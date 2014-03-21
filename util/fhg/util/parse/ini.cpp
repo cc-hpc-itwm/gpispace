@@ -6,8 +6,6 @@
 #include <fhg/util/parse/require.hpp>
 #include <fhg/util/parse/until.hpp>
 
-#include <boost/foreach.hpp>
-
 namespace fhg
 {
   namespace util

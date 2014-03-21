@@ -11,7 +11,6 @@
 #include <fhg/util/boost/variant.hpp>
 #include <fhg/util/xml.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 #include <boost/utility.hpp>
 

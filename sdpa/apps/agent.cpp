@@ -7,7 +7,6 @@
 #include <fhglog/fhglog.hpp>
 
 #include <boost/program_options.hpp>
-#include <boost/foreach.hpp>
 
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <we/layer.hpp>
@@ -111,7 +110,7 @@ int main (int argc, char **argv)
                     << "' at '" << agentUrl
                     << "', having masters: ";
 
-    BOOST_FOREACH (const std::string& master, arrMasterNames)
+    for (const std::string& master : arrMasterNames)
     {
       startup_message << master << ", ";
       listMasterInfo.push_back (sdpa::MasterInfo (master));

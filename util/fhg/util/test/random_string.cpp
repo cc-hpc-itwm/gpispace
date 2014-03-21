@@ -8,7 +8,6 @@
 #include <fhg/util/boost/test/require_exception.hpp>
 
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 
 #include <cmath>
 
@@ -71,7 +70,7 @@ BOOST_AUTO_TEST_CASE (string_of_one)
 {
   std::string const chars ("c");
 
-  BOOST_FOREACH (char const& c, fhg::util::random_string_of (chars))
+  for (char const& c : fhg::util::random_string_of (chars))
   {
     BOOST_REQUIRE_NE (chars.end(), std::find (chars.begin(), chars.end(), c));
   }
@@ -81,7 +80,7 @@ BOOST_AUTO_TEST_CASE (string_of_some)
 {
   std::string const chars ("abcdefgh0123");
 
-  BOOST_FOREACH (char const& c, fhg::util::random_string_of (chars))
+  for (char const& c : fhg::util::random_string_of (chars))
   {
     BOOST_REQUIRE_NE (chars.end(), std::find (chars.begin(), chars.end(), c));
   }
@@ -99,7 +98,7 @@ BOOST_AUTO_TEST_CASE (string_of_distribution)
 
     len += s.size();
 
-    BOOST_FOREACH (char const& c, s)
+    for (char const& c : s)
     {
       ++count[c - '0'];
     }
@@ -115,7 +114,7 @@ BOOST_AUTO_TEST_CASE (string_without)
   std::string const except
     (fhg::util::random_string_of ("0123456789abcdefghijklmnopqrstuvwyxz${}"));
 
-  BOOST_FOREACH (char const& c, fhg::util::random_string_without (except))
+  for (char const& c : fhg::util::random_string_without (except))
   {
     BOOST_REQUIRE_EQUAL
       (except.end(), std::find (except.begin(), except.end(), c));

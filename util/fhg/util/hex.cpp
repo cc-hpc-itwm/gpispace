@@ -1,7 +1,5 @@
 #include <fhg/util/hex.hpp>
 
-#include <boost/foreach.hpp>
-
 #include <cctype>
 #include <iomanip>
 #include <stdexcept>
@@ -15,7 +13,7 @@ namespace fhg
     {
       std::ostringstream sstr;
 
-      BOOST_FOREACH (char const c, s)
+      for (char const c : s)
       {
         sstr << std::setw (2)
              << std::setfill ('0')

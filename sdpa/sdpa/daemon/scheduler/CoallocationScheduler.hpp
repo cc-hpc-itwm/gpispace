@@ -95,9 +95,9 @@ namespace sdpa
 
         bool allGroupTasksFinishedSuccessfully()
         {
-          BOOST_FOREACH ( result_type result
-                        , m_map_worker_result | boost::adaptors::map_values
-                        )
+          for ( result_type result
+              : m_map_worker_result | boost::adaptors::map_values
+              )
           {
             if (result != FINISHED)
             {
@@ -115,9 +115,9 @@ namespace sdpa
         sdpa::worker_id_list_t getListNotTerminatedWorkers() const
         {
           sdpa::worker_id_list_t list_not_terminated_workers(m_list_workers);
-          BOOST_FOREACH ( const worker_id_t& wid
-                        , m_map_worker_result | boost::adaptors::map_keys
-                        )
+          for ( const worker_id_t& wid
+              : m_map_worker_result | boost::adaptors::map_keys
+              )
           {
             list_not_terminated_workers.remove(wid);
           }

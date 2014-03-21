@@ -5,7 +5,6 @@
 
 #include <fhg/util/first_then.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/function.hpp>
 
 namespace fhg
@@ -26,7 +25,7 @@ namespace fhg
       os << header << open;
 
       const first_then<std::string> pre ("", sep + " ");
-      BOOST_FOREACH (const typename C::value_type& x, c)
+      for (const typename C::value_type& x : c)
       {
         pre (os);
         f (x);

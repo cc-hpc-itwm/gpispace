@@ -347,7 +347,7 @@ namespace fhg
 
       void execution_monitor_proxy::move_tick()
       {
-        BOOST_FOREACH (const util::qt::mvc::section_index& index, _auto_moving)
+        for (const util::qt::mvc::section_index& index : _auto_moving)
         {
           index.data ( QDateTime::currentDateTime()
                      , execution_monitor_proxy::visible_range_to_role
@@ -487,10 +487,9 @@ namespace fhg
           const qreal horizontal_scale
             (qreal (rect.width()) / qreal (visible_range.length()));
 
-          BOOST_FOREACH
-            (worker_model::subrange_getter_type range, subrange_getters)
+          for (worker_model::subrange_getter_type range : subrange_getters)
           {
-            BOOST_FOREACH (const worker_model::value_type& data, range (from, to))
+            for (const worker_model::value_type& data : range (from, to))
             {
               const qreal left (std::max (from, data.timestamp()));
               paint_description::block block
@@ -590,14 +589,13 @@ namespace fhg
             paint_description descr
               (prepare_gantt_row (index, option.rect, painter->pen()));
 
-            BOOST_FOREACH ( const worker_model::state_type state
-                          , sorted (descr.blocks.keys())
-                          )
+            for ( const worker_model::state_type state
+                : sorted (descr.blocks.keys())
+                )
             {
               painter->setBrush (color_for_state (state));
 
-              BOOST_FOREACH
-                (const paint_description::block& block, descr.blocks[state])
+              for (const paint_description::block& block : descr.blocks[state])
               {
                 painter->drawRect (shrunken_by_pen (block.rect, painter->pen()));
               }
@@ -632,9 +630,9 @@ namespace fhg
 
             QHash<worker_model::state_type, int> in_state;
 
-            BOOST_FOREACH ( boost::optional<worker_model::value_type> current
-                          , current_intervals
-                          )
+            for ( boost::optional<worker_model::value_type> current
+                : current_intervals
+                )
             {
               if (current && !current->duration())
               {
@@ -647,8 +645,7 @@ namespace fhg
               (option.rect.adjusted (inset, inset, -inset, -inset));
 
             qreal x_pos (0.0);
-            BOOST_FOREACH
-              (const worker_model::state_type state, sorted (in_state.keys()))
+            for (const worker_model::state_type state : sorted (in_state.keys()))
             {
               x_pos += 3.0;
               const QString text (QString ("%1").arg (in_state[state]));
@@ -702,7 +699,7 @@ namespace fhg
         , QAbstractItemView* view
         )
       {
-        BOOST_FOREACH (const paint_description::block& block, descr.blocks[state])
+        for (const paint_description::block& block : descr.blocks[state])
         {
           if ( block.rect.left() <= event->pos().x()
              && event->pos().x() <= block.rect.right()
@@ -757,7 +754,7 @@ namespace fhg
             }
             else
             {
-              BOOST_FOREACH (worker_model::state_type state, descr.blocks.keys())
+              for (worker_model::state_type state : descr.blocks.keys())
               {
                 if (maybe_show_tooltip (state, descr, event, view))
                 {

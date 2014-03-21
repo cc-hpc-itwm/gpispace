@@ -5,7 +5,6 @@
 #include <csignal> // kill
 
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -540,7 +539,7 @@ namespace gpi
 
       void topology_t::broadcast (const std::string &data)
       {
-        BOOST_FOREACH(child_map_t::value_type const & n, m_children)
+        for (child_map_t::value_type const & n : m_children)
         {
           cast(n.second, data);
         }

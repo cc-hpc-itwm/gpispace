@@ -87,14 +87,14 @@ namespace fhg
         void base_item::set_just_pos_but_not_in_property (const QPointF& new_pos)
         {
           //! \todo update more clever
-          foreach (base_item* child, childs())
+          for (base_item* child : childs())
             {
               child->setVisible (false);
             }
 
           QGraphicsItem::setPos (new_pos);
 
-          foreach (base_item* child, childs())
+          for (base_item* child : childs())
             {
               child->setVisible (true);
             }
@@ -104,7 +104,7 @@ namespace fhg
         {
           _style.clear_cache();
 
-          foreach (QGraphicsItem* child, childItems())
+          for (QGraphicsItem* child : childItems())
             {
               if (base_item* child_item = qgraphicsitem_cast<base_item*> (child))
                 {
@@ -168,7 +168,7 @@ namespace fhg
         {
           QLinkedList<base_item*> childs;
 
-          foreach (QGraphicsItem* childItem, childItems())
+          for (QGraphicsItem* childItem : childItems())
             {
               if (base_item* child = qgraphicsitem_cast<base_item *> (childItem))
                 {

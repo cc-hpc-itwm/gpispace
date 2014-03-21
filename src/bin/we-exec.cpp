@@ -13,7 +13,6 @@
 
 #include <boost/bind.hpp>
 #include <boost/filesystem/fstream.hpp>
-#include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/thread.hpp>
@@ -269,9 +268,7 @@ namespace
       else if (id == _job_id)
       {
         std::cout << "finished [" << id << "]" << std::endl;
-        BOOST_FOREACH ( const we::type::activity_t::token_on_port_t& top
-                      , act.output()
-                      )
+        for (const we::type::activity_t::token_on_port_t& top : act.output())
         {
           std::cout << act.transition().ports_output().at (top.second).name()
                     << " => " << pnet::type::value::show (top.first) << std::endl;
@@ -444,12 +441,12 @@ try
 
   we::loader::loader loader;
 
-  BOOST_FOREACH (std::string const& m, mods_to_load)
+  for (std::string const& m : mods_to_load)
   {
     loader.load (m, m);
   }
 
-  BOOST_FOREACH (std::string const& p, mod_path)
+  for (std::string const& p : mod_path)
   {
     loader.append_search_path (p);
   }

@@ -54,9 +54,9 @@ namespace we
 
         boost::unordered_map<std::string, we::place_id_type> place_ids;
 
-        BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                      , activity.transition().ports_input()
-                      )
+        for ( we::type::transition_t::port_map_t::value_type const& p
+            : activity.transition().ports_input()
+            )
         {
           we::place_id_type const place_id
             (net.add_place (place::type (wrapped_name (p.second), p.second.signature())));
@@ -70,9 +70,9 @@ namespace we
 
           place_ids.insert (std::make_pair (wrapped_name (p.second), place_id));
         }
-        BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                      , activity.transition().ports_output()
-                      )
+        for ( we::type::transition_t::port_map_t::value_type const& p
+            : activity.transition().ports_output()
+            )
         {
           we::place_id_type const place_id
             (net.add_place (place::type (wrapped_name (p.second), p.second.signature())));
@@ -87,9 +87,7 @@ namespace we
           place_ids.insert (std::make_pair (wrapped_name (p.second), place_id));
         }
 
-        BOOST_FOREACH ( const type::activity_t::input_t::value_type& top
-                      , activity.input()
-                      )
+        for (const type::activity_t::input_t::value_type& top : activity.input())
         {
           we::type::port_t const& port
             (activity.transition().ports_input().at (top.second));
@@ -121,18 +119,18 @@ namespace we
         type::activity_t activity_inner
           (net.transitions().begin()->second, activity.transition_id());
 
-        BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                      , activity_inner.transition().ports_output()
-                      )
+        for ( we::type::transition_t::port_map_t::value_type const& p
+            : activity_inner.transition().ports_output()
+            )
         {
             we::place_id_type const place_id
               ( net.port_to_place().at (net.transitions().begin()->first)
               .left.find (p.first)->get_right()
               );
 
-            BOOST_FOREACH ( const pnet::type::value::value_type& token
-                          , net.get_token (place_id)
-                          )
+            for ( const pnet::type::value::value_type& token
+                : net.get_token (place_id)
+                )
             {
               activity_inner.add_output (p.first, token);
             }
@@ -531,9 +529,7 @@ namespace we
       we::type::net_type& net
         (boost::get<we::type::net_type&> (_activity.transition().data()));
 
-      BOOST_FOREACH ( const type::activity_t::token_on_port_t& top
-                    , child.output()
-                    )
+      for (const type::activity_t::token_on_port_t& top : child.output())
       {
         net.put_value
           ( net.port_to_place().at (*child.transition_id())
@@ -593,10 +589,9 @@ namespace we
     {
       boost::mutex::scoped_lock const _ (_relation_mutex);
 
-      BOOST_FOREACH
-        ( id_type child
-        , _relation.left.equal_range (parent) | boost::adaptors::map_values
-        )
+      for ( id_type child
+          : _relation.left.equal_range (parent) | boost::adaptors::map_values
+          )
       {
         fun (child);
       }

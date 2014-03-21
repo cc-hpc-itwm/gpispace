@@ -91,7 +91,7 @@ namespace we
     we::port_id_type transition_t::input_port_by_name
       (const std::string& port_name) const
     {
-      BOOST_FOREACH (port_map_t::value_type const& p, _ports_input)
+      for (port_map_t::value_type const& p : _ports_input)
       {
         if (p.second.name() == port_name)
         {
@@ -104,7 +104,7 @@ namespace we
     const we::port_id_type& transition_t::output_port_by_name
       (const std::string& port_name) const
     {
-      BOOST_FOREACH (port_map_t::value_type const& p, _ports_output)
+      for (port_map_t::value_type const& p : _ports_output)
       {
         if (p.second.name() == port_name)
         {

@@ -6,7 +6,6 @@
 #include <boost/format.hpp>
 #include <boost/unordered_map.hpp>
 
-#include <pnetv/jpn/common/Foreach.h>
 #include <pnetv/jpn/common/Unreachable.h>
 
 #include <we/type/expression.fwd.hpp>
@@ -79,7 +78,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
         /* Translate places. */
         typedef std::pair<we::place_id_type, place::type> ip_type;
 
-        BOOST_FOREACH (const ip_type& ip, net.places()) {
+        for (const ip_type& ip : net.places()) {
             const we::place_id_type& pid (ip.first);
             const place::type &p (ip.second);
 
@@ -89,9 +88,9 @@ class TransitionVisitor: public boost::static_visitor<void> {
         }
 
         /* Translate transitions. */
-        typedef std::pair<we::transition_id_type, transition_t> it_type;
-
-        FOREACH (const it_type& it, net.transitions())
+        for ( const std::pair<we::transition_id_type, transition_t>& it
+            : net.transitions()
+            )
         {
           const we::transition_id_type& tid (it.first);
           const transition_t& t (it.second);
@@ -115,9 +114,9 @@ class TransitionVisitor: public boost::static_visitor<void> {
             }
         }
 
-        FOREACH ( const we::type::net_type::adj_pt_type::value_type& pt
-                , net.place_to_transition_consume()
-                )
+        for ( const we::type::net_type::adj_pt_type::value_type& pt
+            : net.place_to_transition_consume()
+            )
         {
           Place *place = ::jpna::find(places_, pt.left);
           Transition *transition = ::jpna::find(transitions_, pt.right);
@@ -125,9 +124,9 @@ class TransitionVisitor: public boost::static_visitor<void> {
           /* Transition consumes the token on input place. */
           transition->addInputPlace(place);
         }
-        FOREACH ( const we::type::net_type::adj_pt_type::value_type& pt
-                , net.place_to_transition_read()
-                )
+        for ( const we::type::net_type::adj_pt_type::value_type& pt
+            : net.place_to_transition_read()
+            )
         {
           Place *place = ::jpna::find(places_, pt.left);
           Transition *transition = ::jpna::find(transitions_, pt.right);
@@ -136,9 +135,9 @@ class TransitionVisitor: public boost::static_visitor<void> {
           transition->addInputPlace(place);
           transition->addOutputPlace(place);
         }
-        FOREACH ( const we::type::net_type::adj_tp_type::value_type& tp
-                , net.transition_to_place()
-                )
+        for ( const we::type::net_type::adj_tp_type::value_type& tp
+            : net.transition_to_place()
+            )
         {
           Transition *transition = ::jpna::find(transitions_, tp.left);
           Place *place = ::jpna::find(places_, tp.right);
@@ -147,11 +146,10 @@ class TransitionVisitor: public boost::static_visitor<void> {
           transition->addOutputPlace(place);
         }
 
-        typedef std::pair<we::transition_id_type, we::type::transition_t>
-          id_and_transition_type;
-
-        FOREACH
-          (id_and_transition_type const id_and_transition, net.transitions())
+        for ( std::pair<we::transition_id_type, we::type::transition_t> const
+               id_and_transition
+            : net.transitions()
+            )
         {
             TransitionVisitor visitor(petriNet_->name() + "::" + id_and_transition.second.name(), petriNets_);
             visitor(id_and_transition.second);
@@ -163,7 +161,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
         boost::apply_visitor(*this, transition.data());
 
-        FOREACH(const transition_t::port_map_t::value_type &item, transition.ports_input()) {
+        for (const transition_t::port_map_t::value_type &item : transition.ports_input()) {
           const we::type::port_t &port = item.second;
 
             if (port.associated_place()) {
@@ -174,7 +172,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
             }
         }
-        FOREACH(const transition_t::port_map_t::value_type &item, transition.ports_output()) {
+        for (const transition_t::port_map_t::value_type &item : transition.ports_output()) {
           const we::type::port_t &port = item.second;
 
             if (port.associated_place()) {
@@ -185,7 +183,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
             }
         }
-        FOREACH(const transition_t::port_map_t::value_type &item, transition.ports_tunnel()) {
+        for (const transition_t::port_map_t::value_type &item : transition.ports_tunnel()) {
           const we::type::port_t &port = item.second;
 
             if (port.associated_place()) {

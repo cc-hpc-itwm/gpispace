@@ -91,7 +91,7 @@ namespace fhg
           setPos_no_collision_detection (fitting_position (new_position));
 
           // do not move, when now colliding with a different port
-          foreach (QGraphicsItem* collidingItem, collidingItems())
+          for (QGraphicsItem* collidingItem : collidingItems())
           {
             if ( qgraphicsitem_cast<port_item*>(collidingItem)
                && collidingItem->parentItem() == parentItem()

@@ -33,7 +33,6 @@
 
 #include <list>
 
-#include <boost/foreach.hpp>
 #include <boost/unordered_map.hpp>
 
 #include <QApplication>
@@ -787,9 +786,9 @@ namespace fhg
             return;
           }
 
-          foreach ( const connectable_item* item
-                  , items_of_type<connectable_item> (event->scenePos())
-                  )
+          for ( const connectable_item* item
+              : items_of_type<connectable_item> (event->scenePos())
+              )
           {
             const connectable_item* pending (_pending_connection->fixed_end());
 
@@ -884,7 +883,7 @@ namespace fhg
 
             stream >> paths;
 
-            foreach (const QString& path, paths)
+            for (const QString& path : paths)
             {
               net().add_transition
                 ( data::manager::instance().load (path).get().clone
@@ -915,7 +914,7 @@ namespace fhg
           graph.rankdir ("LR");
           graph.splines ("ortho");
 
-          foreach (QGraphicsItem* i, items())
+          for (QGraphicsItem* i : items())
           {
             if ( (  i->type() == base_item::port_graph_type
                  || i->type() == base_item::transition_graph_type
@@ -938,7 +937,7 @@ namespace fhg
                                        > edges_map_type;
           edges_map_type edges;
 
-          foreach (association* c, items_of_type<association>())
+          for (association* c : items_of_type<association>())
           {
             QGraphicsItem* start (c->start());
             QGraphicsItem* end (c->end());
@@ -962,12 +961,12 @@ namespace fhg
 
           graph.layout ("dot");
 
-          BOOST_FOREACH (nodes_map_type::value_type& it, nodes)
+          for (nodes_map_type::value_type& it : nodes)
           {
             it.first->setPos (style::raster::snap (it.second.position()));
           }
 
-          // BOOST_FOREACH (const edges_map_type::value_type& edge, edges)
+          // for (const edges_map_type::value_type& edge : edges)
           // {
           //   //! \todo enable this, before repair connection::shape
           //   //                edge.first->fixed_points (edge.second.points());
@@ -977,7 +976,7 @@ namespace fhg
         template<typename item_type, typename handle_type>
           item_type* scene_type::item_with_handle (const handle_type& handle)
         {
-          foreach (item_type* item, items_of_type<item_type>())
+          for (item_type* item : items_of_type<item_type>())
           {
             if (item->handle() == handle)
             {
@@ -1002,7 +1001,7 @@ namespace fhg
         {
           QList<item_type*> result;
 
-          foreach (QGraphicsItem* child, items())
+          for (QGraphicsItem* child : items())
           {
             base_item* bi =
               fhg::util::qt::throwing_qgraphicsitem_cast<base_item*> (child);
@@ -1020,7 +1019,7 @@ namespace fhg
         {
           QList<item_type*> result;
 
-          foreach (QGraphicsItem* child, items (pos))
+          for (QGraphicsItem* child : items (pos))
           {
             base_item* bi =
               fhg::util::qt::throwing_qgraphicsitem_cast<base_item*> (child);

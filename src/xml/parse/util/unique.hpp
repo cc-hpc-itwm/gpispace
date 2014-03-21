@@ -6,7 +6,6 @@
 #include <string>
 #include <stdexcept>
 
-#include <boost/foreach.hpp>
 #include <boost/function.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/optional.hpp>
@@ -129,7 +128,7 @@ namespace xml
 
       void push (const unique<value_type, id_type>& other, const std::string& m)
       {
-        BOOST_FOREACH (const id_type& id, other.ids())
+        for (const id_type& id : other.ids())
         {
           if (push (id) != id)
           {
@@ -163,7 +162,7 @@ namespace xml
       {
         //! \todo Reserve?
         unique<value_type, id_type> copy;
-        BOOST_FOREACH (const value_type& value, values())
+        for (const value_type& value : values())
         {
           copy.push (value.clone (parent, mapper));
         }
@@ -173,7 +172,7 @@ namespace xml
       unique<value_type, id_type>& reparent
         (const typename value_type::parent_id_type& parent)
       {
-        BOOST_FOREACH (value_type& value, values())
+        for (value_type& value : values())
         {
          value.parent (parent);
         }

@@ -16,7 +16,6 @@
 #include <QVBoxLayout>
 
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 
 Q_DECLARE_METATYPE (QModelIndex)
@@ -71,7 +70,7 @@ namespace fhg
 
           stream << indices.size();
 
-          BOOST_FOREACH (QModelIndex index, indices)
+          for (QModelIndex index : indices)
           {
             fhg_assert (index.isValid(), "only valid indices shall have ItemIsDragEnabled");
             stream << itemData (index);
@@ -153,7 +152,7 @@ namespace fhg
             int row (to->model()->rowCount());
             to->model()->insertRows (row, selection.size());
             to->selectionModel()->clear();
-            BOOST_FOREACH (const QModelIndex idx, selection)
+            for (const QModelIndex idx : selection)
             {
               const QModelIndex index (to->model()->index (row, 0));
               to->model()->setItemData (index, idx.model()->itemData (idx));

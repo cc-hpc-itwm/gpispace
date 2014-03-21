@@ -15,8 +15,8 @@
 #include <fhg/util/daemonize.hpp>
 #include <fhg/util/split.hpp>
 
+#include <boost/range/adaptor/reversed.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/foreach.hpp>
 #include <boost/thread.hpp>
 #include <boost/filesystem.hpp>
 
@@ -57,7 +57,9 @@ namespace fhg
 
     kernel_t::~kernel_t ()
     {
-      BOOST_REVERSE_FOREACH (std::string plugin_to_unload, m_load_order)
+      for ( std::string plugin_to_unload
+          : m_load_order | boost::adaptors::reversed
+          )
       {
         m_plugins.erase (m_plugins.find (plugin_to_unload));
       }
@@ -71,7 +73,7 @@ namespace fhg
         throw std::runtime_error ("search path is empty");
       }
 
-      BOOST_FOREACH (std::string const &dir, m_search_path)
+      for (std::string const &dir : m_search_path)
       {
         fs::path plugin_path (dir);
         plugin_path /= name + ".so";
@@ -141,7 +143,7 @@ namespace fhg
       std::list<std::string> const depends
         (fhg::util::split<std::string, std::string> (desc->depends, ','));
 
-      BOOST_FOREACH(std::string const &dep, depends)
+      for (std::string const &dep : depends)
       {
         if (m_plugins.find (dep) == m_plugins.end())
         {

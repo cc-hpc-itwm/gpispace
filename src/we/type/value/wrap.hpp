@@ -6,7 +6,6 @@
 #include <we/type/value.hpp>
 #include <we/type/value/to_value.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/function.hpp>
 
 
@@ -25,7 +24,7 @@ namespace pnet
       {
         std::list<value_type> lv;
 
-        BOOST_FOREACH (T const& x, lT)
+        for (T const& x : lT)
         {
           lv.push_back (to_value (x));
         }
@@ -46,7 +45,7 @@ namespace pnet
       {
         std::set<value_type> sv;
 
-        BOOST_FOREACH (T const& x, sT)
+        for (T const& x : sT)
         {
           sv.insert (to_value (x));
         }
@@ -60,9 +59,7 @@ namespace pnet
       {
         std::map<value_type, value_type> mvv;
 
-        typedef typename std::map<K, V>::value_type kv_type;
-
-        BOOST_FOREACH (kv_type const& kv, mkv)
+        for (typename std::map<K, V>::value_type const& kv : mkv)
         {
           mvv.insert (std::make_pair ( to_value (kv.first)
                                      , to_value (kv.second)

@@ -14,7 +14,6 @@
 #include <fstream>
 
 #include <boost/program_options.hpp>
-#include <boost/foreach.hpp>
 
 #include <fhg/revision.hpp>
 
@@ -190,7 +189,7 @@ try
     {
       if (ports.size())
       {
-        BOOST_FOREACH(std::string const &port, ports)
+        for (std::string const &port : ports)
         {
           we::port_id_type port_id (0);
           try
@@ -222,7 +221,7 @@ try
     {
       if (ports.size())
       {
-        BOOST_FOREACH(std::string const &port, ports)
+        for (std::string const &port : ports)
         {
           we::port_id_type port_id (0);
           try

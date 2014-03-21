@@ -8,8 +8,6 @@
 #include <we/type/value/peek.hpp>
 #include <we/type/value/show.hpp>
 
-#include <boost/foreach.hpp>
-
 #include <iostream>
 
 #include <fhg/util/split.hpp>
@@ -138,9 +136,9 @@ namespace expr
     std::ostream& operator<< (std::ostream& s, const context& cntx)
     {
       {
-        typedef std::pair<std::string, pnet::type::value::value_type> kv_type;
-
-        BOOST_FOREACH (const kv_type& kv, cntx._container)
+        for ( const std::pair<std::string, pnet::type::value::value_type>& kv
+            : cntx._container
+            )
         {
           s << kv.first
             << " := " << pnet::type::value::show (kv.second)
@@ -149,9 +147,9 @@ namespace expr
       }
 
       {
-        typedef std::pair<std::string, const pnet::type::value::value_type*> kv_type;
-
-        BOOST_FOREACH (const kv_type& kv, cntx._ref_container)
+        for ( const std::pair<std::string, const pnet::type::value::value_type*>& kv
+            : cntx._ref_container
+            )
         {
           s << kv.first
             << " -> " << pnet::type::value::show (*kv.second)

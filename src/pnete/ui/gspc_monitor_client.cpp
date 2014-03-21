@@ -7,7 +7,6 @@
 #include <fhg/util/parse/require.hpp>
 
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 
 #include <QColor>
 
@@ -116,7 +115,7 @@ namespace fhg
           std::swap (messages, _outstanding_outgoing);
         }
 
-        foreach (const QString& message, messages)
+        for (const QString& message : messages)
         {
           _socket.write (qPrintable (message));
           _socket.write ("\n");
@@ -183,7 +182,7 @@ namespace fhg
         if (!actions.empty())
         {
           QString message ("describe_action: [");
-          foreach (const QString& action, actions)
+          for (const QString& action : actions)
           {
             message.append ("\"")
               .append (action)
@@ -223,7 +222,7 @@ namespace fhg
         }
 
         QString hosts_string;
-        BOOST_FOREACH (QString host, hosts)
+        for (QString host : hosts)
         {
           hosts_string += '"' + host + "\",";
         }
@@ -694,7 +693,7 @@ namespace fhg
           std::swap (messages, _outstanding_incoming);
         }
 
-        foreach (const QString& message, messages)
+        for (const QString& message : messages)
         {
           const std::string std_message (message.toStdString());
           fhg::util::parse::position_string pos (std_message);

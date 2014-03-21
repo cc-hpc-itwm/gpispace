@@ -919,7 +919,7 @@ BOOST_AUTO_TEST_CASE (wrap_generated)
 
     BOOST_CHECK_EQUAL (ls.size(), lv.size());
 
-    BOOST_FOREACH (const pnet::type::value::value_type& v, lv)
+    for (const pnet::type::value::value_type& v : lv)
     {
       BOOST_CHECK_EQUAL (pnet::type::value::to_value (s), v);
     }
@@ -936,7 +936,7 @@ BOOST_AUTO_TEST_CASE (wrap_generated)
 
     BOOST_CHECK_EQUAL (ss.size(), sv.size());
 
-    BOOST_FOREACH (const pnet::type::value::value_type& v, sv)
+    for (const pnet::type::value::value_type& v : sv)
     {
       BOOST_CHECK_EQUAL (pnet::type::value::to_value (s), v);
     }

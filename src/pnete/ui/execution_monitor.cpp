@@ -14,7 +14,6 @@
 #include <util/qt/treeview_with_delete.hpp>
 #include <util/qt/variant.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 
@@ -412,7 +411,7 @@ namespace fhg
             << sdpa::daemon::NotificationEvent::STATE_CANCELED
             );
 
-          BOOST_FOREACH (const worker_model::state_type& state, all_states)
+          for (const worker_model::state_type& state : all_states)
           {
             QPushButton* label (new QPushButton (to_string (state), this));
             style_button (label, delegate->color_for_state (state));

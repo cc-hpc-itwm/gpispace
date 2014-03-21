@@ -151,7 +151,7 @@ namespace fhg
           std::swap (events, _queued_events);
         }
 
-        BOOST_FOREACH (log::LogEvent log_event, events)
+        for (log::LogEvent log_event : events)
         {
           const sdpa::daemon::NotificationEvent event (log_event.message());
 
@@ -163,7 +163,7 @@ namespace fhg
           const QString activity_id
             (QString::fromStdString (event.activity_id()));
 
-          BOOST_FOREACH (const std::string worker_std, event.components())
+          for (const std::string worker_std : event.components())
           {
             const QString worker (QString::fromStdString (worker_std));
 

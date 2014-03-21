@@ -11,7 +11,6 @@
 
 #include <fhglog/LogMacros.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
 
 #include <string>
@@ -75,7 +74,7 @@ int main(int ac, char **av)
   }
 
   std::map<std::string, std::string> config_variables;
-  BOOST_FOREACH (const std::string& p, config_vars)
+  for (const std::string& p : config_vars)
   {
     const std::pair<std::string, std::string> kv (fhg::util::split_string (p, '='));
     if (kv.first.empty())
@@ -116,7 +115,7 @@ int main(int ac, char **av)
 
   fhg::core::kernel_t kernel (search_path, request_stop, config_variables);
 
-  BOOST_FOREACH (std::string const & p, mods_to_load)
+  for (std::string const & p : mods_to_load)
   {
     kernel.load_plugin_by_name (p);
   }

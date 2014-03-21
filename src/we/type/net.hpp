@@ -17,7 +17,6 @@
 
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
-#include <boost/foreach.hpp>
 #include <boost/function.hpp>
 #include <boost/random.hpp>
 #include <boost/range/adaptor/map.hpp>
@@ -213,16 +212,14 @@ namespace we
           const std::size_t s (_token_by_place_id.size());
           ar & s;
         }
-        BOOST_FOREACH ( const token_by_place_id_type::value_type& pl
-                      , _token_by_place_id
-                      )
+        for (const token_by_place_id_type::value_type& pl : _token_by_place_id)
         {
           ar & pl.first;
           {
             const std::size_t s (pl.second.size());
             ar & s;
           }
-          BOOST_FOREACH (const pnet::type::value::value_type& x, pl.second)
+          for (const pnet::type::value::value_type& x : pl.second)
           {
             std::ostringstream oss;
             oss << pnet::type::value::show (x);
@@ -266,7 +263,7 @@ namespace we
           }
         }
 
-        BOOST_FOREACH (transition_id_type tid, _tmap | boost::adaptors::map_keys)
+        for (transition_id_type tid : _tmap | boost::adaptors::map_keys)
         {
           update_enabled (tid);
         }

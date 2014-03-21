@@ -2,7 +2,6 @@
 
 #include <we/type/bytearray.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/functional/hash.hpp>
 
 #include <iostream>
@@ -38,7 +37,7 @@ namespace bytearray
   std::ostream& operator<< (std::ostream& s, const type& t)
   {
     s << "y(";
-    BOOST_FOREACH (const char c, t._v)
+    for (const char c : t._v)
       {
         s << " " << int (c);
       }

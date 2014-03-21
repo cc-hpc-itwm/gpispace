@@ -7,7 +7,6 @@
 
 #include <boost/functional/hash.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/bind.hpp>
 
 #include <iostream>
@@ -55,7 +54,7 @@ namespace bitsetofint
   {
     std::size_t cnt (0);
 
-    BOOST_FOREACH (uint64_t block, _container)
+    for (uint64_t block : _container)
     {
       // http://en.wikipedia.org/wiki/Hamming_weight
 
@@ -88,7 +87,7 @@ namespace bitsetofint
   {
     unsigned long x (0);
 
-    BOOST_FOREACH (uint64_t block, _container)
+    for (uint64_t block : _container)
     {
       for (size_t bit (0); bit < 64; ++x, ++bit, block >>= 1)
       {
@@ -170,7 +169,7 @@ namespace bitsetofint
   std::ostream& operator<< (std::ostream& s, const type& t)
   {
     s << "{";
-    BOOST_FOREACH (const uint64_t v, t._container)
+    for (const uint64_t v : t._container)
     {
       s << " " << v;
     }
@@ -182,7 +181,7 @@ namespace bitsetofint
 
     oss << "0x/";
 
-    BOOST_FOREACH (const uint64_t v,  t._container)
+    for (const uint64_t v : t._container)
     {
       oss.flags (std::ios::hex);
       oss.width (16);

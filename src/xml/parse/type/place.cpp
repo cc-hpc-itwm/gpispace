@@ -187,7 +187,7 @@ namespace xml
 
           ::we::type::property::dump::dump (s, p.properties());
 
-          BOOST_FOREACH (const place_type::token_type& token, p.tokens)
+          for (const place_type::token_type& token : p.tokens)
           {
             s.open ("token");
             s.open ("value");

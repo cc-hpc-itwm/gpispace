@@ -23,11 +23,9 @@ namespace sdpa
     {
       std::list<agent_id_t> ret;
 
-      BOOST_FOREACH ( const subscriber_map_t::value_type& subscription
-                    , m_listSubscribers
-                    )
+      for (const subscriber_map_t::value_type& subscription : m_listSubscribers)
       {
-        BOOST_FOREACH (job_id_t id, subscription.second)
+        for (job_id_t id : subscription.second)
         {
           if (id == job_id)
           {
@@ -56,7 +54,7 @@ namespace sdpa
 
       pJob->JobFinished (pEvt->result());
 
-      BOOST_FOREACH (agent_id_t subscriber, subscribers (pEvt->job_id()))
+      for (agent_id_t subscriber : subscribers (pEvt->job_id()))
       {
         sendEventToOther
           ( events::JobFinishedEvent::Ptr
@@ -90,7 +88,7 @@ namespace sdpa
 
       pJob->JobFailed (pEvt->error_message());
 
-      BOOST_FOREACH (agent_id_t subscriber, subscribers (pEvt->job_id()))
+      for (agent_id_t subscriber : subscribers (pEvt->job_id()))
       {
         sendEventToOther
           ( events::JobFailedEvent::Ptr
@@ -155,7 +153,7 @@ namespace sdpa
         pJob->CancelJobAck();
         _scheduler.delete_job (pEvt->job_id());
 
-        BOOST_FOREACH (agent_id_t subscriber, subscribers (pEvt->job_id()))
+        for (agent_id_t subscriber : subscribers (pEvt->job_id()))
         {
           sendEventToOther
             ( events::CancelJobAckEvent::Ptr
@@ -179,7 +177,7 @@ namespace sdpa
 
       pJob->CancelJobAck();
 
-      BOOST_FOREACH (agent_id_t subscriber, subscribers (pEvt->job_id()))
+      for (agent_id_t subscriber : subscribers (pEvt->job_id()))
       {
         sendEventToOther
           ( events::CancelJobAckEvent::Ptr

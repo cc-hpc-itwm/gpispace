@@ -4,7 +4,6 @@
 #include <string>
 #include <set>
 #include <iostream>
-#include <boost/foreach.hpp>
 
 namespace sdpa
 {

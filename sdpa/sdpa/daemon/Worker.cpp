@@ -5,8 +5,6 @@
 #include <iostream>
 #include <algorithm>
 
-#include <boost/foreach.hpp>
-
 namespace sdpa
 {
   namespace daemon
@@ -75,7 +73,7 @@ bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
   lock_type const _ (mtx_);
 
   bool bModified = false;
-  BOOST_FOREACH (Capability const& capability, recvCpbSet)
+  for (Capability const& capability : recvCpbSet)
   {
     capabilities_set_t::iterator itwcpb (capabilities_.find (capability));
     if (itwcpb == capabilities_.end())
@@ -97,7 +95,7 @@ bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
 void Worker::removeCapabilities( const capabilities_set_t& cpbset )
 {
   lock_type const _ (mtx_);
-  BOOST_FOREACH (Capability const& capability, cpbset)
+  for (Capability const& capability : cpbset)
   {
     capabilities_.erase (capability);
   }

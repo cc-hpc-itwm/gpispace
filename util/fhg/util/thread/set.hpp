@@ -3,7 +3,6 @@
 #ifndef FHG_UTIL_THREAD_SET_HPP
 #define FHG_UTIL_THREAD_SET_HPP
 
-#include <boost/foreach.hpp>
 #include <boost/function.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/thread.hpp>
@@ -33,7 +32,7 @@ namespace fhg
       void stop_all()
       {
         const boost::mutex::scoped_lock _ (_threads_mutex);
-        BOOST_FOREACH (boost::thread& thread, _threads)
+        for (boost::thread& thread : _threads)
         {
           thread.interrupt();
           if (thread.joinable())

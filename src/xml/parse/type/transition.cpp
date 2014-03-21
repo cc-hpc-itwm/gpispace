@@ -512,7 +512,7 @@ namespace xml
 
       void transition_type::type_check (const state::type & state) const
       {
-        BOOST_FOREACH (const connect_type& connect, connections().values())
+        for (const connect_type& connect : connections().values())
         {
           type_check (connect, state);
         }
@@ -656,7 +656,7 @@ namespace xml
         const id::ref::function id_function (trans.resolved_function());
         const function_type& fun (id_function.get());
 
-        BOOST_FOREACH (const port_type& port_in, fun.ports().values())
+        for (const port_type& port_in : fun.ports().values())
         {
           if (port_in.direction() == we::type::PORT_IN)
           {
@@ -713,9 +713,7 @@ namespace xml
 
             place_map_map_type place_map_map;
 
-            BOOST_FOREACH ( const place_map_type& place_map
-                          , trans.place_map().values()
-                          )
+            for ( const place_map_type& place_map : trans.place_map().values())
               {
                 const place_map_map_type::const_iterator pid
                   (pids.find (place_map.place_real()));
@@ -776,7 +774,7 @@ namespace xml
               boost::unordered_map<std::string, we::port_id_type>
                 port_id_out;
 
-              BOOST_FOREACH (const port_type& port, fun.ports().values())
+              for (const port_type& port : fun.ports().values())
               {
                 if (port.direction() == we::type::PORT_IN)
                 {
@@ -811,7 +809,7 @@ namespace xml
               const we::transition_id_type tid_in
                 (we_net.add_transition (trans_in));
 
-              BOOST_FOREACH (const port_type& port, fun.ports().values())
+              for (const port_type& port : fun.ports().values())
               {
                 if (port.direction() == we::type::PORT_IN && port.place)
                 {
@@ -825,9 +823,7 @@ namespace xml
                 }
               }
 
-              BOOST_FOREACH ( const connect_type& connect
-                            , trans.connections().values()
-                            )
+              for (const connect_type& connect : trans.connections().values())
               {
                 if (we::edge::is_PT (connect.direction()))
                 {
@@ -858,7 +854,7 @@ namespace xml
               boost::unordered_map<std::string, we::port_id_type>
                 port_id_out;
 
-              BOOST_FOREACH (const port_type& port, fun.ports().values())
+              for (const port_type& port : fun.ports().values())
               {
                 if (port.direction() == we::type::PORT_OUT)
                 {
@@ -895,7 +891,7 @@ namespace xml
               const we::transition_id_type tid_out
                 (we_net.add_transition (trans_out));
 
-              BOOST_FOREACH (const port_type& port, fun.ports().values())
+              for (const port_type& port : fun.ports().values())
               {
                 if (port.direction() == we::type::PORT_OUT && port.place)
                 {
@@ -909,9 +905,7 @@ namespace xml
                 }
               }
 
-              BOOST_FOREACH ( const connect_type& connect
-                            , trans.connections().values()
-                            )
+              for (const connect_type& connect : trans.connections().values())
               {
                 if (!we::edge::is_PT (connect.direction()))
                 {
@@ -973,9 +967,7 @@ namespace xml
             const we::transition_id_type tid
               (we_net.add_transition (we_trans));
 
-            BOOST_FOREACH ( const connect_type& connect
-                          , trans.connections().values()
-                          )
+            for (const connect_type& connect : trans.connections().values())
             {
               if (we::edge::is_PT (connect.direction()))
               {
@@ -1048,7 +1040,7 @@ namespace xml
           dumps (s, t.place_map().values());
           dumps (s, t.connections().values());
 
-          BOOST_FOREACH (const std::string& cond, t.conditions())
+          for (const std::string& cond : t.conditions())
           {
             s.open ("condition");
             s.content (cond);

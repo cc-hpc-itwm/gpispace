@@ -3,7 +3,6 @@
 #include <fhglog/fhglog.hpp>
 #include <fhglog/remote/appender.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
 
 #include <iostream>

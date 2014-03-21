@@ -5,7 +5,6 @@
 
 #include <fhg/util/backtracing_exception.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 
 #include <QVariant>
@@ -49,7 +48,7 @@ namespace fhg
         }
         else if (stores<QVariantList> (variant))
         {
-          BOOST_FOREACH (const QVariant v, value <QVariantList> (variant))
+          for (const QVariant v : value <QVariantList> (variant))
           {
             result << collect<T> (v);
           }

@@ -10,7 +10,6 @@
 #include <fhglog/LogMacros.hpp>
 
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -277,7 +276,7 @@ namespace gpi
         if (_topology.is_master ())
         {
           gpi::pc::type::id_t id = 1;
-          BOOST_FOREACH (std::string const& url, default_memory_urls)
+          for (std::string const& url : default_memory_urls)
           {
             _memory_manager.add_memory
               ( 0 // owner

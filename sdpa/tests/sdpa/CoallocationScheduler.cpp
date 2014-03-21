@@ -39,7 +39,7 @@ struct serveJob_checking_scheduler_and_job_manager
   {
     BOOST_REQUIRE_GE (_expected_serveJob_calls.count (jobId), 1);
     BOOST_CHECK_EQUAL (_expected_serveJob_calls[jobId].first, worker_list.size());
-    BOOST_FOREACH (sdpa::worker_id_t worker, worker_list)
+    for (sdpa::worker_id_t worker : worker_list)
     {
       BOOST_REQUIRE (_expected_serveJob_calls[jobId].second.count (worker));
     }

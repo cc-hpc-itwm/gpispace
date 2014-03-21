@@ -1426,15 +1426,11 @@ namespace fhg
         boost::unordered_set< ::xml::parse::id::ref::place_map>
           place_maps_to_delete (transition.get().place_map().ids());
 
-        BOOST_FOREACH ( const ::xml::parse::id::ref::connect& c
-                      , connections_to_delete
-                      )
+        for (const ::xml::parse::id::ref::connect& c : connections_to_delete)
         {
           remove_connection (handle::connect (c, transition.document()));
         }
-        BOOST_FOREACH ( const ::xml::parse::id::ref::place_map& c
-                      , place_maps_to_delete
-                      )
+        for (const ::xml::parse::id::ref::place_map& c : place_maps_to_delete)
         {
           remove_place_map (handle::place_map (c, transition.document()));
         }
@@ -1584,9 +1580,9 @@ namespace fhg
 
           //! \note remove_connection will modify transition's
           //! connections, thus copy out of there first, then modify.
-          BOOST_FOREACH ( const ::xml::parse::type::transition_type& trans
-                        , net.transitions().values()
-                        )
+          for ( const ::xml::parse::type::transition_type& trans
+              : net.transitions().values()
+              )
           {
             throw_into_set
               ( connections_to_delete
@@ -1604,11 +1600,11 @@ namespace fhg
 
           if (net.has_parent())
           {
-            BOOST_FOREACH ( const ::xml::parse::id::ref::port& port
-                          , net.parent()->ports().ids()
-                          | boost::adaptors::filtered
-                            (boost::bind (is_associated_with, _1, place.id()))
-                          )
+            for ( const ::xml::parse::id::ref::port& port
+                : net.parent()->ports().ids()
+                | boost::adaptors::filtered
+                    (boost::bind (is_associated_with, _1, place.id()))
+                )
             {
               handle::port handle (port, place.document());
 
@@ -1623,19 +1619,17 @@ namespace fhg
             }
           }
 
-          BOOST_FOREACH ( const ::xml::parse::id::ref::connect& c
-                        , connections_to_delete
-                        )
+          for (const ::xml::parse::id::ref::connect& c : connections_to_delete)
           {
             remove_connection (handle::connect (c, place.document()));
           }
-          BOOST_FOREACH ( const ::xml::parse::id::ref::place_map& pm
-                        , place_maps_to_delete
-                        )
+          for ( const ::xml::parse::id::ref::place_map& pm
+              : place_maps_to_delete
+              )
           {
             remove_place_map (handle::place_map (pm, place.document()));
           }
-          BOOST_FOREACH (const ::xml::parse::id::ref::port& id, ports_to_delete)
+          for (const ::xml::parse::id::ref::port& id : ports_to_delete)
           {
             delete_port (handle::port (id, place.document()));
           }
@@ -1940,15 +1934,11 @@ namespace fhg
               )
             );
 
-          BOOST_FOREACH ( const ::xml::parse::id::ref::connect& c
-                        , connections_to_delete
-                        )
+          for (const ::xml::parse::id::ref::connect& c : connections_to_delete)
           {
             remove_connection (handle::connect (c, port.document()));
           }
-          BOOST_FOREACH ( const ::xml::parse::id::ref::place_map& pm
-                        , place_maps_to_delete
-                        )
+          for (const ::xml::parse::id::ref::place_map& pm : place_maps_to_delete)
           {
             remove_place_map (handle::place_map (pm, port.document()));
           }

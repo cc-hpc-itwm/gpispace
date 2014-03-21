@@ -7,7 +7,6 @@
 
 #include <we/type/value/positions.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 
 namespace xml
@@ -62,9 +61,9 @@ namespace xml
                            , pnet::type::value::value_type
                            > path_and_value_type;
 
-          BOOST_FOREACH ( path_and_value_type const& path_and_value
-                        , pnet::type::value::positions (y.value())
-                        )
+          for ( path_and_value_type const& path_and_value
+              : pnet::type::value::positions (y.value())
+              )
           {
             ::xml::parse::util::property::set
               ( state

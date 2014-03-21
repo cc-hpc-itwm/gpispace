@@ -26,7 +26,7 @@ namespace pnet
           {
             _os.open ("struct");
             _os.attr ("name", s.first);
-            BOOST_FOREACH (const field_type& f, s.second)
+            for (const field_type& f : s.second)
             {
               traverse (*this, f);
             }

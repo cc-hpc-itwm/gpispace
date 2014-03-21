@@ -7,7 +7,6 @@
 #include <we/expr/exception.hpp>
 
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 #include <boost/function.hpp>
 #include <boost/variant.hpp>
 #include <boost/utility.hpp>
@@ -225,9 +224,7 @@ namespace expr
 
         void operator() (const child_type& m) const
         {
-          typedef std::pair<char, node_type> cn_type;
-
-          BOOST_FOREACH (const cn_type& cn, m)
+          for (const std::pair<char, node_type>& cn : m)
           {
             boost::apply_visitor
               ( visitor_names (_names, _prefix + cn.first)
@@ -273,9 +270,7 @@ namespace expr
           }
           else
           {
-            typedef std::pair<char, node_type> cn_type;
-
-            BOOST_FOREACH (const cn_type& cn, m)
+            for (const std::pair<char, node_type>& cn : m)
               {
                 if (*_tokenizer.pos() == cn.first)
                   {

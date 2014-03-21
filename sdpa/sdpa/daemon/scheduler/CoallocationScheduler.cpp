@@ -100,7 +100,7 @@ namespace sdpa
 
         if (!matching_workers.empty())
         {
-          BOOST_FOREACH (worker_id_t const& worker, matching_workers)
+          for (worker_id_t const& worker : matching_workers)
           {
             listAvailWorkers.erase
               ( std::find
@@ -118,7 +118,7 @@ namespace sdpa
 
             try
             {
-              BOOST_FOREACH (worker_id_t const& worker, matching_workers)
+              for (worker_id_t const& worker : matching_workers)
               {
                 worker_manager().findWorker (worker)->submit (jobId);
               }
@@ -129,7 +129,7 @@ namespace sdpa
             }
             catch (std::runtime_error const&)
             {
-              BOOST_FOREACH (const worker_id_t& wid, matching_workers)
+              for (const worker_id_t& wid : matching_workers)
               {
                 worker_manager().findWorker (wid)->deleteJob (jobId);
               }
@@ -143,12 +143,12 @@ namespace sdpa
         }
       }
 
-      BOOST_FOREACH (job_id_t id, jobs_to_schedule)
+      for (job_id_t id : jobs_to_schedule)
       {
         _jobs_to_schedule.push (id);
       }
 
-      BOOST_FOREACH (const sdpa::job_id_t& id, nonmatching_jobs_queue)
+      for (const sdpa::job_id_t& id : nonmatching_jobs_queue)
       {
         _jobs_to_schedule.push (id);
       }
@@ -168,7 +168,7 @@ namespace sdpa
         Reservation* ptr_reservation(it->second);
         list_not_terminated_workers = ptr_reservation->getListNotTerminatedWorkers();
 
-        BOOST_FOREACH(const worker_id_t& worker_id, list_not_terminated_workers)
+        for (const worker_id_t& worker_id : list_not_terminated_workers)
         {
           worker_manager().findWorker (worker_id)->abort (job_id);
         }

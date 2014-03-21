@@ -126,7 +126,7 @@ namespace fhg
 
     PetriNetEditor::~PetriNetEditor ()
     {
-      foreach (ui::editor_window* w, _editor_windows)
+      for (ui::editor_window* w : _editor_windows)
       {
         w->hide();
         delete w;

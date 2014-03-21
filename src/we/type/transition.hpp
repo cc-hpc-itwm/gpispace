@@ -13,7 +13,6 @@
 #include <we/type/requirement.hpp>
 #include <we/type/value.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/nvp.hpp>
@@ -138,7 +137,7 @@ namespace we { namespace type {
                          , we::port_id_type
                          > token_on_port_t;
 
-        BOOST_FOREACH (token_on_port_t const& top, input)
+        for (token_on_port_t const& top : input)
         {
           context.bind_ref (ports_input().at (top.second).name(), top.first);
         }

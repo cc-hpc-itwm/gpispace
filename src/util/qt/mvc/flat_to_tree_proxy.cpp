@@ -6,7 +6,6 @@
 
 #include <fhg/assert.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/variant.hpp>
 
 #include <QSet>
@@ -154,7 +153,7 @@ namespace fhg
           {
             if (is_branch())
             {
-              BOOST_FOREACH (index_tree_item* child, children())
+              for (index_tree_item* child : children())
               {
                 delete child;
               }
@@ -200,7 +199,7 @@ namespace fhg
 
           index_tree_item* find_branch (QString name)
           {
-            BOOST_FOREACH (index_tree_item* item, children())
+            for (index_tree_item* item : children())
             {
               if (item->is_branch() && item->name() == name)
               {
@@ -235,7 +234,7 @@ namespace fhg
             }
             else
             {
-              BOOST_FOREACH (index_tree_item* child, children())
+              for (index_tree_item* child : children())
               {
                 child->all_leafs_below (above);
               }
@@ -372,7 +371,7 @@ namespace fhg
             }
           }
 
-          BOOST_FOREACH (const QModelIndex& parent, changed_child_rows.keys())
+          for (const QModelIndex& parent : changed_child_rows.keys())
           {
             const std::set<int>& rows (changed_child_rows[parent]);
             std::set<int>::iterator it (rows.begin());
@@ -479,17 +478,16 @@ namespace fhg
             const QModelIndex index (_source->index (row, 0, parent));
 
             QStringList path;
-            BOOST_FOREACH
-              ( boost::shared_ptr<transform_functions_model::transform_function> fun
-              , transform_functions
-              )
+            for ( boost::shared_ptr<transform_functions_model::transform_function> fun
+                : transform_functions
+                )
             {
               path.prepend ((*fun) (index));
             }
 
             index_tree_item* last_item (_invisible_root.get());
             QModelIndex last_parent;
-            BOOST_FOREACH (const QString& segment, path)
+            for (const QString& segment : path)
             {
               index_tree_item* branch (last_item->find_branch (segment));
               if (!branch)
@@ -537,9 +535,7 @@ namespace fhg
         {
           _source_to_tree.clear();
 
-          BOOST_FOREACH ( index_tree_item* item
-                        , _invisible_root->all_leafs_below()
-                        )
+          for (index_tree_item* item : _invisible_root->all_leafs_below())
           {
             if (!item->index().isValid())
             {
@@ -587,7 +583,7 @@ namespace fhg
           if (item && item->parent())
           {
             int row (0);
-            BOOST_FOREACH (index_tree_item* child, item->parent()->children())
+            for (index_tree_item* child : item->parent()->children())
             {
               if (child == item)
               {
@@ -649,7 +645,7 @@ namespace fhg
 
           default:
             QVariantList data;
-            BOOST_FOREACH (const index_tree_item* leaf, item->all_leafs_below())
+            for (const index_tree_item* leaf : item->all_leafs_below())
             {
               data << leaf->index().data (role);
             }
@@ -670,13 +666,13 @@ namespace fhg
           {
             QSet<QPersistentModelIndex> indices;
 
-            BOOST_FOREACH ( const index_tree_item* const item
-                          , item_for (parent)->children()[row]->all_leafs_below()
-                          )
+            for ( const index_tree_item* const item
+                : item_for (parent)->children()[row]->all_leafs_below()
+                )
             {
               indices.insert (item->index());
             }
-            BOOST_FOREACH (QPersistentModelIndex index, indices)
+            for (QPersistentModelIndex index : indices)
             {
               _source->removeRow (index.row(), index.parent());
             }

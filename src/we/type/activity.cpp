@@ -14,7 +14,6 @@
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -95,7 +94,7 @@ namespace we
         we::type::net_type& net
           (boost::get<we::type::net_type&> (_transition.data()));
 
-        BOOST_FOREACH (const activity_t::token_on_port_t& top, child.output())
+        for (const activity_t::token_on_port_t& top : child.output())
         {
           net.put_value
             ( net.port_to_place().at (*child.transition_id())
@@ -186,10 +185,9 @@ namespace we
 
             expr.ast ().eval_all (context);
 
-            BOOST_FOREACH
-              ( we::type::transition_t::port_map_t::value_type const& p
-              , _activity.transition().ports_output()
-              )
+            for ( we::type::transition_t::port_map_t::value_type const& p
+                : _activity.transition().ports_output()
+                )
             {
                 _activity.add_output (p.first, context.value (p.second.name()));
             }
@@ -216,18 +214,17 @@ namespace we
         {
           output_t output;
 
-          BOOST_FOREACH
-            ( we::type::transition_t::port_map_t::value_type const& p
-            , _transition.ports_output()
-            )
+          for ( we::type::transition_t::port_map_t::value_type const& p
+              : _transition.ports_output()
+              )
           {
                 const we::port_id_type& port_id (p.first);
                 const we::place_id_type& pid
                   (*p.second.associated_place());
 
-                BOOST_FOREACH ( const pnet::type::value::value_type& token
-                              , _transition.net()->get_token (pid)
-                              )
+                for ( const pnet::type::value::value_type& token
+                    : _transition.net()->get_token (pid)
+                    )
                 {
                   output.push_back (std::make_pair (token, port_id));
                 }

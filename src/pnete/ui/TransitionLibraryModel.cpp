@@ -55,12 +55,12 @@ namespace fhg
 
         const QDir directory (path);
 
-        foreach ( QFileInfo fileinfo
-                , directory.entryInfoList( QDir::Dirs
-                                         | QDir::NoSymLinks
-                                         | QDir::NoDotAndDotDot
-                                         )
-                )
+        for ( QFileInfo fileinfo
+            : directory.entryInfoList( QDir::Dirs
+                                     | QDir::NoSymLinks
+                                     | QDir::NoDotAndDotDot
+                                     )
+            )
         {
           TransitionLibraryItem* newRoot
             (currentRoot->child_with_fileinfo (fileinfo));
@@ -82,13 +82,13 @@ namespace fhg
                                             );
         }
 
-        foreach ( QFileInfo fileinfo
-                , directory.entryInfoList( QStringList("*.xpnet")
-                                         , QDir::Files
-                                         | QDir::NoSymLinks
-                                         | QDir::NoDotAndDotDot
-                                         )
-                )
+        for ( QFileInfo fileinfo
+            : directory.entryInfoList( QStringList("*.xpnet")
+                                     , QDir::Files
+                                     | QDir::NoSymLinks
+                                     | QDir::NoDotAndDotDot
+                                     )
+            )
           {
             currentRoot->appendChild
               ( new TransitionLibraryItem ( fileinfo
@@ -117,11 +117,11 @@ namespace fhg
         _items->clearChildren();
         emit layoutChanged();
 
-        foreach (QString path, _trustedPaths)
+        for (QString path : _trustedPaths)
           {
             readContentFromDirectoryRecursive(_items, true, path);
           }
-        foreach(QString path, _untrustedPaths)
+        for (QString path : _untrustedPaths)
           {
             readContentFromDirectoryRecursive(_items, false, path);
           }
@@ -236,7 +236,7 @@ namespace fhg
       {
         QSet<QString> paths;
 
-        foreach (const QModelIndex& index, indices)
+        for (const QModelIndex& index : indices)
           {
             TransitionLibraryItem* item
               (static_cast<TransitionLibraryItem*> (index.internalPointer()));

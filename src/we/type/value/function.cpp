@@ -6,8 +6,6 @@
 
 #include <we/expr/exception.hpp>
 
-#include <boost/foreach.hpp>
-
 #include <limits>
 
 #include <cmath>
@@ -375,7 +373,7 @@ namespace pnet
             switch (_token)
             {
             case expr::token::_set_is_subset:
-              BOOST_FOREACH (const value_type& lv, l)
+              for (const value_type& lv : l)
               {
                 if (!r.count (lv))
                 {

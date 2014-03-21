@@ -2,7 +2,6 @@
 #define PNET_SRC_WE_TYPE_VALUE_UNWRAP_HPP
 
 #include <we/type/value.hpp>
-#include <boost/foreach.hpp>
 
 namespace pnet
 {
@@ -15,7 +14,7 @@ namespace pnet
       {
         std::list<T> lt;
 
-        BOOST_FOREACH (value_type const &v, lv)
+        for (value_type const &v : lv)
         {
           lt.push_back (boost::get<T>(v));
         }
@@ -28,7 +27,7 @@ namespace pnet
       {
         std::set<T> st;
 
-        BOOST_FOREACH (value_type const &v, sv)
+        for (value_type const &v : sv)
         {
           st.insert (boost::get<T>(v));
         }
@@ -41,9 +40,7 @@ namespace pnet
       {
         std::map<K, V> mkv;
 
-        typedef std::map<value_type, value_type>::value_type kv_type;
-
-        BOOST_FOREACH (kv_type const &kv, mvv)
+        for (std::map<value_type, value_type>::value_type const& kv : mvv)
         {
           mkv.insert (std::make_pair ( boost::get<K>(kv.first)
                                      , boost::get<V>(kv.second)

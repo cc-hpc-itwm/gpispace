@@ -5,7 +5,6 @@
 
 #include <we/require_type.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/join.hpp>
 #include <boost/unordered_map.hpp>
@@ -117,13 +116,13 @@ namespace we
                                   , pos_and_distance_type
                                   > enabled_by_place_id_type;
 
-      typedef std::pair<transition_id_type, enabled_by_place_id_type> tm_type;
-
-      BOOST_FOREACH (const tm_type& tm, other._enabled_choice)
+      for ( const std::pair<transition_id_type, enabled_by_place_id_type> & tm
+          : other._enabled_choice
+          )
       {
         enabled_by_place_id_type& enabled_by_place_id (_enabled_choice[tm.first]);
 
-        BOOST_FOREACH (const enabled_by_place_id_type::value_type& pd, tm.second)
+        for (const enabled_by_place_id_type::value_type& pd : tm.second)
         {
           enabled_by_place_id[pd.first] = std::make_pair
             ( boost::next ( _token_by_place_id.at (pd.first).begin()
@@ -267,7 +266,7 @@ namespace we
         | boost::adaptors::map_values
         );
 
-      BOOST_FOREACH (transition_id_type tid, boost::join (consume, read))
+      for (transition_id_type tid : boost::join (consume, read))
       {
         update_enabled_put_token (tid, to_be_updated);
       }
@@ -304,7 +303,7 @@ namespace we
       place_id_range_type read
         (_adj_pt_read.right.equal_range (tid) | boost::adaptors::map_values);
 
-      BOOST_FOREACH (place_id_type place_id, boost::join (consume, read))
+      for (place_id_type place_id : boost::join (consume, read))
       {
         std::list<pnet::type::value::value_type>&
           tokens (_token_by_place_id[place_id]);
@@ -352,7 +351,7 @@ namespace we
       place_id_range_type read
         (_adj_pt_read.right.equal_range (tid) | boost::adaptors::map_values);
 
-      BOOST_FOREACH (place_id_type place_id, boost::join (consume, read))
+      for (place_id_type place_id : boost::join (consume, read))
       {
         if (place_id == to_be_updated.get<0>())
         {
@@ -413,11 +412,9 @@ namespace we
     {
       std::list<token_to_be_deleted_type> tokens_to_be_deleted;
 
-      typedef std::pair< place_id_type
-                       , pos_and_distance_type
-                       > place_and_token_type;
-
-      BOOST_FOREACH (const place_and_token_type& pt, _enabled_choice.at (tid))
+      for ( const std::pair<place_id_type, pos_and_distance_type>& pt
+          : _enabled_choice.at (tid)
+          )
       {
         place_id_type pid (pt.first);
         const pos_and_distance_type& pos_and_distance (pt.second);
@@ -442,17 +439,17 @@ namespace we
     void net_type::do_delete
       (std::list<token_to_be_deleted_type> const& tokens_to_be_deleted)
     {
-      BOOST_FOREACH ( token_to_be_deleted_type const& token_to_be_deleted
-                    , tokens_to_be_deleted
-                    )
+      for ( token_to_be_deleted_type const& token_to_be_deleted
+          : tokens_to_be_deleted
+          )
       {
         _token_by_place_id
           .at (token_to_be_deleted.first).erase (token_to_be_deleted.second);
       }
 
-      BOOST_FOREACH ( token_to_be_deleted_type const& token_to_be_deleted
-                    , tokens_to_be_deleted
-                    )
+      for ( token_to_be_deleted_type const& token_to_be_deleted
+          : tokens_to_be_deleted
+          )
       {
         transition_id_range_type consume
           ( _adj_pt_consume.left.equal_range (token_to_be_deleted.first)
@@ -463,7 +460,7 @@ namespace we
           | boost::adaptors::map_values
           );
 
-        BOOST_FOREACH (transition_id_type t, boost::join (consume, read))
+        for (transition_id_type t : boost::join (consume, read))
         {
           update_enabled (t);
         }
@@ -524,10 +521,9 @@ namespace we
 
       std::list<to_be_updated_type> pending_updates;
 
-      BOOST_FOREACH
-        ( we::type::transition_t::port_map_t::value_type const& p
-        , transition.ports_output()
-        )
+      for ( we::type::transition_t::port_map_t::value_type const& p
+          : transition.ports_output()
+          )
       {
           pending_updates.push_back
             ( do_put_value
@@ -539,7 +535,7 @@ namespace we
 
       do_delete (tokens_to_be_deleted);
 
-      BOOST_FOREACH (to_be_updated_type const& to_be_updated, pending_updates)
+      for (to_be_updated_type const& to_be_updated : pending_updates)
       {
         do_update (to_be_updated);
       }
@@ -628,9 +624,7 @@ namespace we
       {
         expr::eval::context context;
 
-        typedef std::pair<place_id_type, iterators_type> pits_type;
-
-        BOOST_FOREACH (const pits_type& pits, _m)
+        for (const std::pair<place_id_type, iterators_type>& pits : _m)
         {
           context.bind_ref
             ( transition.ports_input()
@@ -655,9 +649,7 @@ namespace we
     {
       choice.clear();
 
-      typedef std::pair<place_id_type, iterators_type> pits_type;
-
-      BOOST_FOREACH (const pits_type& pits, _m)
+      for (const std::pair<place_id_type, iterators_type>& pits : _m)
       {
         choice.insert
           (std::make_pair (pits.first, pits.second.pos_and_distance()));

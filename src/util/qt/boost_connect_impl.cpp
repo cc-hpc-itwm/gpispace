@@ -103,7 +103,7 @@ namespace fhg
 
         binding_object::~binding_object()
         {
-          foreach (const binding& b, _bindings)
+          for (const binding& b : _bindings)
           {
             delete b.adapter;
           }

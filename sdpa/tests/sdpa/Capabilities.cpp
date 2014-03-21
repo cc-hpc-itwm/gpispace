@@ -24,7 +24,7 @@ namespace
       (const sdpa::events::CapabilitiesGainedEvent* event)
     {
       boost::mutex::scoped_lock const _ (_mutex);
-      BOOST_FOREACH (const sdpa::capability_t& cpb, event->capabilities())
+      for (const sdpa::capability_t& cpb : event->capabilities())
       {
         _capabilities.insert (cpb);
         _capabilitiy_added.notify_all();
@@ -35,7 +35,7 @@ namespace
       (const sdpa::events::CapabilitiesLostEvent* event)
     {
       boost::mutex::scoped_lock const _ (_mutex);
-      BOOST_FOREACH (const sdpa::capability_t& cpb, event->capabilities())
+      for (const sdpa::capability_t& cpb : event->capabilities())
       {
         _capabilities.erase (cpb);
         _capabilitiy_added.notify_all();

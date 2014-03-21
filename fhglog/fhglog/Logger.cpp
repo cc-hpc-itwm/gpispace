@@ -4,7 +4,6 @@
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
 
 using namespace fhg::log;
@@ -76,7 +75,7 @@ void Logger::log (const LogEvent& event)
   {
     event.trace (name_);
 
-    BOOST_FOREACH (Appender::ptr_t const& appender, appenders_)
+    for (Appender::ptr_t const& appender : appenders_)
     {
       appender->append(event);
     }
@@ -90,7 +89,7 @@ void Logger::log (const LogEvent& event)
 
 void Logger::flush()
 {
-  BOOST_FOREACH (Appender::ptr_t const& appender, appenders_)
+  for (Appender::ptr_t const& appender : appenders_)
   {
     appender->flush();
   }

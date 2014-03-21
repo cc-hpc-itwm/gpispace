@@ -2,7 +2,6 @@
 #include <fhg/assert.hpp>
 
 #include <boost/lexical_cast.hpp>
-#include <boost/foreach.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/make_shared.hpp>

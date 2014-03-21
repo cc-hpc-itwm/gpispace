@@ -10,7 +10,6 @@
 #include <xml/parse/type/function.hpp>
 
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/variant.hpp>
@@ -108,13 +107,11 @@ namespace fhg
         {
           QList<port> ports;
 
-          BOOST_FOREACH ( const data::handle::port& handle
-                        , get().ports().ids()
-                        | boost::adaptors::filtered
-                          (boost::bind (same_direction, _1, dir))
-                        | boost::adaptors::transformed
-                          (boost::bind (make_handle, _1, *this))
-                        )
+          for ( const data::handle::port& handle
+              : get().ports().ids()
+              | boost::adaptors::filtered (boost::bind (same_direction, _1, dir))
+              | boost::adaptors::transformed (boost::bind (make_handle, _1, *this))
+              )
           {
             ports << handle;
           }

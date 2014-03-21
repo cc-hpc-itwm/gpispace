@@ -1,6 +1,5 @@
 #include "VerificationResult.h"
 
-#include <pnetv/jpn/common/Foreach.h>
 #include <pnetv/jpn/common/Unreachable.h>
 
 #include "Transition.h"
@@ -26,7 +25,7 @@ void VerificationResult::print(std::ostream &out) const {
         out << ", init:{";
 
         bool comma = false;
-        FOREACH (const Transition *transition, init()) {
+        for (const Transition *transition : init()) {
             if (comma) {
                 out << ", ";
             } else {
@@ -37,7 +36,7 @@ void VerificationResult::print(std::ostream &out) const {
         out << "}, loop:{";
 
         comma = false;
-        FOREACH (const Transition *transition, loop()) {
+        for (const Transition *transition : loop()) {
             if (comma) {
                 out << ", ";
             } else {

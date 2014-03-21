@@ -348,7 +348,7 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   }
 
   // parse virtual capabilities
-  BOOST_FOREACH (std::string const & cap, capability_list)
+  for (std::string const & cap : capability_list)
   {
     m_virtual_capabilities.insert
       (std::make_pair (cap, sdpa::Capability (cap, m_my_name)));
@@ -369,7 +369,7 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
 
   start_receiver();
 
-  BOOST_FOREACH (std::string const & master, master_list)
+  for (std::string const & master : master_list)
   {
     if (m_masters.find (master) == m_masters.end ())
     {

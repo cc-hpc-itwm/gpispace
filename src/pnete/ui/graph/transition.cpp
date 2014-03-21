@@ -71,7 +71,7 @@ namespace fhg
 
           base_item::setPos (new_position);
 
-          foreach (QGraphicsItem* collidingItem, collidingItems())
+          for (QGraphicsItem* collidingItem : collidingItems())
           {
             if (  qgraphicsitem_cast<transition_item*> (collidingItem)
                || qgraphicsitem_cast<place_item*> (collidingItem)
@@ -116,7 +116,7 @@ namespace fhg
           QPointF positionIn (left, top + padding);
           QPointF positionOut (right, top + padding);
 
-          foreach (QGraphicsItem* child, childItems())
+          for (QGraphicsItem* child : childItems())
           {
             if (port_item* p = qgraphicsitem_cast<port_item*> (child))
             {
@@ -162,7 +162,7 @@ namespace fhg
           QPainterPath path;
           path.addRoundRect (rectangle (), 20); // hardcoded constant
 
-          foreach (QGraphicsItem* child, childItems())
+          for (QGraphicsItem* child : childItems())
           {
             path = path.united (child->shape().translated (child->pos()));
           }

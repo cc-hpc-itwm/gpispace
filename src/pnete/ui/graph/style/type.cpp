@@ -8,8 +8,6 @@
 #include <QPen>
 #include <QBrush>
 
-#include <boost/foreach.hpp>
-
 namespace fhg
 {
   namespace pnete
@@ -55,13 +53,9 @@ namespace fhg
 
           void type::clear_cache ()
           {
-            BOOST_FOREACH( const by_mode_by_key_type::value_type& by_mode
-                         , _by_mode_by_key
-                         )
+            for (const by_mode_by_key_type::value_type& by_mode : _by_mode_by_key)
               {
-                BOOST_FOREACH( const by_mode_type::value_type& store
-                             , by_mode.second
-                             )
+                for (const by_mode_type::value_type& store : by_mode.second)
                   {
                     store::clear_cache (store.second);
                   }

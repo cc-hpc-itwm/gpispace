@@ -11,7 +11,6 @@
 
 #include <fhg/util/parse/require.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
 
 #include <fstream>
@@ -75,7 +74,7 @@ int main (int argc, char** argv) try
     : we::type::activity_t (boost::filesystem::path (input))
     );
 
-  BOOST_FOREACH (std::string const& inp, input_spec)
+  for (std::string const& inp : input_spec)
   {
     fhg::util::parse::position_string pos (inp);
 

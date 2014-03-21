@@ -13,7 +13,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
 #include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
@@ -58,7 +57,7 @@ struct my_state_t
   {
     gpi::pc::type::handle::list_t handles
       (capi.list_allocations());
-    BOOST_FOREACH(gpi::pc::type::handle::descriptor_t const &d, handles)
+    for (gpi::pc::type::handle::descriptor_t const &d : handles)
     {
       if (d.id == hdl)
       {
@@ -1147,7 +1146,7 @@ int cmd_status (shell_t::argv_t const &, shell_t & sh)
     std::cout << "live segments:" << std::endl;
 
     gpi::pc::client::api_t::segment_map_t const & m(sh.state().capi.segments());
-    BOOST_FOREACH (const gpi::pc::client::api_t::segment_map_t::value_type & seg, m)
+    for (const gpi::pc::client::api_t::segment_map_t::value_type & seg : m)
     {
       std::cout << *seg.second << std::endl;
     }
@@ -1157,7 +1156,7 @@ int cmd_status (shell_t::argv_t const &, shell_t & sh)
     std::cout << "garbage segments:" << std::endl;
 
     gpi::pc::client::api_t::segment_set_t const & s(sh.state().capi.garbage_segments());
-    BOOST_FOREACH (const gpi::pc::client::api_t::segment_set_t::value_type & seg, s)
+    for (const gpi::pc::client::api_t::segment_set_t::value_type & seg : s)
     {
       std::cout << *seg << std::endl;
     }
@@ -1347,7 +1346,7 @@ int cmd_segment_list (shell_t::argv_t const & av, shell_t & sh)
     std::sort (segments.begin(), segments.end());
 
     std::cout << gpi::pc::type::segment::ostream_header () << std::endl;
-    BOOST_FOREACH (const gpi::pc::type::segment::descriptor_t & desc, segments)
+    for (const gpi::pc::type::segment::descriptor_t & desc : segments)
     {
       switch (mode)
       {
@@ -1782,7 +1781,7 @@ int cmd_memory_add (shell_t::argv_t const & av, shell_t & sh)
   }
 
   int ec = EXIT_SUCCESS;
-  BOOST_FOREACH (std::string const &url, urls)
+  for (std::string const &url : urls)
   {
     try
     {
@@ -1850,7 +1849,7 @@ int cmd_memory_del (shell_t::argv_t const & av, shell_t & sh)
   }
 
   int ec = EXIT_SUCCESS;
-  BOOST_FOREACH (std::string const &id_s, ids)
+  for (std::string const &id_s : ids)
   {
     try
     {

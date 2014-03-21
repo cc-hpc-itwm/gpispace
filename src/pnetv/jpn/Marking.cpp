@@ -6,7 +6,6 @@
 #include <ostream>
 
 #include <fhg/assert.hpp>
-#include <pnetv/jpn/common/Foreach.h>
 #include <pnetv/jpn/common/PrintRange.h>
 
 namespace jpn {
@@ -42,7 +41,7 @@ void Marking::print(std::ostream &out) const {
 
 #ifndef NDEBUG
 void Marking::check() const {
-    FOREACH (const PlaceMarking &placeMarking, placeMarkings_) {
+    for (const PlaceMarking &placeMarking : placeMarkings_) {
         assert(placeMarking.count() != 0);
     }
 

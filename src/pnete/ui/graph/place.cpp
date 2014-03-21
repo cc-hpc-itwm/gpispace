@@ -169,7 +169,7 @@ namespace fhg
 
           base_item::setPos (new_position);
 
-          foreach (QGraphicsItem* collidingItem, collidingItems())
+          for (QGraphicsItem* collidingItem : collidingItems())
           {
             if (  qgraphicsitem_cast<place_item*> (collidingItem)
                || qgraphicsitem_cast<transition_item*> (collidingItem)
@@ -295,7 +295,7 @@ namespace fhg
           {
             QPointF center (0.0, 0.0);
             int points (0);
-            foreach (association* item, associations())
+            for (association* item : associations())
             {
               center += item->start() != this
                       ? item->start()->scenePos()

@@ -1043,7 +1043,7 @@ BOOST_AUTO_TEST_CASE
     boost::this_thread::yield();
   }
 
-  BOOST_FOREACH (we::layer::id_type child_id, child_ids)
+  for (we::layer::id_type child_id : child_ids)
   {
     layer.finished (child_id, activity_result);
   }

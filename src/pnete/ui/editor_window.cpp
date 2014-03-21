@@ -271,7 +271,7 @@ namespace fhg
         doc_view->show();
         doc_view->raise();
 
-        foreach (QAction* action, doc_view->actions())
+        for (QAction* action : doc_view->actions())
         {
           _document_specific_action_menu->addAction (action);
           _document_specific_action_toolbar->addAction (action);
@@ -303,7 +303,7 @@ namespace fhg
         {
           //! \todo Warn if unsaved changes.
           document_view* current (_accessed_widgets.top());
-          foreach (QAction* action, current->actions())
+          for (QAction* action : current->actions())
           {
             action->setVisible (false);
           }
@@ -339,7 +339,7 @@ namespace fhg
 
         if (!_accessed_widgets.empty())
         {
-          foreach (QAction* action, _accessed_widgets.top()->actions())
+          for (QAction* action : _accessed_widgets.top()->actions())
           {
             action->setVisible (false);
           }
@@ -356,7 +356,7 @@ namespace fhg
 
         _document_specific_action_menu =
           menuBar()->addMenu ("document_specific_actions");
-        foreach (QAction* action, to->actions())
+        for (QAction* action : to->actions())
         {
           _document_specific_action_menu->addAction (action);
           action->setVisible (true);
@@ -406,7 +406,7 @@ namespace fhg
 
         menu->addSeparator();
 
-        foreach (document_view* view, findChildren<document_view*>())
+        for (document_view* view : findChildren<document_view*>())
         {
           menu->addAction (view->toggleViewAction());
         }
@@ -768,9 +768,9 @@ namespace fhg
         void show_results_of_activity
           (const we::type::activity_t& activity)
         {
-          BOOST_FOREACH ( const we::type::activity_t::token_on_port_t& top
-                        , activity.output()
-                        )
+          for ( const we::type::activity_t::token_on_port_t& top
+              : activity.output()
+              )
           {
             std::stringstream tmp;
             tmp << "on " << activity.transition().ports_output().at (top.second).name()
@@ -907,11 +907,10 @@ namespace fhg
                       >* activity_and_fun
           )
         {
-          BOOST_FOREACH
-            ( const we::type::port_t& port
-            , activity_and_fun->first.transition().ports_input()
-            | boost::adaptors::map_values
-            )
+          for ( const we::type::port_t& port
+              : activity_and_fun->first.transition().ports_input()
+              | boost::adaptors::map_values
+              )
           {
               bool retry (true);
               while (retry)

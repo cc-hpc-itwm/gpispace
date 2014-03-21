@@ -7,7 +7,6 @@
 
 #include <fhglog/LogMacros.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
 
 #include <stdexcept>
@@ -46,7 +45,7 @@ namespace fhg
       assert (GLOBAL_manager == this);
       GLOBAL_manager = NULL;
 
-      BOOST_FOREACH (int sig_num, _handlers | boost::adaptors::map_keys)
+      for (int sig_num : _handlers | boost::adaptors::map_keys)
       {
         fhg::syscall::signal (sig_num, SIG_DFL);
       }
@@ -120,9 +119,9 @@ namespace fhg
       (int sig_num, siginfo_t* info, void* context) const
     {
       boost::mutex::scoped_lock const _ (_handler_mutex);
-      BOOST_FOREACH ( const boost::function<void (int, siginfo_t*, void*)>& fun
-                    , _handlers.find (sig_num)->second
-                    )
+      for ( const boost::function<void (int, siginfo_t*, void*)>& fun
+          : _handlers.find (sig_num)->second
+          )
       {
         fun (sig_num, info, context);
       }

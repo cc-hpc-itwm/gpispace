@@ -1,6 +1,5 @@
 #include <gpi-space/pc/memory/transfer_queue.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/make_shared.hpp>
 
 namespace gpi
@@ -40,7 +39,7 @@ namespace gpi
             ("queue permanently disabled due to previous errors");
         }
 
-        BOOST_FOREACH(task_ptr const task, tasks)
+        for (task_ptr const task : tasks)
         {
             m_task_queue.put (task);
         }

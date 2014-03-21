@@ -46,7 +46,7 @@ namespace xml
                    , Container container
                    )
         {
-          BOOST_FOREACH (const typename Container::value_type val, container)
+          for (const typename Container::value_type val : container)
           {
             ::xml::parse::type::dump::dump (s, val);
           }
@@ -58,7 +58,7 @@ namespace xml
                    , const T& x
                    )
         {
-          BOOST_FOREACH (const typename Container::value_type val, container)
+          for (const typename Container::value_type val : container)
           {
             ::xml::parse::type::dump::dump (s, val, x);
           }

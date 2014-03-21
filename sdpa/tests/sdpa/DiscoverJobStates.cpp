@@ -22,8 +22,7 @@ namespace
 
     if (!discovery_result.children().empty())
     {
-      BOOST_FOREACH
-        (const sdpa::discovery_info_t& child_info, discovery_result.children())
+      for (const sdpa::discovery_info_t& child_info : discovery_result.children())
       {
         std::list<sdpa::status::code> const list_info_child
           (get_leaf_job_info (child_info));
@@ -44,8 +43,7 @@ namespace
   {
     unsigned int maxd = 1;
 
-    BOOST_FOREACH
-      (const sdpa::discovery_info_t& child_info, discovery_result.children())
+    for (const sdpa::discovery_info_t& child_info : discovery_result.children())
     {
       unsigned int const depth (max_depth (child_info) + 1);
 
@@ -68,8 +66,7 @@ namespace
 
      BOOST_REQUIRE_EQUAL (list_leaf_job_status.size(), 1);
 
-     BOOST_FOREACH
-       (const sdpa::status::code& leaf_job_status, list_leaf_job_status)
+     for (const sdpa::status::code& leaf_job_status : list_leaf_job_status)
      {
        BOOST_REQUIRE_EQUAL (leaf_job_status, expected_status);
      }
@@ -215,7 +212,7 @@ namespace
   std::size_t recursive_child_count (sdpa::discovery_info_t info)
   {
     std::size_t count (info.children().size());
-    BOOST_FOREACH (sdpa::discovery_info_t child, info.children())
+    for (sdpa::discovery_info_t child : info.children())
     {
       count += recursive_child_count (child);
     }

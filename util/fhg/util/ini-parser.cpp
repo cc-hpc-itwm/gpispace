@@ -6,7 +6,6 @@
 #include <fhg/util/parse/from_string.hpp>
 #include <fhg/util/read_file.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/format.hpp>
 
 #include <stdexcept>

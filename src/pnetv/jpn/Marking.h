@@ -10,7 +10,6 @@
 
 #include <fhg/assert.hpp>
 #include <pnetv/jpn/PlaceMarking.h>
-#include <pnetv/jpn/common/Foreach.h>
 
 namespace jpn {
 
@@ -277,7 +276,7 @@ namespace boost {
     struct hash<jpn::Marking> {
         std::size_t operator()(const jpn::Marking &marking) const {
             std::size_t result = 0;
-            foreach (const jpn::PlaceMarking &placeMarking, marking.placeMarkings()) {
+            for (const jpn::PlaceMarking &placeMarking : marking.placeMarkings()) {
                 result ^= (result << 1) ^ hash<jpn::PlaceMarking>()(placeMarking);
             }
             return result;

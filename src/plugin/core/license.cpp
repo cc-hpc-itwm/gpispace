@@ -135,7 +135,7 @@ namespace fhg
       files.push_back (curdir + "/gspc.lic");
 
       int rc = -1;
-      BOOST_FOREACH (std::string const &licfile, files)
+      for (std::string const &licfile : files)
       {
         rc = fhg::plugin::check_license_file (licfile);
         if (rc == fhg::plugin::LICENSE_VALID)

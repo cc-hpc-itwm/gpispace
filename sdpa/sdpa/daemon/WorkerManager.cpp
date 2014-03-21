@@ -21,7 +21,6 @@
 #include <boost/unordered_map.hpp>
 #include <algorithm>
 #include <sdpa/types.hpp>
-#include <boost/foreach.hpp>
 #include <boost/bind.hpp>
 
 #include <algorithm>
@@ -55,10 +54,12 @@ const boost::optional<worker_id_t> WorkerManager::findSubmOrAckWorker(const sdpa
 {
   boost::mutex::scoped_lock const _ (mtx_);
 
-  BOOST_FOREACH ( Worker::ptr_t worker, worker_map_ | boost::adaptors::map_values
-                | boost::adaptors::filtered
-                  (boost::bind (&Worker::has_job, _1, job_id))
-                )
+  for ( Worker::ptr_t worker
+      : worker_map_
+      | boost::adaptors::map_values
+      | boost::adaptors::filtered
+          (boost::bind (&Worker::has_job, _1, job_id))
+      )
   {
     return worker->name();
   }
@@ -113,9 +114,9 @@ void WorkerManager::getCapabilities(sdpa::capabilities_set_t& agentCpbSet)
 {
   boost::mutex::scoped_lock const _ (mtx_);
 
-  BOOST_FOREACH (Worker::ptr_t worker, worker_map_ | boost::adaptors::map_values)
+  for (Worker::ptr_t worker : worker_map_ | boost::adaptors::map_values)
   {
-    BOOST_FOREACH (sdpa::capability_t capability, worker->capabilities())
+    for (sdpa::capability_t capability : worker->capabilities())
     {
       const sdpa::capabilities_set_t::iterator itag_cpbs
         (agentCpbSet.find (capability));
@@ -157,7 +158,7 @@ namespace
   {
     std::size_t matchingDeg (0);
 
-    BOOST_FOREACH (we::type::requirement_t req, job_req_set.getReqList())
+    for (we::type::requirement_t req : job_req_set.getReqList())
     {
       if (pWorker->hasCapability (req.value()))
       {
@@ -182,7 +183,7 @@ boost::optional<sdpa::worker_id_t> WorkerManager::getBestMatchingWorker
   boost::optional<worker_id_t> bestMatchingWorkerId;
   boost::optional<std::size_t> maxMatchingDeg;
 
-  BOOST_FOREACH (sdpa::worker_id_t workerId, workerList)
+  for (sdpa::worker_id_t workerId : workerList)
   {
     const worker_map_t::const_iterator it (worker_map_.find (workerId));
     if (it == worker_map_.end())

@@ -3,8 +3,6 @@
 #include <we/type/signature/specialize.hpp>
 #include <we/type/signature/apply.hpp>
 
-#include <boost/foreach.hpp>
-
 namespace pnet
 {
   namespace type
@@ -23,7 +21,7 @@ namespace pnet
           {
             s.first = map (s.first);
 
-            BOOST_FOREACH (field_type& f, s.second)
+            for (field_type& f : s.second)
             {
               apply (*this, f);
             }

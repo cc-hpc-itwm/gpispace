@@ -35,7 +35,6 @@
 #include <sdpa/daemon/exceptions.hpp>
 
 #include <boost/tokenizer.hpp>
-#include <boost/foreach.hpp>
 #include <boost/range/adaptor/filtered.hpp>
 
 #include <sstream>
@@ -149,7 +148,7 @@ GenericDaemon::GenericDaemon( const std::string name
 
   {
     lock_type lock (mtx_master_);
-    BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
+    for (sdpa::MasterInfo& masterInfo : m_arrMasterInfo)
     {
       requestRegistration (masterInfo);
     }
@@ -159,7 +158,7 @@ GenericDaemon::GenericDaemon( const std::string name
 GenericDaemon::~GenericDaemon()
 {
   lock_type const _ (mtx_master_);
-  BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
+  for (sdpa::MasterInfo& masterInfo : m_arrMasterInfo)
   {
     if (masterInfo.is_registered())
     {
@@ -174,7 +173,7 @@ GenericDaemon::cleanup_job_map_on_dtor_helper::cleanup_job_map_on_dtor_helper
 {}
 GenericDaemon::cleanup_job_map_on_dtor_helper::~cleanup_job_map_on_dtor_helper()
 {
-  BOOST_FOREACH (const Job* const pJob, _ | boost::adaptors::map_values )
+  for (const Job* const pJob : _ | boost::adaptors::map_values )
   {
     delete pJob;
   }
@@ -194,7 +193,7 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
       // create a SubmitJobEvent for the job job_id serialize and attach description
       LLOG(TRACE, _logger, "The job "<<ptrJob->id()<<" was assigned the following workers:"<<worker_list);
 
-      BOOST_FOREACH(const worker_id_t& worker_id, worker_list)
+      for (const worker_id_t& worker_id : worker_list)
       {
         child_proxy (this, worker_id).submit_job
           (ptrJob->id(), ptrJob->description(), worker_list);
@@ -299,7 +298,7 @@ void GenericDaemon::handleWorkerRegistrationEvent
   sdpa::capabilities_set_t workerCpbSet;
 
   // take the difference
-  BOOST_FOREACH (const sdpa::capability_t& cpb, event->capabilities())
+  for (const sdpa::capability_t& cpb : event->capabilities())
   {
     // own capabilities have always the depth 0 and are not inherited
     // by the descendants
@@ -322,7 +321,7 @@ void GenericDaemon::handleWorkerRegistrationEvent
   {
     lock_type lock (mtx_master_);
     // send to the masters my new set of capabilities
-    BOOST_FOREACH (MasterInfo const& master, m_arrMasterInfo)
+    for (MasterInfo const& master : m_arrMasterInfo)
     {
       if (master.is_registered() && master.name() != worker_id)
       {
@@ -370,7 +369,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
       worker_id_list_t listDeadMasters;
       {
         lock_type lock(mtx_master_);
-        BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
+        for (sdpa::MasterInfo & masterInfo : m_arrMasterInfo)
         {
           if( error.from() == masterInfo.name() )
           {
@@ -405,7 +404,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
 
         // notify capability losses...
         lock_type lock(mtx_master_);
-        BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
+        for (sdpa::MasterInfo& masterInfo : m_arrMasterInfo)
         {
           parent_proxy (this, masterInfo.name()).capabilities_lost
             (ptrWorker->capabilities());
@@ -416,7 +415,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
           ->getJobListAndCleanQueues()
           );
 
-        BOOST_FOREACH (sdpa::job_id_t jobId, jobs_to_reschedule)
+        for (sdpa::job_id_t jobId : jobs_to_reschedule)
         {
           Job* pJob = findJob (jobId);
           if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
@@ -425,7 +424,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
             sdpa::worker_id_list_t
               list_not_terminated_workers(scheduler().releaseReservation (jobId));
 
-            BOOST_FOREACH( const worker_id_t& wid, list_not_terminated_workers)
+            for (const worker_id_t& wid : list_not_terminated_workers)
             {
               child_proxy (this, wid).cancel_job (jobId);
             }
@@ -444,7 +443,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
         {
           lock_type lock(mtx_master_);
           // check if the message comes from a master
-          BOOST_FOREACH(sdpa::MasterInfo & masterInfo, m_arrMasterInfo)
+          for (sdpa::MasterInfo & masterInfo : m_arrMasterInfo)
           {
             if( error.from() == masterInfo.name() )
             {
@@ -596,7 +595,7 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
     m_guiService->notify (evt);
   }
 
-  BOOST_FOREACH(const subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
+  for (const subscriber_map_t::value_type& pair_subscr_joblist : m_listSubscribers )
   {
     if(subscribedFor(pair_subscr_joblist.first, id))
     {
@@ -644,7 +643,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
     m_guiService->notify (evt);
   }
 
-  BOOST_FOREACH( const subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
+  for (const subscriber_map_t::value_type& pair_subscr_joblist : m_listSubscribers )
   {
     if(subscribedFor(pair_subscr_joblist.first, id))
     {
@@ -694,11 +693,11 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
   {
     boost::mutex::scoped_lock const _ (_job_map_mutex);
 
-    BOOST_FOREACH ( Job* job
-                  , job_map_
-                  | boost::adaptors::map_values
-                  | boost::adaptors::filtered (boost::mem_fn (&Job::isMasterJob))
-                  )
+    for ( Job* job
+        : job_map_
+        | boost::adaptors::map_values
+        | boost::adaptors::filtered (boost::mem_fn (&Job::isMasterJob))
+        )
     {
       switch (job->getStatus())
       {
@@ -752,7 +751,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const events::CapabilitiesGain
   {
     sdpa::capabilities_set_t workerCpbSet;
 
-    BOOST_FOREACH(const sdpa::capability_t& cpb,  pCpbGainEvt->capabilities() )
+    for (const sdpa::capability_t& cpb : pCpbGainEvt->capabilities() )
     {
       // own capabilities have always the depth 0
       if( !isOwnCapability(cpb) )
@@ -892,7 +891,7 @@ bool hasId(sdpa::MasterInfo& info, sdpa::agent_id_t& agId)
 void GenericDaemon::removeMasters(const agent_id_list_t& listMasters)
 {
   lock_type lock(mtx_master_);
-  BOOST_FOREACH(const sdpa::agent_id_t& id, listMasters)
+  for (const sdpa::agent_id_t& id : listMasters)
   {
     master_info_list_t::iterator it = find_if( m_arrMasterInfo.begin(), m_arrMasterInfo.end(), boost::bind(hasId, _1, id) );
     if( it != m_arrMasterInfo.end() )
@@ -924,7 +923,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
   lock_type lock(mtx_subscriber_);
 
   // check if all the request jobs still exist
-  BOOST_FOREACH(const job_id_t& jobId, listJobIds)
+  for (const job_id_t& jobId : listJobIds)
   {
     // if the list contains at least one invalid job,
     // send back an error message
@@ -944,7 +943,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
   // allow to subscribe multiple times with different lists of job ids
   if(isSubscriber(subscriber))
   {
-    BOOST_FOREACH(const job_id_t& jobId, listJobIds)
+    for (const job_id_t& jobId : listJobIds)
     {
       if( !subscribedFor(subscriber, jobId) )
         m_listSubscribers[subscriber].push_back(jobId);
@@ -960,7 +959,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
   sendEventToOther(ptrSubscAckEvt);
 
   // check if the subscribed jobs are already in a terminal state
-  BOOST_FOREACH(const job_id_t& jobId, listJobIds)
+  for (const job_id_t& jobId : listJobIds)
   {
     Job* pJob = findJob(jobId);
     if(pJob)

@@ -2,15 +2,13 @@
 
 #include <memory>
 
-#include <pnetv/jpn/common/Foreach.h>
-
 namespace jpna {
 
 PetriNet::~PetriNet() {
-    FOREACH(Transition *transition, transitions_) {
+    for (Transition *transition : transitions_) {
         delete transition;
     }
-    FOREACH(Place *place, places_) {
+    for (Place *place : places_) {
         delete place;
     }
 }
@@ -30,18 +28,18 @@ Place *PetriNet::createPlace() {
 void PetriNet::print(std::ostream &out) const {
     out << "digraph Blabla { label=\"" << name() << "\"; ";
 
-    FOREACH (const Place *place, places()) {
+    for (const Place *place : places()) {
         out << "place" << place->id() << "[label=\"" << place->name() << " (" << place->initialMarking() << ")\",shape=\"ellipse\"];" << std::endl;
     }
 
-    FOREACH (const Transition *transition, transitions()) {
+    for (const Transition *transition : transitions()) {
         out << "transition" << transition->id() << "[label=\"" << transition->name() << "\",shape=\"box\"];" << std::endl;
 
-        FOREACH (const Place *place, transition->inputPlaces()) {
+        for (const Place *place : transition->inputPlaces()) {
             out << "place" << place->id() << " -> transition" << transition->id() << std::endl;
         }
 
-        FOREACH (const Place *place, transition->outputPlaces()) {
+        for (const Place *place : transition->outputPlaces()) {
             out << "transition" << transition->id() << " -> place" << place->id() << std::endl;
         }
     }

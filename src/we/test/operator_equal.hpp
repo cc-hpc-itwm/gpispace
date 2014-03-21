@@ -10,8 +10,6 @@
 
 #include <sdpa/types.hpp>
 
-#include <boost/foreach.hpp>
-
 namespace we
 {
   namespace type
@@ -50,9 +48,9 @@ namespace we
                 , std::list<pnet::type::value::value_type>
                 > tokens_on_place;
 
-        BOOST_FOREACH ( we::place_id_type const& place_id
-                      , n.places() | boost::adaptors::map_keys
-                      )
+        for ( we::place_id_type const& place_id
+            : n.places() | boost::adaptors::map_keys
+            )
         {
           tokens_on_place.insert
             (std::make_pair (place_id, n.get_token (place_id)));

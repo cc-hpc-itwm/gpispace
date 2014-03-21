@@ -4,8 +4,6 @@
 
 #include <fhg/util/join.hpp>
 
-#include <boost/foreach.hpp>
-
 const int WE_GUARD_SYMBOL = 0xDEADBEEF;
 
 namespace we
@@ -42,7 +40,7 @@ namespace we
 
       boost::unique_lock<boost::recursive_mutex> const __ (_search_path_mutex);
 
-      BOOST_FOREACH (boost::filesystem::path const& p, _search_path)
+      for (boost::filesystem::path const& p : _search_path)
       {
         if (boost::filesystem::exists (p / file_name))
         {

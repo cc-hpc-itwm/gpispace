@@ -9,8 +9,6 @@
 #include <QSet>
 #include <QVector>
 
-#include <boost/foreach.hpp>
-
 namespace fhg
 {
   namespace util
@@ -50,7 +48,7 @@ namespace fhg
         QSet<QPersistentModelIndex> persisted (QSet<QModelIndex> set)
         {
           QSet<QPersistentModelIndex> ret;
-          BOOST_FOREACH (QModelIndex index, set)
+          for (QModelIndex index : set)
           {
             ret.insert (index);
           }
@@ -66,11 +64,11 @@ namespace fhg
           return;
         }
 
-        BOOST_FOREACH ( QPersistentModelIndex index
-                      , persisted ( indices_with_parent_in_set_removed
-                                    (selectionModel()->selectedRows().toSet())
-                                  )
-                      )
+        for ( QPersistentModelIndex index
+            : persisted ( indices_with_parent_in_set_removed
+                          (selectionModel()->selectedRows().toSet())
+                        )
+            )
         {
           model()->removeRow (index.row(), index.parent());
         }

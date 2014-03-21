@@ -338,7 +338,7 @@ namespace fhg
               ) const
             {
               WEAVE(structure::open) (s.first);
-              BOOST_FOREACH (const pnet::type::signature::field_type& f, s.second)
+              for (const pnet::type::signature::field_type& f : s.second)
               {
                 boost::apply_visitor (structure_field<State> (_state), f);
               }
@@ -391,7 +391,7 @@ namespace fhg
               typedef std::pair<std::string, pnet::type::value::value_type>
                 prop_type;
 
-              BOOST_FOREACH (prop_type const& p, props)
+              for (prop_type const& p : props)
               {
                 WEAVE(property::open) (p.first);
                 boost::apply_visitor(*this, p.second);
@@ -585,7 +585,7 @@ namespace fhg
           WEAVE(place::is_virtual) (place.is_virtual());
           WEAVE(place::properties) (place.properties());
 
-          BOOST_FOREACH (const ::xml::parse::type::place_type::token_type& tok, place.tokens)
+          for (const ::xml::parse::type::place_type::token_type& tok : place.tokens)
           {
             WEAVE(place::token) (tok);
           }

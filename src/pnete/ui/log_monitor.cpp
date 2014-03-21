@@ -9,7 +9,6 @@
 
 #include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
 #include <boost/function.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/serialization/access.hpp>
@@ -185,7 +184,7 @@ namespace detail
 
     std::vector<fhg::log::LogEvent> result;
 
-    foreach (const formatted_log_event& event, _data)
+    for (const formatted_log_event& event : _data)
     {
       result.push_back (event.event);
     }
@@ -466,7 +465,7 @@ void log_monitor::save ()
     std::ofstream ofs (fname.toStdString ().c_str ());
     std::vector<fhg::log::LogEvent> data (_log_model->data());
 
-    foreach (const fhg::log::LogEvent &evt, data)
+    for (const fhg::log::LogEvent &evt : data)
     {
       ofs << evt << std::endl;
     }

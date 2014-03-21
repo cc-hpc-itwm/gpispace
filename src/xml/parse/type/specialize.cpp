@@ -100,7 +100,7 @@ namespace xml
 
         child_structs.clear();
 
-        BOOST_FOREACH (structure_type& s, structs)
+        for (structure_type& s : structs)
         {
           const type_get_type::const_iterator pos (type_get.find (s.name()));
 

@@ -7,9 +7,10 @@
 #include <map>
 #include <set>
 #include <iostream>
-#include <boost/foreach.hpp>
 #include <we/type/value.hpp>
 #include <sdpa/job_states.hpp>
+
+#include <boost/utility.hpp>
 
 namespace sdpa {
 	typedef std::string job_id_t;

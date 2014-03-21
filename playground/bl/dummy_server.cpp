@@ -18,7 +18,6 @@
 #include <QFileSystemWatcher>
 #include <QFile>
 
-#include <boost/foreach.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/discrete_distribution.hpp>
 
@@ -228,7 +227,7 @@ void thread::execute_action (fhg::util::parse::position& pos)
 
   const QMutexLocker lock (&_hosts_mutex);
 
-  BOOST_FOREACH (QString host, invoc._hosts)
+  for (QString host : invoc._hosts)
   {
     if (!_hosts.contains (host))
     {
@@ -421,7 +420,7 @@ void thread::may_read()
           QList<QString> hosts (_hosts.keys());
           qStableSort (hosts.begin(), hosts.end(), less());
 
-          foreach (const QString& host, hosts)
+          for (const QString& host : hosts)
           {
             _socket->write (qPrintable (QString (" \"%1\",").arg (host)));
           }

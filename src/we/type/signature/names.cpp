@@ -3,8 +3,6 @@
 #include <we/type/signature/names.hpp>
 #include <we/type/signature/traverse.hpp>
 
-#include <boost/foreach.hpp>
-
 namespace pnet
 {
   namespace type
@@ -21,7 +19,7 @@ namespace pnet
           {}
           void _struct (const std::pair<std::string, structure_type>& s) const
           {
-            BOOST_FOREACH (const field_type& f, s.second)
+            for (const field_type& f : s.second)
             {
               traverse (*this, f);
             }

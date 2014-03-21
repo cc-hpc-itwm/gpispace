@@ -15,7 +15,6 @@
 #include <plugin/plugin.hpp>
 
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 
 namespace fhg
 {
@@ -52,7 +51,7 @@ namespace fhg
     std::list<plugin::Plugin*> plugin_t::to_raw (std::list<boost::shared_ptr<plugin_t> > deps)
     {
       std::list<plugin::Plugin*> deps_raw;
-      BOOST_FOREACH (boost::shared_ptr<plugin_t> p, deps)
+      for (boost::shared_ptr<plugin_t> p : deps)
       {
         deps_raw.push_back (p->m_plugin.get());
       }

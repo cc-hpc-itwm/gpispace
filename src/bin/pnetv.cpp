@@ -3,7 +3,6 @@
 
 #include <boost/program_options.hpp>
 
-#include <pnetv/jpn/common/Foreach.h>
 #include <pnetv/jpn/common/Unreachable.h>
 
 #include <pnetv/jpna/Parsing.h>
@@ -79,7 +78,7 @@ int main(int argc, char *argv[]) {
 
     int exitCode = EXIT_SUCCESS;
 
-    FOREACH(const std::string &filename, inputFiles) {
+    for (const std::string &filename : inputFiles) {
         boost::ptr_vector<jpna::PetriNet> petriNets;
 
         try {
@@ -89,7 +88,7 @@ int main(int argc, char *argv[]) {
                 jpna::parse(filename.c_str(), petriNets);
             }
 
-            FOREACH (const jpna::PetriNet &petriNet, petriNets) {
+            for (const jpna::PetriNet &petriNet : petriNets) {
                 std::cout << petriNet.name() << ": ";
                 std::cout.flush();
                 jpna::VerificationResult result = jpna::verify(petriNet);

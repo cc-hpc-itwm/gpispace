@@ -57,7 +57,7 @@ namespace fhg
       TransitionLibraryItem::child_with_fileinfo
       (const QFileInfo& fileinfo) const
       {
-        foreach (TransitionLibraryItem* child, children())
+        for (TransitionLibraryItem* child : children())
           {
             if (child->fileinfo() == fileinfo)
               {
@@ -117,7 +117,7 @@ namespace fhg
 
       void TransitionLibraryItem::clearChildren()
       {
-        foreach(TransitionLibraryItem* child, _children)
+        for (TransitionLibraryItem* child : _children)
         {
           child->clearChildren();
         }
@@ -171,7 +171,7 @@ namespace fhg
         {
           qSort(_children.begin(), _children.end(), sortAscending);
         }
-        foreach(TransitionLibraryItem* child, _children)
+        for (TransitionLibraryItem* child : _children)
         {
           child->sortChildren();
         }

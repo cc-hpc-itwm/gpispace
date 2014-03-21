@@ -6,8 +6,6 @@
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
 
-#include <boost/foreach.hpp>
-
 namespace xml
 {
   namespace parse
@@ -55,7 +53,7 @@ namespace xml
           }
           else
           {
-            BOOST_FOREACH (const std::string& search_path, _search_path)
+            for (const std::string& search_path : _search_path)
             {
               if (!boost::filesystem::exists (search_path))
               {
@@ -213,7 +211,7 @@ namespace xml
       {
         if (!_link_prefix_parsed)
         {
-          BOOST_FOREACH (const std::string& kv, _link_prefix)
+          for (const std::string& kv : _link_prefix)
           {
             std::string parsed_key;
             fhg::util::parse::position_string inp (kv);

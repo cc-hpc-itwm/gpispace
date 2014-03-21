@@ -7,7 +7,6 @@
 #include <list>
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 
 #include <fhg/util/thread/queue.hpp>
 
