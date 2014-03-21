@@ -80,8 +80,8 @@ int getptz(int N)
 void sse_fft(int isign, int n, __m128 cz[])
 {
 	static int kfax[] = { 16,13,11,9,8,7,5,4,3,2 };
-	register __m128 *z = cz;
-	register int j00,j01,j2,j3,j4,j5,j6,j7,j8,j9,j10,j11,j12,j13,j14,j15,jt;
+	__m128 *z = cz;
+	int j00,j01,j2,j3,j4,j5,j6,j7,j8,j9,j10,j11,j12,j13,j14,j15,jt;
 	int nleft,jfax,ifac,jfac,jinc,jmax,ndiv,m,mm=0,mu=0,l;
 	__m128 t1r,t1i,t2r,t2i,t3r,t3i,t4r,t4i,t5r,t5i,
 		t6r,t6i,t7r,t7i,t8r,t8i,t9r,t9i,t10r,t10i,
@@ -3299,8 +3299,8 @@ void sse_fft(int isign, int n, vector float cz[])
 void fft(int isign, int n, float cz[])
 {
 	static int kfax[] = { 16,13,11,9,8,7,5,4,3,2 };
-	register float *z=(float*)cz;
-	register int j00,j01,j2,j3,j4,j5,j6,j7,j8,j9,j10,j11,j12,j13,j14,j15,jt;
+	float *z=(float*)cz;
+	int j00,j01,j2,j3,j4,j5,j6,j7,j8,j9,j10,j11,j12,j13,j14,j15,jt;
 	int nleft,jfax,ifac,jfac,jinc,jmax,ndiv,m,mm=0,mu=0,l;
 	float t1r,t1i,t2r,t2i,t3r,t3i,t4r,t4i,t5r,t5i,
 		t6r,t6i,t7r,t7i,t8r,t8i,t9r,t9i,t10r,t10i,
