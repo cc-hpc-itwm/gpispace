@@ -21,7 +21,6 @@
 
 #include <QUndoStack>
 
-#include <boost/function_types/function_type.hpp>
 #include <boost/function_types/parameter_types.hpp>
 #include <boost/optional.hpp>
 #include <boost/preprocessor/arithmetic/add.hpp>
