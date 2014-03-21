@@ -132,6 +132,24 @@ void WorkerManager::getCapabilities(sdpa::capabilities_set_t& agentCpbSet)
   }
 }
 
+bool WorkerManager::checkIfAbortedJobAndDelete (const worker_id_t& workerId, const sdpa::job_id_t& jobId)
+{
+  boost::mutex::scoped_lock const _ (mtx_);
+
+  worker_map_t::iterator it (worker_map_.find (workerId));
+
+  if (it == worker_map_.end())
+    throw WorkerNotFoundException();
+
+  if (it->second->isAborted (jobId))
+  {
+    it->second->deleteJob (jobId);
+    return true;
+  }
+
+  return false;
+}
+
 namespace
 {
   boost::optional<std::size_t> matchRequirements

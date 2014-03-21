@@ -43,6 +43,7 @@ namespace sdpa { namespace daemon {
     void deleteWorker( const worker_id_t& workerId);
 
     void getCapabilities(sdpa::capabilities_set_t& cpbset);
+    bool checkIfAbortedJobAndDelete (const worker_id_t&, const sdpa::job_id_t&);
 
     sdpa::job_id_list_t getJobListAndCleanQueues(const  Worker::ptr_t& pWorker);
     worker_id_list_t getListWorkersNotReserved();
