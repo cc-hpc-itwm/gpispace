@@ -403,15 +403,13 @@ namespace fhg
         {
           QVBoxLayout* legend_box_layout (new QVBoxLayout (legend_box));
 
-          static const QList<worker_model::state_type> all_states
-            ( QList<worker_model::state_type>()
-            << sdpa::daemon::NotificationEvent::STATE_STARTED
-            << sdpa::daemon::NotificationEvent::STATE_FINISHED
-            << sdpa::daemon::NotificationEvent::STATE_FAILED
-            << sdpa::daemon::NotificationEvent::STATE_CANCELED
-            );
-
-          for (const worker_model::state_type& state : all_states)
+          for ( const worker_model::state_type& state
+              : { sdpa::daemon::NotificationEvent::STATE_STARTED
+                , sdpa::daemon::NotificationEvent::STATE_FINISHED
+                , sdpa::daemon::NotificationEvent::STATE_FAILED
+                , sdpa::daemon::NotificationEvent::STATE_CANCELED
+                }
+              )
           {
             QPushButton* label (new QPushButton (to_string (state), this));
             style_button (label, delegate->color_for_state (state));
