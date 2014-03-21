@@ -639,9 +639,12 @@ BOOST_AUTO_TEST_CASE (token_mul)
 
 namespace
 {
-  void parser_ctor (std::string const& input)
+  template<typename T>
+    void require_ctor_exception
+    (std::string const& input, std::string const& message)
   {
-    (void)expr::parse::parser (input);
+    fhg::util::boost::test::require_exception<T>
+      ([&input]() { (void)expr::parse::parser (input); }, message);
   }
 
   template<typename T>
@@ -670,10 +673,8 @@ namespace
     }
     else
     {
-      fhg::util::boost::test::require_exception<std::runtime_error>
-        ( boost::bind (&parser_ctor, expression)
-        , "r > l => neg result"
-        );
+      require_ctor_exception<std::runtime_error>
+        (expression, "r > l => neg result");
     }
   }
 }
@@ -716,15 +717,10 @@ BOOST_AUTO_TEST_CASE (token_sub)
   require_evaluating_to ("1UL - 0UL", 1UL);
   require_evaluating_to ("2UL - 1UL", 1UL);
 
-  fhg::util::boost::test::require_exception<std::runtime_error>
-    ( boost::bind (&parser_ctor, "0U - 1U")
-    , "r > l => neg result"
-    );
-
-  fhg::util::boost::test::require_exception<std::runtime_error>
-    ( boost::bind (&parser_ctor, "0UL - 1UL")
-    , "r > l => neg result"
-    );
+  require_ctor_exception<std::runtime_error>
+    ("0U - 1U", "r > l => neg result");
+  require_ctor_exception<std::runtime_error>
+    ("0UL - 1UL", "r > l => neg result");
 }
 
 namespace
@@ -758,9 +754,8 @@ namespace
     }
     else
     {
-      fhg::util::boost::test::require_exception
-        <expr::exception::eval::divide_by_zero>
-        (boost::bind (&parser_ctor, expression), "divide by zero");
+      require_ctor_exception<expr::exception::eval::divide_by_zero>
+        (expression, "divide by zero");
     }
   }
 }
@@ -793,18 +788,14 @@ BOOST_AUTO_TEST_CASE (token_divint)
   require_evaluating_to ("2L div 1L", 2L);
   require_evaluating_to ("2UL div 1UL", 2UL);
 
-  fhg::util::boost::test::require_exception
-    <expr::exception::eval::divide_by_zero>
-    (boost::bind (&parser_ctor, "1 div 0"), "divide by zero");
-  fhg::util::boost::test::require_exception
-    <expr::exception::eval::divide_by_zero>
-    (boost::bind (&parser_ctor, "1U div 0U"), "divide by zero");
-  fhg::util::boost::test::require_exception
-    <expr::exception::eval::divide_by_zero>
-    (boost::bind (&parser_ctor, "1L div 0L"), "divide by zero");
-  fhg::util::boost::test::require_exception
-    <expr::exception::eval::divide_by_zero>
-    (boost::bind (&parser_ctor, "1UL div 0UL"), "divide by zero");
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1 div 0", "divide by zero");
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1U div 0U", "divide by zero");
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1L div 0L", "divide by zero");
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1UL div 0UL", "divide by zero");
 }
 
 namespace
@@ -852,18 +843,14 @@ BOOST_AUTO_TEST_CASE (token_modint)
   require_evaluating_to ("5L mod 3L", 2L);
   require_evaluating_to ("5UL mod 3UL", 2UL);
 
-  fhg::util::boost::test::require_exception
-    <expr::exception::eval::divide_by_zero>
-    (boost::bind (&parser_ctor, "1 mod 0"), "divide by zero");
-  fhg::util::boost::test::require_exception
-    <expr::exception::eval::divide_by_zero>
-    (boost::bind (&parser_ctor, "1U mod 0U"), "divide by zero");
-  fhg::util::boost::test::require_exception
-    <expr::exception::eval::divide_by_zero>
-    (boost::bind (&parser_ctor, "1L mod 0L"), "divide by zero");
-  fhg::util::boost::test::require_exception
-    <expr::exception::eval::divide_by_zero>
-    (boost::bind (&parser_ctor, "1UL mod 0UL"), "divide by zero");
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1 mod 0", "divide by zero");
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1U mod 0U", "divide by zero");
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1L mod 0L", "divide by zero");
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1UL mod 0UL", "divide by zero");
 }
 
 namespace
@@ -902,9 +889,8 @@ namespace
       }
       else
       {
-        fhg::util::boost::test::require_exception
-          <expr::exception::eval::divide_by_zero>
-          (boost::bind (&parser_ctor, expression), "divide by zero");
+        require_ctor_exception<expr::exception::eval::divide_by_zero>
+          (expression, "divide by zero");
       }
     }
   }
@@ -924,12 +910,10 @@ BOOST_AUTO_TEST_CASE (token_div)
   require_evaluating_to ("2.0 / 2.0", 1.0);
   require_evaluating_to ("2.0f / 2.0f", 1.0f);
 
-  fhg::util::boost::test::require_exception
-    <expr::exception::eval::divide_by_zero>
-    (boost::bind (&parser_ctor, "1.0 / 0.0"), "divide by zero");
-  fhg::util::boost::test::require_exception
-    <expr::exception::eval::divide_by_zero>
-    (boost::bind (&parser_ctor, "1.0f / 0.0f"), "divide by zero");
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1.0 / 0.0", "divide by zero");
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1.0f / 0.0f", "divide by zero");
 }
 
 namespace
