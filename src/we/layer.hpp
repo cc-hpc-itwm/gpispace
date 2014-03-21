@@ -142,14 +142,6 @@ namespace we
       boost::mt19937& _random_extraction_engine;
       void extract_from_nets();
 
-      void failed_delayed ( activity_data_type& parent_activity
-                          , id_type id
-                          , std::string reason
-                          );
-      void discover_delayed (activity_data_type&, id_type discover_id);
-
-      void cancel_child_jobs (activity_data_type, boost::function<void()> after);
-
       boost::unordered_map<id_type, boost::function<void()> >
         _finalize_job_cancellation;
 
@@ -177,9 +169,6 @@ namespace we
           > relation_type;
         relation_type _relation;
       } _running_jobs;
-
-      void finalize_finished
-        (activity_data_type&, type::activity_t, id_type parent, id_type child);
 
       boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
         _extract_from_nets_thread;

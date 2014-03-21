@@ -159,26 +159,37 @@ namespace we
 
       _nets_to_extract_from.apply
         ( *parent
-        , boost::bind
-          (&layer::finalize_finished, this, _1, result, *parent, id)
+        , [=] (activity_data_type& activity_data)
+        {
+          activity_data.child_finished (result);
+          _running_jobs.terminated (*parent, id);
+        }
         );
-    }
-    void layer::finalize_finished ( activity_data_type& activity_data
-                                  , type::activity_t result
-                                  , id_type parent
-                                  , id_type child
-                                  )
-    {
-      activity_data.child_finished (result);
-      _running_jobs.terminated (parent, child);
     }
 
     void layer::cancel (id_type id)
     {
       const boost::function<void()> after
-        (boost::bind (&layer::rts_canceled_and_forget, this, id));
+        ([=]() { rts_canceled_and_forget (id); });
       _nets_to_extract_from.remove_and_apply
-        (id, boost::bind (&layer::cancel_child_jobs, this, _1, after));
+        ( id
+        , [=] (activity_data_type activity_data)
+        {
+          //! \note Not a race: nobody can insert new running jobs as
+          //! we have ownership of activity
+          if (!_running_jobs.contains (activity_data._id))
+          {
+            after();
+          }
+          else
+          {
+            _finalize_job_cancellation.insert
+              (std::make_pair (activity_data._id, after));
+            _running_jobs.apply
+              (activity_data._id, boost::bind (_rts_cancel, _1));
+          }
+        }
+        );
     }
 
     void layer::failed (id_type id, std::string reason)
@@ -187,48 +198,25 @@ namespace we
       assert (parent);
 
       _nets_to_extract_from.remove_and_apply
-        (*parent, boost::bind (&layer::failed_delayed, this, _1, id, reason));
-    }
-    void layer::failed_delayed ( activity_data_type& parent_activity
-                               , id_type id
-                               , std::string reason
-                               )
-    {
-      const boost::function<void()> after
-        ( boost::bind ( &layer::rts_failed_and_forget
-                      , this, parent_activity._id, reason
-                      )
+        ( *parent
+        , [=] (activity_data_type& parent_activity)
+        {
+          const boost::function<void()> after
+            ([=]() { rts_failed_and_forget (parent_activity._id, reason); });
+
+          if (_running_jobs.terminated (parent_activity._id, id))
+          {
+            after();
+          }
+          else
+          {
+            _finalize_job_cancellation.insert
+              (std::make_pair (parent_activity._id, after));
+            _running_jobs.apply
+              (parent_activity._id, boost::bind (_rts_cancel, _1));
+          }
+        }
         );
-
-      if (_running_jobs.terminated (parent_activity._id, id))
-      {
-        after();
-      }
-      else
-      {
-        _finalize_job_cancellation.insert
-          (std::make_pair (parent_activity._id, after));
-        _running_jobs.apply
-          (parent_activity._id, boost::bind (_rts_cancel, _1));
-      }
-    }
-
-    void layer::cancel_child_jobs
-      (activity_data_type activity_data, boost::function<void()> after)
-    {
-      //! \note Not a race: nobody can insert new running jobs as we
-      //! have ownership of activity
-      if (!_running_jobs.contains (activity_data._id))
-      {
-        after();
-      }
-      else
-      {
-        _finalize_job_cancellation.insert
-          (std::make_pair (activity_data._id, after));
-        _running_jobs.apply
-          (activity_data._id, boost::bind (_rts_cancel, _1));
-      }
     }
 
     void layer::canceled (id_type child)
@@ -246,54 +234,39 @@ namespace we
       }
     }
 
-    namespace
-    {
-      void discover_traverse
-        ( std::size_t* child_count
-        , layer::id_type discover_id
-        , boost::function<void (layer::id_type, layer::id_type)> rts_discover
-        , layer::id_type child
-        )
-      {
-        ++(*child_count);
-        rts_discover (discover_id, child);
-      }
-    }
-
     void layer::discover (id_type discover_id, id_type id)
     {
       _nets_to_extract_from.apply
-        (id, boost::bind (&layer::discover_delayed, this, _1, discover_id));
-    }
-    void layer::discover_delayed
-      (activity_data_type& activity_data, id_type discover_id)
-    {
-      const id_type id (activity_data._id);
+        ( id
+        , [=] (activity_data_type& activity_data)
+        {
+          const id_type id (activity_data._id);
 
-      boost::mutex::scoped_lock const _ (_discover_state_mutex);
-      assert (_discover_state.find (discover_id) == _discover_state.end());
+          boost::mutex::scoped_lock const _ (_discover_state_mutex);
+          assert (_discover_state.find (discover_id) == _discover_state.end());
 
-      std::pair<std::size_t, sdpa::discovery_info_t > state
-        (0, sdpa::discovery_info_t(id, boost::none, sdpa::discovery_info_set_t()));
+          std::pair<std::size_t, sdpa::discovery_info_t > state
+            (0, sdpa::discovery_info_t(id, boost::none, sdpa::discovery_info_set_t()));
 
-      _running_jobs.apply ( id
-                          , boost::bind ( &discover_traverse
-                                        , &state.first
-                                        , discover_id
-                                        , _rts_discover
-                                        , _1
-                                        )
-                          );
+          _running_jobs.apply ( id
+                              , [&] (id_type child)
+                              {
+                                ++state.first;
+                                _rts_discover (discover_id, child);
+                              }
+                              );
 
-      //! \note Not a race: discovered can't be called in parallel
-      if (state.first == std::size_t (0))
-      {
-        _rts_discovered (discover_id, state.second);
-      }
-      else
-      {
-        _discover_state.insert (std::make_pair (discover_id, state));
-      }
+          //! \note Not a race: discovered can't be called in parallel
+          if (state.first == std::size_t (0))
+          {
+            _rts_discovered (discover_id, state.second);
+          }
+          else
+          {
+            _discover_state.insert (std::make_pair (discover_id, state));
+          }
+        }
+        );
     }
 
     void layer::discovered
@@ -430,9 +403,7 @@ namespace we
       boost::recursive_mutex::scoped_lock lock (_container_mutex);
 
       _condition_non_empty.wait
-        ( lock
-        , not boost::bind (&list_with_id_lookup::empty, &_container)
-        );
+        (lock, [&]() -> bool { return !_container.empty(); });
 
       return _container.get_front();
     }
