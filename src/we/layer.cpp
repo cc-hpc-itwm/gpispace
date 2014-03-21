@@ -157,7 +157,7 @@ namespace we
 
       _nets_to_extract_from.apply
         ( *parent
-        , [=] (activity_data_type& activity_data)
+        , [this, parent, result, id] (activity_data_type& activity_data)
         {
           activity_data.child_finished (result);
           _running_jobs.terminated (*parent, id);
@@ -167,12 +167,13 @@ namespace we
 
     void layer::cancel (id_type id)
     {
-      const boost::function<void()> after
-        ([=]() { rts_canceled_and_forget (id); });
       _nets_to_extract_from.remove_and_apply
         ( id
-        , [=] (activity_data_type activity_data)
+        , [this, id] (activity_data_type activity_data)
         {
+          const boost::function<void()> after
+            ([this, id]() { rts_canceled_and_forget (id); });
+
           //! \note Not a race: nobody can insert new running jobs as
           //! we have ownership of activity
           if (!_running_jobs.contains (activity_data._id))
@@ -197,10 +198,12 @@ namespace we
 
       _nets_to_extract_from.remove_and_apply
         ( *parent
-        , [=] (activity_data_type& parent_activity)
+        , [this, id, reason] (activity_data_type& parent_activity)
         {
           const boost::function<void()> after
-            ([=]() { rts_failed_and_forget (parent_activity._id, reason); });
+            ([this, parent_activity, reason]()
+            { rts_failed_and_forget (parent_activity._id, reason); }
+            );
 
           if (_running_jobs.terminated (parent_activity._id, id))
           {
@@ -236,7 +239,7 @@ namespace we
     {
       _nets_to_extract_from.apply
         ( id
-        , [=] (activity_data_type& activity_data)
+        , [this, discover_id] (activity_data_type& activity_data)
         {
           const id_type id (activity_data._id);
 
@@ -247,7 +250,7 @@ namespace we
             (0, sdpa::discovery_info_t(id, boost::none, sdpa::discovery_info_set_t()));
 
           _running_jobs.apply ( id
-                              , [&] (id_type child)
+                              , [this, &discover_id, &state] (id_type child)
                               {
                                 ++state.first;
                                 _rts_discover (discover_id, child);
@@ -401,7 +404,7 @@ namespace we
       boost::recursive_mutex::scoped_lock lock (_container_mutex);
 
       _condition_non_empty.wait
-        (lock, [&]() -> bool { return !_container.empty(); });
+        (lock, [this]() -> bool { return !_container.empty(); });
 
       return _container.get_front();
     }
