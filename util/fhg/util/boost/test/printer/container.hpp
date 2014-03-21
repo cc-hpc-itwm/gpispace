@@ -45,7 +45,7 @@ namespace fhg
               = print_element_default<typename Container::value_type>()
             )
           {
-            return fhg::util::print_container
+            return fhg::util::print_container<Container>
               ( os, "", prefix, ",", suffix, c
               , boost::bind (print_element, boost::ref (os), _1)
               );
