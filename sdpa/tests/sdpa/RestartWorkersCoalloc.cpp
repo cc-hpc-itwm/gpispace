@@ -15,7 +15,7 @@ namespace
   {
   public:
     fake_drts_worker_waiting_for_cancel
-        ( boost::function<void (std::string)> announce_job
+        ( std::function<void (std::string)> announce_job
         , const utils::agent& master_agent
         )
       : utils::fake_drts_worker_notifying_module_call_submission
@@ -102,7 +102,7 @@ namespace
   {
   public:
     fake_drts_worker_waiting_for_finished_ack
-        ( boost::function<void (std::string)> announce_job
+        ( std::function<void (std::string)> announce_job
         , const utils::agent& master_agent
         )
       : utils::fake_drts_worker_notifying_module_call_submission

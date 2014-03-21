@@ -78,7 +78,7 @@ namespace
   {
   public:
     fake_drts_worker_discovering
-        ( boost::function<void (std::string)> announce_job
+        ( std::function<void (std::string)> announce_job
         , utils::agent const& master
         )
       : utils::fake_drts_worker_notifying_module_call_submission

@@ -6,11 +6,12 @@
 #include <pnete/ui/graph/mode.hpp>
 #include <pnete/ui/graph/style/type.fwd.hpp>
 
-#include <boost/function.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/variant.hpp>
 
 #include <QColor>
+
+#include <functional>
 
 namespace fhg
 {
@@ -28,7 +29,7 @@ namespace fhg
             {
               typedef boost::variant<qreal, QColor, Qt::PenStyle> return_type;
 
-              typedef boost::function<return_type (const mode::type&)> by_mode_type;
+              typedef std::function<return_type (const mode::type&)> by_mode_type;
 
               typedef boost::unordered_map< key_type
                                           , by_mode_type

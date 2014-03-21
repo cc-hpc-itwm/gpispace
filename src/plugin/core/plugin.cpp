@@ -65,7 +65,7 @@ namespace fhg
                        )
       : m_handle (my_handle)
       , m_plugin ( m_handle.sym
-                   <plugin::Plugin* (boost::function<void()> request_stop, std::list<plugin::Plugin*>, std::map<std::string, std::string>)>
+                   <plugin::Plugin* (std::function<void()> request_stop, std::list<plugin::Plugin*>, std::map<std::string, std::string>)>
                    ("fhg_get_plugin_instance") (boost::bind (&kernel_t::stop, kernel), to_raw (deps), config_variables)
                  )
     {}

@@ -18,7 +18,7 @@ namespace sdpa
       kill (getpid (), SIGTERM);
     }
 
-    NetworkStrategy::NetworkStrategy ( boost::function<void (sdpa::events::SDPAEvent::Ptr)> event_handler
+    NetworkStrategy::NetworkStrategy ( std::function<void (sdpa::events::SDPAEvent::Ptr)> event_handler
                                      , std::string const & peer_name
                                      , fhg::com::host_t const & host
                                      , fhg::com::port_t const & port

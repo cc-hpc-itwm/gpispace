@@ -285,7 +285,7 @@ namespace expr
     void
     parser::parse
       ( const std::string& input
-      , const boost::function<nd_t (const std::list<std::string>&)> & refnode
+      , const std::function<nd_t (const std::list<std::string>&)> & refnode
       )
     {
       op_stack.push (token::eof);

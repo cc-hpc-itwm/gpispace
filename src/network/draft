@@ -1,7 +1,7 @@
 typedef std::vector<char> buffer_type;
-typedef boost::function<buffer_type (buffer_type)> filter_type;
+typedef std::function<buffer_type (buffer_type)> filter_type;
 typedef boost::posix_time::time_duration timeout_type;
-typedef boost::function<void (buffer_type)> handler_type;
+typedef std::function<void (buffer_type)> handler_type;
 
 template<typename Protocol>
   connection_type<Protocoll> connect_client
@@ -10,7 +10,7 @@ template<typename Protocol>
     , filter_type encrypt
     , filter_type decrypt
     , handler_type
-    , boost::function<void (connection_type<Protocol>*)> on_disconnect
+    , std::function<void (connection_type<Protocol>*)> on_disconnect
     , boost::optional<timeout_type>
     );
 
@@ -21,9 +21,9 @@ class acceptor
            , boost::asio::io_service&
            , filter_type encrypt
            , filter_type decrypt
-           , boost::function<handler_type (connection_type<Protocol>*)>
-           , boost::function<void (connection_type<Protocol>*)> on_disconnect
-           , boost::function<void (connection_type<Protocol>)> handle
+           , std::function<handler_type (connection_type<Protocol>*)>
+           , std::function<void (connection_type<Protocol>*)> on_disconnect
+           , std::function<void (connection_type<Protocol>)> handle
            );
 
   void accept()
@@ -41,7 +41,7 @@ class connection_type
   connection_type ( typename Protocol::socket
                   , filter_type
                   , handler_type
-                  , boost::function<void (connection_type<Protocol>*)>
+                  , std::function<void (connection_type<Protocol>*)>
                   );
   void send (buffer_type);
 };
@@ -67,7 +67,7 @@ struct server
 
 struct service_manager
 {
-  add (std::string, boost::function<void (buffer_type, connection_type*)>);
+  add (std::string, std::function<void (buffer_type, connection_type*)>);
 
   void operator() (connection*, buffer_type) const
   {

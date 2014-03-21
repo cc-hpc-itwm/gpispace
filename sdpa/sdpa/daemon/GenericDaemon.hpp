@@ -150,7 +150,7 @@ namespace sdpa {
       void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
       void sendEventToOther(const sdpa::events::SDPAEvent::Ptr& e);
     private:
-      void delay (boost::function<void()>);
+      void delay (std::function<void()>);
 
     public:
       // registration

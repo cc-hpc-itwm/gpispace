@@ -21,13 +21,13 @@
 
 #include <hwloc.h>
 
-#include <boost/function.hpp>
 #include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
+#include <functional>
 #include <list>
 #include <map>
 #include <string>
@@ -109,7 +109,7 @@ class DRTSImpl : public sdpa::events::EventHandler
                   > map_of_jobs_t;
   typedef std::map<std::string, sdpa::Capability> map_of_capabilities_t;
 public:
-  DRTSImpl (boost::function<void()> request_stop, std::map<std::string, std::string> config_variables);
+  DRTSImpl (std::function<void()> request_stop, std::map<std::string, std::string> config_variables);
   ~DRTSImpl();
 
   virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent *e);
@@ -146,7 +146,7 @@ private:
 
   fhg::log::Logger::ptr_t _logger;
 
-  boost::function<void()> _request_stop;
+  std::function<void()> _request_stop;
 
   fhg::com::kvs::kvsc_ptr_t _kvs_client;
 

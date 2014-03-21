@@ -9,7 +9,6 @@
 #include <ios>
 
 #include <boost/bind.hpp>
-#include <boost/function.hpp>
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <boost/noncopyable.hpp>
@@ -20,6 +19,8 @@
 #include <fhg/assert.hpp>
 #include <fhgcom/header.hpp>
 #include <fhgcom/message.hpp>
+
+#include <functional>
 
 namespace fhg
 {
@@ -44,7 +45,7 @@ namespace fhg
         virtual void handle_error       (ptr_t connection, const boost::system::error_code & error ) = 0;
       };
 
-      typedef boost::function <void (boost::system::error_code const &)> completion_handler_t;
+      typedef std::function <void (boost::system::error_code const &)> completion_handler_t;
       //      typedef void (*completion_handler_t)(const boost::system::error_code & error);
 
       explicit

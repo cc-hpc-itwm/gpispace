@@ -6,8 +6,8 @@
 #include <fhg/util/ostream_modifier.hpp>
 
 #include <boost/bind.hpp>
-#include <boost/function.hpp>
 
+#include <functional>
 #include <iostream>
 
 namespace fhg
@@ -31,7 +31,7 @@ namespace fhg
 
     private:
       mutable T _value;
-      mutable boost::function<void ()> _modify;
+      mutable std::function<void ()> _modify;
 
       void set (const T& value) const
       {

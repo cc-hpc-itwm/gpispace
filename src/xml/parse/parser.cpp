@@ -51,9 +51,10 @@
 
 #include <boost/bind.hpp>
 #include <boost/format.hpp>
-#include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
+
+#include <functional>
 
 // ************************************************************************* //
 
@@ -65,7 +66,7 @@ namespace xml
     {
       template<typename T>
         T generic_parse
-        ( boost::function<T (const xml_node_type*, state::type&)> parse
+        ( std::function<T (const xml_node_type*, state::type&)> parse
         , std::istream& f
         , state::type& state
         , const std::string& name_wanted
@@ -150,7 +151,7 @@ namespace xml
         return_type generic_include
         ( const std::string& file
         , state::type& state
-        , boost::function<return_type (const xml_node_type*, state::type&)> fun
+        , std::function<return_type (const xml_node_type*, state::type&)> fun
         , const std::string& wanted
         , const std::string& pre
         )

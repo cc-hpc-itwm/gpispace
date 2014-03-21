@@ -17,8 +17,8 @@ namespace
   {
   public:
     fake_drts_worker_notifying_submission_and_cancel
-        ( boost::function<void (std::string)> announce_job
-        , boost::function<void (std::string)> announce_cancel
+        ( std::function<void (std::string)> announce_job
+        , std::function<void (std::string)> announce_cancel
         , const utils::agent& master_agent
         )
       : utils::fake_drts_worker_notifying_module_call_submission
@@ -61,7 +61,7 @@ namespace
       return v.second._id == id;
     }
 
-    boost::function<void (std::string)> _announce_cancel;
+    std::function<void (std::string)> _announce_cancel;
   };
 }
 

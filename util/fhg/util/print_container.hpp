@@ -5,7 +5,7 @@
 
 #include <fhg/util/first_then.hpp>
 
-#include <boost/function.hpp>
+#include <functional>
 
 namespace fhg
 {
@@ -19,7 +19,7 @@ namespace fhg
       , const std::string& sep
       , const std::string& close
       , const C& c
-      , const boost::function<void (const typename C::value_type&)>& f
+      , const std::function<void (const typename C::value_type&)>& f
       )
     {
       os << header << open;

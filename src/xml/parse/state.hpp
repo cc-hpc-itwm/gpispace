@@ -176,7 +176,7 @@ namespace xml
 #undef WARN
 
         template<typename T>
-        T generic_parse ( boost::function<T (std::istream&, type&)> parse
+        T generic_parse ( std::function<T (std::istream&, type&)> parse
                         , const boost::filesystem::path& path
                         )
         {
@@ -199,7 +199,7 @@ namespace xml
         }
 
         template<typename T>
-        T generic_parse ( boost::function<T (std::istream&, type&)> parse
+        T generic_parse ( std::function<T (std::istream&, type&)> parse
                         , const std::string& file
                         )
         {
@@ -209,7 +209,7 @@ namespace xml
         void check_for_include_loop (const boost::filesystem::path& path) const;
 
         template<typename T>
-        T generic_include ( boost::function<T (std::istream&, type&)> parse
+        T generic_include ( std::function<T (std::istream&, type&)> parse
                           , const std::string& file
                           )
         {

@@ -110,8 +110,8 @@ namespace fhg
         Q_OBJECT
 
       public:
-        execution_monitor_delegate ( boost::function<void (QString)> set_filter
-                                   , boost::function<QString()> get_filter
+        execution_monitor_delegate ( std::function<void (QString)> set_filter
+                                   , std::function<QString()> get_filter
                                    , QMap<worker_model::state_type, QColor>
                                    , QWidget* parent = NULL
                                    );
@@ -150,8 +150,8 @@ namespace fhg
                        );
 
       private:
-        boost::function<void (QString)> _set_filter;
-        boost::function<QString()> _get_filter;
+        std::function<void (QString)> _set_filter;
+        std::function<QString()> _get_filter;
 
         QMap<worker_model::state_type, QColor> _color_for_state;
       };

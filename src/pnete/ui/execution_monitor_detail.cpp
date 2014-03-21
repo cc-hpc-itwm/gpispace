@@ -356,8 +356,8 @@ namespace fhg
       }
 
       execution_monitor_delegate::execution_monitor_delegate
-        ( boost::function<void (QString)> set_filter
-        , boost::function<QString()> get_filter
+        ( std::function<void (QString)> set_filter
+        , std::function<QString()> get_filter
         , QMap<worker_model::state_type, QColor> color_for_state
         , QWidget* parent
         )

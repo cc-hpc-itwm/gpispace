@@ -102,8 +102,8 @@ namespace fhg
           }
 
         private:
-          boost::function<void (const log::LogEvent&)> _append;
-          boost::function<void()> _flush;
+          std::function<void (const log::LogEvent&)> _append;
+          std::function<void()> _flush;
         };
       }
 

@@ -337,7 +337,7 @@ namespace fhg
           timer->start (timeout);
           return timer;
         }
-        QTimer* timer (QObject* parent, int timeout, boost::function<void()> fun)
+        QTimer* timer (QObject* parent, int timeout, std::function<void()> fun)
         {
           QTimer* timer (new QTimer (parent));
           fhg::util::qt::boost_connect<void()>
@@ -614,7 +614,7 @@ namespace fhg
         , QList<QPair<QString, QString> > additional_data
         )
       {
-        const boost::function<void (QString, QString, QStringList)> append
+        const std::function<void (QString, QString, QStringList)> append
           ( boost::bind
             ( result == monitor_client::okay ? &log_widget::information
             : result == monitor_client::fail ? &log_widget::critical
@@ -895,7 +895,7 @@ namespace fhg
           return QString ("%1").arg (box->value());
         }
 
-        std::pair<QWidget*, boost::function<QString()> > widget_for_item
+        std::pair<QWidget*, std::function<QString()> > widget_for_item
           (const monitor_client::action_argument_data& item)
         {
           switch (*item._type)
@@ -906,7 +906,7 @@ namespace fhg
               box->setChecked ( fhg::util::read_bool
                               (item._default.get_value_or ("false").toStdString())
                               );
-              return std::pair<QWidget*, boost::function<QString()> >
+              return std::pair<QWidget*, std::function<QString()> >
                 (box, boost::bind (checkbox_to_string, box));
             }
 
@@ -916,7 +916,7 @@ namespace fhg
                 ( new fhg::util::qt::file_line_edit
                 (QFileDialog::Directory, item._default.get_value_or (""))
                 );
-              return std::pair<QWidget*, boost::function<QString()> >
+              return std::pair<QWidget*, std::function<QString()> >
                 (edit, boost::bind (&fhg::util::qt::file_line_edit::text, edit));
             }
 
@@ -927,7 +927,7 @@ namespace fhg
               edit->setMaximum (INT_MAX);
               edit->setSuffix (" h");
               edit->setValue (string_to_int (item._default.get_value_or ("1")));
-              return std::pair<QWidget*, boost::function<QString()> >
+              return std::pair<QWidget*, std::function<QString()> >
                 (edit, boost::bind (spinbox_to_string, edit));
             }
 
@@ -937,7 +937,7 @@ namespace fhg
                 ( new fhg::util::qt::file_line_edit
                 (QFileDialog::AnyFile, item._default.get_value_or (""))
                 );
-              return std::pair<QWidget*, boost::function<QString()> >
+              return std::pair<QWidget*, std::function<QString()> >
                 (edit, boost::bind (&fhg::util::qt::file_line_edit::text, edit));
             }
 
@@ -947,14 +947,14 @@ namespace fhg
               edit->setMinimum (INT_MIN);
               edit->setMaximum (INT_MAX);
               edit->setValue (string_to_int (item._default.get_value_or ("0")));
-              return std::pair<QWidget*, boost::function<QString()> >
+              return std::pair<QWidget*, std::function<QString()> >
                 (edit, boost::bind (spinbox_to_string, edit));
             }
 
           case monitor_client::action_argument_data::string:
             {
               QLineEdit* edit (new QLineEdit (item._default.get_value_or ("")));
-              return std::pair<QWidget*, boost::function<QString()> >
+              return std::pair<QWidget*, std::function<QString()> >
                 (edit, boost::bind (&QLineEdit::text, edit));
             }
           default:
@@ -974,7 +974,7 @@ namespace fhg
       void node_state_widget::trigger_action
         (const QStringList& hosts, const QSet<int>& host_ids, const QString& action)
       {
-        QMap<QString, boost::function<QString()> > value_getters;
+        QMap<QString, std::function<QString()> > value_getters;
 
         if ( _action_arguments.contains (action)
            && !_action_arguments[action].isEmpty()
@@ -995,7 +995,7 @@ namespace fhg
               throw std::runtime_error ("action argument without type");
             }
 
-            const std::pair<QWidget*, boost::function<QString()> > ret
+            const std::pair<QWidget*, std::function<QString()> > ret
               (widget_for_item (item));
             layout->addRow (item._label.get_value_or (item._name), ret.first);
             value_getters[item._name] = ret.second;
@@ -1038,7 +1038,7 @@ namespace fhg
           {
             params += "<li>with arguments<ul>";
 
-            for ( QMap<QString, boost::function<QString()> >::const_iterator i
+            for ( QMap<QString, std::function<QString()> >::const_iterator i
                    (value_getters.constBegin())
                 ; i != value_getters.constEnd()
                 ; ++i
@@ -1335,7 +1335,7 @@ namespace fhg
       }
 
       void node_state_widget::sort_by
-        (boost::function<bool (const node_type&, const node_type&)> pred)
+        (std::function<bool (const node_type&, const node_type&)> pred)
       {
         _monitor_client->pause();
 

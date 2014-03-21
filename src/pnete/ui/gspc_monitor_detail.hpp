@@ -162,7 +162,7 @@ namespace fhg
           boost::optional<QString> _expects_state_change;
         };
 
-        void sort_by (boost::function<bool (const node_type&, const node_type&)>);
+        void sort_by (std::function<bool (const node_type&, const node_type&)>);
 
         QMap<QString, QString> _long_action;
         QSet<QString> _action_requires_confirmation;

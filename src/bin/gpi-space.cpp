@@ -787,7 +787,7 @@ int main (int ac, char *av[])
     LOG(INFO, "started GPI interface on rank " << gpi_api.rank() << " at " << config.socket);
 
     fhg::util::thread::event<> stop_requested;
-    const boost::function<void()> request_stop
+    const std::function<void()> request_stop
       (boost::bind (&fhg::util::thread::event<>::notify, &stop_requested));
 
     fhg::util::signal_handler_manager signal_handler;

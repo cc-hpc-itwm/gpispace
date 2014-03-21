@@ -28,7 +28,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QMetaType>
 
-#include <boost/function.hpp>
+#include <functional>
 
 namespace fhg
 {
@@ -63,7 +63,7 @@ namespace fhg
         inline bool boost_connect ( QObject* sender
                                   , const char* signal
                                   , QObject* receiver
-                                  , const boost::function<Sig>& function
+                                  , const std::function<Sig>& function
                                   , Qt::ConnectionType connection_type
                                   = Qt::AutoConnection
                                   )
@@ -81,7 +81,7 @@ namespace fhg
       template<typename Signature>
         inline bool boost_connect ( QObject* sender
                                   , const char* signal
-                                  , const boost::function<Signature>& function
+                                  , const std::function<Signature>& function
                                   , Qt::ConnectionType connection_type
                                   = Qt::AutoConnection
                                   )

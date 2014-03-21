@@ -3,12 +3,12 @@
 #ifndef _FHG_PNETE_UI_GRAPH_STYLE_STORE_HPP
 #define _FHG_PNETE_UI_GRAPH_STYLE_STORE_HPP 1
 
-#include <boost/function.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
 #include <boost/unordered_map.hpp>
 
+#include <functional>
 #include <list>
 
 #include <QColor>
@@ -32,8 +32,8 @@ namespace fhg
             {
             public:
               typedef boost::optional<Value> optional_value_type;
-              typedef boost::function< optional_value_type (Key)
-                                     > predicate_type;
+              typedef std::function< optional_value_type (Key)
+                                   > predicate_type;
 
             private:
               typedef boost::unordered_map< Key

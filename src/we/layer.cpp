@@ -9,14 +9,14 @@
 namespace we
 {
     layer::layer
-        ( boost::function<void (id_type, type::activity_t)> rts_submit
-        , boost::function<void (id_type)> rts_cancel
-        , boost::function<void (id_type, type::activity_t)> rts_finished
-        , boost::function<void (id_type, std::string)> rts_failed
-        , boost::function<void (id_type)> rts_canceled
-        , boost::function<void (id_type, id_type)> rts_discover
-        , boost::function<void (id_type, sdpa::discovery_info_t)> rts_discovered
-        , boost::function<id_type()> rts_id_generator
+        ( std::function<void (id_type, type::activity_t)> rts_submit
+        , std::function<void (id_type)> rts_cancel
+        , std::function<void (id_type, type::activity_t)> rts_finished
+        , std::function<void (id_type, std::string)> rts_failed
+        , std::function<void (id_type)> rts_canceled
+        , std::function<void (id_type, id_type)> rts_discover
+        , std::function<void (id_type, sdpa::discovery_info_t)> rts_discovered
+        , std::function<id_type()> rts_id_generator
         , boost::mt19937& random_extraction_engine
         )
       : _rts_submit (rts_submit)
@@ -171,7 +171,7 @@ namespace we
         ( id
         , [this, id] (activity_data_type activity_data)
         {
-          const boost::function<void()> after
+          const std::function<void()> after
             ([this, id]() { rts_canceled_and_forget (id); });
 
           //! \note Not a race: nobody can insert new running jobs as
@@ -200,7 +200,7 @@ namespace we
         ( *parent
         , [this, id, reason] (activity_data_type parent_activity)
         {
-          const boost::function<void()> after
+          const std::function<void()> after
             ([this, parent_activity, reason]()
             { rts_failed_and_forget (parent_activity._id, reason); }
             );
@@ -227,7 +227,7 @@ namespace we
 
       if (_running_jobs.terminated (*parent, child))
       {
-        boost::unordered_map<id_type, boost::function<void()> >::iterator
+        boost::unordered_map<id_type, std::function<void()> >::iterator
           const pos (_finalize_job_cancellation.find (*parent));
 
         pos->second();
@@ -426,7 +426,7 @@ namespace we
 
         while (fun_and_do_put_it != pos->second.end())
         {
-          std::pair<boost::function<void (activity_data_type&)>, bool>
+          std::pair<std::function<void (activity_data_type&)>, bool>
             fun_and_do_put (*fun_and_do_put_it);
           fun_and_do_put_it = pos->second.erase (fun_and_do_put_it);
 
@@ -463,7 +463,7 @@ namespace we
     }
 
     void layer::async_remove_queue::remove_and_apply
-      (id_type id, boost::function<void (activity_data_type)> fun)
+      (id_type id, std::function<void (activity_data_type)> fun)
     {
       boost::recursive_mutex::scoped_lock const _ (_container_mutex);
 
@@ -488,7 +488,7 @@ namespace we
     }
 
     void layer::async_remove_queue::apply
-      (id_type id, boost::function<void (activity_data_type&)> fun)
+      (id_type id, std::function<void (activity_data_type&)> fun)
     {
       boost::recursive_mutex::scoped_lock const _ (_container_mutex);
 
@@ -588,7 +588,7 @@ namespace we
     }
 
     void layer::locked_parent_child_relation_type::apply
-      (id_type parent, boost::function<void (id_type)> fun) const
+      (id_type parent, std::function<void (id_type)> fun) const
     {
       boost::mutex::scoped_lock const _ (_relation_mutex);
 

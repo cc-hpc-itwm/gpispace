@@ -7,9 +7,10 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
-#include <boost/function.hpp>
 
 #include <fhgcom/peer.hpp>
+
+#include <functional>
 
 namespace sdpa
 {
@@ -18,7 +19,7 @@ namespace sdpa
     class NetworkStrategy
     {
     public:
-      NetworkStrategy ( boost::function<void (sdpa::events::SDPAEvent::Ptr)> event_handler
+      NetworkStrategy ( std::function<void (sdpa::events::SDPAEvent::Ptr)> event_handler
                       , std::string const & peer_name
                       , fhg::com::host_t const & host
                       , fhg::com::port_t const & port
@@ -36,7 +37,7 @@ namespace sdpa
 
       fhg::log::Logger::ptr_t _logger;
 
-      boost::function<void (sdpa::events::SDPAEvent::Ptr)> _event_handler;
+      std::function<void (sdpa::events::SDPAEvent::Ptr)> _event_handler;
 
       const std::string m_port;
 

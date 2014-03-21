@@ -9,8 +9,8 @@ namespace sdpa
   namespace daemon
   {
     CoallocationScheduler::CoallocationScheduler
-        ( boost::function<void (const sdpa::worker_id_list_t&, const job_id_t&)> serve_job
-        , boost::function<job_requirements_t (const sdpa::job_id_t&)> job_requirements
+        ( std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)> serve_job
+        , std::function<job_requirements_t (const sdpa::job_id_t&)> job_requirements
         )
       : _serve_job (serve_job)
       , _job_requirements (job_requirements)
@@ -41,9 +41,9 @@ namespace sdpa
       std::set<worker_id_t> find_assignment_for_job
         ( worker_id_list_t available_workers
         , job_requirements_t requirements
-        , boost::function<boost::optional<worker_id_t>
-                            (job_requirements_t, worker_id_list_t)
-                         > best_match
+        , std::function<boost::optional<worker_id_t>
+                          (job_requirements_t, worker_id_list_t)
+                       > best_match
         )
       {
         std::size_t remaining_workers_needed (requirements.numWorkers());

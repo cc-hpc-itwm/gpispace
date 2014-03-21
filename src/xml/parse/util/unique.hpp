@@ -6,11 +6,12 @@
 #include <string>
 #include <stdexcept>
 
-#include <boost/function.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/optional.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
+
+#include <functional>
 
 namespace xml
 {
@@ -34,11 +35,11 @@ namespace xml
         typedef VALUE_TYPE value_type;
 
         typedef boost::transform_iterator
-          < boost::function<value_type& (const id_type&)>
+          < std::function<value_type& (const id_type&)>
           , typename ids_type::iterator
           > iterator;
         typedef boost::transform_iterator
-          < boost::function<const value_type& (const id_type&)>
+          < std::function<const value_type& (const id_type&)>
           , typename ids_type::const_iterator
           > const_iterator;
 

@@ -3,11 +3,12 @@
 #include <util/qt/mvc/alphanum_sort_proxy.hpp>
 
 #include <boost/bind.hpp>
-#include <boost/function.hpp>
 
 #include <QDate>
 #include <QDateTime>
 #include <QTime>
+
+#include <functional>
 
 namespace fhg
 {
@@ -46,7 +47,7 @@ namespace fhg
                                , const bool locale_aware
                                )
           {
-            const boost::function<int (const QString&, const QString&)> compare
+            const std::function<int (const QString&, const QString&)> compare
               ( boost::bind ( locale_aware
                             ? &locale_aware_compare_proxy
                             : &compare_proxy

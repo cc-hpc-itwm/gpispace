@@ -3,11 +3,11 @@
 #ifndef FHG_UTIL_THREAD_SET_HPP
 #define FHG_UTIL_THREAD_SET_HPP
 
-#include <boost/function.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/thread.hpp>
 
 #include <algorithm>
+#include <functional>
 
 namespace fhg
 {
@@ -17,7 +17,7 @@ namespace fhg
     class set : boost::noncopyable
     {
     public:
-      void start (const boost::function<void()> fun)
+      void start (const std::function<void()> fun)
       {
         const boost::mutex::scoped_lock _ (_threads_mutex);
         _threads.push_back (new boost::thread (&set::thread_function, this, fun));
@@ -44,7 +44,7 @@ namespace fhg
       }
 
     private:
-      void thread_function (const boost::function<void()> fun)
+      void thread_function (const std::function<void()> fun)
       {
         fun();
 

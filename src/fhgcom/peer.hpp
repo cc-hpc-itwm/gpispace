@@ -35,7 +35,7 @@ namespace fhg
       typedef peer_t self;
 
     public:
-      typedef boost::function <void (boost::system::error_code const &)> handler_t;
+      typedef std::function <void (boost::system::error_code const &)> handler_t;
 
       peer_t ( std::string const & name
              , host_t const & host

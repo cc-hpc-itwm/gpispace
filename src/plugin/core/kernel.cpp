@@ -40,13 +40,13 @@ namespace fhg
       _stopped.wait();
     }
 
-    boost::function<void()> wait_until_stopped::make_request_stop()
+    std::function<void()> wait_until_stopped::make_request_stop()
     {
       return boost::bind (&wait_until_stopped::stop, this);
     }
 
     kernel_t::kernel_t ( fhg::core::kernel_t::search_path_t search_path
-                       , boost::function<void()> request_stop
+                       , std::function<void()> request_stop
                        , std::map<std::string, std::string> config_variables
                        )
       : _stop (request_stop)

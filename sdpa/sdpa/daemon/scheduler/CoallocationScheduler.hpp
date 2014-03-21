@@ -21,8 +21,8 @@ namespace sdpa
     class CoallocationScheduler
     {
     public:
-      CoallocationScheduler ( boost::function<void (const sdpa::worker_id_list_t&, const job_id_t&)> serve
-                            , boost::function<job_requirements_t (const sdpa::job_id_t&)>
+      CoallocationScheduler ( std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)> serve
+                            , std::function<job_requirements_t (const sdpa::job_id_t&)>
                             );
 
       const WorkerManager& worker_manager() const;
@@ -45,9 +45,9 @@ namespace sdpa
       void assignJobsToWorkers();
 
     private:
-      boost::function<void (const sdpa::worker_id_list_t&, const job_id_t&)>
+      std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)>
         _serve_job;
-      boost::function<job_requirements_t (const sdpa::job_id_t&)>
+      std::function<job_requirements_t (const sdpa::job_id_t&)>
         _job_requirements;
 
       WorkerManager _worker_manager;

@@ -462,7 +462,7 @@ namespace
 
   template<typename T>
   void require_random_integrals_evaluating_to
-    (boost::function<void (T const&, T const&)> check)
+    (std::function<void (T const&, T const&)> check)
   {
     boost::random::random_device generator;
     boost::random::uniform_int_distribution<T> number
@@ -476,7 +476,7 @@ namespace
 
   template<typename T>
   void check_binop ( std::string const& operation_string
-                   , boost::function<T (T const&, T const&)> operation
+                   , std::function<T (T const&, T const&)> operation
                    , T const& l
                    , T const& r
                    )
@@ -506,7 +506,7 @@ namespace
 
   template<typename T>
   void require_random_fractionals_evaluating_to
-    (boost::function<void (T const&, T const&)> check)
+    (std::function<void (T const&, T const&)> check)
   {
     boost::random::random_device generator;
     //! \todo possible fix ::min to something else
@@ -734,7 +734,7 @@ namespace
   template<typename T>
   void check_divmod_for_integral
     ( std::string const& operation_string
-    , boost::function<T (T const&, T const&)> operation
+    , std::function<T (T const&, T const&)> operation
     , T const& l
     , T const& r
     )

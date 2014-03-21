@@ -13,7 +13,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
@@ -24,6 +23,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <signal.h>
 #include <stdio.h>
@@ -110,7 +110,7 @@ private:
     public:
       typedef std::vector <std::string> argv_t;
 
-      typedef boost::function<int (argv_t const &, shell_t &)> command_callback_t;
+      typedef std::function<int (argv_t const &, shell_t &)> command_callback_t;
       typedef std::vector <command_t> command_list_t;
 
       ~shell_t ();

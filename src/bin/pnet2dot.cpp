@@ -13,13 +13,13 @@
 #include <fhg/util/indenter.hpp>
 #include <fhg/util/read_bool.hpp>
 
-#include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
 #include <boost/range/adaptor/map.hpp>
 
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <sstream>
 
@@ -181,7 +181,7 @@ namespace
   {
   public:
     bool full;
-    std::list<boost::function <bool (we::type::transition_t const&)> >
+    std::list<std::function <bool (we::type::transition_t const&)> >
       filter;
     bool show_token;
     bool show_signature;
@@ -192,7 +192,7 @@ namespace
 
     bool should_be_expanded (const we::type::transition_t& x) const
     {
-      for (boost::function <bool (we::type::transition_t const&)> f : filter)
+      for (std::function <bool (we::type::transition_t const&)> f : filter)
       {
         if (f (x))
         {

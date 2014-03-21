@@ -31,9 +31,8 @@ namespace
     context ( const we::layer::id_type& id
             , we::loader::loader* loader
             , we::layer* layer
-            , boost::function<we::layer::id_type
-                               (we::layer::id_type const&)
-                             > const& new_id
+            , std::function<we::layer::id_type (we::layer::id_type const&)
+                           > const& new_id
             )
       : _id (id)
       , _loader (loader)
@@ -82,7 +81,7 @@ namespace
     we::layer::id_type _id;
     we::loader::loader* _loader;
     we::layer* _layer;
-    boost::function<we::layer::id_type (we::layer::id_type const&)>
+    std::function<we::layer::id_type (we::layer::id_type const&)>
       _new_id;
   };
 

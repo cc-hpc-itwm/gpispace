@@ -5,8 +5,9 @@
 
 #include <string>
 
-#include <boost/function.hpp>
 #include <boost/optional.hpp>
+
+#include <functional>
 
 namespace fhg
 {
@@ -82,7 +83,7 @@ namespace fhg
               };
             }
 
-            typedef boost::function<bool (const base_item*)> function_type;
+            typedef std::function<bool (const base_item*)> function_type;
 
             class predicate : public detail::base<predicate>
             {
@@ -98,8 +99,8 @@ namespace fhg
             class on : public detail::base< on<T> >
             {
             private:
-              typedef boost::function<const T& (const base_item*)> select_type;
-              typedef boost::function<bool (const T&)> apply_type;
+              typedef std::function<const T& (const base_item*)> select_type;
+              typedef std::function<bool (const T&)> apply_type;
 
               const select_type _select;
               const apply_type _apply;

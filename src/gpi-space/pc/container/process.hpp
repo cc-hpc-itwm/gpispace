@@ -8,7 +8,7 @@
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
 
-#include <boost/function.hpp>
+#include <functional>
 
 namespace gpi
 {
@@ -20,7 +20,7 @@ namespace gpi
       {
       public:
         process_t
-          ( boost::function<void (gpi::pc::type::process_id_t const&, int)>
+          ( std::function<void (gpi::pc::type::process_id_t const&, int)>
             const& handle_process_error
           , const gpi::pc::type::process_id_t id
           , const int socket
@@ -62,7 +62,7 @@ namespace gpi
         int close_socket (const int fd);
         int checked_read (const int fd, void *buf, const size_t len);
 
-        boost::function <void (gpi::pc::type::process_id_t const&, int)> m_handle_process_error;
+        std::function <void (gpi::pc::type::process_id_t const&, int)> m_handle_process_error;
         const gpi::pc::type::process_id_t m_id;
         int const m_socket;
         memory::manager_t& _memory_manager;

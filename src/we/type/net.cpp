@@ -404,10 +404,10 @@ namespace we
 
     std::list<net_type::token_to_be_deleted_type> net_type::do_extract
       ( transition_id_type tid
-      , boost::function<void ( port_id_type
-                             , pnet::type::value::value_type const&
-                             )
-                        > fun
+      , std::function<void ( port_id_type
+                           , pnet::type::value::value_type const&
+                           )
+                      > fun
       ) const
     {
       std::list<token_to_be_deleted_type> tokens_to_be_deleted;

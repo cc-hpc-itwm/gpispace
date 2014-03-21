@@ -301,7 +301,7 @@ void WFEImpl::cancel (std::string const &job_id)
 }
 
 
-DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, std::string> config_variables)
+DRTSImpl::DRTSImpl (std::function<void()> request_stop, std::map<std::string, std::string> config_variables)
   : _logger
     (fhg::log::Logger::get (*get<std::string> ("kernel_name", config_variables)))
   , _request_stop (request_stop)

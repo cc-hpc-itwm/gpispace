@@ -44,7 +44,7 @@ namespace fhg
           }
 
           void list ( fhg::util::parse::position& pos
-                    , const boost::function<void (fhg::util::parse::position&)>& f
+                    , const std::function<void (fhg::util::parse::position&)>& f
                     )
           {
             fhg::util::parse::require::list (pos, '[', ',', ']', f);
@@ -52,7 +52,7 @@ namespace fhg
 
           void named_list
             ( fhg::util::parse::position& pos
-            , const boost::function<void (fhg::util::parse::position&, const QString&)>& f
+            , const std::function<void (fhg::util::parse::position&, const QString&)>& f
             )
           {
             require::list (pos, boost::bind (f, _1, label (pos)));
@@ -60,7 +60,7 @@ namespace fhg
 
           void list_of_named_lists
             ( fhg::util::parse::position& pos
-            , const boost::function<void (fhg::util::parse::position&, const QString&)>& f
+            , const std::function<void (fhg::util::parse::position&, const QString&)>& f
             )
           {
             require::list (pos, boost::bind (named_list, _1, f));
@@ -196,7 +196,7 @@ namespace fhg
       void monitor_client::request_action
         ( const QStringList& hosts
         , const QString& action
-        , const QMap<QString, boost::function<QString()> >& value_getters
+        , const QMap<QString, std::function<QString()> >& value_getters
         )
       {
         std::stringstream ss;
@@ -204,7 +204,7 @@ namespace fhg
         {
           ss << ", arguments: [";
 
-          QMap<QString, boost::function<QString()> >::const_iterator i
+          QMap<QString, std::function<QString()> >::const_iterator i
             (value_getters.constBegin());
           while (i != value_getters.constEnd())
           {

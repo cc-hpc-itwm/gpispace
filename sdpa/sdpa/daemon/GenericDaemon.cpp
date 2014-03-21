@@ -849,7 +849,7 @@ void GenericDaemon::sendEventToOther(const events::SDPAEvent::Ptr& pEvt)
   _network_strategy.perform (pEvt);
 }
 
-void GenericDaemon::delay (boost::function<void()> fun)
+void GenericDaemon::delay (std::function<void()> fun)
 {
   sendEventToSelf
     (events::SDPAEvent::Ptr (new events::delayed_function_call (fun)));

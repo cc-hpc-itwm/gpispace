@@ -7,8 +7,9 @@
 
 #include <fhg/assert.hpp>
 
-#include <boost/function.hpp>
 #include <boost/utility.hpp>
+
+#include <functional>
 
 #define FHG_PLUGIN public fhg::plugin::Plugin
 
@@ -30,7 +31,7 @@ struct fhg_plugin_descriptor_t
       return &fhg_plugin_descriptor_##name;                             \
     }                                                                   \
     fhg::plugin::Plugin *fhg_get_plugin_instance                        \
-      (boost::function<void()> request_stop, std::list<fhg::plugin::Plugin*> deps, std::map<std::string, std::string> config_variables) \
+      (std::function<void()> request_stop, std::list<fhg::plugin::Plugin*> deps, std::map<std::string, std::string> config_variables) \
     {                                                                   \
       return new cls (request_stop, deps, config_variables);            \
     }                                                                   \

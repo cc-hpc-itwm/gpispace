@@ -17,7 +17,6 @@
 
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
-#include <boost/function.hpp>
 #include <boost/random.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/any_range.hpp>
@@ -27,6 +26,7 @@
 #include <boost/unordered_set.hpp>
 #include <boost/utility.hpp>
 
+#include <functional>
 #include <list>
 #include <sstream>
 
@@ -186,7 +186,7 @@ namespace we
 
       std::list<token_to_be_deleted_type> do_extract
         ( transition_id_type
-        , boost::function
+        , std::function
             <void (port_id_type, pnet::type::value::value_type const&)>
         ) const;
       void do_delete (std::list<token_to_be_deleted_type> const&);

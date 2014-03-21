@@ -5,9 +5,9 @@
 
 #include <we/type/signature.hpp>
 
-#include <boost/function.hpp>
 #include <boost/optional.hpp>
 
+#include <functional>
 #include <string>
 
 namespace pnet
@@ -16,9 +16,9 @@ namespace pnet
   {
     namespace signature
     {
-      typedef boost::function< boost::optional<signature_type>
-                                 (const std::string&)
-                             > resolver_type;
+      typedef std::function< boost::optional<signature_type>
+                               (const std::string&)
+                           > resolver_type;
 
       signature_type resolve (const structured_type&, const resolver_type&);
     }

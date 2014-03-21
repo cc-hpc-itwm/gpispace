@@ -5,7 +5,6 @@
 
 #include <fhg/util/parse/position.hpp>
 
-#include <boost/function.hpp>
 #include <boost/optional.hpp>
 
 #include <QMap>
@@ -16,6 +15,8 @@
 #include <QStringList>
 #include <QTcpSocket>
 #include <QTimer>
+
+#include <functional>
 
 namespace fhg
 {
@@ -32,7 +33,7 @@ namespace fhg
 
         void request_action ( const QStringList&
                             , const QString&
-                            , const QMap<QString, boost::function<QString()> >&
+                            , const QMap<QString, std::function<QString()> >&
                             );
         void request_layout_hint (const QString&);
         void request_action_description (const QStringList&);

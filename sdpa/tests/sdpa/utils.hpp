@@ -21,7 +21,6 @@
 #include <plugin/plugin.hpp>
 
 #include <boost/bind.hpp>
-#include <boost/function.hpp>
 #include <boost/ref.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/test/unit_test.hpp>
@@ -29,6 +28,7 @@
 #include <boost/thread/scoped_thread.hpp>
 
 #include <fstream>
+#include <functional>
 #include <sstream>
 #include <string>
 
@@ -393,7 +393,7 @@ namespace utils
   {
   public:
     fake_drts_worker_notifying_module_call_submission
-        ( boost::function<void (std::string)> announce_job
+        ( std::function<void (std::string)> announce_job
         , utils::agent const& master
         )
       : basic_drts_worker (master)
@@ -401,7 +401,7 @@ namespace utils
     {}
     fake_drts_worker_notifying_module_call_submission
         ( std::string name
-        , boost::function<void (std::string)> announce_job
+        , std::function<void (std::string)> announce_job
         , utils::agent const& master
         )
       : basic_drts_worker (name, master)
@@ -451,7 +451,7 @@ namespace utils
     std::map<std::string, job_t> _jobs;
 
   private:
-    boost::function<void (std::string)> _announce_job;
+    std::function<void (std::string)> _announce_job;
   };
 
   class fake_drts_worker_directly_finishing_jobs : public basic_drts_worker

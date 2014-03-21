@@ -7,13 +7,14 @@
 #include <we/expr/exception.hpp>
 
 #include <boost/bind.hpp>
-#include <boost/function.hpp>
 #include <boost/variant.hpp>
 #include <boost/utility.hpp>
 
 #include <we/type/value/read.hpp>
 
 #include <fhg/util/parse/require.hpp>
+
+#include <functional>
 
 namespace expr
 {
@@ -47,14 +48,14 @@ namespace expr
     {
       typedef boost::make_recursive_variant
               < std::map<char, boost::recursive_variant_>
-              , boost::function<void (tokenizer&)>
+              , std::function<void (tokenizer&)>
               >::type node_type;
 
       typedef std::map<char, node_type> child_type;
 
       void put ( const std::string::const_iterator pos
                , const std::string::const_iterator end
-               , const boost::function<void (tokenizer&)> f
+               , const std::function<void (tokenizer&)> f
                , child_type& m
                )
       {
@@ -85,7 +86,7 @@ namespace expr
       }
 
       void put ( const std::string& key
-               , const boost::function<void (tokenizer&)> f
+               , const std::function<void (tokenizer&)> f
                , child_type& m
                )
       {
@@ -232,7 +233,7 @@ namespace expr
               );
           }
         }
-        void operator() (const boost::function<void (tokenizer&)>&) const
+        void operator() (const std::function<void (tokenizer&)>&) const
         {
           if (!_names.empty())
           {
@@ -292,7 +293,7 @@ namespace expr
           }
         }
 
-        void operator() (const boost::function<void (tokenizer&)>& f) const
+        void operator() (const std::function<void (tokenizer&)>& f) const
         {
           f (_tokenizer);
         }

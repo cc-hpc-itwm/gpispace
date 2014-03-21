@@ -5,7 +5,7 @@
 
 #include <fhg/util/parse/position.hpp>
 
-#include <boost/function.hpp>
+#include <functional>
 
 namespace fhg
 {
@@ -20,7 +20,7 @@ namespace fhg
       //! ("abcde","fgh")
 
       std::string until
-        (position&, boost::function<bool (position const&)> const&);
+        (position&, std::function<bool (position const&)> const&);
     }
   }
 }
