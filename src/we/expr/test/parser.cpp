@@ -99,12 +99,16 @@ namespace
   }
 }
 
-BOOST_AUTO_TEST_CASE (round_switches_between_half_up_and_half_down)
+BOOST_AUTO_TEST_CASE (round_is_away_from_zero)
 {
-  require_evaluating_to ("round (2.5)", 2.0);
   require_evaluating_to ("round (2.5)", 3.0);
-  require_evaluating_to ("round (2.5)", 2.0);
   require_evaluating_to ("round (2.5)", 3.0);
+  require_evaluating_to ("round (-2.5)", -3.0);
+  require_evaluating_to ("round (-2.5)", -3.0);
+  require_evaluating_to ("round (2.5f)", 3.0f);
+  require_evaluating_to ("round (2.5f)", 3.0f);
+  require_evaluating_to ("round (-2.5f)", -3.0f);
+  require_evaluating_to ("round (-2.5f)", -3.0f);
 }
 
 BOOST_AUTO_TEST_CASE (comment)
