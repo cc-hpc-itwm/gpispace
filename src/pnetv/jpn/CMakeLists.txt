@@ -11,7 +11,6 @@ set(PNETV_JPN_SOURCES
     analysis/State.h
     analysis/StateSpace.cpp
     analysis/StateSpace.h
-    common/Foreach.h
     common/ExtendedInteger.h
     common/Printable.h
     common/Printable.cpp
