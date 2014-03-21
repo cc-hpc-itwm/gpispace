@@ -948,11 +948,11 @@ namespace
       expr::eval::context context;
 
       BOOST_REQUIRE_EQUAL
-        ( boost::get<double>
+        ( boost::get<T>
           ( expr::parse::parser
             ((boost::format ("%1% ** %2%") % l % r).str()).eval_front (context)
           )
-        , pow
+        , std::pow
           ( boost::get<T> (expr::parse::parser (l).eval_front (context))
           , boost::get<T> (expr::parse::parser (r).eval_front (context))
           )
@@ -967,11 +967,11 @@ BOOST_AUTO_TEST_CASE (token_pow)
   check_pow_for_fractional<double>();
 
   require_evaluating_to ("1.0 ** 0.0", 1.0);
-  require_evaluating_to ("1.0f ** 0.0f", 1.0);
+  require_evaluating_to ("1.0f ** 0.0f", 1.0f);
   require_evaluating_to ("1.0 ** 1.0", 1.0);
-  require_evaluating_to ("1.0f ** 1.0f", 1.0);
-  require_evaluating_to ("1.0f ** 2.0f", 1.0);
-  require_evaluating_to ("2.0f ** 0.0f", 1.0);
-  require_evaluating_to ("2.0f ** 1.0f", 2.0);
-  require_evaluating_to ("2.0f ** 2.0f", 4.0);
+  require_evaluating_to ("1.0f ** 1.0f", 1.0f);
+  require_evaluating_to ("1.0f ** 2.0f", 1.0f);
+  require_evaluating_to ("2.0f ** 0.0f", 1.0f);
+  require_evaluating_to ("2.0f ** 1.0f", 2.0f);
+  require_evaluating_to ("2.0f ** 2.0f", 4.0f);
 }

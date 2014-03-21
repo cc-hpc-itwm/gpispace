@@ -507,7 +507,7 @@ namespace pnet
                 throw expr::exception::eval::divide_by_zero();
               }
               return l / r;
-            case expr::token::_pow: return pow (l, r);
+            case expr::token::_pow: return std::pow (l, r);
             case expr::token::min: return std::min (l,r);
             case expr::token::max: return std::max (l,r);
             default: throw exception::eval (_token, l, r);
