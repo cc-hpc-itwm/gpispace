@@ -29,7 +29,6 @@ namespace sdpa { namespace daemon {
   class WorkerManager  {
   public:
     typedef boost::unordered_map<worker_id_t, Worker::ptr_t> worker_map_t;
-    typedef boost::unordered_map<sdpa::job_id_t, sdpa::list_match_workers_t> mapJob2PrefWorkersList_t;
 
     Worker::ptr_t findWorker(const worker_id_t& worker_id);
     bool hasWorker(const worker_id_t& worker_id) const;
