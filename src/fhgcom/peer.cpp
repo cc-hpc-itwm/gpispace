@@ -450,20 +450,6 @@ namespace fhg
       }
     }
 
-    std::string peer_t::resolve ( p2p::address_t const & addr
-                                , std::string const & dflt
-                                )
-    {
-      try
-      {
-        return resolve_addr (addr);
-      }
-      catch (...)
-      {
-        return dflt;
-      }
-    }
-
     void peer_t::connection_established (const p2p::address_t a, boost::system::error_code const &ec)
     {
       lock_type lock (mutex_);
