@@ -935,7 +935,7 @@ void DRTSImpl::handle_recv (boost::system::error_code const & ec)
     const fhg::com::p2p::address_t & addr = m_message.header.src;
     if (addr != m_peer->address())
     {
-      const std::string other_name(m_peer->resolve (addr, "*unknown*"));
+      const std::string other_name(m_peer->resolve_addr (addr));
 
       map_of_masters_t::iterator master(m_masters.find(other_name));
       if (master != m_masters.end() && master->second)
