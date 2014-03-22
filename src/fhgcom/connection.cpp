@@ -7,7 +7,6 @@
 #include <fhgcom/connection.hpp>
 
 #include <fhgcom/util/to_hex.hpp>
-#include <fhgcom/message_io.hpp>
 
 using namespace boost::asio::ip;
 
