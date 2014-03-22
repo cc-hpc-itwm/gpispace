@@ -4,23 +4,6 @@ include_directories (${FhgLog_INCLUDE_DIR})
 
 include_directories (${UTIL_INCLUDE_DIR})
 
-set (hdrs
-  message.hpp
-
-  session.hpp
-  basic_session_manager.hpp
-  session_manager.hpp
-  connection.hpp
-  peer.hpp
-  peer_info.hpp
-
-  tcp_server.hpp
-  tcp_client.hpp
-  io_service_pool.hpp
-
-  header.hpp
-)
-
 set (srcs
   session.cpp
   peer.cpp
