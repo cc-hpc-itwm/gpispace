@@ -4,8 +4,6 @@ include_directories (${FhgLog_INCLUDE_DIR})
 
 include_directories (${UTIL_INCLUDE_DIR})
 
-add_subdirectory(kvs)
-
 set (hdrs
   message.hpp
 
