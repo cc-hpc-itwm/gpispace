@@ -59,13 +59,6 @@ BOOST_FIXTURE_TEST_CASE (check_setup, KVSSetup)
   _kvs->del ("fhg.com.test.PeerTest");
 }
 
-BOOST_FIXTURE_TEST_CASE (output_test, KVSSetup)
-{
-  using namespace fhg::com;
-
-  peer_t peer_o ("peer", host_t("localhost"), port_t("1235"), _kvs);
-}
-
 BOOST_AUTO_TEST_CASE (parse_peer_info_full)
 {
   using namespace fhg::com;
