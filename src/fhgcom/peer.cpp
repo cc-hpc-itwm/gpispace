@@ -19,16 +19,12 @@ namespace fhg
 {
   namespace com
   {
-    static void default_kvs_error_handler (boost::system::error_code const &)
-    {
-      MLOG (ERROR, "could not contact KVS...");
-    }
-
     peer_t::peer_t ( std::string const & name
                    , host_t const & host
                    , port_t const & port
                    , kvs::kvsc_ptr_t kvs_client
                    , std::string const & cookie
+                   , handler_t handler
                    )
       : stopped_(true)
       , stopping_ (false)
@@ -44,7 +40,7 @@ namespace fhg
       , acceptor_(io_service_)
       , m_renew_kvs_entries_timer (io_service_)
       , connections_()
-      , m_kvs_error_handler (default_kvs_error_handler)
+      , m_kvs_error_handler (handler)
     {
     }
 

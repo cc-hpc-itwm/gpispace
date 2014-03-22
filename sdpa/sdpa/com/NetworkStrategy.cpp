@@ -26,19 +26,19 @@ namespace sdpa
                                      )
       : _logger (fhg::log::Logger::get ("NetworkStrategy " + peer_name))
       , _event_handler (event_handler)
-      , m_peer ( new fhg::com::peer_t ( peer_name
-                                      , fhg::com::host_t (host)
-                                      , fhg::com::port_t (port)
-                                      , kvs_client
-                                      , ""
-                                      )
+      , m_peer ( new fhg::com::peer_t
+                 ( peer_name
+                 , fhg::com::host_t (host)
+                 , fhg::com::port_t (port)
+                 , kvs_client
+                 , ""
+                 , boost::bind (&NetworkStrategy::kvs_error_handler, this, _1)
+                 )
                )
       , m_message()
       , m_thread (&fhg::com::peer_t::run, m_peer)
       , m_shutting_down (false)
     {
-      m_peer->set_kvs_error_handler
-        (boost::bind (&NetworkStrategy::kvs_error_handler, this, _1));
       m_peer->start ();
       m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
     }

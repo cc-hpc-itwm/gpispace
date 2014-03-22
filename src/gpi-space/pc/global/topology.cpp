@@ -144,9 +144,9 @@ namespace gpi
                                , port
                                , _kvs_client
                                , cookie
+                               , detail::kvs_error_handler
                                )
           );
-        m_peer->set_kvs_error_handler (detail::kvs_error_handler);
 
         m_peer_thread.reset
           (new boost::thread(boost::bind( &fhg::com::peer_t::run
