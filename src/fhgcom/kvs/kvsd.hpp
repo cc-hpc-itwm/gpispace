@@ -248,7 +248,7 @@ namespace fhg
           typedef boost::unique_lock<boost::recursive_mutex> lock_t;
 
           explicit
-          kvsd (const std::string & file = "")
+          kvsd (const std::string & file)
             : file_(file)
           {
             if (! file_.empty() && boost::filesystem::exists (file_))
