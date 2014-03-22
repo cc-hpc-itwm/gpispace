@@ -1,3 +1,4 @@
+#include <fhglog/LogMacros.hpp>
 #include <fhgcom/tcp_server.hpp>
 #include <boost/bind.hpp>
 
