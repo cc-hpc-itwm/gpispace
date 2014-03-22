@@ -4,9 +4,6 @@
 #include <fhgcom/session.hpp>
 
 #include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
-
-#include <set>
 
 namespace fhg
 {
@@ -22,14 +19,10 @@ namespace fhg
 
       void add_session (session_ptr session)
       {
-        boost::mutex::scoped_lock const _ (_mutex_sessions);
-        sessions_.insert(session);
       }
 
       void del_session (session_ptr session)
       {
-        boost::mutex::scoped_lock const _ (_mutex_sessions);
-        sessions_.erase(session);
       }
 
       void handle_data (session_ptr session, const std::string & data)
@@ -40,9 +33,6 @@ namespace fhg
       virtual ~session_manager() {}
     protected:
       virtual void on_data_hook (session_ptr, const std::string &) = 0;
-    private:
-      boost::mutex          _mutex_sessions;
-      std::set<session_ptr> sessions_;
     };
   }
 }
