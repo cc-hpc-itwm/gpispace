@@ -42,7 +42,6 @@ namespace fhg
         : name_()
         , host_()
         , port_()
-        , to_string_cache_()
       {}
 
       peer_info_t ( const std::string & n
@@ -52,10 +51,7 @@ namespace fhg
         : name_(n)
         , host_(host)
         , port_(port)
-        , to_string_cache_()
-      {
-        update_to_string_cache();
-      }
+      {}
 
       std::string const & host (const std::string & def) const
       {
@@ -69,13 +65,30 @@ namespace fhg
         else return port_;
       }
 
-      std::string const & to_string () const
+      std::string const to_string () const
       {
-        if (to_string_cache_.empty())
+        std::string s;
+
+        if (! name_.empty())
         {
-          update_to_string_cache();
+          s += name_ + "@";
         }
-        return to_string_cache_;
+
+        if (host_.find (":") != std::string::npos)
+        {
+          s += "[" + host_ + "]";
+        }
+        else
+        {
+          s += host_;
+        }
+
+        if (! port_.empty())
+        {
+          s += ":" + port_;
+        }
+
+        return s;
       }
 
       static peer_info_t from_string (const std::string & s)
@@ -136,34 +149,11 @@ namespace fhg
         {
           throw std::runtime_error ("peer_info: parse error: port is missing!");
         }
-        update_to_string_cache();
-      }
-      void update_to_string_cache() const
-      {
-        if (! name_.empty())
-        {
-          to_string_cache_ = name_ + "@";
-        }
-
-        if (host_.find (":") != std::string::npos)
-        {
-          to_string_cache_ += "[" + host_ + "]";
-        }
-        else
-        {
-          to_string_cache_ += host_;
-        }
-
-        if (! port_.empty())
-        {
-          to_string_cache_ += ":" + port_;
-        }
       }
 
       std::string name_;
       std::string host_;
       std::string port_;
-      mutable std::string to_string_cache_;
     };
   }
 }
