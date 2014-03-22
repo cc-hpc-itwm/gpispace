@@ -15,7 +15,6 @@ namespace fhg
     {
     public:
       typedef session_manager manager_t;
-      typedef manager_t::session_type session_type;
       typedef manager_t::session_ptr  session_ptr;
 
       tcp_server ( io_service_pool & pool
