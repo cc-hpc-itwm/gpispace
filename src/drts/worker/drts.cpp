@@ -360,7 +360,7 @@ DRTSImpl::DRTSImpl (std::function<void()> request_stop, std::map<std::string, st
     );
 
   // initialize peer
-  m_peer.reset (new fhg::com::peer_t (m_my_name, host, port, _kvs_client));
+  m_peer.reset (new fhg::com::peer_t (m_my_name, host, port, _kvs_client, ""));
   m_peer_thread.reset
     ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
       (&fhg::com::peer_t::run, m_peer)

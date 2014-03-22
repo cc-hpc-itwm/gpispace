@@ -37,7 +37,7 @@ namespace fhg
              , host_t const & host
              , port_t const & port
              , kvs::kvsc_ptr_t kvs_client
-             , std::string const & cookie = ""
+             , std::string const & cookie
              );
 
       virtual ~peer_t ();
