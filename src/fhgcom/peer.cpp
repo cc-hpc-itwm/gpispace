@@ -70,11 +70,6 @@ namespace fhg
       return old;
     }
 
-    peer_t::handler_t peer_t::get_kvs_error_handler () const
-    {
-      return m_kvs_error_handler;
-    }
-
     void peer_t::run ()
     {
       if (m_peer_thread)
