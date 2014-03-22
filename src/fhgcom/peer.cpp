@@ -163,7 +163,7 @@ namespace fhg
         try
         {
           std::string prefix ("p2p.peer");
-          prefix += "." + boost::lexical_cast<std::string>(my_addr_);
+          prefix += "." + p2p::to_string (my_addr_);
           _kvs_client->del (prefix);
         }
         catch (std::exception const & ex)
@@ -256,7 +256,7 @@ namespace fhg
       {
         // lookup location information
         std::string prefix ("p2p.peer");
-        prefix += "." + boost::lexical_cast<std::string>(addr);
+        prefix += "." + p2p::to_string (addr);
         kvs::values_type peer_info (_kvs_client->get (prefix));
 
         if (peer_info.empty())
@@ -433,7 +433,7 @@ namespace fhg
         try
         {
           const std::string key
-            ("p2p.peer." + boost::lexical_cast<std::string>(addr)+".name");
+            ("p2p.peer." + p2p::to_string (addr)+".name");
 
           kvs::values_type v (_kvs_client->get (key));
           if (v.size() == 1)
@@ -631,7 +631,7 @@ namespace fhg
       boost::asio::ip::tcp::endpoint endpoint = acceptor_.local_endpoint();
 
       std::string prefix ("p2p.peer");
-      prefix += "." + boost::lexical_cast<std::string>(p2p::address_t(name_));
+      prefix += "." + p2p::to_string (p2p::address_t(name_));
 
       kvs::values_type values;
       values[prefix + "." + "location" + "." + "host"] =
