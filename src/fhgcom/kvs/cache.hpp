@@ -1,8 +1,6 @@
 #ifndef FHG_COM_KVS_CACHE_HPP
 #define FHG_COM_KVS_CACHE_HPP 1
 
-#include <fhglog/fhglog.hpp>
-
 #include <boost/lexical_cast.hpp>
 #include <boost/unordered_map.hpp>
 
