@@ -103,6 +103,7 @@ namespace fhg
         return pi;
       }
 
+    private:
       void parse (const std::string & s)
       {
         std::string::size_type b_pos, e_pos;
@@ -155,7 +156,6 @@ namespace fhg
         }
         update_to_string_cache();
       }
-    private:
       void update_to_string_cache() const
       {
         if (! name_.empty())
