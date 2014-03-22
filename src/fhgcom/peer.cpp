@@ -357,7 +357,7 @@ namespace fhg
       message_t m;
       m.assign (data.begin(), data.end());
       m.header.length = data.size();
-      resolve_name (to, m.header.dst);
+      m.header.dst = resolve_name (to);
       async_send (&m, completion_handler);
     }
 
@@ -472,20 +472,6 @@ namespace fhg
     p2p::address_t peer_t::resolve_name (std::string const &name)
     {
       return p2p::address_t (name);
-    }
-
-    void peer_t::resolve_name ( std::string const & name
-                              , p2p::address_t & addr
-                              )
-    {
-      addr = resolve_name (name);
-    }
-
-    void peer_t::resolve_addr ( p2p::address_t const & addr
-                              , std::string & name
-                              )
-    {
-      name = resolve_addr (addr);
     }
 
     void peer_t::connection_established (const p2p::address_t a, boost::system::error_code const &ec)

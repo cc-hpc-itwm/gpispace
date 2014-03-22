@@ -131,8 +131,7 @@ BOOST_FIXTURE_TEST_CASE (peer_run_two, KVSSetup)
     message_t m;
     peer_2.recv (&m);
 
-    std::string src;
-    peer_2.resolve_addr(m.header.src, src);
+    std::string src (peer_2.resolve_addr (m.header.src));
     std::string data (m.data.begin(), m.data.end());
     BOOST_CHECK_EQUAL (src, "peer-1");
     BOOST_CHECK_EQUAL (data, "hello world!");
@@ -158,18 +157,14 @@ BOOST_FIXTURE_TEST_CASE (resolve_peer_names, KVSSetup)
   peer_2.start();
 
   {
-    p2p::address_t a1;
-    peer_1.resolve_name ("peer-1", a1);
-    p2p::address_t a2;
-    peer_2.resolve_name ("peer-1", a2);
+    p2p::address_t a1 (peer_1.resolve_name ("peer-1"));
+    p2p::address_t a2 (peer_2.resolve_name ("peer-1"));
     BOOST_CHECK_EQUAL (a1, a2);
   }
 
   {
-    p2p::address_t a1;
-    peer_1.resolve_name ("peer-2", a1);
-    p2p::address_t a2;
-    peer_2.resolve_name ("peer-2", a2);
+    p2p::address_t a1 (peer_1.resolve_name ("peer-2"));
+    p2p::address_t a2 (peer_2.resolve_name ("peer-2"));
     BOOST_CHECK_EQUAL (a1, a2);
   }
 
@@ -197,20 +192,16 @@ BOOST_FIXTURE_TEST_CASE (resolve_peer_addresses, KVSSetup)
   const p2p::address_t peer_2_addr (peer_2.address());
 
   {
-    std::string n_1;
-    peer_1.resolve_addr (peer_1_addr, n_1);
+    std::string n_1 (peer_1.resolve_addr (peer_1_addr));
 
-    std::string n_2;
-    peer_2.resolve_addr (peer_1_addr, n_2);
+    std::string n_2 (peer_2.resolve_addr (peer_1_addr));
 
     BOOST_CHECK_EQUAL (n_1, n_2);
   }
   {
-    std::string n_1;
-    peer_1.resolve_addr (peer_2_addr, n_1);
+    std::string n_1 (peer_1.resolve_addr (peer_2_addr));
 
-    std::string n_2;
-    peer_2.resolve_addr (peer_2_addr, n_2);
+    std::string n_2 (peer_2.resolve_addr (peer_2_addr));
 
     BOOST_CHECK_EQUAL (n_1, n_2);
   }
@@ -267,7 +258,7 @@ BOOST_FIXTURE_TEST_CASE (send_large_data, KVSSetup)
   peer_1.start();
 
     message_t m;
-    peer_1.resolve_name("peer-1", m.header.dst);
+    m.header.dst = peer_1.resolve_name("peer-1");
     m.data.resize( (2<<25) );
     m.header.length = m.data.size();
     peer_1.send(&m);
