@@ -1,8 +1,6 @@
 #ifndef FHG_COM_SESSION_HPP
 #define FHG_COM_SESSION_HPP 1
 
-#include <fhglog/fhglog.hpp>
-
 #include <deque>
 #include <vector>
 

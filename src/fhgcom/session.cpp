@@ -1,3 +1,4 @@
+#include <fhglog/fhglog.hpp>
 #include <fhgcom/session.hpp>
 #include <boost/bind.hpp>
 
