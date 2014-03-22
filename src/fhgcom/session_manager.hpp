@@ -5,7 +5,6 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
-#include <fhgcom/basic_session_manager.hpp>
 
 #include <fhgcom/session.hpp>
 
@@ -13,7 +12,9 @@ namespace fhg
 {
   namespace com
   {
-    class session_manager : public basic_session_manager
+    class session;
+
+    class session_manager
     {
     public:
       typedef session session_type;
@@ -36,8 +37,9 @@ namespace fhg
         on_data_hook (session, data);
       }
 
+      virtual ~session_manager() {}
     protected:
-      virtual void on_data_hook (session_ptr, const std::string &) {}
+      virtual void on_data_hook (session_ptr, const std::string &) = 0;
     private:
       boost::mutex          _mutex_sessions;
       std::set<session_ptr> sessions_;
