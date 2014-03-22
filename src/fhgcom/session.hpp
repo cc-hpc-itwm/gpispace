@@ -7,7 +7,6 @@
 #include <fhgcom/basic_session_manager.hpp>
 
 #include <boost/asio.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/thread/locks.hpp>
@@ -43,16 +42,6 @@ namespace fhg
       boost::asio::ip::tcp::endpoint local_endpoint () const
       {
         return socket_.local_endpoint();
-      }
-
-      std::string remote_endpoint_str () const
-      {
-        return boost::lexical_cast<std::string>(remote_endpoint());
-      }
-
-      std::string local_endpoint_str () const
-      {
-        return boost::lexical_cast<std::string>(local_endpoint());
       }
 
       void start ()
