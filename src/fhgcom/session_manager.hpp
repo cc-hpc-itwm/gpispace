@@ -3,8 +3,6 @@
 
 #include <set>
 
-#include <fhglog/fhglog.hpp>
-
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 #include <fhgcom/basic_session_manager.hpp>
