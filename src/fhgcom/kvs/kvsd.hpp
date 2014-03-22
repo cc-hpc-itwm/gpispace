@@ -250,7 +250,6 @@ namespace fhg
           explicit
           kvsd (const std::string & file = "")
             : file_(file)
-            , write_through_enabled_(false)
           {
             if (! file_.empty() && boost::filesystem::exists (file_))
             {
@@ -267,28 +266,6 @@ namespace fhg
 
           virtual ~kvsd()
           {
-            write_through ();
-          }
-
-          bool toggle_write_through ()
-          {
-            bool old (write_through_enabled_);
-            write_through_enabled_ = ! write_through_enabled_;
-            return old;
-          }
-
-          void enable_write_through ()
-          {
-            write_through_enabled_ = true;
-          }
-          void disable_write_through ()
-          {
-            write_through_enabled_ = false;
-          }
-
-          bool is_write_through_enabled () const
-          {
-            return write_through_enabled_;
           }
 
           void put ( fhg::com::kvs::message::put::map_type const & m
@@ -303,8 +280,6 @@ namespace fhg
             {
               store_[ e->first ] = entry_type (e->second, expiry);
             }
-
-            write_through ();
           }
 
           template <typename Val>
@@ -316,8 +291,6 @@ namespace fhg
             store_[ k ] = entry_type ( boost::lexical_cast<value_type>(v)
                                      , expiry
                                      );
-
-            write_through ();
           }
 
           void get( key_type const & k
@@ -382,8 +355,6 @@ namespace fhg
 
             store_.clear ();
 
-            write_through ();
-
             LOG_IF(INFO, count > 0, "cleared " << count << " entries");
           }
 
@@ -407,8 +378,6 @@ namespace fhg
                 }
               }
             } while (changed);
-
-            write_through ();
           }
 
           void save () const
@@ -512,25 +481,9 @@ namespace fhg
             }
           }
         private:
-          void write_through ()
-          {
-            if (write_through_enabled_)
-            {
-              try
-              {
-                save ();
-              }
-              catch (std::exception const & ex)
-              {
-                LOG(WARN, "write-through failed: " << ex.what());
-              }
-            }
-          }
-
           mutable boost::recursive_mutex mutex_;
           std::string file_;
           store_type store_;
-          bool write_through_enabled_;
         };
       }
     }
