@@ -2,6 +2,8 @@
 #include <fhgcom/util/to_hex.hpp>
 #include <boost/bind.hpp>
 
+#include <iomanip>
+
 using namespace fhg::com;
 
 void session::close ()
