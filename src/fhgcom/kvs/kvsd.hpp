@@ -254,14 +254,7 @@ namespace fhg
           {
             if (file_ && boost::filesystem::exists (*file_))
             {
-              try
-              {
                 load ();
-              }
-              catch (std::exception const & ex)
-              {
-                LOG (WARN, "could not load file storage: " << ex.what());
-              }
             }
           }
 
