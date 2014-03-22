@@ -1,7 +1,7 @@
 #ifndef FHG_COM_BASIC_SESSION_MANAGER_HPP
 #define FHG_COM_BASIC_SESSION_MANAGER_HPP 1
 
-#include <fhgcom/memory.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace fhg
 {
@@ -12,7 +12,7 @@ namespace fhg
     class basic_session_manager
     {
     public:
-      typedef shared_ptr<session> session_ptr;
+      typedef boost::shared_ptr<session> session_ptr;
       virtual ~basic_session_manager () {}
 
       virtual void add_session (session_ptr session) = 0;

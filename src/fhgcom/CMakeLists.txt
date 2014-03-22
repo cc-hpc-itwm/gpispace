@@ -8,7 +8,6 @@ add_subdirectory(util)
 add_subdirectory(kvs)
 
 set (hdrs
-  memory.hpp
   message.hpp
   message_io.hpp
 

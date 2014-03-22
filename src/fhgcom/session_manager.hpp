@@ -5,7 +5,7 @@
 
 #include <fhglog/fhglog.hpp>
 
-#include <fhgcom/memory.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 #include <fhgcom/basic_session_manager.hpp>
 #include <fhgcom/util/to_hex.hpp>
@@ -20,7 +20,7 @@ namespace fhg
     {
     public:
       typedef session session_type;
-      typedef shared_ptr<session_type> session_ptr;
+      typedef boost::shared_ptr<session_type> session_ptr;
 
       void add_session (session_ptr session)
       {
