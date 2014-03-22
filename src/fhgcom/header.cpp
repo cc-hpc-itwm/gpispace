@@ -73,22 +73,6 @@ namespace fhg
       {
         return ! (lhs == rhs);
       }
-      bool operator<(address_t const& lhs, address_t const& rhs)
-      {
-        return memcmp (&lhs, &rhs, sizeof(address_t)) < 0;
-      }
-      bool operator>(address_t const& lhs, address_t const& rhs)
-      {
-        return memcmp (&lhs, &rhs, sizeof(address_t)) > 0;
-      }
-      bool operator<=(address_t const& lhs, address_t const& rhs)
-      {
-        return ! (lhs > rhs);
-      }
-      bool operator>=(address_t const& lhs, address_t const& rhs)
-      {
-        return ! (lhs < rhs);
-      }
 
       std::size_t hash_value(address_t const& a)
       {
