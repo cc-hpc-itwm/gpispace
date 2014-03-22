@@ -449,7 +449,7 @@ namespace fhg
         }
         catch (std::exception const & ex)
         {
-          LOG(WARN, "could not resolve address (" << addr << ") to name: " << ex.what());
+          LOG(WARN, "could not resolve address (" << p2p::to_string (addr) << ") to name: " << ex.what());
           throw std::runtime_error (std::string("could not resolve address: ") + ex.what());
         }
       }
@@ -506,9 +506,9 @@ namespace fhg
         connection_data_t & cd = connections_.find (a)->second;
 
         LOG( TRACE
-             , my_addr_ << " (" << name_ << ")"
+             , p2p::to_string (my_addr_) << " (" << name_ << ")"
              << " connected to "
-             << a << " (" << cd.name << ")"
+             << p2p::to_string (a) << " (" << cd.name << ")"
              << " @ " << cd.connection->socket().remote_endpoint();
              );
 
@@ -548,7 +548,7 @@ namespace fhg
       {
         LOG_IF( WARN
               , ec
-              , "could not send message to " << a
+              , "could not send message to " << p2p::to_string (a)
               << " connection already closed: "
               << ec << " msg: " << ec.message ()
               );
@@ -568,7 +568,7 @@ namespace fhg
       cd.o_queue.front().handler (ec);
       cd.o_queue.pop_front();
 
-      LOG_IF(WARN, ec, "message delivery to " << a << " failed: " << ec);
+      LOG_IF(WARN, ec, "message delivery to " << p2p::to_string (a) << " failed: " << ec);
 
       if (! ec)
       {
@@ -622,7 +622,7 @@ namespace fhg
       }
       catch (std::exception const & ex)
       {
-        LOG (ERROR, "could not start sender to " << a << ": " << ex.what ());
+        LOG (ERROR, "could not start sender to " << p2p::to_string (a) << ": " << ex.what ());
       }
     }
 
@@ -736,7 +736,7 @@ namespace fhg
       case p2p::type_of_message_traits::HELLO_PACKET:
         if (backlog_.find (c) == backlog_.end())
         {
-          LOG(ERROR, "protocol error between " << my_addr_ << " and " << m->header.src << " closing connection");
+          LOG(ERROR, "protocol error between " << p2p::to_string (my_addr_) << " and " << p2p::to_string (m->header.src) << " closing connection");
           try
           {
             c->stop();
