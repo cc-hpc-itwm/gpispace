@@ -39,9 +39,6 @@ namespace fhg
 
       struct type_of_message_traits
       {
-        // user data 0 -> 7
-        static const int USER_DATA_PACKET = 0x0;
-
         // system data 8 -> 15
         static const int SYSTEM_PACKET_FLAG = 0x8;
         static const int HELLO_PACKET = 0x8;
