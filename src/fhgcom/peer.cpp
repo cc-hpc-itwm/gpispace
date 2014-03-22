@@ -19,9 +19,6 @@ namespace fhg
 {
   namespace com
   {
-    static void dummy_handler (boost::system::error_code const &)
-    {}
-
     static void default_kvs_error_handler (boost::system::error_code const &)
     {
       MLOG (ERROR, "could not contact KVS...");
@@ -470,7 +467,7 @@ namespace fhg
 
         // send hello message
         to_send_t to_send;
-        to_send.handler = dummy_handler;
+        to_send.handler = [](boost::system::error_code const&) {};
         to_send.message.header.src = my_addr_;
         to_send.message.header.dst = a;
         to_send.message.header.type_of_msg = p2p::type_of_message_traits::HELLO_PACKET;
