@@ -57,7 +57,7 @@ namespace sdpa
       // convert event to fhg::com::message_t
 
       fhg::com::message_t msg;
-      msg.header.dst = m_peer->resolve_name (sdpa_event->to());
+      msg.header.dst = fhg::com::p2p::address_t (sdpa_event->to());
       msg.header.src = m_peer->address();
 
       const std::string encoded_evt (codec.encode(sdpa_event.get()));

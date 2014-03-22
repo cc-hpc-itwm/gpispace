@@ -157,14 +157,14 @@ BOOST_FIXTURE_TEST_CASE (resolve_peer_names, KVSSetup)
   peer_2.start();
 
   {
-    p2p::address_t a1 (peer_1.resolve_name ("peer-1"));
-    p2p::address_t a2 (peer_2.resolve_name ("peer-1"));
+    p2p::address_t a1 (fhg::com::p2p::address_t ("peer-1"));
+    p2p::address_t a2 (fhg::com::p2p::address_t ("peer-1"));
     BOOST_CHECK_EQUAL (a1, a2);
   }
 
   {
-    p2p::address_t a1 (peer_1.resolve_name ("peer-2"));
-    p2p::address_t a2 (peer_2.resolve_name ("peer-2"));
+    p2p::address_t a1 (fhg::com::p2p::address_t ("peer-2"));
+    p2p::address_t a2 (fhg::com::p2p::address_t ("peer-2"));
     BOOST_CHECK_EQUAL (a1, a2);
   }
 
@@ -258,7 +258,7 @@ BOOST_FIXTURE_TEST_CASE (send_large_data, KVSSetup)
   peer_1.start();
 
     message_t m;
-    m.header.dst = peer_1.resolve_name("peer-1");
+    m.header.dst = fhg::com::p2p::address_t ("peer-1");
     m.data.resize( (2<<25) );
     m.header.length = m.data.size();
     peer_1.send(&m);

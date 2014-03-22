@@ -70,7 +70,7 @@ namespace sdpa
 
       const std::string encoded_evt (codec.encode (event));
       fhg::com::message_t msg (encoded_evt.begin(), encoded_evt.end());
-      msg.header.dst = m_peer.resolve_name (event->to());
+      msg.header.dst = fhg::com::p2p::address_t (event->to());
       msg.header.src = m_peer.address();
       msg.header.length = msg.data.size();
 
