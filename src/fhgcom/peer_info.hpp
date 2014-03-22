@@ -38,12 +38,6 @@ namespace fhg
     class peer_info_t
     {
     public:
-      peer_info_t ()
-        : name_()
-        , host_()
-        , port_()
-      {}
-
       peer_info_t ( const std::string & n
                   , const host_t & host
                   , const port_t & port
