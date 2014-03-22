@@ -51,7 +51,7 @@ namespace fhg
       void stop ();
       void run ();
 
-      handler_t set_kvs_error_handler (handler_t);
+      void set_kvs_error_handler (handler_t);
 
       void async_send ( const message_t * m
                       , handler_t h
