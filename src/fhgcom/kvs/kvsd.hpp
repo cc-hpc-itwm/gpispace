@@ -15,6 +15,7 @@
 #include <boost/date_time/posix_time/time_serialize.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
@@ -248,10 +249,10 @@ namespace fhg
           typedef boost::unique_lock<boost::recursive_mutex> lock_t;
 
           explicit
-          kvsd (const std::string & file)
+          kvsd (const boost::optional<std::string> & file)
             : file_(file)
           {
-            if (! file_.empty() && boost::filesystem::exists (file_))
+            if (file_ && boost::filesystem::exists (*file_))
             {
               try
               {
@@ -385,11 +386,11 @@ namespace fhg
             save (file_);
           }
 
-          void save (std::string const & file) const
+          void save (boost::optional<std::string> const & file) const
           {
-            if (file.empty ()) return;
+            if (!file) return;
 
-            std::ofstream ofs (file.c_str());
+            std::ofstream ofs (file->c_str());
             if (ofs)
             {
               boost::archive::xml_oarchive ar(ofs);
@@ -400,7 +401,7 @@ namespace fhg
             }
             else
             {
-              throw std::runtime_error ("could not save to file: " + file);
+              throw std::runtime_error ("could not save to file: " + *file);
             }
           }
 
@@ -409,9 +410,14 @@ namespace fhg
             load (file_);
           }
 
-          void load (std::string const & file)
+          void load (boost::optional<std::string> const & file)
           {
-            std::ifstream ifs (file.c_str());
+            if (!file)
+            {
+              return;
+            }
+
+            std::ifstream ifs (file->c_str());
             if (ifs)
             {
               boost::archive::xml_iarchive ar(ifs);
@@ -426,7 +432,7 @@ namespace fhg
             }
             else
             {
-              throw std::runtime_error ("could not load from file: " + file);
+              throw std::runtime_error ("could not load from file: " + *file);
             }
           }
 
@@ -482,7 +488,7 @@ namespace fhg
           }
         private:
           mutable boost::recursive_mutex mutex_;
-          std::string file_;
+          boost::optional<std::string> file_;
           store_type store_;
         };
       }
