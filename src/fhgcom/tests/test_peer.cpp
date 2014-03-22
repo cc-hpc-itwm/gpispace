@@ -142,8 +142,6 @@ BOOST_FIXTURE_TEST_CASE (peer_run_two, KVSSetup)
   peer_1.start();
   peer_2.start();
 
-  try
-  {
     peer_1.send ("peer-2", "hello world!");
     message_t m;
     peer_2.recv (&m);
@@ -153,11 +151,6 @@ BOOST_FIXTURE_TEST_CASE (peer_run_two, KVSSetup)
     std::string data (m.data.begin(), m.data.end());
     BOOST_CHECK_EQUAL (src, "peer-1");
     BOOST_CHECK_EQUAL (data, "hello world!");
-  }
-  catch (std::exception const & ex)
-  {
-    BOOST_ERROR ( ex.what() );
-  }
 
   peer_1.stop();
   peer_2.stop();
@@ -253,17 +246,10 @@ BOOST_FIXTURE_TEST_CASE (peer_loopback, KVSSetup)
 
   peer_1.start();
 
-  try
-  {
     for (std::size_t i (0); i < 10000; ++i)
     {
       peer_1.send(peer_1.name (), "hello world!");
     }
-  }
-  catch (std::exception const & ex)
-  {
-    BOOST_ERROR ( ex.what() );
-  }
 
   peer_1.stop();
   thrd_1.join ();
@@ -295,8 +281,6 @@ BOOST_FIXTURE_TEST_CASE (send_large_data, KVSSetup)
 
   peer_1.start();
 
-  try
-  {
     message_t m;
     peer_1.resolve_name("peer-1", m.header.dst);
     m.data.resize( (2<<25) );
@@ -306,11 +290,6 @@ BOOST_FIXTURE_TEST_CASE (send_large_data, KVSSetup)
     peer_1.recv(&r);
 
     BOOST_CHECK_EQUAL(m.data.size(), r.data.size());
-  }
-  catch (std::exception const & ex)
-  {
-    BOOST_ERROR ( ex.what() );
-  }
 
   peer_1.stop();
   thrd_1.join ();
@@ -329,14 +308,7 @@ BOOST_FIXTURE_TEST_CASE (peers_with_fixed_ports, KVSSetup)
   peer_1.start();
   peer_2.start();
 
-  try
-  {
     peer_1.send(peer_2.name (), "hello world!");
-  }
-  catch (std::exception const & ex)
-  {
-    BOOST_ERROR ( ex.what() );
-  }
 
   peer_1.stop();
   thrd_1.join ();
@@ -358,14 +330,7 @@ BOOST_FIXTURE_TEST_CASE (peers_with_fixed_ports_reuse, KVSSetup)
   peer_1.start();
   peer_2.start();
 
-  try
-  {
     peer_1.send(peer_2.name (), "hello world!");
-  }
-  catch (std::exception const & ex)
-  {
-    BOOST_ERROR ( ex.what() );
-  }
 
   peer_1.stop();
   thrd_1.join ();
