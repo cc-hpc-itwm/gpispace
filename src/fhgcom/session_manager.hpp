@@ -8,7 +8,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 #include <fhgcom/basic_session_manager.hpp>
-#include <fhgcom/util/to_hex.hpp>
 
 #include <fhgcom/session.hpp>
 

@@ -6,8 +6,6 @@
 
 #include <fhgcom/connection.hpp>
 
-#include <fhgcom/util/to_hex.hpp>
-
 using namespace boost::asio::ip;
 
 namespace fhg
