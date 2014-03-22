@@ -227,30 +227,6 @@ namespace fhg
       typedef boost::shared_ptr<client::kvsc> kvsc_ptr_t;
 
       typedef fhg::com::kvs::message::list::map_type values_type;
-
-      struct scoped_entry_t : boost::noncopyable
-      {
-      public:
-        template <typename Val>
-        scoped_entry_t ( kvsc_ptr_t kvs_client
-                       , std::string const & k
-                       , Val v
-                       )
-          : _kvs_client (kvs_client)
-          , key(k)
-        {
-          _kvs_client->put (key, v);
-        }
-
-        ~scoped_entry_t ()
-        {
-          _kvs_client->del (key);
-        }
-
-      private:
-        kvsc_ptr_t _kvs_client;
-        const std::string key;
-      };
     }
   }
 }
