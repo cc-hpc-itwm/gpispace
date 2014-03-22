@@ -23,8 +23,6 @@ namespace fhg
           enum code
             {
                 KVS_ENOERROR = 0
-              , KVS_ENOSUCH
-              , KVS_EPERM
               , KVS_EINVAL
               , KVS_EUNKNOWN
             };
@@ -56,10 +54,6 @@ namespace fhg
             {
             case KVS_ENOERROR:
               return "ok";
-            case KVS_ENOSUCH:
-              return "no such";
-            case KVS_EPERM:
-              return "permission denied";
             case KVS_EINVAL:
               return "invalid argument";
             case KVS_EUNKNOWN:
