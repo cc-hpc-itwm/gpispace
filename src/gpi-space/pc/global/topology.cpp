@@ -563,7 +563,7 @@ namespace gpi
         if (! ec)
         {
           const fhg::com::p2p::address_t & addr = m_incoming_msg.header.src;
-          const std::string name(m_peer->resolve(addr, "*unknown*"));
+          const std::string name(m_peer->resolve_addr (addr));
 
           handle_message( detail::name_to_rank(name)
                         , std::string( m_incoming_msg.buf()
@@ -585,7 +585,7 @@ namespace gpi
           const fhg::com::p2p::address_t & addr = m_incoming_msg.header.src;
           if (addr != m_peer->address())
           {
-            const std::string name(m_peer->resolve(addr, "*unknown*"));
+            const std::string name(m_peer->resolve_addr (addr));
 
             handle_error (detail::name_to_rank(name));
 
