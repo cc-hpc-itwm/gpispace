@@ -1,7 +1,4 @@
 set (hdrs
-  cache.hpp
-  store.hpp
-
   kvsc.hpp
   kvsd.hpp
 )
