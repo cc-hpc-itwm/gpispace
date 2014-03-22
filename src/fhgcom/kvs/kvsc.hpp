@@ -6,7 +6,6 @@
 #include <fhgcom/peer_info.hpp>
 #include <fhgcom/tcp_client.hpp>
 
-#include <fhgcom/kvs/store.hpp>
 #include <fhgcom/kvs/message/type.hpp>
 
 #include <sstream>
