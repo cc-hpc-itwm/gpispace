@@ -117,7 +117,7 @@ namespace fhg
           if (m_buf.empty ())
           {
             m_buf.push_back (boost::asio::buffer ( &message->header
-                                                 , sizeof(message_t::header_t)
+                                                 , sizeof(p2p::header_t)
                                                  )
                             );
             m_buf.push_back (boost::asio::buffer (message->data));

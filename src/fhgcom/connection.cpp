@@ -74,7 +74,7 @@ namespace fhg
       assert (in_message_ != 0);
 
       boost::asio::async_read( socket_
-                             , boost::asio::buffer (&in_message_->header, sizeof(message_t::header_t))
+                             , boost::asio::buffer (&in_message_->header, sizeof(p2p::header_t))
                              , strand_.wrap
                              ( boost::bind ( &self::handle_read_header
                                            , get_this()
