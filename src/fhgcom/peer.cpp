@@ -23,7 +23,6 @@ namespace fhg
                    , host_t const & host
                    , port_t const & port
                    , kvs::kvsc_ptr_t kvs_client
-                   , std::string const & cookie
                    , handler_t handler
                    )
       : stopped_(true)
@@ -31,7 +30,6 @@ namespace fhg
       , name_(name)
       , host_(host)
       , port_(port)
-      , cookie_(cookie)
       , my_addr_(p2p::address_t(name))
       , started_()
       , _kvs_client (kvs_client)
@@ -272,7 +270,6 @@ namespace fhg
 
         cd.connection =
           connection_t::ptr_t(new connection_t( io_service_
-                                              , cookie_
                                               , this
                                               )
                              );
@@ -653,7 +650,6 @@ namespace fhg
     {
       listen_ = connection_t::ptr_t (new connection_t
                                     ( io_service_
-                                    , cookie_
                                     , this
                                     ));
       listen_->local_address(my_addr_);

@@ -365,7 +365,6 @@ DRTSImpl::DRTSImpl (std::function<void()> request_stop, std::map<std::string, st
                           , host
                           , port
                           , _kvs_client
-                          , ""
                           , [](boost::system::error_code const&) {}
                           )
     );

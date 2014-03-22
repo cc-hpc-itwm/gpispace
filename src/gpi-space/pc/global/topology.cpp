@@ -124,7 +124,6 @@ namespace gpi
 
       topology_t::topology_t ( const fhg::com::host_t & host
                              , const fhg::com::port_t & port
-                             , std::string const & cookie
                              , memory::manager_t& memory_manager
                              , fhg::com::kvs::kvsc_ptr_t kvs_client
                              , api::gpi_api_t& gpi_api
@@ -143,7 +142,6 @@ namespace gpi
                                , host
                                , port
                                , _kvs_client
-                               , cookie
                                , detail::kvs_error_handler
                                )
           );

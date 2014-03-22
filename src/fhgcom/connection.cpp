@@ -15,13 +15,11 @@ namespace fhg
   namespace com
   {
     connection_t::connection_t( boost::asio::io_service & io_service
-                              , std::string const & cookie
                               , connection_t::handler_t * h
                               )
       : strand_(io_service)
       , socket_(io_service)
       , deadline_(io_service)
-      , cookie_(cookie)
       , callback_handler_(h)
       , in_message_(new message_t)
     {}

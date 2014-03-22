@@ -31,7 +31,6 @@ namespace sdpa
                  , fhg::com::host_t (host)
                  , fhg::com::port_t (port)
                  , kvs_client
-                 , ""
                  , boost::bind (&NetworkStrategy::kvs_error_handler, this, _1)
                  )
                )

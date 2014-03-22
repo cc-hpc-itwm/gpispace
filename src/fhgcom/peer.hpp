@@ -37,7 +37,6 @@ namespace fhg
              , host_t const & host
              , port_t const & port
              , kvs::kvsc_ptr_t kvs_client
-             , std::string const & cookie
              , handler_t
              );
 
@@ -130,7 +129,6 @@ namespace fhg
       std::string name_;
       std::string host_;
       std::string port_;
-      std::string cookie_;
       p2p::address_t my_addr_;
       fhg::util::thread::event<boost::system::error_code> started_;
 

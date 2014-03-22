@@ -52,7 +52,6 @@ namespace sdpa
                , fhg::com::host_t ("*")
                , fhg::com::port_t ("0")
                , _kvs_client
-               , ""
                , &kvs_error_handler
                )
       , _peer_thread (&fhg::com::peer_t::run, &m_peer)

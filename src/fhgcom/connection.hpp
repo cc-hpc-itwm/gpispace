@@ -49,7 +49,6 @@ namespace fhg
 
       explicit
       connection_t ( boost::asio::io_service & io_service
-                   , std::string const & cookie
                    , handler_t * h
                    );
 
@@ -146,7 +145,6 @@ namespace fhg
       boost::asio::ip::tcp::socket socket_;
       boost::asio::deadline_timer deadline_;
 
-      std::string cookie_;
       handler_t *callback_handler_;
       message_t *in_message_;
 
