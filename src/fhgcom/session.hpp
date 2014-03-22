@@ -1,16 +1,15 @@
 #ifndef FHG_COM_SESSION_HPP
 #define FHG_COM_SESSION_HPP 1
 
-#include <deque>
-#include <vector>
-
 #include <fhgcom/session_manager.hpp>
 
 #include <boost/asio.hpp>
-
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/mutex.hpp>
+
+#include <deque>
+#include <vector>
 
 namespace fhg
 {

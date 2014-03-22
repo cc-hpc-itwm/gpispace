@@ -1,10 +1,12 @@
+
+#include <fhgcom/connection.hpp>
+
 #include <fhglog/LogMacros.hpp>
+
 #include <fhg/assert.hpp>
 #include <fhg/util/macros.hpp>
 
 #include <boost/system/error_code.hpp>
-
-#include <fhgcom/connection.hpp>
 
 using namespace boost::asio::ip;
 

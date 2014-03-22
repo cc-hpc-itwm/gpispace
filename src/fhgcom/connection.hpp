@@ -1,26 +1,25 @@
 #ifndef FHGCOM_CONNECTION_HPP
 #define FHGCOM_CONNECTION_HPP 1
 
-#include <list>
-#include <vector>
-#include <string>
-#include <stdint.h>
-#include <iomanip>
-#include <ios>
-
-#include <boost/bind.hpp>
-#include <boost/asio.hpp>
-#include <boost/array.hpp>
-#include <boost/noncopyable.hpp>
-#include <boost/enable_shared_from_this.hpp>
-
-#include <boost/system/error_code.hpp>
-
-#include <fhg/assert.hpp>
 #include <fhgcom/header.hpp>
 #include <fhgcom/message.hpp>
 
+#include <fhg/assert.hpp>
+
+#include <boost/array.hpp>
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/noncopyable.hpp>
+#include <boost/system/error_code.hpp>
+
 #include <functional>
+#include <iomanip>
+#include <ios>
+#include <list>
+#include <stdint.h>
+#include <string>
+#include <vector>
 
 namespace fhg
 {

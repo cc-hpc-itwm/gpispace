@@ -1,9 +1,9 @@
 #ifndef FHG_COM_MESSAGE_HPP
 #define FHG_COM_MESSAGE_HPP 1
 
-#include <vector>
-
 #include <fhgcom/header.hpp>
+
+#include <vector>
 
 namespace fhg
 {

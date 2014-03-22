@@ -1,20 +1,18 @@
 #define BOOST_TEST_MODULE PeerTest
 #include <boost/test/unit_test.hpp>
 
-#include <fhgcom/tests/address_printer.hpp>
-
-#include <iostream>
-
-#include <boost/thread.hpp>
-#include <boost/bind.hpp>
-
+#include <fhgcom/io_service_pool.hpp>
+#include <fhgcom/kvs/kvsc.hpp>
+#include <fhgcom/kvs/kvsd.hpp>
 #include <fhgcom/peer.hpp>
 #include <fhgcom/peer_info.hpp>
-
-#include <fhgcom/kvs/kvsd.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
-#include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/tcp_server.hpp>
+#include <fhgcom/tests/address_printer.hpp>
+
+#include <boost/bind.hpp>
+#include <boost/thread.hpp>
+
+#include <iostream>
 
 struct KVSSetup
 {

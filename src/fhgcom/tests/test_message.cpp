@@ -1,8 +1,10 @@
 #define BOOST_TEST_MODULE MessageTest
 #include <boost/test/unit_test.hpp>
 
-#include <iostream>
 #include <fhgcom/message.hpp>
+
+#include <iostream>
+
 BOOST_AUTO_TEST_CASE ( test_message_constr_default )
 {
   using namespace fhg::com;

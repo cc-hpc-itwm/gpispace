@@ -1,9 +1,10 @@
 #include <fhgcom/io_service_pool.hpp>
 
-#include <stdexcept>
-#include <boost/thread.hpp>
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
+
+#include <stdexcept>
 
 namespace fhg
 {

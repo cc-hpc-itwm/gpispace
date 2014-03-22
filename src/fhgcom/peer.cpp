@@ -1,23 +1,23 @@
+#include <fhgcom/peer.hpp>
+
 #include <fhglog/LogMacros.hpp>
+
 #include <fhg/assert.hpp>
+#include <fhg/util/thread/event.hpp>
 
-#include <boost/lexical_cast.hpp>
-#include <boost/system/system_error.hpp>
-#include <boost/system/error_code.hpp>
-#include <boost/make_shared.hpp>
-
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/lambda/bind.hpp>
 #include <boost/lambda/lambda.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/system/error_code.hpp>
+#include <boost/system/system_error.hpp>
+
+#include <cstdlib>
 
 using boost::lambda::bind;
 using boost::lambda::var;
 //using boost::lambda::_1;
-
-#include <fhgcom/peer.hpp>
-#include <fhg/util/thread/event.hpp>
-
-#include <cstdlib>
 
 namespace fhg
 {

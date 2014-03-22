@@ -4,11 +4,11 @@
 #ifndef FHGCOM_IO_SERVICE_POOL_HPP
 #define FHGCOM_IO_SERVICE_POOL_HPP 1
 
-#include <vector>
-
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
+
+#include <vector>
 
 namespace fhg
 {

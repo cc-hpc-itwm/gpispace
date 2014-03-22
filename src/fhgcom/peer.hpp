@@ -1,24 +1,23 @@
 #ifndef FHG_COM_PEER_HPP
 #define FHG_COM_PEER_HPP 1
 
-#include <string>
-#include <list>
-#include <deque>
-
-#include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
-#include <boost/system/error_code.hpp>
-#include <boost/enable_shared_from_this.hpp>
-
-#include <boost/unordered_set.hpp>
-#include <boost/unordered_map.hpp>
-
-#include <fhgcom/header.hpp>
 #include <fhgcom/connection.hpp>
+#include <fhgcom/header.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 #include <fhgcom/peer_info.hpp>
 
 #include <fhg/util/thread/event.hpp>
+
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/system/error_code.hpp>
+#include <boost/thread.hpp>
+#include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
+
+#include <deque>
+#include <list>
+#include <string>
 
 namespace fhg
 {

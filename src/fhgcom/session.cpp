@@ -1,5 +1,7 @@
-#include <fhglog/fhglog.hpp>
 #include <fhgcom/session.hpp>
+
+#include <fhglog/fhglog.hpp>
+
 #include <boost/bind.hpp>
 
 #include <iomanip>

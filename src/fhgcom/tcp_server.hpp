@@ -1,12 +1,11 @@
 #ifndef FHG_COM_TCP_SERVER_HPP
 #define FHG_COM_TCP_SERVER_HPP 1
 
-#include <boost/asio.hpp>
-
+#include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/session.hpp>
 #include <fhgcom/session_manager.hpp>
 
-#include <fhgcom/io_service_pool.hpp>
+#include <boost/asio.hpp>
 
 namespace fhg
 {

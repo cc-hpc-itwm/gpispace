@@ -1,18 +1,17 @@
 #ifndef FHG_COM_KVSC_HPP
 #define FHG_COM_KVSC_HPP 1
 
-#include <string>
-
+#include <fhgcom/kvs/message/type.hpp>
 #include <fhgcom/peer_info.hpp>
 #include <fhgcom/tcp_client.hpp>
 
-#include <fhgcom/kvs/message/type.hpp>
-
-#include <sstream>
-#include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #include <boost/thread.hpp>
 #include <boost/utility.hpp>
+
+#include <sstream>
+#include <string>
 
 namespace fhg
 {

@@ -1,5 +1,7 @@
-#include <fhglog/LogMacros.hpp>
 #include <fhgcom/tcp_server.hpp>
+
+#include <fhglog/LogMacros.hpp>
+
 #include <boost/bind.hpp>
 
 using namespace fhg::com;

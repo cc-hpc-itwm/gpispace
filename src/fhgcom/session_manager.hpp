@@ -1,12 +1,12 @@
 #ifndef FHG_COM_SESSION_MANAGER_HPP
 #define FHG_COM_SESSION_MANAGER_HPP 1
 
-#include <set>
+#include <fhgcom/session.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
-#include <fhgcom/session.hpp>
+#include <set>
 
 namespace fhg
 {

@@ -1,33 +1,28 @@
 #ifndef FHG_COM_KVSD_HPP
 #define FHG_COM_KVSD_HPP 1
 
-#include <signal.h> /* For SIGTERM. */
-
-#include <string>
-
-#include <fhglog/fhglog.hpp>
-
-#include <boost/thread.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/filesystem.hpp>
-
 #include <fhgcom/kvs/message/type.hpp>
-
 #include <fhgcom/session.hpp>
 #include <fhgcom/session_manager.hpp>
 
-#include <sstream>
-#include <fstream>
+#include <fhglog/fhglog.hpp>
 
-#include <boost/serialization/map.hpp>
-#include <boost/date_time/posix_time/time_serialize.hpp>
-
-#include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/time_serialize.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/thread.hpp>
+#include <boost/unordered_map.hpp>
+
+#include <fstream>
+#include <signal.h> /* For SIGTERM. */
+#include <sstream>
+#include <string>
 
 namespace fhg
 {

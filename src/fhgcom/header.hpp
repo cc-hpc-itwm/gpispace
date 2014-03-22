@@ -1,10 +1,10 @@
 #ifndef FHG_COM_HEADER_HPP
 #define FHG_COM_HEADER_HPP 1
 
-#include <inttypes.h>
-#include <string>
-#include <iostream>
 #include <cstring> // memset
+#include <inttypes.h>
+#include <iostream>
+#include <string>
 
 namespace fhg
 {
