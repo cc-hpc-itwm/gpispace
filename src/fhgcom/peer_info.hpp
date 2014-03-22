@@ -183,12 +183,6 @@ namespace fhg
       std::string port_;
       mutable std::string to_string_cache_;
     };
-
-    inline
-    std::ostream & operator << (std::ostream & os, peer_info_t const & p)
-    {
-      return os << p.to_string ();
-    }
   }
 }
 
