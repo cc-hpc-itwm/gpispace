@@ -103,11 +103,6 @@ namespace fhg
         memcpy (&u, &a, sizeof(boost::uuids::uuid));
         return boost::lexical_cast<std::string>(u);
       }
-
-      std::ostream & operator<<(std::ostream & os, address_t const &a)
-      {
-        return os << to_string (a);
-      }
     }
   }
 }

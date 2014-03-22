@@ -1,6 +1,8 @@
 #define BOOST_TEST_MODULE PeerTest
 #include <boost/test/unit_test.hpp>
 
+#include <fhgcom/tests/address_printer.hpp>
+
 #include <iostream>
 
 #include <boost/thread.hpp>

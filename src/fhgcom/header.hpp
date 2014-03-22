@@ -32,7 +32,6 @@ namespace fhg
 
       std::size_t hash_value(address_t const& u);
 
-      std::ostream & operator<<(std::ostream & os, address_t const &);
       std::string to_string (address_t const & a);
 
       struct type_of_message_traits
