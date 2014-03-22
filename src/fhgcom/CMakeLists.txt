@@ -9,7 +9,6 @@ add_subdirectory(kvs)
 
 set (hdrs
   message.hpp
-  message_io.hpp
 
   session.hpp
   basic_session_manager.hpp
