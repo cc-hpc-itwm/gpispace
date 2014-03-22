@@ -189,15 +189,6 @@ namespace fhg
     {
       return os << p.to_string ();
     }
-
-    inline
-    std::istream & operator >> (std::istream & is, peer_info_t & p)
-    {
-      std::string s;
-      is >> s;
-      p.parse (s);
-      return is;
-    }
   }
 }
 
