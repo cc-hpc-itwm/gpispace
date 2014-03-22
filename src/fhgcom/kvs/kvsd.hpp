@@ -13,7 +13,6 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 
-#include <fhgcom/kvs/exception.hpp>
 #include <fhgcom/kvs/message/type.hpp>
 
 #include <fhgcom/session.hpp>
