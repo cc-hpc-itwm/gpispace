@@ -15,10 +15,6 @@
 
 #include <cstdlib>
 
-using boost::lambda::bind;
-using boost::lambda::var;
-//using boost::lambda::_1;
-
 namespace fhg
 {
   namespace com
