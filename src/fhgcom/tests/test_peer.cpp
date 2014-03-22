@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE (parse_peer_info_full)
   using namespace fhg::com;
 
   const std::string url ("peer@[::1]:1234");
-  peer_info_t pi = peer_info_t::from_string (url);
+  peer_info_t pi (url);
 }
 
 BOOST_AUTO_TEST_CASE (parse_peer_info_wo_name)
@@ -79,7 +79,15 @@ BOOST_AUTO_TEST_CASE (parse_peer_info_wo_name)
   using namespace fhg::com;
 
   const std::string url ("[::1]:1234");
-  peer_info_t pi = peer_info_t::from_string (url);
+  peer_info_t pi (url);
+}
+
+namespace
+{
+  void ctor (std::string const& url)
+  {
+    (void)fhg::com::peer_info_t (url);
+  }
 }
 
 BOOST_AUTO_TEST_CASE (parse_peer_info_wo_port)
@@ -88,7 +96,7 @@ BOOST_AUTO_TEST_CASE (parse_peer_info_wo_port)
 
   const std::string url ("localhost");
 
-  BOOST_REQUIRE_THROW ( peer_info_t::from_string (url)
+  BOOST_REQUIRE_THROW ( ctor (url)
                       , std::runtime_error
                       );
 }
@@ -98,7 +106,7 @@ BOOST_AUTO_TEST_CASE (parse_peer_info_wi_name)
   using namespace fhg::com;
 
   const std::string url ("peer@localhost:1234");
-  peer_info_t pi = peer_info_t::from_string (url);
+  peer_info_t pi (url);
 }
 
 BOOST_FIXTURE_TEST_CASE (peer_run_single, KVSSetup)

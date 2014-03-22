@@ -53,6 +53,14 @@ namespace fhg
         , port_(port)
       {}
 
+      peer_info_t (std::string const& s)
+        : name_ ()
+        , host_ ()
+        , port_ ()
+      {
+        parse (s);
+      }
+
       std::string const & host (const std::string & def) const
       {
         if (host_.empty()) return def;
@@ -89,13 +97,6 @@ namespace fhg
         }
 
         return s;
-      }
-
-      static peer_info_t from_string (const std::string & s)
-      {
-        peer_info_t pi;
-        pi.parse (s);
-        return pi;
       }
 
     private:

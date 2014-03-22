@@ -74,7 +74,7 @@ int main(int ac, char *av[])
     try
     {
       using namespace fhg::com;
-      peer_info_t pi (peer_info_t::from_string (getenv("KVS_URL")));
+      peer_info_t pi (getenv("KVS_URL"));
       server_address = pi.host(server_address);
       server_port = pi.port(server_port);
     }
