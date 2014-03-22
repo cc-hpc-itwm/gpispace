@@ -120,7 +120,7 @@ namespace fhg
 
         accept_new ();
 
-        io_service_.post (boost::bind ( &self::update_my_location
+        io_service_.post (boost::bind ( &peer_t::update_my_location
                                       , this
                                       )
                          );
@@ -572,7 +572,7 @@ namespace fhg
         {
           // TODO: wrap in strand...
           cd.connection->async_send ( &cd.o_queue.front().message
-                                    , boost::bind ( &self::handle_send
+                                    , boost::bind ( &peer_t::handle_send
                                                   , this
                                                   , a
                                                   , _1
@@ -605,7 +605,7 @@ namespace fhg
 
         cd.send_in_progress = true;
         cd.connection->async_send ( &cd.o_queue.front().message
-                                  , boost::bind ( &self::handle_send
+                                  , boost::bind ( &peer_t::handle_send
                                                 , this
                                                 , a
                                                 , _1
@@ -716,7 +716,7 @@ namespace fhg
       listen_->local_address(my_addr_);
       listen_->remote_address(p2p::address_t());
       acceptor_.async_accept( listen_->socket()
-                            , boost::bind( &self::handle_accept
+                            , boost::bind( &peer_t::handle_accept
                                          , this
                                          , boost::asio::placeholders::error
                                          )

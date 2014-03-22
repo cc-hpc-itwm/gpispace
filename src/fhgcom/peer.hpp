@@ -30,9 +30,6 @@ namespace fhg
                  , private boost::noncopyable
                  , public boost::enable_shared_from_this<peer_t>
     {
-    private:
-      typedef peer_t self;
-
     public:
       typedef std::function <void (boost::system::error_code const &)> handler_t;
 
