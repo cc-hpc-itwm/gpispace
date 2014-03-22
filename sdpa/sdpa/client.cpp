@@ -93,7 +93,7 @@ namespace sdpa
         if (addr != m_peer.address())
         {
           sdpa::events::ErrorEvent::Ptr
-            error(new sdpa::events::ErrorEvent ( m_peer.resolve(addr, "*unknown*")
+            error(new sdpa::events::ErrorEvent ( m_peer.resolve_addr (addr)
                                                , m_peer.name()
                                                , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                                                , "receiving response failed: " + boost::lexical_cast<std::string>(ec)
