@@ -71,7 +71,6 @@ namespace fhg
 
       std::string resolve_addr (p2p::address_t const &);
 
-      p2p::address_t resolve (std::string const & name);
       std::string    resolve (p2p::address_t const & addr, std::string const & dflt = "*unknown*");
 
     protected:
