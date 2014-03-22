@@ -46,10 +46,6 @@ namespace fhg
         static const int SYSTEM_PACKET_FLAG = 0x8;
         static const int HELLO_PACKET = 0x8;
 
-        inline static bool is_user_data (const int tom)
-        {
-          return (tom & SYSTEM_PACKET_FLAG) == 0;
-        }
         inline static bool is_system_data (const int tom)
         {
           return (tom & SYSTEM_PACKET_FLAG) != 0;
