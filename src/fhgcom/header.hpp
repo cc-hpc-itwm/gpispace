@@ -30,8 +30,6 @@ namespace fhg
       bool operator<=(address_t const& lhs, address_t const& rhs);
       bool operator>=(address_t const& lhs, address_t const& rhs);
 
-      void swap(address_t& lhs, address_t& rhs);
-
       std::size_t hash_value(address_t const& u);
 
       std::ostream & operator<<(std::ostream & os, address_t const &);

@@ -90,14 +90,6 @@ namespace fhg
         return ! (lhs < rhs);
       }
 
-      void swap(address_t& lhs, address_t& rhs)
-      {
-        uint8_t tmp[sizeof(address_t)];
-        memcpy (tmp, &lhs, sizeof(address_t));
-        memcpy (&lhs, &rhs, sizeof(address_t));
-        memcpy (&rhs, tmp, sizeof(address_t));
-      }
-
       std::size_t hash_value(address_t const& a)
       {
         boost::uuids::uuid u;
