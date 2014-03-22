@@ -5,34 +5,30 @@ namespace fhg
 {
   namespace com
   {
-    struct host_t
+    struct hard_string
     {
-      explicit
-      host_t (std::string const & h)
-        : value (h)
+      explicit hard_string (std::string const& s)
+        : _s (s)
       {}
-
       operator std::string () const
       {
-        return value;
+        return _s;
       }
     private:
-      std::string value;
+      std::string const _s;
     };
 
-    struct port_t
+    struct host_t : hard_string
     {
-      explicit
-      port_t (std::string const & p)
-        : value (p)
+      explicit host_t (std::string const& s)
+        : hard_string (s)
       {}
-
-      operator std::string () const
-      {
-        return value;
-      }
-    private:
-      std::string value;
+    };
+    struct port_t : hard_string
+    {
+      explicit port_t (std::string const& s)
+        : hard_string (s)
+      {}
     };
 
     class peer_info_t
