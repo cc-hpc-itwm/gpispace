@@ -7,7 +7,6 @@
 #include <boost/bind.hpp>
 
 #include <fhgcom/peer.hpp>
-#include <fhgcom/peer_io.hpp>
 #include <fhgcom/peer_info.hpp>
 
 #include <fhgcom/kvs/kvsd.hpp>
@@ -69,10 +68,6 @@ BOOST_FIXTURE_TEST_CASE (output_test, KVSSetup)
   BOOST_CHECK_EQUAL (peer_o.name(), "peer");
   BOOST_CHECK_EQUAL (peer_o.host(), "localhost");
   BOOST_CHECK_EQUAL (peer_o.port(), "1235");
-
-  std::stringstream sstr;
-  sstr << peer_o;
-  BOOST_CHECK_EQUAL (sstr.str(), "peer@[localhost]:1235");
 }
 
 BOOST_AUTO_TEST_CASE (parse_peer_info_full)
