@@ -56,11 +56,6 @@ namespace fhg
       }
     }
 
-    void peer_t::set_kvs_error_handler (handler_t h)
-    {
-      m_kvs_error_handler = h;
-    }
-
     void peer_t::run ()
     {
       if (m_peer_thread)
