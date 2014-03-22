@@ -91,9 +91,9 @@ bool tcp_server::try_start ( boost::asio::ip::tcp::endpoint endpoint
 
 void tcp_server::accept ()
 {
-  session_ptr new_session( new session( service_pool_.get_io_service()
-                                      , manager_)
-                         );
+  boost::shared_ptr<session>
+    new_session (new session (service_pool_.get_io_service(), manager_));
+
   acceptor_.async_accept
     ( new_session->socket()
     , boost::bind ( &tcp_server::handle_accept
@@ -104,7 +104,7 @@ void tcp_server::accept ()
     );
 }
 
-void tcp_server::handle_accept ( tcp_server::session_ptr session
+void tcp_server::handle_accept ( boost::shared_ptr<session> session
                                , const boost::system::error_code & error
                                )
 {

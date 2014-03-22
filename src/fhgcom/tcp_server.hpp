@@ -15,7 +15,6 @@ namespace fhg
     {
     public:
       typedef session_manager manager_t;
-      typedef manager_t::session_ptr  session_ptr;
 
       tcp_server ( io_service_pool & pool
                  , manager_t & manager
@@ -33,7 +32,7 @@ namespace fhg
                      , boost::system::error_code & ec
                      );
       void accept ();
-      void handle_accept ( session_ptr session
+      void handle_accept ( boost::shared_ptr<session> session
                          , const boost::system::error_code & error
                          );
 
