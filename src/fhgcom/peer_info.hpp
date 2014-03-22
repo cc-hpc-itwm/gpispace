@@ -61,11 +61,6 @@ namespace fhg
       {
         return name_;
       }
-      std::string const & name (const std::string & def) const
-      {
-        if (name_.empty()) return def;
-        else return name();
-      }
 
       std::string const & host () const
       {
