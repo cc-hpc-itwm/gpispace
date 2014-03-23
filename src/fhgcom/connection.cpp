@@ -69,7 +69,7 @@ namespace fhg
       boost::asio::async_read( socket_
                              , boost::asio::buffer (&in_message_->header, sizeof(p2p::header_t))
                              , strand_.wrap
-                             ( boost::bind ( &self::handle_read_header
+                             ( boost::bind ( &connection_t::handle_read_header
                                            , get_this()
                                            , boost::asio::placeholders::error
                                            , boost::asio::placeholders::bytes_transferred
@@ -95,7 +95,7 @@ namespace fhg
         boost::asio::async_read ( socket_
                                 , boost::asio::buffer (in_message_->data)
                                 , strand_.wrap
-                                ( boost::bind ( &self::handle_read_data
+                                ( boost::bind ( &connection_t::handle_read_data
                                               , get_this()
                                               , boost::asio::placeholders::error
                                               , boost::asio::placeholders::bytes_transferred
@@ -191,7 +191,7 @@ namespace fhg
       {
         boost::asio::async_write( socket_
                                 , d.to_buffers()
-                                , strand_.wrap (boost::bind( &self::handle_write
+                                , strand_.wrap (boost::bind( &connection_t::handle_write
                                                            , get_this()
                                                            , boost::asio::placeholders::error
                                                            )
@@ -200,7 +200,7 @@ namespace fhg
       }
       catch (std::length_error const &)
       {
-        strand_.post (boost::bind( &self::handle_write
+        strand_.post (boost::bind( &connection_t::handle_write
                                  , get_this()
                                  , boost::system::errc::make_error_code (boost::system::errc::bad_message)
                                  ));
@@ -239,7 +239,7 @@ namespace fhg
                                   , boost::posix_time::time_duration timeout
                                   )
     {
-      strand_.post (boost::bind( &self::start_send
+      strand_.post (boost::bind( &connection_t::start_send
                                , get_this()
                                , to_send_t (msg, hdl, timeout)
                                ));

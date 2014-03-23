@@ -28,9 +28,6 @@ namespace fhg
     class connection_t : private boost::noncopyable
                        , public boost::enable_shared_from_this<connection_t>
     {
-    private:
-      typedef connection_t self;
-
     public:
       typedef boost::shared_ptr<connection_t> ptr_t;
 
