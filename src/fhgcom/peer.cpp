@@ -461,7 +461,7 @@ namespace fhg
         to_send.handler = [](boost::system::error_code const&) {};
         to_send.message.header.src = my_addr_;
         to_send.message.header.dst = a;
-        to_send.message.header.type_of_msg = p2p::type_of_message_traits::HELLO_PACKET;
+        to_send.message.header.type_of_msg = p2p::HELLO_PACKET;
         to_send.message.header.length = name_.size();
         to_send.message.assign (name_.begin(), name_.end());
 

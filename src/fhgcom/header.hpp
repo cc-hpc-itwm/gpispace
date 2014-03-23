@@ -30,11 +30,7 @@ namespace fhg
 
       std::string to_string (address_t const & a);
 
-      struct type_of_message_traits
-      {
-        // system data 8 -> 15
         static const int HELLO_PACKET = 0x8;
-      };
 
       struct header_t
       {
@@ -46,7 +42,7 @@ namespace fhg
           memset (&dst, 0, sizeof(address_t));
         }
 
-        uint32_t type_of_msg;      // see type_of_message_traits
+        uint32_t type_of_msg;
         uint32_t length;           // size of payload in bytes
         address_t src;             // unique source address
         address_t dst;             // unique destination address
