@@ -4,8 +4,6 @@
 #include <fhgcom/header.hpp>
 #include <fhgcom/tests/address_printer.hpp>
 
-#include <iostream>
-
 BOOST_AUTO_TEST_CASE ( test_address )
 {
   fhg::com::p2p::address_t a1;
