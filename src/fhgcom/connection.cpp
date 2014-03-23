@@ -74,7 +74,7 @@ namespace fhg
                              , boost::asio::buffer (&in_message_->header, sizeof(p2p::header_t))
                              , strand_.wrap
                              ( boost::bind ( &connection_t::handle_read_header
-                                           , get_this()
+                                           , shared_from_this()
                                            , boost::asio::placeholders::error
                                            , boost::asio::placeholders::bytes_transferred
                                            )
@@ -100,7 +100,7 @@ namespace fhg
                                 , boost::asio::buffer (in_message_->data)
                                 , strand_.wrap
                                 ( boost::bind ( &connection_t::handle_read_data
-                                              , get_this()
+                                              , shared_from_this()
                                               , boost::asio::placeholders::error
                                               , boost::asio::placeholders::bytes_transferred
                                               )
@@ -109,7 +109,7 @@ namespace fhg
       else
       {
         in_message_->resize(0);
-        _handle_error (get_this(), ec);
+        _handle_error (shared_from_this(), ec);
       }
     }
 
@@ -124,11 +124,11 @@ namespace fhg
 
             if (m->header.type_of_msg == p2p::HELLO_PACKET)
             {
-              _handle_hello_message (get_this(), m);
+              _handle_hello_message (shared_from_this(), m);
             }
             else
             {
-              _handle_user_data (get_this(), m);
+              _handle_user_data (shared_from_this(), m);
             }
 
             in_message_ = new message_t;
@@ -138,7 +138,7 @@ namespace fhg
       else
       {
         in_message_->resize(0);
-            _handle_error (get_this(), ec);
+            _handle_error (shared_from_this(), ec);
       }
     }
 
@@ -164,7 +164,7 @@ namespace fhg
         boost::asio::async_write( socket_
                                 , d.to_buffers()
                                 , strand_.wrap (boost::bind( &connection_t::handle_write
-                                                           , get_this()
+                                                           , shared_from_this()
                                                            , boost::asio::placeholders::error
                                                            )
                                                )
@@ -173,7 +173,7 @@ namespace fhg
       catch (std::length_error const &)
       {
         strand_.post (boost::bind( &connection_t::handle_write
-                                 , get_this()
+                                 , shared_from_this()
                                  , boost::system::errc::make_error_code (boost::system::errc::bad_message)
                                  ));
       }
@@ -201,7 +201,7 @@ namespace fhg
       }
       else
       {
-        _handle_error (get_this(), ec);
+        _handle_error (shared_from_this(), ec);
       }
     }
 
@@ -210,7 +210,7 @@ namespace fhg
                                   )
     {
       strand_.post (boost::bind( &connection_t::start_send
-                               , get_this()
+                               , shared_from_this()
                                , to_send_t (msg, hdl)
                                ));
     }

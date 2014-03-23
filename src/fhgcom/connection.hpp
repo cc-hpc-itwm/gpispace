@@ -43,11 +43,6 @@ namespace fhg
 
       ~connection_t ();
 
-      ptr_t get_this ()
-      {
-        return shared_from_this();
-      }
-
       boost::asio::ip::tcp::socket & socket ();
 
       void async_send (const message_t * msg, completion_handler_t hdl);
