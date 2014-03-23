@@ -8,28 +8,25 @@
 
 BOOST_AUTO_TEST_CASE ( test_address )
 {
-  using namespace fhg::com::p2p;
-  address_t a1;
+  fhg::com::p2p::address_t a1;
   BOOST_CHECK_EQUAL (16ul, sizeof (a1));
 
-  header_t hdr;
+  fhg::com::p2p::header_t hdr;
   BOOST_CHECK_EQUAL (40ul, sizeof (hdr));
 }
 
 BOOST_AUTO_TEST_CASE ( test_address_translation_equal )
 {
-  using namespace fhg::com::p2p;
-  address_t a1 ("name-1");
-  address_t a2 ("name-1");
+  fhg::com::p2p::address_t a1 ("name-1");
+  fhg::com::p2p::address_t a2 ("name-1");
 
   BOOST_CHECK_EQUAL ( a1, a2 );
 }
 
 BOOST_AUTO_TEST_CASE ( test_address_translation_unique )
 {
-  using namespace fhg::com::p2p;
-  address_t a1 ("name-1");
-  address_t a2 ("name-2");
+  fhg::com::p2p::address_t a1 ("name-1");
+  fhg::com::p2p::address_t a2 ("name-2");
 
   BOOST_CHECK_NE ( a1, a2 );
 }
