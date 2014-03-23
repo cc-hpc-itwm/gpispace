@@ -297,21 +297,24 @@ BOOST_FIXTURE_TEST_CASE (peers_with_fixed_ports_reuse, KVSSetup)
   thrd_2.join ();
 }
 
-static void s_send_loop ( fhg::com::peer_t *peer
-                        , bool *stop
-                        , std::string const & to
-                        )
+namespace
 {
-  while (not *stop)
+  void send_loop ( fhg::com::peer_t *peer
+                 , bool *stop
+                 , std::string const & to
+                 )
   {
-    try
+    while (not *stop)
     {
-      usleep (500);
-      peer->send (to, "hello world\n");
-    }
-    catch (std::exception const &ex)
-    {
-      // ignore
+      try
+      {
+        usleep (500);
+        peer->send (to, "hello world\n");
+      }
+      catch (std::exception const &ex)
+      {
+        // ignore
+      }
     }
   }
 }
@@ -327,7 +330,7 @@ BOOST_FIXTURE_TEST_CASE (two_peers_one_restarts_repeatedly, KVSSetup)
 
   bool stop_request (false);
 
-  boost::thread sender (boost::bind ( s_send_loop
+  boost::thread sender (boost::bind ( send_loop
                                     , &peer_1
                                     , &stop_request
                                     , "peer-2"
