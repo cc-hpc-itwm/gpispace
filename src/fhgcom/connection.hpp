@@ -60,9 +60,8 @@ namespace fhg
 
       boost::asio::ip::tcp::socket & socket ();
 
-      template <typename Handler>
       void async_send ( const message_t * msg
-                      , Handler hdl
+                      , completion_handler_t hdl
                       , boost::posix_time::time_duration timeout = boost::posix_time::pos_infin
                       );
 
@@ -144,18 +143,6 @@ namespace fhg
       p2p::address_t m_local_addr;
       p2p::address_t m_remote_addr;
     };
-
-    template <typename Handler>
-    void connection_t::async_send ( const message_t * msg
-                                  , Handler hdl
-                                  , boost::posix_time::time_duration timeout
-                                  )
-    {
-      strand_.post (boost::bind( &self::start_send
-                               , get_this()
-                               , to_send_t (msg, hdl, timeout)
-                               ));
-    }
   }
 }
 

@@ -233,5 +233,17 @@ namespace fhg
           callback_handler_->handle_error (get_this(), ec);
       }
     }
+
+    void connection_t::async_send ( const message_t * msg
+                                  , completion_handler_t hdl
+                                  , boost::posix_time::time_duration timeout
+                                  )
+    {
+      strand_.post (boost::bind( &self::start_send
+                               , get_this()
+                               , to_send_t (msg, hdl, timeout)
+                               ));
+    }
+
   }
 }
