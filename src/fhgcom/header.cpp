@@ -57,9 +57,9 @@ namespace fhg
         memset (data, 0, sizeof (data));
       }
 
-      address_t::address_t (std::string const &nm)
+      address_t::address_t (std::string const &name)
       {
-        translate_name (nm, *this);
+        translate_name (name, *this);
       }
 
       // standard operators
