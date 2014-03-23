@@ -310,6 +310,7 @@ namespace
       }
       catch (std::exception const &ex)
       {
+        //! \todo explain why this can be ignored
         // ignore
       }
     }
