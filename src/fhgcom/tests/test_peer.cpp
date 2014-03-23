@@ -337,7 +337,7 @@ BOOST_FIXTURE_TEST_CASE (two_peers_one_restarts_repeatedly, KVSSetup)
                                     )
                        );
 
-  for (std::size_t i (0); i < 1000; ++i)
+  for (std::size_t i (0); i < 100; ++i)
   {
     peer_t peer_2
       ("peer-2", host_t("localhost"), port_t("15483"), _kvs, &ignore_errors);
