@@ -122,8 +122,6 @@ namespace fhg
         message_t * m = in_message_;
         in_message_ = 0;
 
-          try
-          {
             if (p2p::type_of_message_traits::is_system_data(m->header.type_of_msg))
             {
               _handle_system_data (get_this(), m);
@@ -134,27 +132,13 @@ namespace fhg
             }
 
             in_message_ = new message_t;
-          }
-          catch (std::exception const & ex)
-          {
-            LOG(ERROR, "could not pass received message to callback handler: " << ex.what());
-            throw;
-          }
 
         start_read ();
       }
       else
       {
         in_message_->resize(0);
-          try
-          {
             _handle_error (get_this(), ec);
-          }
-          catch (std::exception const & ex)
-          {
-            LOG(ERROR, "could not pass received message to callback handler: " << ex.what());
-            throw;
-          }
       }
     }
 
