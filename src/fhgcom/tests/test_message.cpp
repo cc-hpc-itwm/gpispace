@@ -5,21 +5,19 @@
 
 BOOST_AUTO_TEST_CASE ( test_message_constr_default )
 {
-  fhg::com::message_t msg;
-  BOOST_REQUIRE_EQUAL ( msg.size (), 0 );
+  BOOST_REQUIRE_EQUAL (fhg::com::message_t().size (), 0);
 }
 
 BOOST_AUTO_TEST_CASE ( test_message_constr_with_length )
 {
-  fhg::com::message_t msg (10);
-  BOOST_REQUIRE_EQUAL ( msg.size(), 10 );
+  BOOST_REQUIRE_EQUAL (fhg::com::message_t (10).size(), 10);
 }
 
 BOOST_AUTO_TEST_CASE ( test_message_constr_with_data )
 {
   const char * data = "Hello World!";
-  fhg::com::message_t msg ( data, strlen(data)+1 );
-  BOOST_REQUIRE_EQUAL ( msg.size(), (strlen(data)+1) );
+  BOOST_REQUIRE_EQUAL
+    (fhg::com::message_t (data, strlen (data) + 1).size(), strlen (data) + 1);
 }
 
 BOOST_AUTO_TEST_CASE ( test_message_constr_copy )
