@@ -34,11 +34,6 @@ namespace fhg
       {
         // system data 8 -> 15
         static const int HELLO_PACKET = 0x8;
-
-        inline static bool is_hello_message (const int tom)
-        {
-          return tom == HELLO_PACKET;
-        }
       };
 
       struct header_t

@@ -122,7 +122,7 @@ namespace fhg
         message_t * m = in_message_;
         in_message_ = 0;
 
-            if (p2p::type_of_message_traits::is_hello_message(m->header.type_of_msg))
+            if (m->header.type_of_msg == p2p::type_of_message_traits::HELLO_PACKET)
             {
               _handle_hello_message (get_this(), m);
             }
