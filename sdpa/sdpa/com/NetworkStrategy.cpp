@@ -114,8 +114,18 @@ namespace sdpa
         const fhg::com::p2p::address_t & addr = m_message.header.src;
         if (addr != m_peer->address())
         {
+          std::string other;
+          try
+          {
+            other = m_peer->resolve_addr (addr);
+          }
+          catch (std::exception const&)
+          {
+            other = "unknown source";
+          }
+
           sdpa::events::ErrorEvent::Ptr
-            error(new sdpa::events::ErrorEvent ( m_peer->resolve_addr (addr)
+            error(new sdpa::events::ErrorEvent ( other
                                                , m_peer->name()
                                                , sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
                                                , ec.message()
