@@ -75,12 +75,6 @@ namespace fhg
         socket_.set_option (o);
       }
 
-      template <typename GettableSocketOption>
-      void get_option(GettableSocketOption & o) const
-      {
-        socket_.get_option (o);
-      }
-
       void start ();
       void stop ();
 
