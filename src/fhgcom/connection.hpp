@@ -50,10 +50,7 @@ namespace fhg
 
       boost::asio::ip::tcp::socket & socket ();
 
-      void async_send ( const message_t * msg
-                      , completion_handler_t hdl
-                      , boost::posix_time::time_duration timeout = boost::posix_time::pos_infin
-                      );
+      void async_send (const message_t * msg, completion_handler_t hdl);
 
       template <typename SettableSocketOption>
       void set_option(const SettableSocketOption & o)
@@ -72,14 +69,12 @@ namespace fhg
     private:
       struct to_send_t
       {
-        to_send_t (const message_t * msg, completion_handler_t hdl, boost::posix_time::time_duration to)
+        to_send_t (const message_t * msg, completion_handler_t hdl)
           : message(msg)
           , handler(hdl)
-          , timeout(to)
         {}
         const message_t * message;
         completion_handler_t handler;
-        boost::posix_time::time_duration timeout;
 
         std::vector<boost::asio::const_buffer> const & to_buffers() const
         {
@@ -123,7 +118,6 @@ namespace fhg
 
       boost::asio::io_service::strand strand_;
       boost::asio::ip::tcp::socket socket_;
-      boost::asio::deadline_timer deadline_;
 
       std::function<void (ptr_t connection, const message_t*)> _handle_system_data;
       std::function<void (ptr_t connection, const message_t*)> _handle_user_data;

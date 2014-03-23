@@ -22,7 +22,6 @@ namespace fhg
       )
       : strand_(io_service)
       , socket_(io_service)
-      , deadline_(io_service)
       , _handle_system_data (handle_system_data)
       , _handle_user_data (handle_user_data)
       , _handle_error (handle_error)
@@ -224,12 +223,11 @@ namespace fhg
 
     void connection_t::async_send ( const message_t * msg
                                   , completion_handler_t hdl
-                                  , boost::posix_time::time_duration timeout
                                   )
     {
       strand_.post (boost::bind( &connection_t::start_send
                                , get_this()
-                               , to_send_t (msg, hdl, timeout)
+                               , to_send_t (msg, hdl)
                                ));
     }
 
