@@ -308,7 +308,6 @@ namespace
     {
       try
       {
-        usleep (500);
         peer->send (to, "hello world\n");
       }
       catch (std::exception const &ex)
