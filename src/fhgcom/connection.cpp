@@ -105,10 +105,7 @@ namespace fhg
       else
       {
         in_message_->resize(0);
-        if (callback_handler_)
-        {
           callback_handler_->handle_error (get_this(), ec);
-        }
       }
     }
 
@@ -121,8 +118,6 @@ namespace fhg
         message_t * m = in_message_;
         in_message_ = 0;
 
-        if (callback_handler_)
-        {
           try
           {
             if (p2p::type_of_message_traits::is_system_data(m->header.type_of_msg))
@@ -141,22 +136,12 @@ namespace fhg
             LOG(ERROR, "could not pass received message to callback handler: " << ex.what());
             throw;
           }
-        }
-        else
-        {
-          LOG(WARN, "no callback handler registered, dropping message");
-          // drop message (reuse allocated memory)
-          in_message_ = m;
-          in_message_->resize (0);
-        }
 
         start_read ();
       }
       else
       {
         in_message_->resize(0);
-        if (callback_handler_)
-        {
           try
           {
             callback_handler_->handle_error (get_this(), ec);
@@ -166,7 +151,6 @@ namespace fhg
             LOG(ERROR, "could not pass received message to callback handler: " << ex.what());
             throw;
           }
-        }
       }
     }
 
@@ -229,7 +213,6 @@ namespace fhg
       }
       else
       {
-        if (callback_handler_)
           callback_handler_->handle_error (get_this(), ec);
       }
     }
