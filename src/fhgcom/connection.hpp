@@ -31,22 +31,15 @@ namespace fhg
     public:
       typedef boost::shared_ptr<connection_t> ptr_t;
 
-      class handler_t
-      {
-      public:
-        virtual ~handler_t () {}
-
-        virtual void handle_system_data (ptr_t connection, const message_t *) = 0;
-        virtual void handle_user_data   (ptr_t connection, const message_t *) = 0;
-        virtual void handle_error       (ptr_t connection, const boost::system::error_code & error ) = 0;
-      };
-
       typedef std::function <void (boost::system::error_code const &)> completion_handler_t;
 
       explicit
-      connection_t ( boost::asio::io_service & io_service
-                   , handler_t * h
-                   );
+      connection_t
+        ( boost::asio::io_service & io_service
+        , std::function<void (ptr_t connection, const message_t*)> handle_system_data
+        , std::function<void (ptr_t connection, const message_t*)> handle_user_data
+        , std::function<void (ptr_t connection, const boost::system::error_code&)> handle_error
+        );
 
       ~connection_t ();
 
@@ -132,7 +125,9 @@ namespace fhg
       boost::asio::ip::tcp::socket socket_;
       boost::asio::deadline_timer deadline_;
 
-      handler_t *callback_handler_;
+      std::function<void (ptr_t connection, const message_t*)> _handle_system_data;
+      std::function<void (ptr_t connection, const message_t*)> _handle_user_data;
+      std::function<void (ptr_t connection, const boost::system::error_code&)> _handle_error;
       message_t *in_message_;
 
       std::list <to_send_t> to_send_;

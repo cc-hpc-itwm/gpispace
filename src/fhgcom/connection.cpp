@@ -14,13 +14,18 @@ namespace fhg
 {
   namespace com
   {
-    connection_t::connection_t( boost::asio::io_service & io_service
-                              , connection_t::handler_t * h
-                              )
+    connection_t::connection_t
+      ( boost::asio::io_service & io_service
+      , std::function<void (ptr_t connection, const message_t*)> handle_system_data
+      , std::function<void (ptr_t connection, const message_t*)> handle_user_data
+      , std::function<void (ptr_t connection, const boost::system::error_code&)> handle_error
+      )
       : strand_(io_service)
       , socket_(io_service)
       , deadline_(io_service)
-      , callback_handler_(h)
+      , _handle_system_data (handle_system_data)
+      , _handle_user_data (handle_user_data)
+      , _handle_error (handle_error)
       , in_message_(new message_t)
     {}
 
@@ -105,7 +110,7 @@ namespace fhg
       else
       {
         in_message_->resize(0);
-          callback_handler_->handle_error (get_this(), ec);
+        _handle_error (get_this(), ec);
       }
     }
 
@@ -122,11 +127,11 @@ namespace fhg
           {
             if (p2p::type_of_message_traits::is_system_data(m->header.type_of_msg))
             {
-              callback_handler_->handle_system_data (get_this(), m);
+              _handle_system_data (get_this(), m);
             }
             else
             {
-              callback_handler_->handle_user_data (get_this(), m);
+              _handle_user_data (get_this(), m);
             }
 
             in_message_ = new message_t;
@@ -144,7 +149,7 @@ namespace fhg
         in_message_->resize(0);
           try
           {
-            callback_handler_->handle_error (get_this(), ec);
+            _handle_error (get_this(), ec);
           }
           catch (std::exception const & ex)
           {
@@ -213,7 +218,7 @@ namespace fhg
       }
       else
       {
-          callback_handler_->handle_error (get_this(), ec);
+        _handle_error (get_this(), ec);
       }
     }
 

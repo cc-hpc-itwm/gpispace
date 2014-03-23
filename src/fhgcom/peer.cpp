@@ -268,11 +268,14 @@ namespace fhg
         to_send.handler = completion_handler;
         cd.o_queue.push_back (to_send);
 
-        cd.connection =
-          connection_t::ptr_t(new connection_t( io_service_
-                                              , this
-                                              )
-                             );
+        cd.connection = connection_t::ptr_t
+          ( new connection_t
+            ( io_service_
+            , boost::bind (&peer_t::handle_system_data, this, _1, _2)
+            , boost::bind (&peer_t::handle_user_data, this, _1, _2)
+            , boost::bind (&peer_t::handle_error, this, _1, _2)
+            )
+          );
         cd.connection->local_address (my_addr_);
         cd.connection->remote_address (addr);
 
@@ -648,10 +651,14 @@ namespace fhg
 
     void peer_t::accept_new ()
     {
-      listen_ = connection_t::ptr_t (new connection_t
-                                    ( io_service_
-                                    , this
-                                    ));
+      listen_ = connection_t::ptr_t
+        ( new connection_t
+          ( io_service_
+          , boost::bind (&peer_t::handle_system_data, this, _1, _2)
+          , boost::bind (&peer_t::handle_user_data, this, _1, _2)
+          , boost::bind (&peer_t::handle_error, this, _1, _2)
+          )
+        );
       listen_->local_address(my_addr_);
       listen_->remote_address(p2p::address_t());
       acceptor_.async_accept( listen_->socket()

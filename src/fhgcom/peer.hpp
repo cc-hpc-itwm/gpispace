@@ -26,8 +26,7 @@ namespace fhg
     /*!
       This class abstracts from an endpoint
      */
-    class peer_t : public connection_t::handler_t
-                 , private boost::noncopyable
+    class peer_t : private boost::noncopyable
                  , public boost::enable_shared_from_this<peer_t>
     {
     public:
