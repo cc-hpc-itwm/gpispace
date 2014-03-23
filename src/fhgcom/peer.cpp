@@ -696,10 +696,7 @@ namespace fhg
 
           connection_data_t & cd = connections_[m->header.src];
           cd.name = remote_name;
-          if (cd.connection)
-          {
-          }
-          else
+          if (!cd.connection)
           {
             cd.connection = c;
           }
