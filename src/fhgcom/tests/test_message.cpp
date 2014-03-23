@@ -3,8 +3,6 @@
 
 #include <fhgcom/message.hpp>
 
-#include <iostream>
-
 BOOST_AUTO_TEST_CASE ( test_message_constr_default )
 {
   fhg::com::message_t msg;
