@@ -7,7 +7,6 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/lambda/bind.hpp>
-#include <boost/lambda/lambda.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/system/error_code.hpp>
