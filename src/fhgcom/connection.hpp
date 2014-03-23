@@ -45,7 +45,6 @@ namespace fhg
       };
 
       typedef std::function <void (boost::system::error_code const &)> completion_handler_t;
-      //      typedef void (*completion_handler_t)(const boost::system::error_code & error);
 
       explicit
       connection_t ( boost::asio::io_service & io_service
