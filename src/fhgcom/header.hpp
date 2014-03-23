@@ -45,20 +45,14 @@ namespace fhg
       struct header_t
       {
         header_t ()
-          : version (0)
-          , flags (0)
-          , type_of_msg (0)
-          , reserved (0)
+          : type_of_msg (0)
           , length (0)
         {
           memset (&src, 0, sizeof(address_t));
           memset (&dst, 0, sizeof(address_t));
         }
 
-        uint32_t version     :  4; // set to fixed 0 currently
-        uint32_t flags       : 12; // set to fixed 0 currently
-        uint32_t type_of_msg :  4; // see type_of_message_traits
-        uint32_t reserved    : 12; // reserved bits for later use
+        uint32_t type_of_msg;      // see type_of_message_traits
         uint32_t length;           // size of payload in bytes
         address_t src;             // unique source address
         address_t dst;             // unique destination address
