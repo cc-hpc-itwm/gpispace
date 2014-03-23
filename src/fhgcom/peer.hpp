@@ -105,7 +105,6 @@ namespace fhg
 
         bool send_in_progress;
         connection_t::ptr_t connection;
-        connection_t::ptr_t loopback;
         std::string name;
         std::deque<to_send_t> o_queue;
       };

@@ -225,8 +225,6 @@ namespace fhg
       // TODO: io_service_.post (...);
       const p2p::address_t addr (m->header.dst);
 
-      // TODO: short circuit loopback sends
-
       if (connections_.find(addr) == connections_.end())
       {
         // lookup location information
@@ -700,8 +698,6 @@ namespace fhg
           cd.name = remote_name;
           if (cd.connection)
           {
-            // handle loopback connections correctly
-            cd.loopback = c;
           }
           else
           {
