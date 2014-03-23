@@ -53,8 +53,6 @@ namespace fhg
 
       ~connection_t ();
 
-      handler_t * set_callback_handler ( handler_t * h );
-
       ptr_t get_this ()
       {
         return shared_from_this();

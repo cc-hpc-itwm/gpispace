@@ -42,13 +42,6 @@ namespace fhg
       }
     }
 
-    connection_t::handler_t * connection_t::set_callback_handler (connection_t::handler_t * h)
-    {
-      handler_t * old = callback_handler_;
-      callback_handler_ = h;
-      return old;
-    }
-
     tcp::socket & connection_t::socket()
     {
       return socket_;
