@@ -46,12 +46,6 @@ namespace fhg
         return gen(name);
       }
 
-      void translate_name (std::string const & name, address_t & addr)
-      {
-        boost::uuids::uuid u = fhg_com_gen_uuid(name);
-        memcpy (&addr, &u, sizeof(u));
-      }
-
       address_t::address_t ()
       {
         memset (data, 0, sizeof (data));
@@ -59,7 +53,8 @@ namespace fhg
 
       address_t::address_t (std::string const &name)
       {
-        translate_name (name, *this);
+        boost::uuids::uuid u = fhg_com_gen_uuid(name);
+        memcpy (this, &u, sizeof(u));
       }
 
       // standard operators
