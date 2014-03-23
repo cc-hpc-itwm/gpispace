@@ -14,8 +14,7 @@ namespace fhg
     class session_manager
     {
     public:
-      typedef session session_type;
-      typedef boost::shared_ptr<session_type> session_ptr;
+      typedef boost::shared_ptr<session> session_ptr;
 
       void handle_data (session_ptr session, const std::string & data)
       {
