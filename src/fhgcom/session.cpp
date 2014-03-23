@@ -11,6 +11,7 @@ using namespace fhg::com;
 void session::close ()
 {
   stopped_ = true;
+  manager_.del_session (shared_from_this());
   socket_.close ();
 }
 

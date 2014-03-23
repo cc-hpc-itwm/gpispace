@@ -45,6 +45,7 @@ namespace fhg
 
       void start ()
       {
+        manager_.add_session (shared_from_this());
         read_header ();
       }
 

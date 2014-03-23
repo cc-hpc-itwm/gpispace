@@ -16,6 +16,14 @@ namespace fhg
     public:
       typedef boost::shared_ptr<session> session_ptr;
 
+      void add_session (session_ptr session)
+      {
+      }
+
+      void del_session (session_ptr session)
+      {
+      }
+
       void handle_data (session_ptr session, const std::string & data)
       {
         on_data_hook (session, data);
