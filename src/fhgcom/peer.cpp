@@ -799,13 +799,6 @@ namespace fhg
         }
         else
         {
-          /*
-          LOG_IF ( ERROR
-                 , (c->remote_address () != p2p::address_t() && (ec.value() != boost::asio::error::eof))
-                 , "error on a connection i don't know anything about, remote: " << c->remote_address()
-                 << " error: " << ec << " msg: " << ec.message ()
-                 );
-          */
           c->stop ();
           c.reset ();
         }
