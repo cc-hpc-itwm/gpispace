@@ -33,12 +33,11 @@ namespace fhg
       struct type_of_message_traits
       {
         // system data 8 -> 15
-        static const int SYSTEM_PACKET_FLAG = 0x8;
         static const int HELLO_PACKET = 0x8;
 
-        inline static bool is_system_data (const int tom)
+        inline static bool is_hello_message (const int tom)
         {
-          return (tom & SYSTEM_PACKET_FLAG) != 0;
+          return tom == HELLO_PACKET;
         }
       };
 

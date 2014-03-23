@@ -271,7 +271,7 @@ namespace fhg
         cd.connection = connection_t::ptr_t
           ( new connection_t
             ( io_service_
-            , boost::bind (&peer_t::handle_system_data, this, _1, _2)
+            , boost::bind (&peer_t::handle_hello_message, this, _1, _2)
             , boost::bind (&peer_t::handle_user_data, this, _1, _2)
             , boost::bind (&peer_t::handle_error, this, _1, _2)
             )
@@ -654,7 +654,7 @@ namespace fhg
       listen_ = connection_t::ptr_t
         ( new connection_t
           ( io_service_
-          , boost::bind (&peer_t::handle_system_data, this, _1, _2)
+          , boost::bind (&peer_t::handle_hello_message, this, _1, _2)
           , boost::bind (&peer_t::handle_user_data, this, _1, _2)
           , boost::bind (&peer_t::handle_error, this, _1, _2)
           )
@@ -669,13 +669,10 @@ namespace fhg
                             );
     }
 
-    void peer_t::handle_system_data (connection_t::ptr_t c, const message_t *m)
+    void peer_t::handle_hello_message (connection_t::ptr_t c, const message_t *m)
     {
       lock_type lock (mutex_);
 
-      switch (m->header.type_of_msg)
-      {
-      case p2p::type_of_message_traits::HELLO_PACKET:
         if (backlog_.find (c) == backlog_.end())
         {
           LOG(ERROR, "protocol error between " << p2p::to_string (my_addr_) << " and " << p2p::to_string (m->header.src) << " closing connection");
@@ -711,11 +708,6 @@ namespace fhg
             cd.connection = c;
           }
         }
-        break;
-      default:
-        LOG(WARN, "cannot handle system message of type: " << std::hex << m->header.type_of_msg);
-        break;
-      }
 
       delete m;
     }

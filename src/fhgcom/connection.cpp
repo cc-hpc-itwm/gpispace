@@ -16,13 +16,13 @@ namespace fhg
   {
     connection_t::connection_t
       ( boost::asio::io_service & io_service
-      , std::function<void (ptr_t connection, const message_t*)> handle_system_data
+      , std::function<void (ptr_t connection, const message_t*)> handle_hello_message
       , std::function<void (ptr_t connection, const message_t*)> handle_user_data
       , std::function<void (ptr_t connection, const boost::system::error_code&)> handle_error
       )
       : strand_(io_service)
       , socket_(io_service)
-      , _handle_system_data (handle_system_data)
+      , _handle_hello_message (handle_hello_message)
       , _handle_user_data (handle_user_data)
       , _handle_error (handle_error)
       , in_message_(new message_t)
@@ -122,9 +122,9 @@ namespace fhg
         message_t * m = in_message_;
         in_message_ = 0;
 
-            if (p2p::type_of_message_traits::is_system_data(m->header.type_of_msg))
+            if (p2p::type_of_message_traits::is_hello_message(m->header.type_of_msg))
             {
-              _handle_system_data (get_this(), m);
+              _handle_hello_message (get_this(), m);
             }
             else
             {
