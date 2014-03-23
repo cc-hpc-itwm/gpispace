@@ -59,14 +59,12 @@ BOOST_FIXTURE_TEST_CASE (check_setup, KVSSetup)
 
 BOOST_AUTO_TEST_CASE (parse_peer_info_full)
 {
-  const std::string url ("peer@[::1]:1234");
-  fhg::com::peer_info_t pi (url);
+  fhg::com::peer_info_t ("peer@[::1]:1234");
 }
 
 BOOST_AUTO_TEST_CASE (parse_peer_info_wo_name)
 {
-  const std::string url ("[::1]:1234");
-  fhg::com::peer_info_t pi (url);
+  fhg::com::peer_info_t ("[::1]:1234");
 }
 
 namespace
@@ -79,17 +77,14 @@ namespace
 
 BOOST_AUTO_TEST_CASE (parse_peer_info_wo_port)
 {
-  const std::string url ("localhost");
-
-  BOOST_REQUIRE_THROW ( ctor (url)
+  BOOST_REQUIRE_THROW ( ctor ("localhost")
                       , std::runtime_error
                       );
 }
 
 BOOST_AUTO_TEST_CASE (parse_peer_info_wi_name)
 {
-  const std::string url ("peer@localhost:1234");
-  fhg::com::peer_info_t pi (url);
+  fhg::com::peer_info_t ("peer@localhost:1234");
 }
 
 namespace
@@ -130,10 +125,9 @@ BOOST_FIXTURE_TEST_CASE (peer_run_two, KVSSetup)
     message_t m;
     peer_2.recv (&m);
 
-    std::string src (peer_2.resolve_addr (m.header.src));
-    std::string data (m.data.begin(), m.data.end());
-    BOOST_CHECK_EQUAL (src, "peer-1");
-    BOOST_CHECK_EQUAL (data, "hello world!");
+  BOOST_CHECK_EQUAL (peer_2.resolve_addr (m.header.src), "peer-1");
+  BOOST_CHECK_EQUAL
+    (std::string (m.data.begin(), m.data.end()), "hello world!");
 
   peer_1.stop();
   peer_2.stop();
@@ -179,23 +173,13 @@ BOOST_FIXTURE_TEST_CASE (resolve_peer_addresses, KVSSetup)
   peer_1.start();
   peer_2.start();
 
-  const p2p::address_t peer_1_addr (peer_1.address());
-  const p2p::address_t peer_2_addr (peer_2.address());
+  BOOST_CHECK_EQUAL ( peer_1.resolve_addr (peer_1.address())
+                    , peer_2.resolve_addr (peer_1.address())
+                    );
 
-  {
-    std::string n_1 (peer_1.resolve_addr (peer_1_addr));
-
-    std::string n_2 (peer_2.resolve_addr (peer_1_addr));
-
-    BOOST_CHECK_EQUAL (n_1, n_2);
-  }
-  {
-    std::string n_1 (peer_1.resolve_addr (peer_2_addr));
-
-    std::string n_2 (peer_2.resolve_addr (peer_2_addr));
-
-    BOOST_CHECK_EQUAL (n_1, n_2);
-  }
+  BOOST_CHECK_EQUAL ( peer_1.resolve_addr (peer_2.address())
+                    , peer_2.resolve_addr (peer_2.address())
+                    );
 
   peer_1.stop();
   peer_2.stop();
