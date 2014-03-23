@@ -87,7 +87,7 @@ namespace fhg
     {
       if (! ec)
       {
-        assert (bytes_transferred == sizeof(message_t::header_t));
+        assert (bytes_transferred == sizeof(p2p::header_t));
 
         // WORK HERE: convert for local endianess!
         LOG_IF( WARN
