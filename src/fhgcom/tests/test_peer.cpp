@@ -157,18 +157,6 @@ BOOST_FIXTURE_TEST_CASE (resolve_peer_names, KVSSetup)
   peer_1.start();
   peer_2.start();
 
-  {
-    p2p::address_t a1 (fhg::com::p2p::address_t ("peer-1"));
-    p2p::address_t a2 (fhg::com::p2p::address_t ("peer-1"));
-    BOOST_CHECK_EQUAL (a1, a2);
-  }
-
-  {
-    p2p::address_t a1 (fhg::com::p2p::address_t ("peer-2"));
-    p2p::address_t a2 (fhg::com::p2p::address_t ("peer-2"));
-    BOOST_CHECK_EQUAL (a1, a2);
-  }
-
   peer_1.stop();
   peer_2.stop();
 
