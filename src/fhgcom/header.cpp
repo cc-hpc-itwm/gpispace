@@ -40,12 +40,6 @@ namespace fhg
         };
       }
 
-      static boost::uuids::uuid fhg_com_gen_uuid(std::string const & name)
-      {
-        static detail::fhg_com_gen_uuid gen;
-        return gen(name);
-      }
-
       address_t::address_t ()
       {
         memset (data, 0, sizeof (data));
@@ -53,7 +47,8 @@ namespace fhg
 
       address_t::address_t (std::string const &name)
       {
-        boost::uuids::uuid u = fhg_com_gen_uuid(name);
+        static detail::fhg_com_gen_uuid gen;
+        boost::uuids::uuid u = gen(name);
         memcpy (this, &u, sizeof(u));
       }
 
