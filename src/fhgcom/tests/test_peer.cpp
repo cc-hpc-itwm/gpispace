@@ -48,11 +48,9 @@ struct KVSSetup
 BOOST_FIXTURE_TEST_CASE (check_setup, KVSSetup)
 {
   // make sure that the kvs is reachable...
-  using namespace fhg::com;
-
   _kvs->put ("fhg.com.test.PeerTest", 42);
 
-  const kvs::values_type v (_kvs->get ("fhg.com.test.PeerTest"));
+  const fhg::com::kvs::values_type v (_kvs->get ("fhg.com.test.PeerTest"));
   BOOST_REQUIRE_EQUAL (v.size(), 1);
   BOOST_REQUIRE_EQUAL (v.begin()->first, "fhg.com.test.PeerTest");
   BOOST_REQUIRE_EQUAL (v.begin()->second, "42");
@@ -61,18 +59,14 @@ BOOST_FIXTURE_TEST_CASE (check_setup, KVSSetup)
 
 BOOST_AUTO_TEST_CASE (parse_peer_info_full)
 {
-  using namespace fhg::com;
-
   const std::string url ("peer@[::1]:1234");
-  peer_info_t pi (url);
+  fhg::com::peer_info_t pi (url);
 }
 
 BOOST_AUTO_TEST_CASE (parse_peer_info_wo_name)
 {
-  using namespace fhg::com;
-
   const std::string url ("[::1]:1234");
-  peer_info_t pi (url);
+  fhg::com::peer_info_t pi (url);
 }
 
 namespace
@@ -85,8 +79,6 @@ namespace
 
 BOOST_AUTO_TEST_CASE (parse_peer_info_wo_port)
 {
-  using namespace fhg::com;
-
   const std::string url ("localhost");
 
   BOOST_REQUIRE_THROW ( ctor (url)
@@ -96,10 +88,8 @@ BOOST_AUTO_TEST_CASE (parse_peer_info_wo_port)
 
 BOOST_AUTO_TEST_CASE (parse_peer_info_wi_name)
 {
-  using namespace fhg::com;
-
   const std::string url ("peer@localhost:1234");
-  peer_info_t pi (url);
+  fhg::com::peer_info_t pi (url);
 }
 
 namespace
