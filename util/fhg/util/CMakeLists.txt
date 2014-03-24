@@ -88,5 +88,4 @@ install (TARGETS fhg-util-shared
   LIBRARY DESTINATION lib
 )
 
-add_subdirectory (boost)
   add_subdirectory(test)
