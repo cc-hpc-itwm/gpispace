@@ -148,54 +148,22 @@ BOOST_FIXTURE_TEST_CASE (testLoadBalancing, serveJob_checking_scheduler_and_job_
 BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_and_job_manager)
 {
   _scheduler.worker_manager().addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
-  _scheduler.worker_manager().addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
-  _scheduler.worker_manager().addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
-  _scheduler.worker_manager().addWorker ("worker_3", 1, capabilities ("worker_3", "C"));
-  _scheduler.worker_manager().addWorker ("worker_4", 1, capabilities ("worker_4", "C"));
-  _scheduler.worker_manager().addWorker ("worker_5", 1, capabilities ("worker_5", "C"));
-  _scheduler.worker_manager().addWorker ("worker_6", 1, capabilities ("worker_6", "C"));
-  _scheduler.worker_manager().addWorker ("worker_7", 1, capabilities ("worker_7", "C"));
-  _scheduler.worker_manager().addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
 
   add_job ("job_0", require ("C"));
   add_job ("job_1", require ("C"));
-  add_job ("job_2", require ("C"));
-  add_job ("job_3", require ("C"));
-  add_job ("job_4", require ("C"));
-  add_job ("job_5", require ("C"));
-  add_job ("job_6", require ("C"));
-  add_job ("job_7", require ("C"));
-  add_job ("job_8", require ("C"));
-  add_job ("job_9", require ("C"));
 
   _scheduler.enqueueJob ("job_0");
   _scheduler.enqueueJob ("job_1");
-  _scheduler.enqueueJob ("job_2");
-  _scheduler.enqueueJob ("job_3");
-  _scheduler.enqueueJob ("job_4");
-  _scheduler.enqueueJob ("job_5");
-  _scheduler.enqueueJob ("job_6");
-  _scheduler.enqueueJob ("job_7");
-  _scheduler.enqueueJob ("job_8");
-  _scheduler.enqueueJob ("job_9");
 
 
-  expect_serveJob_call ("job_0", worker_list ("worker_8"));
-  expect_serveJob_call ("job_1", worker_list ("worker_7"));
-  expect_serveJob_call ("job_2", worker_list ("worker_5"));
-  expect_serveJob_call ("job_3", worker_list ("worker_4"));
-  expect_serveJob_call ("job_4", worker_list ("worker_6"));
-  expect_serveJob_call ("job_5", worker_list ("worker_3"));
-  expect_serveJob_call ("job_6", worker_list ("worker_2"));
-  expect_serveJob_call ("job_7", worker_list ("worker_1"));
-  expect_serveJob_call ("job_8", worker_list ("worker_0"));
+  expect_serveJob_call ("job_0", worker_list ("worker_0"));
 
   _scheduler.assignJobsToWorkers();
 
 
-  _scheduler.worker_manager().addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
+  _scheduler.worker_manager().addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
 
-  expect_serveJob_call ("job_9", worker_list ("worker_9"));
+  expect_serveJob_call ("job_1", worker_list ("worker_1"));
 
   _scheduler.assignJobsToWorkers();
 }
