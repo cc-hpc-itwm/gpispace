@@ -64,22 +64,6 @@ struct serveJob_checking_scheduler_and_job_manager
 
 namespace
 {
-  std::set<sdpa::worker_id_t> worker_list (sdpa::worker_id_t w1)
-  {
-    std::set<sdpa::worker_id_t> workers;
-    workers.insert (w1);
-    return workers;
-  }
-  std::set<sdpa::worker_id_t> worker_list ( sdpa::worker_id_t w1
-                                          , sdpa::worker_id_t w2
-                                          )
-  {
-    std::set<sdpa::worker_id_t> workers;
-    workers.insert (w1);
-    workers.insert (w2);
-    return workers;
-  }
-
   sdpa::capabilities_set_t capabilities ( sdpa::worker_id_t worker
                                         , std::string name_1
                                         )
@@ -123,8 +107,8 @@ BOOST_FIXTURE_TEST_CASE (testLoadBalancing, serveJob_checking_scheduler_and_job_
   _scheduler.enqueueJob ("job_1");
   _scheduler.enqueueJob ("job_2");
 
-  expect_serveJob_call ("job_0", worker_list ("worker_1"));
-  expect_serveJob_call ("job_1", worker_list ("worker_0"));
+  expect_serveJob_call ("job_0", {"worker_1"});
+  expect_serveJob_call ("job_1", {"worker_0"});
 
   _scheduler.assignJobsToWorkers();
 
@@ -136,7 +120,7 @@ BOOST_FIXTURE_TEST_CASE (testLoadBalancing, serveJob_checking_scheduler_and_job_
   _scheduler.releaseReservation ("job_1");
 
 
-  expect_serveJob_call ("job_2", worker_list ("worker_1"));
+  expect_serveJob_call ("job_2", {"worker_1"});
 
   _scheduler.assignJobsToWorkers();
 }
@@ -152,14 +136,14 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_a
   _scheduler.enqueueJob ("job_1");
 
 
-  expect_serveJob_call ("job_0", worker_list ("worker_0"));
+  expect_serveJob_call ("job_0", {"worker_0"});
 
   _scheduler.assignJobsToWorkers();
 
 
   _scheduler.worker_manager().addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
 
-  expect_serveJob_call ("job_1", worker_list ("worker_1"));
+  expect_serveJob_call ("job_1", {"worker_1"});
 
   _scheduler.assignJobsToWorkers();
 }
@@ -176,14 +160,14 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_schedule
   _scheduler.enqueueJob ("job_1");
 
 
-  expect_serveJob_call ("job_0", worker_list ("worker_0"));
+  expect_serveJob_call ("job_0", {"worker_0"});
 
   _scheduler.assignJobsToWorkers();
 
 
   _scheduler.worker_manager().findWorker ("worker_1")->addCapabilities (capabilities ("worker_1", "C"));
 
-  expect_serveJob_call ("job_1", worker_list ("worker_1"));
+  expect_serveJob_call ("job_1", {"worker_1"});
 
   _scheduler.assignJobsToWorkers();
 }
@@ -202,8 +186,8 @@ BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_m
   _scheduler.enqueueJob ("job_1");
 
 
-  expect_serveJob_call ("job_0", worker_list ("0", "3"));
-  expect_serveJob_call ("job_1", worker_list ("1", "10"));
+  expect_serveJob_call ("job_0", {"0", "3"});
+  expect_serveJob_call ("job_1", {"1", "10"});
 
   _scheduler.assignJobsToWorkers();
 
@@ -219,7 +203,7 @@ BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_m
 
   _scheduler.releaseReservation ("job_0");
 
-  expect_serveJob_call ("job_3", 1, worker_list ("0", "3"));
+  expect_serveJob_call ("job_3", 1, {"0", "3"});
 
   _scheduler.assignJobsToWorkers();
 }
@@ -260,16 +244,16 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and
   _scheduler.enqueueJob ("job_9");
 
 
-  expect_serveJob_call ("job_0", worker_list ("worker_9"));
-  expect_serveJob_call ("job_1", worker_list ("worker_8"));
-  expect_serveJob_call ("job_2", worker_list ("worker_7"));
-  expect_serveJob_call ("job_3", worker_list ("worker_5"));
-  expect_serveJob_call ("job_4", worker_list ("worker_4"));
-  expect_serveJob_call ("job_5", worker_list ("worker_6"));
-  expect_serveJob_call ("job_6", worker_list ("worker_3"));
-  expect_serveJob_call ("job_7", worker_list ("worker_2"));
-  expect_serveJob_call ("job_8", worker_list ("worker_1"));
-  expect_serveJob_call ("job_9", worker_list ("worker_0"));
+  expect_serveJob_call ("job_0", {"worker_9"});
+  expect_serveJob_call ("job_1", {"worker_8"});
+  expect_serveJob_call ("job_2", {"worker_7"});
+  expect_serveJob_call ("job_3", {"worker_5"});
+  expect_serveJob_call ("job_4", {"worker_4"});
+  expect_serveJob_call ("job_5", {"worker_6"});
+  expect_serveJob_call ("job_6", {"worker_3"});
+  expect_serveJob_call ("job_7", {"worker_2"});
+  expect_serveJob_call ("job_8", {"worker_1"});
+  expect_serveJob_call ("job_9", {"worker_0"});
 
   _scheduler.assignJobsToWorkers();
 
@@ -281,7 +265,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and
 
   _scheduler.worker_manager().addWorker("worker_9", 1, capabilities ("worker_9", "C"));
 
-  expect_serveJob_call ("job_0", worker_list ("worker_9"));
+  expect_serveJob_call ("job_0", {"worker_9"});
 
   _scheduler.assignJobsToWorkers();
 }
@@ -299,6 +283,6 @@ BOOST_FIXTURE_TEST_CASE
   add_job ("1", require (1));
   _scheduler.enqueueJob ("1");
 
-  expect_serveJob_call ("1", worker_list ("worker"));
+  expect_serveJob_call ("1", {"worker"});
   _scheduler.assignJobsToWorkers();
 }
