@@ -64,40 +64,28 @@ struct serveJob_checking_scheduler_and_job_manager
 
 namespace
 {
-  sdpa::capabilities_set_t capabilities ( sdpa::worker_id_t worker
-                                        , std::string name_1
-                                        )
-  {
-    sdpa::capabilities_set_t set;
-    set.insert (sdpa::capability_t (name_1, worker));
-    return set;
-  }
-
   job_requirements_t require (std::string name_1)
   {
-    requirement_list_t reqs;
-    reqs.push_back (we::type::requirement_t (name_1, true));
-    return job_requirements_t (reqs, we::type::schedule_data());
+    return job_requirements_t
+      ({we::type::requirement_t (name_1, true)}, we::type::schedule_data());
   }
 
-  job_requirements_t require (std::string name_1, unsigned long workers)
+  job_requirements_t require (std::string name, unsigned long workers)
   {
-    requirement_list_t reqs;
-    reqs.push_back (we::type::requirement_t (name_1, true));
-    return job_requirements_t (reqs, we::type::schedule_data (workers));
+    return job_requirements_t
+      ({we::type::requirement_t (name, true)}, we::type::schedule_data (workers));
   }
 
   job_requirements_t require (unsigned long workers)
   {
-    requirement_list_t reqs;
-    return job_requirements_t (reqs, we::type::schedule_data (workers));
+    return job_requirements_t ({}, we::type::schedule_data (workers));
   }
 }
 
 BOOST_FIXTURE_TEST_CASE (testLoadBalancing, serveJob_checking_scheduler_and_job_manager)
 {
-  _scheduler.worker_manager().addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
-  _scheduler.worker_manager().addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
+  _scheduler.worker_manager().addWorker ("worker_0", 1, {sdpa::capability_t ("C", "worker_0")});
+  _scheduler.worker_manager().addWorker ("worker_1", 1, {sdpa::capability_t ("C", "worker_1")});
 
   add_job ("job_0", require ("C"));
   add_job ("job_1", require ("C"));
@@ -127,7 +115,7 @@ BOOST_FIXTURE_TEST_CASE (testLoadBalancing, serveJob_checking_scheduler_and_job_
 
 BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_and_job_manager)
 {
-  _scheduler.worker_manager().addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
+  _scheduler.worker_manager().addWorker ("worker_0", 1, {sdpa::capability_t ("C", "worker_0")});
 
   add_job ("job_0", require ("C"));
   add_job ("job_1", require ("C"));
@@ -141,7 +129,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_a
   _scheduler.assignJobsToWorkers();
 
 
-  _scheduler.worker_manager().addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
+  _scheduler.worker_manager().addWorker ("worker_1", 1, {sdpa::capability_t ("C", "worker_1")});
 
   expect_serveJob_call ("job_1", {"worker_1"});
 
@@ -150,7 +138,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_a
 
 BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_scheduler_and_job_manager)
 {
-  _scheduler.worker_manager().addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
+  _scheduler.worker_manager().addWorker ("worker_0", 1, {sdpa::capability_t ("C", "worker_0")});
   _scheduler.worker_manager().addWorker ("worker_1", 1);
 
   add_job ("job_0", require ("C"));
@@ -165,7 +153,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_schedule
   _scheduler.assignJobsToWorkers();
 
 
-  _scheduler.worker_manager().findWorker ("worker_1")->addCapabilities (capabilities ("worker_1", "C"));
+  _scheduler.worker_manager().findWorker ("worker_1")->addCapabilities ({sdpa::capability_t ("C", "worker_1")});
 
   expect_serveJob_call ("job_1", {"worker_1"});
 
@@ -174,10 +162,10 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_schedule
 
 BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_manager)
 {
-  _scheduler.worker_manager().addWorker ("0", 1, capabilities ("0", "A"));
-  _scheduler.worker_manager().addWorker ("1", 1, capabilities ("1", "B"));
-  _scheduler.worker_manager().addWorker ("3", 1, capabilities ("3", "A"));
-  _scheduler.worker_manager().addWorker ("4", 1, capabilities ("4", "B"));
+  _scheduler.worker_manager().addWorker ("0", 1, {sdpa::capability_t ("A", "0")});
+  _scheduler.worker_manager().addWorker ("1", 1, {sdpa::capability_t ("B", "1")});
+  _scheduler.worker_manager().addWorker ("3", 1, {sdpa::capability_t ("A", "3")});
+  _scheduler.worker_manager().addWorker ("4", 1, {sdpa::capability_t ("B", "4")});
 
   add_job ("job_0", require ("A", 2));
   add_job ("job_1", require ("B", 2));
@@ -210,16 +198,16 @@ BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_m
 
 BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and_job_manager)
 {
-  _scheduler.worker_manager().addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
-  _scheduler.worker_manager().addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
-  _scheduler.worker_manager().addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
-  _scheduler.worker_manager().addWorker ("worker_3", 1, capabilities ("worker_3", "C"));
-  _scheduler.worker_manager().addWorker ("worker_4", 1, capabilities ("worker_4", "C"));
-  _scheduler.worker_manager().addWorker ("worker_5", 1, capabilities ("worker_5", "C"));
-  _scheduler.worker_manager().addWorker ("worker_6", 1, capabilities ("worker_6", "C"));
-  _scheduler.worker_manager().addWorker ("worker_7", 1, capabilities ("worker_7", "C"));
-  _scheduler.worker_manager().addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
-  _scheduler.worker_manager().addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
+  _scheduler.worker_manager().addWorker ("worker_0", 1, {sdpa::capability_t ("C", "worker_0")});
+  _scheduler.worker_manager().addWorker ("worker_1", 1, {sdpa::capability_t ("C", "worker_1")});
+  _scheduler.worker_manager().addWorker ("worker_2", 1, {sdpa::capability_t ("C", "worker_2")});
+  _scheduler.worker_manager().addWorker ("worker_3", 1, {sdpa::capability_t ("C", "worker_3")});
+  _scheduler.worker_manager().addWorker ("worker_4", 1, {sdpa::capability_t ("C", "worker_4")});
+  _scheduler.worker_manager().addWorker ("worker_5", 1, {sdpa::capability_t ("C", "worker_5")});
+  _scheduler.worker_manager().addWorker ("worker_6", 1, {sdpa::capability_t ("C", "worker_6")});
+  _scheduler.worker_manager().addWorker ("worker_7", 1, {sdpa::capability_t ("C", "worker_7")});
+  _scheduler.worker_manager().addWorker ("worker_8", 1, {sdpa::capability_t ("C", "worker_8")});
+  _scheduler.worker_manager().addWorker ("worker_9", 1, {sdpa::capability_t ("C", "worker_9")});
 
   add_job ("job_0", require ("C"));
   add_job ("job_1", require ("C"));
@@ -263,7 +251,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and
   _scheduler.worker_manager().deleteWorker ("worker_9");
   _scheduler.enqueueJob ("job_0");
 
-  _scheduler.worker_manager().addWorker("worker_9", 1, capabilities ("worker_9", "C"));
+  _scheduler.worker_manager().addWorker("worker_9", 1, {sdpa::capability_t ("C", "worker_9")});
 
   expect_serveJob_call ("job_0", {"worker_9"});
 
