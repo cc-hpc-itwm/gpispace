@@ -1048,6 +1048,9 @@ void GenericDaemon::handleSubmitJobAckEvent(const events::SubmitJobAckEvent* pEv
   Job* ptrJob = findJob(pEvent->job_id());
   if(ptrJob)
   {
+      if(ptrJob->getStatus() == sdpa:: status::CANCELING)
+        return;
+
       try
       {
         ptrJob->Dispatch();

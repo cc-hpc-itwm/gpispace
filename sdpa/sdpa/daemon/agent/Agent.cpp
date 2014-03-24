@@ -148,8 +148,16 @@ namespace sdpa
           );
       }
 
-      workflowEngine()->cancel (pEvt->job_id());
-      pJob->CancelJob();
+      if(pJob->getStatus() == sdpa::status::RUNNING)
+      {
+          pJob->CancelJob();
+          workflowEngine()->cancel (pEvt->job_id());
+      }
+      else
+      {
+          parent_proxy (this, pJob->owner()).cancel_job_ack (pEvt->job_id());
+          deleteJob (pEvt->job_id());
+      }
     }
 
     void Agent::handleCancelJobAckEvent (const events::CancelJobAckEvent* pEvt)
