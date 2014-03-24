@@ -66,19 +66,17 @@ namespace
 {
   job_requirements_t require (std::string name_1)
   {
-    return job_requirements_t
-      ({we::type::requirement_t (name_1, true)}, we::type::schedule_data());
+    return {{we::type::requirement_t (name_1, true)}, we::type::schedule_data()};
   }
 
   job_requirements_t require (std::string name, unsigned long workers)
   {
-    return job_requirements_t
-      ({we::type::requirement_t (name, true)}, we::type::schedule_data (workers));
+    return {{we::type::requirement_t (name, true)}, we::type::schedule_data (workers)};
   }
 
   job_requirements_t require (unsigned long workers)
   {
-    return job_requirements_t ({}, we::type::schedule_data (workers));
+    return {{}, we::type::schedule_data (workers)};
   }
 }
 
