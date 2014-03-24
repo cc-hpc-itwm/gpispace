@@ -198,60 +198,28 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and
 {
   _scheduler.worker_manager().addWorker ("worker_0", 1, {sdpa::capability_t ("C", "worker_0")});
   _scheduler.worker_manager().addWorker ("worker_1", 1, {sdpa::capability_t ("C", "worker_1")});
-  _scheduler.worker_manager().addWorker ("worker_2", 1, {sdpa::capability_t ("C", "worker_2")});
-  _scheduler.worker_manager().addWorker ("worker_3", 1, {sdpa::capability_t ("C", "worker_3")});
-  _scheduler.worker_manager().addWorker ("worker_4", 1, {sdpa::capability_t ("C", "worker_4")});
-  _scheduler.worker_manager().addWorker ("worker_5", 1, {sdpa::capability_t ("C", "worker_5")});
-  _scheduler.worker_manager().addWorker ("worker_6", 1, {sdpa::capability_t ("C", "worker_6")});
-  _scheduler.worker_manager().addWorker ("worker_7", 1, {sdpa::capability_t ("C", "worker_7")});
-  _scheduler.worker_manager().addWorker ("worker_8", 1, {sdpa::capability_t ("C", "worker_8")});
-  _scheduler.worker_manager().addWorker ("worker_9", 1, {sdpa::capability_t ("C", "worker_9")});
 
   add_job ("job_0", require ("C"));
   add_job ("job_1", require ("C"));
-  add_job ("job_2", require ("C"));
-  add_job ("job_3", require ("C"));
-  add_job ("job_4", require ("C"));
-  add_job ("job_5", require ("C"));
-  add_job ("job_6", require ("C"));
-  add_job ("job_7", require ("C"));
-  add_job ("job_8", require ("C"));
-  add_job ("job_9", require ("C"));
 
   _scheduler.enqueueJob ("job_0");
   _scheduler.enqueueJob ("job_1");
-  _scheduler.enqueueJob ("job_2");
-  _scheduler.enqueueJob ("job_3");
-  _scheduler.enqueueJob ("job_4");
-  _scheduler.enqueueJob ("job_5");
-  _scheduler.enqueueJob ("job_6");
-  _scheduler.enqueueJob ("job_7");
-  _scheduler.enqueueJob ("job_8");
-  _scheduler.enqueueJob ("job_9");
 
 
-  expect_serveJob_call ("job_0", {"worker_9"});
-  expect_serveJob_call ("job_1", {"worker_8"});
-  expect_serveJob_call ("job_2", {"worker_7"});
-  expect_serveJob_call ("job_3", {"worker_5"});
-  expect_serveJob_call ("job_4", {"worker_4"});
-  expect_serveJob_call ("job_5", {"worker_6"});
-  expect_serveJob_call ("job_6", {"worker_3"});
-  expect_serveJob_call ("job_7", {"worker_2"});
-  expect_serveJob_call ("job_8", {"worker_1"});
-  expect_serveJob_call ("job_9", {"worker_0"});
+  expect_serveJob_call ("job_0", {"worker_1"});
+  expect_serveJob_call ("job_1", {"worker_0"});
 
   _scheduler.assignJobsToWorkers();
 
 
-  _scheduler.worker_manager().findWorker ("worker_9")->deleteJob ("job_0");
+  _scheduler.worker_manager().findWorker ("worker_1")->deleteJob ("job_0");
   _scheduler.releaseReservation ("job_0");
-  _scheduler.worker_manager().deleteWorker ("worker_9");
+  _scheduler.worker_manager().deleteWorker ("worker_1");
   _scheduler.enqueueJob ("job_0");
 
-  _scheduler.worker_manager().addWorker("worker_9", 1, {sdpa::capability_t ("C", "worker_9")});
+  _scheduler.worker_manager().addWorker ("worker_1", 1, {sdpa::capability_t ("C", "worker_1")});
 
-  expect_serveJob_call ("job_0", {"worker_9"});
+  expect_serveJob_call ("job_0", {"worker_1"});
 
   _scheduler.assignJobsToWorkers();
 }
