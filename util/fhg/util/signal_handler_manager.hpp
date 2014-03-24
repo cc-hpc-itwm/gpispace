@@ -30,7 +30,7 @@ namespace fhg
       void handle (int sig_num, siginfo_t* info, void* context) const;
 
       mutable boost::mutex _handler_mutex;
-      std::map<int, std::list<boost::function<void (int, siginfo_t*, void*)> > >
+      std::map<int, std::list<boost::function<void (int, siginfo_t*, void*)>>>
         _handlers;
     };
   }

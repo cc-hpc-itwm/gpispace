@@ -38,7 +38,7 @@ int main (int argc, char** argv) try
     , "output file name, - for stdout"
     )
     ( "put,p"
-    , po::value<std::vector<std::string> > (&input_spec)
+    , po::value<std::vector<std::string>> (&input_spec)
     , "input token: port=<value>"
     )
     ;

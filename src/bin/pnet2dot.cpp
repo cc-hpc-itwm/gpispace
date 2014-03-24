@@ -181,7 +181,7 @@ namespace
   {
   public:
     bool full;
-    std::list<std::function <bool (we::type::transition_t const&)> >
+    std::list<std::function <bool (we::type::transition_t const&)>>
       filter;
     bool show_token;
     bool show_signature;

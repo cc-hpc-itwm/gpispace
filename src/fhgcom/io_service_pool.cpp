@@ -30,7 +30,7 @@ namespace fhg
 
     void io_service_pool::run ()
     {
-      std::vector<boost::shared_ptr<boost::thread> > threads;
+      std::vector<boost::shared_ptr<boost::thread>> threads;
       for (std::size_t i (0); i < io_services_.size(); ++i)
       {
         for (std::size_t j (0) ; j < m_nthreads ; ++j)

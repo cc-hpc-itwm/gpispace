@@ -65,8 +65,8 @@ int main(int ac, char *av[])
     ("term", "terminate a running kvs daemon")
     ("timeout,T", po::value<size_t>(&timeout)->default_value (timeout), "timeout in milliseconds")
     ("put,p", po::value<std::string>(&key), "store a value in the key-value store")
-    ("get,g", po::value<std::vector<std::string> >(&key_list), "get values from the key-value store")
-    ("del,d", po::value<std::vector<std::string> >(&key_list), "delete entries from the key-value store")
+    ("get,g", po::value<std::vector<std::string>>(&key_list), "get values from the key-value store")
+    ("del,d", po::value<std::vector<std::string>>(&key_list), "delete entries from the key-value store")
     ("cnt", po::value<std::string>(&key), "atomically increment/decrement a numeric entry")
     ;
 

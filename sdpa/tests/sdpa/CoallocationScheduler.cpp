@@ -58,7 +58,7 @@ struct serveJob_checking_scheduler_and_job_manager
     expect_serveJob_call (id, list.size(), list);
   }
 
-  std::map<sdpa::job_id_t, std::pair<std::size_t, std::set<sdpa::worker_id_t> > >
+  std::map<sdpa::job_id_t, std::pair<std::size_t, std::set<sdpa::worker_id_t>>>
     _expected_serveJob_calls;
 };
 

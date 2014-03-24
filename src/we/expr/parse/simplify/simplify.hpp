@@ -14,7 +14,7 @@ namespace expr
   {
     namespace simplify
     {
-      typedef std::set<std::list<std::string> > key_set_type;
+      typedef std::set<std::list<std::string>> key_set_type;
 
       //! \todo also return the modified flag
       parser simplification_pass

@@ -111,7 +111,7 @@ try
   desc.add_options()
     ( "help,h", "this message")
     ( "version,V", "print version information")
-    ( "port,p", po::value<std::vector<std::string> >(&ports), "port to retrieve tokens from" )
+    ( "port,p", po::value<std::vector<std::string>>(&ports), "port to retrieve tokens from" )
     ( "type,t", po::value<std::string>(&type)->default_value(type), "input/output port")
     ( "input,i"
     , po::value<std::string>(&input)->default_value(input)

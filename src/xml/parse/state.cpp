@@ -559,7 +559,7 @@ namespace xml
 #define STRINGVAL(x)                            \
         TYPEDVAL (std::string,x)
 #define STRINGVECVAL(x)                                                 \
-        boost::program_options::value<std::vector<std::string> > (&_ ## x)
+        boost::program_options::value<std::vector<std::string>> (&_ ## x)
 
         boost::program_options::options_description warnings ("Warnings");
 

@@ -227,7 +227,7 @@ namespace we
 
       if (_running_jobs.terminated (*parent, child))
       {
-        std::unordered_map<id_type, std::function<void()> >::iterator
+        std::unordered_map<id_type, std::function<void()>>::iterator
           const pos (_finalize_job_cancellation.find (*parent));
 
         pos->second();

@@ -25,7 +25,7 @@ namespace pnet
 
           std::ostream& operator() (const std::list<value_type>& l) const
           {
-            return fhg::util::print_container<std::list<value_type> >
+            return fhg::util::print_container<std::list<value_type>>
               ( _os, "List ", "(", ",", ")", boost::ref (l)
               , boost::bind (&visitor_show::print_value, this, _1)
               );
@@ -33,14 +33,14 @@ namespace pnet
           std::ostream&
           operator() (const std::map<value_type, value_type>& m) const
           {
-            return fhg::util::print_container<std::map<value_type, value_type> >
+            return fhg::util::print_container<std::map<value_type, value_type>>
               ( _os, "Map ", "[", ",", "]", boost::ref (m)
               , boost::bind (&visitor_show::print_map_item, this, _1)
               );
           }
           std::ostream& operator() (const std::set<value_type>& s) const
           {
-            return fhg::util::print_container<std::set<value_type> >
+            return fhg::util::print_container<std::set<value_type>>
               ( _os, "Set ", "{", ",", "}", boost::ref (s)
               , boost::bind (&visitor_show::print_value, this, _1)
               );

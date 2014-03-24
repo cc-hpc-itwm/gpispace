@@ -275,7 +275,7 @@ namespace sdpa {
 
       void do_registration_after_sleep (const MasterInfo);
 
-      fhg::thread::queue<boost::shared_ptr<events::SDPAEvent> > _event_queue;
+      fhg::thread::queue<boost::shared_ptr<events::SDPAEvent>> _event_queue;
 
       fhg::com::kvs::kvsc_ptr_t _kvs_client;
       sdpa::com::NetworkStrategy _network_strategy;

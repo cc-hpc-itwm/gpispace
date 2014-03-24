@@ -138,7 +138,7 @@ namespace fhg
           ("another plugin with the same name is already loaded: " + plugin_name);
       }
 
-      std::list<boost::shared_ptr<plugin_t> > dependencies;
+      std::list<boost::shared_ptr<plugin_t>> dependencies;
 
       std::list<std::string> const depends
         (fhg::util::split<std::string, std::string> (desc->depends, ','));

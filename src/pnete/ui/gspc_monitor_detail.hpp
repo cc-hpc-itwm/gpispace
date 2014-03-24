@@ -133,7 +133,7 @@ namespace fhg
                            , const QString& action
                            , const action_result_code&
                            , const boost::optional<QString>& message
-                           , QList<QPair<QString, QString> > additional_data
+                           , QList<QPair<QString, QString>> additional_data
                            );
 
         void sort_by_name();
@@ -166,7 +166,7 @@ namespace fhg
 
         QMap<QString, QString> _long_action;
         QSet<QString> _action_requires_confirmation;
-        QMap<QString, QList<monitor_client::action_argument_data> > _action_arguments;
+        QMap<QString, QList<monitor_client::action_argument_data>> _action_arguments;
         QMap<QString, QString> _action_expects_next_state;
 
         QString full_action_name (QString, const QSet<int>& host_ids) const;

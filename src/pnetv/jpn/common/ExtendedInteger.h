@@ -277,7 +277,7 @@ std::ostream &operator<<(std::ostream &out, const ExtendedInteger<T> &a) {
 #ifdef JPN_BOOST_HASH
 namespace boost {
     template<class T>
-    struct hash<jpn::ExtendedInteger<T> > {
+    struct hash<jpn::ExtendedInteger<T>> {
         std::size_t operator()(const jpn::ExtendedInteger<T> &x) const {
             if (x.isNormal()) {
                 return x.value();

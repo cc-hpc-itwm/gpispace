@@ -262,7 +262,7 @@ namespace bitsetofint
 
   std::size_t hash_value (const type& t)
   {
-    boost::hash<std::vector<uint64_t> > h;
+    boost::hash<std::vector<uint64_t>> h;
 
     return h(t._container);
   }

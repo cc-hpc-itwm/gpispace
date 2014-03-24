@@ -135,7 +135,7 @@ namespace we
 
         typedef std::unordered_map
           < id_type
-          , std::list<std::pair<std::function<void (activity_data_type&)>, bool> >
+          , std::list<std::pair<std::function<void (activity_data_type&)>, bool>>
           > to_be_removed_type;
         to_be_removed_type _to_be_removed;
       } _nets_to_extract_from;
@@ -143,7 +143,7 @@ namespace we
       boost::mt19937& _random_extraction_engine;
       void extract_from_nets();
 
-      std::unordered_map<id_type, std::function<void()> >
+      std::unordered_map<id_type, std::function<void()>>
         _finalize_job_cancellation;
 
       mutable boost::mutex _discover_state_mutex;

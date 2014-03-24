@@ -287,7 +287,7 @@ namespace fhg
           }
           else if (role == current_interval_role)
           {
-            return QVariant::fromValue<boost::optional<value_type> >
+            return QVariant::fromValue<boost::optional<value_type>>
               (_worker_containers[_workers[index.row()]].back());
           }
           else if (role == range_getter_role)

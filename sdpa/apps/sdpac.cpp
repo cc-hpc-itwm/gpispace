@@ -293,7 +293,7 @@ int main (int argc, char **argv) {
      )
     ;
   cfg.tool_hidden_opts().add_options()
-    ("arg", po::value<std::vector<std::string> >(),
+    ("arg", po::value<std::vector<std::string>>(),
      "arguments to the command")
     ;
   cfg.positional_opts().add("command", 1).add("arg", -1);
@@ -394,7 +394,7 @@ int main (int argc, char **argv) {
 
     {
       boost::char_separator<char> sep(":");
-      boost::tokenizer<boost::char_separator<char> > tok(kvs_url, sep);
+      boost::tokenizer<boost::char_separator<char>> tok(kvs_url, sep);
 
       vec.assign(tok.begin(),tok.end());
 
@@ -420,7 +420,7 @@ int main (int argc, char **argv) {
     std::vector<std::string> args;
     if (cfg.is_set("arg"))
     {
-      args = cfg.get<std::vector<std::string> >("arg");
+      args = cfg.get<std::vector<std::string>>("arg");
     }
 
     LLOG (INFO, logger, "***************************************************");

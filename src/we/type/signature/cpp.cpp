@@ -391,7 +391,7 @@ namespace pnet
           public:
             print_header_op ( std::ostream& os
                             , fhg::util::indenter& indent
-                            , std::list<std::list<std::string> >& tnames
+                            , std::list<std::list<std::string>>& tnames
                             , std::list<std::string>& tname
                             )
               : printer (os, indent)
@@ -438,7 +438,7 @@ namespace pnet
               traverse (*this, s);
             }
           private:
-            std::list<std::list<std::string> >& _tnames;
+            std::list<std::list<std::string>>& _tnames;
             std::list<std::string>& _tname;
           };
         }
@@ -457,7 +457,7 @@ namespace pnet
           os << fhg::util::cpp::ns::open (indent, "pnetc");
           os << fhg::util::cpp::ns::open (indent, "type");
 
-          std::list<std::list<std::string> > tnames;
+          std::list<std::list<std::string>> tnames;
 
           {
             std::list<std::string> tname;

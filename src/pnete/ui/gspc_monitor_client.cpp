@@ -196,7 +196,7 @@ namespace fhg
       void monitor_client::request_action
         ( const QStringList& hosts
         , const QString& action
-        , const QMap<QString, std::function<QString()> >& value_getters
+        , const QMap<QString, std::function<QString()>>& value_getters
         )
       {
         std::stringstream ss;
@@ -204,7 +204,7 @@ namespace fhg
         {
           ss << ", arguments: [";
 
-          QMap<QString, std::function<QString()> >::const_iterator i
+          QMap<QString, std::function<QString()>>::const_iterator i
             (value_getters.constBegin());
           while (i != value_getters.constEnd())
           {
@@ -563,7 +563,7 @@ namespace fhg
       namespace
       {
         void kv_pair
-          (fhg::util::parse::position& pos, QList<QPair<QString, QString> >* list)
+          (fhg::util::parse::position& pos, QList<QPair<QString, QString>>* list)
         {
           const QString key (require::qstring (pos));
           require::token (pos, ":");
@@ -580,7 +580,7 @@ namespace fhg
 
           boost::optional<monitor_client::action_result_code> _result;
           boost::optional<QString> _message;
-          QList<QPair<QString, QString> > _additional_data;
+          QList<QPair<QString, QString>> _additional_data;
 
           void append (fhg::util::parse::position& pos)
           {

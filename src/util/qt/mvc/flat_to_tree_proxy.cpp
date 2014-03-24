@@ -52,7 +52,7 @@ namespace fhg
           if (role == function_role)
           {
             _items[index.row()].function
-              = value<boost::shared_ptr<transform_function> > (variant);
+              = value<boost::shared_ptr<transform_function>> (variant);
           }
           else if (role == Qt::DisplayRole)
           {
@@ -243,7 +243,7 @@ namespace fhg
 
           index_tree_item* _parent;
 
-          typedef std::pair<QString, QVector<index_tree_item*> > name_and_child_type;
+          typedef std::pair<QString, QVector<index_tree_item*>> name_and_child_type;
           typedef QPersistentModelIndex index_type;
 
           boost::variant<name_and_child_type, index_type> _data;
@@ -355,7 +355,7 @@ namespace fhg
           (const QModelIndex& topLeft, const QModelIndex& bottomRight)
         {
 #ifdef collect_and_combine
-          QMap<QModelIndex, std::set<int> > changed_child_rows;
+          QMap<QModelIndex, std::set<int>> changed_child_rows;
 
           for (int row (topLeft.row()); row <= bottomRight.row(); ++row)
           {
@@ -465,8 +465,8 @@ namespace fhg
         void flat_to_tree_proxy::insert_from_source
           (int begin, int end, QModelIndex parent, bool emit_per_row)
         {
-          const QList<boost::shared_ptr<transform_functions_model::transform_function> > transform_functions
-            ( value_of_all_rows<boost::shared_ptr<transform_functions_model::transform_function> >
+          const QList<boost::shared_ptr<transform_functions_model::transform_function>> transform_functions
+            ( value_of_all_rows<boost::shared_ptr<transform_functions_model::transform_function>>
               ( _transform_functions
               , transform_functions_model::function_role
               , 0

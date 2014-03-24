@@ -57,7 +57,7 @@ int main (int argc, char **argv)
 
   {
     boost::char_separator<char> sep(":");
-    boost::tokenizer<boost::char_separator<char> > tok(vm["kvs_url"].as<std::string>(), sep);
+    boost::tokenizer<boost::char_separator<char>> tok(vm["kvs_url"].as<std::string>(), sep);
 
     vec.assign(tok.begin(),tok.end());
 

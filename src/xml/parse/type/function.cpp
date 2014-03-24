@@ -233,7 +233,7 @@ namespace xml
       {
         template<typename id_type, typename id_ref_type>
         class visitor_get_parent
-          : public boost::static_visitor<boost::optional<id_ref_type> >
+          : public boost::static_visitor<boost::optional<id_ref_type>>
         {
         public:
           visitor_get_parent (id::mapper* id_mapper)
@@ -301,7 +301,7 @@ namespace xml
       namespace
       {
         class visitor_get_function
-          : public boost::static_visitor<boost::optional<const id::ref::function&> >
+          : public boost::static_visitor<boost::optional<const id::ref::function&>>
         {
         private:
           const std::string& _name;

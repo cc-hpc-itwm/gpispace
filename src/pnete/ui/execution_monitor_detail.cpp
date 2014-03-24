@@ -396,7 +396,7 @@ namespace fhg
             }
             block() {}
           };
-          QHash<worker_model::state_type, QVector<block> > blocks;
+          QHash<worker_model::state_type, QVector<block>> blocks;
           bool distribute_vertically;
           qreal height;
 
@@ -611,8 +611,8 @@ namespace fhg
 
         case execution_monitor_proxy::current_states_column:
           {
-            const QList<boost::optional<worker_model::value_type> > current_intervals
-              ( util::qt::collect<boost::optional<worker_model::value_type> >
+            const QList<boost::optional<worker_model::value_type>> current_intervals
+              ( util::qt::collect<boost::optional<worker_model::value_type>>
                 (index.data (worker_model::current_interval_role))
               );
 

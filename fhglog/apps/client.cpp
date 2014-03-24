@@ -29,7 +29,7 @@ int main (int argc, char **argv) try
     ("url,U", po::value<std::string>(&url)->default_value(url), "url (host[:port]) to use")
     ("message,m", po::value<std::string>(&message), "message to send, if message is - stdin is used")
     ("priority,p", po::value<int>(&level)->default_value(level), "log level to use (0-5)")
-    ("tag,t", po::value<std::vector<std::string> >(&tags), "category tag of the message")
+    ("tag,t", po::value<std::vector<std::string>>(&tags), "category tag of the message")
     ("file,f", po::value<std::string>(&file)->default_value(file), "filename of the event")
     ("function,F", po::value<std::string>(&function)->default_value(function), "ffunction to set")
     ("line,L", po::value<int>(&line)->default_value(line), "line number of the event")

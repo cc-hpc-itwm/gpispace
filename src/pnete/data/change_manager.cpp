@@ -472,8 +472,8 @@ namespace fhg
           int _id;
           const handle_type _handle;
           const bool _outer;
-          boost::scoped_ptr<meta_set_property<handle_type> > _set_x_action;
-          boost::scoped_ptr<meta_set_property<handle_type> > _set_y_action;
+          boost::scoped_ptr<meta_set_property<handle_type>> _set_x_action;
+          boost::scoped_ptr<meta_set_property<handle_type>> _set_y_action;
         };
 
         // -- connection ---------------------------------------------

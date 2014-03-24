@@ -46,7 +46,7 @@ namespace bytearray
 
   std::size_t hash_value (const type& t)
   {
-    return boost::hash<std::vector<char> >()(t._v);
+    return boost::hash<std::vector<char>>()(t._v);
   }
 
   bool operator== (const type& x, const type& y)

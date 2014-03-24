@@ -46,7 +46,7 @@ namespace
 {
   std::vector<std::string> require_proper_url (std::string url)
   {
-    const boost::tokenizer<boost::char_separator<char> > tok
+    const boost::tokenizer<boost::char_separator<char>> tok
       (url, boost::char_separator<char> (":"));
 
     const std::vector<std::string> vec (tok.begin(), tok.end());

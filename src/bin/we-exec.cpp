@@ -355,7 +355,7 @@ namespace
     we::layer::id_type _job_id;
     boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
       _timeout_thread;
-    boost::ptr_vector<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> >
+    boost::ptr_vector<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
       worker_;
   };
 }
@@ -385,7 +385,7 @@ try
     , "path to encoded activity or - for stdin"
     )
     ( "mod-path,L"
-    , po::value<std::vector<std::string> >(&mod_path)
+    , po::value<std::vector<std::string>>(&mod_path)
     , "where can modules be located"
     )
     ( "worker"
@@ -393,7 +393,7 @@ try
     , "number of workers"
     )
     ( "load"
-    , po::value<std::vector<std::string> >(&mods_to_load)
+    , po::value<std::vector<std::string>>(&mods_to_load)
     , "modules to load a priori"
     )
     ( "output,o"

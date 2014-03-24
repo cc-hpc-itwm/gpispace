@@ -36,7 +36,7 @@ namespace fhg
               };
 
               template<typename L, typename R>
-              class _and : public base< _and<L,R> >
+              class _and : public base< _and<L,R>>
               {
               private:
                 const L _l;
@@ -52,7 +52,7 @@ namespace fhg
               };
 
               template<typename L, typename R>
-              class _or : public base< _or<L,R> >
+              class _or : public base< _or<L,R>>
               {
               private:
                 const L _l;
@@ -68,7 +68,7 @@ namespace fhg
               };
 
               template<typename L>
-              class _not : public base< _not<L> >
+              class _not : public base< _not<L>>
               {
               private:
                 const L _l;
@@ -96,7 +96,7 @@ namespace fhg
             };
 
             template<typename T>
-            class on : public detail::base< on<T> >
+            class on : public detail::base< on<T>>
             {
             private:
               typedef std::function<const T& (const base_item*)> select_type;

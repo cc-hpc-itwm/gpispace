@@ -279,7 +279,7 @@ namespace fhg
           (new util::qt::mvc::transform_functions_model);
         add_defaults (available_transform_functions);
         qRegisterMetaTypeStreamOperators
-          <boost::shared_ptr<fhg::util::qt::mvc::transform_functions_model::transform_function> >
+          <boost::shared_ptr<fhg::util::qt::mvc::transform_functions_model::transform_function>>
           ("boost::shared_ptr<fhg::util::qt::mvc::transform_functions_model::transform_function>");
 
         QAbstractItemModel* next (NULL);

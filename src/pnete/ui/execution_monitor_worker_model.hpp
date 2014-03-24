@@ -96,7 +96,7 @@ namespace fhg
 
       private:
         QList<QString> _workers;
-        QMap<QString, std::vector<value_type> > _worker_containers;
+        QMap<QString, std::vector<value_type>> _worker_containers;
         QDateTime _base_time;
 
         boost::mutex _event_queue;

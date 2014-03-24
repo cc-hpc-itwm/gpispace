@@ -15,7 +15,7 @@ namespace pnet
       namespace
       {
         template<typename V, typename M, typename MIT>
-        class visitor_peek : public boost::static_visitor<boost::optional<V&> >
+        class visitor_peek : public boost::static_visitor<boost::optional<V&>>
         {
         public:
           visitor_peek ( const std::list<std::string>::const_iterator& key

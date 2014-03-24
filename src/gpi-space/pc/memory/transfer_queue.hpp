@@ -49,7 +49,7 @@ namespace gpi
         mutable boost::mutex m_mutex;
         bool m_enabled;
 
-        fhg::thread::queue<boost::shared_ptr<task_t> >  m_task_queue;
+        fhg::thread::queue<boost::shared_ptr<task_t>>  m_task_queue;
         boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
           m_thread;
 

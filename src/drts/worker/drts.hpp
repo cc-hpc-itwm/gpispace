@@ -156,7 +156,7 @@ private:
 
   WFEImpl m_wfe;
 
-  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> >
+  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
     m_peer_thread;
   boost::shared_ptr<fhg::com::peer_t> m_peer;
   fhg::com::message_t m_message;
@@ -166,9 +166,9 @@ private:
   std::size_t m_reconnect_counter;
 
   fhg::thread::queue<sdpa::events::SDPAEvent::Ptr>  m_event_queue;
-  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> >
+  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
     m_event_thread;
-  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> >
+  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
     m_execution_thread;
 
   mutable boost::mutex m_job_map_mutex;
@@ -185,7 +185,7 @@ private:
   size_t m_backlog_size;
   map_of_jobs_t m_jobs;
 
-  fhg::thread::queue<boost::shared_ptr<drts::Job> > m_pending_jobs;
+  fhg::thread::queue<boost::shared_ptr<drts::Job>> m_pending_jobs;
 
   fhg::thread::set _registration_threads;
 };
