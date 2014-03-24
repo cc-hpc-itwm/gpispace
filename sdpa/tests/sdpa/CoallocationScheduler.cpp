@@ -72,15 +72,11 @@ namespace
   }
   std::set<sdpa::worker_id_t> worker_list ( sdpa::worker_id_t w1
                                           , sdpa::worker_id_t w2
-                                          , sdpa::worker_id_t w3
-                                          , sdpa::worker_id_t w4
                                           )
   {
     std::set<sdpa::worker_id_t> workers;
     workers.insert (w1);
     workers.insert (w2);
-    workers.insert (w3);
-    workers.insert (w4);
     return workers;
   }
 
@@ -196,34 +192,23 @@ BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_m
 {
   _scheduler.worker_manager().addWorker ("0", 1, capabilities ("0", "A"));
   _scheduler.worker_manager().addWorker ("1", 1, capabilities ("1", "B"));
-  _scheduler.worker_manager().addWorker ("2", 1, capabilities ("2", "C"));
   _scheduler.worker_manager().addWorker ("3", 1, capabilities ("3", "A"));
   _scheduler.worker_manager().addWorker ("4", 1, capabilities ("4", "B"));
-  _scheduler.worker_manager().addWorker ("5", 1, capabilities ("5", "C"));
-  _scheduler.worker_manager().addWorker ("6", 1, capabilities ("6", "A"));
-  _scheduler.worker_manager().addWorker ("7", 1, capabilities ("7", "B"));
-  _scheduler.worker_manager().addWorker ("8", 1, capabilities ("8", "C"));
-  _scheduler.worker_manager().addWorker ("9", 1, capabilities ("9", "A"));
-  _scheduler.worker_manager().addWorker ("10", 1, capabilities ("10", "B"));
-  _scheduler.worker_manager().addWorker ("11", 1, capabilities ("11", "C"));
 
-  add_job ("job_0", require ("A", 4));
-  add_job ("job_1", require ("B", 4));
-  add_job ("job_2", require ("C", 4));
+  add_job ("job_0", require ("A", 2));
+  add_job ("job_1", require ("B", 2));
 
   _scheduler.enqueueJob ("job_0");
   _scheduler.enqueueJob ("job_1");
-  _scheduler.enqueueJob ("job_2");
 
 
-  expect_serveJob_call ("job_0", worker_list ("0", "3", "6", "9"));
-  expect_serveJob_call ("job_1", worker_list ("1", "10", "4", "7"));
-  expect_serveJob_call ("job_2", worker_list ("11", "2", "5", "8"));
+  expect_serveJob_call ("job_0", worker_list ("0", "3"));
+  expect_serveJob_call ("job_1", worker_list ("1", "10"));
 
   _scheduler.assignJobsToWorkers();
 
 
-  add_job ("job_3", require ("A", 2));
+  add_job ("job_3", require ("A", 1));
 
   _scheduler.enqueueJob ("job_3");
 
@@ -231,12 +216,10 @@ BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_m
 
   _scheduler.worker_manager().findWorker ("0")->deleteJob ("job_0");
   _scheduler.worker_manager().findWorker ("3")->deleteJob ("job_0");
-  _scheduler.worker_manager().findWorker ("6")->deleteJob ("job_0");
-  _scheduler.worker_manager().findWorker ("9")->deleteJob ("job_0");
 
-  _scheduler.releaseReservation("job_0");
+  _scheduler.releaseReservation ("job_0");
 
-  expect_serveJob_call ("job_3", 2, worker_list ("0", "3", "6", "9"));
+  expect_serveJob_call ("job_3", 1, worker_list ("0", "3"));
 
   _scheduler.assignJobsToWorkers();
 }
