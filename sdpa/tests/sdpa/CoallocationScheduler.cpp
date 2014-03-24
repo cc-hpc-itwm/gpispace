@@ -191,11 +191,6 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_schedule
   add_job ("job_7", require ("C"));
   add_job ("job_8", require ("C"));
   add_job ("job_9", require ("C"));
-  add_job ("job_10", require ("C"));
-  add_job ("job_11", require ("C"));
-  add_job ("job_12", require ("C"));
-  add_job ("job_13", require ("C"));
-  add_job ("job_14", require ("C"));
 
   _scheduler.enqueueJob ("job_0");
   _scheduler.enqueueJob ("job_1");
@@ -207,11 +202,6 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_schedule
   _scheduler.enqueueJob ("job_7");
   _scheduler.enqueueJob ("job_8");
   _scheduler.enqueueJob ("job_9");
-  _scheduler.enqueueJob ("job_10");
-  _scheduler.enqueueJob ("job_11");
-  _scheduler.enqueueJob ("job_12");
-  _scheduler.enqueueJob ("job_13");
-  _scheduler.enqueueJob ("job_14");
 
 
   expect_serveJob_call ("job_0", worker_list ("worker_8"));
