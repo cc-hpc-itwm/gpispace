@@ -1,9 +1,4 @@
 set (hdrs
-  alphanum.hpp
-  daemonize.hpp
-  signal_handler_manager.hpp
-  pidfile_writer.hpp
-
   join.hpp
   read_bool.hpp
   split.hpp
