@@ -160,36 +160,36 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_schedule
 
 BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_manager)
 {
-  _scheduler.worker_manager().addWorker ("0", 1, {sdpa::capability_t ("A", "0")});
-  _scheduler.worker_manager().addWorker ("1", 1, {sdpa::capability_t ("B", "1")});
-  _scheduler.worker_manager().addWorker ("3", 1, {sdpa::capability_t ("A", "3")});
-  _scheduler.worker_manager().addWorker ("4", 1, {sdpa::capability_t ("B", "4")});
+  _scheduler.worker_manager().addWorker ("A0", 1, {sdpa::capability_t ("A", "A0")});
+  _scheduler.worker_manager().addWorker ("B0", 1, {sdpa::capability_t ("B", "B0")});
+  _scheduler.worker_manager().addWorker ("A1", 1, {sdpa::capability_t ("A", "A1")});
+  _scheduler.worker_manager().addWorker ("B1", 1, {sdpa::capability_t ("B", "B1")});
 
-  add_job ("job_0", require ("A", 2));
-  add_job ("job_1", require ("B", 2));
+  add_job ("2A", require ("A", 2));
+  add_job ("2B", require ("B", 2));
 
-  _scheduler.enqueueJob ("job_0");
-  _scheduler.enqueueJob ("job_1");
-
-
-  expect_serveJob_call ("job_0", {"0", "3"});
-  expect_serveJob_call ("job_1", {"1", "10"});
-
-  _scheduler.assignJobsToWorkers();
+  _scheduler.enqueueJob ("2A");
+  _scheduler.enqueueJob ("2B");
 
 
-  add_job ("job_3", require ("A", 1));
-
-  _scheduler.enqueueJob ("job_3");
+  expect_serveJob_call ("2A", {"A0", "A1"});
+  expect_serveJob_call ("2B", {"B0", "B1"});
 
   _scheduler.assignJobsToWorkers();
 
-  _scheduler.worker_manager().findWorker ("0")->deleteJob ("job_0");
-  _scheduler.worker_manager().findWorker ("3")->deleteJob ("job_0");
 
-  _scheduler.releaseReservation ("job_0");
+  add_job ("1A", require ("A", 1));
 
-  expect_serveJob_call ("job_3", 1, {"0", "3"});
+  _scheduler.enqueueJob ("1A");
+
+  _scheduler.assignJobsToWorkers();
+
+  _scheduler.worker_manager().findWorker ("A0")->deleteJob ("2A");
+  _scheduler.worker_manager().findWorker ("A1")->deleteJob ("2A");
+
+  _scheduler.releaseReservation ("2A");
+
+  expect_serveJob_call ("1A", 1, {"A0", "A1"});
 
   _scheduler.assignJobsToWorkers();
 }
