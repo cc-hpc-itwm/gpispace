@@ -8,7 +8,6 @@
 
 #include <fhg/util/thread/event.hpp>
 
-#include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/thread.hpp>
@@ -27,7 +26,6 @@ namespace fhg
       This class abstracts from an endpoint
      */
     class peer_t : private boost::noncopyable
-                 , public boost::enable_shared_from_this<peer_t>
     {
     public:
       typedef std::function <void (boost::system::error_code const &)> handler_t;
