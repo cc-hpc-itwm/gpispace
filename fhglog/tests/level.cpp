@@ -47,12 +47,6 @@ BOOST_AUTO_TEST_CASE (from_string)
       "     ^\n"
     );
   fhg::util::boost::test::require_exception<std::runtime_error>
-    ( boost::bind (&fhg::log::from_string, "TRACEmore")
-    , "PARSE ERROR [5]: additional input\n"
-      "TRACE more\n"
-      "     ^\n"
-    );
-  fhg::util::boost::test::require_exception<std::runtime_error>
     ( boost::bind (&fhg::log::from_string, "INFOmore")
     , "PARSE ERROR [4]: additional input\n"
       "INFO more\n"
