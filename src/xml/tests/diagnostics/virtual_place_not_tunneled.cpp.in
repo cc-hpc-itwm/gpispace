@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE (virtual_place_not_tunneled)
 
   fhg::util::boost::test::require_exception
     <xml::parse::warning::virtual_place_not_tunneled>
-  ( boost::bind (&xml::parse::just_parse, boost::ref (state), filename)
+  ( [&state, &filename] { xml::parse::just_parse (state, filename); }
   , boost::format ("WARNING: the virtual place %1% is not tunneled in %2%.")
   % "v" % boost::filesystem::path (filename)
   );

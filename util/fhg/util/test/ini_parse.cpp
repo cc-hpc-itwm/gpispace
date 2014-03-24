@@ -8,13 +8,12 @@
 
 #include <fhg/util/boost/test/require_exception.hpp>
 
-#include <boost/bind.hpp>
 #include <boost/utility.hpp>
 
 BOOST_AUTO_TEST_CASE (no_section)
 {
   fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
-    ( boost::bind (&fhg::util::parse::ini_map, "foo = bar")
+    ( [] { fhg::util::parse::ini_map ("foo = bar"); }
     , "PARSE ERROR [0]: expected '['\n foo = bar\n^\n"
     );
 }
@@ -108,7 +107,7 @@ BOOST_AUTO_TEST_CASE (parse_comment)
 BOOST_AUTO_TEST_CASE (parse_invalid_line)
 {
   fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
-    ( boost::bind (&fhg::util::parse::ini_map, "illegal line here")
+    ( [] { fhg::util::parse::ini_map ("illegal line here"); }
     , "PARSE ERROR [0]: expected '['\n illegal line here\n^\n"
     );
 }

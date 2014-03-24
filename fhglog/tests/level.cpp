@@ -8,8 +8,6 @@
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/boost/test/require_exception.hpp>
 
-#include <boost/bind.hpp>
-
 BOOST_AUTO_TEST_CASE (from_int)
 {
 #define OKAY(_l, _i)                                            \
@@ -41,31 +39,31 @@ BOOST_AUTO_TEST_CASE (from_string)
 #undef OKAY
 
   fhg::util::boost::test::require_exception<std::runtime_error>
-    ( boost::bind (&fhg::log::from_string, "TRACEmore")
+    ( [] { fhg::log::from_string ("TRACEmore"); }
     , "PARSE ERROR [5]: additional input\n"
       "TRACE more\n"
       "     ^\n"
     );
   fhg::util::boost::test::require_exception<std::runtime_error>
-    ( boost::bind (&fhg::log::from_string, "INFOmore")
+    ( [] { fhg::log::from_string ("INFOmore"); }
     , "PARSE ERROR [4]: additional input\n"
       "INFO more\n"
       "    ^\n"
     );
   fhg::util::boost::test::require_exception<std::runtime_error>
-    ( boost::bind (&fhg::log::from_string, "WARNmore")
+    ( [] { fhg::log::from_string ("WARNmore"); }
     , "PARSE ERROR [4]: additional input\n"
       "WARN more\n"
       "    ^\n"
     );
   fhg::util::boost::test::require_exception<std::runtime_error>
-    ( boost::bind (&fhg::log::from_string, "ERRORmore")
+    ( [] { fhg::log::from_string ("ERRORmore"); }
     , "PARSE ERROR [5]: additional input\n"
       "ERROR more\n"
       "     ^\n"
     );
   fhg::util::boost::test::require_exception<std::runtime_error>
-    ( boost::bind (&fhg::log::from_string, "FATALmore")
+    ( [] { fhg::log::from_string ("FATALmore"); }
     , "PARSE ERROR [5]: additional input\n"
       "FATAL more\n"
       "     ^\n"

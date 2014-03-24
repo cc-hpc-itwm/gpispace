@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE (threaded_unique_set_of_id_throws_on_duplicate)
   BOOST_REQUIRE_EQUAL (id, ids.insert (id));
 
   fhg::util::boost::test::require_exception<std::runtime_error>
-    ( boost::bind (&threaded_unique_set_of_id::insert, &ids, id)
+    ( [&id, &ids] { ids.insert (id); }
     , (boost::format ("duplicate id '%1%'") % id).str()
     );
 }

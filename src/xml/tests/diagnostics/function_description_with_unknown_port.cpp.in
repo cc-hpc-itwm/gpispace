@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE (function_description_with_unknown_return_port)
 
   fhg::util::boost::test::require_exception
     <xml::parse::error::function_description_with_unknown_port>
-  ( boost::bind (&xml::parse::just_parse, boost::ref (state), filename)
+  ( [&state, &filename] { xml::parse::just_parse (state, filename); }
   , boost::format ("ERROR: unknown %1% port %2%"
                    " in description of function %3%.%4% in %5%\n"
                   )
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE (function_description_with_unknown_argument_port)
 
   fhg::util::boost::test::require_exception
     <xml::parse::error::function_description_with_unknown_port>
-  ( boost::bind (&xml::parse::just_parse, boost::ref (state), filename)
+  ( [&state, &filename] { xml::parse::just_parse (state, filename); }
   , boost::format ("ERROR: unknown %1% port %2%"
                    " in description of function %3%.%4% in %5%\n"
                   )

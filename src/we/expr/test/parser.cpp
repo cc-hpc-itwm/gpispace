@@ -252,22 +252,10 @@ BOOST_AUTO_TEST_CASE (token_or_table)
   require_evaluating_to ("2UL || 1UL", 3UL);
 }
 
-namespace
-{
-  void get_and_ignore_value_from_context
-    (expr::eval::context const& context, std::string const& key)
-  {
-    (void)context.value (key);
-  }
-}
-
 BOOST_AUTO_TEST_CASE (token_or_short_circuit)
 {
   fhg::util::boost::test::require_exception<pnet::exception::missing_binding>
-    ( boost::bind ( &get_and_ignore_value_from_context
-                  , require_evaluating_to ("true || (${a} := true)", true)
-                  , "a"
-                  )
+    ( [] { require_evaluating_to ("true || (${a} := true)", true).value ("a"); }
     , "missing binding for: ${a}"
     );
 
@@ -325,10 +313,7 @@ BOOST_AUTO_TEST_CASE (token_and_table)
 BOOST_AUTO_TEST_CASE (token_and_short_circuit)
 {
   fhg::util::boost::test::require_exception<pnet::exception::missing_binding>
-    ( boost::bind ( &get_and_ignore_value_from_context
-                  , require_evaluating_to ("false && (${a} := false)", false)
-                  , "a"
-                  )
+    ( [] { require_evaluating_to ("false && (${a} := false)", false).value ("a"); }
     , "missing binding for: ${a}"
     );
 

@@ -7,14 +7,12 @@
 
 #include <fhg/util/boost/test/require_exception.hpp>
 
-#include <boost/bind.hpp>
-
 #include <cmath>
 
 BOOST_AUTO_TEST_CASE (char_of_empty)
 {
   fhg::util::boost::test::require_exception<std::runtime_error>
-    ( boost::bind (&fhg::util::random_char_of, std::string())
+    ( [] { fhg::util::random_char_of (std::string()); }
     , "random_char_of (empty_string)"
     );
 }
@@ -59,7 +57,7 @@ BOOST_AUTO_TEST_CASE (char_of_distribution)
 BOOST_AUTO_TEST_CASE (string_of_empty)
 {
   fhg::util::boost::test::require_exception<std::runtime_error>
-    ( boost::bind (&fhg::util::random_string_of, std::string())
+    ( [] { fhg::util::random_string_of (std::string()); }
     , "random_char_of (empty_string)"
     );
 }

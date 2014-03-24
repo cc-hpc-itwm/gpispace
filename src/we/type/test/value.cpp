@@ -373,7 +373,7 @@ BOOST_AUTO_TEST_CASE (test_remove)
     value_type v (1);
 
     fhg::util::boost::test::require_exception<std::runtime_error>
-      ( boost::bind (&remove_from_val, "bar", v)
+      ( [&v] { pnet::type::value::remove ("bar", v); }
       , "value_type::remove: trying to remove from unstructured value"
       );
   }
@@ -390,7 +390,7 @@ BOOST_AUTO_TEST_CASE (test_remove)
     poke ("foo", v, value_type (1));
 
     fhg::util::boost::test::require_exception<std::runtime_error>
-      ( boost::bind (&remove_from_val, "bar", v)
+      ( [&v] { pnet::type::value::remove ("bar", v); }
       , "value_type::remove: key not found"
       );
   }
@@ -978,7 +978,7 @@ namespace
     pnet::type::value::value_type const value (pnet::type::value::read (v));
 
     fhg::util::boost::test::require_exception<std::runtime_error>
-      ( boost::bind (&pnet::type::value::dump, os, value)
+      ( [&os, &value] { pnet::type::value::dump (os, value); }
       , ( boost::format ("cannot dump the plain value '%1%'")
         % pnet::type::value::show (value)
         ).str()
@@ -994,7 +994,7 @@ namespace
     fhg::util::xml::xmlstream os (oss);
 
     fhg::util::boost::test::require_exception<std::runtime_error>
-      ( boost::bind (&pnet::type::value::dump, os, pnet::type::value::read (v))
+      ( [&os, &v] { pnet::type::value::dump (os, pnet::type::value::read (v)); }
       , ( boost::format ("cannot dump the single level property"
                         " with key '%1%' and value '%2%'"
                         ) % key % val
