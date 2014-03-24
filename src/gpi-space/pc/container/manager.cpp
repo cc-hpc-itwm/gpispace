@@ -71,11 +71,8 @@ namespace gpi
           m_socket = fd;
 
           m_listener = thread_t
-            (new boost::thread(boost::bind( &manager_t::listener_thread_main
-                                          , this
-                                          , m_socket
-                                          )
-                              )
+            ( new boost::thread
+              (&manager_t::listener_thread_main, this, m_socket)
             );
         }
       }

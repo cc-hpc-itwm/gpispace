@@ -147,11 +147,7 @@ namespace gpi
           );
 
         m_peer_thread.reset
-          (new boost::thread(boost::bind( &fhg::com::peer_t::run
-                                        , m_peer
-                                        )
-                            )
-          );
+          (new boost::thread(&fhg::com::peer_t::run, m_peer));
 
         try
         {
