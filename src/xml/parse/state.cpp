@@ -253,7 +253,7 @@ namespace xml
           _link_prefix_parsed = true;
         }
 
-        const boost::unordered_map<std::string, std::string>::const_iterator
+        const std::unordered_map<std::string, std::string>::const_iterator
           pos (_link_prefix_by_key.find (key));
 
         if (pos != _link_prefix_by_key.end())

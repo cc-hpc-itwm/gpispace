@@ -26,8 +26,6 @@ namespace fhg
       bool operator==(address_t const& lhs, address_t const& rhs);
       bool operator!=(address_t const& lhs, address_t const& rhs);
 
-      std::size_t hash_value(address_t const& u);
-
       std::string to_string (address_t const & a);
 
         static const int HELLO_PACKET = 0x8;
@@ -49,6 +47,14 @@ namespace fhg
       } __attribute__ ((packed));
     }
   }
+}
+
+namespace std
+{
+  template<> struct hash<fhg::com::p2p::address_t>
+  {
+    size_t operator()(fhg::com::p2p::address_t const&) const;
+  };
 }
 
 #endif

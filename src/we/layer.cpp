@@ -52,7 +52,7 @@ namespace we
 
         assert (activity.transition().ports_tunnel().size() == 0);
 
-        boost::unordered_map<std::string, we::place_id_type> place_ids;
+        std::unordered_map<std::string, we::place_id_type> place_ids;
 
         for ( we::type::transition_t::port_map_t::value_type const& p
             : activity.transition().ports_input()
@@ -227,7 +227,7 @@ namespace we
 
       if (_running_jobs.terminated (*parent, child))
       {
-        boost::unordered_map<id_type, std::function<void()> >::iterator
+        std::unordered_map<id_type, std::function<void()> >::iterator
           const pos (_finalize_job_cancellation.find (*parent));
 
         pos->second();

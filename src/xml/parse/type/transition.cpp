@@ -769,9 +769,9 @@ namespace xml
               );
 
             {
-              boost::unordered_map<std::string, we::port_id_type>
+              std::unordered_map<std::string, we::port_id_type>
                 port_id_in;
-              boost::unordered_map<std::string, we::port_id_type>
+              std::unordered_map<std::string, we::port_id_type>
                 port_id_out;
 
               for (const port_type& port : fun.ports().values())
@@ -849,9 +849,9 @@ namespace xml
               );
 
             {
-              boost::unordered_map<std::string, we::port_id_type>
+              std::unordered_map<std::string, we::port_id_type>
                 port_id_in;
-              boost::unordered_map<std::string, we::port_id_type>
+              std::unordered_map<std::string, we::port_id_type>
                 port_id_out;
 
               for (const port_type& port : fun.ports().values())
@@ -945,9 +945,9 @@ namespace xml
 
           { // not unfold
 
-            boost::unordered_map<std::string, we::port_id_type>
+            std::unordered_map<std::string, we::port_id_type>
               port_id_in;
-            boost::unordered_map<std::string, we::port_id_type>
+            std::unordered_map<std::string, we::port_id_type>
               port_id_out;
 
             we::type::transition_t we_trans

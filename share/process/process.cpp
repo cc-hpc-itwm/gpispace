@@ -8,16 +8,16 @@
 #include <errno.h>
 #include <string.h>
 
+#include <fstream>
 #include <iostream>
 #include <sstream>
-#include <string>
-#include <fstream>
 #include <stdexcept>
+#include <string>
+#include <unordered_map>
 
 #include <boost/thread.hpp>
 #include <boost/thread/barrier.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/unordered_map.hpp>
 #include <boost/filesystem.hpp>
 
 #include <fhg/util/split.hpp>
@@ -425,7 +425,7 @@ namespace process
     struct param_map
     {
     private:
-      typedef boost::unordered_map <std::string, std::string> param_map_t;
+      typedef std::unordered_map <std::string, std::string> param_map_t;
 
       param_map_t _map;
 

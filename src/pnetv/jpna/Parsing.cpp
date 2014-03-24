@@ -4,7 +4,6 @@
 #include <fstream>
 
 #include <boost/format.hpp>
-#include <boost/unordered_map.hpp>
 
 #include <pnetv/jpn/common/Unreachable.h>
 
@@ -19,6 +18,8 @@
 #include <boost/range/adaptor/map.hpp>
 
 #include "PetriNet.h"
+
+#include <unordered_map>
 
 namespace jpna {
 
@@ -49,12 +50,12 @@ class TransitionVisitor: public boost::static_visitor<void> {
     /**
      * Places present in the workflow.
      */
-    boost::unordered_map<we::place_id_type, Place *> places_;
+    std::unordered_map<we::place_id_type, Place *> places_;
 
     /**
      * Transitions present in the workflow.
      */
-    boost::unordered_map<we::transition_id_type, Transition *> transitions_;
+    std::unordered_map<we::transition_id_type, Transition *> transitions_;
 
     public:
 

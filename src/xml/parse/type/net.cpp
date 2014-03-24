@@ -533,8 +533,8 @@ namespace xml
       {
         //! \note We need to copy out the ids from the unique, as we
         //! modify the unique and therefore break iteration.
-        const boost::unordered_set<id::ref::place> place_ids (places().ids());
-        const boost::unordered_set<id::ref::transition> transition_ids
+        const std::unordered_set<id::ref::place> place_ids (places().ids());
+        const std::unordered_set<id::ref::transition> transition_ids
           (transitions().ids());
 
         for (const id::ref::place& place : place_ids)
@@ -545,9 +545,9 @@ namespace xml
         for (const id::ref::transition& id : transition_ids)
         {
           transition_type& transition (id.get_ref());
-          const boost::unordered_set<id::ref::connect> connect_ids
+          const std::unordered_set<id::ref::connect> connect_ids
             (transition.connections().ids());
-          const boost::unordered_set<id::ref::place_map> place_map_ids
+          const std::unordered_set<id::ref::place_map> place_map_ids
             (transition.place_map().ids());
 
           transition.name (prefix + transition.name());
@@ -568,8 +568,8 @@ namespace xml
       {
         //! \note We need to copy out the ids from the unique, as we
         //! modify the unique and therefore break iteration.
-        const boost::unordered_set<id::ref::place> place_ids (places().ids());
-        const boost::unordered_set<id::ref::transition> transition_ids
+        const std::unordered_set<id::ref::place> place_ids (places().ids());
+        const std::unordered_set<id::ref::transition> transition_ids
           (transitions().ids());
 
         for (const id::ref::place& place : place_ids)
@@ -581,9 +581,9 @@ namespace xml
         for (const id::ref::transition& id : transition_ids)
         {
           transition_type& transition (id.get_ref());
-          const boost::unordered_set<id::ref::connect> connect_ids
+          const std::unordered_set<id::ref::connect> connect_ids
             (transition.connections().ids());
-          const boost::unordered_set<id::ref::place_map> place_map_ids
+          const std::unordered_set<id::ref::place_map> place_map_ids
             (transition.place_map().ids());
 
           transition.name
@@ -628,16 +628,16 @@ namespace xml
 
       // ******************************************************************* //
 
-      boost::unordered_map<std::string, we::place_id_type>
+      std::unordered_map<std::string, we::place_id_type>
       net_synthesize ( we::type::net_type& we_net
                      , const place_map_map_type & place_map_map
                      , const net_type& net
                      , const state::type & state
                      )
       {
-        typedef boost::unordered_map< std::string
-                                    , we::place_id_type
-                                    > pid_of_place_type;
+        typedef std::unordered_map< std::string
+                                  , we::place_id_type
+                                  > pid_of_place_type;
 
         pid_of_place_type pid_of_place;
 

@@ -1421,9 +1421,9 @@ namespace fhg
 
         //! \note remove_connection will modify transition's
         //! connections, thus copy out of there first, then modify.
-        boost::unordered_set< ::xml::parse::id::ref::connect>
+        std::unordered_set< ::xml::parse::id::ref::connect>
           connections_to_delete (transition.get().connections().ids());
-        boost::unordered_set< ::xml::parse::id::ref::place_map>
+        std::unordered_set< ::xml::parse::id::ref::place_map>
           place_maps_to_delete (transition.get().place_map().ids());
 
         for (const ::xml::parse::id::ref::connect& c : connections_to_delete)
@@ -1572,11 +1572,11 @@ namespace fhg
         {
           const ::xml::parse::type::net_type& net (place.get().parent().get());
 
-          boost::unordered_set< ::xml::parse::id::ref::connect>
+          std::unordered_set< ::xml::parse::id::ref::connect>
             connections_to_delete;
-          boost::unordered_set< ::xml::parse::id::ref::place_map>
+          std::unordered_set< ::xml::parse::id::ref::place_map>
             place_maps_to_delete;
-          boost::unordered_set< ::xml::parse::id::ref::port> ports_to_delete;
+          std::unordered_set< ::xml::parse::id::ref::port> ports_to_delete;
 
           //! \note remove_connection will modify transition's
           //! connections, thus copy out of there first, then modify.
@@ -1914,9 +1914,9 @@ namespace fhg
         {
           //! \note remove_connection will modify transition's
           //! connections, thus copy out of there first, then modify.
-          typedef boost::unordered_set< ::xml::parse::id::ref::connect>
+          typedef std::unordered_set< ::xml::parse::id::ref::connect>
             connections_to_delete_type;
-          typedef boost::unordered_set< ::xml::parse::id::ref::place_map>
+          typedef std::unordered_set< ::xml::parse::id::ref::place_map>
             place_maps_to_delete_type;
 
           connections_to_delete_type connections_to_delete

@@ -6,53 +6,44 @@
 #include <boost/functional/hash.hpp>
 #include <boost/tuple/tuple.hpp>
 
-namespace fhg
+#include <functional>
+
+namespace std
 {
-  namespace util
+  namespace
   {
-    namespace boost
-    {
-      using namespace ::boost;
-      namespace detail
+    template < class tuple_type
+             , size_t index = boost::tuples::length<tuple_type>::value - 1
+             >
+      struct hash_value_impl
       {
-        template < class tuple_type
-                 , size_t index = tuples::length<tuple_type>::value - 1
-                 >
-          struct hash_value_impl
+        static void apply (size_t& seed, const tuple_type& tuple)
         {
-          static void apply (size_t& seed, const tuple_type& tuple)
-          {
-            hash_value_impl<tuple_type, index - 1>::apply (seed, tuple);
-            hash_combine (seed, tuple.template get<index>());
-          }
-        };
+          hash_value_impl<tuple_type, index - 1>::apply (seed, tuple);
+          boost::hash_combine (seed, tuple.template get<index>());
+        }
+      };
 
-        template <class tuple_type>
-          struct hash_value_impl<tuple_type,0>
-        {
-          static void apply (size_t& seed, const tuple_type& tuple)
-          {
-            hash_combine (seed, tuple.template get<0>());
-          }
-        };
-      }
-    }
-  }
-}
-
-namespace boost
-{
-  namespace tuples
-  {
-    //! \note Needs to be here to allow ADL with the scope of tuple_type.
     template <class tuple_type>
-      static inline size_t hash_value (const tuple_type& tuple)
+      struct hash_value_impl<tuple_type, 0>
+    {
+      static void apply (size_t& seed, const tuple_type& tuple)
+      {
+        boost::hash_combine (seed, tuple.template get<0>());
+      }
+    };
+  }
+
+  template<typename... Values>
+    struct hash<boost::tuples::tuple<Values...>>
+  {
+    std::size_t operator() (const boost::tuples::tuple<Values...>& tuple) const
     {
       size_t seed = 0;
-      fhg::util::boost::detail::hash_value_impl<tuple_type>::apply (seed, tuple);
+      hash_value_impl<boost::tuples::tuple<Values...>>::apply (seed, tuple);
       return seed;
     }
-  }
+  };
 }
 
 #endif

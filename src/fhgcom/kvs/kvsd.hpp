@@ -18,12 +18,12 @@
 #include <boost/optional.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/thread.hpp>
-#include <boost/unordered_map.hpp>
 
 #include <fstream>
 #include <signal.h> /* For SIGTERM. */
 #include <sstream>
 #include <string>
+#include <unordered_map>
 
 namespace fhg
 {
@@ -245,7 +245,7 @@ namespace fhg
           typedef std::string key_type;
           typedef std::string value_type;
           typedef entry_t<value_type> entry_type;
-          typedef boost::unordered_map<key_type, entry_type> store_type;
+          typedef std::unordered_map<key_type, entry_type> store_type;
           typedef boost::unique_lock<boost::recursive_mutex> lock_t;
 
           explicit

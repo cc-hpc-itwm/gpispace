@@ -14,7 +14,8 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
-#include <boost/unordered_set.hpp>
+
+#include <unordered_set>
 
 namespace xml
 {
@@ -29,7 +30,7 @@ namespace xml
 
       public:
         typedef std::string unique_key_type;
-        typedef boost::unordered_set<std::string> names_type;
+        typedef std::unordered_set<std::string> names_type;
 
         tmpl_type ( ID_CONS_PARAM(tmpl)
                   , PARENT_CONS_PARAM(net)

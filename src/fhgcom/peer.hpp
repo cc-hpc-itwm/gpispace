@@ -11,12 +11,12 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/thread.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
 
 #include <deque>
 #include <list>
+#include <set>
 #include <string>
+#include <unordered_map>
 
 namespace fhg
 {
@@ -137,13 +137,13 @@ namespace fhg
 
       boost::shared_ptr<boost::thread> m_peer_thread;
 
-      typedef boost::unordered_map<p2p::address_t, std::string> reverse_lookup_cache_t;
+      typedef std::unordered_map<p2p::address_t, std::string> reverse_lookup_cache_t;
       reverse_lookup_cache_t reverse_lookup_cache_;
 
-      typedef boost::unordered_map<p2p::address_t, connection_data_t> connections_t;
+      typedef std::unordered_map<p2p::address_t, connection_data_t> connections_t;
       connections_t connections_;
 
-      typedef boost::unordered_set<connection_t::ptr_t> backlog_t;
+      typedef std::set<connection_t::ptr_t> backlog_t;
       backlog_t backlog_;
 
       connection_t::ptr_t listen_;

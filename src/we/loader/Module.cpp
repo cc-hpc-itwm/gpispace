@@ -96,7 +96,7 @@ namespace we
                       , expr::eval::context& output
                       )
     {
-      const boost::unordered_map<std::string, WrapperFunction>::const_iterator
+      const std::unordered_map<std::string, WrapperFunction>::const_iterator
         fun (call_table_.find (function));
 
       if (fun == call_table_.end())

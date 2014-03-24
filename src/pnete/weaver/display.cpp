@@ -25,9 +25,9 @@
 
 #include <we/type/property.hpp>
 
-#include <boost/unordered_map.hpp>
-
 #include <QtGlobal>
+
+#include <unordered_map>
 
 namespace fhg
 {

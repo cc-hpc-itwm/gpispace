@@ -9,14 +9,14 @@
 #include <xml/parse/util/position.fwd.hpp>
 #include <xml/parse/util/unique.hpp>
 
+#include <fhg/util/std/pair.hpp>
 #include <fhg/util/xml.fwd.hpp>
 
 #include <we/type/id.hpp> //we::place_id_type
 #include <we/type/property.hpp>
 
 #include <string>
-
-#include <boost/unordered/unordered_map_fwd.hpp>
+#include <unordered_map>
 
 namespace xml
 {
@@ -70,9 +70,9 @@ namespace xml
         we::type::property::type _properties;
       };
 
-      typedef boost::unordered_map< std::string
-                                  , we::place_id_type
-                                  > place_map_map_type;
+      typedef std::unordered_map< std::string
+                                , we::place_id_type
+                                > place_map_map_type;
 
       namespace dump
       {

@@ -3,8 +3,8 @@
 #ifndef _XML_PARSE_TYPE_MAP_TYPE_HPP
 #define _XML_PARSE_TYPE_MAP_TYPE_HPP
 
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace xml
 {
@@ -12,8 +12,8 @@ namespace xml
   {
     namespace type
     {
-      typedef boost::unordered_map<std::string, std::string> type_map_type;
-      typedef boost::unordered_set<std::string> type_get_type;
+      typedef std::unordered_map<std::string, std::string> type_map_type;
+      typedef std::unordered_set<std::string> type_get_type;
     }
   }
 }

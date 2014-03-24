@@ -20,15 +20,16 @@
 
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/exceptions.hpp>
-#include <boost/unordered_map.hpp>
 #include <sdpa/job_requirements.hpp>
 
 #include <boost/optional.hpp>
 
+#include <unordered_map>
+
 namespace sdpa { namespace daemon {
   class WorkerManager  {
   public:
-    typedef boost::unordered_map<worker_id_t, Worker::ptr_t> worker_map_t;
+    typedef std::unordered_map<worker_id_t, Worker::ptr_t> worker_map_t;
 
     Worker::ptr_t findWorker(const worker_id_t& worker_id);
     bool hasWorker(const worker_id_t& worker_id) const;

@@ -10,9 +10,9 @@
 #include <boost/thread.hpp>
 #include <boost/thread/barrier.hpp>
 #include <boost/random.hpp>
-#include <boost/unordered_set.hpp>
 
 #include <stdexcept>
+#include <unordered_set>
 
 namespace
 {
@@ -45,7 +45,7 @@ namespace
     }
   private:
     boost::mutex _mutex_ids;
-    boost::unordered_set<std::string> _ids;
+    std::unordered_set<std::string> _ids;
   };
 }
 

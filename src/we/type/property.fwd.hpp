@@ -8,7 +8,6 @@
 #include <string>
 #include <list>
 
-#include <boost/unordered/unordered_map_fwd.hpp>
 #include <boost/variant/variant_fwd.hpp>
 #include <boost/variant/recursive_wrapper_fwd.hpp>
 

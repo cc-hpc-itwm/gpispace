@@ -13,9 +13,10 @@
 
 #include <fhg/util/xml.hpp>
 
-#include <boost/unordered_map.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/bind.hpp>
+
+#include <unordered_map>
 
 namespace xml
 {
@@ -64,7 +65,7 @@ namespace xml
       }
 
       void structure_type::specialize
-        (const boost::unordered_map<std::string, std::string>& m)
+        (const std::unordered_map<std::string, std::string>& m)
       {
         pnet::type::signature::specialize (_sig, m);
       }
@@ -72,11 +73,11 @@ namespace xml
       namespace
       {
         boost::optional<pnet::type::signature::signature_type> get_assignment
-          ( const boost::unordered_map<std::string, structure_type>& m
+          ( const std::unordered_map<std::string, structure_type>& m
           , const std::string& key
           )
         {
-          boost::unordered_map<std::string, structure_type>::const_iterator
+          std::unordered_map<std::string, structure_type>::const_iterator
             pos (m.find (key));
 
           if (pos != m.end())
@@ -105,7 +106,7 @@ namespace xml
       }
 
       void structure_type::resolve
-        (const boost::unordered_map<std::string, structure_type>& m)
+        (const std::unordered_map<std::string, structure_type>& m)
       {
         pnet::type::signature::signature_type sign
           (pnet::type::signature::resolve (_sig

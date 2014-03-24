@@ -18,7 +18,6 @@
 
 #include <fhg/assert.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
-#include <boost/unordered_map.hpp>
 #include <algorithm>
 #include <sdpa/types.hpp>
 #include <boost/bind.hpp>
@@ -29,6 +28,8 @@
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/count_if.hpp>
+
+#include <unordered_map>
 
 namespace sdpa
 {

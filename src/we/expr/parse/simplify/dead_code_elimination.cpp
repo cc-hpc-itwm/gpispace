@@ -6,7 +6,6 @@
 #include <we/expr/token/assoc.hpp>
 #include <we/expr/token/prop.hpp>
 
-#include <boost/unordered_map.hpp>
 #include <boost/variant.hpp>
 
 namespace expr

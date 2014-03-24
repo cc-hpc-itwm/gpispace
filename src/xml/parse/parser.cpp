@@ -1594,7 +1594,7 @@ namespace xml
 
       type::mk_wrapper (state, m);
 
-      boost::unordered_set<std::string> structnames;
+      std::unordered_set<std::string> structnames;
 
       type::struct_to_cpp (state, function, structnames);
 
@@ -1630,8 +1630,8 @@ namespace xml
         function.get_ref().name (boost::optional<std::string>("anonymous"));
       }
 
-      boost::unordered_map<std::string, we::port_id_type> port_id_in;
-      boost::unordered_map<std::string, we::port_id_type> port_id_out;
+      std::unordered_map<std::string, we::port_id_type> port_id_in;
+      std::unordered_map<std::string, we::port_id_type> port_id_out;
 
       we::type::transition_t trans
         (function.get_ref().synthesize ( *function.get().name()

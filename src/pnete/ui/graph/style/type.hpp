@@ -9,9 +9,10 @@
 #include <pnete/ui/graph/mode.hpp>
 
 #include <boost/bind.hpp>
-#include <boost/unordered_map.hpp>
 
 #include <QGraphicsItem>
+
+#include <unordered_map>
 
 class QPainter;
 
@@ -96,10 +97,10 @@ namespace fhg
           class type
           {
           private:
-            typedef boost::unordered_map<mode::type, store::type> by_mode_type;
-            typedef boost::unordered_map< key_type
-                                        , by_mode_type
-                                        > by_mode_by_key_type;
+            typedef std::unordered_map<mode::type, store::type> by_mode_type;
+            typedef std::unordered_map< key_type
+                                      , by_mode_type
+                                      > by_mode_by_key_type;
 
             by_mode_by_key_type _by_mode_by_key;
 

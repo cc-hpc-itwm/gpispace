@@ -22,13 +22,13 @@
 #include <boost/range/any_range.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/tuple/tuple.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
 #include <boost/utility.hpp>
 
 #include <functional>
 #include <list>
 #include <sstream>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace we
 {
@@ -59,12 +59,12 @@ namespace we
         , boost::bimaps::left_based
         , boost::bimaps::with_info<we::type::property::type>
         > place_to_port_with_info_type;
-      typedef boost::unordered_map< transition_id_type
-                                  , port_to_place_with_info_type
-                                  > port_to_place_type;
-      typedef boost::unordered_map< transition_id_type
-                                  , place_to_port_with_info_type
-                                  > place_to_port_type;
+      typedef std::unordered_map< transition_id_type
+                                , port_to_place_with_info_type
+                                > port_to_place_type;
+      typedef std::unordered_map< transition_id_type
+                                , place_to_port_with_info_type
+                                > place_to_port_type;
 
       //! \todo eliminate these, just do not copy or assign nets!
       net_type();
@@ -74,8 +74,8 @@ namespace we
       place_id_type add_place (const place::type&);
       transition_id_type add_transition (const we::type::transition_t&);
 
-      const boost::unordered_map<place_id_type, place::type>& places() const;
-      const boost::unordered_map<transition_id_type, we::type::transition_t>&
+      const std::unordered_map<place_id_type, place::type>& places() const;
+      const std::unordered_map<transition_id_type, we::type::transition_t>&
         transitions() const;
 
       void add_connection ( edge::type
@@ -103,7 +103,7 @@ namespace we
       {
         while (!_enabled.empty())
         {
-          boost::unordered_set<we::transition_id_type> const& transition_ids
+          std::unordered_set<we::transition_id_type> const& transition_ids
             (_enabled.begin()->second);
           boost::uniform_int<std::size_t> random (0, transition_ids.size() - 1);
           transition_id_type const transition_id
@@ -125,10 +125,10 @@ namespace we
 
     private:
       place_id_type _place_id;
-      boost::unordered_map<place_id_type, place::type> _pmap;
+      std::unordered_map<place_id_type, place::type> _pmap;
 
       transition_id_type _transition_id;
-      boost::unordered_map<transition_id_type, we::type::transition_t> _tmap;
+      std::unordered_map<transition_id_type, we::type::transition_t> _tmap;
 
       adj_pt_type _adj_pt_consume;
       adj_pt_type _adj_pt_read;
@@ -137,14 +137,14 @@ namespace we
       port_to_place_type _port_to_place;
       place_to_port_type _place_to_port;
 
-      typedef boost::unordered_map< place_id_type
-                                  , std::list<pnet::type::value::value_type>
-                                  > token_by_place_id_type;
+      typedef std::unordered_map< place_id_type
+                                , std::list<pnet::type::value::value_type>
+                                > token_by_place_id_type;
 
       token_by_place_id_type _token_by_place_id;
 
       typedef std::map< we::priority_type
-                      , boost::unordered_set<we::transition_id_type>
+                      , std::unordered_set<we::transition_id_type>
                       , std::greater<we::priority_type>
                       > enabled_type;
 
@@ -155,9 +155,9 @@ namespace we
         , std::list<pnet::type::value::value_type>::iterator::difference_type
         > pos_and_distance_type;
 
-      boost::unordered_map
+      std::unordered_map
         < transition_id_type
-        , boost::unordered_map<place_id_type, pos_and_distance_type>
+        , std::unordered_map<place_id_type, pos_and_distance_type>
         > _enabled_choice;
 
       void get_enabled_choice (const net_type&);

@@ -58,6 +58,7 @@
 #include <sdpa/types.hpp>
 #include <sdpa/capability.hpp>
 
+#include <fhg/util/std/pair.hpp>
 #include <fhg/util/thread/set.hpp>
 #include <fhg/util/thread/queue.hpp>
 
@@ -229,11 +230,11 @@ namespace sdpa {
       subscriber_map_t m_listSubscribers;
 
     private:
-      boost::unordered_map<std::pair<job_id_t, job_id_t>, std::string>
+      std::unordered_map<std::pair<job_id_t, job_id_t>, std::string>
         _discover_sources;
 
     private:
-      typedef boost::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>
+      typedef std::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>
         job_map_t;
 
       mutable boost::mutex _job_map_mutex;

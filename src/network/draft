@@ -77,7 +77,7 @@ struct service_manager
     _handler.at (name) (buffer_type (pos.rest()), connection);
   }
 
-  boost::unordered_map<std::string, handler_type> _handler;
+  std::unordered_map<std::string, handler_type> _handler;
 }
 
 struct agent

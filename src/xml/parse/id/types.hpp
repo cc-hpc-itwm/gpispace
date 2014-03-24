@@ -20,6 +20,7 @@
 #include <xml/parse/type/transition.fwd.hpp>
 #include <xml/parse/type/use.fwd.hpp>
 
+#include <functional>
 #include <iosfwd>
 
 #include <boost/cstdint.hpp>
@@ -42,7 +43,7 @@ namespace xml
         bool operator== (const NAME& other) const;                      \
         bool operator!= (const NAME& other) const;                      \
                                                                         \
-        friend std::size_t hash_value (const NAME&);                    \
+        friend struct std::hash<NAME>;                                  \
         friend std::ostream& operator<< (std::ostream&, const NAME&);   \
         friend struct ref::NAME;                                        \
         friend class ::xml::parse::id::mapper;                          \
@@ -51,7 +52,6 @@ namespace xml
         base_id_type _val;                                              \
       };                                                                \
                                                                         \
-      std::size_t hash_value (const NAME& val);                         \
       std::ostream& operator<< (std::ostream& os, const NAME& val);     \
                                                                         \
       bool operator< (const NAME& lhs, const ref::NAME& rhs);           \
@@ -86,7 +86,7 @@ namespace xml
           const id::NAME& id() const;                                   \
           mapper* id_mapper() const;                                    \
                                                                         \
-          friend std::size_t hash_value (const NAME&);                  \
+          friend struct std::hash<NAME>;                                \
           friend std::ostream& operator<< (std::ostream&, const NAME&); \
           friend class ::xml::parse::id::mapper;                        \
                                                                         \
@@ -95,7 +95,6 @@ namespace xml
           mapper* _mapper;                                              \
         };                                                              \
                                                                         \
-        std::size_t hash_value (const NAME& val);                       \
         std::ostream& operator<< (std::ostream& os, const NAME& val);
 
 #include <xml/parse/id/helper.lst>
@@ -105,5 +104,28 @@ namespace xml
     }
   }
 }
+
+#define ITEM(NAME,__IGNORE,__IGNORE2,__IGNORE3)                          \
+  namespace std                                                          \
+  {                                                                      \
+    template<> struct hash<xml::parse::id::NAME>                         \
+    {                                                                    \
+      std::size_t operator() (xml::parse::id::NAME const& id) const      \
+      {                                                                  \
+        return std::hash<xml::parse::id::base_id_type>() (id._val);      \
+      }                                                                  \
+    };                                                                   \
+    template<> struct hash<xml::parse::id::ref::NAME>                    \
+    {                                                                    \
+      std::size_t operator() (xml::parse::id::ref::NAME const& id) const \
+      {                                                                  \
+        return std::hash<xml::parse::id::NAME>() (id._id);               \
+      }                                                                  \
+    };                                                                   \
+  }
+
+#include <xml/parse/id/helper.lst>
+
+#undef ITEM
 
 #endif

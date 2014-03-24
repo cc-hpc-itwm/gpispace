@@ -17,9 +17,9 @@
 #include <boost/optional.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>
-#include <boost/unordered_map.hpp>
 
 #include <functional>
+#include <unordered_map>
 
 namespace we
 {
@@ -111,9 +111,9 @@ namespace we
       private:
         struct list_with_id_lookup
         {
-          typedef boost::unordered_map< id_type
-                                      , std::list<activity_data_type>::iterator
-                                      > position_in_container_type;
+          typedef std::unordered_map< id_type
+                                    , std::list<activity_data_type>::iterator
+                                    > position_in_container_type;
           typedef position_in_container_type::iterator iterator;
 
           activity_data_type get_front();
@@ -133,7 +133,7 @@ namespace we
 
         boost::condition_variable_any _condition_non_empty;
 
-        typedef boost::unordered_map
+        typedef std::unordered_map
           < id_type
           , std::list<std::pair<std::function<void (activity_data_type&)>, bool> >
           > to_be_removed_type;
@@ -143,11 +143,11 @@ namespace we
       boost::mt19937& _random_extraction_engine;
       void extract_from_nets();
 
-      boost::unordered_map<id_type, std::function<void()> >
+      std::unordered_map<id_type, std::function<void()> >
         _finalize_job_cancellation;
 
       mutable boost::mutex _discover_state_mutex;
-      boost::unordered_map
+      std::unordered_map
         < id_type, std::pair<std::size_t, sdpa::discovery_info_t >
         > _discover_state;
 

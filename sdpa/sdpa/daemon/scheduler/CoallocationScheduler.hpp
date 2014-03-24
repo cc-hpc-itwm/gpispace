@@ -131,7 +131,7 @@ namespace sdpa
       };
 
       mutable boost::mutex mtx_alloc_table_;
-      typedef boost::unordered_map<sdpa::job_id_t, Reservation*>
+      typedef std::unordered_map<sdpa::job_id_t, Reservation*>
         allocation_table_t;
       allocation_table_t allocation_table_;
     };

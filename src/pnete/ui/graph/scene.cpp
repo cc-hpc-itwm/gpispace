@@ -32,8 +32,7 @@
 #include <xml/parse/type/transition.hpp>
 
 #include <list>
-
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 
 #include <QApplication>
 #include <QDebug>
@@ -904,9 +903,9 @@ namespace fhg
             return;
           }
 
-          typedef boost::unordered_map< base_item*
-                                      , graphviz::node_type
-                                      > nodes_map_type;
+          typedef std::unordered_map< base_item*
+                                    , graphviz::node_type
+                                    > nodes_map_type;
           nodes_map_type nodes;
 
           graphviz::context_type context;
@@ -932,9 +931,9 @@ namespace fhg
             }
           }
 
-          typedef boost::unordered_map < association*
-                                       , graphviz::edge_type
-                                       > edges_map_type;
+          typedef std::unordered_map < association*
+                                     , graphviz::edge_type
+                                     > edges_map_type;
           edges_map_type edges;
 
           for (association* c : items_of_type<association>())

@@ -8,10 +8,10 @@
 
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/optional.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
 
 #include <functional>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace xml
 {
@@ -26,8 +26,8 @@ namespace xml
       typedef ID_TYPE id_type;
       typedef typename value_type::unique_key_type key_type;
 
-      typedef boost::unordered_set<id_type> ids_type;
-      typedef boost::unordered_map<key_type,id_type> by_key_type;
+      typedef std::unordered_set<id_type> ids_type;
+      typedef std::unordered_map<key_type,id_type> by_key_type;
 
       class values_type
       {

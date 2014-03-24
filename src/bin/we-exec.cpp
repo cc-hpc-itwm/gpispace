@@ -17,9 +17,9 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>
-#include <boost/unordered_map.hpp>
 
 #include <list>
+#include <unordered_map>
 #include <vector>
 
 #include <sysexits.h>
@@ -113,9 +113,9 @@ namespace
 
   struct sdpa_daemon
   {
-    typedef boost::unordered_map< we::layer::id_type
-                                , we::layer::id_type
-                                > id_map_t;
+    typedef std::unordered_map< we::layer::id_type
+                              , we::layer::id_type
+                              > id_map_t;
 
     sdpa_daemon ( std::size_t num_worker
                 , we::loader::loader* loader

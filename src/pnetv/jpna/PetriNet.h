@@ -1,11 +1,11 @@
 #pragma once
 
-#include <boost/unordered_map.hpp>
-
 #include <pnetv/jpn/common/Printable.h>
 
 #include "Place.h"
 #include "Transition.h"
+
+#include <unordered_map>
 
 namespace jpna {
 

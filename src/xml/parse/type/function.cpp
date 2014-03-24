@@ -623,8 +623,8 @@ namespace xml
         const conditions_type& _conditions;
         we::type::property::type _properties;
         const requirements_type& _trans_requirements;
-        boost::unordered_map<std::string, we::port_id_type>& _port_id_in;
-        boost::unordered_map<std::string, we::port_id_type>& _port_id_out;
+        std::unordered_map<std::string, we::port_id_type>& _port_id_in;
+        std::unordered_map<std::string, we::port_id_type>& _port_id_out;
         we::priority_type _priority;
 
         typedef we::type::transition_t we_transition_type;
@@ -633,9 +633,9 @@ namespace xml
         typedef we::type::module_call_t we_module_type;
         typedef we::type::expression_t we_expr_type;
 
-        typedef boost::unordered_map< std::string
-                                    , we::place_id_type
-                                    > pid_of_place_type;
+        typedef std::unordered_map< std::string
+                                  , we::place_id_type
+                                  > pid_of_place_type;
 
         void add_port
           (we_transition_type& transition, we::type::port_t const& port) const
@@ -749,8 +749,8 @@ namespace xml
           , const conditions_type& conditions
           , const we::type::property::type& trans_properties
           , const requirements_type& trans_requirements
-          , boost::unordered_map<std::string, we::port_id_type>& port_id_in
-          , boost::unordered_map<std::string, we::port_id_type>& port_id_out
+          , std::unordered_map<std::string, we::port_id_type>& port_id_in
+          , std::unordered_map<std::string, we::port_id_type>& port_id_out
           , we::priority_type priority
           )
           : _name (name)
@@ -846,8 +846,8 @@ namespace xml
       we::type::transition_t function_type::synthesize
         ( const std::string& name
         , const state::type& state
-        , boost::unordered_map<std::string, we::port_id_type>& port_id_in
-        , boost::unordered_map<std::string, we::port_id_type>& port_id_out
+        , std::unordered_map<std::string, we::port_id_type>& port_id_in
+        , std::unordered_map<std::string, we::port_id_type>& port_id_out
         , const boost::optional<bool>& trans_internal
         , const conditions_type& conditions
         , const we::type::property::type& trans_properties
@@ -1045,15 +1045,9 @@ namespace xml
         return name == other.name;
       }
 
-      std::size_t hash_value (const fun_info_type & fi)
-      {
-        boost::hash<std::string> hasher;
-        return hasher (fi.name);
-      }
+      typedef std::unordered_set<fun_info_type> fun_infos_type;
 
-      typedef boost::unordered_set<fun_info_type> fun_infos_type;
-
-      typedef boost::unordered_map<std::string,fun_infos_type> fun_info_map;
+      typedef std::unordered_map<std::string,fun_infos_type> fun_info_map;
 
       typedef boost::filesystem::path path_t;
 
@@ -1108,7 +1102,7 @@ namespace xml
 
       void mk_makefile ( const state::type & state
                        , const fun_info_map & m
-                       , const boost::unordered_set<std::string>& structnames
+                       , const std::unordered_set<std::string>& structnames
                        )
       {
         namespace cpp_util = ::fhg::util::cpp;
@@ -1537,9 +1531,9 @@ namespace xml
         stream                                                     << std::endl;
       }
 
-      typedef boost::unordered_map<std::string, module_type>
+      typedef std::unordered_map<std::string, module_type>
         mc_by_function_type;
-      typedef boost::unordered_map<std::string, mc_by_function_type>
+      typedef std::unordered_map<std::string, mc_by_function_type>
         mcs_type;
 
       bool find_module_calls ( const state::type &
@@ -1620,7 +1614,7 @@ namespace xml
 
       namespace
       {
-        typedef boost::unordered_set<std::string> types_type;
+        typedef std::unordered_set<std::string> types_type;
 
         struct port_with_type
         {
@@ -1672,9 +1666,9 @@ namespace xml
               }
               else
               {
-                boost::unordered_map< std::string
-                                    , std::set<std::string>
-                                    >::const_iterator
+                std::unordered_map< std::string
+                                  , std::set<std::string>
+                                  >::const_iterator
                   pos (_inc.find (_tname));
 
                 if (pos != _inc.end())
@@ -1691,9 +1685,9 @@ namespace xml
 
           private:
             const std::string _tname;
-            boost::unordered_map< std::string
-                                , std::set<std::string>
-                                > _inc;
+            std::unordered_map< std::string
+                              , std::set<std::string>
+                              > _inc;
             std::string const _suffix;
           };
         };
@@ -1845,7 +1839,7 @@ namespace xml
                     , const ports_with_type_type & ports_mutable
                     , const ports_with_type_type & ports_out
                     , const boost::optional<port_with_type> & port_return
-                    , boost::unordered_set<std::string> const& types
+                    , std::unordered_set<std::string> const& types
                     )
         {
           namespace block = fhg::util::cpp::block;
@@ -2287,7 +2281,7 @@ namespace xml
       {
         void to_cpp ( const structs_type& structs
                     , const state::type& state
-                    , boost::unordered_set<std::string>& structnames
+                    , std::unordered_set<std::string>& structnames
                     )
         {
           for (const structure_type& structure : structs)
@@ -2313,7 +2307,7 @@ namespace xml
               stream << fhg::util::cpp::include_guard::open
                 ("PNETC_TYPE_" + structure.name());
 
-              const boost::unordered_set<std::string> names
+              const std::unordered_set<std::string> names
                 (pnet::type::signature::names (sig));
 
 
@@ -2393,7 +2387,7 @@ namespace xml
         {
         public:
           visitor_to_cpp ( const state::type & _state
-                         , boost::unordered_set<std::string>& structnames
+                         , std::unordered_set<std::string>& structnames
                          )
             : state (_state)
             , _structnames (structnames)
@@ -2430,13 +2424,13 @@ namespace xml
 
         private:
           const state::type & state;
-          boost::unordered_set<std::string>& _structnames;
+          std::unordered_set<std::string>& _structnames;
         };
       }
 
       void struct_to_cpp ( const state::type& state
                          , const id::ref::function& function_id
-                         , boost::unordered_set<std::string>& structnames
+                         , std::unordered_set<std::string>& structnames
                          )
       {
         const function_type& function (function_id.get());
@@ -2523,5 +2517,14 @@ namespace xml
         }
       } // namespace dump
     }
+  }
+}
+
+namespace std
+{
+  size_t hash<xml::parse::type::fun_info_type>::operator()
+    (xml::parse::type::fun_info_type const& fun) const
+  {
+    return std::hash<std::string>() (fun.name);
   }
 }

@@ -17,10 +17,11 @@
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/variant.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
 #include <boost/variant.hpp>
 #include <boost/variant/recursive_wrapper.hpp>
+
+#include <unordered_map>
+#include <unordered_set>
 
 namespace we { namespace type {
     struct transition_t
@@ -39,7 +40,7 @@ namespace we { namespace type {
       typedef std::pair< we::port_id_type
                        , we::type::property::type
                        > port_id_with_prop_t;
-      typedef boost::unordered_map<we::port_id_type, port_t> port_map_t;
+      typedef std::unordered_map<we::port_id_type, port_t> port_map_t;
 
       transition_t ()
         : name_ ("<<transition unknown>>")

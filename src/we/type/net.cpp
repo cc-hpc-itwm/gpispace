@@ -7,10 +7,10 @@
 
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/join.hpp>
-#include <boost/unordered_map.hpp>
 #include <boost/utility.hpp>
 
 #include <stack>
+#include <unordered_map>
 
 namespace we
 {
@@ -25,9 +25,9 @@ namespace we
                          > pos_and_distance_type;
       public:
         bool enables (net_type* const, transition_id_type);
-        void write_to ( boost::unordered_map< place_id_type
-                                            , pos_and_distance_type
-                                            >&
+        void write_to ( std::unordered_map< place_id_type
+                                          , pos_and_distance_type
+                                          >&
                       ) const;
         void push (place_id_type, std::list<pnet::type::value::value_type>&);
         void push ( place_id_type
@@ -54,7 +54,7 @@ namespace we
           pos_and_distance_type _pos_and_distance;
         };
 
-        typedef boost::unordered_map<place_id_type, iterators_type> map_type;
+        typedef std::unordered_map<place_id_type, iterators_type> map_type;
 
         map_type _m;
 
@@ -112,9 +112,9 @@ namespace we
     }
     void net_type::get_enabled_choice (const net_type& other)
     {
-      typedef boost::unordered_map< place_id_type
-                                  , pos_and_distance_type
-                                  > enabled_by_place_id_type;
+      typedef std::unordered_map< place_id_type
+                                , pos_and_distance_type
+                                > enabled_by_place_id_type;
 
       for ( const std::pair<transition_id_type, enabled_by_place_id_type> & tm
           : other._enabled_choice
@@ -182,12 +182,12 @@ namespace we
       }
     }
 
-    const boost::unordered_map<place_id_type,place::type>& net_type::places() const
+    const std::unordered_map<place_id_type,place::type>& net_type::places() const
     {
       return _pmap;
     }
 
-    const boost::unordered_map<transition_id_type,we::type::transition_t>&
+    const std::unordered_map<transition_id_type,we::type::transition_t>&
     net_type::transitions() const
     {
       return _tmap;
@@ -285,9 +285,9 @@ namespace we
     const std::list<pnet::type::value::value_type>&
     net_type::get_token (place_id_type pid) const
     {
-      typedef boost::unordered_map< place_id_type
-                                  , std::list<pnet::type::value::value_type>
-                                  > token_by_place_id_t;
+      typedef std::unordered_map< place_id_type
+                                , std::list<pnet::type::value::value_type>
+                                > token_by_place_id_t;
 
       token_by_place_id_t::const_iterator pos (_token_by_place_id.find (pid));
 
@@ -642,9 +642,9 @@ namespace we
 
       return false;
     }
-    void cross_type::write_to (boost::unordered_map< place_id_type
-                                                   , pos_and_distance_type
-                                                   >& choice
+    void cross_type::write_to (std::unordered_map< place_id_type
+                                                 , pos_and_distance_type
+                                                 >& choice
                               ) const
     {
       choice.clear();

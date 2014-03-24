@@ -1175,19 +1175,20 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-namespace we
+namespace std
 {
-  namespace type
+  template<> struct hash<we::type::requirement_t>
   {
-    std::size_t hash_value (const requirement_t& requirement)
+    size_t operator()(we::type::requirement_t const& requirement) const
     {
-      std::size_t seed (0);
+      size_t seed (0);
       boost::hash_combine (seed, requirement.value());
       boost::hash_combine (seed, requirement.is_mandatory());
       return seed;
     }
-  }
+  };
 }
+
 namespace
 {
   we::place_id_type add_transition_with_requirement_and_input_place
@@ -1326,7 +1327,7 @@ namespace
     unsigned int _expected_activities;
 
   public:
-    boost::unordered_map<we::type::requirement_t, unsigned int>
+    std::unordered_map<we::type::requirement_t, unsigned int>
       _received_requirements;
 
   private:

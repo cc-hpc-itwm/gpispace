@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
     }
   }
 
-  boost::unordered_map
+  std::unordered_map
     < we::port_id_type
     , std::list<pnet::type::value::value_type>
     > values_by_port_id;

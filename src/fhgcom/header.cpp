@@ -62,13 +62,6 @@ namespace fhg
         return ! (lhs == rhs);
       }
 
-      std::size_t hash_value(address_t const& a)
-      {
-        boost::uuids::uuid u;
-        memcpy (&u, &a, sizeof(boost::uuids::uuid));
-        return hash_value (u);
-      }
-
       std::string to_string (address_t const & a)
       {
         boost::uuids::uuid u;
@@ -76,5 +69,16 @@ namespace fhg
         return boost::lexical_cast<std::string>(u);
       }
     }
+  }
+}
+
+namespace std
+{
+  size_t hash<fhg::com::p2p::address_t>::operator()
+    (fhg::com::p2p::address_t const& a) const
+  {
+    boost::uuids::uuid u;
+    memcpy (&u, &a, sizeof (boost::uuids::uuid));
+    return hash_value (u);
   }
 }

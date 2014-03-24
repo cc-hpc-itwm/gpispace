@@ -10,6 +10,8 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/functional/hash.hpp>
 
+#include <functional>
+
 namespace we
 {
   template<typename POD_TYPE, class client_type>
@@ -95,25 +97,50 @@ namespace we
   {
     return i >> id._value;
   }
+}
 
+#if __cplusplus >= 201103L
 #define INHERIT_ID_TYPE(_name,_type)                                    \
-  struct _name : public ::we::id_base_type<_type, _name>         \
+  namespace we                                                          \
   {                                                                     \
-    _name () : id_base_type<_type,_name>() {}                           \
-    _name (const _type& value) : id_base_type<_type,_name> (value) {}   \
+    struct _name : public ::we::id_base_type<_type, _name>              \
+    {                                                                   \
+      _name () : id_base_type<_type,_name>() {}                         \
+      _name (const _type& value) : id_base_type<_type,_name> (value) {} \
+    };                                                                  \
+  }                                                                     \
+  namespace std                                                         \
+  {                                                                     \
+    template<> struct hash<we::_name>                                   \
+    {                                                                   \
+      size_t operator() (const we::_name& id) const                     \
+      {                                                                 \
+        return std::hash<_type>() (id.value());                         \
+      }                                                                 \
+    };                                                                  \
   }
+#else
+#define INHERIT_ID_TYPE(_name,_type)                                    \
+  namespace we                                                          \
+  {                                                                     \
+    struct _name : public ::we::id_base_type<_type, _name>              \
+    {                                                                   \
+      _name () : id_base_type<_type,_name>() {}                         \
+      _name (const _type& value) : id_base_type<_type,_name> (value) {} \
+    };                                                                  \
+  }
+#endif
 
   // Martin Kühn: If you aquire a new handle each cycle, then, with 3e9
   // cycles per second, you can run for 2^64/3e9/60/60/24/365 > 194 years.
   // It follows that an uint64_t is enough for now.
 
-  INHERIT_ID_TYPE (place_id_type, boost::uint64_t);
-  INHERIT_ID_TYPE (port_id_type, boost::uint64_t);
-  INHERIT_ID_TYPE (transition_id_type, boost::uint64_t);
+  INHERIT_ID_TYPE (place_id_type, boost::uint64_t)
+  INHERIT_ID_TYPE (port_id_type, boost::uint64_t)
+  INHERIT_ID_TYPE (transition_id_type, boost::uint64_t)
 
-  INHERIT_ID_TYPE (priority_type, boost::int16_t);
+  INHERIT_ID_TYPE (priority_type, boost::int16_t)
 
 #undef INHERIT_ID_TYPE
-}
 
 #endif

@@ -6,8 +6,6 @@
 #include <boost/thread.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/unordered_set.hpp>
-#include <boost/unordered_map.hpp>
 #include <boost/signals2.hpp>
 
 #include <gpi-space/pc/type/typedefs.hpp>
@@ -21,6 +19,9 @@
 #include <gpi-space/pc/memory/memory_buffer.hpp>
 
 #include <fhg/util/thread/queue.hpp>
+
+#include <unordered_set>
+#include <unordered_map>
 
 namespace gpi
 {
@@ -218,10 +219,10 @@ namespace gpi
       private:
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
-        typedef boost::unordered_set <gpi::pc::type::process_id_t> process_ids_t;
-        typedef boost::unordered_map< gpi::pc::type::handle_t
-                                    , gpi::pc::type::handle::descriptor_t
-                                    > handle_descriptor_map_t;
+        typedef std::unordered_set <gpi::pc::type::process_id_t> process_ids_t;
+        typedef std::unordered_map< gpi::pc::type::handle_t
+                                  , gpi::pc::type::handle::descriptor_t
+                                  > handle_descriptor_map_t;
 
         void update_descriptor_from_mmgr ();
 

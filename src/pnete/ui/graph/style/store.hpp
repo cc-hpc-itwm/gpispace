@@ -3,13 +3,12 @@
 #ifndef _FHG_PNETE_UI_GRAPH_STYLE_STORE_HPP
 #define _FHG_PNETE_UI_GRAPH_STYLE_STORE_HPP 1
 
-#include <boost/unordered_map.hpp>
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
-#include <boost/unordered_map.hpp>
 
 #include <functional>
 #include <list>
+#include <unordered_map>
 
 #include <QColor>
 
@@ -36,9 +35,9 @@ namespace fhg
                                    > predicate_type;
 
             private:
-              typedef boost::unordered_map< Key
-                                          , optional_value_type
-                                          > cache_type;
+              typedef std::unordered_map< Key
+                                        , optional_value_type
+                                        > cache_type;
               typedef std::list<predicate_type> predicates_type;
 
               typedef typename cache_type::const_iterator cache_iterator;

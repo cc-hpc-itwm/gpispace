@@ -5,9 +5,8 @@
 
 #include <we/type/signature.hpp>
 
-#include <boost/unordered_set.hpp>
-
 #include <string>
+#include <unordered_set>
 
 namespace pnet
 {
@@ -15,7 +14,7 @@ namespace pnet
   {
     namespace signature
     {
-      boost::unordered_set<std::string> names (const signature_type&);
+      std::unordered_set<std::string> names (const signature_type&);
     }
   }
 }

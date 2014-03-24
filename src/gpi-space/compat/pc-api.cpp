@@ -15,6 +15,8 @@
 
 #include <boost/thread/mutex.hpp>
 
+#include <unordered_map>
+
 typedef boost::mutex mutex_type;
 typedef boost::unique_lock<mutex_type> lock_type;
 
@@ -80,9 +82,9 @@ static
 gpi::pc::type::handle::descriptor_t
 get_handle_info (gpi::pc::type::handle_t h)
 {
-  typedef boost::unordered_map< gpi::pc::type::handle_t
-                              , gpi::pc::type::handle::descriptor_t
-                              > handle_cache_t;
+  typedef std::unordered_map< gpi::pc::type::handle_t
+                            , gpi::pc::type::handle::descriptor_t
+                            > handle_cache_t;
   static handle_cache_t handle_cache;
   static mutex_type mutex;
 

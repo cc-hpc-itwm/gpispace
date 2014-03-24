@@ -2,9 +2,10 @@
 #include    <stdexcept>
 #include    <iostream>
 #include <boost/thread.hpp>
-#include <boost/unordered_map.hpp>
 
 #include <boost/range/adaptor/map.hpp>
+
+#include <unordered_map>
 
 using namespace fhg::log;
 
@@ -14,7 +15,7 @@ namespace
   {
     struct
     {
-      typedef boost::unordered_map<std::string, Logger::ptr_t> logger_map_t;
+      typedef std::unordered_map<std::string, Logger::ptr_t> logger_map_t;
 
       Logger::ptr_t getLogger (const std::string& name)
       {

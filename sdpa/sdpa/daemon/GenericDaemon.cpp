@@ -1216,7 +1216,7 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
     {
       const std::pair<job_id_t, job_id_t> source_id
         (e->discover_id(), e->discover_result().job_id());
-      const boost::unordered_map<std::pair<job_id_t, job_id_t>, std::string>::iterator
+      const std::unordered_map<std::pair<job_id_t, job_id_t>, std::string>::iterator
         source (_discover_sources.find (source_id));
 
       if (source == _discover_sources.end())

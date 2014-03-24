@@ -13,10 +13,11 @@
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/scoped_thread.hpp>
-#include <boost/unordered_map.hpp>
 
 #include <fhg/assert.hpp>
 #include <plugin/plugin.hpp>
+
+#include <unordered_map>
 
 class GPICompatPluginImpl;
 static GPICompatPluginImpl * gpi_compat = 0;
@@ -29,9 +30,9 @@ enum gpi_state_t
 
 class GPICompatPluginImpl : FHG_PLUGIN
 {
-  typedef boost::unordered_map< gpi::pc::type::handle_t
-                              , gpi::pc::type::handle::descriptor_t
-                              > handle_cache_t;
+  typedef std::unordered_map< gpi::pc::type::handle_t
+                            , gpi::pc::type::handle::descriptor_t
+                            > handle_cache_t;
   typedef boost::mutex mutex_type;
   typedef boost::unique_lock<mutex_type> lock_type;
 public:
