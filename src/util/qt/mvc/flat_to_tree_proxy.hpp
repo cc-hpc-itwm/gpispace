@@ -8,8 +8,9 @@
 #include <QMap>
 #include <QVariant>
 
-#include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
+
+#include <memory>
 
 namespace fhg
 {
@@ -30,7 +31,7 @@ namespace fhg
                              , transform_functions_model*
                              , QObject* parent = nullptr
                              );
-          //! \note Exists for ~scoped_ptr<fwd-decl-type>() only.
+          //! \note Exists for ~unique_ptr<fwd-decl-type>() only.
           ~flat_to_tree_proxy();
 
           virtual int rowCount (const QModelIndex& = QModelIndex()) const;
@@ -63,7 +64,7 @@ namespace fhg
           QAbstractItemModel* _source;
 
           transform_functions_model* _transform_functions;
-          boost::scoped_ptr<index_tree_item> _invisible_root;
+          std::unique_ptr<index_tree_item> _invisible_root;
           QMap<QModelIndex, QModelIndex> _source_to_tree;
         };
 

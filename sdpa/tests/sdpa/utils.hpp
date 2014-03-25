@@ -29,6 +29,7 @@
 
 #include <fstream>
 #include <functional>
+#include <memory>
 #include <sstream>
 #include <string>
 
@@ -594,7 +595,7 @@ namespace utils
       }
 
     private:
-      boost::scoped_ptr<client> _client;
+      std::unique_ptr<client> _client;
       sdpa::job_id_t _job_id;
     };
   };

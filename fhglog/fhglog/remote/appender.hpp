@@ -7,7 +7,8 @@
 
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
-#include <boost/scoped_ptr.hpp>
+
+#include <memory>
 
 namespace fhg
 {
@@ -28,7 +29,7 @@ namespace fhg
       private:
         boost::asio::io_service io_service_;
         boost::asio::ip::udp::endpoint logserver_;
-        boost::scoped_ptr<boost::asio::ip::udp::socket> socket_;
+        std::unique_ptr<boost::asio::ip::udp::socket> socket_;
       };
     }
   }

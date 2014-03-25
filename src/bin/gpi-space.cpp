@@ -37,6 +37,8 @@
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/container/manager.hpp>
 
+#include <memory>
+
 static const char * program_name = "gpi-space";
 static const int CONFIG_MAGIC = 0xdeadbeef;
 
@@ -644,7 +646,7 @@ int main (int ac, char *av[])
            );
 
   // initialize gpi api
-  boost::scoped_ptr<gpi_api_t> gpi_api_
+  std::unique_ptr<gpi_api_t> gpi_api_
     (create_gpi_api (requested_api, is_master));
   gpi_api_t& gpi_api (*gpi_api_);
 
