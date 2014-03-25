@@ -86,7 +86,7 @@ namespace fhg
       struct to_recv_t
       {
         to_recv_t ()
-          : message (0)
+          : message (nullptr)
           , handler (0)
         {}
 

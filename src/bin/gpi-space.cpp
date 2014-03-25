@@ -814,7 +814,7 @@ static int configure_logging (const config_t *cfg, const char* logfile)
   snprintf( server_url, sizeof(server_url), "%s:%hu"
           , cfg->log_host, cfg->log_port
           );
-  const char *log_level = 0;
+  const char *log_level = nullptr;
   switch (cfg->log_level)
   {
   case 'T':

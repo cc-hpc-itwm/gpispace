@@ -114,7 +114,7 @@ namespace gpi
         return
           (m_ptr && off < descriptor ().local_size)
           ? ((char*)m_ptr + off)
-          : (char*)0;
+          : (char*)nullptr;
       }
 
       bool

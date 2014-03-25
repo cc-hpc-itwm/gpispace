@@ -245,7 +245,7 @@ namespace fhg
           int margin (const QWidget* wid)
           {
             return
-              wid->style()->pixelMetric (QStyle::PM_HeaderGripMargin, 0, wid) + 1;
+              wid->style()->pixelMetric (QStyle::PM_HeaderGripMargin, nullptr, wid) + 1;
           }
         }
 

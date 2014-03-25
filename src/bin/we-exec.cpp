@@ -61,7 +61,7 @@ namespace
       try
       {
         //!\todo pass a real drts::worker::context
-        we::loader::module_call (*_loader, 0, act, mod);
+        we::loader::module_call (*_loader, nullptr, act, mod);
         _layer->finished (_id, act);
       }
       catch (std::exception const& ex)

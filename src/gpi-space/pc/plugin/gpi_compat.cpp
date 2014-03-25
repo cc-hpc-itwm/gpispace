@@ -20,7 +20,7 @@
 #include <unordered_map>
 
 class GPICompatPluginImpl;
-static GPICompatPluginImpl * gpi_compat = 0;
+static GPICompatPluginImpl * gpi_compat = nullptr;
 
 enum gpi_state_t
   {
@@ -56,7 +56,7 @@ public:
 
     m_gpi_state = ST_DISCONNECTED;
     m_shm_hdl = 0;
-    m_shm_ptr = (void*)0;
+    m_shm_ptr = (void*)nullptr;
     m_shm_id = 0;
     m_shm_size = shm_size;
 
@@ -101,9 +101,9 @@ public:
       LOG(WARN, "gpi_compat plugin could not unregister segment");
     }
 
-    m_shm_ptr = 0;
-    api = 0;
-    gpi_compat = 0;
+    m_shm_ptr = nullptr;
+    api = nullptr;
+    gpi_compat = nullptr;
   }
 
   int reinitialize_gpi_state ()
@@ -179,7 +179,7 @@ public:
     {
       if (m_shm_hdl == (gpi::pc::type::handle_t)0)
         MLOG (ERROR, "gpi state setup but shm_hdl == 0");
-      if (m_shm_ptr == 0)
+      if (m_shm_ptr == nullptr)
         MLOG (ERROR, "gpi state setup but shm_ptr == 0");
     }
 
@@ -229,7 +229,7 @@ private:
     }
 
     m_shm_hdl = 0;
-    m_shm_ptr = 0;
+    m_shm_ptr = nullptr;
     m_shm_id  = 0;
 
     m_gpi_state = ST_DISCONNECTED;
@@ -347,7 +347,7 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 
   static const gpi::pc::type::queue_id_t queue = GPI_PC_INVAL;
 
-  fhg_assert (0 != gpi_compat->m_shm_hdl);
+  fhg_assert (nullptr != gpi_compat->m_shm_hdl);
 
   return
     gpi_compat->api->memcpy( gpi::pc::type::memory_location_t ( gpi_compat->m_shm_hdl
@@ -369,7 +369,7 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 
   static const gpi::pc::type::queue_id_t queue = GPI_PC_INVAL;
 
-  fhg_assert (0 != gpi_compat->m_shm_hdl);
+  fhg_assert (nullptr != gpi_compat->m_shm_hdl);
 
   return
     gpi_compat->api->memcpy( gpi::pc::type::memory_location_t (handle, fvmOffset)
@@ -390,7 +390,7 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
 
   static const gpi::pc::type::queue_id_t queue = GPI_PC_INVAL;
 
-  fhg_assert (0 != gpi_compat->m_shm_hdl);
+  fhg_assert (nullptr != gpi_compat->m_shm_hdl);
 
   return gpi_compat->api->
     memcpy( gpi::pc::type::memory_location_t(handle, fvmOffset)
@@ -409,7 +409,7 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
 
   static const gpi::pc::type::queue_id_t queue = GPI_PC_INVAL;
 
-  fhg_assert (0 != gpi_compat->m_shm_hdl);
+  fhg_assert (nullptr != gpi_compat->m_shm_hdl);
 
   return gpi_compat->api->
     memcpy( gpi::pc::type::memory_location_t(gpi_compat->m_shm_hdl, shmemOffset)

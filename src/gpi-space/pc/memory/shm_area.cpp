@@ -34,7 +34,7 @@ namespace gpi
                           )
         {
           int fd (-1);
-          void *ptr (0);
+          void *ptr (nullptr);
 
           fd = shm_open (path.c_str(), open_flags, open_mode);
           if (fd < 0)
@@ -170,7 +170,7 @@ namespace gpi
         try
         {
           detail::close (m_ptr, descriptor().local_size);
-          m_ptr = 0;
+          m_ptr = nullptr;
           if (unlink_after_close (descriptor().flags))
           {
             detail::unlink (m_path);
@@ -194,7 +194,7 @@ namespace gpi
         return
           (m_ptr && off < descriptor().local_size)
           ? ((char*)m_ptr + off)
-          : 0;
+          : nullptr;
       }
 
       Arena_t

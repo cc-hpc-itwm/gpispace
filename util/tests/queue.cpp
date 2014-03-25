@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE (thread_queue_put_by_multiple_threads)
   for (int i = 0 ; i < NUM_THREADS ; i++)
   {
     threads [i]->join ();
-    delete threads [i]; threads [i] = 0;
+    delete threads [i]; threads [i] = nullptr;
   }
 }
 

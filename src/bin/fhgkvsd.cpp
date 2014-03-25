@@ -14,7 +14,7 @@
 #include <fhg/util/daemonize.hpp>
 
 static fhg::com::io_service_pool pool (1);
-static fhg::com::kvs::server::kvsd *g_kvsd (0);
+static fhg::com::kvs::server::kvsd *g_kvsd (nullptr);
 
 static const int EX_STILL_RUNNING = 4;
 

@@ -35,10 +35,10 @@ typedef enum {
 static DTmmgr_t dtmmgr(nullptr);
 
 static fvmSize_t pcFVMSize(0);
-static void * pcFVM(0);
+static void * pcFVM(nullptr);
 
 static fvmSize_t pcShmSize(0);
-static void * pcShm(0);
+static void * pcShm(nullptr);
 
 enum FVM_PC_API_ERRORS
 {

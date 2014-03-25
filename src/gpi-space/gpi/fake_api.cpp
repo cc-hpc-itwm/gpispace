@@ -20,7 +20,7 @@ namespace gpi
       , m_startup_done (false)
       , m_rank (0)
       , m_mem_size (0)
-      , m_dma (0)
+      , m_dma (nullptr)
       , m_queue_count (8)
     {
       m_dma_request_count.assign (m_queue_count, 0);
@@ -87,7 +87,7 @@ namespace gpi
       {
         if (m_dma)
         {
-          free (m_dma); m_dma = 0;
+          free (m_dma); m_dma = nullptr;
         }
         m_startup_done = false;
       }

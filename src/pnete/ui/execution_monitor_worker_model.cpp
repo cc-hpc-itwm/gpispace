@@ -320,7 +320,7 @@ namespace fhg
       {
         return !hasIndex (row, column, parent)
           ? QModelIndex()
-          : createIndex (row, column, 0);
+          : createIndex (row, column, nullptr);
       }
 
       QModelIndex worker_model::parent (const QModelIndex&) const

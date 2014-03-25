@@ -34,12 +34,12 @@ namespace fhg
         ensurePolished();
 
         const int icon_size
-          (style()->pixelMetric (QStyle::PM_SmallIconSize, 0, this));
+          (style()->pixelMetric (QStyle::PM_SmallIconSize, nullptr, this));
         const QSize actual_icon_size
           (icon().actualSize (QSize (icon_size, icon_size)));
         const int side_length
           ( 2
-          * style()->pixelMetric (QStyle::PM_DockWidgetTitleBarButtonMargin, 0, this)
+          * style()->pixelMetric (QStyle::PM_DockWidgetTitleBarButtonMargin, nullptr, this)
           + qMax (actual_icon_size.width(), actual_icon_size.height())
           );
         return QSize (side_length, side_length);

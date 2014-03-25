@@ -27,7 +27,7 @@ static gpi::pc::client::api_t & gpi_api ()
 }
 
 static gpi::pc::type::info::descriptor_t gpi_info;
-static void *shm_ptr = 0;
+static void *shm_ptr = nullptr;
 static fvmSize_t shm_size = 0;
 static gpi::pc::type::segment_id_t shm_id = 0;
 static gpi::pc::type::handle_t     shm_hdl = 0;
@@ -39,7 +39,7 @@ int fvmConnect()
 
 int fvmLeave()
 {
-  shm_ptr = 0;
+  shm_ptr = nullptr;
   shm_size = 0;
   shm_id = 0;
   shm_hdl = 0;

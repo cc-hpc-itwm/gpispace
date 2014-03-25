@@ -42,7 +42,7 @@ namespace fhg
       if (in_message_)
       {
         delete in_message_;
-        in_message_ = 0;
+        in_message_ = nullptr;
       }
     }
 
@@ -68,7 +68,7 @@ namespace fhg
 
     void connection_t::start_read ()
     {
-      assert (in_message_ != 0);
+      assert (in_message_ != nullptr);
 
       boost::asio::async_read( socket_
                              , boost::asio::buffer (&in_message_->header, sizeof(p2p::header_t))
@@ -120,7 +120,7 @@ namespace fhg
       if (! ec)
       {
         message_t * m = in_message_;
-        in_message_ = 0;
+        in_message_ = nullptr;
 
             if (m->header.type_of_msg == p2p::HELLO_PACKET)
             {
