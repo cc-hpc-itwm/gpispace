@@ -496,8 +496,8 @@ namespace fhg
 
             if (  std::distance (pos, end) == 4
                && *pos == "fhg" && *std::next (pos) == "pnete"
-               && (  *std::next (std::next (pos)) == "position"
-                  || *std::next (std::next (pos)) == "outer_position"
+               && (  *std::next (pos, 2) == "position"
+                  || *std::next (pos, 2) == "outer_position"
                   )
                )
             {
