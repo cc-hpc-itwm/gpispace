@@ -26,7 +26,7 @@ int main(int ac, char *av[])
   std::string server_address ("localhost");
   std::string server_port ("2439");
 
-  if (getenv("KVS_URL") != NULL)
+  if (getenv("KVS_URL") != nullptr)
   {
     try
     {

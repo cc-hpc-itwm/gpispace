@@ -23,7 +23,7 @@ namespace fhg
       public:
         net_widget ( const data::handle::net&
                    , const data::handle::function&
-                   , QWidget* parent = NULL
+                   , QWidget* parent = nullptr
                    );
 
         void set_name (const QString&);

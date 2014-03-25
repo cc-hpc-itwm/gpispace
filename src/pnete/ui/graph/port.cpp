@@ -80,7 +80,7 @@ namespace fhg
 
         void port_item::setPos_no_collision_detection (const QPointF& new_position)
         {
-          const bool outer (parentItem() != NULL);
+          const bool outer (parentItem() != nullptr);
           connectable_item::setPos (new_position, outer);
         }
 
@@ -244,8 +244,8 @@ namespace fhg
         //   {
         //     class connection* const backup (_connection);
         //     const QRectF area (backup->boundingRect());
-        //     backup->start (NULL);
-        //     backup->end (NULL);
+        //     backup->start (nullptr);
+        //     backup->end (nullptr);
         //     delete backup;
         //     scene()->update (area);
         //   }
@@ -480,7 +480,7 @@ namespace fhg
           if (changed_handle == handle())
           {
             const std::string required_position_variable
-              ( parentItem() == NULL
+              ( parentItem() == nullptr
               ? "fhg.pnete.position"
               : "fhg.pnete.outer_position"
               );
@@ -502,8 +502,8 @@ namespace fhg
               ++pos;
               ++pos;
 
-              if (  (parentItem() == NULL && *pos == "position")
-                 || (parentItem() != NULL && *pos == "outer_position")
+              if (  (parentItem() == nullptr && *pos == "position")
+                 || (parentItem() != nullptr && *pos == "outer_position")
                  )
               {
                 ++pos;

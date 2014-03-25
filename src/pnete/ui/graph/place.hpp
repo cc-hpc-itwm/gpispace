@@ -35,7 +35,7 @@ namespace fhg
         public:
           place_item
             ( const data::handle::place& handle
-            , base_item* parent = NULL
+            , base_item* parent = nullptr
             );
 
           virtual const data::handle::place& handle() const;
@@ -73,7 +73,7 @@ namespace fhg
         public:
           virtual void paint ( QPainter* painter
                              , const QStyleOptionGraphicsItem* option
-                             , QWidget* widget = NULL
+                             , QWidget* widget = nullptr
                              );
 
           enum { Type = place_graph_type };

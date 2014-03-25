@@ -262,7 +262,7 @@ namespace detail
   class log_filter_proxy : public QSortFilterProxyModel
   {
   public:
-     log_filter_proxy (QObject* parent = NULL)
+     log_filter_proxy (QObject* parent = nullptr)
        : QSortFilterProxyModel (parent)
     { }
 

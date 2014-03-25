@@ -10,8 +10,8 @@ namespace jpn {
 namespace analysis {
 
 std::vector<TransitionId> backtrack(const State *state, const State *lastState) {
-    assert(state != NULL);
-    assert(lastState != NULL);
+    assert(state != nullptr);
+    assert(lastState != nullptr);
 
     std::vector<TransitionId> result;
 

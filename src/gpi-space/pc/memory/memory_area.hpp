@@ -118,7 +118,7 @@ namespace gpi
         /**
            Return a raw pointer to the given memory location, if possible.
 
-           It may return NULL in the following cases:
+           It may return nullptr in the following cases:
 
            - the location is out of bounds
            - the implementation does not support raw pointers.

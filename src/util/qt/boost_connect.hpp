@@ -86,7 +86,7 @@ namespace fhg
                                   = Qt::AutoConnection
                                   )
       {
-        return boost_connect (sender, signal, NULL, function, connection_type);
+        return boost_connect (sender, signal, nullptr, function, connection_type);
       }
 
       bool boost_disconnect ( QObject* sender

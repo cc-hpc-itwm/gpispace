@@ -64,7 +64,7 @@ namespace fhg
 #else
               (environ)
 #endif
-            ; env_p != NULL && (*env_p != NULL)
+            ; env_p != nullptr && (*env_p != nullptr)
             ; ++env_p
             )
         {

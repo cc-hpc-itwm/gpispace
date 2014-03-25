@@ -22,7 +22,7 @@ namespace fhg
         TransitionLibraryItem ( const QFileInfo& fileinfo
                               , bool is_folder
                               , bool trusted = false
-                              , QObject* parent = NULL
+                              , QObject* parent = nullptr
                               );
 
         void appendChild (TransitionLibraryItem* child);

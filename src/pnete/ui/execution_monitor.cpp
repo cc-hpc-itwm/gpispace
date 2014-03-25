@@ -61,8 +61,8 @@ namespace fhg
           {
             ar & _n & _sep;
             boost::serialization::void_cast_register
-              ( static_cast<nth_substring_of_name*> (NULL)
-              , static_cast<transform_functions_model::transform_function*> (NULL)
+              ( static_cast<nth_substring_of_name*> (nullptr)
+              , static_cast<transform_functions_model::transform_function*> (nullptr)
               );
           }
 
@@ -282,7 +282,7 @@ namespace fhg
           <boost::shared_ptr<fhg::util::qt::mvc::transform_functions_model::transform_function>>
           ("boost::shared_ptr<fhg::util::qt::mvc::transform_functions_model::transform_function>");
 
-        QAbstractItemModel* next (NULL);
+        QAbstractItemModel* next (nullptr);
 
         worker_model* base (new worker_model (port, this));
         next = base;

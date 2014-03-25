@@ -7,7 +7,7 @@
 
 BOOST_AUTO_TEST_CASE (heap)
 {
-  Heap_t h = NULL;
+  Heap_t h = nullptr;
 
   BOOST_REQUIRE_EQUAL (heap_size (h), 0);
 

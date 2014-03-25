@@ -29,7 +29,7 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        monitor_client (const QString& host, int port, QObject* parent = NULL);
+        monitor_client (const QString& host, int port, QObject* parent = nullptr);
 
         void request_action ( const QStringList&
                             , const QString&

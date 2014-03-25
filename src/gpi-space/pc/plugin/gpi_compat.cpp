@@ -79,7 +79,7 @@ public:
 
   ~GPICompatPluginImpl()
   {
-    _reinitialize_thread = NULL;
+    _reinitialize_thread = nullptr;
     delete _reinitialize_thread;
 
     try

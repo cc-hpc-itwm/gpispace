@@ -1060,7 +1060,7 @@ namespace fhg
         if (type == execution_monitor_proxy::name_column)
         {
           fhg_assert (index._section == 0, "only column 0 should be a name column");
-          return NULL;
+          return nullptr;
         }
 
         QMenu* menu (new QMenu);

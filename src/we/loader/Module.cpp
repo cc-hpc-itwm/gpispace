@@ -31,7 +31,7 @@ namespace we
 
       func_ptr.symbol = dlsym (_dlhandle.handle(), "we_mod_initialize");
 
-      if (func_ptr.function != NULL)
+      if (func_ptr.function != nullptr)
       {
         const unsigned int LOADER_VERSION (1U);
 
@@ -57,7 +57,7 @@ namespace we
 
         func_ptr.symbol = dlsym (_dlhandle.handle(), "we_mod_finalize");
 
-        if (func_ptr.function != NULL)
+        if (func_ptr.function != nullptr)
         {
           func_ptr.function (this);
         }

@@ -47,7 +47,7 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        change_manager_t (QObject* parent = NULL);
+        change_manager_t (QObject* parent = nullptr);
 
         // ## editing methods ########################################
         // - net -----------------------------------------------------

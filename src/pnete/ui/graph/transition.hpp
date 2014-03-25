@@ -33,7 +33,7 @@ namespace fhg
 
         public:
           explicit transition_item ( const data::handle::transition& handle
-                                   , base_item* parent = NULL
+                                   , base_item* parent = nullptr
                                    );
 
           virtual const data::handle::transition& handle() const;

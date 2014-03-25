@@ -237,7 +237,7 @@ private:
       }
     }
 
-    shell_t* shell_t::instance = NULL;
+    shell_t* shell_t::instance = nullptr;
 
     shell_t & shell_t::create ( std::string const & program_name
                                                 , std::string const & prompt
@@ -245,7 +245,7 @@ private:
                                                 , my_state_t & state
                                                 )
     {
-      if (instance == NULL)
+      if (instance == nullptr)
       {
         instance = new shell_t (program_name, prompt, histfile, state);
       }
@@ -254,7 +254,7 @@ private:
 
     shell_t & shell_t::get ()
     {
-      assert (instance != NULL);
+      assert (instance != nullptr);
       return *instance;
     }
 
@@ -264,7 +264,7 @@ private:
       {
         delete instance;
       }
-      instance = NULL;
+      instance = nullptr;
     }
 
     void shell_t::initialize_readline ()
@@ -346,7 +346,7 @@ private:
           return &(*cmd);
         }
       }
-      return (command_t*)(NULL);
+      return (command_t*)(nullptr);
     }
 
     int shell_t::run_once ()
@@ -469,12 +469,12 @@ private:
           return match;
         }
       }
-      return NULL;
+      return nullptr;
     }
 
     char **shell_t::shell_completion (const char * text, int start, int)
     {
-      char **matches (NULL);
+      char **matches (nullptr);
 
       if (start == 0)
       {
@@ -509,7 +509,7 @@ static void print_progress( const std::size_t current
                           , const std::size_t total
                           );
 
-static my_state_t *state (NULL);
+static my_state_t *state (nullptr);
 
 static int interrupt_shell()
 {

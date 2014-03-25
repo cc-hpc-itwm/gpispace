@@ -69,7 +69,7 @@ int main(int ac, char *av[])
   std::string pidfile;
   bool daemonize = false;
 
-  if (getenv("KVS_URL") != NULL)
+  if (getenv("KVS_URL") != nullptr)
   {
     try
     {

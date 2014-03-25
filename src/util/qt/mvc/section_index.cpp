@@ -16,7 +16,7 @@ namespace fhg
       namespace mvc
       {
         section_index::section_index()
-          : _model (NULL)
+          : _model (nullptr)
           , _orientation (Qt::Horizontal)
           , _section (-1)
         { }

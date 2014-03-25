@@ -206,7 +206,7 @@ namespace fhg
                 return item;
               }
             }
-            return NULL;
+            return nullptr;
           }
 
           void remove_child (int index)
@@ -257,7 +257,7 @@ namespace fhg
             : QAbstractItemModel (parent)
             , _source (source)
             , _transform_functions (transforms)
-            , _invisible_root (NULL)
+            , _invisible_root (nullptr)
         {
           connect ( source
                   , SIGNAL (columnsAboutToBeInserted (QModelIndex, int, int))
@@ -448,7 +448,7 @@ namespace fhg
 
           _invisible_root.reset
             ( new index_tree_item
-              ("<<invisible root, you should never see this>>", NULL)
+              ("<<invisible root, you should never see this>>", nullptr)
             );
 
           insert_from_source (0, _source->rowCount(), QModelIndex(), false);

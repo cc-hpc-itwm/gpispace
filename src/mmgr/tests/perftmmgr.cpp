@@ -41,7 +41,7 @@ namespace
 
   void test_fill_clear (std::set<Handle_t> const& handles)
   {
-    Tmmgr_t tmmgr = NULL;
+    Tmmgr_t tmmgr = nullptr;
 
     tmmgr_init (&tmmgr, num_handles, 1);
 

@@ -21,7 +21,7 @@ namespace fhg
       public:
         module_call_widget ( const data::handle::module&
                            , const data::handle::function&
-                           , QWidget* parent = NULL
+                           , QWidget* parent = nullptr
                            );
       };
     }

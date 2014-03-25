@@ -36,7 +36,7 @@ namespace gpi
                        , size
                        , flags
                        )
-        , m_mmgr (NULL)
+        , m_mmgr (nullptr)
         , _handle_generator (handle_generator)
       {
         reinit ();
@@ -352,7 +352,7 @@ namespace gpi
                                , hdl.id
                                , arena
                                , &offset
-                               , NULL
+                               , nullptr
                                );
             hdl.offset = offset;
             try

@@ -70,7 +70,7 @@ namespace fhg
 
       monitor_client::monitor_client (const QString& host, int port, QObject* parent)
         : QObject (parent)
-        , _timer (NULL)
+        , _timer (nullptr)
       {
         connect (&_socket, SIGNAL (readyRead()), SLOT (may_read()));
         _socket.connectToHost (host, port);
@@ -90,7 +90,7 @@ namespace fhg
       void monitor_client::pause()
       {
         delete _timer;
-        _timer = NULL;
+        _timer = nullptr;
       }
       void monitor_client::resume()
       {

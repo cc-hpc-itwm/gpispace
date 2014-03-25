@@ -19,7 +19,7 @@ class GpiPluginImpl : FHG_PLUGIN
 public:
   GpiPluginImpl (std::function<void()>, std::list<Plugin*>, std::map<std::string, std::string> config_variables)
     : api ("")
-    , _try_start_loop (NULL)
+    , _try_start_loop (nullptr)
   {
     const std::string socket_path
       ( get<std::string> ("plugin.gpi.socket", config_variables)
@@ -78,7 +78,7 @@ public:
   virtual ~GpiPluginImpl()
   {
     delete _try_start_loop;
-    _try_start_loop = NULL;
+    _try_start_loop = nullptr;
   }
 
   gpi::pc::type::handle_id_t alloc ( const gpi::pc::type::segment_id_t seg_id

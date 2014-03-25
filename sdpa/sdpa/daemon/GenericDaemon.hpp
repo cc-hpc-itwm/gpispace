@@ -197,7 +197,7 @@ namespace sdpa {
         boost::mutex::scoped_lock const _ (_job_map_mutex);
 
         const job_map_t::const_iterator it (job_map_.find( job_id ));
-        return it != job_map_.end() ? it->second : NULL;
+        return it != job_map_.end() ? it->second : nullptr;
       }
       void deleteJob(const sdpa::job_id_t& job_id)
       {

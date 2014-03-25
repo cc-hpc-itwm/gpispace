@@ -49,7 +49,7 @@ namespace fhg
             place_map_graph_type,
           };
 
-          base_item (base_item* parent = NULL);
+          base_item (base_item* parent = nullptr);
 
           scene_type* scene() const;
 

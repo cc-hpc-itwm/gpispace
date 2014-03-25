@@ -93,7 +93,7 @@ namespace xml
         NAME::~NAME()                                                   \
         {                                                               \
           _mapper->remove_reference (*this);                            \
-          _mapper = NULL;                                               \
+          _mapper = nullptr;                                               \
         }                                                               \
                                                                         \
         bool NAME::operator< (const NAME& other) const                  \

@@ -83,7 +83,7 @@ namespace fhg
             bool ok;
             const QString name
               ( QInputDialog::getText
-                ( NULL
+                ( nullptr
                 , dialog_title
                 , prompt
                 , QLineEdit::Normal
@@ -103,7 +103,7 @@ namespace fhg
                                , QObject* parent
                                )
           : QGraphicsScene (parent)
-          , _pending_connection (NULL)
+          , _pending_connection (nullptr)
           , _mouse_position (QPointF (0.0, 0.0))
           , _net (net)
           , _function (function)
@@ -757,7 +757,7 @@ namespace fhg
         void scene_type::remove_pending_connection()
         {
           delete _pending_connection;
-          _pending_connection = NULL;
+          _pending_connection = nullptr;
         }
 
         void scene_type::mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent)
@@ -920,7 +920,7 @@ namespace fhg
                  || i->type() == base_item::place_graph_type
                  || i->type() == base_item::top_level_port_graph_type
                  )
-               && i->parentItem() == NULL
+               && i->parentItem() == nullptr
                )
             {
               nodes.insert ( nodes_map_type::value_type
@@ -982,7 +982,7 @@ namespace fhg
               return item;
             }
           }
-          return NULL;
+          return nullptr;
         }
 
         const data::handle::net& scene_type::net() const

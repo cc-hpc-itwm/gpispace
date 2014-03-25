@@ -736,7 +736,7 @@ namespace fhg
 
     void peer_t::handle_error (connection_t::ptr_t c, const boost::system::error_code & ec)
     {
-      assert ( c != NULL );
+      assert ( c != nullptr );
 
       lock_type lock (mutex_);
 

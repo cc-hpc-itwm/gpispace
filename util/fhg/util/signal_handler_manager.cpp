@@ -43,7 +43,7 @@ namespace fhg
     {
       boost::mutex::scoped_lock const _ (GLOBAL_manager_mutex);
       assert (GLOBAL_manager == this);
-      GLOBAL_manager = NULL;
+      GLOBAL_manager = nullptr;
 
       for (int sig_num : _handlers | boost::adaptors::map_keys)
       {
@@ -63,7 +63,7 @@ namespace fhg
         sigact.sa_sigaction = signal_handler;
         sigact.sa_flags = SA_RESTART | SA_SIGINFO;
 
-        fhg::syscall::sigaction (sig_num, &sigact, NULL);
+        fhg::syscall::sigaction (sig_num, &sigact, nullptr);
       }
 
       _handlers[sig_num].push_back (fun);

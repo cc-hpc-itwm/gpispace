@@ -50,7 +50,7 @@ namespace fhg
         public:
           explicit scene_type ( const data::handle::net& net
                               , const data::handle::function& function
-                              , QObject* parent = NULL
+                              , QObject* parent = nullptr
                               );
 
           void create_pending_connection (connectable_item* item);

@@ -61,7 +61,7 @@ namespace fhg
           Q_OBJECT
 
         public:
-          abstract_proxy (QObject* = NULL);
+          abstract_proxy (QObject* = nullptr);
 
           //! \note Assume id() on invalid mapping, which might be wrong, but
           //! is still superior to potentially crashing.
@@ -81,7 +81,7 @@ namespace fhg
           Q_OBJECT
 
         public:
-          id_proxy (QObject* = NULL);
+          id_proxy (QObject* = nullptr);
 
           //! \note No need to mapToSource(), as id(x) = x.
           virtual QVariant headerData
@@ -100,7 +100,7 @@ namespace fhg
           Q_OBJECT
 
         public:
-          sort_filter_proxy (QObject* = NULL);
+          sort_filter_proxy (QObject* = nullptr);
 
           //! \note Assume id() on invalid mapping, which might be wrong, but
           //! is still superior to potentially crashing.

@@ -98,7 +98,7 @@ namespace fhg
         bool place_item::is_connectable_with (const connectable_item* i) const
         {
           //! \note Places connect to everything except for places.
-          return qobject_cast<const place_item*> (i) == NULL
+          return qobject_cast<const place_item*> (i) == nullptr
             && connectable_item::is_connectable_with (i);
         }
 

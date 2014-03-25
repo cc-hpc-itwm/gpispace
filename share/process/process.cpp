@@ -310,7 +310,7 @@ namespace process
 
       char * TMPDIR (getenv ("TMPDIR"));
 
-      std::string dir ((TMPDIR != NULL) ? TMPDIR : P_tmpdir);
+      std::string dir ((TMPDIR != nullptr) ? TMPDIR : P_tmpdir);
 
       if (dir.size() == 0)
         {
@@ -559,7 +559,7 @@ namespace process
       (fhg::util::split<std::string, std::string> (command, ' '));
 
     char ** av = new char*[cmdline.size()+1];
-    av[cmdline.size()] = (char*)(NULL);
+    av[cmdline.size()] = (char*)(nullptr);
 
     {
       std::size_t idx (0);
@@ -688,7 +688,7 @@ namespace process
       delete[] av;
     }
 
-    sigprocmask (SIG_UNBLOCK, &signals_to_restore, NULL);
+    sigprocmask (SIG_UNBLOCK, &signals_to_restore, nullptr);
 
     return ret;
   }

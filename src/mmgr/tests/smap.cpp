@@ -95,12 +95,12 @@ namespace
 
 BOOST_AUTO_TEST_CASE (smap)
 {
-  SMap_t sm = NULL;
+  SMap_t sm = nullptr;
 
   BOOST_REQUIRE_EQUAL (smap_memused (sm), 0);
   BOOST_REQUIRE_EQUAL (smap_size (sm), 0);
 
-  BOOST_REQUIRE_EQUAL (smap_get (sm, 23), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 23), (PValue_t) nullptr);
 
   BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1023, 23), False);
   BOOST_REQUIRE_EQUAL (smap_size (sm), 1);
@@ -111,67 +111,67 @@ BOOST_AUTO_TEST_CASE (smap)
 
   PVal = smap_get (sm, 1023);
 
-  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (*PVal, 23);
 
   BOOST_REQUIRE_EQUAL (smap_del (&sm, 1023, SMAP_DEL_DEFAULT), True);
   BOOST_REQUIRE_EQUAL (smap_size (sm), 0);
-  BOOST_REQUIRE_EQUAL (smap_get (sm, 1023), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 1023), (PValue_t) nullptr);
 
   BOOST_REQUIRE_EQUAL (smap_del (&sm, 1023, SMAP_DEL_DEFAULT), False);
   BOOST_REQUIRE_EQUAL (smap_size (sm), 0);
-  BOOST_REQUIRE_EQUAL (smap_get (sm, 1023), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 1023), (PValue_t) nullptr);
 
   BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1023, 23), False);
   BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1099, 99), False);
 
   PVal = smap_get (sm, 1023);
 
-  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (*PVal, 23);
 
   PVal = smap_get (sm, 1099);
 
-  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (*PVal, 99);
 
-  BOOST_REQUIRE_EQUAL (smap_get (sm, 1044), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 1044), (PValue_t) nullptr);
 
   BOOST_REQUIRE_EQUAL (smap_del (&sm, 1044, SMAP_DEL_DEFAULT), False);
   BOOST_REQUIRE_EQUAL (smap_size (sm), 2);
 
   PVal = smap_get (sm, 1023);
 
-  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (*PVal, 23);
 
   PVal = smap_get (sm, 1099);
 
-  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (*PVal, 99);
 
-  BOOST_REQUIRE_EQUAL (smap_get (sm, 1044), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 1044), (PValue_t) nullptr);
 
   BOOST_REQUIRE_EQUAL (smap_del (&sm, 1023, SMAP_DEL_DEFAULT), True);
 
   BOOST_REQUIRE_EQUAL (smap_size (sm), 1);
 
-  BOOST_REQUIRE_EQUAL (smap_get (sm, 1023), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 1023), (PValue_t) nullptr);
 
   PVal = smap_get (sm, 1099);
 
-  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (*PVal, 99);
 
-  BOOST_REQUIRE_EQUAL (smap_get (sm, 1044), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 1044), (PValue_t) nullptr);
 
   BOOST_REQUIRE_EQUAL (smap_del (&sm, 1099, SMAP_DEL_DEFAULT), True);
 
   BOOST_REQUIRE_EQUAL (smap_size (sm), 0);
 
-  BOOST_REQUIRE_EQUAL (smap_get (sm, 1023), (PValue_t) NULL);
-  BOOST_REQUIRE_EQUAL (smap_get (sm, 1099), (PValue_t) NULL);
-  BOOST_REQUIRE_EQUAL (smap_get (sm, 1044), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 1023), (PValue_t) nullptr);
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 1099), (PValue_t) nullptr);
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 1044), (PValue_t) nullptr);
 
   BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1023, 23), False);
   BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1099, 99), False);
@@ -205,55 +205,55 @@ BOOST_AUTO_TEST_CASE (smap)
 
   Key = 1013;
   PVal = smap_get_atleast (sm, &Key);
-  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1023);
   BOOST_REQUIRE_EQUAL (*PVal, 23);
 
   Key = 1013;
   PVal = smap_get_atleast_minimal (sm, &Key);
-  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1013);
   BOOST_REQUIRE_EQUAL (*PVal, 13);
 
   Key = 1023;
   PVal = smap_get_atleast (sm, &Key);
-  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1023);
   BOOST_REQUIRE_EQUAL (*PVal, 23);
 
   Key = 1023;
   PVal = smap_get_atleast_minimal (sm, &Key);
-  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1023);
   BOOST_REQUIRE_EQUAL (*PVal, 23);
 
   Key = 1044;
   PVal = smap_get_atleast (sm, &Key);
-  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1099);
   BOOST_REQUIRE_EQUAL (*PVal, 99);
 
   Key = 1044;
   PVal = smap_get_atleast_minimal (sm, &Key);
-  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1044);
   BOOST_REQUIRE_EQUAL (*PVal, 44);
 
   Key = 1099;
   PVal = smap_get_atleast (sm, &Key);
-  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1099);
   BOOST_REQUIRE_EQUAL (*PVal, 99);
 
   Key = 1099;
   PVal = smap_get_atleast_minimal (sm, &Key);
-  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1099);
   BOOST_REQUIRE_EQUAL (*PVal, 99);
 
   Key = 1100;
   PVal = smap_get_atleast_minimal (sm, &Key);
-  BOOST_REQUIRE_EQUAL (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (PVal, (PValue_t) nullptr);
 
   Size_t const memused (smap_memused (sm));
 
@@ -262,7 +262,7 @@ BOOST_AUTO_TEST_CASE (smap)
 
 BOOST_AUTO_TEST_CASE (dups)
 {
-  SMap_t sm = NULL;
+  SMap_t sm = nullptr;
 
   Word_t dups = 0;
 

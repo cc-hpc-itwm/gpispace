@@ -39,7 +39,7 @@ namespace fhg
           QGraphicsScene* sc (QGraphicsItem::scene());
 
           return sc ? util::qt::throwing_qobject_cast<scene_type*> (sc)
-                    : NULL
+                    : nullptr
                     ;
         }
 

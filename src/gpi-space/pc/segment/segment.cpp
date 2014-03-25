@@ -85,7 +85,7 @@ namespace gpi
 
         try
         {
-          m_ptr = fhg::syscall::mmap ( NULL
+          m_ptr = fhg::syscall::mmap ( nullptr
                                      , size()
                                      , PROT_READ | PROT_WRITE
                                      , MAP_SHARED
@@ -121,7 +121,7 @@ namespace gpi
 
         try
         {
-          m_ptr = fhg::syscall::mmap ( NULL
+          m_ptr = fhg::syscall::mmap ( nullptr
                                      , size()
                                      , PROT_READ | PROT_WRITE
                                      , MAP_SHARED

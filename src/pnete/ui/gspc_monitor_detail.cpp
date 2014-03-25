@@ -186,7 +186,7 @@ namespace fhg
       void legend::update (const QString& s)
       {
         delete _state_legend[s];
-        _state_legend[s] = NULL;
+        _state_legend[s] = nullptr;
         if (!state (s)._hidden)
         {
           _state_legend[s] = legend_entry (state (s)._descriptive_name.get_value_or (s), state (s), this);

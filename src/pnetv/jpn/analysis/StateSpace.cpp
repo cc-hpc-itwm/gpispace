@@ -10,7 +10,7 @@ namespace analysis {
 bool karpMiller(const std::vector<Transition> &transitions, const Marking &initialMarking, boost::ptr_vector<State> &states) {
     /* Initialize the queue of states. */
     states.clear();
-    states.push_back(new State(initialMarking, NULL, NULL));
+    states.push_back(new State(initialMarking, nullptr, nullptr));
 
     std::vector<const Transition *> enabledTransitions;
 
@@ -44,7 +44,7 @@ bool karpMiller(const std::vector<Transition> &transitions, const Marking &initi
             Marking newMarking = transition->fire(currentState->marking());
 
             /* Accelerate. */
-            for (const State *state = currentState; state != NULL; state = state->previous()) {
+            for (const State *state = currentState; state != nullptr; state = state->previous()) {
                 if (state->marking() < newMarking) {
                     #ifdef JPN_EXTENDED_MARKINGS
                         newMarking = accelerate(state->marking(), newMarking);
@@ -77,7 +77,7 @@ bool karpMiller(const std::vector<Transition> &transitions, const Marking &initi
 bool findLoop(const std::vector<Transition> &transitions, const Marking &initialMarking, std::vector<TransitionId> &init, std::vector<TransitionId> &loop) {
     /* Initialize the queue of states. */
     boost::ptr_vector<State> states;
-    states.push_back(new State(initialMarking, NULL, NULL));
+    states.push_back(new State(initialMarking, nullptr, nullptr));
 
     std::vector<const Transition *> enabledTransitions;
 
@@ -111,7 +111,7 @@ bool findLoop(const std::vector<Transition> &transitions, const Marking &initial
             Marking newMarking = transition->fire(currentState->marking());
 
             /* Accelerate. */
-            for (const State *state = currentState; state != NULL; state = state->previous()) {
+            for (const State *state = currentState; state != nullptr; state = state->previous()) {
                 if (state->marking() <= newMarking) {
                     /* We are done. */
                     init = backtrack(state, &states[0]);

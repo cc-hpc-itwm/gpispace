@@ -16,8 +16,8 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        no_undoredo_lineedit (QWidget* parent = NULL);
-        no_undoredo_lineedit (const QString& content, QWidget* parent = NULL);
+        no_undoredo_lineedit (QWidget* parent = nullptr);
+        no_undoredo_lineedit (const QString& content, QWidget* parent = nullptr);
 
       protected:
         virtual void contextMenuEvent (QContextMenuEvent*);

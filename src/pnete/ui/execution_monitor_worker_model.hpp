@@ -38,7 +38,7 @@ namespace fhg
           range_getter_role
         };
 
-        worker_model (unsigned short port, QObject* parent = NULL);
+        worker_model (unsigned short port, QObject* parent = nullptr);
         ~worker_model();
 
         virtual int rowCount (const QModelIndex& = QModelIndex()) const;

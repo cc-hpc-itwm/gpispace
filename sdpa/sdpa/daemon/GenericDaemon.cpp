@@ -132,7 +132,7 @@ GenericDaemon::GenericDaemon( const std::string name
                            , boost::bind (&GenericDaemon::gen_id, this)
                            , *_random_extraction_engine
                            )
-                         : NULL
+                         : nullptr
                          )
   , _registration_threads()
   , _scheduling_thread (&GenericDaemon::scheduling_thread, this)

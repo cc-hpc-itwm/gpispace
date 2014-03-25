@@ -32,7 +32,7 @@ typedef enum {
 } fvmOperation_t;
 
 // global variables
-static DTmmgr_t dtmmgr(NULL);
+static DTmmgr_t dtmmgr(nullptr);
 
 static fvmSize_t pcFVMSize(0);
 static void * pcFVM(0);
@@ -53,12 +53,12 @@ static void cleanUp()
 {
   if (pcShm)
   {
-        free(pcShm); pcShm = NULL;
+        free(pcShm); pcShm = nullptr;
         pcShmSize = 0;
   }
   if (pcFVM)
   {
-        free(pcFVM); pcFVM = NULL;
+        free(pcFVM); pcFVM = nullptr;
         pcFVMSize = 0;
   }
 

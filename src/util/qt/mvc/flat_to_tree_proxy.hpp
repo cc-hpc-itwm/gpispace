@@ -28,7 +28,7 @@ namespace fhg
         public:
           flat_to_tree_proxy ( QAbstractItemModel* source
                              , transform_functions_model*
-                             , QObject* parent = NULL
+                             , QObject* parent = nullptr
                              );
           //! \note Exists for ~scoped_ptr<fwd-decl-type>() only.
           ~flat_to_tree_proxy();
@@ -77,7 +77,7 @@ namespace fhg
             function_role = Qt::UserRole
           };
 
-          transform_functions_model (QObject* parent = NULL);
+          transform_functions_model (QObject* parent = nullptr);
 
           virtual QVariant data (const QModelIndex&, int role = Qt::DisplayRole) const;
           virtual bool setData

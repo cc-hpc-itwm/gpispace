@@ -76,7 +76,7 @@ namespace gpi
             }
           }
 
-          ptr = mmap ( NULL
+          ptr = mmap ( nullptr
                      , size
                      , prot
                      , MAP_SHARED
@@ -126,7 +126,7 @@ namespace gpi
                  , flags
                  , handle_generator
                  )
-        , m_ptr (NULL)
+        , m_ptr (nullptr)
       {
         if (name.empty())
         {

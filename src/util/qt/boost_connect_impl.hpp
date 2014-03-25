@@ -43,7 +43,7 @@ namespace fhg
           //! \note no Q_OBJECT, since we don't want moc to run
 
         public:
-          explicit binding_object (QObject *parent = NULL);
+          explicit binding_object (QObject *parent = nullptr);
           virtual ~binding_object();
 
           bool bind ( QObject* sender

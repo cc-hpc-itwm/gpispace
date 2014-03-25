@@ -490,7 +490,7 @@ namespace gpi
           (list_segments ());
 
         // find the correct descriptor
-        const gpi::pc::type::segment::descriptor_t * desc (NULL);
+        const gpi::pc::type::segment::descriptor_t * desc (nullptr);
         for ( gpi::pc::type::segment::list_t::const_iterator it (descriptors.begin())
             ; it != descriptors.end()
             ; ++it

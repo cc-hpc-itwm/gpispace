@@ -49,7 +49,7 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        legend (monitor_client*, QWidget* parent = NULL);
+        legend (monitor_client*, QWidget* parent = nullptr);
 
         const state_description& state (const boost::optional<QString>&) const;
 
@@ -77,7 +77,7 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        log_widget (QWidget* parent = NULL);
+        log_widget (QWidget* parent = nullptr);
 
         void critical (QString host, const QString&, QStringList);
         void information (QString host, const QString&, QStringList);
@@ -99,7 +99,7 @@ namespace fhg
                           , legend*
                           , log_widget*
                           , monitor_client*
-                          , QWidget* parent = NULL
+                          , QWidget* parent = nullptr
                           );
 
         virtual int heightForWidth (int) const;

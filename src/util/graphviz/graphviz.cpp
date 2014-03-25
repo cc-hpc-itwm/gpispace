@@ -207,7 +207,7 @@ namespace fhg
       void graph_type::layout (const QString& engine)
       {
         gvLayout (_context._context, _graph, unsafe (engine));
-        gvRender (_context._context, _graph, unsafe (engine), NULL);
+        gvRender (_context._context, _graph, unsafe (engine), nullptr);
       }
     }
   }

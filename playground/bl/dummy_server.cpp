@@ -44,7 +44,7 @@ void server::incomingConnection (int socket_descriptor)
 thread::thread (int socket_descriptor, const QString& hostlist, QObject* parent)
   : QThread (parent)
   , _socket_descriptor (socket_descriptor)
-  , _socket (NULL)
+  , _socket (nullptr)
 {
   QFileSystemWatcher* watcher (new QFileSystemWatcher (this));
   connect ( watcher, SIGNAL (fileChanged (const QString&))
@@ -79,7 +79,7 @@ namespace
   const double initial_state_probabilities[] = {
     0.1, 0.6, 0.2, 0.1
   };
-  const char* actions[] = {NULL, "add_to_working_set\", \"reboot", "reboot", "remove_from_working_set\", \"foo"};
+  const char* actions[] = {nullptr, "add_to_working_set\", \"reboot", "reboot", "remove_from_working_set\", \"foo"};
 
   const char* description (const QString& action)
   {

@@ -85,7 +85,7 @@ namespace fhg
         return LICENSE_INVALID;
       }
 
-      if (lic.expiry <= time (NULL))
+      if (lic.expiry <= time (nullptr))
       {
         return LICENSE_EXPIRED;
       }

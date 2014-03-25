@@ -15,7 +15,7 @@ class server : public QTcpServer
 {
   Q_OBJECT;
 public:
-  server (int port, const QString& hostlist, QObject* parent = NULL);
+  server (int port, const QString& hostlist, QObject* parent = nullptr);
 
 protected:
   virtual void incomingConnection (int);
@@ -28,7 +28,7 @@ class thread : public QThread
 {
   Q_OBJECT;
 public:
-  thread (int socket_descriptor, const QString& hostlist, QObject* parent = NULL);
+  thread (int socket_descriptor, const QString& hostlist, QObject* parent = nullptr);
 
 protected:
   void run();

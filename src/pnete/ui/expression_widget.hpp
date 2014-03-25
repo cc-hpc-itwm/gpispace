@@ -29,7 +29,7 @@ namespace fhg
       public:
         expression_widget ( const data::handle::expression&
                           , const data::handle::function&
-                          , QWidget* parent = NULL
+                          , QWidget* parent = nullptr
                           );
         void set_expression (const QString&);
         void set_expression (const std::string&);

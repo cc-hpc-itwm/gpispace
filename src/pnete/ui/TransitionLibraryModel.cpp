@@ -23,7 +23,7 @@ namespace fhg
 
       TransitionLibraryModel::TransitionLibraryModel (QWidget* parent)
         : QAbstractItemModel (parent)
-        , _fileSystemWatcher (NULL)
+        , _fileSystemWatcher (nullptr)
         , _items (new TransitionLibraryItem(this))
       {}
 

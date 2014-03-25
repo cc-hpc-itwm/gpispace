@@ -7,47 +7,47 @@
 
 BOOST_AUTO_TEST_CASE (fseg)
 {
-  FSeg_t FSeg = NULL;
+  FSeg_t FSeg = nullptr;
   Key_t Key;
 
   Key = 1 << 9;
-  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 9);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 9);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 9);
 
   Key = 1 << 10;
-  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 10);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 10);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 10);
 
   Key = 1 << 11;
-  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 11);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 11);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 11);
 
   Key = 1 << 12;
-  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 12);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 12);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 12);
 
   Key = 1 << 13;
-  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 13);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 13);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 13);
 
   BOOST_REQUIRE_EQUAL (fseg_size (FSeg), 0);
@@ -65,18 +65,18 @@ BOOST_AUTO_TEST_CASE (fseg)
   BOOST_REQUIRE_EQUAL (fseg_size (FSeg), 4);
 
   Key = 1 << 9;
-  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 9);
   {
     PValue_t PVal = fseg_get_atleast (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 10);
     BOOST_REQUIRE_EQUAL (Key, 1 << 10);
   }
   {
     Key = 1 << 9;
     PValue_t PVal = fseg_get_atleast_minimal (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 10);
     BOOST_REQUIRE_EQUAL (Key, 1 << 10);
   }
@@ -84,19 +84,19 @@ BOOST_AUTO_TEST_CASE (fseg)
   Key = 1 << 10;
   {
     PValue_t PVal = fseg_get (FSeg, Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 10);
     BOOST_REQUIRE_EQUAL (Key, 1 << 10);
   }
   {
     PValue_t PVal = fseg_get_atleast (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 10);
     BOOST_REQUIRE_EQUAL (Key, 1 << 10);
   }
   {
     PValue_t PVal = fseg_get_atleast_minimal (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 10);
     BOOST_REQUIRE_EQUAL (Key, 1 << 10);
   }
@@ -104,19 +104,19 @@ BOOST_AUTO_TEST_CASE (fseg)
   Key = 1 << 11;
   {
     PValue_t PVal = fseg_get (FSeg, Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 10);
     BOOST_REQUIRE_EQUAL (Key, 1 << 11);
   }
   {
     PValue_t PVal = fseg_get_atleast (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 10);
     BOOST_REQUIRE_EQUAL (Key, 1 << 11);
   }
   {
     PValue_t PVal = fseg_get_atleast_minimal (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 10);
     BOOST_REQUIRE_EQUAL (Key, 1 << 11);
   }
@@ -124,29 +124,29 @@ BOOST_AUTO_TEST_CASE (fseg)
   Key = 1 << 12;
   {
     PValue_t PVal = fseg_get (FSeg, Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 11);
     BOOST_REQUIRE_EQUAL (Key, 1 << 12);
   }
   {
     PValue_t PVal = fseg_get_atleast (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 11);
     BOOST_REQUIRE_EQUAL (Key, 1 << 12);
   }
   {
     PValue_t PVal = fseg_get_atleast_minimal (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 11);
     BOOST_REQUIRE_EQUAL (Key, 1 << 12);
   }
 
   Key = 1 << 13;
-  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 13);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 13);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 13);
 
   fseg_del (&FSeg, 1 << 10, 10, SMAP_DEL_DEFAULT);
@@ -154,18 +154,18 @@ BOOST_AUTO_TEST_CASE (fseg)
   BOOST_REQUIRE_EQUAL (fseg_size (FSeg), 3);
 
   Key = 1 << 9;
-  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 9);
   {
     PValue_t PVal = fseg_get_atleast (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 11);
     BOOST_REQUIRE_EQUAL (Key, 1 << 10);
   }
   {
     Key = 1 << 9;
     PValue_t PVal = fseg_get_atleast_minimal (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 11);
     BOOST_REQUIRE_EQUAL (Key, 1 << 10);
   }
@@ -173,19 +173,19 @@ BOOST_AUTO_TEST_CASE (fseg)
   Key = 1 << 10;
   {
     PValue_t PVal = fseg_get (FSeg, Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 11);
     BOOST_REQUIRE_EQUAL (Key, 1 << 10);
   }
   {
     PValue_t PVal = fseg_get_atleast (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 11);
     BOOST_REQUIRE_EQUAL (Key, 1 << 10);
   }
   {
     PValue_t PVal = fseg_get_atleast_minimal (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 11);
     BOOST_REQUIRE_EQUAL (Key, 1 << 10);
   }
@@ -193,19 +193,19 @@ BOOST_AUTO_TEST_CASE (fseg)
   Key = 1 << 11;
   {
     PValue_t PVal = fseg_get (FSeg, Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 10);
     BOOST_REQUIRE_EQUAL (Key, 1 << 11);
   }
   {
     PValue_t PVal = fseg_get_atleast (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 10);
     BOOST_REQUIRE_EQUAL (Key, 1 << 11);
   }
   {
     PValue_t PVal = fseg_get_atleast_minimal (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 10);
     BOOST_REQUIRE_EQUAL (Key, 1 << 11);
   }
@@ -213,29 +213,29 @@ BOOST_AUTO_TEST_CASE (fseg)
   Key = 1 << 12;
   {
     PValue_t PVal = fseg_get (FSeg, Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 11);
     BOOST_REQUIRE_EQUAL (Key, 1 << 12);
   }
   {
     PValue_t PVal = fseg_get_atleast (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 11);
     BOOST_REQUIRE_EQUAL (Key, 1 << 12);
   }
   {
     PValue_t PVal = fseg_get_atleast_minimal (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 11);
     BOOST_REQUIRE_EQUAL (Key, 1 << 12);
   }
 
   Key = 1 << 13;
-  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 13);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 13);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 13);
 
   fseg_del (&FSeg, 1 << 10, 10, SMAP_DEL_DEFAULT);
@@ -247,34 +247,34 @@ BOOST_AUTO_TEST_CASE (fseg)
   BOOST_REQUIRE_EQUAL (fseg_size (FSeg), 2);
 
   Key = 1 << 9;
-  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 9);
   {
     PValue_t PVal = fseg_get_atleast (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 10);
     BOOST_REQUIRE_EQUAL (Key, 1 << 11);
   }
   {
     Key = 1 << 9;
     PValue_t PVal = fseg_get_atleast_minimal (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 10);
     BOOST_REQUIRE_EQUAL (Key, 1 << 11);
   }
 
   Key = 1 << 10;
-  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 10);
   {
     PValue_t PVal = fseg_get_atleast (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 10);
     BOOST_REQUIRE_EQUAL (Key, 1 << 11);
   }
   {
     PValue_t PVal = fseg_get_atleast_minimal (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 10);
     BOOST_REQUIRE_EQUAL (Key, 1 << 11);
   }
@@ -282,19 +282,19 @@ BOOST_AUTO_TEST_CASE (fseg)
   Key = 1 << 11;
   {
     PValue_t PVal = fseg_get (FSeg, Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 10);
     BOOST_REQUIRE_EQUAL (Key, 1 << 11);
   }
   {
     PValue_t PVal = fseg_get_atleast (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 10);
     BOOST_REQUIRE_EQUAL (Key, 1 << 11);
   }
   {
     PValue_t PVal = fseg_get_atleast_minimal (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 10);
     BOOST_REQUIRE_EQUAL (Key, 1 << 11);
   }
@@ -302,29 +302,29 @@ BOOST_AUTO_TEST_CASE (fseg)
   Key = 1 << 12;
   {
     PValue_t PVal = fseg_get (FSeg, Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 11);
     BOOST_REQUIRE_EQUAL (Key, 1 << 12);
   }
   {
     PValue_t PVal = fseg_get_atleast (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 11);
     BOOST_REQUIRE_EQUAL (Key, 1 << 12);
   }
   {
     PValue_t PVal = fseg_get_atleast_minimal (FSeg, &Key);
-    BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
     BOOST_REQUIRE_EQUAL (*PVal, 11);
     BOOST_REQUIRE_EQUAL (Key, 1 << 12);
   }
 
   Key = 1 << 13;
-  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 13);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 13);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 13);
 
   fseg_del (&FSeg, 1 << 11, 10, SMAP_DEL_DEFAULT);
@@ -333,43 +333,43 @@ BOOST_AUTO_TEST_CASE (fseg)
   BOOST_REQUIRE_EQUAL (fseg_size (FSeg), 0);
 
   Key = 1 << 9;
-  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 9);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 9);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 9);
 
   Key = 1 << 10;
-  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 10);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 10);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 10);
 
   Key = 1 << 11;
-  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 11);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 11);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 11);
 
   Key = 1 << 12;
-  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 12);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 12);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 12);
 
   Key = 1 << 13;
-  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get (FSeg, Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 13);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 13);
-  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (fseg_get_atleast_minimal (FSeg, &Key), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (Key, 1 << 13);
 
   fseg_ins (&FSeg, 1 << 10, 10);

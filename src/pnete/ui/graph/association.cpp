@@ -143,7 +143,7 @@ namespace fhg
                   fake_normal.setPoints (fake_normal.p2(), fake_normal.p1());
                   fake_normal.setLength (2 * fake_normal.length());
                   // check, if they intersect within the segment
-                  if ( fake_normal.intersect (segment, NULL)
+                  if ( fake_normal.intersect (segment, nullptr)
                      == QLineF::BoundedIntersection
                      )
                   {

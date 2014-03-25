@@ -80,13 +80,13 @@ namespace fhg
           ( new dock_widget
             (tr ("undo_window"), new QUndoView (_undo_group, this))
           )
-        , _windows_menu (NULL)
-        , _document_specific_action_menu (NULL)
-        , _document_specific_action_toolbar (NULL)
-        , _action_save_current_file (NULL)
-        , _action_execute_current_file_locally_via_prompt (NULL)
-        , _action_execute_current_file_locally_from_file (NULL)
-        , _action_execute_current_file_remote_via_prompt (NULL)
+        , _windows_menu (nullptr)
+        , _document_specific_action_menu (nullptr)
+        , _document_specific_action_toolbar (nullptr)
+        , _action_save_current_file (nullptr)
+        , _action_execute_current_file_locally_via_prompt (nullptr)
+        , _action_execute_current_file_locally_from_file (nullptr)
+        , _action_execute_current_file_remote_via_prompt (nullptr)
       {
         setWindowTitle (tr ("editor_window_title"));
 
@@ -849,7 +849,7 @@ namespace fhg
           {
             const QString res
               ( QFileDialog::getOpenFileName
-                ( NULL
+                ( nullptr
                 , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
                 )
               );
@@ -860,7 +860,7 @@ namespace fhg
           {
             return QString ("%1").arg
               ( QInputDialog::getInt
-                ( NULL
+                ( nullptr
                 , QObject::tr ("value_for_input_token")
                 , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
                 , 0
@@ -876,7 +876,7 @@ namespace fhg
           {
             return QString ("%1").arg
               ( QInputDialog::getDouble
-                ( NULL
+                ( nullptr
                 , QObject::tr ("value_for_input_token")
                 , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
                 , 0
@@ -891,7 +891,7 @@ namespace fhg
           else
           {
             return QInputDialog::getText
-              ( NULL
+              ( nullptr
               , QObject::tr ("value_for_input_token")
               , QObject::tr ("enter_value_for_input_port_%1").arg (port_name)
               , QLineEdit::Normal

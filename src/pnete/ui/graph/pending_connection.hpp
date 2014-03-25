@@ -28,7 +28,7 @@ namespace fhg
         public:
           pending_connection ( const connectable_item* fixed_end
                              , const QPointF& open_end
-                             , base_item* parent = NULL
+                             , base_item* parent = nullptr
                              );
 
           void open_end (const QPointF&);

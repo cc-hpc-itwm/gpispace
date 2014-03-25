@@ -149,7 +149,7 @@ namespace gpi
         {
           path_t vers_path = detail::version_path (m_path);
           FILE *vers_file = fopen (vers_path.string ().c_str (), "r");
-          if (vers_file == NULL)
+          if (vers_file == nullptr)
           {
             ec.assign (errno, boost::system::system_category ());
             return -1;
