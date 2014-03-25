@@ -17,10 +17,10 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/range/algorithm.hpp>
-#include <boost/bind.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 
+#include <functional>
 #include <list>
 
 #define DECLARE_EXPECT_CLASS(NAME, CTOR_ARGUMENTS, INITIALIZER_LIST, MEMBER_VARIABLES, EQ_IMPL) \
@@ -62,14 +62,14 @@ struct daemon
 {
   daemon()
     : _cnt()
-    , layer ( boost::bind (&daemon::submit, this, _1, _2)
-            , boost::bind (&daemon::cancel, this, _1)
-            , boost::bind (&daemon::finished, this, _1, _2)
-            , boost::bind (&daemon::failed, this, _1, _2)
-            , boost::bind (&daemon::canceled, this, _1)
-            , boost::bind (&daemon::discover, this, _1, _2)
-            , boost::bind (&daemon::discovered, this, _1, _2)
-            , boost::bind (&daemon::generate_id, this)
+    , layer ( std::bind (&daemon::submit, this, std::placeholders::_1, std::placeholders::_2)
+            , std::bind (&daemon::cancel, this, std::placeholders::_1)
+            , std::bind (&daemon::finished, this, std::placeholders::_1, std::placeholders::_2)
+            , std::bind (&daemon::failed, this, std::placeholders::_1, std::placeholders::_2)
+            , std::bind (&daemon::canceled, this, std::placeholders::_1)
+            , std::bind (&daemon::discover, this, std::placeholders::_1, std::placeholders::_2)
+            , std::bind (&daemon::discovered, this, std::placeholders::_1, std::placeholders::_2)
+            , std::bind (&daemon::generate_id, this)
             , _random_engine
             )
     , _in_progress_jobs_rts()
@@ -126,7 +126,7 @@ struct daemon
 
     std::list<expect_submit*>::iterator const e
       ( boost::find_if ( _to_submit
-                       , boost::bind (&expect_submit::eq, _1, &id, act)
+                       , std::bind (&expect_submit::eq, std::placeholders::_1, &id, act)
                        )
         );
 
@@ -151,7 +151,7 @@ struct daemon
 
     std::list<expect_cancel*>::iterator const e
       ( boost::find_if ( _to_cancel
-                       , boost::bind (&expect_cancel::eq, _1, id)
+                       , std::bind (&expect_cancel::eq, std::placeholders::_1, id)
                        )
         );
 
@@ -178,7 +178,7 @@ struct daemon
   {
     std::list<expect_finished*>::iterator const e
       ( boost::find_if ( _to_finished
-                       , boost::bind (&expect_finished::eq, _1, id, act)
+                       , std::bind (&expect_finished::eq, std::placeholders::_1, id, act)
                        )
       );
 
@@ -204,7 +204,7 @@ struct daemon
   {
     std::list<expect_failed*>::iterator const e
       ( boost::find_if ( _to_failed
-                       , boost::bind (&expect_failed::eq, _1, id, message)
+                       , std::bind (&expect_failed::eq, std::placeholders::_1, id, message)
                        )
       );
 
@@ -227,7 +227,7 @@ struct daemon
   {
     std::list<expect_canceled*>::iterator const e
       ( boost::find_if ( _to_canceled
-                       , boost::bind (&expect_canceled::eq, _1, id)
+                       , std::bind (&expect_canceled::eq, std::placeholders::_1, id)
                        )
       );
 
@@ -255,7 +255,7 @@ struct daemon
   {
     std::list<expect_discover*>::iterator const e
       ( boost::find_if ( _to_discover
-                       , boost::bind (&expect_discover::eq, _1, discover_id, id)
+                       , std::bind (&expect_discover::eq, std::placeholders::_1, discover_id, id)
                        )
       );
 
@@ -283,7 +283,7 @@ struct daemon
   {
     std::list<expect_discovered*>::iterator const e
       ( boost::find_if ( _to_discovered
-                       , boost::bind (&expect_discovered::eq, _1, discover_id, result)
+                       , std::bind (&expect_discovered::eq, std::placeholders::_1, discover_id, result)
                        )
       );
 
@@ -1019,9 +1019,9 @@ BOOST_AUTO_TEST_CASE
   boost::mt19937 _random_engine;
 
   we::layer layer
-    ( boost::bind (&submit_fake, &child_ids, _1, _2)
-    , boost::bind (&cancel, _1)
-    , boost::bind (&finished_fake, &finished, _1, _2)
+    ( std::bind (&submit_fake, &child_ids, std::placeholders::_1, std::placeholders::_2)
+    , std::bind (&cancel, std::placeholders::_1)
+    , std::bind (&finished_fake, &finished, std::placeholders::_1, std::placeholders::_2)
     , &failed
     , &canceled
     , &discover
@@ -1285,15 +1285,15 @@ namespace
       , _received_requirements()
       , _random_extraction_engine()
       , _cnt (0)
-      , _layer ( boost::bind
-                 (&wfe_and_counter_of_submitted_requirements::submit, this, _2)
-               , boost::bind (&disallow, "cancel")
-               , boost::bind (&disallow, "finished")
-               , boost::bind (&disallow, "failed")
-               , boost::bind (&disallow, "canceled")
-               , boost::bind (&disallow, "discover")
-               , boost::bind (&disallow, "discovered")
-               , boost::bind
+      , _layer ( std::bind
+               (&wfe_and_counter_of_submitted_requirements::submit, this, std::placeholders::_2)
+               , std::bind (&disallow, "cancel")
+               , std::bind (&disallow, "finished")
+               , std::bind (&disallow, "failed")
+               , std::bind (&disallow, "canceled")
+               , std::bind (&disallow, "discover")
+               , std::bind (&disallow, "discovered")
+               , std::bind
                  (&wfe_and_counter_of_submitted_requirements::generate_id, this)
                , _random_extraction_engine
                )

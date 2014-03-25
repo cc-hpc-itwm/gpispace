@@ -13,10 +13,9 @@
 #include <we/expr/eval/refnode.hpp>
 #include <we/expr/eval/eval.hpp>
 
-#include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <sstream>
+#include <functional>
 #include <sstream>
 #include <iterator>
 
@@ -33,10 +32,10 @@ namespace expr
       , tmp_stack ()
       , _constant_folding (constant_folding)
     {
-      parse (input, boost::bind ( eval::refnode_value
-                                , boost::ref(context)
-                                , _1
-                                )
+      parse (input, std::bind ( eval::refnode_value
+                              , std::ref (context)
+                              , std::placeholders::_1
+                              )
             );
     }
     parser::parser ( const std::string & input
@@ -121,7 +120,9 @@ namespace expr
 
       void parser::rename (const std::string& from, const std::string& to)
     {
-      std::for_each (begin(), end(), boost::bind (node::rename, _1, from, to));
+      std::for_each ( begin(), end()
+                    , std::bind (node::rename, std::placeholders::_1, from, to)
+                    );
     }
 
     std::string parser::string (void) const

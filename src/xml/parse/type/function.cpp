@@ -42,6 +42,7 @@
 
 #include <boost/range/adaptors.hpp>
 
+#include <functional>
 #include <iostream>
 #include <string>
 #include <set>
@@ -542,10 +543,10 @@ namespace xml
         const structs_type::const_iterator pos
           ( std::find_if ( structs.begin()
                          , structs.end()
-                         , boost::bind ( parse::structure_type_util::struct_by_name
-                                       , type
-                                       , _1
-                                       )
+                         , std::bind ( parse::structure_type_util::struct_by_name
+                                     , type
+                                     , std::placeholders::_1
+                                     )
                          )
           );
 
@@ -553,7 +554,7 @@ namespace xml
         {
           return pnet::type::signature::resolve
             ( pos->signature()
-            , boost::bind (&function_type::signature, *this, _1)
+            , std::bind (&function_type::signature, *this, std::placeholders::_1)
             );
         }
 
@@ -1304,10 +1305,10 @@ namespace xml
                       << ( link.prefix()
                          ? boost::filesystem::absolute
                            ( link.link
-                             ( boost::bind ( &state::type::link_prefix_by_key
-                                           , boost::ref (state)
-                                           , _1
-                                           )
+                             ( std::bind ( &state::type::link_prefix_by_key
+                                         , std::ref (state)
+                                         , std::placeholders::_1
+                                         )
                              )
                            , fun->path.parent_path()
                            ).string()

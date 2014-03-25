@@ -7,10 +7,10 @@
 #include <fhg/util/parse/require.hpp>
 #include <fhg/util/num.hpp>
 
-#include <boost/bind.hpp>
-
 #include <QColor>
 #include <QString>
+
+#include <functional>
 
 namespace prefix
 {
@@ -52,7 +52,7 @@ namespace prefix
       , const std::function<void (fhg::util::parse::position&, const QString&)>& f
       )
     {
-      require::list (pos, boost::bind (f, _1, label (pos)));
+      require::list (pos, std::bind (f, std::placeholders::_1, label (pos)));
     }
 
     void list_of_named_lists
@@ -60,7 +60,7 @@ namespace prefix
       , const std::function<void (fhg::util::parse::position&, const QString&)>& f
       )
     {
-      require::list (pos, boost::bind (named_list, _1, f));
+      require::list (pos, std::bind (named_list, std::placeholders::_1, f));
     }
   }
 }

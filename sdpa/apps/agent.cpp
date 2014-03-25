@@ -20,6 +20,8 @@
 
 #include <boost/tokenizer.hpp>
 
+#include <functional>
+
 namespace bfs = boost::filesystem;
 namespace po = boost::program_options;
 
@@ -123,14 +125,14 @@ int main (int argc, char **argv)
 
   fhg::util::thread::event<> stop_requested;
   const std::function<void()> request_stop
-    (boost::bind (&fhg::util::thread::event<>::notify, &stop_requested));
+    (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
 
   fhg::util::signal_handler_manager signal_handlers;
 
   signal_handlers.add_log_backtrace_and_exit_for_critical_errors (logger);
 
-  signal_handlers.add (SIGTERM, boost::bind (request_stop));
-  signal_handlers.add (SIGINT, boost::bind (request_stop));
+  signal_handlers.add (SIGTERM, std::bind (request_stop));
+  signal_handlers.add (SIGINT, std::bind (request_stop));
 
 
   stop_requested.wait();

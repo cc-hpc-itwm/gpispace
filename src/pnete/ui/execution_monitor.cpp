@@ -26,6 +26,8 @@
 #include <QTreeView>
 #include <QVBoxLayout>
 
+#include <functional>
+
 Q_DECLARE_METATYPE (sdpa::daemon::NotificationEvent::state_t)
 
 namespace fhg
@@ -313,8 +315,8 @@ namespace fhg
 
         execution_monitor_delegate* delegate
           ( new execution_monitor_delegate
-            ( boost::bind (set_filter_regexp, filtered_by_user, _1)
-            , boost::bind (get_filter_regexp, filtered_by_user)
+            ( std::bind (set_filter_regexp, filtered_by_user, std::placeholders::_1)
+            , std::bind (get_filter_regexp, filtered_by_user)
             , get_or_set_with_defaults()
             , tree
             )
@@ -340,25 +342,25 @@ namespace fhg
         QAction* remove_column (new QAction (tr ("remove_column_action"), next));
 
         util::qt::boost_connect<void()>
-          (add_column, SIGNAL (triggered()), boost::bind (&add_columns, 1, next));
+          (add_column, SIGNAL (triggered()), std::bind (&add_columns, 1, next));
         util::qt::boost_connect<void()>
-          (remove_column, SIGNAL (triggered()), boost::bind (&add_columns, -1, next));
+          (remove_column, SIGNAL (triggered()), std::bind (&add_columns, -1, next));
 
         util::qt::boost_connect<void()>
           ( next, SIGNAL (columnsInserted (QModelIndex, int, int))
-          , boost::bind (&disable_if_column_adding_not_possible, add_column, 1, next)
+          , std::bind (&disable_if_column_adding_not_possible, add_column, 1, next)
           );
         util::qt::boost_connect<void()>
           ( next, SIGNAL (columnsRemoved (QModelIndex, int, int))
-          , boost::bind (&disable_if_column_adding_not_possible, add_column, 1, next)
+          , std::bind (&disable_if_column_adding_not_possible, add_column, 1, next)
           );
         util::qt::boost_connect<void()>
           ( next, SIGNAL (columnsInserted (QModelIndex, int, int))
-          , boost::bind (&disable_if_column_adding_not_possible, remove_column, -1, next)
+          , std::bind (&disable_if_column_adding_not_possible, remove_column, -1, next)
           );
         util::qt::boost_connect<void()>
           ( next, SIGNAL (columnsRemoved (QModelIndex, int, int))
-          , boost::bind (&disable_if_column_adding_not_possible, remove_column, -1, next)
+          , std::bind (&disable_if_column_adding_not_possible, remove_column, -1, next)
           );
 
         disable_if_column_adding_not_possible (add_column, 1, next);
@@ -382,7 +384,7 @@ namespace fhg
 
         util::qt::boost_connect<void()>
           ( clear_model, SIGNAL (triggered())
-          , this, boost::bind (&worker_model::clear, base)
+          , this, std::bind (&worker_model::clear, base)
           );
 
         util::qt::mini_button* clear_button
@@ -419,14 +421,14 @@ namespace fhg
               ( label
               , SIGNAL (clicked())
               , this
-              , boost::bind (&change_gantt_color, delegate, label, state, this)
+              , std::bind (&change_gantt_color, delegate, label, state, this)
               );
 
             util::qt::boost_connect<void (worker_model::state_type, QColor)>
               ( delegate
               , SIGNAL (color_for_state_changed (worker_model::state_type, QColor))
               , this
-              , boost::bind (&maybe_style_button, label, state, _1, _2)
+              , std::bind (&maybe_style_button, label, state, std::placeholders::_1, std::placeholders::_2)
               );
           }
         }

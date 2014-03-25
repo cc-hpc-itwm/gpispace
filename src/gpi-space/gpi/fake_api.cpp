@@ -1,8 +1,5 @@
 #include <gpi-space/gpi/fake_api.hpp>
 
-#include <boost/function.hpp>
-#include <boost/bind.hpp>
-
 #include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 

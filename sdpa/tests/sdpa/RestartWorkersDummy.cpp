@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE (restart_worker_with_dummy_workflow)
 
     const utils::fake_drts_worker_notifying_module_call_submission worker
       ( worker_id
-      , boost::bind (&fhg::util::thread::event<>::notify, &job_submitted)
+      , [&job_submitted] (std::string) { job_submitted.notify(); }
       , agent
       );
 

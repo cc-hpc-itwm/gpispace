@@ -7,8 +7,6 @@
 
 #include <boost/functional/hash.hpp>
 
-#include <boost/bind.hpp>
-
 #include <iostream>
 #include <sstream>
 #include <iomanip>

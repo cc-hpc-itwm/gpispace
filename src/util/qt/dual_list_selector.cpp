@@ -15,8 +15,9 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 
-#include <boost/bind.hpp>
 #include <boost/optional.hpp>
+
+#include <functional>
 
 Q_DECLARE_METATYPE (QModelIndex)
 
@@ -184,10 +185,10 @@ namespace fhg
           move_selected_entries_list (from_view, to, selection);
         }
 
-        void move_selected_entries ( QAbstractItemView* from_view
-                                   , QAbstractItemView* to
-                                   , const QModelIndex index
-                                   )
+        void move_entry ( QAbstractItemView* from_view
+                        , QAbstractItemView* to
+                        , const QModelIndex index
+                        )
         {
           move_selected_entries_list (from_view, to, QModelIndexList() << index);
         }
@@ -291,28 +292,28 @@ namespace fhg
 
         fhg::util::qt::boost_connect<void()>
           ( _deselect, SIGNAL (triggered())
-          , boost::bind (move_selected_entries, _selected_view, _available_view)
+          , std::bind (move_selected_entries, _selected_view, _available_view)
           );
         fhg::util::qt::boost_connect<void()>
           ( _select, SIGNAL (triggered())
-          , boost::bind (move_selected_entries, _available_view, _selected_view)
+          , std::bind (move_selected_entries, _available_view, _selected_view)
           );
         fhg::util::qt::boost_connect<void()>
           ( _move_up, SIGNAL (triggered())
-          , boost::bind (move_selected<-1>, _selected_view, _selected)
+          , std::bind (move_selected<-1>, _selected_view, _selected)
           );
         fhg::util::qt::boost_connect<void()>
           ( _move_down, SIGNAL (triggered())
-          ,  boost::bind (move_selected<1>, _selected_view, _selected)
+          ,  std::bind (move_selected<1>, _selected_view, _selected)
           );
 
         boost_connect<void (QModelIndex)>
           ( _selected_view, SIGNAL (doubleClicked (QModelIndex))
-          , boost::bind (move_selected_entries, _selected_view, _available_view, _1)
+          , std::bind (move_entry, _selected_view, _available_view, std::placeholders::_1)
           );
         boost_connect<void (QModelIndex)>
           ( _available_view, SIGNAL (doubleClicked (QModelIndex))
-          , boost::bind (move_selected_entries, _available_view, _selected_view, _1)
+          , std::bind (move_entry, _available_view, _selected_view, std::placeholders::_1)
           );
 
         connect_any_change (_selected, this, SLOT (enable_actions()));

@@ -13,7 +13,6 @@
 #include <iostream>
 #include <fstream>
 
-#include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -732,7 +731,7 @@ int main (int ac, char *av[])
   try
   {
     fhg::util::signal_handler_manager signal_handler;
-    signal_handler.add (SIGALRM, boost::bind (&startup_failed));
+    signal_handler.add (SIGALRM, std::bind (&startup_failed));
 
     gpi_api.start (ac, av, gpi_timeout);
   }
@@ -794,11 +793,11 @@ int main (int ac, char *av[])
 
     fhg::util::thread::event<> stop_requested;
     const std::function<void()> request_stop
-      (boost::bind (&fhg::util::thread::event<>::notify, &stop_requested));
+      (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
 
     fhg::util::signal_handler_manager signal_handler;
-    signal_handler.add (SIGTERM, boost::bind (request_stop));
-    signal_handler.add (SIGINT, boost::bind (request_stop));
+    signal_handler.add (SIGTERM, std::bind (request_stop));
+    signal_handler.add (SIGINT, std::bind (request_stop));
 
     stop_requested.wait();
 

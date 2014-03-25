@@ -36,9 +36,9 @@
 #include <QDateTime>
 #include <QHeaderView>
 
-#include <boost/bind.hpp>
 #include <boost/optional.hpp>
 
+#include <functional>
 #include <iostream>
 #include <sstream>
 
@@ -360,7 +360,7 @@ namespace fhg
           , _monitor_client (monitor_client_)
           , _window_title (window_title)
       {
-        timer (this, 30000, boost::bind (&monitor_client::request_hostlist, _monitor_client));
+        timer (this, 30000, std::bind (&monitor_client::request_hostlist, _monitor_client));
         timer (this, 1000, SLOT (refresh_stati()));
 
         setSizeIncrement (per_step, per_step);
@@ -417,7 +417,7 @@ namespace fhg
         _monitor_client->request_hostlist();
       }
 
-      void node_state_widget::update (int node)
+      void node_state_widget::update_node (int node)
       {
         const int per_row (items_per_row (width()));
 
@@ -437,7 +437,7 @@ namespace fhg
         {
           if (_nodes[i]._state == s)
           {
-            update (i);
+            update_node (i);
           }
         }
       }
@@ -527,7 +527,7 @@ namespace fhg
 
           if (old_state != state || old_expected_state)
           {
-            update (*node_index);
+            update_node (*node_index);
 
             if (n._watched)
             {
@@ -579,7 +579,7 @@ namespace fhg
         for (const QString& hostname : hostnames)
         {
           _nodes << node_type (hostname);
-          update (_nodes.size() - 1);
+          update_node (_nodes.size() - 1);
           update_requests << hostname;
         }
 
@@ -615,14 +615,14 @@ namespace fhg
         )
       {
         const std::function<void (QString, QString, QStringList)> append
-          ( boost::bind
+          ( std::bind
             ( result == monitor_client::okay ? &log_widget::information
             : result == monitor_client::fail ? &log_widget::critical
             : &log_widget::warning
             , _log
-            , _1
-            , _2
-            , _3
+            , std::placeholders::_1
+            , std::placeholders::_2
+            , std::placeholders::_3
             )
           );
 
@@ -783,7 +783,7 @@ namespace fhg
       {
         for (const int index : _selection)
         {
-          update (index);
+          update_node (index);
         }
         _selection.clear();
       }
@@ -791,13 +791,13 @@ namespace fhg
       void node_state_widget::add_to_selection (const int& node)
       {
         _selection.append (node);
-        update (node);
+        update_node (node);
       }
 
       void node_state_widget::remove_from_selection (const int& node)
       {
         _selection.removeOne (node);
-        update (node);
+        update_node (node);
       }
 
       void node_state_widget::mouseReleaseEvent (QMouseEvent* event)
@@ -907,7 +907,7 @@ namespace fhg
                               (item._default.get_value_or ("false").toStdString())
                               );
               return std::pair<QWidget*, std::function<QString()>>
-                (box, boost::bind (checkbox_to_string, box));
+                (box, std::bind (checkbox_to_string, box));
             }
 
           case monitor_client::action_argument_data::directory:
@@ -917,7 +917,7 @@ namespace fhg
                 (QFileDialog::Directory, item._default.get_value_or (""))
                 );
               return std::pair<QWidget*, std::function<QString()>>
-                (edit, boost::bind (&fhg::util::qt::file_line_edit::text, edit));
+                (edit, std::bind (&fhg::util::qt::file_line_edit::text, edit));
             }
 
           case monitor_client::action_argument_data::duration:
@@ -928,7 +928,7 @@ namespace fhg
               edit->setSuffix (" h");
               edit->setValue (string_to_int (item._default.get_value_or ("1")));
               return std::pair<QWidget*, std::function<QString()>>
-                (edit, boost::bind (spinbox_to_string, edit));
+                (edit, std::bind (spinbox_to_string, edit));
             }
 
           case monitor_client::action_argument_data::filename:
@@ -938,7 +938,7 @@ namespace fhg
                 (QFileDialog::AnyFile, item._default.get_value_or (""))
                 );
               return std::pair<QWidget*, std::function<QString()>>
-                (edit, boost::bind (&fhg::util::qt::file_line_edit::text, edit));
+                (edit, std::bind (&fhg::util::qt::file_line_edit::text, edit));
             }
 
           case monitor_client::action_argument_data::integer:
@@ -948,14 +948,14 @@ namespace fhg
               edit->setMaximum (INT_MAX);
               edit->setValue (string_to_int (item._default.get_value_or ("0")));
               return std::pair<QWidget*, std::function<QString()>>
-                (edit, boost::bind (spinbox_to_string, edit));
+                (edit, std::bind (spinbox_to_string, edit));
             }
 
           case monitor_client::action_argument_data::string:
             {
               QLineEdit* edit (new QLineEdit (item._default.get_value_or ("")));
               return std::pair<QWidget*, std::function<QString()>>
-                (edit, boost::bind (&QLineEdit::text, edit));
+                (edit, std::bind (&QLineEdit::text, edit));
             }
           default:
             abort ();
@@ -1077,7 +1077,7 @@ namespace fhg
           {
             const size_t index (*node_index_by_name (host));
             node (index)._expects_state_change = expected;
-            update (index);
+            update_node (index);
           }
         }
       }
@@ -1191,12 +1191,12 @@ namespace fhg
                     ( action
                     , SIGNAL (triggered())
                     , this
-                    , boost::bind ( &node_state_widget::trigger_action
-                                  , this
-                                  , hostnames
-                                  , nodes
-                                  , action_name
-                                  )
+                    , std::bind ( &node_state_widget::trigger_action
+                                , this
+                                , hostnames
+                                , nodes
+                                , action_name
+                                )
                     );
                 }
                 else
@@ -1223,12 +1223,12 @@ namespace fhg
                     ( action
                     , SIGNAL (triggered())
                     , this
-                    , boost::bind ( &node_state_widget::trigger_action
-                                  , this
-                                  , hostnames
-                                  , nodes
-                                  , action_name
-                                  )
+                    , std::bind ( &node_state_widget::trigger_action
+                                , this
+                                , hostnames
+                                , nodes
+                                , action_name
+                                )
                     );
                 }
                 else
@@ -1265,14 +1265,14 @@ namespace fhg
                       ( action
                       , SIGNAL (toggled (bool))
                       , _monitor_client
-                      , boost::bind (&node_type::watched, &(node (index)), !all)
+                      , std::bind (&node_type::watched, &(node (index)), !all)
                       );
 
                     fhg::util::qt::boost_connect<void (void)>
                       ( action
                       , SIGNAL (triggered())
                       , this
-                      , boost::bind (&node_state_widget::update, this, index)
+                      , std::bind (&node_state_widget::update_node, this, index)
                       );
                   }
                 }
@@ -1289,26 +1289,26 @@ namespace fhg
                       ( unwatch_all
                       , SIGNAL (triggered())
                       , _monitor_client
-                      , boost::bind (&node_type::watched, &(node (index)), false)
+                      , std::bind (&node_type::watched, &(node (index)), false)
                       );
                     fhg::util::qt::boost_connect<void (void)>
                       ( watch_all
                       , SIGNAL (triggered())
                       , _monitor_client
-                      , boost::bind (&node_type::watched, &(node (index)), true)
+                      , std::bind (&node_type::watched, &(node (index)), true)
                       );
 
                     fhg::util::qt::boost_connect<void (void)>
                       ( unwatch_all
                       , SIGNAL (triggered())
                       , this
-                      , boost::bind (&node_state_widget::update, this, index)
+                      , std::bind (&node_state_widget::update_node, this, index)
                       );
                     fhg::util::qt::boost_connect<void (void)>
                       ( watch_all
                       , SIGNAL (triggered())
                       , this
-                      , boost::bind (&node_state_widget::update, this, index)
+                      , std::bind (&node_state_widget::update_node, this, index)
                       );
                   }
                 }
@@ -1365,28 +1365,20 @@ namespace fhg
 
       void node_state_widget::sort_by_name()
       {
-        // [](const QString& l, const QString& r) -> bool
-        // {
-        //   return fhg::util::alphanum::less() (l.toStdString(), r.toStdString());
-        // }
-
-        fhg::util::alphanum::less less;
-
-        sort_by ( boost::bind ( &fhg::util::alphanum::less::operator(), less
-                              , boost::bind ( &QString::toStdString
-                                            , boost::bind (&node_type::_hostname, _1)
-                                            )
-                              , boost::bind ( &QString::toStdString
-                                            , boost::bind (&node_type::_hostname, _2)
-                                            )
-                              )
+        sort_by ( [](node_type const& lhs, node_type const& rhs)
+                {
+                  return fhg::util::alphanum::less()
+                    (lhs._hostname.toStdString(), rhs._hostname.toStdString());
+                }
                 );
       }
 
       void node_state_widget::sort_by_state()
       {
-        sort_by ( boost::bind (&node_type::_state, _1)
-                < boost::bind (&node_type::_state, _2)
+        sort_by ( [](node_type const& lhs, node_type const& rhs)
+                {
+                  return lhs._state < rhs._state;
+                }
                 );
       }
 

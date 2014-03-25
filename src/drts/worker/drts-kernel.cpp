@@ -13,6 +13,7 @@
 
 #include <boost/program_options.hpp>
 
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -124,8 +125,8 @@ int main(int ac, char **av)
 
   signal_handlers.add_log_backtrace_and_exit_for_critical_errors (logger);
 
-  signal_handlers.add (SIGTERM, boost::bind (request_stop));
-  signal_handlers.add (SIGINT, boost::bind (request_stop));
+  signal_handlers.add (SIGTERM, std::bind (request_stop));
+  signal_handlers.add (SIGINT, std::bind (request_stop));
 
   DRTSImpl const plugin (request_stop, config_variables);
 

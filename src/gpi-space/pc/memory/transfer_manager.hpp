@@ -51,21 +51,21 @@ namespace gpi
         //            = src.get_transfer_function (dst, queue)
         //
         //          memcpy:
-        //              return boost::bind ( ::memcpy
-        //                                 , dst.ptr<char>(dst_offset)
-        //                                 , src.ptr<char>(src_offset)
-        //                                 , amount
-        //                                 )
+        //              return std::bind ( ::memcpy
+        //                               , dst.ptr<char>(dst_offset)
+        //                               , src.ptr<char>(src_offset)
+        //                               , amount
+        //                               )
         //          writeDMA:
-        //              return boost::bind ( api::write_dma
-        //                                 , ref(api)
-        //                                 , params, ...
-        //                                 )
+        //              return std::bind ( api::write_dma
+        //                               , ref(api)
+        //                               , params, ...
+        //                               )
         //          readDMA:
-        //              return boost::bind ( api::read_dma
-        //                                 , ref(api)
-        //                                 , params, ...
-        //                                 )
+        //              return std::bind ( api::read_dma
+        //                               , ref(api)
+        //                               , params, ...
+        //                               )
         //
         //    -> different transfer tasks
         //

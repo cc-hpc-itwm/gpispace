@@ -109,10 +109,10 @@ namespace fhg
     void signal_handler_manager::add_log_backtrace_and_exit_for_critical_errors
       (fhg::log::Logger::ptr_t logger)
     {
-      add (SIGSEGV, boost::bind (&crit_err_hdlr, _1, _2, _3, logger));
-      add (SIGBUS, boost::bind (&crit_err_hdlr, _1, _2, _3, logger));
-      add (SIGABRT, boost::bind (&crit_err_hdlr, _1, _2, _3, logger));
-      add (SIGFPE, boost::bind (&crit_err_hdlr, _1, _2, _3, logger));
+      add (SIGSEGV, std::bind (&crit_err_hdlr, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, logger));
+      add (SIGBUS, std::bind (&crit_err_hdlr, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, logger));
+      add (SIGABRT, std::bind (&crit_err_hdlr, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, logger));
+      add (SIGFPE, std::bind (&crit_err_hdlr, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, logger));
     }
 
     void signal_handler_manager::handle

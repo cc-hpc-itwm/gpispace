@@ -31,6 +31,7 @@
 
 #include <QPointF>
 
+#include <functional>
 #include <memory>
 
 #define VARIADIC_SIZE(...) VARIADIC_SIZE_I(__VA_ARGS__, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1,)
@@ -1590,13 +1591,13 @@ namespace fhg
               ( connections_to_delete
               , trans.connections().ids()
               | boost::adaptors::filtered
-                (boost::bind (is_connected_to_place, _1, place.id()))
+                (std::bind (is_connected_to_place, std::placeholders::_1, place.id()))
               );
             throw_into_set
               ( place_maps_to_delete
               , trans.place_map().ids()
               | boost::adaptors::filtered
-                (boost::bind (is_mapping_place, _1, place.id()))
+                (std::bind (is_mapping_place, std::placeholders::_1, place.id()))
               );
           }
 
@@ -1605,7 +1606,7 @@ namespace fhg
             for ( const ::xml::parse::id::ref::port& port
                 : net.parent()->ports().ids()
                 | boost::adaptors::filtered
-                    (boost::bind (is_associated_with, _1, place.id()))
+                    (std::bind (is_associated_with, std::placeholders::_1, place.id()))
                 )
             {
               handle::port handle (port, place.document());
@@ -1925,14 +1926,14 @@ namespace fhg
             ( boost::copy_range<connections_to_delete_type>
               ( port.get().parent()->parent_transition()->get().connections().ids()
               | boost::adaptors::filtered
-                (boost::bind (is_connected_to_port, _1, port.id()))
+                (std::bind (is_connected_to_port, std::placeholders::_1, port.id()))
               )
             );
           place_maps_to_delete_type place_maps_to_delete
             ( boost::copy_range<place_maps_to_delete_type>
               ( port.get().parent()->parent_transition()->get().place_map().ids()
               | boost::adaptors::filtered
-                (boost::bind (is_mapping_through_port, _1, port.id()))
+                (std::bind (is_mapping_through_port, std::placeholders::_1, port.id()))
               )
             );
 

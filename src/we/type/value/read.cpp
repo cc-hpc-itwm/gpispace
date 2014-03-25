@@ -6,7 +6,7 @@
 #include <fhg/util/parse/require.hpp>
 #include <fhg/util/num.hpp>
 
-#include <boost/bind.hpp>
+#include <functional>
 
 namespace pnet
 {
@@ -144,7 +144,7 @@ namespace pnet
             fhg::util::parse::require::list
               ( pos
               , '[', ',', ']'
-              , boost::bind (map_item, boost::ref (m), _1)
+              , std::bind (map_item, std::ref (m), std::placeholders::_1)
               );
 
             return m;
@@ -168,7 +168,7 @@ namespace pnet
               fhg::util::parse::require::list
                 ( pos
                 ,  '{', ',', '}'
-                , boost::bind (set_item, boost::ref (s), _1)
+                , std::bind (set_item, std::ref (s), std::placeholders::_1)
                 );
 
               return s;
@@ -183,7 +183,7 @@ namespace pnet
               fhg::util::parse::require::list
                 ( pos
                 ,  '[', ',', ']'
-                , boost::bind (struct_item, boost::ref (m), _1)
+                , std::bind (struct_item, std::ref (m), std::placeholders::_1)
                 );
 
               return m;
@@ -203,7 +203,7 @@ namespace pnet
             fhg::util::parse::require::list
               ( pos
               ,  '(', ',', ')'
-              , boost::bind (list_item, boost::ref (l), _1)
+              , std::bind (list_item, std::ref (l), std::placeholders::_1)
               );
 
             return l;

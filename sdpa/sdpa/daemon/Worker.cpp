@@ -106,7 +106,10 @@ bool Worker::hasCapability(const std::string& cpbName)
   lock_type const _ (mtx_);
 
   return std::find_if ( capabilities_.begin(), capabilities_.end()
-                      , boost::bind (&capability_t::name, _1) == cpbName
+                      , [&cpbName] (capability_t const& cap)
+                      {
+                        return cap.name() == cpbName;
+                      }
                       ) != capabilities_.end();
 }
 

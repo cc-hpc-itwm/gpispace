@@ -8,6 +8,8 @@
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 
+#include <functional>
+
 BOOST_GLOBAL_FIXTURE (setup_logging)
 
 namespace
@@ -31,11 +33,10 @@ namespace
       const std::map<std::string, job_t>::const_iterator it
         ( std::find_if
           ( _jobs.begin(), _jobs.end()
-          , boost::bind
-            ( &fake_drts_worker_notifying_submission_and_cancel::job_id_matches
-            , _1
-            , e->job_id()
-            )
+          , [&e] (std::pair<std::string, job_t> v)
+          {
+            return v.second._id == e->job_id();
+          }
           )
         );
       BOOST_REQUIRE (it != _jobs.end());
@@ -56,11 +57,6 @@ namespace
     }
 
   private:
-    static bool job_id_matches (std::pair<std::string, job_t> v, sdpa::job_id_t id)
-    {
-      return v.second._id == id;
-    }
-
     std::function<void (std::string)> _announce_cancel;
   };
 }
@@ -89,8 +85,8 @@ BOOST_AUTO_TEST_CASE (cancel_with_agent)
   fhg::util::thread::event<> job_submitted;
   fhg::util::thread::event<std::string> cancel_requested;
   fake_drts_worker_notifying_submission_and_cancel worker
-    ( boost::bind (&fhg::util::thread::event<>::notify, &job_submitted)
-    , boost::bind (&fhg::util::thread::event<std::string>::notify, &cancel_requested, _1)
+    ( [&job_submitted] (std::string) { job_submitted.notify(); }
+    , [&cancel_requested] (std::string j) { cancel_requested.notify (j); }
     , agent
     );
 
@@ -135,8 +131,8 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
   fhg::util::thread::event<> job_submitted;
   fhg::util::thread::event<std::string> cancel_requested;
   fake_drts_worker_notifying_submission_and_cancel worker
-    ( boost::bind (&fhg::util::thread::event<>::notify, &job_submitted)
-    , boost::bind (&fhg::util::thread::event<std::string>::notify, &cancel_requested, _1)
+    ( [&job_submitted] (std::string) { job_submitted.notify(); }
+    , [&cancel_requested] (std::string j) { cancel_requested.notify (j); }
     , agent
     );
 

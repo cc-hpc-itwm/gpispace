@@ -133,7 +133,7 @@ namespace
     fhg::util::thread::event<std::string> job_submitted;
 
     fake_drts_worker_discovering<reply> worker
-      ( boost::bind (&fhg::util::thread::event<std::string>::notify, &job_submitted, _1)
+      ( [&job_submitted] (std::string j) { job_submitted.notify (j); }
       , agent
       );
 
@@ -247,7 +247,7 @@ namespace
     fhg::util::thread::event<std::string> job_submitted;
 
     fake_drts_worker_discovering<sdpa::status::RUNNING> worker
-      ( boost::bind (&fhg::util::thread::event<std::string>::notify, &job_submitted, _1)
+      ( [&job_submitted] (std::string j) { job_submitted.notify (j); }
       , agents.back()
       );
 

@@ -14,8 +14,8 @@
 #include <fhg/util/xml.hpp>
 
 #include <boost/range/adaptor/map.hpp>
-#include <boost/bind.hpp>
 
+#include <functional>
 #include <unordered_map>
 
 namespace xml
@@ -109,9 +109,8 @@ namespace xml
         (const std::unordered_map<std::string, structure_type>& m)
       {
         pnet::type::signature::signature_type sign
-          (pnet::type::signature::resolve (_sig
-                                          , boost::bind (get_assignment, m, _1)
-                                          )
+          (pnet::type::signature::resolve
+            (_sig, std::bind (get_assignment, m, std::placeholders::_1))
           );
 
         _sig = boost::apply_visitor (get_struct(), sign);

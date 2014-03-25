@@ -49,7 +49,6 @@
 #include <istream>
 #include <stdexcept>
 
-#include <boost/bind.hpp>
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
@@ -157,7 +156,7 @@ namespace xml
         )
       {
         return state.generic_include<return_type>
-          ( boost::bind (generic_parse<return_type>, fun, _1, _2, wanted, pre)
+          ( std::bind (generic_parse<return_type>, fun, std::placeholders::_1, std::placeholders::_2, wanted, pre)
           , file
           );
       }
@@ -1564,10 +1563,10 @@ namespace xml
       state.set_input (input);
 
       return state.generic_parse<id::ref::function>
-        ( boost::bind ( generic_parse<id::ref::function>
-                      , function_type, _1, _2
-                      , "defun", "parse_function"
-                      )
+        ( std::bind ( generic_parse<id::ref::function>
+                    , function_type, std::placeholders::_1, std::placeholders::_2
+                    , "defun", "parse_function"
+                    )
         , input
         );
     }

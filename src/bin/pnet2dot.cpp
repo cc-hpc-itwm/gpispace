@@ -674,17 +674,19 @@ try
   for (std::string const& p : not_starts_with)
   {
     options.filter.push_back
-      ( boost::bind ( &fhg::util::starts_with, p
-                    , boost::bind (&we::type::transition_t::name, _1)
-                    )
+      ( [&p] (we::type::transition_t const& t)
+      {
+        return fhg::util::starts_with (p, t.name());
+      }
       );
   }
   for (std::string const& s : not_ends_with)
   {
     options.filter.push_back
-      ( boost::bind ( &fhg::util::ends_with, s
-                    , boost::bind (&we::type::transition_t::name, _1)
-                    )
+      ( [&s] (we::type::transition_t const& t)
+      {
+        return fhg::util::ends_with (s, t.name());
+      }
       );
   }
 

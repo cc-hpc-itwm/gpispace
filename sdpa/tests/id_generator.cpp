@@ -11,6 +11,7 @@
 #include <boost/thread/barrier.hpp>
 #include <boost/random.hpp>
 
+#include <functional>
 #include <stdexcept>
 #include <unordered_set>
 
@@ -93,10 +94,10 @@ namespace
     while (num_threads --> 0)
     {
       threads.add_thread (new boost::thread ( &insert
-                                            , boost::ref (id_generator)
-                                            , boost::ref (ids)
+                                            , std::ref (id_generator)
+                                            , std::ref (ids)
                                             , random (engine)
-                                            , boost::ref (barrier)
+                                            , std::ref (barrier)
                                             )
                          );
     }

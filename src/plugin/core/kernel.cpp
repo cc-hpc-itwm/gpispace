@@ -42,7 +42,7 @@ namespace fhg
 
     std::function<void()> wait_until_stopped::make_request_stop()
     {
-      return boost::bind (&wait_until_stopped::stop, this);
+      return [this] { stop(); };
     }
 
     kernel_t::kernel_t ( fhg::core::kernel_t::search_path_t search_path

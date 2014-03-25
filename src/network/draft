@@ -59,7 +59,7 @@ struct server
 
   handler_type create_handler (connection_type* connection)
   {
-    return boost::bind (&operator(), _service_manager, connection, _1);
+    return std::bind (&operator(), _service_manager, connection, std::placeholders::_1);
   }
 
   void handle (connection_type*, buffer_type);

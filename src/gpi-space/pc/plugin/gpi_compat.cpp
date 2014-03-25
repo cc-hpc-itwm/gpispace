@@ -7,7 +7,6 @@
 #include <gpi-space/pc/plugin/gpi.hpp>
 #include <gpi-space/pc/type/flags.hpp>
 
-#include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>

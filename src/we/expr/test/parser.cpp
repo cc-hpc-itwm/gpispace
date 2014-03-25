@@ -10,11 +10,11 @@
 
 #include <fhg/util/boost/test/require_exception.hpp>
 
-#include <boost/bind.hpp>
 #include <boost/random/random_device.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
 
+#include <functional>
 #include <limits>
 #include <string>
 
@@ -522,13 +522,13 @@ BOOST_AUTO_TEST_CASE (token_add)
   require_evaluating_to ("\"ab\" + \"a\"", std::string ("aba"));
 
   require_random_integrals_evaluating_to<int>
-    (boost::bind (&check_binop<int>, "+", &plus<int>, _1, _2));
+    (std::bind (&check_binop<int>, "+", &plus<int>, std::placeholders::_1, std::placeholders::_2));
   require_random_integrals_evaluating_to<unsigned int>
-    (boost::bind (&check_binop<unsigned int>, "+", &plus<unsigned int>, _1, _2));
+    (std::bind (&check_binop<unsigned int>, "+", &plus<unsigned int>, std::placeholders::_1, std::placeholders::_2));
   require_random_integrals_evaluating_to<long>
-    (boost::bind (&check_binop<long>, "+", &plus<long>, _1, _2));
+    (std::bind (&check_binop<long>, "+", &plus<long>, std::placeholders::_1, std::placeholders::_2));
   require_random_integrals_evaluating_to<unsigned long>
-    (boost::bind (&check_binop<unsigned long>, "+", &plus<unsigned long>, _1, _2));
+    (std::bind (&check_binop<unsigned long>, "+", &plus<unsigned long>, std::placeholders::_1, std::placeholders::_2));
 
   require_evaluating_to ("0 + 0", 0);
   require_evaluating_to ("0 + 1", 1);
@@ -544,9 +544,9 @@ BOOST_AUTO_TEST_CASE (token_add)
   require_evaluating_to ("1UL + 0UL", 1UL);
 
   require_random_fractionals_evaluating_to<float>
-    (boost::bind (&check_binop<float>, "+", &plus<float>, _1, _2));
+    (std::bind (&check_binop<float>, "+", &plus<float>, std::placeholders::_1, std::placeholders::_2));
   require_random_fractionals_evaluating_to<double>
-    (boost::bind (&check_binop<double>, "+", &plus<double>, _1, _2));
+    (std::bind (&check_binop<double>, "+", &plus<double>, std::placeholders::_1, std::placeholders::_2));
 
   require_evaluating_to ("0.0 + 0.0", 0.0);
   require_evaluating_to ("0.0 + 1.0", 1.0);
@@ -570,13 +570,13 @@ namespace
 BOOST_AUTO_TEST_CASE (token_mul)
 {
   require_random_integrals_evaluating_to<int>
-    (boost::bind (&check_binop<int>, "*", &product<int>, _1, _2));
+    (std::bind (&check_binop<int>, "*", &product<int>, std::placeholders::_1, std::placeholders::_2));
   require_random_integrals_evaluating_to<unsigned int>
-    (boost::bind (&check_binop<unsigned int>, "*", &product<unsigned int>, _1, _2));
+    (std::bind (&check_binop<unsigned int>, "*", &product<unsigned int>, std::placeholders::_1, std::placeholders::_2));
   require_random_integrals_evaluating_to<long>
-    (boost::bind (&check_binop<long>, "*", &product<long>, _1, _2));
+    (std::bind (&check_binop<long>, "*", &product<long>, std::placeholders::_1, std::placeholders::_2));
   require_random_integrals_evaluating_to<unsigned long>
-    (boost::bind (&check_binop<unsigned long>, "*", &product<unsigned long>, _1, _2));
+    (std::bind (&check_binop<unsigned long>, "*", &product<unsigned long>, std::placeholders::_1, std::placeholders::_2));
 
   require_evaluating_to ("0 * 0", 0);
   require_evaluating_to ("0 * 1", 0);
@@ -604,9 +604,9 @@ BOOST_AUTO_TEST_CASE (token_mul)
   require_evaluating_to ("2UL * 1UL", 2UL);
 
   require_random_fractionals_evaluating_to<float>
-    (boost::bind (&check_binop<float>, "*", &product<float>, _1, _2));
+    (std::bind (&check_binop<float>, "*", &product<float>, std::placeholders::_1, std::placeholders::_2));
   require_random_fractionals_evaluating_to<double>
-    (boost::bind (&check_binop<double>, "*", &product<double>, _1, _2));
+    (std::bind (&check_binop<double>, "*", &product<double>, std::placeholders::_1, std::placeholders::_2));
 
   require_evaluating_to ("0.0 * 0.0", 0.0);
   require_evaluating_to ("0.0 * 1.0", 0.0);
@@ -667,9 +667,9 @@ namespace
 BOOST_AUTO_TEST_CASE (token_sub)
 {
   require_random_integrals_evaluating_to<int>
-    (boost::bind (&check_binop<int>, "-", &minus<int>, _1, _2));
+    (std::bind (&check_binop<int>, "-", &minus<int>, std::placeholders::_1, std::placeholders::_2));
   require_random_integrals_evaluating_to<long>
-    (boost::bind (&check_binop<long>, "-", &minus<long>, _1, _2));
+    (std::bind (&check_binop<long>, "-", &minus<long>, std::placeholders::_1, std::placeholders::_2));
 
   require_evaluating_to ("0 - 0", 0);
   require_evaluating_to ("1 - 0", 1);
@@ -679,9 +679,9 @@ BOOST_AUTO_TEST_CASE (token_sub)
   require_evaluating_to ("0L - 1L", -1L);
 
   require_random_fractionals_evaluating_to<float>
-    (boost::bind (&check_binop<float>, "-", &minus<float>, _1, _2));
+    (std::bind (&check_binop<float>, "-", &minus<float>, std::placeholders::_1, std::placeholders::_2));
   require_random_fractionals_evaluating_to<double>
-    (boost::bind (&check_binop<double>, "-", &minus<double>, _1, _2));
+    (std::bind (&check_binop<double>, "-", &minus<double>, std::placeholders::_1, std::placeholders::_2));
 
   require_evaluating_to ("0.0 - 0.0", 0.0);
   require_evaluating_to ("0.0 - 1.0", -1.0);
@@ -748,13 +748,13 @@ namespace
 BOOST_AUTO_TEST_CASE (token_divint)
 {
   require_random_integrals_evaluating_to<int>
-    (boost::bind (&check_divmod_for_integral<int>, "div", &quotient<int>, _1, _2));
+    (std::bind (&check_divmod_for_integral<int>, "div", &quotient<int>, std::placeholders::_1, std::placeholders::_2));
   require_random_integrals_evaluating_to<int>
-    (boost::bind (&check_divmod_for_integral<unsigned int>, "div", &quotient<unsigned int>, _1, _2));
+    (std::bind (&check_divmod_for_integral<unsigned int>, "div", &quotient<unsigned int>, std::placeholders::_1, std::placeholders::_2));
   require_random_integrals_evaluating_to<int>
-    (boost::bind (&check_divmod_for_integral<long>, "div", &quotient<long>, _1, _2));
+    (std::bind (&check_divmod_for_integral<long>, "div", &quotient<long>, std::placeholders::_1, std::placeholders::_2));
   require_random_integrals_evaluating_to<int>
-    (boost::bind (&check_divmod_for_integral<unsigned long>, "div", &quotient<unsigned long>, _1, _2));
+    (std::bind (&check_divmod_for_integral<unsigned long>, "div", &quotient<unsigned long>, std::placeholders::_1, std::placeholders::_2));
 
   require_evaluating_to ("0 div 1", 0);
   require_evaluating_to ("0U div 1U", 0U);
@@ -795,13 +795,13 @@ namespace
 BOOST_AUTO_TEST_CASE (token_modint)
 {
   require_random_integrals_evaluating_to<int>
-    (boost::bind (&check_divmod_for_integral<int>, "mod", &remainder<int>, _1, _2));
+    (std::bind (&check_divmod_for_integral<int>, "mod", &remainder<int>, std::placeholders::_1, std::placeholders::_2));
   require_random_integrals_evaluating_to<unsigned int>
-    (boost::bind (&check_divmod_for_integral<unsigned int>, "mod", &remainder<unsigned int>, _1, _2));
+    (std::bind (&check_divmod_for_integral<unsigned int>, "mod", &remainder<unsigned int>, std::placeholders::_1, std::placeholders::_2));
   require_random_integrals_evaluating_to<long>
-    (boost::bind (&check_divmod_for_integral<long>, "mod", &remainder<long>, _1, _2));
+    (std::bind (&check_divmod_for_integral<long>, "mod", &remainder<long>, std::placeholders::_1, std::placeholders::_2));
   require_random_integrals_evaluating_to<unsigned long>
-    (boost::bind (&check_divmod_for_integral<unsigned long>, "mod", &remainder<unsigned long>, _1, _2));
+    (std::bind (&check_divmod_for_integral<unsigned long>, "mod", &remainder<unsigned long>, std::placeholders::_1, std::placeholders::_2));
 
   require_evaluating_to ("0 mod 1", 0);
   require_evaluating_to ("0U mod 1U", 0U);

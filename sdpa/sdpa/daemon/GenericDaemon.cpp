@@ -37,6 +37,7 @@
 #include <boost/tokenizer.hpp>
 #include <boost/range/adaptor/filtered.hpp>
 
+#include <functional>
 #include <sstream>
 #include <algorithm>
 
@@ -68,11 +69,6 @@ namespace
     const std::vector<std::string> vec (require_proper_url (url));
     return fhg::com::port_t (vec.size() == 2 ? vec[1] : "0");
   }
-
-  job_requirements_t job_requirements (GenericDaemon* daemon, job_id_t job_id)
-  {
-    return daemon->findJob (job_id)->requirements();
-  }
 }
 
 GenericDaemon::GenericDaemon( const std::string name
@@ -91,8 +87,11 @@ GenericDaemon::GenericDaemon( const std::string name
   , _job_map_mutex()
   , job_map_()
   , _cleanup_job_map_on_dtor_helper (job_map_)
-  , _scheduler ( boost::bind (&GenericDaemon::serveJob, this, _1, _2)
-               , boost::bind (&job_requirements, this, _1)
+  , _scheduler ( std::bind (&GenericDaemon::serveJob, this, std::placeholders::_1, std::placeholders::_2)
+               , [this] (job_id_t job_id)
+               {
+                 return findJob (job_id)->requirements();
+               }
                )
   , _scheduling_thread_mutex()
   , _scheduling_thread_notifier()
@@ -114,7 +113,10 @@ GenericDaemon::GenericDaemon( const std::string name
     ( new fhg::com::kvs::client::kvsc
       (kvs_host, kvs_port, true, boost::posix_time::seconds(120), 1)
     )
-  , _network_strategy ( boost::bind (&GenericDaemon::sendEventToSelf, this, _1)
+  , _network_strategy ( [this] (events::SDPAEvent::Ptr const& e)
+                      {
+                        _event_queue.put (e);
+                      }
                       , name /*name for peer*/
                       , host_from_url (url)
                       , port_from_url (url)
@@ -122,14 +124,14 @@ GenericDaemon::GenericDaemon( const std::string name
                       )
   , ptr_workflow_engine_ ( create_wfe
                          ? new we::layer
-                           ( boost::bind (&GenericDaemon::submit, this, _1, _2)
-                           , boost::bind (&GenericDaemon::cancel, this, _1)
-                           , boost::bind (&GenericDaemon::finished, this, _1, _2)
-                           , boost::bind (&GenericDaemon::failed, this, _1, _2)
-                           , boost::bind (&GenericDaemon::canceled, this, _1)
-                           , boost::bind (&GenericDaemon::discover, this, _1, _2)
-                           , boost::bind (&GenericDaemon::discovered, this, _1, _2)
-                           , boost::bind (&GenericDaemon::gen_id, this)
+                           ( std::bind (&GenericDaemon::submit, this, std::placeholders::_1, std::placeholders::_2)
+                           , std::bind (&GenericDaemon::cancel, this, std::placeholders::_1)
+                           , std::bind (&GenericDaemon::finished, this, std::placeholders::_1, std::placeholders::_2)
+                           , std::bind (&GenericDaemon::failed, this, std::placeholders::_1, std::placeholders::_2)
+                           , std::bind (&GenericDaemon::canceled, this, std::placeholders::_1)
+                           , std::bind (&GenericDaemon::discover, this, std::placeholders::_1, std::placeholders::_2)
+                           , std::bind (&GenericDaemon::discovered, this, std::placeholders::_1, std::placeholders::_2)
+                           , std::bind (&GenericDaemon::gen_id, this)
                            , *_random_extraction_engine
                            )
                          : nullptr
@@ -207,11 +209,6 @@ std::string GenericDaemon::gen_id()
   return generator.next();
 }
 
-bool hasName(const sdpa::MasterInfo& masterInfo, const std::string& name)
-{
-  return masterInfo.name() == name;
-}
-
 void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 {
   const events::SubmitJobEvent& e (*evt);
@@ -219,7 +216,11 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   {
     lock_type lock(mtx_master_);
     // check if the incoming event was produced by a master to which the current agent has already registered
-    master_info_list_t::iterator itMaster = find_if(m_arrMasterInfo.begin(), m_arrMasterInfo.end(), boost::bind(hasName, _1, e.from()));
+    master_info_list_t::iterator itMaster = find_if
+      ( m_arrMasterInfo.begin()
+      , m_arrMasterInfo.end()
+      , [&evt] (sdpa::MasterInfo const& info) { return info.name() == evt->from(); }
+      );
 
     if( itMaster != m_arrMasterInfo.end() && !itMaster->is_registered() )
     {
@@ -534,7 +535,7 @@ catch (std::exception const& ex)
 
 void GenericDaemon::cancel (const we::layer::id_type& job_id)
 {
-  delay (boost::bind (&GenericDaemon::delayed_cancel, this, job_id));
+  delay (std::bind (&GenericDaemon::delayed_cancel, this, job_id));
 }
 void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
 {
@@ -816,10 +817,6 @@ void GenericDaemon::handleSubscribeEvent( const events::SubscribeEvent* pEvt )
   subscribe(pEvt->subscriber(), pEvt->listJobIds());
 }
 
-void GenericDaemon::sendEventToSelf(const events::SDPAEvent::Ptr& pEvt)
-{
-  _event_queue.put (pEvt);
-}
 void GenericDaemon::handle_events()
 {
   while (true)
@@ -851,14 +848,14 @@ void GenericDaemon::sendEventToOther(const events::SDPAEvent::Ptr& pEvt)
 
 void GenericDaemon::delay (std::function<void()> fun)
 {
-  sendEventToSelf
+  _event_queue.put
     (events::SDPAEvent::Ptr (new events::delayed_function_call (fun)));
 }
 
 void GenericDaemon::request_registration_soon (const MasterInfo& info)
 {
   _registration_threads.start
-    (boost::bind (&GenericDaemon::do_registration_after_sleep, this, info));
+    (std::bind (&GenericDaemon::do_registration_after_sleep, this, info));
 }
 
 void GenericDaemon::do_registration_after_sleep (const MasterInfo info)
@@ -883,17 +880,16 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
   }
 }
 
-bool hasId(sdpa::MasterInfo& info, sdpa::agent_id_t& agId)
-{
-  return info.name() == agId;
-}
-
 void GenericDaemon::removeMasters(const agent_id_list_t& listMasters)
 {
   lock_type lock(mtx_master_);
   for (const sdpa::agent_id_t& id : listMasters)
   {
-    master_info_list_t::iterator it = find_if( m_arrMasterInfo.begin(), m_arrMasterInfo.end(), boost::bind(hasId, _1, id) );
+    master_info_list_t::iterator it = find_if
+      ( m_arrMasterInfo.begin()
+      , m_arrMasterInfo.end()
+      , [&id] (sdpa::MasterInfo const& info) { return info.name() == id; }
+      );
     if( it != m_arrMasterInfo.end() )
       m_arrMasterInfo.erase(it);
   }
@@ -1112,9 +1108,9 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
 
     void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type job_id)
     {
-      delay ( boost::bind ( &GenericDaemon::delayed_discover, this
-                          , discover_id, job_id
-                          )
+      delay ( std::bind ( &GenericDaemon::delayed_discover, this
+                        , discover_id, job_id
+                        )
             );
     }
     void GenericDaemon::delayed_discover

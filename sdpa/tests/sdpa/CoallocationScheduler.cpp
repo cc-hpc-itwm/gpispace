@@ -3,12 +3,14 @@
 
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 
+#include <functional>
+
 struct serveJob_checking_scheduler_and_job_manager
 {
   serveJob_checking_scheduler_and_job_manager()
     : _scheduler
-      ( boost::bind (&serveJob_checking_scheduler_and_job_manager::serveJob, this, _1, _2)
-      , boost::bind (&serveJob_checking_scheduler_and_job_manager::requirements, this, _1)
+      ( std::bind (&serveJob_checking_scheduler_and_job_manager::serveJob, this, std::placeholders::_1, std::placeholders::_2)
+      , std::bind (&serveJob_checking_scheduler_and_job_manager::requirements, this, std::placeholders::_1)
       )
   {}
 

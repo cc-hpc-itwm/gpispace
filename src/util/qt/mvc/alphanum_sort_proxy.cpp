@@ -2,8 +2,6 @@
 
 #include <util/qt/mvc/alphanum_sort_proxy.hpp>
 
-#include <boost/bind.hpp>
-
 #include <QDate>
 #include <QDateTime>
 #include <QTime>
@@ -48,13 +46,13 @@ namespace fhg
                                )
           {
             const std::function<int (const QString&, const QString&)> compare
-              ( boost::bind ( locale_aware
-                            ? &locale_aware_compare_proxy
-                            : &compare_proxy
-                            , _1
-                            , _2
-                            , case_sensitivity
-                            )
+              ( std::bind ( locale_aware
+                          ? &locale_aware_compare_proxy
+                          : &compare_proxy
+                          , std::placeholders::_1
+                          , std::placeholders::_2
+                          , case_sensitivity
+                          )
               );
 
             enum mode_t { STRING, NUMBER } mode (STRING);

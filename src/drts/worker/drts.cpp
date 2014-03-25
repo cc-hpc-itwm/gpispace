@@ -15,6 +15,8 @@
 #include <we/type/module_call.hpp>
 #include <we/type/net.hpp>
 
+#include <functional>
+
 wfe_task_t::wfe_task_t (std::string id, std::string worker_name, std::list<std::string> workers)
   : id (id)
   , state (wfe_task_t::PENDING)
@@ -844,7 +846,7 @@ void DRTSImpl::send_job_result_to_master (boost::shared_ptr<drts::Job> const & j
 void DRTSImpl::request_registration_soon()
 {
   _registration_threads.start
-    (boost::bind (&DRTSImpl::request_registration_after_sleep, this));
+    (std::bind (&DRTSImpl::request_registration_after_sleep, this));
 }
 void DRTSImpl::request_registration_after_sleep()
 {
@@ -911,10 +913,10 @@ void DRTSImpl::start_connect ()
 
 void DRTSImpl::start_receiver()
 {
-  m_peer->async_recv(&m_message, boost::bind( &DRTSImpl::handle_recv
-                                            , this
-                                            , _1
-                                            )
+  m_peer->async_recv(&m_message, std::bind( &DRTSImpl::handle_recv
+                                          , this
+                                          , std::placeholders::_1
+                                          )
                     );
 }
 

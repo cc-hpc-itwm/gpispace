@@ -175,7 +175,7 @@ namespace fhg
         QSet<QString> _nodes_to_update;
         QSet<QString> _ignore_next_nodes_state;
 
-        void update (int node);
+        void update_node (int node);
         void update();
 
         QList<node_type> _nodes;

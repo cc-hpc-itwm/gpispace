@@ -23,6 +23,8 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
+#include <functional>
+
 namespace sdpa
 {
   namespace client
@@ -58,7 +60,8 @@ namespace sdpa
       , _stopping (false)
     {
       m_peer.start ();
-      m_peer.async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
+      m_peer.async_recv
+        (&m_message, std::bind(&Client::handle_recv, this, std::placeholders::_1));
     }
 
     Client::~Client()
@@ -109,7 +112,8 @@ namespace sdpa
 
       if (!_stopping)
       {
-        m_peer.async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
+        m_peer.async_recv
+          (&m_message, std::bind(&Client::handle_recv, this, std::placeholders::_1));
       }
     }
 

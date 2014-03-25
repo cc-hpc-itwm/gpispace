@@ -2,7 +2,7 @@
 
 #include <fhglog/LogMacros.hpp>
 
-#include <boost/bind.hpp>
+#include <functional>
 
 using namespace fhg::com;
 using namespace boost::asio::ip;
@@ -96,11 +96,11 @@ void tcp_server::accept ()
 
   acceptor_.async_accept
     ( new_session->socket()
-    , boost::bind ( &tcp_server::handle_accept
-                  , this
-                  , new_session
-                  , boost::asio::placeholders::error
-                  )
+    , std::bind ( &tcp_server::handle_accept
+                , this
+                , new_session
+                , std::placeholders::_1
+                )
     );
 }
 

@@ -35,7 +35,7 @@ namespace gpi
           , _topology (topology)
           , _gpi_api (gpi_api)
           , m_reader
-            (boost::bind (&process_t::reader_thread_main, this, m_socket))
+            (std::bind (&process_t::reader_thread_main, this, m_socket))
         {}
         ~process_t()
         {

@@ -11,6 +11,8 @@
 
 #include <boost/thread/scoped_thread.hpp>
 
+#include <functional>
+
 namespace
 {
   class TestAppender : public fhg::log::Appender
@@ -64,7 +66,7 @@ BOOST_AUTO_TEST_CASE (log_to_fake_remote_stream)
 
   {
     const boost::strict_scoped_thread<> service_thread
-      (boost::bind (&boost::asio::io_service::run, &io_service));
+      ([&io_service] { io_service.run(); });
 
     fhg::log::remote::RemoteAppender appender ("localhost:2438");
 

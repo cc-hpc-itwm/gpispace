@@ -4,6 +4,8 @@
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 
+#include <functional>
+
 namespace sdpa
 {
   namespace daemon
@@ -93,8 +95,12 @@ namespace sdpa
           ( find_assignment_for_job
             ( listAvailWorkers
             , _job_requirements (jobId)
-            , boost::bind
-              (&WorkerManager::getBestMatchingWorker, &worker_manager(), _1, _2)
+            , std::bind
+              ( &WorkerManager::getBestMatchingWorker
+              , &worker_manager()
+              , std::placeholders::_1
+              , std::placeholders::_2
+              )
             )
           );
 

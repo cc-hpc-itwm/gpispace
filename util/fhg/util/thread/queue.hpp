@@ -1,7 +1,6 @@
 #ifndef FHG_UTIL_THREAD_QUEUE_HPP
 #define FHG_UTIL_THREAD_QUEUE_HPP
 
-#include <boost/bind.hpp>
 #include <boost/ptr_container/ptr_list.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include <boost/thread/recursive_mutex.hpp>
@@ -23,8 +22,7 @@ namespace fhg
       T get()
       {
         boost::unique_lock<boost::recursive_mutex> lock (m_mtx);
-        m_get_cond.wait
-          (lock, not boost::bind (&container_type::empty, &m_container));
+        m_get_cond.wait (lock, [this] { return !m_container.empty(); });
 
         T t (m_container.front()); m_container.pop_front();
         return t;
@@ -64,8 +62,7 @@ namespace fhg
       typename container_type::auto_type get()
       {
         boost::unique_lock<boost::recursive_mutex> lock (m_mtx);
-        m_get_cond.wait
-          (lock, not boost::bind (&container_type::empty, &m_container));
+        m_get_cond.wait (lock, [this] { return !m_container.empty(); });
 
         return m_container.pop_front();
       }

@@ -8,6 +8,7 @@
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/join.hpp>
 
+#include <functional>
 #include <iterator>
 #include <stack>
 #include <unordered_map>
@@ -474,9 +475,9 @@ namespace we
 
       do_delete
         ( do_extract ( tid
-                     , boost::bind ( &we::type::activity_t::add_input, &act
-                                   , _1, _2
-                                   )
+                     , std::bind ( &we::type::activity_t::add_input, &act
+                                 , std::placeholders::_1, std::placeholders::_2
+                                 )
                      )
         );
 
