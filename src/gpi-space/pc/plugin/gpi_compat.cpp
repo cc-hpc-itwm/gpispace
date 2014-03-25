@@ -347,7 +347,7 @@ fvmCommHandle_t fvmGetGlobalData(const fvmAllocHandle_t handle,
 
   static const gpi::pc::type::queue_id_t queue = GPI_PC_INVAL;
 
-  fhg_assert (nullptr != gpi_compat->m_shm_hdl);
+  fhg_assert (0 != gpi_compat->m_shm_hdl);
 
   return
     gpi_compat->api->memcpy( gpi::pc::type::memory_location_t ( gpi_compat->m_shm_hdl
@@ -369,7 +369,7 @@ fvmCommHandle_t fvmPutGlobalData(const fvmAllocHandle_t handle,
 
   static const gpi::pc::type::queue_id_t queue = GPI_PC_INVAL;
 
-  fhg_assert (nullptr != gpi_compat->m_shm_hdl);
+  fhg_assert (0 != gpi_compat->m_shm_hdl);
 
   return
     gpi_compat->api->memcpy( gpi::pc::type::memory_location_t (handle, fvmOffset)
@@ -390,7 +390,7 @@ fvmCommHandle_t fvmPutLocalData(const fvmAllocHandle_t handle,
 
   static const gpi::pc::type::queue_id_t queue = GPI_PC_INVAL;
 
-  fhg_assert (nullptr != gpi_compat->m_shm_hdl);
+  fhg_assert (0 != gpi_compat->m_shm_hdl);
 
   return gpi_compat->api->
     memcpy( gpi::pc::type::memory_location_t(handle, fvmOffset)
@@ -409,7 +409,7 @@ fvmCommHandle_t fvmGetLocalData(const fvmAllocHandle_t handle,
 
   static const gpi::pc::type::queue_id_t queue = GPI_PC_INVAL;
 
-  fhg_assert (nullptr != gpi_compat->m_shm_hdl);
+  fhg_assert (0 != gpi_compat->m_shm_hdl);
 
   return gpi_compat->api->
     memcpy( gpi::pc::type::memory_location_t(gpi_compat->m_shm_hdl, shmemOffset)
