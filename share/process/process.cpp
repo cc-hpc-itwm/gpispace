@@ -577,7 +577,7 @@ namespace process
 
           av[idx] = new char[param.size()+1];
           memcpy(av[idx], param.c_str(), param.size());
-          av[idx][param.size()] = (char)0;
+          av[idx][param.size()] = '\0';
         }
     }
 

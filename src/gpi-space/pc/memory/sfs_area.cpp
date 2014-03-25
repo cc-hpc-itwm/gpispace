@@ -218,9 +218,9 @@ namespace gpi
               char buf [1024];
               int read_bytes = ::read (fd, buf, sizeof(buf)-1);
               if (read_bytes)
-                buf [read_bytes-1] = 0;
+                buf [read_bytes-1] = '\0';
               else
-                buf [0] = 0;
+                buf [0] = '\0';
               ::close (fd); fd = -1;
 
               // compare lock info
