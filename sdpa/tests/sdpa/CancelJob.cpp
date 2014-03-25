@@ -112,7 +112,6 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
 {
   const utils::kvs_server kvs_server;
   const utils::orchestrator orchestrator (kvs_server);
-  const utils::agent agent (orchestrator);
 
   utils::client client (orchestrator);
 
