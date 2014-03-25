@@ -32,14 +32,6 @@ BOOST_AUTO_TEST_CASE (test_url_ctor)
   BOOST_CHECK_EQUAL (url.get ("bar").get_value_or (""), "baz");
 }
 
-namespace
-{
-  gpi::pc::url_t ctor (std::string const& u)
-  {
-    return gpi::pc::url_t (u);
-  }
-}
-
 BOOST_AUTO_TEST_CASE (test_invalid_type)
 {
   fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>

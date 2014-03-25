@@ -350,14 +350,6 @@ BOOST_AUTO_TEST_CASE (poke)
   }
 }
 
-namespace
-{
-  void remove_from_val (std::string path, pnet::type::value::value_type& v)
-  {
-    pnet::type::value::remove (path, v);
-  }
-}
-
 BOOST_AUTO_TEST_CASE (test_remove)
 {
   using pnet::type::value::value_type;
