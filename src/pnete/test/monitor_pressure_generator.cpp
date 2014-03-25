@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
+#include <boost/thread.hpp>
 
 #include <sdpa/daemon/NotificationService.hpp>
 

@@ -6,7 +6,6 @@
 #include <fhglog/Appender.hpp>
 
 #include <boost/asio.hpp>
-#include <boost/thread.hpp>
 
 #include <memory>
 
