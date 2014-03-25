@@ -7,8 +7,8 @@
 
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/join.hpp>
-#include <boost/utility.hpp>
 
+#include <iterator>
 #include <stack>
 #include <unordered_map>
 
@@ -125,9 +125,9 @@ namespace we
         for (const enabled_by_place_id_type::value_type& pd : tm.second)
         {
           enabled_by_place_id[pd.first] = std::make_pair
-            ( boost::next ( _token_by_place_id.at (pd.first).begin()
-                          , pd.second.second
-                          )
+            ( std::next ( _token_by_place_id.at (pd.first).begin()
+                        , pd.second.second
+                        )
             , pd.second.second
             );
         }
@@ -555,7 +555,7 @@ namespace we
       , const std::list<pnet::type::value::value_type>::iterator::difference_type& distance_from_zero
       )
       : _begin (token)
-      , _end (boost::next (token))
+      , _end (std::next (token))
       , _distance_from_zero (distance_from_zero)
       , _pos_and_distance (token, distance_from_zero)
     {}

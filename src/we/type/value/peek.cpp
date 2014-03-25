@@ -4,7 +4,7 @@
 
 #include <we/type/value/path/split.hpp>
 
-#include <boost/utility.hpp>
+#include <iterator>
 
 namespace pnet
 {
@@ -41,7 +41,7 @@ namespace pnet
               if (field->first == *_key)
               {
                 return boost::apply_visitor
-                  ( visitor_peek<V,M,MIT> ( boost::next (_key)
+                  ( visitor_peek<V,M,MIT> ( std::next (_key)
                                           , _end
                                           , field->second
                                           )

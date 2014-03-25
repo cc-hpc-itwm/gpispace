@@ -26,6 +26,8 @@
 
 #include <xml/parse/type/port.hpp>
 
+#include <iterator>
+
 namespace fhg
 {
   namespace pnete
@@ -493,9 +495,9 @@ namespace fhg
             ::we::type::property::path_type::const_iterator const end (path.end());
 
             if (  std::distance (pos, end) == 4
-               && *pos == "fhg" && *boost::next (pos) == "pnete"
-               && (  *boost::next (boost::next (pos)) == "position"
-                  || *boost::next (boost::next (pos)) == "outer_position"
+               && *pos == "fhg" && *std::next (pos) == "pnete"
+               && (  *std::next (std::next (pos)) == "position"
+                  || *std::next (std::next (pos)) == "outer_position"
                   )
                )
             {

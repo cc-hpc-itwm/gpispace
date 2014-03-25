@@ -8,13 +8,13 @@
 
 #include <boost/bind.hpp>
 #include <boost/variant.hpp>
-#include <boost/utility.hpp>
 
 #include <we/type/value/read.hpp>
 
 #include <fhg/util/parse/require.hpp>
 
 #include <functional>
+#include <iterator>
 
 namespace expr
 {
@@ -61,7 +61,7 @@ namespace expr
       {
         const child_type::iterator child (m.find (*pos));
 
-        if (boost::next (pos) == end)
+        if (std::next (pos) == end)
         {
           if (child != m.end())
           {
@@ -73,7 +73,7 @@ namespace expr
         }
         else
         {
-          put ( boost::next (pos)
+          put ( std::next (pos)
               , end
               , f
               , boost::get<child_type&>

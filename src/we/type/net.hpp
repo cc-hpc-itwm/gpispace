@@ -22,9 +22,9 @@
 #include <boost/range/any_range.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/tuple/tuple.hpp>
-#include <boost/utility.hpp>
 
 #include <functional>
+#include <iterator>
 #include <list>
 #include <sstream>
 #include <unordered_map>
@@ -107,7 +107,7 @@ namespace we
             (_enabled.begin()->second);
           boost::uniform_int<std::size_t> random (0, transition_ids.size() - 1);
           transition_id_type const transition_id
-            (*boost::next (transition_ids.begin(), random (engine)));
+            (*std::next (transition_ids.begin(), random (engine)));
           we::type::transition_t const& transition (_tmap.at (transition_id));
 
           if (transition.expression())

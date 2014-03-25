@@ -8,7 +8,7 @@
 
 #include <fhg/util/boost/test/require_exception.hpp>
 
-#include <boost/utility.hpp>
+#include <iterator>
 
 BOOST_AUTO_TEST_CASE (no_section)
 {
@@ -150,8 +150,8 @@ BOOST_AUTO_TEST_CASE (multiple_section)
   BOOST_REQUIRE_EQUAL (m.size(), 2);
   BOOST_REQUIRE_EQUAL (m.begin()->first, "1.k");
   BOOST_REQUIRE_EQUAL (m.begin()->second, "v");
-  BOOST_REQUIRE_EQUAL (boost::next (m.begin())->first, "2.k");
-  BOOST_REQUIRE_EQUAL (boost::next (m.begin())->second, "v");
+  BOOST_REQUIRE_EQUAL (std::next (m.begin())->first, "2.k");
+  BOOST_REQUIRE_EQUAL (std::next (m.begin())->second, "v");
 }
 
 BOOST_AUTO_TEST_CASE (multiple_section_no_linebreak)
@@ -162,8 +162,8 @@ BOOST_AUTO_TEST_CASE (multiple_section_no_linebreak)
   BOOST_REQUIRE_EQUAL (m.size(), 2);
   BOOST_REQUIRE_EQUAL (m.begin()->first, "1.k");
   BOOST_REQUIRE_EQUAL (m.begin()->second, "v");
-  BOOST_REQUIRE_EQUAL (boost::next (m.begin())->first, "2.k");
-  BOOST_REQUIRE_EQUAL (boost::next (m.begin())->second, "v");
+  BOOST_REQUIRE_EQUAL (std::next (m.begin())->first, "2.k");
+  BOOST_REQUIRE_EQUAL (std::next (m.begin())->second, "v");
 }
 
 BOOST_AUTO_TEST_CASE (value_is_extended_to_endofline)
@@ -184,8 +184,8 @@ BOOST_AUTO_TEST_CASE (quoted_value_is_not_extended_to_endofline_and_unquoted)
   BOOST_REQUIRE_EQUAL (m.size(), 2);
   BOOST_REQUIRE_EQUAL (m.begin()->first, "1.k");
   BOOST_REQUIRE_EQUAL (m.begin()->second, "v");
-  BOOST_REQUIRE_EQUAL (boost::next (m.begin())->first, "2.k");
-  BOOST_REQUIRE_EQUAL (boost::next (m.begin())->second, "v");
+  BOOST_REQUIRE_EQUAL (std::next (m.begin())->first, "2.k");
+  BOOST_REQUIRE_EQUAL (std::next (m.begin())->second, "v");
 }
 
 BOOST_AUTO_TEST_CASE (key_can_contain_comment_character_1)

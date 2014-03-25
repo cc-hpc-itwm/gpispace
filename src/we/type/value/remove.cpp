@@ -3,9 +3,8 @@
 #include <we/type/value/remove.hpp>
 #include <we/type/value/path/split.hpp>
 
-#include <boost/utility.hpp>
-
 #include <functional>
+#include <iterator>
 
 namespace pnet
 {
@@ -60,7 +59,7 @@ namespace pnet
               }
 
               const std::list<std::string>::const_iterator next
-                (boost::next (_key));
+                (std::next (_key));
 
               if (next == _end)
               {

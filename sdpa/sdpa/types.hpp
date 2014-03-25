@@ -10,7 +10,7 @@
 #include <we/type/value.hpp>
 #include <sdpa/job_states.hpp>
 
-#include <boost/utility.hpp>
+#include <iterator>
 
 namespace sdpa {
 	typedef std::string job_id_t;
@@ -102,7 +102,7 @@ inline std::ostream& operator<<(std::ostream& os, const sdpa::worker_id_list_t& 
   for(sdpa::worker_id_list_t::const_iterator it=worker_list.begin(); it!=worker_list.end(); it++)
   {
       os<<*it;
-      if( boost::next(it) != worker_list.end() )
+      if( std::next(it) != worker_list.end() )
         os<<",";
       else
         os<<")";
