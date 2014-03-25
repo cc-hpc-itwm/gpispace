@@ -101,32 +101,36 @@ static int configure_logging (const config_t *cfg, const char* logfile);
 namespace
 {
   enum requested_api_t { API_auto, API_real, API_fake };
-  //! \todo directly return movable std::unique_ptr
-  gpi_api_t* create_gpi_api (requested_api_t requested_api, bool is_master)
+  std::unique_ptr<gpi_api_t> create_gpi_api
+    (requested_api_t requested_api, bool is_master)
   {
 #ifdef ENABLE_REAL_GPI
     if (requested_api == API_auto)
     {
       try
       {
-        return new gpi::api::real_gpi_api_t (is_master);
+        return std::unique_ptr<gpi_api_t>
+          (new gpi::api::real_gpi_api_t (is_master));
       }
       catch (gpi::exception::gpi_error const& ex)
       {
         fprintf (stderr, "%s: %s\n", program_name, ex.what());
         fprintf (stderr, "%s: fallback to fake API\n", program_name);
 
-        return new gpi::api::fake_gpi_api_t (is_master);
+        return std::unique_ptr<gpi_api_t>
+          (new gpi::api::fake_gpi_api_t (is_master));
       }
     }
     else if (requested_api == API_real)
     {
-      return new gpi::api::real_gpi_api_t (is_master);
+      return std::unique_ptr<gpi_api_t>
+        (new gpi::api::real_gpi_api_t (is_master));
     }
     else // if (requested_api == API_fake)
 #endif
     {
-      return new gpi::api::fake_gpi_api_t (is_master);
+      return std::unique_ptr<gpi_api_t>
+        (new gpi::api::fake_gpi_api_t (is_master));
     }
   }
 
