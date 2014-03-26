@@ -8,7 +8,6 @@ set(PNETV_JPNA_SOURCES
     Types.h
     Verification.cpp
     Verification.h
-    VerificationResult.cpp
     VerificationResult.h
 )
 

@@ -18,6 +18,53 @@ enum {
     EXIT_LOOPS
 };
 
+namespace jpna
+{
+  std::ostream& operator<< (std::ostream& out, VerificationResult const& result)
+  {
+    out << "(";
+    switch (result.result()) {
+    case VerificationResult::TERMINATES:
+      out << "TERMINATES";
+      break;
+    case VerificationResult::LOOPS:
+      out << "LOOPS";
+      break;
+    case VerificationResult::MAYBE_LOOPS:
+      out << "MAYBE_LOOPS";
+      break;
+    default:
+      jpn::unreachable();
+    }
+    if (result.result() != VerificationResult::TERMINATES) {
+      out << ", init:{";
+
+      bool comma = false;
+      for (const Transition *transition : result.init()) {
+        if (comma) {
+          out << ", ";
+        } else {
+          comma = true;
+        }
+        out << "`" << transition->name() << "'";
+      }
+      out << "}, loop:{";
+
+      comma = false;
+      for (const Transition *transition : result.loop()) {
+        if (comma) {
+          out << ", ";
+        } else {
+          comma = true;
+        }
+        out << "`" << transition->name() << "'";
+      }
+      out << "}";
+    }
+    return out << ")";
+  }
+}
+
 int main(int argc, char *argv[]) {
     namespace po = boost::program_options;
 

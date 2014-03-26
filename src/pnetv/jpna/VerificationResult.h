@@ -4,8 +4,6 @@
 #include <vector>
 #include <fhg/assert.hpp>
 
-#include <pnetv/jpn/common/Printable.h>
-
 namespace jpna {
 
 class Transition;
@@ -13,7 +11,7 @@ class Transition;
 /**
  * Result of a verification.
  */
-class VerificationResult: public jpn::Printable {
+class VerificationResult {
     public:
 
     /**
@@ -71,8 +69,6 @@ class VerificationResult: public jpn::Printable {
      * \return Trace realising one iteration of the loop.
      */
     const std::vector<const Transition *> &loop() const { return loop_; }
-
-    virtual void print(std::ostream &out) const;
 };
 
 } // namespace jpna
