@@ -31,5 +31,3 @@ std::ostream &operator<<(std::ostream &out, const Printable &object) {
 }
 
 } // namespace jpn
-
-/* vim:set et sts=4 sw=4: */

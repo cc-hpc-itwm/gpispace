@@ -142,5 +142,3 @@ bool findLoop(const std::vector<Transition> &transitions, const Marking &initial
     return false;
 }
 }} // namespace jpn::analysis
-
-/* vim:set et sts=4 sw=4: */

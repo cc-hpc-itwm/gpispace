@@ -23,5 +23,3 @@ void printRange(std::ostream &out, const T &container)
 }
 
 } // namespace jpn
-
-/* vim:set et sts=4 sw=4: */

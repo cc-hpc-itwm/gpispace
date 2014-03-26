@@ -79,5 +79,3 @@ namespace boost {
 #ifndef JPN_EXTENDED_MARKINGS
 #undef ExtendedTokenCount
 #endif
-
-/* vim:set et sts=4 sw=4: */

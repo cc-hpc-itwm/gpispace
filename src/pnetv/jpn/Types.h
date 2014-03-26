@@ -11,5 +11,3 @@ namespace jpn {
   typedef int TokenCount; ///< Integer for token count.
 
 } // namespace jpn
-
-/* vim:set et sts=4 sw=4: */

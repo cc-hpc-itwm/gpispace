@@ -26,5 +26,3 @@ std::vector<TransitionId> backtrack(const State *state, const State *lastState) 
 }
 
 }} // namespace jpn::analysis
-
-/* vim:set et sts=4 sw=4: */

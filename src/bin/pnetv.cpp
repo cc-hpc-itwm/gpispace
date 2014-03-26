@@ -121,5 +121,3 @@ int main(int argc, char *argv[]) {
 
     return exitCode;
 }
-
-/* vim:set et sts=4 sw=4: */

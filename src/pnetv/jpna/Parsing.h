@@ -27,5 +27,3 @@ void parse(const char *filename, boost::ptr_vector<PetriNet> &petriNets);
 void parse(const char *filename, std::istream &in, boost::ptr_vector<PetriNet> &petriNets);
 
 } // namespace jpna
-
-/* vim:set et sts=4 sw=4: */

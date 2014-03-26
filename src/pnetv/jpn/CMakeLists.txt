@@ -19,5 +19,3 @@ set(PNETV_JPN_SOURCES
 )
 
 add_library(pnetv-jpn STATIC ${PNETV_JPN_SOURCES})
-
-# vim:set et sts=4 sw=4 nospell:

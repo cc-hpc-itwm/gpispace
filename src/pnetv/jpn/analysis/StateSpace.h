@@ -36,5 +36,3 @@ bool karpMiller(const std::vector<Transition> &transitions, const Marking &initi
 bool findLoop(const std::vector<Transition> &transitions, const Marking &initialMarking, std::vector<TransitionId> &init, std::vector<TransitionId> &loop);
 
 }} // namespace jpn::analysis
-
-/* vim:set et sts=4 sw=4: */

@@ -11,5 +11,3 @@ std::string Printable::toString() const {
 }
 
 } // namespace jpn
-
-/* vim:set et sts=4 sw=4: */
