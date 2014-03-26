@@ -339,8 +339,7 @@ BOOST_FIXTURE_TEST_CASE (two_peers_one_restarts_repeatedly, KVSSetup)
     {
       using namespace boost::system;
 
-      if (  se.code ().value () != errc::address_not_available
-         )
+      if (se.code ().value () != boost::asio::error::eof)
       {
         peer_2.stop ();
         BOOST_ERROR (se.what ());
