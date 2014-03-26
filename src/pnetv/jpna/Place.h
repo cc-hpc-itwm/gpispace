@@ -28,7 +28,7 @@ class Place {
     Place(we::place_id_type id): id_(id), initialMarking_(0) {}
 
     /**
-     * \return Id of the transition.
+     * \return Id of the place.
      */
     we::place_id_type id() const { return id_; }
 
@@ -38,7 +38,7 @@ class Place {
     const std::string &name() const { return name_; }
 
     /**
-     * Sets the name of the transition.
+     * Sets the name of the place.
      *
      * \param name New name.
      */
