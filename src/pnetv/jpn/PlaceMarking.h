@@ -1,25 +1,16 @@
 #pragma once
 
 #include <pnetv/jpn/Types.h>
-#ifdef JPN_EXTENDED_MARKINGS
-#include <pnetv/jpn/common/ExtendedInteger.h>
-#endif
 #include <pnetv/jpn/common/Printable.h>
 
 namespace jpn {
-
-#ifdef JPN_EXTENDED_MARKINGS
-typedef ExtendedInteger<TokenCount> ExtendedTokenCount;
-#else
-#define ExtendedTokenCount TokenCount
-#endif
 
 /**
  * Marking of a place.
  */
 class PlaceMarking: public Printable {
     PlaceId placeId_; ///< Identifier of the place.
-    ExtendedTokenCount count_; ///< Token count.
+    TokenCount count_; ///< Token count.
 
     public:
 
@@ -29,7 +20,7 @@ class PlaceMarking: public Printable {
      * \param[in] placeId Identifier of the place.
      * \param[in] count Token count.
      */
-    PlaceMarking(PlaceId placeId, ExtendedTokenCount count):
+    PlaceMarking(PlaceId placeId, TokenCount count):
         placeId_(placeId), count_(count)
     {}
 
@@ -41,7 +32,7 @@ class PlaceMarking: public Printable {
     /**
      * \return Token count.
      */
-    const ExtendedTokenCount &count() const { return count_; }
+    const TokenCount &count() const { return count_; }
 
     virtual void print(std::ostream &out) const;
 };
@@ -58,7 +49,3 @@ bool operator==(const PlaceMarking &a, const PlaceMarking &b) {
 }
 
 } // namespace jpn
-
-#ifndef JPN_EXTENDED_MARKINGS
-#undef ExtendedTokenCount
-#endif

@@ -46,11 +46,7 @@ bool karpMiller(const std::vector<Transition> &transitions, const Marking &initi
             /* Accelerate. */
             for (const State *state = currentState; state != nullptr; state = state->previous()) {
                 if (state->marking() < newMarking) {
-                    #ifdef JPN_EXTENDED_MARKINGS
-                        newMarking = accelerate(state->marking(), newMarking);
-                    #else
                         return false;
-                    #endif
                 }
             }
 

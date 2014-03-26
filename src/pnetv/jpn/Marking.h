@@ -52,9 +52,6 @@ class Marking: public Printable {
 
     friend Marking operator+(const Marking &, const Marking &);
     friend Marking operator-(const Marking &, const Marking &);
-#ifdef JPN_EXTENDED_MARKINGS
-    friend Marking accelerate(const Marking &a, const Marking &b);
-#endif
 };
 
 /**
@@ -224,42 +221,5 @@ Marking operator-(const Marking &a, const Marking &b) {
 
     return result;
 }
-
-#ifdef JPN_EXTENDED_MARKINGS
-/**
- * \param[in] a Marking.
- * \param[in] b Marking. a < b.
- *
- * \return A marking which is has an infinity for a given place p if a[p] < b[p] and b[p] otherwise.
- */
-inline
-Marking accelerate(const Marking &a, const Marking &b) {
-    assert(a < b);
-
-    Marking result;
-
-    std::vector<PlaceMarking>::const_iterator i = a.placeMarkings().begin();
-    std::vector<PlaceMarking>::const_iterator iend = a.placeMarkings().end();
-
-    std::vector<PlaceMarking>::const_iterator j = b.placeMarkings().begin();
-    std::vector<PlaceMarking>::const_iterator jend = b.placeMarkings().end();
-
-    while (j != jend) {
-        while (i != iend && i->placeId() < j->placeId()) {
-            ++i;
-        }
-
-        if (i == iend || i->placeId() > j->placeId() || (i->placeId() == j->placeId() && i->count() < j->count())) {
-            result.placeMarkings_.push_back(PlaceMarking(j->placeId(), ExtendedTokenCount(ExtendedTokenCount::PLUS_INF)));
-        } else {
-            result.placeMarkings_.push_back(*j);
-        }
-
-        ++j;
-    }
-
-    return result;
-}
-#endif
 
 } // namespace jpn
