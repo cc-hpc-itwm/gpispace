@@ -10,9 +10,7 @@
 #include <we/type/transition.hpp>
 
 #include <boost/format.hpp>
-#include <boost/range/adaptor/map.hpp>
 
-#include <cctype>
 #include <fstream>
 #include <unordered_map>
 
