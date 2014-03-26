@@ -107,28 +107,6 @@ bool operator<(const Marking &a, const Marking &b) {
  * \param[in] a Marking.
  * \param[in] b Marking.
  *
- * \return True iff b is covered by a.
- */
-inline
-bool operator>=(const Marking &a, const Marking &b) {
-    return b <= a;
-}
-
-/**
- * \param[in] a Marking.
- * \param[in] b Marking.
- *
- * \return True iff b is covered by a and they are not equal.
- */
-inline
-bool operator>(const Marking &a, const Marking &b) {
-    return b < a;
-}
-
-/**
- * \param[in] a Marking.
- * \param[in] b Marking.
- *
  * \return A marking which is a componentwise sum of the two.
  */
 inline
