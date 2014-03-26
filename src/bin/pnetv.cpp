@@ -10,6 +10,7 @@
 #include <pnetv/jpna/Verification.h>
 
 #include <fhg/revision.hpp>
+#include <fhg/util/first_then.hpp>
 
 enum {
     EXIT_INVALID_ARGUMENTS = EXIT_FAILURE,
@@ -39,25 +40,21 @@ namespace jpna
     if (result.result() != VerificationResult::TERMINATES) {
       out << ", init:{";
 
-      bool comma = false;
-      for (const Transition *transition : result.init()) {
-        if (comma) {
-          out << ", ";
-        } else {
-          comma = true;
+      {
+        fhg::util::first_then<std::string> comma ("", ", ");
+
+        for (const Transition *transition : result.init()) {
+          out << comma << "`" << transition->name() << "'";
         }
-        out << "`" << transition->name() << "'";
       }
       out << "}, loop:{";
 
-      comma = false;
-      for (const Transition *transition : result.loop()) {
-        if (comma) {
-          out << ", ";
-        } else {
-          comma = true;
+      {
+        fhg::util::first_then<std::string> comma ("", ", ");
+
+        for (const Transition *transition : result.loop()) {
+          out << comma << "`" << transition->name() << "'";
         }
-        out << "`" << transition->name() << "'";
       }
       out << "}";
     }
