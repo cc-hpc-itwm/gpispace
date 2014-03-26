@@ -334,7 +334,6 @@ BOOST_FIXTURE_TEST_CASE (two_peers_one_restarts_repeatedly, KVSSetup)
     {
       peer_2.start();
       peer_2.send (peer_1.name (), "hello world!");
-      peer_2.stop();
     }
     catch (boost::system::system_error const &se)
     {
@@ -353,6 +352,7 @@ BOOST_FIXTURE_TEST_CASE (two_peers_one_restarts_repeatedly, KVSSetup)
       BOOST_ERROR ( ex.what() );
     }
 
+    peer_2.stop ();
     thrd_2.join ();
   }
 
