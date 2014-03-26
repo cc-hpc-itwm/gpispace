@@ -9,11 +9,11 @@
 namespace jpn {
 namespace analysis {
 
-std::vector<TransitionId> backtrack(const State *state, const State *lastState) {
+std::vector<we::transition_id_type> backtrack(const State *state, const State *lastState) {
     assert(state != nullptr);
     assert(lastState != nullptr);
 
-    std::vector<TransitionId> result;
+    std::vector<we::transition_id_type> result;
 
     while (state != lastState) {
         result.push_back(state->lastTransition()->id());

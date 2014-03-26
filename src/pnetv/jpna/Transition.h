@@ -15,7 +15,7 @@ class Place;
  * Transition from a workflow abstracted from unnecessary details.
  */
 class Transition {
-    TransitionId id_; ///< Id of the transition.
+    we::transition_id_type id_; ///< Id of the transition.
     std::string name_; ///< Name of the transition.
     std::vector<const Place *> inputPlaces_; ///< Ids of input places.
     std::vector<const Place *> outputPlaces_; ///< Ids of output places.
@@ -29,12 +29,12 @@ class Transition {
      *
      * \param id Id.
      */
-    Transition(TransitionId id): id_(id), conditionAlwaysTrue_(true), priority_(0) {}
+    Transition(we::transition_id_type id): id_(id), conditionAlwaysTrue_(true), priority_(0) {}
 
     /**
      * \return Id of the transition.
      */
-    TransitionId id() const { return id_; }
+    we::transition_id_type id() const { return id_; }
 
     /**
      * Name of the transition.

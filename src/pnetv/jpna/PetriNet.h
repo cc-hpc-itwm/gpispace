@@ -56,14 +56,14 @@ class PetriNet {
      *
      * \return Transition with given id.
      */
-    Transition *getTransition(TransitionId id) { return transitions_[id.value()]; }
+    Transition *getTransition(we::transition_id_type id) { return transitions_[id.value()]; }
 
     /**
      * \param id Id of the transitions.
      *
      * \return Transition with given id.
      */
-    const Transition *getTransition(TransitionId id) const { return transitions_[id.value()]; }
+    const Transition *getTransition(we::transition_id_type id) const { return transitions_[id.value()]; }
     /**
      * \return Newly created place owned by the Petri net.
      */

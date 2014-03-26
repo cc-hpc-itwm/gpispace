@@ -33,6 +33,6 @@ bool karpMiller(const std::vector<Transition> &transitions, const Marking &initi
  *
  * \return True of the loop was found. False otherwise.
  */
-bool findLoop(const std::vector<Transition> &transitions, const Marking &initialMarking, std::vector<TransitionId> &init, std::vector<TransitionId> &loop);
+bool findLoop(const std::vector<Transition> &transitions, const Marking &initialMarking, std::vector<we::transition_id_type> &init, std::vector<we::transition_id_type> &loop);
 
 }} // namespace jpn::analysis

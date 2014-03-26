@@ -34,9 +34,9 @@ jpn::Transition makeTransition(const Transition *transition) {
         transition->priority());
 }
 
-std::vector<const Transition *> makeTrace(const std::vector<jpn::TransitionId> &trace, const PetriNet &petriNet) {
+std::vector<const Transition *> makeTrace(const std::vector<we::transition_id_type> &trace, const PetriNet &petriNet) {
     std::vector<const Transition *> result;
-    for (jpn::TransitionId transitionId : trace) {
+    for (we::transition_id_type transitionId : trace) {
         result.push_back(petriNet.getTransition(transitionId));
     }
     return result;
@@ -55,8 +55,8 @@ VerificationResult verify(const PetriNet &petriNet) {
         }
     }
 
-    std::vector<TransitionId> init;
-    std::vector<TransitionId> loop;
+    std::vector<we::transition_id_type> init;
+    std::vector<we::transition_id_type> loop;
     if (jpn::analysis::findLoop(transitions, initialMarking, init, loop)) {
         return VerificationResult(VerificationResult::LOOPS, makeTrace(init, petriNet), makeTrace(loop, petriNet));
     }
