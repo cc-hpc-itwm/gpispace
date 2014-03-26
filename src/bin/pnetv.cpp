@@ -3,8 +3,6 @@
 
 #include <boost/program_options.hpp>
 
-#include <pnetv/jpn/common/Unreachable.h>
-
 #include <pnetv/jpna/Parsing.h>
 #include <pnetv/jpna/PetriNet.h>
 #include <pnetv/jpna/Verification.h>
@@ -34,8 +32,6 @@ namespace jpna
     case VerificationResult::MAYBE_LOOPS:
       out << "MAYBE_LOOPS";
       break;
-    default:
-      jpn::unreachable();
     }
     if (result.result() != VerificationResult::TERMINATES) {
       out << ", init:{";
@@ -151,9 +147,6 @@ int main(int argc, char *argv[]) {
                     case jpna::VerificationResult::LOOPS: {
                         exitCode = EXIT_LOOPS;
                         break;
-                    }
-                    default: {
-                        jpn::unreachable();
                     }
                 }
             }
