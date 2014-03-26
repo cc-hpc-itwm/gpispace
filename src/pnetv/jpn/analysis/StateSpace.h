@@ -13,17 +13,6 @@ namespace jpn {
 namespace analysis {
 
 /**
- * For a Petri net, builds a set of reachable markings covering the set of all reachable markings.
- *
- * \param[in] transitions Transitions of a Petri net.
- * \param[in] initialMarking Initial marking of the Petri net.
- * \param[out] states Computed set of states.
- *
- * \return True on success, false if the Petri net is unbounded and support for extended markings is off.
- */
-bool karpMiller(const std::vector<Transition> &transitions, const Marking &initialMarking, boost::ptr_vector<State> &states);
-
-/**
  * For a Petri net, tries to find a loop.
  *
  * \param[in] transitions Transitions of a Petri net.
