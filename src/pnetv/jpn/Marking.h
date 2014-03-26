@@ -42,13 +42,6 @@ class Marking {
 
     private:
 
-#ifndef NDEBUG
-    /**
-     * Check correctness of internal data structures.
-     */
-    void check() const;
-#endif
-
     friend Marking operator+(const Marking &, const Marking &);
     friend Marking operator-(const Marking &, const Marking &);
 };
@@ -168,10 +161,6 @@ Marking operator+(const Marking &a, const Marking &b) {
         result.placeMarkings_.push_back(*j++);
     }
 
-#ifndef NDEBUG
-    result.check();
-#endif
-
     return result;
 }
 
@@ -213,10 +202,6 @@ Marking operator-(const Marking &a, const Marking &b) {
         result.placeMarkings_.push_back(PlaceMarking(j->placeId(), -j->count()));
         ++j;
     }
-
-#ifndef NDEBUG
-    result.check();
-#endif
 
     return result;
 }

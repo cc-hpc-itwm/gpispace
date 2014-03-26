@@ -22,22 +22,6 @@ Marking::Marking(const std::vector<PlaceMarking> &placeMarkings):
       , [](PlaceMarking const& a, PlaceMarking const& b)
       { return a.placeId() < b.placeId(); }
       );
-
-#ifndef NDEBUG
-    check();
-#endif
 }
-
-#ifndef NDEBUG
-void Marking::check() const {
-    for (const PlaceMarking &placeMarking : placeMarkings_) {
-        assert(placeMarking.count() != 0);
-    }
-
-    for (std::size_t i = 1; i < placeMarkings_.size(); ++i) {
-        assert(placeMarkings_[i - 1].placeId() < placeMarkings_[i].placeId());
-    }
-}
-#endif
 
 } // namespace jpn
