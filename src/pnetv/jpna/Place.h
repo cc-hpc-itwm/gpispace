@@ -1,12 +1,12 @@
 #pragma once
 
-#include <string>
-
-#include <boost/optional.hpp>
-
 #include "Types.h"
 
 #include <we/type/id.hpp>
+
+#include <boost/optional.hpp>
+
+#include <string>
 
 namespace jpna {
 

@@ -1,22 +1,19 @@
 #include "Parsing.h"
 
-#include <cctype>
-#include <fstream>
-
-#include <boost/format.hpp>
-
-#include <we/type/expression.fwd.hpp>
-#include <we/type/module_call.fwd.hpp>
-#include <we/type/port.hpp>
-#include <we/type/transition.hpp>
-#include <we/type/net.hpp>
-
-#include <we/type/activity.hpp>
-
-#include <boost/range/adaptor/map.hpp>
-
 #include "PetriNet.h"
 
+#include <we/type/activity.hpp>
+#include <we/type/expression.fwd.hpp>
+#include <we/type/module_call.fwd.hpp>
+#include <we/type/net.hpp>
+#include <we/type/port.hpp>
+#include <we/type/transition.hpp>
+
+#include <boost/format.hpp>
+#include <boost/range/adaptor/map.hpp>
+
+#include <cctype>
+#include <fstream>
 #include <unordered_map>
 
 namespace jpna {

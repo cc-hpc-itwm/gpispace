@@ -1,13 +1,13 @@
 #pragma once
 
-#include <vector>
-
-#include <boost/ptr_container/ptr_vector.hpp>
+#include "State.h"
 
 #include <pnetv/jpn/Marking.h>
 #include <pnetv/jpn/Transition.h>
 
-#include "State.h"
+#include <boost/ptr_container/ptr_vector.hpp>
+
+#include <vector>
 
 namespace jpn {
 namespace analysis {

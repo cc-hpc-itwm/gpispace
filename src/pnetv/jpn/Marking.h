@@ -1,9 +1,10 @@
 #pragma once
 
-#include <vector>
+#include <pnetv/jpn/PlaceMarking.h>
 
 #include <fhg/assert.hpp>
-#include <pnetv/jpn/PlaceMarking.h>
+
+#include <vector>
 
 namespace jpn {
 

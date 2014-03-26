@@ -1,8 +1,8 @@
 #include "StateSpace.h"
 
-#include <boost/ptr_container/ptr_vector.hpp>
-
 #include "Backtrack.h"
+
+#include <boost/ptr_container/ptr_vector.hpp>
 
 namespace jpn {
 namespace analysis {

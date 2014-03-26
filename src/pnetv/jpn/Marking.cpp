@@ -1,9 +1,9 @@
 #include "Marking.h"
 
+#include <fhg/assert.hpp>
+
 #include <cassert>
 #include <algorithm>
-
-#include <fhg/assert.hpp>
 
 namespace jpn {
 

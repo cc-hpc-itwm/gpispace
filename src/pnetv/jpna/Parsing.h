@@ -1,9 +1,9 @@
 #pragma once
 
+#include <boost/ptr_container/ptr_vector.hpp>
+
 #include <string>
 #include <vector>
-
-#include <boost/ptr_container/ptr_vector.hpp>
 
 namespace jpna {
 

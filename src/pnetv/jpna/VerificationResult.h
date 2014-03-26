@@ -1,8 +1,9 @@
 #pragma once
 
+#include <fhg/assert.hpp>
+
 #include <cassert>
 #include <vector>
-#include <fhg/assert.hpp>
 
 namespace jpna {
 

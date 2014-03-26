@@ -1,10 +1,11 @@
 #include "Backtrack.h"
 
-#include <algorithm> /* std::reverse() */
-#include <cassert>
+#include "State.h"
+
 #include <fhg/assert.hpp>
 
-#include "State.h"
+#include <algorithm> /* std::reverse() */
+#include <cassert>
 
 namespace jpn {
 namespace analysis {
