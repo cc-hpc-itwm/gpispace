@@ -1,9 +1,5 @@
 #pragma once
 
-#ifdef JPN_BOOST_HASH
-#include <boost/functional/hash.hpp>
-#endif
-
 #include <pnetv/jpn/Types.h>
 #ifdef JPN_EXTENDED_MARKINGS
 #include <pnetv/jpn/common/ExtendedInteger.h>
@@ -62,17 +58,6 @@ bool operator==(const PlaceMarking &a, const PlaceMarking &b) {
 }
 
 } // namespace jpn
-
-#ifdef JPN_BOOST_HASH
-namespace boost {
-    template<>
-    struct hash<jpn::PlaceMarking> {
-        std::size_t operator()(const jpn::PlaceMarking &placeMarking) const {
-            return placeMarking.placeId() << 8 | hash<jpn::ExtendedTokenCount>()(placeMarking.count());
-        }
-    };
-}
-#endif
 
 #ifndef JPN_EXTENDED_MARKINGS
 #undef ExtendedTokenCount

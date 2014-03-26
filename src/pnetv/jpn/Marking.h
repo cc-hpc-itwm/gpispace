@@ -2,10 +2,6 @@
 
 #include <vector>
 
-#ifdef JPN_BOOST_HASH
-#include <boost/functional/hash.hpp>
-#endif
-
 #include <fhg/assert.hpp>
 #include <pnetv/jpn/PlaceMarking.h>
 
@@ -267,18 +263,3 @@ Marking accelerate(const Marking &a, const Marking &b) {
 #endif
 
 } // namespace jpn
-
-#ifdef JPN_BOOST_HASH
-namespace boost {
-    template<>
-    struct hash<jpn::Marking> {
-        std::size_t operator()(const jpn::Marking &marking) const {
-            std::size_t result = 0;
-            for (const jpn::PlaceMarking &placeMarking : marking.placeMarkings()) {
-                result ^= (result << 1) ^ hash<jpn::PlaceMarking>()(placeMarking);
-            }
-            return result;
-        }
-    };
-}
-#endif
