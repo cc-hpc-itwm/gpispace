@@ -5,8 +5,6 @@
 
 #include <boost/format.hpp>
 
-#include <pnetv/jpn/common/Unreachable.h>
-
 #include <we/type/expression.fwd.hpp>
 #include <we/type/module_call.fwd.hpp>
 #include <we/type/port.hpp>
