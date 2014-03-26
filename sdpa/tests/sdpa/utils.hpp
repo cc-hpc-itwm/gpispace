@@ -328,7 +328,7 @@ namespace utils
       if (e->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN)
       {
         BOOST_REQUIRE (_accept_workers);
-        BOOST_REQUIRE (e->from() == name() || _accepted_workers.erase (e->from()));
+        BOOST_REQUIRE (_accepted_workers.erase (e->from()));
       }
       else
       {
