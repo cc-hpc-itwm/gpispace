@@ -6,13 +6,15 @@
 
 #include "Types.h"
 
+#include <we/type/id.hpp>
+
 namespace jpna {
 
 /**
  * Place from a workflow abstracted from unnecessary details.
  */
 class Place {
-    PlaceId id_; ///< Id of the place.
+    we::place_id_type id_; ///< Id of the place.
     std::string name_; ///< Name of the transition.
     TokenCount initialMarking_; ///< Initial marking.
 
@@ -23,12 +25,12 @@ class Place {
      *
      * \param id Id.
      */
-    Place(PlaceId id): id_(id), initialMarking_(0) {}
+    Place(we::place_id_type id): id_(id), initialMarking_(0) {}
 
     /**
      * \return Id of the transition.
      */
-    PlaceId id() const { return id_; }
+    we::place_id_type id() const { return id_; }
 
     /**
      * \return Name of the place.

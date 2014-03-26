@@ -2,13 +2,15 @@
 
 #include <pnetv/jpn/Types.h>
 
+#include <we/type/id.hpp>
+
 namespace jpn {
 
 /**
  * Marking of a place.
  */
 class PlaceMarking {
-    PlaceId placeId_; ///< Identifier of the place.
+    we::place_id_type placeId_; ///< Identifier of the place.
     TokenCount count_; ///< Token count.
 
     public:
@@ -19,14 +21,14 @@ class PlaceMarking {
      * \param[in] placeId Identifier of the place.
      * \param[in] count Token count.
      */
-    PlaceMarking(PlaceId placeId, TokenCount count):
+    PlaceMarking(we::place_id_type placeId, TokenCount count):
         placeId_(placeId), count_(count)
     {}
 
     /**
      * \return Identifier of the place.
      */
-    PlaceId placeId() const { return placeId_; }
+    we::place_id_type placeId() const { return placeId_; }
 
     /**
      * \return Token count.

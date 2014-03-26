@@ -3,6 +3,8 @@
 #include "Place.h"
 #include "Transition.h"
 
+#include <we/type/id.hpp>
+
 #include <unordered_map>
 
 namespace jpna {
@@ -82,14 +84,14 @@ class PetriNet {
      *
      * \return Place with given id.
      */
-    Place *getPlace(PlaceId id) { return places_[id.value()]; }
+    Place *getPlace(we::place_id_type id) { return places_[id.value()]; }
 
     /**
      * \param id Id of the place.
      *
      * \return Place with given id.
      */
-    const Place *getPlace(PlaceId id) const { return places_[id.value()]; }
+    const Place *getPlace(we::place_id_type id) const { return places_[id.value()]; }
 };
 
 } // namespace jpna
