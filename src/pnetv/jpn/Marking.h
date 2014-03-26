@@ -1,7 +1,5 @@
 #pragma once
 
-#include <pnetv/jpn/config.h>
-
 #include <vector>
 
 #ifdef JPN_BOOST_HASH

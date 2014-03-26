@@ -1,7 +1,5 @@
 #pragma once
 
-#include <pnetv/jpn/config.h>
-
 #include <we/type/id.hpp>
 
 namespace jpn {
