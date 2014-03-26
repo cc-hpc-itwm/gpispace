@@ -7,25 +7,21 @@
 
 namespace jpn {
 
-namespace {
-    struct CountIsZero {
-        bool operator()(const PlaceMarking &m) const {
-            return m.count() == 0;
-        }
-    };
-
-    struct CompareId {
-        bool operator()(const PlaceMarking &a, const PlaceMarking &b) const {
-            return a.placeId() < b.placeId();
-        }
-    };
-} // anonymous namespace
-
 Marking::Marking(const std::vector<PlaceMarking> &placeMarkings):
     placeMarkings_(placeMarkings)
 {
-    placeMarkings_.erase(std::remove_if(placeMarkings_.begin(), placeMarkings_.end(), CountIsZero()), placeMarkings_.end());
-    std::sort(placeMarkings_.begin(), placeMarkings_.end(), CompareId());
+    placeMarkings_.erase
+      ( std::remove_if
+        ( placeMarkings_.begin(), placeMarkings_.end()
+        , [](PlaceMarking const& m) { return m.count() == 0; }
+        )
+      , placeMarkings_.end()
+      );
+    std::sort
+      ( placeMarkings_.begin(), placeMarkings_.end()
+      , [](PlaceMarking const& a, PlaceMarking const& b)
+      { return a.placeId() < b.placeId(); }
+      );
 
 #ifndef NDEBUG
     check();
