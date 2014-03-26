@@ -25,26 +25,4 @@ Place *PetriNet::createPlace() {
     return result.release();
 }
 
-void PetriNet::print(std::ostream &out) const {
-    out << "digraph Blabla { label=\"" << name() << "\"; ";
-
-    for (const Place *place : places()) {
-        out << "place" << place->id() << "[label=\"" << place->name() << " (" << place->initialMarking() << ")\",shape=\"ellipse\"];" << std::endl;
-    }
-
-    for (const Transition *transition : transitions()) {
-        out << "transition" << transition->id() << "[label=\"" << transition->name() << "\",shape=\"box\"];" << std::endl;
-
-        for (const Place *place : transition->inputPlaces()) {
-            out << "place" << place->id() << " -> transition" << transition->id() << std::endl;
-        }
-
-        for (const Place *place : transition->outputPlaces()) {
-            out << "transition" << transition->id() << " -> place" << place->id() << std::endl;
-        }
-    }
-
-    out << "}" << std::endl;
-}
-
 } // namespace jpna

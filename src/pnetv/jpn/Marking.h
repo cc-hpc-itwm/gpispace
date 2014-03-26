@@ -14,7 +14,7 @@ namespace jpn {
  * All place markings in the vector have non-zero token count.
  * The vector is sorted by place ids.
  */
-class Marking: public Printable {
+class Marking {
     std::vector<PlaceMarking> placeMarkings_; ///< Markings of individual places.
 
     public:
@@ -38,8 +38,6 @@ class Marking: public Printable {
      * \return Markings of individual places.
      */
     const std::vector<PlaceMarking> &placeMarkings() const { return placeMarkings_; }
-
-    virtual void print(std::ostream &out) const;
 
     private:
 

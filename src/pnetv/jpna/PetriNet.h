@@ -1,7 +1,5 @@
 #pragma once
 
-#include <pnetv/jpn/common/Printable.h>
-
 #include "Place.h"
 #include "Transition.h"
 
@@ -12,7 +10,7 @@ namespace jpna {
 /**
  * Petri Net representing a workflow with unnecessary details being abstracted away.
  */
-class PetriNet: public jpn::Printable {
+class PetriNet {
     std::string name_; ///< Name of the Petri net.
     std::vector<Transition *> transitions_; ///< Transitions.
     std::vector<Place *> places_; ///< Places.
@@ -92,13 +90,6 @@ class PetriNet: public jpn::Printable {
      * \return Place with given id.
      */
     const Place *getPlace(PlaceId id) const { return places_[id.value()]; }
-
-    /**
-     * Dumps the graph in DOT format into given stream.
-     *
-     * \param out Output stream.
-     */
-    virtual void print(std::ostream &out) const;
 };
 
 } // namespace jpna

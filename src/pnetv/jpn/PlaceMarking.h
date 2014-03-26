@@ -1,14 +1,13 @@
 #pragma once
 
 #include <pnetv/jpn/Types.h>
-#include <pnetv/jpn/common/Printable.h>
 
 namespace jpn {
 
 /**
  * Marking of a place.
  */
-class PlaceMarking: public Printable {
+class PlaceMarking {
     PlaceId placeId_; ///< Identifier of the place.
     TokenCount count_; ///< Token count.
 
@@ -33,8 +32,6 @@ class PlaceMarking: public Printable {
      * \return Token count.
      */
     const TokenCount &count() const { return count_; }
-
-    virtual void print(std::ostream &out) const;
 };
 
 /**

@@ -2,11 +2,8 @@
 
 #include <cassert>
 #include <algorithm>
-#include <iostream>
-#include <ostream>
 
 #include <fhg/assert.hpp>
-#include <pnetv/jpn/common/PrintRange.h>
 
 namespace jpn {
 
@@ -33,10 +30,6 @@ Marking::Marking(const std::vector<PlaceMarking> &placeMarkings):
 #ifndef NDEBUG
     check();
 #endif
-}
-
-void Marking::print(std::ostream &out) const {
-    printRange(out, placeMarkings().begin(), placeMarkings().end());
 }
 
 #ifndef NDEBUG
