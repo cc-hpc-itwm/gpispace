@@ -9,10 +9,11 @@
 
 #include <xml/parse/type/function.hpp>
 
-#include <boost/bind.hpp>
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/variant.hpp>
+
+#include <functional>
 
 namespace fhg
 {
@@ -109,8 +110,8 @@ namespace fhg
 
           for ( const data::handle::port& handle
               : get().ports().ids()
-              | boost::adaptors::filtered (boost::bind (same_direction, _1, dir))
-              | boost::adaptors::transformed (boost::bind (make_handle, _1, *this))
+              | boost::adaptors::filtered (std::bind (same_direction, std::placeholders::_1, dir))
+              | boost::adaptors::transformed (std::bind (make_handle, std::placeholders::_1, *this))
               )
           {
             ports << handle;

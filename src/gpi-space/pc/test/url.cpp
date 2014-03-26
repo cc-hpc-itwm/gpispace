@@ -8,7 +8,7 @@
 
 #include <fhg/util/boost/test/require_exception.hpp>
 
-#include <boost/utility.hpp>
+#include <iterator>
 
 BOOST_AUTO_TEST_CASE (test_url_basics)
 {
@@ -189,8 +189,8 @@ BOOST_AUTO_TEST_CASE (parameter_list_many)
   BOOST_REQUIRE_EQUAL (url.args().size(), 2);
   BOOST_REQUIRE_EQUAL (url.args().begin()->first, "k1");
   BOOST_REQUIRE_EQUAL (url.args().begin()->second, "a");
-  BOOST_REQUIRE_EQUAL (boost::next (url.args().begin())->first, "k2");
-  BOOST_REQUIRE_EQUAL (boost::next (url.args().begin())->second, "b");
+  BOOST_REQUIRE_EQUAL (std::next (url.args().begin())->first, "k2");
+  BOOST_REQUIRE_EQUAL (std::next (url.args().begin())->second, "b");
 }
 
 BOOST_AUTO_TEST_CASE (key_contains_questionmark)

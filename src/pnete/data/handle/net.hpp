@@ -30,7 +30,7 @@ namespace fhg
         public:
           net (const net_meta_base::id_type&, internal_type*);
 
-          void add_transition (const boost::optional<QPointF>&) const;
+          void add_empty_transition (const boost::optional<QPointF>&) const;
           void add_transition ( const xml::parse::id::ref::function&
                               , const boost::optional<QPointF>&
                               ) const;

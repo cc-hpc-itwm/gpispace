@@ -9,7 +9,7 @@
 #include <fhg/syscall.hpp>
 #include <fhglog/LogMacros.hpp>
 
-#include <boost/bind.hpp>
+#include <functional>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -220,7 +220,11 @@ namespace gpi
                 ( id
                 , std::auto_ptr<process_t>
                   ( new process_t
-                    ( boost::bind (&manager_t::handle_process_error, this, _1, _2)
+                    ( std::bind ( &manager_t::handle_process_error
+                                , this
+                                , std::placeholders::_1
+                                , std::placeholders::_2
+                                )
                     , id
                     , cfd
                     , _memory_manager

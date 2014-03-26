@@ -7,7 +7,6 @@
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#include <boost/bind.hpp>
 
 #include <sys/un.h>
 

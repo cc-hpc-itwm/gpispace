@@ -369,10 +369,10 @@ namespace xml
         const structs_type::const_iterator pos
           ( std::find_if ( structs.begin()
                          , structs.end()
-                         , boost::bind ( parse::structure_type_util::struct_by_name
-                                       , type
-                                       , _1
-                                       )
+                         , std::bind ( parse::structure_type_util::struct_by_name
+                                     , type
+                                     , std::placeholders::_1
+                                     )
                          )
           );
 
@@ -380,7 +380,7 @@ namespace xml
         {
           return pnet::type::signature::resolve
             ( pos->signature()
-            , boost::bind (&net_type::signature, *this, _1)
+            , std::bind (&net_type::signature, *this, std::placeholders::_1)
             );
         }
 

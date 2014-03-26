@@ -8,21 +8,11 @@ typedef bitsetofint::type set_t;
 #include <sstream>
 #include <set>
 
-#include <boost/bind.hpp>
-
 using std::cout;
 using std::cerr;
 using std::endl;
 
 #define REQUIRE(b) if (!(b)) { cerr << "FAILURE in line " << __LINE__ << endl; ++ec; }
-
-namespace
-{
-  void set_insert (std::set<std::size_t>& s, const std::size_t& x)
-  {
-    s.insert (x);
-  }
-}
 
 int
 main ()
@@ -466,7 +456,7 @@ main ()
     bitsetofint::type b;
     std::set<std::size_t> s;
 
-    b.list (boost::bind (&set_insert, boost::ref(s), _1));
+    b.list ([&s] (std::size_t x) { s.insert (x); });
 
     REQUIRE (s.size() == 0);
     REQUIRE (s == b.elements());
@@ -476,7 +466,7 @@ main ()
     bitsetofint::type b (bitsetofint::type().ins (42));
     std::set<std::size_t> s;
 
-    b.list (boost::bind (&set_insert, boost::ref(s), _1));
+    b.list ([&s] (std::size_t x) { s.insert (x); });
 
     REQUIRE (s.size() == 1);
     REQUIRE (s.count (42) == 1);
@@ -487,7 +477,7 @@ main ()
     bitsetofint::type b (bitsetofint::type().ins (0).ins (1).ins (13).ins (42));
     std::set<std::size_t> s;
 
-    b.list (boost::bind (&set_insert, boost::ref(s), _1));
+    b.list ([&s] (std::size_t x) { s.insert (x); });
 
     REQUIRE (s.size() == 4);
     REQUIRE (s.count (0) == 1);

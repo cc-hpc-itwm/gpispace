@@ -20,7 +20,6 @@
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <algorithm>
 #include <sdpa/types.hpp>
-#include <boost/bind.hpp>
 
 #include <algorithm>
 #include <limits>
@@ -59,7 +58,7 @@ const boost::optional<worker_id_t> WorkerManager::findSubmOrAckWorker(const sdpa
       : worker_map_
       | boost::adaptors::map_values
       | boost::adaptors::filtered
-          (boost::bind (&Worker::has_job, _1, job_id))
+        ([&job_id] (boost::shared_ptr<Worker> w) { return w->has_job (job_id); })
       )
   {
     return worker->name();

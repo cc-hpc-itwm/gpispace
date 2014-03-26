@@ -70,14 +70,14 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnin
 
   fhg::util::thread::event<std::string> job_submitted_0;
   fake_drts_worker_waiting_for_cancel worker_0
-    (boost::bind (&fhg::util::thread::event<std::string>::notify, &job_submitted_0, _1), agent);
+    ([&job_submitted_0] (std::string j) { job_submitted_0.notify (j); }, agent);
 
   {
     fhg::util::thread::event<> job_submitted_1;
 
     const utils::fake_drts_worker_notifying_module_call_submission worker_1
       ( worker_id
-      , boost::bind (&fhg::util::thread::event<>::notify, &job_submitted_1)
+      , [&job_submitted_1] (std::string) { job_submitted_1.notify(); }
       , agent
       );
 
@@ -143,14 +143,14 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is
 
   fhg::util::thread::event<std::string> job_submitted_0;
   fake_drts_worker_waiting_for_finished_ack worker_0
-    (boost::bind (&fhg::util::thread::event<std::string>::notify, &job_submitted_0, _1), agent);
+    ([&job_submitted_0] (std::string j) { job_submitted_0.notify (j); }, agent);
 
   {
     fhg::util::thread::event<> job_submitted_1;
 
     const utils::fake_drts_worker_notifying_module_call_submission worker_1
       ( worker_id
-      , boost::bind (&fhg::util::thread::event<>::notify, &job_submitted_1)
+      , [&job_submitted_1] (std::string) { job_submitted_1.notify(); }
       , agent
       );
 

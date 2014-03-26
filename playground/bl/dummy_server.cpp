@@ -21,6 +21,8 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/discrete_distribution.hpp>
 
+#include <functional>
+
 server::server (int port, const QString& hostlist, QObject* parent)
   : QTcpServer (parent)
   , _hostlist (hostlist)
@@ -180,7 +182,11 @@ namespace
             prefix::require::token (pos, ":");
 
             prefix::require::list
-              (pos, boost::bind (insert_into_map, _1, &_arguments));
+              ( pos
+              , std::bind ( insert_into_map
+                          , std::placeholders::_1, &_arguments
+                          )
+              );
 
             break;
           }
@@ -193,7 +199,8 @@ namespace
         fhg::util::parse::require::require (pos, "osts");
         prefix::require::token (pos, ":");
 
-        prefix::require::list (pos, boost::bind (&insert_into_set, _1, &_hosts));
+        prefix::require::list
+          (pos, std::bind (&insert_into_set, std::placeholders::_1, &_hosts));
 
         break;
       }
@@ -210,7 +217,7 @@ void thread::execute_action (fhg::util::parse::position& pos)
 {
   action_invocation invoc;
   prefix::require::list
-    (pos, boost::bind (&action_invocation::append, &invoc, _1));
+    (pos, std::bind (&action_invocation::append, &invoc, std::placeholders::_1));
 
   if (invoc._hosts.empty() || !invoc._action)
   {
@@ -404,7 +411,12 @@ void thread::may_read()
         prefix::require::token (pos, ":");
 
         prefix::require::list
-          (pos, boost::bind (&thread::send_action_description, this, _1));
+          ( pos
+          , std::bind ( &thread::send_action_description
+                      , this
+                      , std::placeholders::_1
+                      )
+          );
 
         break;
 
@@ -434,7 +446,8 @@ void thread::may_read()
         fhg::util::parse::require::require (pos, "ayout_hint");
         prefix::require::token (pos, ":");
 
-        prefix::require::list (pos, boost::bind (&thread::send_layout_hint, this, _1));
+        prefix::require::list
+          (pos, std::bind (&thread::send_layout_hint, this, std::placeholders::_1));
 
         break;
 
@@ -471,10 +484,11 @@ void thread::may_read()
           const QMutexLocker lock (&_pending_status_updates_mutex);
           prefix::require::list
             ( pos
-            , boost::bind ( &QStringList::push_back
-                          , &_pending_status_updates
-                          , boost::bind (prefix::require::qstring, _1)
-                          )
+            , std::bind ( &QStringList::push_back
+                        , &_pending_status_updates
+                        , std::bind
+                          (prefix::require::qstring, std::placeholders::_1)
+                        )
             );
         }
       }

@@ -6,13 +6,13 @@
 #include <fhg/util/thread/event.hpp>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/lambda/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
 
 #include <cstdlib>
+#include <functional>
 
 namespace fhg
 {
@@ -58,10 +58,7 @@ namespace fhg
       if (m_peer_thread)
         return;
       m_peer_thread = boost::make_shared<boost::thread>
-        (boost::bind ( &boost::asio::io_service::run
-                     , &io_service_
-                     )
-        );
+        ([this] { io_service_.run(); });
       m_peer_thread->join ();
     }
 
@@ -98,10 +95,7 @@ namespace fhg
 
         accept_new ();
 
-        io_service_.post (boost::bind ( &peer_t::update_my_location
-                                      , this
-                                      )
-                         );
+        io_service_.post (std::bind (&peer_t::update_my_location, this));
       }
 
       // todo introduce timeout to event::wait()
@@ -196,7 +190,10 @@ namespace fhg
     {
       typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
       async_op_t send_finished;
-      async_send (to, data, boost::bind (&async_op_t::notify, &send_finished, _1));
+      async_send
+        ( to, data
+        , std::bind (&async_op_t::notify, &send_finished, std::placeholders::_1)
+        );
 
       const boost::system::error_code ec (send_finished.wait());
       if (ec)
@@ -268,9 +265,9 @@ namespace fhg
         cd.connection = connection_t::ptr_t
           ( new connection_t
             ( io_service_
-            , boost::bind (&peer_t::handle_hello_message, this, _1, _2)
-            , boost::bind (&peer_t::handle_user_data, this, _1, _2)
-            , boost::bind (&peer_t::handle_error, this, _1, _2)
+            , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
+            , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
+            , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
             )
           );
         cd.connection->local_address (my_addr_);
@@ -323,7 +320,10 @@ namespace fhg
       typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
       async_op_t send_finished;
 
-      async_send (m, boost::bind (&async_op_t::notify, &send_finished, _1));
+      async_send
+        ( m
+        , std::bind (&async_op_t::notify, &send_finished, std::placeholders::_1)
+        );
 
       const boost::system::error_code ec (send_finished.wait());
       if (ec)
@@ -350,7 +350,10 @@ namespace fhg
 
       typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
       async_op_t recv_finished;
-      async_recv (m, boost::bind (&async_op_t::notify, &recv_finished, _1));
+      async_recv
+        ( m
+        , std::bind (&async_op_t::notify, &recv_finished, std::placeholders::_1)
+        );
 
       const boost::system::error_code ec (recv_finished.wait());
       if (ec)
@@ -512,11 +515,11 @@ namespace fhg
         {
           // TODO: wrap in strand...
           cd.connection->async_send ( &cd.o_queue.front().message
-                                    , boost::bind ( &peer_t::handle_send
-                                                  , this
-                                                  , a
-                                                  , _1
-                                                  )
+                                    , std::bind ( &peer_t::handle_send
+                                                , this
+                                                , a
+                                                , std::placeholders::_1
+                                                )
                                     );
         }
         else
@@ -545,11 +548,11 @@ namespace fhg
 
         cd.send_in_progress = true;
         cd.connection->async_send ( &cd.o_queue.front().message
-                                  , boost::bind ( &peer_t::handle_send
-                                                , this
-                                                , a
-                                                , _1
-                                                )
+                                  , std::bind ( &peer_t::handle_send
+                                              , this
+                                              , a
+                                              , std::placeholders::_1
+                                              )
                                   );
       }
       catch (std::out_of_range const &)
@@ -601,7 +604,7 @@ namespace fhg
         (boost::posix_time::seconds (60 + rand() % 30));
 
       m_renew_kvs_entries_timer.async_wait
-        (boost::bind (&peer_t::renew_kvs_entries, this));
+        (std::bind (&peer_t::renew_kvs_entries, this));
     }
 
     void peer_t::update_my_location ()
@@ -651,18 +654,18 @@ namespace fhg
       listen_ = connection_t::ptr_t
         ( new connection_t
           ( io_service_
-          , boost::bind (&peer_t::handle_hello_message, this, _1, _2)
-          , boost::bind (&peer_t::handle_user_data, this, _1, _2)
-          , boost::bind (&peer_t::handle_error, this, _1, _2)
+          , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
+          , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
+          , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
           )
         );
       listen_->local_address(my_addr_);
       listen_->remote_address(p2p::address_t());
       acceptor_.async_accept( listen_->socket()
-                            , boost::bind( &peer_t::handle_accept
-                                         , this
-                                         , boost::asio::placeholders::error
-                                         )
+                            , std::bind( &peer_t::handle_accept
+                                       , this
+                                       , std::placeholders::_1
+                                       )
                             );
     }
 

@@ -53,8 +53,10 @@ namespace fhg
           const boost::mutex::scoped_lock _ (_threads_mutex);
           const boost::ptr_vector<boost::thread>::iterator it
             ( std::find_if ( _threads.begin(), _threads.end()
-                           , boost::bind (&boost::thread::get_id, _1)
-                           == boost::this_thread::get_id()
+                           , [] (boost::thread const& t)
+                           {
+                             return t.get_id() == boost::this_thread::get_id();
+                           }
                            )
             );
           if (it != _threads.end())

@@ -20,7 +20,6 @@
 #include <plugin/core/kernel.hpp>
 #include <plugin/plugin.hpp>
 
-#include <boost/bind.hpp>
 #include <boost/ref.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/test/unit_test.hpp>
@@ -29,6 +28,7 @@
 
 #include <fstream>
 #include <functional>
+#include <memory>
 #include <sstream>
 #include <string>
 
@@ -267,8 +267,7 @@ namespace utils
         )
       , _event_queue()
       , _network
-        ( boost::bind
-          (&fhg::thread::queue<sdpa::events::SDPAEvent::Ptr>::put, &_event_queue, _1)
+        ( [this] (sdpa::events::SDPAEvent::Ptr e) { _event_queue.put (e); }
         , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
         , _kvs_client
         )
@@ -291,8 +290,7 @@ namespace utils
         )
       , _event_queue()
       , _network
-        ( boost::bind
-          (&fhg::thread::queue<sdpa::events::SDPAEvent::Ptr>::put, &_event_queue, _1)
+        ( [this] (sdpa::events::SDPAEvent::Ptr e) { _event_queue.put (e); }
         , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
         , _kvs_client
         )
@@ -594,7 +592,7 @@ namespace utils
       }
 
     private:
-      boost::scoped_ptr<client> _client;
+      std::unique_ptr<client> _client;
       sdpa::job_id_t _job_id;
     };
   };

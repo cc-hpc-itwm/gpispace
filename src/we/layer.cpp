@@ -6,6 +6,8 @@
 
 #include <boost/range/adaptor/map.hpp>
 
+#include <functional>
+
 namespace we
 {
     layer::layer
@@ -185,7 +187,7 @@ namespace we
             _finalize_job_cancellation.insert
               (std::make_pair (activity_data._id, after));
             _running_jobs.apply
-              (activity_data._id, boost::bind (_rts_cancel, _1));
+              (activity_data._id, std::bind (_rts_cancel, std::placeholders::_1));
           }
         }
         );
@@ -214,7 +216,7 @@ namespace we
             _finalize_job_cancellation.insert
               (std::make_pair (parent_activity._id, after));
             _running_jobs.apply
-              (parent_activity._id, boost::bind (_rts_cancel, _1));
+              (parent_activity._id, std::bind (_rts_cancel, std::placeholders::_1));
           }
         }
         );

@@ -8,8 +8,6 @@
 
 #include <fhg/util/boost/test/require_exception.hpp>
 
-#include <boost/bind.hpp>
-
 BOOST_AUTO_TEST_CASE (function_description_with_unknown_return_port)
 {
   xml::parse::state::type state;

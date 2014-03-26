@@ -1,6 +1,5 @@
 #include <fhgcom/io_service_pool.hpp>
 
-#include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
@@ -36,11 +35,7 @@ namespace fhg
         for (std::size_t j (0) ; j < m_nthreads ; ++j)
         {
           boost::shared_ptr<boost::thread> thread
-            (new boost::thread(boost::bind( &boost::asio::io_service::run
-                                          , io_services_[i]
-                                          )
-                              )
-            );
+            (new boost::thread([this, i] { io_services_[i]->run(); }));
           threads.push_back (thread);
         }
       }

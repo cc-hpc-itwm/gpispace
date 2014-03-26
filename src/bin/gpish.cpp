@@ -9,7 +9,6 @@
 
 #include <fhglog/LogMacros.hpp>
 
-#include <boost/bind.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/filesystem.hpp>
@@ -668,7 +667,7 @@ int main (int ac, char **av)
   initialize_shell (ac, av);
 
   fhg::util::signal_handler_manager signal_handler_manager;
-  signal_handler_manager.add (SIGINT, boost::bind (&interrupt_shell));
+  signal_handler_manager.add (SIGINT, std::bind (&interrupt_shell));
 
   shell_t::get().run();
 

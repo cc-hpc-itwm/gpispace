@@ -24,6 +24,8 @@
 #include <QTimer>
 #include <QToolTip>
 
+#include <functional>
+
 namespace fhg
 {
   namespace pnete
@@ -518,7 +520,7 @@ namespace fhg
                   ( std::lower_bound
                     ( blocks_in_state.begin(), blocks_in_state.end()
                     , block.rect
-                    , boost::bind (&overlaps, _1, _2, merge_threshold)
+                    , std::bind (&overlaps, std::placeholders::_1, std::placeholders::_2, merge_threshold)
                     )
                   );
 
@@ -791,35 +793,34 @@ namespace fhg
 
         util::qt::boost_connect<void (int)>
           ( _scrollbar, SIGNAL (valueChanged (int))
-          , _automove, boost::bind (&QCheckBox::setChecked, _automove, false)
+          , _automove, std::bind (&QCheckBox::setChecked, _automove, false)
           );
 
         util::qt::boost_connect<void (bool)>
           ( _automove, SIGNAL (toggled (bool))
-          , delegate, boost::bind ( &util::qt::mvc::section_index::data
-                                  , _index
-                                  , _1
-                                  , execution_monitor_proxy::automatically_move_role
-                                  )
+          , delegate
+          , [this] (bool value)
+          {
+            _index.data (value, execution_monitor_proxy::automatically_move_role);
+          }
           );
-
 
         util::qt::boost_connect<void (int)>
           ( _visible_range_length, SIGNAL (valueChanged (int))
-          , delegate, boost::bind ( &util::qt::mvc::section_index::data
-                                  , _index
-                                  , _1
-                                  , execution_monitor_proxy::visible_range_length_role
-                                  )
+          , delegate
+          , [this] (int value)
+          {
+            _index.data (value, execution_monitor_proxy::visible_range_length_role);
+          }
           );
 
         util::qt::boost_connect<void (int)>
           ( _scrollbar, SIGNAL (valueChanged (int))
-          , delegate, boost::bind ( &util::qt::mvc::section_index::data
-                                  , _index
-                                  , _1
-                                  , execution_monitor_proxy::visible_range_to_role
-                                  )
+          , delegate
+          , [this] (int value)
+          {
+            _index.data (value, execution_monitor_proxy::visible_range_to_role);
+          }
           );
 
 
@@ -1076,13 +1077,14 @@ namespace fhg
           ( toggle_column_type
           , SIGNAL (triggered())
           , index._model
-          , boost::bind ( &util::qt::mvc::section_index::data
-                        , index
-                        , type == execution_monitor_proxy::gantt_column
-                        ? QVariant::fromValue (execution_monitor_proxy::current_states_column)
-                        : QVariant::fromValue (execution_monitor_proxy::gantt_column)
-                        , execution_monitor_proxy::column_type_role
-                        )
+          , [index, type]
+          {
+            index.data ( type == execution_monitor_proxy::gantt_column
+                       ? QVariant::fromValue (execution_monitor_proxy::current_states_column)
+                       : QVariant::fromValue (execution_monitor_proxy::gantt_column)
+                       , execution_monitor_proxy::column_type_role
+                       );
+          }
           );
 
         menu->addSeparator();
@@ -1092,13 +1094,13 @@ namespace fhg
           ( remove
           , SIGNAL (triggered())
           , index._model
-          , boost::bind ( index._orientation == Qt::Horizontal
-                        ? &QAbstractItemModel::removeColumn
-                        : &QAbstractItemModel::removeRow
-                        , index._model
-                        , index._section
-                        , QModelIndex()
-                        )
+          , std::bind ( index._orientation == Qt::Horizontal
+                      ? &QAbstractItemModel::removeColumn
+                      : &QAbstractItemModel::removeRow
+                      , index._model
+                      , index._section
+                      , QModelIndex()
+                      )
           );
 
         return menu;

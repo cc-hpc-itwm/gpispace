@@ -11,13 +11,13 @@
 
 #include <sdpa/job_states.hpp>
 
-#include <boost/bind.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/program_options.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
+#include <functional>
 #include <list>
 #include <unordered_map>
 #include <vector>
@@ -125,14 +125,14 @@ namespace
                 )
         : _mutex_id()
         , _id (0)
-        , mgmt_layer_ ( boost::bind (&sdpa_daemon::submit, this, _1, _2)
-                      , boost::bind (&sdpa_daemon::cancel, this, _1)
-                      , boost::bind (&sdpa_daemon::finished, this, _1, _2)
-                      , boost::bind (&sdpa_daemon::failed, this, _1, _2)
-                      , boost::bind (&sdpa_daemon::canceled, this, _1)
+        , mgmt_layer_ ( std::bind (&sdpa_daemon::submit, this, std::placeholders::_1, std::placeholders::_2)
+                      , std::bind (&sdpa_daemon::cancel, this, std::placeholders::_1)
+                      , std::bind (&sdpa_daemon::finished, this, std::placeholders::_1, std::placeholders::_2)
+                      , std::bind (&sdpa_daemon::failed, this, std::placeholders::_1, std::placeholders::_2)
+                      , std::bind (&sdpa_daemon::canceled, this, std::placeholders::_1)
                       , &discover
                       , &discovered
-                      , boost::bind (&sdpa_daemon::gen_id, this)
+                      , std::bind (&sdpa_daemon::gen_id, this)
                       , random_extraction_engine
                       )
         , _mutex_id_map()
@@ -167,7 +167,7 @@ namespace
         context ctxt ( job.id
                      , _loader
                      , &mgmt_layer_
-                     , boost::bind (&sdpa_daemon::add_mapping, this, _1)
+                     , std::bind (&sdpa_daemon::add_mapping, this, std::placeholders::_1)
                      );
 
         job.act.execute (&ctxt);

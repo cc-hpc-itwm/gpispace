@@ -1,12 +1,12 @@
 #ifndef FHG_PLUGIN_CORE_PLUGIN_HPP
 #define FHG_PLUGIN_CORE_PLUGIN_HPP
 
-#include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/utility.hpp>
 
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
 
 namespace fhg
@@ -38,7 +38,7 @@ namespace fhg
         template<typename T> T* sym (std::string);
       } m_handle;
 
-      boost::scoped_ptr<fhg::plugin::Plugin> m_plugin;
+      std::unique_ptr<fhg::plugin::Plugin> m_plugin;
 
       static std::list<plugin::Plugin*> to_raw (std::list<boost::shared_ptr<plugin_t>>);
     };

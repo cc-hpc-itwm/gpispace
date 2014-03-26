@@ -6,6 +6,8 @@
 
 #include <QTimer>
 
+#include <functional>
+
 namespace fhg
 {
   namespace pnete
@@ -115,13 +117,13 @@ namespace fhg
         , _event_queue()
         , _queued_events()
         , _log_server ( delegating_fhglog_appender::create
-                        ( boost::bind (&worker_model::append_event, this, _1)
-                        , boost::bind (&worker_model::handle_events, this)
+                        ( std::bind (&worker_model::append_event, this, std::placeholders::_1)
+                        , std::bind (&worker_model::handle_events, this)
                         )
                       , _io_service
                       , port
                       )
-        , _io_thread (boost::bind (&boost::asio::io_service::run, &_io_service))
+        , _io_thread ([this] { _io_service.run(); })
       {
         QTimer* timer (new QTimer (this));
         connect (timer, SIGNAL (timeout()), SLOT (handle_events()));
@@ -191,7 +193,10 @@ namespace fhg
               fhg_assert ( std::find_if
                            ( container.begin()
                            , container.end()
-                           , boost::bind (&value_type::id, _1) == activity_id
+                           , [&activity_id] (value_type const& v)
+                           {
+                             return v.id() == activity_id;
+                           }
                            ) == container.end()
                          , "no previous interval shall have the same id as a new one"
                          );
@@ -271,7 +276,13 @@ namespace fhg
             ( lower
             , std::lower_bound
               ( lower, end
-              , to, boost::bind (&worker_model::value_type::timestamp, _1) < _2
+              , to
+              , [] ( worker_model::value_type const& v
+                   , worker_model::timestamp_type const& t
+                   )
+              {
+                return v.timestamp() < t;
+              }
               )
             );
         }
@@ -293,12 +304,12 @@ namespace fhg
           else if (role == range_getter_role)
           {
             return QVariant::fromValue<subrange_getter_type>
-              ( boost::bind
+              ( std::bind
                 ( &find_subrange
                 , _worker_containers.find (_workers[index.row()])->begin()
                 , _worker_containers.find (_workers[index.row()])->end()
-                , _1
-                , _2
+                , std::placeholders::_1
+                , std::placeholders::_2
                 )
               );
           }

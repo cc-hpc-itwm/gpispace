@@ -7,7 +7,6 @@
 
 #include <fhglog/appender/call.hpp>
 
-#include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/function.hpp>
 #include <boost/lambda/lambda.hpp>
@@ -43,6 +42,7 @@
 #include <QThread>
 
 #include <cmath>
+#include <functional>
 #include <fstream>
 #include <list>
 #include <sstream>
@@ -60,7 +60,7 @@ namespace
 
     l->addAppender
       ( fhg::log::Appender::ptr_t
-        (new fhg::log::appender::call (boost::bind (function, that, _1)))
+        (new fhg::log::appender::call (std::bind (function, that, std::placeholders::_1)))
       );
 
     return l;
@@ -299,7 +299,7 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   , _io_service()
   , _log_server
     (logger_with (&log_monitor::append_log_event, this), _io_service, port)
-  , _io_thread (boost::bind (&boost::asio::io_service::run, &_io_service))
+  , _io_thread ([this] { _io_service.run(); })
 {
   // _log_model->moveToThread (_log_model_update_thread);
   connect ( _log_model_update_timer, SIGNAL (timeout())
@@ -347,7 +347,7 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
     ( filter_level_combobox
     , SIGNAL (currentIndexChanged(int))
     , _log_filter
-    , boost::bind (&detail::log_filter_proxy::minimum_severity, _log_filter, _1)
+    , std::bind (&detail::log_filter_proxy::minimum_severity, _log_filter, std::placeholders::_1)
     );
 
   connect ( filter_level_dial, SIGNAL (valueChanged(int))
@@ -375,7 +375,7 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   clear_log_button->setToolTip (tr ("Clear all events"));
   fhg::util::qt::boost_connect<void()>
     ( clear_log_button, SIGNAL (clicked())
-    , _log_model, boost::bind (&detail::log_table_model::clear, _log_model)
+    , _log_model, std::bind (&detail::log_table_model::clear, _log_model)
     );
 
   QCheckBox* follow_logging_cb (new QCheckBox (tr ("follow"), this));

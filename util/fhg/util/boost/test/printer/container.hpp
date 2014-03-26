@@ -46,7 +46,7 @@ namespace fhg
           {
             return fhg::util::print_container<Container>
               ( os, "", prefix, ",", suffix, c
-              , boost::bind (print_element, boost::ref (os), _1)
+              , std::bind (print_element, std::ref (os), std::placeholders::_1)
               );
           }
         }

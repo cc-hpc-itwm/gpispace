@@ -6,6 +6,8 @@
 
 #include <gpi-space/gpi/api.hpp>
 
+#include <functional>
+
 namespace gpi
 {
   namespace pc
@@ -71,10 +73,10 @@ namespace gpi
           try
           {
             task_ptr wtask (boost::make_shared<task_t>
-                           ("wait_on_queue", boost::bind( &api::gpi_api_t::wait_dma
-                                                        , &_gpi_api
-                                                        , queue
-                                                        )
+                           ("wait_on_queue", std::bind( &api::gpi_api_t::wait_dma
+                                                      , &_gpi_api
+                                                      , queue
+                                                      )
                            )
                            );
             m_queues [queue]->enqueue (wtask);

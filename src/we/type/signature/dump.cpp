@@ -6,8 +6,6 @@
 #include <fhg/util/print_container.hpp>
 #include <fhg/util/xml.hpp>
 
-#include <boost/bind.hpp>
-
 namespace pnet
 {
   namespace type

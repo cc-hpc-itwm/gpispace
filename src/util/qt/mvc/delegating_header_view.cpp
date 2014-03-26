@@ -7,8 +7,6 @@
 #include <util/qt/mvc/header_delegate.hpp>
 #include <util/qt/painter_state_saver.hpp>
 
-#include <boost/bind.hpp>
-
 #include <QContextMenuEvent>
 #include <QKeyEvent>
 #include <QMenu>

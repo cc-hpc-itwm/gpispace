@@ -7,8 +7,6 @@
 
 #include <boost/functional/hash.hpp>
 
-#include <boost/bind.hpp>
-
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -72,16 +70,9 @@ namespace bitsetofint
     return cnt;
   }
 
-  namespace
-  {
-    void print_element (std::ostream& s, const unsigned long& x)
-    {
-      s << x << std::endl;
-    }
-  }
   void type::list (std::ostream& s) const
   {
-    list (boost::bind (&print_element, boost::ref (s), _1));
+    list ([&s] (unsigned long const& x) { s << x << std::endl; });
   }
   void type::list (const boost::function<void (const unsigned long&)>& f) const
   {
@@ -99,19 +90,11 @@ namespace bitsetofint
     }
   }
 
-  namespace
-  {
-    void set_insert (std::set<unsigned long>& s, const unsigned long& x)
-    {
-      s.insert (x);
-    }
-  }
-
   std::set<unsigned long> type::elements() const
   {
     std::set<unsigned long> s;
 
-    list (boost::bind (&set_insert, boost::ref (s), _1));
+    list ([&s] (unsigned long const& x) { s.insert (x); });
 
     return s;
   }

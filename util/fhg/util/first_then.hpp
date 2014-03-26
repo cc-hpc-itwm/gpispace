@@ -5,8 +5,6 @@
 
 #include <fhg/util/ostream_modifier.hpp>
 
-#include <boost/bind.hpp>
-
 #include <functional>
 #include <iostream>
 
@@ -20,7 +18,7 @@ namespace fhg
     public:
       first_then (const T& f, const T& t)
         : _value (f)
-        , _modify (boost::bind (&first_then::set, this, t))
+        , _modify (std::bind (&first_then::set, this, t))
       {}
       std::ostream& operator() (std::ostream& os) const
       {

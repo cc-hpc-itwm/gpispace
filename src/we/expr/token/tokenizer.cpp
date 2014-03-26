@@ -6,15 +6,14 @@
 
 #include <we/expr/exception.hpp>
 
-#include <boost/bind.hpp>
 #include <boost/variant.hpp>
-#include <boost/utility.hpp>
 
 #include <we/type/value/read.hpp>
 
 #include <fhg/util/parse/require.hpp>
 
 #include <functional>
+#include <iterator>
 
 namespace expr
 {
@@ -61,7 +60,7 @@ namespace expr
       {
         const child_type::iterator child (m.find (*pos));
 
-        if (boost::next (pos) == end)
+        if (std::next (pos) == end)
         {
           if (child != m.end())
           {
@@ -73,7 +72,7 @@ namespace expr
         }
         else
         {
-          put ( boost::next (pos)
+          put ( std::next (pos)
               , end
               , f
               , boost::get<child_type&>
@@ -105,21 +104,21 @@ namespace expr
 #define ACTION(_key,_action) put (_key, _action, ts)
 
 #define UNARY(_key, _token)                                             \
-        ACTION (_key, boost::bind (&tokenizer::unary, _1, _token, _key))
+        ACTION (_key, std::bind (&tokenizer::unary, std::placeholders::_1, _token, _key))
 
 #define SET_TOKEN(_key, _token)                                         \
-        ACTION (_key, boost::bind (&tokenizer::set_token, _1, _token))
+        ACTION (_key, std::bind (&tokenizer::set_token, std::placeholders::_1, _token))
 
 #define SET_VALUE(_key, _value)                                         \
-        ACTION (_key, boost::bind (&tokenizer::set_value, _1, _value))
+        ACTION (_key, std::bind (&tokenizer::set_value, std::placeholders::_1, _value))
 
-        ACTION ("!", boost::bind (&tokenizer::notne, _1));
-        ACTION ("${", boost::bind (&tokenizer::identifier, _1));
-        ACTION ("*", boost::bind (&tokenizer::mulpow, _1));
-        ACTION ("-", boost::bind (&tokenizer::negsub, _1));
-        ACTION ("/", boost::bind (&tokenizer::divcomment, _1));
-        ACTION ("<", boost::bind (&tokenizer::cmp, _1, lt, le));
-        ACTION (">", boost::bind (&tokenizer::cmp, _1, gt, ge));
+        ACTION ("!", std::bind (&tokenizer::notne, std::placeholders::_1));
+        ACTION ("${", std::bind (&tokenizer::identifier, std::placeholders::_1));
+        ACTION ("*", std::bind (&tokenizer::mulpow, std::placeholders::_1));
+        ACTION ("-", std::bind (&tokenizer::negsub, std::placeholders::_1));
+        ACTION ("/", std::bind (&tokenizer::divcomment, std::placeholders::_1));
+        ACTION ("<", std::bind (&tokenizer::cmp, std::placeholders::_1, lt, le));
+        ACTION (">", std::bind (&tokenizer::cmp, std::placeholders::_1, gt, ge));
 
         SET_TOKEN ("%", modint);
         SET_TOKEN ("&&", _and);

@@ -8,6 +8,8 @@
 
 #include <boost/system/error_code.hpp>
 
+#include <functional>
+
 using namespace boost::asio::ip;
 
 namespace fhg
@@ -73,11 +75,11 @@ namespace fhg
       boost::asio::async_read( socket_
                              , boost::asio::buffer (&in_message_->header, sizeof(p2p::header_t))
                              , strand_.wrap
-                             ( boost::bind ( &connection_t::handle_read_header
-                                           , shared_from_this()
-                                           , boost::asio::placeholders::error
-                                           , boost::asio::placeholders::bytes_transferred
-                                           )
+                             ( std::bind ( &connection_t::handle_read_header
+                                         , shared_from_this()
+                                         , std::placeholders::_1
+                                         , std::placeholders::_2
+                                         )
                              ));
     }
 
@@ -99,11 +101,11 @@ namespace fhg
         boost::asio::async_read ( socket_
                                 , boost::asio::buffer (in_message_->data)
                                 , strand_.wrap
-                                ( boost::bind ( &connection_t::handle_read_data
-                                              , shared_from_this()
-                                              , boost::asio::placeholders::error
-                                              , boost::asio::placeholders::bytes_transferred
-                                              )
+                                ( std::bind ( &connection_t::handle_read_data
+                                            , shared_from_this()
+                                            , std::placeholders::_1
+                                            , std::placeholders::_2
+                                            )
                                 ));
       }
       else
@@ -163,19 +165,19 @@ namespace fhg
       {
         boost::asio::async_write( socket_
                                 , d.to_buffers()
-                                , strand_.wrap (boost::bind( &connection_t::handle_write
-                                                           , shared_from_this()
-                                                           , boost::asio::placeholders::error
-                                                           )
+                                , strand_.wrap (std::bind( &connection_t::handle_write
+                                                         , shared_from_this()
+                                                         , std::placeholders::_1
+                                                         )
                                                )
                                 );
       }
       catch (std::length_error const &)
       {
-        strand_.post (boost::bind( &connection_t::handle_write
-                                 , shared_from_this()
-                                 , boost::system::errc::make_error_code (boost::system::errc::bad_message)
-                                 ));
+        strand_.post (std::bind( &connection_t::handle_write
+                               , shared_from_this()
+                               , boost::system::errc::make_error_code (boost::system::errc::bad_message)
+                               ));
       }
     }
 
@@ -209,11 +211,9 @@ namespace fhg
                                   , completion_handler_t hdl
                                   )
     {
-      strand_.post (boost::bind( &connection_t::start_send
-                               , shared_from_this()
-                               , to_send_t (msg, hdl)
-                               ));
+      boost::shared_ptr<connection_t> that (shared_from_this());
+      strand_.post
+        ([that, msg, hdl] { that->start_send (to_send_t (msg, hdl)); });
     }
-
   }
 }

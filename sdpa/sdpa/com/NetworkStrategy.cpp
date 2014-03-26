@@ -8,6 +8,8 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include <functional>
+
 namespace sdpa
 {
   namespace com
@@ -31,7 +33,10 @@ namespace sdpa
                  , fhg::com::host_t (host)
                  , fhg::com::port_t (port)
                  , kvs_client
-                 , boost::bind (&NetworkStrategy::kvs_error_handler, this, _1)
+                 , std::bind ( &NetworkStrategy::kvs_error_handler
+                             , this
+                             , std::placeholders::_1
+                             )
                  )
                )
       , m_message()
@@ -39,7 +44,10 @@ namespace sdpa
       , m_shutting_down (false)
     {
       m_peer->start ();
-      m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
+      m_peer->async_recv
+        ( &m_message
+        , std::bind(&NetworkStrategy::handle_recv, this, std::placeholders::_1)
+        );
     }
 
     NetworkStrategy::~NetworkStrategy()
@@ -66,7 +74,11 @@ namespace sdpa
 
       try
       {
-        m_peer->async_send (&msg, boost::bind (&NetworkStrategy::handle_send, this, sdpa_event, _1));
+        m_peer->async_send
+          ( &msg
+          , std::bind
+            (&NetworkStrategy::handle_send, this, sdpa_event, std::placeholders::_1)
+          );
       }
       catch (std::exception const & ex)
       {
@@ -107,7 +119,10 @@ namespace sdpa
           (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
         _event_handler (evt);
 
-        m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
+        m_peer->async_recv
+          ( &m_message
+          , std::bind(&NetworkStrategy::handle_recv, this, std::placeholders::_1)
+          );
       }
       else if (! m_shutting_down)
       {
@@ -132,7 +147,10 @@ namespace sdpa
                                                )
                  );
           _event_handler (error);
-          m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
+          m_peer->async_recv
+            ( &m_message
+            , std::bind(&NetworkStrategy::handle_recv, this, std::placeholders::_1)
+            );
         }
       }
     }

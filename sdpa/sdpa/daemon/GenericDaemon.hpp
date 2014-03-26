@@ -49,7 +49,6 @@
 #include <boost/utility.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>
-#include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include <sdpa/daemon/NotificationService.hpp>
@@ -63,6 +62,8 @@
 #include <fhg/util/thread/queue.hpp>
 
 #include <fhglog/fhglog.hpp>
+
+#include <memory>
 
 #define OVERWRITTEN_IN_TEST virtual
 
@@ -148,7 +149,6 @@ namespace sdpa {
 
     protected:
       // event communication
-      void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
       void sendEventToOther(const sdpa::events::SDPAEvent::Ptr& e);
     private:
       void delay (std::function<void()>);
@@ -160,7 +160,7 @@ namespace sdpa {
 
       // workflow engine
     public:
-      const boost::scoped_ptr<we::layer>& workflowEngine() const { return ptr_workflow_engine_; }
+      const std::unique_ptr<we::layer>& workflowEngine() const { return ptr_workflow_engine_; }
       bool hasWorkflowEngine() const { return !!ptr_workflow_engine_;}
 
       // workers
@@ -280,7 +280,7 @@ namespace sdpa {
       fhg::com::kvs::kvsc_ptr_t _kvs_client;
       sdpa::com::NetworkStrategy _network_strategy;
 
-      boost::scoped_ptr<we::layer> ptr_workflow_engine_;
+      std::unique_ptr<we::layer> ptr_workflow_engine_;
 
       fhg::thread::set _registration_threads;
 

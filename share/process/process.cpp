@@ -24,6 +24,8 @@
 
 #include <process.hpp>
 
+#include <functional>
+
 namespace process
 {
   namespace detail
@@ -392,7 +394,7 @@ namespace process
       detail::fifo (filename);
 
       return new boost::thread ( thread::writer_from_file
-                               , boost::ref (barrier)
+                               , std::ref (barrier)
                                , filename
                                , buf
                                , bytes_left
@@ -409,11 +411,11 @@ namespace process
       detail::fifo (filename);
 
       return new boost::thread ( thread::reader_from_file
-                               , boost::ref (barrier)
+                               , std::ref (barrier)
                                , filename
                                , buf
                                , max_size
-                               , boost::ref (bytes_read)
+                               , std::ref (bytes_read)
                                );
     }
   }
@@ -635,14 +637,14 @@ namespace process
           , out[detail::RD]
           , buf_stdout.buf()
           , buf_stdout.size()
-          , boost::ref (ret.bytes_read_stdout)
+          , std::ref (ret.bytes_read_stdout)
           );
 
         boost::thread thread_buf_stderr
           ( thread::circular_reader
           , err[detail::RD]
-          , boost::ref (buf_stderr)
-          , boost::ref (ret.bytes_read_stderr)
+          , std::ref (buf_stderr)
+          , std::ref (ret.bytes_read_stderr)
           );
 
         int status (0);

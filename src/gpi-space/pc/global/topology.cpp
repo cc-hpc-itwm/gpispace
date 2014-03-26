@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <csignal> // kill
 
-#include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -16,6 +15,8 @@
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
+
+#include <functional>
 
 namespace gpi
 {
@@ -165,11 +166,11 @@ namespace gpi
 
         // start the message handler
         m_peer->async_recv ( &m_incoming_msg
-                           , boost::bind( &topology_t::message_received
-                                        , this
-                                        , _1
-                                        , boost::ref (memory_manager)
-                                        )
+                           , std::bind( &topology_t::message_received
+                                      , this
+                                      , std::placeholders::_1
+                                      , std::ref (memory_manager)
+                                      )
                            );
 
         for (std::size_t n(0); n < _gpi_api.number_of_nodes(); ++n)
@@ -522,12 +523,12 @@ namespace gpi
       {
         m_peer->async_send ( child.name
                            , data
-                           , boost::bind ( &topology_t::message_sent
-                                         , this
-                                         , child
-                                         , data
-                                         , _1
-                                         )
+                           , std::bind ( &topology_t::message_sent
+                                       , this
+                                       , child
+                                       , data
+                                       , std::placeholders::_1
+                                       )
                            );
       }
 
@@ -567,11 +568,11 @@ namespace gpi
                         );
 
           m_peer->async_recv ( &m_incoming_msg
-                             , boost::bind( &topology_t::message_received
-                                          , this
-                                          , _1
-                                          , boost::ref (memory_manager)
-                                          )
+                             , std::bind( &topology_t::message_received
+                                        , this
+                                        , std::placeholders::_1
+                                        , std::ref (memory_manager)
+                                        )
                              );
         }
         else if (! m_shutting_down)
@@ -584,11 +585,11 @@ namespace gpi
             handle_error (detail::name_to_rank(name));
 
             m_peer->async_recv ( &m_incoming_msg
-                               , boost::bind( &topology_t::message_received
-                                            , this
-                                            , _1
-                                            , boost::ref (memory_manager)
-                                            )
+                               , std::bind( &topology_t::message_received
+                                          , this
+                                          , std::placeholders::_1
+                                          , std::ref (memory_manager)
+                                          )
                                );
           }
         }

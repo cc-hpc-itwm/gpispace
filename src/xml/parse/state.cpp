@@ -6,6 +6,8 @@
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
 
+#include <iterator>
+
 namespace xml
 {
   namespace parse
@@ -328,8 +330,8 @@ namespace xml
           }
           else if (  pos != end
                   && *pos == "warning"
-                  && boost::next (pos) != end
-                  && *boost::next (pos) == "inline_many_output_ports"
+                  && std::next (pos) != end
+                  && *std::next (pos) == "inline_many_output_ports"
                   )
           {
             /* do nothing, it's known */

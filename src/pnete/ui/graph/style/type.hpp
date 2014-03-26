@@ -8,10 +8,9 @@
 #include <pnete/ui/graph/style/store.hpp>
 #include <pnete/ui/graph/mode.hpp>
 
-#include <boost/bind.hpp>
-
 #include <QGraphicsItem>
 
+#include <functional>
 #include <unordered_map>
 
 class QPainter;
@@ -160,7 +159,7 @@ namespace fhg
                         , const VALUE& value
                         )
             {
-              push<VALUE> (key, mode, boost::bind (constant<VALUE>, value, _1));
+              push<VALUE> (key, mode, std::bind (constant<VALUE>, value, std::placeholders::_1));
             }
 
             template<typename T>
