@@ -21,21 +21,6 @@ namespace jpna {
 namespace {
 
 /**
- * \param container An associative container.
- * \param key Key.
- *
- * \return An element from the container with given key. The element must exist.
- *
- * \tparam Container Type of the associative container.
- */
-template<class Container>
-typename Container::mapped_type find(const Container &container, const typename Container::key_type &key) {
-    typename Container::const_iterator i = container.find(key);
-    assert(i != container.end());
-    return i->second;
-}
-
-/**
  * Visitor for discovering subnets in workflows and translating them to Petri nets.
  */
 class TransitionVisitor: public boost::static_visitor<void> {
@@ -114,8 +99,8 @@ class TransitionVisitor: public boost::static_visitor<void> {
             : net.place_to_transition_consume()
             )
         {
-          Place *place = ::jpna::find(places_, pt.left);
-          Transition *transition = ::jpna::find(transitions_, pt.right);
+          Place *place = places_.at (pt.left);
+          Transition *transition = transitions_.at (pt.right);
 
           /* Transition consumes the token on input place. */
           transition->addInputPlace(place);
@@ -124,8 +109,8 @@ class TransitionVisitor: public boost::static_visitor<void> {
             : net.place_to_transition_read()
             )
         {
-          Place *place = ::jpna::find(places_, pt.left);
-          Transition *transition = ::jpna::find(transitions_, pt.right);
+          Place *place = places_.at (pt.left);
+          Transition *transition = transitions_.at (pt.right);
 
           /* Transition takes a token and instantly puts it back. */
           transition->addInputPlace(place);
@@ -135,8 +120,8 @@ class TransitionVisitor: public boost::static_visitor<void> {
             : net.transition_to_place()
             )
         {
-          Transition *transition = ::jpna::find(transitions_, tp.left);
-          Place *place = ::jpna::find(places_, tp.right);
+          Transition *transition = transitions_.at (tp.left);
+          Place *place = places_.at (tp.right);
 
           /* Executing the transition puts a token on output place. */
           transition->addOutputPlace(place);
@@ -163,7 +148,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             if (port.associated_place()) {
                 we::place_id_type pid = *port.associated_place();
 
-                Place *place = ::jpna::find(places_, pid);
+                Place *place = places_.at (pid);
                 place->setInitialMarking(place->initialMarking() + 1);
 
             }
@@ -174,7 +159,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             if (port.associated_place()) {
                 we::place_id_type pid = *port.associated_place();
 
-                Place *place = ::jpna::find(places_, pid);
+                Place *place = places_.at (pid);
                 place->setInitialMarking(place->initialMarking() + 1);
 
             }
@@ -185,7 +170,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             if (port.associated_place()) {
                 we::place_id_type pid = *port.associated_place();
 
-                Place *place = ::jpna::find(places_, pid);
+                Place *place = places_.at (pid);
                 place->setInitialMarking(place->initialMarking() + 1);
 
             }
