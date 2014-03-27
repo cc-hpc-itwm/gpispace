@@ -42,7 +42,6 @@ namespace xml
         const state::type& _state;
         const boost::filesystem::path _file;
         std::ostringstream _oss;
-        const bool _auto_commit;
 
         void write() const;
       };

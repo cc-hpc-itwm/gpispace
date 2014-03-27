@@ -50,14 +50,10 @@ namespace xml
         : _state (state)
         , _file (file)
         , _oss ()
-        , _auto_commit (true)
       {}
       check_no_change_fstream::~check_no_change_fstream()
       {
-        if (_auto_commit)
-        {
-          commit();
-        }
+        commit();
       }
       check_no_change_fstream&
       check_no_change_fstream::operator << (std::ostream& (*f)(std::ostream&))
