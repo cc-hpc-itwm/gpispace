@@ -321,14 +321,18 @@ $(NET_VALIDATION):
 
 else
 
+-include $(NET_VALIDATION).d
+
 ifeq "$(TEE)" ""
 
 $(NET_VALIDATION): $(XML) $(DEP)
+	$(PNETC) -i $(XML) -o /dev/null -MP -MT $@ -MM $(NET_VALIDATION).d
 	$(XMLLINT) $$($(PNETC_LIST_DEPENDENCIES) -i $(XML) -o /dev/null) 2> "$@"
 
 else
 
 $(NET_VALIDATION): $(XML) $(DEP)
+	$(PNETC) -i $(XML) -o /dev/null -MP -MT $@ -MM $(NET_VALIDATION).d
 	set -o pipefail ; $(XMLLINT) $$($(PNETC_LIST_DEPENDENCIES) -i $(XML) -o /dev/null) 2>&1 | $(TEE) $@
 
 endif
@@ -435,6 +439,7 @@ clean: $(CLEAN)
 	-$(RM) -f $(NET).d
 	-$(RM) -f $(NET_NOINLINE).d
 	-$(RM) -f $(NET).gen.d
+	-$(RM) -f $(NET_VALIDATION).d
 	-$(RM) -f $(NET_VERIFICATION)
 	-$(RM) -f $(NET_VALIDATION)
 	-$(RM) -f *~
