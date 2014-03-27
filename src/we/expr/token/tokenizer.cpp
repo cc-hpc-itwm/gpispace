@@ -115,26 +115,27 @@ namespace expr
         ACTION ("!", std::bind (&tokenizer::notne, std::placeholders::_1));
         ACTION ("${", std::bind (&tokenizer::identifier, std::placeholders::_1));
         ACTION ("*", std::bind (&tokenizer::mulpow, std::placeholders::_1));
+        ACTION ("|", std::bind (&tokenizer::or_boolean_integral, std::placeholders::_1));
+        ACTION ("&", std::bind (&tokenizer::and_boolean_integral, std::placeholders::_1));
         ACTION ("-", std::bind (&tokenizer::negsub, std::placeholders::_1));
         ACTION ("/", std::bind (&tokenizer::divcomment, std::placeholders::_1));
         ACTION ("<", std::bind (&tokenizer::cmp, std::placeholders::_1, lt, le));
         ACTION (">", std::bind (&tokenizer::cmp, std::placeholders::_1, gt, ge));
 
         SET_TOKEN ("%", modint);
-        SET_TOKEN ("&&", _and);
         SET_TOKEN ("(", lpr);
         SET_TOKEN (")", rpr);
         SET_TOKEN ("+", add);
         SET_TOKEN (",", sep);
         SET_TOKEN (":=", define);
-        SET_TOKEN (":and:", _and);
+        SET_TOKEN (":and:", _and_boolean);
         SET_TOKEN (":eq:", eq);
         SET_TOKEN (":ge:", ge);
         SET_TOKEN (":gt:", gt);
         SET_TOKEN (":le:", le);
         SET_TOKEN (":lt:", lt);
         SET_TOKEN (":ne:", ne);
-        SET_TOKEN (":or:", _or);
+        SET_TOKEN (":or:", _or_boolean);
         SET_TOKEN ("==", eq);
         SET_TOKEN ("^", _powint);
         SET_TOKEN ("div", divint);
@@ -149,7 +150,6 @@ namespace expr
         SET_TOKEN ("mod", modint);
         SET_TOKEN ("round", _round);
         SET_TOKEN ("substr", _substr);
-        SET_TOKEN ("||", _or);
 
         SET_TOKEN ("map_assign", _map_assign);
         SET_TOKEN ("map_get_assignment", _map_get_assignment);
@@ -343,6 +343,34 @@ namespace expr
       else
       {
         set_token (mul);
+      }
+    }
+
+    void tokenizer::or_boolean_integral()
+    {
+      if (!is_eof() && *_pos == '|')
+      {
+        ++_pos;
+
+        set_token (_or_boolean);
+      }
+      else
+      {
+        set_token (_or_integral);
+      }
+    }
+
+    void tokenizer::and_boolean_integral()
+    {
+      if (!is_eof() && *_pos == '&')
+      {
+        ++_pos;
+
+        set_token (_and_boolean);
+      }
+      else
+      {
+        set_token (_and_integral);
       }
     }
 

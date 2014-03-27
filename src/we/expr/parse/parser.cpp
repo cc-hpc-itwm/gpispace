@@ -211,8 +211,10 @@ namespace expr
     {
       switch (op_stack.top())
         {
-        case token::_or:
-        case token::_and: binary (op_stack.top(), k); break;
+        case token::_or_boolean:
+        case token::_or_integral:
+        case token::_and_boolean:
+        case token::_and_integral: binary (op_stack.top(), k); break;
         case token::_not: unary (op_stack.top(), k); break;
         case token::lt:
         case token::le:

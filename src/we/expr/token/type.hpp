@@ -10,8 +10,10 @@ namespace expr
   namespace token
   {
     enum type
-    { _or                     // prec  0, left associative
-    , _and                    // prec  1, left associative
+    { _or_boolean             // prec  0, left associative
+    , _or_integral
+    , _and_boolean            // prec  1, left associative
+    , _and_integral           // prec  1, left associative
     , _not                    // prec 30, right associative
     , lt, le, gt, ge, ne, eq  // prec 10, left associative
 

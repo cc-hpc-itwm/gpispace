@@ -161,7 +161,7 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_not: return x == 0;
+            case expr::token::_not: return ~x;
             case expr::token::neg: return -x;
             case expr::token::abs: return std::abs (x);
             case expr::token::_sin: return sin (x);
@@ -185,7 +185,7 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_not: return x == 0;
+            case expr::token::_not: return ~x;
             case expr::token::_sin: return sin (x);
             case expr::token::_cos: return cos (x);
             case expr::token::_sqrt: return sqrt (x);
@@ -215,8 +215,8 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_or: return l || r;
-            case expr::token::_and: return l && r;
+            case expr::token::_or_boolean: return l || r;
+            case expr::token::_and_boolean: return l && r;
             case expr::token::lt: return l < r;
             case expr::token::le: return l <= r;
             case expr::token::gt: return l > r;
@@ -401,8 +401,8 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_or: return l | r;
-            case expr::token::_and: return l & r;
+            case expr::token::_or_integral: return l | r;
+            case expr::token::_and_integral: return l & r;
             case expr::token::lt: return l < r;
             case expr::token::le: return l <= r;
             case expr::token::gt: return l > r;
@@ -437,8 +437,8 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_or: return l | r;
-            case expr::token::_and: return l & r;
+            case expr::token::_or_integral: return l | r;
+            case expr::token::_and_integral: return l & r;
             case expr::token::lt: return l < r;
             case expr::token::le: return l <= r;
             case expr::token::gt: return l > r;

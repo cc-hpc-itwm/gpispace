@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE (renamed_at_depth_greater_zero)
     (parser.string(), expr::parse::parser ("sin (${A})").string());
 }
 
-BOOST_AUTO_TEST_CASE (token_or_table)
+BOOST_AUTO_TEST_CASE (token_or_boolean_table)
 {
   require_evaluating_to ("true || true", true);
   require_evaluating_to ("true || false", true);
@@ -222,34 +222,37 @@ BOOST_AUTO_TEST_CASE (token_or_table)
   require_evaluating_to ("true :or: false", true);
   require_evaluating_to ("false :or: true", true);
   require_evaluating_to ("false :or: false", false);
+}
 
-  require_evaluating_to ("0 || 0", 0);
-  require_evaluating_to ("0 || 1", 1);
-  require_evaluating_to ("1 || 1", 1);
-  require_evaluating_to ("1 || 0", 1);
-  require_evaluating_to ("1 || 2", 3);
-  require_evaluating_to ("2 || 1", 3);
+BOOST_AUTO_TEST_CASE (token_or_integral)
+{
+  require_evaluating_to ("0 | 0", 0);
+  require_evaluating_to ("0 | 1", 1);
+  require_evaluating_to ("1 | 1", 1);
+  require_evaluating_to ("1 | 0", 1);
+  require_evaluating_to ("1 | 2", 3);
+  require_evaluating_to ("2 | 1", 3);
 
-  require_evaluating_to ("0U || 0U", 0U);
-  require_evaluating_to ("0U || 1U", 1U);
-  require_evaluating_to ("1U || 1U", 1U);
-  require_evaluating_to ("1U || 0U", 1U);
-  require_evaluating_to ("1U || 2U", 3U);
-  require_evaluating_to ("2U || 1U", 3U);
+  require_evaluating_to ("0U | 0U", 0U);
+  require_evaluating_to ("0U | 1U", 1U);
+  require_evaluating_to ("1U | 1U", 1U);
+  require_evaluating_to ("1U | 0U", 1U);
+  require_evaluating_to ("1U | 2U", 3U);
+  require_evaluating_to ("2U | 1U", 3U);
 
-  require_evaluating_to ("0L || 0L", 0L);
-  require_evaluating_to ("0L || 1L", 1L);
-  require_evaluating_to ("1L || 1L", 1L);
-  require_evaluating_to ("1L || 0L", 1L);
-  require_evaluating_to ("1L || 2L", 3L);
-  require_evaluating_to ("2L || 1L", 3L);
+  require_evaluating_to ("0L | 0L", 0L);
+  require_evaluating_to ("0L | 1L", 1L);
+  require_evaluating_to ("1L | 1L", 1L);
+  require_evaluating_to ("1L | 0L", 1L);
+  require_evaluating_to ("1L | 2L", 3L);
+  require_evaluating_to ("2L | 1L", 3L);
 
-  require_evaluating_to ("0UL || 0UL", 0UL);
-  require_evaluating_to ("0UL || 1UL", 1UL);
-  require_evaluating_to ("1UL || 1UL", 1UL);
-  require_evaluating_to ("1UL || 0UL", 1UL);
-  require_evaluating_to ("1UL || 2UL", 3UL);
-  require_evaluating_to ("2UL || 1UL", 3UL);
+  require_evaluating_to ("0UL | 0UL", 0UL);
+  require_evaluating_to ("0UL | 1UL", 1UL);
+  require_evaluating_to ("1UL | 1UL", 1UL);
+  require_evaluating_to ("1UL | 0UL", 1UL);
+  require_evaluating_to ("1UL | 2UL", 3UL);
+  require_evaluating_to ("2UL | 1UL", 3UL);
 }
 
 BOOST_AUTO_TEST_CASE (token_or_short_circuit)
@@ -265,7 +268,7 @@ BOOST_AUTO_TEST_CASE (token_or_short_circuit)
     );
 }
 
-BOOST_AUTO_TEST_CASE (token_and_table)
+BOOST_AUTO_TEST_CASE (token_and_boolean_table)
 {
   require_evaluating_to ("true && true", true);
   require_evaluating_to ("true && false", false);
@@ -276,38 +279,41 @@ BOOST_AUTO_TEST_CASE (token_and_table)
   require_evaluating_to ("true :and: false", false);
   require_evaluating_to ("false :and: true", false);
   require_evaluating_to ("false :and: false", false);
+}
 
-  require_evaluating_to ("0 && 0", 0);
-  require_evaluating_to ("0 && 1", 0);
-  require_evaluating_to ("1 && 1", 1);
-  require_evaluating_to ("1 && 0", 0);
-  require_evaluating_to ("1 && 2", 0);
-  require_evaluating_to ("2 && 1", 0);
-  require_evaluating_to ("2 && 3", 2);
+BOOST_AUTO_TEST_CASE (token_and_integral)
+{
+  require_evaluating_to ("0 & 0", 0);
+  require_evaluating_to ("0 & 1", 0);
+  require_evaluating_to ("1 & 1", 1);
+  require_evaluating_to ("1 & 0", 0);
+  require_evaluating_to ("1 & 2", 0);
+  require_evaluating_to ("2 & 1", 0);
+  require_evaluating_to ("2 & 3", 2);
 
-  require_evaluating_to ("0U && 0U", 0U);
-  require_evaluating_to ("0U && 1U", 0U);
-  require_evaluating_to ("1U && 1U", 1U);
-  require_evaluating_to ("1U && 0U", 0U);
-  require_evaluating_to ("1U && 2U", 0U);
-  require_evaluating_to ("2U && 1U", 0U);
-  require_evaluating_to ("2U && 3U", 2U);
+  require_evaluating_to ("0U & 0U", 0U);
+  require_evaluating_to ("0U & 1U", 0U);
+  require_evaluating_to ("1U & 1U", 1U);
+  require_evaluating_to ("1U & 0U", 0U);
+  require_evaluating_to ("1U & 2U", 0U);
+  require_evaluating_to ("2U & 1U", 0U);
+  require_evaluating_to ("2U & 3U", 2U);
 
-  require_evaluating_to ("0L && 0L", 0L);
-  require_evaluating_to ("0L && 1L", 0L);
-  require_evaluating_to ("1L && 1L", 1L);
-  require_evaluating_to ("1L && 0L", 0L);
-  require_evaluating_to ("1L && 2L", 0L);
-  require_evaluating_to ("2L && 1L", 0L);
-  require_evaluating_to ("2L && 3L", 2L);
+  require_evaluating_to ("0L & 0L", 0L);
+  require_evaluating_to ("0L & 1L", 0L);
+  require_evaluating_to ("1L & 1L", 1L);
+  require_evaluating_to ("1L & 0L", 0L);
+  require_evaluating_to ("1L & 2L", 0L);
+  require_evaluating_to ("2L & 1L", 0L);
+  require_evaluating_to ("2L & 3L", 2L);
 
-  require_evaluating_to ("0UL && 0UL", 0UL);
-  require_evaluating_to ("0UL && 1UL", 0UL);
-  require_evaluating_to ("1UL && 1UL", 1UL);
-  require_evaluating_to ("1UL && 0UL", 0UL);
-  require_evaluating_to ("1UL && 2UL", 0UL);
-  require_evaluating_to ("2UL && 1UL", 0UL);
-  require_evaluating_to ("2UL && 3UL", 2UL);
+  require_evaluating_to ("0UL & 0UL", 0UL);
+  require_evaluating_to ("0UL & 1UL", 0UL);
+  require_evaluating_to ("1UL & 1UL", 1UL);
+  require_evaluating_to ("1UL & 0UL", 0UL);
+  require_evaluating_to ("1UL & 2UL", 0UL);
+  require_evaluating_to ("2UL & 1UL", 0UL);
+  require_evaluating_to ("2UL & 3UL", 2UL);
 }
 
 BOOST_AUTO_TEST_CASE (token_and_short_circuit)
@@ -329,14 +335,14 @@ BOOST_AUTO_TEST_CASE (token_not)
   require_evaluating_to ("!false", true);
   require_evaluating_to ("!!true", true);
   require_evaluating_to ("!!false", false);
-  require_evaluating_to ("!0", true);
-  require_evaluating_to ("!1", false);
-  require_evaluating_to ("!0U", true);
-  require_evaluating_to ("!1U", false);
-  require_evaluating_to ("!0L", true);
-  require_evaluating_to ("!1L", false);
-  require_evaluating_to ("!0UL", true);
-  require_evaluating_to ("!1UL", false);
+  require_evaluating_to ("!0", ~0);
+  require_evaluating_to ("!1", ~1);
+  require_evaluating_to ("!0U", ~0U);
+  require_evaluating_to ("!1U", ~1U);
+  require_evaluating_to ("!0L", ~0L);
+  require_evaluating_to ("!1L", ~1L);
+  require_evaluating_to ("!0UL", ~0UL);
+  require_evaluating_to ("!1UL", ~1UL);
 }
 
 namespace

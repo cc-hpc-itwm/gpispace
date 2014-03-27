@@ -58,7 +58,7 @@ namespace expr
 
               return c1;
             }
-          else if (is_or (b.token))
+          else if (is_or_boolean (b.token))
             {
               pnet::type::value::value_type c0 (boost::apply_visitor (*this, b.l));
 
@@ -73,7 +73,7 @@ namespace expr
                   return c0;
                 }
             }
-          else if (is_and (b.token))
+          else if (is_and_boolean (b.token))
             {
               pnet::type::value::value_type c0 (boost::apply_visitor (*this, b.l));
 

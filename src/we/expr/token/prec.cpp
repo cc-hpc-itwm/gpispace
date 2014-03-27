@@ -14,8 +14,10 @@ namespace expr
     {
       switch (token)
         {
-        case token::_or: return 0;
-        case token::_and: return 1;
+        case token::_or_boolean: return 0;
+        case token::_or_integral: return 0;
+        case token::_and_boolean: return 1;
+        case token::_and_integral: return 1;
         case token::_not: return 30;
         case token::lt:
         case token::le:
