@@ -18,11 +18,6 @@ namespace xml
   {
     namespace util
     {
-      std::ofstream & mk_fstream ( std::ofstream & stream
-                                 , const state::type & state
-                                 , const boost::filesystem::path & file
-                                 );
-
       class check_no_change_fstream
       {
       public:

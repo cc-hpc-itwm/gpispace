@@ -12,37 +12,6 @@ namespace xml
   {
     namespace util
     {
-      std::ofstream & mk_fstream ( std::ofstream & stream
-                                 , const state::type & state
-                                 , const boost::filesystem::path & file
-                                 )
-      {
-        boost::filesystem::path path (file);
-
-        path.remove_filename();
-
-        boost::filesystem::create_directories (path);
-
-        if (not boost::filesystem::is_directory (path))
-          {
-            throw error::could_not_create_directory (path);
-          }
-
-        if (boost::filesystem::exists (file))
-          {
-            state.warn (warning::overwrite_file (file));
-          }
-
-        stream.open (file.string().c_str());
-
-        if (!stream.good())
-          {
-            throw error::could_not_open_file (file);
-          }
-
-        return stream;
-      }
-
       check_no_change_fstream::check_no_change_fstream
       ( const state::type& state
       , const boost::filesystem::path& file
