@@ -28,7 +28,6 @@ namespace xml
       public:
         explicit check_no_change_fstream ( const state::type&
                                          , const boost::filesystem::path&
-                                         , const bool auto_commit = true
                                          );
         ~check_no_change_fstream();
         void commit() const;

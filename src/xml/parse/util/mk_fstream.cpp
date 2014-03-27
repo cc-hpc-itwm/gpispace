@@ -46,12 +46,11 @@ namespace xml
       check_no_change_fstream::check_no_change_fstream
       ( const state::type& state
       , const boost::filesystem::path& file
-      , const bool auto_commit
       )
         : _state (state)
         , _file (file)
         , _oss ()
-        , _auto_commit (auto_commit)
+        , _auto_commit (true)
       {}
       check_no_change_fstream::~check_no_change_fstream()
       {
