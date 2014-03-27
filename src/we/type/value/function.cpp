@@ -163,7 +163,7 @@ namespace pnet
             {
             case expr::token::_not: return x == 0;
             case expr::token::neg: return -x;
-            case expr::token::abs: return (x < 0) ? (-x) : x;
+            case expr::token::abs: return std::abs (x);
             case expr::token::_sin: return sin (x);
             case expr::token::_cos: return cos (x);
             case expr::token::_sqrt: return sqrt (x);
