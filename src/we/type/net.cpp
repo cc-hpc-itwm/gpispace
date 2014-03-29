@@ -641,12 +641,9 @@ namespace we
                                                  >& choice
                               ) const
     {
-      choice.clear();
-
       for (const std::pair<place_id_type, iterators_type>& pits : _m)
       {
-        choice.insert
-          (std::make_pair (pits.first, pits.second.pos_and_distance()));
+        choice[pits.first] = pits.second.pos_and_distance();
       }
     }
     void cross_type::push ( place_id_type place_id
