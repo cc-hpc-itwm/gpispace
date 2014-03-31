@@ -159,14 +159,6 @@ GenericDaemon::GenericDaemon( const std::string name
 
 GenericDaemon::~GenericDaemon()
 {
-  lock_type const _ (mtx_master_);
-  for (sdpa::MasterInfo& masterInfo : m_arrMasterInfo)
-  {
-    if (masterInfo.is_registered())
-    {
-      parent_proxy (this, masterInfo.name()).notify_shutdown();
-    }
-  }
 }
 
 GenericDaemon::cleanup_job_map_on_dtor_helper::cleanup_job_map_on_dtor_helper

@@ -139,18 +139,33 @@ namespace sdpa
             other = "unknown source";
           }
 
-          sdpa::events::ErrorEvent::Ptr
-            error(new sdpa::events::ErrorEvent ( other
-                                               , m_peer->name()
-                                               , sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
-                                               , ec.message()
-                                               )
+          if(ec == boost::asio::error::eof) // Connection closed cleanly by peer.
+          {
+            sdpa::events::ErrorEvent::Ptr
+              error(new sdpa::events::ErrorEvent ( other
+                                                  , m_peer->name()
+                                                  , sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
+                                                  , ec.message()
+                                                  )
+                  );
+            _event_handler (error);
+          }
+          else
+          {
+            sdpa::events::ErrorEvent::Ptr
+              error(new sdpa::events::ErrorEvent ( other
+                                                 , m_peer->name()
+                                                 , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
+                                                 , ec.message()
+                                                 )
                  );
-          _event_handler (error);
+           _event_handler (error);
+          }
+
           m_peer->async_recv
-            ( &m_message
-            , std::bind(&NetworkStrategy::handle_recv, this, std::placeholders::_1)
-            );
+           ( &m_message
+           , std::bind(&NetworkStrategy::handle_recv, this, std::placeholders::_1)
+           );
         }
       }
     }
