@@ -1147,6 +1147,19 @@ namespace xml
         stream                                                     << std::endl;
         stream << "CXXFLAGS += -fPIC"                              << std::endl;
         stream                                                     << std::endl;
+        stream << "ifndef BOOST_ROOT"                              << std::endl;
+        stream << "  $(warning !!!)"                               << std::endl;
+        stream << "  $(warning !!! BOOST_ROOT EMPTY, ASSUMING /usr)"
+                                                                   << std::endl;
+        stream << "  $(warning !!! THIS IS PROBABLY NOT WHAT YOU WANT!)"
+                                                                   << std::endl;
+        stream << "  $(warning !!!)"                               << std::endl;
+        stream << "  $(warning !!! Try to set BOOST_ROOT in the environment!)"
+                                                                   << std::endl;
+        stream << "  $(warning !!!)"                               << std::endl;
+        stream << "  BOOST_ROOT := /usr"                           << std::endl;
+        stream << "endif"                                          << std::endl;
+        stream                                                     << std::endl;
         stream << "ifndef CXX"                                     << std::endl;
         stream << "  $(error Variable CXX is not defined)"         << std::endl;
         stream << "endif"                                          << std::endl;
@@ -1162,6 +1175,7 @@ namespace xml
         stream                                                     << std::endl;
         stream << "CXXFLAGS += -I."                                << std::endl;
         stream << "CXXFLAGS += -isystem $(SDPA_INCLUDE)"           << std::endl;
+        stream << "CXXFLAGS += -isystem $(BOOST_ROOT)/include"     << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef SDPA_LDPATH"                             << std::endl;
         stream << "  ifndef SDPA_HOME"                             << std::endl;
