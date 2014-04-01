@@ -1,3 +1,0 @@
-<defun name="module_call">
-  <module name="m" function="f"/>
-</defun>
