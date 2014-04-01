@@ -139,28 +139,16 @@ namespace sdpa
             other = "unknown source";
           }
 
-          if(ec == boost::asio::error::eof) // Connection closed cleanly by peer.
-          {
-            sdpa::events::ErrorEvent::Ptr
-              error(new sdpa::events::ErrorEvent ( other
-                                                  , m_peer->name()
-                                                  , sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
-                                                  , ec.message()
-                                                  )
-                  );
-            _event_handler (error);
-          }
-          else
-          {
-            sdpa::events::ErrorEvent::Ptr
-              error(new sdpa::events::ErrorEvent ( other
-                                                 , m_peer->name()
-                                                 , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-                                                 , ec.message()
-                                                 )
-                 );
-           _event_handler (error);
-          }
+          sdpa::events::ErrorEvent::Ptr
+            error(new sdpa::events::ErrorEvent ( other
+                                                , m_peer->name()
+                                                , (ec == boost::asio::error::eof) // Connection closed cleanly by peer
+                                                ? sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
+                                                : sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
+                                                , ec.message()
+                                                )
+                );
+          _event_handler (error);
 
           m_peer->async_recv
            ( &m_message
