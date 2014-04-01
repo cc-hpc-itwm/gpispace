@@ -61,121 +61,112 @@ function require_readable ()
     fi
 }
 
-log_info "performing self-test"
+runtime_started=false
+function cleanup ()
+{
+    if $runtime_started
+    then
+        sdpa stop
+    fi
+    rm -rf "${builddir}"
+}
+builddir=$(mktemp -d)
+mkdir -p "${builddir}"
+trap cleanup EXIT
 
-xml="$sdpa_home/libexec/sdpa/apps/selftest/selftest.xml"
-require_readable "$xml"
-
+require_readable "${SDPA_HOME}/share/sdpa/make/common.mk"
+require_readable "${SDPA_HOME}/libexec/sdpa/apps/selftest/selftest.xml"
 require_executable pnetc
 require_executable sdpac
 require_executable pnetput
 require_executable pnetget
 
-job_desc=$(mktemp)
-old_trap=$(trap -p EXIT)
-trap "rm -f $job_desc" EXIT
+challenge=$$
 
-function sigterm()
-{
-    trap sigterm TERM
-}
-trap sigterm TERM
+make+=( make -f "${SDPA_HOME}/share/sdpa/make/common.mk" )
+make+=( MAIN=selftest )
+make+=( XML=selftest.xml )
+make+=( PUT_PORT=\'challenge=\"$challenge\"\' )
+make+=( BUILDDIR="${builddir}" )
+make+=( LIB_DESTDIR="${builddir}" )
+make+=( -C "${SDPA_HOME}/libexec/sdpa/apps/selftest" )
 
-log_info "building job description..."
-challenge=$(date +%s | md5sum | awk '{print $1}')
-if [ $? -ne 0 ] ; then
-    challenge="dummy"
+log_info "+ compiling selftest..."
+
+export BOOST_ROOT="${SDPA_HOME}"
+
+"${make[@]}" lib install put >> "${builddir}/compile.log"
+ec=$?
+if [ $ec -ne 0 ]
+then
+    log_error "+ compilation failed"
+    cat "${builddir}/compile.log"
+    exit $ec
 fi
 
-expected_response="sdpa.response.$challenge"
+log_info "+ booting runtime system on: $(hostname -s)"
 
-if ! cat "$xml" | pnetc | pnetput -p challenge=\"$challenge\" > "$job_desc" ; then
-    log_error "could not generate job description and place tokens"
-    exit 5
-fi
-
-tmpnodes=$(mktemp)
-echo "$(hostname -s)" > "${tmpnodes}"
-
-runtime_started=false
-cleanup()
-{
-    if $runtime_started
-    then
-        sdpa stop >/dev/null 2>&1
-        runtime_started=false
-    fi
-    rm -f "${tmpnodes}"
-}
-trap cleanup EXIT TERM INT
-
-log_info "(re-)starting SDPA..."
+echo "$(hostname -s)" > "${builddir}/hostfile"
 
 err=$(sdpa stop 2>&1)
 
 runtime_started=true
-err=$(sdpa boot -M -f "${tmpnodes}" -A "${sdpa_home}/libexec/sdpa/apps/selftest/modules" work:1 2>&1)
+sdpa boot -M -f "${builddir}/hostfile" -A "${builddir}" work:1 > "${builddir}/boot.log" 2>&1
 ec=$?
 if [ $ec -ne 0 ] ; then
-    sdpa stop >/dev/null 2>&1
-    runtime_started=false
-    log_error "restart failed: $err"
+    log_error "++ boot failed: $err"
+    cat "${builddir}/boot.log"
     exit $ec
 fi
 
-log_info "computing response for challenge: $challenge"
+expected_response="sdpa.response.$challenge"
 
-log_info "submitting job..."
-job_id=$(sdpac submit "$job_desc")
-log_info "JOB-ID: $job_id"
+log_info "++ submitting job..."
+job_id=$(sdpac submit "${builddir}/selftest.pnet.put")
+log_info "+++ job-id: $job_id"
 
-walltime=120
-log_info "waiting at most $walltime seconds for job to return..."
+walltime=15
+log_info "++++ waiting at most $walltime seconds for job to return..."
 job_state=42
 for ((i=0 ; i < $walltime ; ++i)) ; do
-    sleep 1
     job_status=$(sdpac status "$job_id")
     if echo "$job_status" | grep -q -i -e 'finished' ; then
-        log_info "job has finished"
+        log_info "+++ job has finished"
         job_state=0
         break
     elif echo "$job_status" | grep -q -i -e 'failed' ; then
-        log_error "job has failed"
+        log_error "+++ job has failed"
         job_state=1
         break
     elif echo "$job_status" | grep -q -i -e 'canceled' ; then
-        log_error "job has been canceled"
+        log_error "+++ job has been canceled"
         job_state=2
         break
     fi
+    sleep 1
 done
 
 if [ "$job_state" -ne 0 ] ; then
-    log_error "self test job could not be executed!"
-    sdpa stop
+    log_error "++ selftest could not be executed!"
     exit 8
 fi
 
-log_info "I: retrieving results"
-if ! sdpac --force -o "$job_desc" results "$job_id" 2>/dev/null ; then
-    log_error "could not retrieve results"
-    rm "$job_desc"
-    sdpa stop
+log_info "+++ retrieving results"
+if ! sdpac --force -o "${builddir}/result.pnet" results "$job_id" 2>/dev/null ; then
+    log_error "++++ could not retrieve results"
     exit 6
 fi
 
 if ! sdpac delete "$job_id" ; then
-    log_error "could not delete job"
-    rm "$job_desc"
-    sdpa stop
+    log_error "++++ could not delete job"
     exit 7
 fi
 
-response=$(pnetget < "$job_desc" --type=output response | sed -e 's/^"//g' -e 's/"$//g')
+response=$(pnetget < "${builddir}/result.pnet" --type=output response | sed -e 's/^"//g' -e 's/"$//g')
 if [ x"$response" != x"$expected_response" ] ; then
-    log_error "response: '$response' does not match expected response: '$expected_response'"
+    log_error "++ response: '$response' does not match expected response: '$expected_response'"
 else
-    log_info "got correct response"
+    log_info "++ got correct response"
 fi
 
 if [ -z "$USER" ] ; then
@@ -184,9 +175,7 @@ else
     greeting="user $USER"
 fi
 
-rm "$job_desc"
-
 sdpa stop >/dev/null 2>&1
 runtime_started=false
 
-log_info "Congratulations $greeting, your SDPA installation is working!"
+log_info "+ Congratulations $greeting, your installation is working!"
