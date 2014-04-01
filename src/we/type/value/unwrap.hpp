@@ -3,6 +3,8 @@
 
 #include <we/type/value.hpp>
 
+#include <boost/foreach.hpp>
+
 namespace pnet
 {
   namespace type
@@ -14,7 +16,7 @@ namespace pnet
       {
         std::list<T> lt;
 
-        for (value_type const &v : lv)
+        BOOST_FOREACH (value_type const &v, lv)
         {
           lt.push_back (boost::get<T>(v));
         }
@@ -27,7 +29,7 @@ namespace pnet
       {
         std::set<T> st;
 
-        for (value_type const &v : sv)
+        BOOST_FOREACH (value_type const &v, sv)
         {
           st.insert (boost::get<T>(v));
         }
@@ -40,7 +42,11 @@ namespace pnet
       {
         std::map<K, V> mkv;
 
-        for (std::map<value_type, value_type>::value_type const& kv : mvv)
+        BOOST_FOREACH
+          ( std::map<value_type BOOST_PP_COMMA() value_type>::value_type const&
+            kv
+          , mvv
+          )
         {
           mkv.insert (std::make_pair ( boost::get<K>(kv.first)
                                      , boost::get<V>(kv.second)
