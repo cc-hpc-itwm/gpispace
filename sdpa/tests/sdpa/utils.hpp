@@ -413,12 +413,12 @@ namespace utils
 
       _jobs.insert (std::make_pair (name, job_t (*e->job_id(), e->from())));
 
-      _announce_job (name);
-
       _network.perform
         ( sdpa::events::SDPAEvent::Ptr
           (new sdpa::events::SubmitJobAckEvent (_name, e->from(), *e->job_id()))
         );
+
+      _announce_job (name);
     }
     virtual void handleJobFinishedAckEvent
       (const sdpa::events::JobFinishedAckEvent*)
