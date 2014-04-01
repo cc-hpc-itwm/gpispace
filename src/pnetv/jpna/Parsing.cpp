@@ -2,10 +2,8 @@
 
 #include "PetriNet.h"
 
-#include <we/type/activity.hpp>
 #include <we/type/expression.fwd.hpp>
 #include <we/type/module_call.fwd.hpp>
-#include <we/type/net.hpp>
 #include <we/type/port.hpp>
 #include <we/type/transition.hpp>
 
@@ -191,10 +189,16 @@ void parse(const char *filename, boost::ptr_vector<PetriNet> &petriNets) {
 }
 
 void parse(const char *filename, std::istream &in, boost::ptr_vector<PetriNet> &petriNets) {
-  we::type::activity_t activity (in);
+  parse (filename, we::type::activity_t (in), petriNets);
+}
 
-    TransitionVisitor visitor(filename, petriNets);
-    visitor(activity.transition());
+void parse ( const char* name
+           , we::type::activity_t const& activity
+           , boost::ptr_vector<PetriNet>& nets
+           )
+{
+  TransitionVisitor visitor (name, nets);
+  visitor (activity.transition());
 }
 
 } // namespace jpna
