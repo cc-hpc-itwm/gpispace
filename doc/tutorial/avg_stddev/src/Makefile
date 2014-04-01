@@ -8,9 +8,9 @@ CXXFLAGS += -Wall
 CXXFLAGS += -Wextra
 
 CXXINCLUDEPATHS += .
-CXXINCLUDEPATHS += $(BOOST_ROOT)/include
+CXXINCLUDEPATHS += $(SDPA_HOME)/include
 
-CXXLIBPATHS += $(BOOST_ROOT)/lib
+CXXLIBPATHS += $(SDPA_HOME)/lib
 
 LIBS += boost_program_options
 LIBS += boost_thread
