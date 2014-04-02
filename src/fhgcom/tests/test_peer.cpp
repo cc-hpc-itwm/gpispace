@@ -9,6 +9,8 @@
 #include <fhgcom/tcp_server.hpp>
 #include <fhgcom/tests/address_printer.hpp>
 
+#include <fhg/util/random_string.hpp>
+
 #include <boost/thread.hpp>
 
 struct KVSSetup
@@ -45,13 +47,16 @@ struct KVSSetup
 BOOST_FIXTURE_TEST_CASE (check_setup, KVSSetup)
 {
   // make sure that the kvs is reachable...
-  _kvs->put ("fhg.com.test.PeerTest", 42);
+  std::string const key (fhg::util::random_string());
+  std::string const value (fhg::util::random_string());
 
-  const fhg::com::kvs::values_type v (_kvs->get ("fhg.com.test.PeerTest"));
+  _kvs->put (key, value);
+
+  const fhg::com::kvs::values_type v (_kvs->get (key));
   BOOST_REQUIRE_EQUAL (v.size(), 1);
-  BOOST_REQUIRE_EQUAL (v.begin()->first, "fhg.com.test.PeerTest");
-  BOOST_REQUIRE_EQUAL (v.begin()->second, "42");
-  _kvs->del ("fhg.com.test.PeerTest");
+  BOOST_REQUIRE_EQUAL (v.begin()->first, key);
+  BOOST_REQUIRE_EQUAL (v.begin()->second, value);
+  _kvs->del (key);
 }
 
 BOOST_AUTO_TEST_CASE (parse_peer_info_full)

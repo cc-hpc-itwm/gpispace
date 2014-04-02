@@ -16,6 +16,7 @@ fhg_add_test (test_peer.cpp
   PROJECT fhgcom
   BOOST_UNIT_TEST
   LINK_LIBRARIES fhgcom
+                 fhg-util
                  ${FhgLog_LIBRARY}
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_SERIALIZATION_LIBRARY}
