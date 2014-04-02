@@ -88,7 +88,7 @@ double AsianMonteCarlo (
   double DeltaT, GewT;    // Hilfsvariablen
   double value = 0.0;
   double valuecv = 0.0;   // Wert bei geom. Mittel
-  // double valueana = 0.0;  // Analytischer Wert bei geom. Mittel
+  double valueana = 0.0;  // Analytischer Wert bei geom. Mittel
   double cv;              // Multiplikator falls mit Controle Variate
   double G;               // Hilfsvariable
 
@@ -118,6 +118,8 @@ double AsianMonteCarlo (
     valueana = 0.0;
     cv = 0.0;
   };
+
+  (void)(valueana);
 
   for (long int j=1; j<=pstParam->m_nn; j++)
   {
