@@ -65,14 +65,13 @@ namespace fhg
                     );
           }
 
-          template <typename Val>
-          void put (key_type const & k, Val v)
+          void put (key_type const & k, std::string const& value)
           {
             boost::lock_guard<boost::recursive_mutex> lock (mtx_);
 
             fhg::com::kvs::message::type m;
             request ( kvs_
-                    , fhg::com::kvs::message::put (k, v)
+                    , fhg::com::kvs::message::put (k, value)
                     , m
                     );
           }
