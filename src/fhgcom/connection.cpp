@@ -10,8 +10,6 @@
 
 #include <functional>
 
-using namespace boost::asio::ip;
-
 namespace fhg
 {
   namespace com
@@ -48,7 +46,7 @@ namespace fhg
       }
     }
 
-    tcp::socket & connection_t::socket()
+    boost::asio::ip::tcp::socket & connection_t::socket()
     {
       return socket_;
     }
