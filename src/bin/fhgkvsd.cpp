@@ -13,7 +13,7 @@
 
 #include <fhg/util/daemonize.hpp>
 
-static fhg::com::io_service_pool pool;
+static fhg::com::io_service_pool pool (4);
 static fhg::com::kvs::server::kvsd *g_kvsd (nullptr);
 
 static const int EX_STILL_RUNNING = 4;
@@ -198,7 +198,6 @@ int main(int ac, char *av[])
                                 , reuse_address
                                 );
 
-    pool.set_nthreads (4);
     pool.run ();
   }
   catch (std::exception const & ex)

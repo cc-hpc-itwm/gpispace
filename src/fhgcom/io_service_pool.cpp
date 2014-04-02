@@ -6,10 +6,10 @@ namespace fhg
 {
   namespace com
   {
-    io_service_pool::io_service_pool ()
+    io_service_pool::io_service_pool (std::size_t nthreads)
       : io_service_ (new boost::asio::io_service)
       , work_ (new boost::asio::io_service::work (*io_service_))
-      , m_nthreads (1)
+      , m_nthreads (nthreads)
     {}
 
     void io_service_pool::run ()
