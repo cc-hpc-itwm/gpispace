@@ -29,25 +29,8 @@ tcp_server::tcp_server ( io_service_pool & pool
 
   while (endpoint_iterator != boost::asio::ip::tcp::resolver::iterator())
   {
-    try_start(*endpoint_iterator);
-    ++endpoint_iterator;
-  }
-}
-
-void tcp_server::stop ()
-{
-  acceptor_.close();
-}
-
-unsigned short tcp_server::port () const
-{
-  return acceptor_.local_endpoint().port();
-}
-
-void tcp_server::try_start ( boost::asio::ip::tcp::endpoint endpoint
-                           )
-{
   boost::system::error_code ec;
+  boost::asio::ip::tcp::endpoint endpoint (*endpoint_iterator);
 
   acceptor_.close ();
   acceptor_.open (endpoint.protocol(), ec);
@@ -76,6 +59,18 @@ void tcp_server::try_start ( boost::asio::ip::tcp::endpoint endpoint
     acceptor_.close();
     boost::asio::detail::throw_error (ec);
   }
+    ++endpoint_iterator;
+  }
+}
+
+void tcp_server::stop ()
+{
+  acceptor_.close();
+}
+
+unsigned short tcp_server::port () const
+{
+  return acceptor_.local_endpoint().port();
 }
 
 void tcp_server::accept ()
