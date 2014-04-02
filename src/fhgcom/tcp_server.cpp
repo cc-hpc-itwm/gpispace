@@ -22,8 +22,6 @@ tcp_server::tcp_server ( io_service_pool & pool
 {
   acceptor_.close ();
 
-  boost::system::error_code ec;
-
   boost::asio::ip::tcp::resolver resolver (service_pool_.get_io_service());
   boost::asio::ip::tcp::resolver::query query(host_, service_);
   boost::asio::ip::tcp::resolver::iterator
@@ -31,12 +29,9 @@ tcp_server::tcp_server ( io_service_pool & pool
 
   while (endpoint_iterator != boost::asio::ip::tcp::resolver::iterator())
   {
-    if   (try_start(*endpoint_iterator, ec)) break;
-    else ++endpoint_iterator;
+    try_start(*endpoint_iterator);
+    ++endpoint_iterator;
   }
-
-  // throw remaining error if any
-  boost::asio::detail::throw_error (ec);
 }
 
 void tcp_server::stop ()
@@ -49,19 +44,20 @@ unsigned short tcp_server::port () const
   return acceptor_.local_endpoint().port();
 }
 
-bool tcp_server::try_start ( boost::asio::ip::tcp::endpoint endpoint
-                           , boost::system::error_code & ec
+void tcp_server::try_start ( boost::asio::ip::tcp::endpoint endpoint
                            )
 {
+  boost::system::error_code ec;
+
   acceptor_.close ();
   acceptor_.open (endpoint.protocol(), ec);
 
-  if (ec) return false;
+  if (ec) boost::asio::detail::throw_error (ec);
 
   if (reuse_addr_)
   {
     acceptor_.set_option (tcp::acceptor::reuse_address(true), ec);
-    if (ec) return false;
+    if (ec) boost::asio::detail::throw_error (ec);
   }
 
   acceptor_.bind (endpoint, ec);
@@ -78,10 +74,8 @@ bool tcp_server::try_start ( boost::asio::ip::tcp::endpoint endpoint
   {
     LOG(WARN, "could not bind to " << endpoint << " = " << ec.message() << ": " << ec);
     acceptor_.close();
-    return false;
+    boost::asio::detail::throw_error (ec);
   }
-
-  return true;
 }
 
 void tcp_server::accept ()

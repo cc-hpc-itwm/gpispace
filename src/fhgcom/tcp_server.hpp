@@ -27,8 +27,7 @@ namespace fhg
 
       unsigned short port () const;
     private:
-      bool try_start ( boost::asio::ip::tcp::endpoint ep
-                     , boost::system::error_code & ec
+      void try_start ( boost::asio::ip::tcp::endpoint ep
                      );
       void accept ();
       void handle_accept ( boost::shared_ptr<session> session
