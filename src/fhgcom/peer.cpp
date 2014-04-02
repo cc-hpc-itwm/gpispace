@@ -759,8 +759,6 @@ namespace fhg
           to_send_t to_send = cd.o_queue.front();
           cd.o_queue.pop_front();
 
-          using namespace boost::system;
-
           lock.unlock ();
           to_send.handler (ec);
           lock.lock ();
@@ -775,7 +773,6 @@ namespace fhg
           to_recv_t to_recv = tmp.front();
           tmp.pop_front();
 
-          using namespace boost::system;
           to_recv.message->header.src = c->remote_address();
           to_recv.message->header.dst = c->local_address();
 
