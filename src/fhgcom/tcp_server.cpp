@@ -7,19 +7,19 @@
 using namespace fhg::com;
 using namespace boost::asio::ip;
 
-tcp_server::tcp_server ( io_service_pool & pool
+tcp_server::tcp_server ( boost::asio::io_service& io_service
                        , tcp_server::manager_t & manager
                        , const std::string & host
                        , const std::string & service
                        , const bool reuse_addr
                        )
-  : service_pool_ (pool)
+  : _io_service (io_service)
   , manager_(manager)
-  , acceptor_(pool.get_io_service())
+  , acceptor_(_io_service)
 {
   acceptor_.close ();
 
-  boost::asio::ip::tcp::resolver resolver (service_pool_.get_io_service());
+  boost::asio::ip::tcp::resolver resolver (_io_service);
   boost::asio::ip::tcp::resolver::query query(host, service);
   boost::asio::ip::tcp::resolver::iterator
     endpoint_iterator(resolver.resolve (query));
@@ -80,7 +80,7 @@ unsigned short tcp_server::port () const
 void tcp_server::accept ()
 {
   boost::shared_ptr<session>
-    new_session (new session (service_pool_.get_io_service(), manager_));
+    new_session (new session (_io_service, manager_));
 
   acceptor_.async_accept
     ( new_session->socket()

@@ -158,7 +158,7 @@ namespace utils
     kvs_server()
       : _io_service_pool (1)
       , _kvs_daemon (boost::none)
-      , _tcp_server (_io_service_pool, _kvs_daemon, "localhost", "0", true)
+      , _tcp_server (_io_service_pool.get_io_service(), _kvs_daemon, "localhost", "0", true)
       , _io_thread (&fhg::com::io_service_pool::run, &_io_service_pool)
     {}
     ~kvs_server()

@@ -21,7 +21,7 @@ struct KVSSetup
   KVSSetup ()
     : m_pool (1)
     , m_kvsd (boost::none)
-    , m_serv (m_pool, m_kvsd, "localhost", "0", true)
+    , m_serv (m_pool.get_io_service(), m_kvsd, "localhost", "0", true)
     , m_thrd (&fhg::com::io_service_pool::run, &m_pool)
     , _kvs ( new fhg::com::kvs::client::kvsc
              ( "localhost"

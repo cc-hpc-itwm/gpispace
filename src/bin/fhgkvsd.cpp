@@ -191,7 +191,7 @@ int main(int ac, char *av[])
 
   try
   {
-    fhg::com::tcp_server server ( pool
+    fhg::com::tcp_server server ( pool.get_io_service()
                                 , kvsd
                                 , server_address
                                 , server_port
