@@ -173,7 +173,7 @@ namespace utils
     }
     std::string kvs_port() const
     {
-      return boost::lexical_cast<std::string> (_tcp_server.port());
+      return boost::lexical_cast<std::string> (_tcp_server.TESTONLY_port());
     }
 
   private:

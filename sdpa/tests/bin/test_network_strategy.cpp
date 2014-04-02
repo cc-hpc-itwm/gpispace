@@ -25,7 +25,7 @@ struct KVSSetup
     , m_thrd (&fhg::com::io_service_pool::run, &m_pool)
     , _kvs ( new fhg::com::kvs::client::kvsc
              ( "localhost"
-             , boost::lexical_cast<std::string> (m_serv.port())
+             , boost::lexical_cast<std::string> (m_serv.TESTONLY_port())
              , true // auto_reconnect
              , boost::posix_time::seconds (3)
              , 3

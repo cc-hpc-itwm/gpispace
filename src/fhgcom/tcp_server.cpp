@@ -72,7 +72,7 @@ void tcp_server::stop ()
   acceptor_.close();
 }
 
-unsigned short tcp_server::port () const
+unsigned short tcp_server::TESTONLY_port () const
 {
   return acceptor_.local_endpoint().port();
 }
