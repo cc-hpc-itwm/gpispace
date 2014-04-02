@@ -585,8 +585,8 @@ namespace fhg
          || (endpoint.address() == boost::asio::ip::address_v6::any())
          )
       {
-        const std::string h(boost::asio::ip::host_name());
-        values[prefix + "." + "location" + "." + "host"] = h;
+        values[prefix + "." + "location" + "." + "host"]
+          = boost::asio::ip::host_name();
       }
 
       try
