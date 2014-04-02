@@ -35,12 +35,19 @@ tcp_server::tcp_server ( io_service_pool & pool
     acceptor_.close ();
     acceptor_.open (endpoint.protocol(), ec);
 
-    if (ec) boost::asio::detail::throw_error (ec);
+    if (ec)
+    {
+      boost::asio::detail::throw_error (ec);
+    }
 
     if (reuse_addr_)
     {
       acceptor_.set_option (tcp::acceptor::reuse_address(true), ec);
-      if (ec) boost::asio::detail::throw_error (ec);
+
+      if (ec)
+      {
+        boost::asio::detail::throw_error (ec);
+      }
     }
 
     acceptor_.bind (endpoint, ec);
