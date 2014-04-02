@@ -12,8 +12,7 @@
 
 #include <fhg/assert.hpp>
 #include <fhg/util/backtracing_exception.hpp>
-
-#include <boost/format.hpp>
+#include <fhg/util/macros.hpp>
 
 #include <QCheckBox>
 #include <QHBoxLayout>
@@ -27,7 +26,6 @@
 #include <QToolTip>
 
 #include <functional>
-#include <stdexcept>
 
 namespace fhg
 {
@@ -695,8 +693,7 @@ namespace fhg
           case event::STATE_CANCELED: return "canceled";
           }
 
-          throw std::runtime_error
-            ((boost::format ("invalid worker_model::state_type: %1%") % state).str());
+          INVALID_ENUM_VALUE(worker_model::state_type, state);
         }
       }
 
@@ -891,9 +888,11 @@ namespace fhg
       {
         fhg_assert (can_edit_section (index), "only create editors for editable sections");
 
-        switch ( util::qt::value<execution_monitor_proxy::column_type>
-                 (index.data (execution_monitor_proxy::column_type_role))
-               )
+        const execution_monitor_proxy::column_type column
+          (util::qt::value<execution_monitor_proxy::column_type>
+          (index.data (execution_monitor_proxy::column_type_role)
+          ));
+        switch (column)
         {
         case execution_monitor_proxy::name_column:
           {
@@ -911,7 +910,7 @@ namespace fhg
           throw std::runtime_error ("can't create editor for non-editable section");
         }
 
-        throw std::runtime_error ("invalid column_type");
+        INVALID_ENUM_VALUE(execution_monitor_proxy::column_type, column);
       }
 
       void execution_monitor_delegate::release_editor

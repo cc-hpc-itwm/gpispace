@@ -16,7 +16,6 @@
 
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/shared_ptr.hpp>
-#include <boost/format.hpp>
 
 #include <QAction>
 #include <QColorDialog>
@@ -28,7 +27,8 @@
 #include <QVBoxLayout>
 
 #include <functional>
-#include <stdexcept>
+
+#include <fhg/util/macros.hpp>
 
 Q_DECLARE_METATYPE (sdpa::daemon::NotificationEvent::state_t)
 
@@ -187,8 +187,7 @@ namespace fhg
           case event::STATE_CANCELED: return "canceled";
           }
 
-          throw std::runtime_error
-            ((boost::format ("invalid worker_model::state_type: %1%") % state).str());
+          INVALID_ENUM_VALUE (worker_model::state_type, state);
         }
 
         QColor get_or_set_with_default
