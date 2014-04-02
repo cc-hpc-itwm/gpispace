@@ -306,7 +306,7 @@ namespace utils
 
     ~basic_drts_component()
     {
-      BOOST_REQUIRE (_accepted_workers.empty());
+      wait_for_workers_to_shutdown();
     }
 
     virtual void handleWorkerRegistrationAckEvent
@@ -333,12 +333,22 @@ namespace utils
       if (e->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN)
       {
         BOOST_REQUIRE (_accept_workers);
+        boost::mutex::scoped_lock const _ (_mutex_workers_shutdown);
         BOOST_REQUIRE (_accepted_workers.erase (e->from()));
+        if(_accepted_workers.empty())
+          _cond_workers_shutdown.notify_all();
       }
       else
       {
         throw std::runtime_error ("UNHANDLED EVENT: ErrorEvent");
       }
+    }
+
+    void wait_for_workers_to_shutdown()
+    {
+      boost::mutex::scoped_lock lock (_mutex_workers_shutdown);
+      while(!_accepted_workers.empty())
+        _cond_workers_shutdown.wait(lock);
     }
 
     std::string name() const { return _name; }
@@ -371,6 +381,9 @@ namespace utils
         _event_queue.get()->handleBy (this);
       }
     }
+  private:
+      boost::mutex _mutex_workers_shutdown;
+      boost::condition_variable_any _cond_workers_shutdown;
   };
 
   class basic_drts_worker : public basic_drts_component
