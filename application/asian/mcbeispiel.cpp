@@ -7,7 +7,7 @@
 
 int main()
 {
-	
+
 	// Programm-Parameter
   param_t stParam;
 
@@ -58,33 +58,33 @@ int main()
 
 	// Aktienpreis
 //	S = 100.0;
-	
+
 
 	// Strike
-	
+
 //	K = 90.0;
-	
+
 
 	// Faelligkeit
-	
+
 //	T = 1.0027;
-	
+
 	// Volatilitaet
-	
+
 //	sigma = 0.2;
-	
+
 
 	// Zinsrate
-	
+
 //	r = 0.05;
-	
+
 
 	// Dividende
-	
+
 //	d = 0.0;
 
 	// Fixings
-	
+
 //	FixingsProJahr = 5.0;
 	AnzahlderFixings = (long)(stParam.m_dFixingsProJahr * stParam.m_dT);
 
