@@ -9,7 +9,6 @@
 #include <boost/function.hpp>
 
 #include <boost/foreach.hpp>
-#include <boost/preprocessor/punctuation/comma.hpp>
 
 #include <we/type/value/show.hpp>
 #include <iostream>
