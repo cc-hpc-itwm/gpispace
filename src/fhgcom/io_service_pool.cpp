@@ -1,6 +1,5 @@
 #include <fhgcom/io_service_pool.hpp>
 
-#include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
 #include <stdexcept>
@@ -17,18 +16,13 @@ namespace fhg
 
     void io_service_pool::run ()
     {
-      std::vector<boost::shared_ptr<boost::thread>> threads;
+      boost::thread_group  threads;
         for (std::size_t j (0) ; j < m_nthreads ; ++j)
         {
-          boost::shared_ptr<boost::thread> thread
-            (new boost::thread([this] { io_service_->run(); }));
-          threads.push_back (thread);
+          threads.create_thread ([this] { io_service_->run(); });
         }
 
-      for (std::size_t i (0); i < threads.size(); ++i)
-      {
-        threads[i]->join();
-      }
+        threads.join_all();
     }
 
     void io_service_pool::stop ()
