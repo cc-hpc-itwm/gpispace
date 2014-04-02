@@ -2,8 +2,6 @@
 
 #include <boost/thread.hpp>
 
-#include <stdexcept>
-
 namespace fhg
 {
   namespace com
