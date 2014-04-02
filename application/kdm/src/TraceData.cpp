@@ -318,8 +318,6 @@ float TraceData::GetData(const int& it, const float Frequ) const
 
 float TraceData::GetData(const float& t,SincInterpolator &_SincInt) const
 {
-  int it = static_cast<int> ((t-T0)/dtbin);
-//  std::cout << "t = " << t << ", it = " << it << std::endl;
 
 
   const float sign = 1.0f;
