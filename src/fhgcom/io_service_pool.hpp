@@ -18,7 +18,7 @@ namespace fhg
       : private boost::noncopyable
     {
     public:
-      explicit io_service_pool (std::size_t pool_size);
+      io_service_pool ();
 
       void set_nthreads (size_t nthreads) { m_nthreads = nthreads; }
 

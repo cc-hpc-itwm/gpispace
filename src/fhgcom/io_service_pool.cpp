@@ -9,10 +9,12 @@ namespace fhg
 {
   namespace com
   {
-    io_service_pool::io_service_pool (std::size_t pool_size)
+    io_service_pool::io_service_pool ()
       : next_io_service_(0)
       , m_nthreads (1)
     {
+      std::size_t const pool_size (1);
+
       if (pool_size == 0)
       {
         throw std::runtime_error ("io_service_pool(): pool-size must not be 0");
