@@ -29,36 +29,36 @@ tcp_server::tcp_server ( io_service_pool & pool
 
   while (endpoint_iterator != boost::asio::ip::tcp::resolver::iterator())
   {
-  boost::system::error_code ec;
-  boost::asio::ip::tcp::endpoint endpoint (*endpoint_iterator);
+    boost::system::error_code ec;
+    boost::asio::ip::tcp::endpoint endpoint (*endpoint_iterator);
 
-  acceptor_.close ();
-  acceptor_.open (endpoint.protocol(), ec);
+    acceptor_.close ();
+    acceptor_.open (endpoint.protocol(), ec);
 
-  if (ec) boost::asio::detail::throw_error (ec);
-
-  if (reuse_addr_)
-  {
-    acceptor_.set_option (tcp::acceptor::reuse_address(true), ec);
     if (ec) boost::asio::detail::throw_error (ec);
-  }
 
-  acceptor_.bind (endpoint, ec);
-  if (! ec)
-  {
-    acceptor_.listen (tcp::acceptor::max_connections, ec);
+    if (reuse_addr_)
+    {
+      acceptor_.set_option (tcp::acceptor::reuse_address(true), ec);
+      if (ec) boost::asio::detail::throw_error (ec);
+    }
+
+    acceptor_.bind (endpoint, ec);
     if (! ec)
     {
-      accept ();
+      acceptor_.listen (tcp::acceptor::max_connections, ec);
+      if (! ec)
+      {
+        accept ();
+      }
     }
-  }
 
-  if (ec)
-  {
-    LOG(WARN, "could not bind to " << endpoint << " = " << ec.message() << ": " << ec);
-    acceptor_.close();
-    boost::asio::detail::throw_error (ec);
-  }
+    if (ec)
+    {
+      LOG(WARN, "could not bind to " << endpoint << " = " << ec.message() << ": " << ec);
+      acceptor_.close();
+      boost::asio::detail::throw_error (ec);
+    }
     ++endpoint_iterator;
   }
 }
