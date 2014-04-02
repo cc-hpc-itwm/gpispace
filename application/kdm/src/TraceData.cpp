@@ -319,16 +319,15 @@ float TraceData::GetData(const int& it, const float Frequ) const
 float TraceData::GetData(const float& t,SincInterpolator &_SincInt) const
 {
   int it = static_cast<int> ((t-T0)/dtbin);
-  float Data;
 //  std::cout << "t = " << t << ", it = " << it << std::endl;
   if (it >= (Nt-1))
-    Data = 0;
+  {
+  }
   else
   {
     const float t0 = Trace[it];
     const float t1 = Trace[it+1];
     const float d = (t-(T0+it*dtbin))/dtbin;
-    Data = d * t1 + (1-d) * t0;
   }
 
 
