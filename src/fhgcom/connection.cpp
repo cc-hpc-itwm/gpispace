@@ -140,7 +140,7 @@ namespace fhg
 
     void connection_t::start_send (connection_t::to_send_t const & s)
     {
-      bool send_in_progress = !to_send_.empty();
+      bool const send_in_progress = !to_send_.empty();
       to_send_.push_back (s);
       if (! send_in_progress)
         start_send();
@@ -179,7 +179,7 @@ namespace fhg
     {
       if (! ec)
       {
-        to_send_t d (to_send_.front());
+        to_send_t const d (to_send_.front());
         to_send_.pop_front();
 
         try
