@@ -68,17 +68,11 @@ namespace fhg
           template <typename Val>
           void put (key_type const & k, Val v)
           {
-            this->timed_put<Val>(k, v, 0);
-          }
-
-          template <typename Val>
-          void timed_put (key_type const & k, Val v, size_t expiry)
-          {
             boost::lock_guard<boost::recursive_mutex> lock (mtx_);
 
             fhg::com::kvs::message::type m;
             request ( kvs_
-                    , fhg::com::kvs::message::put (k, v).set_expiry (expiry)
+                    , fhg::com::kvs::message::put (k, v)
                     , m
                     );
           }

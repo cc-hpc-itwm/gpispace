@@ -43,7 +43,6 @@ int main(int ac, char *av[])
 
   std::string key;
   std::string value;
-  size_t expiry (0);
   size_t timeout (120 * 1000);
 
   std::vector<std::string> key_list;
@@ -55,7 +54,6 @@ int main(int ac, char *av[])
     ("port,P", po::value<std::string>(&server_port)->default_value(server_port), "port or service name to use")
     ("key,k", po::value<std::string>(&key), "key to put or get")
     ("value,v", po::value<std::string>(&value), "value to store")
-    ("expiry,e", po::value<size_t>(&expiry)->default_value (expiry), "expiry of entry in milli seconds")
     ("full,f", "key must match completely")
 
     ("save,S", "save the database on the server")
@@ -222,9 +220,6 @@ int main(int ac, char *av[])
 
     try
     {
-      if (expiry)
-        client.timed_put (key, value, expiry);
-      else
         client.put (key, value);
     }
     catch (std::exception const & ex)
