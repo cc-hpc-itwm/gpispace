@@ -7,8 +7,8 @@ namespace fhg
   namespace com
   {
     io_service_pool::io_service_pool (std::size_t nthreads)
-      : io_service_ (new boost::asio::io_service)
-      , work_ (new boost::asio::io_service::work (*io_service_))
+      : io_service_()
+      , work_ (io_service_)
       , m_nthreads (nthreads)
     {}
 
@@ -17,7 +17,7 @@ namespace fhg
       boost::thread_group  threads;
         for (std::size_t j (0) ; j < m_nthreads ; ++j)
         {
-          threads.create_thread ([this] { io_service_->run(); });
+          threads.create_thread ([this] { io_service_.run(); });
         }
 
         threads.join_all();
@@ -25,12 +25,12 @@ namespace fhg
 
     void io_service_pool::stop ()
     {
-        io_service_->stop();
+        io_service_.stop();
     }
 
     boost::asio::io_service & io_service_pool::get_io_service ()
     {
-      return *io_service_;
+      return io_service_;
     }
   }
 }
