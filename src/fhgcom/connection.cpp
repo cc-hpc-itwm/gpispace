@@ -182,14 +182,16 @@ namespace fhg
         to_send_t const d (to_send_.front());
         to_send_.pop_front();
 
-        try
+        if (d.handler)
         {
-          if (d.handler)
+          try
+          {
             d.handler (ec);
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "completion handler failed: " << ex.what());
+          }
+          catch (std::exception const & ex)
+          {
+            LOG(ERROR, "completion handler failed: " << ex.what());
+          }
         }
 
         if (! to_send_.empty())
