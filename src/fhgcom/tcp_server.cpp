@@ -20,21 +20,6 @@ tcp_server::tcp_server ( io_service_pool & pool
   , reuse_addr_(reuse_addr)
   , acceptor_(pool.get_io_service())
 {
-  start();
-}
-
-void tcp_server::stop ()
-{
-  acceptor_.close();
-}
-
-unsigned short tcp_server::port () const
-{
-  return acceptor_.local_endpoint().port();
-}
-
-void tcp_server::start ()
-{
   acceptor_.close ();
 
   boost::system::error_code ec;
@@ -52,6 +37,16 @@ void tcp_server::start ()
 
   // throw remaining error if any
   boost::asio::detail::throw_error (ec);
+}
+
+void tcp_server::stop ()
+{
+  acceptor_.close();
+}
+
+unsigned short tcp_server::port () const
+{
+  return acceptor_.local_endpoint().port();
 }
 
 bool tcp_server::try_start ( boost::asio::ip::tcp::endpoint endpoint
