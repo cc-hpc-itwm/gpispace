@@ -33,7 +33,6 @@ namespace fhg
       std::vector<io_service_ptr> io_services_;
       std::vector<work_ptr> work_;
 
-      std::size_t next_io_service_;
       std::size_t m_nthreads;
     };
   }
