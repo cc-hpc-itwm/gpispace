@@ -320,15 +320,6 @@ float TraceData::GetData(const float& t,SincInterpolator &_SincInt) const
 {
   int it = static_cast<int> ((t-T0)/dtbin);
 //  std::cout << "t = " << t << ", it = " << it << std::endl;
-  if (it >= (Nt-1))
-  {
-  }
-  else
-  {
-    const float t0 = Trace[it];
-    const float t1 = Trace[it+1];
-    const float d = (t-(T0+it*dtbin))/dtbin;
-  }
 
 
   const float sign = 1.0f;
