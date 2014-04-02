@@ -304,6 +304,11 @@ namespace utils
         );
     }
 
+    ~basic_drts_component()
+    {
+      BOOST_REQUIRE (_accepted_workers.empty());
+    }
+
     virtual void handleWorkerRegistrationAckEvent
       (const sdpa::events::WorkerRegistrationAckEvent* e)
     {
