@@ -143,8 +143,7 @@ namespace fhg
       typedef std::unordered_map<p2p::address_t, connection_data_t> connections_t;
       connections_t connections_;
 
-      typedef std::set<connection_t::ptr_t> backlog_t;
-      backlog_t backlog_;
+      std::set<connection_t::ptr_t> backlog_;
 
       connection_t::ptr_t listen_;
 
