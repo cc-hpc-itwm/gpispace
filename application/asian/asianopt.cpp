@@ -525,6 +525,3 @@ bool CheckAsianParameters (
                  pstParam->m_dT, TimeV, GewV) < 0.0) OK = false;
 	return OK;
 };
-
-
-
