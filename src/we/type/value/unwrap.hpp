@@ -4,6 +4,7 @@
 #include <we/type/value.hpp>
 
 #include <boost/foreach.hpp>
+#include <boost/preprocessor/punctuation/comma.hpp>
 
 namespace pnet
 {
