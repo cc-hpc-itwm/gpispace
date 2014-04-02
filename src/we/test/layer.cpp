@@ -18,6 +18,7 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/range/algorithm.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <boost/preprocessor/punctuation/comma.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 
 #include <functional>
