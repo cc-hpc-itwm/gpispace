@@ -90,7 +90,7 @@ namespace fhg
 
           struct transform_function
           {
-            virtual ~transform_function() { }
+            virtual ~transform_function() = default;
             virtual QString operator() (QModelIndex) const = 0;
           };
 

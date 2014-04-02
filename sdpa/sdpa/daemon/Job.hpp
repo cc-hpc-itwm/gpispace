@@ -18,7 +18,7 @@ namespace sdpa
     // front-end: define the FSM structure
     struct JobFSM_ : public boost::msm::front::state_machine_def<JobFSM_>
     {
-      virtual ~JobFSM_() {}
+      virtual ~JobFSM_() = default;
 
       struct s_pending : public boost::msm::front::state<>{};
       struct s_running : public boost::msm::front::state<>{};

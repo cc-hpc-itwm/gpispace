@@ -188,7 +188,7 @@ private:
         , m_callback (cb)
       {}
 
-      virtual ~command_t () {}
+      virtual ~command_t () = default;
 
       int operator () (argv_t const & args, shell_t &shell) const
       {

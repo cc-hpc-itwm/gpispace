@@ -258,9 +258,7 @@ namespace fhg
             }
           }
 
-          virtual ~kvsd()
-          {
-          }
+          virtual ~kvsd() = default;
 
           void put ( fhg::com::kvs::message::put::map_type const & m
                    , boost::posix_time::ptime expiry = boost::posix_time::min_date_time

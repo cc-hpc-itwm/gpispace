@@ -157,10 +157,6 @@ GenericDaemon::GenericDaemon( const std::string name
   }
 }
 
-GenericDaemon::~GenericDaemon()
-{
-}
-
 GenericDaemon::cleanup_job_map_on_dtor_helper::cleanup_job_map_on_dtor_helper
     (job_map_t& m)
   : _ (m)

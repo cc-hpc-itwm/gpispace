@@ -19,7 +19,7 @@ namespace sdpa
 
       typedef std::string address_t;
 
-      virtual ~SDPAEvent() {}
+      virtual ~SDPAEvent() = default;
 
       const address_t& from() const
       {

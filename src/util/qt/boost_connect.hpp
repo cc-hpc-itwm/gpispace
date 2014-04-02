@@ -41,7 +41,7 @@ namespace fhg
         class abstract_connection_adapter
         {
         public:
-          virtual ~abstract_connection_adapter() { }
+          virtual ~abstract_connection_adapter() = default;
 
           virtual void invoke (void** args) = 0;
         };

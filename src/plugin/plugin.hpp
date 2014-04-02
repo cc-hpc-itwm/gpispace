@@ -44,7 +44,7 @@ namespace fhg
     class Plugin : boost::noncopyable
     {
     public:
-      virtual ~Plugin(){}
+      virtual ~Plugin() = default;
     };
   }
 }

@@ -36,7 +36,7 @@ namespace fhg
         on_data_hook (session, data);
       }
 
-      virtual ~session_manager() {}
+      virtual ~session_manager() = default;
     protected:
       virtual void on_data_hook (session_ptr, const std::string &) = 0;
     private:

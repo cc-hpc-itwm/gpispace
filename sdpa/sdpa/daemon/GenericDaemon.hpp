@@ -84,7 +84,7 @@ namespace sdpa {
                    , const boost::optional<std::string>& guiUrl = boost::none
                    , bool create_wfe = false
                    );
-      virtual ~GenericDaemon();
+      virtual ~GenericDaemon() = default;
 
       const std::string& name() const;
 
