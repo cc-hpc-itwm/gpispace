@@ -3,7 +3,6 @@
 #include <iostream>
 #include <boost/program_options.hpp>
 
-#include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/peer_info.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
