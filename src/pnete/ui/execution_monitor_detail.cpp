@@ -13,6 +13,8 @@
 #include <fhg/assert.hpp>
 #include <fhg/util/backtracing_exception.hpp>
 
+#include <boost/format.hpp>
+
 #include <QCheckBox>
 #include <QHBoxLayout>
 #include <QHelpEvent>
@@ -25,6 +27,7 @@
 #include <QToolTip>
 
 #include <functional>
+#include <stdexcept>
 
 namespace fhg
 {
@@ -691,6 +694,9 @@ namespace fhg
           case event::STATE_FAILED: return "failed";
           case event::STATE_CANCELED: return "canceled";
           }
+
+          throw std::runtime_error
+            ((boost::format ("invalid worker_model::state_type: %1%") % state).str());
         }
       }
 
@@ -904,6 +910,8 @@ namespace fhg
           //! \note asserted above, but throwing a warning in release builds
           throw std::runtime_error ("can't create editor for non-editable section");
         }
+
+        throw std::runtime_error ("invalid column_type");
       }
 
       void execution_monitor_delegate::release_editor

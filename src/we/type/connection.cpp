@@ -1,6 +1,8 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/type/connection.hpp>
+#include <boost/format.hpp>
+#include <stdexcept>
 
 namespace we
 {
@@ -23,6 +25,9 @@ namespace we
       case PT_READ: return "read";
       case TP: return "out";
       }
+
+      throw std::runtime_error
+        ((boost::format ("invalid edge type: %1%") % e).str());
     }
   }
 }
