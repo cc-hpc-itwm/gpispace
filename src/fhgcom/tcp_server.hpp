@@ -35,10 +35,6 @@ namespace fhg
       io_service_pool &  service_pool_;
       manager_t & manager_;
 
-      std::string host_;
-      std::string service_;
-      bool reuse_addr_;
-
       boost::asio::ip::tcp::acceptor acceptor_;
     };
   }

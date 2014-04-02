@@ -15,15 +15,12 @@ tcp_server::tcp_server ( io_service_pool & pool
                        )
   : service_pool_ (pool)
   , manager_(manager)
-  , host_(host)
-  , service_(service)
-  , reuse_addr_(reuse_addr)
   , acceptor_(pool.get_io_service())
 {
   acceptor_.close ();
 
   boost::asio::ip::tcp::resolver resolver (service_pool_.get_io_service());
-  boost::asio::ip::tcp::resolver::query query(host_, service_);
+  boost::asio::ip::tcp::resolver::query query(host, service);
   boost::asio::ip::tcp::resolver::iterator
     endpoint_iterator(resolver.resolve (query));
 
@@ -40,7 +37,7 @@ tcp_server::tcp_server ( io_service_pool & pool
       boost::asio::detail::throw_error (ec);
     }
 
-    if (reuse_addr_)
+    if (reuse_addr)
     {
       acceptor_.set_option (tcp::acceptor::reuse_address(true), ec);
 
