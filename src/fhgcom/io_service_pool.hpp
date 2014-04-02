@@ -8,8 +8,6 @@
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <vector>
-
 namespace fhg
 {
   namespace com
@@ -27,11 +25,8 @@ namespace fhg
 
       boost::asio::io_service & get_io_service ();
     private:
-      typedef boost::shared_ptr<boost::asio::io_service> io_service_ptr;
-      typedef boost::shared_ptr<boost::asio::io_service::work> work_ptr;
-
-      std::vector<io_service_ptr> io_services_;
-      std::vector<work_ptr> work_;
+      boost::shared_ptr<boost::asio::io_service> io_service_;
+      boost::shared_ptr<boost::asio::io_service::work> work_;
 
       std::size_t m_nthreads;
     };
