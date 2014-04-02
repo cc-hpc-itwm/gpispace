@@ -90,10 +90,6 @@ namespace fhg
         assert (bytes_transferred == sizeof(p2p::header_t));
 
         // WORK HERE: convert for local endianess!
-        LOG_IF( WARN
-              , in_message_->header.length > (1<<22)
-              , "incoming message is quite large (>4MB)!"
-              );
         in_message_->resize ();
 
         boost::asio::async_read ( socket_
