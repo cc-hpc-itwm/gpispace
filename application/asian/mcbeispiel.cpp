@@ -27,9 +27,8 @@ int main()
   double dx;
   double *pDivZeit = 0;
   double *pDivWert;
-  double result;
 
-	
+
   // Konfigurationsdatei einlesen
   char var[512],
 	line[512];
@@ -141,7 +140,7 @@ int main()
 	CVBool = false;
 
 
-	result = AsianMonteCarlo (Ergebnis, StdDev,
+	AsianMonteCarlo (Ergebnis, StdDev,
                               &stParam,
                               LastFixing,
                               TimeV, GewV, Div, Art, CVBool);
