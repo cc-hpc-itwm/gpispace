@@ -140,8 +140,7 @@ namespace fhg
       typedef std::unordered_map<p2p::address_t, std::string> reverse_lookup_cache_t;
       reverse_lookup_cache_t reverse_lookup_cache_;
 
-      typedef std::unordered_map<p2p::address_t, connection_data_t> connections_t;
-      connections_t connections_;
+      std::unordered_map<p2p::address_t, connection_data_t> connections_;
 
       std::set<connection_t::ptr_t> backlog_;
 
