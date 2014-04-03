@@ -102,6 +102,14 @@ add_definitions (-DBOOST_THREAD_THROW_IF_PRECONDITION_NOT_SATISFIED)
 
 get_filename_component (BOOST_ROOT "${Boost_INCLUDE_DIR}" PATH CACHE)
 
+if (NOT DEFINED Boost_LIBRARY_DIR)
+  get_filename_component (Boost_LIBRARY_DIR "${Boost_SYSTEM_LIBRARY}" PATH CACHE)
+endif()
+
+if (NOT DEFINED Boost_LIBRARY_DIRS)
+  set (Boost_LIBRARY_DIRS \"${Boost_LIBRARY_DIR}\" CACHE)
+endif()
+
 include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 # TODO : Remove again?
 link_directories (${Boost_LIBRARY_DIRS})

@@ -43,9 +43,12 @@ install(CODE "
   file(COPY \${GRAPHVIZ_PLUGIN_CORE} DESTINATION \"\${CMAKE_INSTALL_PREFIX}/lib/graphviz\")
   file(COPY \${GRAPHVIZ_PLUGIN_DOT} DESTINATION \"\${CMAKE_INSTALL_PREFIX}/lib/graphviz\")
   file(COPY \"${Boost_INCLUDE_DIR}/boost\" DESTINATION \"\${CMAKE_INSTALL_PREFIX}/include/\")
-  file(COPY \"${Boost_LIBRARY_DIR}/\" DESTINATION \"\${CMAKE_INSTALL_PREFIX}/lib/\"
-       FILES_MATCHING PATTERN \"libboost*.so*\"
-  )
+
+  foreach (_dir ${Boost_LIBRARY_DIRS})
+    file(GLOB_RECURSE __boost_libraries FOLLOW_SYMLINKS \"\${_dir}/libboost*\")
+    file(COPY \${__boost_libraries} DESTINATION \"\${CMAKE_INSTALL_PREFIX}/lib/\")
+  endforeach()
+  set(_dir)
 
   file(GLOB_RECURSE PLUGINS
          \"\${CMAKE_INSTALL_PREFIX}/libexec/fhg/plugins/*.so\")
