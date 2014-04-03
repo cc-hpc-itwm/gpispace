@@ -227,6 +227,29 @@ namespace we
             ar & token_rep;
           }
         }
+
+        std::size_t const number_of_enabled_transitions
+          ( std::accumulate
+            ( _enabled.begin(), _enabled.end()
+            , 0
+            , [](std::size_t n, enabled_type::value_type const& ps)
+            {
+              return n + ps.second.size();
+            }
+            )
+          );
+
+        ar & BOOST_SERIALIZATION_NVP (number_of_enabled_transitions);
+
+        for ( std::unordered_set<transition_id_type> const& s
+            : _enabled | boost::adaptors::map_values
+            )
+        {
+          for (transition_id_type transition_id : s)
+          {
+            ar & transition_id;
+          }
+        }
       }
       template<typename Archive>
       void load (Archive& ar, const unsigned int)
@@ -263,9 +286,25 @@ namespace we
           }
         }
 
+        std::size_t number_of_enabled_transitions;
+
+        ar & number_of_enabled_transitions;
+
+        std::unordered_set<transition_id_type> enabled_transitions;
+
+        while (number_of_enabled_transitions --> 0)
+        {
+          transition_id_type transition_id;
+          ar & transition_id;
+          enabled_transitions.insert (transition_id);
+        }
+
         for (transition_id_type tid : _tmap | boost::adaptors::map_keys)
         {
-          update_enabled (tid);
+          if (enabled_transitions.count (tid) > 0)
+          {
+            update_enabled (tid);
+          }
         }
       }
       BOOST_SERIALIZATION_SPLIT_MEMBER()
