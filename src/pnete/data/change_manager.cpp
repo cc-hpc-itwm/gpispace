@@ -204,6 +204,10 @@ namespace fhg
               change_manager_t& change_manager      \
             , internal_type* document
 
+#define ACTION_ARG_LIST_NO_DOCUMENT                 \
+              change_manager_t& change_manager      \
+            , internal_type*
+
 #define ACTION_INIT(NAME)                           \
                 QUndoCommand (NAME)                 \
               , _change_manager (change_manager)    \
@@ -235,7 +239,7 @@ namespace fhg
         }
 
         template<typename HANDLE_TYPE>
-          void set_property ( ACTION_ARG_LIST
+          void set_property ( ACTION_ARG_LIST_NO_DOCUMENT
                             , const HANDLE_TYPE& handle
                             , const ::we::type::property::key_type& key
                             , const ::we::type::property::value_type& val
@@ -306,7 +310,10 @@ namespace fhg
 
         template<typename HANDLE_TYPE>
         void set_type_impl
-          (ACTION_ARG_LIST, const HANDLE_TYPE& handle, const QString& type)
+          ( ACTION_ARG_LIST_NO_DOCUMENT
+          , const HANDLE_TYPE& handle
+          , const QString& type
+          )
         {
           handle.get_ref().type (type.toStdString());
 
@@ -352,7 +359,10 @@ namespace fhg
 
         template<typename HANDLE_TYPE>
         void set_name_impl
-          (ACTION_ARG_LIST, const HANDLE_TYPE& handle, const QString& name)
+          ( ACTION_ARG_LIST_NO_DOCUMENT
+          , const HANDLE_TYPE& handle
+          , const QString& name
+          )
         {
           handle.get_ref().name (name.toStdString());
 
@@ -565,7 +575,7 @@ namespace fhg
         };
 
         void connection_is_read_impl
-          (ACTION_ARG_LIST, const handle::connect& connect, bool read)
+          (ACTION_ARG_LIST_NO_DOCUMENT, const handle::connect& connect, bool read)
         {
           connect.get_ref().direction ( read
                                       ? we::edge::PT_READ
@@ -965,7 +975,7 @@ namespace fhg
         };
 
         void set_place_association_impl
-          ( ACTION_ARG_LIST
+          ( ACTION_ARG_LIST_NO_DOCUMENT
           , const handle::port& port
           , const boost::optional<std::string>& place
           )
@@ -1007,7 +1017,7 @@ namespace fhg
 
         // - function ------------------------------------------------
         void set_function_name_impl
-          ( ACTION_ARG_LIST
+          ( ACTION_ARG_LIST_NO_DOCUMENT
           , const data::handle::function& function
           , const boost::optional<std::string>& name
           )
@@ -1055,7 +1065,7 @@ namespace fhg
 
         // - expression ----------------------------------------------
         void set_expression_content_impl
-          ( ACTION_ARG_LIST
+          ( ACTION_ARG_LIST_NO_DOCUMENT
           , const data::handle::expression& expression
           , const std::string& content
           )
