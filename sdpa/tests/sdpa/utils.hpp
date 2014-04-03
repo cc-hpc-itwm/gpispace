@@ -256,13 +256,17 @@ namespace utils
 
   class basic_drts_component : sdpa::events::EventHandler
   {
-  public:
+  private:
     basic_drts_component
-        (std::string name, kvs_server const& kvs, bool accept_workers)
+        ( std::string name
+        , boost::optional<std::string> master_name
+        , std::string kvs_host, std::string kvs_port
+        , bool accept_workers
+        )
       : _name (name)
-      , _kvs_host (kvs.kvs_host())
-      , _kvs_port (kvs.kvs_port())
-      , _master_name (boost::none)
+      , _kvs_host (kvs_host)
+      , _kvs_port (kvs_port)
+      , _master_name (master_name)
       , _accept_workers (accept_workers)
       , _kvs_client
         ( new fhg::com::kvs::client::kvsc
@@ -277,27 +281,24 @@ namespace utils
       , _event_thread (&basic_drts_component::event_thread, this)
     {}
 
+  public:
+    basic_drts_component
+        (std::string name, kvs_server const& kvs, bool accept_workers)
+      : basic_drts_component ( name, boost::none
+                             , kvs.kvs_host(), kvs.kvs_port()
+                             , accept_workers
+                             )
+    {}
+
     basic_drts_component ( std::string name
                          , utils::agent const& master
                          , sdpa::capabilities_set_t capabilities
                          , bool accept_workers
                          )
-      : _name (name)
-      , _kvs_host (master.kvs_host())
-      , _kvs_port (master.kvs_port())
-      , _master_name (master.name())
-      , _accept_workers (accept_workers)
-      , _kvs_client
-        ( new fhg::com::kvs::client::kvsc
-          (_kvs_host, _kvs_port, true, boost::posix_time::seconds (120), 1)
-        )
-      , _event_queue()
-      , _network
-        ( [this] (sdpa::events::SDPAEvent::Ptr e) { _event_queue.put (e); }
-        , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
-        , _kvs_client
-        )
-      , _event_thread (&basic_drts_component::event_thread, this)
+      : basic_drts_component ( name, master.name()
+                             , master.kvs_host(), master.kvs_port()
+                             , accept_workers
+                             )
     {
       _network.perform
         ( sdpa::events::SDPAEvent::Ptr
