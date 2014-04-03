@@ -28,6 +28,11 @@ fhg_add_test (CoallocationScheduler.cpp
                  ${FhgLog_LIBRARY}
 )
 
+fhg_add_test (daemon_message_flow.cpp
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES sdpa
+)
+
 fhg_add_test (DiscoverJobStates.cpp
   PROJECT sdpa_test
   BOOST_UNIT_TEST
