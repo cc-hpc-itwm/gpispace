@@ -601,6 +601,13 @@ namespace we
 
     bool cross_type::enables (net_type* const n, transition_id_type transition_id)
     {
+      //! \note that means the transitions without in-port cannot fire
+      //! instead of fire unconditionally
+      if (_m.empty())
+      {
+        return false;
+      }
+
       we::type::transition_t const& transition
         (n->transitions().at (transition_id));
 
