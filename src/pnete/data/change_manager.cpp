@@ -58,8 +58,6 @@ namespace fhg
 
       namespace
       {
-        template <typename T> void no_unused_warning (T const &) {}
-
         namespace ids
         {
           enum
@@ -205,9 +203,6 @@ namespace fhg
 #define ACTION_ARG_LIST                             \
               change_manager_t& change_manager      \
             , internal_type* document
-#define ACTION_ARG_LIST_NO_UNUSED_WARNING       \
-        no_unused_warning (change_manager);     \
-        no_unused_warning (document)
 
 #define ACTION_INIT(NAME)                           \
                 QUndoCommand (NAME)                 \
@@ -246,8 +241,6 @@ namespace fhg
                             , const ::we::type::property::value_type& val
                             )
         {
-          ACTION_ARG_LIST_NO_UNUSED_WARNING;
-
           typedef HANDLE_TYPE handle_type;
           typedef void (change_manager_t::* signal_type)
             ( const handle_type&
@@ -315,8 +308,6 @@ namespace fhg
         void set_type_impl
           (ACTION_ARG_LIST, const HANDLE_TYPE& handle, const QString& type)
         {
-          ACTION_ARG_LIST_NO_UNUSED_WARNING;
-
           handle.get_ref().type (type.toStdString());
 
           typedef void (change_manager_t::* signal_type)
@@ -363,8 +354,6 @@ namespace fhg
         void set_name_impl
           (ACTION_ARG_LIST, const HANDLE_TYPE& handle, const QString& name)
         {
-          ACTION_ARG_LIST_NO_UNUSED_WARNING;
-
           handle.get_ref().name (name.toStdString());
 
           typedef void (change_manager_t::* signal_type)
@@ -388,9 +377,7 @@ namespace fhg
               , _handle (handle)
               , _old_name (QString::fromStdString (handle.get().name()))
               , _new_name (name)
-          {
-            ACTION_ARG_LIST_NO_UNUSED_WARNING;
-          }
+          { }
 
           virtual void undo()
           {
@@ -580,8 +567,6 @@ namespace fhg
         void connection_is_read_impl
           (ACTION_ARG_LIST, const handle::connect& connect, bool read)
         {
-          ACTION_ARG_LIST_NO_UNUSED_WARNING;
-
           connect.get_ref().direction ( read
                                       ? we::edge::PT_READ
                                       : we::edge::PT
@@ -985,7 +970,6 @@ namespace fhg
           , const boost::optional<std::string>& place
           )
         {
-          ACTION_ARG_LIST_NO_UNUSED_WARNING;
           port.get_ref().place = place;
           EMIT_SIGNAL (&signal::place_association_set, port, place);
         }
@@ -1028,8 +1012,6 @@ namespace fhg
           , const boost::optional<std::string>& name
           )
         {
-          ACTION_ARG_LIST_NO_UNUSED_WARNING;
-
           function.get_ref().name (name);
 
           EMIT_SIGNAL
@@ -1078,8 +1060,6 @@ namespace fhg
           , const std::string& content
           )
         {
-          ACTION_ARG_LIST_NO_UNUSED_WARNING;
-
           expression.get_ref().set (content);
 
           EMIT_SIGNAL
