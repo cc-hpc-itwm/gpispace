@@ -3,14 +3,22 @@ ifndef DIR_BUILD
   DIR_BUILD=.
 endif
 
+ifndef BOOST_ROOT
+  ifndef SDPA_HOME
+    $(error Neither BOOST_ROOT nor SDPA_HOME are set)
+  else
+    BOOST_ROOT := $(SDPA_HOME)/external/boost
+  endif
+endif
+
 CXXFLAGS += -O3
 CXXFLAGS += -Wall
 CXXFLAGS += -Wextra
 
 CXXINCLUDEPATHS += .
-CXXINCLUDEPATHS += $(SDPA_HOME)/include
+CXXINCLUDEPATHS += $(BOOST_ROOT)/include
 
-CXXLIBPATHS += $(SDPA_HOME)/lib
+CXXLIBPATHS += $(BOOST_ROOT)/lib
 
 LIBS += boost_program_options
 LIBS += boost_thread

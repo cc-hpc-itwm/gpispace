@@ -1160,8 +1160,18 @@ namespace xml
         stream << "  endif"                                        << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
+        stream << "ifndef BOOST_ROOT"                              << std::endl;
+        stream << "  ifndef SDPA_HOME"                             << std::endl;
+        stream << "    $(error Neither BOOST_ROOT nor SDPA_HOME are set)"
+                                                                   << std::endl;
+        stream << "  else"                                         << std::endl;
+        stream << "    BOOST_ROOT := $(SDPA_HOME)/external/boost"  << std::endl;
+        stream << "  endif"                                        << std::endl;
+        stream << "endif"                                          << std::endl;
+        stream                                                     << std::endl;
         stream << "CXXFLAGS += -I."                                << std::endl;
         stream << "CXXFLAGS += -isystem $(SDPA_INCLUDE)"           << std::endl;
+        stream << "CXXFLAGS += -isystem $(BOOST_ROOT)/include"     << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef SDPA_LDPATH"                             << std::endl;
         stream << "  ifndef SDPA_HOME"                             << std::endl;

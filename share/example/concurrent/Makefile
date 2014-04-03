@@ -24,8 +24,16 @@ include $(SDPA_HOME)/share/sdpa/make/common.mk
 
 WE_EXEC_LIBPATHS := $(BUILDDIR)
 
+ifndef BOOST_ROOT
+  ifndef SDPA_HOME
+    $(error Neither BOOST_ROOT nor SDPA_HOME are set)
+  else
+    BOOST_ROOT := $(SDPA_HOME)/external/boost
+  endif
+endif
+
 $(BUILDDIR)/concurrent.o: concurrent.cpp
-	$(CXX) -fPIC $(CXXFLAGS) -isystem $(SDPA_HOME)/include -c $< -o $@
+	$(CXX) -fPIC $(CXXFLAGS) -isystem $(SDPA_HOME)/include -isystem $(BOOST_ROOT)/include -c $< -o $@
 
 $(BUILDDIR)/libconcurrent.so: $(BUILDDIR)/concurrent.o
 	$(CXX) -fPIC -shared -o $@ $< $(LDFLAGS)
