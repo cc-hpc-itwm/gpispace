@@ -1,26 +1,3 @@
-set (hdrs
-  join.hpp
-  read_bool.hpp
-  split.hpp
-  starts_with.hpp
-
-  ini-parser.hpp
-
-  getenv.hpp
-
-  xml.hpp
-
-  counter.hpp
-  backtracing_exception.hpp
-  backtracing_exception.fwd.hpp
-
-  remove_prefix.hpp
-
-  now.hpp
-  hex.hpp
-  read_file.hpp
-)
-
 set (srcs
   ../syscall.cpp
 
@@ -78,9 +55,6 @@ target_link_libraries (fhg-util-shared
   ${Boost_RANDOM_LIBRARY}
   )
 
-install(FILES ${hdrs}
-  DESTINATION include/fhg/util
-)
 install (TARGETS fhg-util
   ARCHIVE DESTINATION lib
 )
