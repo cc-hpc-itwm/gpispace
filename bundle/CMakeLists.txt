@@ -68,6 +68,7 @@ install(CODE "
                           -x libpthread.*
                           -x libgthread.*
                           -x libreadline.*
+                          -x libboost*.*
                            ${APPS} \${PLUGINS}
                   RESULT_VARIABLE __res
                   ERROR_VARIABLE __err
