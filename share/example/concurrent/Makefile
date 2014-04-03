@@ -28,9 +28,9 @@ ifndef BOOST_ROOT
   BOOST_ROOT := $(SDPA_HOME)/external/boost
 else
   ifneq "$(BOOST_ROOT)" "$(SDPA_HOME)/external/boost"
-    $(warning "BOOST_ROOT is set and different from GSPC bundled version")
-    $(warning "BOOST_ROOT = $(BOOST_ROOT)")
-    $(warning "GSPC_BUNDLED = $(SDPA_HOME)/external/boost")
+    $(warning BOOST_ROOT is set and different from GSPC bundled version)
+    $(warning BOOST_ROOT = $(BOOST_ROOT))
+    $(warning GSPC_BUNDLED = $(SDPA_HOME)/external/boost)
   endif
 endif
 
