@@ -5,9 +5,18 @@
 
 #include <we/type/value.hpp>
 
-#include <fhg/util/parse/position.hpp>
-
 #include <string>
+
+namespace fhg
+{
+  namespace util
+  {
+    namespace parse
+    {
+      class position;
+    }
+  }
+}
 
 namespace pnet
 {
