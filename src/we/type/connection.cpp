@@ -1,8 +1,8 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/type/connection.hpp>
-#include <boost/format.hpp>
-#include <stdexcept>
+
+#include <fhg/util/macros.hpp>
 
 namespace we
 {
@@ -26,8 +26,7 @@ namespace we
       case TP: return "out";
       }
 
-      throw std::runtime_error
-        ((boost::format ("invalid edge type: %1%") % e).str());
+      INVALID_ENUM_VALUE (we::edge:type, e);
     }
   }
 }
