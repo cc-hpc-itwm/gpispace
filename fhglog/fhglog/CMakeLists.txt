@@ -6,7 +6,6 @@ set (hdrs
   color_map.hpp
   event.hpp
   fhglog.hpp
-  format.hpp
   level.hpp
   )
 set (header_appender
