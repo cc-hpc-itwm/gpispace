@@ -3,16 +3,10 @@ set (hdrs
   Configuration.hpp
   LogMacros.hpp
   Logger.hpp
-  color_map.hpp
   event.hpp
   fhglog.hpp
   level.hpp
   )
-set (header_appender
-  appender/file.hpp
-  appender/stream.hpp
-  appender/call.hpp
-)
 
 set (srcs
   Configuration.cpp
@@ -26,17 +20,10 @@ set (source_appender
   appender/stream.cpp
 )
 
-set (remote_hdrs
-  remote/server.hpp
-  remote/appender.hpp
-  )
 set (remote_srcs
   remote/server.cpp
   remote/appender.cpp
   )
-install(FILES ${remote_hdrs}
-  DESTINATION include/fhglog/remote
-)
 
 ADD_LIBRARY (fhglog
   ${srcs}
@@ -58,9 +45,6 @@ target_link_libraries (fhglog-shared fhg-util ${Boost_FILESYSTEM_LIBRARY})
 
 install(FILES ${hdrs}
   DESTINATION include/fhglog
-)
-install(FILES ${header_appender}
-  DESTINATION include/fhglog/appender
 )
 install(TARGETS fhglog
   ARCHIVE
