@@ -1168,13 +1168,15 @@ namespace xml
         stream << "    BOOST_ROOT := $(SDPA_HOME)/external/boost"  << std::endl;
         stream << "  endif"                                        << std::endl;
         stream << "else"                                           << std::endl;
-        stream << "  ifneq \"$(BOOST_ROOT)\" \"$(SDPA_HOME)/external/boost\""
+        stream << "  ifdef SDPA_HOME"                              << std::endl;
+        stream << "    ifneq \"$(BOOST_ROOT)\" \"$(SDPA_HOME)/external/boost\""
                                                                    << std::endl;
-        stream << "    $(warning \"BOOST_ROOT is set and different from GSPC bundled version\")"
+        stream << "      $(warning \"BOOST_ROOT is set and different from GSPC bundled version\")"
                                                                    << std::endl;
-        stream << "    $(warning \"BOOST_ROOT = $(BOOST_ROOT)\")"  << std::endl;
-        stream << "    $(warning \"GSPC_BUNDLED = $(SDPA_HOME)/external/boost\")"
+        stream << "      $(warning \"BOOST_ROOT = $(BOOST_ROOT)\")"<< std::endl;
+        stream << "      $(warning \"GSPC_BUNDLED = $(SDPA_HOME)/external/boost\")"
                                                                    << std::endl;
+        stream << "    endif"                                      << std::endl;
         stream << "  endif"                                        << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
