@@ -25,11 +25,7 @@ include $(SDPA_HOME)/share/sdpa/make/common.mk
 WE_EXEC_LIBPATHS := $(BUILDDIR)
 
 ifndef BOOST_ROOT
-  ifndef SDPA_HOME
-    $(error Neither BOOST_ROOT nor SDPA_HOME are set)
-  else
-    BOOST_ROOT := $(SDPA_HOME)/external/boost
-  endif
+  BOOST_ROOT := $(SDPA_HOME)/external/boost
 else
   ifneq "$(BOOST_ROOT)" "$(SDPA_HOME)/external/boost"
     $(warning "BOOST_ROOT is set and different from GSPC bundled version")
