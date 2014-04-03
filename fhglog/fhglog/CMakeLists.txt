@@ -39,20 +39,14 @@ install(FILES ${remote_hdrs}
 )
 
 ADD_LIBRARY (fhglog
-  ${hdrs}
-  ${header_appender}
   ${srcs}
   ${source_appender}
   ${remote_srcs}
-  ${remote_hdrs}
 )
 ADD_LIBRARY (fhglog-shared SHARED
-  ${hdrs}
-  ${header_appender}
   ${srcs}
   ${source_appender}
   ${remote_srcs}
-  ${remote_hdrs}
 )
 set_target_properties (fhglog-shared
   PROPERTIES OUTPUT_NAME fhglog
