@@ -693,7 +693,7 @@ namespace fhg
           case event::STATE_CANCELED: return "canceled";
           }
 
-          INVALID_ENUM_VALUE(worker_model::state_type, state);
+          INVALID_ENUM_VALUE (worker_model::state_type, state);
         }
       }
 
@@ -889,8 +889,8 @@ namespace fhg
         fhg_assert (can_edit_section (index), "only create editors for editable sections");
 
         const execution_monitor_proxy::column_type column
-          (util::qt::value<execution_monitor_proxy::column_type>
-          (index.data (execution_monitor_proxy::column_type_role)
+          ( util::qt::value<execution_monitor_proxy::column_type>
+            (index.data (execution_monitor_proxy::column_type_role)
           ));
         switch (column)
         {
@@ -910,7 +910,7 @@ namespace fhg
           throw std::runtime_error ("can't create editor for non-editable section");
         }
 
-        INVALID_ENUM_VALUE(execution_monitor_proxy::column_type, column);
+        INVALID_ENUM_VALUE (execution_monitor_proxy::column_type, column);
       }
 
       void execution_monitor_delegate::release_editor
