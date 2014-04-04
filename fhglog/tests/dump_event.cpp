@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE (encode_with_time_constraint)
   fhg::log::LogEvent evt (gen_event());
   const char first_encoded_char (*evt.encoded().begin());
 
-  const std::size_t max (250000);
+  const std::size_t max (200000);
 
   int count (0);
 
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE (decode_with_time_constraint)
   const std::string evts (evt.encoded());
   const pid_t id (evt.tid());
 
-  const std::size_t max (750000);
+  const std::size_t max (500000);
 
   pid_t count (0);
 
