@@ -698,26 +698,26 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
       {
       case sdpa::status::FINISHED:
         {
-          parent_proxy (this, job->owner()).job_finished (job->id(), job->result());
+          parent_proxy (this, masterName).job_finished (job->id(), job->result());
         }
         continue;
 
       case sdpa::status::FAILED:
         {
-          parent_proxy (this, job->owner()).job_failed
+          parent_proxy (this, masterName).job_failed
             (job->id(), job->error_message());
         }
         continue;
 
       case sdpa::status::CANCELED:
         {
-          parent_proxy (this, job->owner()).cancel_job_ack (job->id());
+          parent_proxy (this, masterName).cancel_job_ack (job->id());
         }
         continue;
 
       case sdpa::status::PENDING:
         {
-          parent_proxy (this, job->owner()).submit_job_ack (job->id());
+          parent_proxy (this, masterName).submit_job_ack (job->id());
         }
         continue;
 
