@@ -703,7 +703,7 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
       case sdpa::status::FAILED:
         {
           parent_proxy (this, job->owner()).job_failed
-            (job->id(), "unknown error: error event resent");
+            (job->id(), job->error_message());
         }
         break;
 
