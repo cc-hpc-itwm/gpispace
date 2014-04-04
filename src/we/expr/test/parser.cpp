@@ -10,12 +10,9 @@
 
 #include <fhg/util/boost/test/require_exception.hpp>
 
-#include <boost/random/random_device.hpp>
-#include <boost/random/uniform_int_distribution.hpp>
-#include <boost/random/uniform_real_distribution.hpp>
-
 #include <functional>
 #include <limits>
+#include <random>
 #include <string>
 
 #ifdef NDEBUG
@@ -455,8 +452,8 @@ namespace
   void require_random_integrals_evaluating_to
     (std::function<void (T const&, T const&)> check)
   {
-    boost::random::random_device generator;
-    boost::random::uniform_int_distribution<T> number
+    std::random_device generator;
+    std::uniform_int_distribution<T> number
       (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
 
     for (int i (0); i < 1000; ++i)
@@ -499,10 +496,10 @@ namespace
   void require_random_fractionals_evaluating_to
     (std::function<void (T const&, T const&)> check)
   {
-    boost::random::random_device generator;
+    std::random_device generator;
     //! \todo possible fix ::min to something else
-    boost::random::uniform_real_distribution<T> number
-      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+    std::uniform_real_distribution<T> number
+      (-std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
 
     for (int i (0); i < 1000; ++i)
     {
@@ -849,9 +846,9 @@ namespace
   template<typename T>
   void check_quotient_for_fractional()
   {
-    boost::random::random_device generator;
+    std::random_device generator;
     //! \todo possible fix ::min to something else
-    boost::random::uniform_real_distribution<T> number
+    std::uniform_real_distribution<T> number
       (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
 
     for (int i (0); i < 1000; ++i)
@@ -912,9 +909,9 @@ namespace
   template<typename T>
     void check_pow_for_fractional()
   {
-    boost::random::random_device generator;
+    std::random_device generator;
     //! \todo possible fix ::min to something else
-    boost::random::uniform_real_distribution<T> number
+    std::uniform_real_distribution<T> number
       (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
 
     for (int i (0); i < 1000; ++i)
