@@ -682,7 +682,6 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
       break;
     }
 
-  if(!isTop())
   {
     boost::mutex::scoped_lock const _ (_job_map_mutex);
 
