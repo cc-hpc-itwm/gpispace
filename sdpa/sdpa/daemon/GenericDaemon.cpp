@@ -900,7 +900,7 @@ bool GenericDaemon::subscribedFor(const sdpa::agent_id_t& agId, const sdpa::job_
 void GenericDaemon::handleSubscribeEvent (const events::SubscribeEvent* pEvt)
 {
   const sdpa::agent_id_t& subscriber (pEvt->subscriber());
-  const sdpa::job_id_list_t& listJobIds (pEvt->listJobIds());
+  const sdpa::job_id_list_t listJobIds {pEvt->job_id()};
 
   lock_type lock(mtx_subscriber_);
 

@@ -15,19 +15,19 @@ namespace sdpa
 
       SubscribeEvent ( const address_t& a_from
                      , const address_t& a_to
-                     , const job_id_list_t& listJobIds
+                     , const job_id_t& job_id
                      )
         : MgmtEvent (a_from, a_to)
-        , listJobIds_ (listJobIds)
+        , _job_id (job_id)
       {}
 
       const sdpa::agent_id_t& subscriber() const
       {
         return from();
       }
-      const sdpa::job_id_list_t& listJobIds() const
+      const sdpa::job_id_t& job_id() const
       {
-        return listJobIds_;
+        return _job_id;
       }
 
       virtual void handleBy (EventHandler* handler)
@@ -36,21 +36,21 @@ namespace sdpa
       }
 
     private:
-      sdpa::job_id_list_t listJobIds_;
+      sdpa::job_id_t _job_id;
     };
 
     SAVE_CONSTRUCT_DATA_DEF (SubscribeEvent, e)
     {
       SAVE_MGMTEVENT_CONSTRUCT_DATA (e);
-      SAVE_TO_ARCHIVE (e->listJobIds());
+      SAVE_TO_ARCHIVE (e->job_id());
     }
 
     LOAD_CONSTRUCT_DATA_DEF (SubscribeEvent, e)
     {
       LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
-      LOAD_FROM_ARCHIVE (sdpa::job_id_list_t, listJobIds);
+      LOAD_FROM_ARCHIVE (sdpa::job_id_t, job_id);
 
-      ::new (e) SubscribeEvent (from, to, listJobIds);
+      ::new (e) SubscribeEvent (from, to, job_id);
     }
   }
 }

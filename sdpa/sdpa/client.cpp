@@ -161,7 +161,7 @@ namespace sdpa
       (job_id_t id, job_info_t& job_info)
     {
       send_and_wait_for_reply<sdpa::events::SubscribeAckEvent>
-        (sdpa::events::SubscribeEvent (_name, orchestrator_, job_id_list_t (1, id)));
+        (sdpa::events::SubscribeEvent (_name, orchestrator_, id));
      sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
 
       if ( sdpa::events::JobFinishedEvent* evt
