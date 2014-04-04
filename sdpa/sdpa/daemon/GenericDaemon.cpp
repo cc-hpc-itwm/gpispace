@@ -911,14 +911,9 @@ void GenericDaemon::handleSubscribeEvent (const events::SubscribeEvent* pEvt)
     // send back an error message
     if(!findJob(jobId))
     {
-        std::ostringstream oss("Could not subscribe for the job");
-        oss<<jobId<<". The job does not exist!";
-        events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent( name(),
-                                                                  subscriber,
-                                                                  events::ErrorEvent::SDPA_EUNKNOWN,
-                                                                  oss.str()));
-        sendEventToOther(pErrorEvt);
-        return;
+      throw std::runtime_error ( "Could not subscribe for the job" + jobId
+                               + ". The job does not exist!"
+                               );
     }
   }
 
