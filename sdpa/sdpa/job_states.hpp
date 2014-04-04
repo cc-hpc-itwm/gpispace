@@ -26,7 +26,7 @@ namespace sdpa
       return c == FINISHED || c == FAILED || c == CANCELED;
     }
 
-    inline std::string show(int code)
+    inline std::string show (status::code code)
     {
       switch (code)
       {
