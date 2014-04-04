@@ -689,6 +689,8 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
         : job_map_
         | boost::adaptors::map_values
         | boost::adaptors::filtered (boost::mem_fn (&Job::isMasterJob))
+        | boost::adaptors::filtered
+            ([&masterName] (Job* job) { return job->owner() == masterName; })
         )
     {
       const sdpa::status::code status (job->getStatus());
