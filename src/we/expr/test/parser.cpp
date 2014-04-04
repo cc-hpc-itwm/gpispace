@@ -497,9 +497,10 @@ namespace
     (std::function<void (T const&, T const&)> check)
   {
     std::random_device generator;
-    //! \todo possible fix ::min to something else
     std::uniform_real_distribution<T> number
-      (-std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+      ( -std::numeric_limits<T>::max() / T (2.0)
+      ,  std::numeric_limits<T>::max() / T (2.0)
+      );
 
     for (int i (0); i < 1000; ++i)
     {
@@ -847,9 +848,10 @@ namespace
   void check_quotient_for_fractional()
   {
     std::random_device generator;
-    //! \todo possible fix ::min to something else
     std::uniform_real_distribution<T> number
-      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+      ( -std::numeric_limits<T>::max() / T (2.0)
+      ,  std::numeric_limits<T>::max() / T (2.0)
+      );
 
     for (int i (0); i < 1000; ++i)
     {
@@ -910,9 +912,10 @@ namespace
     void check_pow_for_fractional()
   {
     std::random_device generator;
-    //! \todo possible fix ::min to something else
     std::uniform_real_distribution<T> number
-      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+      ( -std::numeric_limits<T>::max() / T (2.0)
+      ,  std::numeric_limits<T>::max() / T (2.0)
+      );
 
     for (int i (0); i < 1000; ++i)
     {
