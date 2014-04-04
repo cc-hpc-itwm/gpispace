@@ -15,14 +15,13 @@
 #include <fhg/util/random_string.hpp>
 
 #include <boost/lexical_cast.hpp>
-#include <boost/tuple/tuple.hpp>
 #include <boost/range/algorithm.hpp>
-#include <boost/tuple/tuple.hpp>
 #include <boost/preprocessor/punctuation/comma.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 
 #include <functional>
 #include <list>
+#include <tuple>
 
 #define DECLARE_EXPECT_CLASS(NAME, CTOR_ARGUMENTS, INITIALIZER_LIST, MEMBER_VARIABLES, EQ_IMPL) \
   struct expect_ ## NAME                                                \
@@ -484,10 +483,10 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
 
 namespace
 {
-  boost::tuple< we::type::transition_t
-              , we::type::transition_t
-              , we::transition_id_type
-              >
+  std::tuple< we::type::transition_t
+            , we::type::transition_t
+            , we::transition_id_type
+            >
     net_with_childs (bool put_on_input, std::size_t token_count)
   {
     we::type::transition_t transition
@@ -539,7 +538,7 @@ namespace
       net.add_connection (PT, transition_id, place_id_in, port_id_in, empty);
     }
 
-    return boost::make_tuple
+    return std::make_tuple
       ( we::type::transition_t ( "net"
                                , net
                                , boost::none
@@ -552,20 +551,20 @@ namespace
       );
   }
 
-  boost::tuple< we::type::activity_t
-              , we::type::activity_t
-              , we::type::activity_t
-              , we::type::activity_t
-              >
+  std::tuple< we::type::activity_t
+            , we::type::activity_t
+            , we::type::activity_t
+            , we::type::activity_t
+            >
     activity_with_child (std::size_t token_count)
   {
     we::transition_id_type transition_id_child;
     we::type::transition_t transition_in;
     we::type::transition_t transition_out;
     we::type::transition_t transition_child;
-    boost::tie (transition_in, transition_child, transition_id_child) =
+    std::tie (transition_in, transition_child, transition_id_child) =
       net_with_childs (true, token_count);
-    boost::tie (transition_out, boost::tuples::ignore, boost::tuples::ignore) =
+    std::tie (transition_out, std::ignore, std::ignore) =
       net_with_childs (false, token_count);
 
     we::type::activity_t activity_input (transition_in, boost::none);
@@ -581,7 +580,7 @@ namespace
     activity_result.add_output
       (transition_child.output_port_by_name ("out"), value::CONTROL);
 
-    return boost::make_tuple
+    return std::make_tuple
       (activity_input, activity_output, activity_child, activity_result);
   }
 }
@@ -593,7 +592,7 @@ BOOST_FIXTURE_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (1);
 
   we::layer::id_type const id (generate_id());
@@ -620,7 +619,7 @@ BOOST_FIXTURE_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (2);
 
   we::layer::id_type const id (generate_id());
@@ -656,7 +655,7 @@ BOOST_FIXTURE_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (1);
 
   {
@@ -702,7 +701,7 @@ BOOST_FIXTURE_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (2);
 
   we::layer::id_type const id_0 (generate_id());
@@ -750,7 +749,7 @@ BOOST_FIXTURE_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (1);
 
   we::layer::id_type const id (generate_id());
@@ -783,7 +782,7 @@ BOOST_FIXTURE_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (2);
 
   we::layer::id_type const id (generate_id());
@@ -826,7 +825,7 @@ BOOST_FIXTURE_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (2);
 
   we::layer::id_type const id (generate_id());
@@ -865,7 +864,7 @@ BOOST_FIXTURE_TEST_CASE (child_failure_shall_fail_parent, daemon)
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (1);
 
   we::layer::id_type const id (generate_id());
@@ -893,7 +892,7 @@ BOOST_FIXTURE_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (2);
 
   we::layer::id_type const id (generate_id());
@@ -935,7 +934,7 @@ BOOST_FIXTURE_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (N);
 
   we::layer::id_type const id (generate_id());
@@ -1009,7 +1008,7 @@ BOOST_AUTO_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (num_child_per_activity);
 
   std::vector<we::layer::id_type> child_ids;
@@ -1069,7 +1068,7 @@ BOOST_FIXTURE_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (1);
 
   we::layer::id_type const id (generate_id());
@@ -1117,7 +1116,7 @@ BOOST_FIXTURE_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (2);
 
   we::layer::id_type const id (generate_id());

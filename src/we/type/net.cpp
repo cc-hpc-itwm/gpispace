@@ -252,18 +252,18 @@ namespace we
           )
         );
 
-      return boost::make_tuple
+      return std::make_tuple
         (pid, tokenpos, std::distance (tokens.begin(), tokenpos));
     }
 
     void net_type::do_update (to_be_updated_type const& to_be_updated)
     {
       transition_id_range_type consume
-        ( _adj_pt_consume.left.equal_range (to_be_updated.get<0>())
+        ( _adj_pt_consume.left.equal_range (std::get<0> (to_be_updated))
         | boost::adaptors::map_values
         );
       transition_id_range_type read
-        ( _adj_pt_read.left.equal_range (to_be_updated.get<0>())
+        ( _adj_pt_read.left.equal_range (std::get<0> (to_be_updated))
         | boost::adaptors::map_values
         );
 
@@ -354,9 +354,12 @@ namespace we
 
       for (place_id_type place_id : boost::join (consume, read))
       {
-        if (place_id == to_be_updated.get<0>())
+        if (place_id == std::get<0> (to_be_updated))
         {
-          cross.push (place_id, to_be_updated.get<1>(), to_be_updated.get<2>());
+          cross.push ( place_id
+                     , std::get<1> (to_be_updated)
+                     , std::get<2> (to_be_updated)
+                     );
         }
         else
         {

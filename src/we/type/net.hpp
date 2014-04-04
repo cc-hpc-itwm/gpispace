@@ -21,12 +21,12 @@
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/any_range.hpp>
 #include <boost/serialization/nvp.hpp>
-#include <boost/tuple/tuple.hpp>
 
 #include <functional>
 #include <iterator>
 #include <list>
 #include <sstream>
+#include <tuple>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -162,7 +162,7 @@ namespace we
 
       void get_enabled_choice (const net_type&);
 
-      typedef boost::tuple
+      typedef std::tuple
         < place_id_type
         , std::list<pnet::type::value::value_type>::iterator
         , std::list<pnet::type::value::value_type>::iterator::difference_type

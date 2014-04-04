@@ -1,26 +1,26 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_BOOST_TUPLE_HPP
-#define FHG_UTIL_BOOST_TUPLE_HPP
+#ifndef FHG_UTIL_STD_TUPLE_HPP
+#define FHG_UTIL_STD_TUPLE_HPP
 
 #include <boost/functional/hash.hpp>
-#include <boost/tuple/tuple.hpp>
 
 #include <functional>
+#include <tuple>
 
 namespace std
 {
   namespace
   {
     template < class tuple_type
-             , size_t index = boost::tuples::length<tuple_type>::value - 1
+             , size_t index = std::tuple_size<tuple_type>::value - 1
              >
       struct hash_value_impl
       {
         static void apply (size_t& seed, const tuple_type& tuple)
         {
           hash_value_impl<tuple_type, index - 1>::apply (seed, tuple);
-          boost::hash_combine (seed, tuple.template get<index>());
+          boost::hash_combine (seed, std::get<index> (tuple));
         }
       };
 
@@ -29,18 +29,18 @@ namespace std
     {
       static void apply (size_t& seed, const tuple_type& tuple)
       {
-        boost::hash_combine (seed, tuple.template get<0>());
+        boost::hash_combine (seed, std::get<0> (tuple));
       }
     };
   }
 
   template<typename... Values>
-    struct hash<boost::tuples::tuple<Values...>>
+    struct hash<std::tuple<Values...>>
   {
-    std::size_t operator() (const boost::tuples::tuple<Values...>& tuple) const
+    std::size_t operator() (const std::tuple<Values...>& tuple) const
     {
       size_t seed = 0;
-      hash_value_impl<boost::tuples::tuple<Values...>>::apply (seed, tuple);
+      hash_value_impl<std::tuple<Values...>>::apply (seed, tuple);
       return seed;
     }
   };

@@ -321,11 +321,11 @@ namespace xml
         }
 
         if ( _connections.has
-             ( boost::make_tuple ( place
-                                 , connection.get().port()
-                                 , we::edge::is_PT
-                                   (connection.get().direction())
-                                 )
+             ( std::make_tuple ( place
+                               , connection.get().port()
+                               , we::edge::is_PT
+                                 (connection.get().direction())
+                               )
              )
            )
         {
@@ -352,10 +352,10 @@ namespace xml
              != we::edge::is_PT (dir)
              )
            && _connections.has
-             ( boost::make_tuple ( connection.get().place()
-                                 , connection.get().port()
-                                 , we::edge::is_PT (dir)
-                                 )
+             ( std::make_tuple ( connection.get().place()
+                               , connection.get().port()
+                               , we::edge::is_PT (dir)
+                               )
              )
            )
         {

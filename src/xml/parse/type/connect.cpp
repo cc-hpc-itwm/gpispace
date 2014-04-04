@@ -104,7 +104,7 @@ namespace xml
 
       connect_type::unique_key_type connect_type::unique_key() const
       {
-        return boost::make_tuple
+        return std::make_tuple
           (_place, _port, we::edge::is_PT (_direction));
       }
 

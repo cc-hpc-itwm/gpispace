@@ -913,10 +913,10 @@ namespace xml
 
       namespace
       {
-        boost::tuple< std::string
-                    , boost::optional<std::string>
-                    , std::list<std::string>
-                    >
+        std::tuple< std::string
+                  , boost::optional<std::string>
+                  , std::list<std::string>
+                  >
         parse_function_signature ( const std::string& input
                                  , const std::string& _name
                                  , const util::position_type& pod
@@ -1033,7 +1033,7 @@ namespace xml
             }
           }
 
-          return boost::make_tuple (function, port_return, port_arg);
+          return std::make_tuple (function, port_return, port_arg);
         }
       }
 
@@ -1050,16 +1050,16 @@ namespace xml
           (fhg::util::boost::fmap<std::string, bool>
           (fhg::util::read_bool, optional (node, "pass_context")));
         const util::position_type pod (state.position (node));
-        const boost::tuple
+        const std::tuple
           < std::string
           , boost::optional<std::string>
           , std::list<std::string>
           > sig ( parse_function_signature
                   (signature, name, pod, outer_function, name)
                 );
-        const std::string function (sig.get<0>());
-        const boost::optional<std::string> port_return (sig.get<1>());
-        const std::list<std::string> port_arg (sig.get<2>());
+        const std::string function (std::get<0> (sig));
+        const boost::optional<std::string> port_return (std::get<1> (sig));
+        const std::list<std::string> port_arg (std::get<2> (sig));
 
         boost::optional<std::string> code;
         boost::optional<util::position_type> pod_of_code;
