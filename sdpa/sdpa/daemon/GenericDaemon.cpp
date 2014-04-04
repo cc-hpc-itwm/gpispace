@@ -929,7 +929,7 @@ void GenericDaemon::handleSubscribeEvent (const events::SubscribeEvent* pEvt)
     m_listSubscribers.insert(subscriber_map_t::value_type(subscriber, {jobId}));
   }
 
-  sdpa::events::SubscribeAckEvent::Ptr ptrSubscAckEvt(new sdpa::events::SubscribeAckEvent(name(), subscriber, {jobId}));
+  sdpa::events::SubscribeAckEvent::Ptr ptrSubscAckEvt(new sdpa::events::SubscribeAckEvent(name(), subscriber, jobId));
   sendEventToOther(ptrSubscAckEvt);
 
   // check if the subscribed jobs are already in a terminal state
