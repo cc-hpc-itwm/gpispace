@@ -1,6 +1,8 @@
 #ifndef SDPA_JOB_STATES_HPP
 #define SDPA_JOB_STATES_HPP
 
+#include <fhg/util/macros.hpp>
+
 #include <string>
 #include <map>
 
@@ -42,9 +44,9 @@ namespace sdpa
         return "SDPA::Canceled";
       case CANCELING:
         return "SDPA::Canceling";
-      default:
-        return "Strange job state";
       }
+
+      INVALID_ENUM_VALUE (status::code, code);
     }
   };
 }
