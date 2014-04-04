@@ -230,7 +230,7 @@ namespace utils
       , _kvs_port (master.kvs_port())
       , _ ( random_peer_name(), "127.0.0.1"
           , _kvs_host, _kvs_port
-          , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.name()))
+          , {sdpa::MasterInfo (master.name())}
           , boost::none
           )
     {}
@@ -239,7 +239,7 @@ namespace utils
       , _kvs_port (master.kvs_port())
       , _ ( random_peer_name(), "127.0.0.1"
           , _kvs_host, _kvs_port
-          , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.name()))
+          , {sdpa::MasterInfo (master.name())}
           , boost::none
           )
     {}
