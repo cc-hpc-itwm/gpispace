@@ -931,7 +931,6 @@ void GenericDaemon::handleSubscribeEvent (const events::SubscribeEvent* pEvt)
     m_listSubscribers.insert(subscriber_map_t::value_type(subscriber, listJobIds));
   }
 
-  // TODO: we should only send an ack *if* the job actually exists....
   sdpa::events::SubscribeAckEvent::Ptr ptrSubscAckEvt(new sdpa::events::SubscribeAckEvent(name(), subscriber, listJobIds));
   sendEventToOther(ptrSubscAckEvt);
 
