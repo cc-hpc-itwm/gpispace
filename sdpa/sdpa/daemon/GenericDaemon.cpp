@@ -692,40 +692,41 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
         | boost::adaptors::filtered (boost::mem_fn (&Job::isMasterJob))
         )
     {
-      switch (job->getStatus())
+      const sdpa::status::code status (job->getStatus());
+      switch (status)
       {
       case sdpa::status::FINISHED:
         {
           parent_proxy (this, job->owner()).job_finished (job->id(), job->result());
         }
-        break;
+        continue;
 
       case sdpa::status::FAILED:
         {
           parent_proxy (this, job->owner()).job_failed
             (job->id(), job->error_message());
         }
-        break;
+        continue;
 
       case sdpa::status::CANCELED:
         {
           parent_proxy (this, job->owner()).cancel_job_ack (job->id());
         }
-        break;
+        continue;
 
       case sdpa::status::PENDING:
         {
           parent_proxy (this, job->owner()).submit_job_ack (job->id());
         }
-        break;
+        continue;
 
       case sdpa::status::RUNNING:
       case sdpa::status::CANCELING:
         // don't send anything to the master if the job is not completed or in a pending state
-        break;
-      default:
-        throw std::runtime_error("The job "+job->id()+" has an invalid/unknown state");
+        continue;
       }
+
+      INVALID_ENUM_VALUE (sdpa::status::code, status);
     }
   }
 }
