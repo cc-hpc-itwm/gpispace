@@ -902,97 +902,90 @@ void GenericDaemon::handleSubscribeEvent (const events::SubscribeEvent* pEvt)
   const sdpa::agent_id_t& subscriber (pEvt->subscriber());
   const job_id_t& jobId (pEvt->job_id());
 
-  lock_type lock(mtx_subscriber_);
+  lock_type lock (mtx_subscriber_);
 
-  // check if all the request jobs still exist
+  if (!findJob(jobId))
   {
-    // if the list contains at least one invalid job,
-    // send back an error message
-    if(!findJob(jobId))
-    {
-      throw std::runtime_error ( "Could not subscribe for the job" + jobId
-                               + ". The job does not exist!"
-                               );
-    }
+    throw std::runtime_error ( "Could not subscribe for the job" + jobId
+                             + ". The job does not exist!"
+                             );
   }
 
   // allow to subscribe multiple times with different lists of job ids
-  if(isSubscriber(subscriber))
+  if (!subscribedFor (subscriber, jobId))
   {
-    {
-      if( !subscribedFor(subscriber, jobId) )
-        m_listSubscribers[subscriber].push_back(jobId);
-    }
-  }
-  else
-  {
-    m_listSubscribers.insert(subscriber_map_t::value_type(subscriber, {jobId}));
+    m_listSubscribers[subscriber].push_back (jobId);
   }
 
-  sdpa::events::SubscribeAckEvent::Ptr ptrSubscAckEvt(new sdpa::events::SubscribeAckEvent(name(), subscriber, jobId));
-  sendEventToOther(ptrSubscAckEvt);
+  sdpa::events::SubscribeAckEvent::Ptr ptrSubscAckEvt
+    (new sdpa::events::SubscribeAckEvent (name(), subscriber, jobId));
+  sendEventToOther (ptrSubscAckEvt);
 
   // check if the subscribed jobs are already in a terminal state
+  Job* pJob = findJob (jobId);
+  if (pJob)
   {
-    Job* pJob = findJob(jobId);
-    if(pJob)
+    switch (pJob->getStatus())
     {
-      switch (pJob->getStatus())
+    case sdpa::status::FINISHED:
       {
-        case sdpa::status::FINISHED:
-        {
-          events::JobFinishedEvent::Ptr pEvtJobFinished
-            (new events::JobFinishedEvent( name()
+        events::JobFinishedEvent::Ptr pEvtJobFinished
+          ( new events::JobFinishedEvent ( name()
                                          , subscriber
                                          , pJob->id()
                                          , pJob->result()
-                                         ));
-          sendEventToOther(pEvtJobFinished);
-        }
-        break;
+                                         )
+          );
+        sendEventToOther (pEvtJobFinished);
+      }
+      break;
 
-        case sdpa::status::FAILED:
-        {
-          events::JobFailedEvent::Ptr pEvtJobFailed
-            (new events::JobFailedEvent( name()
+    case sdpa::status::FAILED:
+      {
+        events::JobFailedEvent::Ptr pEvtJobFailed
+          ( new events::JobFailedEvent ( name()
                                        , subscriber
                                        , pJob->id()
                                        , pJob->error_message()
                                        )
-            );
-          sendEventToOther(pEvtJobFailed);
-        }
-        break;
-
-        case sdpa::status::CANCELED:
-        {
-          events::CancelJobAckEvent::Ptr pEvtCancelJobAck( new events::CancelJobAckEvent( name(), subscriber, pJob->id() ));
-          sendEventToOther(pEvtCancelJobAck);
-        }
-        break;
-
-        case sdpa::status::PENDING:
-        case sdpa::status::RUNNING:
-        case sdpa::status::CANCELING:
-          // send nothing to the master if the job is not completed
-          break;
-        default:
-           throw std::runtime_error("The job "+jobId+" has an invalid/unknown state");
+          );
+        sendEventToOther (pEvtJobFailed);
       }
-    }
-    else
-    {
-      std::string strErr("The job ");
-      strErr+=jobId;
-      strErr+=" could not be found!";
+      break;
 
-      sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
-                                                          , subscriber
-                                                          , events::ErrorEvent::SDPA_EUNKNOWN
-                                                          , strErr
-                                                          )
-      ));
+    case sdpa::status::CANCELED:
+      {
+        events::CancelJobAckEvent::Ptr pEvtCancelJobAck
+          (new events::CancelJobAckEvent (name(), subscriber, pJob->id()));
+        sendEventToOther (pEvtCancelJobAck);
+      }
+      break;
+
+    case sdpa::status::PENDING:
+    case sdpa::status::RUNNING:
+    case sdpa::status::CANCELING:
+      // send nothing to the master if the job is not completed
+      break;
+    default:
+      throw std::runtime_error
+        ("The job " + jobId + " has an invalid/unknown state");
     }
+  }
+  else
+  {
+    std::string strErr ("The job ");
+    strErr += jobId;
+    strErr += " could not be found!";
+
+    sendEventToOther
+      ( events::ErrorEvent::Ptr
+        ( new events::ErrorEvent ( name()
+                                 , subscriber
+                                 , events::ErrorEvent::SDPA_EUNKNOWN
+                                 , strErr
+                                 )
+        )
+      );
   }
 }
 
