@@ -109,7 +109,7 @@ namespace sdpa {
 
       // masters and subscribers
       void unsubscribe(const sdpa::agent_id_t&);
-      void subscribe(const sdpa::agent_id_t&, const sdpa::job_id_list_t&);
+      virtual void handleSubscribeEvent (const sdpa::events::SubscribeEvent*);
       bool isSubscriber(const sdpa::agent_id_t&);
       bool subscribedFor(const sdpa::agent_id_t&, const sdpa::job_id_t&);
 
@@ -136,7 +136,6 @@ namespace sdpa {
       virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* );
       virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
       //virtual void handleSubscribeAckEvent (const sdpa::events::SubscribeAckEvent*) ?!
-      virtual void handleSubscribeEvent( const sdpa::events::SubscribeEvent* pEvt );
       virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*);
       virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* );
       virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );

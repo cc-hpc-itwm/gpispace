@@ -800,11 +800,6 @@ void GenericDaemon::handleCapabilitiesLostEvent(const events::CapabilitiesLostEv
   }
 }
 
-void GenericDaemon::handleSubscribeEvent( const events::SubscribeEvent* pEvt )
-{
-  subscribe(pEvt->subscriber(), pEvt->listJobIds());
-}
-
 void GenericDaemon::handle_events()
 {
   while (true)
@@ -902,8 +897,11 @@ bool GenericDaemon::subscribedFor(const sdpa::agent_id_t& agId, const sdpa::job_
     != m_listSubscribers[agId].end();
 }
 
-void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::job_id_list_t& listJobIds)
+void GenericDaemon::handleSubscribeEvent (const events::SubscribeEvent* pEvt)
 {
+  const sdpa::agent_id_t& subscriber (pEvt->subscriber());
+  const sdpa::job_id_list_t& listJobIds (pEvt->listJobIds());
+
   lock_type lock(mtx_subscriber_);
 
   // check if all the request jobs still exist
