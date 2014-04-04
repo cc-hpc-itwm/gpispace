@@ -960,7 +960,7 @@ void GenericDaemon::handleSubscribeEvent (const events::SubscribeEvent* pEvt)
             (new events::JobFailedEvent( name()
                                        , subscriber
                                        , pJob->id()
-                                       , "TODO: take the error message from the job pointer somehow"
+                                       , pJob->error_message()
                                        )
             );
           sendEventToOther(pEvtJobFailed);
