@@ -900,12 +900,11 @@ bool GenericDaemon::subscribedFor(const sdpa::agent_id_t& agId, const sdpa::job_
 void GenericDaemon::handleSubscribeEvent (const events::SubscribeEvent* pEvt)
 {
   const sdpa::agent_id_t& subscriber (pEvt->subscriber());
-  const sdpa::job_id_list_t listJobIds {pEvt->job_id()};
+  const job_id_t& jobId (pEvt->job_id());
 
   lock_type lock(mtx_subscriber_);
 
   // check if all the request jobs still exist
-  for (const job_id_t& jobId : listJobIds)
   {
     // if the list contains at least one invalid job,
     // send back an error message
@@ -920,7 +919,6 @@ void GenericDaemon::handleSubscribeEvent (const events::SubscribeEvent* pEvt)
   // allow to subscribe multiple times with different lists of job ids
   if(isSubscriber(subscriber))
   {
-    for (const job_id_t& jobId : listJobIds)
     {
       if( !subscribedFor(subscriber, jobId) )
         m_listSubscribers[subscriber].push_back(jobId);
@@ -928,14 +926,13 @@ void GenericDaemon::handleSubscribeEvent (const events::SubscribeEvent* pEvt)
   }
   else
   {
-    m_listSubscribers.insert(subscriber_map_t::value_type(subscriber, listJobIds));
+    m_listSubscribers.insert(subscriber_map_t::value_type(subscriber, {jobId}));
   }
 
-  sdpa::events::SubscribeAckEvent::Ptr ptrSubscAckEvt(new sdpa::events::SubscribeAckEvent(name(), subscriber, listJobIds));
+  sdpa::events::SubscribeAckEvent::Ptr ptrSubscAckEvt(new sdpa::events::SubscribeAckEvent(name(), subscriber, {jobId}));
   sendEventToOther(ptrSubscAckEvt);
 
   // check if the subscribed jobs are already in a terminal state
-  for (const job_id_t& jobId : listJobIds)
   {
     Job* pJob = findJob(jobId);
     if(pJob)
