@@ -34,6 +34,8 @@
 #include <sdpa/id_generator.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
+#include <fhg/util/macros.hpp>
+
 #include <boost/tokenizer.hpp>
 #include <boost/range/adaptor/filtered.hpp>
 
@@ -923,7 +925,8 @@ void GenericDaemon::handleSubscribeEvent (const events::SubscribeEvent* pEvt)
   sendEventToOther (ptrSubscAckEvt);
 
   // check if the subscribed jobs are already in a terminal state
-  switch (pJob->getStatus())
+  const sdpa::status::code status (pJob->getStatus());
+  switch (status)
   {
   case sdpa::status::FINISHED:
     {
@@ -936,7 +939,7 @@ void GenericDaemon::handleSubscribeEvent (const events::SubscribeEvent* pEvt)
         );
       sendEventToOther (pEvtJobFinished);
     }
-    break;
+    return;
 
   case sdpa::status::FAILED:
     {
@@ -949,7 +952,7 @@ void GenericDaemon::handleSubscribeEvent (const events::SubscribeEvent* pEvt)
         );
       sendEventToOther (pEvtJobFailed);
     }
-    break;
+    return;
 
   case sdpa::status::CANCELED:
     {
@@ -957,17 +960,16 @@ void GenericDaemon::handleSubscribeEvent (const events::SubscribeEvent* pEvt)
         (new events::CancelJobAckEvent (name(), subscriber, pJob->id()));
       sendEventToOther (pEvtCancelJobAck);
     }
-    break;
+    return;
 
   case sdpa::status::PENDING:
   case sdpa::status::RUNNING:
   case sdpa::status::CANCELING:
     // send nothing to the master if the job is not completed
-    break;
-  default:
-    throw std::runtime_error
-      ("The job " + jobId + " has an invalid/unknown state");
+    return;
   }
+
+  INVALID_ENUM_VALUE (sdpa::status::code, status);
 }
 
 bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
