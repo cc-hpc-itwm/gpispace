@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE (performance_parse_once_eval_often)
   double const t (-fhg::util::now());
 
   const long round (750);
-  const long max (3000);
+  const long max (2000);
   const std::string input ("${a} < ${b}");
 
   expr::eval::context context;
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE (performance_often_parse_and_eval)
   double const t (-fhg::util::now());
 
   const long round (75);
-  const long max (3000);
+  const long max (2000);
   const std::string input ("${a} < ${b}");
 
   expr::eval::context context;
