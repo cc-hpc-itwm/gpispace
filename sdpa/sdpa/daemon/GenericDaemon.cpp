@@ -677,6 +677,8 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
     if( it->name() == masterName )
     {
       it->set_registered(true);
+      it->resetConsecRegAttempts();
+      it->resetConsecNetFailCnt();
       break;
     }
 
