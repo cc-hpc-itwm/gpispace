@@ -120,36 +120,34 @@ class TransitionVisitor: public boost::static_visitor<void> {
     }
 
     void operator()(const we::type::transition_t &transition) {
-        typedef we::type::transition_t transition_t;
-
         boost::apply_visitor(*this, transition.data());
 
-        for (const transition_t::port_map_t::value_type &item : transition.ports_input()) {
-          const we::type::port_t &port = item.second;
-
-            if (port.associated_place()) {
-                we::place_id_type pid = *port.associated_place();
-
-                petriNet_->increment_token_count (pid);
-            }
+        for ( const we::type::port_t& port
+            : transition.ports_input() | boost::adaptors::map_values
+            )
+        {
+          if (port.associated_place())
+          {
+            petriNet_->increment_token_count (*port.associated_place());
+          }
         }
-        for (const transition_t::port_map_t::value_type &item : transition.ports_output()) {
-          const we::type::port_t &port = item.second;
-
-            if (port.associated_place()) {
-                we::place_id_type pid = *port.associated_place();
-
-                petriNet_->increment_token_count (pid);
-            }
+        for ( const we::type::port_t& port
+            : transition.ports_output() | boost::adaptors::map_values
+            )
+        {
+          if (port.associated_place())
+          {
+            petriNet_->increment_token_count (*port.associated_place());
+          }
         }
-        for (const transition_t::port_map_t::value_type &item : transition.ports_tunnel()) {
-          const we::type::port_t &port = item.second;
-
-            if (port.associated_place()) {
-                we::place_id_type pid = *port.associated_place();
-
-                petriNet_->increment_token_count (pid);
-            }
+        for ( const we::type::port_t& port
+            : transition.ports_tunnel() | boost::adaptors::map_values
+            )
+        {
+          if (port.associated_place())
+          {
+            petriNet_->increment_token_count (*port.associated_place());
+          }
         }
 
         petriNets_.push_back(petriNet_);
