@@ -23,8 +23,8 @@ Transition *PetriNet::createTransition() {
                                , TokenCount initial_marking
                                )
   {
-    std::auto_ptr<Place> result
-      (new Place (places_.size(), name, initial_marking));
+    std::auto_ptr<Place> result (new Place (places_.size(), name));
+    _token_count[result->id()] = initial_marking;
     places_.push_back(result.get());
     return result.release();
   }

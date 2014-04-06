@@ -4,16 +4,28 @@
 
 #include "PetriNet.h"
 
+#include <boost/range/adaptor/filtered.hpp>
+
 namespace jpna {
 
 namespace {
 
-inline jpn::Marking makeInitialMarking(const std::vector<const Place *> &places) {
+inline jpn::Marking makeInitialMarking
+  (std::unordered_map<we::place_id_type, TokenCount> const& token_count)
+{
     std::vector<jpn::PlaceMarking> placeMarkings;
-    for (const Place *place : places) {
-        if (place->initialMarking()) {
-            placeMarkings.push_back(jpn::PlaceMarking(place->id(), place->initialMarking()));
-        }
+    for ( std::pair<we::place_id_type, TokenCount> token_count_on_place
+        : token_count
+        | boost::adaptors::filtered
+          ( [](std::pair<we::place_id_type, TokenCount> const& x)
+            { return x.second; }
+          )
+        )
+    {
+      placeMarkings.push_back ( jpn::PlaceMarking ( token_count_on_place.first
+                                                  , token_count_on_place.second
+                                                  )
+                              );
     }
     return jpn::Marking(placeMarkings);
 }
@@ -45,7 +57,7 @@ std::vector<const Transition *> makeTrace(const std::vector<we::transition_id_ty
 } // anonymous namespace
 
 VerificationResult verify(const PetriNet &petriNet) {
-    jpn::Marking initialMarking = makeInitialMarking(petriNet.places());
+    jpn::Marking initialMarking = makeInitialMarking(petriNet.token_count());
 
     std::vector<jpn::Transition> transitions;
 

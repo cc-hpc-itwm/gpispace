@@ -16,6 +16,7 @@ class PetriNet {
     std::string name_; ///< Name of the Petri net.
     std::vector<Transition *> transitions_; ///< Transitions.
     std::vector<Place *> places_; ///< Places.
+    std::unordered_map<we::place_id_type, TokenCount> _token_count;
 
     public:
 
@@ -93,13 +94,14 @@ class PetriNet {
      */
     const Place *getPlace(we::place_id_type id) const { return places_[id.value()]; }
 
-    void increment_token_count (we::place_id_type place_id) const
+    void increment_token_count (we::place_id_type place_id)
     {
-      ( *std::find_if
-        ( places_.begin(), places_.end()
-        , [&place_id](Place* place) { return place->id() == place_id; }
-        )
-      )->increment_token_count();
+      ++_token_count[place_id];
+    }
+
+    std::unordered_map<we::place_id_type, TokenCount> const& token_count() const
+    {
+      return _token_count;
     }
 };
 
