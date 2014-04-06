@@ -15,7 +15,7 @@ FHG_BOOST_TEST_LOG_VALUE_PRINTER (jpna::VerificationResult::Result, os, result)
   os <<
     ( (result == jpna::VerificationResult::TERMINATES) ? "TERMINATES"
     : (result == jpna::VerificationResult::LOOPS) ? "LOOPS"
-    : (result == jpna::VerificationResult::LOOPS) ? "MAYBE_LOOPS"
+    : (result == jpna::VerificationResult::MAYBE_LOOPS) ? "MAYBE_LOOPS"
     : throw std::runtime_error ("STRANGE verification_result")
     );
 }
