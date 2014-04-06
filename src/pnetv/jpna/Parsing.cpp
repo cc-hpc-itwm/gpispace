@@ -64,10 +64,11 @@ class TransitionVisitor: public boost::static_visitor<void> {
             std::ostringstream condition;
             condition << t.condition();
 
-            Transition *transition = petriNet_->createTransition();
-            transition->setName(t.name() + "[" + condition.str() + "]");
-            transition->setConditionAlwaysTrue(!t.condition());
-            transition->setPriority (t.priority());
+            Transition *transition = petriNet_->createTransition
+              ( t.name() + "[" + condition.str() + "]"
+              , !t.condition()
+              , t.priority()
+              );
             transitions_[tid] = transition;
 
             /* If there is a limit on number of firings, implement it using an additional place. */

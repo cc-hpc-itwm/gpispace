@@ -10,11 +10,21 @@ PetriNet::~PetriNet() {
     }
 }
 
-Transition *PetriNet::createTransition() {
-    std::auto_ptr<Transition> result(new Transition(transitions_.size()));
+  Transition *PetriNet::createTransition ( std::string const& name
+                                         , bool condition_always_true
+                                         , we::priority_type priority
+                                         )
+  {
+    std::auto_ptr<Transition> result
+      (new Transition ( transitions_.size()
+                      , name
+                      , condition_always_true
+                      , priority
+                      )
+      );
     transitions_.push_back(result.get());
     return result.release();
-}
+  }
 
   we::place_id_type PetriNet::createPlace ( TokenCount initial_marking
                                           )

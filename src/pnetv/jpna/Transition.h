@@ -27,7 +27,16 @@ class Transition {
      *
      * \param id Id.
      */
-    Transition(we::transition_id_type id): id_(id), conditionAlwaysTrue_(true), priority_(0) {}
+    Transition ( we::transition_id_type id
+               , std::string const& name
+               , bool condition_always_true
+               , we::priority_type priority
+               )
+      : id_ (id)
+      , name_ (name)
+      , conditionAlwaysTrue_ (condition_always_true)
+      , priority_ (priority)
+    {}
 
     /**
      * \return Id of the transition.
@@ -40,36 +49,15 @@ class Transition {
     const std::string &name() const { return name_; }
 
     /**
-     * Sets the name of the transition.
-     *
-     * \param name New name.
-     */
-    void setName(const std::string &name) { name_ = name; }
-
-    /**
      * \return True iff transition's condition is constant true.
      */
     bool conditionAlwaysTrue() const { return conditionAlwaysTrue_; }
-
-    /**
-     * Sets whether condition is always true.
-     *
-     * \param value True iff the condition is always true.
-     */
-    void setConditionAlwaysTrue(bool value) { conditionAlwaysTrue_ = value; }
 
     /**
      * \return Priority of the transition.
      * Transitions with lower priority don't fire unless there are enabled transitions with higher priority.
      */
     we::priority_type priority() const { return priority_; }
-
-    /**
-     * Sets the transition's priority.
-     *
-     * \param[in] priority New priority.
-     */
-    void setPriority(we::priority_type priority) { priority_ = priority; }
 
     void addInputPlace (we::place_id_type place_id)
     {

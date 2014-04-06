@@ -38,7 +38,10 @@ class PetriNet {
     /**
      * \return Newly created transition owned by the Petri net.
      */
-    Transition *createTransition();
+    Transition *createTransition ( std::string const& name
+                                 , bool condition_always_true
+                                 , we::priority_type priority
+                                 );
 
     /**
      * \return All the transitions in the Petri net.
