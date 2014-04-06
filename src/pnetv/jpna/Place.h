@@ -35,11 +35,6 @@ class Place {
     we::place_id_type id() const { return id_; }
 
     /**
-     * \return Name of the place.
-     */
-    const std::string &name() const { return name_; }
-
-    /**
      * \return Initial marking of this place.
      */
     TokenCount initialMarking() const { return initialMarking_; }
