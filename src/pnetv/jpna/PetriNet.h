@@ -45,19 +45,7 @@ class PetriNet {
     /**
      * \return All the transitions in the Petri net.
      */
-    const std::vector<Transition *> &transitions() { return transitions_; }
-
-    /**
-     * \return All the transitions in the Petri net.
-     */
     const std::vector<const Transition *> &transitions() const { return reinterpret_cast<const std::vector<const Transition *> &>(transitions_); }
-
-    /**
-     * \param id Id of the transitions.
-     *
-     * \return Transition with given id.
-     */
-    Transition *getTransition(we::transition_id_type id) { return transitions_[id.value()]; }
 
     /**
      * \param id Id of the transitions.
@@ -69,30 +57,6 @@ class PetriNet {
      * \return Newly created place owned by the Petri net.
      */
     Place *createPlace (std::string const&, TokenCount);
-
-    /**
-     * \return All the places in the Petri net.
-     */
-    const std::vector<Place *> &places() { return places_; }
-
-    /**
-     * \return All the places in the Petri net.
-     */
-    const std::vector<const Place *> &places() const { return reinterpret_cast<const std::vector<const Place *> &>(places_); }
-
-    /**
-     * \param id Valid id of the place.
-     *
-     * \return Place with given id.
-     */
-    Place *getPlace(we::place_id_type id) { return places_[id.value()]; }
-
-    /**
-     * \param id Id of the place.
-     *
-     * \return Place with given id.
-     */
-    const Place *getPlace(we::place_id_type id) const { return places_[id.value()]; }
 
     void increment_token_count (we::place_id_type place_id)
     {
