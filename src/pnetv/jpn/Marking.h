@@ -79,12 +79,11 @@ bool operator<=(const Marking &a, const Marking &b) {
     std::vector<PlaceMarking>::const_iterator j = b.placeMarkings().begin();
     std::vector<PlaceMarking>::const_iterator jend = b.placeMarkings().end();
 
-    std::vector<PlaceMarking>::const_iterator iend = a.placeMarkings().end();
-    for (std::vector<PlaceMarking>::const_iterator i = a.placeMarkings().begin(); i != iend; ++i) {
-        while (j != jend && j->placeId() < i->placeId()) {
+    for (PlaceMarking const& i : a.placeMarkings()) {
+        while (j != jend && j->placeId() < i.placeId()) {
             ++j;
         }
-        if (j == jend || j->placeId() != i->placeId() || j->count() < i->count()) {
+        if (j == jend || j->placeId() != i.placeId() || j->count() < i.count()) {
             return false;
         }
     }
