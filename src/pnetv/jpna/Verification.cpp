@@ -4,8 +4,6 @@
 
 #include "PetriNet.h"
 
-#include <boost/range/adaptor/filtered.hpp>
-
 namespace jpna {
 
 namespace {
@@ -16,10 +14,6 @@ inline jpn::Marking makeInitialMarking
     std::vector<jpn::PlaceMarking> placeMarkings;
     for ( std::pair<we::place_id_type, TokenCount> token_count_on_place
         : token_count
-        | boost::adaptors::filtered
-          ( [](std::pair<we::place_id_type, TokenCount> const& x)
-            { return x.second; }
-          )
         )
     {
       placeMarkings.push_back ( jpn::PlaceMarking ( token_count_on_place.first

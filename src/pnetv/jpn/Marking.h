@@ -124,11 +124,8 @@ namespace
       }
       else
       {
-        if (op (i->count(), j->count()) != 0)
-        {
           result.push_back
             (PlaceMarking (i->placeId(), op (i->count(), j->count())));
-        }
         ++i;
         ++j;
       }
