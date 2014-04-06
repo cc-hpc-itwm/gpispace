@@ -30,10 +30,10 @@ inline jpn::Marking makeInitialMarking
     return jpn::Marking(placeMarkings);
 }
 
-inline jpn::Marking makeMarking(const std::vector<const Place *> &places) {
+inline jpn::Marking makeMarking(const std::vector<we::place_id_type> &places) {
     std::vector<jpn::PlaceMarking> placeMarkings;
-    for (const Place *place : places) {
-        placeMarkings.push_back(jpn::PlaceMarking(place->id(), 1));
+    for (we::place_id_type place_id : places) {
+        placeMarkings.push_back(jpn::PlaceMarking(place_id, 1));
     }
     return jpn::Marking(placeMarkings);
 }

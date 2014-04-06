@@ -8,9 +8,6 @@ PetriNet::~PetriNet() {
     for (Transition *transition : transitions_) {
         delete transition;
     }
-    for (Place *place : places_) {
-        delete place;
-    }
 }
 
 Transition *PetriNet::createTransition() {
@@ -19,13 +16,12 @@ Transition *PetriNet::createTransition() {
     return result.release();
 }
 
-  Place *PetriNet::createPlace ( TokenCount initial_marking
-                               )
+  we::place_id_type PetriNet::createPlace ( TokenCount initial_marking
+                                          )
   {
-    std::auto_ptr<Place> result (new Place (places_.size()));
-    _token_count[result->id()] = initial_marking;
-    places_.push_back(result.get());
-    return result.release();
+    we::place_id_type const place_id (_token_count.size());
+    _token_count[place_id] = initial_marking;
+    return place_id;
   }
 
 } // namespace jpna

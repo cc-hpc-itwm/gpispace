@@ -24,11 +24,6 @@ class TransitionVisitor: public boost::static_visitor<void> {
     boost::ptr_vector<PetriNet> &petriNets_; ///< Where to add the resulting Petri net when done.
 
     /**
-     * Places present in the workflow.
-     */
-    std::unordered_map<we::place_id_type, Place *> places_;
-
-    /**
      * Transitions present in the workflow.
      */
     std::unordered_map<we::transition_id_type, Transition *> transitions_;
@@ -53,12 +48,9 @@ class TransitionVisitor: public boost::static_visitor<void> {
         typedef we::type::transition_t transition_t;
 
         /* Translate places. */
-        for ( we::place_id_type place_id
-            : net.places() | boost::adaptors::map_keys
-            )
+        for (std::size_t _ (0); _ < net.places().size(); ++_)
         {
-            Place *place = petriNet_->createPlace (0);
-            places_[place_id] = place;
+            petriNet_->createPlace (0);
         }
 
         /* Translate transitions. */
@@ -80,11 +72,10 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
             /* If there is a limit on number of firings, implement it using an additional place. */
             if (boost::optional<const we::type::property::value_type &> limit = t.prop().get("fhg.pnetv.firings_limit")) {
-                Place *place = petriNet_->createPlace
-                  ( boost::lexical_cast<TokenCount> (*limit)
-                  );
-
-                transition->addInputPlace(place);
+              transition->addInputPlace
+                ( petriNet_->createPlace
+                  (boost::lexical_cast<TokenCount> (*limit))
+                );
             }
         }
 
@@ -92,32 +83,29 @@ class TransitionVisitor: public boost::static_visitor<void> {
             : net.place_to_transition_consume()
             )
         {
-          Place *place = places_.at (pt.left);
           Transition *transition = transitions_.at (pt.right);
 
           /* Transition consumes the token on input place. */
-          transition->addInputPlace(place);
+          transition->addInputPlace (pt.left);
         }
         for ( const we::type::net_type::adj_pt_type::value_type& pt
             : net.place_to_transition_read()
             )
         {
-          Place *place = places_.at (pt.left);
           Transition *transition = transitions_.at (pt.right);
 
           /* Transition takes a token and instantly puts it back. */
-          transition->addInputPlace(place);
-          transition->addOutputPlace(place);
+          transition->addInputPlace (pt.left);
+          transition->addOutputPlace (pt.left);
         }
         for ( const we::type::net_type::adj_tp_type::value_type& tp
             : net.transition_to_place()
             )
         {
           Transition *transition = transitions_.at (tp.left);
-          Place *place = places_.at (tp.right);
 
           /* Executing the transition puts a token on output place. */
-          transition->addOutputPlace(place);
+          transition->addOutputPlace (tp.right);
         }
 
         for ( std::pair<we::transition_id_type, we::type::transition_t> const

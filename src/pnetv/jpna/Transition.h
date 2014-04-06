@@ -9,16 +9,14 @@
 
 namespace jpna {
 
-class Place;
-
 /**
  * Transition from a workflow abstracted from unnecessary details.
  */
 class Transition {
     we::transition_id_type id_; ///< Id of the transition.
     std::string name_; ///< Name of the transition.
-    std::vector<const Place *> inputPlaces_; ///< Ids of input places.
-    std::vector<const Place *> outputPlaces_; ///< Ids of output places.
+    std::vector<we::place_id_type> inputPlaces_; ///< Ids of input places.
+    std::vector<we::place_id_type> outputPlaces_; ///< Ids of output places.
     bool conditionAlwaysTrue_; ///< True iff transition's condition is constant true.
     we::priority_type priority_; ///< Priority.
 
@@ -73,29 +71,25 @@ class Transition {
      */
     void setPriority(we::priority_type priority) { priority_ = priority; }
 
-    /**
-     * Adds input place.
-     *
-     * \param place Place.
-     */
-    void addInputPlace(const Place *place) { inputPlaces_.push_back(place); }
+    void addInputPlace (we::place_id_type place_id)
+    {
+      inputPlaces_.push_back (place_id);
+    }
 
     /**
      * \return Ids of input places.
      */
-    const std::vector<const Place *> &inputPlaces() const { return inputPlaces_; }
+    const std::vector<we::place_id_type> &inputPlaces() const { return inputPlaces_; }
 
-    /**
-     * Adds output place.
-     *
-     * \param place Place.
-     */
-    void addOutputPlace(const Place *place) { outputPlaces_.push_back(place); }
+    void addOutputPlace (we::place_id_type place_id)
+    {
+      outputPlaces_.push_back (place_id);
+    }
 
     /**
      * \return Ids of output places.
      */
-    const std::vector<const Place *> &outputPlaces() const { return outputPlaces_; }
+    const std::vector<we::place_id_type> &outputPlaces() const { return outputPlaces_; }
 };
 
 } // namespace jpna

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Place.h"
 #include "Transition.h"
 
 #include <we/type/id.hpp>
@@ -15,7 +14,6 @@ namespace jpna {
 class PetriNet {
     std::string name_; ///< Name of the Petri net.
     std::vector<Transition *> transitions_; ///< Transitions.
-    std::vector<Place *> places_; ///< Places.
     std::unordered_map<we::place_id_type, TokenCount> _token_count;
 
     public:
@@ -56,7 +54,7 @@ class PetriNet {
     /**
      * \return Newly created place owned by the Petri net.
      */
-    Place *createPlace (TokenCount);
+    we::place_id_type createPlace (TokenCount);
 
     void increment_token_count (we::place_id_type place_id)
     {
