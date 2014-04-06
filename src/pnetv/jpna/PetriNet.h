@@ -67,7 +67,7 @@ class PetriNet {
     /**
      * \return Newly created place owned by the Petri net.
      */
-    Place *createPlace();
+    Place *createPlace (std::string const&, TokenCount);
 
     /**
      * \return All the places in the Petri net.

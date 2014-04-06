@@ -19,10 +19,14 @@ Transition *PetriNet::createTransition() {
     return result.release();
 }
 
-Place *PetriNet::createPlace() {
-    std::auto_ptr<Place> result(new Place(places_.size()));
+  Place *PetriNet::createPlace ( std::string const& name
+                               , TokenCount initial_marking
+                               )
+  {
+    std::auto_ptr<Place> result
+      (new Place (places_.size(), name, initial_marking));
     places_.push_back(result.get());
     return result.release();
-}
+  }
 
 } // namespace jpna

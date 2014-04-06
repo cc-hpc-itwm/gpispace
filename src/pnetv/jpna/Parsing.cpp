@@ -59,8 +59,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             const we::place_id_type& pid (ip.first);
             const place::type &p (ip.second);
 
-            Place *place = petriNet_->createPlace();
-            place->setName(p.name());
+            Place *place = petriNet_->createPlace (p.name(), 0);
             places_[pid] = place;
         }
 
@@ -83,9 +82,10 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
             /* If there is a limit on number of firings, implement it using an additional place. */
             if (boost::optional<const we::type::property::value_type &> limit = t.prop().get("fhg.pnetv.firings_limit")) {
-                Place *place = petriNet_->createPlace();
-                place->setName("limit!" + t.name());
-                place->setInitialMarking(boost::lexical_cast<TokenCount>(*limit));
+                Place *place = petriNet_->createPlace
+                  ( "limit!" + t.name()
+                  , boost::lexical_cast<TokenCount> (*limit)
+                  );
 
                 transition->addInputPlace(place);
             }
@@ -145,7 +145,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
                 we::place_id_type pid = *port.associated_place();
 
                 Place *place = places_.at (pid);
-                place->setInitialMarking(place->initialMarking() + 1);
+                place->increment_token_count();
 
             }
         }
@@ -156,7 +156,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
                 we::place_id_type pid = *port.associated_place();
 
                 Place *place = places_.at (pid);
-                place->setInitialMarking(place->initialMarking() + 1);
+                place->increment_token_count();
 
             }
         }
@@ -167,7 +167,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
                 we::place_id_type pid = *port.associated_place();
 
                 Place *place = places_.at (pid);
-                place->setInitialMarking(place->initialMarking() + 1);
+                place->increment_token_count();
 
             }
         }

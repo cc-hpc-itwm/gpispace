@@ -20,12 +20,14 @@ class Place {
 
     public:
 
-    /**
-     * Constructor.
-     *
-     * \param id Id.
-     */
-    Place(we::place_id_type id): id_(id), initialMarking_(0) {}
+    Place ( we::place_id_type id
+          , std::string const& name
+          , TokenCount initial_marking
+          )
+      : id_ (id)
+      , name_ (name)
+      , initialMarking_ (initial_marking)
+    {}
 
     /**
      * \return Id of the place.
@@ -38,23 +40,14 @@ class Place {
     const std::string &name() const { return name_; }
 
     /**
-     * Sets the name of the place.
-     *
-     * \param name New name.
-     */
-    void setName(const std::string &name) { name_ = name; }
-
-    /**
      * \return Initial marking of this place.
      */
     TokenCount initialMarking() const { return initialMarking_; }
 
-    /**
-     * Sets initial marking of the place.
-     *
-     * \param count Initial token count.
-     */
-    void setInitialMarking(TokenCount count) { initialMarking_ = count; }
+    void increment_token_count()
+    {
+      ++initialMarking_;
+    }
 };
 
 } // namespace jpna
