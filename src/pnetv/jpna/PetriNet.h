@@ -92,6 +92,15 @@ class PetriNet {
      * \return Place with given id.
      */
     const Place *getPlace(we::place_id_type id) const { return places_[id.value()]; }
+
+    void increment_token_count (we::place_id_type place_id) const
+    {
+      ( *std::find_if
+        ( places_.begin(), places_.end()
+        , [&place_id](Place* place) { return place->id() == place_id; }
+        )
+      )->increment_token_count();
+    }
 };
 
 } // namespace jpna

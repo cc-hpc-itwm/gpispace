@@ -144,9 +144,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             if (port.associated_place()) {
                 we::place_id_type pid = *port.associated_place();
 
-                Place *place = places_.at (pid);
-                place->increment_token_count();
-
+                petriNet_->increment_token_count (pid);
             }
         }
         for (const transition_t::port_map_t::value_type &item : transition.ports_output()) {
@@ -155,9 +153,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             if (port.associated_place()) {
                 we::place_id_type pid = *port.associated_place();
 
-                Place *place = places_.at (pid);
-                place->increment_token_count();
-
+                petriNet_->increment_token_count (pid);
             }
         }
         for (const transition_t::port_map_t::value_type &item : transition.ports_tunnel()) {
@@ -166,9 +162,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             if (port.associated_place()) {
                 we::place_id_type pid = *port.associated_place();
 
-                Place *place = places_.at (pid);
-                place->increment_token_count();
-
+                petriNet_->increment_token_count (pid);
             }
         }
 
