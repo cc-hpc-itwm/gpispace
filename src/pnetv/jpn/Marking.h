@@ -21,11 +21,6 @@ class Marking {
     public:
 
     /**
-     * Default constructor.
-     */
-    Marking() {}
-
-    /**
      * Constructor from an array of individual place markings.
      *
      * Place markings with zero token count are removed.
@@ -39,11 +34,6 @@ class Marking {
      * \return Markings of individual places.
      */
     const std::vector<PlaceMarking> &placeMarkings() const { return placeMarkings_; }
-
-    private:
-
-    friend Marking operator+(const Marking &, const Marking &);
-    friend Marking operator-(const Marking &, const Marking &);
 };
 
 /**
@@ -105,6 +95,58 @@ inline bool operator< (const Marking &a, const Marking &b)
   return a <= b && a != b;
 }
 
+namespace
+{
+  inline Marking binop
+    ( Marking const& a
+    , Marking const& b
+    , std::function<TokenCount (TokenCount, TokenCount)> op
+    )
+  {
+    std::vector<PlaceMarking> result;
+
+    std::vector<PlaceMarking>::const_iterator i = a.placeMarkings().begin();
+    std::vector<PlaceMarking>::const_iterator iend = a.placeMarkings().end();
+
+    std::vector<PlaceMarking>::const_iterator j = b.placeMarkings().begin();
+    std::vector<PlaceMarking>::const_iterator jend = b.placeMarkings().end();
+
+    while (i != iend && j != jend)
+    {
+      if (i->placeId() < j->placeId())
+      {
+        result.push_back (*i++);
+      }
+      else if (i->placeId() > j->placeId())
+      {
+        result.push_back (PlaceMarking (j->placeId(), op (0, j->count())));
+        ++j;
+      }
+      else
+      {
+        if (op (i->count(), j->count()) != 0)
+        {
+          result.push_back
+            (PlaceMarking (i->placeId(), op (i->count(), j->count())));
+        }
+        ++i;
+        ++j;
+      }
+    }
+    while (i != iend)
+    {
+      result.push_back (*i++);
+    }
+    while (j != jend)
+    {
+      result.push_back (PlaceMarking (j->placeId(), op (0, j->count())));
+      ++j;
+    }
+
+    return Marking (result);
+  }
+}
+
 /**
  * \param[in] a Marking.
  * \param[in] b Marking.
@@ -113,45 +155,7 @@ inline bool operator< (const Marking &a, const Marking &b)
  */
 inline Marking operator+ (const Marking &a, const Marking &b)
 {
-  Marking result;
-
-  std::vector<PlaceMarking>::const_iterator i = a.placeMarkings().begin();
-  std::vector<PlaceMarking>::const_iterator iend = a.placeMarkings().end();
-
-  std::vector<PlaceMarking>::const_iterator j = b.placeMarkings().begin();
-  std::vector<PlaceMarking>::const_iterator jend = b.placeMarkings().end();
-
-  while (i != iend && j != jend)
-  {
-    if (i->placeId() < j->placeId())
-    {
-      result.placeMarkings_.push_back (*i++);
-    }
-    else if (i->placeId() > j->placeId())
-    {
-      result.placeMarkings_.push_back (*j++);
-    }
-    else
-    {
-      if (i->count() + j->count() != 0)
-      {
-        result.placeMarkings_.push_back
-          (PlaceMarking (i->placeId(), i->count() + j->count()));
-      }
-      ++i;
-      ++j;
-    }
-  }
-  while (i != iend)
-  {
-    result.placeMarkings_.push_back (*i++);
-  }
-  while (j != jend)
-  {
-    result.placeMarkings_.push_back (*j++);
-  }
-
-  return result;
+  return binop (a, b, [](TokenCount l, TokenCount r) { return l + r; });
 }
 
 /**
@@ -161,49 +165,7 @@ inline Marking operator+ (const Marking &a, const Marking &b)
  * \return A marking which is a componentwise difference between a and b.
  */
 inline Marking operator- (const Marking &a, const Marking &b)
- {
-   Marking result;
-
-   std::vector<PlaceMarking>::const_iterator i = a.placeMarkings().begin();
-   std::vector<PlaceMarking>::const_iterator iend = a.placeMarkings().end();
-
-   std::vector<PlaceMarking>::const_iterator j = b.placeMarkings().begin();
-   std::vector<PlaceMarking>::const_iterator jend = b.placeMarkings().end();
-
-   while (i != iend && j != jend)
-   {
-     if (i->placeId() < j->placeId())
-     {
-       result.placeMarkings_.push_back (*i);
-       ++i;
-     }
-     else if (i->placeId() > j->placeId())
-     {
-       result.placeMarkings_.push_back
-         (PlaceMarking (j->placeId(), -j->count()));
-       ++j;
-     }
-     else
-     {
-       if (i->count() - j->count() != 0)
-       {
-         result.placeMarkings_.push_back
-           (PlaceMarking (i->placeId(), i->count() - j->count()));
-       }
-       ++i;
-       ++j;
-     }
-   }
-   while (i != iend)
-   {
-     result.placeMarkings_.push_back (*i++);
-   }
-   while (j != jend)
-   {
-     result.placeMarkings_.push_back (PlaceMarking (j->placeId(), -j->count()));
-     ++j;
-   }
-
-   return result;
- }
+{
+  return binop (a, b, [](TokenCount l, TokenCount r) { return l - r; });
+}
 } // namespace jpn
