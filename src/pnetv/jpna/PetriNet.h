@@ -56,7 +56,7 @@ class PetriNet {
     /**
      * \return Newly created place owned by the Petri net.
      */
-    Place *createPlace (std::string const&, TokenCount);
+    Place *createPlace (TokenCount);
 
     void increment_token_count (we::place_id_type place_id)
     {

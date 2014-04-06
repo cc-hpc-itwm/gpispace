@@ -19,11 +19,10 @@ Transition *PetriNet::createTransition() {
     return result.release();
 }
 
-  Place *PetriNet::createPlace ( std::string const& name
-                               , TokenCount initial_marking
+  Place *PetriNet::createPlace ( TokenCount initial_marking
                                )
   {
-    std::auto_ptr<Place> result (new Place (places_.size(), name));
+    std::auto_ptr<Place> result (new Place (places_.size()));
     _token_count[result->id()] = initial_marking;
     places_.push_back(result.get());
     return result.release();

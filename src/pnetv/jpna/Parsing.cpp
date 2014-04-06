@@ -53,14 +53,12 @@ class TransitionVisitor: public boost::static_visitor<void> {
         typedef we::type::transition_t transition_t;
 
         /* Translate places. */
-        typedef std::pair<we::place_id_type, place::type> ip_type;
-
-        for (const ip_type& ip : net.places()) {
-            const we::place_id_type& pid (ip.first);
-            const place::type &p (ip.second);
-
-            Place *place = petriNet_->createPlace (p.name(), 0);
-            places_[pid] = place;
+        for ( we::place_id_type place_id
+            : net.places() | boost::adaptors::map_keys
+            )
+        {
+            Place *place = petriNet_->createPlace (0);
+            places_[place_id] = place;
         }
 
         /* Translate transitions. */
@@ -83,8 +81,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             /* If there is a limit on number of firings, implement it using an additional place. */
             if (boost::optional<const we::type::property::value_type &> limit = t.prop().get("fhg.pnetv.firings_limit")) {
                 Place *place = petriNet_->createPlace
-                  ( "limit!" + t.name()
-                  , boost::lexical_cast<TokenCount> (*limit)
+                  ( boost::lexical_cast<TokenCount> (*limit)
                   );
 
                 transition->addInputPlace(place);

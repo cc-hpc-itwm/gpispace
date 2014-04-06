@@ -6,8 +6,6 @@
 
 #include <boost/optional.hpp>
 
-#include <string>
-
 namespace jpna {
 
 /**
@@ -15,15 +13,12 @@ namespace jpna {
  */
 class Place {
     we::place_id_type id_; ///< Id of the place.
-    std::string name_; ///< Name of the transition.
 
     public:
 
     Place ( we::place_id_type id
-          , std::string const& name
           )
       : id_ (id)
-      , name_ (name)
     {}
 
     /**
