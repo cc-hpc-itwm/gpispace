@@ -22,6 +22,7 @@
 #include <fhgcom/kvs/kvsc.hpp>
 
 #include <fhg/util/daemonize.hpp>
+#include <fhg/util/make_unique.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/pidfile_writer.hpp>
@@ -108,28 +109,24 @@ namespace
     {
       try
       {
-        return std::unique_ptr<gpi_api_t>
-          (new gpi::api::real_gpi_api_t (is_master));
+        return fhg::util::make_unique <gpi::api::real_gpi_api_t> (is_master);
       }
       catch (gpi::exception::gpi_error const& ex)
       {
         fprintf (stderr, "%s: %s\n", program_name, ex.what());
         fprintf (stderr, "%s: fallback to fake API\n", program_name);
 
-        return std::unique_ptr<gpi_api_t>
-          (new gpi::api::fake_gpi_api_t (is_master));
+        return fhg::util::make_unique <gpi::api::fake_gpi_api_t> (is_master);
       }
     }
     else if (requested_api == API_real)
     {
-      return std::unique_ptr<gpi_api_t>
-        (new gpi::api::real_gpi_api_t (is_master));
+      return fhg::util::make_unique <gpi::api::real_gpi_api_t> (is_master);
     }
     else // if (requested_api == API_fake)
 #endif
     {
-      return std::unique_ptr<gpi_api_t>
-        (new gpi::api::fake_gpi_api_t (is_master));
+      return fhg::util::make_unique <gpi::api::fake_gpi_api_t> (is_master);
     }
   }
 
