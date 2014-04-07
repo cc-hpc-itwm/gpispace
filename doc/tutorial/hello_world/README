@@ -99,7 +99,7 @@ For the `.o` objects GPI-Space is told to link with `hello2.o` and `hello_world.
 PNETC_LINK_PREFIX += "libdir=$(BUILDDIR)"
 ----
 
-Please note that above the libraries were produced in the folder`$(BUILDDIR)`. In general the `prefix` allows to write workflows that are independent of the location of the libraries.
+Please note that above the libraries were produced in the folder `$(BUILDDIR)`. In general the `prefix` allows to write workflows that are independent of the location of the libraries.
 
 The location of the shared object file is specified in the link:Makefile[]:
 
