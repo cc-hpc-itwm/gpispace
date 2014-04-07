@@ -7,6 +7,7 @@
 
 #include <fhg/assert.hpp>
 #include <fhg/syscall.hpp>
+#include <fhg/util/make_unique.hpp>
 #include <fhglog/LogMacros.hpp>
 
 #include <functional>
@@ -216,21 +217,19 @@ namespace gpi
             {
               boost::mutex::scoped_lock const _ (_mutex_processes);
 
-              m_processes.insert
+              m_processes.emplace
                 ( id
-                , std::auto_ptr<process_t>
-                  ( new process_t
-                    ( std::bind ( &manager_t::handle_process_error
-                                , this
-                                , std::placeholders::_1
-                                , std::placeholders::_2
-                                )
-                    , id
-                    , cfd
-                    , _memory_manager
-                    , _topology
-                    , _gpi_api
-                    )
+                , fhg::util::make_unique<process_t>
+                  ( std::bind ( &manager_t::handle_process_error
+                              , this
+                              , std::placeholders::_1
+                              , std::placeholders::_2
+                              )
+                  , id
+                  , cfd
+                  , _memory_manager
+                  , _topology
+                  , _gpi_api
                   )
                 );
             }
