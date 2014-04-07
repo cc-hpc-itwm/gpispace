@@ -67,6 +67,11 @@ if (ENABLE_DOCUMENTATION)
     BACKEND xhtml11
     )
 
+  install (FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/user.html
+    DESTINATION share/gspc/doc/
+  )
+
   ADD_ASCIIDOC (user-asciidoc-docbook
     INPUT user/gpispace.txt
     OUTPUT user.docbook
