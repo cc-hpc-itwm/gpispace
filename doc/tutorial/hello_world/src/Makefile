@@ -1,9 +1,9 @@
 
-ifndef DIR_BUILD
-  DIR_BUILD = ..
+ifndef BUILDDIR
+  BUILDDIR = ..
 endif
 
-LIB_PATH = $(DIR_BUILD)
+LIB_PATH = $(BUILDDIR)
 INC_PATH = $(CURDIR)/../include
 
 OBJ_HELLO = $(LIB_PATH)/hello_world.o

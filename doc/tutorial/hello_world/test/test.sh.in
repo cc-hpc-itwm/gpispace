@@ -22,7 +22,7 @@ make+=( CXXLIBRARYPATHS="${DIR_BUILD}" )
 make+=( WE_EXEC_OUTPUT="${RESULT}" )
 make+=( -C "${DIR_SOURCE}" )
 
-make_mod='make DIR_BUILD=${DIR_BUILD} -C "${DIR_MODULE}"'
+make_mod='make BUILDDIR=${DIR_BUILD} -C "${DIR_MODULE}"'
 
 cleanup()
 {
