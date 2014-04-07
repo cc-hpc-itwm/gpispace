@@ -133,8 +133,6 @@ namespace gpi
       class transfer_manager_t
       {
       public:
-        static const size_t DEF_BUFFER_SIZE = 4194304;
-
         transfer_manager_t (api::gpi_api_t&);
 
         void transfer (memory_transfer_t const &);

@@ -26,6 +26,8 @@ namespace gpi
 
         for (size_t i = 0; i < number_of_queues; ++i)
         {
+          constexpr size_t DEF_BUFFER_SIZE (4194304);
+
           std::auto_ptr<buffer_t> buffer (new buffer_t (DEF_BUFFER_SIZE));
           m_memory_buffer_pool.put (buffer);
         }
