@@ -709,11 +709,11 @@ namespace gpi
           {
             temporarily_removed_buffer (area_t::memory_pool_t& pool)
               : _pool (pool)
-              , _buffer (_pool.get().release())
+              , _buffer (_pool.get())
             {}
             ~temporarily_removed_buffer()
             {
-              _pool.put (_buffer);
+              _pool.put (std::move (_buffer));
             }
 
             buffer_t* operator->() const
@@ -722,7 +722,7 @@ namespace gpi
             }
 
             area_t::memory_pool_t& _pool;
-            std::auto_ptr<buffer_t> _buffer;
+            std::unique_ptr<buffer_t> _buffer;
           };
         }
 

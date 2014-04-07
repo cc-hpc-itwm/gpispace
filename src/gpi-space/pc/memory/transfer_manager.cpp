@@ -2,6 +2,8 @@
 
 #include <fhglog/LogMacros.hpp>
 
+#include <fhg/util/make_unique.hpp>
+
 #include <boost/make_shared.hpp>
 
 #include <gpi-space/gpi/api.hpp>
@@ -28,8 +30,8 @@ namespace gpi
         {
           constexpr size_t DEF_BUFFER_SIZE (4194304);
 
-          std::auto_ptr<buffer_t> buffer (new buffer_t (DEF_BUFFER_SIZE));
-          m_memory_buffer_pool.put (buffer);
+          m_memory_buffer_pool.put
+            (fhg::util::make_unique<buffer_t> (DEF_BUFFER_SIZE));
         }
       }
 
