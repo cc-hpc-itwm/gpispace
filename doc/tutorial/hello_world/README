@@ -28,7 +28,7 @@ Now `hello_world` is started by
 share/gspc/doc/tutorial/hello_world$ make BUILDDIR=$HOME/build run
 ----
 
-and output is produced that contains near the end lines like
+The output that is produced contains (near the end) lines like
 
 ....
 *** Calling 3 versions of hello...*** Calling 3 versions of hello...
