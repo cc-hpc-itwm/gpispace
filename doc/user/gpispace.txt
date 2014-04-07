@@ -107,6 +107,7 @@ transitions. behavior of transitions defined by functions,
 i.e. workflows again.
 
 small workflow, being a module call below:
+[[module_call]]
 
 [source,xml]
 ----
