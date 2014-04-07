@@ -21,6 +21,7 @@ set (FHGLOG_STRIP_LEVEL "-1" CACHE STRING "Strip log messages with a level >= N"
 set (FHG_ASSERT_MODE CACHE INTEGER "fhg assert mode: 0 ignore, 1 enable, 2 use assert, 3 throw, 4 just log, 5 log and abort")
 option (FHG_ASSERT_REPLACE_LEGACY "Replace legacy assert with fhg_assert" ON)
 option (ENABLE_BACKTRACE_ON_PARSE_ERROR "Show a backtrace on (pnet) parser errors" OFF)
+option (ENABLE_DOCUMENTATION "enable documentation" ON)
 
   execute_process (
     COMMAND git rev-parse HEAD
