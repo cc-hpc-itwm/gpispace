@@ -119,8 +119,7 @@ namespace sdpa
 
     namespace
     {
-      FHG_ATTRIBUTE_NORETURN
-        void handle_bad_event (sdpa::events::SDPAEvent::Ptr reply)
+      [[noreturn]] void handle_bad_event (sdpa::events::SDPAEvent::Ptr reply)
       {
         if ( sdpa::events::ErrorEvent *err
            = dynamic_cast<sdpa::events::ErrorEvent*> (reply.get())
