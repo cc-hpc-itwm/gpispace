@@ -15,15 +15,10 @@ The first step is to build the demonstration libraries by
 ----
 share/gspc/doc/tutorial/hello_world$ mkdir $HOME/build
 share/gspc/doc/tutorial/hello_world$ make BUILDDIR=$HOME/build -C src
-----
-
-Afterwards there are three objects, e.g.
-
-[source,bash]
-----
 share/gspc/doc/tutorial/hello_world$ ls $HOME/build/*.*o
-$HOME/build/hello2.o      $HOME/build/libhello_util.so
+$HOME/build/hello2.o
 $HOME/build/hello_world.o
+$HOME/build/libhello_util.so
 ----
 
 Now `hello_world` is started by
