@@ -703,6 +703,29 @@ namespace gpi
           gpi::pc::type::size_t m_amount;
         };
 
+        namespace
+        {
+          struct temporarily_removed_buffer
+          {
+            temporarily_removed_buffer (area_t::memory_pool_t& pool)
+              : _pool (pool)
+              , _buffer (_pool.get().release())
+            {}
+            ~temporarily_removed_buffer()
+            {
+              _pool.put (_buffer);
+            }
+
+            buffer_t* operator->() const
+            {
+              return _buffer.operator->();
+            }
+
+            area_t::memory_pool_t& _pool;
+            std::auto_ptr<buffer_t> _buffer;
+          };
+        }
+
         struct copy
         {
           copy ( area_t & src
@@ -722,7 +745,7 @@ namespace gpi
 
           void operator () ()
           {
-            std::auto_ptr<buffer_t> buffer (m_pool.get().release());
+            temporarily_removed_buffer buffer (m_pool);
 
             size_t remaining = m_amount;
 
@@ -741,7 +764,7 @@ namespace gpi
                      << " from " << m_src_loc
                      << " remaining " << remaining
                      );
-                m_pool.put (buffer);
+
                 throw std::runtime_error ("could not read");
               }
 
@@ -758,8 +781,6 @@ namespace gpi
 
               remaining -= num_read;
             }
-
-            m_pool.put (buffer);
           }
         private:
           area_t & m_src;
