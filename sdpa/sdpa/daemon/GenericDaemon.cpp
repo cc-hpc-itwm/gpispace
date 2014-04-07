@@ -1033,8 +1033,6 @@ void GenericDaemon::handleJobFinishedAckEvent(const events::JobFinishedAckEvent*
 {
   // The result was successfully delivered by the worker and the WE was notified
   // therefore, I can delete the job from the job map
-  std::ostringstream os;
-  worker_id_t worker_id = pEvt->from();
   if(findJob(pEvt->job_id()))
   {
       // delete it from the map when you receive a JobFinishedAckEvent!
@@ -1049,9 +1047,6 @@ void GenericDaemon::handleJobFinishedAckEvent(const events::JobFinishedAckEvent*
 // respond to a worker that the JobFailedEvent was received
 void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEvt )
 {
-  std::ostringstream os;
-  worker_id_t worker_id = pEvt->from();
-
   if(findJob(pEvt->job_id()))
   {
         // delete it from the map when you receive a JobFailedAckEvent!
