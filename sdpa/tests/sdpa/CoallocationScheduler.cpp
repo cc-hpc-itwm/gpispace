@@ -23,7 +23,7 @@ struct serveJob_checking_scheduler_and_job_manager
 
   void add_job (const sdpa::job_id_t& job_id, const job_requirements_t& reqs)
   {
-    if (!_requirements.insert (std::make_pair (job_id, reqs)).second)
+    if (!_requirements.emplace (job_id, reqs).second)
     {
       throw std::runtime_error ("added job twice");
     }
@@ -52,8 +52,7 @@ struct serveJob_checking_scheduler_and_job_manager
   void expect_serveJob_call
     (sdpa::job_id_t id, std::size_t count, std::set<sdpa::worker_id_t> list)
   {
-    _expected_serveJob_calls.insert
-      (std::make_pair (id, std::make_pair (count, list)));
+    _expected_serveJob_calls.emplace (id, std::make_pair (count, list));
   }
   void expect_serveJob_call (sdpa::job_id_t id, std::set<sdpa::worker_id_t> list)
   {

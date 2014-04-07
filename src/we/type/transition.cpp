@@ -64,7 +64,7 @@ namespace we
       switch (port.direction())
       {
       case PORT_IN:
-        _ports_input.insert (std::make_pair (port_id, port));
+        _ports_input.emplace (port_id, port);
         break;
 
       case PORT_OUT:
@@ -77,11 +77,11 @@ namespace we
               ).str()
             );
         }
-        _ports_output.insert (std::make_pair (port_id, port));
+        _ports_output.emplace (port_id, port);
         break;
 
       case PORT_TUNNEL:
-        _ports_tunnel.insert (std::make_pair (port_id, port));
+        _ports_tunnel.emplace (port_id, port);
         break;
       }
 

@@ -131,7 +131,7 @@ namespace sdpa
               _serve_job (worker_id_list_t (matching_workers.begin(), matching_workers.end()), jobId);
 
               Reservation* pReservation (new Reservation (matching_workers));
-              allocation_table_.insert (std::make_pair (jobId, pReservation));
+              allocation_table_.emplace (jobId, pReservation);
             }
             catch (std::runtime_error const&)
             {

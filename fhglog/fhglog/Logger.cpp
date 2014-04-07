@@ -26,15 +26,13 @@ namespace fhg
             logger_map_t::const_iterator const logger (_logger.find (name));
 
             return (logger != _logger.end()) ? logger->second
-              : _logger.insert
-              ( std::make_pair
+              : _logger.emplace
                 ( name
                 , Logger::ptr_t ( name != "default"
                                 ? new Logger (name, *getLogger ("default"))
                                 : new Logger (name)
                                 )
-                )
-              ).first->second;
+                ).first->second;
           }
 
         private:

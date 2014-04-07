@@ -110,7 +110,7 @@ namespace we
     }
     void Module::add_function (const std::string& name, WrapperFunction f)
     {
-      if (! call_table_.insert (std::make_pair (name, f)).second)
+      if (! call_table_.emplace (name, f).second)
       {
         throw duplicate_function (name_, name);
       }

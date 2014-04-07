@@ -1109,11 +1109,8 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
 
       if (pJob && worker_id)
       {
-        _discover_sources.insert
-          ( std::make_pair ( std::make_pair (pEvt->discover_id(), pEvt->job_id())
-                           , pEvt->from()
-                           )
-          );
+        _discover_sources.emplace
+          (std::make_pair (pEvt->discover_id(), pEvt->job_id()), pEvt->from());
 
         child_proxy (this, *worker_id).discover_job_states
           (pEvt->job_id(), pEvt->discover_id());
@@ -1124,11 +1121,8 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
       //! out of the wfe. Special "worker" id?
       else if (pJob && workflowEngine())
       {
-        _discover_sources.insert
-          ( std::make_pair ( std::make_pair (pEvt->discover_id(), pEvt->job_id())
-                           , pEvt->from()
-                           )
-          );
+        _discover_sources.emplace
+          (std::make_pair (pEvt->discover_id(), pEvt->job_id()), pEvt->from());
 
         //! \todo There is a race here: between SubmitJobAck and
         //! we->submit(), there's still a lot of stuff. We can't

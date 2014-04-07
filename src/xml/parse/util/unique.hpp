@@ -122,7 +122,7 @@ namespace xml
           }
 
         _values._ids.insert (id);
-        _by_key.insert (std::make_pair (key, id));
+        _by_key.emplace (key, id);
 
         return id;
       }

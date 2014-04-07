@@ -147,7 +147,7 @@ namespace xml
               ).str()                                                   \
             );                                                          \
         }                                                               \
-        _maps->MEMBER_NAME.insert (std::make_pair (id, elem));          \
+        _maps->MEMBER_NAME.emplace (id, elem);                          \
       }                                                                 \
                                                                         \
       void mapper::add_reference (const ref::NAME& ref)                 \

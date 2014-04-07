@@ -778,29 +778,25 @@ namespace xml
               {
                 if (port.direction() == we::type::PORT_IN)
                 {
-                  port_id_in.insert
-                    ( std::make_pair
-                      ( port.name()
-                      , trans_in.add_port
-                        ( we::type::port_t ( port.name()
-                                           , we::type::PORT_IN
-                                           , port.signature_or_throw()
-                                           , port.properties()
-                                           )
-                        )
+                  port_id_in.emplace
+                    ( port.name()
+                    , trans_in.add_port
+                      ( we::type::port_t ( port.name()
+                                         , we::type::PORT_IN
+                                         , port.signature_or_throw()
+                                         , port.properties()
+                                         )
                       )
                     );
 
-                  port_id_out.insert
-                    ( std::make_pair
-                      ( port.name()
-                      , trans_in.add_port
-                        ( we::type::port_t ( port.name()
-                                           , we::type::PORT_OUT
-                                           , port.signature_or_throw()
-                                           , port.properties()
-                                           )
-                        )
+                  port_id_out.emplace
+                    ( port.name()
+                    , trans_in.add_port
+                      ( we::type::port_t ( port.name()
+                                         , we::type::PORT_OUT
+                                         , port.signature_or_throw()
+                                         , port.properties()
+                                         )
                       )
                     );
                 }
@@ -858,29 +854,25 @@ namespace xml
               {
                 if (port.direction() == we::type::PORT_OUT)
                 {
-                  port_id_in.insert
-                    ( std::make_pair
-                      ( port.name()
-                      , trans_out.add_port
-                        ( we::type::port_t ( port.name()
-                                           , we::type::PORT_IN
-                                           , port.signature_or_throw()
-                                           , port.properties()
-                                           )
-                        )
+                  port_id_in.emplace
+                    ( port.name()
+                    , trans_out.add_port
+                      ( we::type::port_t ( port.name()
+                                         , we::type::PORT_IN
+                                         , port.signature_or_throw()
+                                         , port.properties()
+                                         )
                       )
                     );
 
-                  port_id_out.insert
-                    ( std::make_pair
-                      ( port.name()
-                      , trans_out.add_port
-                        ( we::type::port_t ( port.name()
-                                           , we::type::PORT_OUT
-                                           , port.signature_or_throw()
-                                           , port.properties()
-                                           )
-                        )
+                  port_id_out.emplace
+                    ( port.name()
+                    , trans_out.add_port
+                      ( we::type::port_t ( port.name()
+                                         , we::type::PORT_OUT
+                                         , port.signature_or_throw()
+                                         , port.properties()
+                                         )
                       )
                     );
                 }

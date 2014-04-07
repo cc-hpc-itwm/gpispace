@@ -530,7 +530,7 @@ namespace xml
 
         for (const port_type& port : ports().values())
         {
-          forbidden.insert (std::make_pair (port.type(), port.name()));
+          forbidden.emplace (port.type(), port.name());
         }
 
         return forbidden;
@@ -646,11 +646,11 @@ namespace xml
 
           if (port.is_output())
           {
-            _port_id_out.insert (std::make_pair (port.name(), port_id));
+            _port_id_out.emplace (port.name(), port_id);
           }
           else
           {
-            _port_id_in.insert (std::make_pair (port.name(), port_id));
+            _port_id_in.emplace (port.name(), port_id);
           }
         }
 
@@ -2026,7 +2026,7 @@ namespace xml
               }
             }
 
-            mcs[mod.name()].insert (std::make_pair (mod.function(), mod));
+            mcs[mod.name()].emplace (mod.function(), mod);
 
             ports_with_type_type ports_const;
             ports_with_type_type ports_mutable;

@@ -430,7 +430,7 @@ namespace utils
       const std::string name
         (we::type::activity_t (e->description()).transition().name());
 
-      _jobs.insert (std::make_pair (name, job_t (*e->job_id(), e->from())));
+      _jobs.emplace (name, job_t (*e->job_id(), e->from()));
 
       _network.perform
         ( sdpa::events::SDPAEvent::Ptr

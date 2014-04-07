@@ -181,7 +181,7 @@ namespace sdpa {
 
         Job* pJob = new Job( job_id, desc, is_master_job, owner, job_req_list);
 
-        if (!job_map_.insert(std::make_pair (job_id, pJob)).second)
+        if (!job_map_.emplace (job_id, pJob).second)
         {
           delete pJob;
           throw std::runtime_error ("job with same id already exists");

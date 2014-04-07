@@ -230,7 +230,7 @@ int WFEImpl::execute ( std::string const &job_id
 
   {
     boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
-    _currently_executed_tasks.insert(std::make_pair(job_id, &task));
+    _currently_executed_tasks.emplace (job_id, &task);
   }
 
   emit_task (task);
@@ -352,8 +352,7 @@ DRTSImpl::DRTSImpl (std::function<void()> request_stop, std::map<std::string, st
   // parse virtual capabilities
   for (std::string const & cap : capability_list)
   {
-    m_virtual_capabilities.insert
-      (std::make_pair (cap, sdpa::Capability (cap, m_my_name)));
+    m_virtual_capabilities.emplace (cap, sdpa::Capability (cap, m_my_name));
   }
 
   m_event_thread.reset
@@ -396,7 +395,7 @@ DRTSImpl::DRTSImpl (std::function<void()> request_stop, std::map<std::string, st
         throw std::runtime_error ("cannot be my own master!");
       }
 
-      m_masters.insert (std::make_pair(master, false));
+      m_masters.emplace (master, false);
     }
     else
     {
@@ -499,7 +498,7 @@ void DRTSImpl::handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *e)
                                                      , job->id()
                                                      )
                  );
-      m_jobs.insert (std::make_pair(job->id(), job));
+      m_jobs.emplace (job->id(), job);
 
       m_pending_jobs.put(job);
     }

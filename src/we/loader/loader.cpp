@@ -66,7 +66,7 @@ namespace we
 
       _module_stack.push (mod);
 
-      return _module_table.insert (std::make_pair (name, mod)).first->second;
+      return _module_table.emplace (name, mod).first->second;
     }
 
     void loader::clear_search_path()

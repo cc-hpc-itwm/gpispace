@@ -106,7 +106,7 @@ get_handle_info (gpi::pc::type::handle_t h)
           handle_cache.erase(handle_cache.begin());
         }
 
-        info = handle_cache.insert(std::make_pair(h, *it)).first;
+        info = handle_cache.emplace (h, *it).first;
         break;
       }
     }

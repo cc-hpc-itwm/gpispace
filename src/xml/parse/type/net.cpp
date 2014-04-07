@@ -654,7 +654,7 @@ namespace xml
                 (place.name(), state.file_in_progress());
             }
 
-            pid_of_place.insert (std::make_pair (place.name(), pid->second));
+            pid_of_place.emplace (place.name(), pid->second);
 
             const place::type place_real (we_net.places().at (pid->second));
 
@@ -687,7 +687,7 @@ namespace xml
                                  )
               );
 
-            pid_of_place.insert (std::make_pair (place.name(), pid));
+            pid_of_place.emplace (place.name(), pid);
           }
         }
 

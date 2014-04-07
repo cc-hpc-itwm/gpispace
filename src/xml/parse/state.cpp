@@ -373,11 +373,7 @@ namespace xml
                                         )
           );
 
-        m->insert
-          (std::make_pair ( p
-                          , util::position_type (p, p, file_in_progress())
-                          )
-          );
+        m->emplace (p, util::position_type (p, p, file_in_progress()));
       }
       util::position_type type::position (const xml_node_type* node) const
       {
@@ -403,7 +399,7 @@ namespace xml
                                     , before->second.column()
                                     );
 
-        m.insert (std::make_pair (node->name(), p));
+        m.emplace (node->name(), p);
 
         return p;
       }

@@ -139,7 +139,7 @@ namespace we
     {
       const place_id_type pid (_place_id++);
 
-      _pmap.insert (std::make_pair (pid, place));
+      _pmap.emplace (pid, place);
 
       return pid;
     }
@@ -149,7 +149,7 @@ namespace we
     {
       const transition_id_type tid (_transition_id++);
 
-      _tmap.insert (std::make_pair (tid, transition));
+      _tmap.emplace (tid, transition);
 
       return tid;
     }
@@ -653,7 +653,7 @@ namespace we
                           , std::list<pnet::type::value::value_type>& tokens
                           )
     {
-      _m.insert (std::make_pair (place_id, iterators_type (tokens)));
+      _m.emplace (place_id, iterators_type (tokens));
     }
     void cross_type::push
       ( place_id_type place_id
@@ -661,8 +661,7 @@ namespace we
       , const std::list<pnet::type::value::value_type>::iterator::difference_type& distance_from_zero
       )
     {
-      _m.insert
-        (std::make_pair (place_id, iterators_type (token, distance_from_zero)));
+      _m.emplace (place_id, iterators_type (token, distance_from_zero));
     }
   }
 }

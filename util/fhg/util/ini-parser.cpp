@@ -33,7 +33,7 @@ namespace fhg
 
     void ini::put (std::string const& key, std::string const& value)
     {
-      if (!_key_value.insert (std::make_pair (key, value)).second)
+      if (!_key_value.emplace (key, value).second)
       {
         throw std::runtime_error
           ( boost::str

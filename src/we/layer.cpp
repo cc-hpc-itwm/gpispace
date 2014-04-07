@@ -70,7 +70,7 @@ namespace we
                              , we::type::property::type()
                              );
 
-          place_ids.insert (std::make_pair (wrapped_name (p.second), place_id));
+          place_ids.emplace (wrapped_name (p.second), place_id);
         }
         for ( we::type::transition_t::port_map_t::value_type const& p
             : activity.transition().ports_output()
@@ -86,7 +86,7 @@ namespace we
                              , we::type::property::type()
                              );
 
-          place_ids.insert (std::make_pair (wrapped_name (p.second), place_id));
+          place_ids.emplace (wrapped_name (p.second), place_id);
         }
 
         for (const type::activity_t::input_t::value_type& top : activity.input())
@@ -184,8 +184,7 @@ namespace we
           }
           else
           {
-            _finalize_job_cancellation.insert
-              (std::make_pair (activity_data._id, after));
+            _finalize_job_cancellation.emplace (activity_data._id, after);
             _running_jobs.apply
               (activity_data._id, std::bind (_rts_cancel, std::placeholders::_1));
           }
@@ -213,8 +212,7 @@ namespace we
           }
           else
           {
-            _finalize_job_cancellation.insert
-              (std::make_pair (parent_activity._id, after));
+            _finalize_job_cancellation.emplace (parent_activity._id, after);
             _running_jobs.apply
               (parent_activity._id, std::bind (_rts_cancel, std::placeholders::_1));
           }
@@ -266,7 +264,7 @@ namespace we
           }
           else
           {
-            _discover_state.insert (std::make_pair (discover_id, state));
+            _discover_state.emplace (discover_id, state);
           }
         }
         );
@@ -371,12 +369,8 @@ namespace we
     void layer::async_remove_queue::list_with_id_lookup::push_back
       (activity_data_type activity_data)
     {
-      _position_in_container.insert
-        ( std::make_pair
-          ( activity_data._id
-          , _container.insert (_container.end(), activity_data)
-          )
-        );
+      _position_in_container.emplace
+        (activity_data._id, _container.insert (_container.end(), activity_data));
     }
     layer::async_remove_queue::list_with_id_lookup::iterator
       layer::async_remove_queue::list_with_id_lookup::find (id_type id)

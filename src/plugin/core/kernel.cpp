@@ -160,7 +160,7 @@ namespace fhg
                                           )
                         );
 
-      m_plugins.insert (std::make_pair(plugin_name, p));
+      m_plugins.emplace (plugin_name, p);
       m_load_order.push_back (plugin_name);
 
       MLOG( TRACE

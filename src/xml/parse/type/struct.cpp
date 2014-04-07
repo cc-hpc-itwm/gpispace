@@ -161,7 +161,7 @@ namespace xml
                 throw error::struct_redefined (old->second, *pos);
               }
 
-            set.insert (std::make_pair (pos->name(), *pos));
+            set.emplace (pos->name(), *pos);
           }
 
         return set;
@@ -205,7 +205,7 @@ namespace xml
                   );
               }
 
-            set.insert (std::make_pair (strct.name(), strct));
+            set.emplace (strct.name(), strct);
           }
 
         return set;
