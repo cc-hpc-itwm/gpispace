@@ -12,8 +12,6 @@ namespace po = boost::program_options;
 
 int main (int argc, char **argv) try
 {
-  using namespace fhg::log;
-
   po::options_description desc("options");
 
   std::string url (getenv("FHGLOG_to_server") ? getenv("FHGLOG_to_server") : "");
@@ -22,7 +20,7 @@ int main (int argc, char **argv) try
   int line (0);
   std::string message("-");
   std::vector<std::string> tags;
-  int level (INFO);
+  int level (fhg::log::INFO);
 
   desc.add_options()
     ("help,h", "this message")
@@ -66,14 +64,14 @@ int main (int argc, char **argv) try
     } while (true);
   }
 
-  remote::RemoteAppender r (url);
-  r.append (LogEvent ( from_int (level)
-                     , file
-                     , function
-                     , line
-                     , message
-                     , tags
-                     )
+  fhg::log::remote::RemoteAppender r (url);
+  r.append (fhg::log::LogEvent ( fhg::log::from_int (level)
+                               , file
+                               , function
+                               , line
+                               , message
+                               , tags
+                               )
            );
 
   return 0;
