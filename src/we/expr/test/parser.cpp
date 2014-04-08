@@ -954,3 +954,17 @@ BOOST_AUTO_TEST_CASE (token_pow)
   require_evaluating_to ("2.0f ** 1.0f", 2.0f);
   require_evaluating_to ("2.0f ** 2.0f", 4.0f);
 }
+
+BOOST_AUTO_TEST_CASE (token_pow_int_signed_negative_exponent_throws)
+{
+  fhg::util::boost::test::require_exception
+    <expr::exception::eval::negative_exponent>
+    ( [] { require_evaluating_to ("0 ^ (-1)", 0); }
+    , "negative exponent"
+    );
+  fhg::util::boost::test::require_exception
+    <expr::exception::eval::negative_exponent>
+    ( [] { require_evaluating_to ("0L ^ (-1L)", 0L); }
+    , "negative exponent"
+    );
+}
