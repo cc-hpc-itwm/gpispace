@@ -105,6 +105,7 @@ sdpa boot -M -f nodefile work:1
 
 [source,bash]
 ----
+$ sdpa boot -h
 usage: start-sdpa [options]
 
   -h: this help
