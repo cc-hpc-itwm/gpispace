@@ -72,6 +72,11 @@ if (ENABLE_DOCUMENTATION)
     DESTINATION share/gspc/doc/
   )
 
+  install (FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/user/images/gpi_space_workflow_notext.png
+    DESTINATION share/gspc/doc/images
+  )
+
   ADD_ASCIIDOC (user-asciidoc-docbook
     INPUT user/gpispace.txt
     OUTPUT user.docbook
