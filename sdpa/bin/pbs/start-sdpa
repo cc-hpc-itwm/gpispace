@@ -304,7 +304,7 @@ done
 # sanity checks
 
 if [ -z "$nodefile" ] ; then
-    error 1 "nodefile is missing"
+    error 1 "nodefile is missing (-f)"
 fi
 
 if [ -z "$sdpa_home" ] ; then
