@@ -47,7 +47,7 @@ The output also shows the commands that are executed by GPI-Space in order to bu
 
 Please find in the folder link:src/[] the implementations that produced this output.
 
-Please note that the output could differ on your system as it actually is the interleaving of two outputs. The easiest way to serialize the execution is to run the demonstration with a single worker only, e.g.
+Please note that the output could differ from system to system as it actually is the interleaving of two outputs. The easiest way to serialize the execution is to run the demonstration with a single worker only, e.g.
 
 [source,bash]
 ----
