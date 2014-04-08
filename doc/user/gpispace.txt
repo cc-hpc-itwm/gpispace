@@ -25,14 +25,15 @@ To install GPI-Space just unpack the distribution file:
 [source,bash]
 ----
 cd $HOME
-tar xvzf gpispace.tgz
+tar xvzf gspc-<VERSION>.tar.gz
 ----
 
-and add `$HOME/gpispace/bin` to your search path:
+and add  `$HOME/gspc-<VERSION>/bin` to your  search path. In  case you
+are using bash:
 
 [source,bash]
 ----
-export PATH=$HOME/gpispace/bin:$PATH
+export PATH=$HOME/gspc-<VERSION>/bin:$PATH
 ----
 
 To test the installation run
