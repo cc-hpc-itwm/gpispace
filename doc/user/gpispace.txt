@@ -28,7 +28,7 @@ cd $HOME
 tar xvzf gspc-<VERSION>.tar.gz
 ----
 
-and add  `$HOME/gspc-<VERSION>/bin` to your  search path. In  case you
+and add `$HOME/gspc-<VERSION>/bin` to your search path. In case you
 are using bash:
 
 [source,bash]
@@ -81,21 +81,21 @@ development and execution of GPI-Space workflows",align="center",width="75%"]
 === Start and Stop
 
 To start the runtime system, run `sdpa boot`. It allows you to specify
-which kind  of workers and  how many you  want to have,  execute `sdpa
+which kind of workers and how many you want to have, execute `sdpa
 boot -h` to get a list of parameters.
 
 ==== Examples
 
-To  create an  example  hostfile,  you may  want  to  run `hostname  >
+To create an example hostfile, you may want to run `hostname >
 nodefile` and use this file for upcoming tests, otherwise you may want
 to use `$PBS_NODEFILE` or something like that depending on the kind of
 cluster queing system you have.
 
 ===== Without GPI
 
-The following command starts the runtime  system on the hosts given in
-`nodefile` but does  not start the virtual memory  layer (`-M`). Also,
-it  starts  one  (1)  worker   that  provides  the  `work`  capability
+The following command starts the runtime system on the hosts given in
+`nodefile` but does not start the virtual memory layer (`-M`). Also,
+it starts one (1) worker that provides the `work` capability
 (`work:1`) on each of those hosts.
 
 [source,bash]
@@ -141,7 +141,7 @@ usage: start-sdpa [options]
               2 workers/node with capabilities WRITE *and* LOAD
 ----
 
-The `boot` command  requires you to set  a list of hosts  to start on,
+The `boot` command requires you to set a list of hosts to start on,
 this is done by specifying `-f <file>`.
 
 
