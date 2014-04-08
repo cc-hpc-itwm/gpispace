@@ -83,15 +83,19 @@ development and execution of GPI-Space workflows",align="center",width="75%"]
 topology
 
 === Observe, Gantt-Viewer, (gspcmon?)
+.
 
 === Advanced: fhglog*
+.
 
 === Advanced: kvs
+.
 
 === Advanced: fhgcfg
+.
 
 === Advanced: gspc*
-
+.
 
 == Workflows
 
