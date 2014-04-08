@@ -44,7 +44,7 @@ gspc selftest
 ----
 
 When GPI-Space is installed correctly the output will be something
-like
+like:
 
 ----
 GPI-Space selftest started...
