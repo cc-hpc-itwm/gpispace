@@ -56,8 +56,8 @@ GPI-Space selftest completed: 0 error(s)
 
 agent, orchestrator, worker, client
 
-image:images/gpi_space_workflow_notext.png[Schematic overview of development
-and execution of GPI-Space workflows]
+image:images/gpi_space_workflow_notext.png[alt="Schematic overview of
+development and execution of GPI-Space workflows",align="center",width="75%"]
 
 [source,tex]
 ----
