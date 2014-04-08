@@ -88,7 +88,6 @@ double AsianMonteCarlo (
   double DeltaT, GewT;    // Hilfsvariablen
   double value = 0.0;
   double valuecv = 0.0;   // Wert bei geom. Mittel
-  double valueana = 0.0;  // Analytischer Wert bei geom. Mittel
   double cv;              // Multiplikator falls mit Controle Variate
   double G;               // Hilfsvariable
 
@@ -115,7 +114,6 @@ double AsianMonteCarlo (
   }
   else
   {
-    valueana = 0.0;
     cv = 0.0;
   };
 
@@ -523,6 +521,3 @@ bool CheckAsianParameters (
                  pstParam->m_dT, TimeV, GewV) < 0.0) OK = false;
 	return OK;
 };
-
-
-

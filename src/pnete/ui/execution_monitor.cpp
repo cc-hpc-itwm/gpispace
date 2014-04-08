@@ -28,6 +28,8 @@
 
 #include <functional>
 
+#include <fhg/util/macros.hpp>
+
 Q_DECLARE_METATYPE (sdpa::daemon::NotificationEvent::state_t)
 
 namespace fhg
@@ -184,6 +186,8 @@ namespace fhg
           case event::STATE_FAILED: return "failed";
           case event::STATE_CANCELED: return "canceled";
           }
+
+          INVALID_ENUM_VALUE (worker_model::state_type, state);
         }
 
         QColor get_or_set_with_default

@@ -12,6 +12,7 @@
 
 #include <fhg/assert.hpp>
 #include <fhg/util/backtracing_exception.hpp>
+#include <fhg/util/macros.hpp>
 
 #include <QCheckBox>
 #include <QHBoxLayout>
@@ -691,6 +692,8 @@ namespace fhg
           case event::STATE_FAILED: return "failed";
           case event::STATE_CANCELED: return "canceled";
           }
+
+          INVALID_ENUM_VALUE (worker_model::state_type, state);
         }
       }
 
@@ -885,9 +888,11 @@ namespace fhg
       {
         fhg_assert (can_edit_section (index), "only create editors for editable sections");
 
-        switch ( util::qt::value<execution_monitor_proxy::column_type>
-                 (index.data (execution_monitor_proxy::column_type_role))
-               )
+        const execution_monitor_proxy::column_type column
+          ( util::qt::value<execution_monitor_proxy::column_type>
+            (index.data (execution_monitor_proxy::column_type_role)
+          ));
+        switch (column)
         {
         case execution_monitor_proxy::name_column:
           {
@@ -904,6 +909,8 @@ namespace fhg
           //! \note asserted above, but throwing a warning in release builds
           throw std::runtime_error ("can't create editor for non-editable section");
         }
+
+        INVALID_ENUM_VALUE (execution_monitor_proxy::column_type, column);
       }
 
       void execution_monitor_delegate::release_editor

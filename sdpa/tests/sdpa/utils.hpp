@@ -216,7 +216,8 @@ namespace utils
   {
     template <typename T, typename U>
     agent (const T& master_0, const U& master_1)
-      : _kvs_host (master_0.kvs_host())
+      : boost::noncopyable ()
+      , _kvs_host (master_0.kvs_host())
       , _kvs_port (master_0.kvs_port())
       , _ ( random_peer_name(), "127.0.0.1"
           , _kvs_host, _kvs_port
@@ -226,7 +227,8 @@ namespace utils
     {}
     template <typename T>
     agent (const T& master)
-      : _kvs_host (master.kvs_host())
+      : boost::noncopyable ()
+      , _kvs_host (master.kvs_host())
       , _kvs_port (master.kvs_port())
       , _ ( random_peer_name(), "127.0.0.1"
           , _kvs_host, _kvs_port
@@ -235,7 +237,8 @@ namespace utils
           )
     {}
     agent (const agent& master)
-      : _kvs_host (master.kvs_host())
+      : boost::noncopyable ()
+      , _kvs_host (master.kvs_host())
       , _kvs_port (master.kvs_port())
       , _ ( random_peer_name(), "127.0.0.1"
           , _kvs_host, _kvs_port
