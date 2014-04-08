@@ -119,7 +119,8 @@ namespace sdpa
 
     namespace
     {
-      [[noreturn]] void handle_bad_event (sdpa::events::SDPAEvent::Ptr reply)
+      [[noreturn]] void handle_error_and_unexpected_event
+        (sdpa::events::SDPAEvent::Ptr reply)
       {
         if ( sdpa::events::ErrorEvent *err
            = dynamic_cast<sdpa::events::ErrorEvent*> (reply.get())
@@ -153,7 +154,7 @@ namespace sdpa
         return *e;
       }
 
-      handle_bad_event (reply);
+      handle_error_and_unexpected_event (reply);
     }
 
     sdpa::status::code Client::wait_for_terminal_state
@@ -195,7 +196,7 @@ namespace sdpa
         return sdpa::status::CANCELED;
       }
 
-      handle_bad_event (reply);
+      handle_error_and_unexpected_event (reply);
     }
 
     sdpa::status::code Client::wait_for_terminal_state_polling
