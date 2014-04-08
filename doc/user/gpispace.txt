@@ -80,28 +80,7 @@ development and execution of GPI-Space workflows",align="center",width="75%"]
 
 === Start and Stop
 
-To start the runtime system, run `sdpa boot`. It allows you to specify
-which kind of workers and how many you want to have, execute `sdpa
-boot -h` to get a list of parameters.
-
-==== Examples
-
-To create an example hostfile, you may want to run `hostname >
-nodefile` and use this file for upcoming tests, otherwise you may want
-to use `$PBS_NODEFILE` or something like that depending on the kind of
-cluster queing system you have.
-
-===== Without GPI
-
-The following command starts the runtime system on the hosts given in
-`nodefile` but does not start the virtual memory layer (`-M`). Also,
-it starts one (1) worker that provides the `work` capability
-(`work:1`) on each of those hosts.
-
-[source,bash]
-----
-$ sdpa boot -M -f nodefile work:1
-----
+To start the runtime system, run `sdpa boot`. It allows you to specify which kind of workers and how many you want to have, execute `sdpa boot -h` to get a list of parameters.
 
 [source,bash]
 ----
@@ -142,9 +121,94 @@ usage: start-sdpa [options]
               2 workers/node with capabilities WRITE *and* LOAD
 ----
 
-The `boot` command requires you to set a list of hosts to start on,
-this is done by specifying `-f <file>`.
+The values in braces are default values that could differ from system to system. The command looks very complicated, so let's play with it:
 
+[source,bash]
+----
+$ sdpa boot
+E: nodefile is missing (-f)
+----
+
+The `boot` command requires you to set a list of hosts to start on, this is done by specifying `-f <file>`.
+
+Typically the list of nodes is stored in an environment variable the depends on the queuing system, e.g. `$PBS_NODEFILE` when `pbs` is used. For testing on a single node it is convenient to create a nodefile like
+
+[source,bash]
+----
+$ hostname > nodefile
+----
+
+[source,bash]
+----
+$ sdpa boot -f nodefile
+E: No virtual memory binary was specified (-x), to disable the virtual memory specify -M
+----
+
+TODO: The usage of the virtual memory layer is described else where!?
+
+[source,bash]
+----
+$ sdpa boot -f nodefile -M
+I: using nodefile: /home/rahn/gpispace/doc/user/nodefile
+starting base sdpa components on brank...
+I: sending log events to: brank:38559
+I: sending execution events to: brank:38560
++ fhgkvsd (3327)
+Running orchestrator on brank
+I: starting agent: agent-brank-0 on host brank with parent orchestrator
+Running agent-brank-0 on brank with master orchestrator
+----
+
+TODO: The lines have three different prefixes.
+
+The status of the runtime system is examined with
+
+[source,bash]
+----
+$ sdpa status
+gpi is dead
+process container (all nodes)
+    brank
+drts is dead
+----
+
+TODO: The status output is useless.
+
+The following runs the example `sum` from the tutorial
+
+[source,bash]
+----
+gpispace/doc/tutorial/sum$ make -C src
+gpispace/doc/tutorial/sum$ make DESTDIR=$PWD install
+gpispace/doc/tutorial/sum$ hostname > nodefile
+gpispace/doc/tutorial/sum$ sdpa boot -f nodefile -M -A $PWD/modules work:1
+gpispace/doc/tutorial/sum$ make submit
+gpispace/doc/tutorial/sum$ pnetget -i sum_many.out
+on 0: 7L
+on 0: 1L
+----
+
+TODO: Explain all the many steps that are required here!
+
+TODO: The same does not work for `hello_world`: `error-message := Module call failed: call to 'hello_world::call_hello_world' failed: could not load module '/home/rahn/gpispace/doc/tutorial/hello_world/modules/libhello_world.so': libhello_util.so: cannot open shared object file: No such file or directory`
+
+The runtime system can be stopped by
+
+[source,bash]
+----
+$ sdpa stop
+process container (all nodes)
+    brank
+agent (all nodes)
+    brank
+orchestrator
+    sending SIGTERM to orchestrator (3381)....ok
+gpi
+fhgkvsd
+    sending SIGTERM to fhgkvsd (3327)....ok
+----
+
+TODO: The number for orchestrator makes no sense to the user.
 
 === Observe, Gantt-Viewer, (gspcmon?)
 .
