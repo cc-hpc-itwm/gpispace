@@ -80,7 +80,70 @@ development and execution of GPI-Space workflows",align="center",width="75%"]
 
 === Start and Stop
 
-topology
+To start the runtime system, run `sdpa boot`. It allows you to specify
+which kind  of workers and  how many you  want to have,  execute `sdpa
+boot -h` to get a list of parameters.
+
+==== Examples
+
+To  create an  example  hostfile,  you may  want  to  run `hostname  >
+nodefile` and use this file for upcoming tests, otherwise you may want
+to use `$PBS_NODEFILE` or something like that depending on the kind of
+cluster queing system you have.
+
+===== Without GPI
+
+The following command starts the runtime  system on the hosts given in
+`nodefile` but does  not start the virtual memory  layer (`-M`). Also,
+it  starts  one  (1)  worker   that  provides  the  `work`  capability
+(`work:1`) on each of those hosts.
+
+[source,bash]
+----
+sdpa boot -M -f nodefile work:1
+----
+
+[source,bash]
+----
+usage: start-sdpa [options]
+
+  -h: this help
+  -v: be verbose
+  -n: dry run
+  -A path: add a path to the list of application search paths
+  -f: node file to use
+  -S: state directory to use
+  -m: amount of gpi memory to use
+  -M: disable use of the memory layer
+  -s: default amount of shared memory to use (=0)
+  -d: do not delete logfiles
+  -C: capability specification
+  -G: number of segments
+  -x: GPI binary to execute
+  -k: kvs port (=2439)
+  -l: log url (=voyager:38559)
+  -g: gui url (=voyager:38560)
+
+        format:
+           <CAP>[+CAP1...][#socket][:N[xM][,shm]]
+
+        examples:
+           INIT:1x1,0
+              exactly *one* INIT worker
+
+           LOAD:2,16*2**20
+              2 LOAD worker/node
+
+           WRITE:2x4,16*2**20
+              2 WRITE workers/node but on at most 4 nodes
+
+           WRITE+LOAD:2
+              2 workers/node with capabilities WRITE *and* LOAD
+----
+
+The `boot` command  requires you to set  a list of hosts  to start on,
+this is done by specifying `-f <file>`.
+
 
 === Observe, Gantt-Viewer, (gspcmon?)
 .
