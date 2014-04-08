@@ -120,7 +120,7 @@ find_package (Graphviz COMPONENTS cdt gvc graph pathplan REQUIRED QUIET)
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-set(CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../../../lib/")
+set(CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../external/boost/lib:\$ORIGIN/../../../lib/")
 
 # replacement for find_package (<one of our subprojects>)
 set (UTIL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/util)

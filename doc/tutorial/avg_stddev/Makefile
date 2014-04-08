@@ -4,7 +4,6 @@ MAIN = avg_stddev
 ###############################################################################
 
 CXXINCLUDEPATHS += $(CURDIR)/src
-CXXINCLUDEPATHS += $(BOOST_ROOT)/include
 
 #CXXLIBRARYPATHS += $(CURDIR)/lib
 

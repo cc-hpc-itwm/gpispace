@@ -1147,19 +1147,6 @@ namespace xml
         stream                                                     << std::endl;
         stream << "CXXFLAGS += -fPIC"                              << std::endl;
         stream                                                     << std::endl;
-        stream << "ifndef BOOST_ROOT"                              << std::endl;
-        stream << "  $(warning !!!)"                               << std::endl;
-        stream << "  $(warning !!! BOOST_ROOT EMPTY, ASSUMING /usr)"
-                                                                   << std::endl;
-        stream << "  $(warning !!! THIS IS PROBABLY NOT WHAT YOU WANT!)"
-                                                                   << std::endl;
-        stream << "  $(warning !!!)"                               << std::endl;
-        stream << "  $(warning !!! Try to set BOOST_ROOT in the environment!)"
-                                                                   << std::endl;
-        stream << "  $(warning !!!)"                               << std::endl;
-        stream << "  BOOST_ROOT := /usr"                           << std::endl;
-        stream << "endif"                                          << std::endl;
-        stream                                                     << std::endl;
         stream << "ifndef CXX"                                     << std::endl;
         stream << "  $(error Variable CXX is not defined)"         << std::endl;
         stream << "endif"                                          << std::endl;
@@ -1170,6 +1157,28 @@ namespace xml
                                                                    << std::endl;
         stream << "  else"                                         << std::endl;
         stream << "    SDPA_INCLUDE := $(SDPA_HOME)/include"       << std::endl;
+        stream << "  endif"                                        << std::endl;
+        stream << "endif"                                          << std::endl;
+        stream                                                     << std::endl;
+        stream << "ifndef BOOST_ROOT"                              << std::endl;
+        stream << "  ifndef SDPA_HOME"                             << std::endl;
+        stream << "    $(error Neither BOOST_ROOT nor SDPA_HOME are set)"
+                                                                   << std::endl;
+        stream << "  else"                                         << std::endl;
+        stream << "    BOOST_ROOT := $(SDPA_HOME)/external/boost"  << std::endl;
+        stream << "  endif"                                        << std::endl;
+        stream << "else"                                           << std::endl;
+        stream << "  ifdef SDPA_HOME"                              << std::endl;
+        stream << "    ifneq \"$(BOOST_ROOT)\" \"$(SDPA_HOME)/external/boost\""
+                                                                   << std::endl;
+        stream << "      $(warning !!!)"                           << std::endl;
+        stream << "      $(warning !!! BOOST_ROOT is set and different from GSPC bundled version)"
+                                                                   << std::endl;
+        stream << "      $(warning !!! BOOST_ROOT = $(BOOST_ROOT))"    << std::endl;
+        stream << "      $(warning !!! GSPC_BUNDLED = $(SDPA_HOME)/external/boost)"
+                                                                   << std::endl;
+        stream << "      $(warning !!!)"                           << std::endl;
+        stream << "    endif"                                      << std::endl;
         stream << "  endif"                                        << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;

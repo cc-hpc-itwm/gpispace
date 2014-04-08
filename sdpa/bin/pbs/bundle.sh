@@ -96,14 +96,6 @@ function bundle_dependencies ()
         dep=$(echo -n "$dep_and_path" | cut -d: -f 1)
         pth=$(echo -n "$dep_and_path" | cut -d: -f 2)
 
-        if [ "$pth" = "not" ] ; then
-            echo >&2 "cannot resolve dependency: '$dep' of file '$file'"
-            echo >&2 "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
-            if ! $keep_going ; then
-                exit 2
-            fi
-        fi
-
         if is_filtered "$dep" ; then
             debug $(printf "%${indent}s" "") "$file >- $pth  (filtered)"
 
@@ -115,6 +107,14 @@ function bundle_dependencies ()
             continue
         else
             debug $(printf "%${indent}s" "") "$file <- $pth"
+        fi
+
+        if [ "$pth" = "not" ] ; then
+            echo >&2 "cannot resolve dependency: '$dep' of file '$file'"
+            echo >&2 "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
+            if ! $keep_going ; then
+                exit 2
+            fi
         fi
 
         pth=$(readlink -f "${pth}")
