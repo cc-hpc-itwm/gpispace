@@ -202,10 +202,10 @@ legacy library.
 
 ==== Place, Token, Transition, Port
 
-Including legacy / external code is important, but obviously not the
+Including legacy/external code is important, but obviously not the
 thing to do at top level of a workflow. In GPI-Space, workflows are
 based on Petri nets. Petri nets consist of places and transitions
-where transitions represent module calls / algorithms / functions.
+where transitions represent module calls/algorithms/functions.
 Places can be compared to checkpoints with intermediate results, which
 again may be inputs to other transitions. Transitions and places are
 connected by directed edges.  Data is represented by tokens which are
