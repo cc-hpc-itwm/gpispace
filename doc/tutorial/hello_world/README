@@ -21,6 +21,9 @@ $HOME/build/hello_world.o
 $HOME/build/libhello_util.so
 ----
 
+TODO: Explain/change $HOME/build to something
+TOOD: All paths are absolute
+
 Now `hello_world` is started by
 
 [source,bash]
