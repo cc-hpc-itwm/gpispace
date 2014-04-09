@@ -1,0 +1,14 @@
+situation/goal: accessing a counter atomically
+
+run:
+  share/gspc/doc/tutorial/atomic$ make
+  share/gspc/doc/tutorial/atomic$ make run
+output:
+  …
+  final_value => 112L
+
+how: two transitions are connected to the same place, consuming if number_of_updates > 0, increasing value, decreasing number_of_updates and putting back
+
+explain that consume-access automatically is atomic and a token can not be used in more than one transition at a time. nod at read? note that for just having a/$n$ transition(s) not being run in parallel, them consuming and putting a control token is enough.
+
+todo: maybe do something more interesting, like doing different things in update_*, counting invocations of both transitions?
