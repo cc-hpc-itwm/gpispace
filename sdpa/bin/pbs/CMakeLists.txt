@@ -13,7 +13,6 @@ set (scripts
   stop-agent
   status-agent
   status-drts
-  pidof
   sdpa-selftest
 )
 
