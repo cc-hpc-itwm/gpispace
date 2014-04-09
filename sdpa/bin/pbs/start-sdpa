@@ -84,7 +84,7 @@ function rexec ()
     local err
     local rc
     local ssh_opts="-q -x -T -n -C -4 -c arcfour,blowfish-cbc -o CheckHostIP=no -o StrictHostKeyChecking=no"
-    local cmd="ssh $ssh_opts $node LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\" $@"
+    local cmd="ssh $ssh_opts $node /usr/bin/env LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\" $@"
     err=$($cmd </dev/null 2>&1)
     rc=$?
     if [ $rc -ne 0 ] ; then
