@@ -2,7 +2,6 @@ Subject: RFC: Explicit memory management, iteration 0
 
 - memory is described as a port (with an unique name across all ports)
 - to distinguish between memory_locations that should be copied and memory_location for which their content should be copied, we have new names, e.g. <memory-in>, <memory-out>, <memory-inout>
-- the type is optional in <memory-in/out/inout>
 - the memory ports can be connected to places (that contain memory_locations) or by an expression
 
 <port name="config" type="config"/>
@@ -52,13 +51,9 @@ typedef struct
 
 where size equals to the number that was produced by the expression.
 
-OKAY and equivalent:
+BAD, compile time failure (memory_location has no type):
 
-<memory-in name="d"/>
 <memory-in name="d" type="memory_location"/>
-
-BAD, compile time failure:
-
 <memory-in name="d" type="long"/>
 
 OKAY and equivalent:
