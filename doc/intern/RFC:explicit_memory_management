@@ -1,85 +1,71 @@
 Subject: RFC: Explicit memory management, iteration 0
 
-- memory is described as a port (with an unique name across all ports)
-- to distinguish between memory_locations that should be copied and memory_location for which their content should be copied, we have new names, e.g. <memory-in>, <memory-out>, <memory-inout>
-- the memory ports can be connected to places (that contain memory_locations) or by an expression
+- there is no alloc/free from within the workflow, this is a meta-issue and solved on the meta level. The virtual memory provides alloc/free that work with memory handles like now. A typical run would allocate memory, run the workflow with the handle (or mabye more than one) as additional parameter and later free the memory. Also we can re-use the same handle in different workflows or with the same workflow several times without freeing it in between.
 
-<port name="config" type="config"/>
-<port name="id" type="unsigned long"/>
-<memory-in name="data"/>
-<memory-out name="result"/>
-<module name="m" function="negate (data, result)">
-  <code><![CDATA[
-    assert (data.data);
-
-    int* ids (data.data);
-
-    for (unsigned long i (0); i < data.size; ++i)
-    {
-      ids[i] = -ids[i];
-    }
-
-    result = data;
-  ]]>
-</module>
-<connect-read port="config" place="config"/>
-<connect-in port="id" place="id"/>
-<connect-in port="data">
-  <expression>
-    ${data.handle} := ${config.handle.meta};
-    ${data.offset} := ${id} * ${config.slot.size};
-    ${data.size} := ${config.slot.size};
-  </expression>
-</connect-in>
-<connect-out port="result" place="neg">
-
-The types are
+- in the workflow a handle typically is split into memory locations of type
 
 <struct name="memory_location">
-  <field name="handle" type="long"/>
+  <field name="handle" type="memory_handle"/>
   <field name="offset" type="unsigned long"/>
   <field name="size" type="unsigned long"/>
 </struct>
 
-in workflow land and in C++ land
+- the addition to the workflow language is a new tag <memory-transfer> that describes memory transfers in terms of locations. Via some in-port, the memory locations come into the module call. The values are copied at the momemt the transition is fired. That means that possible modifications are not influencing to locations that the data is copied to (although the modification of an output port would possible become visible in the workflow). Later the keyword "const" will forbid modifications.
 
-typedef struct
-{ void* data;
-  unsigned long size;
-} memory_location_t;
+<place name="data_location" type="memory_location"/>
+<place name="available_location" type="memory_location"/>
+<place name="randomized_data_location" type="memory_location"/>
 
-where size equals to the number that was produced by the expression.
+<transition name="randomize">
+  <defun>
 
-BAD, compile time failure (memory_location has no type):
+    <in name="data_location" type="memory_location"/>
+    <in name="available_location_in" type="memory_location"/>
+    <out name="available_location_out" type="memory_location"/>
+    <out name="randomized_data_location" type="memory_location"/>
 
-<memory-in name="d" type="memory_location"/>
-<memory-in name="d" type="long"/>
+    <memory-transfer name="data" from="data_location"/>
+    <memory-transfer name="randomized_data" to="available_location_in"/>
 
-OKAY and equivalent:
+    <module name="m"
+            function="randomize ( data, data_location
+                                , randomized_data, randomized_data_location
+                                , available_location_in, available_location_out
+                                )
+                     "
+    >
+      <code><![CDATA[
+      // prolog, generated
+      // data = shmem_malloc (data_location.size);
+      // randomized_data = shmem_malloc (available_location_in.size);
+      // memcpy (data_location -> data)
 
-<connect-in port="p" place="l"/>
-<connect-in port="p"><place>l</place></connect-in>
+      randomized_data_location = available_location_in;
 
-OKAY and equivalent:
+      char* d (data);
+      char* r (randomized_data);
 
-<connect-in port="p" expression="${p} := ${q}"/>
-<connect-in port="p"><expression>${p} := ${q}</expression></connect-in>
+      for (int i (0); i < data_location.size; ++i)
+      {
+        r[i] = d[i] ^ rand();
+      }
 
-BAD, compile time failure:
+      available_location_out = data_location;
 
-<connect-in port="p" place="l" expression="${q}"/>
+      // epilog, generated
+      // memcpy (randomized_data -> available_location_in)
+      // shmem_free (randomized_data);
+      // shmem_free (data);
+      ]]></code>
+    </module>
+  </defun>
+  <connect-in port="data_location" place="data_location"/>
+  <connect-in port="available_location_in" place="available_location"/>
+  <connect-out port="available_location_out" place="available_location"/>
+  <connect-out port="randomized_data_location"
+               place="randomized_data_location"/>
+</transition>
 
-and any combination of using not exactly one place or exactly one expression, either as attribute or as child.
-
-OKAY
-
-<connect-out port="p" place="p">
-  <expression>
-    ${p} := ${x}
-  </expression>
-</connect-out>
-
-would connect and output port with an place and fill its value according to the expression. Useful in mixed module-call/expression as described below.
 
 - the generated code would
 
@@ -91,54 +77,19 @@ would connect and output port with an place and fill its value according to the 
     wait
   wrap_parameter_to_workflow
 
-  where get_memory and put_memory are new. Later (iteration optimize fetch/get) we can make separate function in order to run get/put while other function calls are in progress.
+  where get_memory and put_memory are new. Later (iteration optimize
+fetch/get) we can make separate function in order to run get/put while
+other function calls are in progress.
 
-In iteration 0 we just use the existing shared memory to store the data, throwing if there is not enough space.
+In iteration 0 we just use the existing shared memory to store the data,
+throwing if there is not enough space.
 
-- later (iteration optimize workflow memory_management) we can identify and eliminate those puts that are followed by a get. This is especially easy when the memory port is connected with an place directly but can be done for expressions too.
+- later (iteration optimize workflow memory_management) we can identify
+and eliminate those puts that are followed by a get. This is especially
+easy when the memory port is connected with an place directly but can be
+done for expressions too.
 
-- later (iteration make the scheduler locality aware) we can transport the list of memory locations that is accessed by the module call to the scheduler in order to run the task at the location where the copy costs are low.
-
-- the mechanism for connection with expression can be used also with normal ports
-
-Now, we often write
-
-<transition name="init">
-  <defun>
-    <in name="buffer_size" type="unsigned long"/>
-    <out name="config" type="config"/>
-    <module name="m" function="config init (buffer_size)">
-      <code><![CDATA[
-        // do some calculations, allocations that require to run in C++ land
-
-        pnetc::type::config::config config;
-
-        config.buffer_size = buffer_size;
-
-        return config;
-      ]]>
-    </module>
-  </defun>
-  <connect-in port="buffer_size" place="buffer_size"/>
-  <connect-out port="config" place="config"/>
-</transition>
-
-instead with connect with expression we could write
-
-<transition name="init">
-  <defun>
-    <in name="buffer_size" type="unsigned long"/>
-    <out name="config" type="config"/>
-    <module name="m" function="init (buffer_size)">
-      <code><![CDATA[
-        // do some calculations that require to run in C++ land
-      ]]>
-    </module>
-  </defun>
-  <connect-in port="buffer_size" place="buffer_size"/>
-  <connect-out port="config" place="config">
-    <expression>
-      ${config.buffer_size} := ${buffer_size}
-    </expression>
-  </connect-out>
-</transition>
+- later (iteration make the scheduler locality aware) we can transport
+the list of memory locations that is accessed by the module call to the
+scheduler in order to run the task at the location where the copy costs
+are low.
