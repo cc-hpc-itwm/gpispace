@@ -9,7 +9,7 @@ Subject: RFC: Explicit memory management, iteration 0
 <port name="id" type="unsigned long"/>
 <memory-in name="data"/>
 <memory-out name="result"/>
-<module name="m" function="negate ()">
+<module name="m" function="negate (data, result)">
   <code><![CDATA[
     assert (data.data);
     assert (result.data);
