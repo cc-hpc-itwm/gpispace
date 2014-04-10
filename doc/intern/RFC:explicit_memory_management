@@ -11,16 +11,15 @@ Subject: RFC: Explicit memory management, iteration 0
 <module name="m" function="negate (data, result)">
   <code><![CDATA[
     assert (data.data);
-    assert (result.data);
-    assert (result.size >= data.size);
 
     int* ids (data.data);
-    int* out (result.data);
 
     for (unsigned long i (0); i < data.size; ++i)
     {
-      out[i] = -ids[i];
+      ids[i] = -ids[i];
     }
+
+    result = data;
   ]]>
 </module>
 <connect-read port="config" place="config"/>
