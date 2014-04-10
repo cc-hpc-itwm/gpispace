@@ -1,0 +1,94 @@
+Subject: RFC: Explicit memory management, iteration 0
+
+- memory is described as a port (with an unique name across all ports)
+- to distinguish between memory_locations that should be copied and memory_location for which their content should be copied, we have new names, e.g. <memory-in>, <memory-out>, <memory-inout>
+- the type is optional in <memory-in/out/inout>
+- the memory ports can be connected to places (that contain memory_locations) or by an expression
+
+<port name="config" type="config"/>
+<port name="id" type="unsigned long"/>
+<memory-in name="data"/>
+<memory-out name="result"/>
+<module name="m" function="negate ()">
+  <code><![CDATA[
+    assert (data.data);
+    assert (result.data);
+    assert (result.size >= data.size);
+
+    int* ids (data.data);
+    int* out (result.data);
+
+    for (unsigned long i (0); i < data.size; ++i)
+    {
+      out[i] = -ids[i];
+    }
+  ]]>
+</module>
+<connect-read port="config" place="config"/>
+<connect-in port="id" place="id"/>
+<connect-in port="data">
+  <expression>
+    ${data.handle} := ${config.handle.meta};
+    ${data.offset} := ${id} * ${config.slot.size};
+    ${data.size} := ${config.slot.size};
+  </expression>
+</connect-in>
+<connect-out port="result" place="neg">
+
+The types are
+
+<struct name="memory_location">
+  <field name="handle" type="long"/>
+  <field name="offset" type="unsigned long"/>
+  <field name="size" type="unsigned long"/>
+</struct>
+
+in workflow land and in C++ land
+
+typedef struct
+{ void* data;
+  unsigned long size;
+} memory_location_t;
+
+where size equals to the number that was produced by the expression.
+
+OKAY and equivalent:
+
+<memory-in name="d"/>
+<memory-in name="d" type="memory_location"/>
+
+BAD, compile time failure:
+
+<memory-in name="d" type="long"/>
+
+OKAY and equivalent:
+
+<connect-in port="p" place="l"/>
+<connect-in port="p"><place>l</place></connect-in>
+
+OKAY and equivalent:
+
+<connect-in port="p" expression="${p} := ${q}"/>
+<connect-in port="p"><expression>${p} := ${q}</expression></connect-in>
+
+BAD, compile time failure:
+
+<connect-in port="p" place="l" expression="${q}"/>
+
+and any combination of using not exactly one place or exactly one expression, either as attribute or as child.
+
+- the generated code would
+
+  unwrap_parameter_to_c
+    get_memory into memory_locations
+    wait
+  call function (parameter, memory_locations)
+    put_memory from memory_locations
+    wait
+  wrap_parameter_to_workflow
+
+  where get_memory and put_memory are new. Later (iteration optimize fetch/get) we can make separate function in order to run get/put while other function calls are in progress.
+
+- later (iteration optimize workflow memory_management) we can identify and eliminate those puts that are followed by a get. This is especially easy when the memory port is connected with an place directly but can be done for expressions too.
+
+- later (iteration make the scheduler locality aware) we can transport the list of memory locations that is accessed by the module call to the scheduler in order to run the task at the location where the copy costs are low.
