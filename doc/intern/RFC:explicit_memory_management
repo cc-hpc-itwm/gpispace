@@ -77,6 +77,16 @@ BAD, compile time failure:
 
 and any combination of using not exactly one place or exactly one expression, either as attribute or as child.
 
+OKAY
+
+<connect-out port="p" place="p">
+  <expression>
+    ${p} := ${x}
+  </expression>
+</connect-out>
+
+would connect and output port with an place and fill its value according to the expression. Useful in mixed module-call/expression as described below.
+
 - the generated code would
 
   unwrap_parameter_to_c
@@ -94,3 +104,47 @@ In iteration 0 we just use the existing shared memory to store the data, throwin
 - later (iteration optimize workflow memory_management) we can identify and eliminate those puts that are followed by a get. This is especially easy when the memory port is connected with an place directly but can be done for expressions too.
 
 - later (iteration make the scheduler locality aware) we can transport the list of memory locations that is accessed by the module call to the scheduler in order to run the task at the location where the copy costs are low.
+
+- the mechanism for connection with expression can be used also with normal ports
+
+Now, we often write
+
+<transition name="init">
+  <defun>
+    <in name="buffer_size" type="unsigned long"/>
+    <out name="config" type="config"/>
+    <module name="m" function="config init (buffer_size)">
+      <code><![CDATA[
+        // do some calculations, allocations that require to run in C++ land
+
+        pnetc::type::config::config config;
+
+        config.buffer_size = buffer_size;
+
+        return config;
+      ]]>
+    </module>
+  </defun>
+  <connect-in port="buffer_size" place="buffer_size"/>
+  <connect-out port="config" place="config"/>
+</transition>
+
+instead with connect with expression we could write
+
+<transition name="init">
+  <defun>
+    <in name="buffer_size" type="unsigned long"/>
+    <out name="config" type="config"/>
+    <module name="m" function="init (buffer_size)">
+      <code><![CDATA[
+        // do some calculations that require to run in C++ land
+      ]]>
+    </module>
+  </defun>
+  <connect-in port="buffer_size" place="buffer_size"/>
+  <connect-out port="config" place="config">
+    <expression>
+      ${config.buffer_size} := ${buffer_size}
+    </expression>
+  </connect-out>
+</transition>
