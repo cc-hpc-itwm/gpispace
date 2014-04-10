@@ -89,6 +89,8 @@ and any combination of using not exactly one place or exactly one expression, ei
 
   where get_memory and put_memory are new. Later (iteration optimize fetch/get) we can make separate function in order to run get/put while other function calls are in progress.
 
+In iteration 0 we just use the existing shared memory to store the data, throwing if there is not enough space.
+
 - later (iteration optimize workflow memory_management) we can identify and eliminate those puts that are followed by a get. This is especially easy when the memory port is connected with an place directly but can be done for expressions too.
 
 - later (iteration make the scheduler locality aware) we can transport the list of memory locations that is accessed by the module call to the scheduler in order to run the task at the location where the copy costs are low.
