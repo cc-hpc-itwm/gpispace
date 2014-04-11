@@ -66,11 +66,18 @@ Subject: RFC: Explicit memory management, iteration 0
                place="randomized_data_location"/>
 </transition>
 
+- the memory transfer could also be connected to a port of type list<memory_location> to support striped data like in the frtm (see below), e.g.
+
+  <in name="portion_of_velocity_cube" type="list of memory_location"/>
+  <memory-transfer name="velocity" from="portion_of_velocity_cube"/>
 
 - the generated code would
 
   unwrap_parameter_to_c
-    get_memory into memory_locations
+    get_memory into memory_locations, e.g.
+      foreach (transfer t : transfers)
+        foreach (location l : transfer)
+          get (l)
     wait
   call function (parameter, memory_locations)
     put_memory from memory_locations
@@ -99,3 +106,5 @@ are low.
 * smartb:
   - the subscriber will not fit with our model anyhow, so it should be a separate program that gets a handle and writes to it, independend of any workflow
   - the polling right now does polling and changes parts of the table, this is not possible in the new model, see link:smartb:polling, conceptual.jpg[] for a sketch on how to implement this within the new model: the poller reads the whole table and returns a list of flags that should be processed. That list is split into separate memory locations that are updated to be in progress and the processing of the message starts. once all elements of the list are updated, the poller can start again. after a certain message has been processed the location with the flag is updated to be free again. There are optimizations possible here (as there are now two more module calls per message), the point is that the model fits.
+
+* frtm: does not use virtual memory right now, we could think of using it, e.g. to store the velocity cube. In this case we need to calculate the portion of the table that is accessed by a module call in before. This will be a geometric part of a cube, e.g. not a single memory location but a list of memory locations. The model must allow to connect a <memory-transfer> to a port of type list<memory_location> too. Note that this simplifies the polling in smartb too.
