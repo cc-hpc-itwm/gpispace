@@ -25,7 +25,8 @@ todo: specify the correct installation path here
 
 todo: install the source files and the Makefile
 
-In order to compile and run the example one should use the provided Makefile.
+In order to compile and run the example one should use the provided Makefile (```link:Makefile[]```).
+
 First step is to create a (temporary) folder where to build the example
 and to keep the intermediary generated files.
 
@@ -56,9 +57,9 @@ Omitting one of these parameters in the command line will result in an error, li
 Please note that the build directory (here, /tmp/test) should already be created before invoking the command.
 
 For the other parameters, optional values are proposed, like 1024 bytes for the chunk size, 10 read slots and 20 write slots.
-The user can specify valuse in the command line for these, parameters, too, like in the line below:
+The user can specify values in the command line for these, parameters, too, like in the line below:
 
-    make INPUT_FILE="input_file.txt" OUTPUT_FILE="output_file.txt" CHUNK_SIZE=2048 READ_SLOTS=7 WRITE_SLOTS=15 BUILDDIR=/tmp/test
+  make INPUT_FILE="input_file.txt" OUTPUT_FILE="output_file.txt" CHUNK_SIZE=2048 READ_SLOTS=7 WRITE_SLOTS=15 BUILDDIR=/tmp/test
  
 The result of the compilation are a bunch of files that are stored into the specified build directory. The user may find there 
 the corresponding C++ generated code for the modules and the types specified into the .xpnet workflow description file, 
@@ -69,6 +70,21 @@ are loaded by the workers at runtime during the execution of the workflow.
 For effectively running the example, the user should just execute the following command:
 
 make run BUILDDIR=/tmp/test 
+
+The user may completely skip the first step and this case the run command must contain at least the mandatory parameters
+indicated above, like following:  
+
+  make run INPUT_FILE="input_file.txt" OUTPUT_FILE="output_file.txt" BUILDDIR=/tmp/test
+ 
+In this case the default values will be used for the optional parameters but the user has the freedom 
+to chose a value for them, as well, as in the following command:
+
+  make run INPUT_FILE="input_file.txt" OUTPUT_FILE="output_file.txt" CHUNK_SIZE=2048 READ_SLOTS=7 WRITE_SLOTS=15 BUILDDIR=/tmp/test
+
+to do: give example of a simple input file and explain how the user can easily generate one
+(e.g. use ```echo "Some text that contains lower and upper case letters" > input_file.txt```)
+
+to do: for the chose input file explain what the expected output should be  
 
 During the execution, the example will print on the screen useful logging information related 
 to the execution of the modules, like below:
@@ -107,10 +123,9 @@ finished [1]
 done => []
 ....
 
-Analyzing the Petri net workflow, which is stored into transform_file.xpnet, the user can see that this
-contains several place and transition definitions. Some of the transitions are declared inline, which means that they are locally 
-executed. Other transitions assume module calls and they are remotely executed in parallel on the available
-workers. In this workflow there are four modules defined:
+Analyzing the Petri net workflow that is stored into the transform_file.xpnet file, the user can see that this
+contains several place and transition definitions. Some transitions contain module calls, which are automatically scheduled 
+to the available workers existing in the system and executed. In this workflow there are four modules defined:
 
 * create_config: this module is called only once, in the beginning and is responsible with allocating memory into the virtual address space 
                 and prepare necessary configuration data that is to be passed to other modules afterwards.
