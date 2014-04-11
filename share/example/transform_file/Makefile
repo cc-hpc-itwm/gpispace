@@ -8,34 +8,25 @@ ifndef MAKECMDGOALS
   	$(error please specify the build directory)
   endif
   ifndef INPUT_FILE
-  	$(error input file not specified, please specify one in the command line)
+  	$(error INPUT_FILE not set, please specify the name of the input file)
   endif
   
   ifndef OUTPUT_FILE
-  	$(error output file not specified, please specify one in the command line)
+  	$(error OUTPUT_FILE not set, please specify the name of the output file)
   endif
 endif
 
 ifeq ($(MAKECMDGOALS),run)
   ifndef BUILDDIR
-  	$(error please specify the build directory)
+	$(error BUILDDIR not set, please specify the build directory)
   endif
 endif
 
 ifeq ($(MAKECMDGOALS),clean)
   ifndef BUILDDIR
-  	$(error please specify the build directory)
+  	$(error  BUILDDIR not set, please specify the build directory)
   endif
 endif
-
-
-###############################################################################
-
-NOT_STARTS_WITH += dup
-NOT_STARTS_WITH += triple
-NOT_STARTS_WITH += generate
-NOT_STARTS_WITH += release
-NOT_STARTS_WITH += check
 
 ###############################################################################
 
