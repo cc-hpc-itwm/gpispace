@@ -25,7 +25,7 @@ todo: specify the correct installation path here
 
 todo: install the source files and the Makefile
 
-In order to compile and run the example one should use the provided Makefile (```link:Makefile[]```).
+In order to compile and run the example one should use the provided `link:Makefile[]`.
 
 First step is to create a (temporary) folder where to build the example
 and to keep the intermediary generated files.
@@ -50,9 +50,9 @@ like in the following line:
   
 Omitting one of these parameters in the command line will result in an error, like below:
 
-* Makefile:8: *** please specify the build directory.  Stop.
-* Makefile:11: *** input file not specified, please specify one in the command line.  Stop.
-* Makefile:15: *** output file not specified, please specify one in the command line.  Stop.
+* Makefile:8: *** BUILDDIR not set, please specify the build directory.  Stop.
+* Makefile:11: *** INPUT_FILE not set, please specify the name of the input file.  Stop.
+* Makefile:15: *** OUTPUT_FILE not set, please specify the name of the output file.  Stop.
 
 Please note that the build directory (here, /tmp/test) should already be created before invoking the command.
 
