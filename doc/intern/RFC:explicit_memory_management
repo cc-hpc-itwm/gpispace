@@ -108,3 +108,27 @@ are low.
   - the polling right now does polling and changes parts of the table, this is not possible in the new model, see link:smartb:polling, conceptual.jpg[] for a sketch on how to implement this within the new model: the poller reads the whole table and returns a list of flags that should be processed. That list is split into separate memory locations that are updated to be in progress and the processing of the message starts. once all elements of the list are updated, the poller can start again. after a certain message has been processed the location with the flag is updated to be free again. There are optimizations possible here (as there are now two more module calls per message), the point is that the model fits.
 
 * frtm: does not use virtual memory right now, we could think of using it, e.g. to store the velocity cube. In this case we need to calculate the portion of the table that is accessed by a module call in before. This will be a geometric part of a cube, e.g. not a single memory location but a list of memory locations. The model must allow to connect a <memory-transfer> to a port of type list<memory_location> too. Note that this simplifies the polling in smartb too.
+
+* parsu: it works with slots everywhere: translation is straight forward
+
+* ufbmig: two kind of data is transported: the salt mask (with a fixed allocation, so no problem here) and intervals of a priori unknown size, the management of the interval, including splitting and joining is done in the workflow already, so no problem here either
+
+* superbin: works with slots: translation is straight forward
+
+* azimuthal: like in the frtm lists of locations to describe n-dimensional structures: translation is straight forward
+
+* asian: does not use virtual memory
+
+* kdm: distributes the config of known size to all nodes -> this is not possible because the term "node" is not known in the workflow. this is not strictly necessary as the config should be known in the workflow and not transported via virtual memory, also it would be enught to store it once, distributing it to all nodes is an optimization already
+
+besides that again memory is accessed in a strided fashion, e.g. to select parts of the travel time table and at some places single memory locations suffice
+
+* mapreduce: transfers blocks of memory for which the size is determined within the module call, e.g.
+ - used = fread (...), move (ptr, used);
+ - move (ptr, last_pos) where last_pos is calculated before
+ - move (ptr, part_slice_info.part_used)
+ - move (ptr, partition_ingo.part_used)
+ - ...
+seems that many transfers have a size that is calculated in the module call. There should be a maximum size in all cases, to the translation could use the maximum size instead. This would be less efficient but still fit with the model. The other approach is to avoid the calculations within the module call like it is done in the ufbmig.
+
+* kth blb: will use the virtual memory to cache blocks of input data and for (partial) results of known size: translation is straight forward
