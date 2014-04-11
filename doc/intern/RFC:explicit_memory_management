@@ -93,3 +93,9 @@ done for expressions too.
 the list of memory locations that is accessed by the module call to the
 scheduler in order to run the task at the location where the copy costs
 are low.
+
+- the applications we know can work with it:
+
+* smartb:
+  - the subscriber will not fit with our model anyhow, so it should be a separate program that gets a handle and writes to it, independend of any workflow
+  - the polling right now does polling and changes parts of the table, this is not possible in the new model, see link:smartb:polling, conceptual.jpg[] for a sketch on how to implement this within the new model: the poller reads the whole table and returns a list of flags that should be processed. That list is split into separate memory locations that are updated to be in progress and the processing of the message starts. once all elements of the list are updated, the poller can start again. after a certain message has been processed the location with the flag is updated to be free again. There are optimizations possible here (as there are now two more module calls per message), the point is that the model fits.
