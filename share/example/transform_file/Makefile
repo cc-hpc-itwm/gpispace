@@ -5,7 +5,7 @@ endif
 
 ifndef MAKECMDGOALS
  ifndef BUILDDIR
-  	$(error please specify the build directory)
+  	$(error BUILDDIR not set, please specify the build directory)
   endif
   ifndef INPUT_FILE
   	$(error INPUT_FILE not set, please specify the name of the input file)
