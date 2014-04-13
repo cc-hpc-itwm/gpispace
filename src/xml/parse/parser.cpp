@@ -1559,7 +1559,8 @@ namespace xml
 
     // ********************************************************************* //
 
-    id::ref::function just_parse (state::type& state, const std::string& input)
+    id::ref::function just_parse
+      (state::type& state, const boost::filesystem::path& input)
     {
       state.set_input (input);
 

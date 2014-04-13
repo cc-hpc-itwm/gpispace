@@ -8,13 +8,16 @@
 
 #include <we/type/activity.fwd.hpp>
 
+#include <boost/filesystem.hpp>
+
 #include <string>
 
 namespace xml
 {
   namespace parse
   {
-    id::ref::function just_parse (state::type&, const std::string&);
+    id::ref::function just_parse
+      (state::type&, const boost::filesystem::path&);
 
     void post_processing_passes (const id::ref::function&, state::type*);
 
