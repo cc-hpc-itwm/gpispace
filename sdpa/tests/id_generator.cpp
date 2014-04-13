@@ -17,18 +17,6 @@
 
 namespace
 {
-  //! \note that boost::format as well as std::string::operator+ have
-  //! problems with the zero
-  std::string random_string_without_zero()
-  {
-    static std::string const zero (1, '\0');
-
-    return fhg::util::random_string_without (zero);
-  }
-}
-
-namespace
-{
   class threaded_unique_set_of_id
   {
   public:
@@ -54,7 +42,7 @@ BOOST_AUTO_TEST_CASE (threaded_unique_set_of_id_throws_on_duplicate)
 {
   threaded_unique_set_of_id ids;
 
-  std::string const id (random_string_without_zero());
+  std::string const id (fhg::util::random_string_without_zero());
 
   BOOST_REQUIRE_EQUAL (id, ids.insert (id));
 
@@ -88,7 +76,7 @@ namespace
 
     boost::uniform_int<std::size_t> random (100, 1000);
 
-    sdpa::id_generator id_generator (random_string_without_zero());
+    sdpa::id_generator id_generator (fhg::util::random_string_without_zero());
     threaded_unique_set_of_id ids;
 
     while (num_threads --> 0)

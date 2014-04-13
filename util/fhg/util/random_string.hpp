@@ -27,6 +27,10 @@ namespace fhg
 
     // content of xml tags, e.g. [^\0<>\\]
     std::string random_content_string();
+
+    //! \note that boost::format as well as std::string::operator+ have
+    //! problems with the zero
+    std::string random_string_without_zero();
   }
 }
 
