@@ -16,6 +16,7 @@ namespace xml
 {
   namespace parse
   {
+    id::ref::function just_parse (state::type&, std::istream&);
     id::ref::function just_parse
       (state::type&, const boost::filesystem::path&);
 

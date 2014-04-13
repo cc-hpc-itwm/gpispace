@@ -1559,6 +1559,17 @@ namespace xml
 
     // ********************************************************************* //
 
+    id::ref::function just_parse (state::type& state, std::istream& stream)
+    {
+      return state.generic_parse<id::ref::function>
+        ( std::bind ( generic_parse<id::ref::function>
+                    , function_type, std::placeholders::_1, std::placeholders::_2
+                    , "defun", "parse_function"
+                    )
+        , stream
+        );
+    }
+
     id::ref::function just_parse
       (state::type& state, const boost::filesystem::path& input)
     {

@@ -177,16 +177,10 @@ namespace xml
 
         template<typename T>
         T generic_parse ( std::function<T (std::istream&, type&)> parse
-                        , const boost::filesystem::path& path
+                        , std::istream& s
                         )
         {
-          _in_progress.push_back (path);
-
-          std::ifstream stream (path.string().c_str());
-
-          const T x (parse (stream, *this));
-
-          _in_progress.pop_back();
+          const T x (parse (s, *this));
 
           if (_in_progress_position.empty())
           {
@@ -194,6 +188,22 @@ namespace xml
           }
 
           _in_progress_position.pop_back();
+
+          return x;
+        }
+
+        template<typename T>
+        T generic_parse ( std::function<T (std::istream&, type&)> parse
+                        , const boost::filesystem::path& path
+                        )
+        {
+          _in_progress.push_back (path);
+
+          std::ifstream stream (path.string().c_str());
+
+          const T x (generic_parse<T> (parse, stream));
+
+          _in_progress.pop_back();
 
           return x;
         }
