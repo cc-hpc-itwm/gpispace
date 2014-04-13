@@ -70,5 +70,15 @@ namespace fhg
 
       return random_string_of (chars);
     }
+
+    std::string random_identifier()
+    {
+      return
+        fhg::util::random_char_of
+        ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_")
+        +
+        fhg::util::random_string_of
+        ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789");
+    }
   }
 }

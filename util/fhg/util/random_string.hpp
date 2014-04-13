@@ -21,6 +21,9 @@ namespace fhg
     // equivalent to
     // random_string_of (filter (not . elem except) . map char [0..255])
     std::string random_string_without (std::string const& except);
+
+    // [a-zA-Z_][a-zA-Z_0-9]*
+    std::string random_identifier();
   }
 }
 

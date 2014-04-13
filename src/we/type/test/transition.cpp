@@ -17,16 +17,6 @@ namespace
                                 , we::port_id_type
                                 >
                       > input_t;
-
-  std::string random_identifier()
-  {
-    return
-      fhg::util::random_char_of
-        ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_")
-      +
-      fhg::util::random_string_of
-        ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789");
-  }
 }
 
 BOOST_AUTO_TEST_CASE (get_schedule_data_not_set)
@@ -109,7 +99,7 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_constant_long)
 BOOST_AUTO_TEST_CASE (get_schedule_data_expression_simple)
 {
   std::string const key (fhg::util::random_string());
-  std::string const port_name (random_identifier());
+  std::string const port_name (fhg::util::random_identifier());
   unsigned long const value (rand());
 
   we::type::property::path_type path;
@@ -153,8 +143,8 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_simple)
 BOOST_AUTO_TEST_CASE (get_schedule_data_expression_sum)
 {
   std::string const key (fhg::util::random_string());
-  std::string const port_name1 (random_identifier());
-  std::string const port_name2 (random_identifier());
+  std::string const port_name1 (fhg::util::random_identifier());
+  std::string const port_name2 (fhg::util::random_identifier());
   unsigned long const value1 (rand());
   unsigned long const value2 (rand());
 
