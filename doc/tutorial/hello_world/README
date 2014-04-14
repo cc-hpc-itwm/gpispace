@@ -22,7 +22,9 @@ $HOME/build/libhello_util.so
 ----
 
 TODO: Explain/change $HOME/build to something
-TOOD: All paths are absolute
+
+NOTE: All paths are interpreted as absolute paths. A common way to make relative paths absolute is to prepend them with the current working directory, e.g. `$PWD/<relative_path>` in `bash`.
+
 
 Now `hello_world` is started by
 
