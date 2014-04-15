@@ -21,8 +21,9 @@ $HOME/build/hello_world.o
 $HOME/build/libhello_util.so
 ----
 
-TODO: Explain/change $HOME/build to something
-TOOD: All paths are absolute
+The location of the building directory is set to `$HOME/build` here as this is a place where users most probably have permissions to write. Any path will work that allows to write data. The link:Makefile[] is set up in a way that all outputs are located in the building directory. This makes it possible to build and run the project even in the case that for the source directory no write permissions have been granted.
+
+NOTE: All paths are interpreted as absolute paths. A common way to make relative paths absolute is to prepend them with the current working directory, e.g. `$PWD/<relative_path>` in `bash`.
 
 Now `hello_world` is started by
 
