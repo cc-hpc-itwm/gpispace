@@ -133,7 +133,7 @@ E: nodefile is missing (-f)
 
 The `boot` command requires to set a list of hosts to start on, this is done by specifying `-f <file>`.
 
-Typically the list of nodes is stored in an environment variable the depends on the queuing system, e.g. `$PBS_NODEFILE` when `pbs` is used. For testing on a single node it is convenient to create a nodefile like
+Typically the list of nodes is stored in an environment variable the depends on the queuing system, e.g. `$PBS_NODEFILE` when `pbs` is used. For testing on a single node it is convenient to create a nodefile using
 
 [source,bash]
 ----
