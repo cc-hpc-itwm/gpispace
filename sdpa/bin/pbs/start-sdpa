@@ -304,7 +304,7 @@ done
 # sanity checks
 
 if [ -z "$nodefile" ] ; then
-    error 1 "nodefile is missing"
+    error 1 "nodefile is missing (-f)"
 fi
 
 if [ -z "$sdpa_home" ] ; then
@@ -346,7 +346,7 @@ num_hosts=${#hosts[@]}
 if $gpi_enabled ; then
     if [ -z "${gpi_exe}" ]
     then
-        error 2 "GPI was requested but no binary was specified"
+        error 2 "No virtual memory binary was specified (-x), to disable the virtual memory specify -M"
     fi
     if [ ! -x "${gpi_exe}" ]
     then
