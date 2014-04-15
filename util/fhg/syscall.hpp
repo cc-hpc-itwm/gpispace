@@ -18,7 +18,7 @@ namespace fhg
     void close (int fd);
     int dup (int oldfd);
     int dup (int olfd, int newfd);
-    void execve (const char* filename, char* const argv[], char* const envp[]);
+    [[noreturn]] void execve (const char* filename, char* const argv[], char* const envp[]);
     pid_t fork();
     void ftruncate (int fd, off_t length);
     void kill (pid_t pid, int sig);
