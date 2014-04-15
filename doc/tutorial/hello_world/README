@@ -21,6 +21,9 @@ $HOME/build/hello_world.o
 $HOME/build/libhello_util.so
 ----
 
+TODO: Explain/change $HOME/build to something
+TOOD: All paths are absolute
+
 Now `hello_world` is started by
 
 [source,bash]
@@ -47,7 +50,7 @@ The output also shows the commands that are executed by GPI-Space in order to bu
 
 Please find in the folder link:src/[] the implementations that produced this output.
 
-Please note that the output could differ on your system as it actually is the interleaving of two outputs. The easiest way to serialize the execution is to run the demonstration with a single worker only, e.g.
+Please note that the output could differ from system to system as it actually is the interleaving of two outputs. The easiest way to serialize the execution is to run the demonstration with a single worker only, e.g.
 
 [source,bash]
 ----
@@ -134,7 +137,7 @@ Please note that the call of the `C++` version explicitely uses the top level na
 
 == Call `hello_world` many times
 
-The workflow description in link:hello_many.xpnet[] is a small wrapper that allows to call the link:../../user.html#module_call[module call] `hello_world` many times. In the link:Makefile[] there are two control tokens putted on the port `in`:
+The workflow description in link:hello_many.xpnet[] is a small wrapper that allows to call the link:../../user.html#module_call[module call] `hello_world` many times. In the link:Makefile[] there are two control tokens put on the port `in`:
 
 [source,makefile]
 ----
