@@ -2,99 +2,154 @@ Subject: RFC: Explicit memory management, iteration 0
 
 - there is no alloc/free from within the workflow, this is a meta-issue and solved on the meta level. The virtual memory provides alloc/free that work with memory handles like now. A typical run would allocate memory, run the workflow with the handle (or mabye more than one) as additional parameter and later free the memory. Also we can re-use the same handle in different workflows or with the same workflow several times without freeing it in between.
 
-- in the workflow a handle typically is split into memory locations of type
-
-<struct name="memory_location">
-  <field name="handle" type="memory_handle"/>
+<struct name="global_memory_range">
+  <field name="handle" type="global_memory_handle_type"/>
   <field name="offset" type="unsigned long"/>
   <field name="size" type="unsigned long"/>
 </struct>
 
-- the addition to the workflow language is a new tag <memory-transfer> that describes memory transfers in terms of locations. Via some in-port, the memory locations come into the module call. The values are copied at the momemt the transition is fired. That means that possible modifications are not influencing to locations that the data is copied to (although the modification of an output port would possible become visible in the workflow). Later the keyword "const" will forbid modifications.
+<struct name="local_memory_range">
+  <field name="buffer_name" type="string"/>
+  <field name="offset" type="unsigned long"/>
+  <field name="size" type="unsigned long"/>
+</struct>
 
-<place name="data_location" type="memory_location"/>
-<place name="available_location" type="memory_location"/>
-<place name="randomized_data_location" type="memory_location"/>
+- new tag between <in/out/inout> and <module>
 
-<transition name="randomize">
-  <defun>
+    <memory-buffer name="data">
+      <size>/* expression of type unsigned long */</size>
+    </memory-buffer>
 
-    <in name="data_location" type="memory_location"/>
-    <in name="available_location_in" type="memory_location"/>
-    <out name="available_location_out" type="memory_location"/>
-    <out name="randomized_data_location" type="memory_location"/>
+  Expression will be evaluated before the module gets executed with the input token context of the module bind to the context. Changes to input variables are invisible in the module call.
 
-    <memory-transfer name="data" from="data_location"/>
-    <memory-transfer name="randomized_data" to="available_location_in"/>
+- new tags as child of <module>
 
-    <module name="m"
-            function="randomize ( data, data_location
-                                , randomized_data, randomized_data_location
-                                , available_location_in, available_location_out
-                                )
-                     "
-    >
-      <code><![CDATA[
-      // prolog, generated
-      // data = shmem_malloc (data_location.size);
-      // randomized_data = shmem_malloc (available_location_in.size);
-      // memcpy (data_location -> data)
+    <memory-get>
+      <global>/* list of global_memory_range */</global>
+      <local>/* list of local_memory_range */</local>
+    </memory-get>
 
-      randomized_data_location = available_location_in;
+    <memory-put>
+      <local/>
+      <global/>
+    </memory-put>
 
-      char* d (data);
-      char* r (randomized_data);
+  memory-get: Expression will be evaluated before the module gets executed with the input token context of the module bind to the context. Changes to input variables are invisible in the module call.
 
-      for (int i (0); i < data_location.size; ++i)
-      {
-        r[i] = d[i] ^ rand();
-      }
+  memory-put: Expression will be evaluated with the output context of the module call. Changes to the output variables are not visible in the workflow.
 
-      available_location_out = data_location;
+    <memory-getput> == <memory-get><memory-put>
 
-      // epilog, generated
-      // memcpy (randomized_data -> available_location_in)
-      // shmem_free (randomized_data);
-      // shmem_free (data);
-      ]]></code>
+- example: inplace transformation
+
+    <in name="config" type="config"/>
+    <in name="slot" type="slot"/>
+
+    <memory-buffer name="data">
+      <size>
+        ${config.slot_size}
+      </size>
+    </memory-buffer>
+
+    <memory-getput>
+      <global>
+        List ( Struct [ handle := ${config.handle}
+                      , offset := ${slot.id} * ${config.slot_size}
+                      , size := ${config.slot_size}
+                      ]
+             )
+      </global>
+      <local>
+        List ( Struct [ buffer := "data"
+                      , offset := 0UL
+                      , size := ${config.slot_size}
+                      ]
+             )
+      </local>
+    </memory-getput>
+
+    <module name="m" function="transform (data, config)"/>
+
+- example: transformation where output differs in size, can be larger than the input but not larger than config.slot_size
+
+    <in name="config" type="config"/>
+    <in name="slot_in" type="slot_filled_partially"/>
+    <inout name="slot_out" type="slot_filled_partially"/>
+
+    <memory-buffer name="input">
+      <size>
+        ${slot_in.used}
+      </size>
+    </memory-buffer>
+
+    <memory-buffer name="output">
+      <size>
+        ${config.slot_size}
+      </size>
+    </memory-buffer>
+
+    <memory-get>
+      <global>
+        List ( Struct [ handle := ${config.handle}
+                      , offset := ${slot_in.id} * ${config.slot_size}
+                      , size := ${slot_in.used}
+                      ]
+             )
+      </global>
+      <local>
+        List ( Struct [ buffer := "input"
+                      , offset := 0UL
+                      , size := ${slot_in.used}
+                      ]
+             )
+      </local>
+    </memory-get>
+
+    <memory-put>
+      <local>
+        List ( Struct [ buffer := "output"
+                      , offset := 0UL
+                      , size := ${slot_out.used}
+                      ]
+             )
+      </local>
+      <global>
+        List ( Struct [ handle := ${config.handle}
+                      , offset := ${slot_out.id} * ${config.slot_size}
+                      , size := ${slot_out.used}
+                      ]
+             )
+      </global>
+    </memory-put>
+
+    <module name="m" function="f (input, output, config, slot_in, slot_out)">
+      <code>
+        // at the end:
+        assert (slot_out.used <= config.slot_size);
+      </code>
     </module>
-  </defun>
-  <connect-in port="data_location" place="data_location"/>
-  <connect-in port="available_location_in" place="available_location"/>
-  <connect-out port="available_location_out" place="available_location"/>
-  <connect-out port="randomized_data_location"
-               place="randomized_data_location"/>
-</transition>
-
-- the memory transfer could also be connected to a port of type list<memory_location> to support striped data like in the frtm (see below), e.g.
-
-  <in name="portion_of_velocity_cube" type="list of memory_location"/>
-  <memory-transfer name="velocity" from="portion_of_velocity_cube"/>
 
 - the generated code would
 
+    eval buffer specifications with copied context_input
+    allocate local memory, automatically de-allocated at scope exit
+    eval memory-get with copied context_input
+    get_memory into buffers, e.g. prefix combine the global list locations into the local list locations
+    wait
   unwrap_parameter_to_c
-    get_memory into memory_locations, e.g.
-      foreach (transfer t : transfers)
-        foreach (location l : transfer)
-          get (l)
-    wait
-  call function (parameter, memory_locations)
-    put_memory from memory_locations
-    wait
+  call function (parameter, buffers)
   wrap_parameter_to_workflow
+    eval memory-put with copied context_output
+    put_memory from buffers, again prefix style
+    wait
 
-  where get_memory and put_memory are new. Later (iteration optimize
-fetch/get) we can make separate function in order to run get/put while
-other function calls are in progress.
+  Later (iteration optimize fetch/get) we can make separate function in order to run get/put while other function calls are in progress.
 
 In iteration 0 we just use the existing shared memory to store the data,
-throwing if there is not enough space.
+throwing if there is not enough space. (This is allocate just checks bounds and de-allocate is a no op).
 
 - later (iteration optimize workflow memory_management) we can identify
-and eliminate those puts that are followed by a get. This is especially
-easy when the memory port is connected with an place directly but can be
-done for expressions too.
+and eliminate those puts that are followed by a get.
 
 - later (iteration make the scheduler locality aware) we can transport
 the list of memory locations that is accessed by the module call to the
