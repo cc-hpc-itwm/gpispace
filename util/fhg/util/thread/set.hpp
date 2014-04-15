@@ -13,7 +13,7 @@ namespace fhg
 {
   namespace thread
   {
-    //! \note A set of threads which are cleaned up in dtor /  stop_all().
+    //! \note A set of threads which are cleaned up in dtor.
     class set : boost::noncopyable
     {
     public:
@@ -25,12 +25,6 @@ namespace fhg
 
       ~set()
       {
-        stop_all();
-      }
-
-      //! \todo Should be removed. Exists because of bad dtor in use-case.
-      void stop_all()
-      {
         const boost::mutex::scoped_lock _ (_threads_mutex);
         for (boost::thread& thread : _threads)
         {
@@ -40,7 +34,6 @@ namespace fhg
             thread.join();
           }
         }
-        _threads.clear();
       }
 
     private:
