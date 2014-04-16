@@ -16,12 +16,13 @@ if (ENABLE_DOCUMENTATION)
     if (ASCIIDOC_FOUND AND SOURCE_HIGHLITE_FOUND)
       add_custom_command (
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}
-        COMMAND "PATH=$ENV{PATH}:${SOURCE_HIGHLITE_BINDIR}"
-                ${ASCIIDOC_EXECUTABLE}
-                -b ${DOC_BACKEND}
-                -o ${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}
-                ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT} ||
-                rm -rf ${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}
+        COMMAND ${CMAKE_COMMAND}
+                -DPATH="$ENV{PATH}:${SOURCE_HIGHLITE_BINDIR}"
+                -DASCIIDOC="${ASCIIDOC_EXECUTABLE}"
+                -DBACKEND="${DOC_BACKEND}"
+                -DOUTPUT="${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}"
+                -DINPUT="${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}"
+                -P "${CMAKE_SOURCE_DIR}/modules/asciidoc.cmake"
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}
       )
       add_custom_target (${DOC_TARGET}
