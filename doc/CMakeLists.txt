@@ -32,37 +32,6 @@ if (ENABLE_DOCUMENTATION)
     endif()
   endmacro()
 
-  macro (ADD_A2X)
-    parse_arguments (DOC
-      "INPUT;FORMAT;OPTION"
-      ""
-      ${ARGN}
-    )
-    car (DOC_TARGET ${DOC_DEFAULT_ARGS})
-
-    set (OUTPUT_FOLDER ${CMAKE_CURRENT_BINARY_DIR}/a2x-${DOC_FORMAT})
-
-    if (ASCIIDOC_FOUND AND SOURCE_HIGHLITE_FOUND)
-      add_custom_command (
-        OUTPUT ${OUTPUT_FOLDER}
-        COMMAND ${CMAKE_COMMAND}
-                -DA2X="${A2X_EXECUTABLE}"
-                -DPATH="${ASCIIDOC_BINDIR}:$ENV{PATH}"
-                -DFORMAT="${DOC_FORMAT}"
-                -DOPTION="${DOC_OPTION}"
-                -DOUTPUT="${OUTPUT_FOLDER}"
-                -DINPUT="${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}"
-                -P "${CMAKE_SOURCE_DIR}/modules/a2x.cmake"
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}
-      )
-      add_custom_target (${DOC_TARGET}
-        ALL
-        DEPENDS ${OUTPUT_FOLDER}
-      )
-    endif()
-  endmacro()
-
-
   ADD_ASCIIDOC (user-asciidoc-html
     INPUT user/gpispace.txt
     OUTPUT user.html
@@ -83,17 +52,6 @@ if (ENABLE_DOCUMENTATION)
     INPUT user/gpispace.txt
     OUTPUT user.docbook
     BACKEND docbook
-    )
-
-  ADD_A2X (user-a2x-html
-    INPUT user/gpispace.txt
-    FORMAT xhtml
-    )
-
-  ADD_A2X (user-a2x-pdf
-    INPUT user/gpispace.txt
-    FORMAT pdf
-    OPTION --fop
     )
 endif()
 
