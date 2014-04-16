@@ -403,7 +403,6 @@ namespace expr
 
       do
         {
-          fhg::util::parse::require::skip_spaces (_pos);
           _ref.push_back (fhg::util::parse::require::identifier (_pos));
 
           if (_pos.end())
