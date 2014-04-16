@@ -192,6 +192,8 @@ The proposition is to never allow for void* but use iterators right from the beg
 
 Contra: Complex data would not allow to specify any kind of iterator.
 
+Pro: The extension in the workflow language seems to be small. Just specify that you are going to do the put/get a number of times. However, the implications for the implementation are big.
+
 - the applications we know can work with it:
 
 * smartb:
