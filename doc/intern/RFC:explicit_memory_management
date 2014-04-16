@@ -176,6 +176,14 @@ U4 (Daniel) Is an easier case of U1: Select substructures from a larger structur
 
 Solution: The main point here is to find from some geometries the memory locations the module call wants to read and their global and local order. This is a repeated task in many projects and should be included in an early example on how to use the new memory tags.
 
+U5 (Dirk) Is U1 for writers, e.g. one has a small input that is used to produce many larger outputs. One example is a list of shots that shares a common (and expensive) pre-calculation and for each element in the list a large cube is produced and put to the global memory. (Yes, the assumption is that there is enough space in the global memory.)
+
+Solution: Again the flow is modeled in the workflow and more overhead is produced. The common pre-calculation can be stored like in U2 as "persistent" blob, however that introduces some difficulties to the user (serialization/deserialization). An output iterator (see P1) would be the solution that gives much freedom to the application and still let the system know much about memory transfers. In general there is a design space that has full knowledge/no freedom at one end and no knowledge/full freedom (the situation now) at the other.
+
+U6 (Dirk) In seislib there is an abstraction for global memory that has two implementations, one for GPI and one for SDPA! This assumes memory access from within the module call and it is unclear how far this reaches. (It was a failure to allow put/get in the first place, now seislib gone the wrong direction: Instead of removing direct memory access it was wrapped and most probably used more often.) Unfortunately that means that many codes will _not_ work out of the box that claim to do so.
+
+U7 (Dirk) Good to remember that Stencil operation are wide spread. One of the early examples should be a Stencil.
+
 - further propositions
 
 P1 (Dirk) Provide iterators to the module call that can be incremented and  dereferenced. In more general terms this would be a way to tell the system something about the access patterns across many memory locations, e.g. a const_forward_iterator would allow for intelligent pre-fetching of data. It breaks the model as an "active" object is needed that triggers memory operations via the drts context. However, the potential benefit is in the saved overhead to go back and forth from the module call to the workflow again and again, just to do the increment there (implicit).
