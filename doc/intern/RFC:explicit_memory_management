@@ -9,7 +9,7 @@ Subject: RFC: Explicit memory management, iteration 0
 </struct>
 
 <struct name="local_memory_range">
-  <field name="buffer_name" type="string"/>
+  <field name="buffer" type="string"/>
   <field name="offset" type="unsigned long"/>
   <field name="size" type="unsigned long"/>
 </struct>
