@@ -47,6 +47,7 @@ if (ENABLE_DOCUMENTATION)
         OUTPUT ${OUTPUT_FOLDER}
         COMMAND ${CMAKE_COMMAND}
                 -DA2X="${A2X_EXECUTABLE}"
+                -DPATH="${ASCIIDOC_BINDIR}:$ENV{PATH}"
                 -DFORMAT="${DOC_FORMAT}"
                 -DOPTION="${DOC_OPTION}"
                 -DOUTPUT="${OUTPUT_FOLDER}"
