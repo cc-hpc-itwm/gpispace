@@ -72,6 +72,96 @@ When read-only is set to true, the memory will be made available read only in th
 
     <module name="m" function="transform (data, config)"/>
 
+- example: gather two partial filled buffers into a single one
+
+    <in name="config" type="config"/>
+    <in name="slot_in_A" type="slot"/>
+    <in name="slot_in_B" type="slot"/>
+    <in name="slot_out" type="slot"/>
+
+    <condition>
+      (${slot_in_A.used} + ${slot_in_B.used}) :le: ${config.slot_size}
+    </condition>
+
+    <memory-buffer name="data">
+      <size>
+        ${slot_in_A.used} + ${slot_in_B.used}
+      </size>
+    </memory-buffer>
+
+    <memory-get>
+      <global>
+        List ( Struct [ handle := ${config.handle}
+                      , offset := ${slot_in_A.id} * ${config.slot_size}
+                      , size := ${slot_in_A.used}
+                      ]
+             , Struct [ handle := ${config.handle}
+                      , offset := ${slot_in_B.id} * ${config.slot_size}
+                      , size := ${slot_in_B.used}
+                      ]
+             )
+      </global>
+      <local>
+        List ( Struct [ buffer := "data"
+                      , offset := 0UL
+                      , size := ${slot_in_A.used} + ${slot_in_B.used}
+                      ]
+             )
+      </local>
+    </memory-get>
+
+    <memory-put>
+      <global>
+        List ( Struct [ handle := ${config.handle}
+                      , offset := ${slot_out.id} * ${config.slot_size}
+                      , size := ${slot_in_A.used} + ${slot_in_B.used}
+                      ]
+             )
+      </global>
+      <local>
+        List ( Struct [ buffer := "data"
+                      , offset := 0UL
+                      , size := ${slot_in_A.used} + ${slot_in_B.used}
+                      ]
+             )
+      </local>
+    </memory-get>
+
+    <module name="m" function="gather (data, config)"/>
+
+    The two global memory buffers are collected coalesced into the local buffer and the one is transferred back to the global memory.
+
+    Note that the <local> part could be described as
+
+      <local>
+        List ( Struct [ buffer := "data"
+                      , offset := 0UL
+                      , size := ${slot_in_A.used}
+                      ]
+             , Struct [ buffer := "data"
+                      , offset := ${slot_in_A.used}
+                      , size := ${slot_in_B.used}
+                      ]
+             )
+      </local>
+
+    in the get as well as in the put. Also the <global> part of the put could be described by
+
+      <global>
+        List ( Struct [ handle := ${config.handle}
+                      , offset := ${slot_out.id} * ${config.slot_size}
+                      , size := ${slot_in_A.used}
+                      ]
+             , Struct [ handle := ${config.handle}
+                      , offset := ${slot_out.id} * ${config.slot_size}
+                                + ${slot_in_A.used}
+                      , size := ${slot_in_B.used}
+                      ]
+             )
+      </global>
+
+    All combinations of these versions would give the very same result (maybe with different numbers of transfer).
+
 - example: transformation where output differs in size, can be larger than the input but not larger than config.slot_size
 
     <in name="config" type="config"/>
