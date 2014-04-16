@@ -47,12 +47,6 @@ if (ENABLE_DOCUMENTATION)
     ${CMAKE_CURRENT_SOURCE_DIR}/user/images/gpi_space_workflow_notext.png
     DESTINATION share/gspc/doc/images
   )
-
-  ADD_ASCIIDOC (user-asciidoc-docbook
-    INPUT user/gpispace.txt
-    OUTPUT user.docbook
-    BACKEND docbook
-    )
 endif()
 
 add_subdirectory (tutorial)
