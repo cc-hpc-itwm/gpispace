@@ -156,6 +156,32 @@ the list of memory locations that is accessed by the module call to the
 scheduler in order to run the task at the location where the copy costs
 are low.
 
+- use cases that we are aware of and how to handle them
+
+U1 (Dirk) Select large parts in a complicated way from a large structure. One example is a huge velocity cube that is written to disk in an order that differs from the order in memory. The way it is done now roughly copies in a loop parts that fit into the local memory, transpose it and write it to disk afterward.
+
+Solution: The coordination must be done in the workflow. The overhead is negligible as the individual parts can be gathered in parallel. Has the advantage to add knowledge to the workflow and allow for more fault tolerance.
+
+U2 (Dirk) Persistent local storage. One example is a costly and huge accelerator structure that is used very often in small (compared to the size of the accelerator) computations. Copying it every time is way to expensive so it should stay in the worker.
+
+Solution: Ignore the fact that the memory is persistent. Instead rely on the ability of the system to avoid unnecessary copies. This is an optimization that most probably is not available in the first implementations. Also to make the optimization possible the memory must be marked CONST. Without the optimization the workflow still works, but does many copies and is (much/prohibitive) slower.
+
+U3 (Dirk) Is a variation of U1: Non-associative reduction of parts that are to large to fit all into the local memory. The solution now gets the data as required from within the module call.
+
+Solution: Again the management is lifted to the workflow. The intermediate results must be written to the virtual memory. An optimization could eliminate the intermediate copies. The proposition P1 (see below) addresses this use case, just set up an iterator within the workflow and increment it within the module call.
+
+U4 (Daniel) Is an easier case of U1: Select substructures from a larger structure, depending on the geometry of the shots to be computed. Is simpler as U1 as the selected part fits into the local memory.
+
+Solution: The main point here is to find from some geometries the memory locations the module call wants to read and their global and local order. This is a repeated task in many projects and should be included in an early example on how to use the new memory tags.
+
+- further propositions
+
+P1 (Dirk) Provide iterators to the module call that can be incremented and  dereferenced. In more general terms this would be a way to tell the system something about the access patterns across many memory locations, e.g. a const_forward_iterator would allow for intelligent pre-fetching of data. It breaks the model as an "active" object is needed that triggers memory operations via the drts context. However, the potential benefit is in the saved overhead to go back and forth from the module call to the workflow again and again, just to do the increment there (implicit).
+
+The proposition is to never allow for void* but use iterators right from the beginning. Question: How to specify the type of the iterator? Would add a type field to the memory buffer.
+
+Contra: Complex data would not allow to specify any kind of iterator.
+
 - the applications we know can work with it:
 
 * smartb:
