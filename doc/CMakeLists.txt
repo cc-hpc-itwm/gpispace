@@ -17,7 +17,7 @@ if (ENABLE_DOCUMENTATION)
       add_custom_command (
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}
         COMMAND ${CMAKE_COMMAND}
-                -DPATH="$ENV{PATH}:${SOURCE_HIGHLITE_BINDIR}"
+                -DPATH="${SOURCE_HIGHLITE_BINDIR}:$ENV{PATH}"
                 -DASCIIDOC="${ASCIIDOC_EXECUTABLE}"
                 -DBACKEND="${DOC_BACKEND}"
                 -DOUTPUT="${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}"
