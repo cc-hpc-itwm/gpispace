@@ -24,7 +24,7 @@ Subject: RFC: Explicit memory management, iteration 0
 
 - new tags as child of <module>
 
-    <memory-get [const="true"]>
+    <memory-get [read-only="true"]>
       <global>/* list of global_memory_range */</global>
       <local>/* list of local_memory_range */</local>
     </memory-get>
@@ -36,7 +36,7 @@ Subject: RFC: Explicit memory management, iteration 0
 
   memory-get: Expression will be evaluated before the module gets executed with the input token context of the module bind to the context. Changes to input variables are invisible in the module call.
 
-When const is set to true, the memory will be made available read only in the module call. This will allow to share read-only data between module calls without fetching them again and again. See use case U2 below.
+When read-only is set to true, the memory will be made available read only in the module call. This will allow to share read-only data between module calls without fetching them again and again. See use case U2 below.
 
   memory-put: Expression will be evaluated with the output context of the module call. Changes to the output variables are not visible in the workflow.
 
@@ -166,7 +166,7 @@ Solution: The coordination must be done in the workflow. The overhead is negligi
 
 U2 (Dirk) Persistent local storage. One example is a costly and huge accelerator structure that is used very often in small (compared to the size of the accelerator) computations. Copying it every time is way to expensive so it should stay in the worker.
 
-Solution: Ignore the fact that the memory is persistent. Instead rely on the ability of the system to avoid unnecessary copies. This is an optimization that most probably is not available in the first implementations. Also to make the optimization possible the memory must be marked CONST. Without the optimization the workflow still works, but does many copies and is (much/prohibitive) slower.
+Solution: Ignore the fact that the memory is persistent. Instead rely on the ability of the system to avoid unnecessary copies. This is an optimization that most probably is not available in the first implementations. Also to make the optimization possible the memory must be marked read-only. Without the optimization the workflow still works, but does many copies and is (much/prohibitive) slower.
 
 U3 (Dirk) Is a variation of U1: Non-associative reduction of parts that are to large to fit all into the local memory. The solution now gets the data as required from within the module call.
 
