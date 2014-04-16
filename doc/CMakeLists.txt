@@ -45,13 +45,13 @@ if (ENABLE_DOCUMENTATION)
     if (ASCIIDOC_FOUND AND SOURCE_HIGHLITE_FOUND)
       add_custom_command (
         OUTPUT ${OUTPUT_FOLDER}
-        COMMAND mkdir -p ${OUTPUT_FOLDER} &&
-                ${A2X_EXECUTABLE}
-                -f ${DOC_FORMAT} ${DOC_OPTION}
-                --no-xmllint
-                --destination-dir=${OUTPUT_FOLDER}
-                ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT} ||
-                rm -rf ${OUTPUT_FOLDER}
+        COMMAND ${CMAKE_COMMAND}
+                -DA2X="${A2X_EXECUTABLE}"
+                -DFORMAT="${DOC_FORMAT}"
+                -DOPTION="${DOC_OPTION}"
+                -DOUTPUT="${OUTPUT_FOLDER}"
+                -DINPUT="${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}"
+                -P "${CMAKE_SOURCE_DIR}/modules/a2x.cmake"
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}
       )
       add_custom_target (${DOC_TARGET}
