@@ -67,9 +67,12 @@ namespace sdpa
               (pEvt->job_id(), "One of tasks of the group failed with the actual reservation!");
           }
 
+          for (std::string worker : scheduler().workers (pJob->id()))
+          {
+            scheduler().worker_manager().findWorker (worker)->deleteJob (pJob->id());
+          }
           scheduler().releaseReservation (pJob->id());
         }
-        scheduler().worker_manager().findWorker (pEvt->from())->deleteJob (pJob->id());
         request_scheduling();
 
         if(bAllPartResCollected)
@@ -114,9 +117,12 @@ namespace sdpa
             workflowEngine()->failed (pEvt->job_id(), pEvt->error_message());
           }
 
+          for (std::string worker : scheduler().workers (pJob->id()))
+          {
+            scheduler().worker_manager().findWorker (worker)->deleteJob (pJob->id());
+          }
           scheduler().releaseReservation (pJob->id());
         }
-        scheduler().worker_manager().findWorker (pEvt->from())->deleteJob (pJob->id());
         request_scheduling();
 
         if (bAllPartResCollected)
@@ -209,10 +215,13 @@ namespace sdpa
         {
           if (bTaskGroupComputed)
           {
+            for (std::string worker : scheduler().workers (pJob->id()))
+            {
+              scheduler().worker_manager().findWorker (worker)->deleteJob (pJob->id());
+            }
             scheduler().releaseReservation (pEvt->job_id());
           }
           LLOG (TRACE, _logger, "Remove job " << pEvt->job_id() << " from the worker "<<pEvt->from());
-          scheduler().worker_manager().findWorker (pEvt->from())->deleteJob (pEvt->job_id());
           request_scheduling();
         }
         catch (const WorkerNotFoundException&)
