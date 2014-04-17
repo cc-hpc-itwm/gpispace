@@ -22,19 +22,17 @@
 
             if (wlist.empty())
             {
-              throw std::runtime_error ("worker list is empty!");
+              throw std::logic_error ("worker list is empty!");
             }
-            else
-            {
-              workers.assign (wlist.begin(), wlist.end());
 
-              for ( std::list<std::string>::const_iterator it (wlist.begin())
-                  ; it != wlist.end()
-                  ; ++it
-                  )
-              {
-                hostnames.push_back (_pnetc_context->worker_to_hostname (*it));
-              }
+            workers.assign (wlist.begin(), wlist.end());
+
+            for ( std::list<std::string>::const_iterator it (wlist.begin())
+                ; it != wlist.end()
+                ; ++it
+                )
+            {
+              hostnames.push_back (_pnetc_context->worker_to_hostname (*it));
             }
           ]]></code>
         </module>
