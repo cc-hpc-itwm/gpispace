@@ -28,12 +28,12 @@
             {
               workers.assign (wlist.begin(), wlist.end());
 
-              std::list<std::string>::const_iterator it (wlist.begin());
-              while (it != wlist.end())
+              for ( std::list<std::string>::const_iterator it (wlist.begin())
+                  ; it != wlist.end()
+                  ; ++it
+                  )
               {
                 hostnames.push_back (_pnetc_context->worker_to_hostname (*it));
-
-                ++it;
               }
             }
           ]]></code>
