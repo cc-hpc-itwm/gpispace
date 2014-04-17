@@ -15,12 +15,8 @@
         <out name="hostnames" type="list"/>
         <module name="workerlist" function="run (workers, hostnames)"
                 pass_context="true">
-          <cinclude href="fhglog/fhglog.hpp"/>
-          <cinclude href="sstream"/>
           <ld flag="-lwe-dev" />
           <code><![CDATA[
-            MLOG (INFO, "run ()");
-
             std::list<std::string> wlist =
               _pnetc_context->worker_list ();
 
@@ -32,22 +28,13 @@
             {
               workers.assign (wlist.begin(), wlist.end());
 
-              std::ostringstream worker_names;
               std::list<std::string>::const_iterator it (wlist.begin());
               while (it != wlist.end())
               {
                 hostnames.push_back (_pnetc_context->worker_to_hostname (*it));
 
-                worker_names << *it << ", ";
                 ++it;
               }
-
-              MLOG (INFO, "running on: " << worker_names.str());
-
-              MLOG ( INFO
-                   , "hostname of first worker: "
-                   << _pnetc_context->worker_to_hostname (wlist.front ())
-                   );
             }
 
             return;
