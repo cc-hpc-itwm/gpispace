@@ -2,21 +2,15 @@
   <in  name="trigger" type="control" place="trigger_in"/>
   <out name="workers" type="list" place="workers"/>
 
-  <struct name="worker_info">
-    <field name="workers" type="list" />
-  </struct>
-
   <net>
     <place name="trigger_in" type="control"/>
     <place name="workers" type="list"/>
 
-    <place name="worker_info" type="worker_info" />
-
     <transition name="run">
       <defun>
         <in  name="trigger" type="control"/>
-        <out name="worker_info" type="worker_info"/>
-        <module name="workerlist" function="run (worker_info)" pass_context="true">
+        <out name="workers" type="list"/>
+        <module name="workerlist" function="run (workers)" pass_context="true">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="sstream"/>
           <ld flag="-lwe-dev" />
@@ -32,7 +26,7 @@
             }
             else
             {
-              worker_info.workers.assign (wlist.begin(), wlist.end());
+              workers.assign (wlist.begin(), wlist.end());
 
               std::ostringstream worker_names;
               std::list<std::string>::const_iterator it (wlist.begin());
@@ -55,20 +49,7 @@
         </module>
       </defun>
       <connect-in  port="trigger" place="trigger_in"/>
-      <connect-out port="worker_info" place="worker_info"/>
-    </transition>
-
-    <transition name="extract_worker_list">
-      <defun>
-        <in name="worker_info" type="worker_info" />
-        <out name="workers" type="list" />
-
-        <expression>
-          ${workers} := ${worker_info.workers};
-        </expression>
-      </defun>
-      <connect-in port="worker_info" place="worker_info" />
-      <connect-out port="workers" place="workers" />
+      <connect-out port="workers" place="workers"/>
     </transition>
   </net>
 </defun>
