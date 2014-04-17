@@ -17,8 +17,7 @@
                 pass_context="true">
           <ld flag="-lwe-dev" />
           <code><![CDATA[
-            std::list<std::string> wlist =
-              _pnetc_context->worker_list ();
+            const std::list<std::string> wlist (_pnetc_context->worker_list());
 
             if (wlist.empty())
             {
