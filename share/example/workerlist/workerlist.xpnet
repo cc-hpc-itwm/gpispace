@@ -1,10 +1,10 @@
 <defun name="workerlist">
-  <in  name="trigger" type="control" place="trigger_in"/>
+  <in  name="trigger" type="control" place="trigger"/>
   <out name="workers" type="list" place="workers"/>
   <out name="hostnames" type="list" place="hostnames"/>
 
   <net>
-    <place name="trigger_in" type="control"/>
+    <place name="trigger" type="control"/>
     <place name="workers" type="list"/>
     <place name="hostnames" type="list"/>
 
@@ -54,7 +54,7 @@
           ]]></code>
         </module>
       </defun>
-      <connect-in  port="trigger" place="trigger_in"/>
+      <connect-in  port="trigger" place="trigger"/>
       <connect-out port="workers" place="workers"/>
       <connect-out port="hostnames" place="hostnames"/>
     </transition>
