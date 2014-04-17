@@ -36,8 +36,6 @@
                 ++it;
               }
             }
-
-            return;
           ]]></code>
         </module>
       </defun>
