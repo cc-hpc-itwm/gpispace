@@ -47,9 +47,7 @@ In order for a module call to receive information about the drts, one has to set
                 pass_context="true">
 ----
 
-The drts context is then available via the variable `drts::worker::context* _pnetc_context` which is automatically available in the module call. The type is described in link:unk/include/drts/worker/context.hpp[include/drts/worker/context.hpp].
-
-TODO: correct link to context.hpp
+The drts context is then available via the variable `drts::worker::context* _pnetc_context` which is automatically available in the module call. The type is described in link:../../../../include/drts/worker/context.hpp[include/drts/worker/context.hpp].
 
 Amongst others, it provides the functions `worker_name()`  which returns the name of the worker the module call is executed on and `worker_list()` which contains the names of all workers participating in a module call when requesting multiple workers. It also provides `worker_to_hostname (std::string)` which allows to map from a worker name to a host name, which may be needed to run legacy binaries on all workers.
 
