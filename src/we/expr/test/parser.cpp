@@ -481,6 +481,24 @@ namespace
   }
 
   template<typename T>
+  void check_binop_prefix ( std::string const& operation_string
+                          , std::function<T (T const&, T const&)> operation
+                          , T const& l
+                          , T const& r
+                          )
+  {
+    require_evaluating_to
+      ( ( boost::format ("%4% (%1%%3%, %2%%3%)")
+        % l
+        % r
+        % suffix<T>()()
+        % operation_string
+        ).str()
+      , operation (l, r)
+      );
+  }
+
+  template<typename T>
     T parse_showed (T const& x)
   {
     expr::eval::context context;
@@ -624,6 +642,131 @@ BOOST_AUTO_TEST_CASE (token_mul)
   require_evaluating_to ("1.0f * 1.0f", 1.0f);
   require_evaluating_to ("1.0f * 2.0f", 2.0f);
   require_evaluating_to ("2.0f * 1.0f", 2.0f);
+}
+
+namespace
+{
+  template<typename T>
+    T minimum (T const& l, T const& r)
+  {
+    return std::min (l, r);
+  }
+
+  template<typename T>
+    T maximum (T const& l, T const& r)
+  {
+    return std::max (l, r);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_min)
+{
+  require_random_integrals_evaluating_to<int>
+    (std::bind (&check_binop_prefix<int>, "min", &minimum<int>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<unsigned int>
+    (std::bind (&check_binop_prefix<unsigned int>, "min", &minimum<unsigned int>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<long>
+    (std::bind (&check_binop_prefix<long>, "min", &minimum<long>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<unsigned long>
+    (std::bind (&check_binop_prefix<unsigned long>, "min", &minimum<unsigned long>, std::placeholders::_1, std::placeholders::_2));
+
+  require_evaluating_to ("0 min 0", 0);
+  require_evaluating_to ("0 min 1", 0);
+  require_evaluating_to ("1 min 0", 0);
+  require_evaluating_to ("1 min 1", 1);
+  require_evaluating_to ("1 min 2", 1);
+  require_evaluating_to ("2 min 1", 1);
+  require_evaluating_to ("0U min 0U", 0U);
+  require_evaluating_to ("0U min 1U", 0U);
+  require_evaluating_to ("1U min 0U", 0U);
+  require_evaluating_to ("1U min 1U", 1U);
+  require_evaluating_to ("1U min 2U", 1U);
+  require_evaluating_to ("2U min 1U", 1U);
+  require_evaluating_to ("0L min 0L", 0L);
+  require_evaluating_to ("0L min 1L", 0L);
+  require_evaluating_to ("1L min 0L", 0L);
+  require_evaluating_to ("1L min 1L", 1L);
+  require_evaluating_to ("1L min 2L", 1L);
+  require_evaluating_to ("2L min 1L", 1L);
+  require_evaluating_to ("0UL min 0UL", 0UL);
+  require_evaluating_to ("0UL min 1UL", 0UL);
+  require_evaluating_to ("1UL min 0UL", 0UL);
+  require_evaluating_to ("1UL min 1UL", 1UL);
+  require_evaluating_to ("1UL min 2UL", 1UL);
+  require_evaluating_to ("2UL min 1UL", 1UL);
+
+  require_random_fractionals_evaluating_to<float>
+    (std::bind (&check_binop_prefix<float>, "min", &minimum<float>, std::placeholders::_1, std::placeholders::_2));
+  require_random_fractionals_evaluating_to<double>
+    (std::bind (&check_binop_prefix<double>, "min", &minimum<double>, std::placeholders::_1, std::placeholders::_2));
+
+  require_evaluating_to ("0.0 min 0.0", 0.0);
+  require_evaluating_to ("0.0 min 1.0", 0.0);
+  require_evaluating_to ("1.0 min 0.0", 0.0);
+  require_evaluating_to ("1.0 min 1.0", 1.0);
+  require_evaluating_to ("1.0 min 2.0", 1.0);
+  require_evaluating_to ("2.0 min 1.0", 1.0);
+  require_evaluating_to ("0.0f min 0.0f", 0.0f);
+  require_evaluating_to ("0.0f min 1.0f", 0.0f);
+  require_evaluating_to ("1.0f min 0.0f", 0.0f);
+  require_evaluating_to ("1.0f min 1.0f", 1.0f);
+  require_evaluating_to ("1.0f min 2.0f", 1.0f);
+  require_evaluating_to ("2.0f min 1.0f", 1.0f);
+}
+
+BOOST_AUTO_TEST_CASE (token_max)
+{
+  require_random_integrals_evaluating_to<int>
+    (std::bind (&check_binop_prefix<int>, "max", &maximum<int>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<unsigned int>
+    (std::bind (&check_binop_prefix<unsigned int>, "max", &maximum<unsigned int>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<long>
+    (std::bind (&check_binop_prefix<long>, "max", &maximum<long>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<unsigned long>
+    (std::bind (&check_binop_prefix<unsigned long>, "max", &maximum<unsigned long>, std::placeholders::_1, std::placeholders::_2));
+
+  require_evaluating_to ("0 max 0", 0);
+  require_evaluating_to ("0 max 1", 1);
+  require_evaluating_to ("1 max 0", 1);
+  require_evaluating_to ("1 max 1", 1);
+  require_evaluating_to ("1 max 2", 2);
+  require_evaluating_to ("2 max 1", 2);
+  require_evaluating_to ("0U max 0U", 0U);
+  require_evaluating_to ("0U max 1U", 1U);
+  require_evaluating_to ("1U max 0U", 1U);
+  require_evaluating_to ("1U max 1U", 1U);
+  require_evaluating_to ("1U max 2U", 2U);
+  require_evaluating_to ("2U max 1U", 2U);
+  require_evaluating_to ("0L max 0L", 0L);
+  require_evaluating_to ("0L max 1L", 1L);
+  require_evaluating_to ("1L max 0L", 1L);
+  require_evaluating_to ("1L max 1L", 1L);
+  require_evaluating_to ("1L max 2L", 2L);
+  require_evaluating_to ("2L max 1L", 2L);
+  require_evaluating_to ("0UL max 0UL", 0UL);
+  require_evaluating_to ("0UL max 1UL", 1UL);
+  require_evaluating_to ("1UL max 0UL", 1UL);
+  require_evaluating_to ("1UL max 1UL", 1UL);
+  require_evaluating_to ("1UL max 2UL", 2UL);
+  require_evaluating_to ("2UL max 1UL", 2UL);
+
+  require_random_fractionals_evaluating_to<float>
+    (std::bind (&check_binop_prefix<float>, "max", &maximum<float>, std::placeholders::_1, std::placeholders::_2));
+  require_random_fractionals_evaluating_to<double>
+    (std::bind (&check_binop_prefix<double>, "max", &maximum<double>, std::placeholders::_1, std::placeholders::_2));
+
+  require_evaluating_to ("0.0 max 0.0", 0.0);
+  require_evaluating_to ("0.0 max 1.0", 1.0);
+  require_evaluating_to ("1.0 max 0.0", 1.0);
+  require_evaluating_to ("1.0 max 1.0", 1.0);
+  require_evaluating_to ("1.0 max 2.0", 2.0);
+  require_evaluating_to ("2.0 max 1.0", 2.0);
+  require_evaluating_to ("0.0f max 0.0f", 0.0f);
+  require_evaluating_to ("0.0f max 1.0f", 1.0f);
+  require_evaluating_to ("1.0f max 0.0f", 1.0f);
+  require_evaluating_to ("1.0f max 1.0f", 1.0f);
+  require_evaluating_to ("1.0f max 2.0f", 2.0f);
+  require_evaluating_to ("2.0f max 1.0f", 2.0f);
 }
 
 namespace
