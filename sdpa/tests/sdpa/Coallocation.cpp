@@ -31,16 +31,7 @@ namespace
   {
     we::type::property::type props;
     props.set ("fhg.drts.schedule.num_worker", "2UL");
-    we::type::transition_t transition_0
-      ( fhg::util::random_string()
-      , we::type::module_call_t
-        (fhg::util::random_string(), fhg::util::random_string())
-      , boost::none
-      , true
-      , props
-      , we::priority_type()
-      );
-    we::type::transition_t transition_1
+    we::type::transition_t transition
       ( fhg::util::random_string()
       , we::type::module_call_t
         (fhg::util::random_string(), fhg::util::random_string())
@@ -50,21 +41,13 @@ namespace
       , we::priority_type()
       );
     const std::string port_name (fhg::util::random_string());
-    we::port_id_type const port_id_in_0
-      ( transition_0.add_port ( we::type::port_t ( port_name
-                                                 , we::type::PORT_IN
-                                                 , std::string ("string")
-                                                 , we::type::property::type()
-                                                 )
-                              )
-      );
-    we::port_id_type const port_id_in_1
-      ( transition_1.add_port ( we::type::port_t ( port_name
-                                                 , we::type::PORT_IN
-                                                 , std::string ("string")
-                                                 , we::type::property::type()
-                                                 )
-                              )
+    we::port_id_type const port_id_in
+      ( transition.add_port ( we::type::port_t ( port_name
+                                               , we::type::PORT_IN
+                                               , std::string ("string")
+                                               , we::type::property::type()
+                                               )
+                            )
       );
 
     we::type::net_type net;
@@ -75,21 +58,10 @@ namespace
     net.put_value (place_id_in, fhg::util::random_string_without ("\\\""));
     net.put_value (place_id_in, fhg::util::random_string_without ("\\\""));
 
-    we::transition_id_type const transition_id_0
-      (net.add_transition (transition_0));
-    we::transition_id_type const transition_id_1
-      (net.add_transition (transition_1));
-
     net.add_connection ( we::edge::PT
-                       , transition_id_0
+                       , net.add_transition (transition)
                        , place_id_in
-                       , port_id_in_0
-                       , we::type::property::type()
-                       );
-    net.add_connection ( we::edge::PT
-                       , transition_id_1
-                       , place_id_in
-                       , port_id_in_1
+                       , port_id_in
                        , we::type::property::type()
                        );
 
