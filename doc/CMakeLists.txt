@@ -16,12 +16,13 @@ if (ENABLE_DOCUMENTATION)
     if (ASCIIDOC_FOUND AND SOURCE_HIGHLITE_FOUND)
       add_custom_command (
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}
-        COMMAND "PATH=$ENV{PATH}:${SOURCE_HIGHLITE_BINDIR}"
-                ${ASCIIDOC_EXECUTABLE}
-                -b ${DOC_BACKEND}
-                -o ${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}
-                ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT} ||
-                rm -rf ${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}
+        COMMAND ${CMAKE_COMMAND}
+                -DPATH="${SOURCE_HIGHLITE_BINDIR}:$ENV{PATH}"
+                -DASCIIDOC="${ASCIIDOC_EXECUTABLE}"
+                -DBACKEND="${DOC_BACKEND}"
+                -DOUTPUT="${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}"
+                -DINPUT="${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}"
+                -P "${CMAKE_SOURCE_DIR}/modules/asciidoc.cmake"
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}
       )
       add_custom_target (${DOC_TARGET}
@@ -30,36 +31,6 @@ if (ENABLE_DOCUMENTATION)
       )
     endif()
   endmacro()
-
-  macro (ADD_A2X)
-    parse_arguments (DOC
-      "INPUT;FORMAT;OPTION"
-      ""
-      ${ARGN}
-    )
-    car (DOC_TARGET ${DOC_DEFAULT_ARGS})
-
-    set (OUTPUT_FOLDER ${CMAKE_CURRENT_BINARY_DIR}/a2x-${DOC_FORMAT})
-
-    if (ASCIIDOC_FOUND AND SOURCE_HIGHLITE_FOUND)
-      add_custom_command (
-        OUTPUT ${OUTPUT_FOLDER}
-        COMMAND mkdir -p ${OUTPUT_FOLDER} &&
-                ${A2X_EXECUTABLE}
-                -f ${DOC_FORMAT} ${DOC_OPTION}
-                --no-xmllint
-                --destination-dir=${OUTPUT_FOLDER}
-                ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT} ||
-                rm -rf ${OUTPUT_FOLDER}
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}
-      )
-      add_custom_target (${DOC_TARGET}
-        ALL
-        DEPENDS ${OUTPUT_FOLDER}
-      )
-    endif()
-  endmacro()
-
 
   ADD_ASCIIDOC (user-asciidoc-html
     INPUT user/gpispace.txt
@@ -76,23 +47,6 @@ if (ENABLE_DOCUMENTATION)
     ${CMAKE_CURRENT_SOURCE_DIR}/user/images/gpi_space_workflow_notext.png
     DESTINATION share/gspc/doc/images
   )
-
-  ADD_ASCIIDOC (user-asciidoc-docbook
-    INPUT user/gpispace.txt
-    OUTPUT user.docbook
-    BACKEND docbook
-    )
-
-  ADD_A2X (user-a2x-html
-    INPUT user/gpispace.txt
-    FORMAT xhtml
-    )
-
-  ADD_A2X (user-a2x-pdf
-    INPUT user/gpispace.txt
-    FORMAT pdf
-    OPTION --fop
-    )
 endif()
 
 add_subdirectory (tutorial)
