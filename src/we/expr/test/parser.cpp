@@ -968,3 +968,56 @@ BOOST_AUTO_TEST_CASE (token_pow_int_signed_negative_exponent_throws)
     , "negative exponent"
     );
 }
+
+namespace
+{
+  template<typename T>
+    void check_neg_for_fractional()
+  {
+    std::random_device generator;
+    std::uniform_real_distribution<T> number
+      ( -std::numeric_limits<T>::max() / T (2.0)
+      ,  std::numeric_limits<T>::max() / T (2.0)
+      );
+
+    for (int i (0); i < 1000; ++i)
+    {
+      std::string const x
+        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+
+      expr::eval::context context;
+
+      BOOST_REQUIRE_EQUAL
+        ( boost::get<T>
+          ( expr::parse::parser
+            ((boost::format ("-%1%") % x).str()).eval_front (context)
+          )
+        , -boost::get<T> (expr::parse::parser (x).eval_front (context))
+        );
+    }
+  }
+
+  template<typename T>
+    void check_neg_for_integral()
+  {
+    std::random_device generator;
+    std::uniform_int_distribution<T> number
+      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+
+    for (int i (0); i < 1000; ++i)
+    {
+      T const x (number (generator));
+
+      require_evaluating_to
+        ((boost::format ("-%1%%2%") % x % suffix<T>()()).str(), -x);
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_neg)
+{
+  check_neg_for_fractional<float>();
+  check_neg_for_fractional<double>();
+  check_neg_for_integral<int>();
+  check_neg_for_integral<long>();
+}
