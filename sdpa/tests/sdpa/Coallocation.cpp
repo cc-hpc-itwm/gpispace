@@ -342,6 +342,9 @@ BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_worke
   }
 
   worker_1.canceled (canceled_job_1);
+  //! \note Potential race?: agent thread may happen before this
+  //! thread continuing and setting flag
+  worker_1_shall_not_get_a_job = false;
 
   //! \note cleanup of both jobs
   {
