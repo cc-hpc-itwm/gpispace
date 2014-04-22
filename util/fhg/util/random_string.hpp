@@ -24,6 +24,9 @@ namespace fhg
 
     // [a-zA-Z_][a-zA-Z_0-9]*
     std::string random_identifier();
+
+    // content of xml tags, e.g. [^\0<>\\]
+    std::string random_content_string();
   }
 }
 
