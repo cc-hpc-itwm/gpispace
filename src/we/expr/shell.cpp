@@ -49,7 +49,7 @@ int main()
     switch (input[0])
     {
     case '?':
-      std::cout << "constant_folding (switch with f): "
+      std::cout << "constant_folding (switch with g): "
                 << std::boolalpha << constant_folding << std::noboolalpha
                 << std::endl
                 << "context (delete with #): "
