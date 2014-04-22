@@ -4,6 +4,7 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 
@@ -27,10 +28,10 @@ BOOST_AUTO_TEST_CASE (testCoallocationWorkflow)
 
 namespace
 {
-  we::type::activity_t net_with_two_childs_requiring_two_workers()
+  we::type::activity_t net_with_two_childs_requiring_n_workers (unsigned long n)
   {
     we::type::property::type props;
-    props.set ("fhg.drts.schedule.num_worker", "2UL");
+    props.set ("fhg.drts.schedule.num_worker", std::to_string (n) + "UL");
     we::type::transition_t transition
       ( fhg::util::random_string()
       , we::type::module_call_t
@@ -95,7 +96,7 @@ BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_part_of_coallocat
   // 2. submit workflow which generates tasks (2) that require 2 workers
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
-    (client.submit_job (net_with_two_childs_requiring_two_workers().to_string()));
+    (client.submit_job (net_with_two_childs_requiring_n_workers (2).to_string()));
 
   // 3. start worker 2
   fhg::util::thread::event<std::string> job_submitted_2;
@@ -172,7 +173,7 @@ BOOST_AUTO_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are_av
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
-    (client.submit_job (net_with_two_childs_requiring_two_workers().to_string()));
+    (client.submit_job (net_with_two_childs_requiring_n_workers (2).to_string()));
 
   fhg::util::thread::event<std::string> job_submitted_2;
   bool worker_2_shall_not_get_a_job (false);
@@ -213,4 +214,161 @@ BOOST_AUTO_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are_av
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
+}
+
+namespace
+{
+  class fake_drts_worker_notifying_cancel
+    : public utils::fake_drts_worker_waiting_for_finished_ack
+  {
+  public:
+    fake_drts_worker_notifying_cancel
+        ( std::function<void (std::string)> announce_job
+        , std::function<void (std::string)> announce_cancel
+        , const utils::agent& master_agent
+        )
+      : utils::fake_drts_worker_waiting_for_finished_ack
+        (announce_job, master_agent)
+      , _announce_cancel (announce_cancel)
+    {}
+    ~fake_drts_worker_notifying_cancel()
+    {
+      BOOST_REQUIRE (_cancels.empty());
+    }
+
+    void handleCancelJobEvent
+      (const sdpa::events::CancelJobEvent* pEvt)
+    {
+      boost::mutex::scoped_lock const _ (_cancels_mutex);
+
+      _cancels.emplace (pEvt->job_id(), pEvt->from());
+      _announce_cancel (pEvt->job_id());
+    }
+
+    void canceled (std::string job_id)
+    {
+      boost::mutex::scoped_lock const _ (_cancels_mutex);
+
+      const std::string master (_cancels.at (job_id));
+      _cancels.erase (job_id);
+
+      _network.perform
+        ( sdpa::events::SDPAEvent::Ptr
+          (new sdpa::events::CancelJobAckEvent (_name, master, job_id))
+        );
+    }
+
+  private:
+    std::function<void (std::string)> _announce_cancel;
+    mutable boost::mutex _cancels_mutex;
+    std::map<std::string, std::string> _cancels;
+  };
+}
+
+BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated)
+{
+  //! \note related to issue #374
+
+  const utils::kvs_server kvs_server;
+  const utils::orchestrator orchestrator (kvs_server);
+  const utils::agent agent (orchestrator);
+
+  utils::client client (orchestrator);
+  sdpa::job_id_t const job_id
+    (client.submit_job (net_with_two_childs_requiring_n_workers (3).to_string()));
+
+  fhg::util::thread::event<std::string> job_submitted_1;
+  fhg::util::thread::event<std::string> cancel_requested_1;
+  bool worker_1_shall_not_get_a_job (false);
+  fake_drts_worker_notifying_cancel worker_1
+    ([&job_submitted_1, &worker_1_shall_not_get_a_job] (std::string j)
+    {
+      BOOST_REQUIRE (!worker_1_shall_not_get_a_job);
+      job_submitted_1.notify (j);
+    }
+    , [&cancel_requested_1] (std::string j) { cancel_requested_1.notify (j); }
+    , agent
+    );
+
+  fhg::util::thread::event<std::string> job_submitted_2;
+  fhg::util::thread::event<std::string> cancel_requested_2;
+  fake_drts_worker_notifying_cancel worker_2
+    ( [&job_submitted_2] (std::string j) { job_submitted_2.notify (j); }
+    , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
+    , agent
+    );
+
+  {
+    fhg::util::thread::event<std::string> job_submitted_3;
+
+    const utils::fake_drts_worker_notifying_module_call_submission worker_3
+      ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }
+      , agent
+      );
+
+    std::string job_name (job_submitted_1.wait());
+    BOOST_REQUIRE_EQUAL (job_name, job_submitted_2.wait());
+    BOOST_REQUIRE_EQUAL (job_name, job_submitted_3.wait());
+  }
+
+  worker_1_shall_not_get_a_job = true;
+  const std::string canceled_job_1 (cancel_requested_1.wait());
+  worker_2.canceled (cancel_requested_2.wait());
+
+  {
+    utils::fake_drts_worker_notifying_module_call_submission worker_4
+      ([] (std::string)
+      {
+        BOOST_FAIL ("worker_4 shall never get a job: worker 1 is still canceling");
+      }
+      , agent
+      );
+    utils::fake_drts_worker_notifying_module_call_submission worker_5
+      ([] (std::string)
+      {
+        BOOST_FAIL ("worker_5 shall never get a job: workers 1 is still canceling");
+      }
+      , agent
+      );
+
+    //! \note Race and sleep! This is ugly, but needed to provoke a
+    //! bad scheduling to worker_1, worker_4 and worker_5. We sadly
+    //! have no way to wait for the next scheduling loop without
+    //! modifying the agent itself. The timeout is large enough that a
+    //! loop should happen though: Scheduling should be triggered when
+    //! worker_4 and worker_5 are registered.
+    //! may be equivalent to agent._.request_scheduling();
+    boost::this_thread::sleep (boost::posix_time::seconds (5));
+  }
+
+  worker_1.canceled (canceled_job_1);
+
+  //! \note cleanup of both jobs
+  {
+    fhg::util::thread::event<std::string> job_submitted_3;
+
+    utils::fake_drts_worker_notifying_module_call_submission worker_3
+      ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }
+      , agent
+      );
+
+    {
+      std::string job_name (job_submitted_1.wait());
+      BOOST_REQUIRE_EQUAL (job_name, job_submitted_2.wait());
+      BOOST_REQUIRE_EQUAL (job_name, job_submitted_3.wait());
+
+      worker_1.finish (job_name);
+      worker_2.finish (job_name);
+      worker_3.finish (job_name);
+    }
+    {
+      std::string job_name (job_submitted_1.wait());
+      BOOST_REQUIRE_EQUAL (job_name, job_submitted_2.wait());
+      BOOST_REQUIRE_EQUAL (job_name, job_submitted_3.wait());
+
+      worker_1.finish (job_name);
+      worker_2.finish (job_name);
+      worker_3.finish (job_name);
+    }
+  }
 }
