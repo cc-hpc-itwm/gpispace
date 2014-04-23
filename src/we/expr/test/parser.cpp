@@ -1307,3 +1307,42 @@ BOOST_AUTO_TEST_CASE (token_round)
   check_unary_for_integral<long, long> ("round", &round_integral<long>);
   check_unary_for_integral<unsigned long, unsigned long> ("round", &round_integral<unsigned long>);
 }
+
+namespace
+{
+  template<typename T, typename R>
+    R cast (T const& x)
+  {
+    return static_cast<R> (x);
+  }
+
+  template<typename T>
+  void check_token_cast (std::string const& tag)
+  {
+    check_unary_for_fractional<float, T> (tag, &cast<float, T>);
+    check_unary_for_fractional<double, T> (tag, &cast<double, T>);
+    check_unary_for_integral<int, T> (tag, &cast<int, T>);
+    check_unary_for_integral<unsigned int, T> (tag, &cast<unsigned int, T>);
+    check_unary_for_integral<long, T> (tag, &cast<long, T>);
+    check_unary_for_integral<unsigned long, T> (tag, &cast<unsigned long, T>);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (tokens_cast)
+{
+  check_token_cast<int> ("int");
+  check_token_cast<unsigned int> ("uint");
+  check_token_cast<long> ("long");
+  check_token_cast<unsigned long> ("ulong");
+  check_token_cast<float> ("float");
+  check_token_cast<double> ("double");
+
+  require_evaluating_to ("int (true)", 1);
+  require_evaluating_to ("int (false)", 0);
+  require_evaluating_to ("uint (true)", 1U);
+  require_evaluating_to ("uint (false)", 0U);
+  require_evaluating_to ("long (true)", 1L);
+  require_evaluating_to ("long (false)", 0L);
+  require_evaluating_to ("ulong (true)", 1UL);
+  require_evaluating_to ("ulong (false)", 0UL);
+}
