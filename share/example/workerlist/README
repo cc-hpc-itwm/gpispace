@@ -32,7 +32,7 @@ Submitting the workflow and looking at the result is now done via
 share/gspc/example/workerlist $ make -f $SDPA_HOME/share/sdpa/make/common.mk MAIN=workerlist PUT_PORT="trigger=[]" submit
 share/gspc/example/workerlist $ pnetget --port workers --input $BUILDDIR/workerlist.out
 List ("worker-hostname-1")
-share/gspc/example/workerlist $ pnetget  --port hostnames --input $BUILDDIR/workerlist.out
+share/gspc/example/workerlist $ pnetget --port hostnames --input $BUILDDIR/workerlist.out
 Map ["worker-hostname-1" -> "hostname"]
 ----
 
@@ -42,8 +42,7 @@ In order for a module call to receive information about the drts, one has to set
 
 [source,xml]
 ----
-        <module name="workerlist" function="run (workers, hostnames)"
-                pass_context="true">
+<module name="workerlist" function="run (workers, hostnames)" pass_context="true">
 ----
 
 The drts context is then available via the variable `drts::worker::context* _pnetc_context` which is automatically available in the module call. The type is described in link:../../../../include/drts/worker/context.hpp[include/drts/worker/context.hpp].
