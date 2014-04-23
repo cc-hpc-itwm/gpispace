@@ -13,4 +13,6 @@ if (ENABLE_DOCUMENTATION)
   )
 endif()
 
+install (FILES README workerlist.xpnet DESTINATION share/gspc/example/workerlist)
+
 add_subdirectory (test)
