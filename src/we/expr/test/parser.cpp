@@ -1216,3 +1216,22 @@ BOOST_AUTO_TEST_CASE (token_sin)
   check_unary_for_integral<long, double> ("sin", &sinus<long, double>);
   check_unary_for_integral<unsigned long, double> ("sin", &sinus<unsigned long, double>);
 }
+
+namespace
+{
+  template<typename T, typename R>
+    R cosinus (T const& x)
+  {
+    return std::cos (x);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_cos)
+{
+  check_unary_for_fractional<float, float> ("cos", &cosinus<float, float>);
+  check_unary_for_fractional<double, double> ("cos", &cosinus<double, double>);
+  check_unary_for_integral<int, double> ("cos", &cosinus<int, double>);
+  check_unary_for_integral<unsigned int, double> ("cos", &cosinus<unsigned int, double>);
+  check_unary_for_integral<long, double> ("cos", &cosinus<long, double>);
+  check_unary_for_integral<unsigned long, double> ("cos", &cosinus<unsigned long, double>);
+}
