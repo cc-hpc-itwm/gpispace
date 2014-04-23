@@ -69,7 +69,12 @@ namespace pnet
                 throw expr::exception::eval::square_root_for_negative_argument<T> (x);
               }
               return std::sqrt (x);
-            case expr::token::_log: return std::log (x);
+            case expr::token::_log:
+              if (!(x > 0))
+              {
+                throw expr::exception::eval::log_for_nonpositive_argument<T> (x);
+              }
+              return std::log (x);
             case expr::token::_floor: return std::floor (x);
             case expr::token::_ceil: return std::ceil (x);
             case expr::token::_round: return std::round (x);
@@ -177,7 +182,12 @@ namespace pnet
                 throw expr::exception::eval::square_root_for_negative_argument<T> (x);
               }
               return std::sqrt (x);
-            case expr::token::_log: return std::log (x);
+            case expr::token::_log:
+              if (!(x > 0))
+              {
+                throw expr::exception::eval::log_for_nonpositive_argument<T> (x);
+              }
+              return std::log (x);
             case expr::token::_floor: return x;
             case expr::token::_ceil: return x;
             case expr::token::_round: return x;

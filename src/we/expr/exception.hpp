@@ -85,6 +85,24 @@ namespace expr
       private:
         T _value;
       };
+
+      template<typename T>
+      class log_for_nonpositive_argument : public std::runtime_error
+      {
+      public:
+        log_for_nonpositive_argument (T value)
+          : std::runtime_error
+            (( boost::format ("logarithm for nonpositive argument '%1%'")
+             % value
+             ).str()
+            )
+          , _value (value)
+        {}
+        virtual ~log_for_nonpositive_argument() throw() = default;
+
+      private:
+        T _value;
+      };
     }
   }
 }
