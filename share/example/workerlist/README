@@ -38,7 +38,7 @@ Map ["worker-hostname-1" -> "hostname"]
 
 == Getting the drts context in a module call
 
-In order for a module call to receive information about the drts, one has to set the `pass_context` attribute of the `<module>` to `true`
+In order for a module call to receive information about the drts, one has to set the `pass_context` attribute of the `<module>` to `true`. This can be seen in link:workerlist.xpnet[workerlist.xpnet] in the module definition of the function of transition `run`
 
 [source,xml]
 ----
