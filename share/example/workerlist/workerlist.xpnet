@@ -1,5 +1,5 @@
 <defun name="workerlist">
-  <in  name="trigger" type="control" place="trigger"/>
+  <in name="trigger" type="control" place="trigger"/>
   <out name="workers" type="list" place="workers"/>
   <out name="hostnames" type="map" place="hostnames"/>
 
@@ -10,7 +10,7 @@
 
     <transition name="run">
       <defun>
-        <in  name="trigger" type="control"/>
+        <in name="trigger" type="control"/>
         <out name="workers" type="list"/>
         <out name="hostnames" type="map"/>
         <module name="workerlist" function="run (workers, hostnames)"
@@ -36,7 +36,7 @@
           ]]></code>
         </module>
       </defun>
-      <connect-in  port="trigger" place="trigger"/>
+      <connect-in port="trigger" place="trigger"/>
       <connect-out port="workers" place="workers"/>
       <connect-out port="hostnames" place="hostnames"/>
     </transition>
