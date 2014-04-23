@@ -380,7 +380,7 @@ BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_worke
   {
     fhg::util::thread::event<std::string> job_submitted_3;
 
-    utils::fake_drts_worker_notifying_module_call_submission worker_3
+    utils::fake_drts_worker_waiting_for_finished_ack worker_3
       ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }
       , agent
       );
@@ -392,7 +392,7 @@ BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_worke
 
       worker_1.finish (job_name);
       worker_2.finish (job_name);
-      worker_3.finish (job_name);
+      worker_3.finish_and_wait_for_ack (job_name);
     }
     {
       std::string job_name (job_submitted_1.wait());
@@ -401,7 +401,10 @@ BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_worke
 
       worker_1.finish (job_name);
       worker_2.finish (job_name);
-      worker_3.finish (job_name);
+      worker_3.finish_and_wait_for_ack (job_name);
     }
   }
+
+  BOOST_REQUIRE_EQUAL
+    (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
