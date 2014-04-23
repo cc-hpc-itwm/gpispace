@@ -1346,3 +1346,93 @@ BOOST_AUTO_TEST_CASE (tokens_cast)
   require_evaluating_to ("ulong (true)", 1UL);
   require_evaluating_to ("ulong (false)", 0UL);
 }
+
+namespace
+{
+  template<typename T>
+  void check_square_root_for_fractional()
+  {
+    std::random_device generator;
+    std::uniform_real_distribution<T> number
+      ( -std::numeric_limits<T>::max() / T (2.0)
+      ,  std::numeric_limits<T>::max() / T (2.0)
+      );
+
+    for (int i (0); i < 1000; ++i)
+    {
+      std::string const input
+        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+
+      expr::eval::context _;
+
+      std::string const expression
+        ((boost::format ("sqrt (%1%)") % input).str());
+
+      T const value
+        (boost::get<T> (expr::parse::parser (input).eval_front (_)));
+
+      if (value < 0)
+      {
+        require_ctor_exception
+          <expr::exception::eval::square_root_for_negative_argument<T>>
+          ( expression
+          , ( boost::format ("square root for negative argument '%1%'") % value
+            ).str()
+          );
+      }
+      else
+      {
+        BOOST_REQUIRE_EQUAL
+          ( boost::get<T> (expr::parse::parser (expression).eval_front (_))
+          , std::sqrt (value)
+          );
+      }
+    }
+  }
+
+  template<typename T>
+  void check_square_root_for_signed_integral()
+  {
+    std::random_device generator;
+    std::uniform_int_distribution<T> number
+      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+
+    for (int i (0); i < 1000; ++i)
+    {
+      T const x (number (generator));
+
+      std::string const expression
+        ((boost::format ("sqrt (%1%%2%)") % x % suffix<T>()()).str());
+
+      if (x < 0)
+      {
+        require_ctor_exception
+          <expr::exception::eval::square_root_for_negative_argument<T>>
+          ( expression
+          , ( boost::format ("square root for negative argument '%1%'") % x
+            ).str()
+          );
+      }
+      else
+      {
+        require_evaluating_to (expression, std::sqrt (x));
+      }
+    }
+  }
+
+  template<typename T>
+    double square_root (T const& x)
+  {
+    return std::sqrt (x);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_sqrt)
+{
+  check_square_root_for_fractional<float>();
+  check_square_root_for_fractional<double>();
+  check_unary_for_integral<unsigned int, double> ("sqrt", &square_root<unsigned int>);
+  check_unary_for_integral<unsigned long, double> ("sqrt", &square_root<unsigned long>);
+  check_square_root_for_signed_integral<int>();
+  check_square_root_for_signed_integral<long>();
+}
