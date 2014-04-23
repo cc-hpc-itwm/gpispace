@@ -1436,3 +1436,93 @@ BOOST_AUTO_TEST_CASE (token_sqrt)
   check_square_root_for_signed_integral<int>();
   check_square_root_for_signed_integral<long>();
 }
+
+namespace
+{
+  template<typename T>
+  void check_logarithm_for_fractional()
+  {
+    std::random_device generator;
+    std::uniform_real_distribution<T> number
+      ( -std::numeric_limits<T>::max() / T (2.0)
+      ,  std::numeric_limits<T>::max() / T (2.0)
+      );
+
+    for (int i (0); i < 1000; ++i)
+    {
+      std::string const input
+        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+
+      expr::eval::context _;
+
+      std::string const expression
+        ((boost::format ("log (%1%)") % input).str());
+
+      T const value
+        (boost::get<T> (expr::parse::parser (input).eval_front (_)));
+
+      if (value < 0)
+      {
+        require_ctor_exception
+          <expr::exception::eval::log_for_nonpositive_argument<T>>
+          ( expression
+          , ( boost::format ("logarithm for nonpositive argument '%1%'") % value
+            ).str()
+          );
+      }
+      else
+      {
+        BOOST_REQUIRE_EQUAL
+          ( boost::get<T> (expr::parse::parser (expression).eval_front (_))
+          , std::log (value)
+          );
+      }
+    }
+  }
+
+  template<typename T>
+  void check_logarithm_for_signed_integral()
+  {
+    std::random_device generator;
+    std::uniform_int_distribution<T> number
+      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+
+    for (int i (0); i < 1000; ++i)
+    {
+      T const x (number (generator));
+
+      std::string const expression
+        ((boost::format ("log (%1%%2%)") % x % suffix<T>()()).str());
+
+      if (!(x > 0))
+      {
+        require_ctor_exception
+          <expr::exception::eval::log_for_nonpositive_argument<T>>
+          ( expression
+          , ( boost::format ("logarithm for nonpositive argument '%1%'") % x
+            ).str()
+          );
+      }
+      else
+      {
+        require_evaluating_to (expression, std::log (x));
+      }
+    }
+  }
+
+  template<typename T>
+    double logarithm (T const& x)
+  {
+    return std::log (x);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_log)
+{
+  check_logarithm_for_fractional<float>();
+  check_logarithm_for_fractional<double>();
+  check_unary_for_integral<unsigned int, double> ("log", &logarithm<unsigned int>);
+  check_unary_for_integral<unsigned long, double> ("log", &logarithm<unsigned long>);
+  check_logarithm_for_signed_integral<int>();
+  check_logarithm_for_signed_integral<long>();
+}
