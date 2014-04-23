@@ -1259,3 +1259,27 @@ BOOST_AUTO_TEST_CASE (token_floor)
   check_unary_for_integral<long, long> ("floor", &floor_integral<long>);
   check_unary_for_integral<unsigned long, unsigned long> ("floor", &floor_integral<unsigned long>);
 }
+
+namespace
+{
+  template<typename T>
+    T ceil_fractional (T const& x)
+  {
+    return std::ceil (x);
+  }
+  template<typename T>
+    T ceil_integral (T const& x)
+  {
+    return x;
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_ceil)
+{
+  check_unary_for_fractional<float, float> ("ceil", &ceil_fractional<float>);
+  check_unary_for_fractional<double, double> ("ceil", &ceil_fractional<double>);
+  check_unary_for_integral<int, int> ("ceil", &ceil_integral<int>);
+  check_unary_for_integral<unsigned int, unsigned int> ("ceil", &ceil_integral<unsigned int>);
+  check_unary_for_integral<long, long> ("ceil", &ceil_integral<long>);
+  check_unary_for_integral<unsigned long, unsigned long> ("ceil", &ceil_integral<unsigned long>);
+}
