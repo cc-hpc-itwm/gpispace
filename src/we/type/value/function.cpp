@@ -63,7 +63,12 @@ namespace pnet
             case expr::token::abs: return std::abs (x);
             case expr::token::_sin: return std::sin (x);
             case expr::token::_cos: return std::cos (x);
-            case expr::token::_sqrt: return std::sqrt (x);
+            case expr::token::_sqrt:
+              if (x < 0)
+              {
+                throw expr::exception::eval::square_root_for_negative_argument<T> (x);
+              }
+              return std::sqrt (x);
             case expr::token::_log: return std::log (x);
             case expr::token::_floor: return std::floor (x);
             case expr::token::_ceil: return std::ceil (x);
@@ -166,7 +171,12 @@ namespace pnet
             case expr::token::abs: return std::abs (x);
             case expr::token::_sin: return std::sin (x);
             case expr::token::_cos: return std::cos (x);
-            case expr::token::_sqrt: return std::sqrt (x);
+            case expr::token::_sqrt:
+              if (x < 0)
+              {
+                throw expr::exception::eval::square_root_for_negative_argument<T> (x);
+              }
+              return std::sqrt (x);
             case expr::token::_log: return std::log (x);
             case expr::token::_floor: return x;
             case expr::token::_ceil: return x;

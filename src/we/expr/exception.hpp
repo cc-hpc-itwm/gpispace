@@ -68,6 +68,23 @@ namespace expr
       public:
         negative_exponent();
       };
+
+      template<typename T>
+      class square_root_for_negative_argument : public std::runtime_error
+      {
+      public:
+        square_root_for_negative_argument (T value)
+          : std::runtime_error
+            (( boost::format ("square root for negative argument '%1%'") % value
+             ).str()
+            )
+          , _value (value)
+        {}
+        virtual ~square_root_for_negative_argument() throw() = default;
+
+      private:
+        T _value;
+      };
     }
   }
 }
