@@ -70,11 +70,13 @@ namespace
 
     we::type::net_type net;
 
-    we::place_id_type const place_id_in
+    we::place_id_type const place_id_in_0
+      (net.add_place (place::type (port_name, std::string ("string"))));
+    we::place_id_type const place_id_in_1
       (net.add_place (place::type (port_name, std::string ("string"))));
 
-    net.put_value (place_id_in, fhg::util::random_string_without ("\\\""));
-    net.put_value (place_id_in, fhg::util::random_string_without ("\\\""));
+    net.put_value (place_id_in_0, fhg::util::random_string_without ("\\\""));
+    net.put_value (place_id_in_1, fhg::util::random_string_without ("\\\""));
 
     we::transition_id_type const transition_id_0
       (net.add_transition (transition_0));
@@ -83,13 +85,13 @@ namespace
 
     net.add_connection ( we::edge::PT
                        , transition_id_0
-                       , place_id_in
+                       , place_id_in_0
                        , port_id_in_0
                        , we::type::property::type()
                        );
     net.add_connection ( we::edge::PT
                        , transition_id_1
-                       , place_id_in
+                       , place_id_in_1
                        , port_id_in_1
                        , we::type::property::type()
                        );
