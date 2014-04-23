@@ -410,14 +410,14 @@ BOOST_AUTO_TEST_CASE (token_cmp)
   check_compare ("1.0f", "0.0f", false, false, true, true);
 
   check_equality ("{}", "{}", true);
-  check_equality ("{}", "bitset_insert {} 1L", false);
-  check_equality ("bitset_insert {} 1L", "{}", false);
-  check_equality ("bitset_insert {} 1L", "bitset_insert {} 2L", false);
-  check_equality ( "bitset_insert (bitset_insert {} 1L) 2L"
-                 , "bitset_insert {} 2L", false
+  check_equality ("{}", "bitset_insert {} 1UL", false);
+  check_equality ("bitset_insert {} 1UL", "{}", false);
+  check_equality ("bitset_insert {} 1UL", "bitset_insert {} 2UL", false);
+  check_equality ( "bitset_insert (bitset_insert {} 1UL) 2UL"
+                 , "bitset_insert {} 2UL", false
                  );
-  check_equality ( "bitset_insert (bitset_insert {} 1L) 2L"
-                 , "bitset_insert (bitset_insert {} 2L) 1L", true
+  check_equality ( "bitset_insert (bitset_insert {} 1UL) 2UL"
+                 , "bitset_insert (bitset_insert {} 2UL) 1UL", true
                  );
 
   check_equality ("y()", "y()", true);

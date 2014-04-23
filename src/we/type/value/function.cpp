@@ -324,7 +324,7 @@ namespace pnet
             default: throw exception::eval (_token, l, r);
             }
           }
-          value_type operator() (bitsetofint::type l, long r) const
+          value_type operator() (bitsetofint::type l, unsigned long r) const
           {
             switch (_token)
             {
