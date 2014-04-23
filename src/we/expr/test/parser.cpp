@@ -700,18 +700,18 @@ BOOST_AUTO_TEST_CASE (token_min)
   require_random_fractionals_evaluating_to<double>
     (std::bind (&check_binop_prefix<double>, "min", &minimum<double>, std::placeholders::_1, std::placeholders::_2));
 
-  require_evaluating_to ("0.0 min 0.0", 0.0);
-  require_evaluating_to ("0.0 min 1.0", 0.0);
-  require_evaluating_to ("1.0 min 0.0", 0.0);
-  require_evaluating_to ("1.0 min 1.0", 1.0);
-  require_evaluating_to ("1.0 min 2.0", 1.0);
-  require_evaluating_to ("2.0 min 1.0", 1.0);
-  require_evaluating_to ("0.0f min 0.0f", 0.0f);
-  require_evaluating_to ("0.0f min 1.0f", 0.0f);
-  require_evaluating_to ("1.0f min 0.0f", 0.0f);
-  require_evaluating_to ("1.0f min 1.0f", 1.0f);
-  require_evaluating_to ("1.0f min 2.0f", 1.0f);
-  require_evaluating_to ("2.0f min 1.0f", 1.0f);
+  require_evaluating_to ("min (0.0, 0.0)", 0.0);
+  require_evaluating_to ("min (0.0, 1.0)", 0.0);
+  require_evaluating_to ("min (1.0, 0.0)", 0.0);
+  require_evaluating_to ("min (1.0, 1.0)", 1.0);
+  require_evaluating_to ("min (1.0, 2.0)", 1.0);
+  require_evaluating_to ("min (2.0, 1.0)", 1.0);
+  require_evaluating_to ("min (0.0f, 0.0f)", 0.0f);
+  require_evaluating_to ("min (0.0f, 1.0f)", 0.0f);
+  require_evaluating_to ("min (1.0f, 0.0f)", 0.0f);
+  require_evaluating_to ("min (1.0f, 1.0f)", 1.0f);
+  require_evaluating_to ("min (1.0f, 2.0f)", 1.0f);
+  require_evaluating_to ("min (2.0f, 1.0f)", 1.0f);
 }
 
 BOOST_AUTO_TEST_CASE (token_max)
