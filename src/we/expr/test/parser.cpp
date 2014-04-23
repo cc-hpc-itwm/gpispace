@@ -1183,3 +1183,20 @@ BOOST_AUTO_TEST_CASE (token_neg)
   check_unary_for_integral<int> ("-", &negate<int>);
   check_unary_for_integral<long> ("-", &negate<long>);
 }
+
+namespace
+{
+  template<typename T>
+    T absolute (T const& x)
+  {
+    return std::abs (x);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_abs)
+{
+  check_unary_for_fractional<float> ("abs", &absolute<float>);
+  check_unary_for_fractional<double> ("abs", &absolute<double>);
+  check_unary_for_integral<int> ("abs", &absolute<int>);
+  check_unary_for_integral<long> ("abs", &absolute<long>);
+}
