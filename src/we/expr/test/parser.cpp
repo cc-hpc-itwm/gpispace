@@ -1148,13 +1148,9 @@ namespace
   }
 
   template<typename T>
-    T negate (T const& x)
-  {
-    return -x;
-  }
-
-  template<typename T>
-    void check_neg_for_integral()
+    void check_unary_for_integral ( std::string const& operation_string
+                                  , std::function<T (T const&)> operation
+                                  )
   {
     std::random_device generator;
     std::uniform_int_distribution<T> number
@@ -1165,8 +1161,18 @@ namespace
       T const x (number (generator));
 
       require_evaluating_to
-        ((boost::format ("-%1%%2%") % x % suffix<T>()()).str(), -x);
+        (( boost::format ("%1% (%2%%3%)")
+         % operation_string % x % suffix<T>()()
+         ).str()
+        , operation (x)
+        );
     }
+  }
+
+  template<typename T>
+    T negate (T const& x)
+  {
+    return -x;
   }
 }
 
@@ -1174,6 +1180,6 @@ BOOST_AUTO_TEST_CASE (token_neg)
 {
   check_unary_for_fractional<float> ("-", &negate<float>);
   check_unary_for_fractional<double> ("-", &negate<double>);
-  check_neg_for_integral<int>();
-  check_neg_for_integral<long>();
+  check_unary_for_integral<int> ("-", &negate<int>);
+  check_unary_for_integral<long> ("-", &negate<long>);
 }
