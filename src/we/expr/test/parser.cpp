@@ -1527,24 +1527,49 @@ BOOST_AUTO_TEST_CASE (token_log)
   check_logarithm_for_signed_integral<long>();
 }
 
+namespace
+{
+  void check_random_bitsets
+    (std::function<void (bitsetofint::type const&)> check)
+  {
+    std::random_device generator;
+    std::uniform_int_distribution<int> count (0, 100);
+    std::uniform_int_distribution<unsigned long> number (0, 1UL << 10);
+
+    for (int _ (0); _ < 1000; ++_)
+    {
+      bitsetofint::type bs;
+
+      int n (count (generator));
+
+      while (n --> 0)
+      {
+        bs.ins (number (generator));
+      }
+
+      check (bs);
+    }
+  }
+}
+
 BOOST_AUTO_TEST_CASE (token_bitset_count)
 {
-  std::random_device generator;
-  std::uniform_int_distribution<int> count (0, 100);
-  std::uniform_int_distribution<unsigned long> number (0, 1UL << 10);
-
-  for (int _ (0); _ < 1000; ++_)
-  {
-    bitsetofint::type bs;
-
-    int n (count (generator));
-
-    while (n --> 0)
+  check_random_bitsets
+    ([](bitsetofint::type const& bs)
     {
-      bs.ins (number (generator));
+      require_evaluating_to
+        (boost::format ("bitset_count (%1%)") % bs, bs.count());
     }
+    );
+}
 
-    require_evaluating_to
-      (boost::format ("bitset_count (%1%)") % bs, bs.count());
-  }
+BOOST_AUTO_TEST_CASE (token_bitset_fromhex_tohex_is_id)
+{
+  check_random_bitsets
+    ([](bitsetofint::type const& bs)
+    {
+      require_evaluating_to
+        (boost::format ("bitset_fromhex (bitset_tohex (%1%))") % bs, bs);
+    }
+    );
 }
