@@ -1550,6 +1550,45 @@ namespace
       check (bs);
     }
   }
+
+  void check_random_pairs_of_bitsets
+  ( std::function<void ( bitsetofint::type const&
+                       , bitsetofint::type const&
+                       )
+                 > check
+  )
+  {
+    std::random_device generator;
+    std::uniform_int_distribution<int> count (0, 100);
+    std::uniform_int_distribution<unsigned long> number (0, 1UL << 10);
+
+    for (int _ (0); _ < 1000; ++_)
+    {
+      bitsetofint::type bs_l;
+
+      {
+        int n (count (generator));
+
+        while (n --> 0)
+        {
+          bs_l.ins (number (generator));
+        }
+      }
+
+      bitsetofint::type bs_r;
+
+      {
+        int n (count (generator));
+
+        while (n --> 0)
+        {
+          bs_r.ins (number (generator));
+        }
+      }
+
+      check (bs_l, bs_r);
+    }
+  }
 }
 
 BOOST_AUTO_TEST_CASE (token_bitset_count)
@@ -1570,6 +1609,31 @@ BOOST_AUTO_TEST_CASE (token_bitset_fromhex_tohex_is_id)
     {
       require_evaluating_to
         (boost::format ("bitset_fromhex (bitset_tohex (%1%))") % bs, bs);
+    }
+    );
+}
+
+BOOST_AUTO_TEST_CASE (token_bitset_logical)
+{
+  check_random_pairs_of_bitsets
+    ([](bitsetofint::type const& l, bitsetofint::type const& r)
+    {
+      require_evaluating_to
+        (boost::format ("bitset_or (%1%, %2%)") % l % r, l | r);
+    }
+    );
+  check_random_pairs_of_bitsets
+    ([](bitsetofint::type const& l, bitsetofint::type const& r)
+    {
+      require_evaluating_to
+        (boost::format ("bitset_and (%1%, %2%)") % l % r, l & r);
+    }
+    );
+  check_random_pairs_of_bitsets
+    ([](bitsetofint::type const& l, bitsetofint::type const& r)
+    {
+      require_evaluating_to
+        (boost::format ("bitset_xor (%1%, %2%)") % l % r, l ^ r);
     }
     );
 }
