@@ -22,18 +22,18 @@ As information about a drts worker is only available when using a real setup, ru
 
 [source,bash]
 ----
-share/gspc/example/workerlist $ sdpa boot -A $BUILDDIR/gen/pnetc/op/ -M -f $NODEFILE worker:1
+share/gspc/example/workerlist $ sdpa boot -A $BUILDDIR/gen/pnetc/op/ -M -f $NODEFILE worker:2
 ----
 
 Submitting the workflow and looking at the result is now done via
 
 [source,bash]
 ----
-share/gspc/example/workerlist $ make -f $SDPA_HOME/share/sdpa/make/common.mk MAIN=workerlist PUT_PORT="trigger=[]" submit
+share/gspc/example/workerlist $ make -f $SDPA_HOME/share/sdpa/make/common.mk MAIN=workerlist PUT_PORT="num_workers=2UL" submit
 share/gspc/example/workerlist $ pnetget --port workers --input $BUILDDIR/workerlist.out
-List ("worker-hostname-1")
+List ("worker-hostname-1", "worker-hostname-2")
 share/gspc/example/workerlist $ pnetget --port hostnames --input $BUILDDIR/workerlist.out
-Map ["worker-hostname-1" -> "hostname"]
+Map ["worker-hostname-1" -> "hostname", "worker-hostname-2" -> "hostname"]
 ----
 
 == Getting the drts context in a module call

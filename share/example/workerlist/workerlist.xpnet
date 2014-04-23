@@ -1,18 +1,25 @@
 <defun name="workerlist">
-  <in name="trigger" type="control" place="trigger"/>
+  <in name="num_workers" type="unsigned long" place="num_workers"/>
   <out name="workers" type="list" place="workers"/>
   <out name="hostnames" type="map" place="hostnames"/>
 
   <net>
-    <place name="trigger" type="control"/>
+    <place name="num_workers" type="unsigned long"/>
     <place name="workers" type="list"/>
     <place name="hostnames" type="map"/>
 
     <transition name="run">
       <defun>
-        <in name="trigger" type="control"/>
+        <in name="num_workers" type="unsigned long"/>
         <out name="workers" type="list"/>
         <out name="hostnames" type="map"/>
+        <properties name="fhg">
+          <properties name="drts">
+            <properties name="schedule">
+              <property key="num_worker">${num_workers}</property>
+            </properties>
+          </properties>
+        </properties>
         <module name="workerlist" function="run (workers, hostnames)"
                 pass_context="true">
           <ld flag="-lwe-dev" />
@@ -36,7 +43,7 @@
           ]]></code>
         </module>
       </defun>
-      <connect-in port="trigger" place="trigger"/>
+      <connect-in port="num_workers" place="num_workers"/>
       <connect-out port="workers" place="workers"/>
       <connect-out port="hostnames" place="hostnames"/>
     </transition>
