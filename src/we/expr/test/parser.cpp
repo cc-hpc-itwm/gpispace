@@ -1283,3 +1283,27 @@ BOOST_AUTO_TEST_CASE (token_ceil)
   check_unary_for_integral<long, long> ("ceil", &ceil_integral<long>);
   check_unary_for_integral<unsigned long, unsigned long> ("ceil", &ceil_integral<unsigned long>);
 }
+
+namespace
+{
+  template<typename T>
+    T round_fractional (T const& x)
+  {
+    return std::round (x);
+  }
+  template<typename T>
+    T round_integral (T const& x)
+  {
+    return x;
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_round)
+{
+  check_unary_for_fractional<float, float> ("round", &round_fractional<float>);
+  check_unary_for_fractional<double, double> ("round", &round_fractional<double>);
+  check_unary_for_integral<int, int> ("round", &round_integral<int>);
+  check_unary_for_integral<unsigned int, unsigned int> ("round", &round_integral<unsigned int>);
+  check_unary_for_integral<long, long> ("round", &round_integral<long>);
+  check_unary_for_integral<unsigned long, unsigned long> ("round", &round_integral<unsigned long>);
+}
