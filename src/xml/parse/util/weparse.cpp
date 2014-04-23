@@ -11,6 +11,8 @@ namespace xml
   {
     namespace util
     {
+      namespace
+      {
       std::string
       format_parse_error ( const std::string& input
                          , const expr::exception::parse::exception& e
@@ -27,6 +29,7 @@ namespace xml
         s << e.what() << std::endl;
 
         return s.str();
+      }
       }
 
       expr::parse::parser generic_we_parse ( const std::string& input
