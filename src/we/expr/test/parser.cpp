@@ -1114,9 +1114,9 @@ BOOST_AUTO_TEST_CASE (token_pow_int_signed_negative_exponent_throws)
 
 namespace
 {
-  template<typename T>
+  template<typename T, typename R>
     void check_unary_for_fractional ( std::string const operation_string
-                                    , std::function <T (const T&)> operation
+                                    , std::function <R (const T&)> operation
                                     )
   {
     std::random_device generator;
@@ -1127,29 +1127,26 @@ namespace
 
     for (int i (0); i < 1000; ++i)
     {
-      T const x (number (generator));
-
       std::string const input
-        ((boost::format ("%1%%2%") % x % suffix<T>()()).str());
-      std::string const result
-        ((boost::format ("%1%%2%") % operation (x) % suffix<T>()()).str());
+        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
 
       expr::eval::context context;
 
       BOOST_REQUIRE_EQUAL
-        ( boost::get<T>
+        ( boost::get<R>
           ( expr::parse::parser
             ((boost::format ("%1% (%2%)") % operation_string  % input).str())
           .eval_front (context)
           )
-        , boost::get<T> (expr::parse::parser (result).eval_front (context))
+        , operation
+          (boost::get<T> (expr::parse::parser (input).eval_front (context)))
         );
     }
   }
 
-  template<typename T>
+  template<typename T, typename R>
     void check_unary_for_integral ( std::string const& operation_string
-                                  , std::function<T (T const&)> operation
+                                  , std::function<R (T const&)> operation
                                   )
   {
     std::random_device generator;
@@ -1178,10 +1175,10 @@ namespace
 
 BOOST_AUTO_TEST_CASE (token_neg)
 {
-  check_unary_for_fractional<float> ("-", &negate<float>);
-  check_unary_for_fractional<double> ("-", &negate<double>);
-  check_unary_for_integral<int> ("-", &negate<int>);
-  check_unary_for_integral<long> ("-", &negate<long>);
+  check_unary_for_fractional<float, float> ("-", &negate<float>);
+  check_unary_for_fractional<double, double> ("-", &negate<double>);
+  check_unary_for_integral<int, int> ("-", &negate<int>);
+  check_unary_for_integral<long, long> ("-", &negate<long>);
 }
 
 namespace
@@ -1195,8 +1192,27 @@ namespace
 
 BOOST_AUTO_TEST_CASE (token_abs)
 {
-  check_unary_for_fractional<float> ("abs", &absolute<float>);
-  check_unary_for_fractional<double> ("abs", &absolute<double>);
-  check_unary_for_integral<int> ("abs", &absolute<int>);
-  check_unary_for_integral<long> ("abs", &absolute<long>);
+  check_unary_for_fractional<float, float> ("abs", &absolute<float>);
+  check_unary_for_fractional<double, double> ("abs", &absolute<double>);
+  check_unary_for_integral<int, int> ("abs", &absolute<int>);
+  check_unary_for_integral<long, long> ("abs", &absolute<long>);
+}
+
+namespace
+{
+  template<typename T, typename R>
+    R sinus (T const& x)
+  {
+    return std::sin (x);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_sin)
+{
+  check_unary_for_fractional<float, float> ("sin", &sinus<float, float>);
+  check_unary_for_fractional<double, double> ("sin", &sinus<double, double>);
+  check_unary_for_integral<int, double> ("sin", &sinus<int, double>);
+  check_unary_for_integral<unsigned int, double> ("sin", &sinus<unsigned int, double>);
+  check_unary_for_integral<long, double> ("sin", &sinus<long, double>);
+  check_unary_for_integral<unsigned long, double> ("sin", &sinus<unsigned long, double>);
 }
