@@ -1235,3 +1235,27 @@ BOOST_AUTO_TEST_CASE (token_cos)
   check_unary_for_integral<long, double> ("cos", &cosinus<long, double>);
   check_unary_for_integral<unsigned long, double> ("cos", &cosinus<unsigned long, double>);
 }
+
+namespace
+{
+  template<typename T>
+    T floor_fractional (T const& x)
+  {
+    return std::floor (x);
+  }
+  template<typename T>
+    T floor_integral (T const& x)
+  {
+    return x;
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_floor)
+{
+  check_unary_for_fractional<float, float> ("floor", &floor_fractional<float>);
+  check_unary_for_fractional<double, double> ("floor", &floor_fractional<double>);
+  check_unary_for_integral<int, int> ("floor", &floor_integral<int>);
+  check_unary_for_integral<unsigned int, unsigned int> ("floor", &floor_integral<unsigned int>);
+  check_unary_for_integral<long, long> ("floor", &floor_integral<long>);
+  check_unary_for_integral<unsigned long, unsigned long> ("floor", &floor_integral<unsigned long>);
+}
