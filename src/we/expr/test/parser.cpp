@@ -1526,3 +1526,25 @@ BOOST_AUTO_TEST_CASE (token_log)
   check_logarithm_for_signed_integral<int>();
   check_logarithm_for_signed_integral<long>();
 }
+
+BOOST_AUTO_TEST_CASE (token_bitset_count)
+{
+  std::random_device generator;
+  std::uniform_int_distribution<int> count (0, 100);
+  std::uniform_int_distribution<unsigned long> number (0, 1UL << 10);
+
+  for (int _ (0); _ < 1000; ++_)
+  {
+    bitsetofint::type bs;
+
+    int n (count (generator));
+
+    while (n --> 0)
+    {
+      bs.ins (number (generator));
+    }
+
+    require_evaluating_to
+      (boost::format ("bitset_count (%1%)") % bs, bs.count());
+  }
+}
