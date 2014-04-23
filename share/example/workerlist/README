@@ -13,7 +13,7 @@ Building the module has no additional requirements
 
 [source,bash]
 ----
-share/gspc/example/workerlist $ BUILDDIR=$HOME/build
+share/gspc/example/workerlist $ export BUILDDIR=$HOME/build
 share/gspc/example/workerlist $ mkdir -p $BUILDDIR
 share/gspc/example/workerlist $ make -f $SDPA_HOME/share/sdpa/make/common.mk MAIN=workerlist
 ----
