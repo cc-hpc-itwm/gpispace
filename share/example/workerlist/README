@@ -13,27 +13,26 @@ Building the module has no additional requirements
 
 [source,bash]
 ----
-$ mkdir build
-$ BUILDDIR=$PWD/build
-$ make -f $SDPA_HOME/share/sdpa/make/common.mk MAIN=workerlist
+share/gspc/example/workerlist $ mkdir build
+share/gspc/example/workerlist $ BUILDDIR=$PWD/build
+share/gspc/example/workerlist $ make -f $SDPA_HOME/share/sdpa/make/common.mk MAIN=workerlist
 ----
 
 As information about a drts worker is only available when using a real setup, running the net in `we-exec` is not sufficient. Starting a drts as described in  link:../../user.html#_start_and_stop[the user manual] is required. The worker does not need a specific capability and virtual memory is not used
 
 [source,bash]
 ----
-$ sdpa boot -A $BUILDDIR/gen/pnetc/op/ -M -f $NODEFILE worker:1
+share/gspc/example/workerlist $ sdpa boot -A $BUILDDIR/gen/pnetc/op/ -M -f $NODEFILE worker:1
 ----
 
 Submitting the workflow and looking at the result is now done via
 
 [source,bash]
 ----
-$ make -f $SDPA_HOME/share/sdpa/make/common.mk MAIN=workerlist \
-          PUT_PORT="trigger=[]" submit
-$ pnetget --port workers --input build/workerlist.out
+share/gspc/example/workerlist $ make -f $SDPA_HOME/share/sdpa/make/common.mk MAIN=workerlist PUT_PORT="trigger=[]" submit
+share/gspc/example/workerlist $ pnetget --port workers --input $BUILDDIR/workerlist.out
 List ("worker-hostname-1")
-$ pnetget  --port hostnames --input build/workerlist.out
+share/gspc/example/workerlist $ pnetget  --port hostnames --input $BUILDDIR/workerlist.out
 Map ["worker-hostname-1" -> "hostname"]
 ----
 
