@@ -48,6 +48,4 @@ In order for a module call to receive information about the drts, one has to set
 
 The drts context is then available via the variable `drts::worker::context* _pnetc_context` which is automatically available in the module call. The type is described in link:../../../../include/drts/worker/context.hpp[include/drts/worker/context.hpp].
 
-Amongst others, it provides the functions `worker_name()`  which returns the name of the worker the module call is executed on and `worker_list()` which contains the names of all workers participating in a module call when requesting multiple workers. It also provides `worker_to_hostname (std::string)` which allows to map from a worker name to a host name, which may be needed to run legacy binaries on all workers.
-
-The drts context also provides the function `set_module_call_do_cancel (boost::function<void()>` which can be used to inform the drts worker on how this module call can be cleanly canceled.
+Amongst others, described in link:../../doc/user.html#_drts_context[the user manual], it provides the functions `worker_name()`  which returns the name of the worker the module call is executed on and `worker_list()` which contains the names of all workers participating in a module call when requesting multiple workers. It also provides `worker_to_hostname (std::string)` which allows to map from a worker name to a host name, which may be needed to run legacy binaries on all workers.
