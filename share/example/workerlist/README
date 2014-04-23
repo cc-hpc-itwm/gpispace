@@ -42,7 +42,8 @@ In order for a module call to receive information about the drts, one has to set
 
 [source,xml]
 ----
-<module name="workerlist" function="run (workers, hostnames)" pass_context="true">
+        <module name="workerlist" function="run (workers, hostnames)"
+                pass_context="true">
 ----
 
 The drts context is then available via the variable `drts::worker::context* _pnetc_context` which is automatically available in the module call. The type is described in link:../../../../include/drts/worker/context.hpp[include/drts/worker/context.hpp].
