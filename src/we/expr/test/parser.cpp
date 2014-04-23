@@ -1115,7 +1115,9 @@ BOOST_AUTO_TEST_CASE (token_pow_int_signed_negative_exponent_throws)
 namespace
 {
   template<typename T>
-    void check_neg_for_fractional()
+    void check_unary_for_fractional ( std::string const operation_string
+                                    , std::function <T (const T&)> operation
+                                    )
   {
     std::random_device generator;
     std::uniform_real_distribution<T> number
@@ -1125,19 +1127,30 @@ namespace
 
     for (int i (0); i < 1000; ++i)
     {
-      std::string const x
-        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+      T const x (number (generator));
+
+      std::string const input
+        ((boost::format ("%1%%2%") % x % suffix<T>()()).str());
+      std::string const result
+        ((boost::format ("%1%%2%") % operation (x) % suffix<T>()()).str());
 
       expr::eval::context context;
 
       BOOST_REQUIRE_EQUAL
         ( boost::get<T>
           ( expr::parse::parser
-            ((boost::format ("-%1%") % x).str()).eval_front (context)
+            ((boost::format ("%1% (%2%)") % operation_string  % input).str())
+          .eval_front (context)
           )
-        , -boost::get<T> (expr::parse::parser (x).eval_front (context))
+        , boost::get<T> (expr::parse::parser (result).eval_front (context))
         );
     }
+  }
+
+  template<typename T>
+    T negate (T const& x)
+  {
+    return -x;
   }
 
   template<typename T>
@@ -1159,8 +1172,8 @@ namespace
 
 BOOST_AUTO_TEST_CASE (token_neg)
 {
-  check_neg_for_fractional<float>();
-  check_neg_for_fractional<double>();
+  check_unary_for_fractional<float> ("-", &negate<float>);
+  check_unary_for_fractional<double> ("-", &negate<double>);
   check_neg_for_integral<int>();
   check_neg_for_integral<long>();
 }
