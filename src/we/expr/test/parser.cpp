@@ -1637,3 +1637,57 @@ BOOST_AUTO_TEST_CASE (token_bitset_logical)
     }
     );
 }
+
+BOOST_AUTO_TEST_CASE (token_bitset_ins_del_is_elem)
+{
+  std::random_device generator;
+  std::uniform_int_distribution<int> count (0, 100);
+  std::uniform_int_distribution<unsigned long> number (0, 1UL << 10);
+
+  for (int _ (0); _ < 1000; ++_)
+  {
+    std::set<unsigned long> ks;
+    bitsetofint::type a;
+    bitsetofint::type b;
+
+    int n (count (generator));
+
+    while (n --> 0)
+    {
+      unsigned long const k (number (generator));
+
+      ks.insert (k);
+
+      require_evaluating_to
+        ( boost::format ("bitset_is_element (%1%, %2%UL)") % a % k
+        , b.is_element (k)
+        );
+
+      b.ins (k);
+
+      require_evaluating_to
+        (boost::format ("bitset_insert (%1%, %2%UL)") % a % k, b);
+
+      a.ins (k);
+
+      require_evaluating_to
+        (boost::format ("bitset_is_element (%1%, %2%UL)") % a % k, true);
+    }
+
+    for (unsigned long k : ks)
+    {
+      require_evaluating_to
+        (boost::format ("bitset_is_element (%1%, %2%UL)") % a % k, true);
+
+      b.del (k);
+
+      require_evaluating_to
+        (boost::format ("bitset_delete (%1%, %2%UL)") % a % k, b);
+
+      a.del (k);
+
+      require_evaluating_to
+        (boost::format ("bitset_is_element (%1%, %2%UL)") % a % k, false);
+    }
+  }
+}
