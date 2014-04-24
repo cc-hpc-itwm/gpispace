@@ -459,7 +459,7 @@ namespace
     std::uniform_int_distribution<T> number
       (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
 
-    for (int i (0); i < 1000; ++i)
+    for (int i (0); i < 100; ++i)
     {
       check (number (generator), number (generator));
     }
@@ -523,7 +523,7 @@ namespace
       ,  std::numeric_limits<T>::max() / T (2.0)
       );
 
-    for (int i (0); i < 1000; ++i)
+    for (int i (0); i < 100; ++i)
     {
       check ( parse_showed (number (generator))
             , parse_showed (number (generator))
@@ -999,7 +999,7 @@ namespace
       ,  std::numeric_limits<T>::max() / T (2.0)
       );
 
-    for (int i (0); i < 1000; ++i)
+    for (int i (0); i < 100; ++i)
     {
       std::string const l
         ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
@@ -1063,7 +1063,7 @@ namespace
       ,  std::numeric_limits<T>::max() / T (2.0)
       );
 
-    for (int i (0); i < 1000; ++i)
+    for (int i (0); i < 100; ++i)
     {
       std::string const l
         ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
@@ -1128,7 +1128,7 @@ namespace
       ,  std::numeric_limits<T>::max() / T (2.0)
       );
 
-    for (int i (0); i < 1000; ++i)
+    for (int i (0); i < 100; ++i)
     {
       std::string const input
         ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
@@ -1156,7 +1156,7 @@ namespace
     std::uniform_int_distribution<T> number
       (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
 
-    for (int i (0); i < 1000; ++i)
+    for (int i (0); i < 100; ++i)
     {
       T const x (number (generator));
 
@@ -1361,7 +1361,7 @@ namespace
       ,  std::numeric_limits<T>::max() / T (2.0)
       );
 
-    for (int i (0); i < 1000; ++i)
+    for (int i (0); i < 100; ++i)
     {
       std::string const input
         ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
@@ -1400,7 +1400,7 @@ namespace
     std::uniform_int_distribution<T> number
       (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
 
-    for (int i (0); i < 1000; ++i)
+    for (int i (0); i < 100; ++i)
     {
       T const x (number (generator));
 
@@ -1451,7 +1451,7 @@ namespace
       ,  std::numeric_limits<T>::max() / T (2.0)
       );
 
-    for (int i (0); i < 1000; ++i)
+    for (int i (0); i < 100; ++i)
     {
       std::string const input
         ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
@@ -1490,7 +1490,7 @@ namespace
     std::uniform_int_distribution<T> number
       (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
 
-    for (int i (0); i < 1000; ++i)
+    for (int i (0); i < 100; ++i)
     {
       T const x (number (generator));
 
@@ -1539,7 +1539,7 @@ namespace
     std::uniform_int_distribution<int> count (0, 100);
     std::uniform_int_distribution<unsigned long> number (0, 1UL << 10);
 
-    for (int _ (0); _ < 1000; ++_)
+    for (int _ (0); _ < 100; ++_)
     {
       bitsetofint::type bs;
 
@@ -1565,7 +1565,7 @@ namespace
     std::uniform_int_distribution<int> count (0, 100);
     std::uniform_int_distribution<unsigned long> number (0, 1UL << 10);
 
-    for (int _ (0); _ < 1000; ++_)
+    for (int _ (0); _ < 100; ++_)
     {
       bitsetofint::type bs_l;
 
@@ -1647,7 +1647,7 @@ BOOST_AUTO_TEST_CASE (token_bitset_ins_del_is_elem)
   std::uniform_int_distribution<int> count (0, 100);
   std::uniform_int_distribution<unsigned long> number (0, 1UL << 10);
 
-  for (int _ (0); _ < 1000; ++_)
+  for (int _ (0); _ < 100; ++_)
   {
     std::set<unsigned long> ks;
     bitsetofint::type a;
@@ -1702,7 +1702,7 @@ BOOST_AUTO_TEST_CASE (tokens_stack_push_top_pop_empty_size)
   std::uniform_int_distribution<int> number
     (std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
 
-  for (int _ (0); _ < 100; ++_)
+  for (int _ (0); _ < 10; ++_)
   {
     std::list<pnet::type::value::value_type> a;
     std::list<pnet::type::value::value_type> b;
@@ -1786,7 +1786,7 @@ BOOST_AUTO_TEST_CASE (token_stack_join)
   std::uniform_int_distribution<int> number
     (std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
 
-  for (int _ (0); _ < 100; ++_)
+  for (int _ (0); _ < 10; ++_)
   {
     std::list<pnet::type::value::value_type> a;
     std::list<pnet::type::value::value_type> b;
@@ -1826,7 +1826,7 @@ BOOST_AUTO_TEST_CASE
   std::uniform_int_distribution<long> value
     (std::numeric_limits<long>::min(), std::numeric_limits<long>::max());
 
-  for (int _ (0); _ < 100; ++_)
+  for (int _ (0); _ < 10; ++_)
   {
     std::map<pnet::type::value::value_type, pnet::type::value::value_type> a;
     std::map<pnet::type::value::value_type, pnet::type::value::value_type> b;
@@ -1941,7 +1941,7 @@ BOOST_AUTO_TEST_CASE (tokens_set_empty_size_insert_erase_is_element)
   std::uniform_int_distribution<long> number
     (std::numeric_limits<long>::min(), std::numeric_limits<long>::max());
 
-  for (int _ (0); _ < 100; ++_)
+  for (int _ (0); _ < 10; ++_)
   {
     std::set<pnet::type::value::value_type> a;
     std::set<pnet::type::value::value_type> b;
@@ -2023,7 +2023,7 @@ BOOST_AUTO_TEST_CASE (tokens_set_top_pop)
   std::uniform_int_distribution<long> number
     (std::numeric_limits<long>::min(), std::numeric_limits<long>::max());
 
-  for (int _ (0); _ < 100; ++_)
+  for (int _ (0); _ < 10; ++_)
   {
     std::set<pnet::type::value::value_type> a;
     std::set<pnet::type::value::value_type> b;
@@ -2074,7 +2074,7 @@ BOOST_AUTO_TEST_CASE (token_set_is_subset)
 
 BOOST_AUTO_TEST_CASE (token_len)
 {
-  for (int _ (0); _ < 1000; ++_)
+  for (int _ (0); _ < 100; ++_)
   {
     std::string const s (fhg::util::random_string_without ("\"\\"));
 
