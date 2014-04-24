@@ -1814,3 +1814,121 @@ BOOST_AUTO_TEST_CASE (token_stack_join)
       );
   }
 }
+
+BOOST_AUTO_TEST_CASE
+  (tokens_map_assign_unassign_is_assigned_get_assignment_size_empty)
+{
+  std::random_device generator;
+  std::uniform_int_distribution<int> count (0, 100);
+  std::uniform_int_distribution<int> key
+    (std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+  std::uniform_int_distribution<long> value
+    (std::numeric_limits<long>::min(), std::numeric_limits<long>::max());
+
+  for (int _ (0); _ < 100; ++_)
+  {
+    std::map<pnet::type::value::value_type, pnet::type::value::value_type> a;
+    std::map<pnet::type::value::value_type, pnet::type::value::value_type> b;
+
+    require_evaluating_to
+      ( (boost::format ("map_empty (%1%)") % pnet::type::value::show (a)).str()
+      , true
+      );
+
+    int n (count (generator));
+    std::set<int> ks;
+
+    while (n --> 0)
+    {
+      require_evaluating_to
+        ( boost::format ("map_size (%1%)") % pnet::type::value::show (a)
+        , a.size()
+        );
+
+      int const k (key (generator));
+      long const v (value (generator));
+
+      ks.insert (k);
+
+      require_evaluating_to
+        ( boost::format ("map_is_assigned (%1%, %2%)")
+        % pnet::type::value::show (a)
+        % k
+        , a.find (k) != a.end()
+        );
+
+      b.emplace (k, v);
+
+      require_evaluating_to
+        ( ( boost::format ("map_assign (%1%, %2%, %3%L)")
+          % pnet::type::value::show (a)
+          % k
+          % v
+          ).str()
+        , b
+        );
+
+      a.emplace (k, v);
+
+      require_evaluating_to
+        ( boost::format ("map_is_assigned (%1%, %2%)")
+        % pnet::type::value::show (a)
+        % k
+        , true
+        );
+
+      require_evaluating_to
+        ( boost::format ("map_get_assignment (%1%, %2%)")
+        % pnet::type::value::show (a)
+        % k
+        , v
+        );
+
+      require_evaluating_to
+        ( ( boost::format ("map_empty (%1%)") % pnet::type::value::show (a)
+          ).str()
+        , false
+        );
+    }
+
+    for (int k : ks)
+    {
+      require_evaluating_to
+        ( boost::format ("map_is_assigned (%1%, %2%)")
+        % pnet::type::value::show (a)
+        % k
+        , true
+        );
+
+      require_evaluating_to
+        ( boost::format ("map_get_assignment (%1%, %2%)")
+        % pnet::type::value::show (a)
+        % k
+        , a.at (k)
+        );
+
+      require_evaluating_to
+        ( ( boost::format ("map_empty (%1%)") % pnet::type::value::show (a)
+          ).str()
+        , false
+        );
+
+      b.erase (k);
+
+      require_evaluating_to
+        ( ( boost::format ("map_unassign (%1%, %2%)")
+          % pnet::type::value::show (a)
+          % k
+          ).str()
+        , b
+        );
+
+      a.erase (k);
+    }
+
+    require_evaluating_to
+      ( (boost::format ("map_empty (%1%)") % pnet::type::value::show (a)).str()
+      , true
+      );
+  }
+}
