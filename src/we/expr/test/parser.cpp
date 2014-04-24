@@ -2055,3 +2055,18 @@ BOOST_AUTO_TEST_CASE (tokens_set_top_pop)
     }
   }
 }
+
+BOOST_AUTO_TEST_CASE (token_set_is_subset)
+{
+  require_evaluating_to ("set_is_subset (Set{}, Set{})", true);
+  require_evaluating_to
+    ("set_is_subset (set_insert (Set{}, 1L), Set{})", false);
+  require_evaluating_to
+    ("set_is_subset (set_insert (Set{}, 1L), set_insert (Set{}, 1L))", true);
+  require_evaluating_to
+    ("set_is_subset (Set{}, set_insert (Set{}, 1L))", true);
+  require_evaluating_to
+    ("set_is_subset (set_insert (Set{}, 1), set_insert (Set{}, 1L))", false);
+  require_evaluating_to
+    ("set_is_subset (set_insert (Set{}, 1), set_insert (Set{}, 2))", false);
+}
