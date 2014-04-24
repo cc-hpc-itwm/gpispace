@@ -2014,3 +2014,44 @@ BOOST_AUTO_TEST_CASE (tokens_set_empty_size_insert_erase_is_element)
       );
   }
 }
+
+BOOST_AUTO_TEST_CASE (tokens_set_top_pop)
+{
+  std::random_device generator;
+  std::uniform_int_distribution<int> count (0, 100);
+  std::uniform_int_distribution<long> number
+    (std::numeric_limits<long>::min(), std::numeric_limits<long>::max());
+
+  for (int _ (0); _ < 100; ++_)
+  {
+    std::set<pnet::type::value::value_type> a;
+    std::set<pnet::type::value::value_type> b;
+
+    int n (count (generator));
+
+    while (n --> 0)
+    {
+      long const k (number (generator));
+
+      a.insert (k);
+      b.insert (k);
+
+      require_evaluating_to
+        ( (boost::format ("set_top (%1%)") % pnet::type::value::show (a)).str()
+        , *(a.begin())
+        );
+    }
+
+    while (!a.empty())
+    {
+      b.erase (b.begin());
+
+      require_evaluating_to
+        ( (boost::format ("set_pop (%1%)") % pnet::type::value::show (a)).str()
+        , b
+        );
+
+      a.erase (a.begin());
+    }
+  }
+}
