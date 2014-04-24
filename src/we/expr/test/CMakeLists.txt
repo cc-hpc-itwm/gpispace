@@ -3,5 +3,5 @@
 fhg_add_test (parser.cpp
   BOOST_UNIT_TEST
   PROJECT we_expr
-  LINK_LIBRARIES pnet
+  LINK_LIBRARIES pnet fhg-util
 )
