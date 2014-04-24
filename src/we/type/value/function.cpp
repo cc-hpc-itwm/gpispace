@@ -96,14 +96,6 @@ namespace pnet
           {
             return unary_fractional (x);
           }
-          value_type operator() (char x) const
-          {
-            switch (_token)
-            {
-            case expr::token::_len: return 1UL;
-            default: throw exception::eval (_token, x);
-            }
-          }
           value_type operator() (std::string x) const
           {
             switch (_token)
