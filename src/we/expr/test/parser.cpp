@@ -7,6 +7,7 @@
 #include <we/expr/eval/context.hpp>
 #include <we/expr/parse/parser.hpp>
 #include <we/type/value/boost/test/printer.hpp>
+#include <we/type/value/show.hpp>
 
 #include <fhg/util/boost/test/require_exception.hpp>
 
@@ -14,6 +15,7 @@
 #include <limits>
 #include <random>
 #include <string>
+#include <stack>
 
 #ifdef NDEBUG
 #include <fhg/util/now.hpp>
@@ -1689,5 +1691,89 @@ BOOST_AUTO_TEST_CASE (token_bitset_ins_del_is_elem)
       require_evaluating_to
         (boost::format ("bitset_is_element (%1%, %2%UL)") % a % k, false);
     }
+  }
+}
+
+BOOST_AUTO_TEST_CASE (tokens_stack_push_top_pop_empty_size)
+{
+  std::random_device generator;
+  std::uniform_int_distribution<unsigned long> count (0, 100);
+  std::uniform_int_distribution<int> number
+    (std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+
+  for (int _ (0); _ < 100; ++_)
+  {
+    std::list<pnet::type::value::value_type> a;
+    std::list<pnet::type::value::value_type> b;
+
+    require_evaluating_to
+      ( ( boost::format ("stack_empty (%1%)")
+        % pnet::type::value::show (a)
+        ).str()
+      , true
+      );
+
+    unsigned long n (count (generator));
+
+    std::stack<int> ks;
+
+    for (unsigned long i (0); i < n; ++i)
+    {
+      require_evaluating_to
+        (boost::format ("stack_size (%1%)") % pnet::type::value::show (a), i);
+
+      int const k (number (generator));
+
+      ks.push (k);
+
+      b.push_back (k);
+
+      require_evaluating_to
+        ( boost::format ("stack_push (%1%, %2%)")
+        % pnet::type::value::show (a) % k
+        , b
+        );
+
+      a.push_back (k);
+
+      require_evaluating_to
+        (boost::format ("stack_top (%1%)") % pnet::type::value::show (a), k);
+
+      require_evaluating_to
+        ( ( boost::format ("stack_empty (%1%)")
+          % pnet::type::value::show (a)
+          ).str()
+        , false
+        );
+    }
+
+    while (!ks.empty())
+    {
+      require_evaluating_to
+        ( boost::format ("stack_size (%1%)") % pnet::type::value::show (a)
+        , ks.size()
+        );
+
+      require_evaluating_to
+        ( boost::format ("stack_top (%1%)") % pnet::type::value::show (a)
+        , ks.top()
+        );
+
+      b.pop_back();
+
+      require_evaluating_to
+        (boost::format ("stack_pop (%1%)") % pnet::type::value::show (a), b);
+
+      a.pop_back();
+
+      ks.pop();
+    }
+
+    require_evaluating_to
+      ( ( boost::format ("stack_empty (%1%)")
+        % pnet::type::value::show (a)
+        ).str()
+      , true
+      );
   }
 }
