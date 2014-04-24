@@ -1932,3 +1932,85 @@ BOOST_AUTO_TEST_CASE
       );
   }
 }
+
+BOOST_AUTO_TEST_CASE (tokens_set_empty_size_insert_erase_is_element)
+{
+  std::random_device generator;
+  std::uniform_int_distribution<int> count (0, 100);
+  std::uniform_int_distribution<long> number
+    (std::numeric_limits<long>::min(), std::numeric_limits<long>::max());
+
+  for (int _ (0); _ < 100; ++_)
+  {
+    std::set<pnet::type::value::value_type> a;
+    std::set<pnet::type::value::value_type> b;
+
+    require_evaluating_to
+      ( (boost::format ("set_empty (%1%)") % pnet::type::value::show (a)).str()
+      , true
+      );
+
+    int n (count (generator));
+    std::set<long> ks;
+
+    while (n --> 0)
+    {
+      require_evaluating_to
+        ( boost::format ("set_size (%1%)") % pnet::type::value::show (a)
+        , a.size()
+        );
+
+      long const k (number (generator));
+      ks.insert (k);
+
+      require_evaluating_to
+        ( boost::format ("set_is_element (%1%, %2%L)")
+        % pnet::type::value::show (a)
+        % k
+        , a.find (k) != a.end()
+        );
+
+      b.insert (k);
+
+      require_evaluating_to
+        ( boost::format ("set_insert (%1%, %2%L)")
+        % pnet::type::value::show (a)
+        % k
+        , b
+        );
+
+      a.insert (k);
+    }
+
+    for (long k : ks)
+    {
+      require_evaluating_to
+        ( boost::format ("set_size (%1%)") % pnet::type::value::show (a)
+        , a.size()
+        );
+
+      require_evaluating_to
+        ( boost::format ("set_is_element (%1%, %2%L)")
+        % pnet::type::value::show (a)
+        % k
+        , true
+        );
+
+      b.erase (k);
+
+      require_evaluating_to
+        ( boost::format ("set_erase (%1%, %2%L)")
+        % pnet::type::value::show (a)
+        % k
+        , b
+        );
+
+      a.erase (k);
+    }
+
+    require_evaluating_to
+      ( (boost::format ("set_empty (%1%)") % pnet::type::value::show (a)).str()
+      , true
+      );
+  }
+}
