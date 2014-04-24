@@ -1777,3 +1777,40 @@ BOOST_AUTO_TEST_CASE (tokens_stack_push_top_pop_empty_size)
       );
   }
 }
+
+BOOST_AUTO_TEST_CASE (token_stack_join)
+{
+  std::random_device generator;
+  std::uniform_int_distribution<unsigned long> count (0, 100);
+  std::uniform_int_distribution<int> number
+    (std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+
+  for (int _ (0); _ < 100; ++_)
+  {
+    std::list<pnet::type::value::value_type> a;
+    std::list<pnet::type::value::value_type> b;
+    std::list<pnet::type::value::value_type> joined;
+
+    unsigned long na (count (generator));
+    unsigned long nb (count (generator));
+
+    while (na --> 0)
+    {
+      a.push_back (number (generator));
+      joined.push_back (a.back());
+    }
+    while (nb --> 0)
+    {
+      b.push_back (number (generator));
+      joined.push_back (b.back());
+    }
+
+    require_evaluating_to
+      ( ( boost::format ("stack_join (%1%, %2%)")
+        % pnet::type::value::show (a)
+        % pnet::type::value::show (b)
+        ).str()
+      , joined
+      );
+  }
+}
