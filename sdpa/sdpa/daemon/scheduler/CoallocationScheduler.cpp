@@ -163,6 +163,26 @@ namespace sdpa
     void CoallocationScheduler::releaseReservation (const sdpa::job_id_t& job_id)
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      const allocation_table_t::const_iterator it
+       (allocation_table_.find (job_id));
+
+      if (it != allocation_table_.end())
+      {
+        Reservation* ptr_reservation(it->second);
+        for (std::string worker : ptr_reservation->getWorkerList())
+        {
+          try {
+              worker_manager().findWorker (worker)->deleteJob (job_id);
+          }
+          catch (const WorkerNotFoundException&)
+          {
+            // the worker might be gone in between
+          }
+        }
+
+        delete ptr_reservation;
+        allocation_table_.erase (it);
+      }
     }
 
     void CoallocationScheduler::workerFinished
