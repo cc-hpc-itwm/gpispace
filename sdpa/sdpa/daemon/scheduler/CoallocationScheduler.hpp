@@ -45,6 +45,32 @@ namespace sdpa
       void releaseReservation (const sdpa::job_id_t&);
       void assignJobsToWorkers();
 
+      template<typename Func>
+      bool cancelNotTerminatedWorkerJobs (Func func, const sdpa::job_id_t& job_id)
+      {
+        boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+        sdpa::worker_id_list_t list_not_terminated_workers;
+
+        const allocation_table_t::const_iterator it
+          (allocation_table_.find (job_id));
+
+        if (it != allocation_table_.end())
+        {
+          Reservation* ptr_reservation(it->second);
+          list_not_terminated_workers = ptr_reservation->getListNotTerminatedWorkers();
+        }
+
+        for ( sdpa::worker_id_list_t::iterator it = list_not_terminated_workers.begin()
+            ; it != list_not_terminated_workers.end()
+            ; ++it
+            )
+        {
+          func( *it );
+        }
+
+        return !list_not_terminated_workers.empty();
+      }
+
     private:
       std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)>
         _serve_job;
