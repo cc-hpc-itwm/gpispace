@@ -164,19 +164,6 @@ namespace sdpa
     {
       Job* pJob (findJob(pEvt->job_id()));
 
-      if (pJob)
-      {
-        try
-        {
-          pJob->CancelJobAck();
-        }
-        catch (std::exception const&)
-        {
-          workflowEngine()->canceled (pEvt->job_id());
-          throw;
-        }
-      }
-
       if (!hasWorkflowEngine())
       {
         if (!isTop())
