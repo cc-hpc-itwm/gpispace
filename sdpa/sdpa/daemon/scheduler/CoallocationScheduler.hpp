@@ -42,7 +42,7 @@ namespace sdpa
       void request_scheduling();
 
       // used by daemon and self and test
-      sdpa::worker_id_list_t releaseReservation (const sdpa::job_id_t&);
+      void releaseReservation (const sdpa::job_id_t&);
       void assignJobsToWorkers();
 
     private:

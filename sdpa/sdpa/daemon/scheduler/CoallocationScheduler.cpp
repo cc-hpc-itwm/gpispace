@@ -160,12 +160,9 @@ namespace sdpa
       }
     }
 
-    sdpa::worker_id_list_t CoallocationScheduler::releaseReservation (const sdpa::job_id_t& job_id)
+    void CoallocationScheduler::releaseReservation (const sdpa::job_id_t& job_id)
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-
-      sdpa::worker_id_list_t list_not_terminated_workers;
-      return list_not_terminated_workers;
     }
 
     void CoallocationScheduler::workerFinished
