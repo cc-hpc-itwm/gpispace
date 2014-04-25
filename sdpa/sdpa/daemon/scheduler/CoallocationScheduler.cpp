@@ -165,24 +165,6 @@ namespace sdpa
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
 
       sdpa::worker_id_list_t list_not_terminated_workers;
-
-      const allocation_table_t::const_iterator it
-        (allocation_table_.find (job_id));
-
-      if (it != allocation_table_.end())
-      {
-        Reservation* ptr_reservation(it->second);
-        list_not_terminated_workers = ptr_reservation->getListNotTerminatedWorkers();
-
-        for (const worker_id_t& worker_id : list_not_terminated_workers)
-        {
-          worker_manager().findWorker (worker_id)->abort (job_id);
-        }
-
-        delete ptr_reservation;
-        allocation_table_.erase (it);
-      }
-
       return list_not_terminated_workers;
     }
 
