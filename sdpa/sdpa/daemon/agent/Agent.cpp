@@ -175,30 +175,22 @@ namespace sdpa
       }
       else
       {
-        LLOG (TRACE, _logger, "informing workflow engine that the activity "<< pEvt->job_id() <<" was canceled");
-
         scheduler().workerCanceled (pEvt->from(), pEvt->job_id());
         const bool bTaskGroupComputed
           (scheduler().allPartialResultsCollected (pEvt->job_id()));
 
         if (bTaskGroupComputed)
         {
-          workflowEngine()->canceled (pEvt->job_id());
+          if (pJob->getStatus() == sdpa::status::CANCELING)
+          {
+            pJob->CancelJobAck();
+            workflowEngine()->canceled (pEvt->job_id());
+          }
+
+          scheduler().releaseReservation (pEvt->job_id());
         }
 
-        try
-        {
-          if (bTaskGroupComputed)
-          {
-            scheduler().releaseReservation (pEvt->job_id());
-          }
-          LLOG (TRACE, _logger, "Remove job " << pEvt->job_id() << " from the worker "<<pEvt->from());
-          request_scheduling();
-        }
-        catch (const WorkerNotFoundException&)
-        {
-            scheduler().delete_job (pEvt->job_id());
-        }
+        request_scheduling();
 
         if (bTaskGroupComputed)
         {
