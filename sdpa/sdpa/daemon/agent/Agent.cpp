@@ -202,7 +202,14 @@ namespace sdpa
 
         if (bTaskGroupComputed)
         {
-          deleteJob(pEvt->job_id());
+          if(pJob->getStatus() != sdpa::status::PENDING)
+          {
+            deleteJob(pEvt->job_id());
+          }
+          else
+          {
+            scheduler().enqueueJob (pEvt->job_id());
+          }
         }
       }
     }
