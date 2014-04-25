@@ -25,12 +25,6 @@ namespace sdpa
     {
       child_proxy (this, pEvt->from()).job_finished_ack (pEvt->job_id());
 
-      if (scheduler().worker_manager().checkIfAbortedJobAndDelete (pEvt->from(), pEvt->job_id()))
-      {
-        request_scheduling();
-        return;
-      }
-
       Job* pJob (findJob (pEvt->job_id()));
       if (!hasWorkflowEngine())
       {
@@ -85,12 +79,6 @@ namespace sdpa
     void Agent::handleJobFailedEvent (const events::JobFailedEvent* pEvt)
     {
       child_proxy (this, pEvt->from()).job_failed_ack (pEvt->job_id());
-
-      if (scheduler().worker_manager().checkIfAbortedJobAndDelete (pEvt->from(), pEvt->job_id()))
-      {
-        request_scheduling();
-        return;
-      }
 
       Job* pJob (findJob (pEvt->job_id()));
       if (!hasWorkflowEngine())
@@ -168,12 +156,6 @@ namespace sdpa
 
     void Agent::handleCancelJobAckEvent (const events::CancelJobAckEvent* pEvt)
     {
-      if (scheduler().worker_manager().checkIfAbortedJobAndDelete (pEvt->from(), pEvt->job_id()))
-      {
-        request_scheduling();
-        return;
-      }
-
       Job* pJob (findJob(pEvt->job_id()));
 
       if (pJob)
