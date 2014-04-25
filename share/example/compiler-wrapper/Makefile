@@ -15,6 +15,10 @@ CXXLIBRARYPATHS += $(SDPA_HOME)/libexec/sdpa
 
 ###############################################################################
 
+ifndef SDPA_HOME
+$(error "SDPA_HOME is not set, please set it to the installation path of GPISpace")
+endif
+
 include $(SDPA_HOME)/share/sdpa/make/common.mk
 
 .PHONY: gen-sdpacc
