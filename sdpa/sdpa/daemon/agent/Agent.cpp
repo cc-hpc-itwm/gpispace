@@ -166,6 +166,7 @@ namespace sdpa
 
       if (!hasWorkflowEngine())
       {
+        pJob->CancelJobAck();
         if (!isTop())
         {
           parent_proxy (this, pJob->owner()).cancel_job_ack (pEvt->job_id());
