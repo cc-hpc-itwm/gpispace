@@ -26,7 +26,7 @@ namespace fhg
           Q_OBJECT;
 
         public:
-          connectable_item (base_item* parent = NULL);
+          connectable_item (base_item* parent = nullptr);
 
           void add_association (association* c);
           void remove_association (association * c);

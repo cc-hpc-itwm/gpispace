@@ -3,6 +3,22 @@ ifndef DIR_BUILD
   DIR_BUILD=.
 endif
 
+ifndef BOOST_ROOT
+  ifndef SDPA_HOME
+    $(error Neither BOOST_ROOT nor SDPA_HOME are set)
+  else
+    BOOST_ROOT := $(SDPA_HOME)/external/boost
+  endif
+else
+  ifdef SDPA_HOME
+    ifneq "$(BOOST_ROOT)" "$(SDPA_HOME)/external/boost"
+      $(warning BOOST_ROOT is set and different from GSPC bundled version)
+      $(warning BOOST_ROOT = $(BOOST_ROOT))
+      $(warning GSPC_BUNDLED = $(SDPA_HOME)/external/boost)
+    endif
+  endif
+endif
+
 CXXFLAGS += -O3
 CXXFLAGS += -Wall
 CXXFLAGS += -Wextra

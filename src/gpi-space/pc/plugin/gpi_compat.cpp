@@ -7,18 +7,19 @@
 #include <gpi-space/pc/plugin/gpi.hpp>
 #include <gpi-space/pc/type/flags.hpp>
 
-#include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
-#include <boost/unordered_map.hpp>
+#include <boost/thread/scoped_thread.hpp>
 
 #include <fhg/assert.hpp>
 #include <plugin/plugin.hpp>
 
+#include <unordered_map>
+
 class GPICompatPluginImpl;
-static GPICompatPluginImpl * gpi_compat = 0;
+static GPICompatPluginImpl * gpi_compat = nullptr;
 
 enum gpi_state_t
   {
@@ -28,13 +29,13 @@ enum gpi_state_t
 
 class GPICompatPluginImpl : FHG_PLUGIN
 {
-  typedef boost::unordered_map< gpi::pc::type::handle_t
-                              , gpi::pc::type::handle::descriptor_t
-                              > handle_cache_t;
+  typedef std::unordered_map< gpi::pc::type::handle_t
+                            , gpi::pc::type::handle::descriptor_t
+                            > handle_cache_t;
   typedef boost::mutex mutex_type;
   typedef boost::unique_lock<mutex_type> lock_type;
 public:
-  GPICompatPluginImpl (boost::function<void()>, std::list<Plugin*> dependencies, std::map<std::string, std::string> config_variables)
+  GPICompatPluginImpl (std::function<void()>, std::list<Plugin*> dependencies, std::map<std::string, std::string> config_variables)
   {
     const std::string worker_name
       (*get<std::string> ("kernel_name", config_variables));
@@ -54,7 +55,7 @@ public:
 
     m_gpi_state = ST_DISCONNECTED;
     m_shm_hdl = 0;
-    m_shm_ptr = (void*)0;
+    m_shm_ptr = (void*)nullptr;
     m_shm_id = 0;
     m_shm_size = shm_size;
 
@@ -70,22 +71,15 @@ public:
 
     api = gpi_api;
 
-    _reinitialize_thread = new boost::thread
-      (&GPICompatPluginImpl::schedule_reinitialize_gpi, this);
+    _reinitialize_thread =
+      new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+        (&GPICompatPluginImpl::schedule_reinitialize_gpi, this);
   }
 
   ~GPICompatPluginImpl()
   {
-    if (_reinitialize_thread)
-    {
-      _reinitialize_thread->interrupt();
-      if (_reinitialize_thread->joinable())
-      {
-        _reinitialize_thread->join();
-      }
-      _reinitialize_thread = NULL;
-      delete _reinitialize_thread;
-    }
+    _reinitialize_thread = nullptr;
+    delete _reinitialize_thread;
 
     try
     {
@@ -106,9 +100,9 @@ public:
       LOG(WARN, "gpi_compat plugin could not unregister segment");
     }
 
-    m_shm_ptr = 0;
-    api = 0;
-    gpi_compat = 0;
+    m_shm_ptr = nullptr;
+    api = nullptr;
+    gpi_compat = nullptr;
   }
 
   int reinitialize_gpi_state ()
@@ -184,7 +178,7 @@ public:
     {
       if (m_shm_hdl == (gpi::pc::type::handle_t)0)
         MLOG (ERROR, "gpi state setup but shm_hdl == 0");
-      if (m_shm_ptr == 0)
+      if (m_shm_ptr == nullptr)
         MLOG (ERROR, "gpi state setup but shm_ptr == 0");
     }
 
@@ -234,7 +228,7 @@ private:
     }
 
     m_shm_hdl = 0;
-    m_shm_ptr = 0;
+    m_shm_ptr = nullptr;
     m_shm_id  = 0;
 
     m_gpi_state = ST_DISCONNECTED;
@@ -262,7 +256,8 @@ private:
   boost::posix_time::time_duration   m_initialize_retry_interval;
   bool                               m_was_connected;
 
-  boost::thread* _reinitialize_thread;
+  boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>*
+    _reinitialize_thread;
 };
 
 int fvmConnect()

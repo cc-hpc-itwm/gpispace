@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE (answer_question)
   {
     expr::eval::context out;
 
-    loader["answer"].call ("answer", 0, expr::eval::context(), out);
+    loader["answer"].call ("answer", nullptr, expr::eval::context(), out);
 
     BOOST_REQUIRE_EQUAL
       (out.value ("out"), pnet::type::value::value_type (42L));
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE (answer_question)
   {
     expr::eval::context out;
 
-    loader["question"].call ("question", 0, expr::eval::context(), out);
+    loader["question"].call ("question", nullptr, expr::eval::context(), out);
 
     BOOST_REQUIRE_EQUAL
       (out.value ("out"), pnet::type::value::value_type (44L));
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE (answer_question)
   {
     expr::eval::context out;
 
-    loader["answer"].call ("answer", 0, expr::eval::context(), out);
+    loader["answer"].call ("answer", nullptr, expr::eval::context(), out);
 
     BOOST_REQUIRE_EQUAL
       (out.value ("out"), pnet::type::value::value_type (42L));
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE (load_failed)
   we::loader::loader loader;
 
   fhg::util::boost::test::require_exception<we::loader::module_load_failed>
-    ( boost::bind (&we::loader::loader::load, &loader, "name", "<path>")
+    ( [&loader] { loader.load ("name", "<path>"); }
     , "could not load module '<path>': <path>:"
       " cannot open shared object file: No such file or directory"
     );
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE (load_already_registered)
   BOOST_REQUIRE (loader.load ("name", "./libanswer.so"));
 
   fhg::util::boost::test::require_exception<we::loader::module_already_registered>
-    ( boost::bind (&we::loader::loader::load, &loader, "name", "<path>")
+    ( [&loader] { loader.load ("name", "<path>"); }
     , "module 'name' already registered"
     );
 }
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE (bracket_not_found)
   we::loader::loader loader;
 
   fhg::util::boost::test::require_exception<we::loader::module_not_found>
-    ( boost::bind (&we::loader::loader::operator[], &loader, "name")
+    ( [&loader] { loader["name"]; }
     , "module 'libname.so' not found in ''"
     );
 
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE (bracket_not_found)
   loader.append_search_path ("<q>");
 
   fhg::util::boost::test::require_exception<we::loader::module_not_found>
-    ( boost::bind (&we::loader::loader::operator[], &loader, "name")
+    ( [&loader] { loader["name"]; }
     , "module 'libname.so' not found in '\"<p>\":\"<q>\"'"
     );
 }

@@ -6,9 +6,10 @@
 #include <we/type/value.hpp>
 #include <we/type/value/to_value.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/function.hpp>
 
+#include <boost/foreach.hpp>
+#include <boost/preprocessor/punctuation/comma.hpp>
 
 #include <we/type/value/show.hpp>
 #include <iostream>
@@ -60,9 +61,8 @@ namespace pnet
       {
         std::map<value_type, value_type> mvv;
 
-        typedef typename std::map<K, V>::value_type kv_type;
-
-        BOOST_FOREACH (kv_type const& kv, mkv)
+        BOOST_FOREACH
+          (typename std::map<K BOOST_PP_COMMA() V>::value_type const& kv, mkv)
         {
           mvv.insert (std::make_pair ( to_value (kv.first)
                                      , to_value (kv.second)

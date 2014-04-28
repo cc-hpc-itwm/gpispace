@@ -16,7 +16,6 @@
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
 
 #include <fhg/revision.hpp>
 
@@ -116,9 +115,7 @@ namespace // anonymous
 
     if (state.dependencies_target().size() > 0)
       {
-        BOOST_FOREACH ( const std::string& target
-                      , state.dependencies_target()
-                      )
+        for (const std::string& target : state.dependencies_target())
           {
             wrapping_stream.put (target);
           }
@@ -126,9 +123,7 @@ namespace // anonymous
 
     if (state.dependencies_target_quoted().size() > 0)
       {
-        BOOST_FOREACH ( const std::string& target
-                      , state.dependencies_target_quoted()
-                      )
+        for (const std::string& target : state.dependencies_target_quoted())
           {
             wrapping_stream.put (quote_for_make (target));
           }
@@ -143,9 +138,7 @@ namespace // anonymous
 
     wrapping_stream.append (":");
 
-    BOOST_FOREACH ( const boost::filesystem::path& path
-                  , state.dependencies()
-                  )
+    for (const boost::filesystem::path& path : state.dependencies())
       {
         const std::string& dep (path.string());
 
@@ -159,9 +152,7 @@ namespace // anonymous
 
     if (state.dependencies_add_phony_targets())
       {
-        BOOST_FOREACH ( const boost::filesystem::path& path
-                      , state.dependencies()
-                      )
+        for (const boost::filesystem::path& path : state.dependencies())
           {
             const std::string& dep (path.string());
 
@@ -206,7 +197,7 @@ void list_dependencies ( const xml::parse::state::type& state
 
   stream << quote_for_list (input) << std::endl;
 
-  BOOST_FOREACH (const boost::filesystem::path& p, state.dependencies())
+  for (const boost::filesystem::path& p : state.dependencies())
   {
     stream << quote_for_list(p.string()) << std::endl;
   }

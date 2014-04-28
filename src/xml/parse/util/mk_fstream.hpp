@@ -18,17 +18,11 @@ namespace xml
   {
     namespace util
     {
-      std::ofstream & mk_fstream ( std::ofstream & stream
-                                 , const state::type & state
-                                 , const boost::filesystem::path & file
-                                 );
-
       class check_no_change_fstream
       {
       public:
         explicit check_no_change_fstream ( const state::type&
                                          , const boost::filesystem::path&
-                                         , const bool auto_commit = true
                                          );
         ~check_no_change_fstream();
         void commit() const;
@@ -43,7 +37,6 @@ namespace xml
         const state::type& _state;
         const boost::filesystem::path _file;
         std::ostringstream _oss;
-        const bool _auto_commit;
 
         void write() const;
       };

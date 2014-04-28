@@ -6,8 +6,6 @@
 #include <fhg/util/parse/require.hpp>
 #include <fhg/util/parse/until.hpp>
 
-#include <boost/foreach.hpp>
-
 namespace fhg
 {
   namespace util
@@ -102,7 +100,7 @@ namespace fhg
       std::map<std::string, std::string> ini_map (std::string const& input)
       {
         return fhg::util::parse::from_string
-          <std::map<std::string, std::string> > (&ini, input);
+          <std::map<std::string, std::string>> (&ini, input);
       }
     }
   }

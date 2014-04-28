@@ -29,7 +29,7 @@ namespace fhg
         QList<data::handle::function> _functions;
 
       public:
-        StructureView (QWidget* parent = 0);
+        StructureView (QWidget* parent = nullptr);
 
         void append (const data::handle::function&);
         void clear();

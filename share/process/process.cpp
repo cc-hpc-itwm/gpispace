@@ -8,21 +8,23 @@
 #include <errno.h>
 #include <string.h>
 
+#include <fstream>
 #include <iostream>
 #include <sstream>
-#include <string>
-#include <fstream>
 #include <stdexcept>
+#include <string>
+#include <unordered_map>
 
 #include <boost/thread.hpp>
 #include <boost/thread/barrier.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/unordered_map.hpp>
 #include <boost/filesystem.hpp>
 
 #include <fhg/util/split.hpp>
 
 #include <process.hpp>
+
+#include <functional>
 
 namespace process
 {
@@ -310,7 +312,7 @@ namespace process
 
       char * TMPDIR (getenv ("TMPDIR"));
 
-      std::string dir ((TMPDIR != NULL) ? TMPDIR : P_tmpdir);
+      std::string dir ((TMPDIR != nullptr) ? TMPDIR : P_tmpdir);
 
       if (dir.size() == 0)
         {
@@ -392,7 +394,7 @@ namespace process
       detail::fifo (filename);
 
       return new boost::thread ( thread::writer_from_file
-                               , boost::ref (barrier)
+                               , std::ref (barrier)
                                , filename
                                , buf
                                , bytes_left
@@ -409,11 +411,11 @@ namespace process
       detail::fifo (filename);
 
       return new boost::thread ( thread::reader_from_file
-                               , boost::ref (barrier)
+                               , std::ref (barrier)
                                , filename
                                , buf
                                , max_size
-                               , boost::ref (bytes_read)
+                               , std::ref (bytes_read)
                                );
     }
   }
@@ -425,7 +427,7 @@ namespace process
     struct param_map
     {
     private:
-      typedef boost::unordered_map <std::string, std::string> param_map_t;
+      typedef std::unordered_map <std::string, std::string> param_map_t;
 
       param_map_t _map;
 
@@ -559,7 +561,7 @@ namespace process
       (fhg::util::split<std::string, std::string> (command, ' '));
 
     char ** av = new char*[cmdline.size()+1];
-    av[cmdline.size()] = (char*)(NULL);
+    av[cmdline.size()] = (char*)(nullptr);
 
     {
       std::size_t idx (0);
@@ -577,7 +579,7 @@ namespace process
 
           av[idx] = new char[param.size()+1];
           memcpy(av[idx], param.c_str(), param.size());
-          av[idx][param.size()] = (char)0;
+          av[idx][param.size()] = '\0';
         }
     }
 
@@ -635,14 +637,14 @@ namespace process
           , out[detail::RD]
           , buf_stdout.buf()
           , buf_stdout.size()
-          , boost::ref (ret.bytes_read_stdout)
+          , std::ref (ret.bytes_read_stdout)
           );
 
         boost::thread thread_buf_stderr
           ( thread::circular_reader
           , err[detail::RD]
-          , boost::ref (buf_stderr)
-          , boost::ref (ret.bytes_read_stderr)
+          , std::ref (buf_stderr)
+          , std::ref (ret.bytes_read_stderr)
           );
 
         int status (0);
@@ -688,7 +690,7 @@ namespace process
       delete[] av;
     }
 
-    sigprocmask (SIG_UNBLOCK, &signals_to_restore, NULL);
+    sigprocmask (SIG_UNBLOCK, &signals_to_restore, nullptr);
 
     return ret;
   }

@@ -9,6 +9,10 @@ fhg_add_application_test (properly_find_master_when_started_after_agent
   SCRIPT properly_find_master_when_started_after_agent
   RESOURCE_LOCK starts_drts_environment)
 
+fhg_add_application_test (drts_should_handle_multiple_workflows_being_submitted_during_lifetime
+  SCRIPT drts_should_handle_multiple_workflows_being_submitted_during_lifetime
+  RESOURCE_LOCK starts_drts_environment)
+
 fhg_add_test (id_generator
   BOOST_UNIT_TEST
   LINK_LIBRARIES sdpa

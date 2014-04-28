@@ -82,7 +82,7 @@ namespace we
         {
           const std::size_t size (l.size());
           ar & size;
-          BOOST_FOREACH (const token_on_port_t& top, l)
+          for (const token_on_port_t& top : l)
           {
             std::ostringstream oss;
             oss << pnet::type::value::show (top.first);

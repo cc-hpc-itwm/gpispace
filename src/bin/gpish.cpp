@@ -9,12 +9,9 @@
 
 #include <fhglog/LogMacros.hpp>
 
-#include <boost/bind.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
-#include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
@@ -25,6 +22,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <signal.h>
 #include <stdio.h>
@@ -58,7 +56,7 @@ struct my_state_t
   {
     gpi::pc::type::handle::list_t handles
       (capi.list_allocations());
-    BOOST_FOREACH(gpi::pc::type::handle::descriptor_t const &d, handles)
+    for (gpi::pc::type::handle::descriptor_t const &d : handles)
     {
       if (d.id == hdl)
       {
@@ -111,7 +109,7 @@ private:
     public:
       typedef std::vector <std::string> argv_t;
 
-      typedef boost::function<int (argv_t const &, shell_t &)> command_callback_t;
+      typedef std::function<int (argv_t const &, shell_t &)> command_callback_t;
       typedef std::vector <command_t> command_list_t;
 
       ~shell_t ();
@@ -190,7 +188,7 @@ private:
         , m_callback (cb)
       {}
 
-      virtual ~command_t () {}
+      virtual ~command_t () = default;
 
       int operator () (argv_t const & args, shell_t &shell) const
       {
@@ -238,7 +236,7 @@ private:
       }
     }
 
-    shell_t* shell_t::instance = NULL;
+    shell_t* shell_t::instance = nullptr;
 
     shell_t & shell_t::create ( std::string const & program_name
                                                 , std::string const & prompt
@@ -246,7 +244,7 @@ private:
                                                 , my_state_t & state
                                                 )
     {
-      if (instance == NULL)
+      if (instance == nullptr)
       {
         instance = new shell_t (program_name, prompt, histfile, state);
       }
@@ -255,7 +253,7 @@ private:
 
     shell_t & shell_t::get ()
     {
-      assert (instance != NULL);
+      assert (instance != nullptr);
       return *instance;
     }
 
@@ -265,7 +263,7 @@ private:
       {
         delete instance;
       }
-      instance = NULL;
+      instance = nullptr;
     }
 
     void shell_t::initialize_readline ()
@@ -347,7 +345,7 @@ private:
           return &(*cmd);
         }
       }
-      return (command_t*)(NULL);
+      return (command_t*)(nullptr);
     }
 
     int shell_t::run_once ()
@@ -470,12 +468,12 @@ private:
           return match;
         }
       }
-      return NULL;
+      return nullptr;
     }
 
     char **shell_t::shell_completion (const char * text, int start, int)
     {
-      char **matches (NULL);
+      char **matches (nullptr);
 
       if (start == 0)
       {
@@ -510,7 +508,7 @@ static void print_progress( const std::size_t current
                           , const std::size_t total
                           );
 
-static my_state_t *state (NULL);
+static my_state_t *state (nullptr);
 
 static int interrupt_shell()
 {
@@ -669,7 +667,7 @@ int main (int ac, char **av)
   initialize_shell (ac, av);
 
   fhg::util::signal_handler_manager signal_handler_manager;
-  signal_handler_manager.add (SIGINT, boost::bind (&interrupt_shell));
+  signal_handler_manager.add (SIGINT, std::bind (&interrupt_shell));
 
   shell_t::get().run();
 
@@ -1147,7 +1145,7 @@ int cmd_status (shell_t::argv_t const &, shell_t & sh)
     std::cout << "live segments:" << std::endl;
 
     gpi::pc::client::api_t::segment_map_t const & m(sh.state().capi.segments());
-    BOOST_FOREACH (const gpi::pc::client::api_t::segment_map_t::value_type & seg, m)
+    for (const gpi::pc::client::api_t::segment_map_t::value_type & seg : m)
     {
       std::cout << *seg.second << std::endl;
     }
@@ -1157,7 +1155,7 @@ int cmd_status (shell_t::argv_t const &, shell_t & sh)
     std::cout << "garbage segments:" << std::endl;
 
     gpi::pc::client::api_t::segment_set_t const & s(sh.state().capi.garbage_segments());
-    BOOST_FOREACH (const gpi::pc::client::api_t::segment_set_t::value_type & seg, s)
+    for (const gpi::pc::client::api_t::segment_set_t::value_type & seg : s)
     {
       std::cout << *seg << std::endl;
     }
@@ -1347,7 +1345,7 @@ int cmd_segment_list (shell_t::argv_t const & av, shell_t & sh)
     std::sort (segments.begin(), segments.end());
 
     std::cout << gpi::pc::type::segment::ostream_header () << std::endl;
-    BOOST_FOREACH (const gpi::pc::type::segment::descriptor_t & desc, segments)
+    for (const gpi::pc::type::segment::descriptor_t & desc : segments)
     {
       switch (mode)
       {
@@ -1782,7 +1780,7 @@ int cmd_memory_add (shell_t::argv_t const & av, shell_t & sh)
   }
 
   int ec = EXIT_SUCCESS;
-  BOOST_FOREACH (std::string const &url, urls)
+  for (std::string const &url : urls)
   {
     try
     {
@@ -1850,7 +1848,7 @@ int cmd_memory_del (shell_t::argv_t const & av, shell_t & sh)
   }
 
   int ec = EXIT_SUCCESS;
-  BOOST_FOREACH (std::string const &id_s, ids)
+  for (std::string const &id_s : ids)
   {
     try
     {

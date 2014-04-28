@@ -20,11 +20,6 @@ namespace sdpa
         : JobEvent (a_from, a_to, a_job_id)
       {}
 
-      std::string str() const
-      {
-        return "SubmitJobAckEvent(" + job_id () + ")";
-      }
-
       virtual void handleBy (EventHandler* handler)
       {
         handler->handleSubmitJobAckEvent (this);

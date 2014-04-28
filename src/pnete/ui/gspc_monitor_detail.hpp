@@ -49,7 +49,7 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        legend (monitor_client*, QWidget* parent = NULL);
+        legend (monitor_client*, QWidget* parent = nullptr);
 
         const state_description& state (const boost::optional<QString>&) const;
 
@@ -77,7 +77,7 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        log_widget (QWidget* parent = NULL);
+        log_widget (QWidget* parent = nullptr);
 
         void critical (QString host, const QString&, QStringList);
         void information (QString host, const QString&, QStringList);
@@ -99,7 +99,7 @@ namespace fhg
                           , legend*
                           , log_widget*
                           , monitor_client*
-                          , QWidget* parent = NULL
+                          , QWidget* parent = nullptr
                           );
 
         virtual int heightForWidth (int) const;
@@ -133,7 +133,7 @@ namespace fhg
                            , const QString& action
                            , const action_result_code&
                            , const boost::optional<QString>& message
-                           , QList<QPair<QString, QString> > additional_data
+                           , QList<QPair<QString, QString>> additional_data
                            );
 
         void sort_by_name();
@@ -162,11 +162,11 @@ namespace fhg
           boost::optional<QString> _expects_state_change;
         };
 
-        void sort_by (boost::function<bool (const node_type&, const node_type&)>);
+        void sort_by (std::function<bool (const node_type&, const node_type&)>);
 
         QMap<QString, QString> _long_action;
         QSet<QString> _action_requires_confirmation;
-        QMap<QString, QList<monitor_client::action_argument_data> > _action_arguments;
+        QMap<QString, QList<monitor_client::action_argument_data>> _action_arguments;
         QMap<QString, QString> _action_expects_next_state;
 
         QString full_action_name (QString, const QSet<int>& host_ids) const;
@@ -175,7 +175,7 @@ namespace fhg
         QSet<QString> _nodes_to_update;
         QSet<QString> _ignore_next_nodes_state;
 
-        void update (int node);
+        void update_node (int node);
         void update();
 
         QList<node_type> _nodes;

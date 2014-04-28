@@ -6,7 +6,7 @@
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
 
-#include <boost/foreach.hpp>
+#include <iterator>
 
 namespace xml
 {
@@ -55,7 +55,7 @@ namespace xml
           }
           else
           {
-            BOOST_FOREACH (const std::string& search_path, _search_path)
+            for (const std::string& search_path : _search_path)
             {
               if (!boost::filesystem::exists (search_path))
               {
@@ -213,7 +213,7 @@ namespace xml
       {
         if (!_link_prefix_parsed)
         {
-          BOOST_FOREACH (const std::string& kv, _link_prefix)
+          for (const std::string& kv : _link_prefix)
           {
             std::string parsed_key;
             fhg::util::parse::position_string inp (kv);
@@ -255,7 +255,7 @@ namespace xml
           _link_prefix_parsed = true;
         }
 
-        const boost::unordered_map<std::string, std::string>::const_iterator
+        const std::unordered_map<std::string, std::string>::const_iterator
           pos (_link_prefix_by_key.find (key));
 
         if (pos != _link_prefix_by_key.end())
@@ -330,8 +330,8 @@ namespace xml
           }
           else if (  pos != end
                   && *pos == "warning"
-                  && boost::next (pos) != end
-                  && *boost::next (pos) == "inline_many_output_ports"
+                  && std::next (pos) != end
+                  && *std::next (pos) == "inline_many_output_ports"
                   )
           {
             /* do nothing, it's known */
@@ -373,11 +373,7 @@ namespace xml
                                         )
           );
 
-        m->insert
-          (std::make_pair ( p
-                          , util::position_type (p, p, file_in_progress())
-                          )
-          );
+        m->emplace (p, util::position_type (p, p, file_in_progress()));
       }
       util::position_type type::position (const xml_node_type* node) const
       {
@@ -403,7 +399,7 @@ namespace xml
                                     , before->second.column()
                                     );
 
-        m.insert (std::make_pair (node->name(), p));
+        m.emplace (node->name(), p);
 
         return p;
       }
@@ -561,7 +557,7 @@ namespace xml
 #define STRINGVAL(x)                            \
         TYPEDVAL (std::string,x)
 #define STRINGVECVAL(x)                                                 \
-        boost::program_options::value<std::vector<std::string> > (&_ ## x)
+        boost::program_options::value<std::vector<std::string>> (&_ ## x)
 
         boost::program_options::options_description warnings ("Warnings");
 

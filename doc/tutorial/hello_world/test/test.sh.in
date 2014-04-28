@@ -10,7 +10,7 @@ DIR_SOURCE="${DIR_TEST}/.."
 DIR_MODULE="${DIR_SOURCE}/src"
 
 MAIN="hello_many"
-RESULT="$(mktemp --tmpdir="${DIR_BUILD}")"
+RESULT="$(mktemp -p "${DIR_BUILD}")"
 
 OUT="${DIR_BUILD}/${MAIN}.out"
 CMP="${DIR_BUILD}/run.out"
@@ -22,7 +22,7 @@ make+=( CXXLIBRARYPATHS="${DIR_BUILD}" )
 make+=( WE_EXEC_OUTPUT="${RESULT}" )
 make+=( -C "${DIR_SOURCE}" )
 
-make_mod='make DIR_BUILD=${DIR_BUILD} -C "${DIR_MODULE}"'
+make_mod='make BUILDDIR=${DIR_BUILD} -C "${DIR_MODULE}"'
 
 cleanup()
 {

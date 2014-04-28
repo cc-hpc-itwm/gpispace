@@ -1,24 +1,22 @@
 #ifndef FHG_COM_PEER_HPP
 #define FHG_COM_PEER_HPP 1
 
-#include <string>
-#include <list>
-#include <deque>
-
-#include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
-#include <boost/system/error_code.hpp>
-#include <boost/enable_shared_from_this.hpp>
-
-#include <boost/unordered_set.hpp>
-#include <boost/unordered_map.hpp>
-
-#include <fhgcom/header.hpp>
 #include <fhgcom/connection.hpp>
+#include <fhgcom/header.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 #include <fhgcom/peer_info.hpp>
 
 #include <fhg/util/thread/event.hpp>
+
+#include <boost/shared_ptr.hpp>
+#include <boost/system/error_code.hpp>
+#include <boost/thread.hpp>
+
+#include <deque>
+#include <list>
+#include <set>
+#include <string>
+#include <unordered_map>
 
 namespace fhg
 {
@@ -27,21 +25,16 @@ namespace fhg
     /*!
       This class abstracts from an endpoint
      */
-    class peer_t : public connection_t::handler_t
-                 , private boost::noncopyable
-                 , public boost::enable_shared_from_this<peer_t>
+    class peer_t : private boost::noncopyable
     {
-    private:
-      typedef peer_t self;
-
     public:
-      typedef boost::function <void (boost::system::error_code const &)> handler_t;
+      typedef std::function <void (boost::system::error_code const &)> handler_t;
 
       peer_t ( std::string const & name
              , host_t const & host
              , port_t const & port
              , kvs::kvsc_ptr_t kvs_client
-             , std::string const & cookie = ""
+             , handler_t
              );
 
       virtual ~peer_t ();
@@ -54,9 +47,6 @@ namespace fhg
       void start ();
       void stop ();
       void run ();
-
-      handler_t set_kvs_error_handler (handler_t);
-      handler_t get_kvs_error_handler () const;
 
       void async_send ( const message_t * m
                       , handler_t h
@@ -75,15 +65,9 @@ namespace fhg
       void recv (message_t *m);
 
       std::string resolve_addr (p2p::address_t const &);
-      p2p::address_t resolve_name (std::string const &);
-      void resolve_name (std::string const & name, p2p::address_t & addr);
-      void resolve_addr (p2p::address_t const & addr, std::string & name);
-
-      p2p::address_t resolve (std::string const & name);
-      std::string    resolve (p2p::address_t const & addr, std::string const & dflt = "*unknown*");
 
     protected:
-      void handle_system_data (connection_t::ptr_t, const message_t *m);
+      void handle_hello_message (connection_t::ptr_t, const message_t *m);
       void handle_user_data   (connection_t::ptr_t, const message_t *m);
       void handle_error       (connection_t::ptr_t, const boost::system::error_code & error);
 
@@ -102,7 +86,7 @@ namespace fhg
       struct to_recv_t
       {
         to_recv_t ()
-          : message (0)
+          : message (nullptr)
           , handler (0)
         {}
 
@@ -119,7 +103,6 @@ namespace fhg
 
         bool send_in_progress;
         connection_t::ptr_t connection;
-        connection_t::ptr_t loopback;
         std::string name;
         std::deque<to_send_t> o_queue;
       };
@@ -142,7 +125,6 @@ namespace fhg
       std::string name_;
       std::string host_;
       std::string port_;
-      std::string cookie_;
       p2p::address_t my_addr_;
       fhg::util::thread::event<boost::system::error_code> started_;
 
@@ -155,14 +137,12 @@ namespace fhg
 
       boost::shared_ptr<boost::thread> m_peer_thread;
 
-      typedef boost::unordered_map<p2p::address_t, std::string> reverse_lookup_cache_t;
+      typedef std::unordered_map<p2p::address_t, std::string> reverse_lookup_cache_t;
       reverse_lookup_cache_t reverse_lookup_cache_;
 
-      typedef boost::unordered_map<p2p::address_t, connection_data_t> connections_t;
-      connections_t connections_;
+      std::unordered_map<p2p::address_t, connection_data_t> connections_;
 
-      typedef boost::unordered_set<connection_t::ptr_t> backlog_t;
-      backlog_t backlog_;
+      std::set<connection_t::ptr_t> backlog_;
 
       connection_t::ptr_t listen_;
 

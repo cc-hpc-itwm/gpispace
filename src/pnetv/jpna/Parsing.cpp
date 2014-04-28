@@ -1,44 +1,20 @@
 #include "Parsing.h"
 
-#include <cctype>
-#include <fstream>
-
-#include <boost/format.hpp>
-#include <boost/unordered_map.hpp>
-
-#include <pnetv/jpn/common/Foreach.h>
-#include <pnetv/jpn/common/Unreachable.h>
+#include "PetriNet.h"
 
 #include <we/type/expression.fwd.hpp>
 #include <we/type/module_call.fwd.hpp>
 #include <we/type/port.hpp>
 #include <we/type/transition.hpp>
-#include <we/type/net.hpp>
 
-#include <we/type/activity.hpp>
+#include <boost/format.hpp>
 
-#include <boost/range/adaptor/map.hpp>
-
-#include "PetriNet.h"
+#include <fstream>
+#include <unordered_map>
 
 namespace jpna {
 
 namespace {
-
-/**
- * \param container An associative container.
- * \param key Key.
- *
- * \return An element from the container with given key. The element must exist.
- *
- * \tparam Container Type of the associative container.
- */
-template<class Container>
-typename Container::mapped_type find(const Container &container, const typename Container::key_type &key) {
-    typename Container::const_iterator i = container.find(key);
-    assert(i != container.end());
-    return i->second;
-}
 
 /**
  * Visitor for discovering subnets in workflows and translating them to Petri nets.
@@ -48,14 +24,9 @@ class TransitionVisitor: public boost::static_visitor<void> {
     boost::ptr_vector<PetriNet> &petriNets_; ///< Where to add the resulting Petri net when done.
 
     /**
-     * Places present in the workflow.
-     */
-    boost::unordered_map<we::place_id_type, Place *> places_;
-
-    /**
      * Transitions present in the workflow.
      */
-    boost::unordered_map<we::transition_id_type, Transition *> transitions_;
+    std::unordered_map<we::transition_id_type, Transition *> transitions_;
 
     public:
 
@@ -77,21 +48,15 @@ class TransitionVisitor: public boost::static_visitor<void> {
         typedef we::type::transition_t transition_t;
 
         /* Translate places. */
-        typedef std::pair<we::place_id_type, place::type> ip_type;
-
-        BOOST_FOREACH (const ip_type& ip, net.places()) {
-            const we::place_id_type& pid (ip.first);
-            const place::type &p (ip.second);
-
-            Place *place = petriNet_->createPlace();
-            place->setName(p.name());
-            places_[pid] = place;
+        for (std::size_t _ (0); _ < net.places().size(); ++_)
+        {
+            petriNet_->createPlace (0);
         }
 
         /* Translate transitions. */
-        typedef std::pair<we::transition_id_type, transition_t> it_type;
-
-        FOREACH (const it_type& it, net.transitions())
+        for ( const std::pair<we::transition_id_type, transition_t>& it
+            : net.transitions()
+            )
         {
           const we::transition_id_type& tid (it.first);
           const transition_t& t (it.second);
@@ -99,59 +64,55 @@ class TransitionVisitor: public boost::static_visitor<void> {
             std::ostringstream condition;
             condition << t.condition();
 
-            Transition *transition = petriNet_->createTransition();
-            transition->setName(t.name() + "[" + condition.str() + "]");
-            transition->setConditionAlwaysTrue(!t.condition());
-            transition->setPriority (t.priority());
+            Transition *transition = petriNet_->createTransition
+              ( t.name() + "[" + condition.str() + "]"
+              , !t.condition()
+              , t.priority()
+              );
             transitions_[tid] = transition;
 
             /* If there is a limit on number of firings, implement it using an additional place. */
             if (boost::optional<const we::type::property::value_type &> limit = t.prop().get("fhg.pnetv.firings_limit")) {
-                Place *place = petriNet_->createPlace();
-                place->setName("limit!" + t.name());
-                place->setInitialMarking(boost::lexical_cast<TokenCount>(*limit));
-
-                transition->addInputPlace(place);
+              transition->addInputPlace
+                ( petriNet_->createPlace
+                  (boost::lexical_cast<TokenCount> (*limit))
+                );
             }
         }
 
-        FOREACH ( const we::type::net_type::adj_pt_type::value_type& pt
-                , net.place_to_transition_consume()
-                )
+        for ( const we::type::net_type::adj_pt_type::value_type& pt
+            : net.place_to_transition_consume()
+            )
         {
-          Place *place = ::jpna::find(places_, pt.left);
-          Transition *transition = ::jpna::find(transitions_, pt.right);
+          Transition *transition = transitions_.at (pt.right);
 
           /* Transition consumes the token on input place. */
-          transition->addInputPlace(place);
+          transition->addInputPlace (pt.left);
         }
-        FOREACH ( const we::type::net_type::adj_pt_type::value_type& pt
-                , net.place_to_transition_read()
-                )
+        for ( const we::type::net_type::adj_pt_type::value_type& pt
+            : net.place_to_transition_read()
+            )
         {
-          Place *place = ::jpna::find(places_, pt.left);
-          Transition *transition = ::jpna::find(transitions_, pt.right);
+          Transition *transition = transitions_.at (pt.right);
 
           /* Transition takes a token and instantly puts it back. */
-          transition->addInputPlace(place);
-          transition->addOutputPlace(place);
+          transition->addInputPlace (pt.left);
+          transition->addOutputPlace (pt.left);
         }
-        FOREACH ( const we::type::net_type::adj_tp_type::value_type& tp
-                , net.transition_to_place()
-                )
+        for ( const we::type::net_type::adj_tp_type::value_type& tp
+            : net.transition_to_place()
+            )
         {
-          Transition *transition = ::jpna::find(transitions_, tp.left);
-          Place *place = ::jpna::find(places_, tp.right);
+          Transition *transition = transitions_.at (tp.left);
 
           /* Executing the transition puts a token on output place. */
-          transition->addOutputPlace(place);
+          transition->addOutputPlace (tp.right);
         }
 
-        typedef std::pair<we::transition_id_type, we::type::transition_t>
-          id_and_transition_type;
-
-        FOREACH
-          (id_and_transition_type const id_and_transition, net.transitions())
+        for ( std::pair<we::transition_id_type, we::type::transition_t> const
+               id_and_transition
+            : net.transitions()
+            )
         {
             TransitionVisitor visitor(petriNet_->name() + "::" + id_and_transition.second.name(), petriNets_);
             visitor(id_and_transition.second);
@@ -159,42 +120,34 @@ class TransitionVisitor: public boost::static_visitor<void> {
     }
 
     void operator()(const we::type::transition_t &transition) {
-        typedef we::type::transition_t transition_t;
-
         boost::apply_visitor(*this, transition.data());
 
-        FOREACH(const transition_t::port_map_t::value_type &item, transition.ports_input()) {
-          const we::type::port_t &port = item.second;
-
-            if (port.associated_place()) {
-                we::place_id_type pid = *port.associated_place();
-
-                Place *place = ::jpna::find(places_, pid);
-                place->setInitialMarking(place->initialMarking() + 1);
-
-            }
+        for ( const we::type::port_t& port
+            : transition.ports_input() | boost::adaptors::map_values
+            )
+        {
+          if (port.associated_place())
+          {
+            petriNet_->increment_token_count (*port.associated_place());
+          }
         }
-        FOREACH(const transition_t::port_map_t::value_type &item, transition.ports_output()) {
-          const we::type::port_t &port = item.second;
-
-            if (port.associated_place()) {
-                we::place_id_type pid = *port.associated_place();
-
-                Place *place = ::jpna::find(places_, pid);
-                place->setInitialMarking(place->initialMarking() + 1);
-
-            }
+        for ( const we::type::port_t& port
+            : transition.ports_output() | boost::adaptors::map_values
+            )
+        {
+          if (port.associated_place())
+          {
+            petriNet_->increment_token_count (*port.associated_place());
+          }
         }
-        FOREACH(const transition_t::port_map_t::value_type &item, transition.ports_tunnel()) {
-          const we::type::port_t &port = item.second;
-
-            if (port.associated_place()) {
-                we::place_id_type pid = *port.associated_place();
-
-                Place *place = ::jpna::find(places_, pid);
-                place->setInitialMarking(place->initialMarking() + 1);
-
-            }
+        for ( const we::type::port_t& port
+            : transition.ports_tunnel() | boost::adaptors::map_values
+            )
+        {
+          if (port.associated_place())
+          {
+            petriNet_->increment_token_count (*port.associated_place());
+          }
         }
 
         petriNets_.push_back(petriNet_);
@@ -214,12 +167,16 @@ void parse(const char *filename, boost::ptr_vector<PetriNet> &petriNets) {
 }
 
 void parse(const char *filename, std::istream &in, boost::ptr_vector<PetriNet> &petriNets) {
-  we::type::activity_t activity (in);
+  parse (filename, we::type::activity_t (in), petriNets);
+}
 
-    TransitionVisitor visitor(filename, petriNets);
-    visitor(activity.transition());
+void parse ( const char* name
+           , we::type::activity_t const& activity
+           , boost::ptr_vector<PetriNet>& nets
+           )
+{
+  TransitionVisitor visitor (name, nets);
+  visitor (activity.transition());
 }
 
 } // namespace jpna
-
-/* vim:set et sts=4 sw=4: */

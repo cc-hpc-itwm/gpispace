@@ -35,7 +35,7 @@ namespace detail
     Q_OBJECT;
 
   public:
-    log_table_model (QObject* parent = NULL);
+    log_table_model (QObject* parent = nullptr);
 
     virtual int rowCount (const QModelIndex& = QModelIndex()) const;
     virtual int columnCount (const QModelIndex& = QModelIndex()) const;
@@ -71,7 +71,7 @@ class log_monitor : public QWidget
   Q_OBJECT;
 
 public:
-  explicit log_monitor (unsigned short port, QWidget* parent = NULL);
+  explicit log_monitor (unsigned short port, QWidget* parent = nullptr);
   ~log_monitor();
 
 public slots:

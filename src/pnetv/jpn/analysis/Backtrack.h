@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include <pnetv/jpn/Types.h>
+#include <we/type/id.hpp>
 
 namespace jpn {
 namespace analysis {
@@ -17,8 +17,6 @@ class State;
  *
  * \return Ids of transitions leading from `lastState' to `state'.
  */
-std::vector<TransitionId> backtrack(const State *state, const State *lastState);
+std::vector<we::transition_id_type> backtrack(const State *state, const State *lastState);
 
 }} // namespace jpn::analysis
-
-/* vim:set et sts=4 sw=4: */

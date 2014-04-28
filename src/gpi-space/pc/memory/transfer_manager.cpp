@@ -2,9 +2,13 @@
 
 #include <fhglog/LogMacros.hpp>
 
+#include <fhg/util/make_unique.hpp>
+
 #include <boost/make_shared.hpp>
 
 #include <gpi-space/gpi/api.hpp>
+
+#include <functional>
 
 namespace gpi
 {
@@ -24,8 +28,10 @@ namespace gpi
 
         for (size_t i = 0; i < number_of_queues; ++i)
         {
-          std::auto_ptr<buffer_t> buffer (new buffer_t (DEF_BUFFER_SIZE));
-          m_memory_buffer_pool.put (buffer);
+          constexpr size_t DEF_BUFFER_SIZE (4194304);
+
+          m_memory_buffer_pool.put
+            (fhg::util::make_unique<buffer_t> (DEF_BUFFER_SIZE));
         }
       }
 
@@ -71,10 +77,10 @@ namespace gpi
           try
           {
             task_ptr wtask (boost::make_shared<task_t>
-                           ("wait_on_queue", boost::bind( &api::gpi_api_t::wait_dma
-                                                        , &_gpi_api
-                                                        , queue
-                                                        )
+                           ("wait_on_queue", std::bind( &api::gpi_api_t::wait_dma
+                                                      , &_gpi_api
+                                                      , queue
+                                                      )
                            )
                            );
             m_queues [queue]->enqueue (wtask);

@@ -2,8 +2,6 @@
 
 #include <xml/parse/type/require.hpp>
 
-#include <boost/foreach.hpp>
-
 #include <fhg/util/xml.hpp>
 
 namespace xml
@@ -43,7 +41,7 @@ namespace xml
 
       void requirements_type::join (const requirements_type& reqs)
       {
-        BOOST_FOREACH (const map_type::value_type& req, reqs)
+        for (const map_type::value_type& req : reqs)
         {
           set (req.first, req.second);
         }

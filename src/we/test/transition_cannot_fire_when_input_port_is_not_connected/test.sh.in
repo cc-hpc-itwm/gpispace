@@ -8,7 +8,7 @@ DIR_SOURCE="@CMAKE_CURRENT_SOURCE_DIR@"
 
 MAIN="transition_with_unconnected_input_port"
 OUT="${DIR_BUILD}/${MAIN}.out"
-RES=$(mktemp --tmpdir="${DIR_BUILD}")
+RES=$(mktemp -p "${DIR_BUILD}")
 
 make+=( make -f "${SDPA_HOME}/share/sdpa/make/common.mk" )
 make+=( MAIN="${MAIN}" )

@@ -5,8 +5,7 @@
 
 #include <fhg/util/parse/position.hpp>
 
-#include <boost/function.hpp>
-
+#include <functional>
 #include <string>
 #include <stdexcept>
 
@@ -17,7 +16,7 @@ namespace fhg
     namespace parse
     {
       template<typename T>
-        T from_string ( boost::function <T (position&)> read
+        T from_string ( std::function <T (position&)> read
                       , std::string const& input
                       )
       {

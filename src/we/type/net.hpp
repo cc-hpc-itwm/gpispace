@@ -17,19 +17,18 @@
 
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
-#include <boost/foreach.hpp>
-#include <boost/function.hpp>
 #include <boost/random.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/any_range.hpp>
 #include <boost/serialization/nvp.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
-#include <boost/utility.hpp>
 
+#include <functional>
+#include <iterator>
 #include <list>
 #include <sstream>
+#include <tuple>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace we
 {
@@ -60,12 +59,12 @@ namespace we
         , boost::bimaps::left_based
         , boost::bimaps::with_info<we::type::property::type>
         > place_to_port_with_info_type;
-      typedef boost::unordered_map< transition_id_type
-                                  , port_to_place_with_info_type
-                                  > port_to_place_type;
-      typedef boost::unordered_map< transition_id_type
-                                  , place_to_port_with_info_type
-                                  > place_to_port_type;
+      typedef std::unordered_map< transition_id_type
+                                , port_to_place_with_info_type
+                                > port_to_place_type;
+      typedef std::unordered_map< transition_id_type
+                                , place_to_port_with_info_type
+                                > place_to_port_type;
 
       //! \todo eliminate these, just do not copy or assign nets!
       net_type();
@@ -75,8 +74,8 @@ namespace we
       place_id_type add_place (const place::type&);
       transition_id_type add_transition (const we::type::transition_t&);
 
-      const boost::unordered_map<place_id_type, place::type>& places() const;
-      const boost::unordered_map<transition_id_type, we::type::transition_t>&
+      const std::unordered_map<place_id_type, place::type>& places() const;
+      const std::unordered_map<transition_id_type, we::type::transition_t>&
         transitions() const;
 
       void add_connection ( edge::type
@@ -104,11 +103,11 @@ namespace we
       {
         while (!_enabled.empty())
         {
-          boost::unordered_set<we::transition_id_type> const& transition_ids
+          std::unordered_set<we::transition_id_type> const& transition_ids
             (_enabled.begin()->second);
           boost::uniform_int<std::size_t> random (0, transition_ids.size() - 1);
           transition_id_type const transition_id
-            (*boost::next (transition_ids.begin(), random (engine)));
+            (*std::next (transition_ids.begin(), random (engine)));
           we::type::transition_t const& transition (_tmap.at (transition_id));
 
           if (transition.expression())
@@ -126,10 +125,10 @@ namespace we
 
     private:
       place_id_type _place_id;
-      boost::unordered_map<place_id_type, place::type> _pmap;
+      std::unordered_map<place_id_type, place::type> _pmap;
 
       transition_id_type _transition_id;
-      boost::unordered_map<transition_id_type, we::type::transition_t> _tmap;
+      std::unordered_map<transition_id_type, we::type::transition_t> _tmap;
 
       adj_pt_type _adj_pt_consume;
       adj_pt_type _adj_pt_read;
@@ -138,14 +137,14 @@ namespace we
       port_to_place_type _port_to_place;
       place_to_port_type _place_to_port;
 
-      typedef boost::unordered_map< place_id_type
-                                  , std::list<pnet::type::value::value_type>
-                                  > token_by_place_id_type;
+      typedef std::unordered_map< place_id_type
+                                , std::list<pnet::type::value::value_type>
+                                > token_by_place_id_type;
 
       token_by_place_id_type _token_by_place_id;
 
       typedef std::map< we::priority_type
-                      , boost::unordered_set<we::transition_id_type>
+                      , std::unordered_set<we::transition_id_type>
                       , std::greater<we::priority_type>
                       > enabled_type;
 
@@ -156,14 +155,14 @@ namespace we
         , std::list<pnet::type::value::value_type>::iterator::difference_type
         > pos_and_distance_type;
 
-      boost::unordered_map
+      std::unordered_map
         < transition_id_type
-        , boost::unordered_map<place_id_type, pos_and_distance_type>
+        , std::unordered_map<place_id_type, pos_and_distance_type>
         > _enabled_choice;
 
       void get_enabled_choice (const net_type&);
 
-      typedef boost::tuple
+      typedef std::tuple
         < place_id_type
         , std::list<pnet::type::value::value_type>::iterator
         , std::list<pnet::type::value::value_type>::iterator::difference_type
@@ -187,7 +186,7 @@ namespace we
 
       std::list<token_to_be_deleted_type> do_extract
         ( transition_id_type
-        , boost::function
+        , std::function
             <void (port_id_type, pnet::type::value::value_type const&)>
         ) const;
       void do_delete (std::list<token_to_be_deleted_type> const&);
@@ -213,21 +212,42 @@ namespace we
           const std::size_t s (_token_by_place_id.size());
           ar & s;
         }
-        BOOST_FOREACH ( const token_by_place_id_type::value_type& pl
-                      , _token_by_place_id
-                      )
+        for (const token_by_place_id_type::value_type& pl : _token_by_place_id)
         {
           ar & pl.first;
           {
             const std::size_t s (pl.second.size());
             ar & s;
           }
-          BOOST_FOREACH (const pnet::type::value::value_type& x, pl.second)
+          for (const pnet::type::value::value_type& x : pl.second)
           {
             std::ostringstream oss;
             oss << pnet::type::value::show (x);
             const std::string token_rep (oss.str());
             ar & token_rep;
+          }
+        }
+
+        std::size_t const number_of_enabled_transitions
+          ( std::accumulate
+            ( _enabled.begin(), _enabled.end()
+            , 0
+            , [](std::size_t n, enabled_type::value_type const& ps)
+            {
+              return n + ps.second.size();
+            }
+            )
+          );
+
+        ar & BOOST_SERIALIZATION_NVP (number_of_enabled_transitions);
+
+        for ( std::unordered_set<transition_id_type> const& s
+            : _enabled | boost::adaptors::map_values
+            )
+        {
+          for (transition_id_type transition_id : s)
+          {
+            ar & transition_id;
           }
         }
       }
@@ -266,9 +286,25 @@ namespace we
           }
         }
 
-        BOOST_FOREACH (transition_id_type tid, _tmap | boost::adaptors::map_keys)
+        std::size_t number_of_enabled_transitions;
+
+        ar & number_of_enabled_transitions;
+
+        std::unordered_set<transition_id_type> enabled_transitions;
+
+        while (number_of_enabled_transitions --> 0)
         {
-          update_enabled (tid);
+          transition_id_type transition_id;
+          ar & transition_id;
+          enabled_transitions.insert (transition_id);
+        }
+
+        for (transition_id_type tid : _tmap | boost::adaptors::map_keys)
+        {
+          if (enabled_transitions.count (tid) > 0)
+          {
+            update_enabled (tid);
+          }
         }
       }
       BOOST_SERIALIZATION_SPLIT_MEMBER()

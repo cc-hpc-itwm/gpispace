@@ -34,7 +34,7 @@ namespace sdpa
     class EventHandler
     {
     public:
-      virtual ~EventHandler() {}
+      virtual ~EventHandler() = default;
 
       virtual void handleCancelJobAckEvent (const CancelJobAckEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: CancelJobAck"); }

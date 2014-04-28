@@ -4,9 +4,9 @@
 #define FHG_UTIL_BOOST_TEST_REQUIRE_EXCEPTION_HPP
 
 #include <boost/format.hpp>
-#include <boost/function.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include <functional>
 #include <stdexcept>
 #include <typeinfo>
 
@@ -21,7 +21,7 @@ namespace fhg
       namespace test
       {
         template<typename E>
-        void require_exception ( boost::function<void()> f
+        void require_exception ( std::function<void()> f
                                , std::string const& what
                                )
         {
@@ -44,7 +44,7 @@ namespace fhg
         }
 
         template<typename E>
-        void require_exception ( boost::function<void()> f
+        void require_exception ( std::function<void()> f
                                , boost::format const& format
                                )
         {

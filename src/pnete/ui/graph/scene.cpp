@@ -89,7 +89,7 @@ namespace fhg
             bool ok;
             const QString name
               ( QInputDialog::getText
-                ( NULL
+                ( nullptr
                 , dialog_title
                 , prompt
                 , QLineEdit::Normal
@@ -109,14 +109,14 @@ namespace fhg
                                , QObject* parent
                                )
           : QGraphicsScene (parent)
-          , _pending_connection (NULL)
+          , _pending_connection (nullptr)
           , _mouse_position (QPointF (0.0, 0.0))
           , _net (net)
           , _function (function)
           //! \todo Don't default to center of scene, but center of visible scene!
           , _add_transition_action
             ( connect_action ( new QAction (tr ("new_transition"), this)
-                             , std::bind ( &data::handle::net::add_transition
+                             , std::bind ( &data::handle::net::add_empty_transition
                                          , _net
                                          , boost::none
                                          )
@@ -557,7 +557,7 @@ namespace fhg
         void scene_type::remove_pending_connection()
         {
           delete _pending_connection;
-          _pending_connection = NULL;
+          _pending_connection = nullptr;
         }
 
         void scene_type::mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent)
@@ -829,7 +829,7 @@ namespace fhg
               return item;
             }
           }
-          return NULL;
+          return nullptr;
         }
 
         const data::handle::net& scene_type::net() const

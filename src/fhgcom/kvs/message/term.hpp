@@ -1,14 +1,13 @@
 #ifndef FHG_COM_KVS_MESSAGE_TERM_HPP
 #define FHG_COM_KVS_MESSAGE_TERM_HPP 1
 
-// serialization
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/variant.hpp>
 
 #include <string>
-#include <unistd.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 namespace fhg
 {

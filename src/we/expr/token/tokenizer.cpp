@@ -6,15 +6,14 @@
 
 #include <we/expr/exception.hpp>
 
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
-#include <boost/function.hpp>
 #include <boost/variant.hpp>
-#include <boost/utility.hpp>
 
 #include <we/type/value/read.hpp>
 
 #include <fhg/util/parse/require.hpp>
+
+#include <functional>
+#include <iterator>
 
 namespace expr
 {
@@ -48,20 +47,20 @@ namespace expr
     {
       typedef boost::make_recursive_variant
               < std::map<char, boost::recursive_variant_>
-              , boost::function<void (tokenizer&)>
+              , std::function<void (tokenizer&)>
               >::type node_type;
 
       typedef std::map<char, node_type> child_type;
 
       void put ( const std::string::const_iterator pos
                , const std::string::const_iterator end
-               , const boost::function<void (tokenizer&)> f
+               , const std::function<void (tokenizer&)> f
                , child_type& m
                )
       {
         const child_type::iterator child (m.find (*pos));
 
-        if (boost::next (pos) == end)
+        if (std::next (pos) == end)
         {
           if (child != m.end())
           {
@@ -73,7 +72,7 @@ namespace expr
         }
         else
         {
-          put ( boost::next (pos)
+          put ( std::next (pos)
               , end
               , f
               , boost::get<child_type&>
@@ -86,7 +85,7 @@ namespace expr
       }
 
       void put ( const std::string& key
-               , const boost::function<void (tokenizer&)> f
+               , const std::function<void (tokenizer&)> f
                , child_type& m
                )
       {
@@ -105,37 +104,38 @@ namespace expr
 #define ACTION(_key,_action) put (_key, _action, ts)
 
 #define UNARY(_key, _token)                                             \
-        ACTION (_key, boost::bind (&tokenizer::unary, _1, _token, _key))
+        ACTION (_key, std::bind (&tokenizer::unary, std::placeholders::_1, _token, _key))
 
 #define SET_TOKEN(_key, _token)                                         \
-        ACTION (_key, boost::bind (&tokenizer::set_token, _1, _token))
+        ACTION (_key, std::bind (&tokenizer::set_token, std::placeholders::_1, _token))
 
 #define SET_VALUE(_key, _value)                                         \
-        ACTION (_key, boost::bind (&tokenizer::set_value, _1, _value))
+        ACTION (_key, std::bind (&tokenizer::set_value, std::placeholders::_1, _value))
 
-        ACTION ("!", boost::bind (&tokenizer::notne, _1));
-        ACTION ("${", boost::bind (&tokenizer::identifier, _1));
-        ACTION ("*", boost::bind (&tokenizer::mulpow, _1));
-        ACTION ("-", boost::bind (&tokenizer::negsub, _1));
-        ACTION ("/", boost::bind (&tokenizer::divcomment, _1));
-        ACTION ("<", boost::bind (&tokenizer::cmp, _1, lt, le));
-        ACTION (">", boost::bind (&tokenizer::cmp, _1, gt, ge));
+        ACTION ("!", std::bind (&tokenizer::notne, std::placeholders::_1));
+        ACTION ("${", std::bind (&tokenizer::identifier, std::placeholders::_1));
+        ACTION ("*", std::bind (&tokenizer::mulpow, std::placeholders::_1));
+        ACTION ("|", std::bind (&tokenizer::or_boolean_integral, std::placeholders::_1));
+        ACTION ("&", std::bind (&tokenizer::and_boolean_integral, std::placeholders::_1));
+        ACTION ("-", std::bind (&tokenizer::negsub, std::placeholders::_1));
+        ACTION ("/", std::bind (&tokenizer::divcomment, std::placeholders::_1));
+        ACTION ("<", std::bind (&tokenizer::cmp, std::placeholders::_1, lt, le));
+        ACTION (">", std::bind (&tokenizer::cmp, std::placeholders::_1, gt, ge));
 
-        SET_TOKEN ("%", mod);
-        SET_TOKEN ("&&", _and);
+        SET_TOKEN ("%", modint);
         SET_TOKEN ("(", lpr);
         SET_TOKEN (")", rpr);
         SET_TOKEN ("+", add);
         SET_TOKEN (",", sep);
         SET_TOKEN (":=", define);
-        SET_TOKEN (":and:", _and);
+        SET_TOKEN (":and:", _and_boolean);
         SET_TOKEN (":eq:", eq);
         SET_TOKEN (":ge:", ge);
         SET_TOKEN (":gt:", gt);
         SET_TOKEN (":le:", le);
         SET_TOKEN (":lt:", lt);
         SET_TOKEN (":ne:", ne);
-        SET_TOKEN (":or:", _or);
+        SET_TOKEN (":or:", _or_boolean);
         SET_TOKEN ("==", eq);
         SET_TOKEN ("^", _powint);
         SET_TOKEN ("div", divint);
@@ -150,7 +150,6 @@ namespace expr
         SET_TOKEN ("mod", modint);
         SET_TOKEN ("round", _round);
         SET_TOKEN ("substr", _substr);
-        SET_TOKEN ("||", _or);
 
         SET_TOKEN ("map_assign", _map_assign);
         SET_TOKEN ("map_get_assignment", _map_get_assignment);
@@ -225,9 +224,7 @@ namespace expr
 
         void operator() (const child_type& m) const
         {
-          typedef std::pair<char, node_type> cn_type;
-
-          BOOST_FOREACH (const cn_type& cn, m)
+          for (const std::pair<char, node_type>& cn : m)
           {
             boost::apply_visitor
               ( visitor_names (_names, _prefix + cn.first)
@@ -235,7 +232,7 @@ namespace expr
               );
           }
         }
-        void operator() (const boost::function<void (tokenizer&)>&) const
+        void operator() (const std::function<void (tokenizer&)>&) const
         {
           if (!_names.empty())
           {
@@ -273,9 +270,7 @@ namespace expr
           }
           else
           {
-            typedef std::pair<char, node_type> cn_type;
-
-            BOOST_FOREACH (const cn_type& cn, m)
+            for (const std::pair<char, node_type>& cn : m)
               {
                 if (*_tokenizer.pos() == cn.first)
                   {
@@ -297,7 +292,7 @@ namespace expr
           }
         }
 
-        void operator() (const boost::function<void (tokenizer&)>& f) const
+        void operator() (const std::function<void (tokenizer&)>& f) const
         {
           f (_tokenizer);
         }
@@ -351,6 +346,34 @@ namespace expr
       }
     }
 
+    void tokenizer::or_boolean_integral()
+    {
+      if (!is_eof() && *_pos == '|')
+      {
+        ++_pos;
+
+        set_token (_or_boolean);
+      }
+      else
+      {
+        set_token (_or_integral);
+      }
+    }
+
+    void tokenizer::and_boolean_integral()
+    {
+      if (!is_eof() && *_pos == '&')
+      {
+        ++_pos;
+
+        set_token (_and_boolean);
+      }
+      else
+      {
+        set_token (_and_integral);
+      }
+    }
+
     void tokenizer::negsub()
     {
       set_token (next_can_be_unary (_token) ? neg : sub);
@@ -380,7 +403,6 @@ namespace expr
 
       do
         {
-          fhg::util::parse::require::skip_spaces (_pos);
           _ref.push_back (fhg::util::parse::require::identifier (_pos));
 
           if (_pos.end())

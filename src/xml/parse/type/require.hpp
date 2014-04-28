@@ -6,8 +6,7 @@
 #include <fhg/util/xml.fwd.hpp>
 
 #include <string>
-
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 
 namespace xml
 {
@@ -20,7 +19,7 @@ namespace xml
       struct requirements_type
       {
       private:
-        typedef boost::unordered_map<require_key_type,bool> map_type;
+        typedef std::unordered_map<require_key_type,bool> map_type;
 
       public:
         requirements_type();

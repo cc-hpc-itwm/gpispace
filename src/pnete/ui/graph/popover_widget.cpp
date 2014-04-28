@@ -16,13 +16,13 @@ namespace fhg
     namespace ui
     {
       popover_widget::popover_widget(QWidget* content)
-        : QWidget( NULL, Qt::FramelessWindowHint | Qt::Popup )
+        : QWidget( nullptr, Qt::FramelessWindowHint | Qt::Popup )
         , _arrowOffset( 20 )
         , _arrowLength( 20 )
         , _roundness( 20 )
         , _contentPadding( 10 )
         , _content( content )
-        , _closingAnimation(NULL)
+        , _closingAnimation(nullptr)
         , _wantedSize(_content->minimumSize() + QSize(2 * _contentPadding, 2 * _contentPadding))
         , _hideTimer(new QTimer(this))
         , _hideTimeout(300)
@@ -64,7 +64,7 @@ namespace fhg
 
         void popover_widget::animationFinished()
         {
-          _closingAnimation = NULL;
+          _closingAnimation = nullptr;
         }
 
         QPropertyAnimation* popover_widget::createAnimation()
@@ -93,7 +93,7 @@ namespace fhg
           if(_closingAnimation)
           {
             delete _closingAnimation;
-            _closingAnimation = NULL;
+            _closingAnimation = nullptr;
             QWidget::closeEvent(event);
           }
           else

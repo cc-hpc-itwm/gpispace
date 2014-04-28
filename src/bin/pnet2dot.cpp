@@ -13,14 +13,13 @@
 #include <fhg/util/indenter.hpp>
 #include <fhg/util/read_bool.hpp>
 
-#include <boost/foreach.hpp>
-#include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
 #include <boost/range/adaptor/map.hpp>
 
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <sstream>
 
@@ -182,7 +181,7 @@ namespace
   {
   public:
     bool full;
-    std::list<boost::function <bool (we::type::transition_t const&)> >
+    std::list<std::function <bool (we::type::transition_t const&)>>
       filter;
     bool show_token;
     bool show_signature;
@@ -193,8 +192,7 @@ namespace
 
     bool should_be_expanded (const we::type::transition_t& x) const
     {
-      BOOST_FOREACH
-        (boost::function <bool (we::type::transition_t const&)> f, filter)
+      for (std::function <bool (we::type::transition_t const&)> f : filter)
       {
         if (f (x))
         {
@@ -288,9 +286,7 @@ namespace
 
       s << _indent << "subgraph cluster_net_" << id_net << " {";
 
-      typedef std::pair<we::place_id_type, place::type> ip_type;
-
-      BOOST_FOREACH (const ip_type& ip, net.places())
+      for (const std::pair<we::place_id_type, place::type>& ip : net.places())
       {
         const we::place_id_type& place_id (ip.first);
         const place::type& place (ip.second);
@@ -299,9 +295,7 @@ namespace
 
         if (opts.show_token)
         {
-          BOOST_FOREACH ( const pnet::type::value::value_type& t
-                        , net.get_token (place_id)
-                        )
+          for (const pnet::type::value::value_type& t : net.get_token (place_id))
           {
             token << endl << pnet::type::value::show (t);
           }
@@ -329,9 +323,9 @@ namespace
              );
       }
 
-      typedef std::pair<we::transition_id_type,we::type::transition_t> it_type;
-
-      BOOST_FOREACH (const it_type& it, net.transitions())
+      for ( const std::pair<we::transition_id_type,we::type::transition_t>& it
+          : net.transitions()
+          )
       {
         const we::transition_id_type& trans_id (it.first);
         const we::type::transition_t& trans (it.second);
@@ -343,11 +337,10 @@ namespace
 
         if (net.port_to_place().find (trans_id) != net.port_to_place().end())
         {
-          BOOST_FOREACH
-            ( we::type::net_type::port_to_place_with_info_type::value_type
-              const& port_to_place
-            , net.port_to_place().at (trans_id)
-            )
+          for ( we::type::net_type::port_to_place_with_info_type::value_type
+                  const& port_to_place
+              : net.port_to_place().at (trans_id)
+              )
           {
             s << fhg::util::deeper (_indent)
               << name ( id_trans
@@ -362,11 +355,10 @@ namespace
 
         if (net.place_to_port().find (trans_id) !=  net.place_to_port().end())
         {
-          BOOST_FOREACH
-            ( we::type::net_type::place_to_port_with_info_type::value_type
-              const& place_to_port
-            , net.place_to_port().at (trans_id)
-            )
+          for ( we::type::net_type::place_to_port_with_info_type::value_type
+                  const& place_to_port
+              : net.place_to_port().at (trans_id)
+              )
           {
             s << fhg::util::deeper (_indent)
               << name ( id_net
@@ -443,17 +435,13 @@ namespace
               + priority.str()
               );
 
-    BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                  , t.ports_input()
-                  )
+    for (we::type::transition_t::port_map_t::value_type const& p : t.ports_input())
     {
       std::ostringstream token;
 
       if (opts.show_token && input)
       {
-        BOOST_FOREACH ( we::type::activity_t::input_t::value_type const& vp
-                      , *input
-                      )
+        for (we::type::activity_t::input_t::value_type const& vp : *input)
         {
           if (vp.second == p.first)
           {
@@ -469,17 +457,13 @@ namespace
                 + quote (token.str())
                 );
     }
-    BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                  , t.ports_output()
-                  )
+    for (we::type::transition_t::port_map_t::value_type const& p : t.ports_output())
     {
       std::ostringstream token;
 
       if (opts.show_token && output)
       {
-        BOOST_FOREACH ( we::type::activity_t::output_t::value_type const& vp
-                      , *output
-                      )
+        for (we::type::activity_t::output_t::value_type const& vp : *output)
         {
           if (vp.second == p.first)
           {
@@ -495,9 +479,7 @@ namespace
                 + quote (token.str())
                 );
     }
-    BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                  , t.ports_tunnel()
-                  )
+    for (we::type::transition_t::port_map_t::value_type const& p : t.ports_tunnel())
     {
       s << fhg::util::deeper (indent)
         << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
@@ -512,9 +494,7 @@ namespace
       s << boost::apply_visitor (visit_transition (id, indent, opts), t.data());
       --indent;
 
-      BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                    , t.ports_input()
-                    )
+      for (we::type::transition_t::port_map_t::value_type const& p : t.ports_input())
       {
         if (p.second.associated_place())
         {
@@ -528,9 +508,7 @@ namespace
             << association();
         }
       }
-      BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                    , t.ports_output()
-                    )
+      for (we::type::transition_t::port_map_t::value_type const& p : t.ports_output())
       {
         if (p.second.associated_place())
         {
@@ -544,9 +522,7 @@ namespace
             << association();
         }
       }
-      BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                    , t.ports_tunnel()
-                    )
+      for (we::type::transition_t::port_map_t::value_type const& p : t.ports_tunnel())
       {
         if (p.second.associated_place())
         {
@@ -695,20 +671,22 @@ try
     return EXIT_SUCCESS;
   }
 
-  BOOST_FOREACH (std::string const& p, not_starts_with)
+  for (std::string const& p : not_starts_with)
   {
     options.filter.push_back
-      ( boost::bind ( &fhg::util::starts_with, p
-                    , boost::bind (&we::type::transition_t::name, _1)
-                    )
+      ( [&p] (we::type::transition_t const& t)
+      {
+        return fhg::util::starts_with (p, t.name());
+      }
       );
   }
-  BOOST_FOREACH (std::string const& s, not_ends_with)
+  for (std::string const& s : not_ends_with)
   {
     options.filter.push_back
-      ( boost::bind ( &fhg::util::ends_with, s
-                    , boost::bind (&we::type::transition_t::name, _1)
-                    )
+      ( [&s] (we::type::transition_t const& t)
+      {
+        return fhg::util::ends_with (s, t.name());
+      }
       );
   }
 

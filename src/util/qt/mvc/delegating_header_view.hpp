@@ -23,7 +23,7 @@ namespace fhg
           Q_OBJECT
 
         public:
-          delegating_header_view (QWidget* parent = NULL);
+          delegating_header_view (QWidget* parent = nullptr);
 
           virtual void setModel (QAbstractItemModel*);
 
@@ -60,7 +60,7 @@ namespace fhg
             boost::optional<int> section;
             QWidget* widget;
             mini_button* close_button;
-            _editor_type() : section (boost::none), widget (NULL), close_button (NULL) {}
+            _editor_type() : section (boost::none), widget (nullptr), close_button (nullptr) {}
           } _editor;
 
           friend class header_delegate;

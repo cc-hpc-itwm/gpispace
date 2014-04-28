@@ -8,23 +8,24 @@
 #include <sdpa/events/ErrorEvent.hpp>
 
 #include <boost/thread.hpp>
-#include <boost/bind.hpp>
 
 #include <fhgcom/kvs/kvsd.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 #include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/tcp_server.hpp>
 
+#include <functional>
+
 struct KVSSetup
 {
   KVSSetup ()
     : m_pool (1)
-    , m_kvsd()
-    , m_serv (m_pool, m_kvsd, "localhost", "0", true)
+    , m_kvsd (boost::none)
+    , m_serv (m_pool.get_io_service(), m_kvsd, "localhost", "0", true)
     , m_thrd (&fhg::com::io_service_pool::run, &m_pool)
     , _kvs ( new fhg::com::kvs::client::kvsc
              ( "localhost"
-             , boost::lexical_cast<std::string> (m_serv.port())
+             , boost::lexical_cast<std::string> (m_serv.TESTONLY_port())
              , true // auto_reconnect
              , boost::posix_time::seconds (3)
              , 3
@@ -89,12 +90,14 @@ BOOST_FIXTURE_TEST_CASE (perform_test, KVSSetup)
 {
   wait_for_n_events_strategy counter (1);
 
-  sdpa::com::NetworkStrategy net ( boost::bind (&wait_for_n_events_strategy::perform, &counter, _1)
-                                 , "peer-1"
-                                 , fhg::com::host_t ("localhost")
-                                 , fhg::com::port_t ("0")
-                                 , _kvs
-                                 );
+  sdpa::com::NetworkStrategy net
+    ( std::bind
+      (&wait_for_n_events_strategy::perform, &counter, std::placeholders::_1)
+    , "peer-1"
+    , fhg::com::host_t ("localhost")
+    , fhg::com::port_t ("0")
+    , _kvs
+    );
 
   net.perform (boost::shared_ptr<sdpa::events::SDPAEvent>(new sdpa::events::ErrorEvent( "peer-1"
                                                               , "peer-1"

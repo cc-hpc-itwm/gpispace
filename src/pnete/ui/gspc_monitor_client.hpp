@@ -5,7 +5,6 @@
 
 #include <fhg/util/parse/position.hpp>
 
-#include <boost/function.hpp>
 #include <boost/optional.hpp>
 
 #include <QMap>
@@ -16,6 +15,8 @@
 #include <QStringList>
 #include <QTcpSocket>
 #include <QTimer>
+
+#include <functional>
 
 namespace fhg
 {
@@ -28,11 +29,11 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        monitor_client (const QString& host, int port, QObject* parent = NULL);
+        monitor_client (const QString& host, int port, QObject* parent = nullptr);
 
         void request_action ( const QStringList&
                             , const QString&
-                            , const QMap<QString, boost::function<QString()> >&
+                            , const QMap<QString, std::function<QString()>>&
                             );
         void request_layout_hint (const QString&);
         void request_action_description (const QStringList&);
@@ -77,7 +78,7 @@ namespace fhg
                            , const QString&
                            , const action_result_code&
                            , const boost::optional<QString>&
-                           , QList<QPair<QString, QString> >
+                           , QList<QPair<QString, QString>>
                            );
         void nodes (QStringList);
         void nodes_details (const QString&, const boost::optional<QString>&);

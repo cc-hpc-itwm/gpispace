@@ -7,8 +7,6 @@
 #include <gpi-space/pc/url.hpp>
 #include <fhg/util/first_then.hpp>
 
-#include <boost/foreach.hpp>
-
 namespace gpi
 {
   namespace pc
@@ -19,10 +17,7 @@ namespace gpi
 
       fhg::util::first_then<std::string> const sep ("?", "&");
 
-      BOOST_FOREACH
-        ( std::pair<std::string BOOST_PP_COMMA() std::string> const& kv
-        , url.args()
-        )
+      for (std::pair<std::string, std::string> const& kv : url.args())
       {
         os << sep << kv.first << '=' << kv.second;
       }

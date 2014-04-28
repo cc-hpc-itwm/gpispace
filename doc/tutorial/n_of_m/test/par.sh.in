@@ -9,7 +9,7 @@ DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
 DIR_SOURCE="${DIR_TEST}/.."
 
 OUT="${DIR_BUILD}/n_of_m.out"
-RESULT="$(mktemp --tmpdir="${DIR_BUILD}")"
+RESULT="$(mktemp -p "${DIR_BUILD}")"
 
 make=()
 make+=( make BUILDDIR="${DIR_BUILD}" )

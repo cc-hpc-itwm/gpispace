@@ -17,7 +17,6 @@
 #include <fhg/assert.hpp>
 #include <fhg/syscall.hpp>
 
-#include <boost/bind.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>

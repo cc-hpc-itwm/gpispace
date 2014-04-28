@@ -20,11 +20,11 @@
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include <boost/unordered_map.hpp>
 
 namespace xml
 {
@@ -176,7 +176,7 @@ namespace xml
 #undef WARN
 
         template<typename T>
-        T generic_parse ( boost::function<T (std::istream&, type&)> parse
+        T generic_parse ( std::function<T (std::istream&, type&)> parse
                         , const boost::filesystem::path& path
                         )
         {
@@ -199,7 +199,7 @@ namespace xml
         }
 
         template<typename T>
-        T generic_parse ( boost::function<T (std::istream&, type&)> parse
+        T generic_parse ( std::function<T (std::istream&, type&)> parse
                         , const std::string& file
                         )
         {
@@ -209,7 +209,7 @@ namespace xml
         void check_for_include_loop (const boost::filesystem::path& path) const;
 
         template<typename T>
-        T generic_include ( boost::function<T (std::istream&, type&)> parse
+        T generic_include ( std::function<T (std::istream&, type&)> parse
                           , const std::string& file
                           )
         {
@@ -283,9 +283,9 @@ namespace xml
 
         link_prefix_type _link_prefix;
 
-        mutable boost::unordered_map< std::string
-                                    , std::string
-                                    > _link_prefix_by_key;
+        mutable std::unordered_map< std::string
+                                  , std::string
+                                  > _link_prefix_by_key;
         mutable bool _link_prefix_parsed;
 
         std::string _Osearch_path;

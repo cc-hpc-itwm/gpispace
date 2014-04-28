@@ -4,9 +4,8 @@
 
 #include <we/type/value/name.hpp>
 
-#include <boost/unordered_map.hpp>
-
 #include <iostream>
+#include <unordered_map>
 
 namespace pnet
 {
@@ -16,7 +15,7 @@ namespace pnet
     {
       namespace
       {
-        typedef boost::unordered_map<std::string,std::string> map_type;
+        typedef std::unordered_map<std::string,std::string> map_type;
 
         map_type init_typenames_complete()
         {

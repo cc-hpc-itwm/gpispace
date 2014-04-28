@@ -1,6 +1,9 @@
 #include <fhgcom/session.hpp>
-#include <fhgcom/util/to_hex.hpp>
-#include <boost/bind.hpp>
+
+#include <fhglog/fhglog.hpp>
+
+#include <functional>
+#include <iomanip>
 
 using namespace fhg::com;
 
@@ -39,10 +42,10 @@ void session::async_send (const std::string & data)
                             , boost::asio::buffer( to_send_.front().data()
                                                  , to_send_.front().length()
                                                  )
-                            , boost::bind( &session::handle_write
-                                         , shared_from_this ()
-                                         , boost::asio::placeholders::error
-                                         )
+                            , std::bind( &session::handle_write
+                                       , shared_from_this ()
+                                       , std::placeholders::_1
+                                       )
                             );
   }
 }
@@ -51,11 +54,11 @@ void session::read_header ()
 {
   boost::asio::async_read ( socket_
                           , boost::asio::buffer (inbound_header_)
-                          , boost::bind ( &session::handle_read_header
-                                        , shared_from_this()
-                                        , boost::asio::placeholders::error
-                                        , boost::asio::placeholders::bytes_transferred
-                                        )
+                          , std::bind ( &session::handle_read_header
+                                      , shared_from_this()
+                                      , std::placeholders::_1
+                                      , std::placeholders::_2
+                                      )
                           );
 }
 
@@ -84,11 +87,11 @@ void session::handle_read_header ( const boost::system::error_code & error
 
     boost::asio::async_read ( socket_
                             , boost::asio::buffer (inbound_data_)
-                            , boost::bind ( &session::handle_read_data
-                                          , shared_from_this()
-                                          , boost::asio::placeholders::error
-                                          , boost::asio::placeholders::bytes_transferred
-                                          )
+                            , std::bind ( &session::handle_read_data
+                                        , shared_from_this()
+                                        , std::placeholders::_1
+                                        , std::placeholders::_2
+                                        )
                             );
   }
   else
@@ -158,10 +161,10 @@ void session::handle_write (const boost::system::error_code & e)
                               , boost::asio::buffer( to_send_.front().data()
                                                    , to_send_.front().length()
                                                    )
-                              , boost::bind( &session::handle_write
-                                           , shared_from_this ()
-                                           , boost::asio::placeholders::error
-                                           )
+                              , std::bind( &session::handle_write
+                                         , shared_from_this ()
+                                         , std::placeholders::_1
+                                         )
                               );
     }
   }

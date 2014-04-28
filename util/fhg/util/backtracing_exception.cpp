@@ -68,7 +68,7 @@ namespace fhg
 #ifndef NO_CXA_DEMANGLE
         int status;
         const char* ret
-          (abi::__cxa_demangle(function_name.c_str(), NULL, NULL, &status));
+          (abi::__cxa_demangle(function_name.c_str(), nullptr, nullptr, &status));
         const std::string demangled_name
           (status == 0 ? ret : function_name);
 #else

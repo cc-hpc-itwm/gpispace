@@ -7,10 +7,10 @@
 
 #include <fhg/assert.hpp>
 #include <fhg/syscall.hpp>
+#include <fhg/util/make_unique.hpp>
 #include <fhglog/LogMacros.hpp>
 
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
+#include <functional>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,11 +72,8 @@ namespace gpi
           m_socket = fd;
 
           m_listener = thread_t
-            (new boost::thread(boost::bind( &manager_t::listener_thread_main
-                                          , this
-                                          , m_socket
-                                          )
-                              )
+            ( new boost::thread
+              (&manager_t::listener_thread_main, this, m_socket)
             );
         }
       }
@@ -220,17 +217,19 @@ namespace gpi
             {
               boost::mutex::scoped_lock const _ (_mutex_processes);
 
-              m_processes.insert
+              m_processes.emplace
                 ( id
-                , std::auto_ptr<process_t>
-                  ( new process_t
-                    ( boost::bind (&manager_t::handle_process_error, this, _1, _2)
-                    , id
-                    , cfd
-                    , _memory_manager
-                    , _topology
-                    , _gpi_api
-                    )
+                , fhg::util::make_unique<process_t>
+                  ( std::bind ( &manager_t::handle_process_error
+                              , this
+                              , std::placeholders::_1
+                              , std::placeholders::_2
+                              )
+                  , id
+                  , cfd
+                  , _memory_manager
+                  , _topology
+                  , _gpi_api
                   )
                 );
             }
@@ -261,7 +260,6 @@ namespace gpi
         , _memory_manager (gpi_api)
         , _topology ( global::topology_t::any_addr()
                     , global::topology_t::any_port() // topology_t::port_t("10821")
-                    , "dummy-cookie"
                     , _memory_manager
                     , kvs_client
                     , gpi_api
@@ -277,7 +275,7 @@ namespace gpi
         if (_topology.is_master ())
         {
           gpi::pc::type::id_t id = 1;
-          BOOST_FOREACH (std::string const& url, default_memory_urls)
+          for (std::string const& url : default_memory_urls)
           {
             _memory_manager.add_memory
               ( 0 // owner

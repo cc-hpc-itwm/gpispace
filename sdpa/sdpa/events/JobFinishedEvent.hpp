@@ -22,11 +22,6 @@ namespace sdpa
         , result_ (job_result)
       {}
 
-      std::string str() const
-      {
-        return "JobFinishedEvent(" + job_id () + ")";
-      }
-
       virtual void handleBy (EventHandler* handler)
       {
         handler->handleJobFinishedEvent (this);

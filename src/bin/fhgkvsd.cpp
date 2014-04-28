@@ -13,8 +13,8 @@
 
 #include <fhg/util/daemonize.hpp>
 
-static fhg::com::io_service_pool pool (1);
-static fhg::com::kvs::server::kvsd *g_kvsd (0);
+static fhg::com::io_service_pool pool (4);
+static fhg::com::kvs::server::kvsd *g_kvsd (nullptr);
 
 static const int EX_STILL_RUNNING = 4;
 
@@ -69,12 +69,12 @@ int main(int ac, char *av[])
   std::string pidfile;
   bool daemonize = false;
 
-  if (getenv("KVS_URL") != NULL)
+  if (getenv("KVS_URL") != nullptr)
   {
     try
     {
       using namespace fhg::com;
-      peer_info_t pi (peer_info_t::from_string (getenv("KVS_URL")));
+      peer_info_t pi (getenv("KVS_URL"));
       server_address = pi.host(server_address);
       server_port = pi.port(server_port);
     }
@@ -191,14 +191,13 @@ int main(int ac, char *av[])
 
   try
   {
-    fhg::com::tcp_server server ( pool
+    fhg::com::tcp_server server ( pool.get_io_service()
                                 , kvsd
                                 , server_address
                                 , server_port
                                 , reuse_address
                                 );
 
-    pool.set_nthreads (4);
     pool.run ();
   }
   catch (std::exception const & ex)

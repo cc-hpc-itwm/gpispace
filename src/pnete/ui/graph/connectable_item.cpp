@@ -68,7 +68,7 @@ namespace fhg
         {
           QLinkedList<base_item*> childs;
 
-          foreach (association* association, associations())
+          for (association* association : associations())
           {
             childs << association;
           }

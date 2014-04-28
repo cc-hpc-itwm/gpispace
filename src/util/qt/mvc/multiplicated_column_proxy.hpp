@@ -18,7 +18,7 @@ namespace fhg
           Q_OBJECT
 
         public:
-          multiplicated_column_proxy (QAbstractItemModel*, QObject* parent = NULL);
+          multiplicated_column_proxy (QAbstractItemModel*, QObject* parent = nullptr);
 
           virtual int columnCount (const QModelIndex& = QModelIndex()) const;
           virtual QModelIndex mapToSource (const QModelIndex& proxy) const;

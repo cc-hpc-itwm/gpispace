@@ -18,9 +18,10 @@
 #include <QFileSystemWatcher>
 #include <QFile>
 
-#include <boost/foreach.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/discrete_distribution.hpp>
+
+#include <functional>
 
 server::server (int port, const QString& hostlist, QObject* parent)
   : QTcpServer (parent)
@@ -45,7 +46,7 @@ void server::incomingConnection (int socket_descriptor)
 thread::thread (int socket_descriptor, const QString& hostlist, QObject* parent)
   : QThread (parent)
   , _socket_descriptor (socket_descriptor)
-  , _socket (NULL)
+  , _socket (nullptr)
 {
   QFileSystemWatcher* watcher (new QFileSystemWatcher (this));
   connect ( watcher, SIGNAL (fileChanged (const QString&))
@@ -80,7 +81,7 @@ namespace
   const double initial_state_probabilities[] = {
     0.1, 0.6, 0.2, 0.1
   };
-  const char* actions[] = {NULL, "add_to_working_set\", \"reboot", "reboot", "remove_from_working_set\", \"foo"};
+  const char* actions[] = {nullptr, "add_to_working_set\", \"reboot", "reboot", "remove_from_working_set\", \"foo"};
 
   const char* description (const QString& action)
   {
@@ -181,7 +182,11 @@ namespace
             prefix::require::token (pos, ":");
 
             prefix::require::list
-              (pos, boost::bind (insert_into_map, _1, &_arguments));
+              ( pos
+              , std::bind ( insert_into_map
+                          , std::placeholders::_1, &_arguments
+                          )
+              );
 
             break;
           }
@@ -194,7 +199,8 @@ namespace
         fhg::util::parse::require::require (pos, "osts");
         prefix::require::token (pos, ":");
 
-        prefix::require::list (pos, boost::bind (&insert_into_set, _1, &_hosts));
+        prefix::require::list
+          (pos, std::bind (&insert_into_set, std::placeholders::_1, &_hosts));
 
         break;
       }
@@ -211,7 +217,7 @@ void thread::execute_action (fhg::util::parse::position& pos)
 {
   action_invocation invoc;
   prefix::require::list
-    (pos, boost::bind (&action_invocation::append, &invoc, _1));
+    (pos, std::bind (&action_invocation::append, &invoc, std::placeholders::_1));
 
   if (invoc._hosts.empty() || !invoc._action)
   {
@@ -228,7 +234,7 @@ void thread::execute_action (fhg::util::parse::position& pos)
 
   const QMutexLocker lock (&_hosts_mutex);
 
-  BOOST_FOREACH (QString host, invoc._hosts)
+  for (QString host : invoc._hosts)
   {
     if (!_hosts.contains (host))
     {
@@ -405,7 +411,12 @@ void thread::may_read()
         prefix::require::token (pos, ":");
 
         prefix::require::list
-          (pos, boost::bind (&thread::send_action_description, this, _1));
+          ( pos
+          , std::bind ( &thread::send_action_description
+                      , this
+                      , std::placeholders::_1
+                      )
+          );
 
         break;
 
@@ -421,7 +432,7 @@ void thread::may_read()
           QList<QString> hosts (_hosts.keys());
           qStableSort (hosts.begin(), hosts.end(), less());
 
-          foreach (const QString& host, hosts)
+          for (const QString& host : hosts)
           {
             _socket->write (qPrintable (QString (" \"%1\",").arg (host)));
           }
@@ -435,7 +446,8 @@ void thread::may_read()
         fhg::util::parse::require::require (pos, "ayout_hint");
         prefix::require::token (pos, ":");
 
-        prefix::require::list (pos, boost::bind (&thread::send_layout_hint, this, _1));
+        prefix::require::list
+          (pos, std::bind (&thread::send_layout_hint, this, std::placeholders::_1));
 
         break;
 
@@ -472,10 +484,11 @@ void thread::may_read()
           const QMutexLocker lock (&_pending_status_updates_mutex);
           prefix::require::list
             ( pos
-            , boost::bind ( &QStringList::push_back
-                          , &_pending_status_updates
-                          , boost::bind (prefix::require::qstring, _1)
-                          )
+            , std::bind ( &QStringList::push_back
+                        , &_pending_status_updates
+                        , std::bind
+                          (prefix::require::qstring, std::placeholders::_1)
+                        )
             );
         }
       }

@@ -32,6 +32,8 @@ namespace expr
       void cmp (const token::type&, const token::type&);
       void negsub();
       void mulpow();
+      void or_boolean_integral();
+      void and_boolean_integral();
       void divcomment();
       void identifier();
       void notne();

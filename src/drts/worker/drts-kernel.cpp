@@ -11,9 +11,9 @@
 
 #include <fhglog/LogMacros.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
 
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -34,7 +34,7 @@ int main(int ac, char **av)
   desc.add_options()
     ("help,h", "this message")
     ("name,n", po::value<std::string>(&kernel_name), "give the kernel a name")
-    ("set,s", po::value<std::vector<std::string> >(&config_vars), "set a parameter to a value key=value")
+    ("set,s", po::value<std::vector<std::string>>(&config_vars), "set a parameter to a value key=value")
     ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
     ("daemonize", "daemonize after all checks were successful")
     ("gpi_enabled", "load gpi api")
@@ -75,7 +75,7 @@ int main(int ac, char **av)
   }
 
   std::map<std::string, std::string> config_variables;
-  BOOST_FOREACH (const std::string& p, config_vars)
+  for (const std::string& p : config_vars)
   {
     const std::pair<std::string, std::string> kv (fhg::util::split_string (p, '='));
     if (kv.first.empty())
@@ -112,11 +112,11 @@ int main(int ac, char **av)
   }
 
   fhg::core::wait_until_stopped waiter;
-  const boost::function<void()> request_stop (waiter.make_request_stop());
+  const std::function<void()> request_stop (waiter.make_request_stop());
 
   fhg::core::kernel_t kernel (search_path, request_stop, config_variables);
 
-  BOOST_FOREACH (std::string const & p, mods_to_load)
+  for (std::string const & p : mods_to_load)
   {
     kernel.load_plugin_by_name (p);
   }
@@ -125,8 +125,8 @@ int main(int ac, char **av)
 
   signal_handlers.add_log_backtrace_and_exit_for_critical_errors (logger);
 
-  signal_handlers.add (SIGTERM, boost::bind (request_stop));
-  signal_handlers.add (SIGINT, boost::bind (request_stop));
+  signal_handlers.add (SIGTERM, std::bind (request_stop));
+  signal_handlers.add (SIGINT, std::bind (request_stop));
 
   DRTSImpl const plugin (request_stop, config_variables);
 

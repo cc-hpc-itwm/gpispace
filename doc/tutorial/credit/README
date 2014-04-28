@@ -1,0 +1,20 @@
+situation/goal: rate-limiting transitions
+
+$ MAIN=work_and_wait make run
+[output with uncontrollable interleaving. more than one step-2 happening at once]
+$ MAIN=work_and_wait make clean
+$ MAIN=work_and_wait_credit PUT_PORT="c=2L" make run
+[output with only two step-2 happening at once, as seen by the sleep]
+
+how:
+* generate c credit tokens
+* annotate tokens with one of the credit tokens
+* work (annotated_token)
+* put back credit token after work
+
+as count of credit tokens is limited, there are no more tokens available until a currently running work is done, thus number of parallel work()s are limited to c.
+
+todo: separate nets that are valid for top-level and those only being included in them in the same directory. having them all at one level confuses.
+todo: work_and_wait_credit needs more input than makefile has by default, thus additional PUT_PORT. confusing.
+todo: running `MAIN=work_and_wait_credit make run; MAIN=work_and_wait make run` breaks work_and_wait. (not correctly recompiled modules?)
+todo: also sleep in work?

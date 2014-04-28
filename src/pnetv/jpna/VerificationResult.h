@@ -1,10 +1,9 @@
 #pragma once
 
-#include <cassert>
-#include <vector>
 #include <fhg/assert.hpp>
 
-#include <pnetv/jpn/common/Printable.h>
+#include <cassert>
+#include <vector>
 
 namespace jpna {
 
@@ -13,7 +12,7 @@ class Transition;
 /**
  * Result of a verification.
  */
-class VerificationResult: public jpn::Printable {
+class VerificationResult {
     public:
 
     /**
@@ -71,10 +70,6 @@ class VerificationResult: public jpn::Printable {
      * \return Trace realising one iteration of the loop.
      */
     const std::vector<const Transition *> &loop() const { return loop_; }
-
-    virtual void print(std::ostream &out) const;
 };
 
 } // namespace jpna
-
-/* vim:set et sts=4 sw=4: */

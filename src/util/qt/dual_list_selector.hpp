@@ -26,7 +26,7 @@ namespace fhg
 
         public:
           dual_list_move_and_drag_proxy
-            (QAbstractItemModel*, QObject* = NULL);
+            (QAbstractItemModel*, QObject* = nullptr);
 
           virtual Qt::ItemFlags flags (const QModelIndex&) const;
           virtual Qt::DropActions supportedDropActions() const;
@@ -45,7 +45,7 @@ namespace fhg
           Q_OBJECT
 
         public:
-          list_view_with_drop_source_check (QWidget* parent = NULL);
+          list_view_with_drop_source_check (QWidget* parent = nullptr);
 
           void allowed_drop_sources (QSet<QWidget*>);
           QSet<QWidget*> allowed_drop_sources() const;
@@ -65,7 +65,7 @@ namespace fhg
       public:
         dual_list_selector ( QAbstractListModel* available
                            , QAbstractListModel* selected
-                           , QWidget* = NULL
+                           , QWidget* = nullptr
                            );
 
       private slots:

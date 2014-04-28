@@ -7,8 +7,6 @@
 #include <util/qt/mvc/header_delegate.hpp>
 #include <util/qt/painter_state_saver.hpp>
 
-#include <boost/bind.hpp>
-
 #include <QContextMenuEvent>
 #include <QKeyEvent>
 #include <QMenu>
@@ -24,7 +22,7 @@ namespace fhg
       {
         delegating_header_view::delegating_header_view (QWidget* parent)
           : QHeaderView (Qt::Horizontal, parent)
-          , _delegate (NULL)
+          , _delegate (nullptr)
         {
           connect ( this
                   , SIGNAL (sectionResized (int, int, int))
@@ -71,7 +69,7 @@ namespace fhg
                     , SLOT (data_changed (Qt::Orientation, int, int))
                     );
 
-            _delegates.insert (0, model()->columnCount(), NULL);
+            _delegates.insert (0, model()->columnCount(), nullptr);
           }
         }
 
@@ -187,7 +185,7 @@ namespace fhg
         void delegating_header_view::sections_inserted
           (const QModelIndex&, int from, int to)
         {
-          _delegates.insert (from, to - from + 1, NULL);
+          _delegates.insert (from, to - from + 1, nullptr);
           update();
         }
 
@@ -245,7 +243,7 @@ namespace fhg
           int margin (const QWidget* wid)
           {
             return
-              wid->style()->pixelMetric (QStyle::PM_HeaderGripMargin, 0, wid) + 1;
+              wid->style()->pixelMetric (QStyle::PM_HeaderGripMargin, nullptr, wid) + 1;
           }
         }
 
@@ -268,10 +266,10 @@ namespace fhg
           {
             delegate_for_section (*_editor.section)->release_editor
               (section_index (this, *_editor.section), _editor.widget);
-            _editor.widget = NULL;
+            _editor.widget = nullptr;
 
             delete _editor.close_button;
-            _editor.close_button = NULL;
+            _editor.close_button = nullptr;
 
             _editor.section = boost::none;
 

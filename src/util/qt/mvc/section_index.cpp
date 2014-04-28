@@ -3,9 +3,10 @@
 #include <util/qt/mvc/section_index.hpp>
 
 #include <boost/functional/hash.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
 
 #include <QDebug>
+
+#include <tuple>
 
 namespace fhg
 {
@@ -16,7 +17,7 @@ namespace fhg
       namespace mvc
       {
         section_index::section_index()
-          : _model (NULL)
+          : _model (nullptr)
           , _orientation (Qt::Horizontal)
           , _section (-1)
         { }
@@ -53,13 +54,13 @@ namespace fhg
 
         bool section_index::operator< (const section_index& other) const
         {
-          return boost::tie (_model, _orientation, _section)
-               < boost::tie (other._model, other._orientation, other._section);
+          return std::tie (_model, _orientation, _section)
+               < std::tie (other._model, other._orientation, other._section);
         }
         bool section_index::operator== (const section_index& other) const
         {
-          return boost::tie (_model, _orientation, _section)
-              == boost::tie (other._model, other._orientation, other._section);
+          return std::tie (_model, _orientation, _section)
+              == std::tie (other._model, other._orientation, other._section);
         }
 
         QDebug operator<< (QDebug d, section_index index)

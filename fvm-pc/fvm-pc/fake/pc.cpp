@@ -32,13 +32,13 @@ typedef enum {
 } fvmOperation_t;
 
 // global variables
-static DTmmgr_t dtmmgr(NULL);
+static DTmmgr_t dtmmgr(nullptr);
 
 static fvmSize_t pcFVMSize(0);
-static void * pcFVM(0);
+static void * pcFVM(nullptr);
 
 static fvmSize_t pcShmSize(0);
-static void * pcShm(0);
+static void * pcShm(nullptr);
 
 enum FVM_PC_API_ERRORS
 {
@@ -53,22 +53,18 @@ static void cleanUp()
 {
   if (pcShm)
   {
-        fprintf (stderr, "fvm-pc: removing shared memory segment: %p\n", pcShm);
-        free(pcShm); pcShm = NULL;
+        free(pcShm); pcShm = nullptr;
         pcShmSize = 0;
   }
   if (pcFVM)
   {
-        fprintf (stderr, "fvm-pc: removing FVM segment: %p\n", pcFVM);
-        free(pcFVM); pcFVM = NULL;
+        free(pcFVM); pcFVM = nullptr;
         pcFVMSize = 0;
   }
 
   if (dtmmgr)
   {
-    fprintf (stderr, "fvm-pc: finalizing mmgr: %p %p\n", &dtmmgr, dtmmgr);
-    Size_t Bytes = dtmmgr_finalize (&dtmmgr);
-        fprintf (stderr, "fvm-pc: mmgr freed bytes = %lu" "\n", Bytes);
+    dtmmgr_finalize (&dtmmgr);
   }
 }
 
@@ -98,7 +94,6 @@ int fvmConnect(fvm_pc_config_t cfg)
   else
   {
     pcShmSize = cfg.shmemsize;
-    fprintf(stderr, "fvm-pc: allocating %lu bytes of shared-memory\n", pcShmSize);
     pcShm = malloc(pcShmSize);
         if (! pcShm)
         {
@@ -109,7 +104,6 @@ int fvmConnect(fvm_pc_config_t cfg)
         memset(pcShm, 0, pcShmSize);
 
     pcFVMSize = cfg.fvmsize;
-    fprintf(stderr, "fvm-pc: allocating %lu bytes of VM\n", pcFVMSize);
     pcFVM = malloc(pcFVMSize);
         if (! pcFVM)
         {
@@ -118,8 +112,6 @@ int fvmConnect(fvm_pc_config_t cfg)
           return FVM_EOUTOFMEM;
         }
         memset(pcFVM, 0, pcFVMSize);
-
-    fprintf(stderr, "fvm-pc: using %lu bytes of VM memory\n", pcFVMSize);
 
     dtmmgr_init (&dtmmgr, pcFVMSize, 2 /* aligned to 2-byte boundary */);
 

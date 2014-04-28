@@ -6,9 +6,10 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/serialization/nvp.hpp>
-#include <boost/functional/hash.hpp>
 
 #include <gpi-space/pc/type/typedefs.hpp>
+
+#include <functional>
 
 // TODO: move this define to a better place
 #if !defined(HANDLE_IDENT_BITS)
@@ -85,13 +86,7 @@ namespace gpi
         {
           ar & BOOST_SERIALIZATION_NVP( handle );
         }
-        friend std::size_t hash_value (const handle_t& x);
       };
-
-      inline std::size_t hash_value (const handle_t& x)
-      {
-        return boost::hash<handle_id_t>() (x.handle);
-      }
 
       inline
       void validate (const handle_t & hdl)
@@ -139,6 +134,17 @@ namespace gpi
       }
     }
   }
+}
+
+namespace std
+{
+  template<> struct hash<gpi::pc::type::handle_t>
+  {
+    size_t operator()(gpi::pc::type::handle_t const& x) const
+    {
+      return std::hash<gpi::pc::type::handle_id_t>() (x.handle);
+    }
+  };
 }
 
 #endif

@@ -30,7 +30,7 @@ namespace fhg
         public:
           ports_model ( const data::handle::function&
                       , const we::type::PortDirection&
-                      , QObject* parent = NULL
+                      , QObject* parent = nullptr
                       );
 
           int rowCount (const QModelIndex& = QModelIndex()) const;
@@ -61,7 +61,7 @@ namespace fhg
       public:
         explicit port_lists_widget ( const data::handle::function&
                                    , const QStringList& types
-                                   , QWidget* parent = NULL
+                                   , QWidget* parent = nullptr
                                    );
       };
     }

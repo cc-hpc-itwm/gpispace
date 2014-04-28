@@ -26,7 +26,7 @@ namespace fhg
         Q_OBJECT
 
         public:
-        graph_view (graph::scene_type* scene, QWidget* parent = NULL);
+        graph_view (graph::scene_type* scene, QWidget* parent = nullptr);
 
         graph::scene_type* scene() const;
 

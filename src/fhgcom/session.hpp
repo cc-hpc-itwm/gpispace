@@ -1,19 +1,15 @@
 #ifndef FHG_COM_SESSION_HPP
 #define FHG_COM_SESSION_HPP 1
 
-#include <fhglog/fhglog.hpp>
-
-#include <deque>
-#include <vector>
-
-#include <fhgcom/basic_session_manager.hpp>
+#include <fhgcom/session_manager.hpp>
 
 #include <boost/asio.hpp>
-#include <boost/lexical_cast.hpp>
-
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/mutex.hpp>
+
+#include <deque>
+#include <vector>
 
 namespace fhg
 {
@@ -22,7 +18,7 @@ namespace fhg
     class session : public boost::enable_shared_from_this<session>
     {
     public:
-      typedef basic_session_manager manager_t;
+      typedef session_manager manager_t;
 
       session ( boost::asio::io_service & io_service
               , manager_t & manager
@@ -45,16 +41,6 @@ namespace fhg
       boost::asio::ip::tcp::endpoint local_endpoint () const
       {
         return socket_.local_endpoint();
-      }
-
-      std::string remote_endpoint_str () const
-      {
-        return boost::lexical_cast<std::string>(remote_endpoint());
-      }
-
-      std::string local_endpoint_str () const
-      {
-        return boost::lexical_cast<std::string>(local_endpoint());
       }
 
       void start ()

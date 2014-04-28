@@ -15,6 +15,8 @@
 
 #include <boost/thread/mutex.hpp>
 
+#include <unordered_map>
+
 typedef boost::mutex mutex_type;
 typedef boost::unique_lock<mutex_type> lock_type;
 
@@ -25,7 +27,7 @@ static gpi::pc::client::api_t & gpi_api ()
 }
 
 static gpi::pc::type::info::descriptor_t gpi_info;
-static void *shm_ptr = 0;
+static void *shm_ptr = nullptr;
 static fvmSize_t shm_size = 0;
 static gpi::pc::type::segment_id_t shm_id = 0;
 static gpi::pc::type::handle_t     shm_hdl = 0;
@@ -37,7 +39,7 @@ int fvmConnect()
 
 int fvmLeave()
 {
-  shm_ptr = 0;
+  shm_ptr = nullptr;
   shm_size = 0;
   shm_id = 0;
   shm_hdl = 0;
@@ -80,9 +82,9 @@ static
 gpi::pc::type::handle::descriptor_t
 get_handle_info (gpi::pc::type::handle_t h)
 {
-  typedef boost::unordered_map< gpi::pc::type::handle_t
-                              , gpi::pc::type::handle::descriptor_t
-                              > handle_cache_t;
+  typedef std::unordered_map< gpi::pc::type::handle_t
+                            , gpi::pc::type::handle::descriptor_t
+                            > handle_cache_t;
   static handle_cache_t handle_cache;
   static mutex_type mutex;
 
@@ -104,7 +106,7 @@ get_handle_info (gpi::pc::type::handle_t h)
           handle_cache.erase(handle_cache.begin());
         }
 
-        info = handle_cache.insert(std::make_pair(h, *it)).first;
+        info = handle_cache.emplace (h, *it).first;
         break;
       }
     }

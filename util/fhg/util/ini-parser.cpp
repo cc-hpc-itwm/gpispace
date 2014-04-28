@@ -6,7 +6,6 @@
 #include <fhg/util/parse/from_string.hpp>
 #include <fhg/util/read_file.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/format.hpp>
 
 #include <stdexcept>
@@ -34,7 +33,7 @@ namespace fhg
 
     void ini::put (std::string const& key, std::string const& value)
     {
-      if (!_key_value.insert (std::make_pair (key, value)).second)
+      if (!_key_value.emplace (key, value).second)
       {
         throw std::runtime_error
           ( boost::str

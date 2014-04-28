@@ -22,11 +22,6 @@ namespace sdpa
       {
         handler->handleWorkerRegistrationAckEvent (this);
       }
-
-      std::string str() const
-      {
-        return "WorkerRegistrationAckEvent";
-      }
     };
 
     CONSTRUCT_DATA_DEFS_FOR_EMPTY_MGMTEVENT_OVERLOAD (WorkerRegistrationAckEvent)

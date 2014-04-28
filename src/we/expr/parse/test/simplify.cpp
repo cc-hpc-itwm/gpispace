@@ -9,7 +9,6 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/test/unit_test.hpp>
-#include <boost/foreach.hpp>
 
 #include <string>
 
@@ -29,7 +28,7 @@ namespace
   {
     expr::parse::simplify::key_set_type needed_bindings;
 
-    BOOST_FOREACH (const std::string& name, _needed_bindings)
+    for (const std::string& name : _needed_bindings)
     {
       needed_bindings.insert (key_vec_from_string (name));
     }

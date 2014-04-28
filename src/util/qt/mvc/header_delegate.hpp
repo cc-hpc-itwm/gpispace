@@ -19,7 +19,7 @@ namespace fhg
         class header_delegate
         {
         public:
-          virtual ~header_delegate() { }
+          virtual ~header_delegate() = default;
 
           virtual void paint
             (QPainter*, const QRect&, const section_index&) = 0;

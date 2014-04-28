@@ -9,7 +9,7 @@ namespace fhg
     namespace parse
     {
       std::string until
-        (position& pos, boost::function<bool (position const&)> const& p)
+        (position& pos, std::function<bool (position const&)> const& p)
       {
         std::string s;
 

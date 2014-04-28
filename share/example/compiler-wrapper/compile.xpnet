@@ -15,7 +15,6 @@
                                           , std_err
                                           )">
     <cinclude href="fhglog/fhglog.hpp"/>
-    <cinclude href="we/type/value/show.hpp"/>
     <cinclude href="boost/foreach.hpp"/>
     <cinclude href="errno.h"/>
     <cinclude href="unistd.h"/>
@@ -29,8 +28,6 @@
     <code><![CDATA[
         LOG (INFO, "SDPACC compile");
 
-        LOG (INFO, "===> compiler := " << compiler);
-        LOG (INFO, "===> argv := " << pnet::type::value::show (argv));
 	LOG (INFO, "===> cwd := " << cwd);
 
 	char oldwd[PATH_MAX];

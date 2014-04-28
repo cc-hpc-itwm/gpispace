@@ -3,6 +3,7 @@
 
 source "@CMAKE_BINARY_DIR@/test/env.sh"
 source "@CMAKE_BINARY_DIR@/test/dir_build.sh"
+source "@CMAKE_BINARY_DIR@/test/dir_state.sh"
 source "@CMAKE_BINARY_DIR@/test/measured.sh"
 
 DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
@@ -21,6 +22,7 @@ cleanup()
   eval ${make[@]} uninstall
   eval ${make[@]} clean
   cleanup_dir_build
+  cleanup_dir_state
 }
 
 trap 'cleanup' EXIT
@@ -30,9 +32,7 @@ measured "install" ${make[@]} install                       || die $EX_ERR_RUN
 
 hostname > "${HOSTFILE}"                                    || die $EX_ERR_RUN
 
-measured "setup" SDPA_PERFORM_UNATTENDED_SETUP=1 sdpa setup || die $EX_ERR_ENV
-
-measured "boot" sdpa boot -A "${DIR_BUILD}" -M -f "${HOSTFILE}" worker:1      \
+measured "boot" sdpa boot -S "${DIR_STATE}" -A "${DIR_BUILD}" -M -f "${HOSTFILE}" worker:1      \
                                                             || die $EX_ERR_BOOT
 
 measured "submit" "${DIR_BUILD}/sdpacc" -o "${DIR_BUILD}/hello" "${DIR_SOURCE}/src/hello.c" || die $EX_ERR_RUN
@@ -48,5 +48,6 @@ rm "${HOSTFILE}"                                         || die $EX_ERR_CLEANUP
 measured "uninstall" ${make[@]} uninstall                || die $EX_ERR_CLEANUP
 measured "clean" ${make[@]} clean                        || die $EX_ERR_CLEANUP
 cleanup_dir_build                                        || die $EX_ERR_CLEANUP
+cleanup_dir_state                                        || die $EX_ERR_CLEANUP
 
 trap - EXIT

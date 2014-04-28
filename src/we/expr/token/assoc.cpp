@@ -10,8 +10,10 @@ namespace expr
     {
       switch (token)
         {
-        case token::_or:
-        case token::_and: return left;
+        case token::_or_boolean:
+        case token::_or_integral:
+        case token::_and_boolean:
+        case token::_and_integral: return left;
         case token::_not: return right;
         case token::lt:
         case token::le:
@@ -24,8 +26,7 @@ namespace expr
         case token::mul:
         case token::div:
         case token::divint:
-        case token::modint:
-        case token::mod: return left;
+        case token::modint: return left;
         case token::_pow:
         case token::_powint:
         case token::neg: return right;

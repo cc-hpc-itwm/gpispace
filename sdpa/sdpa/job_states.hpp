@@ -1,6 +1,8 @@
 #ifndef SDPA_JOB_STATES_HPP
 #define SDPA_JOB_STATES_HPP
 
+#include <fhg/util/macros.hpp>
+
 #include <string>
 #include <map>
 
@@ -19,7 +21,6 @@ namespace sdpa
       , PENDING
       , RUNNING
       , CANCELING
-      , UNKNOWN
       };
 
     inline bool is_terminal (code c)
@@ -27,7 +28,7 @@ namespace sdpa
       return c == FINISHED || c == FAILED || c == CANCELED;
     }
 
-    inline std::string show(int code)
+    inline std::string show (status::code code)
     {
       switch (code)
       {
@@ -43,9 +44,9 @@ namespace sdpa
         return "SDPA::Canceled";
       case CANCELING:
         return "SDPA::Canceling";
-      default:
-        return "SDPA::Unknown";
       }
+
+      INVALID_ENUM_VALUE (status::code, code);
     }
   };
 }

@@ -8,6 +8,8 @@
 
 #include <gpi-space/pc/client/api.hpp>
 
+#include <boost/thread/scoped_thread.hpp>
+
 typedef boost::recursive_mutex         mutex_type;
 typedef boost::unique_lock<mutex_type> lock_type;
 
@@ -15,9 +17,9 @@ class GpiPluginImpl : FHG_PLUGIN
                     , public gpi::GPI
 {
 public:
-  GpiPluginImpl (boost::function<void()>, std::list<Plugin*>, std::map<std::string, std::string> config_variables)
+  GpiPluginImpl (std::function<void()>, std::list<Plugin*>, std::map<std::string, std::string> config_variables)
     : api ("")
-    , _try_start_loop (NULL)
+    , _try_start_loop (nullptr)
   {
     const std::string socket_path
       ( get<std::string> ("plugin.gpi.socket", config_variables)
@@ -67,23 +69,16 @@ public:
 
       if (! connected)
       {
-        _try_start_loop = new boost::thread (&GpiPluginImpl::restart_loop, this);
+        _try_start_loop = new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+          (&GpiPluginImpl::restart_loop, this);
       }
     }
   }
 
   virtual ~GpiPluginImpl()
   {
-    if (_try_start_loop)
-    {
-      _try_start_loop->interrupt();
-      if (_try_start_loop->joinable())
-      {
-        _try_start_loop->join();
-      }
-      delete _try_start_loop;
-      _try_start_loop = NULL;
-    }
+    delete _try_start_loop;
+    _try_start_loop = nullptr;
   }
 
   gpi::pc::type::handle_id_t alloc ( const gpi::pc::type::segment_id_t seg_id
@@ -228,7 +223,8 @@ private:
   mutable mutex_type     m_state_mtx;
   gpi::pc::client::api_t api;
 
-  boost::thread* _try_start_loop;
+  boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>*
+    _try_start_loop;
 };
 
 EXPORT_FHG_PLUGIN (gpi, GpiPluginImpl, "");

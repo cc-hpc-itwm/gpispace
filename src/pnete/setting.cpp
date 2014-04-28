@@ -9,8 +9,6 @@
 #include <QSettings>
 #include <QApplication>
 
-#include <boost/foreach.hpp>
-
 namespace fhg
 {
   namespace pnete
@@ -128,7 +126,7 @@ namespace fhg
 
             int index (0);
 
-            BOOST_FOREACH(const path_type& path, paths)
+            for (const path_type& path : paths)
               {
                 settings.setArrayIndex (index++);
 

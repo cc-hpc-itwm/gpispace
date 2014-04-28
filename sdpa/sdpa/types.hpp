@@ -7,9 +7,10 @@
 #include <map>
 #include <set>
 #include <iostream>
-#include <boost/foreach.hpp>
 #include <we/type/value.hpp>
 #include <sdpa/job_states.hpp>
+
+#include <iterator>
 
 namespace sdpa {
 	typedef std::string job_id_t;
@@ -23,7 +24,7 @@ namespace sdpa {
 	typedef worker_id_list_t agent_id_list_t;
 	typedef std::pair<worker_id_t, job_id_t> worker_job_pair_t;
 
-  typedef std::list<std::pair<sdpa::worker_id_t, int> > list_match_workers_t;
+  typedef std::list<std::pair<sdpa::worker_id_t, int>> list_match_workers_t;
 
   typedef std::map<sdpa::worker_id_t, int> map_degs_t;
 
@@ -103,7 +104,7 @@ inline std::ostream& operator<<(std::ostream& os, const sdpa::worker_id_list_t& 
   for(sdpa::worker_id_list_t::const_iterator it=worker_list.begin(); it!=worker_list.end(); it++)
   {
       os<<*it;
-      if( boost::next(it) != worker_list.end() )
+      if( std::next(it) != worker_list.end() )
         os<<",";
       else
         os<<")";

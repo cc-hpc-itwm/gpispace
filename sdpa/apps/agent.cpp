@@ -7,7 +7,6 @@
 #include <fhglog/fhglog.hpp>
 
 #include <boost/program_options.hpp>
-#include <boost/foreach.hpp>
 
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <we/layer.hpp>
@@ -21,10 +20,10 @@
 
 #include <boost/tokenizer.hpp>
 
+#include <functional>
+
 namespace bfs = boost::filesystem;
 namespace po = boost::program_options;
-
-static const int EX_STILL_RUNNING = 4;
 
 int main (int argc, char **argv)
 {
@@ -44,7 +43,7 @@ int main (int argc, char **argv)
     ("name,n", po::value<std::string>(&agentName)->default_value("agent"), "Agent's logical name")
     ("url,u",  po::value<std::string>(&agentUrl)->default_value("localhost"), "Agent's url")
     //("orch_name,m",  po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
-    ("master,m", po::value<std::vector<std::string> >(&arrMasterNames)->multitoken(), "Agent's master list")
+    ("master,m", po::value<std::vector<std::string>>(&arrMasterNames)->multitoken(), "Agent's master list")
     ("app_gui_url,a", po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
     ("kvs_url,k",  po::value<std::string>()->required(), "The kvs daemon's url")
     ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
@@ -69,7 +68,7 @@ int main (int argc, char **argv)
 
   {
     boost::char_separator<char> sep(":");
-    boost::tokenizer<boost::char_separator<char> > tok(vm["kvs_url"].as<std::string>(), sep);
+    boost::tokenizer<boost::char_separator<char>> tok(vm["kvs_url"].as<std::string>(), sep);
 
     vec.assign(tok.begin(),tok.end());
 
@@ -113,7 +112,7 @@ int main (int argc, char **argv)
                     << "' at '" << agentUrl
                     << "', having masters: ";
 
-    BOOST_FOREACH (const std::string& master, arrMasterNames)
+    for (const std::string& master : arrMasterNames)
     {
       startup_message << master << ", ";
       listMasterInfo.push_back (sdpa::MasterInfo (master));
@@ -125,15 +124,15 @@ int main (int argc, char **argv)
 
 
   fhg::util::thread::event<> stop_requested;
-  const boost::function<void()> request_stop
-    (boost::bind (&fhg::util::thread::event<>::notify, &stop_requested));
+  const std::function<void()> request_stop
+    (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
 
   fhg::util::signal_handler_manager signal_handlers;
 
   signal_handlers.add_log_backtrace_and_exit_for_critical_errors (logger);
 
-  signal_handlers.add (SIGTERM, boost::bind (request_stop));
-  signal_handlers.add (SIGINT, boost::bind (request_stop));
+  signal_handlers.add (SIGTERM, std::bind (request_stop));
+  signal_handlers.add (SIGINT, std::bind (request_stop));
 
 
   stop_requested.wait();

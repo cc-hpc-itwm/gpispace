@@ -24,7 +24,8 @@
 #include <fhg/util/counter.hpp>
 
 #include <boost/optional/optional_fwd.hpp>
-#include <boost/scoped_ptr.hpp>
+
+#include <memory>
 
 namespace xml
 {
@@ -36,7 +37,7 @@ namespace xml
       {
       public:
         mapper();
-        //! \note This does nothing but boost::~scoped_ptr<maps>,
+        //! \note This does nothing but std::~unique_ptr<maps>,
         //! which needs ~maps, which is only defined in the C++, thus
         //! not visible to the implicit version defined where mapper
         //! is used.
@@ -84,9 +85,8 @@ namespace xml
 #undef ITEM
 
         //! \note We need to use pimpl, as there is an include loop.
-        //! \todo C++11: std::unique_ptr
         struct maps;
-        boost::scoped_ptr<maps> _maps;
+        std::unique_ptr<maps> _maps;
         ::fhg::util::counter<id::base_id_type> _counter;
       };
     }

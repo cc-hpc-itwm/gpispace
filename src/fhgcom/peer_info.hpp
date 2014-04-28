@@ -5,104 +5,82 @@ namespace fhg
 {
   namespace com
   {
-    struct host_t
+    struct hard_string
     {
-      explicit
-      host_t (std::string const & h)
-        : value (h)
+      explicit hard_string (std::string const& s)
+        : _s (s)
       {}
-
       operator std::string () const
       {
-        return value;
+        return _s;
       }
     private:
-      std::string value;
+      std::string const _s;
     };
 
-    struct port_t
+    struct host_t : hard_string
     {
-      explicit
-      port_t (std::string const & p)
-        : value (p)
+      explicit host_t (std::string const& s)
+        : hard_string (s)
       {}
-
-      operator std::string () const
-      {
-        return value;
-      }
-    private:
-      std::string value;
+    };
+    struct port_t : hard_string
+    {
+      explicit port_t (std::string const& s)
+        : hard_string (s)
+      {}
     };
 
     class peer_info_t
     {
     public:
-      peer_info_t ()
-        : name_()
-        , host_()
-        , port_()
-        , to_string_cache_()
-      {}
-
-      peer_info_t ( const std::string & n
-                  , const host_t & host
-                  , const port_t & port
-                  )
-        : name_(n)
-        , host_(host)
-        , port_(port)
-        , to_string_cache_()
+      peer_info_t (std::string const& s)
+        : name_ ()
+        , host_ ()
+        , port_ ()
       {
-        update_to_string_cache();
+        parse (s);
       }
 
-      std::string const & name () const
-      {
-        return name_;
-      }
-      std::string const & name (const std::string & def) const
-      {
-        if (name_.empty()) return def;
-        else return name();
-      }
-
-      std::string const & host () const
-      {
-        return host_;
-      }
       std::string const & host (const std::string & def) const
       {
         if (host_.empty()) return def;
-        else return host();
+        else return host_;
       }
 
-      std::string const & port () const
-      {
-        return port_;
-      }
       std::string const & port (const std::string & def) const
       {
         if (port_.empty()) return def;
-        else return port();
+        else return port_;
       }
 
-      std::string const & to_string () const
+      std::string const to_string () const
       {
-        if (to_string_cache_.empty())
+        std::string s;
+
+        if (! name_.empty())
         {
-          update_to_string_cache();
+          s += name_ + "@";
         }
-        return to_string_cache_;
+
+        if (host_.find (":") != std::string::npos)
+        {
+          s += "[" + host_ + "]";
+        }
+        else
+        {
+          s += host_;
+        }
+
+        if (! port_.empty())
+        {
+          s += ":" + port_;
+        }
+
+        return s;
       }
 
-      static peer_info_t from_string (const std::string & s)
-      {
-        peer_info_t pi;
-        pi.parse (s);
-        return pi;
-      }
-
+    private:
       void parse (const std::string & s)
       {
         std::string::size_type b_pos, e_pos;
@@ -153,51 +131,12 @@ namespace fhg
         {
           throw std::runtime_error ("peer_info: parse error: port is missing!");
         }
-        update_to_string_cache();
-      }
-    private:
-      void update_to_string_cache() const
-      {
-        if (! name_.empty())
-        {
-          to_string_cache_ = name_ + "@";
-        }
-
-        if (host_.find (":") != std::string::npos)
-        {
-          to_string_cache_ += "[" + host_ + "]";
-        }
-        else
-        {
-          to_string_cache_ += host_;
-        }
-
-        if (! port_.empty())
-        {
-          to_string_cache_ += ":" + port_;
-        }
       }
 
       std::string name_;
       std::string host_;
       std::string port_;
-      mutable std::string to_string_cache_;
     };
-
-    inline
-    std::ostream & operator << (std::ostream & os, peer_info_t const & p)
-    {
-      return os << p.to_string ();
-    }
-
-    inline
-    std::istream & operator >> (std::istream & is, peer_info_t & p)
-    {
-      std::string s;
-      is >> s;
-      p.parse (s);
-      return is;
-    }
   }
 }
 

@@ -13,8 +13,6 @@
 #include <fhg/util/split.hpp>
 #include <fhg/util/join.hpp>
 
-#include <boost/foreach.hpp>
-
 namespace
 {
   void write (std::ostream& os, std::map<std::string, std::string> const& m)
@@ -22,8 +20,7 @@ namespace
     boost::optional<std::string> section_label;
     std::string section_sublabel;
 
-    BOOST_FOREACH
-      (std::pair<std::string BOOST_PP_COMMA() std::string> const& kv, m)
+    for (std::pair<std::string, std::string> const& kv : m)
     {
       std::list<std::string> path
         (fhg::util::split<std::string, std::string> (kv.first, '.'));
@@ -139,10 +136,7 @@ int main (int ac, char *av[])
   {
     boost::regex ex (key);
     exit_code = 1;
-    BOOST_FOREACH
-      ( std::pair<std::string BOOST_PP_COMMA() std::string> const& kv
-      , m.assignments()
-      )
+    for (std::pair<std::string, std::string> const& kv : m.assignments())
     {
       if (boost::regex_search (kv.first, ex))
       {
@@ -169,10 +163,7 @@ int main (int ac, char *av[])
   }
   else if (vm.count ("list"))
   {
-    BOOST_FOREACH
-      ( std::pair<std::string BOOST_PP_COMMA() std::string> const& kv
-      , m.assignments()
-      )
+    for (std::pair<std::string, std::string> const& kv : m.assignments())
     {
       std::cout << kv.first << " = " << kv.second << std::endl;
     }

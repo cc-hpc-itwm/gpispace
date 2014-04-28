@@ -10,7 +10,7 @@ namespace fhg
     {
       struct timeval tv;
 
-      gettimeofday (&tv, 0);
+      gettimeofday (&tv, nullptr);
 
       return (double(tv.tv_sec) + double (tv.tv_usec) * 1E-6);
     }

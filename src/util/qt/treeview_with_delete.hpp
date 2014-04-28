@@ -16,7 +16,7 @@ namespace fhg
         Q_OBJECT
 
       public:
-        treeview_with_delete (QWidget* parent = NULL);
+        treeview_with_delete (QWidget* parent = nullptr);
 
       protected:
         virtual void keyPressEvent (QKeyEvent*);

@@ -7,7 +7,6 @@
 
 #include <fhglog/LogMacros.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
 
 #include <stdexcept>
@@ -44,9 +43,9 @@ namespace fhg
     {
       boost::mutex::scoped_lock const _ (GLOBAL_manager_mutex);
       assert (GLOBAL_manager == this);
-      GLOBAL_manager = NULL;
+      GLOBAL_manager = nullptr;
 
-      BOOST_FOREACH (int sig_num, _handlers | boost::adaptors::map_keys)
+      for (int sig_num : _handlers | boost::adaptors::map_keys)
       {
         fhg::syscall::signal (sig_num, SIG_DFL);
       }
@@ -64,7 +63,7 @@ namespace fhg
         sigact.sa_sigaction = signal_handler;
         sigact.sa_flags = SA_RESTART | SA_SIGINFO;
 
-        fhg::syscall::sigaction (sig_num, &sigact, NULL);
+        fhg::syscall::sigaction (sig_num, &sigact, nullptr);
       }
 
       _handlers[sig_num].push_back (fun);
@@ -110,19 +109,19 @@ namespace fhg
     void signal_handler_manager::add_log_backtrace_and_exit_for_critical_errors
       (fhg::log::Logger::ptr_t logger)
     {
-      add (SIGSEGV, boost::bind (&crit_err_hdlr, _1, _2, _3, logger));
-      add (SIGBUS, boost::bind (&crit_err_hdlr, _1, _2, _3, logger));
-      add (SIGABRT, boost::bind (&crit_err_hdlr, _1, _2, _3, logger));
-      add (SIGFPE, boost::bind (&crit_err_hdlr, _1, _2, _3, logger));
+      add (SIGSEGV, std::bind (&crit_err_hdlr, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, logger));
+      add (SIGBUS, std::bind (&crit_err_hdlr, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, logger));
+      add (SIGABRT, std::bind (&crit_err_hdlr, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, logger));
+      add (SIGFPE, std::bind (&crit_err_hdlr, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, logger));
     }
 
     void signal_handler_manager::handle
       (int sig_num, siginfo_t* info, void* context) const
     {
       boost::mutex::scoped_lock const _ (_handler_mutex);
-      BOOST_FOREACH ( const boost::function<void (int, siginfo_t*, void*)>& fun
-                    , _handlers.find (sig_num)->second
-                    )
+      for ( const boost::function<void (int, siginfo_t*, void*)>& fun
+          : _handlers.find (sig_num)->second
+          )
       {
         fun (sig_num, info, context);
       }

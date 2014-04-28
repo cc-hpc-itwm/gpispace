@@ -4,16 +4,18 @@
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 
+#include <functional>
+
 namespace sdpa
 {
   namespace daemon
   {
-    CoallocationScheduler::CoallocationScheduler (GenericDaemon* pCommHandler)
-      : ptr_comm_handler_ ( pCommHandler
-                          ? pCommHandler
-                          : throw std::runtime_error
-                            ("CoallocationScheduler ctor with NULL ptr_comm_handler")
-                          )
+    CoallocationScheduler::CoallocationScheduler
+        ( std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)> serve_job
+        , std::function<job_requirements_t (const sdpa::job_id_t&)> job_requirements
+        )
+      : _serve_job (serve_job)
+      , _job_requirements (job_requirements)
       , _worker_manager()
     {}
 
@@ -36,91 +38,110 @@ namespace sdpa
       _jobs_to_schedule.push (jobId);
     }
 
+    namespace
+    {
+      std::set<worker_id_t> find_assignment_for_job
+        ( worker_id_list_t available_workers
+        , job_requirements_t requirements
+        , std::function<boost::optional<worker_id_t>
+                          (job_requirements_t, worker_id_list_t)
+                       > best_match
+        )
+      {
+        std::size_t remaining_workers_needed (requirements.numWorkers());
+        std::set<worker_id_t> workers;
+
+        while (remaining_workers_needed --> 0)
+        {
+          const boost::optional<worker_id_t> matching_worker
+            ( available_workers.empty() ? boost::none
+            : requirements.empty() ? available_workers.front()
+            : best_match (requirements, available_workers)
+            );
+
+          if (!matching_worker)
+          {
+            return std::set<worker_id_t>();
+          }
+
+          available_workers.erase
+            ( std::find ( available_workers.begin(), available_workers.end()
+                        , *matching_worker
+                        )
+            );
+
+          workers.insert (*matching_worker);
+        }
+
+        return workers;
+      }
+    }
+
     void CoallocationScheduler::assignJobsToWorkers()
     {
       sdpa::worker_id_list_t listAvailWorkers
         (worker_manager().getListWorkersNotReserved());
 
+      std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
+
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
 
-      while (!listAvailWorkers.empty())
+      while (!listAvailWorkers.empty() && !jobs_to_schedule.empty())
       {
-        const boost::optional<job_id_t> job_id (_jobs_to_schedule.pop());
-        if (!job_id)
+        sdpa::job_id_t jobId (jobs_to_schedule.front());
+        jobs_to_schedule.pop_front();
+
+        const std::set<worker_id_t> matching_workers
+          ( find_assignment_for_job
+            ( listAvailWorkers
+            , _job_requirements (jobId)
+            , std::bind
+              ( &WorkerManager::getBestMatchingWorker
+              , &worker_manager()
+              , std::placeholders::_1
+              , std::placeholders::_2
+              )
+            )
+          );
+
+        if (!matching_workers.empty())
         {
-          break;
-        }
-        sdpa::job_id_t jobId (*job_id);
-
-        const job_requirements_t job_reqs
-          (ptr_comm_handler_->getJobRequirements (jobId));
-
-        const boost::optional<sdpa::worker_id_t> matchingWorkerId
-          ( listAvailWorkers.empty() ? boost::none
-          : job_reqs.empty() ? listAvailWorkers.front()
-          : worker_manager().getBestMatchingWorker (job_reqs, listAvailWorkers)
-         );
-
-        if (matchingWorkerId)
-        {
-          listAvailWorkers.erase ( std::find ( listAvailWorkers.begin()
-                                             , listAvailWorkers.end()
-                                             , *matchingWorkerId
-                                             )
-                                 );
+          for (worker_id_t const& worker : matching_workers)
+          {
+            listAvailWorkers.erase
+              ( std::find
+                (listAvailWorkers.begin(), listAvailWorkers.end(), worker)
+              );
+          }
 
           boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-          {
-            worker_manager().findWorker (*matchingWorkerId)->reserve();
 
-            allocation_table_t::iterator it (allocation_table_.find(jobId));
-            if (it == allocation_table_.end())
+            allocation_table_t::iterator it (allocation_table_.find (jobId));
+            if (it != allocation_table_.end())
             {
-              Reservation* pReservation (new Reservation (job_reqs.numWorkers()));
-              allocation_table_.insert (std::make_pair (jobId, pReservation));
+              throw std::runtime_error ("already have reservation for job");
             }
 
-            allocation_table_[jobId]->addWorker (*matchingWorkerId);
-          }
-
-          Reservation* pReservation (allocation_table_[jobId]);
-
-          if (pReservation->acquired())
-          {
-            sdpa::worker_id_list_t list_reserved_workers =
-              pReservation->getWorkerList();
-
-            sdpa::worker_id_list_t list_invalid_workers;
-            BOOST_FOREACH (const worker_id_t& wid, list_reserved_workers)
+            try
             {
-              if (!worker_manager().hasWorker (wid))
+              for (worker_id_t const& worker : matching_workers)
               {
-                list_invalid_workers.push_back (wid);
+                worker_manager().findWorker (worker)->submit (jobId);
               }
-            }
+              _serve_job (worker_id_list_t (matching_workers.begin(), matching_workers.end()), jobId);
 
-            if (list_invalid_workers.empty())
-            {
-              BOOST_FOREACH (const worker_id_t& wid, list_reserved_workers)
-              {
-                worker_manager().findWorker (wid)->submit (jobId);
-              }
-              ptr_comm_handler_->serveJob (list_reserved_workers, jobId);
+              Reservation* pReservation (new Reservation (matching_workers));
+              allocation_table_.emplace (jobId, pReservation);
             }
-            else
+            catch (std::runtime_error const&)
             {
-              BOOST_FOREACH (const worker_id_t& wid, list_invalid_workers)
+              for (const worker_id_t& wid : matching_workers)
               {
-                pReservation->delWorker (wid);
+                worker_manager().findWorker (wid)->deleteJob (jobId);
               }
 
-              _jobs_to_schedule.push_front (jobId);
+              jobs_to_schedule.push_front (jobId);
             }
-          }
-          else
-          {
-            _jobs_to_schedule.push_front (jobId);
-          }
         }
         else
         {
@@ -128,31 +149,41 @@ namespace sdpa
         }
       }
 
-      BOOST_FOREACH (const sdpa::job_id_t& id, nonmatching_jobs_queue)
+      for (job_id_t id : jobs_to_schedule)
+      {
+        _jobs_to_schedule.push (id);
+      }
+
+      for (const sdpa::job_id_t& id : nonmatching_jobs_queue)
       {
         _jobs_to_schedule.push (id);
       }
     }
 
-    void CoallocationScheduler::releaseReservation (const sdpa::job_id_t& jobId)
+    sdpa::worker_id_list_t CoallocationScheduler::releaseReservation (const sdpa::job_id_t& job_id)
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
 
+      sdpa::worker_id_list_t list_not_terminated_workers;
+
       const allocation_table_t::const_iterator it
-        (allocation_table_.find (jobId));
+        (allocation_table_.find (job_id));
 
       if (it != allocation_table_.end())
       {
-        BOOST_FOREACH ( sdpa::worker_id_t const& workerId
-                      , it->second->getWorkerList()
-                      )
+        Reservation* ptr_reservation(it->second);
+        list_not_terminated_workers = ptr_reservation->getListNotTerminatedWorkers();
+
+        for (const worker_id_t& worker_id : list_not_terminated_workers)
         {
-          worker_manager().findWorker (workerId)->free();
+          worker_manager().findWorker (worker_id)->abort (job_id);
         }
 
-        delete it->second;
+        delete ptr_reservation;
         allocation_table_.erase (it);
       }
+
+      return list_not_terminated_workers;
     }
 
     void CoallocationScheduler::workerFinished
@@ -166,7 +197,8 @@ namespace sdpa
       }
       else
       {
-        throw JobNotFoundException();
+        throw std::runtime_error
+          ("workerFinished: job missing in allocation table");
       }
     }
 
@@ -181,7 +213,8 @@ namespace sdpa
       }
       else
       {
-        throw JobNotFoundException();
+        throw std::runtime_error
+          ("workerFailed: job missing in allocation table");
       }
     }
 
@@ -196,7 +229,8 @@ namespace sdpa
       }
       else
       {
-        throw JobNotFoundException();
+        throw std::runtime_error
+          ("workerCanceled: job missing in allocation table");
       }
     }
 
@@ -210,7 +244,8 @@ namespace sdpa
       }
       else
       {
-        throw JobNotFoundException();
+        throw std::runtime_error
+          ("allPartialResultsCollected: job missing in allocation table");
       }
     }
 
@@ -224,33 +259,15 @@ namespace sdpa
       }
       else
       {
-        throw JobNotFoundException();
+        throw std::runtime_error
+          ("groupFinished: job missing in allocation table");
       }
-    }
-
-    boost::optional<job_id_t> CoallocationScheduler::locked_job_id_list::pop()
-    {
-      boost::mutex::scoped_lock const _ (mtx_);
-      if (container_.empty())
-      {
-        return boost::none;
-      }
-
-      job_id_t item = container_.front();
-      container_.pop_front();
-      return item;
     }
 
     void CoallocationScheduler::locked_job_id_list::push (job_id_t item)
     {
       boost::mutex::scoped_lock const _ (mtx_);
       container_.push_back (item);
-    }
-
-    void CoallocationScheduler::locked_job_id_list::push_front (job_id_t item)
-    {
-      boost::mutex::scoped_lock const _ (mtx_);
-      container_.push_front (item);
     }
 
     size_t CoallocationScheduler::locked_job_id_list::erase (const job_id_t& item)
@@ -271,6 +288,15 @@ namespace sdpa
         }
       }
       return count;
+    }
+
+    std::list<job_id_t> CoallocationScheduler::locked_job_id_list::get_and_clear()
+    {
+      boost::mutex::scoped_lock const _ (mtx_);
+
+      std::list<job_id_t> ret;
+      std::swap (ret, container_);
+      return ret;
     }
   }
 }

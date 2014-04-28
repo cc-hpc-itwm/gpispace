@@ -14,7 +14,6 @@
 #include <util/qt/treeview_with_delete.hpp>
 #include <util/qt/variant.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 
@@ -26,6 +25,10 @@
 #include <QSettings>
 #include <QTreeView>
 #include <QVBoxLayout>
+
+#include <functional>
+
+#include <fhg/util/macros.hpp>
 
 Q_DECLARE_METATYPE (sdpa::daemon::NotificationEvent::state_t)
 
@@ -62,8 +65,8 @@ namespace fhg
           {
             ar & _n & _sep;
             boost::serialization::void_cast_register
-              ( static_cast<nth_substring_of_name*> (NULL)
-              , static_cast<transform_functions_model::transform_function*> (NULL)
+              ( static_cast<nth_substring_of_name*> (nullptr)
+              , static_cast<transform_functions_model::transform_function*> (nullptr)
               );
           }
 
@@ -183,6 +186,8 @@ namespace fhg
           case event::STATE_FAILED: return "failed";
           case event::STATE_CANCELED: return "canceled";
           }
+
+          INVALID_ENUM_VALUE (worker_model::state_type, state);
         }
 
         QColor get_or_set_with_default
@@ -280,10 +285,10 @@ namespace fhg
           (new util::qt::mvc::transform_functions_model);
         add_defaults (available_transform_functions);
         qRegisterMetaTypeStreamOperators
-          <boost::shared_ptr<fhg::util::qt::mvc::transform_functions_model::transform_function> >
+          <boost::shared_ptr<fhg::util::qt::mvc::transform_functions_model::transform_function>>
           ("boost::shared_ptr<fhg::util::qt::mvc::transform_functions_model::transform_function>");
 
-        QAbstractItemModel* next (NULL);
+        QAbstractItemModel* next (nullptr);
 
         worker_model* base (new worker_model (port, this));
         next = base;
@@ -314,8 +319,8 @@ namespace fhg
 
         execution_monitor_delegate* delegate
           ( new execution_monitor_delegate
-            ( boost::bind (set_filter_regexp, filtered_by_user, _1)
-            , boost::bind (get_filter_regexp, filtered_by_user)
+            ( std::bind (set_filter_regexp, filtered_by_user, std::placeholders::_1)
+            , std::bind (get_filter_regexp, filtered_by_user)
             , get_or_set_with_defaults()
             , tree
             )
@@ -341,25 +346,25 @@ namespace fhg
         QAction* remove_column (new QAction (tr ("remove_column_action"), next));
 
         util::qt::boost_connect<void()>
-          (add_column, SIGNAL (triggered()), boost::bind (&add_columns, 1, next));
+          (add_column, SIGNAL (triggered()), std::bind (&add_columns, 1, next));
         util::qt::boost_connect<void()>
-          (remove_column, SIGNAL (triggered()), boost::bind (&add_columns, -1, next));
+          (remove_column, SIGNAL (triggered()), std::bind (&add_columns, -1, next));
 
         util::qt::boost_connect<void()>
           ( next, SIGNAL (columnsInserted (QModelIndex, int, int))
-          , boost::bind (&disable_if_column_adding_not_possible, add_column, 1, next)
+          , std::bind (&disable_if_column_adding_not_possible, add_column, 1, next)
           );
         util::qt::boost_connect<void()>
           ( next, SIGNAL (columnsRemoved (QModelIndex, int, int))
-          , boost::bind (&disable_if_column_adding_not_possible, add_column, 1, next)
+          , std::bind (&disable_if_column_adding_not_possible, add_column, 1, next)
           );
         util::qt::boost_connect<void()>
           ( next, SIGNAL (columnsInserted (QModelIndex, int, int))
-          , boost::bind (&disable_if_column_adding_not_possible, remove_column, -1, next)
+          , std::bind (&disable_if_column_adding_not_possible, remove_column, -1, next)
           );
         util::qt::boost_connect<void()>
           ( next, SIGNAL (columnsRemoved (QModelIndex, int, int))
-          , boost::bind (&disable_if_column_adding_not_possible, remove_column, -1, next)
+          , std::bind (&disable_if_column_adding_not_possible, remove_column, -1, next)
           );
 
         disable_if_column_adding_not_possible (add_column, 1, next);
@@ -383,7 +388,7 @@ namespace fhg
 
         util::qt::boost_connect<void()>
           ( clear_model, SIGNAL (triggered())
-          , this, boost::bind (&worker_model::clear, base)
+          , this, std::bind (&worker_model::clear, base)
           );
 
         util::qt::mini_button* clear_button
@@ -404,15 +409,13 @@ namespace fhg
         {
           QVBoxLayout* legend_box_layout (new QVBoxLayout (legend_box));
 
-          static const QList<worker_model::state_type> all_states
-            ( QList<worker_model::state_type>()
-            << sdpa::daemon::NotificationEvent::STATE_STARTED
-            << sdpa::daemon::NotificationEvent::STATE_FINISHED
-            << sdpa::daemon::NotificationEvent::STATE_FAILED
-            << sdpa::daemon::NotificationEvent::STATE_CANCELED
-            );
-
-          BOOST_FOREACH (const worker_model::state_type& state, all_states)
+          for ( const worker_model::state_type& state
+              : { sdpa::daemon::NotificationEvent::STATE_STARTED
+                , sdpa::daemon::NotificationEvent::STATE_FINISHED
+                , sdpa::daemon::NotificationEvent::STATE_FAILED
+                , sdpa::daemon::NotificationEvent::STATE_CANCELED
+                }
+              )
           {
             QPushButton* label (new QPushButton (to_string (state), this));
             style_button (label, delegate->color_for_state (state));
@@ -422,14 +425,14 @@ namespace fhg
               ( label
               , SIGNAL (clicked())
               , this
-              , boost::bind (&change_gantt_color, delegate, label, state, this)
+              , std::bind (&change_gantt_color, delegate, label, state, this)
               );
 
             util::qt::boost_connect<void (worker_model::state_type, QColor)>
               ( delegate
               , SIGNAL (color_for_state_changed (worker_model::state_type, QColor))
               , this
-              , boost::bind (&maybe_style_button, label, state, _1, _2)
+              , std::bind (&maybe_style_button, label, state, std::placeholders::_1, std::placeholders::_2)
               );
           }
         }

@@ -2,6 +2,8 @@
 
 #include <we/type/port.hpp>
 
+#include <fhg/util/macros.hpp>
+
 namespace we
 {
   namespace type
@@ -14,6 +16,8 @@ namespace we
       case PORT_OUT: return "out";
       case PORT_TUNNEL: return "tunnel";
       }
+
+      INVALID_ENUM_VALUE (we::type::PortDirection, dir);
     }
   }
 }

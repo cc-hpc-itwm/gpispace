@@ -71,10 +71,7 @@ namespace
   {
     static std::map<std::string, std::string> m;
 
-    return m.insert (std::make_pair ( key
-                                    , std::string (key.rbegin(), key.rend())
-                                    )
-                    ).first->second;
+    return m.emplace (key, std::string (key.rbegin(), key.rend())).first->second;
   }
 }
 

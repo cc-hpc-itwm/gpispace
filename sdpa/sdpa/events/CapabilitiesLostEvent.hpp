@@ -36,10 +36,6 @@ namespace sdpa
       {
         return capabilities_;
       }
-      std::string str() const
-      {
-        return "CapabilitiesLostEvent";
-      }
 
       virtual void handleBy (EventHandler* handler)
       {

@@ -3,7 +3,6 @@
 #include <iostream>
 #include <boost/program_options.hpp>
 
-#include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/peer_info.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
@@ -26,12 +25,12 @@ int main(int ac, char *av[])
   std::string server_address ("localhost");
   std::string server_port ("2439");
 
-  if (getenv("KVS_URL") != NULL)
+  if (getenv("KVS_URL") != nullptr)
   {
     try
     {
       using namespace fhg::com;
-      peer_info_t pi (peer_info_t::from_string (getenv("KVS_URL")));
+      peer_info_t pi (getenv("KVS_URL"));
       server_address = pi.host(server_address);
       server_port = pi.port(server_port);
     }
@@ -43,7 +42,6 @@ int main(int ac, char *av[])
 
   std::string key;
   std::string value;
-  size_t expiry (0);
   size_t timeout (120 * 1000);
 
   std::vector<std::string> key_list;
@@ -55,7 +53,6 @@ int main(int ac, char *av[])
     ("port,P", po::value<std::string>(&server_port)->default_value(server_port), "port or service name to use")
     ("key,k", po::value<std::string>(&key), "key to put or get")
     ("value,v", po::value<std::string>(&value), "value to store")
-    ("expiry,e", po::value<size_t>(&expiry)->default_value (expiry), "expiry of entry in milli seconds")
     ("full,f", "key must match completely")
 
     ("save,S", "save the database on the server")
@@ -65,8 +62,8 @@ int main(int ac, char *av[])
     ("term", "terminate a running kvs daemon")
     ("timeout,T", po::value<size_t>(&timeout)->default_value (timeout), "timeout in milliseconds")
     ("put,p", po::value<std::string>(&key), "store a value in the key-value store")
-    ("get,g", po::value<std::vector<std::string> >(&key_list), "get values from the key-value store")
-    ("del,d", po::value<std::vector<std::string> >(&key_list), "delete entries from the key-value store")
+    ("get,g", po::value<std::vector<std::string>>(&key_list), "get values from the key-value store")
+    ("del,d", po::value<std::vector<std::string>>(&key_list), "delete entries from the key-value store")
     ("cnt", po::value<std::string>(&key), "atomically increment/decrement a numeric entry")
     ;
 
@@ -222,9 +219,6 @@ int main(int ac, char *av[])
 
     try
     {
-      if (expiry)
-        client.timed_put (key, value, expiry);
-      else
         client.put (key, value);
     }
     catch (std::exception const & ex)

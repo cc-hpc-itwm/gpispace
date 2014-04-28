@@ -3,9 +3,8 @@
 #include <we/type/value/of_type.hpp>
 #include <we/type/value/name.hpp>
 
-#include <boost/unordered_map.hpp>
-
 #include <stdexcept>
+#include <unordered_map>
 
 namespace pnet
 {
@@ -15,7 +14,7 @@ namespace pnet
     {
       namespace
       {
-        typedef boost::unordered_map<std::string, value_type> by_name_type;
+        typedef std::unordered_map<std::string, value_type> by_name_type;
 
         by_name_type initialize()
         {

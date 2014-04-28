@@ -98,7 +98,7 @@ namespace fhg
         bool place_item::is_connectable_with (const connectable_item* i) const
         {
           //! \note Places connect to everything except for places.
-          return qobject_cast<const place_item*> (i) == NULL
+          return qobject_cast<const place_item*> (i) == nullptr
             && connectable_item::is_connectable_with (i);
         }
 
@@ -169,7 +169,7 @@ namespace fhg
 
           base_item::setPos (new_position);
 
-          foreach (QGraphicsItem* collidingItem, collidingItems())
+          for (QGraphicsItem* collidingItem : collidingItems())
           {
             if (  qgraphicsitem_cast<place_item*> (collidingItem)
                || qgraphicsitem_cast<transition_item*> (collidingItem)
@@ -295,7 +295,7 @@ namespace fhg
           {
             QPointF center (0.0, 0.0);
             int points (0);
-            foreach (association* item, associations())
+            for (association* item : associations())
             {
               center += item->start() != this
                       ? item->start()->scenePos()

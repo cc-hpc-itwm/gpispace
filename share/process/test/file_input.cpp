@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE (process_file_input)
 
   process::execute_return_type ret
     (process::execute ( command
-                      , process::const_buffer (NULL,0)
+                      , process::const_buffer (nullptr,0)
                       , process::buffer (res,10)
                       , files_input
                       , process::file_buffer_list ()

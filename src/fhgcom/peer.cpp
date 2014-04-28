@@ -1,49 +1,34 @@
-#include <fhglog/LogMacros.hpp>
-#include <fhg/assert.hpp>
-
-#include <boost/lexical_cast.hpp>
-#include <boost/foreach.hpp>
-#include <boost/system/system_error.hpp>
-#include <boost/system/error_code.hpp>
-#include <boost/make_shared.hpp>
-
-#include <boost/lambda/bind.hpp>
-#include <boost/lambda/lambda.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-
-using boost::lambda::bind;
-using boost::lambda::var;
-//using boost::lambda::_1;
-
 #include <fhgcom/peer.hpp>
+
+#include <fhglog/LogMacros.hpp>
+
+#include <fhg/assert.hpp>
 #include <fhg/util/thread/event.hpp>
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/system/error_code.hpp>
+#include <boost/system/system_error.hpp>
+
 #include <cstdlib>
+#include <functional>
 
 namespace fhg
 {
   namespace com
   {
-    static void dummy_handler (boost::system::error_code const &)
-    {}
-
-    static void default_kvs_error_handler (boost::system::error_code const &)
-    {
-      MLOG (ERROR, "could not contact KVS...");
-    }
-
     peer_t::peer_t ( std::string const & name
                    , host_t const & host
                    , port_t const & port
                    , kvs::kvsc_ptr_t kvs_client
-                   , std::string const & cookie
+                   , handler_t handler
                    )
       : stopped_(true)
       , stopping_ (false)
       , name_(name)
       , host_(host)
       , port_(port)
-      , cookie_(cookie)
       , my_addr_(p2p::address_t(name))
       , started_()
       , _kvs_client (kvs_client)
@@ -52,16 +37,8 @@ namespace fhg
       , acceptor_(io_service_)
       , m_renew_kvs_entries_timer (io_service_)
       , connections_()
-      , m_kvs_error_handler (default_kvs_error_handler)
+      , m_kvs_error_handler (handler)
     {
-      if (name.find ('.') != std::string::npos)
-      {
-        throw std::runtime_error ("peer_t(): invalid argument: name must not contain '.'!");
-      }
-      if (name.find (' ') != std::string::npos)
-      {
-        throw std::runtime_error ("peer_t(): invalid argument: name must not contain ' '!");
-      }
     }
 
     peer_t::~peer_t()
@@ -76,27 +53,12 @@ namespace fhg
       }
     }
 
-    peer_t::handler_t peer_t::set_kvs_error_handler (handler_t h)
-    {
-      handler_t old = m_kvs_error_handler;
-      m_kvs_error_handler = h;
-      return old;
-    }
-
-    peer_t::handler_t peer_t::get_kvs_error_handler () const
-    {
-      return m_kvs_error_handler;
-    }
-
     void peer_t::run ()
     {
       if (m_peer_thread)
         return;
       m_peer_thread = boost::make_shared<boost::thread>
-        (boost::bind ( &boost::asio::io_service::run
-                     , &io_service_
-                     )
-        );
+        ([this] { io_service_.run(); });
       m_peer_thread->join ();
     }
 
@@ -133,15 +95,11 @@ namespace fhg
 
         accept_new ();
 
-        io_service_.post (boost::bind ( &self::update_my_location
-                                      , this
-                                      )
-                         );
+        io_service_.post (std::bind (&peer_t::update_my_location, this));
       }
 
-      boost::system::error_code ec;
       // todo introduce timeout to event::wait()
-      started_.wait (ec);
+      const boost::system::error_code ec (started_.wait());
 
       if (ec)
       {
@@ -173,7 +131,7 @@ namespace fhg
         try
         {
           std::string prefix ("p2p.peer");
-          prefix += "." + boost::lexical_cast<std::string>(my_addr_);
+          prefix += "." + p2p::to_string (my_addr_);
           _kvs_client->del (prefix);
         }
         catch (std::exception const & ex)
@@ -232,10 +190,12 @@ namespace fhg
     {
       typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
       async_op_t send_finished;
-      async_send (to, data, boost::bind (&async_op_t::notify, &send_finished, _1));
+      async_send
+        ( to, data
+        , std::bind (&async_op_t::notify, &send_finished, std::placeholders::_1)
+        );
 
-      boost::system::error_code ec;
-      send_finished.wait (ec);
+      const boost::system::error_code ec (send_finished.wait());
       if (ec)
       {
         throw boost::system::system_error (ec);
@@ -261,13 +221,11 @@ namespace fhg
       // TODO: io_service_.post (...);
       const p2p::address_t addr (m->header.dst);
 
-      // TODO: short circuit loopback sends
-
       if (connections_.find(addr) == connections_.end())
       {
         // lookup location information
         std::string prefix ("p2p.peer");
-        prefix += "." + boost::lexical_cast<std::string>(addr);
+        prefix += "." + p2p::to_string (addr);
         kvs::values_type peer_info (_kvs_client->get (prefix));
 
         if (peer_info.empty())
@@ -304,12 +262,14 @@ namespace fhg
         to_send.handler = completion_handler;
         cd.o_queue.push_back (to_send);
 
-        cd.connection =
-          connection_t::ptr_t(new connection_t( io_service_
-                                              , cookie_
-                                              , this
-                                              )
-                             );
+        cd.connection = connection_t::ptr_t
+          ( new connection_t
+            ( io_service_
+            , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
+            , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
+            , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
+            )
+          );
         cd.connection->local_address (my_addr_);
         cd.connection->remote_address (addr);
 
@@ -360,10 +320,12 @@ namespace fhg
       typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
       async_op_t send_finished;
 
-      async_send (m, boost::bind (&async_op_t::notify, &send_finished, _1));
+      async_send
+        ( m
+        , std::bind (&async_op_t::notify, &send_finished, std::placeholders::_1)
+        );
 
-      boost::system::error_code ec;
-      send_finished.wait (ec);
+      const boost::system::error_code ec (send_finished.wait());
       if (ec)
       {
         throw boost::system::system_error (ec);
@@ -378,7 +340,7 @@ namespace fhg
       message_t m;
       m.assign (data.begin(), data.end());
       m.header.length = data.size();
-      resolve_name (to, m.header.dst);
+      m.header.dst = p2p::address_t (to);
       async_send (&m, completion_handler);
     }
 
@@ -388,10 +350,12 @@ namespace fhg
 
       typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
       async_op_t recv_finished;
-      async_recv (m, boost::bind (&async_op_t::notify, &recv_finished, _1));
+      async_recv
+        ( m
+        , std::bind (&async_op_t::notify, &recv_finished, std::placeholders::_1)
+        );
 
-      boost::system::error_code ec;
-      recv_finished.wait (ec);
+      const boost::system::error_code ec (recv_finished.wait());
       if (ec)
       {
         throw boost::system::system_error (ec);
@@ -446,7 +410,7 @@ namespace fhg
         try
         {
           const std::string key
-            ("p2p.peer." + boost::lexical_cast<std::string>(addr)+".name");
+            ("p2p.peer." + p2p::to_string (addr)+".name");
 
           kvs::values_type v (_kvs_client->get (key));
           if (v.size() == 1)
@@ -462,7 +426,7 @@ namespace fhg
         }
         catch (std::exception const & ex)
         {
-          LOG(WARN, "could not resolve address (" << addr << ") to name: " << ex.what());
+          LOG(WARN, "could not resolve address (" << p2p::to_string (addr) << ") to name: " << ex.what());
           throw std::runtime_error (std::string("could not resolve address: ") + ex.what());
         }
       }
@@ -470,44 +434,6 @@ namespace fhg
       {
         return it->second;
       }
-    }
-
-    std::string peer_t::resolve ( p2p::address_t const & addr
-                                , std::string const & dflt
-                                )
-    {
-      try
-      {
-        return resolve_addr (addr);
-      }
-      catch (...)
-      {
-        return dflt;
-      }
-    }
-
-    p2p::address_t peer_t::resolve ( std::string const & name )
-    {
-      return p2p::address_t (name);
-    }
-
-    p2p::address_t peer_t::resolve_name (std::string const &name)
-    {
-      return p2p::address_t (name);
-    }
-
-    void peer_t::resolve_name ( std::string const & name
-                              , p2p::address_t & addr
-                              )
-    {
-      addr = resolve_name (name);
-    }
-
-    void peer_t::resolve_addr ( p2p::address_t const & addr
-                              , std::string & name
-                              )
-    {
-      name = resolve_addr (addr);
     }
 
     void peer_t::connection_established (const p2p::address_t a, boost::system::error_code const &ec)
@@ -519,9 +445,9 @@ namespace fhg
         connection_data_t & cd = connections_.find (a)->second;
 
         LOG( TRACE
-             , my_addr_ << " (" << name_ << ")"
+             , p2p::to_string (my_addr_) << " (" << name_ << ")"
              << " connected to "
-             << a << " (" << cd.name << ")"
+             << p2p::to_string (a) << " (" << cd.name << ")"
              << " @ " << cd.connection->socket().remote_endpoint();
              );
 
@@ -532,10 +458,10 @@ namespace fhg
 
         // send hello message
         to_send_t to_send;
-        to_send.handler = dummy_handler;
+        to_send.handler = [](boost::system::error_code const&) {};
         to_send.message.header.src = my_addr_;
         to_send.message.header.dst = a;
-        to_send.message.header.type_of_msg = p2p::type_of_message_traits::HELLO_PACKET;
+        to_send.message.header.type_of_msg = p2p::HELLO_PACKET;
         to_send.message.header.length = name_.size();
         to_send.message.assign (name_.begin(), name_.end());
 
@@ -561,7 +487,7 @@ namespace fhg
       {
         LOG_IF( WARN
               , ec
-              , "could not send message to " << a
+              , "could not send message to " << p2p::to_string (a)
               << " connection already closed: "
               << ec << " msg: " << ec.message ()
               );
@@ -581,7 +507,7 @@ namespace fhg
       cd.o_queue.front().handler (ec);
       cd.o_queue.pop_front();
 
-      LOG_IF(WARN, ec, "message delivery to " << a << " failed: " << ec);
+      LOG_IF(WARN, ec, "message delivery to " << p2p::to_string (a) << " failed: " << ec);
 
       if (! ec)
       {
@@ -589,11 +515,11 @@ namespace fhg
         {
           // TODO: wrap in strand...
           cd.connection->async_send ( &cd.o_queue.front().message
-                                    , boost::bind ( &self::handle_send
-                                                  , this
-                                                  , a
-                                                  , _1
-                                                  )
+                                    , std::bind ( &peer_t::handle_send
+                                                , this
+                                                , a
+                                                , std::placeholders::_1
+                                                )
                                     );
         }
         else
@@ -622,11 +548,11 @@ namespace fhg
 
         cd.send_in_progress = true;
         cd.connection->async_send ( &cd.o_queue.front().message
-                                  , boost::bind ( &self::handle_send
-                                                , this
-                                                , a
-                                                , _1
-                                                )
+                                  , std::bind ( &peer_t::handle_send
+                                              , this
+                                              , a
+                                              , std::placeholders::_1
+                                              )
                                   );
       }
       catch (std::out_of_range const &)
@@ -635,7 +561,7 @@ namespace fhg
       }
       catch (std::exception const & ex)
       {
-        LOG (ERROR, "could not start sender to " << a << ": " << ex.what ());
+        LOG (ERROR, "could not start sender to " << p2p::to_string (a) << ": " << ex.what ());
       }
     }
 
@@ -644,7 +570,7 @@ namespace fhg
       boost::asio::ip::tcp::endpoint endpoint = acceptor_.local_endpoint();
 
       std::string prefix ("p2p.peer");
-      prefix += "." + boost::lexical_cast<std::string>(p2p::address_t(name_));
+      prefix += "." + p2p::to_string (p2p::address_t(name_));
 
       kvs::values_type values;
       values[prefix + "." + "location" + "." + "host"] =
@@ -659,8 +585,8 @@ namespace fhg
          || (endpoint.address() == boost::asio::ip::address_v6::any())
          )
       {
-        const std::string h(boost::asio::ip::host_name());
-        values[prefix + "." + "location" + "." + "host"] = h;
+        values[prefix + "." + "location" + "." + "host"]
+          = boost::asio::ip::host_name();
       }
 
       try
@@ -678,7 +604,7 @@ namespace fhg
         (boost::posix_time::seconds (60 + rand() % 30));
 
       m_renew_kvs_entries_timer.async_wait
-        (boost::bind (&peer_t::renew_kvs_entries, this));
+        (std::bind (&peer_t::renew_kvs_entries, this));
     }
 
     void peer_t::update_my_location ()
@@ -725,31 +651,31 @@ namespace fhg
 
     void peer_t::accept_new ()
     {
-      listen_ = connection_t::ptr_t (new connection_t
-                                    ( io_service_
-                                    , cookie_
-                                    , this
-                                    ));
+      listen_ = connection_t::ptr_t
+        ( new connection_t
+          ( io_service_
+          , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
+          , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
+          , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
+          )
+        );
       listen_->local_address(my_addr_);
       listen_->remote_address(p2p::address_t());
       acceptor_.async_accept( listen_->socket()
-                            , boost::bind( &self::handle_accept
-                                         , this
-                                         , boost::asio::placeholders::error
-                                         )
+                            , std::bind( &peer_t::handle_accept
+                                       , this
+                                       , std::placeholders::_1
+                                       )
                             );
     }
 
-    void peer_t::handle_system_data (connection_t::ptr_t c, const message_t *m)
+    void peer_t::handle_hello_message (connection_t::ptr_t c, const message_t *m)
     {
       lock_type lock (mutex_);
 
-      switch (m->header.type_of_msg)
-      {
-      case p2p::type_of_message_traits::HELLO_PACKET:
         if (backlog_.find (c) == backlog_.end())
         {
-          LOG(ERROR, "protocol error between " << my_addr_ << " and " << m->header.src << " closing connection");
+          LOG(ERROR, "protocol error between " << p2p::to_string (my_addr_) << " and " << p2p::to_string (m->header.src) << " closing connection");
           try
           {
             c->stop();
@@ -772,21 +698,11 @@ namespace fhg
 
           connection_data_t & cd = connections_[m->header.src];
           cd.name = remote_name;
-          if (cd.connection)
-          {
-            // handle loopback connections correctly
-            cd.loopback = c;
-          }
-          else
+          if (!cd.connection)
           {
             cd.connection = c;
           }
         }
-        break;
-      default:
-        LOG(WARN, "cannot handle system message of type: " << std::hex << m->header.type_of_msg);
-        break;
-      }
 
       delete m;
     }
@@ -823,7 +739,7 @@ namespace fhg
 
     void peer_t::handle_error (connection_t::ptr_t c, const boost::system::error_code & ec)
     {
-      assert ( c != NULL );
+      assert ( c != nullptr );
 
       lock_type lock (mutex_);
 
@@ -843,8 +759,6 @@ namespace fhg
           to_send_t to_send = cd.o_queue.front();
           cd.o_queue.pop_front();
 
-          using namespace boost::system;
-
           lock.unlock ();
           to_send.handler (ec);
           lock.lock ();
@@ -859,7 +773,6 @@ namespace fhg
           to_recv_t to_recv = tmp.front();
           tmp.pop_front();
 
-          using namespace boost::system;
           to_recv.message->header.src = c->remote_address();
           to_recv.message->header.dst = c->local_address();
 
@@ -878,13 +791,6 @@ namespace fhg
         }
         else
         {
-          /*
-          LOG_IF ( ERROR
-                 , (c->remote_address () != p2p::address_t() && (ec.value() != boost::asio::error::eof))
-                 , "error on a connection i don't know anything about, remote: " << c->remote_address()
-                 << " error: " << ec << " msg: " << ec.message ()
-                 );
-          */
           c->stop ();
           c.reset ();
         }

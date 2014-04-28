@@ -22,7 +22,7 @@ namespace fhg
       {
         char buf [HOST_NAME_MAX + 1];
 
-        buf[HOST_NAME_MAX] = 0;
+        buf[HOST_NAME_MAX] = '\0';
 
         if (gethostname (buf, HOST_NAME_MAX) == 0)
         {

@@ -21,7 +21,6 @@
 
 #include <QUndoStack>
 
-#include <boost/function_types/function_type.hpp>
 #include <boost/function_types/parameter_types.hpp>
 #include <boost/optional.hpp>
 #include <boost/preprocessor/arithmetic/add.hpp>
@@ -48,7 +47,7 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        change_manager_t (QObject* parent = NULL);
+        change_manager_t (QObject* parent = nullptr);
 
         // ## editing methods ########################################
         // - net -----------------------------------------------------

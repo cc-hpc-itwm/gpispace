@@ -131,9 +131,7 @@ namespace gpi
 
             std::string const key (fhg::util::parse::require::identifier (pos));
             fhg::util::parse::require::require (pos, '=');
-            if (!m_args.insert ( std::make_pair (key, require_value (pos))
-                               ).second
-               )
+            if (!m_args.emplace (key, require_value (pos)).second)
             {
               throw fhg::util::parse::error::generic
                 ((boost::format ("duplicate key '%1%'") % key).str(), pos);

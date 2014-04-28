@@ -8,7 +8,6 @@
 #include <fhg/util/parse/position.hpp>
 
 #include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
 #include <boost/format.hpp>
 
 #include <string>
@@ -87,7 +86,7 @@ namespace fhg
             {
               fhg::util::first_then<std::string> sep ("#", ",#");
 
-              BOOST_FOREACH (std::string const& tag, evt.tags())
+              for (std::string const& tag : evt.tags())
               {
                 os << sep << tag;
               }
@@ -97,7 +96,7 @@ namespace fhg
             {
               fhg::util::first_then<std::string> sep ("", "->");
 
-              BOOST_FOREACH (std::string const& t, evt.trace())
+              for (std::string const& t : evt.trace())
               {
                 os << sep << t;
               }

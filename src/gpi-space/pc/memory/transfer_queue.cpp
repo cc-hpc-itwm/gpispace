@@ -1,6 +1,5 @@
 #include <gpi-space/pc/memory/transfer_queue.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/make_shared.hpp>
 
 namespace gpi
@@ -11,18 +10,8 @@ namespace gpi
     {
       transfer_queue_t::transfer_queue_t()
         : m_enabled (true)
-        , m_thread (boost::bind (&transfer_queue_t::worker, this))
+        , m_thread (&transfer_queue_t::worker, this)
       {}
-
-      transfer_queue_t::~transfer_queue_t ()
-      {
-        // clear all pending and all finished
-        m_thread.interrupt ();
-        if (m_thread.joinable())
-        {
-          m_thread.join ();
-        }
-      }
 
       void
       transfer_queue_t::worker ()
@@ -50,7 +39,7 @@ namespace gpi
             ("queue permanently disabled due to previous errors");
         }
 
-        BOOST_FOREACH(task_ptr const task, tasks)
+        for (task_ptr const task : tasks)
         {
             m_task_queue.put (task);
         }

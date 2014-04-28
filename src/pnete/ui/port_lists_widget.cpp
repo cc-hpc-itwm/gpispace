@@ -8,9 +8,6 @@
 
 #include <xml/parse/type/function.hpp>
 
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
-
 #include <QAction>
 #include <QGroupBox>
 #include <QHeaderView>
@@ -20,6 +17,8 @@
 #include <QToolBar>
 #include <QVBoxLayout>
 #include <QWidget>
+
+#include <functional>
 
 namespace fhg
 {
@@ -235,22 +234,22 @@ namespace fhg
           ( bar->addAction (QObject::tr ("add_in_port"))
           , SIGNAL (triggered())
           , this
-          , boost::bind ( &data::handle::function::add_port
-                        , function
-                        , we::type::PORT_IN
-                        , boost::none
-                        )
+          , std::bind ( &data::handle::function::add_port
+                      , function
+                      , we::type::PORT_IN
+                      , boost::none
+                      )
           );
 
         fhg::util::qt::boost_connect<void()>
           ( bar->addAction (QObject::tr ("add_out_port"))
           , SIGNAL (triggered())
           , this
-          , boost::bind ( &data::handle::function::add_port
-                        , function
-                        , we::type::PORT_OUT
-                        , boost::none
-                        )
+          , std::bind ( &data::handle::function::add_port
+                      , function
+                      , we::type::PORT_OUT
+                      , boost::none
+                      )
           );
 
         if (function.content_is_net())
@@ -259,11 +258,11 @@ namespace fhg
             ( bar->addAction (QObject::tr ("add_tunnel_port"))
             , SIGNAL (triggered())
             , this
-            , boost::bind ( &data::handle::function::add_port
-                          , function
-                          , we::type::PORT_TUNNEL
-                          , boost::none
-                          )
+            , std::bind ( &data::handle::function::add_port
+                        , function
+                        , we::type::PORT_TUNNEL
+                        , boost::none
+                        )
             );
         }
 

@@ -14,22 +14,13 @@
 
 #include <fhg/util/boost/test/require_exception.hpp>
 
-#include <boost/bind.hpp>
 #include <boost/format.hpp>
 #include <boost/version.hpp>
-
-namespace
-{
-  void ctor (std::string const& path)
-  {
-    (void) (we::loader::Module (path));
-  }
-}
 
 BOOST_AUTO_TEST_CASE (ctor_load_failed)
 {
   fhg::util::boost::test::require_exception<we::loader::module_load_failed>
-    ( boost::bind (&ctor, "<path>")
+    ( [] { we::loader::Module ("<path>"); }
     , "could not load module '<path>': <path>:"
       " cannot open shared object file: No such file or directory"
     );
@@ -38,7 +29,7 @@ BOOST_AUTO_TEST_CASE (ctor_load_failed)
 BOOST_AUTO_TEST_CASE (ctor_failed_exception_from_we_mod_initialize)
 {
   fhg::util::boost::test::require_exception<std::runtime_error>
-    ( boost::bind (&ctor, "./libinitialize_throws.so")
+    ( [] { we::loader::Module ("./libinitialize_throws.so"); }
     , "initialize_throws"
     );
 }
@@ -48,7 +39,7 @@ BOOST_AUTO_TEST_CASE (ctor_failed_bad_boost_version)
 #define XSTR(x) STR(x)
 #define STR(x) #x
   fhg::util::boost::test::require_exception<std::runtime_error>
-    ( boost::bind (&ctor, "./libempty_not_linked_with_pnet.so")
+    ( [] { we::loader::Module ("./libempty_not_linked_with_pnet.so"); }
     , ( boost::format
         ( "could not load module './libempty_not_linked_with_pnet.so':"
           " ./libempty_not_linked_with_pnet.so: undefined symbol: %1%"
@@ -85,9 +76,10 @@ BOOST_AUTO_TEST_CASE (call_not_found)
   expr::eval::context output;
 
   fhg::util::boost::test::require_exception<we::loader::function_not_found>
-    ( boost::bind ( &we::loader::Module::call, &m
-                  , "<name>", &context, input, output
-                  )
+    ( [&m, &context, &input, &output]
+    {
+      m.call ("<name>", &context, input, output);
+    }
     , "function 'empty::<name>' not found"
     );
 }
@@ -142,7 +134,7 @@ BOOST_AUTO_TEST_CASE (duplicate_function)
   m.add_function ("f", &inc);
 
   fhg::util::boost::test::require_exception<we::loader::duplicate_function>
-    ( boost::bind ( &we::loader::Module::add_function, &m, "f", inc)
+    ( [&m] { m.add_function ("f", &inc); }
     , "duplicate function 'empty::f'"
     );
 }

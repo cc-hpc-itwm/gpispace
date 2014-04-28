@@ -22,8 +22,6 @@ namespace
 
     BOOST_REQUIRE (r);
 
-    BOOST_REQUIRE_EQUAL (r->str(), e.str());
-
     BOOST_REQUIRE_EQUAL (r->from(), e.from());
     BOOST_REQUIRE_EQUAL (r->to(), e.to());
 
@@ -183,26 +181,18 @@ BOOST_AUTO_TEST_CASE (SubmitJob)
 
 BOOST_AUTO_TEST_CASE (SubscribeAck)
 {
-  sdpa::job_id_list_t jobs;
-  jobs.push_back ("job-1");
-  jobs.push_back ("job-2");
-
-  SubscribeAckEvent e ("foo", "bar", jobs);
+  SubscribeAckEvent e ("foo", "bar", fhg::util::random_string());
   SubscribeAckEvent* r (encode_decode_mgmt_event (e));
 
-  BOOST_REQUIRE_EQUAL (r->listJobIds(), e.listJobIds());
+  BOOST_REQUIRE_EQUAL (r->job_id(), e.job_id());
 }
 
 BOOST_AUTO_TEST_CASE (Subscribe)
 {
-  sdpa::job_id_list_t jobs;
-  jobs.push_back ("job-1");
-  jobs.push_back ("job-2");
-
-  SubscribeEvent e ("foo", "bar", jobs);
+  SubscribeEvent e ("foo", "bar", fhg::util::random_string());
   SubscribeEvent* r (encode_decode_mgmt_event (e));
 
-  BOOST_REQUIRE_EQUAL (r->listJobIds(), e.listJobIds());
+  BOOST_REQUIRE_EQUAL (r->job_id(), e.job_id());
   BOOST_REQUIRE_EQUAL (r->subscriber(), e.subscriber());
 }
 

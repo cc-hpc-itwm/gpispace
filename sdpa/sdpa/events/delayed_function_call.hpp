@@ -5,7 +5,7 @@
 
 #include <sdpa/events/SDPAEvent.hpp>
 
-#include <boost/function.hpp>
+#include <functional>
 
 namespace sdpa
 {
@@ -14,7 +14,7 @@ namespace sdpa
     class delayed_function_call : public sdpa::events::SDPAEvent
     {
     public:
-      delayed_function_call (boost::function<void()> function)
+      delayed_function_call (std::function<void()> function)
         : SDPAEvent ("<<internal>>", "<<internal>>")
         , _function (function)
       {}
@@ -24,13 +24,8 @@ namespace sdpa
         _function();
       }
 
-      virtual std::string str() const
-      {
-        return "delayed_function_call (<function_pointer>)";
-      }
-
     private:
-      boost::function<void()> _function;
+      std::function<void()> _function;
     };
 
     //! \note No serialization: Shall only be used within daemon, not over net

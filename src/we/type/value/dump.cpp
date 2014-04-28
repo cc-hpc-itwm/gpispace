@@ -5,7 +5,6 @@
 
 #include <fhg/util/xml.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/format.hpp>
 
 #include <sstream>
@@ -33,15 +32,13 @@ namespace pnet
 
           fhg::util::xml::xmlstream& operator() (const structured_type& m) const
           {
-            typedef std::pair<std::string, value_type> kv_type;
-
             if (_parent)
             {
               _os.open ("properties");
               _os.attr ("name", *_parent);
             }
 
-            BOOST_FOREACH (kv_type const& kv, m)
+            for (std::pair<std::string, value_type> const& kv : m)
             {
               boost::apply_visitor
                 (visitor_dump (_os, _depth + 1, kv.first), kv.second);

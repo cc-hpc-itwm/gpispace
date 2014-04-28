@@ -30,7 +30,7 @@ namespace gpi
                            , const type::size_t sz
                            , const type::segment_id_t id
                            )
-        : m_ptr (0)
+        : m_ptr (nullptr)
       {
         if (name.empty())
           throw std::runtime_error ("invalid name argument to segment_t(): name must not be empty");
@@ -85,7 +85,7 @@ namespace gpi
 
         try
         {
-          m_ptr = fhg::syscall::mmap ( NULL
+          m_ptr = fhg::syscall::mmap ( nullptr
                                      , size()
                                      , PROT_READ | PROT_WRITE
                                      , MAP_SHARED
@@ -121,7 +121,7 @@ namespace gpi
 
         try
         {
-          m_ptr = fhg::syscall::mmap ( NULL
+          m_ptr = fhg::syscall::mmap ( nullptr
                                      , size()
                                      , PROT_READ | PROT_WRITE
                                      , MAP_SHARED
@@ -147,7 +147,7 @@ namespace gpi
         if (m_ptr)
         {
           fhg::syscall::munmap (m_ptr, size());
-          m_ptr = 0;
+          m_ptr = nullptr;
         }
       }
 

@@ -9,10 +9,7 @@ BOOST_AUTO_TEST_CASE ( signal_event )
   typedef event<int> my_event;
 
   my_event e;
-  e.notify (42);
 
-  int answer (0);
-  e.wait (answer);
-
-  BOOST_CHECK_EQUAL (42, answer);
+  e.notify (41);
+  BOOST_REQUIRE_EQUAL (41, e.wait());
 }

@@ -6,8 +6,6 @@
 #include <fhg/util/print_container.hpp>
 #include <fhg/util/xml.hpp>
 
-#include <boost/bind.hpp>
-
 namespace pnet
 {
   namespace type
@@ -26,7 +24,7 @@ namespace pnet
           {
             _os.open ("struct");
             _os.attr ("name", s.first);
-            BOOST_FOREACH (const field_type& f, s.second)
+            for (const field_type& f : s.second)
             {
               traverse (*this, f);
             }

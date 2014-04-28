@@ -18,7 +18,7 @@
         <out name="worker_info" type="worker_info"/>
         <module name="workerlist" function="run (worker_info)" pass_context="true">
           <cinclude href="fhglog/fhglog.hpp"/>
-          <cinclude href="fhg/util/join.hpp"/>
+          <cinclude href="sstream"/>
           <ld flag="-lwe-dev" />
           <code><![CDATA[
             MLOG (INFO, "run ()");
@@ -34,12 +34,15 @@
             {
               worker_info.workers.assign (wlist.begin(), wlist.end());
 
-              std::string worker_names = fhg::util::join ( wlist.begin ()
-                                                         , wlist.end ()
-                                                         , ", "
-                                                         );
+              std::ostringstream worker_names;
+              std::list<std::string>::const_iterator it (wlist.begin());
+              while (it != wlist.end())
+              {
+                worker_names << *it << ", ";
+                ++it;
+              }
 
-              MLOG (INFO, "running on: " << worker_names);
+              MLOG (INFO, "running on: " << worker_names.str());
 
               MLOG ( INFO
                    , "hostname of first worker: "

@@ -36,10 +36,9 @@
 #include <QDateTime>
 #include <QHeaderView>
 
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 
+#include <functional>
 #include <iostream>
 #include <sstream>
 
@@ -187,7 +186,7 @@ namespace fhg
       void legend::update (const QString& s)
       {
         delete _state_legend[s];
-        _state_legend[s] = NULL;
+        _state_legend[s] = nullptr;
         if (!state (s)._hidden)
         {
           _state_legend[s] = legend_entry (state (s)._descriptive_name.get_value_or (s), state (s), this);
@@ -258,7 +257,7 @@ namespace fhg
                        );
           wid->setItem (first_row, 1, create_item (host));
           wid->setItem (first_row, 2, create_item (message));
-          BOOST_FOREACH (QString additional, additional_rows)
+          for (QString additional : additional_rows)
           {
             const int row (wid->rowCount());
             wid->insertRow (row);
@@ -338,7 +337,7 @@ namespace fhg
           timer->start (timeout);
           return timer;
         }
-        QTimer* timer (QObject* parent, int timeout, boost::function<void()> fun)
+        QTimer* timer (QObject* parent, int timeout, std::function<void()> fun)
         {
           QTimer* timer (new QTimer (parent));
           fhg::util::qt::boost_connect<void()>
@@ -361,7 +360,7 @@ namespace fhg
           , _monitor_client (monitor_client_)
           , _window_title (window_title)
       {
-        timer (this, 30000, boost::bind (&monitor_client::request_hostlist, _monitor_client));
+        timer (this, 30000, std::bind (&monitor_client::request_hostlist, _monitor_client));
         timer (this, 1000, SLOT (refresh_stati()));
 
         setSizeIncrement (per_step, per_step);
@@ -405,8 +404,8 @@ namespace fhg
                 , SIGNAL (states_actions_expected_next_state (const QString&, const QString&))
                 , SLOT (states_actions_expected_next_state (const QString&, const QString&)));
         connect ( _monitor_client
-                , SIGNAL (action_result (const QString&, const QString&, const action_result_code&, const boost::optional<QString>&, QList<QPair<QString, QString> >))
-                , SLOT (action_result (const QString&, const QString&, const action_result_code&, const boost::optional<QString>&, QList<QPair<QString, QString> >))
+                , SIGNAL (action_result (const QString&, const QString&, const action_result_code&, const boost::optional<QString>&, QList<QPair<QString, QString>>))
+                , SLOT (action_result (const QString&, const QString&, const action_result_code&, const boost::optional<QString>&, QList<QPair<QString, QString>>))
                 );
 
         connect ( _legend_widget
@@ -418,7 +417,7 @@ namespace fhg
         _monitor_client->request_hostlist();
       }
 
-      void node_state_widget::update (int node)
+      void node_state_widget::update_node (int node)
       {
         const int per_row (items_per_row (width()));
 
@@ -438,7 +437,7 @@ namespace fhg
         {
           if (_nodes[i]._state == s)
           {
-            update (i);
+            update_node (i);
           }
         }
       }
@@ -528,7 +527,7 @@ namespace fhg
 
           if (old_state != state || old_expected_state)
           {
-            update (*node_index);
+            update_node (*node_index);
 
             if (n._watched)
             {
@@ -577,16 +576,16 @@ namespace fhg
           ++index;
         }
 
-        foreach (const QString& hostname, hostnames)
+        for (const QString& hostname : hostnames)
         {
           _nodes << node_type (hostname);
-          update (_nodes.size() - 1);
+          update_node (_nodes.size() - 1);
           update_requests << hostname;
         }
 
         rebuild_node_index();
 
-        foreach (const QString& hostname, update_requests)
+        for (const QString& hostname : update_requests)
         {
           if ( !_pending_updates.contains (hostname)
              && !_nodes_to_update.contains (hostname)
@@ -612,18 +611,18 @@ namespace fhg
         , const QString&
         , const monitor_client::action_result_code& result
         , const boost::optional<QString>& message
-        , QList<QPair<QString, QString> > additional_data
+        , QList<QPair<QString, QString>> additional_data
         )
       {
-        const boost::function<void (QString, QString, QStringList)> append
-          ( boost::bind
+        const std::function<void (QString, QString, QStringList)> append
+          ( std::bind
             ( result == monitor_client::okay ? &log_widget::information
             : result == monitor_client::fail ? &log_widget::critical
             : &log_widget::warning
             , _log
-            , _1
-            , _2
-            , _3
+            , std::placeholders::_1
+            , std::placeholders::_2
+            , std::placeholders::_3
             )
           );
 
@@ -634,8 +633,7 @@ namespace fhg
         }
 
         QStringList additional;
-        typedef QPair<QString, QString> kv_pair;
-        BOOST_FOREACH (kv_pair pair, additional_data)
+        for (QPair<QString, QString> pair : additional_data)
         {
           additional << QString ("%1 = %2").arg (pair.first).arg (pair.second);
         }
@@ -783,9 +781,9 @@ namespace fhg
 
       void node_state_widget::clear_selection()
       {
-        foreach (const int index, _selection)
+        for (const int index : _selection)
         {
-          update (index);
+          update_node (index);
         }
         _selection.clear();
       }
@@ -793,13 +791,13 @@ namespace fhg
       void node_state_widget::add_to_selection (const int& node)
       {
         _selection.append (node);
-        update (node);
+        update_node (node);
       }
 
       void node_state_widget::remove_from_selection (const int& node)
       {
         _selection.removeOne (node);
-        update (node);
+        update_node (node);
       }
 
       void node_state_widget::mouseReleaseEvent (QMouseEvent* event)
@@ -897,7 +895,7 @@ namespace fhg
           return QString ("%1").arg (box->value());
         }
 
-        std::pair<QWidget*, boost::function<QString()> > widget_for_item
+        std::pair<QWidget*, std::function<QString()>> widget_for_item
           (const monitor_client::action_argument_data& item)
         {
           switch (*item._type)
@@ -908,8 +906,8 @@ namespace fhg
               box->setChecked ( fhg::util::read_bool
                               (item._default.get_value_or ("false").toStdString())
                               );
-              return std::pair<QWidget*, boost::function<QString()> >
-                (box, boost::bind (checkbox_to_string, box));
+              return std::pair<QWidget*, std::function<QString()>>
+                (box, std::bind (checkbox_to_string, box));
             }
 
           case monitor_client::action_argument_data::directory:
@@ -918,8 +916,8 @@ namespace fhg
                 ( new fhg::util::qt::file_line_edit
                 (QFileDialog::Directory, item._default.get_value_or (""))
                 );
-              return std::pair<QWidget*, boost::function<QString()> >
-                (edit, boost::bind (&fhg::util::qt::file_line_edit::text, edit));
+              return std::pair<QWidget*, std::function<QString()>>
+                (edit, std::bind (&fhg::util::qt::file_line_edit::text, edit));
             }
 
           case monitor_client::action_argument_data::duration:
@@ -929,8 +927,8 @@ namespace fhg
               edit->setMaximum (INT_MAX);
               edit->setSuffix (" h");
               edit->setValue (string_to_int (item._default.get_value_or ("1")));
-              return std::pair<QWidget*, boost::function<QString()> >
-                (edit, boost::bind (spinbox_to_string, edit));
+              return std::pair<QWidget*, std::function<QString()>>
+                (edit, std::bind (spinbox_to_string, edit));
             }
 
           case monitor_client::action_argument_data::filename:
@@ -939,8 +937,8 @@ namespace fhg
                 ( new fhg::util::qt::file_line_edit
                 (QFileDialog::AnyFile, item._default.get_value_or (""))
                 );
-              return std::pair<QWidget*, boost::function<QString()> >
-                (edit, boost::bind (&fhg::util::qt::file_line_edit::text, edit));
+              return std::pair<QWidget*, std::function<QString()>>
+                (edit, std::bind (&fhg::util::qt::file_line_edit::text, edit));
             }
 
           case monitor_client::action_argument_data::integer:
@@ -949,15 +947,15 @@ namespace fhg
               edit->setMinimum (INT_MIN);
               edit->setMaximum (INT_MAX);
               edit->setValue (string_to_int (item._default.get_value_or ("0")));
-              return std::pair<QWidget*, boost::function<QString()> >
-                (edit, boost::bind (spinbox_to_string, edit));
+              return std::pair<QWidget*, std::function<QString()>>
+                (edit, std::bind (spinbox_to_string, edit));
             }
 
           case monitor_client::action_argument_data::string:
             {
               QLineEdit* edit (new QLineEdit (item._default.get_value_or ("")));
-              return std::pair<QWidget*, boost::function<QString()> >
-                (edit, boost::bind (&QLineEdit::text, edit));
+              return std::pair<QWidget*, std::function<QString()>>
+                (edit, std::bind (&QLineEdit::text, edit));
             }
           default:
             abort ();
@@ -976,7 +974,7 @@ namespace fhg
       void node_state_widget::trigger_action
         (const QStringList& hosts, const QSet<int>& host_ids, const QString& action)
       {
-        QMap<QString, boost::function<QString()> > value_getters;
+        QMap<QString, std::function<QString()>> value_getters;
 
         if ( _action_arguments.contains (action)
            && !_action_arguments[action].isEmpty()
@@ -990,14 +988,14 @@ namespace fhg
           QWidget* wid (new QWidget (dialog));
           QFormLayout* layout (new QFormLayout (wid));
 
-          foreach (const monitor_client::action_argument_data& item, _action_arguments[action])
+          for (const monitor_client::action_argument_data& item : _action_arguments[action])
           {
             if (!item._type)
             {
               throw std::runtime_error ("action argument without type");
             }
 
-            const std::pair<QWidget*, boost::function<QString()> > ret
+            const std::pair<QWidget*, std::function<QString()>> ret
               (widget_for_item (item));
             layout->addRow (item._label.get_value_or (item._name), ret.first);
             value_getters[item._name] = ret.second;
@@ -1040,7 +1038,7 @@ namespace fhg
           {
             params += "<li>with arguments<ul>";
 
-            for ( QMap<QString, boost::function<QString()> >::const_iterator i
+            for ( QMap<QString, std::function<QString()>>::const_iterator i
                    (value_getters.constBegin())
                 ; i != value_getters.constEnd()
                 ; ++i
@@ -1075,11 +1073,11 @@ namespace fhg
             (hosts.toSet().intersect (_pending_updates));
           _ignore_next_nodes_state |= currently_pending_hosts;
 
-          BOOST_FOREACH (const QString& host, hosts)
+          for (const QString& host : hosts)
           {
             const size_t index (*node_index_by_name (host));
             node (index)._expects_state_change = expected;
-            update (index);
+            update_node (index);
           }
         }
       }
@@ -1148,7 +1146,7 @@ namespace fhg
 
               bool one_node_expects_state_change (false);
 
-              foreach (const int index, nodes)
+              for (const int index : nodes)
               {
                 const node_type& n (node (index));
                 hostnames << n._hostname;
@@ -1168,7 +1166,7 @@ namespace fhg
               QSet<QString> triggering_actions;
               QSet<QString> non_triggering_actions;
 
-              foreach (const QString& action_name, action_name_union)
+              for (const QString& action_name : action_name_union)
               {
                 if (_action_expects_next_state.contains (action_name))
                 {
@@ -1180,7 +1178,7 @@ namespace fhg
                 }
               }
 
-              foreach (const QString& action_name, triggering_actions)
+              for (const QString& action_name : triggering_actions)
               {
                 QAction* action
                   (context_menu.addAction (full_action_name (action_name, nodes)));
@@ -1193,12 +1191,12 @@ namespace fhg
                     ( action
                     , SIGNAL (triggered())
                     , this
-                    , boost::bind ( &node_state_widget::trigger_action
-                                  , this
-                                  , hostnames
-                                  , nodes
-                                  , action_name
-                                  )
+                    , std::bind ( &node_state_widget::trigger_action
+                                , this
+                                , hostnames
+                                , nodes
+                                , action_name
+                                )
                     );
                 }
                 else
@@ -1212,7 +1210,7 @@ namespace fhg
                 context_menu.addSeparator();
               }
 
-              foreach (const QString& action_name, non_triggering_actions)
+              for (const QString& action_name : non_triggering_actions)
               {
                 QAction* action
                   (context_menu.addAction (full_action_name (action_name, nodes)));
@@ -1225,12 +1223,12 @@ namespace fhg
                     ( action
                     , SIGNAL (triggered())
                     , this
-                    , boost::bind ( &node_state_widget::trigger_action
-                                  , this
-                                  , hostnames
-                                  , nodes
-                                  , action_name
-                                  )
+                    , std::bind ( &node_state_widget::trigger_action
+                                , this
+                                , hostnames
+                                , nodes
+                                , action_name
+                                )
                     );
                 }
                 else
@@ -1248,7 +1246,7 @@ namespace fhg
                 bool all (true);
                 bool none (true);
 
-                foreach (const int index, nodes)
+                for (const int index : nodes)
                 {
                   all = all && node (index)._watched;
                   none = none && !node (index)._watched;
@@ -1261,20 +1259,20 @@ namespace fhg
                   QAction* action (context_menu.addAction (text));
                   action->setCheckable (true);
                   action->setChecked (all);
-                  foreach (const int index, nodes)
+                  for (const int index : nodes)
                   {
                     fhg::util::qt::boost_connect<void (bool)>
                       ( action
                       , SIGNAL (toggled (bool))
                       , _monitor_client
-                      , boost::bind (&node_type::watched, &(node (index)), !all)
+                      , std::bind (&node_type::watched, &(node (index)), !all)
                       );
 
                     fhg::util::qt::boost_connect<void (void)>
                       ( action
                       , SIGNAL (triggered())
                       , this
-                      , boost::bind (&node_state_widget::update, this, index)
+                      , std::bind (&node_state_widget::update_node, this, index)
                       );
                   }
                 }
@@ -1285,32 +1283,32 @@ namespace fhg
                   QAction* watch_all (menu->addAction (tr ("All")));
                   QAction* unwatch_all (menu->addAction (tr ("None")));
 
-                  foreach (const int index, nodes)
+                  for (const int index : nodes)
                   {
                     fhg::util::qt::boost_connect<void (void)>
                       ( unwatch_all
                       , SIGNAL (triggered())
                       , _monitor_client
-                      , boost::bind (&node_type::watched, &(node (index)), false)
+                      , std::bind (&node_type::watched, &(node (index)), false)
                       );
                     fhg::util::qt::boost_connect<void (void)>
                       ( watch_all
                       , SIGNAL (triggered())
                       , _monitor_client
-                      , boost::bind (&node_type::watched, &(node (index)), true)
+                      , std::bind (&node_type::watched, &(node (index)), true)
                       );
 
                     fhg::util::qt::boost_connect<void (void)>
                       ( unwatch_all
                       , SIGNAL (triggered())
                       , this
-                      , boost::bind (&node_state_widget::update, this, index)
+                      , std::bind (&node_state_widget::update_node, this, index)
                       );
                     fhg::util::qt::boost_connect<void (void)>
                       ( watch_all
                       , SIGNAL (triggered())
                       , this
-                      , boost::bind (&node_state_widget::update, this, index)
+                      , std::bind (&node_state_widget::update_node, this, index)
                       );
                   }
                 }
@@ -1337,13 +1335,13 @@ namespace fhg
       }
 
       void node_state_widget::sort_by
-        (boost::function<bool (const node_type&, const node_type&)> pred)
+        (std::function<bool (const node_type&, const node_type&)> pred)
       {
         _monitor_client->pause();
 
         QList<QString> selected_hostnames;
 
-        foreach (const int& index, _selection)
+        for (const int& index : _selection)
         {
           selected_hostnames << node (index)._hostname;
         }
@@ -1355,7 +1353,7 @@ namespace fhg
         _last_manual_selection = boost::none;
 
         _selection.clear();
-        BOOST_FOREACH (const QString& name, selected_hostnames)
+        for (const QString& name : selected_hostnames)
         {
           _selection << *node_index_by_name (name);
         }
@@ -1367,28 +1365,20 @@ namespace fhg
 
       void node_state_widget::sort_by_name()
       {
-        // [](const QString& l, const QString& r) -> bool
-        // {
-        //   return fhg::util::alphanum::less() (l.toStdString(), r.toStdString());
-        // }
-
-        fhg::util::alphanum::less less;
-
-        sort_by ( boost::bind ( &fhg::util::alphanum::less::operator(), less
-                              , boost::bind ( &QString::toStdString
-                                            , boost::bind (&node_type::_hostname, _1)
-                                            )
-                              , boost::bind ( &QString::toStdString
-                                            , boost::bind (&node_type::_hostname, _2)
-                                            )
-                              )
+        sort_by ( [](node_type const& lhs, node_type const& rhs)
+                {
+                  return fhg::util::alphanum::less()
+                    (lhs._hostname.toStdString(), rhs._hostname.toStdString());
+                }
                 );
       }
 
       void node_state_widget::sort_by_state()
       {
-        sort_by ( boost::bind (&node_type::_state, _1)
-                < boost::bind (&node_type::_state, _2)
+        sort_by ( [](node_type const& lhs, node_type const& rhs)
+                {
+                  return lhs._state < rhs._state;
+                }
                 );
       }
 

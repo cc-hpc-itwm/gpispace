@@ -12,12 +12,12 @@ namespace fhg
     {
       //! \todo When tabbed, do not show title bar, let be dragged via tab.
       dock_widget::dock_widget (const QString& title)
-        : QDockWidget (title, 0, 0)
+        : QDockWidget (title, nullptr, 0)
       {
         init();
       }
       dock_widget::dock_widget (const QString& title, QWidget* widget)
-        : QDockWidget (title, 0, 0)
+        : QDockWidget (title, nullptr, 0)
       {
         init();
         setWidget (widget);

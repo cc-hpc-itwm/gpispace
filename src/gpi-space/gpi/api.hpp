@@ -33,7 +33,7 @@ namespace gpi
           , queue (via_queue)
         {}
 
-        virtual ~dma_error () throw () {}
+        virtual ~dma_error () throw () = default;
 
         const offset_t local_offset;
         const offset_t remote_offset;
@@ -47,7 +47,7 @@ namespace gpi
     class gpi_api_t : boost::noncopyable
     {
     public:
-      virtual ~gpi_api_t() { }
+      virtual ~gpi_api_t() = default;
 
       // wrapped C function calls
       virtual void set_binary_path (const char *) = 0;

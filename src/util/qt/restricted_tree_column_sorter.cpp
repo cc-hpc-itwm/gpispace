@@ -4,12 +4,10 @@
 
 #include <util/qt/boost_connect.hpp>
 
-#include <boost/bind.hpp>
-
 #include <QHeaderView>
 #include <QTreeView>
 
-#include <QDebug>
+#include <functional>
 
 namespace fhg
 {
@@ -28,7 +26,7 @@ namespace fhg
         _tree->header()->setClickable (true);
         util::qt::boost_connect<void (int)>
           ( _tree->header(), SIGNAL (sectionClicked (int))
-          , boost::bind (&restricted_tree_column_sorter::next, this, _1)
+          , std::bind (&restricted_tree_column_sorter::next, this, std::placeholders::_1)
           );
         next (*_allowed_columns.begin());
       }

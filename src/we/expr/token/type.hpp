@@ -10,15 +10,16 @@ namespace expr
   namespace token
   {
     enum type
-    { _token_begin
-    , _or = _token_begin      // prec  0, left associative
-    , _and                    // prec  1, left associative
+    { _or_boolean             // prec  0, left associative
+    , _or_integral
+    , _and_boolean            // prec  1, left associative
+    , _and_integral           // prec  1, left associative
     , _not                    // prec 30, right associative
     , lt, le, gt, ge, ne, eq  // prec 10, left associative
 
     , add, sub                // prec 21, left associative
     , mul, div, divint        // prec 22, left associative
-    , mod, modint             // prec 23, left associative
+    , modint                  // prec 23, left associative
     , _pow                    // prec 24, right associative
     , _powint                 // prec 24, right associative
     , neg                     // prec 25, unary minus
@@ -51,7 +52,6 @@ namespace expr
     , define                  // prec -99, right associative
 
     , eof
-    , _token_end = eof
     };
 
     std::ostream& operator<< (std::ostream&, const type&);

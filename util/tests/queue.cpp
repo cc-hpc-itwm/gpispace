@@ -6,10 +6,10 @@
 
 #include <list>
 #include <boost/thread.hpp>
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 
 #include <fhg/util/thread/queue.hpp>
+
+#include <functional>
 
 typedef fhg::thread::queue<int> items_t;
 
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE (thread_queue_put_by_other_thread)
   items_t items;
 
   boost::thread filler = boost::thread ( &fill_items
-                                       , boost::ref (items)
+                                       , std::ref (items)
                                        , NUM_ITEMS_TO_PUT
                                        );
 
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE (thread_queue_put_by_multiple_threads)
   for (int i = 0 ; i < NUM_THREADS ; i++)
   {
     threads.push_back (new boost::thread ( &fill_items
-                                         , boost::ref (items)
+                                         , std::ref (items)
                                          , NUM_ITEMS_TO_PUT
                                          )
                       );
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE (thread_queue_put_by_multiple_threads)
   for (int i = 0 ; i < NUM_THREADS ; i++)
   {
     threads [i]->join ();
-    delete threads [i]; threads [i] = 0;
+    delete threads [i]; threads [i] = nullptr;
   }
 }
 

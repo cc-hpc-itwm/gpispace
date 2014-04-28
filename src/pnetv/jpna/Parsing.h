@@ -1,9 +1,12 @@
 #pragma once
 
-#include <string>
-#include <vector>
+#include <we/type/activity.hpp>
+#include <we/type/net.hpp>
 
 #include <boost/ptr_container/ptr_vector.hpp>
+
+#include <string>
+#include <vector>
 
 namespace jpna {
 
@@ -26,6 +29,9 @@ void parse(const char *filename, boost::ptr_vector<PetriNet> &petriNets);
  */
 void parse(const char *filename, std::istream &in, boost::ptr_vector<PetriNet> &petriNets);
 
-} // namespace jpna
+void parse ( const char*
+           , we::type::activity_t const&
+           , boost::ptr_vector<PetriNet>&
+           );
 
-/* vim:set et sts=4 sw=4: */
+} // namespace jpna

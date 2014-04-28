@@ -103,7 +103,7 @@ namespace fhg
 
         binding_object::~binding_object()
         {
-          foreach (const binding& b, _bindings)
+          for (const binding& b : _bindings)
           {
             delete b.adapter;
           }
@@ -350,7 +350,7 @@ namespace fhg
 
           if (obj)
           {
-            unbind (NULL, NULL, obj);
+            unbind (nullptr, nullptr, obj);
           }
         }
         void binding_object::sender_destroyed()
@@ -359,7 +359,7 @@ namespace fhg
 
           if (obj)
           {
-            unbind (obj, NULL, NULL);
+            unbind (obj, nullptr, nullptr);
           }
         }
       }

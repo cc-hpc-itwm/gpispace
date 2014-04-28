@@ -1,6 +1,5 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 include_directories(${FhgLog_INCLUDE_DIR})
@@ -184,6 +183,7 @@ add_library (pnet
 target_link_libraries (pnet
   fhg-util
   ${Boost_SERIALIZATION_LIBRARY}
+  ${Boost_DATE_TIME_LIBRARY}
   ${CMAKE_DL_LIBS}
 )
 

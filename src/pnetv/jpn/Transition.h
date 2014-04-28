@@ -1,6 +1,5 @@
 #pragma once
 
-#include <pnetv/jpn/config.h>
 #include <pnetv/jpn/Marking.h>
 
 #include <we/type/id.hpp>
@@ -11,7 +10,7 @@ namespace jpn {
  * Transition.
  */
 class Transition {
-    TransitionId id_; ///< Transition id.
+    we::transition_id_type id_; ///< Transition id.
     Marking input_; ///< Input of the transition.
     Marking output_; ///< Output of the transition.
     Marking effect_; ///< Effect of the transition (output - input).
@@ -22,14 +21,14 @@ class Transition {
     /**
      * Class constructor.
      */
-    Transition(TransitionId id, const Marking &input, const Marking &output, we::priority_type priority = 0):
+    Transition(we::transition_id_type id, const Marking &input, const Marking &output, we::priority_type priority = 0):
         id_(id), input_(input), output_(output), effect_(output - input), priority_(priority)
     {}
 
     /**
      * \return Transition id.
      */
-    TransitionId id() const { return id_; }
+    we::transition_id_type id() const { return id_; }
 
     /**
      * \return Input of the transition.
@@ -75,5 +74,3 @@ class Transition {
 };
 
 } // namespace jpn
-
-/* vim:set et sts=4 sw=4: */

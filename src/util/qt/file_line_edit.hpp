@@ -19,7 +19,7 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        file_line_edit (QFileDialog::FileMode, const QString&, QWidget* = NULL);
+        file_line_edit (QFileDialog::FileMode, const QString&, QWidget* = nullptr);
 
         QString text() const;
 

@@ -6,8 +6,6 @@
 
 #include <we/expr/exception.hpp>
 
-#include <boost/foreach.hpp>
-
 #include <limits>
 
 #include <cmath>
@@ -55,23 +53,21 @@ namespace pnet
           {
             return integral_unsigned (x);
           }
-          value_type operator() (float x) const
-          {
-            static bool round_half_up (true);
 
+          template<typename T>
+            value_type unary_fractional (T x) const
+          {
             switch (_token)
             {
             case expr::token::neg: return -x;
-            case expr::token::abs: return (x < 0) ? (-x) : x;
-            case expr::token::_sin: return sinf (x);
-            case expr::token::_cos: return cosf (x);
-            case expr::token::_sqrt: return sqrtf (x);
-            case expr::token::_log: return logf (x);
-            case expr::token::_floor: return floorf (x);
-            case expr::token::_ceil: return ceilf (x);
-            case expr::token::_round:
-              round_half_up = !round_half_up;
-              return round_half_up ? floorf (x + 0.5) : ceilf (x - 0.5);
+            case expr::token::abs: return std::abs (x);
+            case expr::token::_sin: return std::sin (x);
+            case expr::token::_cos: return std::cos (x);
+            case expr::token::_sqrt: return std::sqrt (x);
+            case expr::token::_log: return std::log (x);
+            case expr::token::_floor: return std::floor (x);
+            case expr::token::_ceil: return std::ceil (x);
+            case expr::token::_round: return std::round (x);
             case expr::token::_toint: return static_cast<int> (x);
             case expr::token::_tolong: return static_cast<long> (x);
             case expr::token::_touint: return static_cast<unsigned int> (x);
@@ -81,31 +77,14 @@ namespace pnet
             default: throw exception::eval (_token, x);
             }
           }
+
+          value_type operator() (float x) const
+          {
+            return unary_fractional (x);
+          }
           value_type operator() (double x) const
           {
-            static bool round_half_up (true);
-
-            switch (_token)
-            {
-            case expr::token::neg: return -x;
-            case expr::token::abs: return (x < 0) ? (-x) : x;
-            case expr::token::_sin: return sin (x);
-            case expr::token::_cos: return cos (x);
-            case expr::token::_sqrt: return sqrt (x);
-            case expr::token::_log: return log (x);
-            case expr::token::_floor: return floor (x);
-            case expr::token::_ceil: return ceil (x);
-            case expr::token::_round:
-              round_half_up = !round_half_up;
-              return round_half_up ? floor (x + 0.5) : ceil (x - 0.5);
-            case expr::token::_toint: return static_cast<int> (x);
-            case expr::token::_tolong: return static_cast<long> (x);
-            case expr::token::_touint: return static_cast<unsigned int> (x);
-            case expr::token::_toulong: return static_cast<unsigned long> (x);
-            case expr::token::_tofloat: return static_cast<float> (x);
-            case expr::token::_todouble: return static_cast<double> (x);
-            default: throw exception::eval (_token, x);
-            }
+            return unary_fractional (x);
           }
           value_type operator() (char x) const
           {
@@ -182,9 +161,9 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_not: return x == 0;
+            case expr::token::_not: return ~x;
             case expr::token::neg: return -x;
-            case expr::token::abs: return (x < 0) ? (-x) : x;
+            case expr::token::abs: return std::abs (x);
             case expr::token::_sin: return sin (x);
             case expr::token::_cos: return cos (x);
             case expr::token::_sqrt: return sqrt (x);
@@ -206,7 +185,7 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_not: return x == 0;
+            case expr::token::_not: return ~x;
             case expr::token::_sin: return sin (x);
             case expr::token::_cos: return cos (x);
             case expr::token::_sqrt: return sqrt (x);
@@ -236,8 +215,8 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_or: return l || r;
-            case expr::token::_and: return l && r;
+            case expr::token::_or_boolean: return l || r;
+            case expr::token::_and_boolean: return l && r;
             case expr::token::lt: return l < r;
             case expr::token::le: return l <= r;
             case expr::token::gt: return l > r;
@@ -317,6 +296,7 @@ namespace pnet
           {
             switch (_token)
             {
+            case expr::token::ne: return ! (l == r);
             case expr::token::eq: return l == r;
             case expr::token::_bitset_or: return l | r;
             case expr::token::_bitset_and: return l & r;
@@ -338,6 +318,7 @@ namespace pnet
           {
             switch (_token)
             {
+            case expr::token::ne: return ! (l == r);
             case expr::token::eq: return l == r;
             default: throw exception::eval (_token, l, r);
             }
@@ -373,7 +354,7 @@ namespace pnet
             switch (_token)
             {
             case expr::token::_set_is_subset:
-              BOOST_FOREACH (const value_type& lv, l)
+              for (const value_type& lv : l)
               {
                 if (!r.count (lv))
                 {
@@ -420,8 +401,8 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_or: return l | r;
-            case expr::token::_and: return l & r;
+            case expr::token::_or_integral: return l | r;
+            case expr::token::_and_integral: return l & r;
             case expr::token::lt: return l < r;
             case expr::token::le: return l <= r;
             case expr::token::gt: return l > r;
@@ -456,8 +437,8 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_or: return l | r;
-            case expr::token::_and: return l & r;
+            case expr::token::_or_integral: return l | r;
+            case expr::token::_and_integral: return l & r;
             case expr::token::lt: return l < r;
             case expr::token::le: return l <= r;
             case expr::token::gt: return l > r;
@@ -507,7 +488,7 @@ namespace pnet
                 throw expr::exception::eval::divide_by_zero();
               }
               return l / r;
-            case expr::token::_pow: return pow (l, r);
+            case expr::token::_pow: return std::pow (l, r);
             case expr::token::min: return std::min (l,r);
             case expr::token::max: return std::max (l,r);
             default: throw exception::eval (_token, l, r);

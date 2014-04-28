@@ -17,7 +17,7 @@ namespace fhg
       class transition_library_view : public QTreeView
       {
       public:
-        explicit transition_library_view (int width1, int margin, QWidget* = 0);
+        explicit transition_library_view (int width1, int margin, QWidget* = nullptr);
 
       protected:
         virtual void resizeEvent (QResizeEvent*);

@@ -12,20 +12,24 @@ force=false
 debug=false
 verbose=false
 daemonize=false
-backlog=-1
+backlog=1
 identity=0
 name_prefix="drts"
 master=
 gpi_socket=
 lib_path=
 kvs_url=
+log_url=
 count=
 capabilities=""
 state_dir="$HOME/.sdpa/state"
-config_file="$HOME/.sdpa/configs/sdpa.rc"
 logdir=
 shm_size=
 numa_socket=
+DEFAULT_PLUGIN_DRTS_MAX_RECONNECT="128"
+DEFAULT_KERNEL_LOAD_LAZY="true"
+DEFAULT_PLUGIN_GPI_STARTMODE="wait"
+sdpa_home=
 
 function usage ()
 {
@@ -41,21 +45,19 @@ usage: $(basename "$0") [options]
     -g ip:port (=$gui): gui address
     -b N (=$backlog): set the backlog
     -S path (=$gpi_socket): gpi socket path
-    -l path: library path
+    -L path: library path
     -k kvs-url (=$kvs_url): url to the key-value-store
     -c count: start this many processes (0==#cores)
     -C capability: start with this capability (can be specified more than once
     -D daemonize
-    -L logfile
     -s state-dir
-    -F config file
-    -M shared memory size
-    -B communication buffer size
+    -M shared memory size, if not specified or empty, GPI is disabled
     -N numa socket
+    -H sdpa-home
 EOF
 }
 
-while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:F:B:N:" opt; do
+while getopts ":hvfg:l:m:i:b:S:k:Dc:C:L:s:n:M:N:H:" opt; do
     case $opt in
         h)
             usage
@@ -70,6 +72,9 @@ while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:F:B:N:" opt; do
         g)
             gui=$OPTARG
             ;;
+        l)
+            log_url=$OPTARG
+            ;;
         m)
             master=$OPTARG
             ;;
@@ -81,13 +86,20 @@ while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:F:B:N:" opt; do
             identity=$OPTARG
             ;;
         b)
+            if [ -z "$OPTARG" ]
+            then
+                echo >&2 "backlog must not be empty"
+                exit 2
+            fi
+            if [ $OPTARG -le 0 ]
+            then
+                echo >&2 "backlog must not be less-or-equal 0"
+                exit 2
+            fi
             backlog=$OPTARG
             ;;
         S)
             gpi_socket=$OPTARG
-            ;;
-        l)
-            lib_path=$OPTARG
             ;;
         k)
             kvs_url=$OPTARG
@@ -106,13 +118,15 @@ while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:F:B:N:" opt; do
             fi
             ;;
         L)
-            logdir="$OPTARG"
+            if [ -z "${lib_path}" ]
+            then
+                lib_path="$OPTARG"
+            else
+                lib_path="${lib_path}:${OPTARG}"
+            fi
             ;;
         s)
             state_dir="$OPTARG"
-            ;;
-        F)
-            config_file="$OPTARG"
             ;;
         n)
             name_prefix="$OPTARG"
@@ -120,11 +134,11 @@ while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:F:B:N:" opt; do
         M)
             shm_size=$OPTARG
             ;;
-        B)
-            echo >&2 "W: ignoring obosolete option -B <com_size>"
-            ;;
         N)
             numa_socket=$OPTARG
+            ;;
+        H)
+            sdpa_home="$OPTARG"
             ;;
         \?)
             echo "invalid option: -$OPTARG" >&2
@@ -134,53 +148,38 @@ while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:F:B:N:" opt; do
     esac
 done
 
-# read sdpa state if it exists
-
-if [ -r "${state_dir}/sdpa.env" ] ; then
-    source "${state_dir}/sdpa.env"
-else
-    echo >&2 "needs to be executed under SDPA"
-    exit 4
+if [ -n "${log_url}" ]
+then
+    export FHGLOG_to_server="${log_url}"
 fi
 
-if [ ! -r "${config_file}" ] ; then
-    echo >&2 "config file '${config_file}' does not exist, aborting."
+if [ -z "${sdpa_home}" ]
+then
+    echo >&2 "sdpa-home is empty, please specify -H"
     exit 4
 fi
 
 if [ -z "$gui" ]
 then
-  gui=$(fhgcfg -f "${config_file}" -g sdpa.gui -v "$GUI_URL")
-fi
-
-gpi_enabled=$(fhgcfg -f "${config_file}" -g gpi.enabled -v true)
-if [ $backlog -lt 0 ] ; then
-    backlog=$(fhgcfg -f "${config_file}" -g plugin.drts.backlog -v 1)
-fi
-
-if [ -z "$lib_path" ]
-then
-    lib_path="$PC_LIBRARY_PATH"
+    echo >&2 "gui url is required, please specify -g"
+    exit 4
 fi
 
 if [ -z "$kvs_url" ]
 then
-    kvs_url="${KVS_URL}"
-fi
-
-
-if [ -z "$kvs_url" ] ; then
-    log "E: no kvs-url specified!"
-    exit 1
+    echo >&2 "kvs url is required, please specify -k"
+    exit 4
 fi
 
 if [ -z "$master" ] ; then
-    log "E: no master specified!"
+    echo >&2 "E: no master specified!"
     exit 1
 fi
 
 if [ -z "$shm_size" ] ; then
-    shm_size=$(fhgcfg -f "${config_file}" -g plugin.gpi_compat.shm_size -v 536870912)
+    gpi_enabled=false
+else
+    gpi_enabled=true
 fi
 
 if [ x"$identity" = x"0" ] ; then
@@ -190,6 +189,7 @@ if [ x"$identity" = x"0" ] ; then
             count=$(grep ^processor /proc/cpuinfo | wc -l)
         fi
         opts=
+        opts="$opts -H $sdpa_home"
         opts="$opts -m $master"
         opts="$opts -k $kvs_url"
         opts="$opts -b $backlog"
@@ -197,14 +197,27 @@ if [ x"$identity" = x"0" ] ; then
             opts="$opts -S $gpi_socket"
         fi
         opts="$opts -g $gui"
-        opts="$opts -l ${lib_path}"
+        if [ -n "${lib_path}" ]
+        then
+            opts="$opts -L ${lib_path}"
+        fi
         opts="$opts -s $state_dir"
-        opts="$opts -F $config_file"
         opts="$opts -n $name_prefix"
-        opts="$opts -M $shm_size"
+        if [ -n "$shm_size" ]
+        then
+            opts="$opts -M $shm_size"
+        fi
         if [ -n "$numa_socket" ]
         then
             opts="$opts -N $numa_socket"
+        fi
+        if [ -n "${log_url}" ]
+        then
+            opts="$opts -l ${log_url}"
+        fi
+        if $verbose
+        then
+            opts="$opts -v"
         fi
 
         for cap in ${capabilities//,/ } ; do
@@ -235,6 +248,10 @@ if [ x"$identity" = x"0" ] ; then
 fi
 
 name="${name_prefix}-$(hostname -s)-${identity}"
+if [ -n "${numa_socket}" ]
+then
+    name="${name}.${numa_socket}"
+fi
 
 if [ -z "$logdir" ]
 then
@@ -242,9 +259,12 @@ then
 fi
 logprefix="${logdir}/${name}"
 
-bin="$(which drts-kernel)"
+exec 1> >(tee "${logprefix}.out")
+exec 2> >(tee "${logprefix}.err" >&2)
+
+bin="${sdpa_home}/bin/drts-kernel"
 if [ ! -x "$bin" ] ; then
-  log "# could not find drts-kernel in the path!"
+  echo >&2 "# could not find drts-kernel in '${sdpa_home}/bin'!"
   exit 1
 fi
 
@@ -255,12 +275,12 @@ for p in $still_running ; do
 
     if [ "$name_opt" = "${name}" ] ; then
         if [ "$force" = "true" ] ; then
-            log "W: $name is still running, terminating it"
+            echo >&2 "W: $name is still running, terminating it"
             kill -TERM "$p"
             sleep 3
             kill -KILL "$p" &>/dev/null
         else
-            log "E: $name still running, not starting again"
+            echo >&2 "E: $name still running, not starting again"
             exit 2
         fi
     fi
@@ -270,8 +290,8 @@ done
 # config values (kernel)
 
 cfg="$cfg -n $name"
-cfg="$cfg -L $SDPA_HOME/libexec/fhg/plugins"
-lazy=$(fhgcfg -f "${config_file}" -g kernel.lazy -v false)
+cfg="$cfg -L $sdpa_home/libexec/fhg/plugins"
+lazy=${DEFAULT_KERNEL_LOAD_LAZY}
 if [ x"$lazy" = x"true" ] ; then
     cfg="$cfg -s kernel.load.lazy=1"
 else
@@ -281,13 +301,25 @@ fi
 if [ x"$gpi_enabled" = x"true" ] ; then
     cfg="$cfg --gpi_enabled"
 
-    fake_gpi_capability="GPI-PGAS"
+    fake_gpi_capability="GPI"
 
     if [ -z "$capabilities" ] ; then
       capabilities="${fake_gpi_capability}"
     else
       capabilities="$capabilities,${fake_gpi_capability}"
     fi
+
+    # config values (gpi plugin)
+    if [ -z "$gpi_socket" ] ; then
+        echo >&2 "E: GPI socket is not set"
+        exit 1
+    fi
+
+    cfg="$cfg -s plugin.gpi.socket=${gpi_socket}"
+    cfg="$cfg -s plugin.gpi.startmode=${DEFAULT_PLUGIN_GPI_STARTMODE}"
+
+    # config values (gpi_compat plugin)
+    cfg="$cfg -s plugin.gpi_compat.shm_size=$shm_size"
 fi
 
 # config values (drts plugin)
@@ -297,7 +329,7 @@ cfg="$cfg -s plugin.drts.kvs_host=$kvs_host"
 cfg="$cfg -s plugin.drts.kvs_port=$kvs_port"
 cfg="$cfg -s plugin.drts.master=$master"
 cfg="$cfg -s plugin.drts.backlog=$backlog"
-cfg="$cfg -s plugin.drts.max_reconnect_attempts=$(fhgcfg -f "${config_file}" -g plugin.drts.max_reconnect_attempts -v 128)"
+cfg="$cfg -s plugin.drts.max_reconnect_attempts=${DEFAULT_PLUGIN_DRTS_MAX_RECONNECT}"
 cfg="$cfg -s plugin.drts.capabilities=${capabilities}"
 cfg="$cfg -s plugin.drts.gui_url=$gui"
 cfg="$cfg -s plugin.drts.library_path=${lib_path}"
@@ -306,23 +338,20 @@ then
     cfg="$cfg -s plugin.drts.socket=$numa_socket"
 fi
 
-# config values (gpi plugin)
-if [ -z "$gpi_socket" ] ; then
-    gpi_socket=$(fhgcfg -f "${config_file}" -g gpi.socket_path -v "/tmp")
-    gpi_socket="$gpi_socket/S-gpi-space.$(id -u).0"
-fi
-cfg="$cfg -s plugin.gpi.socket=${gpi_socket}"
-cfg="$cfg -s plugin.gpi.startmode=$(fhgcfg -f "${config_file}" -g plugin.gpi.startmode -v wait)"
-
-# config values (gpi_compat plugin)
-cfg="$cfg -s plugin.gpi_compat.shm_size=$shm_size"
-
 cmd="${bin} $cfg"
 
+if $verbose
+then
+    export FHGLOG_level=TRACE
+else
+    export FHGLOG_level=INFO
+fi
+
+export LD_LIBRARY_PATH="${sdpa_home}/lib:${sdpa_home}/libexec/sdpa:$LD_LIBRARY_PATH"
 export FHGLOG_to_file="${logprefix}.log"
-log "Running $cmd on node $hostname" >/dev/null 2>&1
+echo >&2 "Running $cmd on node $hostname"
 if [ x"$daemonize" = x"true" ] ; then
-    $cmd --daemonize >"${logprefix}.out" 2>"${logprefix}.err"
+    $cmd --daemonize
 else
     exec $cmd
 fi

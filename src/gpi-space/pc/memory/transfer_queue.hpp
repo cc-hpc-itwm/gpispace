@@ -10,6 +10,8 @@
 
 #include <fhg/util/thread/queue.hpp>
 
+#include <boost/thread/scoped_thread.hpp>
+
 namespace gpi
 {
   namespace pc
@@ -21,7 +23,6 @@ namespace gpi
       public:
         explicit
         transfer_queue_t();
-        ~transfer_queue_t ();
 
         void enqueue (task_ptr const &);
         void enqueue (task_list_t const &);
@@ -48,8 +49,9 @@ namespace gpi
         mutable boost::mutex m_mutex;
         bool m_enabled;
 
-        fhg::thread::queue<boost::shared_ptr<task_t> >  m_task_queue;
-        boost::thread m_thread;
+        fhg::thread::queue<boost::shared_ptr<task_t>>  m_task_queue;
+        boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+          m_thread;
 
         mutable boost::mutex _mutex_dispatched;
         task_set_t m_dispatched;

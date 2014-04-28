@@ -69,7 +69,7 @@ namespace fhg
                       , make_function_content (kind_, _state)
                       ).make_reference_id()
                     )
-        , _change_manager (NULL)
+        , _change_manager (nullptr)
       {}
 
       internal_type::internal_type (const QString& filename)
@@ -78,7 +78,7 @@ namespace fhg
                                                , filename.toStdString()
                                                )
                     )
-        , _change_manager (NULL)
+        , _change_manager (nullptr)
       {}
 
       const ::xml::parse::id::ref::function& internal_type::function() const

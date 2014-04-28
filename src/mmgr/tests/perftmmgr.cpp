@@ -7,8 +7,6 @@
 
 #include <fhg/util/now.hpp>
 
-#include <boost/foreach.hpp>
-
 #include <set>
 
 namespace
@@ -43,7 +41,7 @@ namespace
 
   void test_fill_clear (std::set<Handle_t> const& handles)
   {
-    Tmmgr_t tmmgr = NULL;
+    Tmmgr_t tmmgr = nullptr;
 
     tmmgr_init (&tmmgr, num_handles, 1);
 
@@ -51,7 +49,7 @@ namespace
     double t_alloc (-fhg::util::now());
 #endif
 
-    BOOST_FOREACH (Handle_t const& handle, handles)
+    for (Handle_t const& handle : handles)
     {
       BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, handle, 1), ALLOC_SUCCESS);
     }
@@ -64,7 +62,7 @@ namespace
     double t_free (-fhg::util::now());
 #endif
 
-    BOOST_FOREACH (Handle_t const& handle, handles)
+    for (Handle_t const& handle : handles)
     {
       BOOST_REQUIRE_EQUAL (tmmgr_free (&tmmgr, handle), RET_SUCCESS);
     }

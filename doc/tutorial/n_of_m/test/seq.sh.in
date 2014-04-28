@@ -11,7 +11,7 @@ DIR_SOURCE="${DIR_TEST}/.."
 OUT="${DIR_BUILD}/n_of_m.out"
 CMP="${DIR_BUILD}/run.out"
 CMP_ORIG="${DIR_TEST}/out.cmp"
-RESULT="$(mktemp --tmpdir="${DIR_BUILD}")"
+RESULT="$(mktemp -p "${DIR_BUILD}")"
 
 make+=()
 make+=( make BUILDDIR="${DIR_BUILD}" )

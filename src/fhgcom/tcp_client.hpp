@@ -1,9 +1,9 @@
 #ifndef FHG_COM_TCP_CLIENT_HPP
 #define FHG_COM_TCP_CLIENT_HPP 1
 
+#include <boost/asio.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/condition.hpp>
-#include <boost/asio.hpp>
 
 namespace fhg
 {

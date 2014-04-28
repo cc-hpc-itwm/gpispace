@@ -8,7 +8,7 @@
 
 #include <sstream>
 
-#include <boost/bind.hpp>
+#include <functional>
 
 namespace
 {
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE (call)
   std::ostringstream oss;
   std::ostringstream cmp;
   state_t s (oss);
-  fhg::log::appender::call c (boost::bind (&state_t::fun, boost::ref (s), _1));
+  fhg::log::appender::call c (std::bind (&state_t::fun, std::ref (s), std::placeholders::_1));
 
   for (int i (0); i < 10; ++i)
   {

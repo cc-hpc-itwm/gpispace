@@ -74,7 +74,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE (tmmgr)
 {
-  Tmmgr_t tmmgr = NULL;
+  Tmmgr_t tmmgr = nullptr;
 
   BOOST_REQUIRE_EQUAL (tmmgr_init (&tmmgr, 45, 1), 45);
 
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE (tmmgr)
 
   unsigned long callback_count = 0;
 
-  tmmgr_defrag (&tmmgr, &fMemmove, NULL, &callback_count);
+  tmmgr_defrag (&tmmgr, &fMemmove, nullptr, &callback_count);
 
   BOOST_REQUIRE_EQUAL (tmmgr_memfree (tmmgr), 34);
   BOOST_REQUIRE_EQUAL (tmmgr_memused (tmmgr), 11);
@@ -217,7 +217,7 @@ BOOST_AUTO_TEST_CASE (tmmgr)
 
   BOOST_REQUIRE_EQUAL (tmmgr_resize (&tmmgr, 45), RESIZE_BELOW_HIGHWATER);
 
-  tmmgr_defrag (&tmmgr, &fMemmove, NULL, &callback_count);
+  tmmgr_defrag (&tmmgr, &fMemmove, nullptr, &callback_count);
 
   BOOST_REQUIRE_EQUAL (tmmgr_resize (&tmmgr, 34), RESIZE_BELOW_MEMUSED);
   BOOST_REQUIRE_EQUAL (tmmgr_resize (&tmmgr, 35), RESIZE_SUCCESS);
@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE (tmmgr)
 
 BOOST_AUTO_TEST_CASE (tmmgr_aligned)
 {
-  Tmmgr_t tmmgr = NULL;
+  Tmmgr_t tmmgr = nullptr;
 
   BOOST_REQUIRE_EQUAL (tmmgr_init (&tmmgr, 45, (1 << 4)), 32);
 
@@ -363,7 +363,7 @@ BOOST_AUTO_TEST_CASE (tmmgr_aligned)
 
   unsigned long callback_count = 5;
 
-  tmmgr_defrag (&tmmgr, &fMemmove, NULL, &callback_count);
+  tmmgr_defrag (&tmmgr, &fMemmove, nullptr, &callback_count);
 
   BOOST_REQUIRE_EQUAL (tmmgr_resize (&tmmgr, 150), RESIZE_SUCCESS);
 

@@ -7,7 +7,7 @@ source "@CMAKE_BINARY_DIR@/test/measured.sh"
 DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
 DIR_SOURCE="${DIR_TEST}/.."
 MAIN="work_and_wait"
-RESULT="$(mktemp --tmpdir="${DIR_BUILD}")"
+RESULT="$(mktemp -p "${DIR_BUILD}")"
 
 OUT="${DIR_BUILD}/${MAIN}.out"
 CMP="${DIR_BUILD}/run.out"

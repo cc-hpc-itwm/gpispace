@@ -39,7 +39,7 @@ namespace fhg
           QGraphicsScene* sc (QGraphicsItem::scene());
 
           return sc ? util::qt::throwing_qobject_cast<scene_type*> (sc)
-                    : NULL
+                    : nullptr
                     ;
         }
 
@@ -82,7 +82,7 @@ namespace fhg
         {
           _style.clear_cache();
 
-          foreach (QGraphicsItem* child, childItems())
+          for (QGraphicsItem* child : childItems())
             {
               if (base_item* child_item = qgraphicsitem_cast<base_item*> (child))
                 {
@@ -146,7 +146,7 @@ namespace fhg
         {
           QLinkedList<base_item*> childs;
 
-          foreach (QGraphicsItem* childItem, childItems())
+          for (QGraphicsItem* childItem : childItems())
             {
               if (base_item* child = qgraphicsitem_cast<base_item *> (childItem))
                 {

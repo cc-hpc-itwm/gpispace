@@ -21,8 +21,9 @@
 
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
-#include <boost/unordered_map.hpp>
 #include <boost/preprocessor.hpp>
+
+#include <unordered_map>
 
 namespace xml
 {
@@ -51,12 +52,12 @@ namespace xml
 
 #define ITEM(NAME,MEMBER_NAME,TYPE,__IGNORE)                            \
                                                                         \
-        typedef boost::unordered_map< NAME                              \
-                                    , type::TYPE                        \
-                                    > NAME ## _map_type;                \
+        typedef std::unordered_map< NAME                                \
+                                  , type::TYPE                          \
+                                  > NAME ## _map_type;                  \
                                                                         \
         NAME ## _map_type MEMBER_NAME;                                  \
-        boost::unordered_map<NAME, base_id_type>                        \
+        std::unordered_map<NAME, base_id_type>                          \
           MEMBER_NAME ## _references;
 
 #include <xml/parse/id/helper.lst>
@@ -146,7 +147,7 @@ namespace xml
               ).str()                                                   \
             );                                                          \
         }                                                               \
-        _maps->MEMBER_NAME.insert (std::make_pair (id, elem));          \
+        _maps->MEMBER_NAME.emplace (id, elem);                          \
       }                                                                 \
                                                                         \
       void mapper::add_reference (const ref::NAME& ref)                 \

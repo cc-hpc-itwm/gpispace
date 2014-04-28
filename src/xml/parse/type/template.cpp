@@ -7,8 +7,6 @@
 
 #include <fhg/util/xml.hpp>
 
-#include <boost/foreach.hpp>
-
 namespace xml
 {
   namespace parse
@@ -128,7 +126,7 @@ namespace xml
           s.open ("template");
           s.attr ("name", t.name());
 
-          BOOST_FOREACH (const std::string& tn, t.tmpl_parameter())
+          for (const std::string& tn : t.tmpl_parameter())
             {
               s.open ("template-parameter");
               s.attr ("type", tn);

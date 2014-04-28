@@ -152,19 +152,17 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
     }
   }
 
-  boost::unordered_map
+  std::unordered_map
     < we::port_id_type
     , std::list<pnet::type::value::value_type>
     > values_by_port_id;
 
   we::type::activity_t::output_t const output (act.output());
 
-  BOOST_FOREACH
-    ( std::pair<                pnet::type::value::value_type
-               BOOST_PP_COMMA() we::port_id_type
-               > const& token_on_port
-    , output
-    )
+  for ( std::pair<pnet::type::value::value_type, we::port_id_type> const&
+          token_on_port
+      : output
+      )
   {
     values_by_port_id[token_on_port.second].push_back (token_on_port.first);
   }

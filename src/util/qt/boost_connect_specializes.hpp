@@ -72,7 +72,7 @@ namespace fhg
         {
         public:
           explicit connection_adapter
-            (const boost::function<QTBI_PARTIAL_SPEC>& f)
+            (const std::function<QTBI_PARTIAL_SPEC>& f)
             : m_function (f)
           { }
 
@@ -103,7 +103,7 @@ namespace fhg
 #undef QTBI_PARAM
           }
 
-          boost::function<QTBI_PARTIAL_SPEC> m_function;
+          std::function<QTBI_PARTIAL_SPEC> m_function;
         };
       }
     }

@@ -13,7 +13,6 @@
 #include <iostream>
 #include <fstream>
 
-#include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -23,6 +22,7 @@
 #include <fhgcom/kvs/kvsc.hpp>
 
 #include <fhg/util/daemonize.hpp>
+#include <fhg/util/make_unique.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/pidfile_writer.hpp>
@@ -36,6 +36,8 @@
 
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/container/manager.hpp>
+
+#include <memory>
 
 static const char * program_name = "gpi-space";
 static const int CONFIG_MAGIC = 0xdeadbeef;
@@ -99,32 +101,32 @@ static int configure_logging (const config_t *cfg, const char* logfile);
 namespace
 {
   enum requested_api_t { API_auto, API_real, API_fake };
-  //! \todo directly return movable std::unique_ptr
-  gpi_api_t* create_gpi_api (requested_api_t requested_api, bool is_master)
+  std::unique_ptr<gpi_api_t> create_gpi_api
+    (requested_api_t requested_api, bool is_master)
   {
 #ifdef ENABLE_REAL_GPI
     if (requested_api == API_auto)
     {
       try
       {
-        return new gpi::api::real_gpi_api_t (is_master);
+        return fhg::util::make_unique <gpi::api::real_gpi_api_t> (is_master);
       }
       catch (gpi::exception::gpi_error const& ex)
       {
         fprintf (stderr, "%s: %s\n", program_name, ex.what());
         fprintf (stderr, "%s: fallback to fake API\n", program_name);
 
-        return new gpi::api::fake_gpi_api_t (is_master);
+        return fhg::util::make_unique <gpi::api::fake_gpi_api_t> (is_master);
       }
     }
     else if (requested_api == API_real)
     {
-      return new gpi::api::real_gpi_api_t (is_master);
+      return fhg::util::make_unique <gpi::api::real_gpi_api_t> (is_master);
     }
     else // if (requested_api == API_fake)
 #endif
     {
-      return new gpi::api::fake_gpi_api_t (is_master);
+      return fhg::util::make_unique <gpi::api::fake_gpi_api_t> (is_master);
     }
   }
 
@@ -156,7 +158,6 @@ int main (int ac, char *av[])
   unsigned int gpi_mtu = 0;
   int gpi_net = -1;
   int gpi_np = -1;
-  int gpi_numa_socket = 0;
   unsigned int gpi_timeout = 120;
 
   std::vector<std::string> mem_urls;
@@ -272,13 +273,11 @@ int main (int ac, char *av[])
       ++i;
       if (i < ac)
       {
-        if ( ( (strlen(av[i]) + strlen("/S-gpi-space.XXXXX.XXXX") + 1)
-             > sizeof(config.socket))
-           )
+        if ((strlen(av[i]) + 1) > sizeof(config.socket))
         {
           fprintf(stderr, "%s: path to socket is too large!\n", program_name);
           fprintf(stderr, "    at most %lu characters are supported\n"
-                 , sizeof(config.socket) - (strlen("/S-gpi-space.XXXXX.XXXX")+1)
+                 , sizeof(config.socket) - 1
                  );
           exit(EX_INVAL);
         }
@@ -642,14 +641,12 @@ int main (int ac, char *av[])
 
   snprintf ( config.socket
            , sizeof(config.socket)
-           , "%s/S-gpi-space.%d.%d"
+           , "%s"
            , socket_path
-           , getuid()
-           , gpi_numa_socket
            );
 
   // initialize gpi api
-  boost::scoped_ptr<gpi_api_t> gpi_api_
+  std::unique_ptr<gpi_api_t> gpi_api_
     (create_gpi_api (requested_api, is_master));
   gpi_api_t& gpi_api (*gpi_api_);
 
@@ -731,7 +728,7 @@ int main (int ac, char *av[])
   try
   {
     fhg::util::signal_handler_manager signal_handler;
-    signal_handler.add (SIGALRM, boost::bind (&startup_failed));
+    signal_handler.add (SIGALRM, std::bind (&startup_failed));
 
     gpi_api.start (ac, av, gpi_timeout);
   }
@@ -792,12 +789,12 @@ int main (int ac, char *av[])
     LOG(INFO, "started GPI interface on rank " << gpi_api.rank() << " at " << config.socket);
 
     fhg::util::thread::event<> stop_requested;
-    const boost::function<void()> request_stop
-      (boost::bind (&fhg::util::thread::event<>::notify, &stop_requested));
+    const std::function<void()> request_stop
+      (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
 
     fhg::util::signal_handler_manager signal_handler;
-    signal_handler.add (SIGTERM, boost::bind (request_stop));
-    signal_handler.add (SIGINT, boost::bind (request_stop));
+    signal_handler.add (SIGTERM, std::bind (request_stop));
+    signal_handler.add (SIGINT, std::bind (request_stop));
 
     stop_requested.wait();
 
@@ -819,7 +816,7 @@ static int configure_logging (const config_t *cfg, const char* logfile)
   snprintf( server_url, sizeof(server_url), "%s:%hu"
           , cfg->log_host, cfg->log_port
           );
-  const char *log_level = 0;
+  const char *log_level = nullptr;
   switch (cfg->log_level)
   {
   case 'T':
