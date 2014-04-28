@@ -5,46 +5,76 @@
 
 #include <we/type/bitsetofint.hpp>
 
-#include <iostream>
 #include <sstream>
 #include <set>
 
-BOOST_AUTO_TEST_CASE (NOTEST_various_tests)
+BOOST_AUTO_TEST_CASE (various_tests)
 {
   bitsetofint::type set(1);
 
-  std::cout << set << std::endl;
+  {
+    std::ostringstream oss;
+
+    oss << set;
+
+    BOOST_REQUIRE_EQUAL ("{ 0}", oss.str());
+  }
 
   for (unsigned int i (0); i < 80; ++i)
-    std::cout << set.is_element(i);
-  std::cout << std::endl;
+  {
+    BOOST_REQUIRE (!set.is_element (i));
+  }
 
   set.ins (13);
   set.ins (22);
   set.ins (69);
 
+  BOOST_REQUIRE (set.is_element (13));
+  BOOST_REQUIRE (set.is_element (22));
+  BOOST_REQUIRE (set.is_element (69));
+
   for (unsigned int i (0); i < 80; ++i)
-    std::cout << set.is_element(i);
-  std::cout << std::endl;
+  {
+    BOOST_REQUIRE (!set.is_element (i) || i == 13 || i == 22 || i == 69);
+  }
 
   set.ins (13);
   set.del (22);
   set.ins (70);
 
+  BOOST_REQUIRE (set.is_element (13));
+  BOOST_REQUIRE (set.is_element (69));
+  BOOST_REQUIRE (set.is_element (70));
+
   for (unsigned int i (0); i < 80; ++i)
-    std::cout << set.is_element(i);
-  std::cout << std::endl;
+  {
+    BOOST_REQUIRE (!set.is_element (i) || i == 13 || i == 69 || i == 70);
+  }
 
-  std::cout << set << std::endl;
+  {
+    std::ostringstream oss;
 
-  std::cout << "*** filled up to " << (1 << 20) << std::endl;
+    oss << set;
+
+    BOOST_REQUIRE_EQUAL ("{ 8192 96}", oss.str());
+  }
 
   set.ins (1 << 20);
 
-  std::cout << "*** filled up to " << std::numeric_limits<unsigned int>::max() << std::endl;
+  BOOST_REQUIRE_EQUAL (set.count(), 4);
+  BOOST_REQUIRE (set.is_element (13));
+  BOOST_REQUIRE (set.is_element (69));
+  BOOST_REQUIRE (set.is_element (70));
+  BOOST_REQUIRE (set.is_element (1 << 20));
 
   set.ins (std::numeric_limits<unsigned int>::max());
 
+  BOOST_REQUIRE_EQUAL (set.count(), 5);
+  BOOST_REQUIRE (set.is_element (13));
+  BOOST_REQUIRE (set.is_element (69));
+  BOOST_REQUIRE (set.is_element (70));
+  BOOST_REQUIRE (set.is_element (1 << 20));
+  BOOST_REQUIRE (set.is_element (std::numeric_limits<unsigned int>::max()));
 }
 BOOST_AUTO_TEST_CASE (bit_operations)
 {
