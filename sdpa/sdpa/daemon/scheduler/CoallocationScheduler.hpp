@@ -60,12 +60,9 @@ namespace sdpa
           list_not_terminated_workers = ptr_reservation->getListNotTerminatedWorkers();
         }
 
-        for ( sdpa::worker_id_list_t::iterator it = list_not_terminated_workers.begin()
-            ; it != list_not_terminated_workers.end()
-            ; ++it
-            )
+        for (worker_id_t worker_id : list_not_terminated_workers)
         {
-          func( *it );
+          func (worker_id);
         }
 
         return !list_not_terminated_workers.empty();
