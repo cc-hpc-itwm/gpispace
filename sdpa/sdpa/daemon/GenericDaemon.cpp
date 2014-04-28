@@ -415,7 +415,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
             pJob->Reschedule();
 
             if (!scheduler().cancelNotTerminatedWorkerJobs
-                  ( [&](const sdpa::worker_id_t& wid)
+                  ( [this, &jobId](const sdpa::worker_id_t& wid)
                   {
                     child_proxy (this, wid).cancel_job (jobId);
                   }
