@@ -23,19 +23,15 @@ namespace sdpa
 
     void Agent::handleJobFinishedEvent (const events::JobFinishedEvent* pEvt)
     {
-      // check if the message comes from outside/slave or from WFE
-      // if it comes from a slave, one should inform WFE -> subjob
-      // if it comes from WFE -> concerns the master job
-
       child_proxy (this, pEvt->from()).job_finished_ack (pEvt->job_id());
 
-      Job* pJob (findJob (pEvt->job_id()));
-      if (!pJob)
+      if (scheduler().worker_manager().checkIfAbortedJobAndDelete (pEvt->from(), pEvt->job_id()))
       {
-        //! \todo Explain why we can ignore this
+        request_scheduling();
         return;
       }
 
+      Job* pJob (findJob (pEvt->job_id()));
       if (!hasWorkflowEngine())
       {
         pJob->JobFinished (pEvt->result());
@@ -44,10 +40,10 @@ namespace sdpa
       }
       else
       {
-        scheduler()->workerFinished (pEvt->from(), pEvt->job_id());
+        scheduler().workerFinished (pEvt->from(), pEvt->job_id());
 
         const bool bAllPartResCollected
-          (scheduler()->allPartialResultsCollected (pEvt->job_id()));
+          (scheduler().allPartialResultsCollected (pEvt->job_id()));
 
         if (bAllPartResCollected)
         {
@@ -56,7 +52,7 @@ namespace sdpa
             pJob->CancelJobAck();
             workflowEngine()->canceled (pEvt->job_id());
           }
-          else if(scheduler()->groupFinished (pEvt->job_id()))
+          else if(scheduler().groupFinished (pEvt->job_id()))
           {
             pJob->JobFinished (pEvt->result());
             workflowEngine()->finished
@@ -71,9 +67,9 @@ namespace sdpa
               (pEvt->job_id(), "One of tasks of the group failed with the actual reservation!");
           }
 
-          scheduler()->releaseReservation (pJob->id());
+          scheduler().releaseReservation (pJob->id());
         }
-        scheduler()->worker_manager().findWorker (pEvt->from())->deleteJob (pJob->id());
+        scheduler().worker_manager().findWorker (pEvt->from())->deleteJob (pJob->id());
         request_scheduling();
 
         if(bAllPartResCollected)
@@ -87,13 +83,13 @@ namespace sdpa
     {
       child_proxy (this, pEvt->from()).job_failed_ack (pEvt->job_id());
 
-      Job* pJob (findJob (pEvt->job_id()));
-      if (!pJob)
+      if (scheduler().worker_manager().checkIfAbortedJobAndDelete (pEvt->from(), pEvt->job_id()))
       {
-        //! \todo Explain why we can ignore this
+        request_scheduling();
         return;
       }
 
+      Job* pJob (findJob (pEvt->job_id()));
       if (!hasWorkflowEngine())
       {
         pJob->JobFailed (pEvt->error_message());
@@ -102,15 +98,8 @@ namespace sdpa
       }
       else
       {
-        // this should only be called once, therefore the state
-        // machine when we switch the job from one state to another,
-        // the code belonging to exactly that transition should be
-        // executed. I.e. all this code should go to the FSM callback
-        // routine.
-
-
-        scheduler()->workerFailed (pEvt->from(), pEvt->job_id());
-        bool bAllPartResCollected (scheduler()->allPartialResultsCollected (pEvt->job_id()));
+        scheduler().workerFailed (pEvt->from(), pEvt->job_id());
+        bool bAllPartResCollected (scheduler().allPartialResultsCollected (pEvt->job_id()));
 
         if (bAllPartResCollected)
         {
@@ -125,12 +114,9 @@ namespace sdpa
             workflowEngine()->failed (pEvt->job_id(), pEvt->error_message());
           }
 
-          // cancel the other jobs assigned to the workers which are
-          // in the reservation list
-
-          scheduler()->releaseReservation (pJob->id());
+          scheduler().releaseReservation (pJob->id());
         }
-        scheduler()->worker_manager().findWorker (pEvt->from())->deleteJob (pJob->id());
+        scheduler().worker_manager().findWorker (pEvt->from())->deleteJob (pJob->id());
         request_scheduling();
 
         if (bAllPartResCollected)
@@ -162,12 +148,26 @@ namespace sdpa
           );
       }
 
-      workflowEngine()->cancel (pEvt->job_id());
-      pJob->CancelJob();
+      if(pJob->getStatus() == sdpa::status::RUNNING)
+      {
+          pJob->CancelJob();
+          workflowEngine()->cancel (pEvt->job_id());
+      }
+      else
+      {
+          parent_proxy (this, pJob->owner()).cancel_job_ack (pEvt->job_id());
+          deleteJob (pEvt->job_id());
+      }
     }
 
     void Agent::handleCancelJobAckEvent (const events::CancelJobAckEvent* pEvt)
     {
+      if (scheduler().worker_manager().checkIfAbortedJobAndDelete (pEvt->from(), pEvt->job_id()))
+      {
+        request_scheduling();
+        return;
+      }
+
       Job* pJob (findJob(pEvt->job_id()));
 
       if (pJob)
@@ -183,26 +183,22 @@ namespace sdpa
         }
       }
 
-      // the acknowledgment comes from a slave and there is no WE
       if (!hasWorkflowEngine())
       {
-        // just send an acknowledgment to the master
-        // send an acknowledgment to the component that requested the cancellation
         if (!isTop())
         {
-          // only if the job was already submitted
           parent_proxy (this, pJob->owner()).cancel_job_ack (pEvt->job_id());
 
           deleteJob (pEvt->job_id());
         }
       }
-      else // acknowledgment comes from a worker -> inform WE that the activity was canceled
+      else
       {
         LLOG (TRACE, _logger, "informing workflow engine that the activity "<< pEvt->job_id() <<" was canceled");
 
-        scheduler()->workerCanceled (pEvt->from(), pEvt->job_id());
+        scheduler().workerCanceled (pEvt->from(), pEvt->job_id());
         const bool bTaskGroupComputed
-          (scheduler()->allPartialResultsCollected (pEvt->job_id()));
+          (scheduler().allPartialResultsCollected (pEvt->job_id()));
 
         if (bTaskGroupComputed)
         {
@@ -213,16 +209,15 @@ namespace sdpa
         {
           if (bTaskGroupComputed)
           {
-            scheduler()->releaseReservation (pEvt->job_id());
+            scheduler().releaseReservation (pEvt->job_id());
           }
           LLOG (TRACE, _logger, "Remove job " << pEvt->job_id() << " from the worker "<<pEvt->from());
-          scheduler()->worker_manager().findWorker (pEvt->from())->deleteJob (pEvt->job_id());
+          scheduler().worker_manager().findWorker (pEvt->from())->deleteJob (pEvt->job_id());
           request_scheduling();
         }
         catch (const WorkerNotFoundException&)
         {
-          // the job was not assigned to any worker yet -> this means that might
-          // still be in the scheduler's queue
+            scheduler().delete_job (pEvt->job_id());
         }
 
         if (bTaskGroupComputed)

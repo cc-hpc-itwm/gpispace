@@ -33,9 +33,7 @@
 #include <xml/parse/type/transition.hpp>
 
 #include <list>
-
-#include <boost/foreach.hpp>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 
 #include <QApplication>
 #include <QDebug>
@@ -46,6 +44,8 @@
 #include <QMessageBox>
 #include <QScrollBar>
 #include <QTimer>
+
+#include <functional>
 
 namespace fhg
 {
@@ -89,7 +89,7 @@ namespace fhg
             bool ok;
             const QString name
               ( QInputDialog::getText
-                ( NULL
+                ( nullptr
                 , dialog_title
                 , prompt
                 , QLineEdit::Normal
@@ -109,52 +109,52 @@ namespace fhg
                                , QObject* parent
                                )
           : QGraphicsScene (parent)
-          , _pending_connection (NULL)
+          , _pending_connection (nullptr)
           , _mouse_position (QPointF (0.0, 0.0))
           , _net (net)
           , _function (function)
           //! \todo Don't default to center of scene, but center of visible scene!
           , _add_transition_action
             ( connect_action ( new QAction (tr ("new_transition"), this)
-                             , boost::bind ( &data::handle::net::add_transition
-                                           , _net
-                                           , boost::none
-                                           )
+                             , std::bind ( &data::handle::net::add_empty_transition
+                                         , _net
+                                         , boost::none
+                                         )
                              )
             )
           , _add_place_action
             ( connect_action ( new QAction (tr ("new_place"), this)
-                             , boost::bind ( &data::handle::net::add_place
-                                           , _net
-                                           , boost::none
-                                           )
+                             , std::bind ( &data::handle::net::add_place
+                                         , _net
+                                         , boost::none
+                                         )
                              )
             )
           , _add_top_level_port_in_action
             ( connect_action ( new QAction (tr ("new_top_level_port_in"), this)
-                             , boost::bind ( &data::handle::function::add_port
-                                           , _function
-                                           , we::type::PORT_IN
-                                           , boost::none
-                                           )
+                             , std::bind ( &data::handle::function::add_port
+                                         , _function
+                                         , we::type::PORT_IN
+                                         , boost::none
+                                         )
                              )
             )
           , _add_top_level_port_out_action
             ( connect_action ( new QAction (tr ("new_top_level_port_out"), this)
-                             , boost::bind ( &data::handle::function::add_port
-                                           , _function
-                                           , we::type::PORT_OUT
-                                           , boost::none
-                                           )
+                             , std::bind ( &data::handle::function::add_port
+                                         , _function
+                                         , we::type::PORT_OUT
+                                         , boost::none
+                                         )
                              )
             )
           , _add_top_level_port_tunnel_action
             ( connect_action ( new QAction (tr ("new_top_level_port_tunnel"), this)
-                             , boost::bind ( &data::handle::function::add_port
-                                           , _function
-                                           , we::type::PORT_TUNNEL
-                                           , boost::none
-                                           )
+                             , std::bind ( &data::handle::function::add_port
+                                         , _function
+                                         , we::type::PORT_TUNNEL
+                                         , boost::none
+                                         )
                              )
             )
           , _auto_layout_action
@@ -323,14 +323,14 @@ namespace fhg
                 ( menu->addAction(tr ("transition_set_name"))
                 , SIGNAL (triggered())
                 , item_below_cursor
-                , boost::bind ( set_name_for_handle<data::handle::transition>
-                              , handle
-                              , tr ("transition_set_name_dialog_title_for_%1").arg
-                                (QString::fromStdString (handle.get().name()))
-                              , tr ("transition_set_name_prompt")
-                              , QString::fromStdString (handle.get().name())
-                              , event->widget()
-                              )
+                , std::bind ( set_name_for_handle<data::handle::transition>
+                            , handle
+                            , tr ("transition_set_name_dialog_title_for_%1").arg
+                              (QString::fromStdString (handle.get().name()))
+                            , tr ("transition_set_name_prompt")
+                            , QString::fromStdString (handle.get().name())
+                            , event->widget()
+                            )
                 );
 
               menu->addSeparator();
@@ -339,7 +339,7 @@ namespace fhg
                 ( menu->addAction (tr ("transition_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
-                , boost::bind (&data::handle::transition::remove, handle)
+                , std::bind (&data::handle::transition::remove, handle)
                 );
             }
             break;
@@ -357,7 +357,7 @@ namespace fhg
                   ( menu->addAction (tr ("place_make_explicit"))
                   , SIGNAL (triggered())
                   , item_below_cursor
-                  , boost::bind (&data::handle::place::make_explicit, handle)
+                  , std::bind (&data::handle::place::make_explicit, handle)
                   );
               }
               else
@@ -366,28 +366,28 @@ namespace fhg
                   ( menu->addAction(tr ("place_set_name"))
                   , SIGNAL (triggered())
                   , item_below_cursor
-                  , boost::bind ( set_name_for_handle<data::handle::place>
-                                , handle
-                                , tr ("place_set_name_dialog_title_for_%1").arg
-                                  (QString::fromStdString (handle.get().name()))
-                                , tr ("place_set_name_prompt")
-                                , QString::fromStdString (handle.get().name())
-                                , event->widget()
-                                )
+                  , std::bind ( set_name_for_handle<data::handle::place>
+                              , handle
+                              , tr ("place_set_name_dialog_title_for_%1").arg
+                                (QString::fromStdString (handle.get().name()))
+                              , tr ("place_set_name_prompt")
+                              , QString::fromStdString (handle.get().name())
+                              , event->widget()
+                              )
                   );
 
                 fhg::util::qt::boost_connect<void()>
                   ( menu->addAction(tr ("place_set_type"))
                   , SIGNAL (triggered())
                   , item_below_cursor
-                  , boost::bind ( set_we_type_for_handle<data::handle::place>
-                                , handle
-                                , tr ("place_set_type_dialog_title_for_%1").arg
-                                  (QString::fromStdString (handle.get().name()))
-                                , tr ("place_set_type_prompt")
-                                , QString::fromStdString (handle.get().type())
-                                , event->widget()
-                                )
+                  , std::bind ( set_we_type_for_handle<data::handle::place>
+                              , handle
+                              , tr ("place_set_type_dialog_title_for_%1").arg
+                                (QString::fromStdString (handle.get().name()))
+                              , tr ("place_set_type_prompt")
+                              , QString::fromStdString (handle.get().type())
+                              , event->widget()
+                              )
                   );
 
                 if (handle.is_virtual())
@@ -396,7 +396,7 @@ namespace fhg
                     ( menu->addAction (tr ("place_make_real"))
                     , SIGNAL (triggered())
                     , item_below_cursor
-                    , boost::bind (&data::handle::place::make_real, handle)
+                    , std::bind (&data::handle::place::make_real, handle)
                     );
                 }
                 else
@@ -405,7 +405,7 @@ namespace fhg
                     ( menu->addAction (tr ("place_make_virtual"))
                     , SIGNAL (triggered())
                     , item_below_cursor
-                    , boost::bind (&data::handle::place::make_virtual, handle)
+                    , std::bind (&data::handle::place::make_virtual, handle)
                     );
                 }
               }
@@ -416,7 +416,7 @@ namespace fhg
                 ( menu->addAction (tr ("place_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
-                , boost::bind (&data::handle::place::remove, handle)
+                , std::bind (&data::handle::place::remove, handle)
                 );
             }
             break;
@@ -432,7 +432,7 @@ namespace fhg
                 ( menu->addAction (tr ("connection_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
-                , boost::bind (&data::handle::place::remove, handle.resolved_place())
+                , std::bind (&data::handle::place::remove, handle.resolved_place())
                 );
             }
             break;
@@ -448,7 +448,7 @@ namespace fhg
                 ( menu->addAction (tr ("port_place_assoc_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
-                , boost::bind
+                , std::bind
                   (&data::handle::port::remove_place_association, handle)
                 );
             }
@@ -466,7 +466,7 @@ namespace fhg
                 ( menu->addAction (tr ("place_map_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
-                , boost::bind (&data::handle::place::remove, handle.resolved_real_place())
+                , std::bind (&data::handle::place::remove, handle.resolved_real_place())
                 );
             }
 
@@ -557,7 +557,7 @@ namespace fhg
         void scene_type::remove_pending_connection()
         {
           delete _pending_connection;
-          _pending_connection = NULL;
+          _pending_connection = nullptr;
         }
 
         void scene_type::mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent)
@@ -585,9 +585,9 @@ namespace fhg
             return;
           }
 
-          foreach ( const connectable_item* item
-                  , items_of_type<connectable_item> (event->scenePos())
-                  )
+          for ( const connectable_item* item
+              : items_of_type<connectable_item> (event->scenePos())
+              )
           {
             const connectable_item* pending (_pending_connection->fixed_end());
 
@@ -686,7 +686,7 @@ namespace fhg
             static const QPointF offset_per_transition
               (size::raster() * 5, size::raster() * 5);
 
-            foreach (const QString& path, paths)
+            for (const QString& path : paths)
             {
               net().add_transition
                 ( data::manager::instance().load (path).get().clone
@@ -709,9 +709,9 @@ namespace fhg
             return;
           }
 
-          typedef boost::unordered_map< base_item*
-                                      , graphviz::node_type
-                                      > nodes_map_type;
+          typedef std::unordered_map< base_item*
+                                    , graphviz::node_type
+                                    > nodes_map_type;
           nodes_map_type nodes;
 
           graphviz::context_type context;
@@ -719,7 +719,7 @@ namespace fhg
           graph.rankdir ("LR");
           graph.splines ("ortho");
 
-          foreach (transition_item* i, items_of_type<transition_item>())
+          for (transition_item* i : items_of_type<transition_item>())
           {
             nodes.insert ( nodes_map_type::value_type
                            ( qgraphicsitem_cast<base_item*> (i)
@@ -728,12 +728,12 @@ namespace fhg
                          );
           }
 
-          typedef boost::unordered_map < association*
-                                       , graphviz::edge_type
-                                       > edges_map_type;
+          typedef std::unordered_map < association*
+                                     , graphviz::edge_type
+                                     > edges_map_type;
           edges_map_type edges;
 
-          foreach (association* c, items_of_type<association>())
+          for (association* c : items_of_type<association>())
           {
             QGraphicsItem* start (c->start());
             QGraphicsItem* end (c->end());
@@ -743,7 +743,7 @@ namespace fhg
 
             if (place_item* place = qgraphicsitem_cast<place_item*> (start))
             {
-              foreach (association* assoc, place->associations())
+              for (association* assoc : place->associations())
               {
                 if (assoc != c)
                 {
@@ -780,7 +780,7 @@ namespace fhg
           QPointF center;
           int counter (0);
 
-          BOOST_FOREACH (nodes_map_type::value_type& it, nodes)
+          for (nodes_map_type::value_type& it : nodes)
           {
             if (it.first->type() != base_item::place_graph_type)
             {
@@ -802,7 +802,7 @@ namespace fhg
             QTimer::singleShot (0, this, SLOT (center_all_views()));
           }
 
-          // BOOST_FOREACH (const edges_map_type::value_type& edge, edges)
+          // for (const edges_map_type::value_type& edge : edges)
           // {
           //   //! \todo enable this, before repair connection::shape
           //   //                edge.first->fixed_points (edge.second.points());
@@ -812,7 +812,7 @@ namespace fhg
         void scene_type::center_all_views()
         {
           const QPointF center (itemsBoundingRect().center());
-          foreach (QGraphicsView* view, views())
+          for (QGraphicsView* view : views())
           {
             view->centerOn (center);
             view->update();
@@ -822,14 +822,14 @@ namespace fhg
         template<typename item_type, typename handle_type>
           item_type* scene_type::item_with_handle (const handle_type& handle)
         {
-          foreach (item_type* item, items_of_type<item_type>())
+          for (item_type* item : items_of_type<item_type>())
           {
             if (item->handle() == handle)
             {
               return item;
             }
           }
-          return NULL;
+          return nullptr;
         }
 
         const data::handle::net& scene_type::net() const
@@ -847,7 +847,7 @@ namespace fhg
         {
           QList<item_type*> result;
 
-          foreach (QGraphicsItem* child, items())
+          for (QGraphicsItem* child : items())
           {
             base_item* bi =
               fhg::util::qt::throwing_qgraphicsitem_cast<base_item*> (child);
@@ -865,7 +865,7 @@ namespace fhg
         {
           QList<item_type*> result;
 
-          foreach (QGraphicsItem* child, items (pos))
+          for (QGraphicsItem* child : items (pos))
           {
             base_item* bi =
               fhg::util::qt::throwing_qgraphicsitem_cast<base_item*> (child);
@@ -951,7 +951,7 @@ namespace fhg
         {
           QRectF rect (itemsBoundingRect());
 
-          foreach (QGraphicsView* view, views())
+          for (QGraphicsView* view : views())
           {
             const QPointF tl ( view->horizontalScrollBar()->value()
                              , view->verticalScrollBar()->value()

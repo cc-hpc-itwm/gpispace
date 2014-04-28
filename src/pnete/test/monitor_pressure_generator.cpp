@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
+#include <boost/thread.hpp>
 
 #include <sdpa/daemon/NotificationService.hpp>
 
@@ -103,7 +104,7 @@ int main(int ac, char **av)
   std::vector<std::string> worker_names (worker_count);
   std::generate (worker_names.begin(), worker_names.end(), worker_gen);
 
-  std::map<std::string, boost::optional<activity> > workers;
+  std::map<std::string, boost::optional<activity>> workers;
 
   for (;;)
   {

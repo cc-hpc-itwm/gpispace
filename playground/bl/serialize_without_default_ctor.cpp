@@ -54,13 +54,13 @@ namespace serialization
         (type_check<char[sizeof(&U::__is_properly_serializable_tag)]> *);
       template <typename  > static no  &chk
         (...);
-      BOOST_STATIC_CONSTANT (bool, value = sizeof (chk<T>(0)) == sizeof (yes));
+      BOOST_STATIC_CONSTANT (bool, value = sizeof (chk<T> (nullptr)) == sizeof (yes));
     };
   }
 
   template<typename T, typename Archive>
     void serialize ( Archive& ar, const T& x
-                   , typename boost::enable_if_c<is_properly_serializable<T>::value>::type* = 0
+                   , typename boost::enable_if_c<is_properly_serializable<T>::value>::type* = nullptr
                    )
   {
     const T* temp (&x);
@@ -68,7 +68,7 @@ namespace serialization
   }
   template<typename T, typename Archive>
     void serialize ( Archive& ar, const T& x
-                   , typename boost::disable_if_c<is_properly_serializable<T>::value>::type* = 0
+                   , typename boost::disable_if_c<is_properly_serializable<T>::value>::type* = nullptr
                    )
   {
     ar << x;
@@ -76,7 +76,7 @@ namespace serialization
 
   template<typename T, typename Archive>
     T deserialize ( Archive& ar
-                  , typename boost::enable_if_c<is_properly_serializable<T>::value>::type* = 0
+                  , typename boost::enable_if_c<is_properly_serializable<T>::value>::type* = nullptr
                   )
   {
     typename boost::aligned_storage< sizeof (T)
@@ -88,7 +88,7 @@ namespace serialization
   }
   template<typename T, typename Archive>
     T deserialize ( Archive& ar
-                  , typename boost::disable_if_c<is_properly_serializable<T>::value>::type* = 0
+                  , typename boost::disable_if_c<is_properly_serializable<T>::value>::type* = nullptr
                   )
   {
     T temp;

@@ -25,7 +25,7 @@ namespace fhg
         Q_OBJECT
 
         public:
-          TransitionLibraryModel (QWidget* parent = NULL);
+          TransitionLibraryModel (QWidget* parent = nullptr);
 
           static const QString mimeType;
 

@@ -71,7 +71,7 @@ namespace fhg
           current_states_column
         };
 
-        execution_monitor_proxy (QAbstractItemModel* model, QObject* parent = NULL);
+        execution_monitor_proxy (QAbstractItemModel* model, QObject* parent = nullptr);
 
         virtual QVariant headerData
           (int section, Qt::Orientation, int role = Qt::DisplayRole) const;
@@ -110,10 +110,10 @@ namespace fhg
         Q_OBJECT
 
       public:
-        execution_monitor_delegate ( boost::function<void (QString)> set_filter
-                                   , boost::function<QString()> get_filter
+        execution_monitor_delegate ( std::function<void (QString)> set_filter
+                                   , std::function<QString()> get_filter
                                    , QMap<worker_model::state_type, QColor>
-                                   , QWidget* parent = NULL
+                                   , QWidget* parent = nullptr
                                    );
 
         virtual void paint ( QPainter* painter
@@ -150,8 +150,8 @@ namespace fhg
                        );
 
       private:
-        boost::function<void (QString)> _set_filter;
-        boost::function<QString()> _get_filter;
+        std::function<void (QString)> _set_filter;
+        std::function<QString()> _get_filter;
 
         QMap<worker_model::state_type, QColor> _color_for_state;
       };
@@ -163,7 +163,7 @@ namespace fhg
       public:
         execution_monitor_editor ( execution_monitor_delegate*
                                  , util::qt::mvc::section_index
-                                 , QWidget* parent = NULL
+                                 , QWidget* parent = nullptr
                                  );
 
       public slots:

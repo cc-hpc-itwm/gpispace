@@ -12,15 +12,16 @@
 #include <we/type/value/poke.hpp>
 
 #include <fhg/util/now.hpp>
+#include <fhg/util/random_string.hpp>
 
 #include <boost/lexical_cast.hpp>
-#include <boost/tuple/tuple.hpp>
 #include <boost/range/algorithm.hpp>
-#include <boost/bind.hpp>
-#include <boost/tuple/tuple.hpp>
+#include <boost/preprocessor/punctuation/comma.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 
+#include <functional>
 #include <list>
+#include <tuple>
 
 #define DECLARE_EXPECT_CLASS(NAME, CTOR_ARGUMENTS, INITIALIZER_LIST, MEMBER_VARIABLES, EQ_IMPL) \
   struct expect_ ## NAME                                                \
@@ -61,14 +62,14 @@ struct daemon
 {
   daemon()
     : _cnt()
-    , layer ( boost::bind (&daemon::submit, this, _1, _2)
-            , boost::bind (&daemon::cancel, this, _1)
-            , boost::bind (&daemon::finished, this, _1, _2)
-            , boost::bind (&daemon::failed, this, _1, _2)
-            , boost::bind (&daemon::canceled, this, _1)
-            , boost::bind (&daemon::discover, this, _1, _2)
-            , boost::bind (&daemon::discovered, this, _1, _2)
-            , boost::bind (&daemon::generate_id, this)
+    , layer ( std::bind (&daemon::submit, this, std::placeholders::_1, std::placeholders::_2)
+            , std::bind (&daemon::cancel, this, std::placeholders::_1)
+            , std::bind (&daemon::finished, this, std::placeholders::_1, std::placeholders::_2)
+            , std::bind (&daemon::failed, this, std::placeholders::_1, std::placeholders::_2)
+            , std::bind (&daemon::canceled, this, std::placeholders::_1)
+            , std::bind (&daemon::discover, this, std::placeholders::_1, std::placeholders::_2)
+            , std::bind (&daemon::discovered, this, std::placeholders::_1, std::placeholders::_2)
+            , std::bind (&daemon::generate_id, this)
             , _random_engine
             )
     , _in_progress_jobs_rts()
@@ -115,7 +116,7 @@ struct daemon
         BOOST_PP_COMMA() _act (act)
                        , we::layer::id_type* _id
                        ; we::type::activity_t _act
-                       , id != NULL && _act == act
+                       , id != nullptr && _act == act
                        );
 
   void submit
@@ -125,7 +126,7 @@ struct daemon
 
     std::list<expect_submit*>::iterator const e
       ( boost::find_if ( _to_submit
-                       , boost::bind (&expect_submit::eq, _1, &id, act)
+                       , std::bind (&expect_submit::eq, std::placeholders::_1, &id, act)
                        )
         );
 
@@ -150,7 +151,7 @@ struct daemon
 
     std::list<expect_cancel*>::iterator const e
       ( boost::find_if ( _to_cancel
-                       , boost::bind (&expect_cancel::eq, _1, id)
+                       , std::bind (&expect_cancel::eq, std::placeholders::_1, id)
                        )
         );
 
@@ -177,7 +178,7 @@ struct daemon
   {
     std::list<expect_finished*>::iterator const e
       ( boost::find_if ( _to_finished
-                       , boost::bind (&expect_finished::eq, _1, id, act)
+                       , std::bind (&expect_finished::eq, std::placeholders::_1, id, act)
                        )
       );
 
@@ -203,7 +204,7 @@ struct daemon
   {
     std::list<expect_failed*>::iterator const e
       ( boost::find_if ( _to_failed
-                       , boost::bind (&expect_failed::eq, _1, id, message)
+                       , std::bind (&expect_failed::eq, std::placeholders::_1, id, message)
                        )
       );
 
@@ -226,7 +227,7 @@ struct daemon
   {
     std::list<expect_canceled*>::iterator const e
       ( boost::find_if ( _to_canceled
-                       , boost::bind (&expect_canceled::eq, _1, id)
+                       , std::bind (&expect_canceled::eq, std::placeholders::_1, id)
                        )
       );
 
@@ -254,7 +255,7 @@ struct daemon
   {
     std::list<expect_discover*>::iterator const e
       ( boost::find_if ( _to_discover
-                       , boost::bind (&expect_discover::eq, _1, discover_id, id)
+                       , std::bind (&expect_discover::eq, std::placeholders::_1, discover_id, id)
                        )
       );
 
@@ -282,7 +283,7 @@ struct daemon
   {
     std::list<expect_discovered*>::iterator const e
       ( boost::find_if ( _to_discovered
-                       , boost::bind (&expect_discovered::eq, _1, discover_id, result)
+                       , std::bind (&expect_discovered::eq, std::placeholders::_1, discover_id, result)
                        )
       );
 
@@ -482,10 +483,10 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
 
 namespace
 {
-  boost::tuple< we::type::transition_t
-              , we::type::transition_t
-              , we::transition_id_type
-              >
+  std::tuple< we::type::transition_t
+            , we::type::transition_t
+            , we::transition_id_type
+            >
     net_with_childs (bool put_on_input, std::size_t token_count)
   {
     we::type::transition_t transition
@@ -537,7 +538,7 @@ namespace
       net.add_connection (PT, transition_id, place_id_in, port_id_in, empty);
     }
 
-    return boost::make_tuple
+    return std::make_tuple
       ( we::type::transition_t ( "net"
                                , net
                                , boost::none
@@ -550,20 +551,20 @@ namespace
       );
   }
 
-  boost::tuple< we::type::activity_t
-              , we::type::activity_t
-              , we::type::activity_t
-              , we::type::activity_t
-              >
+  std::tuple< we::type::activity_t
+            , we::type::activity_t
+            , we::type::activity_t
+            , we::type::activity_t
+            >
     activity_with_child (std::size_t token_count)
   {
     we::transition_id_type transition_id_child;
     we::type::transition_t transition_in;
     we::type::transition_t transition_out;
     we::type::transition_t transition_child;
-    boost::tie (transition_in, transition_child, transition_id_child) =
+    std::tie (transition_in, transition_child, transition_id_child) =
       net_with_childs (true, token_count);
-    boost::tie (transition_out, boost::tuples::ignore, boost::tuples::ignore) =
+    std::tie (transition_out, std::ignore, std::ignore) =
       net_with_childs (false, token_count);
 
     we::type::activity_t activity_input (transition_in, boost::none);
@@ -579,7 +580,7 @@ namespace
     activity_result.add_output
       (transition_child.output_port_by_name ("out"), value::CONTROL);
 
-    return boost::make_tuple
+    return std::make_tuple
       (activity_input, activity_output, activity_child, activity_result);
   }
 }
@@ -591,7 +592,7 @@ BOOST_FIXTURE_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (1);
 
   we::layer::id_type const id (generate_id());
@@ -618,7 +619,7 @@ BOOST_FIXTURE_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (2);
 
   we::layer::id_type const id (generate_id());
@@ -648,13 +649,107 @@ BOOST_FIXTURE_TEST_CASE
 }
 
 BOOST_FIXTURE_TEST_CASE
+  (two_sequential_jobs_shall_be_properly_handled, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_output;
+  we::type::activity_t activity_child;
+  we::type::activity_t activity_result;
+  std::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (1);
+
+  {
+    we::layer::id_type const id (generate_id());
+
+    we::layer::id_type child_id;
+
+    {
+      expect_submit const _ (this, &child_id, activity_child);
+
+      do_submit (id, activity_input);
+    }
+
+    {
+      expect_finished const _ (this, id, activity_output);
+
+      do_finished (child_id, activity_result);
+    }
+  }
+  {
+    we::layer::id_type const id (generate_id());
+
+    we::layer::id_type child_id;
+
+    {
+      expect_submit const _ (this, &child_id, activity_child);
+
+      do_submit (id, activity_input);
+    }
+
+    {
+      expect_finished const _ (this, id, activity_output);
+
+      do_finished (child_id, activity_result);
+    }
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (two_interleaving_jobs_shall_be_properly_handled, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_output;
+  we::type::activity_t activity_child;
+  we::type::activity_t activity_result;
+  std::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (2);
+
+  we::layer::id_type const id_0 (generate_id());
+  we::layer::id_type const id_1 (generate_id());
+
+  we::layer::id_type child_id_0_0;
+  we::layer::id_type child_id_0_1;
+  we::layer::id_type child_id_1_0;
+  we::layer::id_type child_id_1_1;
+
+  {
+    expect_submit const _0 (this, &child_id_0_0, activity_child);
+    expect_submit const _1 (this, &child_id_0_1, activity_child);
+
+    do_submit (id_0, activity_input);
+  }
+
+  {
+    expect_submit const _0 (this, &child_id_1_0, activity_child);
+    expect_submit const _1 (this, &child_id_1_1, activity_child);
+
+    do_submit (id_1, activity_input);
+  }
+
+  do_finished (child_id_1_1, activity_result);
+  do_finished (child_id_0_0, activity_result);
+
+  {
+    expect_finished const _ (this, id_1, activity_output);
+
+    do_finished (child_id_1_0, activity_result);
+  }
+
+  {
+    expect_finished const _ (this, id_0, activity_output);
+
+    do_finished (child_id_0_1, activity_result);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE
   (canceled_shall_be_called_after_cancel_one_child, daemon)
 {
   we::type::activity_t activity_input;
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (1);
 
   we::layer::id_type const id (generate_id());
@@ -687,7 +782,7 @@ BOOST_FIXTURE_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (2);
 
   we::layer::id_type const id (generate_id());
@@ -730,7 +825,7 @@ BOOST_FIXTURE_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (2);
 
   we::layer::id_type const id (generate_id());
@@ -769,7 +864,7 @@ BOOST_FIXTURE_TEST_CASE (child_failure_shall_fail_parent, daemon)
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (1);
 
   we::layer::id_type const id (generate_id());
@@ -797,7 +892,7 @@ BOOST_FIXTURE_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (2);
 
   we::layer::id_type const id (generate_id());
@@ -839,7 +934,7 @@ BOOST_FIXTURE_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (N);
 
   we::layer::id_type const id (generate_id());
@@ -913,7 +1008,7 @@ BOOST_AUTO_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (num_child_per_activity);
 
   std::vector<we::layer::id_type> child_ids;
@@ -924,9 +1019,9 @@ BOOST_AUTO_TEST_CASE
   boost::mt19937 _random_engine;
 
   we::layer layer
-    ( boost::bind (&submit_fake, &child_ids, _1, _2)
-    , boost::bind (&cancel, _1)
-    , boost::bind (&finished_fake, &finished, _1, _2)
+    ( std::bind (&submit_fake, &child_ids, std::placeholders::_1, std::placeholders::_2)
+    , std::bind (&cancel, std::placeholders::_1)
+    , std::bind (&finished_fake, &finished, std::placeholders::_1, std::placeholders::_2)
     , &failed
     , &canceled
     , &discover
@@ -948,7 +1043,7 @@ BOOST_AUTO_TEST_CASE
     boost::this_thread::yield();
   }
 
-  BOOST_FOREACH (we::layer::id_type child_id, child_ids)
+  for (we::layer::id_type child_id : child_ids)
   {
     layer.finished (child_id, activity_result);
   }
@@ -973,7 +1068,7 @@ BOOST_FIXTURE_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (1);
 
   we::layer::id_type const id (generate_id());
@@ -1021,7 +1116,7 @@ BOOST_FIXTURE_TEST_CASE
   we::type::activity_t activity_output;
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
-  boost::tie (activity_input, activity_output, activity_child, activity_result)
+  std::tie (activity_input, activity_output, activity_child, activity_result)
     = activity_with_child (2);
 
   we::layer::id_type const id (generate_id());
@@ -1078,4 +1173,193 @@ BOOST_FIXTURE_TEST_CASE
     do_finished (child_id_A, activity_result);
     do_finished (child_id_B, activity_result);
   }
+}
+
+namespace std
+{
+  template<> struct hash<we::type::requirement_t>
+  {
+    size_t operator()(we::type::requirement_t const& requirement) const
+    {
+      size_t seed (0);
+      boost::hash_combine (seed, requirement.value());
+      boost::hash_combine (seed, requirement.is_mandatory());
+      return seed;
+    }
+  };
+}
+
+namespace
+{
+  we::place_id_type add_transition_with_requirement_and_input_place
+    (we::type::net_type& net, we::type::requirement_t const& requirement)
+  {
+    we::type::transition_t transition
+      ( fhg::util::random_string()
+      , we::type::module_call_t
+        (fhg::util::random_string(), fhg::util::random_string())
+      , boost::none
+      , true
+      , we::type::property::type()
+      , we::priority_type()
+      );
+    transition.add_requirement (requirement);
+
+    const std::string port_name (fhg::util::random_string());
+    we::port_id_type const port_id
+      ( transition.add_port ( we::type::port_t ( port_name
+                                               , we::type::PORT_IN
+                                               , std::string ("control")
+                                               , we::type::property::type()
+                                               )
+                            )
+      );
+
+    we::transition_id_type const transition_id
+      (net.add_transition (transition));
+
+    we::place_id_type const place_id
+      (net.add_place (place::type (port_name, std::string ("control"))));
+
+    net.add_connection ( we::edge::PT
+                       , transition_id
+                       , place_id
+                       , port_id
+                       , we::type::property::type()
+                       );
+
+    return place_id;
+  }
+
+  we::type::activity_t net_with_two_childs_that_require_capabilities
+    ( we::type::requirement_t const& capability_A
+    , std::size_t num_worker_with_capability_A
+    , we::type::requirement_t const& capability_B
+    , std::size_t num_worker_with_capability_B
+    )
+  {
+    we::type::net_type net;
+
+    {
+      we::place_id_type const place_id
+        (add_transition_with_requirement_and_input_place (net, capability_A));
+
+      while (num_worker_with_capability_A --> 0)
+      {
+        net.put_value (place_id, we::type::literal::control());
+      }
+    }
+
+    {
+      we::place_id_type const place_id
+        (add_transition_with_requirement_and_input_place (net, capability_B));
+
+      while (num_worker_with_capability_B --> 0)
+      {
+        net.put_value (place_id, we::type::literal::control());
+      }
+    }
+
+    return we::type::activity_t
+      ( we::type::transition_t ( fhg::util::random_string()
+                               , net
+                               , boost::none
+                               , true
+                               , we::type::property::type()
+                               , we::priority_type()
+                               )
+      , boost::none
+      );
+  }
+
+  void disallow (std::string what)
+  {
+    throw std::runtime_error ("disallowed function called: " + what);
+  }
+
+  class wfe_and_counter_of_submitted_requirements
+  {
+  public:
+    wfe_and_counter_of_submitted_requirements (unsigned int expected_activities)
+      : _expected_activities (expected_activities)
+      , _received_requirements()
+      , _random_extraction_engine()
+      , _cnt (0)
+      , _layer ( std::bind
+               (&wfe_and_counter_of_submitted_requirements::submit, this, std::placeholders::_2)
+               , std::bind (&disallow, "cancel")
+               , std::bind (&disallow, "finished")
+               , std::bind (&disallow, "failed")
+               , std::bind (&disallow, "canceled")
+               , std::bind (&disallow, "discover")
+               , std::bind (&disallow, "discovered")
+               , std::bind
+                 (&wfe_and_counter_of_submitted_requirements::generate_id, this)
+               , _random_extraction_engine
+               )
+    {}
+
+    void submit (const we::type::activity_t& activity)
+    {
+      const std::list<we::type::requirement_t> list_req
+        (activity.transition().requirements());
+
+      BOOST_REQUIRE_EQUAL (list_req.size(), 1);
+
+      boost::unique_lock<boost::mutex> const _ (_mtx_all_submitted);
+      ++_received_requirements[list_req.front()];
+
+      if (--_expected_activities == 0)
+      {
+        _cond_all_submitted.notify_one();
+      }
+    }
+
+    void wait_all_submitted()
+    {
+      boost::unique_lock<boost::mutex> const _ (_mtx_all_submitted);
+      _cond_all_submitted.wait (_mtx_all_submitted);
+    }
+
+  private:
+    boost::mutex _mtx_all_submitted;
+    boost::condition_variable_any _cond_all_submitted;
+    unsigned int _expected_activities;
+
+  public:
+    std::unordered_map<we::type::requirement_t, unsigned int>
+      _received_requirements;
+
+  private:
+    boost::mt19937 _random_extraction_engine;
+
+    boost::mutex _generate_id_mutex;
+    unsigned long _cnt;
+    we::layer::id_type generate_id()
+    {
+      boost::mutex::scoped_lock const _ (_generate_id_mutex);
+      return boost::lexical_cast<we::layer::id_type> (++_cnt);
+    }
+
+  public:
+    we::layer _layer;
+  };
+}
+
+BOOST_AUTO_TEST_CASE (layer_properly_forwards_requirements)
+{
+  wfe_and_counter_of_submitted_requirements helper (30);
+
+  const we::type::requirement_t req_A ("A", true);
+  const we::type::requirement_t req_B ("B", true);
+
+  helper._layer.submit
+    ( fhg::util::random_string()
+    , net_with_two_childs_that_require_capabilities (req_A, 20, req_B, 10)
+    );
+  helper.wait_all_submitted();
+
+  BOOST_REQUIRE_EQUAL (helper._received_requirements.size(), 2);
+  BOOST_REQUIRE_EQUAL (helper._received_requirements.at (req_A), 20);
+  BOOST_REQUIRE_EQUAL (helper._received_requirements.at (req_B), 10);
 }

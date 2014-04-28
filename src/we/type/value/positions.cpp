@@ -3,8 +3,6 @@
 #include <we/type/value/positions.hpp>
 #include <we/type/value/path/append.hpp>
 
-#include <boost/foreach.hpp>
-
 namespace pnet
 {
   namespace type
@@ -28,9 +26,7 @@ namespace pnet
 
           void operator() (structured_type const& s) const
           {
-            typedef std::pair<std::string, value_type> key_value_type;
-
-            BOOST_FOREACH (key_value_type const& key_value, s)
+            for (std::pair<std::string, value_type> const& key_value : s)
             {
               path::append const _ (_path, key_value.first);
 

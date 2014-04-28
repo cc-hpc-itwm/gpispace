@@ -14,8 +14,7 @@
 #include <plugin/core/plugin.hpp>
 #include <plugin/plugin.hpp>
 
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
+#include <functional>
 
 namespace fhg
 {
@@ -49,10 +48,10 @@ namespace fhg
       return symbol._data;
     }
 
-    std::list<plugin::Plugin*> plugin_t::to_raw (std::list<boost::shared_ptr<plugin_t> > deps)
+    std::list<plugin::Plugin*> plugin_t::to_raw (std::list<boost::shared_ptr<plugin_t>> deps)
     {
       std::list<plugin::Plugin*> deps_raw;
-      BOOST_FOREACH (boost::shared_ptr<plugin_t> p, deps)
+      for (boost::shared_ptr<plugin_t> p : deps)
       {
         deps_raw.push_back (p->m_plugin.get());
       }
@@ -61,13 +60,13 @@ namespace fhg
 
     plugin_t::plugin_t ( void *my_handle
                        , kernel_t *kernel
-                       , std::list<boost::shared_ptr<plugin_t> > deps
+                       , std::list<boost::shared_ptr<plugin_t>> deps
                        , std::map<std::string, std::string> config_variables
                        )
       : m_handle (my_handle)
       , m_plugin ( m_handle.sym
-                   <plugin::Plugin* (boost::function<void()> request_stop, std::list<plugin::Plugin*>, std::map<std::string, std::string>)>
-                   ("fhg_get_plugin_instance") (boost::bind (&kernel_t::stop, kernel), to_raw (deps), config_variables)
+                   <plugin::Plugin* (std::function<void()> request_stop, std::list<plugin::Plugin*>, std::map<std::string, std::string>)>
+                   ("fhg_get_plugin_instance") (std::bind (&kernel_t::stop, kernel), to_raw (deps), config_variables)
                  )
     {}
   }

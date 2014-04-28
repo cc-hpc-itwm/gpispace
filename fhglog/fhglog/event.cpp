@@ -6,7 +6,6 @@
 #include <fhg/util/hostname.hpp>
 #include <fhg/util/now.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -219,12 +218,12 @@ std::ostream& operator<< (std::ostream& os, const fhg::log::LogEvent& event)
   os << ',' << event.tid();
   os << ',' << encode::string (event.host());
   os << ',';
-  BOOST_FOREACH (std::string const& t, event.trace())
+  for (std::string const& t : event.trace())
   {
     os << encode::string (t);
   }
   os << ',';
-  BOOST_FOREACH (std::string const& t, event.tags())
+  for (std::string const& t : event.tags())
   {
     os << encode::string (t);
   }

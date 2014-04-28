@@ -28,7 +28,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QMetaType>
 
-#include <boost/function.hpp>
+#include <functional>
 
 namespace fhg
 {
@@ -41,7 +41,7 @@ namespace fhg
         class abstract_connection_adapter
         {
         public:
-          virtual ~abstract_connection_adapter() { }
+          virtual ~abstract_connection_adapter() = default;
 
           virtual void invoke (void** args) = 0;
         };
@@ -63,7 +63,7 @@ namespace fhg
         inline bool boost_connect ( QObject* sender
                                   , const char* signal
                                   , QObject* receiver
-                                  , const boost::function<Sig>& function
+                                  , const std::function<Sig>& function
                                   , Qt::ConnectionType connection_type
                                   = Qt::AutoConnection
                                   )
@@ -81,12 +81,12 @@ namespace fhg
       template<typename Signature>
         inline bool boost_connect ( QObject* sender
                                   , const char* signal
-                                  , const boost::function<Signature>& function
+                                  , const std::function<Signature>& function
                                   , Qt::ConnectionType connection_type
                                   = Qt::AutoConnection
                                   )
       {
-        return boost_connect (sender, signal, NULL, function, connection_type);
+        return boost_connect (sender, signal, nullptr, function, connection_type);
       }
 
       bool boost_disconnect ( QObject* sender

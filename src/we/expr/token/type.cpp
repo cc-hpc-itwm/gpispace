@@ -18,8 +18,10 @@ namespace expr
     {
       switch (_token)
         {
-        case _or: return os << " || ";
-        case _and: return os << " && ";
+        case _or_boolean: return os << " || ";
+        case _or_integral: return os << " | ";
+        case _and_boolean: return os << " && ";
+        case _and_integral: return os << " & ";
         case _not: return os << "!";
         case lt: return os << " < ";
         case le: return os << " <= ";
@@ -32,7 +34,6 @@ namespace expr
         case mul: return os << " * ";
         case div: return os << " / ";
         case divint: return os << " div ";
-        case mod: return os << " % ";
         case modint: return os << " mod ";
         case _pow: return os << "**";
         case _powint: return os << "^";

@@ -20,7 +20,7 @@ namespace fhg
     public:
       void wait();
       void stop();
-      boost::function<void()> make_request_stop();
+      std::function<void()> make_request_stop();
 
       fhg::util::thread::event<> _stop_requested;
       fhg::util::thread::event<> _stopped;
@@ -32,19 +32,19 @@ namespace fhg
       typedef std::vector<std::string> search_path_t;
 
       kernel_t ( fhg::core::kernel_t::search_path_t search_path
-               , boost::function<void()> request_stop
+               , std::function<void()> request_stop
                , std::map<std::string, std::string> config_variables
                );
       ~kernel_t ();
 
-      boost::function<void()> _stop;
+      std::function<void()> _stop;
       void stop() { _stop(); }
 
       void load_plugin_by_name (std::string const & name);
       void load_plugin_from_file (std::string const & file);
 
     private:
-      std::map<std::string, boost::shared_ptr<plugin_t> > m_plugins;
+      std::map<std::string, boost::shared_ptr<plugin_t>> m_plugins;
       std::list<std::string> m_load_order;
 
       std::map<std::string, std::string> m_config;

@@ -18,5 +18,4 @@ target_link_libraries (sdpa
   ${FhgCom_LIBRARY}
   ${Boost_THREAD_LIBRARY}
   ${UTIL_LIBRARIES}
-  ${ZLIB_LIBRARIES}
   pnet)

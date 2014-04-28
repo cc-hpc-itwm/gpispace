@@ -31,7 +31,7 @@ namespace we
 
       func_ptr.symbol = dlsym (_dlhandle.handle(), "we_mod_initialize");
 
-      if (func_ptr.function != NULL)
+      if (func_ptr.function != nullptr)
       {
         const unsigned int LOADER_VERSION (1U);
 
@@ -57,7 +57,7 @@ namespace we
 
         func_ptr.symbol = dlsym (_dlhandle.handle(), "we_mod_finalize");
 
-        if (func_ptr.function != NULL)
+        if (func_ptr.function != nullptr)
         {
           func_ptr.function (this);
         }
@@ -96,7 +96,7 @@ namespace we
                       , expr::eval::context& output
                       )
     {
-      const boost::unordered_map<std::string, WrapperFunction>::const_iterator
+      const std::unordered_map<std::string, WrapperFunction>::const_iterator
         fun (call_table_.find (function));
 
       if (fun == call_table_.end())
@@ -110,7 +110,7 @@ namespace we
     }
     void Module::add_function (const std::string& name, WrapperFunction f)
     {
-      if (! call_table_.insert (std::make_pair (name, f)).second)
+      if (! call_table_.emplace (name, f).second)
       {
         throw duplicate_function (name_, name);
       }

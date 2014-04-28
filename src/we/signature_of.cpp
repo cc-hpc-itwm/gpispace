@@ -4,8 +4,6 @@
 
 #include <we/type/value/name_of.hpp>
 
-#include <boost/foreach.hpp>
-
 namespace pnet
 {
   namespace
@@ -44,7 +42,7 @@ namespace pnet
     {
       type::signature::structure_type s;
 
-      BOOST_FOREACH (const type::value::structured_type::value_type& f, v)
+      for (const type::value::structured_type::value_type& f : v)
       {
         s.push_back (boost::apply_visitor ( visitor_structured (f.first)
                                           , f.second

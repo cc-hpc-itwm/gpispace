@@ -67,8 +67,8 @@ BOOST_FIXTURE_TEST_CASE (warning_duplicate_external_function, fixture)
     , boost::format ( "WARNING: the external function f in module m"
                       " has multiple occurences in %1% and %2%"
                     )
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 10, 9)
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 5, 9)
+    % xml::parse::util::position_type (nullptr, nullptr, xpnet, 10, 9)
+    % xml::parse::util::position_type (nullptr, nullptr, xpnet, 5, 9)
     );
 }
 
@@ -83,8 +83,8 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_external_function, fixture)
                       " has conflicting definition at %1%"
                       ", earlier definition is at %2%"
                     )
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 5, 9)
-    % xml::parse::util::position_type (NULL, NULL, xpnet, 10, 9)
+    % xml::parse::util::position_type (nullptr, nullptr, xpnet, 5, 9)
+    % xml::parse::util::position_type (nullptr, nullptr, xpnet, 10, 9)
     );
 }
 
@@ -96,8 +96,8 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_external_function, fixture)
   , boost::format ( "ERROR: duplicate " _msg " at %1%"                  \
                     ", earlier definition is at %2%"                    \
                   )                                                     \
-  % xml::parse::util::position_type (NULL, NULL, xpnet, _ll, _cl)       \
-  % xml::parse::util::position_type (NULL, NULL, xpnet, _le, _ce)       \
+  % xml::parse::util::position_type (nullptr, nullptr, xpnet, _ll, _cl)       \
+  % xml::parse::util::position_type (nullptr, nullptr, xpnet, _le, _ce)       \
   )
 
 BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_in_read, fixture)

@@ -35,7 +35,7 @@ namespace fhg
 
         public:
           port_item ( const data::handle::port& handle
-                    , transition_item* parent = NULL
+                    , transition_item* parent = nullptr
                     );
 
           const qreal& length() const;
@@ -92,7 +92,7 @@ namespace fhg
 
         public:
           top_level_port_item ( const data::handle::port& handle
-                              , transition_item* parent = NULL
+                              , transition_item* parent = nullptr
                               )
             : port_item (handle, parent)
             {}

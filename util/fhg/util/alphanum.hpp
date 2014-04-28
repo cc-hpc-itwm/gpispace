@@ -59,8 +59,8 @@ namespace fhg
            it's own digit character handling which only works with ASCII
            digit characters, but provides better performance.
 
-           @param l NULL-terminated C-style string
-           @param r NULL-terminated C-style string
+           @param l nullptr-terminated C-style string
+           @param r nullptr-terminated C-style string
            @return negative if l<r, 0 if l equals r, positive if l>r
         */
         int alphanum_impl (const char *l, const char *r)

@@ -6,7 +6,7 @@
 
 #include <xml/parse/error.hpp>
 
-#include <boost/unordered_set.hpp>
+#include <unordered_set>
 
 namespace xml
 {
@@ -37,7 +37,7 @@ namespace xml
         }
 
       private:
-        boost::unordered_set<std::string> _s;
+        std::unordered_set<std::string> _s;
       };
 
     }

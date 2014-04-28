@@ -1,22 +1,17 @@
 #ifndef FHG_COM_KVSC_HPP
 #define FHG_COM_KVSC_HPP 1
 
-#include <string>
-
-#include <fhg/assert.hpp>
-#include <fhglog/fhglog.hpp>
-
+#include <fhgcom/kvs/message/type.hpp>
 #include <fhgcom/peer_info.hpp>
 #include <fhgcom/tcp_client.hpp>
 
-#include <fhgcom/kvs/store.hpp>
-#include <fhgcom/kvs/message/type.hpp>
-
-#include <sstream>
-#include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #include <boost/thread.hpp>
 #include <boost/utility.hpp>
+
+#include <sstream>
+#include <string>
 
 namespace fhg
 {
@@ -70,20 +65,13 @@ namespace fhg
                     );
           }
 
-          template <typename Val>
-          void put (key_type const & k, Val v)
-          {
-            this->timed_put<Val>(k, v, 0);
-          }
-
-          template <typename Val>
-          void timed_put (key_type const & k, Val v, size_t expiry)
+          void put (key_type const & k, std::string const& value)
           {
             boost::lock_guard<boost::recursive_mutex> lock (mtx_);
 
             fhg::com::kvs::message::type m;
             request ( kvs_
-                    , fhg::com::kvs::message::put (k, v).set_expiry (expiry)
+                    , fhg::com::kvs::message::put (k, value)
                     , m
                     );
           }
@@ -232,30 +220,6 @@ namespace fhg
       typedef boost::shared_ptr<client::kvsc> kvsc_ptr_t;
 
       typedef fhg::com::kvs::message::list::map_type values_type;
-
-      struct scoped_entry_t : boost::noncopyable
-      {
-      public:
-        template <typename Val>
-        scoped_entry_t ( kvsc_ptr_t kvs_client
-                       , std::string const & k
-                       , Val v
-                       )
-          : _kvs_client (kvs_client)
-          , key(k)
-        {
-          _kvs_client->put (key, v);
-        }
-
-        ~scoped_entry_t ()
-        {
-          _kvs_client->del (key);
-        }
-
-      private:
-        kvsc_ptr_t _kvs_client;
-        const std::string key;
-      };
     }
   }
 }

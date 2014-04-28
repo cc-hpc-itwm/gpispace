@@ -5,9 +5,8 @@
 
 #include <we/type/signature.hpp>
 
-#include <boost/unordered_map.hpp>
-
 #include <string>
+#include <unordered_map>
 
 namespace pnet
 {
@@ -16,7 +15,7 @@ namespace pnet
     namespace signature
     {
       void specialize ( structured_type&
-                      , const boost::unordered_map<std::string, std::string>&
+                      , const std::unordered_map<std::string, std::string>&
                       );
     }
   }

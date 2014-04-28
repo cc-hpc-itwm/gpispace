@@ -25,11 +25,6 @@ namespace sdpa
         , m_error_message (error_message)
       { }
 
-      std::string str() const
-      {
-        return "JobStatusReplyEvent(" + job_id() + ")";
-      }
-
       sdpa::status::code status() const
       {
         return status_;

@@ -8,7 +8,6 @@
 
 #include <we/type/value/show.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/format.hpp>
 
 #include <stdexcept>
@@ -43,7 +42,7 @@ namespace expr
         {
           std::string s;
 
-          BOOST_FOREACH (const std::string& k, key_vec)
+          for (const std::string& k : key_vec)
           {
             if (!s.empty())
             {

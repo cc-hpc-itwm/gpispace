@@ -12,6 +12,7 @@
 
 #include <fhg/assert.hpp>
 #include <fhg/util/backtracing_exception.hpp>
+#include <fhg/util/macros.hpp>
 
 #include <QCheckBox>
 #include <QHBoxLayout>
@@ -23,6 +24,8 @@
 #include <QSpinBox>
 #include <QTimer>
 #include <QToolTip>
+
+#include <functional>
 
 namespace fhg
 {
@@ -347,7 +350,7 @@ namespace fhg
 
       void execution_monitor_proxy::move_tick()
       {
-        BOOST_FOREACH (const util::qt::mvc::section_index& index, _auto_moving)
+        for (const util::qt::mvc::section_index& index : _auto_moving)
         {
           index.data ( QDateTime::currentDateTime()
                      , execution_monitor_proxy::visible_range_to_role
@@ -356,8 +359,8 @@ namespace fhg
       }
 
       execution_monitor_delegate::execution_monitor_delegate
-        ( boost::function<void (QString)> set_filter
-        , boost::function<QString()> get_filter
+        ( std::function<void (QString)> set_filter
+        , std::function<QString()> get_filter
         , QMap<worker_model::state_type, QColor> color_for_state
         , QWidget* parent
         )
@@ -396,7 +399,7 @@ namespace fhg
             }
             block() {}
           };
-          QHash<worker_model::state_type, QVector<block> > blocks;
+          QHash<worker_model::state_type, QVector<block>> blocks;
           bool distribute_vertically;
           qreal height;
 
@@ -487,10 +490,9 @@ namespace fhg
           const qreal horizontal_scale
             (qreal (rect.width()) / qreal (visible_range.length()));
 
-          BOOST_FOREACH
-            (worker_model::subrange_getter_type range, subrange_getters)
+          for (worker_model::subrange_getter_type range : subrange_getters)
           {
-            BOOST_FOREACH (const worker_model::value_type& data, range (from, to))
+            for (const worker_model::value_type& data : range (from, to))
             {
               const qreal left (std::max (from, data.timestamp()));
               paint_description::block block
@@ -519,7 +521,7 @@ namespace fhg
                   ( std::lower_bound
                     ( blocks_in_state.begin(), blocks_in_state.end()
                     , block.rect
-                    , boost::bind (&overlaps, _1, _2, merge_threshold)
+                    , std::bind (&overlaps, std::placeholders::_1, std::placeholders::_2, merge_threshold)
                     )
                   );
 
@@ -590,14 +592,13 @@ namespace fhg
             paint_description descr
               (prepare_gantt_row (index, option.rect, painter->pen()));
 
-            BOOST_FOREACH ( const worker_model::state_type state
-                          , sorted (descr.blocks.keys())
-                          )
+            for ( const worker_model::state_type state
+                : sorted (descr.blocks.keys())
+                )
             {
               painter->setBrush (color_for_state (state));
 
-              BOOST_FOREACH
-                (const paint_description::block& block, descr.blocks[state])
+              for (const paint_description::block& block : descr.blocks[state])
               {
                 painter->drawRect (shrunken_by_pen (block.rect, painter->pen()));
               }
@@ -613,8 +614,8 @@ namespace fhg
 
         case execution_monitor_proxy::current_states_column:
           {
-            const QList<boost::optional<worker_model::value_type> > current_intervals
-              ( util::qt::collect<boost::optional<worker_model::value_type> >
+            const QList<boost::optional<worker_model::value_type>> current_intervals
+              ( util::qt::collect<boost::optional<worker_model::value_type>>
                 (index.data (worker_model::current_interval_role))
               );
 
@@ -632,9 +633,9 @@ namespace fhg
 
             QHash<worker_model::state_type, int> in_state;
 
-            BOOST_FOREACH ( boost::optional<worker_model::value_type> current
-                          , current_intervals
-                          )
+            for ( boost::optional<worker_model::value_type> current
+                : current_intervals
+                )
             {
               if (current && !current->duration())
               {
@@ -647,8 +648,7 @@ namespace fhg
               (option.rect.adjusted (inset, inset, -inset, -inset));
 
             qreal x_pos (0.0);
-            BOOST_FOREACH
-              (const worker_model::state_type state, sorted (in_state.keys()))
+            for (const worker_model::state_type state : sorted (in_state.keys()))
             {
               x_pos += 3.0;
               const QString text (QString ("%1").arg (in_state[state]));
@@ -692,6 +692,8 @@ namespace fhg
           case event::STATE_FAILED: return "failed";
           case event::STATE_CANCELED: return "canceled";
           }
+
+          INVALID_ENUM_VALUE (worker_model::state_type, state);
         }
       }
 
@@ -702,7 +704,7 @@ namespace fhg
         , QAbstractItemView* view
         )
       {
-        BOOST_FOREACH (const paint_description::block& block, descr.blocks[state])
+        for (const paint_description::block& block : descr.blocks[state])
         {
           if ( block.rect.left() <= event->pos().x()
              && event->pos().x() <= block.rect.right()
@@ -757,7 +759,7 @@ namespace fhg
             }
             else
             {
-              BOOST_FOREACH (worker_model::state_type state, descr.blocks.keys())
+              for (worker_model::state_type state : descr.blocks.keys())
               {
                 if (maybe_show_tooltip (state, descr, event, view))
                 {
@@ -794,35 +796,34 @@ namespace fhg
 
         util::qt::boost_connect<void (int)>
           ( _scrollbar, SIGNAL (valueChanged (int))
-          , _automove, boost::bind (&QCheckBox::setChecked, _automove, false)
+          , _automove, std::bind (&QCheckBox::setChecked, _automove, false)
           );
 
         util::qt::boost_connect<void (bool)>
           ( _automove, SIGNAL (toggled (bool))
-          , delegate, boost::bind ( &util::qt::mvc::section_index::data
-                                  , _index
-                                  , _1
-                                  , execution_monitor_proxy::automatically_move_role
-                                  )
+          , delegate
+          , [this] (bool value)
+          {
+            _index.data (value, execution_monitor_proxy::automatically_move_role);
+          }
           );
-
 
         util::qt::boost_connect<void (int)>
           ( _visible_range_length, SIGNAL (valueChanged (int))
-          , delegate, boost::bind ( &util::qt::mvc::section_index::data
-                                  , _index
-                                  , _1
-                                  , execution_monitor_proxy::visible_range_length_role
-                                  )
+          , delegate
+          , [this] (int value)
+          {
+            _index.data (value, execution_monitor_proxy::visible_range_length_role);
+          }
           );
 
         util::qt::boost_connect<void (int)>
           ( _scrollbar, SIGNAL (valueChanged (int))
-          , delegate, boost::bind ( &util::qt::mvc::section_index::data
-                                  , _index
-                                  , _1
-                                  , execution_monitor_proxy::visible_range_to_role
-                                  )
+          , delegate
+          , [this] (int value)
+          {
+            _index.data (value, execution_monitor_proxy::visible_range_to_role);
+          }
           );
 
 
@@ -887,9 +888,11 @@ namespace fhg
       {
         fhg_assert (can_edit_section (index), "only create editors for editable sections");
 
-        switch ( util::qt::value<execution_monitor_proxy::column_type>
-                 (index.data (execution_monitor_proxy::column_type_role))
-               )
+        const execution_monitor_proxy::column_type column
+          ( util::qt::value<execution_monitor_proxy::column_type>
+            (index.data (execution_monitor_proxy::column_type_role)
+          ));
+        switch (column)
         {
         case execution_monitor_proxy::name_column:
           {
@@ -906,6 +909,8 @@ namespace fhg
           //! \note asserted above, but throwing a warning in release builds
           throw std::runtime_error ("can't create editor for non-editable section");
         }
+
+        INVALID_ENUM_VALUE (execution_monitor_proxy::column_type, column);
       }
 
       void execution_monitor_delegate::release_editor
@@ -1063,7 +1068,7 @@ namespace fhg
         if (type == execution_monitor_proxy::name_column)
         {
           fhg_assert (index._section == 0, "only column 0 should be a name column");
-          return NULL;
+          return nullptr;
         }
 
         QMenu* menu (new QMenu);
@@ -1079,13 +1084,14 @@ namespace fhg
           ( toggle_column_type
           , SIGNAL (triggered())
           , index._model
-          , boost::bind ( &util::qt::mvc::section_index::data
-                        , index
-                        , type == execution_monitor_proxy::gantt_column
-                        ? QVariant::fromValue (execution_monitor_proxy::current_states_column)
-                        : QVariant::fromValue (execution_monitor_proxy::gantt_column)
-                        , execution_monitor_proxy::column_type_role
-                        )
+          , [index, type]
+          {
+            index.data ( type == execution_monitor_proxy::gantt_column
+                       ? QVariant::fromValue (execution_monitor_proxy::current_states_column)
+                       : QVariant::fromValue (execution_monitor_proxy::gantt_column)
+                       , execution_monitor_proxy::column_type_role
+                       );
+          }
           );
 
         menu->addSeparator();
@@ -1095,13 +1101,13 @@ namespace fhg
           ( remove
           , SIGNAL (triggered())
           , index._model
-          , boost::bind ( index._orientation == Qt::Horizontal
-                        ? &QAbstractItemModel::removeColumn
-                        : &QAbstractItemModel::removeRow
-                        , index._model
-                        , index._section
-                        , QModelIndex()
-                        )
+          , std::bind ( index._orientation == Qt::Horizontal
+                      ? &QAbstractItemModel::removeColumn
+                      : &QAbstractItemModel::removeRow
+                      , index._model
+                      , index._section
+                      , QModelIndex()
+                      )
           );
 
         return menu;

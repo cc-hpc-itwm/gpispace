@@ -18,7 +18,7 @@ namespace fhg
           Q_OBJECT
 
         public:
-          alphanum_sort_proxy (QAbstractItemModel*, QObject* = NULL);
+          alphanum_sort_proxy (QAbstractItemModel*, QObject* = nullptr);
 
         protected:
           virtual bool lessThan (const QModelIndex&, const QModelIndex&) const;

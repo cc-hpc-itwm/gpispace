@@ -9,6 +9,10 @@
 #include <fhglog/remote/appender.hpp>
 #include <fhglog/remote/server.hpp>
 
+#include <boost/thread/scoped_thread.hpp>
+
+#include <functional>
+
 namespace
 {
   class TestAppender : public fhg::log::Appender
@@ -60,16 +64,13 @@ BOOST_AUTO_TEST_CASE (log_to_fake_remote_stream)
                                      )
     );
 
-  boost::thread service_thread
-    (boost::bind (&boost::asio::io_service::run, &io_service));
-
-  fhg::log::remote::RemoteAppender appender ("localhost:2438");
-
-  appender.append (FHGLOG_MKEVENT_HERE (ERROR, "hello server!"));
-
-  if (service_thread.joinable())
   {
-    service_thread.join();
+    const boost::strict_scoped_thread<> service_thread
+      ([&io_service] { io_service.run(); });
+
+    fhg::log::remote::RemoteAppender appender ("localhost:2438");
+
+    appender.append (FHGLOG_MKEVENT_HERE (ERROR, "hello server!"));
   }
 
   BOOST_REQUIRE_EQUAL (logstream.str(), "hello server!");

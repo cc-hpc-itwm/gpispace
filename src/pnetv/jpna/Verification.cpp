@@ -1,7 +1,5 @@
 #include "Verification.h"
 
-#include <pnetv/jpn/common/Foreach.h>
-#include <pnetv/jpn/common/PrintRange.h>
 #include <pnetv/jpn/analysis/StateSpace.h>
 
 #include "PetriNet.h"
@@ -10,20 +8,26 @@ namespace jpna {
 
 namespace {
 
-inline jpn::Marking makeInitialMarking(const std::vector<const Place *> &places) {
+inline jpn::Marking makeInitialMarking
+  (std::unordered_map<we::place_id_type, TokenCount> const& token_count)
+{
     std::vector<jpn::PlaceMarking> placeMarkings;
-    FOREACH (const Place *place, places) {
-        if (place->initialMarking()) {
-            placeMarkings.push_back(jpn::PlaceMarking(place->id(), place->initialMarking()));
-        }
+    for ( std::pair<we::place_id_type, TokenCount> token_count_on_place
+        : token_count
+        )
+    {
+      placeMarkings.push_back ( jpn::PlaceMarking ( token_count_on_place.first
+                                                  , token_count_on_place.second
+                                                  )
+                              );
     }
     return jpn::Marking(placeMarkings);
 }
 
-inline jpn::Marking makeMarking(const std::vector<const Place *> &places) {
+inline jpn::Marking makeMarking(const std::vector<we::place_id_type> &places) {
     std::vector<jpn::PlaceMarking> placeMarkings;
-    FOREACH (const Place *place, places) {
-        placeMarkings.push_back(jpn::PlaceMarking(place->id(), 1));
+    for (we::place_id_type place_id : places) {
+        placeMarkings.push_back(jpn::PlaceMarking(place_id, 1));
     }
     return jpn::Marking(placeMarkings);
 }
@@ -36,9 +40,9 @@ jpn::Transition makeTransition(const Transition *transition) {
         transition->priority());
 }
 
-std::vector<const Transition *> makeTrace(const std::vector<jpn::TransitionId> &trace, const PetriNet &petriNet) {
+std::vector<const Transition *> makeTrace(const std::vector<we::transition_id_type> &trace, const PetriNet &petriNet) {
     std::vector<const Transition *> result;
-    FOREACH (jpn::TransitionId transitionId, trace) {
+    for (we::transition_id_type transitionId : trace) {
         result.push_back(petriNet.getTransition(transitionId));
     }
     return result;
@@ -47,23 +51,23 @@ std::vector<const Transition *> makeTrace(const std::vector<jpn::TransitionId> &
 } // anonymous namespace
 
 VerificationResult verify(const PetriNet &petriNet) {
-    jpn::Marking initialMarking = makeInitialMarking(petriNet.places());
+    jpn::Marking initialMarking = makeInitialMarking(petriNet.token_count());
 
     std::vector<jpn::Transition> transitions;
 
-    FOREACH(const Transition *transition, petriNet.transitions()) {
+    for (const Transition *transition : petriNet.transitions()) {
         if (transition->conditionAlwaysTrue()) {
             transitions.push_back(makeTransition(transition));
         }
     }
 
-    std::vector<TransitionId> init;
-    std::vector<TransitionId> loop;
+    std::vector<we::transition_id_type> init;
+    std::vector<we::transition_id_type> loop;
     if (jpn::analysis::findLoop(transitions, initialMarking, init, loop)) {
         return VerificationResult(VerificationResult::LOOPS, makeTrace(init, petriNet), makeTrace(loop, petriNet));
     }
 
-    FOREACH(const Transition *transition, petriNet.transitions()) {
+    for (const Transition *transition : petriNet.transitions()) {
         if (!transition->conditionAlwaysTrue()) {
             transitions.push_back(makeTransition(transition));
         }
@@ -77,5 +81,3 @@ VerificationResult verify(const PetriNet &petriNet) {
 }
 
 } // namespace jpna
-
-/* vim:set et sts=4 sw=4: */

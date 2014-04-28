@@ -2,8 +2,6 @@
 #define FHG_COM_KVS_MESSAGE_REQ_LIST_HPP 1
 
 #include <boost/lexical_cast.hpp>
-
-// serialization
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/variant.hpp>

@@ -21,12 +21,13 @@
 
 #include <hwloc.h>
 
-#include <boost/function.hpp>
 #include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/scoped_thread.hpp>
 
+#include <functional>
 #include <list>
 #include <map>
 #include <string>
@@ -108,7 +109,7 @@ class DRTSImpl : public sdpa::events::EventHandler
                   > map_of_jobs_t;
   typedef std::map<std::string, sdpa::Capability> map_of_capabilities_t;
 public:
-  DRTSImpl (boost::function<void()> request_stop, std::map<std::string, std::string> config_variables);
+  DRTSImpl (std::function<void()> request_stop, std::map<std::string, std::string> config_variables);
   ~DRTSImpl();
 
   virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent *e);
@@ -145,7 +146,7 @@ private:
 
   fhg::log::Logger::ptr_t _logger;
 
-  boost::function<void()> _request_stop;
+  std::function<void()> _request_stop;
 
   fhg::com::kvs::kvsc_ptr_t _kvs_client;
 
@@ -155,7 +156,8 @@ private:
 
   WFEImpl m_wfe;
 
-  boost::shared_ptr<boost::thread>    m_peer_thread;
+  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
+    m_peer_thread;
   boost::shared_ptr<fhg::com::peer_t> m_peer;
   fhg::com::message_t m_message;
   //! \todo Two sets for connected and unconnected masters?
@@ -164,8 +166,10 @@ private:
   std::size_t m_reconnect_counter;
 
   fhg::thread::queue<sdpa::events::SDPAEvent::Ptr>  m_event_queue;
-  boost::shared_ptr<boost::thread>    m_event_thread;
-  boost::shared_ptr<boost::thread>    m_execution_thread;
+  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
+    m_event_thread;
+  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
+    m_execution_thread;
 
   mutable boost::mutex m_job_map_mutex;
   mutable boost::mutex m_job_computed_mutex;
@@ -181,7 +185,7 @@ private:
   size_t m_backlog_size;
   map_of_jobs_t m_jobs;
 
-  fhg::thread::queue<boost::shared_ptr<drts::Job> > m_pending_jobs;
+  fhg::thread::queue<boost::shared_ptr<drts::Job>> m_pending_jobs;
 
   fhg::thread::set _registration_threads;
 };

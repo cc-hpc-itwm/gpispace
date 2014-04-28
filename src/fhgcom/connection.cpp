@@ -1,29 +1,30 @@
+
+#include <fhgcom/connection.hpp>
+
 #include <fhglog/LogMacros.hpp>
+
 #include <fhg/assert.hpp>
 #include <fhg/util/macros.hpp>
 
 #include <boost/system/error_code.hpp>
 
-#include <fhgcom/connection.hpp>
-
-#include <fhgcom/util/to_hex.hpp>
-#include <fhgcom/message_io.hpp>
-
-using namespace boost::asio::ip;
+#include <functional>
 
 namespace fhg
 {
   namespace com
   {
-    connection_t::connection_t( boost::asio::io_service & io_service
-                              , std::string const & cookie
-                              , connection_t::handler_t * h
-                              )
+    connection_t::connection_t
+      ( boost::asio::io_service & io_service
+      , std::function<void (ptr_t connection, const message_t*)> handle_hello_message
+      , std::function<void (ptr_t connection, const message_t*)> handle_user_data
+      , std::function<void (ptr_t connection, const boost::system::error_code&)> handle_error
+      )
       : strand_(io_service)
       , socket_(io_service)
-      , deadline_(io_service)
-      , cookie_(cookie)
-      , callback_handler_(h)
+      , _handle_hello_message (handle_hello_message)
+      , _handle_user_data (handle_user_data)
+      , _handle_error (handle_error)
       , in_message_(new message_t)
     {}
 
@@ -41,18 +42,11 @@ namespace fhg
       if (in_message_)
       {
         delete in_message_;
-        in_message_ = 0;
+        in_message_ = nullptr;
       }
     }
 
-    connection_t::handler_t * connection_t::set_callback_handler (connection_t::handler_t * h)
-    {
-      handler_t * old = callback_handler_;
-      callback_handler_ = h;
-      return old;
-    }
-
-    tcp::socket & connection_t::socket()
+    boost::asio::ip::tcp::socket & connection_t::socket()
     {
       return socket_;
     }
@@ -74,16 +68,16 @@ namespace fhg
 
     void connection_t::start_read ()
     {
-      assert (in_message_ != 0);
+      assert (in_message_ != nullptr);
 
       boost::asio::async_read( socket_
-                             , boost::asio::buffer (&in_message_->header, sizeof(message_t::header_t))
+                             , boost::asio::buffer (&in_message_->header, sizeof(p2p::header_t))
                              , strand_.wrap
-                             ( boost::bind ( &self::handle_read_header
-                                           , get_this()
-                                           , boost::asio::placeholders::error
-                                           , boost::asio::placeholders::bytes_transferred
-                                           )
+                             ( std::bind ( &connection_t::handle_read_header
+                                         , shared_from_this()
+                                         , std::placeholders::_1
+                                         , std::placeholders::_2
+                                         )
                              ));
     }
 
@@ -93,32 +87,25 @@ namespace fhg
     {
       if (! ec)
       {
-        assert (bytes_transferred == sizeof(message_t::header_t));
+        assert (bytes_transferred == sizeof(p2p::header_t));
 
         // WORK HERE: convert for local endianess!
-        LOG_IF( WARN
-              , in_message_->header.length > (1<<22)
-              , "incoming message is quite large (>4MB)!"
-              );
         in_message_->resize ();
 
         boost::asio::async_read ( socket_
                                 , boost::asio::buffer (in_message_->data)
                                 , strand_.wrap
-                                ( boost::bind ( &self::handle_read_data
-                                              , get_this()
-                                              , boost::asio::placeholders::error
-                                              , boost::asio::placeholders::bytes_transferred
-                                              )
+                                ( std::bind ( &connection_t::handle_read_data
+                                            , shared_from_this()
+                                            , std::placeholders::_1
+                                            , std::placeholders::_2
+                                            )
                                 ));
       }
       else
       {
         in_message_->resize(0);
-        if (callback_handler_)
-        {
-          callback_handler_->handle_error (get_this(), ec);
-        }
+        _handle_error (shared_from_this(), ec);
       }
     }
 
@@ -129,60 +116,31 @@ namespace fhg
       if (! ec)
       {
         message_t * m = in_message_;
-        in_message_ = 0;
+        in_message_ = nullptr;
 
-        if (callback_handler_)
-        {
-          try
-          {
-            if (p2p::type_of_message_traits::is_system_data(m->header.type_of_msg))
+            if (m->header.type_of_msg == p2p::HELLO_PACKET)
             {
-              callback_handler_->handle_system_data (get_this(), m);
+              _handle_hello_message (shared_from_this(), m);
             }
             else
             {
-              callback_handler_->handle_user_data (get_this(), m);
+              _handle_user_data (shared_from_this(), m);
             }
 
             in_message_ = new message_t;
-          }
-          catch (std::exception const & ex)
-          {
-            LOG(ERROR, "could not pass received message to callback handler: " << ex.what());
-            throw;
-          }
-        }
-        else
-        {
-          LOG(WARN, "no callback handler registered, dropping message");
-          // drop message (reuse allocated memory)
-          in_message_ = m;
-          in_message_->resize (0);
-        }
 
         start_read ();
       }
       else
       {
         in_message_->resize(0);
-        if (callback_handler_)
-        {
-          try
-          {
-            callback_handler_->handle_error (get_this(), ec);
-          }
-          catch (std::exception const & ex)
-          {
-            LOG(ERROR, "could not pass received message to callback handler: " << ex.what());
-            throw;
-          }
-        }
+            _handle_error (shared_from_this(), ec);
       }
     }
 
     void connection_t::start_send (connection_t::to_send_t const & s)
     {
-      bool send_in_progress = !to_send_.empty();
+      bool const send_in_progress = !to_send_.empty();
       to_send_.push_back (s);
       if (! send_in_progress)
         start_send();
@@ -201,19 +159,19 @@ namespace fhg
       {
         boost::asio::async_write( socket_
                                 , d.to_buffers()
-                                , strand_.wrap (boost::bind( &self::handle_write
-                                                           , get_this()
-                                                           , boost::asio::placeholders::error
-                                                           )
+                                , strand_.wrap (std::bind( &connection_t::handle_write
+                                                         , shared_from_this()
+                                                         , std::placeholders::_1
+                                                         )
                                                )
                                 );
       }
       catch (std::length_error const &)
       {
-        strand_.post (boost::bind( &self::handle_write
-                                 , get_this()
-                                 , boost::system::errc::make_error_code (boost::system::errc::bad_message)
-                                 ));
+        strand_.post (std::bind( &connection_t::handle_write
+                               , shared_from_this()
+                               , boost::system::errc::make_error_code (boost::system::errc::bad_message)
+                               ));
       }
     }
 
@@ -221,17 +179,19 @@ namespace fhg
     {
       if (! ec)
       {
-        to_send_t d (to_send_.front());
+        to_send_t const d (to_send_.front());
         to_send_.pop_front();
 
-        try
+        if (d.handler)
         {
-          if (d.handler)
+          try
+          {
             d.handler (ec);
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "completion handler failed: " << ex.what());
+          }
+          catch (std::exception const & ex)
+          {
+            LOG(ERROR, "completion handler failed: " << ex.what());
+          }
         }
 
         if (! to_send_.empty())
@@ -239,9 +199,17 @@ namespace fhg
       }
       else
       {
-        if (callback_handler_)
-          callback_handler_->handle_error (get_this(), ec);
+        _handle_error (shared_from_this(), ec);
       }
+    }
+
+    void connection_t::async_send ( const message_t * msg
+                                  , completion_handler_t hdl
+                                  )
+    {
+      boost::shared_ptr<connection_t> that (shared_from_this());
+      strand_.post
+        ([that, msg, hdl] { that->start_send (to_send_t (msg, hdl)); });
     }
   }
 }

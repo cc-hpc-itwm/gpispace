@@ -5,9 +5,8 @@
 
 #include <we/expr/parse/parser.hpp>
 
-#include <boost/unordered_set.hpp>
-
 #include <list>
+#include <set>
 
 namespace expr
 {
@@ -15,7 +14,7 @@ namespace expr
   {
     namespace simplify
     {
-      typedef boost::unordered_set<std::list<std::string> > key_set_type;
+      typedef std::set<std::list<std::string>> key_set_type;
 
       //! \todo also return the modified flag
       parser simplification_pass

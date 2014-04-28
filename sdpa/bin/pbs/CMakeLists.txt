@@ -3,9 +3,8 @@ set (prgs
 )
 
 set (scripts
-  clear-logs
+  bundle.sh
   start-gpi
-  start-gui
   start-orch
   start-agent
   start-drts
@@ -14,7 +13,6 @@ set (scripts
   stop-agent
   status-agent
   status-drts
-  pidof
   sdpa-selftest
 )
 

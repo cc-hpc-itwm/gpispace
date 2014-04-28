@@ -4,7 +4,7 @@
 
 #include <we/type/value/path/split.hpp>
 
-#include <boost/utility.hpp>
+#include <iterator>
 
 namespace pnet
 {
@@ -15,7 +15,7 @@ namespace pnet
       namespace
       {
         template<typename V, typename M, typename MIT>
-        class visitor_peek : public boost::static_visitor<boost::optional<V&> >
+        class visitor_peek : public boost::static_visitor<boost::optional<V&>>
         {
         public:
           visitor_peek ( const std::list<std::string>::const_iterator& key
@@ -41,7 +41,7 @@ namespace pnet
               if (field->first == *_key)
               {
                 return boost::apply_visitor
-                  ( visitor_peek<V,M,MIT> ( boost::next (_key)
+                  ( visitor_peek<V,M,MIT> ( std::next (_key)
                                           , _end
                                           , field->second
                                           )

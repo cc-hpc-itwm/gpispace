@@ -2,8 +2,9 @@
 
 #include <pnete/ui/graph/style/store.hpp>
 
-#include <boost/bind.hpp>
 #include <boost/test/unit_test.hpp>
+
+#include <functional>
 
 typedef fhg::pnete::ui::graph::style::store::cached_predicates<std::string, std::string> store_type;
 
@@ -32,7 +33,7 @@ BOOST_AUTO_TEST_CASE (caching)
   store_type store;
   size_t count_eval (0);
 
-  store.push (boost::bind (&beep_if, std::string ("what"), &count_eval, _1));
+  store.push (std::bind (&beep_if, std::string ("what"), &count_eval, std::placeholders::_1));
 
   BOOST_REQUIRE_EQUAL (count_eval, 0UL);
 
@@ -64,7 +65,7 @@ BOOST_AUTO_TEST_CASE (fallback_if_non_existing)
   store_type store;
   size_t count_eval (0);
 
-  store.push (boost::bind (&beep_if, std::string ("what"), &count_eval, _1));
+  store.push (std::bind (&beep_if, std::string ("what"), &count_eval, std::placeholders::_1));
   store.push (fallback);
 
   BOOST_REQUIRE_EQUAL (store.get ("what"), opt ("beep"));

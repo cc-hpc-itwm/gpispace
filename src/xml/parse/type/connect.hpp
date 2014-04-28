@@ -10,17 +10,16 @@
 #include <xml/parse/type/with_position_of_definition.hpp>
 #include <xml/parse/util/position.fwd.hpp>
 
-#include <fhg/util/boost/tuple.hpp> //! \note To allow storing in unique.
+#include <fhg/util/std/tuple.hpp> //! \note To allow storing in unique.
 #include <fhg/util/xml.fwd.hpp>
 
 #include <we/type/net.hpp>
 #include <we/type/property.hpp>
 
 #include <string>
+#include <tuple>
 
 #include <boost/optional.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp> //! \note To allow storing in unique.
 
 namespace xml
 {
@@ -34,8 +33,8 @@ namespace xml
         PARENT_SIGNATURES(transition);
 
       public:
-        //! \note            place,       port,        PT||PT_READ
-        typedef boost::tuple<std::string, std::string, bool> unique_key_type;
+        //! \note          place,       port,        PT||PT_READ
+        typedef std::tuple<std::string, std::string, bool> unique_key_type;
 
         connect_type ( ID_CONS_PARAM(connect)
                      , PARENT_CONS_PARAM(transition)

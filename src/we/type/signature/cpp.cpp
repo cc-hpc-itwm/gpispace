@@ -16,7 +16,6 @@
 #include <fhg/util/cpp/struct.hpp>
 #include <fhg/util/cpp/include.hpp>
 
-#include <boost/foreach.hpp>
 
 #include <set>
 #include <list>
@@ -49,7 +48,7 @@ namespace pnet
             void traverse_fields
               (P p, const std::pair<std::string, structure_type>& s) const
             {
-              BOOST_FOREACH (const field_type& f, s.second)
+              for (const field_type& f : s.second)
               {
                 traverse (p, f);
               }
@@ -392,7 +391,7 @@ namespace pnet
           public:
             print_header_op ( std::ostream& os
                             , fhg::util::indenter& indent
-                            , std::list<std::list<std::string> >& tnames
+                            , std::list<std::list<std::string>>& tnames
                             , std::list<std::string>& tname
                             )
               : printer (os, indent)
@@ -439,7 +438,7 @@ namespace pnet
               traverse (*this, s);
             }
           private:
-            std::list<std::list<std::string> >& _tnames;
+            std::list<std::list<std::string>>& _tnames;
             std::list<std::string>& _tname;
           };
         }
@@ -458,7 +457,7 @@ namespace pnet
           os << fhg::util::cpp::ns::open (indent, "pnetc");
           os << fhg::util::cpp::ns::open (indent, "type");
 
-          std::list<std::list<std::string> > tnames;
+          std::list<std::list<std::string>> tnames;
 
           {
             std::list<std::string> tname;
@@ -475,7 +474,7 @@ namespace pnet
           os << fhg::util::cpp::ns::open (indent, "type");
           os << fhg::util::cpp::ns::open (indent, "value");
 
-          BOOST_FOREACH (std::list<std::string>& tname, tnames)
+          for (std::list<std::string>& tname : tnames)
           {
             os << indent
                << "template<>"

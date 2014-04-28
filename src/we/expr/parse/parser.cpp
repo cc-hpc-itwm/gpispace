@@ -13,10 +13,9 @@
 #include <we/expr/eval/refnode.hpp>
 #include <we/expr/eval/eval.hpp>
 
-#include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <sstream>
+#include <functional>
 #include <sstream>
 #include <iterator>
 
@@ -33,10 +32,10 @@ namespace expr
       , tmp_stack ()
       , _constant_folding (constant_folding)
     {
-      parse (input, boost::bind ( eval::refnode_value
-                                , boost::ref(context)
-                                , _1
-                                )
+      parse (input, std::bind ( eval::refnode_value
+                              , std::ref (context)
+                              , std::placeholders::_1
+                              )
             );
     }
     parser::parser ( const std::string & input
@@ -121,7 +120,9 @@ namespace expr
 
       void parser::rename (const std::string& from, const std::string& to)
     {
-      std::for_each (begin(), end(), boost::bind (node::rename, _1, from, to));
+      std::for_each ( begin(), end()
+                    , std::bind (node::rename, std::placeholders::_1, from, to)
+                    );
     }
 
     std::string parser::string (void) const
@@ -210,8 +211,10 @@ namespace expr
     {
       switch (op_stack.top())
         {
-        case token::_or:
-        case token::_and: binary (op_stack.top(), k); break;
+        case token::_or_boolean:
+        case token::_or_integral:
+        case token::_and_boolean:
+        case token::_and_integral: binary (op_stack.top(), k); break;
         case token::_not: unary (op_stack.top(), k); break;
         case token::lt:
         case token::le:
@@ -253,7 +256,6 @@ namespace expr
         case token::_substr:
         case token::mul:
         case token::div:
-        case token::mod:
         case token::divint:
         case token::modint:
         case token::_pow:
@@ -286,7 +288,7 @@ namespace expr
     void
     parser::parse
       ( const std::string& input
-      , const boost::function<nd_t (const std::list<std::string>&)> & refnode
+      , const std::function<nd_t (const std::list<std::string>&)> & refnode
       )
     {
       op_stack.push (token::eof);

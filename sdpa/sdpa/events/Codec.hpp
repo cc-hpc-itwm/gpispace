@@ -53,7 +53,7 @@ namespace sdpa
         std::istringstream sstr (s);
         boost::archive::text_iarchive ar (sstr);
         initialize_archive (ar);
-        SDPAEvent* e (NULL);
+        SDPAEvent* e (nullptr);
         ar >> e;
         return e;
       }

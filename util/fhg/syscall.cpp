@@ -94,7 +94,9 @@ namespace fhg
 
     void execve (const char* filename, char* const argv[], char* const envp[])
     {
-      return negative_one_fails_with_errno<void> (::execve (filename, argv, envp));
+      negative_one_fails_with_errno<void> (::execve (filename, argv, envp));
+
+      abort(); // execve either does not return, or returns negative, thus throws
     }
 
     pid_t fork()

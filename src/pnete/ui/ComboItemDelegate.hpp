@@ -21,7 +21,7 @@ namespace fhg
       class ComboBoxItemDelegate : public QStyledItemDelegate
       {
       public:
-        ComboBoxItemDelegate(const QStringList& types, QObject *parent = 0);
+        ComboBoxItemDelegate(const QStringList& types, QObject *parent = nullptr);
 
         virtual QWidget* createEditor ( QWidget *parent
                                       , const QStyleOptionViewItem &option

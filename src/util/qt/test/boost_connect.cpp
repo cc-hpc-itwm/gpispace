@@ -40,7 +40,7 @@ BOOST_FIXTURE_TEST_CASE (unbind_all, boost_connect_fixture)
                   )
                 );
 
-  BOOST_REQUIRE (fhg::util::qt::boost_disconnect (this, NULL, this));
+  BOOST_REQUIRE (fhg::util::qt::boost_disconnect (this, nullptr, this));
 
   emit signal1();
 

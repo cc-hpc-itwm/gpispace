@@ -72,7 +72,7 @@ namespace gpi
                  , flags
                  , handle_generator
                  )
-        , m_ptr (0)
+        , m_ptr (nullptr)
         , m_fd (-1)
         , m_lock_fd (-1)
         , m_path (path)
@@ -149,7 +149,7 @@ namespace gpi
         {
           path_t vers_path = detail::version_path (m_path);
           FILE *vers_file = fopen (vers_path.string ().c_str (), "r");
-          if (vers_file == NULL)
+          if (vers_file == nullptr)
           {
             ec.assign (errno, boost::system::system_category ());
             return -1;
@@ -218,9 +218,9 @@ namespace gpi
               char buf [1024];
               int read_bytes = ::read (fd, buf, sizeof(buf)-1);
               if (read_bytes)
-                buf [read_bytes-1] = 0;
+                buf [read_bytes-1] = '\0';
               else
-                buf [0] = 0;
+                buf [0] = '\0';
               ::close (fd); fd = -1;
 
               // compare lock info
@@ -357,7 +357,7 @@ namespace gpi
                                     )
              )
           {
-            m_ptr = mmap ( (void*)0
+            m_ptr = mmap ( (void*)nullptr
                          , m_size
                          , PROT_READ + PROT_WRITE
                          , MAP_SHARED
@@ -368,7 +368,7 @@ namespace gpi
             {
               ec.assign (errno, boost::system::system_category ());
               ::close (fd); fd = -1;
-              m_ptr = 0;
+              m_ptr = nullptr;
               return -1;
             }
           }
@@ -405,7 +405,7 @@ namespace gpi
         int rc = 0;
 
         // only cleanup when we actually opened...
-        if ((m_fd >= 0) || (m_ptr != 0))
+        if ((m_fd >= 0) || (m_ptr != nullptr))
         {
           /*
             steps:
@@ -422,7 +422,7 @@ namespace gpi
           if (m_ptr)
           {
             munmap (m_ptr, m_size);
-            m_ptr = 0;
+            m_ptr = nullptr;
           }
 
           if (gpi::flag::is_set ( descriptor ().flags
@@ -530,7 +530,7 @@ namespace gpi
       void *
       sfs_area_t::raw_ptr (gpi::pc::type::offset_t off)
       {
-        return m_ptr && off < m_size ? (char*)m_ptr + off : 0;
+        return m_ptr && off < m_size ? (char*)m_ptr + off : nullptr;
       }
 
       bool

@@ -9,6 +9,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/scoped_thread.hpp>
 
 namespace
 {
@@ -82,13 +83,11 @@ BOOST_AUTO_TEST_CASE (different_loggers)
   fhg::log::Logger::get ("2")->addAppender
     (fhg::log::Appender::ptr_t (new pushback_appender (&output_2)));
 
-  boost::thread t0 (&thread_function, "0");
-  boost::thread t1 (&thread_function, "1");
-  boost::thread t2 (&thread_function, "2");
-
-  if (t2.joinable()) { t2.join(); }
-  if (t1.joinable()) { t1.join(); }
-  if (t0.joinable()) { t0.join(); }
+  {
+    const boost::strict_scoped_thread<> t0 (&thread_function, "0");
+    const boost::strict_scoped_thread<> t1 (&thread_function, "1");
+    const boost::strict_scoped_thread<> t2 (&thread_function, "2");
+  }
 
   BOOST_REQUIRE_EQUAL_COLLECTIONS
     (output_0.begin(), output_0.end(), reference.begin(), reference.end());
@@ -112,13 +111,11 @@ BOOST_AUTO_TEST_CASE (same_logger)
     (fhg::log::Appender::ptr_t (new pushback_appender_synchronized (&output)));
   fhg::log::Logger::get ("log")->addAppender (sync_appender);
 
-  boost::thread t0 (&thread_function, "log");
-  boost::thread t1 (&thread_function, "log");
-  boost::thread t2 (&thread_function, "log");
-
-  if (t2.joinable()) { t2.join(); }
-  if (t1.joinable()) { t1.join(); }
-  if (t0.joinable()) { t0.join(); }
+  {
+    const boost::strict_scoped_thread<> t0 (&thread_function, "log");
+    const boost::strict_scoped_thread<> t1 (&thread_function, "log");
+    const boost::strict_scoped_thread<> t2 (&thread_function, "log");
+  }
 
   std::sort (output.begin(), output.end());
 

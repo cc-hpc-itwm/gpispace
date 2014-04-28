@@ -65,14 +65,14 @@ namespace expr
       return (token == define);
     }
 
-    bool is_or (const type& token)
+    bool is_or_boolean (const type& token)
     {
-      return (token == _or);
+      return (token == _or_boolean);
     }
 
-    bool is_and (const type& token)
+    bool is_and_boolean (const type& token)
     {
-      return (token == _and);
+      return (token == _and_boolean);
     }
   }
 }

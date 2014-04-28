@@ -25,7 +25,7 @@ namespace fhg
         {
         public:
           base (internal_type* document);
-          virtual ~base() { }
+          virtual ~base() = default;
 
           virtual void set_property ( const ::we::type::property::key_type&
                                     , const ::we::type::property::value_type&

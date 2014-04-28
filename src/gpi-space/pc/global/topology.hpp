@@ -9,7 +9,6 @@
 #ifndef GPI_SPACE_GLOBAL_TOPOLOGY_HPP
 #define GPI_SPACE_GLOBAL_TOPOLOGY_HPP 1
 
-#include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
@@ -24,6 +23,8 @@
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/type/handle.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
+
+#include <functional>
 
 namespace gpi
 {
@@ -57,17 +58,16 @@ namespace gpi
           std::string message;
         };
 
-        typedef boost::function<rank_result_t ( rank_result_t
-                                              , rank_result_t
-                                              )
-                               > fold_t;
+        typedef std::function<rank_result_t ( rank_result_t
+                                            , rank_result_t
+                                            )
+                             > fold_t;
 
         static port_t const & any_port ();
         static host_t const & any_addr ();
 
         topology_t ( const fhg::com::host_t & host
                    , const fhg::com::port_t & port
-                   , std::string const & cookie
                    , memory::manager_t& memory_manager
                    , fhg::com::kvs::kvsc_ptr_t kvs_client
                    , api::gpi_api_t&

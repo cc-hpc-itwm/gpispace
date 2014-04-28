@@ -19,8 +19,8 @@ namespace fhg
         Q_OBJECT
 
       public:
-        mini_button (QStyle::StandardPixmap icon, QWidget* parent = NULL);
-        mini_button (QAction*, QWidget* parent = NULL);
+        mini_button (QStyle::StandardPixmap icon, QWidget* parent = nullptr);
+        mini_button (QAction*, QWidget* parent = nullptr);
 
         QSize sizeHint() const;
         QSize minimumSizeHint() const;

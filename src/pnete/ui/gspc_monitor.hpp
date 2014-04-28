@@ -17,7 +17,7 @@ namespace fhg
         Q_OBJECT
 
       public:
-        gspc_monitor (QString host, int port, QWidget* parent = NULL);
+        gspc_monitor (QString host, int port, QWidget* parent = nullptr);
       };
     }
   }

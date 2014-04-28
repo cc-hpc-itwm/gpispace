@@ -5,13 +5,13 @@
 
 #include <we/require_type.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/join.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/utility.hpp>
 
+#include <functional>
+#include <iterator>
 #include <stack>
+#include <unordered_map>
 
 namespace we
 {
@@ -26,9 +26,9 @@ namespace we
                          > pos_and_distance_type;
       public:
         bool enables (net_type* const, transition_id_type);
-        void write_to ( boost::unordered_map< place_id_type
-                                            , pos_and_distance_type
-                                            >&
+        void write_to ( std::unordered_map< place_id_type
+                                          , pos_and_distance_type
+                                          >&
                       ) const;
         void push (place_id_type, std::list<pnet::type::value::value_type>&);
         void push ( place_id_type
@@ -55,7 +55,7 @@ namespace we
           pos_and_distance_type _pos_and_distance;
         };
 
-        typedef boost::unordered_map<place_id_type, iterators_type> map_type;
+        typedef std::unordered_map<place_id_type, iterators_type> map_type;
 
         map_type _m;
 
@@ -113,22 +113,22 @@ namespace we
     }
     void net_type::get_enabled_choice (const net_type& other)
     {
-      typedef boost::unordered_map< place_id_type
-                                  , pos_and_distance_type
-                                  > enabled_by_place_id_type;
+      typedef std::unordered_map< place_id_type
+                                , pos_and_distance_type
+                                > enabled_by_place_id_type;
 
-      typedef std::pair<transition_id_type, enabled_by_place_id_type> tm_type;
-
-      BOOST_FOREACH (const tm_type& tm, other._enabled_choice)
+      for ( const std::pair<transition_id_type, enabled_by_place_id_type> & tm
+          : other._enabled_choice
+          )
       {
         enabled_by_place_id_type& enabled_by_place_id (_enabled_choice[tm.first]);
 
-        BOOST_FOREACH (const enabled_by_place_id_type::value_type& pd, tm.second)
+        for (const enabled_by_place_id_type::value_type& pd : tm.second)
         {
           enabled_by_place_id[pd.first] = std::make_pair
-            ( boost::next ( _token_by_place_id.at (pd.first).begin()
-                          , pd.second.second
-                          )
+            ( std::next ( _token_by_place_id.at (pd.first).begin()
+                        , pd.second.second
+                        )
             , pd.second.second
             );
         }
@@ -139,7 +139,7 @@ namespace we
     {
       const place_id_type pid (_place_id++);
 
-      _pmap.insert (std::make_pair (pid, place));
+      _pmap.emplace (pid, place);
 
       return pid;
     }
@@ -149,7 +149,7 @@ namespace we
     {
       const transition_id_type tid (_transition_id++);
 
-      _tmap.insert (std::make_pair (tid, transition));
+      _tmap.emplace (tid, transition);
 
       return tid;
     }
@@ -183,12 +183,12 @@ namespace we
       }
     }
 
-    const boost::unordered_map<place_id_type,place::type>& net_type::places() const
+    const std::unordered_map<place_id_type,place::type>& net_type::places() const
     {
       return _pmap;
     }
 
-    const boost::unordered_map<transition_id_type,we::type::transition_t>&
+    const std::unordered_map<transition_id_type,we::type::transition_t>&
     net_type::transitions() const
     {
       return _tmap;
@@ -252,22 +252,22 @@ namespace we
           )
         );
 
-      return boost::make_tuple
+      return std::make_tuple
         (pid, tokenpos, std::distance (tokens.begin(), tokenpos));
     }
 
     void net_type::do_update (to_be_updated_type const& to_be_updated)
     {
       transition_id_range_type consume
-        ( _adj_pt_consume.left.equal_range (to_be_updated.get<0>())
+        ( _adj_pt_consume.left.equal_range (std::get<0> (to_be_updated))
         | boost::adaptors::map_values
         );
       transition_id_range_type read
-        ( _adj_pt_read.left.equal_range (to_be_updated.get<0>())
+        ( _adj_pt_read.left.equal_range (std::get<0> (to_be_updated))
         | boost::adaptors::map_values
         );
 
-      BOOST_FOREACH (transition_id_type tid, boost::join (consume, read))
+      for (transition_id_type tid : boost::join (consume, read))
       {
         update_enabled_put_token (tid, to_be_updated);
       }
@@ -286,9 +286,9 @@ namespace we
     const std::list<pnet::type::value::value_type>&
     net_type::get_token (place_id_type pid) const
     {
-      typedef boost::unordered_map< place_id_type
-                                  , std::list<pnet::type::value::value_type>
-                                  > token_by_place_id_t;
+      typedef std::unordered_map< place_id_type
+                                , std::list<pnet::type::value::value_type>
+                                > token_by_place_id_t;
 
       token_by_place_id_t::const_iterator pos (_token_by_place_id.find (pid));
 
@@ -304,7 +304,7 @@ namespace we
       place_id_range_type read
         (_adj_pt_read.right.equal_range (tid) | boost::adaptors::map_values);
 
-      BOOST_FOREACH (place_id_type place_id, boost::join (consume, read))
+      for (place_id_type place_id : boost::join (consume, read))
       {
         std::list<pnet::type::value::value_type>&
           tokens (_token_by_place_id[place_id]);
@@ -352,11 +352,14 @@ namespace we
       place_id_range_type read
         (_adj_pt_read.right.equal_range (tid) | boost::adaptors::map_values);
 
-      BOOST_FOREACH (place_id_type place_id, boost::join (consume, read))
+      for (place_id_type place_id : boost::join (consume, read))
       {
-        if (place_id == to_be_updated.get<0>())
+        if (place_id == std::get<0> (to_be_updated))
         {
-          cross.push (place_id, to_be_updated.get<1>(), to_be_updated.get<2>());
+          cross.push ( place_id
+                     , std::get<1> (to_be_updated)
+                     , std::get<2> (to_be_updated)
+                     );
         }
         else
         {
@@ -405,19 +408,17 @@ namespace we
 
     std::list<net_type::token_to_be_deleted_type> net_type::do_extract
       ( transition_id_type tid
-      , boost::function<void ( port_id_type
-                             , pnet::type::value::value_type const&
-                             )
-                        > fun
+      , std::function<void ( port_id_type
+                           , pnet::type::value::value_type const&
+                           )
+                      > fun
       ) const
     {
       std::list<token_to_be_deleted_type> tokens_to_be_deleted;
 
-      typedef std::pair< place_id_type
-                       , pos_and_distance_type
-                       > place_and_token_type;
-
-      BOOST_FOREACH (const place_and_token_type& pt, _enabled_choice.at (tid))
+      for ( const std::pair<place_id_type, pos_and_distance_type>& pt
+          : _enabled_choice.at (tid)
+          )
       {
         place_id_type pid (pt.first);
         const pos_and_distance_type& pos_and_distance (pt.second);
@@ -442,17 +443,17 @@ namespace we
     void net_type::do_delete
       (std::list<token_to_be_deleted_type> const& tokens_to_be_deleted)
     {
-      BOOST_FOREACH ( token_to_be_deleted_type const& token_to_be_deleted
-                    , tokens_to_be_deleted
-                    )
+      for ( token_to_be_deleted_type const& token_to_be_deleted
+          : tokens_to_be_deleted
+          )
       {
         _token_by_place_id
           .at (token_to_be_deleted.first).erase (token_to_be_deleted.second);
       }
 
-      BOOST_FOREACH ( token_to_be_deleted_type const& token_to_be_deleted
-                    , tokens_to_be_deleted
-                    )
+      for ( token_to_be_deleted_type const& token_to_be_deleted
+          : tokens_to_be_deleted
+          )
       {
         transition_id_range_type consume
           ( _adj_pt_consume.left.equal_range (token_to_be_deleted.first)
@@ -463,7 +464,7 @@ namespace we
           | boost::adaptors::map_values
           );
 
-        BOOST_FOREACH (transition_id_type t, boost::join (consume, read))
+        for (transition_id_type t : boost::join (consume, read))
         {
           update_enabled (t);
         }
@@ -477,9 +478,9 @@ namespace we
 
       do_delete
         ( do_extract ( tid
-                     , boost::bind ( &we::type::activity_t::add_input, &act
-                                   , _1, _2
-                                   )
+                     , std::bind ( &we::type::activity_t::add_input, &act
+                                 , std::placeholders::_1, std::placeholders::_2
+                                 )
                      )
         );
 
@@ -524,10 +525,9 @@ namespace we
 
       std::list<to_be_updated_type> pending_updates;
 
-      BOOST_FOREACH
-        ( we::type::transition_t::port_map_t::value_type const& p
-        , transition.ports_output()
-        )
+      for ( we::type::transition_t::port_map_t::value_type const& p
+          : transition.ports_output()
+          )
       {
           pending_updates.push_back
             ( do_put_value
@@ -539,7 +539,7 @@ namespace we
 
       do_delete (tokens_to_be_deleted);
 
-      BOOST_FOREACH (to_be_updated_type const& to_be_updated, pending_updates)
+      for (to_be_updated_type const& to_be_updated : pending_updates)
       {
         do_update (to_be_updated);
       }
@@ -559,7 +559,7 @@ namespace we
       , const std::list<pnet::type::value::value_type>::iterator::difference_type& distance_from_zero
       )
       : _begin (token)
-      , _end (boost::next (token))
+      , _end (std::next (token))
       , _distance_from_zero (distance_from_zero)
       , _pos_and_distance (token, distance_from_zero)
     {}
@@ -604,13 +604,6 @@ namespace we
 
     bool cross_type::enables (net_type* const n, transition_id_type transition_id)
     {
-      //! \note that means the transitions without in-port cannot fire
-      //! instead of fire unconditionally
-      if (_m.empty())
-      {
-        return false;
-      }
-
       we::type::transition_t const& transition
         (n->transitions().at (transition_id));
 
@@ -628,9 +621,7 @@ namespace we
       {
         expr::eval::context context;
 
-        typedef std::pair<place_id_type, iterators_type> pits_type;
-
-        BOOST_FOREACH (const pits_type& pits, _m)
+        for (const std::pair<place_id_type, iterators_type>& pits : _m)
         {
           context.bind_ref
             ( transition.ports_input()
@@ -648,26 +639,21 @@ namespace we
 
       return false;
     }
-    void cross_type::write_to (boost::unordered_map< place_id_type
-                                                   , pos_and_distance_type
-                                                   >& choice
+    void cross_type::write_to (std::unordered_map< place_id_type
+                                                 , pos_and_distance_type
+                                                 >& choice
                               ) const
     {
-      choice.clear();
-
-      typedef std::pair<place_id_type, iterators_type> pits_type;
-
-      BOOST_FOREACH (const pits_type& pits, _m)
+      for (const std::pair<place_id_type, iterators_type>& pits : _m)
       {
-        choice.insert
-          (std::make_pair (pits.first, pits.second.pos_and_distance()));
+        choice[pits.first] = pits.second.pos_and_distance();
       }
     }
     void cross_type::push ( place_id_type place_id
                           , std::list<pnet::type::value::value_type>& tokens
                           )
     {
-      _m.insert (std::make_pair (place_id, iterators_type (tokens)));
+      _m.emplace (place_id, iterators_type (tokens));
     }
     void cross_type::push
       ( place_id_type place_id
@@ -675,8 +661,7 @@ namespace we
       , const std::list<pnet::type::value::value_type>::iterator::difference_type& distance_from_zero
       )
     {
-      _m.insert
-        (std::make_pair (place_id, iterators_type (token, distance_from_zero)));
+      _m.emplace (place_id, iterators_type (token, distance_from_zero));
     }
   }
 }

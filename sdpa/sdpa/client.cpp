@@ -23,6 +23,8 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
+#include <functional>
+
 namespace sdpa
 {
   namespace client
@@ -48,23 +50,24 @@ namespace sdpa
                                           , 1
                                           )
         )
-      , m_peer (_name, fhg::com::host_t ("*"), fhg::com::port_t ("0"), _kvs_client)
+      , m_peer ( _name
+               , fhg::com::host_t ("*")
+               , fhg::com::port_t ("0")
+               , _kvs_client
+               , &kvs_error_handler
+               )
       , _peer_thread (&fhg::com::peer_t::run, &m_peer)
       , _stopping (false)
     {
-      m_peer.set_kvs_error_handler (&kvs_error_handler);
       m_peer.start ();
-      m_peer.async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
+      m_peer.async_recv
+        (&m_message, std::bind(&Client::handle_recv, this, std::placeholders::_1));
     }
 
     Client::~Client()
     {
       _stopping = true;
       m_peer.stop();
-      if (_peer_thread.joinable())
-      {
-        _peer_thread.join();
-      }
     }
 
     fhg::com::message_t Client::message_for_event
@@ -74,7 +77,7 @@ namespace sdpa
 
       const std::string encoded_evt (codec.encode (event));
       fhg::com::message_t msg (encoded_evt.begin(), encoded_evt.end());
-      msg.header.dst = m_peer.resolve_name (event->to());
+      msg.header.dst = fhg::com::p2p::address_t (event->to());
       msg.header.src = m_peer.address();
       msg.header.length = msg.data.size();
 
@@ -97,7 +100,7 @@ namespace sdpa
         if (addr != m_peer.address())
         {
           sdpa::events::ErrorEvent::Ptr
-            error(new sdpa::events::ErrorEvent ( m_peer.resolve(addr, "*unknown*")
+            error(new sdpa::events::ErrorEvent ( m_peer.resolve_addr (addr)
                                                , m_peer.name()
                                                , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                                                , "receiving response failed: " + boost::lexical_cast<std::string>(ec)
@@ -109,14 +112,15 @@ namespace sdpa
 
       if (!_stopping)
       {
-        m_peer.async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
+        m_peer.async_recv
+          (&m_message, std::bind(&Client::handle_recv, this, std::placeholders::_1));
       }
     }
 
     namespace
     {
-      FHG_ATTRIBUTE_NORETURN
-        void handle_bad_event (sdpa::events::SDPAEvent::Ptr reply)
+      [[noreturn]] void handle_error_and_unexpected_event
+        (sdpa::events::SDPAEvent::Ptr reply)
       {
         if ( sdpa::events::ErrorEvent *err
            = dynamic_cast<sdpa::events::ErrorEvent*> (reply.get())
@@ -130,7 +134,8 @@ namespace sdpa
             );
         }
 
-        throw std::runtime_error ("Unexpected reply: " + reply->str());
+        throw std::runtime_error
+          ("Unexpected reply: " + std::string (typeid (reply.get()).name()));
       }
     }
 
@@ -149,14 +154,14 @@ namespace sdpa
         return *e;
       }
 
-      handle_bad_event (reply);
+      handle_error_and_unexpected_event (reply);
     }
 
     sdpa::status::code Client::wait_for_terminal_state
       (job_id_t id, job_info_t& job_info)
     {
       send_and_wait_for_reply<sdpa::events::SubscribeAckEvent>
-        (sdpa::events::SubscribeEvent (_name, orchestrator_, job_id_list_t (1, id)));
+        (sdpa::events::SubscribeEvent (_name, orchestrator_, id));
      sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
 
       if ( sdpa::events::JobFinishedEvent* evt
@@ -191,7 +196,7 @@ namespace sdpa
         return sdpa::status::CANCELED;
       }
 
-      handle_bad_event (reply);
+      handle_error_and_unexpected_event (reply);
     }
 
     sdpa::status::code Client::wait_for_terminal_state_polling

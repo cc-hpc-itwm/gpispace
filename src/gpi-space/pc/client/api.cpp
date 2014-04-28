@@ -7,7 +7,6 @@
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#include <boost/bind.hpp>
 
 #include <sys/un.h>
 
@@ -87,7 +86,14 @@ namespace gpi
 
         if (m_socket != -1)
         {
-          close_socket (m_socket);
+          try
+          {
+            close_socket (m_socket);
+          }
+          catch (boost::system::system_error const &se)
+          {
+            // ignore already closed/invalid socket
+          }
           m_socket = -1;
 
           // move all segments to trash
@@ -483,7 +489,7 @@ namespace gpi
           (list_segments ());
 
         // find the correct descriptor
-        const gpi::pc::type::segment::descriptor_t * desc (NULL);
+        const gpi::pc::type::segment::descriptor_t * desc (nullptr);
         for ( gpi::pc::type::segment::list_t::const_iterator it (descriptors.begin())
             ; it != descriptors.end()
             ; ++it

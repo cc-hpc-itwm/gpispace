@@ -71,7 +71,7 @@ namespace gpi
 
         static gpi::pc::type::time_t now ()
         {
-          return time(NULL);
+          return time(nullptr);
         }
 
         private:

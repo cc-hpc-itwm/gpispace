@@ -6,7 +6,6 @@
 
 #include <iostream>
 
-#include <boost/functional/hash.hpp>
 #include <boost/optional.hpp>
 
 namespace xml
@@ -33,10 +32,6 @@ namespace xml
         return _val != other._val;                                      \
       }                                                                 \
                                                                         \
-      std::size_t hash_value (const NAME& val)                          \
-      {                                                                 \
-        return boost::hash<base_id_type>() (val._val);                  \
-      }                                                                 \
       std::ostream& operator<< (std::ostream& os, const NAME& val)      \
       {                                                                 \
         return os << val._val;                                          \
@@ -98,7 +93,7 @@ namespace xml
         NAME::~NAME()                                                   \
         {                                                               \
           _mapper->remove_reference (*this);                            \
-          _mapper = NULL;                                               \
+          _mapper = nullptr;                                               \
         }                                                               \
                                                                         \
         bool NAME::operator< (const NAME& other) const                  \
@@ -132,10 +127,6 @@ namespace xml
           return _mapper;                                               \
         }                                                               \
                                                                         \
-        std::size_t hash_value (const NAME& ref)                        \
-        {                                                               \
-          return hash_value (ref._id);                                  \
-        }                                                               \
         std::ostream& operator<< (std::ostream& os, const NAME& ref)    \
         {                                                               \
           return os << ref._id;                                         \

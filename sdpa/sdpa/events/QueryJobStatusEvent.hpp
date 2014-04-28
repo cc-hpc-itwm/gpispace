@@ -20,11 +20,6 @@ namespace sdpa
         :  sdpa::events::JobEvent (a_from, a_to, a_job_id)
       {}
 
-      std::string str() const
-      {
-        return "QueryJobStatusEvent(" + job_id () + ")";
-      }
-
       virtual void handleBy (EventHandler* handler)
       {
         handler->handleQueryJobStatusEvent (this);

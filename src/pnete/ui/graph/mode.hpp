@@ -28,4 +28,18 @@ namespace fhg
   }
 }
 
+#include <functional>
+
+namespace std
+{
+  template<> struct hash<fhg::pnete::ui::graph::mode::type>
+  {
+    size_t operator() (const fhg::pnete::ui::graph::mode::type& v) const
+    {
+      return std::hash
+        <std::underlying_type<fhg::pnete::ui::graph::mode::type>::type>() (v);
+    }
+  };
+};
+
 #endif

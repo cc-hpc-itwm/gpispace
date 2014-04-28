@@ -24,7 +24,7 @@ int TestByteOrder(void)
 
 void float2ibm(float* data, const int n, const int endianess)
 {
-    register int fconv, fmant, t; 
+    int fconv, fmant, t;
     for (int i = 0; i < n; i++)
     {
 	
@@ -49,7 +49,7 @@ void float2ibm(float* data, const int n, const int endianess)
 
 void ibm2float(float* data, const int n, const int endianess)
 {
-    register int fconv, fmant, t; 
+    int fconv, fmant, t;
     for (int i = 0; i < n; i++)
     {
 	fconv = ((int*)data)[i];

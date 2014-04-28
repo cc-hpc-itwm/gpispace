@@ -16,7 +16,7 @@ namespace fhg
           : net_meta_base (id, document)
         { }
 
-        void net::add_transition
+        void net::add_empty_transition
           (const boost::optional<QPointF>& position) const
         {
           change_manager().add_transition (*this, position);

@@ -4,8 +4,6 @@
 #include <stdio.h>
 #include <csignal> // kill
 
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -17,6 +15,8 @@
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
+
+#include <functional>
 
 namespace gpi
 {
@@ -125,7 +125,6 @@ namespace gpi
 
       topology_t::topology_t ( const fhg::com::host_t & host
                              , const fhg::com::port_t & port
-                             , std::string const & cookie
                              , memory::manager_t& memory_manager
                              , fhg::com::kvs::kvsc_ptr_t kvs_client
                              , api::gpi_api_t& gpi_api
@@ -144,17 +143,12 @@ namespace gpi
                                , host
                                , port
                                , _kvs_client
-                               , cookie
+                               , detail::kvs_error_handler
                                )
           );
-        m_peer->set_kvs_error_handler (detail::kvs_error_handler);
 
         m_peer_thread.reset
-          (new boost::thread(boost::bind( &fhg::com::peer_t::run
-                                        , m_peer
-                                        )
-                            )
-          );
+          (new boost::thread(&fhg::com::peer_t::run, m_peer));
 
         try
         {
@@ -172,11 +166,11 @@ namespace gpi
 
         // start the message handler
         m_peer->async_recv ( &m_incoming_msg
-                           , boost::bind( &topology_t::message_received
-                                        , this
-                                        , _1
-                                        , boost::ref (memory_manager)
-                                        )
+                           , std::bind( &topology_t::message_received
+                                      , this
+                                      , std::placeholders::_1
+                                      , std::ref (memory_manager)
+                                      )
                            );
 
         for (std::size_t n(0); n < _gpi_api.number_of_nodes(); ++n)
@@ -529,18 +523,18 @@ namespace gpi
       {
         m_peer->async_send ( child.name
                            , data
-                           , boost::bind ( &topology_t::message_sent
-                                         , this
-                                         , child
-                                         , data
-                                         , _1
-                                         )
+                           , std::bind ( &topology_t::message_sent
+                                       , this
+                                       , child
+                                       , data
+                                       , std::placeholders::_1
+                                       )
                            );
       }
 
       void topology_t::broadcast (const std::string &data)
       {
-        BOOST_FOREACH(child_map_t::value_type const & n, m_children)
+        for (child_map_t::value_type const & n : m_children)
         {
           cast(n.second, data);
         }
@@ -564,7 +558,7 @@ namespace gpi
         if (! ec)
         {
           const fhg::com::p2p::address_t & addr = m_incoming_msg.header.src;
-          const std::string name(m_peer->resolve(addr, "*unknown*"));
+          const std::string name(m_peer->resolve_addr (addr));
 
           handle_message( detail::name_to_rank(name)
                         , std::string( m_incoming_msg.buf()
@@ -574,11 +568,11 @@ namespace gpi
                         );
 
           m_peer->async_recv ( &m_incoming_msg
-                             , boost::bind( &topology_t::message_received
-                                          , this
-                                          , _1
-                                          , boost::ref (memory_manager)
-                                          )
+                             , std::bind( &topology_t::message_received
+                                        , this
+                                        , std::placeholders::_1
+                                        , std::ref (memory_manager)
+                                        )
                              );
         }
         else if (! m_shutting_down)
@@ -586,16 +580,16 @@ namespace gpi
           const fhg::com::p2p::address_t & addr = m_incoming_msg.header.src;
           if (addr != m_peer->address())
           {
-            const std::string name(m_peer->resolve(addr, "*unknown*"));
+            const std::string name(m_peer->resolve_addr (addr));
 
             handle_error (detail::name_to_rank(name));
 
             m_peer->async_recv ( &m_incoming_msg
-                               , boost::bind( &topology_t::message_received
-                                            , this
-                                            , _1
-                                            , boost::ref (memory_manager)
-                                            )
+                               , std::bind( &topology_t::message_received
+                                          , this
+                                          , std::placeholders::_1
+                                          , std::ref (memory_manager)
+                                          )
                                );
           }
         }

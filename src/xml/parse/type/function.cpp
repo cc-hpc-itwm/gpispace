@@ -40,9 +40,10 @@
 
 #include <we/type/id.hpp>
 
-#include <boost/foreach.hpp>
 #include <boost/range/adaptors.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
+#include <functional>
 #include <iostream>
 #include <string>
 #include <set>
@@ -234,7 +235,7 @@ namespace xml
       {
         template<typename id_type, typename id_ref_type>
         class visitor_get_parent
-          : public boost::static_visitor<boost::optional<id_ref_type> >
+          : public boost::static_visitor<boost::optional<id_ref_type>>
         {
         public:
           visitor_get_parent (id::mapper* id_mapper)
@@ -302,7 +303,7 @@ namespace xml
       namespace
       {
         class visitor_get_function
-          : public boost::static_visitor<boost::optional<const id::ref::function&> >
+          : public boost::static_visitor<boost::optional<const id::ref::function&>>
         {
         private:
           const std::string& _name;
@@ -527,9 +528,9 @@ namespace xml
       {
         xml::parse::structure_type_util::forbidden_type forbidden;
 
-        BOOST_FOREACH (const port_type& port, ports().values())
+        for (const port_type& port : ports().values())
         {
-          forbidden.insert (std::make_pair (port.type(), port.name()));
+          forbidden.emplace (port.type(), port.name());
         }
 
         return forbidden;
@@ -543,10 +544,10 @@ namespace xml
         const structs_type::const_iterator pos
           ( std::find_if ( structs.begin()
                          , structs.end()
-                         , boost::bind ( parse::structure_type_util::struct_by_name
-                                       , type
-                                       , _1
-                                       )
+                         , std::bind ( parse::structure_type_util::struct_by_name
+                                     , type
+                                     , std::placeholders::_1
+                                     )
                          )
           );
 
@@ -554,7 +555,7 @@ namespace xml
         {
           return pnet::type::signature::resolve
             ( pos->signature()
-            , boost::bind (&function_type::signature, *this, _1)
+            , std::bind (&function_type::signature, *this, std::placeholders::_1)
             );
         }
 
@@ -603,7 +604,7 @@ namespace xml
 
       void function_type::type_check (const state::type & state) const
       {
-        BOOST_FOREACH (const port_type& port, ports().values())
+        for (const port_type& port : ports().values())
         {
           port.type_check (position_of_definition().path(), state);
         }
@@ -624,8 +625,8 @@ namespace xml
         const conditions_type& _conditions;
         we::type::property::type _properties;
         const requirements_type& _trans_requirements;
-        boost::unordered_map<std::string, we::port_id_type>& _port_id_in;
-        boost::unordered_map<std::string, we::port_id_type>& _port_id_out;
+        std::unordered_map<std::string, we::port_id_type>& _port_id_in;
+        std::unordered_map<std::string, we::port_id_type>& _port_id_out;
         we::priority_type _priority;
 
         typedef we::type::transition_t we_transition_type;
@@ -634,9 +635,9 @@ namespace xml
         typedef we::type::module_call_t we_module_type;
         typedef we::type::expression_t we_expr_type;
 
-        typedef boost::unordered_map< std::string
-                                    , we::place_id_type
-                                    > pid_of_place_type;
+        typedef std::unordered_map< std::string
+                                  , we::place_id_type
+                                  > pid_of_place_type;
 
         void add_port
           (we_transition_type& transition, we::type::port_t const& port) const
@@ -645,11 +646,11 @@ namespace xml
 
           if (port.is_output())
           {
-            _port_id_out.insert (std::make_pair (port.name(), port_id));
+            _port_id_out.emplace (port.name(), port_id);
           }
           else
           {
-            _port_id_in.insert (std::make_pair (port.name(), port_id));
+            _port_id_in.emplace (port.name(), port_id);
           }
         }
 
@@ -657,7 +658,7 @@ namespace xml
                        , const function_type::ports_type& ports
                        ) const
         {
-          BOOST_FOREACH (const port_type& port, ports.values())
+          for (const port_type& port : ports.values())
           {
             add_port (trans, we::type::port_t ( port.name()
                                               , port.direction()
@@ -683,7 +684,7 @@ namespace xml
                        , const Map & pid_of_place
                        ) const
         {
-          BOOST_FOREACH (const port_type& port, ports.values())
+          for (const port_type& port : ports.values())
           {
             if (not port.place)
             {
@@ -750,8 +751,8 @@ namespace xml
           , const conditions_type& conditions
           , const we::type::property::type& trans_properties
           , const requirements_type& trans_requirements
-          , boost::unordered_map<std::string, we::port_id_type>& port_id_in
-          , boost::unordered_map<std::string, we::port_id_type>& port_id_out
+          , std::unordered_map<std::string, we::port_id_type>& port_id_in
+          , std::unordered_map<std::string, we::port_id_type>& port_id_out
           , we::priority_type priority
           )
           : _name (name)
@@ -847,8 +848,8 @@ namespace xml
       we::type::transition_t function_type::synthesize
         ( const std::string& name
         , const state::type& state
-        , boost::unordered_map<std::string, we::port_id_type>& port_id_in
-        , boost::unordered_map<std::string, we::port_id_type>& port_id_out
+        , std::unordered_map<std::string, we::port_id_type>& port_id_in
+        , std::unordered_map<std::string, we::port_id_type>& port_id_out
         , const boost::optional<bool>& trans_internal
         , const conditions_type& conditions
         , const we::type::property::type& trans_properties
@@ -935,12 +936,12 @@ namespace xml
                                      , state::type & state
                                      )
       {
-        BOOST_FOREACH (port_type& port, ports().values())
+        for (port_type& port : ports().values())
         {
           port.specialize (map, state);
         }
 
-        BOOST_FOREACH (structure_type& s, structs)
+        for (structure_type& s : structs)
         {
           s.specialize (map);
         }
@@ -1046,15 +1047,9 @@ namespace xml
         return name == other.name;
       }
 
-      std::size_t hash_value (const fun_info_type & fi)
-      {
-        boost::hash<std::string> hasher;
-        return hasher (fi.name);
-      }
+      typedef std::unordered_set<fun_info_type> fun_infos_type;
 
-      typedef boost::unordered_set<fun_info_type> fun_infos_type;
-
-      typedef boost::unordered_map<std::string,fun_infos_type> fun_info_map;
+      typedef std::unordered_map<std::string,fun_infos_type> fun_info_map;
 
       typedef boost::filesystem::path path_t;
 
@@ -1064,7 +1059,7 @@ namespace xml
       {
         fhg::util::indenter indent;
 
-        BOOST_FOREACH (const fun_info_map::value_type& mod, m)
+        for (const fun_info_map::value_type& mod : m)
         {
           const std::string& modname (mod.first);
           const fun_infos_type& funs (mod.second);
@@ -1076,7 +1071,7 @@ namespace xml
 
           stream << fhg::util::cpp::include ("we/loader/macros.hpp");
 
-          BOOST_FOREACH (const fun_info_type& fun, funs)
+          for (const fun_info_type& fun : funs)
           {
             stream << std::endl << fun.code;
           }
@@ -1084,7 +1079,7 @@ namespace xml
           stream << std::endl;
           stream << "WE_MOD_INITIALIZE_START (" << modname << ");";
           stream << fhg::util::cpp::block::open (indent);
-          BOOST_FOREACH (const fun_info_type& fun, funs)
+          for (const fun_info_type& fun : funs)
           {
             stream << indent
                    << "WE_REGISTER_FUN_AS ("
@@ -1109,7 +1104,7 @@ namespace xml
 
       void mk_makefile ( const state::type & state
                        , const fun_info_map & m
-                       , const boost::unordered_set<std::string>& structnames
+                       , const std::unordered_set<std::string>& structnames
                        )
       {
         namespace cpp_util = ::fhg::util::cpp;
@@ -1122,12 +1117,28 @@ namespace xml
         const std::string file_global_cxxflags ("Makefile.CXXFLAGS");
         const std::string file_global_ldflags ("Makefile.LDFLAGS");
 
-        util::check_no_change_fstream stream (state, file);
+        boost::filesystem::create_directories (prefix);
+
+        if (not boost::filesystem::is_directory (prefix))
+        {
+          throw error::could_not_create_directory (prefix);
+        }
+
+        std::ofstream stream (file.string().c_str());
+
+        if (!stream.good())
+        {
+          throw error::could_not_open_file (file);
+        }
 
         stream << "# GPI-Space generated: DO NOT EDIT THIS FILE!"  << std::endl;
+        stream << "# time of creation: "
+               << boost::posix_time::to_simple_string
+                  (boost::posix_time::second_clock::local_time())
+                                                                   << std::endl;
         stream                                                     << std::endl;
 
-        BOOST_FOREACH (const fun_info_map::value_type& mod, m)
+        for (const fun_info_map::value_type& mod : m)
         {
           stream << "MODULES += pnetc/op/lib" << mod.first << ".so"
                  << std::endl;
@@ -1135,19 +1146,6 @@ namespace xml
 
         stream                                                     << std::endl;
         stream << "CXXFLAGS += -fPIC"                              << std::endl;
-        stream                                                     << std::endl;
-        stream << "ifndef BOOST_ROOT"                              << std::endl;
-        stream << "  $(warning !!!)"                               << std::endl;
-        stream << "  $(warning !!! BOOST_ROOT EMPTY, ASSUMING /usr)"
-                                                                   << std::endl;
-        stream << "  $(warning !!! THIS IS PROBABLY NOT WHAT YOU WANT!)"
-                                                                   << std::endl;
-        stream << "  $(warning !!!)"                               << std::endl;
-        stream << "  $(warning !!! Try to set BOOST_ROOT in the environment!)"
-                                                                   << std::endl;
-        stream << "  $(warning !!!)"                               << std::endl;
-        stream << "  BOOST_ROOT := /usr"                           << std::endl;
-        stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef CXX"                                     << std::endl;
         stream << "  $(error Variable CXX is not defined)"         << std::endl;
@@ -1159,6 +1157,28 @@ namespace xml
                                                                    << std::endl;
         stream << "  else"                                         << std::endl;
         stream << "    SDPA_INCLUDE := $(SDPA_HOME)/include"       << std::endl;
+        stream << "  endif"                                        << std::endl;
+        stream << "endif"                                          << std::endl;
+        stream                                                     << std::endl;
+        stream << "ifndef BOOST_ROOT"                              << std::endl;
+        stream << "  ifndef SDPA_HOME"                             << std::endl;
+        stream << "    $(error Neither BOOST_ROOT nor SDPA_HOME are set)"
+                                                                   << std::endl;
+        stream << "  else"                                         << std::endl;
+        stream << "    BOOST_ROOT := $(SDPA_HOME)/external/boost"  << std::endl;
+        stream << "  endif"                                        << std::endl;
+        stream << "else"                                           << std::endl;
+        stream << "  ifdef SDPA_HOME"                              << std::endl;
+        stream << "    ifneq \"$(BOOST_ROOT)\" \"$(SDPA_HOME)/external/boost\""
+                                                                   << std::endl;
+        stream << "      $(warning !!!)"                           << std::endl;
+        stream << "      $(warning !!! BOOST_ROOT is set and different from GSPC bundled version)"
+                                                                   << std::endl;
+        stream << "      $(warning !!! BOOST_ROOT = $(BOOST_ROOT))"    << std::endl;
+        stream << "      $(warning !!! GSPC_BUNDLED = $(SDPA_HOME)/external/boost)"
+                                                                   << std::endl;
+        stream << "      $(warning !!!)"                           << std::endl;
+        stream << "    endif"                                      << std::endl;
         stream << "  endif"                                        << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
@@ -1194,7 +1214,7 @@ namespace xml
           util::check_no_change_fstream cxx
             (state, prefix / file_global_cxxflags);
 
-          BOOST_FOREACH (std::string const& flag, state.gen_cxxflags())
+          for (std::string const& flag : state.gen_cxxflags())
           {
             cxx << "CXXFLAGS += " << flag << std::endl;
           }
@@ -1204,7 +1224,7 @@ namespace xml
           util::check_no_change_fstream ld
             (state, prefix / file_global_ldflags);
 
-          BOOST_FOREACH (std::string const& flag, state.gen_ldflags())
+          for (std::string const& flag : state.gen_ldflags())
           {
             ld << "LDFLAGS += " << flag << std::endl;
           }
@@ -1238,7 +1258,7 @@ namespace xml
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
 
-        BOOST_FOREACH (const std::string& tname, structnames)
+        for (const std::string& tname : structnames)
         {
           const std::string path_type ("pnetc/type/");
           const std::string obj (path_type + tname + "/op.o");
@@ -1251,19 +1271,13 @@ namespace xml
 
           stream << "TYPE_OBJS += " << obj << std::endl;
 
+          stream << "-include " << dep                           << std::endl;
           stream << obj << ": " << obj_cpp << " "
                  << file_global_cxxflags                         << std::endl;
-          stream << "\t$(CXX) $(CXXFLAGS) -c $< -o $@"           << std::endl;
-          stream << dep << ": " << obj_cpp
-                 << " "
-                 << file_global_cxxflags                         << std::endl;
           stream << "\t$(CXX) $(CXXFLAGS)"
-                 << " -MM -MP -MT '" << dep << "' -MT '"
-                 << obj
-                 << "' $< -MF $@"                                << std::endl;
-          stream << "ifneq \"$(wildcard " << dep << ")\" \"\""   << std::endl;
-          stream << "  include " << dep                          << std::endl;
-          stream << "endif"                                      << std::endl;
+                 << " -MM -MP -MT '" << obj << "' "
+                 << "$< -MF " << dep                             << std::endl;
+          stream << "\t$(CXX) $(CXXFLAGS) -c $< -o $@"           << std::endl;
           stream << "DEPENDS += " << dep                         << std::endl;
           stream                                                 << std::endl;
         }
@@ -1304,17 +1318,17 @@ namespace xml
 
                 stream << objs << " += " << obj_fun << std::endl;
 
-                BOOST_FOREACH (const link_type& link, fun->links)
+                for (const link_type& link : fun->links)
                   {
                     stream
                       << objs << " += "
                       << ( link.prefix()
                          ? boost::filesystem::absolute
                            ( link.link
-                             ( boost::bind ( &state::type::link_prefix_by_key
-                                           , boost::ref (state)
-                                           , _1
-                                           )
+                             ( std::bind ( &state::type::link_prefix_by_key
+                                         , std::ref (state)
+                                         , std::placeholders::_1
+                                         )
                              )
                            , fun->path.parent_path()
                            ).string()
@@ -1323,7 +1337,7 @@ namespace xml
                       << std::endl;
                   }
 
-                BOOST_FOREACH (const std::string& flag, fun->ldflags)
+                for (const std::string& flag : fun->ldflags)
                   {
                     ldflags_module << ldflags << " += " << flag << std::endl;
                   }
@@ -1332,7 +1346,7 @@ namespace xml
                   util::check_no_change_fstream cxxflags_function
                     (state, prefix / file_function_cxxflags);
 
-                  BOOST_FOREACH (const std::string& flag, fun->cxxflags)
+                  for (const std::string& flag : fun->cxxflags)
                   {
                     cxxflags_function << cxxflags << " += " << flag << std::endl;
                   }
@@ -1345,6 +1359,7 @@ namespace xml
                 const std::string cpp
                   (path_op + mod->first + "/" + fun->name + ".cpp");
 
+                stream << "-include " << dep                      << std::endl;
                 stream << obj_fun
                        << ": "
                        << cpp
@@ -1354,22 +1369,10 @@ namespace xml
                        << file_function_cxxflags
                                                                    << std::endl;
                 stream << "\t$(CXX) $(CXXFLAGS)" << " $(" << cxxflags << ")"
-                       << " -c $< -o $@"                           << std::endl;
-                stream << dep << ": "
-                       << cpp
-                       << " "
-                       << file_global_cxxflags
-                       << " "
-                       << file_function_cxxflags
-                                                                   << std::endl;
+                       << " -MM -MP -MT '" << obj_fun << "' "
+                       << "$< -MF " << dep                         << std::endl;
                 stream << "\t$(CXX) $(CXXFLAGS)" << " $(" << cxxflags << ")"
-                       << " -MM -MP -MT '" << dep << "' -MT '"
-                       << obj_fun
-                       << "' $< -MF $@"                            << std::endl;
-                stream << "ifneq \"$(wildcard " << dep << ")\" \"\""
-                                                                   << std::endl;
-                stream << "  include " << dep                      << std::endl;
-                stream << "endif"                                  << std::endl;
+                       << " -c $< -o $@"                           << std::endl;
                 stream << "DEPENDS += " << dep                     << std::endl;
                 stream                                             << std::endl;
               }
@@ -1488,8 +1491,6 @@ namespace xml
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
 
-        stream << "depend: $(DEPENDS)"                             << std::endl;
-        stream                                                     << std::endl;
         stream << "ifeq \"$(RM)\" \"\""                            << std::endl;
         stream                                                     << std::endl;
         stream << "clean:"                                         << std::endl;
@@ -1538,9 +1539,9 @@ namespace xml
         stream                                                     << std::endl;
       }
 
-      typedef boost::unordered_map<std::string, module_type>
+      typedef std::unordered_map<std::string, module_type>
         mc_by_function_type;
-      typedef boost::unordered_map<std::string, mc_by_function_type>
+      typedef std::unordered_map<std::string, mc_by_function_type>
         mcs_type;
 
       bool find_module_calls ( const state::type &
@@ -1606,7 +1607,7 @@ namespace xml
 
         n.contains_a_module_call = false;
 
-        BOOST_FOREACH (transition_type& transition, n.transitions().values())
+        for (transition_type& transition : n.transitions().values())
           {
             n.contains_a_module_call
               |= boost::apply_visitor
@@ -1621,7 +1622,7 @@ namespace xml
 
       namespace
       {
-        typedef boost::unordered_set<std::string> types_type;
+        typedef std::unordered_set<std::string> types_type;
 
         struct port_with_type
         {
@@ -1673,14 +1674,14 @@ namespace xml
               }
               else
               {
-                boost::unordered_map< std::string
-                                    , std::set<std::string>
-                                    >::const_iterator
+                std::unordered_map< std::string
+                                  , std::set<std::string>
+                                  >::const_iterator
                   pos (_inc.find (_tname));
 
                 if (pos != _inc.end())
                 {
-                  BOOST_FOREACH (std::string const& i, pos->second)
+                  for (std::string const& i : pos->second)
                   {
                     os << fhg::util::cpp::include (i);
                   }
@@ -1692,9 +1693,9 @@ namespace xml
 
           private:
             const std::string _tname;
-            boost::unordered_map< std::string
-                                , std::set<std::string>
-                                > _inc;
+            std::unordered_map< std::string
+                              , std::set<std::string>
+                              > _inc;
             std::string const _suffix;
           };
         };
@@ -1816,19 +1817,19 @@ namespace xml
             s << sep << "drts::worker::context *_pnetc_context";
           }
 
-          BOOST_FOREACH (const port_with_type& port, ports_const)
+          for (const port_with_type& port : ports_const)
           {
             s << sep << "const " << mk_type (port.type) << "& " << port.name
               << deeper (indent);
           }
 
-          BOOST_FOREACH (const port_with_type& port, ports_mutable)
+          for (const port_with_type& port : ports_mutable)
           {
             s << sep << mk_type (port.type) << "& " << port.name
               << deeper (indent);
           }
 
-          BOOST_FOREACH (const port_with_type& port, ports_out)
+          for (const port_with_type& port : ports_out)
           {
             s << sep << mk_type (port.type) << "& " << port.name
               << deeper (indent);
@@ -1846,7 +1847,7 @@ namespace xml
                     , const ports_with_type_type & ports_mutable
                     , const ports_with_type_type & ports_out
                     , const boost::optional<port_with_type> & port_return
-                    , boost::unordered_set<std::string> const& types
+                    , std::unordered_set<std::string> const& types
                     )
         {
           namespace block = fhg::util::cpp::block;
@@ -1858,7 +1859,7 @@ namespace xml
 
           s << cpp::include ("pnetc/op/" + mod.name() + "/" + file_hpp.string());
 
-          BOOST_FOREACH (std::string const& tname, types)
+          for (std::string const& tname : types)
           {
             s << include (tname, "/op.hpp");
           }
@@ -1874,17 +1875,17 @@ namespace xml
           s << deeper (indent) << ")";
           s << block::open (indent);
 
-          BOOST_FOREACH (const port_with_type& port, ports_const)
+          for (const port_with_type& port : ports_const)
           {
             s << mk_get (indent, port, "const ", "& ");
           }
 
-          BOOST_FOREACH (const port_with_type& port, ports_mutable)
+          for (const port_with_type& port : ports_mutable)
           {
             s << mk_get (indent, port);
           }
 
-          BOOST_FOREACH (const port_with_type& port, ports_out)
+          for (const port_with_type& port : ports_out)
           {
             s << indent << mk_type (port.type) << " " << port.name << ";";
           }
@@ -1915,17 +1916,17 @@ namespace xml
             s << sep << "_pnetc_context";
           }
 
-          BOOST_FOREACH (const port_with_type& port, ports_const)
+          for (const port_with_type& port : ports_const)
           {
             s << sep << port.name;
           }
 
-          BOOST_FOREACH (const port_with_type& port, ports_mutable)
+          for (const port_with_type& port : ports_mutable)
           {
             s << sep << port.name;
           }
 
-          BOOST_FOREACH (const port_with_type& port, ports_out)
+          for (const port_with_type& port : ports_out)
           {
             s << sep << port.name;
           }
@@ -1944,7 +1945,7 @@ namespace xml
 
           s << ";";
 
-          BOOST_FOREACH (const port_with_type& port, ports_mutable)
+          for (const port_with_type& port : ports_mutable)
           {
             s << indent
               << "_pnetc_output.bind ("
@@ -1955,7 +1956,7 @@ namespace xml
               ;
           }
 
-          BOOST_FOREACH (const port_with_type& port, ports_out)
+          for (const port_with_type& port : ports_out)
           {
             s << indent
               << "_pnetc_output.bind ("
@@ -2034,7 +2035,7 @@ namespace xml
               }
             }
 
-            mcs[mod.name()].insert (std::make_pair (mod.function(), mod));
+            mcs[mod.name()].emplace (mod.function(), mod);
 
             ports_with_type_type ports_const;
             ports_with_type_type ports_mutable;
@@ -2053,7 +2054,7 @@ namespace xml
               types.insert (port.type());
             }
 
-            BOOST_FOREACH (const std::string& name, mod.port_arg())
+            for (const std::string& name : mod.port_arg())
             {
               if (_id_function.get().is_known_port_inout (name))
               {
@@ -2154,7 +2155,7 @@ namespace xml
               {
                 stream << cpp_util::include ("drts/worker/context_fwd.hpp");
               }
-              BOOST_FOREACH (const std::string& tname, types)
+              for (const std::string& tname : types)
               {
                 stream << include (tname, ".hpp");
               }
@@ -2193,7 +2194,7 @@ namespace xml
               stream << cpp_util::include
                 ("pnetc/op/" + mod.name() + "/" + file_hpp);
 
-              BOOST_FOREACH (const std::string& tname, types)
+              for (const std::string& tname : types)
               {
                 stream << include (tname, "/op.hpp");
               }
@@ -2203,7 +2204,7 @@ namespace xml
                 stream << cpp_util::include ("drts/worker/context.hpp");
               }
 
-              BOOST_FOREACH (const std::string& inc, mod.cincludes())
+              for (const std::string& inc : mod.cincludes())
               {
                 stream << cpp_util::include (inc);
               }
@@ -2288,10 +2289,10 @@ namespace xml
       {
         void to_cpp ( const structs_type& structs
                     , const state::type& state
-                    , boost::unordered_set<std::string>& structnames
+                    , std::unordered_set<std::string>& structnames
                     )
         {
-          BOOST_FOREACH (const structure_type& structure, structs)
+          for (const structure_type& structure : structs)
           {
             structnames.insert (structure.name());
 
@@ -2314,11 +2315,11 @@ namespace xml
               stream << fhg::util::cpp::include_guard::open
                 ("PNETC_TYPE_" + structure.name());
 
-              const boost::unordered_set<std::string> names
+              const std::unordered_set<std::string> names
                 (pnet::type::signature::names (sig));
 
 
-              BOOST_FOREACH (const std::string& tname, names)
+              for (const std::string& tname : names)
               {
                 stream << include (tname, ".hpp");
               }
@@ -2352,9 +2353,7 @@ namespace xml
                                                 + structure.name() + ".hpp"
                                                 );
 
-              BOOST_FOREACH ( const std::string& tname
-                            , pnet::type::signature::names (sig)
-                            )
+              for (const std::string& tname : pnet::type::signature::names (sig))
               {
                 stream << include (tname, "/op.hpp");
               }
@@ -2396,7 +2395,7 @@ namespace xml
         {
         public:
           visitor_to_cpp ( const state::type & _state
-                         , boost::unordered_set<std::string>& structnames
+                         , std::unordered_set<std::string>& structnames
                          )
             : state (_state)
             , _structnames (structnames)
@@ -2410,16 +2409,12 @@ namespace xml
             {
               to_cpp (n.structs, state, _structnames);
 
-              BOOST_FOREACH ( const id::ref::function& id_function
-                            , n.functions().ids()
-                            )
+              for (const id::ref::function& id_function : n.functions().ids())
               {
                 struct_to_cpp (state, id_function, _structnames);
               }
 
-              BOOST_FOREACH ( const transition_type& transition
-                            , n.transitions().values()
-                            )
+              for (const transition_type& transition : n.transitions().values())
               {
                 boost::apply_visitor (*this, transition.function_or_use());
               }
@@ -2437,13 +2432,13 @@ namespace xml
 
         private:
           const state::type & state;
-          boost::unordered_set<std::string>& _structnames;
+          std::unordered_set<std::string>& _structnames;
         };
       }
 
       void struct_to_cpp ( const state::type& state
                          , const id::ref::function& function_id
-                         , boost::unordered_set<std::string>& structnames
+                         , std::unordered_set<std::string>& structnames
                          )
       {
         const function_type& function (function_id.get());
@@ -2504,7 +2499,7 @@ namespace xml
 
           ::we::type::property::dump::dump (s, f.properties());
 
-          BOOST_FOREACH (const std::string& tn, f.typenames())
+          for (const std::string& tn : f.typenames())
           {
             s.open ("template-parameter");
             s.attr ("type", tn);
@@ -2519,7 +2514,7 @@ namespace xml
 
           boost::apply_visitor (function_dump_visitor (s), f.content());
 
-          BOOST_FOREACH (const std::string& cond, f.conditions())
+          for (const std::string& cond : f.conditions())
           {
             s.open ("condition");
             s.content (cond);
@@ -2530,5 +2525,14 @@ namespace xml
         }
       } // namespace dump
     }
+  }
+}
+
+namespace std
+{
+  size_t hash<xml::parse::type::fun_info_type>::operator()
+    (xml::parse::type::fun_info_type const& fun) const
+  {
+    return std::hash<std::string>() (fun.name);
   }
 }

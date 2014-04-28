@@ -7,7 +7,7 @@
 
 BOOST_AUTO_TEST_CASE (ostab)
 {
-  OStab_t ostab = NULL;
+  OStab_t ostab = nullptr;
 
   BOOST_REQUIRE_EQUAL (ostab_memused (ostab), 0);
   BOOST_REQUIRE_EQUAL (ostab_size (ostab), 0);
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE (ostab)
 
 BOOST_AUTO_TEST_CASE (ostab_mega)
 {
-  OStab_t ostab = NULL;
+  OStab_t ostab = nullptr;
 
   for (Word_t i = 0; i < (1 << 20); ++i)
   {

@@ -13,9 +13,10 @@
 
 #include <fhg/util/xml.hpp>
 
-#include <boost/unordered_map.hpp>
 #include <boost/range/adaptor/map.hpp>
-#include <boost/bind.hpp>
+
+#include <functional>
+#include <unordered_map>
 
 namespace xml
 {
@@ -64,7 +65,7 @@ namespace xml
       }
 
       void structure_type::specialize
-        (const boost::unordered_map<std::string, std::string>& m)
+        (const std::unordered_map<std::string, std::string>& m)
       {
         pnet::type::signature::specialize (_sig, m);
       }
@@ -72,11 +73,11 @@ namespace xml
       namespace
       {
         boost::optional<pnet::type::signature::signature_type> get_assignment
-          ( const boost::unordered_map<std::string, structure_type>& m
+          ( const std::unordered_map<std::string, structure_type>& m
           , const std::string& key
           )
         {
-          boost::unordered_map<std::string, structure_type>::const_iterator
+          std::unordered_map<std::string, structure_type>::const_iterator
             pos (m.find (key));
 
           if (pos != m.end())
@@ -105,12 +106,11 @@ namespace xml
       }
 
       void structure_type::resolve
-        (const boost::unordered_map<std::string, structure_type>& m)
+        (const std::unordered_map<std::string, structure_type>& m)
       {
         pnet::type::signature::signature_type sign
-          (pnet::type::signature::resolve (_sig
-                                          , boost::bind (get_assignment, m, _1)
-                                          )
+          (pnet::type::signature::resolve
+            (_sig, std::bind (get_assignment, m, std::placeholders::_1))
           );
 
         _sig = boost::apply_visitor (get_struct(), sign);
@@ -161,7 +161,7 @@ namespace xml
                 throw error::struct_redefined (old->second, *pos);
               }
 
-            set.insert (std::make_pair (pos->name(), *pos));
+            set.emplace (pos->name(), *pos);
           }
 
         return set;
@@ -205,7 +205,7 @@ namespace xml
                   );
               }
 
-            set.insert (std::make_pair (strct.name(), strct));
+            set.emplace (strct.name(), strct);
           }
 
         return set;

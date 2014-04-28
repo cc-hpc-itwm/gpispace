@@ -7,9 +7,6 @@
 
 #include <boost/functional/hash.hpp>
 
-#include <boost/foreach.hpp>
-#include <boost/bind.hpp>
-
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -55,7 +52,7 @@ namespace bitsetofint
   {
     std::size_t cnt (0);
 
-    BOOST_FOREACH (uint64_t block, _container)
+    for (uint64_t block : _container)
     {
       // http://en.wikipedia.org/wiki/Hamming_weight
 
@@ -73,22 +70,15 @@ namespace bitsetofint
     return cnt;
   }
 
-  namespace
-  {
-    void print_element (std::ostream& s, const unsigned long& x)
-    {
-      s << x << std::endl;
-    }
-  }
   void type::list (std::ostream& s) const
   {
-    list (boost::bind (&print_element, boost::ref (s), _1));
+    list ([&s] (unsigned long const& x) { s << x << std::endl; });
   }
   void type::list (const boost::function<void (const unsigned long&)>& f) const
   {
     unsigned long x (0);
 
-    BOOST_FOREACH (uint64_t block, _container)
+    for (uint64_t block : _container)
     {
       for (size_t bit (0); bit < 64; ++x, ++bit, block >>= 1)
       {
@@ -100,19 +90,11 @@ namespace bitsetofint
     }
   }
 
-  namespace
-  {
-    void set_insert (std::set<unsigned long>& s, const unsigned long& x)
-    {
-      s.insert (x);
-    }
-  }
-
   std::set<unsigned long> type::elements() const
   {
     std::set<unsigned long> s;
 
-    list (boost::bind (&set_insert, boost::ref (s), _1));
+    list ([&s] (unsigned long const& x) { s.insert (x); });
 
     return s;
   }
@@ -170,7 +152,7 @@ namespace bitsetofint
   std::ostream& operator<< (std::ostream& s, const type& t)
   {
     s << "{";
-    BOOST_FOREACH (const uint64_t v, t._container)
+    for (const uint64_t v : t._container)
     {
       s << " " << v;
     }
@@ -182,7 +164,7 @@ namespace bitsetofint
 
     oss << "0x/";
 
-    BOOST_FOREACH (const uint64_t v,  t._container)
+    for (const uint64_t v : t._container)
     {
       oss.flags (std::ios::hex);
       oss.width (16);
@@ -263,7 +245,7 @@ namespace bitsetofint
 
   std::size_t hash_value (const type& t)
   {
-    boost::hash<std::vector<uint64_t> > h;
+    boost::hash<std::vector<uint64_t>> h;
 
     return h(t._container);
   }

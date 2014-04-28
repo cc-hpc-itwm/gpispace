@@ -1,45 +1,3 @@
-# check for 'pthread_setname_np'
-include(CheckCSourceCompiles)
-set (CMAKE_REQUIRED_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
-check_c_source_compiles("
-#include <pthread.h>
-int main () { pthread_setname_np (pthread_self (), \"test\"); }
-" HAVE_PTHREAD_SETNAME)
-
-if (HAVE_PTHREAD_SETNAME)
-  add_definitions (-DHAVE_PTHREAD_SETNAME)
-endif()
-
-set (hdrs
-  alphanum.hpp
-  daemonize.hpp
-  signal_handler_manager.hpp
-  pidfile_writer.hpp
-
-  join.hpp
-  read_bool.hpp
-  split.hpp
-  starts_with.hpp
-
-  ini-parser.hpp
-
-  getenv.hpp
-
-  xml.hpp
-
-  counter.hpp
-  backtracing_exception.hpp
-  backtracing_exception.fwd.hpp
-
-  threadname.hpp
-
-  remove_prefix.hpp
-
-  now.hpp
-  hex.hpp
-  read_file.hpp
-)
-
 set (srcs
   ../syscall.cpp
 
@@ -48,7 +6,6 @@ set (srcs
   signal_handler_manager.cpp
   pidfile_writer.cpp
   program_info.c
-  threadname.cpp
   random_string.cpp
   remove_prefix.cpp
   read_bool.cpp
@@ -98,9 +55,6 @@ target_link_libraries (fhg-util-shared
   ${Boost_RANDOM_LIBRARY}
   )
 
-install(FILES ${hdrs}
-  DESTINATION include/fhg/util
-)
 install (TARGETS fhg-util
   ARCHIVE DESTINATION lib
 )
@@ -108,5 +62,4 @@ install (TARGETS fhg-util-shared
   LIBRARY DESTINATION lib
 )
 
-add_subdirectory (boost)
   add_subdirectory(test)

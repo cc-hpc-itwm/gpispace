@@ -54,7 +54,7 @@ namespace we
       virtual void handle_externally (activity_t&, mod_t const&) = 0;
       virtual void handle_externally (activity_t&, expr_t const&) = 0;
 
-      virtual ~context() {}
+      virtual ~context() = default;
     };
 }
 

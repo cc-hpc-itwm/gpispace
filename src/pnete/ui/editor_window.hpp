@@ -65,7 +65,7 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        explicit editor_window (QWidget *parent = NULL);
+        explicit editor_window (QWidget *parent = nullptr);
 
         void add_transition_library_path (const QString&, bool trusted = false);
 

@@ -1,31 +1,17 @@
 #pragma once
 
-#include <pnetv/jpn/config.h>
-
-#ifdef JPN_BOOST_HASH
-#include <boost/functional/hash.hpp>
-#endif
-
 #include <pnetv/jpn/Types.h>
-#ifdef JPN_EXTENDED_MARKINGS
-#include <pnetv/jpn/common/ExtendedInteger.h>
-#endif
-#include <pnetv/jpn/common/Printable.h>
+
+#include <we/type/id.hpp>
 
 namespace jpn {
-
-#ifdef JPN_EXTENDED_MARKINGS
-typedef ExtendedInteger<TokenCount> ExtendedTokenCount;
-#else
-#define ExtendedTokenCount TokenCount
-#endif
 
 /**
  * Marking of a place.
  */
-class PlaceMarking: public Printable {
-    PlaceId placeId_; ///< Identifier of the place.
-    ExtendedTokenCount count_; ///< Token count.
+class PlaceMarking {
+    we::place_id_type placeId_; ///< Identifier of the place.
+    TokenCount count_; ///< Token count.
 
     public:
 
@@ -35,21 +21,19 @@ class PlaceMarking: public Printable {
      * \param[in] placeId Identifier of the place.
      * \param[in] count Token count.
      */
-    PlaceMarking(PlaceId placeId, ExtendedTokenCount count):
+    PlaceMarking(we::place_id_type placeId, TokenCount count):
         placeId_(placeId), count_(count)
     {}
 
     /**
      * \return Identifier of the place.
      */
-    PlaceId placeId() const { return placeId_; }
+    we::place_id_type placeId() const { return placeId_; }
 
     /**
      * \return Token count.
      */
-    const ExtendedTokenCount &count() const { return count_; }
-
-    virtual void print(std::ostream &out) const;
+    const TokenCount &count() const { return count_; }
 };
 
 /**
@@ -64,20 +48,3 @@ bool operator==(const PlaceMarking &a, const PlaceMarking &b) {
 }
 
 } // namespace jpn
-
-#ifdef JPN_BOOST_HASH
-namespace boost {
-    template<>
-    struct hash<jpn::PlaceMarking> {
-        std::size_t operator()(const jpn::PlaceMarking &placeMarking) const {
-            return placeMarking.placeId() << 8 | hash<jpn::ExtendedTokenCount>()(placeMarking.count());
-        }
-    };
-}
-#endif
-
-#ifndef JPN_EXTENDED_MARKINGS
-#undef ExtendedTokenCount
-#endif
-
-/* vim:set et sts=4 sw=4: */

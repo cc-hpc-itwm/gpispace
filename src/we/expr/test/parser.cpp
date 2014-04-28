@@ -3,11 +3,16 @@
 #define BOOST_TEST_MODULE we_expr_parser
 #include <boost/test/unit_test.hpp>
 
+#include <we/exception.hpp>
 #include <we/expr/eval/context.hpp>
 #include <we/expr/parse/parser.hpp>
-
 #include <we/type/value/boost/test/printer.hpp>
 
+#include <fhg/util/boost/test/require_exception.hpp>
+
+#include <functional>
+#include <limits>
+#include <random>
 #include <string>
 
 #ifdef NDEBUG
@@ -18,7 +23,7 @@ BOOST_AUTO_TEST_CASE (performance_parse_once_eval_often)
   double const t (-fhg::util::now());
 
   const long round (750);
-  const long max (3000);
+  const long max (2000);
   const std::string input ("${a} < ${b}");
 
   expr::eval::context context;
@@ -46,7 +51,7 @@ BOOST_AUTO_TEST_CASE (performance_often_parse_and_eval)
   double const t (-fhg::util::now());
 
   const long round (75);
-  const long max (3000);
+  const long max (2000);
   const std::string input ("${a} < ${b}");
 
   expr::eval::context context;
@@ -68,21 +73,39 @@ BOOST_AUTO_TEST_CASE (performance_often_parse_and_eval)
 }
 #endif
 
-BOOST_AUTO_TEST_CASE (round_switches_between_half_up_and_half_down)
+namespace
 {
-  const std::string input ("round (2.5)");
-  expr::eval::context context;
+  template<typename T>
+  expr::eval::context require_evaluating_to
+    (std::string const& expression, T const& value)
+  {
+    expr::eval::context context;
 
-#define CHECK(v)                                                         \
-  BOOST_REQUIRE_EQUAL ( expr::parse::parser (input, context).get_front() \
-                      , pnet::type::value::value_type (v)                \
-                      )
+    BOOST_REQUIRE_EQUAL ( expr::parse::parser (expression).eval_front (context)
+                        , pnet::type::value::value_type (value)
+                        );
 
-  CHECK (2.0);
-  CHECK (3.0);
-  CHECK (2.0);
-  CHECK (3.0);
-#undef CHECK
+    return context;
+  }
+
+  template<typename T>
+  expr::eval::context require_evaluating_to
+    (boost::format const& format, T const& value)
+  {
+    return require_evaluating_to (format.str(), value);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (round_is_away_from_zero)
+{
+  require_evaluating_to ("round (2.5)", 3.0);
+  require_evaluating_to ("round (2.5)", 3.0);
+  require_evaluating_to ("round (-2.5)", -3.0);
+  require_evaluating_to ("round (-2.5)", -3.0);
+  require_evaluating_to ("round (2.5f)", 3.0f);
+  require_evaluating_to ("round (2.5f)", 3.0f);
+  require_evaluating_to ("round (-2.5f)", -3.0f);
+  require_evaluating_to ("round (-2.5f)", -3.0f);
 }
 
 BOOST_AUTO_TEST_CASE (comment)
@@ -118,46 +141,28 @@ BOOST_AUTO_TEST_CASE (parens_can_be_omitted_after_floor)
 
 BOOST_AUTO_TEST_CASE (ceiling)
 {
-  expr::eval::context context;
-
-#define CHECK(_expression, _value)                                    \
-  BOOST_REQUIRE_EQUAL                                                 \
-    ( expr::parse::parser (_expression, context).get_front()          \
-    , pnet::type::value::value_type (_value)                          \
-    )
-
-  CHECK ("ceil (0.0)", 0.0);
-  CHECK ("ceil (0.25)", 1.0);
-  CHECK ("ceil (0.5)", 1.0);
-  CHECK ("ceil (0.75)", 1.0);
-  CHECK ("ceil (1.0)", 1.0);
-  CHECK ("ceil (1.25)", 2.0);
-  CHECK ("ceil (1.5)", 2.0);
-  CHECK ("ceil (1.75)", 2.0);
-  CHECK ("ceil (2.0)", 2.0);
-#undef CHECK
+  require_evaluating_to ("ceil (0.0)", 0.0);
+  require_evaluating_to ("ceil (0.25)", 1.0);
+  require_evaluating_to ("ceil (0.5)", 1.0);
+  require_evaluating_to ("ceil (0.75)", 1.0);
+  require_evaluating_to ("ceil (1.0)", 1.0);
+  require_evaluating_to ("ceil (1.25)", 2.0);
+  require_evaluating_to ("ceil (1.5)", 2.0);
+  require_evaluating_to ("ceil (1.75)", 2.0);
+  require_evaluating_to ("ceil (2.0)", 2.0);
 }
 
 BOOST_AUTO_TEST_CASE (_floor)
 {
-  expr::eval::context context;
-
-#define CHECK(_expression, _value)                                    \
-  BOOST_REQUIRE_EQUAL                                                 \
-    ( expr::parse::parser (_expression, context).get_front()          \
-    , pnet::type::value::value_type (_value)                          \
-    )
-
-  CHECK ("floor (0.0)", 0.0);
-  CHECK ("floor (0.25)", 0.0);
-  CHECK ("floor (0.5)", 0.0);
-  CHECK ("floor (0.75)", 0.0);
-  CHECK ("floor (1.0)", 1.0);
-  CHECK ("floor (1.25)", 1.0);
-  CHECK ("floor (1.5)", 1.0);
-  CHECK ("floor (1.75)", 1.0);
-  CHECK ("floor (2.0)", 2.0);
-#undef CHECK
+  require_evaluating_to ("floor (0.0)", 0.0);
+  require_evaluating_to ("floor (0.25)", 0.0);
+  require_evaluating_to ("floor (0.5)", 0.0);
+  require_evaluating_to ("floor (0.75)", 0.0);
+  require_evaluating_to ("floor (1.0)", 1.0);
+  require_evaluating_to ("floor (1.25)", 1.0);
+  require_evaluating_to ("floor (1.5)", 1.0);
+  require_evaluating_to ("floor (1.75)", 1.0);
+  require_evaluating_to ("floor (2.0)", 2.0);
 }
 
 BOOST_AUTO_TEST_CASE (other_variable_not_renamed)
@@ -201,4 +206,765 @@ BOOST_AUTO_TEST_CASE (renamed_at_depth_greater_zero)
 
   BOOST_REQUIRE_EQUAL
     (parser.string(), expr::parse::parser ("sin (${A})").string());
+}
+
+BOOST_AUTO_TEST_CASE (token_or_boolean_table)
+{
+  require_evaluating_to ("true || true", true);
+  require_evaluating_to ("true || false", true);
+  require_evaluating_to ("false || true", true);
+  require_evaluating_to ("false || false", false);
+
+  require_evaluating_to ("true :or: true", true);
+  require_evaluating_to ("true :or: false", true);
+  require_evaluating_to ("false :or: true", true);
+  require_evaluating_to ("false :or: false", false);
+}
+
+BOOST_AUTO_TEST_CASE (token_or_integral)
+{
+  require_evaluating_to ("0 | 0", 0);
+  require_evaluating_to ("0 | 1", 1);
+  require_evaluating_to ("1 | 1", 1);
+  require_evaluating_to ("1 | 0", 1);
+  require_evaluating_to ("1 | 2", 3);
+  require_evaluating_to ("2 | 1", 3);
+
+  require_evaluating_to ("0U | 0U", 0U);
+  require_evaluating_to ("0U | 1U", 1U);
+  require_evaluating_to ("1U | 1U", 1U);
+  require_evaluating_to ("1U | 0U", 1U);
+  require_evaluating_to ("1U | 2U", 3U);
+  require_evaluating_to ("2U | 1U", 3U);
+
+  require_evaluating_to ("0L | 0L", 0L);
+  require_evaluating_to ("0L | 1L", 1L);
+  require_evaluating_to ("1L | 1L", 1L);
+  require_evaluating_to ("1L | 0L", 1L);
+  require_evaluating_to ("1L | 2L", 3L);
+  require_evaluating_to ("2L | 1L", 3L);
+
+  require_evaluating_to ("0UL | 0UL", 0UL);
+  require_evaluating_to ("0UL | 1UL", 1UL);
+  require_evaluating_to ("1UL | 1UL", 1UL);
+  require_evaluating_to ("1UL | 0UL", 1UL);
+  require_evaluating_to ("1UL | 2UL", 3UL);
+  require_evaluating_to ("2UL | 1UL", 3UL);
+}
+
+BOOST_AUTO_TEST_CASE (token_or_short_circuit)
+{
+  fhg::util::boost::test::require_exception<pnet::exception::missing_binding>
+    ( [] { require_evaluating_to ("true || (${a} := true)", true).value ("a"); }
+    , "missing binding for: ${a}"
+    );
+
+  BOOST_REQUIRE_EQUAL
+    ( require_evaluating_to ("false || (${a} := true)", true).value ("a")
+    , pnet::type::value::value_type (true)
+    );
+}
+
+BOOST_AUTO_TEST_CASE (token_and_boolean_table)
+{
+  require_evaluating_to ("true && true", true);
+  require_evaluating_to ("true && false", false);
+  require_evaluating_to ("false && true", false);
+  require_evaluating_to ("false && false", false);
+
+  require_evaluating_to ("true :and: true", true);
+  require_evaluating_to ("true :and: false", false);
+  require_evaluating_to ("false :and: true", false);
+  require_evaluating_to ("false :and: false", false);
+}
+
+BOOST_AUTO_TEST_CASE (token_and_integral)
+{
+  require_evaluating_to ("0 & 0", 0);
+  require_evaluating_to ("0 & 1", 0);
+  require_evaluating_to ("1 & 1", 1);
+  require_evaluating_to ("1 & 0", 0);
+  require_evaluating_to ("1 & 2", 0);
+  require_evaluating_to ("2 & 1", 0);
+  require_evaluating_to ("2 & 3", 2);
+
+  require_evaluating_to ("0U & 0U", 0U);
+  require_evaluating_to ("0U & 1U", 0U);
+  require_evaluating_to ("1U & 1U", 1U);
+  require_evaluating_to ("1U & 0U", 0U);
+  require_evaluating_to ("1U & 2U", 0U);
+  require_evaluating_to ("2U & 1U", 0U);
+  require_evaluating_to ("2U & 3U", 2U);
+
+  require_evaluating_to ("0L & 0L", 0L);
+  require_evaluating_to ("0L & 1L", 0L);
+  require_evaluating_to ("1L & 1L", 1L);
+  require_evaluating_to ("1L & 0L", 0L);
+  require_evaluating_to ("1L & 2L", 0L);
+  require_evaluating_to ("2L & 1L", 0L);
+  require_evaluating_to ("2L & 3L", 2L);
+
+  require_evaluating_to ("0UL & 0UL", 0UL);
+  require_evaluating_to ("0UL & 1UL", 0UL);
+  require_evaluating_to ("1UL & 1UL", 1UL);
+  require_evaluating_to ("1UL & 0UL", 0UL);
+  require_evaluating_to ("1UL & 2UL", 0UL);
+  require_evaluating_to ("2UL & 1UL", 0UL);
+  require_evaluating_to ("2UL & 3UL", 2UL);
+}
+
+BOOST_AUTO_TEST_CASE (token_and_short_circuit)
+{
+  fhg::util::boost::test::require_exception<pnet::exception::missing_binding>
+    ( [] { require_evaluating_to ("false && (${a} := false)", false).value ("a"); }
+    , "missing binding for: ${a}"
+    );
+
+  BOOST_REQUIRE_EQUAL
+    ( require_evaluating_to ("true && (${a} := false)", false).value ("a")
+    , pnet::type::value::value_type (false)
+    );
+}
+
+BOOST_AUTO_TEST_CASE (token_not)
+{
+  require_evaluating_to ("!true", false);
+  require_evaluating_to ("!false", true);
+  require_evaluating_to ("!!true", true);
+  require_evaluating_to ("!!false", false);
+  require_evaluating_to ("!0", ~0);
+  require_evaluating_to ("!1", ~1);
+  require_evaluating_to ("!0U", ~0U);
+  require_evaluating_to ("!1U", ~1U);
+  require_evaluating_to ("!0L", ~0L);
+  require_evaluating_to ("!1L", ~1L);
+  require_evaluating_to ("!0UL", ~0UL);
+  require_evaluating_to ("!1UL", ~1UL);
+}
+
+namespace
+{
+  void check_compare
+    (std::string lhs, std::string rhs, bool lt, bool le, bool gt, bool ge)
+  {
+    require_evaluating_to (boost::format ("%1% < %2%") % lhs % rhs, lt);
+    require_evaluating_to (boost::format ("%1% <= %2%") % lhs % rhs, le);
+    require_evaluating_to (boost::format ("%1% > %2%") % lhs % rhs, gt);
+    require_evaluating_to (boost::format ("%1% >= %2%") % lhs % rhs, ge);
+
+    require_evaluating_to (boost::format ("%1% :lt: %2%") % lhs % rhs, lt);
+    require_evaluating_to (boost::format ("%1% :le: %2%") % lhs % rhs, le);
+    require_evaluating_to (boost::format ("%1% :gt: %2%") % lhs % rhs, gt);
+    require_evaluating_to (boost::format ("%1% :ge: %2%") % lhs % rhs, ge);
+  }
+
+  void check_equality (std::string lhs, std::string rhs, bool eq)
+  {
+    require_evaluating_to (boost::format ("%1% != %2%") % lhs % rhs, !eq);
+    require_evaluating_to (boost::format ("%1% == %2%") % lhs % rhs, eq);
+
+    require_evaluating_to (boost::format ("%1% :ne: %2%") % lhs % rhs, !eq);
+    require_evaluating_to (boost::format ("%1% :eq: %2%") % lhs % rhs, eq);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_cmp)
+{
+#define CHECK(_lhs, _rhs, _lt, _le, _gt, _ge, _eq)                      \
+  check_compare (#_lhs, #_rhs, _lt, _le, _gt, _ge);                     \
+  check_equality (#_lhs, #_rhs, _eq)
+
+  CHECK ('a', 'a', false, true, false, true, true);
+  CHECK ('a', 'b', true, true, false, false, false);
+  CHECK ('b', 'a', false, false, true, true, false);
+  CHECK ("\"\"", "\"\"", false, true, false, true, true);
+  CHECK ("\"\"", "\"a\"", true, true, false, false, false);
+  CHECK ("\"a\"", "\"a\"", false, true, false, true, true);
+  CHECK ("\"a\"", "\"b\"", true, true, false, false, false);
+  CHECK ("\"a\"", "\"ab\"", true, true, false, false, false);
+  CHECK ("\"a\"", "\"\"", false, false, true, true, false);
+  CHECK ("\"b\"", "\"a\"", false, false, true, true, false);
+  CHECK ("\"ab\"", "\"a\"", false, false, true, true, false);
+  CHECK (true, true, false, true, false, true, true);
+  CHECK (false, true, true, true, false, false, false);
+  CHECK (true, false, false, false, true, true, false);
+  CHECK (0, 0, false, true, false, true, true);
+  CHECK (0, 1, true, true, false, false, false);
+  CHECK (1, 0, false, false, true, true, false);
+  CHECK (0U, 0U, false, true, false, true, true);
+  CHECK (0U, 1U, true, true, false, false, false);
+  CHECK (1U, 0U, false, false, true, true, false);
+  CHECK (0L, 0L, false, true, false, true, true);
+  CHECK (0L, 1L, true, true, false, false, false);
+  CHECK (1L, 0L, false, false, true, true, false);
+  CHECK (0UL, 0UL, false, true, false, true, true);
+  CHECK (0UL, 1UL, true, true, false, false, false);
+  CHECK (1UL, 0UL, false, false, true, true, false);
+#undef CHECK
+
+  check_compare ("0.0", "0.0", false, true, false, true);
+  check_compare ("0.0", "1.0", true, true, false, false);
+  check_compare ("1.0", "0.0", false, false, true, true);
+  check_compare ("0.0f", "0.0f", false, true, false, true);
+  check_compare ("0.0f", "1.0f", true, true, false, false);
+  check_compare ("1.0f", "0.0f", false, false, true, true);
+
+  check_equality ("{}", "{}", true);
+  check_equality ("{}", "bitset_insert {} 1L", false);
+  check_equality ("bitset_insert {} 1L", "{}", false);
+  check_equality ("bitset_insert {} 1L", "bitset_insert {} 2L", false);
+  check_equality ( "bitset_insert (bitset_insert {} 1L) 2L"
+                 , "bitset_insert {} 2L", false
+                 );
+  check_equality ( "bitset_insert (bitset_insert {} 1L) 2L"
+                 , "bitset_insert (bitset_insert {} 2L) 1L", true
+                 );
+
+  check_equality ("y()", "y()", true);
+  check_equality ("y(4)", "y()", false);
+  check_equality ("y()", "y(4)", false);
+  check_equality ("y(4)", "y(4)", true);
+}
+
+namespace
+{
+  template<typename T> struct suffix {};
+
+#define SUFFIX(_type, _suffix)                  \
+  template<>                                    \
+  struct suffix<_type>                          \
+  {                                             \
+    std::string operator() ()                   \
+    {                                           \
+      return _suffix;                           \
+    }                                           \
+  }
+
+  SUFFIX (int, "");
+  SUFFIX (unsigned int, "U");
+  SUFFIX (long, "L");
+  SUFFIX (unsigned long, "UL");
+  SUFFIX (float, "f");
+  SUFFIX (double, "");
+#undef SUFFIX
+
+  template<typename T>
+  void require_random_integrals_evaluating_to
+    (std::function<void (T const&, T const&)> check)
+  {
+    std::random_device generator;
+    std::uniform_int_distribution<T> number
+      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+
+    for (int i (0); i < 1000; ++i)
+    {
+      check (number (generator), number (generator));
+    }
+  }
+
+  template<typename T>
+  void check_binop ( std::string const& operation_string
+                   , std::function<T (T const&, T const&)> operation
+                   , T const& l
+                   , T const& r
+                   )
+  {
+    require_evaluating_to
+      ( ( boost::format ("%1%%3% %4% %2%%3%")
+        % l
+        % r
+        % suffix<T>()()
+        % operation_string
+        ).str()
+      , operation (l, r)
+      );
+  }
+
+  template<typename T>
+    T parse_showed (T const& x)
+  {
+    expr::eval::context context;
+
+    return boost::get<T>
+      ( expr::parse::parser
+        ((boost::format ("%1%%2%") % x % suffix<T>()()).str())
+      . eval_front (context)
+      );
+  }
+
+  template<typename T>
+  void require_random_fractionals_evaluating_to
+    (std::function<void (T const&, T const&)> check)
+  {
+    std::random_device generator;
+    std::uniform_real_distribution<T> number
+      ( -std::numeric_limits<T>::max() / T (2.0)
+      ,  std::numeric_limits<T>::max() / T (2.0)
+      );
+
+    for (int i (0); i < 1000; ++i)
+    {
+      check ( parse_showed (number (generator))
+            , parse_showed (number (generator))
+            );
+    }
+  }
+
+  template<typename T>
+    T plus (T const& l, T const& r)
+  {
+    return l + r;
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_add)
+{
+  require_evaluating_to ("'a' + 'a'", std::string ("aa"));
+  require_evaluating_to ("\"\" + \"\"", std::string (""));
+  require_evaluating_to ("\"a\" + \"\"", std::string ("a"));
+  require_evaluating_to ("\"a\" + \"a\"", std::string ("aa"));
+  require_evaluating_to ("\"ab\" + \"a\"", std::string ("aba"));
+
+  require_random_integrals_evaluating_to<int>
+    (std::bind (&check_binop<int>, "+", &plus<int>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<unsigned int>
+    (std::bind (&check_binop<unsigned int>, "+", &plus<unsigned int>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<long>
+    (std::bind (&check_binop<long>, "+", &plus<long>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<unsigned long>
+    (std::bind (&check_binop<unsigned long>, "+", &plus<unsigned long>, std::placeholders::_1, std::placeholders::_2));
+
+  require_evaluating_to ("0 + 0", 0);
+  require_evaluating_to ("0 + 1", 1);
+  require_evaluating_to ("1 + 0", 1);
+  require_evaluating_to ("0U + 0U", 0U);
+  require_evaluating_to ("0U + 1U", 1U);
+  require_evaluating_to ("1U + 0U", 1U);
+  require_evaluating_to ("0L + 0L", 0L);
+  require_evaluating_to ("0L + 1L", 1L);
+  require_evaluating_to ("1L + 0L", 1L);
+  require_evaluating_to ("0UL + 0UL", 0UL);
+  require_evaluating_to ("0UL + 1UL", 1UL);
+  require_evaluating_to ("1UL + 0UL", 1UL);
+
+  require_random_fractionals_evaluating_to<float>
+    (std::bind (&check_binop<float>, "+", &plus<float>, std::placeholders::_1, std::placeholders::_2));
+  require_random_fractionals_evaluating_to<double>
+    (std::bind (&check_binop<double>, "+", &plus<double>, std::placeholders::_1, std::placeholders::_2));
+
+  require_evaluating_to ("0.0 + 0.0", 0.0);
+  require_evaluating_to ("0.0 + 1.0", 1.0);
+  require_evaluating_to ("1.0 + 0.0", 1.0);
+  require_evaluating_to ("1.0 + 1.0", 2.0);
+  require_evaluating_to ("0.0f + 0.0f", 0.0f);
+  require_evaluating_to ("0.0f + 1.0f", 1.0f);
+  require_evaluating_to ("1.0f + 0.0f", 1.0f);
+  require_evaluating_to ("1.0f + 1.0f", 2.0f);
+}
+
+namespace
+{
+  template<typename T>
+    T product (T const& l, T const& r)
+  {
+    return l * r;
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_mul)
+{
+  require_random_integrals_evaluating_to<int>
+    (std::bind (&check_binop<int>, "*", &product<int>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<unsigned int>
+    (std::bind (&check_binop<unsigned int>, "*", &product<unsigned int>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<long>
+    (std::bind (&check_binop<long>, "*", &product<long>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<unsigned long>
+    (std::bind (&check_binop<unsigned long>, "*", &product<unsigned long>, std::placeholders::_1, std::placeholders::_2));
+
+  require_evaluating_to ("0 * 0", 0);
+  require_evaluating_to ("0 * 1", 0);
+  require_evaluating_to ("1 * 0", 0);
+  require_evaluating_to ("1 * 1", 1);
+  require_evaluating_to ("1 * 2", 2);
+  require_evaluating_to ("2 * 1", 2);
+  require_evaluating_to ("0U * 0U", 0U);
+  require_evaluating_to ("0U * 1U", 0U);
+  require_evaluating_to ("1U * 0U", 0U);
+  require_evaluating_to ("1U * 1U", 1U);
+  require_evaluating_to ("1U * 2U", 2U);
+  require_evaluating_to ("2U * 1U", 2U);
+  require_evaluating_to ("0L * 0L", 0L);
+  require_evaluating_to ("0L * 1L", 0L);
+  require_evaluating_to ("1L * 0L", 0L);
+  require_evaluating_to ("1L * 1L", 1L);
+  require_evaluating_to ("1L * 2L", 2L);
+  require_evaluating_to ("2L * 1L", 2L);
+  require_evaluating_to ("0UL * 0UL", 0UL);
+  require_evaluating_to ("0UL * 1UL", 0UL);
+  require_evaluating_to ("1UL * 0UL", 0UL);
+  require_evaluating_to ("1UL * 1UL", 1UL);
+  require_evaluating_to ("1UL * 2UL", 2UL);
+  require_evaluating_to ("2UL * 1UL", 2UL);
+
+  require_random_fractionals_evaluating_to<float>
+    (std::bind (&check_binop<float>, "*", &product<float>, std::placeholders::_1, std::placeholders::_2));
+  require_random_fractionals_evaluating_to<double>
+    (std::bind (&check_binop<double>, "*", &product<double>, std::placeholders::_1, std::placeholders::_2));
+
+  require_evaluating_to ("0.0 * 0.0", 0.0);
+  require_evaluating_to ("0.0 * 1.0", 0.0);
+  require_evaluating_to ("1.0 * 0.0", 0.0);
+  require_evaluating_to ("1.0 * 1.0", 1.0);
+  require_evaluating_to ("1.0 * 2.0", 2.0);
+  require_evaluating_to ("2.0 * 1.0", 2.0);
+  require_evaluating_to ("0.0f * 0.0f", 0.0f);
+  require_evaluating_to ("0.0f * 1.0f", 0.0f);
+  require_evaluating_to ("1.0f * 0.0f", 0.0f);
+  require_evaluating_to ("1.0f * 1.0f", 1.0f);
+  require_evaluating_to ("1.0f * 2.0f", 2.0f);
+  require_evaluating_to ("2.0f * 1.0f", 2.0f);
+}
+
+namespace
+{
+  template<typename T>
+    void require_ctor_exception
+    (std::string const& input, std::string const& message)
+  {
+    fhg::util::boost::test::require_exception<T>
+      ([&input]() { (void)expr::parse::parser (input); }, message);
+  }
+
+  template<typename T>
+    T minus (T const& l, T const& r)
+  {
+    return l - r;
+  }
+}
+
+namespace
+{
+  template<typename T>
+  void check_minus_for_unsigned_integral (T const& l, T const& r)
+  {
+    std::string const expression
+      ( ( boost::format ("%1%%3% - %2%%3%")
+        % l
+        % r
+        % suffix<T>()()
+        ).str()
+      );
+
+    if (l >= r)
+    {
+      require_evaluating_to (expression, l - r);
+    }
+    else
+    {
+      require_ctor_exception<std::runtime_error>
+        (expression, "r > l => neg result");
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_sub)
+{
+  require_random_integrals_evaluating_to<int>
+    (std::bind (&check_binop<int>, "-", &minus<int>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<long>
+    (std::bind (&check_binop<long>, "-", &minus<long>, std::placeholders::_1, std::placeholders::_2));
+
+  require_evaluating_to ("0 - 0", 0);
+  require_evaluating_to ("1 - 0", 1);
+  require_evaluating_to ("0 - 1", -1);
+  require_evaluating_to ("0L - 0L", 0L);
+  require_evaluating_to ("1L - 0L", 1L);
+  require_evaluating_to ("0L - 1L", -1L);
+
+  require_random_fractionals_evaluating_to<float>
+    (std::bind (&check_binop<float>, "-", &minus<float>, std::placeholders::_1, std::placeholders::_2));
+  require_random_fractionals_evaluating_to<double>
+    (std::bind (&check_binop<double>, "-", &minus<double>, std::placeholders::_1, std::placeholders::_2));
+
+  require_evaluating_to ("0.0 - 0.0", 0.0);
+  require_evaluating_to ("0.0 - 1.0", -1.0);
+  require_evaluating_to ("1.0 - 1.0", 0.0);
+  require_evaluating_to ("0.0f - 0.0f", 0.0f);
+  require_evaluating_to ("0.0f - 1.0f", -1.0f);
+  require_evaluating_to ("1.0f - 1.0f", 0.0f);
+
+  require_random_integrals_evaluating_to<unsigned int>
+    (&check_minus_for_unsigned_integral<unsigned int>);
+  require_random_integrals_evaluating_to<unsigned int>
+    (&check_minus_for_unsigned_integral<unsigned long>);
+
+  require_evaluating_to ("0U - 0U", 0U);
+  require_evaluating_to ("1U - 0U", 1U);
+  require_evaluating_to ("2U - 1U", 1U);
+  require_evaluating_to ("0UL - 0UL", 0UL);
+  require_evaluating_to ("1UL - 0UL", 1UL);
+  require_evaluating_to ("2UL - 1UL", 1UL);
+
+  require_ctor_exception<std::runtime_error>
+    ("0U - 1U", "r > l => neg result");
+  require_ctor_exception<std::runtime_error>
+    ("0UL - 1UL", "r > l => neg result");
+}
+
+namespace
+{
+  template<typename T>
+    T quotient (T const& l, T const& r)
+  {
+    return l / r;
+  }
+
+  template<typename T>
+  void check_divmod_for_integral
+    ( std::string const& operation_string
+    , std::function<T (T const&, T const&)> operation
+    , T const& l
+    , T const& r
+    )
+  {
+    std::string const expression
+      ( ( boost::format ("%1%%3% %4% %2%%3%")
+        % l
+        % r
+        % suffix<T>()()
+        % operation_string
+        ).str()
+      );
+
+    if (r != 0)
+    {
+      require_evaluating_to (expression, operation (l, r));
+    }
+    else
+    {
+      require_ctor_exception<expr::exception::eval::divide_by_zero>
+        (expression, "divide by zero");
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_divint)
+{
+  require_random_integrals_evaluating_to<int>
+    (std::bind (&check_divmod_for_integral<int>, "div", &quotient<int>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<int>
+    (std::bind (&check_divmod_for_integral<unsigned int>, "div", &quotient<unsigned int>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<int>
+    (std::bind (&check_divmod_for_integral<long>, "div", &quotient<long>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<int>
+    (std::bind (&check_divmod_for_integral<unsigned long>, "div", &quotient<unsigned long>, std::placeholders::_1, std::placeholders::_2));
+
+  require_evaluating_to ("0 div 1", 0);
+  require_evaluating_to ("0U div 1U", 0U);
+  require_evaluating_to ("0L div 1L", 0L);
+  require_evaluating_to ("0UL div 1UL", 0UL);
+  require_evaluating_to ("1 div 1", 1);
+  require_evaluating_to ("1U div 1U", 1U);
+  require_evaluating_to ("1L div 1L", 1L);
+  require_evaluating_to ("1UL div 1UL", 1UL);
+  require_evaluating_to ("2 div 2", 1);
+  require_evaluating_to ("2U div 2U", 1U);
+  require_evaluating_to ("2L div 2L", 1L);
+  require_evaluating_to ("2UL div 2UL", 1UL);
+  require_evaluating_to ("2 div 1", 2);
+  require_evaluating_to ("2U div 1U", 2U);
+  require_evaluating_to ("2L div 1L", 2L);
+  require_evaluating_to ("2UL div 1UL", 2UL);
+
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1 div 0", "divide by zero");
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1U div 0U", "divide by zero");
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1L div 0L", "divide by zero");
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1UL div 0UL", "divide by zero");
+}
+
+namespace
+{
+  template<typename T>
+    T remainder (T const& l, T const& r)
+  {
+    return l % r;
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_modint)
+{
+  require_random_integrals_evaluating_to<int>
+    (std::bind (&check_divmod_for_integral<int>, "mod", &remainder<int>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<unsigned int>
+    (std::bind (&check_divmod_for_integral<unsigned int>, "mod", &remainder<unsigned int>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<long>
+    (std::bind (&check_divmod_for_integral<long>, "mod", &remainder<long>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<unsigned long>
+    (std::bind (&check_divmod_for_integral<unsigned long>, "mod", &remainder<unsigned long>, std::placeholders::_1, std::placeholders::_2));
+
+  require_evaluating_to ("0 mod 1", 0);
+  require_evaluating_to ("0U mod 1U", 0U);
+  require_evaluating_to ("0L mod 1L", 0L);
+  require_evaluating_to ("0UL mod 1UL", 0UL);
+  require_evaluating_to ("1 mod 1", 0);
+  require_evaluating_to ("1U mod 1U", 0U);
+  require_evaluating_to ("1L mod 1L", 0L);
+  require_evaluating_to ("1UL mod 1UL", 0UL);
+  require_evaluating_to ("2 mod 2", 0);
+  require_evaluating_to ("2U mod 2U", 0U);
+  require_evaluating_to ("2L mod 2L", 0L);
+  require_evaluating_to ("2UL mod 2UL", 0UL);
+  require_evaluating_to ("2 mod 1", 0);
+  require_evaluating_to ("2U mod 1U", 0U);
+  require_evaluating_to ("2L mod 1L", 0L);
+  require_evaluating_to ("2UL mod 1UL", 0UL);
+  require_evaluating_to ("1 mod 2", 1);
+  require_evaluating_to ("1U mod 2U", 1U);
+  require_evaluating_to ("1L mod 2L", 1L);
+  require_evaluating_to ("1UL mod 2UL", 1UL);
+  require_evaluating_to ("5 mod 3", 2);
+  require_evaluating_to ("5U mod 3U", 2U);
+  require_evaluating_to ("5L mod 3L", 2L);
+  require_evaluating_to ("5UL mod 3UL", 2UL);
+
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1 mod 0", "divide by zero");
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1U mod 0U", "divide by zero");
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1L mod 0L", "divide by zero");
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1UL mod 0UL", "divide by zero");
+}
+
+namespace
+{
+  template<typename T>
+  void check_quotient_for_fractional()
+  {
+    std::random_device generator;
+    std::uniform_real_distribution<T> number
+      ( -std::numeric_limits<T>::max() / T (2.0)
+      ,  std::numeric_limits<T>::max() / T (2.0)
+      );
+
+    for (int i (0); i < 1000; ++i)
+    {
+      std::string const l
+        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+      std::string const r
+        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+
+      std::string const expression
+        ((boost::format ("%1% / %2%") % l % r).str());
+
+      expr::eval::context context;
+
+      T const r_value
+        (boost::get<T> (expr::parse::parser (r).eval_front (context)));
+
+      if (std::abs (r_value) >= std::numeric_limits<T>::min())
+      {
+        BOOST_REQUIRE_EQUAL
+          ( boost::get<T>
+            (expr::parse::parser (expression). eval_front (context))
+          , boost::get<T> (expr::parse::parser (l).eval_front (context))
+          / r_value
+          );
+      }
+      else
+      {
+        require_ctor_exception<expr::exception::eval::divide_by_zero>
+          (expression, "divide by zero");
+      }
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_div)
+{
+  check_quotient_for_fractional<float>();
+  check_quotient_for_fractional<double>();
+
+  require_evaluating_to ("0.0 / 1.0", 0.0);
+  require_evaluating_to ("0.0f / 1.0f", 0.0f);
+  require_evaluating_to ("1.0 / 1.0", 1.0);
+  require_evaluating_to ("1.0f / 1.0f", 1.0f);
+  require_evaluating_to ("2.0 / 1.0", 2.0);
+  require_evaluating_to ("2.0f / 1.0f", 2.0f);
+  require_evaluating_to ("2.0 / 2.0", 1.0);
+  require_evaluating_to ("2.0f / 2.0f", 1.0f);
+
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1.0 / 0.0", "divide by zero");
+  require_ctor_exception<expr::exception::eval::divide_by_zero>
+    ("1.0f / 0.0f", "divide by zero");
+}
+
+namespace
+{
+  template<typename T>
+    void check_pow_for_fractional()
+  {
+    std::random_device generator;
+    std::uniform_real_distribution<T> number
+      ( -std::numeric_limits<T>::max() / T (2.0)
+      ,  std::numeric_limits<T>::max() / T (2.0)
+      );
+
+    for (int i (0); i < 1000; ++i)
+    {
+      std::string const l
+        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+      std::string const r
+        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+
+      expr::eval::context context;
+
+      BOOST_REQUIRE_EQUAL
+        ( boost::get<T>
+          ( expr::parse::parser
+            ((boost::format ("%1% ** %2%") % l % r).str()).eval_front (context)
+          )
+        , std::pow
+          ( boost::get<T> (expr::parse::parser (l).eval_front (context))
+          , boost::get<T> (expr::parse::parser (r).eval_front (context))
+          )
+        );
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_pow)
+{
+  check_pow_for_fractional<float>();
+  check_pow_for_fractional<double>();
+
+  require_evaluating_to ("1.0 ** 0.0", 1.0);
+  require_evaluating_to ("1.0f ** 0.0f", 1.0f);
+  require_evaluating_to ("1.0 ** 1.0", 1.0);
+  require_evaluating_to ("1.0f ** 1.0f", 1.0f);
+  require_evaluating_to ("1.0f ** 2.0f", 1.0f);
+  require_evaluating_to ("2.0f ** 0.0f", 1.0f);
+  require_evaluating_to ("2.0f ** 1.0f", 2.0f);
+  require_evaluating_to ("2.0f ** 2.0f", 4.0f);
+}
+
+BOOST_AUTO_TEST_CASE (token_pow_int_signed_negative_exponent_throws)
+{
+  fhg::util::boost::test::require_exception
+    <expr::exception::eval::negative_exponent>
+    ( [] { require_evaluating_to ("0 ^ (-1)", 0); }
+    , "negative exponent"
+    );
+  fhg::util::boost::test::require_exception
+    <expr::exception::eval::negative_exponent>
+    ( [] { require_evaluating_to ("0L ^ (-1L)", 0L); }
+    , "negative exponent"
+    );
 }

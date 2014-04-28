@@ -115,7 +115,7 @@ if [ -z "$pattern" ] ; then
     if [ -n "$identity" ] ; then
         pattern="$pattern-${identity}"
     else
-        pattern="$pattern-[0-9]\+"
+        pattern="$pattern-[0-9]\+.*"
     fi
 fi
 

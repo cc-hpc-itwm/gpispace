@@ -6,9 +6,6 @@
 
 #include <GPI.h>
 
-#include <boost/function.hpp>
-#include <boost/bind.hpp>
-
 #include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
@@ -25,7 +22,7 @@ namespace gpi
       , m_startup_done (false)
       , m_rank (std::numeric_limits<rank_t>::max())
       , m_mem_size (0)
-      , m_dma (0)
+      , m_dma (nullptr)
     {
       if (m_is_master)
       {

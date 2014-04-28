@@ -20,16 +20,16 @@
 
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/exceptions.hpp>
-#include <boost/unordered_map.hpp>
-#include <sdpa/engine/IWorkflowEngine.hpp>
+#include <sdpa/job_requirements.hpp>
 
 #include <boost/optional.hpp>
+
+#include <unordered_map>
 
 namespace sdpa { namespace daemon {
   class WorkerManager  {
   public:
-    typedef boost::unordered_map<worker_id_t, Worker::ptr_t> worker_map_t;
-    typedef boost::unordered_map<sdpa::job_id_t, sdpa::list_match_workers_t> mapJob2PrefWorkersList_t;
+    typedef std::unordered_map<worker_id_t, Worker::ptr_t> worker_map_t;
 
     Worker::ptr_t findWorker(const worker_id_t& worker_id);
     bool hasWorker(const worker_id_t& worker_id) const;
@@ -43,8 +43,7 @@ namespace sdpa { namespace daemon {
     void deleteWorker( const worker_id_t& workerId);
 
     void getCapabilities(sdpa::capabilities_set_t& cpbset);
-
-    void deleteJob(const sdpa::job_id_t& jobId);
+    bool checkIfAbortedJobAndDelete (const worker_id_t&, const sdpa::job_id_t&);
 
     sdpa::job_id_list_t getJobListAndCleanQueues(const  Worker::ptr_t& pWorker);
     worker_id_list_t getListWorkersNotReserved();

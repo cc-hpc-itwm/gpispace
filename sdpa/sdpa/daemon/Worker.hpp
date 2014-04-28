@@ -44,9 +44,11 @@ namespace sdpa { namespace daemon {
 	 */
     void acknowledge(const job_id_t&);
 
+    void abort (const job_id_t&);
+    bool isAborted (const job_id_t&);
+
     // update last service time
     double lastScheduleTime() {lock_type lock(mtx_); return last_schedule_time_; }
-    void setLastScheduleTime(const double& last_schedule_time ) { lock_type lock(mtx_); last_schedule_time_ = last_schedule_time; }
 
     /**
       Return the name of the worker.
@@ -81,8 +83,10 @@ namespace sdpa { namespace daemon {
 
     // methods related to reservation
     bool isReserved();
+  private:
     void reserve();
     void free();
+  public:
 
     std::set<job_id_t> getJobListAndCleanQueues();
 
@@ -94,6 +98,7 @@ namespace sdpa { namespace daemon {
 
     std::set<job_id_t> submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
     std::set<job_id_t> acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
+    std::set<job_id_t> aborted_; //! the queue of jobs assigned to this worker and that should be aborted
 
     bool reserved_;
 

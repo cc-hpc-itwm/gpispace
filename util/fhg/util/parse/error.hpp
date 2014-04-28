@@ -5,7 +5,9 @@
 
 #include <stdexcept>
 
+#ifndef NO_BACKTRACE_ON_PARSE_ERROR
 #include <fhg/util/backtracing_exception.hpp>
+#endif
 #include <fhg/util/parse/position.hpp>
 
 #include <boost/format.hpp>

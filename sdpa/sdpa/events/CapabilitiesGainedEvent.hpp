@@ -37,11 +37,6 @@ namespace sdpa
         return capabilities_;
       }
 
-      std::string str() const
-      {
-        return "CapabilitiesGainedEvent";
-      }
-
       virtual void handleBy (EventHandler* handler)
       {
         handler->handleCapabilitiesGainedEvent (this);

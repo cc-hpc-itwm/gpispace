@@ -19,7 +19,7 @@ namespace sdpa
 
       typedef std::string address_t;
 
-      virtual ~SDPAEvent() {}
+      virtual ~SDPAEvent() = default;
 
       const address_t& from() const
       {
@@ -30,7 +30,6 @@ namespace sdpa
         return to_;
       }
 
-      virtual std::string str() const = 0;
       virtual void handleBy (EventHandler*) = 0;
 
     protected:

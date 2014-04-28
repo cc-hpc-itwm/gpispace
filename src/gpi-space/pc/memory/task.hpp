@@ -2,12 +2,12 @@
 #define GPI_SPACE_PC_MEMORY_TASK_HPP
 
 #include <boost/noncopyable.hpp>
-#include <boost/function.hpp>
 #include <boost/exception_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 
 #include <boost/shared_ptr.hpp>
+#include <functional>
 #include <set>
 #include <list>
 
@@ -25,7 +25,7 @@ namespace gpi
       class task_t : boost::noncopyable
       {
       public:
-        typedef boost::function<void (void)> function_type;
+        typedef std::function<void (void)> function_type;
 
         task_t (std::string const name, function_type fun);
 

@@ -1,34 +1,29 @@
 #ifndef FHG_COM_KVSD_HPP
 #define FHG_COM_KVSD_HPP 1
 
-#include <signal.h> /* For SIGTERM. */
-
-#include <string>
-
-#include <fhglog/fhglog.hpp>
-
-#include <boost/thread.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/filesystem.hpp>
-
-#include <fhgcom/kvs/exception.hpp>
 #include <fhgcom/kvs/message/type.hpp>
-
 #include <fhgcom/session.hpp>
 #include <fhgcom/session_manager.hpp>
 
-#include <sstream>
-#include <fstream>
+#include <fhglog/fhglog.hpp>
 
-#include <boost/serialization/map.hpp>
-#include <boost/date_time/posix_time/time_serialize.hpp>
-
-#include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/time_serialize.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/thread.hpp>
+
+#include <fstream>
+#include <signal.h> /* For SIGTERM. */
+#include <sstream>
+#include <string>
+#include <unordered_map>
 
 namespace fhg
 {
@@ -250,52 +245,20 @@ namespace fhg
           typedef std::string key_type;
           typedef std::string value_type;
           typedef entry_t<value_type> entry_type;
-          typedef boost::unordered_map<key_type, entry_type> store_type;
+          typedef std::unordered_map<key_type, entry_type> store_type;
           typedef boost::unique_lock<boost::recursive_mutex> lock_t;
 
           explicit
-          kvsd (const std::string & file = "", const bool write_through=false)
+          kvsd (const boost::optional<std::string> & file)
             : file_(file)
-            , write_through_enabled_(write_through)
           {
-            if (! file_.empty() && boost::filesystem::exists (file_))
+            if (file_ && boost::filesystem::exists (*file_))
             {
-              try
-              {
                 load ();
-              }
-              catch (std::exception const & ex)
-              {
-                LOG (WARN, "could not load file storage: " << ex.what());
-              }
             }
           }
 
-          virtual ~kvsd()
-          {
-            write_through ();
-          }
-
-          bool toggle_write_through ()
-          {
-            bool old (write_through_enabled_);
-            write_through_enabled_ = ! write_through_enabled_;
-            return old;
-          }
-
-          void enable_write_through ()
-          {
-            write_through_enabled_ = true;
-          }
-          void disable_write_through ()
-          {
-            write_through_enabled_ = false;
-          }
-
-          bool is_write_through_enabled () const
-          {
-            return write_through_enabled_;
-          }
+          virtual ~kvsd() = default;
 
           void put ( fhg::com::kvs::message::put::map_type const & m
                    , boost::posix_time::ptime expiry = boost::posix_time::min_date_time
@@ -309,8 +272,6 @@ namespace fhg
             {
               store_[ e->first ] = entry_type (e->second, expiry);
             }
-
-            write_through ();
           }
 
           template <typename Val>
@@ -322,8 +283,6 @@ namespace fhg
             store_[ k ] = entry_type ( boost::lexical_cast<value_type>(v)
                                      , expiry
                                      );
-
-            write_through ();
           }
 
           void get( key_type const & k
@@ -388,8 +347,6 @@ namespace fhg
 
             store_.clear ();
 
-            write_through ();
-
             LOG_IF(INFO, count > 0, "cleared " << count << " entries");
           }
 
@@ -413,8 +370,6 @@ namespace fhg
                 }
               }
             } while (changed);
-
-            write_through ();
           }
 
           void save () const
@@ -422,11 +377,11 @@ namespace fhg
             save (file_);
           }
 
-          void save (std::string const & file) const
+          void save (boost::optional<std::string> const & file) const
           {
-            if (file.empty ()) return;
+            if (!file) return;
 
-            std::ofstream ofs (file.c_str());
+            std::ofstream ofs (file->c_str());
             if (ofs)
             {
               boost::archive::xml_oarchive ar(ofs);
@@ -437,7 +392,7 @@ namespace fhg
             }
             else
             {
-              throw std::runtime_error ("could not save to file: " + file);
+              throw std::runtime_error ("could not save to file: " + *file);
             }
           }
 
@@ -446,9 +401,14 @@ namespace fhg
             load (file_);
           }
 
-          void load (std::string const & file)
+          void load (boost::optional<std::string> const & file)
           {
-            std::ifstream ifs (file.c_str());
+            if (!file)
+            {
+              return;
+            }
+
+            std::ifstream ifs (file->c_str());
             if (ifs)
             {
               boost::archive::xml_iarchive ar(ifs);
@@ -463,7 +423,7 @@ namespace fhg
             }
             else
             {
-              throw std::runtime_error ("could not load from file: " + file);
+              throw std::runtime_error ("could not load from file: " + *file);
             }
           }
 
@@ -489,7 +449,8 @@ namespace fhg
             }
           }
         protected:
-          void on_data_hook (session_ptr client, const std::string &s)
+          void on_data_hook
+            (boost::shared_ptr<session> client, const std::string &s)
           {
             try
             {
@@ -517,25 +478,9 @@ namespace fhg
             }
           }
         private:
-          void write_through ()
-          {
-            if (write_through_enabled_)
-            {
-              try
-              {
-                save ();
-              }
-              catch (std::exception const & ex)
-              {
-                LOG(WARN, "write-through failed: " << ex.what());
-              }
-            }
-          }
-
           mutable boost::recursive_mutex mutex_;
-          std::string file_;
+          boost::optional<std::string> file_;
           store_type store_;
-          bool write_through_enabled_;
         };
       }
     }

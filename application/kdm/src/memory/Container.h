@@ -185,7 +185,7 @@ template< class T >
 template <class F>  F& 
 container< T >::DoIt( F& g )
 {
-   for ( register T*__restrict__  I( rep ); I!=_end; ++I) g(*I);
+   for ( T*__restrict__  I( rep ); I!=_end; ++I) g(*I);
    return g;
 }
 

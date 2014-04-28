@@ -1,17 +1,13 @@
 #include <fhglog/LogMacros.hpp>
-#include <fhgcom/util/to_hex.hpp>
-
-#include <boost/lambda/bind.hpp>
-#include <boost/lambda/lambda.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <fhgcom/tcp_client.hpp>
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+
+#include <functional>
+
 using boost::asio::deadline_timer;
 using boost::asio::ip::tcp;
-using boost::lambda::bind;
-using boost::lambda::var;
-//using boost::lambda::_1;
 
 namespace fhg
 {
@@ -120,11 +116,13 @@ namespace fhg
           // ec indicates completion.
           ec = boost::asio::error::would_block;
 
-          // Start the asynchronous operation itself. The boost::lambda function
+          // Start the asynchronous operation itself. The lambda function
           // object is used as a callback and will update the ec variable when the
-          // operation completes. The blocking_udp_client.cpp example shows how you
-          // can use boost::bind rather than boost::lambda.
-          socket_.async_connect(iter->endpoint(), var(ec) = boost::lambda::_1);
+          // operation completes.
+          socket_.async_connect
+            ( iter->endpoint()
+            , [&ec] (boost::system::error_code new_ec) { ec = new_ec; }
+            );
 
           // Block until the asynchronous operation has completed.
           do io_service_.run_one(); while (ec == boost::asio::error::would_block);
@@ -144,7 +142,6 @@ namespace fhg
 
         if (!ec && socket_.is_open())
         {
-          MLOG (TRACE, "connected to " << socket_.remote_endpoint(ec));
           return;
         }
       }
@@ -225,11 +222,14 @@ namespace fhg
            << data
         ;
 
-      // Start the asynchronous operation itself. The boost::lambda function
+      // Start the asynchronous operation itself. The lambda function
       // object is used as a callback and will update the ec variable when the
-      // operation completes. The blocking_udp_client.cpp example shows how you
-      // can use boost::bind rather than boost::lambda.
-      boost::asio::async_write(socket_, boost::asio::buffer(sstr.str()), var(ec) = boost::lambda::_1);
+      // operation completes.
+      boost::asio::async_write
+        ( socket_
+        , boost::asio::buffer(sstr.str())
+        , [&ec] (boost::system::error_code new_ec, std::size_t) { ec = new_ec; }
+        );
 
       // Block until the asynchronous operation has completed.
       do io_service_.run_one(); while (ec == boost::asio::error::would_block);
@@ -271,10 +271,11 @@ namespace fhg
       boost::system::error_code ec = boost::asio::error::would_block;
 
       char header[header_length];
-      boost::asio::async_read ( socket_
-                              , boost::asio::buffer (header, header_length)
-                              , var(ec) = boost::lambda::_1
-                              );
+      boost::asio::async_read
+        ( socket_
+        , boost::asio::buffer (header, header_length)
+        , [&ec] (boost::system::error_code new_ec, std::size_t) { ec = new_ec; }
+        );
 
       // Block until the asynchronous operation has completed.
       do io_service_.run_one(); while (ec == boost::asio::error::would_block);
@@ -299,10 +300,11 @@ namespace fhg
       data.resize(data_size);
 
       ec = boost::asio::error::would_block;
-      boost::asio::async_read ( socket_
-                              , boost::asio::buffer (data)
-                              , var(ec) = boost::lambda::_1
-                              );
+      boost::asio::async_read
+        ( socket_
+        , boost::asio::buffer (data)
+        , [&ec] (boost::system::error_code new_ec, std::size_t) { ec = new_ec; }
+        );
 
       // Block until the asynchronous operation has completed.
       do io_service_.run_one(); while (ec == boost::asio::error::would_block);
@@ -335,7 +337,7 @@ namespace fhg
       }
 
       // Put the actor back to sleep.
-      deadline_.async_wait(bind(&tcp_client::check_deadline, this));
+      deadline_.async_wait(std::bind(&tcp_client::check_deadline, this));
     }
   }
 }

@@ -1,8 +1,6 @@
 #ifndef FHG_UTIL_THREAD_QUEUE_HPP
 #define FHG_UTIL_THREAD_QUEUE_HPP
 
-#include <boost/bind.hpp>
-#include <boost/ptr_container/ptr_list.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/utility.hpp>
@@ -23,8 +21,7 @@ namespace fhg
       T get()
       {
         boost::unique_lock<boost::recursive_mutex> lock (m_mtx);
-        m_get_cond.wait
-          (lock, not boost::bind (&container_type::empty, &m_container));
+        m_get_cond.wait (lock, [this] { return !m_container.empty(); });
 
         T t (m_container.front()); m_container.pop_front();
         return t;
@@ -59,21 +56,20 @@ namespace fhg
       class ptr_queue : public boost::noncopyable
     {
     public:
-      typedef boost::ptr_list<T> container_type;
-
-      typename container_type::auto_type get()
+      std::unique_ptr<T> get()
       {
         boost::unique_lock<boost::recursive_mutex> lock (m_mtx);
-        m_get_cond.wait
-          (lock, not boost::bind (&container_type::empty, &m_container));
+        m_get_cond.wait (lock, [this] { return !m_container.empty(); });
 
-        return m_container.pop_front();
+        std::unique_ptr<T> ret (std::move (m_container.front()));
+        m_container.pop_front();
+        return ret;
       }
 
-      void put (std::auto_ptr<T> t)
+      void put (std::unique_ptr<T> t)
       {
         boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
-        m_container.push_back (t);
+        m_container.push_back (std::move (t));
         m_get_cond.notify_one();
       }
 
@@ -81,7 +77,7 @@ namespace fhg
       mutable boost::recursive_mutex m_mtx;
       boost::condition_variable_any m_get_cond;
 
-      container_type m_container;
+      std::list<std::unique_ptr<T>> m_container;
     };
   }
 }

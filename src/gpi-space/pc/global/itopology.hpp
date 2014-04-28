@@ -21,7 +21,7 @@ namespace gpi
       class itopology_t
       {
       public:
-        virtual ~itopology_t () {}
+        virtual ~itopology_t () = default;
 
         virtual bool is_master () const = 0;
 

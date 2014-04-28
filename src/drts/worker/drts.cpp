@@ -4,7 +4,6 @@
 #include <plugin/plugin.hpp>
 #include <fhg/util/getenv.hpp>
 #include <fhg/util/split.hpp>
-#include <fhg/util/threadname.hpp>
 
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/events.hpp>
@@ -15,6 +14,8 @@
 #include <we/type/expression.fwd.hpp>
 #include <we/type/module_call.hpp>
 #include <we/type/net.hpp>
+
+#include <functional>
 
 wfe_task_t::wfe_task_t (std::string id, std::string worker_name, std::list<std::string> workers)
   : id (id)
@@ -229,7 +230,7 @@ int WFEImpl::execute ( std::string const &job_id
 
   {
     boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
-    _currently_executed_tasks.insert(std::make_pair(job_id, &task));
+    _currently_executed_tasks.emplace (job_id, &task);
   }
 
   emit_task (task);
@@ -302,7 +303,7 @@ void WFEImpl::cancel (std::string const &job_id)
 }
 
 
-DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, std::string> config_variables)
+DRTSImpl::DRTSImpl (std::function<void()> request_stop, std::map<std::string, std::string> config_variables)
   : _logger
     (fhg::log::Logger::get (*get<std::string> ("kernel_name", config_variables)))
   , _request_stop (request_stop)
@@ -349,32 +350,38 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   }
 
   // parse virtual capabilities
-  BOOST_FOREACH (std::string const & cap, capability_list)
+  for (std::string const & cap : capability_list)
   {
-    if (m_virtual_capabilities.find(cap) == m_virtual_capabilities.end())
-    {
-      std::pair<std::string, std::string> const capability_and_type
-        = fhg::util::split_string (cap, '-');
-
-      m_virtual_capabilities.insert
-        ( std::make_pair
-         (cap, sdpa::Capability (capability_and_type.first, m_my_name))
-        );
-    }
+    m_virtual_capabilities.emplace (cap, sdpa::Capability (cap, m_my_name));
   }
 
-  m_event_thread.reset(new boost::thread(&DRTSImpl::event_thread, this));
-  fhg::util::set_threadname (*m_event_thread, "[drts-events]");
+  m_event_thread.reset
+    ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+      (&DRTSImpl::event_thread, this)
+    );
 
   // initialize peer
-  m_peer.reset (new fhg::com::peer_t (m_my_name, host, port, _kvs_client));
-  m_peer_thread.reset(new boost::thread(&fhg::com::peer_t::run, m_peer));
-  fhg::util::set_threadname (*m_peer_thread, "[drts-peer]");
+  m_peer.reset
+    ( new fhg::com::peer_t
+      ( m_my_name
+      , host
+      , port
+      , _kvs_client
+      , [](boost::system::error_code const&)
+      {
+        MLOG (ERROR, "could not contact KVS...");
+      }
+      )
+    );
+  m_peer_thread.reset
+    ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+      (&fhg::com::peer_t::run, m_peer)
+    );
   m_peer->start();
 
   start_receiver();
 
-  BOOST_FOREACH (std::string const & master, master_list)
+  for (std::string const & master : master_list)
   {
     if (m_masters.find (master) == m_masters.end ())
     {
@@ -388,7 +395,7 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
         throw std::runtime_error ("cannot be my own master!");
       }
 
-      m_masters.insert (std::make_pair(master, false));
+      m_masters.emplace (master, false);
     }
     else
     {
@@ -399,8 +406,9 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   }
 
   m_execution_thread.reset
-    (new boost::thread(&DRTSImpl::job_execution_thread, this));
-  fhg::util::set_threadname (*m_execution_thread, "[drts-execute]");
+    ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+      (&DRTSImpl::job_execution_thread, this)
+    );
 
   start_connect ();
 }
@@ -409,32 +417,12 @@ DRTSImpl::~DRTSImpl()
 {
   m_shutting_down = true;
 
-  if (m_execution_thread)
-  {
-    m_execution_thread->interrupt();
-    if (m_execution_thread->joinable ())
-      m_execution_thread->join ();
-    m_execution_thread.reset();
-  }
-
-  if (m_event_thread)
-  {
-    m_event_thread->interrupt();
-    if (m_event_thread->joinable ())
-      m_event_thread->join();
-    m_event_thread.reset();
-  }
+  m_execution_thread.reset();
+  m_event_thread.reset();
 
   if (m_peer)
   {
     m_peer->stop();
-  }
-
-  if (m_peer_thread)
-  {
-    m_peer_thread->interrupt();
-    if (m_peer_thread->joinable ())
-      m_peer_thread->join();
   }
 
   m_peer_thread.reset();
@@ -510,7 +498,7 @@ void DRTSImpl::handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *e)
                                                      , job->id()
                                                      )
                  );
-      m_jobs.insert (std::make_pair(job->id(), job));
+      m_jobs.emplace (job->id(), job);
 
       m_pending_jobs.put(job);
     }
@@ -857,7 +845,7 @@ void DRTSImpl::send_job_result_to_master (boost::shared_ptr<drts::Job> const & j
 void DRTSImpl::request_registration_soon()
 {
   _registration_threads.start
-    (boost::bind (&DRTSImpl::request_registration_after_sleep, this));
+    (std::bind (&DRTSImpl::request_registration_after_sleep, this));
 }
 void DRTSImpl::request_registration_after_sleep()
 {
@@ -924,10 +912,10 @@ void DRTSImpl::start_connect ()
 
 void DRTSImpl::start_receiver()
 {
-  m_peer->async_recv(&m_message, boost::bind( &DRTSImpl::handle_recv
-                                            , this
-                                            , _1
-                                            )
+  m_peer->async_recv(&m_message, std::bind( &DRTSImpl::handle_recv
+                                          , this
+                                          , std::placeholders::_1
+                                          )
                     );
 }
 
@@ -959,7 +947,7 @@ void DRTSImpl::handle_recv (boost::system::error_code const & ec)
     const fhg::com::p2p::address_t & addr = m_message.header.src;
     if (addr != m_peer->address())
     {
-      const std::string other_name(m_peer->resolve (addr, "*unknown*"));
+      const std::string other_name(m_peer->resolve_addr (addr));
 
       map_of_masters_t::iterator master(m_masters.find(other_name));
       if (master != m_masters.end() && master->second)

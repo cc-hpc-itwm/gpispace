@@ -9,7 +9,6 @@
 #include <sdpa/daemon/NotificationEvent.hpp>
 
 #include <boost/asio.hpp>
-#include <boost/function.hpp>
 #include <boost/optional.hpp>
 #include <boost/range.hpp>
 #include <boost/thread.hpp>
@@ -17,6 +16,8 @@
 #include <QAbstractItemModel>
 #include <QDateTime>
 #include <QVector>
+
+#include <functional>
 
 namespace fhg
 {
@@ -37,7 +38,7 @@ namespace fhg
           range_getter_role
         };
 
-        worker_model (unsigned short port, QObject* parent = NULL);
+        worker_model (unsigned short port, QObject* parent = nullptr);
         ~worker_model();
 
         virtual int rowCount (const QModelIndex& = QModelIndex()) const;
@@ -87,7 +88,7 @@ namespace fhg
 
         typedef boost::iterator_range<std::vector<value_type>::const_iterator>
           subrange_type;
-        typedef boost::function<subrange_type (timestamp_type, timestamp_type)>
+        typedef std::function<subrange_type (timestamp_type, timestamp_type)>
           subrange_getter_type;
 
       private slots:
@@ -95,7 +96,7 @@ namespace fhg
 
       private:
         QList<QString> _workers;
-        QMap<QString, std::vector<value_type> > _worker_containers;
+        QMap<QString, std::vector<value_type>> _worker_containers;
         QDateTime _base_time;
 
         boost::mutex _event_queue;

@@ -2,7 +2,9 @@
 #define PNET_SRC_WE_TYPE_VALUE_UNWRAP_HPP
 
 #include <we/type/value.hpp>
+
 #include <boost/foreach.hpp>
+#include <boost/preprocessor/punctuation/comma.hpp>
 
 namespace pnet
 {
@@ -41,9 +43,11 @@ namespace pnet
       {
         std::map<K, V> mkv;
 
-        typedef std::map<value_type, value_type>::value_type kv_type;
-
-        BOOST_FOREACH (kv_type const &kv, mvv)
+        BOOST_FOREACH
+          ( std::map<value_type BOOST_PP_COMMA() value_type>::value_type const&
+            kv
+          , mvv
+          )
         {
           mkv.insert (std::make_pair ( boost::get<K>(kv.first)
                                      , boost::get<V>(kv.second)

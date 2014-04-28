@@ -3,10 +3,10 @@
 
 #include <we/loader/IModule.hpp>
 
-#include <boost/unordered_map.hpp>
 #include <boost/utility.hpp>
 
 #include <string>
+#include <unordered_map>
 
 #include <dlfcn.h>
 
@@ -47,7 +47,7 @@ namespace we
       private:
         void* _handle;
       } _dlhandle;
-      boost::unordered_map<std::string, WrapperFunction> call_table_;
+      std::unordered_map<std::string, WrapperFunction> call_table_;
     };
   }
 }

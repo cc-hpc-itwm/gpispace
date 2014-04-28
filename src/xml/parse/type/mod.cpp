@@ -10,8 +10,6 @@
 
 #include <fhg/util/xml.hpp>
 
-#include <boost/foreach.hpp>
-
 //! \todo remove, needed to make we::type::net_type a complete type
 #include <we/type/net.hpp>
 
@@ -171,7 +169,7 @@ namespace xml
 
           bool first (true);
 
-          BOOST_FOREACH (const std::string& arg, m.port_arg())
+          for (const std::string& arg : m.port_arg())
             {
               if (first)
               {
@@ -196,28 +194,28 @@ namespace xml
           s.attr ("name", m.name());
           s.attr ("function", dump_fun (m));
 
-          BOOST_FOREACH (const std::string& inc, m.cincludes())
+          for (const std::string& inc : m.cincludes())
             {
               s.open ("cinclude");
               s.attr ("href", inc);
               s.close ();
             }
 
-          BOOST_FOREACH (const std::string& flag, m.ldflags())
+          for (const std::string& flag : m.ldflags())
             {
               s.open ("ld");
               s.attr ("flag", flag);
               s.close ();
             }
 
-          BOOST_FOREACH (const std::string& flag, m.cxxflags())
+          for (const std::string& flag : m.cxxflags())
             {
               s.open ("cxx");
               s.attr ("flag", flag);
               s.close ();
             }
 
-          BOOST_FOREACH (const link_type& link, m.links())
+          for (const link_type& link : m.links())
             {
               ::xml::parse::type::dump::dump (s, link);
             }

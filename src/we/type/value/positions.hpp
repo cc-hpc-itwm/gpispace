@@ -13,7 +13,7 @@ namespace pnet
   {
     namespace value
     {
-      std::list<std::pair<std::list<std::string>, value_type> >
+      std::list<std::pair<std::list<std::string>, value_type>>
         positions (value_type const&);
     }
   }

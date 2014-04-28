@@ -6,8 +6,6 @@
 
 #include <we/exception.hpp>
 
-#include <boost/foreach.hpp>
-
 namespace pnet
 {
   namespace type
@@ -128,7 +126,7 @@ namespace pnet
         {
           structure_type l;
 
-          BOOST_FOREACH (const field_type& f, s.second)
+          for (const field_type& f : s.second)
           {
             l.push_back
               (boost::apply_visitor (resolve_field ( _resolver

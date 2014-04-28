@@ -4,8 +4,7 @@
 
 #include <fhg/util/print_container.hpp>
 
-#include <boost/bind.hpp>
-
+#include <functional>
 #include <iostream>
 
 namespace pnet
@@ -25,31 +24,35 @@ namespace pnet
 
           std::ostream& operator() (const std::list<value_type>& l) const
           {
-            return fhg::util::print_container<std::list<value_type> >
-              ( _os, "List ", "(", ",", ")", boost::ref (l)
-              , boost::bind (&visitor_show::print_value, this, _1)
+            return fhg::util::print_container<std::list<value_type>>
+              ( _os, "List ", "(", ",", ")", std::ref (l)
+              , std::bind
+                (&visitor_show::print_value, this, std::placeholders::_1)
               );
           }
           std::ostream&
           operator() (const std::map<value_type, value_type>& m) const
           {
-            return fhg::util::print_container<std::map<value_type, value_type> >
-              ( _os, "Map ", "[", ",", "]", boost::ref (m)
-              , boost::bind (&visitor_show::print_map_item, this, _1)
+            return fhg::util::print_container<std::map<value_type, value_type>>
+              ( _os, "Map ", "[", ",", "]", std::ref (m)
+              , std::bind
+                (&visitor_show::print_map_item, this, std::placeholders::_1)
               );
           }
           std::ostream& operator() (const std::set<value_type>& s) const
           {
-            return fhg::util::print_container<std::set<value_type> >
-              ( _os, "Set ", "{", ",", "}", boost::ref (s)
-              , boost::bind (&visitor_show::print_value, this, _1)
+            return fhg::util::print_container<std::set<value_type>>
+              ( _os, "Set ", "{", ",", "}", std::ref (s)
+              , std::bind
+                (&visitor_show::print_value, this, std::placeholders::_1)
               );
           }
           std::ostream& operator() (const structured_type& m) const
           {
             return fhg::util::print_container<structured_type>
-              ( _os, "Struct ", "[", ",", "]", boost::ref (m)
-              , boost::bind (&visitor_show::print_struct_item, this, _1)
+              ( _os, "Struct ", "[", ",", "]", std::ref (m)
+              , std::bind
+                (&visitor_show::print_struct_item, this, std::placeholders::_1)
               );
           }
           std::ostream& operator() (const control& c) const

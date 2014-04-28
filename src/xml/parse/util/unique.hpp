@@ -6,12 +6,12 @@
 #include <string>
 #include <stdexcept>
 
-#include <boost/foreach.hpp>
-#include <boost/function.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/optional.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
+
+#include <functional>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace xml
 {
@@ -26,8 +26,8 @@ namespace xml
       typedef ID_TYPE id_type;
       typedef typename value_type::unique_key_type key_type;
 
-      typedef boost::unordered_set<id_type> ids_type;
-      typedef boost::unordered_map<key_type,id_type> by_key_type;
+      typedef std::unordered_set<id_type> ids_type;
+      typedef std::unordered_map<key_type,id_type> by_key_type;
 
       class values_type
       {
@@ -35,11 +35,11 @@ namespace xml
         typedef VALUE_TYPE value_type;
 
         typedef boost::transform_iterator
-          < boost::function<value_type& (const id_type&)>
+          < std::function<value_type& (const id_type&)>
           , typename ids_type::iterator
           > iterator;
         typedef boost::transform_iterator
-          < boost::function<const value_type& (const id_type&)>
+          < std::function<const value_type& (const id_type&)>
           , typename ids_type::const_iterator
           > const_iterator;
 
@@ -122,14 +122,14 @@ namespace xml
           }
 
         _values._ids.insert (id);
-        _by_key.insert (std::make_pair (key, id));
+        _by_key.emplace (key, id);
 
         return id;
       }
 
       void push (const unique<value_type, id_type>& other, const std::string& m)
       {
-        BOOST_FOREACH (const id_type& id, other.ids())
+        for (const id_type& id : other.ids())
         {
           if (push (id) != id)
           {
@@ -163,7 +163,7 @@ namespace xml
       {
         //! \todo Reserve?
         unique<value_type, id_type> copy;
-        BOOST_FOREACH (const value_type& value, values())
+        for (const value_type& value : values())
         {
           copy.push (value.clone (parent, mapper));
         }
@@ -173,7 +173,7 @@ namespace xml
       unique<value_type, id_type>& reparent
         (const typename value_type::parent_id_type& parent)
       {
-        BOOST_FOREACH (value_type& value, values())
+        for (value_type& value : values())
         {
          value.parent (parent);
         }

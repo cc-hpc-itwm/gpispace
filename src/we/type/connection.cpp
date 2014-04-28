@@ -2,6 +2,8 @@
 
 #include <we/type/connection.hpp>
 
+#include <fhg/util/macros.hpp>
+
 namespace we
 {
   namespace edge
@@ -23,6 +25,8 @@ namespace we
       case PT_READ: return "read";
       case TP: return "out";
       }
+
+      INVALID_ENUM_VALUE (we::edge:type, e);
     }
   }
 }

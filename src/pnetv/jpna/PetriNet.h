@@ -1,21 +1,20 @@
 #pragma once
 
-#include <boost/unordered_map.hpp>
-
-#include <pnetv/jpn/common/Printable.h>
-
-#include "Place.h"
 #include "Transition.h"
+
+#include <we/type/id.hpp>
+
+#include <unordered_map>
 
 namespace jpna {
 
 /**
  * Petri Net representing a workflow with unnecessary details being abstracted away.
  */
-class PetriNet: public jpn::Printable {
+class PetriNet {
     std::string name_; ///< Name of the Petri net.
     std::vector<Transition *> transitions_; ///< Transitions.
-    std::vector<Place *> places_; ///< Places.
+    std::unordered_map<we::place_id_type, TokenCount> _token_count;
 
     public:
 
@@ -39,12 +38,10 @@ class PetriNet: public jpn::Printable {
     /**
      * \return Newly created transition owned by the Petri net.
      */
-    Transition *createTransition();
-
-    /**
-     * \return All the transitions in the Petri net.
-     */
-    const std::vector<Transition *> &transitions() { return transitions_; }
+    Transition *createTransition ( std::string const& name
+                                 , bool condition_always_true
+                                 , we::priority_type priority
+                                 );
 
     /**
      * \return All the transitions in the Petri net.
@@ -56,51 +53,21 @@ class PetriNet: public jpn::Printable {
      *
      * \return Transition with given id.
      */
-    Transition *getTransition(TransitionId id) { return transitions_[id.value()]; }
-
-    /**
-     * \param id Id of the transitions.
-     *
-     * \return Transition with given id.
-     */
-    const Transition *getTransition(TransitionId id) const { return transitions_[id.value()]; }
+    const Transition *getTransition(we::transition_id_type id) const { return transitions_[id.value()]; }
     /**
      * \return Newly created place owned by the Petri net.
      */
-    Place *createPlace();
+    we::place_id_type createPlace (TokenCount);
 
-    /**
-     * \return All the places in the Petri net.
-     */
-    const std::vector<Place *> &places() { return places_; }
+    void increment_token_count (we::place_id_type place_id)
+    {
+      ++_token_count[place_id];
+    }
 
-    /**
-     * \return All the places in the Petri net.
-     */
-    const std::vector<const Place *> &places() const { return reinterpret_cast<const std::vector<const Place *> &>(places_); }
-
-    /**
-     * \param id Valid id of the place.
-     *
-     * \return Place with given id.
-     */
-    Place *getPlace(PlaceId id) { return places_[id.value()]; }
-
-    /**
-     * \param id Id of the place.
-     *
-     * \return Place with given id.
-     */
-    const Place *getPlace(PlaceId id) const { return places_[id.value()]; }
-
-    /**
-     * Dumps the graph in DOT format into given stream.
-     *
-     * \param out Output stream.
-     */
-    virtual void print(std::ostream &out) const;
+    std::unordered_map<we::place_id_type, TokenCount> const& token_count() const
+    {
+      return _token_count;
+    }
 };
 
 } // namespace jpna
-
-/* vim:set et sts=4 sw=4: */

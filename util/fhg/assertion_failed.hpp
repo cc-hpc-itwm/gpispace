@@ -21,7 +21,7 @@ namespace fhg
       , m_what_text (fhg::assert_helper::message(cond, message, file, line))
     {}
 
-    virtual ~assertion_failed() throw() {}
+    virtual ~assertion_failed() throw() = default;
 
     const char * what () const throw() { return m_what_text.c_str(); }
 

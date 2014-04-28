@@ -29,6 +29,8 @@
 
 #include <xml/parse/type/port.hpp>
 
+#include <iterator>
+
 namespace fhg
 {
   namespace pnete
@@ -98,7 +100,7 @@ namespace fhg
 
         void port_item::setPos_no_collision_detection (const QPointF& new_position)
         {
-          const bool outer (parentItem() != NULL);
+          const bool outer (parentItem() != nullptr);
           connectable_item::setPos (new_position, outer);
         }
 
@@ -109,7 +111,7 @@ namespace fhg
           setPos_no_collision_detection (fitting_position (new_position));
 
           // do not move, when now colliding with a different port
-          foreach (QGraphicsItem* collidingItem, collidingItems())
+          for (QGraphicsItem* collidingItem : collidingItems())
           {
             if ( qgraphicsitem_cast<port_item*>(collidingItem)
                && collidingItem->parentItem() == parentItem()
@@ -267,8 +269,8 @@ namespace fhg
         //   {
         //     class connection* const backup (_connection);
         //     const QRectF area (backup->boundingRect());
-        //     backup->start (NULL);
-        //     backup->end (NULL);
+        //     backup->start (nullptr);
+        //     backup->end (nullptr);
         //     delete backup;
         //     scene()->update (area);
         //   }
@@ -484,7 +486,7 @@ namespace fhg
           if (changed_handle == handle())
           {
             const std::string required_position_variable
-              ( parentItem() == NULL
+              ( parentItem() == nullptr
               ? "fhg.pnete.position"
               : "fhg.pnete.outer_position"
               );
@@ -497,17 +499,17 @@ namespace fhg
             ::we::type::property::path_type::const_iterator const end (path.end());
 
             if (  std::distance (pos, end) == 4
-               && *pos == "fhg" && *boost::next (pos) == "pnete"
-               && (  *boost::next (boost::next (pos)) == "position"
-                  || *boost::next (boost::next (pos)) == "outer_position"
+               && *pos == "fhg" && *std::next (pos) == "pnete"
+               && (  *std::next (pos, 2) == "position"
+                  || *std::next (pos, 2) == "outer_position"
                   )
                )
             {
               ++pos;
               ++pos;
 
-              if (  (parentItem() == NULL && *pos == "position")
-                 || (parentItem() != NULL && *pos == "outer_position")
+              if (  (parentItem() == nullptr && *pos == "position")
+                 || (parentItem() != nullptr && *pos == "outer_position")
                  )
               {
                 ++pos;

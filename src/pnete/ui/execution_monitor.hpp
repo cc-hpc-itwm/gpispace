@@ -14,7 +14,7 @@ namespace fhg
         Q_OBJECT
 
       public:
-        execution_monitor (unsigned short port, QWidget* parent = NULL);
+        execution_monitor (unsigned short port, QWidget* parent = nullptr);
       };
     }
   }

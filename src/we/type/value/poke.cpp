@@ -3,9 +3,8 @@
 #include <we/type/value/poke.hpp>
 #include <we/type/value/path/split.hpp>
 
-#include <boost/utility.hpp>
-
 #include <functional>
+#include <iterator>
 
 namespace pnet
 {
@@ -78,7 +77,7 @@ namespace pnet
             value_type& v (pos->second);
 
             return boost::apply_visitor
-              (visitor_poke (boost::next (_key), _end, v, _value), v);
+              (visitor_poke (std::next (_key), _end, v, _value), v);
           }
         };
       }

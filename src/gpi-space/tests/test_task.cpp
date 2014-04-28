@@ -2,10 +2,9 @@
 #include <boost/test/unit_test.hpp>
 
 #include <boost/exception/diagnostic_information.hpp>
-#include <boost/bind.hpp>
 
 #include <fhglog/LogMacros.hpp>
-#include <boost/make_shared.hpp>
+
 #include <gpi-space/pc/memory/task.hpp>
 
 struct SetupLogging
@@ -18,21 +17,11 @@ struct SetupLogging
 
 BOOST_GLOBAL_FIXTURE( SetupLogging );
 
-static void task_executed (int *i)
-{
-  (*i)++;
-}
-
-static void task_erroneous ()
-{
-  throw std::runtime_error ("function failed");
-}
-
 BOOST_AUTO_TEST_CASE ( simple_task )
 {
   using namespace gpi::pc::memory;
   int executed (0);
-  task_t task ("simple_task", boost::bind (task_executed, &executed));
+  task_t task ("simple_task", [&executed] { ++executed; });
 
   BOOST_CHECK (task.USED_IN_TEST_ONLY_is_pending());
 
@@ -46,7 +35,7 @@ BOOST_AUTO_TEST_CASE ( simple_task )
 BOOST_AUTO_TEST_CASE ( simple_task_failed )
 {
   using namespace gpi::pc::memory;
-  task_t task ("simple_task", task_erroneous);
+  task_t task ("simple_task", [] { throw std::runtime_error ("function failed"); });
 
   BOOST_CHECK (task.USED_IN_TEST_ONLY_is_pending());
 

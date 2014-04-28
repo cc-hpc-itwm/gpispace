@@ -1,9 +1,5 @@
 # bundle up
 
-install (PROGRAMS bundle.sh
-  DESTINATION libexec/sdpa/scripts
-)
-
 set (APPS)
 
 macro (BUNDLE_APPS)
@@ -39,9 +35,18 @@ bundle_apps(
 )
 
 install(CODE "
+  file(MAKE_DIRECTORY \"\${CMAKE_INSTALL_PREFIX}/lib/graphviz\")
+  file(COPY \"${CMAKE_CURRENT_SOURCE_DIR}/graphviz/config6\"
+       DESTINATION \"\${CMAKE_INSTALL_PREFIX}/lib/graphviz\")
+  file(GLOB GRAPHVIZ_PLUGIN_CORE \"${GRAPHVIZ_PLUGIN_DIR}/libgvplugin_core.so*\")
+  file(GLOB GRAPHVIZ_PLUGIN_DOT \"${GRAPHVIZ_PLUGIN_DIR}/libgvplugin_dot_layout.so*\")
+  file(COPY \${GRAPHVIZ_PLUGIN_CORE} DESTINATION \"\${CMAKE_INSTALL_PREFIX}/lib/graphviz\")
+  file(COPY \${GRAPHVIZ_PLUGIN_DOT} DESTINATION \"\${CMAKE_INSTALL_PREFIX}/lib/graphviz\")
+  file(COPY \"${BOOST_ROOT}/\" DESTINATION \"\${CMAKE_INSTALL_PREFIX}/external/boost\")
+
   file(GLOB_RECURSE PLUGINS
          \"\${CMAKE_INSTALL_PREFIX}/libexec/fhg/plugins/*.so\")
-  execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/bundle.sh
+  execute_process(COMMAND ${CMAKE_SOURCE_DIR}/sdpa/bin/pbs/bundle.sh
                           -p \"\${CMAKE_INSTALL_PREFIX}\"
                           -d
                           -L \"\${CMAKE_INSTALL_PREFIX}/lib\"
@@ -49,8 +54,6 @@ install(CODE "
                           -x libxcb.*
                           -x libSM.*
                           -x libc.so.*
-                          -x libstdc++.so.*
-                          -x libgcc_s.so.*
                           -x libz.so.*
                           -x libm.so.*
                           -x librt.*
@@ -65,6 +68,7 @@ install(CODE "
                           -x libpthread.*
                           -x libgthread.*
                           -x libreadline.*
+                          -x libboost*.*
                            ${APPS} \${PLUGINS}
                   RESULT_VARIABLE __res
                   ERROR_VARIABLE __err

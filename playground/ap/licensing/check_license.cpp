@@ -76,7 +76,7 @@ static int check_license (std::string const &cypher)
     return LICENSE_INVALID;
   }
 
-  if (lic.valid_until <= time (NULL))
+  if (lic.valid_until <= time (nullptr))
   {
     return LICENSE_EXPIRED;
   }

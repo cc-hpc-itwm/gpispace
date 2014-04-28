@@ -2,15 +2,13 @@
 #define FHG_COM_KVS_MESSAGE_PUT_HPP 1
 
 #include <boost/lexical_cast.hpp>
-
-// serialization
+#include <boost/serialization/map.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/string.hpp>
-#include <boost/serialization/map.hpp>
 #include <boost/serialization/variant.hpp>
 
-#include <string>
 #include <map>
+#include <string>
 
 namespace fhg
 {

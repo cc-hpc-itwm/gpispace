@@ -6,17 +6,19 @@
 
 #include <boost/range/adaptor/map.hpp>
 
+#include <functional>
+
 namespace we
 {
     layer::layer
-        ( boost::function<void (id_type, type::activity_t)> rts_submit
-        , boost::function<void (id_type)> rts_cancel
-        , boost::function<void (id_type, type::activity_t)> rts_finished
-        , boost::function<void (id_type, std::string)> rts_failed
-        , boost::function<void (id_type)> rts_canceled
-        , boost::function<void (id_type, id_type)> rts_discover
-        , boost::function<void (id_type, sdpa::discovery_info_t)> rts_discovered
-        , boost::function<id_type()> rts_id_generator
+        ( std::function<void (id_type, type::activity_t)> rts_submit
+        , std::function<void (id_type)> rts_cancel
+        , std::function<void (id_type, type::activity_t)> rts_finished
+        , std::function<void (id_type, std::string)> rts_failed
+        , std::function<void (id_type)> rts_canceled
+        , std::function<void (id_type, id_type)> rts_discover
+        , std::function<void (id_type, sdpa::discovery_info_t)> rts_discovered
+        , std::function<id_type()> rts_id_generator
         , boost::mt19937& random_extraction_engine
         )
       : _rts_submit (rts_submit)
@@ -30,14 +32,6 @@ namespace we
       , _random_extraction_engine (random_extraction_engine)
       , _extract_from_nets_thread (&layer::extract_from_nets, this)
     {}
-    layer::~layer()
-    {
-      _extract_from_nets_thread.interrupt();
-      if (_extract_from_nets_thread.joinable())
-      {
-        _extract_from_nets_thread.join();
-      }
-    }
 
     namespace
     {
@@ -60,11 +54,11 @@ namespace we
 
         assert (activity.transition().ports_tunnel().size() == 0);
 
-        boost::unordered_map<std::string, we::place_id_type> place_ids;
+        std::unordered_map<std::string, we::place_id_type> place_ids;
 
-        BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                      , activity.transition().ports_input()
-                      )
+        for ( we::type::transition_t::port_map_t::value_type const& p
+            : activity.transition().ports_input()
+            )
         {
           we::place_id_type const place_id
             (net.add_place (place::type (wrapped_name (p.second), p.second.signature())));
@@ -76,11 +70,11 @@ namespace we
                              , we::type::property::type()
                              );
 
-          place_ids.insert (std::make_pair (wrapped_name (p.second), place_id));
+          place_ids.emplace (wrapped_name (p.second), place_id);
         }
-        BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                      , activity.transition().ports_output()
-                      )
+        for ( we::type::transition_t::port_map_t::value_type const& p
+            : activity.transition().ports_output()
+            )
         {
           we::place_id_type const place_id
             (net.add_place (place::type (wrapped_name (p.second), p.second.signature())));
@@ -92,12 +86,10 @@ namespace we
                              , we::type::property::type()
                              );
 
-          place_ids.insert (std::make_pair (wrapped_name (p.second), place_id));
+          place_ids.emplace (wrapped_name (p.second), place_id);
         }
 
-        BOOST_FOREACH ( const type::activity_t::input_t::value_type& top
-                      , activity.input()
-                      )
+        for (const type::activity_t::input_t::value_type& top : activity.input())
         {
           we::type::port_t const& port
             (activity.transition().ports_input().at (top.second));
@@ -129,18 +121,18 @@ namespace we
         type::activity_t activity_inner
           (net.transitions().begin()->second, activity.transition_id());
 
-        BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                      , activity_inner.transition().ports_output()
-                      )
+        for ( we::type::transition_t::port_map_t::value_type const& p
+            : activity_inner.transition().ports_output()
+            )
         {
             we::place_id_type const place_id
               ( net.port_to_place().at (net.transitions().begin()->first)
               .left.find (p.first)->get_right()
               );
 
-            BOOST_FOREACH ( const pnet::type::value::value_type& token
-                          , net.get_token (place_id)
-                          )
+            for ( const pnet::type::value::value_type& token
+                : net.get_token (place_id)
+                )
             {
               activity_inner.add_output (p.first, token);
             }
@@ -167,26 +159,37 @@ namespace we
 
       _nets_to_extract_from.apply
         ( *parent
-        , boost::bind
-          (&layer::finalize_finished, this, _1, result, *parent, id)
+        , [this, parent, result, id] (activity_data_type& activity_data)
+        {
+          activity_data.child_finished (result);
+          _running_jobs.terminated (*parent, id);
+        }
         );
-    }
-    void layer::finalize_finished ( activity_data_type& activity_data
-                                  , type::activity_t result
-                                  , id_type parent
-                                  , id_type child
-                                  )
-    {
-      activity_data.child_finished (result);
-      _running_jobs.terminated (parent, child);
     }
 
     void layer::cancel (id_type id)
     {
-      const boost::function<void()> after
-        (boost::bind (&layer::rts_canceled_and_forget, this, id));
       _nets_to_extract_from.remove_and_apply
-        (id, boost::bind (&layer::cancel_child_jobs, this, _1, after));
+        ( id
+        , [this, id] (activity_data_type activity_data)
+        {
+          const std::function<void()> after
+            ([this, id]() { rts_canceled_and_forget (id); });
+
+          //! \note Not a race: nobody can insert new running jobs as
+          //! we have ownership of activity
+          if (!_running_jobs.contains (activity_data._id))
+          {
+            after();
+          }
+          else
+          {
+            _finalize_job_cancellation.emplace (activity_data._id, after);
+            _running_jobs.apply
+              (activity_data._id, std::bind (_rts_cancel, std::placeholders::_1));
+          }
+        }
+        );
     }
 
     void layer::failed (id_type id, std::string reason)
@@ -195,48 +198,26 @@ namespace we
       assert (parent);
 
       _nets_to_extract_from.remove_and_apply
-        (*parent, boost::bind (&layer::failed_delayed, this, _1, id, reason));
-    }
-    void layer::failed_delayed ( activity_data_type& parent_activity
-                               , id_type id
-                               , std::string reason
-                               )
-    {
-      const boost::function<void()> after
-        ( boost::bind ( &layer::rts_failed_and_forget
-                      , this, parent_activity._id, reason
-                      )
+        ( *parent
+        , [this, id, reason] (activity_data_type parent_activity)
+        {
+          const std::function<void()> after
+            ([this, parent_activity, reason]()
+            { rts_failed_and_forget (parent_activity._id, reason); }
+            );
+
+          if (_running_jobs.terminated (parent_activity._id, id))
+          {
+            after();
+          }
+          else
+          {
+            _finalize_job_cancellation.emplace (parent_activity._id, after);
+            _running_jobs.apply
+              (parent_activity._id, std::bind (_rts_cancel, std::placeholders::_1));
+          }
+        }
         );
-
-      if (_running_jobs.terminated (parent_activity._id, id))
-      {
-        after();
-      }
-      else
-      {
-        _finalize_job_cancellation.insert
-          (std::make_pair (parent_activity._id, after));
-        _running_jobs.apply
-          (parent_activity._id, boost::bind (_rts_cancel, _1));
-      }
-    }
-
-    void layer::cancel_child_jobs
-      (activity_data_type activity_data, boost::function<void()> after)
-    {
-      //! \note Not a race: nobody can insert new running jobs as we
-      //! have ownership of activity
-      if (!_running_jobs.contains (activity_data._id))
-      {
-        after();
-      }
-      else
-      {
-        _finalize_job_cancellation.insert
-          (std::make_pair (activity_data._id, after));
-        _running_jobs.apply
-          (activity_data._id, boost::bind (_rts_cancel, _1));
-      }
     }
 
     void layer::canceled (id_type child)
@@ -246,7 +227,7 @@ namespace we
 
       if (_running_jobs.terminated (*parent, child))
       {
-        boost::unordered_map<id_type, boost::function<void()> >::iterator
+        std::unordered_map<id_type, std::function<void()>>::iterator
           const pos (_finalize_job_cancellation.find (*parent));
 
         pos->second();
@@ -254,54 +235,39 @@ namespace we
       }
     }
 
-    namespace
-    {
-      void discover_traverse
-        ( std::size_t* child_count
-        , layer::id_type discover_id
-        , boost::function<void (layer::id_type, layer::id_type)> rts_discover
-        , layer::id_type child
-        )
-      {
-        ++(*child_count);
-        rts_discover (discover_id, child);
-      }
-    }
-
     void layer::discover (id_type discover_id, id_type id)
     {
       _nets_to_extract_from.apply
-        (id, boost::bind (&layer::discover_delayed, this, _1, discover_id));
-    }
-    void layer::discover_delayed
-      (activity_data_type& activity_data, id_type discover_id)
-    {
-      const id_type id (activity_data._id);
+        ( id
+        , [this, discover_id] (activity_data_type& activity_data)
+        {
+          const id_type id (activity_data._id);
 
-      boost::mutex::scoped_lock const _ (_discover_state_mutex);
-      assert (_discover_state.find (discover_id) == _discover_state.end());
+          boost::mutex::scoped_lock const _ (_discover_state_mutex);
+          assert (_discover_state.find (discover_id) == _discover_state.end());
 
-      std::pair<std::size_t, sdpa::discovery_info_t > state
-        (0, sdpa::discovery_info_t(id, boost::none, sdpa::discovery_info_set_t()));
+          std::pair<std::size_t, sdpa::discovery_info_t > state
+            (0, sdpa::discovery_info_t(id, boost::none, sdpa::discovery_info_set_t()));
 
-      _running_jobs.apply ( id
-                          , boost::bind ( &discover_traverse
-                                        , &state.first
-                                        , discover_id
-                                        , _rts_discover
-                                        , _1
-                                        )
-                          );
+          _running_jobs.apply ( id
+                              , [this, &discover_id, &state] (id_type child)
+                              {
+                                ++state.first;
+                                _rts_discover (discover_id, child);
+                              }
+                              );
 
-      //! \note Not a race: discovered can't be called in parallel
-      if (state.first == std::size_t (0))
-      {
-        _rts_discovered (discover_id, state.second);
-      }
-      else
-      {
-        _discover_state.insert (std::make_pair (discover_id, state));
-      }
+          //! \note Not a race: discovered can't be called in parallel
+          if (state.first == std::size_t (0))
+          {
+            _rts_discovered (discover_id, state.second);
+          }
+          else
+          {
+            _discover_state.emplace (discover_id, state);
+          }
+        }
+        );
     }
 
     void layer::discovered
@@ -403,12 +369,8 @@ namespace we
     void layer::async_remove_queue::list_with_id_lookup::push_back
       (activity_data_type activity_data)
     {
-      _position_in_container.insert
-        ( std::make_pair
-          ( activity_data._id
-          , _container.insert (_container.end(), activity_data)
-          )
-        );
+      _position_in_container.emplace
+        (activity_data._id, _container.insert (_container.end(), activity_data));
     }
     layer::async_remove_queue::list_with_id_lookup::iterator
       layer::async_remove_queue::list_with_id_lookup::find (id_type id)
@@ -438,9 +400,7 @@ namespace we
       boost::recursive_mutex::scoped_lock lock (_container_mutex);
 
       _condition_non_empty.wait
-        ( lock
-        , not boost::bind (&list_with_id_lookup::empty, &_container)
-        );
+        (lock, [this]() -> bool { return !_container.empty(); });
 
       return _container.get_front();
     }
@@ -462,7 +422,7 @@ namespace we
 
         while (fun_and_do_put_it != pos->second.end())
         {
-          std::pair<boost::function<void (activity_data_type&)>, bool>
+          std::pair<std::function<void (activity_data_type&)>, bool>
             fun_and_do_put (*fun_and_do_put_it);
           fun_and_do_put_it = pos->second.erase (fun_and_do_put_it);
 
@@ -499,7 +459,7 @@ namespace we
     }
 
     void layer::async_remove_queue::remove_and_apply
-      (id_type id, boost::function<void (activity_data_type)> fun)
+      (id_type id, std::function<void (activity_data_type)> fun)
     {
       boost::recursive_mutex::scoped_lock const _ (_container_mutex);
 
@@ -524,7 +484,7 @@ namespace we
     }
 
     void layer::async_remove_queue::apply
-      (id_type id, boost::function<void (activity_data_type&)> fun)
+      (id_type id, std::function<void (activity_data_type&)> fun)
     {
       boost::recursive_mutex::scoped_lock const _ (_container_mutex);
 
@@ -568,9 +528,7 @@ namespace we
       we::type::net_type& net
         (boost::get<we::type::net_type&> (_activity.transition().data()));
 
-      BOOST_FOREACH ( const type::activity_t::token_on_port_t& top
-                    , child.output()
-                    )
+      for (const type::activity_t::token_on_port_t& top : child.output())
       {
         net.put_value
           ( net.port_to_place().at (*child.transition_id())
@@ -626,14 +584,13 @@ namespace we
     }
 
     void layer::locked_parent_child_relation_type::apply
-      (id_type parent, boost::function<void (id_type)> fun) const
+      (id_type parent, std::function<void (id_type)> fun) const
     {
       boost::mutex::scoped_lock const _ (_relation_mutex);
 
-      BOOST_FOREACH
-        ( id_type child
-        , _relation.left.equal_range (parent) | boost::adaptors::map_values
-        )
+      for ( id_type child
+          : _relation.left.equal_range (parent) | boost::adaptors::map_values
+          )
       {
         fun (child);
       }

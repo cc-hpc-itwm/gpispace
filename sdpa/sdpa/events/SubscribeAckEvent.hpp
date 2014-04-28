@@ -14,15 +14,15 @@ namespace sdpa
 
       SubscribeAckEvent ( const address_t& a_from
                         , const address_t& a_to
-                        , const job_id_list_t& listJobIds
+                        , const job_id_t& job_id
                         )
         : MgmtEvent (a_from, a_to)
-        , listJobIds_ (listJobIds)
+        , _job_id (job_id)
       { }
 
-      const sdpa::job_id_list_t& listJobIds() const
+      const sdpa::job_id_t& job_id() const
       {
-        return listJobIds_;
+        return _job_id;
       }
 
       virtual void handleBy (EventHandler* handler)
@@ -30,27 +30,22 @@ namespace sdpa
         handler->handleSubscribeAckEvent (this);
       }
 
-      std::string str() const
-      {
-        return "SubscribeAckEvent";
-      }
-
     private:
-      sdpa::job_id_list_t listJobIds_;
+      sdpa::job_id_t _job_id;
     };
 
     SAVE_CONSTRUCT_DATA_DEF (SubscribeAckEvent, e)
     {
       SAVE_MGMTEVENT_CONSTRUCT_DATA (e);
-      SAVE_TO_ARCHIVE (e->listJobIds());
+      SAVE_TO_ARCHIVE (e->job_id());
     }
 
     LOAD_CONSTRUCT_DATA_DEF (SubscribeAckEvent, e)
     {
       LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
-      LOAD_FROM_ARCHIVE (sdpa::job_id_list_t, listJobIds);
+      LOAD_FROM_ARCHIVE (sdpa::job_id_t, job_id);
 
-      ::new (e) SubscribeAckEvent (from, to, listJobIds);
+      ::new (e) SubscribeAckEvent (from, to, job_id);
     }
   }
 }

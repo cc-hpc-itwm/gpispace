@@ -96,14 +96,6 @@ ifndef XML
   endif
 endif
 
-ifndef DEP_XML
-  ifndef XML
-    $(error variable XML undefined but needed to derive variable DEP_XML)
-  else
-    DEP_XML := $(BUILDDIR)/$(MAIN).xpnet.d
-  endif
-endif
-
 ifndef NET
   ifndef MAIN
     $(error variable MAIN undefined but needed to derive variable NET)
@@ -285,7 +277,7 @@ ps: $(PS) $(PS_NOINLINE)
 svg: $(SVG) $(SVG_NOINLINE)
 net: $(NET)
 put: $(PUT)
-gen: $(GEN)
+gen: $(GEN)/Makefile
 verify: $(NET_VERIFICATION)
 validate: $(NET_VALIDATION)
 
@@ -300,19 +292,16 @@ endif
 
 ###############################################################################
 
-$(DEP_XML): $(XML) | $(BUILDDIR)
-	$(PNETC) -i $(XML) -o /dev/null -MP -MT '$(DEP_XML)' -MM $@
+-include $(NET).d
 
-ifneq "$(wildcard $(DEP_XML))" ""
-  include $(DEP_XML)
-endif
-
-###############################################################################
-
-$(NET): $(DEP_XML) $(XML) $(DEP)
+$(NET): $(XML) $(DEP) | $(BUILDDIR)
+	$(PNETC) -i $(XML) -o /dev/null -MP -MT $@ -MM $(NET).d
 	$(PNETC) -i $(XML) -o $@
 
-$(NET_NOINLINE): $(DEP_XML) $(XML) $(DEP)
+-include $(NET_NOINLINE).d
+
+$(NET_NOINLINE): $(XML) $(DEP) | $(BUILDDIR)
+	$(PNETC_NOINLINE) -i $(XML) -o /dev/null -MP -MT $@ -MM $(NET_NOINLINE).d
 	$(PNETC_NOINLINE) -i $(XML) -o $@
 
 $(PUT): $(NET)
@@ -332,14 +321,18 @@ $(NET_VALIDATION):
 
 else
 
+-include $(NET_VALIDATION).d
+
 ifeq "$(TEE)" ""
 
-$(NET_VALIDATION): $(DEP_XML) $(XML) $(DEP)
+$(NET_VALIDATION): $(XML) $(DEP)
+	$(PNETC) -i $(XML) -o /dev/null -MP -MT $@ -MM $(NET_VALIDATION).d
 	$(XMLLINT) $$($(PNETC_LIST_DEPENDENCIES) -i $(XML) -o /dev/null) 2> "$@"
 
 else
 
-$(NET_VALIDATION): $(DEP_XML) $(XML) $(DEP)
+$(NET_VALIDATION): $(XML) $(DEP)
+	$(PNETC) -i $(XML) -o /dev/null -MP -MT $@ -MM $(NET_VALIDATION).d
 	set -o pipefail ; $(XMLLINT) $$($(PNETC_LIST_DEPENDENCIES) -i $(XML) -o /dev/null) 2>&1 | $(TEE) $@
 
 endif
@@ -347,10 +340,13 @@ endif
 
 ###############################################################################
 
-$(GEN): $(DEP_XML) $(XML) $(DEP)
-	$(PNETC) -i $(XML) -o /dev/null -g $@
+-include $(NET).gen.d
 
-lib: $(GEN)
+$(GEN)/Makefile: $(XML) $(DEP) | $(BUILDDIR)
+	$(PNETC) -i $(XML) -o /dev/null -MP -MT $@ -MM $(NET).gen.d
+	$(PNETC) -i $(XML) -o /dev/null -g $(GEN)
+
+lib: $(GEN)/Makefile
 	$(MAKE) -C $(GEN)
 
 ###############################################################################
@@ -440,7 +436,10 @@ clean: $(CLEAN)
 	-$(RM) -f $(SVG)
 	-$(RM) -f $(SVG_NOINLINE)
 	-$(RM) -f $(OUT)
-	-$(RM) -f $(DEP_XML)
+	-$(RM) -f $(NET).d
+	-$(RM) -f $(NET_NOINLINE).d
+	-$(RM) -f $(NET).gen.d
+	-$(RM) -f $(NET_VALIDATION).d
 	-$(RM) -f $(NET_VERIFICATION)
 	-$(RM) -f $(NET_VALIDATION)
 	-$(RM) -f *~

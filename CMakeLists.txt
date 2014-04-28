@@ -2,9 +2,9 @@ cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
 
 project (sdpa_main)
 
-set(V_MAJOR 13)
-set(V_MINOR 09)
-set(V_PATCH 1)
+set(V_MAJOR 14)
+set(V_MINOR 03)
+set(V_PATCH )
 set(V_EXTRA )
 
 set (PROJECT_VERSION      CACHE STRING "Project version")
@@ -21,6 +21,7 @@ set (FHGLOG_STRIP_LEVEL "-1" CACHE STRING "Strip log messages with a level >= N"
 set (FHG_ASSERT_MODE CACHE INTEGER "fhg assert mode: 0 ignore, 1 enable, 2 use assert, 3 throw, 4 just log, 5 log and abort")
 option (FHG_ASSERT_REPLACE_LEGACY "Replace legacy assert with fhg_assert" ON)
 option (ENABLE_BACKTRACE_ON_PARSE_ERROR "Show a backtrace on (pnet) parser errors" OFF)
+option (ENABLE_DOCUMENTATION "enable documentation" ON)
 
   execute_process (
     COMMAND git rev-parse HEAD
@@ -39,32 +40,15 @@ if (NOT PROJECT_REVISION)
 endif (NOT PROJECT_REVISION)
 set (PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" FORCE)
 
-  execute_process (
-    COMMAND git describe
-    COMMAND sed -e "s/^v//"
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE _out
-    ERROR_VARIABLE _err
-    RESULT_VARIABLE _res
-  )
-  if (${_res} EQUAL 0)
-    string (STRIP "${_out}" _out)
-    set (PROJECT_VERSION ${_out})
-  else()
-    set(__new_vsn "${V_MAJOR}.${V_MINOR}")
-    if (NOT ${V_PATCH} STREQUAL "")
-      set(__new_vsn "${__new_vsn}-${V_PATCH}")
-    endif()
-    if (NOT ${V_EXTRA} STREQUAL "")
-      set(__new_vsn "${__new_vsn}-${V_EXTRA}")
-    endif()
-    set (PROJECT_VERSION ${__new_vsn})
-  endif ()
-
-if (NOT PROJECT_VERSION)
-  message (FATAL_ERROR "could not discover version info, please define -DPROJECT_VERSION by hand!")
+set(__new_vsn "${V_MAJOR}.${V_MINOR}")
+if (NOT ${V_PATCH} STREQUAL "")
+  set(__new_vsn "${__new_vsn}-${V_PATCH}")
 endif()
-set (PROJECT_VERSION "${PROJECT_VERSION}" CACHE STRING "Project version" FORCE)
+if (NOT ${V_EXTRA} STREQUAL "")
+  set(__new_vsn "${__new_vsn}-${V_EXTRA}")
+endif()
+set (PROJECT_VERSION "${__new_vsn}" CACHE STRING "Project version" FORCE)
+set (__new_vsn)
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
@@ -89,6 +73,7 @@ endif()
 
 add_definitions ("-DBOOST_FILESYSTEM_VERSION=3")
 add_definitions ("-DBOOST_FILESYSTEM_NO_DEPRECATED")
+add_definitions ("-DBOOST_NO_CXX11_SCOPED_ENUMS") # required if linking against boost not built with c++11
 
 add_definitions ("-DFHGLOG_STRIP_LEVEL=${FHGLOG_STRIP_LEVEL}")
 
@@ -106,25 +91,15 @@ if (BOOST_ROOT)
   set (Boost_NO_SYSTEM_PATHS ON)
 endif()
 
-find_package (Boost 1.47 REQUIRED QUIET COMPONENTS
+find_package (Boost 1.55 REQUIRED QUIET COMPONENTS
   thread system filesystem serialization program_options
   regex signals date_time test_exec_monitor unit_test_framework random)
 
-if (Boost_MAJOR_VERSION EQUAL 1)
-  if (Boost_MINOR_VERSION EQUAL 48)
-    message (FATAL_ERROR "Incompatible Boost 1.48 detected")
-  endif()
-endif()
-
-if (Boost_MAJOR_VERSION EQUAL 1)
-  if (Boost_MINOR_VERSION GREATER 51)
-    # Boost.Thread now throws when preconditions are not met.
-    # This is the case when calling join() in some tests, while
-    # joinable() == false.  This define is only a hacky workaround and
-    # the precondition shall be checked everywhere, where needed.
-    add_definitions (-DBOOST_THREAD_THROW_IF_PRECONDITION_NOT_SATISFIED)
-  endif()
-endif()
+# Boost.Thread now throws when preconditions are not met.
+# This is the case when calling join() in some tests, while
+# joinable() == false.  This define is only a hacky workaround and
+# the precondition shall be checked everywhere, where needed.
+add_definitions (-DBOOST_THREAD_THROW_IF_PRECONDITION_NOT_SATISFIED)
 
 get_filename_component (BOOST_ROOT "${Boost_INCLUDE_DIR}" PATH CACHE)
 
@@ -139,18 +114,19 @@ add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
 set (FHG_QT_MOC_BOOST_HACK_OPTIONS "-DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED;-DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION")
 
 find_package(HWLOC REQUIRED QUIET)
+find_package (Graphviz COMPONENTS cdt gvc graph pathplan REQUIRED QUIET)
 
 # RPATH configuration
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-set(CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../../../lib/")
+set(CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../external/boost/lib:\$ORIGIN/../../../lib/")
 
 # replacement for find_package (<one of our subprojects>)
-set (UTIL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/util ${CMAKE_BINARY_DIR}/util)
+set (UTIL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/util)
 set (UTIL_LIBRARIES fhg-revision fhg-util)
 
-set (FhgLog_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhglog ${CMAKE_BINARY_DIR}/fhglog)
+set (FhgLog_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhglog)
 set (FhgLog_LIBRARY fhglog)
 set (FhgLog_LIBRARY_SHARED fhglog-shared)
 
@@ -158,16 +134,16 @@ set (MMGR_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src)
 set (MMGR_LIBRARY mmgr)
 set (MMGR_LIBRARY_SHARED mmgr.shared)
 
-set (FhgKernel_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
+set (FhgKernel_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src)
 
-set (SDPA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/sdpa ${CMAKE_BINARY_DIR}/sdpa)
+set (SDPA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/sdpa)
 
-set (FhgCom_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
+set (FhgCom_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src)
 set (FhgCom_LIBRARY fhgcom)
 
-set (FVM_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fvm-pc ${CMAKE_BINARY_DIR}/fvm-pc)
+set (FVM_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fvm-pc)
 
-set (GPI_SPACE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
+set (GPI_SPACE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src)
 set (GPI_SPACE_LIBRARY gpi-space-pc-client-static gpi-space-pc-segment)
 
 set (PNETC_LIB_DIR "share/sdpa/xml/lib")

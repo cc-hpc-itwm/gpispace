@@ -3,14 +3,12 @@
 
 #include <boost/program_options.hpp>
 
-#include <pnetv/jpn/common/Foreach.h>
-#include <pnetv/jpn/common/Unreachable.h>
-
 #include <pnetv/jpna/Parsing.h>
 #include <pnetv/jpna/PetriNet.h>
 #include <pnetv/jpna/Verification.h>
 
 #include <fhg/revision.hpp>
+#include <fhg/util/first_then.hpp>
 
 enum {
     EXIT_INVALID_ARGUMENTS = EXIT_FAILURE,
@@ -18,6 +16,47 @@ enum {
     EXIT_MAYBE_LOOPS,
     EXIT_LOOPS
 };
+
+namespace jpna
+{
+  std::ostream& operator<< (std::ostream& out, VerificationResult const& result)
+  {
+    out << "(";
+    switch (result.result()) {
+    case VerificationResult::TERMINATES:
+      out << "TERMINATES";
+      break;
+    case VerificationResult::LOOPS:
+      out << "LOOPS";
+      break;
+    case VerificationResult::MAYBE_LOOPS:
+      out << "MAYBE_LOOPS";
+      break;
+    }
+    if (result.result() != VerificationResult::TERMINATES) {
+      out << ", init:{";
+
+      {
+        fhg::util::first_then<std::string> comma ("", ", ");
+
+        for (const Transition *transition : result.init()) {
+          out << comma << "`" << transition->name() << "'";
+        }
+      }
+      out << "}, loop:{";
+
+      {
+        fhg::util::first_then<std::string> comma ("", ", ");
+
+        for (const Transition *transition : result.loop()) {
+          out << comma << "`" << transition->name() << "'";
+        }
+      }
+      out << "}";
+    }
+    return out << ")";
+  }
+}
 
 int main(int argc, char *argv[]) {
     namespace po = boost::program_options;
@@ -79,7 +118,7 @@ int main(int argc, char *argv[]) {
 
     int exitCode = EXIT_SUCCESS;
 
-    FOREACH(const std::string &filename, inputFiles) {
+    for (const std::string &filename : inputFiles) {
         boost::ptr_vector<jpna::PetriNet> petriNets;
 
         try {
@@ -89,7 +128,7 @@ int main(int argc, char *argv[]) {
                 jpna::parse(filename.c_str(), petriNets);
             }
 
-            FOREACH (const jpna::PetriNet &petriNet, petriNets) {
+            for (const jpna::PetriNet &petriNet : petriNets) {
                 std::cout << petriNet.name() << ": ";
                 std::cout.flush();
                 jpna::VerificationResult result = jpna::verify(petriNet);
@@ -109,9 +148,6 @@ int main(int argc, char *argv[]) {
                         exitCode = EXIT_LOOPS;
                         break;
                     }
-                    default: {
-                        jpn::unreachable();
-                    }
                 }
             }
         } catch (const std::exception &e) {
@@ -122,5 +158,3 @@ int main(int argc, char *argv[]) {
 
     return exitCode;
 }
-
-/* vim:set et sts=4 sw=4: */

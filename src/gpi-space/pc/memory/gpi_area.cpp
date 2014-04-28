@@ -13,6 +13,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/make_shared.hpp>
 
+#include <functional>
+
 namespace gpi
 {
   namespace pc
@@ -114,7 +116,7 @@ namespace gpi
         return
           (m_ptr && off < descriptor ().local_size)
           ? ((char*)m_ptr + off)
-          : (char*)0;
+          : (char*)nullptr;
       }
 
       bool
@@ -238,9 +240,13 @@ namespace gpi
                  , src_hdl.local_size
                  , amount
                  , queue
-                 , boost::bind ( &api::gpi_api_t::read_dma, &gpi_api
-                               , _1, _2, _3, _4, _5
-                               )
+                 , std::bind ( &api::gpi_api_t::read_dma, &gpi_api
+                             , std::placeholders::_1
+                             , std::placeholders::_2
+                             , std::placeholders::_3
+                             , std::placeholders::_4
+                             , std::placeholders::_5
+                             )
                  );
         }
 
@@ -259,9 +265,13 @@ namespace gpi
                  , dst_hdl.local_size
                  , amount
                  , queue
-                 , boost::bind ( &api::gpi_api_t::write_dma, &gpi_api
-                               , _1, _2, _3, _4, _5
-                               )
+                 , std::bind ( &api::gpi_api_t::write_dma, &gpi_api
+                             , std::placeholders::_1
+                             , std::placeholders::_2
+                             , std::placeholders::_3
+                             , std::placeholders::_4
+                             , std::placeholders::_5
+                             )
                  );
         }
 
@@ -391,15 +401,15 @@ namespace gpi
             + " "
             + boost::lexical_cast<std::string> (amount)
 
-            , boost::bind ( &helper::do_write_dma
-                          , this->descriptor (src.handle)
-                          , src.offset
-                          , dst_area.descriptor (dst.handle)
-                          , dst.offset
-                          , amount
-                          , queue
-                          , boost::ref (_gpi_api)
-                          )
+            , std::bind ( &helper::do_write_dma
+                        , this->descriptor (src.handle)
+                        , src.offset
+                        , dst_area.descriptor (dst.handle)
+                        , dst.offset
+                        , amount
+                        , queue
+                        , std::ref (_gpi_api)
+                        )
             ));
         }
         else if (dst_area.is_local (gpi::pc::type::memory_region_t (dst, amount)))
@@ -414,15 +424,15 @@ namespace gpi
             + " "
             + boost::lexical_cast<std::string> (amount)
 
-            , boost::bind ( &helper::do_read_dma
-                          , this->descriptor     (src.handle)
-                          , src.offset
-                          , dst_area.descriptor (dst.handle)
-                          , dst.offset
-                          , amount
-                          , queue
-                          , boost::ref (_gpi_api)
-                          )
+            , std::bind ( &helper::do_read_dma
+                        , this->descriptor     (src.handle)
+                        , src.offset
+                        , dst_area.descriptor (dst.handle)
+                        , dst.offset
+                        , amount
+                        , queue
+                        , std::ref (_gpi_api)
+                        )
             ));
         }
         else
@@ -454,16 +464,16 @@ namespace gpi
           + " "
           + boost::lexical_cast<std::string> (amount)
 
-          , boost::bind ( &helper::do_send
-                        , boost::ref (src_area)
-                        , src
-                        , boost::ref (*this)
-                        , dst
-                        , amount
-                        , queue
-                        , boost::ref (m_com_handles)
-                        , boost::ref (_gpi_api)
-                        )
+          , std::bind ( &helper::do_send
+                      , std::ref (src_area)
+                      , src
+                      , std::ref (*this)
+                      , dst
+                      , amount
+                      , queue
+                      , std::ref (m_com_handles)
+                      , std::ref (_gpi_api)
+                      )
           ));
         return 0;
       }
@@ -486,16 +496,16 @@ namespace gpi
           + " "
           + boost::lexical_cast<std::string> (amount)
 
-          , boost::bind ( &helper::do_recv
-                        , boost::ref (dst_area)
-                        , dst
-                        , boost::ref (*this)
-                        , src
-                        , amount
-                        , queue
-                        , boost::ref (m_com_handles)
-                        , boost::ref (_gpi_api)
-                        )
+          , std::bind ( &helper::do_recv
+                      , std::ref (dst_area)
+                      , dst
+                      , std::ref (*this)
+                      , src
+                      , amount
+                      , queue
+                      , std::ref (m_com_handles)
+                      , std::ref (_gpi_api)
+                      )
           ));
         return 0;
       }

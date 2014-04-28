@@ -73,8 +73,7 @@ void mcinterface(
   double dx;
   double *pDivZeit;
   double *pDivWert;
-  double result;
-  
+
   //	FixingsProJahr = 5.0;
   AnzahlderFixings = (long)(stParam.m_dFixingsProJahr * stParam.m_dT);
 
@@ -118,10 +117,10 @@ void mcinterface(
   Art = FixC;
 
   CVBool = false;
-    
+
   //std::cout<<"Compute MonteCarlo...."<<std::endl;
 
-  result = AsianMonteCarlo (Ergebnis, StdDev,
+  AsianMonteCarlo (Ergebnis, StdDev,
                             &stParam,
                             LastFixing,
                             TimeV, GewV, Div, Art, CVBool);

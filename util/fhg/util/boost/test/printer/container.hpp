@@ -4,11 +4,9 @@
 #define FHG_UTIL_BOOST_TEST_PRINTER_CONTAINER_HPP
 
 #include <fhg/util/boost/test.hpp>
-#include <fhg/util/first_then.hpp>
+#include <fhg/util/print_container.hpp>
 
-#include <boost/foreach.hpp>
-#include <boost/function.hpp>
-
+#include <functional>
 #include <string>
 
 namespace fhg
@@ -39,23 +37,17 @@ namespace fhg
             , Container const& c
             , std::string const& prefix
             , std::string const& suffix
-            , boost::function <void ( std::ostream&
-                                    , typename Container::value_type const&
-                                    )
-                              > const& print_element
+            , std::function <void ( std::ostream&
+                                  , typename Container::value_type const&
+                                  )
+                            > const& print_element
               = print_element_default<typename Container::value_type>()
             )
           {
-            fhg::util::first_then<std::string> const sep ("", ", ");
-
-            os << prefix;
-
-            BOOST_FOREACH (typename Container::value_type const& x, c)
-            {
-              os << sep;  print_element (os, x);
-            }
-
-            return os << suffix;
+            return fhg::util::print_container<Container>
+              ( os, "", prefix, ",", suffix, c
+              , std::bind (print_element, std::ref (os), std::placeholders::_1)
+              );
           }
         }
       }

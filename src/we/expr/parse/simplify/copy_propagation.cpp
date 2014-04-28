@@ -7,8 +7,9 @@
 #include <we/expr/token/assoc.hpp>
 #include <we/expr/token/prop.hpp>
 
-#include <boost/unordered_map.hpp>
 #include <boost/variant.hpp>
+
+#include <map>
 
 namespace expr
 {
@@ -18,9 +19,7 @@ namespace expr
     {
       namespace
       {
-        typedef boost::unordered_map < key_type
-                                     , key_type
-                                     > propagation_map_type;
+        typedef std::map<key_type, key_type> propagation_map_type;
 
         void remove_parents_and_children_both
           (const key_type& var, propagation_map_type& map)

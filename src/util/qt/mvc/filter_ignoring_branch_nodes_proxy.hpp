@@ -18,7 +18,7 @@ namespace fhg
           Q_OBJECT
 
         public:
-          filter_ignoring_branch_nodes_proxy (QAbstractItemModel*, QObject* = NULL);
+          filter_ignoring_branch_nodes_proxy (QAbstractItemModel*, QObject* = nullptr);
 
         protected:
           virtual bool filterAcceptsRow (int, const QModelIndex& parent) const;

@@ -7,14 +7,12 @@
 
 #include <fhg/util/boost/test/require_exception.hpp>
 
-namespace
+BOOST_AUTO_TEST_CASE (process_redefine)
 {
-  //! \todo use boost::bind below
-  struct _
-  {
-    void operator() () const
+  fhg::util::boost::test::require_exception<std::runtime_error>
+    ([]
     {
-      process::file_const_buffer file (NULL, 0, "%redefinition%");
+      process::file_const_buffer file (nullptr, 0, "%redefinition%");
 
       process::file_const_buffer_list files_input;
 
@@ -22,17 +20,12 @@ namespace
       files_input.push_back (file);
 
       process::execute ( std::string()
-                       , process::const_buffer (NULL, 0)
-                       , process::buffer (NULL, 0)
+                       , process::const_buffer (nullptr, 0)
+                       , process::buffer (nullptr, 0)
                        , files_input
                        , process::file_buffer_list()
                        );
     }
-  };
-}
-
-BOOST_AUTO_TEST_CASE (process_redefine)
-{
-  fhg::util::boost::test::require_exception<std::runtime_error>
-    (_(), "redefinition of key: %redefinition%");
+    , "redefinition of key: %redefinition%"
+    );
 }

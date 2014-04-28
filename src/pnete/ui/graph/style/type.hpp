@@ -8,10 +8,10 @@
 #include <pnete/ui/graph/style/store.hpp>
 #include <pnete/ui/graph/mode.hpp>
 
-#include <boost/bind.hpp>
-#include <boost/unordered_map.hpp>
-
 #include <QGraphicsItem>
+
+#include <functional>
+#include <unordered_map>
 
 class QPainter;
 
@@ -97,10 +97,10 @@ namespace fhg
           class type
           {
           private:
-            typedef boost::unordered_map<mode::type, store::type> by_mode_type;
-            typedef boost::unordered_map< key_type
-                                        , by_mode_type
-                                        > by_mode_by_key_type;
+            typedef std::unordered_map<mode::type, store::type> by_mode_type;
+            typedef std::unordered_map< key_type
+                                      , by_mode_type
+                                      > by_mode_by_key_type;
 
             by_mode_by_key_type _by_mode_by_key;
 
@@ -160,7 +160,7 @@ namespace fhg
                         , const VALUE& value
                         )
             {
-              push<VALUE> (key, mode, boost::bind (constant<VALUE>, value, _1));
+              push<VALUE> (key, mode, std::bind (constant<VALUE>, value, std::placeholders::_1));
             }
 
             template<typename T>

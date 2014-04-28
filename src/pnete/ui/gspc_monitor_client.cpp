@@ -6,11 +6,9 @@
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/parse/require.hpp>
 
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
-
 #include <QColor>
 
+#include <functional>
 #include <iostream>
 #include <sstream>
 
@@ -45,7 +43,7 @@ namespace fhg
           }
 
           void list ( fhg::util::parse::position& pos
-                    , const boost::function<void (fhg::util::parse::position&)>& f
+                    , const std::function<void (fhg::util::parse::position&)>& f
                     )
           {
             fhg::util::parse::require::list (pos, '[', ',', ']', f);
@@ -53,25 +51,25 @@ namespace fhg
 
           void named_list
             ( fhg::util::parse::position& pos
-            , const boost::function<void (fhg::util::parse::position&, const QString&)>& f
+            , const std::function<void (fhg::util::parse::position&, const QString&)>& f
             )
           {
-            require::list (pos, boost::bind (f, _1, label (pos)));
+            require::list (pos, std::bind (f, std::placeholders::_1, label (pos)));
           }
 
           void list_of_named_lists
             ( fhg::util::parse::position& pos
-            , const boost::function<void (fhg::util::parse::position&, const QString&)>& f
+            , const std::function<void (fhg::util::parse::position&, const QString&)>& f
             )
           {
-            require::list (pos, boost::bind (named_list, _1, f));
+            require::list (pos, std::bind (named_list, std::placeholders::_1, f));
           }
         }
       }
 
       monitor_client::monitor_client (const QString& host, int port, QObject* parent)
         : QObject (parent)
-        , _timer (NULL)
+        , _timer (nullptr)
       {
         connect (&_socket, SIGNAL (readyRead()), SLOT (may_read()));
         _socket.connectToHost (host, port);
@@ -91,7 +89,7 @@ namespace fhg
       void monitor_client::pause()
       {
         delete _timer;
-        _timer = NULL;
+        _timer = nullptr;
       }
       void monitor_client::resume()
       {
@@ -116,7 +114,7 @@ namespace fhg
           std::swap (messages, _outstanding_outgoing);
         }
 
-        foreach (const QString& message, messages)
+        for (const QString& message : messages)
         {
           _socket.write (qPrintable (message));
           _socket.write ("\n");
@@ -183,7 +181,7 @@ namespace fhg
         if (!actions.empty())
         {
           QString message ("describe_action: [");
-          foreach (const QString& action, actions)
+          for (const QString& action : actions)
           {
             message.append ("\"")
               .append (action)
@@ -197,7 +195,7 @@ namespace fhg
       void monitor_client::request_action
         ( const QStringList& hosts
         , const QString& action
-        , const QMap<QString, boost::function<QString()> >& value_getters
+        , const QMap<QString, std::function<QString()>>& value_getters
         )
       {
         std::stringstream ss;
@@ -205,7 +203,7 @@ namespace fhg
         {
           ss << ", arguments: [";
 
-          QMap<QString, boost::function<QString()> >::const_iterator i
+          QMap<QString, std::function<QString()>>::const_iterator i
             (value_getters.constBegin());
           while (i != value_getters.constEnd())
           {
@@ -223,7 +221,7 @@ namespace fhg
         }
 
         QString hosts_string;
-        BOOST_FOREACH (QString host, hosts)
+        for (QString host : hosts)
         {
           hosts_string += '"' + host + "\",";
         }
@@ -239,10 +237,10 @@ namespace fhg
 
         QStringList actions;
         require::list ( pos
-                      , boost::bind ( &QStringList::push_back
-                                    , &actions
-                                    , boost::bind (require::qstring, _1)
-                                    )
+                      , std::bind ( &QStringList::push_back
+                                  , &actions
+                                  , std::bind (require::qstring, std::placeholders::_1)
+                                  )
                       );
 
         emit states_add (state, actions);
@@ -377,7 +375,7 @@ namespace fhg
           require::token (pos, ":");
 
           monitor_client::action_argument_data data (name);
-          require::list (pos, boost::bind (&monitor_client::action_argument_data::append, &data, _1));
+          require::list (pos, std::bind (&monitor_client::action_argument_data::append, &data, std::placeholders::_1));
 
           data_list->append (data);
         }
@@ -403,7 +401,7 @@ namespace fhg
 
           {
             QList<action_argument_data> data;
-            require::list (pos, boost::bind (action_argument, _1, &data));
+            require::list (pos, std::bind (action_argument, std::placeholders::_1, &data));
 
             emit states_actions_arguments (action, data);
           }
@@ -556,7 +554,7 @@ namespace fhg
         boost::optional<QString> details (boost::none);
         boost::optional<QString> state (boost::none);
         require::list
-          (pos, boost::bind (&status_update_data, _1, &details, &state));
+          (pos, std::bind (&status_update_data, std::placeholders::_1, &details, &state));
         emit nodes_state (host, state);
         emit nodes_details (host, details);
       }
@@ -564,7 +562,7 @@ namespace fhg
       namespace
       {
         void kv_pair
-          (fhg::util::parse::position& pos, QList<QPair<QString, QString> >* list)
+          (fhg::util::parse::position& pos, QList<QPair<QString, QString>>* list)
         {
           const QString key (require::qstring (pos));
           require::token (pos, ":");
@@ -581,7 +579,7 @@ namespace fhg
 
           boost::optional<monitor_client::action_result_code> _result;
           boost::optional<QString> _message;
-          QList<QPair<QString, QString> > _additional_data;
+          QList<QPair<QString, QString>> _additional_data;
 
           void append (fhg::util::parse::position& pos)
           {
@@ -600,7 +598,7 @@ namespace fhg
               require::require (pos, "dditional_data");
               require::token (pos, ":");
 
-              require::list (pos, boost::bind (&kv_pair, _1, &_additional_data));
+              require::list (pos, std::bind (&kv_pair, std::placeholders::_1, &_additional_data));
 
               break;
 
@@ -671,7 +669,7 @@ namespace fhg
         require::token (pos, ":");
 
         action_result_data result;
-        require::list (pos, boost::bind (&action_result_data::append, &result, _1));
+        require::list (pos, std::bind (&action_result_data::append, &result, std::placeholders::_1));
 
         if (!result._result)
         {
@@ -694,7 +692,7 @@ namespace fhg
           std::swap (messages, _outstanding_incoming);
         }
 
-        foreach (const QString& message, messages)
+        for (const QString& message : messages)
         {
           const std::string std_message (message.toStdString());
           fhg::util::parse::position_string pos (std_message);
@@ -734,7 +732,7 @@ namespace fhg
 
                 require::list_of_named_lists
                   ( pos
-                  , boost::bind (&monitor_client::action_description, this, _1, _2)
+                  , std::bind (&monitor_client::action_description, this, std::placeholders::_1, std::placeholders::_2)
                   );
 
                 break;
@@ -745,7 +743,9 @@ namespace fhg
                 require::token (pos, ":");
 
                 require::list
-                  (pos, boost::bind (&monitor_client::action_result, this, _1));
+                  ( pos
+                  , [this] (fhg::util::parse::position& pos) { action_result (pos); }
+                  );
               }
               break;
 
@@ -757,10 +757,10 @@ namespace fhg
               {
                 QStringList hostnames;
                 require::list ( pos
-                              , boost::bind ( &QStringList::push_back
-                                            , &hostnames
-                                            , boost::bind (require::qstring, _1)
-                                            )
+                              , std::bind ( &QStringList::push_back
+                                          , &hostnames
+                                          , std::bind (require::qstring, std::placeholders::_1)
+                                          )
                               );
 
                 emit nodes (hostnames);
@@ -775,7 +775,7 @@ namespace fhg
 
               require::list_of_named_lists
                 ( pos
-                , boost::bind (&monitor_client::layout_hint, this, _1, _2)
+                , std::bind (&monitor_client::layout_hint, this, std::placeholders::_1, std::placeholders::_2)
                 );
 
               break;
@@ -786,7 +786,7 @@ namespace fhg
               require::token (pos, ":");
 
               require::list
-                (pos, boost::bind (&monitor_client::possible_status, this, _1));
+                (pos, std::bind (&monitor_client::possible_status, this, std::placeholders::_1));
 
               break;
 
@@ -796,7 +796,7 @@ namespace fhg
               require::token (pos, ":");
 
               require::list
-                (pos, boost::bind (&monitor_client::status_update, this, _1));
+                (pos, std::bind (&monitor_client::status_update, this, std::placeholders::_1));
 
               break;
             }

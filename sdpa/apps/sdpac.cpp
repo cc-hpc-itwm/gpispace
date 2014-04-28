@@ -40,18 +40,8 @@ enum return_codes_t
   , JOB_ID_MISSING        = 51
   , FILE_EXISTS           = 52
   , IO_ERROR              = 53
-  , NETWORK_ERROR         = 54
   , UNKNOWN_ERROR         = 100
   };
-
-void get_user_input(std::string const & prompt, std::string & result, std::istream & in = std::cin)
-{
-  std::cout << prompt;
-  std::string tmp;
-  std::getline (in, tmp);
-  if (tmp.size())
-    result = tmp;
-}
 
 namespace
 {
@@ -115,7 +105,6 @@ namespace
     po::options_description &tool_opts() { return tool_opts_; }
     po::options_description &tool_hidden_opts() { return tool_hidden_opts_; }
     po::positional_options_description &positional_opts() { return positional_opts_; }
-    po::options_description& network_opts() { return network_opts_;} // network related options
 
     std::ostream &printHelp(std::ostream &) const;
     std::ostream &printModuleHelp(std::ostream &os) const;
@@ -131,7 +120,6 @@ namespace
 
     po::options_description generic_opts_; // supported by all command line tools
     po::options_description logging_opts_; // logging related options
-    po::options_description network_opts_; // network related options
     po::options_description tool_opts_;    // additional command line options
     po::options_description tool_hidden_opts_; // hidden command line options
     po::options_description specific_opts_; // specific options to a component, feel free to modify them
@@ -145,7 +133,6 @@ namespace
     , env_prefix_("SDPAC_")
     , generic_opts_("Generic Options")
     , logging_opts_("Logging configuration")
-    , network_opts_("Network Options")
     , tool_opts_("Command-line tool options")
     , tool_hidden_opts_("Command-line tool options (hidden)")
     , specific_opts_(component_name_ + " specific options")
@@ -183,7 +170,6 @@ namespace
     po::options_description desc;
     desc.add(generic_opts_)
       .add(logging_opts_)
-      .add(network_opts_)
       .add(specific_opts_)
       .add(tool_opts_)
       .add(tool_hidden_opts_);
@@ -212,7 +198,6 @@ namespace
       {
         po::options_description desc;
         desc.add(logging_opts_)
-          .add(network_opts_)
           .add(specific_opts_);
         po::store(po::parse_config_file(stream, desc), opts_);
       }
@@ -249,7 +234,6 @@ namespace
   {
     po::options_description desc;
     desc.add(logging_opts_)
-      .add(network_opts_)
       .add(specific_opts_);
     po::store(po::parse_environment(desc, environment_variable_to_option(env_prefix_)) , opts_);
   }
@@ -271,13 +255,11 @@ namespace
   {
     const std::string mod (get<std::string>("help-module"));
 
-    if      (mod == "network")       os << network_opts_;
-    else if (mod == "logging")       os << logging_opts_;
+    if      (mod == "logging")       os << logging_opts_;
     else if (mod == component_name_) os << specific_opts_;
     else
     {
       os << "Available modules are:" << std::endl
-         << "\t" << "network" << std::endl
          << "\t" << "logging" << std::endl
          << "\t" << component_name_ << std::endl
          << "use --help-module=module to get more information" << std::endl;
@@ -311,7 +293,7 @@ int main (int argc, char **argv) {
      )
     ;
   cfg.tool_hidden_opts().add_options()
-    ("arg", po::value<std::vector<std::string> >(),
+    ("arg", po::value<std::vector<std::string>>(),
      "arguments to the command")
     ;
   cfg.positional_opts().add("command", 1).add("arg", -1);
@@ -412,7 +394,7 @@ int main (int argc, char **argv) {
 
     {
       boost::char_separator<char> sep(":");
-      boost::tokenizer<boost::char_separator<char> > tok(kvs_url, sep);
+      boost::tokenizer<boost::char_separator<char>> tok(kvs_url, sep);
 
       vec.assign(tok.begin(),tok.end());
 
@@ -438,7 +420,7 @@ int main (int argc, char **argv) {
     std::vector<std::string> args;
     if (cfg.is_set("arg"))
     {
-      args = cfg.get<std::vector<std::string> >("arg");
+      args = cfg.get<std::vector<std::string>>("arg");
     }
 
     LLOG (INFO, logger, "***************************************************");
@@ -567,7 +549,7 @@ int main (int argc, char **argv) {
     }
     else
     {
-      std::cerr << "illegal command: " << command << std::endl;
+      std::cerr << "unknown command: " << command << std::endl;
       return (ERR_USAGE);
     }
   }

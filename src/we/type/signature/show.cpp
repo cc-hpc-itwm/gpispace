@@ -5,8 +5,7 @@
 
 #include <fhg/util/print_container.hpp>
 
-#include <boost/bind.hpp>
-
+#include <functional>
 #include <iostream>
 
 namespace pnet
@@ -26,8 +25,8 @@ namespace pnet
           void _struct (const std::pair<std::string, structure_type>& s) const
           {
             fhg::util::print_container<structure_type>
-              ( _os, s.first, " :: [", ",", "]", boost::ref (s.second)
-              , boost::bind (&printer::print, *this, _1)
+              ( _os, s.first, " :: [", ",", "]", std::ref (s.second)
+              , std::bind (&printer::print, *this, std::placeholders::_1)
               );
           }
           void _field (const std::pair<std::string, std::string>& f) const

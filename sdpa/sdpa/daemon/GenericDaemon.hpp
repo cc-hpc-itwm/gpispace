@@ -41,24 +41,29 @@
 
 #include <sdpa/types.hpp>
 
+#include <we/layer.hpp>
 #include <we/type/schedule_data.hpp>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
 #include <boost/utility.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/scoped_thread.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include <sdpa/daemon/NotificationService.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
-#include <sdpa/engine/IWorkflowEngine.hpp>
+#include <sdpa/job_requirements.hpp>
 #include <sdpa/types.hpp>
 #include <sdpa/capability.hpp>
 
+#include <fhg/util/std/pair.hpp>
 #include <fhg/util/thread/set.hpp>
 #include <fhg/util/thread/queue.hpp>
 
 #include <fhglog/fhglog.hpp>
+
+#include <memory>
 
 #define OVERWRITTEN_IN_TEST virtual
 
@@ -79,12 +84,11 @@ namespace sdpa {
                    , const boost::optional<std::string>& guiUrl = boost::none
                    , bool create_wfe = false
                    );
-      virtual ~GenericDaemon();
+      virtual ~GenericDaemon() = default;
 
       const std::string& name() const;
 
       void removeMasters(const agent_id_list_t& );
-      size_t numberOfMasterAgents() { return m_arrMasterInfo.size(); }
 
       bool isTop() { return m_arrMasterInfo.empty(); }
 
@@ -94,16 +98,18 @@ namespace sdpa {
       void finished(const we::layer::id_type & id, const we::type::activity_t& result);
       void failed( const we::layer::id_type& wfId, std::string const& reason);
       void canceled(const we::layer::id_type& id);
-      OVERWRITTEN_IN_TEST void discover (we::layer::id_type discover_id, we::layer::id_type job_id);
-      OVERWRITTEN_IN_TEST void discovered (we::layer::id_type discover_id, sdpa::discovery_info_t);
+      void discover (we::layer::id_type discover_id, we::layer::id_type job_id);
+      void discovered (we::layer::id_type discover_id, sdpa::discovery_info_t);
 
       void addCapability(const capability_t& cpb);
 
-      boost::shared_ptr<CoallocationScheduler> scheduler() const {return ptr_scheduler_;}
     protected:
+      const CoallocationScheduler& scheduler() const {return _scheduler;}
+      CoallocationScheduler& scheduler() {return _scheduler;}
+
       // masters and subscribers
       void unsubscribe(const sdpa::agent_id_t&);
-      void subscribe(const sdpa::agent_id_t&, const sdpa::job_id_list_t&);
+      virtual void handleSubscribeEvent (const sdpa::events::SubscribeEvent*);
       bool isSubscriber(const sdpa::agent_id_t&);
       bool subscribedFor(const sdpa::agent_id_t&, const sdpa::job_id_t&);
 
@@ -130,7 +136,6 @@ namespace sdpa {
       virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* );
       virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
       //virtual void handleSubscribeAckEvent (const sdpa::events::SubscribeAckEvent*) ?!
-      virtual void handleSubscribeEvent( const sdpa::events::SubscribeEvent* pEvt );
       virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*);
       virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* );
       virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
@@ -141,11 +146,11 @@ namespace sdpa {
       virtual void handleDiscoverJobStatesEvent
         (const sdpa::events::DiscoverJobStatesEvent*);
 
+    protected:
       // event communication
-      void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
-      OVERWRITTEN_IN_TEST void sendEventToOther(const sdpa::events::SDPAEvent::Ptr& e);
+      void sendEventToOther(const sdpa::events::SDPAEvent::Ptr& e);
     private:
-      void delay (boost::function<void()>);
+      void delay (std::function<void()>);
 
     public:
       // registration
@@ -154,11 +159,11 @@ namespace sdpa {
 
       // workflow engine
     public:
-      we::layer* workflowEngine() const { return ptr_workflow_engine_; }
-      bool hasWorkflowEngine() const { return ptr_workflow_engine_;}
+      const std::unique_ptr<we::layer>& workflowEngine() const { return ptr_workflow_engine_; }
+      bool hasWorkflowEngine() const { return !!ptr_workflow_engine_;}
 
       // workers
-      OVERWRITTEN_IN_TEST void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
+      void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
 
     protected:
       // jobs
@@ -172,40 +177,30 @@ namespace sdpa {
                   , const job_requirements_t& job_req_list
                   )
       {
-        boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
+        boost::mutex::scoped_lock const _ (_job_map_mutex);
 
-        Job* pJob = new Job( job_id, desc, is_master_job, owner );
+        Job* pJob = new Job( job_id, desc, is_master_job, owner, job_req_list);
 
-        if (!job_map_.insert(std::make_pair (job_id, pJob)).second)
+        if (!job_map_.emplace (job_id, pJob).second)
         {
           delete pJob;
           throw std::runtime_error ("job with same id already exists");
         }
 
-        if (!job_req_list.empty())
-          job_requirements_.insert(std::make_pair(job_id, job_req_list));
-
         return pJob;
       }
 
     public:
-      void TEST_add_dummy_job
-        (const sdpa::job_id_t& job_id, const job_requirements_t& req_list)
-      {
-        addJob (job_id, job_id, false, "", req_list);
-      }
       Job* findJob(const sdpa::job_id_t& job_id ) const
       {
-        boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
+        boost::mutex::scoped_lock const _ (_job_map_mutex);
 
         const job_map_t::const_iterator it (job_map_.find( job_id ));
-        return it != job_map_.end() ? it->second : NULL;
+        return it != job_map_.end() ? it->second : nullptr;
       }
       void deleteJob(const sdpa::job_id_t& job_id)
       {
-        boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
-
-        job_requirements_.erase (job_id);
+        boost::mutex::scoped_lock const _ (_job_map_mutex);
 
         const job_map_t::const_iterator it (job_map_.find( job_id ));
         if (it != job_map_.end())
@@ -215,16 +210,8 @@ namespace sdpa {
         }
         else
         {
-          throw JobNotFoundException();
+          throw std::runtime_error ("deleteJob: job not found");
         }
-      }
-      //! \todo Why doesn't every job have an entry here?
-      const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const
-      {
-        boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
-
-        const requirements_map_t::const_iterator it (job_requirements_.find (jobId));
-        return it != job_requirements_.end() ? it->second : job_requirements_t();
       }
 
     private:
@@ -237,37 +224,35 @@ namespace sdpa {
 
       std::string _name;
 
-      mutex_type mtx_;
-
       sdpa::master_info_list_t m_arrMasterInfo;
       typedef std::map<agent_id_t, job_id_list_t> subscriber_map_t;
       subscriber_map_t m_listSubscribers;
 
     private:
-      boost::unordered_map<std::pair<job_id_t, job_id_t>, std::string>
+      std::unordered_map<std::pair<job_id_t, job_id_t>, std::string>
         _discover_sources;
 
     private:
-      typedef boost::unordered_map<sdpa::job_id_t, job_requirements_t>
-        requirements_map_t;
-      typedef boost::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>
+      typedef std::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>
         job_map_t;
 
-      mutable boost::mutex _job_map_and_requirements_mutex;
+      mutable boost::mutex _job_map_mutex;
       job_map_t job_map_;
-      requirements_map_t job_requirements_;
+      struct cleanup_job_map_on_dtor_helper
+      {
+        cleanup_job_map_on_dtor_helper (GenericDaemon::job_map_t&);
+        ~cleanup_job_map_on_dtor_helper();
+        GenericDaemon::job_map_t& _;
+      } _cleanup_job_map_on_dtor_helper;
 
     protected:
-      boost::shared_ptr<CoallocationScheduler> ptr_scheduler_;
+      CoallocationScheduler _scheduler;
 
       boost::mutex _scheduling_thread_mutex;
       boost::condition_variable _scheduling_thread_notifier;
-      boost::thread _scheduling_thread;
-      void scheduling_thread();
       void request_scheduling();
 
       boost::optional<boost::mt19937> _random_extraction_engine;
-      we::layer* ptr_workflow_engine_;
 
     private:
 
@@ -286,17 +271,25 @@ namespace sdpa {
       unsigned int _max_consecutive_registration_attempts;
       unsigned int _max_consecutive_network_faults;
       boost::posix_time::time_duration _registration_timeout;
-      fhg::thread::set _registration_threads;
 
       void do_registration_after_sleep (const MasterInfo);
 
-
-      fhg::thread::queue<boost::shared_ptr<events::SDPAEvent> > _event_queue;
-      boost::thread _event_handler_thread;
-      void handle_events();
+      fhg::thread::queue<boost::shared_ptr<events::SDPAEvent>> _event_queue;
 
       fhg::com::kvs::kvsc_ptr_t _kvs_client;
-      boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
+      sdpa::com::NetworkStrategy _network_strategy;
+
+      std::unique_ptr<we::layer> ptr_workflow_engine_;
+
+      fhg::thread::set _registration_threads;
+
+      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+        _scheduling_thread;
+      void scheduling_thread();
+
+      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+        _event_handler_thread;
+      void handle_events();
 
     protected:
       struct child_proxy
@@ -325,6 +318,7 @@ namespace sdpa {
 
         void worker_registration
           (boost::optional<unsigned int> capacity, capabilities_set_t) const;
+        void notify_shutdown() const;
 
         void job_failed (job_id_t, std::string error_message) const;
         void job_finished (job_id_t, job_result_t) const;

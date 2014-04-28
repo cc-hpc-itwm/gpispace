@@ -17,9 +17,7 @@
 #include <we/exception.hpp>
 
 #include <sstream>
-
-#include <boost/foreach.hpp>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 
 BOOST_AUTO_TEST_CASE (signature_show)
 {
@@ -67,7 +65,7 @@ BOOST_AUTO_TEST_CASE (signature_show)
 #undef CHECK
 
   {
-    boost::unordered_set<std::string> n (pnet::type::signature::names (line2D));
+    std::unordered_set<std::string> n (pnet::type::signature::names (line2D));
 
     BOOST_REQUIRE_EQUAL (n.size(), 2);
     BOOST_REQUIRE_EQUAL (n.count("point2D"), 1);
@@ -79,7 +77,7 @@ BOOST_AUTO_TEST_CASE (signature_show)
   {
     signature_type s (structured_type (std::make_pair ("s", ps)));
 
-    boost::unordered_set<std::string> n (pnet::type::signature::names (s));
+    std::unordered_set<std::string> n (pnet::type::signature::names (s));
 
     BOOST_REQUIRE_EQUAL (n.size(), 3);
     BOOST_REQUIRE_EQUAL (n.count("point2D"), 1);
@@ -650,12 +648,12 @@ namespace
   class resolver
   {
   public:
-    resolver (const boost::unordered_map<std::string, signature_type>& m)
+    resolver (const std::unordered_map<std::string, signature_type>& m)
       : _m (m)
     {}
     boost::optional<signature_type> operator() (const std::string& key) const
     {
-      boost::unordered_map<std::string, signature_type>::const_iterator
+      std::unordered_map<std::string, signature_type>::const_iterator
         pos (_m.find (key));
 
       if (pos == _m.end())
@@ -666,7 +664,7 @@ namespace
       return pos->second;
     }
   private:
-    const boost::unordered_map<std::string, signature_type>& _m;
+    const std::unordered_map<std::string, signature_type>& _m;
   };
 }
 
@@ -715,7 +713,7 @@ BOOST_AUTO_TEST_CASE (resolve)
     (std::make_pair ("circle", circle_resolved_fields));
 
 
-  boost::unordered_map<std::string, signature_type> resolver_map;
+  std::unordered_map<std::string, signature_type> resolver_map;
 
   BOOST_CHECK_THROW ( resolve (circle, resolver (resolver_map))
                     , pnet::exception::could_not_resolve

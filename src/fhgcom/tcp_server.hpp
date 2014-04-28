@@ -1,12 +1,10 @@
 #ifndef FHG_COM_TCP_SERVER_HPP
 #define FHG_COM_TCP_SERVER_HPP 1
 
-#include <boost/asio.hpp>
-
 #include <fhgcom/session.hpp>
 #include <fhgcom/session_manager.hpp>
 
-#include <fhgcom/io_service_pool.hpp>
+#include <boost/asio.hpp>
 
 namespace fhg
 {
@@ -16,10 +14,8 @@ namespace fhg
     {
     public:
       typedef session_manager manager_t;
-      typedef manager_t::session_type session_type;
-      typedef manager_t::session_ptr  session_ptr;
 
-      tcp_server ( io_service_pool & pool
+      tcp_server ( boost::asio::io_service&
                  , manager_t & manager
                  , const std::string & host
                  , const std::string & service
@@ -28,23 +24,15 @@ namespace fhg
 
       void stop ();
 
-      unsigned short port () const;
+      unsigned short TESTONLY_port () const;
     private:
-      void start (void);
-      bool try_start ( boost::asio::ip::tcp::endpoint ep
-                     , boost::system::error_code & ec
-                     );
       void accept ();
-      void handle_accept ( session_ptr session
+      void handle_accept ( boost::shared_ptr<session> session
                          , const boost::system::error_code & error
                          );
 
-      io_service_pool &  service_pool_;
+      boost::asio::io_service& _io_service;
       manager_t & manager_;
-
-      std::string host_;
-      std::string service_;
-      bool reuse_addr_;
 
       boost::asio::ip::tcp::acceptor acceptor_;
     };

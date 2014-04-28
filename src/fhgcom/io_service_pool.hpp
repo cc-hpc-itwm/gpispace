@@ -4,11 +4,8 @@
 #ifndef FHGCOM_IO_SERVICE_POOL_HPP
 #define FHGCOM_IO_SERVICE_POOL_HPP 1
 
-#include <vector>
-
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/shared_ptr.hpp>
 
 namespace fhg
 {
@@ -18,22 +15,16 @@ namespace fhg
       : private boost::noncopyable
     {
     public:
-      explicit io_service_pool (std::size_t pool_size);
-
-      void set_nthreads (size_t nthreads) { m_nthreads = nthreads; }
+      explicit io_service_pool (std::size_t nthreads);
 
       void run ();
       void stop ();
 
       boost::asio::io_service & get_io_service ();
     private:
-      typedef boost::shared_ptr<boost::asio::io_service> io_service_ptr;
-      typedef boost::shared_ptr<boost::asio::io_service::work> work_ptr;
+      boost::asio::io_service io_service_;
+      boost::asio::io_service::work work_;
 
-      std::vector<io_service_ptr> io_services_;
-      std::vector<work_ptr> work_;
-
-      std::size_t next_io_service_;
       std::size_t m_nthreads;
     };
   }

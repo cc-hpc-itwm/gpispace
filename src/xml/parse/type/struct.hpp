@@ -16,9 +16,9 @@
 
 #include <list>
 #include <string>
+#include <unordered_map>
 
 #include <boost/filesystem.hpp>
-#include <boost/unordered/unordered_map_fwd.hpp>
 #include <boost/variant.hpp>
 #include <boost/function.hpp>
 
@@ -43,8 +43,8 @@ namespace xml
         const pnet::type::signature::structured_type& signature() const;
         const std::string& name() const;
 
-        void specialize (const boost::unordered_map<std::string, std::string>&);
-        void resolve (const boost::unordered_map<std::string, structure_type>&);
+        void specialize (const std::unordered_map<std::string, std::string>&);
+        void resolve (const std::unordered_map<std::string, structure_type>&);
 
         id::ref::structure clone
           ( const boost::optional<parent_id_type>& parent = boost::none
@@ -67,8 +67,8 @@ namespace xml
 
     namespace structure_type_util
     {
-      typedef boost::unordered_map<std::string, type::structure_type> set_type;
-      typedef boost::unordered_map<std::string, std::string> forbidden_type;
+      typedef std::unordered_map<std::string, type::structure_type> set_type;
+      typedef std::unordered_map<std::string, std::string> forbidden_type;
 
       set_type make (const type::structs_type & structs);
 

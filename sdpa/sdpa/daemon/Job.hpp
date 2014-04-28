@@ -3,6 +3,7 @@
 
 #include <sdpa/job_states.hpp>
 #include <sdpa/types.hpp>
+#include <sdpa/job_requirements.hpp>
 
 #include <fhg/assert.hpp>
 
@@ -17,7 +18,7 @@ namespace sdpa
     // front-end: define the FSM structure
     struct JobFSM_ : public boost::msm::front::state_machine_def<JobFSM_>
     {
-      virtual ~JobFSM_() {}
+      virtual ~JobFSM_() = default;
 
       struct s_pending : public boost::msm::front::state<>{};
       struct s_running : public boost::msm::front::state<>{};
@@ -103,12 +104,14 @@ namespace sdpa
           , const job_desc_t desc
           , bool is_master_job
           , const worker_id_t& owner
+          , job_requirements_t
           );
 
       const job_desc_t& description() const;
       const job_id_t& id() const;
       bool isMasterJob() const;
       worker_id_t owner() const;
+      job_requirements_t requirements() const;
 
       std::string error_message () const;
       const job_result_t& result() const;
@@ -128,6 +131,7 @@ namespace sdpa
       job_id_t id_;
       bool _is_master_job;
       worker_id_t m_owner;
+      job_requirements_t _requirements;
 
       std::string m_error_message;
       job_result_t result_;

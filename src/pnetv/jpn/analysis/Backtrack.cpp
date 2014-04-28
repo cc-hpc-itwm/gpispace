@@ -1,19 +1,20 @@
 #include "Backtrack.h"
 
-#include <algorithm> /* std::reverse() */
-#include <cassert>
+#include "State.h"
+
 #include <fhg/assert.hpp>
 
-#include "State.h"
+#include <algorithm> /* std::reverse() */
+#include <cassert>
 
 namespace jpn {
 namespace analysis {
 
-std::vector<TransitionId> backtrack(const State *state, const State *lastState) {
-    assert(state != NULL);
-    assert(lastState != NULL);
+std::vector<we::transition_id_type> backtrack(const State *state, const State *lastState) {
+    assert(state != nullptr);
+    assert(lastState != nullptr);
 
-    std::vector<TransitionId> result;
+    std::vector<we::transition_id_type> result;
 
     while (state != lastState) {
         result.push_back(state->lastTransition()->id());
@@ -26,5 +27,3 @@ std::vector<TransitionId> backtrack(const State *state, const State *lastState) 
 }
 
 }} // namespace jpn::analysis
-
-/* vim:set et sts=4 sw=4: */

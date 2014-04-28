@@ -1,9 +1,9 @@
 #ifndef FHG_COM_MESSAGE_HPP
 #define FHG_COM_MESSAGE_HPP 1
 
-#include <vector>
-
 #include <fhgcom/header.hpp>
+
+#include <vector>
 
 namespace fhg
 {
@@ -11,8 +11,6 @@ namespace fhg
   {
     struct message_t
     {
-      typedef p2p::header_t header_t;
-
       message_t ()
         : data()
       {}
@@ -52,7 +50,7 @@ namespace fhg
       const char * buf () const { return &data[0]; }
       std::size_t size () const { return data.size(); }
 
-      header_t header;
+      p2p::header_t header;
       std::vector<char> data;
     };
   }

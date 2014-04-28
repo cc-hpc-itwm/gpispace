@@ -17,7 +17,7 @@ namespace fhg
       namespace
       {
         template<typename T> class get_or_none_impl
-          : public boost::static_visitor<boost::optional<T&> >
+          : public boost::static_visitor<boost::optional<T&>>
         {
         public:
           boost::optional<T&> operator() (T& val) const

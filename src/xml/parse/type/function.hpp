@@ -21,9 +21,9 @@
 #include <we/type/port.hpp>
 
 #include <boost/optional.hpp>
-#include <boost/unordered_set.hpp>
 
 #include <string>
+#include <unordered_set>
 
 namespace xml
 {
@@ -43,7 +43,7 @@ namespace xml
         ID_SIGNATURES(function);
 
       private:
-        typedef boost::unordered_set<std::string> typenames_type;
+        typedef std::unordered_set<std::string> typenames_type;
 
       public:
         typedef std::string unique_key_type;
@@ -196,8 +196,8 @@ namespace xml
         we::type::transition_t synthesize
           ( const std::string&
           , const state::type&
-          , boost::unordered_map<std::string, we::port_id_type>& port_id_in
-          , boost::unordered_map<std::string, we::port_id_type>& port_id_out
+          , std::unordered_map<std::string, we::port_id_type>& port_id_in
+          , std::unordered_map<std::string, we::port_id_type>& port_id_out
           , const boost::optional<bool>&
           , const conditions_type&
           , const we::type::property::type&
@@ -272,15 +272,11 @@ namespace xml
                       );
 
         bool operator== (const fun_info_type & other) const;
-
-        friend std::size_t hash_value (const fun_info_type &);
       };
 
-      std::size_t hash_value (const fun_info_type & fi);
+      typedef std::unordered_set<fun_info_type> fun_infos_type;
 
-      typedef boost::unordered_set<fun_info_type> fun_infos_type;
-
-      typedef boost::unordered_map<std::string,fun_infos_type> fun_info_map;
+      typedef std::unordered_map<std::string,fun_infos_type> fun_info_map;
 
       typedef boost::filesystem::path path_t;
 
@@ -290,7 +286,7 @@ namespace xml
 
       void mk_makefile ( const state::type & state
                        , const fun_info_map & m
-                       , const boost::unordered_set<std::string>& structnames
+                       , const std::unordered_set<std::string>& structnames
                        );
 
       bool find_module_calls ( const state::type & state
@@ -302,7 +298,7 @@ namespace xml
 
       void struct_to_cpp ( const state::type &
                          , const id::ref::function &
-                         , boost::unordered_set<std::string>&
+                         , std::unordered_set<std::string>&
                          );
 
       // ******************************************************************* //
@@ -315,6 +311,14 @@ namespace xml
       } // namespace dump
     }
   }
+}
+
+namespace std
+{
+  template<> struct hash<xml::parse::type::fun_info_type>
+  {
+    size_t operator()(xml::parse::type::fun_info_type const&) const;
+  };
 }
 
 #endif

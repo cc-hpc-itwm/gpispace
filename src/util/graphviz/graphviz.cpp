@@ -139,7 +139,7 @@ namespace fhg
         const QStringList position_strings
           (QString (get_attribute (_edge, "pos")).split(" "));
 
-        foreach (const QString& point_string, position_strings)
+        for (const QString& point_string : position_strings)
           {
             QStringList components (point_string.split(","));
 
@@ -207,7 +207,7 @@ namespace fhg
       void graph_type::layout (const QString& engine)
       {
         gvLayout (_context._context, _graph, unsafe (engine));
-        gvRender (_context._context, _graph, unsafe (engine), NULL);
+        gvRender (_context._context, _graph, unsafe (engine), nullptr);
       }
     }
   }

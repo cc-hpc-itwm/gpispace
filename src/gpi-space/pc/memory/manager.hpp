@@ -3,14 +3,15 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/unordered_set.hpp>
-#include <boost/unordered_map.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
 #include <gpi-space/pc/memory/transfer_manager.hpp>
+
+#include <unordered_set>
+#include <unordered_map>
 
 namespace gpi
 {
@@ -123,12 +124,12 @@ namespace gpi
       private:
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
-        typedef boost::unordered_map< gpi::pc::type::segment_id_t
-                                    , area_ptr
-                                    > area_map_t;
-        typedef boost::unordered_map< gpi::pc::type::handle_t
-                                    , gpi::pc::type::segment_id_t
-                                    > handle_to_segment_t;
+        typedef std::unordered_map< gpi::pc::type::segment_id_t
+                                  , area_ptr
+                                  > area_map_t;
+        typedef std::unordered_map< gpi::pc::type::handle_t
+                                  , gpi::pc::type::segment_id_t
+                                  > handle_to_segment_t;
 
         area_ptr get_area (const gpi::pc::type::segment_id_t);
         area_ptr get_area (const gpi::pc::type::segment_id_t) const;

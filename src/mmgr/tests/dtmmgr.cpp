@@ -36,7 +36,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE (dtmmgr)
 {
-  DTmmgr_t dtmmgr = NULL;
+  DTmmgr_t dtmmgr = nullptr;
 
   dtmmgr_init (&dtmmgr, 45, 2);
 
@@ -70,43 +70,43 @@ BOOST_AUTO_TEST_CASE (dtmmgr)
   {
     Offset_t Offset = -1;
 
-    dtmmgr_offset_size (dtmmgr, 0, ARENA_UP, &Offset, NULL);
+    dtmmgr_offset_size (dtmmgr, 0, ARENA_UP, &Offset, nullptr);
 
     BOOST_REQUIRE_EQUAL (Offset, 0);
 
-    dtmmgr_offset_size (dtmmgr, 2, ARENA_UP, &Offset, NULL);
+    dtmmgr_offset_size (dtmmgr, 2, ARENA_UP, &Offset, nullptr);
 
     BOOST_REQUIRE_EQUAL (Offset, 2);
 
-    dtmmgr_offset_size (dtmmgr, 4, ARENA_UP, &Offset, NULL);
+    dtmmgr_offset_size (dtmmgr, 4, ARENA_UP, &Offset, nullptr);
 
     BOOST_REQUIRE_EQUAL (Offset, 4);
 
-    dtmmgr_offset_size (dtmmgr, 6, ARENA_UP, &Offset, NULL);
+    dtmmgr_offset_size (dtmmgr, 6, ARENA_UP, &Offset, nullptr);
 
     BOOST_REQUIRE_EQUAL (Offset, 6);
 
-    dtmmgr_offset_size (dtmmgr, 8, ARENA_UP, &Offset, NULL);
+    dtmmgr_offset_size (dtmmgr, 8, ARENA_UP, &Offset, nullptr);
 
     BOOST_REQUIRE_EQUAL (Offset, 8);
 
-    dtmmgr_offset_size (dtmmgr, 1, ARENA_DOWN, &Offset, NULL);
+    dtmmgr_offset_size (dtmmgr, 1, ARENA_DOWN, &Offset, nullptr);
 
     BOOST_REQUIRE_EQUAL (Offset, 42);
 
-    dtmmgr_offset_size (dtmmgr, 3, ARENA_DOWN, &Offset, NULL);
+    dtmmgr_offset_size (dtmmgr, 3, ARENA_DOWN, &Offset, nullptr);
 
     BOOST_REQUIRE_EQUAL (Offset, 40);
 
-    dtmmgr_offset_size (dtmmgr, 5, ARENA_DOWN, &Offset, NULL);
+    dtmmgr_offset_size (dtmmgr, 5, ARENA_DOWN, &Offset, nullptr);
 
     BOOST_REQUIRE_EQUAL (Offset, 38);
 
-    dtmmgr_offset_size (dtmmgr, 7, ARENA_DOWN, &Offset, NULL);
+    dtmmgr_offset_size (dtmmgr, 7, ARENA_DOWN, &Offset, nullptr);
 
     BOOST_REQUIRE_EQUAL (Offset, 36);
 
-    dtmmgr_offset_size (dtmmgr, 9, ARENA_DOWN, &Offset, NULL);
+    dtmmgr_offset_size (dtmmgr, 9, ARENA_DOWN, &Offset, nullptr);
 
     BOOST_REQUIRE_EQUAL (Offset, 34);
   }
@@ -119,8 +119,8 @@ BOOST_AUTO_TEST_CASE (dtmmgr)
 
   unsigned long callback_count = 0;
 
-  dtmmgr_defrag (&dtmmgr, ARENA_UP, &fMemmove, NULL, &callback_count);
-  dtmmgr_defrag (&dtmmgr, ARENA_DOWN, &fMemmove, NULL, &callback_count);
+  dtmmgr_defrag (&dtmmgr, ARENA_UP, &fMemmove, nullptr, &callback_count);
+  dtmmgr_defrag (&dtmmgr, ARENA_DOWN, &fMemmove, nullptr, &callback_count);
 
   BOOST_REQUIRE_EQUAL (callback_count, 3);
 

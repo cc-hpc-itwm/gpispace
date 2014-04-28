@@ -8,8 +8,7 @@
 #include <we/expr/exception.hpp>
 #include <we/expr/token/type.hpp>
 
-#include <boost/function.hpp>
-
+#include <functional>
 #include <string>
 #include <stack>
 #include <list>
@@ -73,7 +72,7 @@ namespace expr
       void reduce (const std::size_t k);
       void
       parse ( const std::string& input
-            , const boost::function<nd_t (const std::list<std::string>&)>&
+            , const std::function<nd_t (const std::list<std::string>&)>&
             );
 
     public:
