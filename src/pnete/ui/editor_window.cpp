@@ -95,11 +95,11 @@ namespace fhg
           ( new dock_widget
             (tr ("undo_window"), new QUndoView (_undo_group, this))
           )
-        , _windows_menu (NULL)
-        , _document_specific_action_menu (NULL)
-        , _document_specific_action_toolbar (NULL)
-        , _action_save_current_file (NULL)
-        , _action_execute_current_file_remote_via_prompt (NULL)
+        , _windows_menu (nullptr)
+        , _document_specific_action_menu (nullptr)
+        , _document_specific_action_toolbar (nullptr)
+        , _action_save_current_file (nullptr)
+        , _action_execute_current_file_remote_via_prompt (nullptr)
       {
         setWindowTitle (tr ("editor_window_title"));
 
@@ -312,7 +312,7 @@ namespace fhg
         doc_view->show();
         doc_view->raise();
 
-        foreach (QAction* action, doc_view->actions())
+        for (QAction* action : doc_view->actions())
         {
           _document_specific_action_menu->addAction (action);
           _document_specific_action_toolbar->addAction (action);
@@ -341,7 +341,7 @@ namespace fhg
         {
           //! \todo Warn if unsaved changes.
           document_view* current (_accessed_widgets.top());
-          foreach (QAction* action, current->actions())
+          for (QAction* action : current->actions())
           {
             action->setVisible (false);
           }
@@ -375,7 +375,7 @@ namespace fhg
 
         if (!_accessed_widgets.empty())
         {
-          foreach (QAction* action, _accessed_widgets.top()->actions())
+          for (QAction* action : _accessed_widgets.top()->actions())
           {
             action->setVisible (false);
           }
@@ -392,7 +392,7 @@ namespace fhg
 
         _document_specific_action_menu =
           menuBar()->addMenu (tr ("document_specific_actions"));
-        foreach (QAction* action, to->actions())
+        for (QAction* action : to->actions())
         {
           _document_specific_action_menu->addAction (action);
           action->setVisible (true);
@@ -442,7 +442,7 @@ namespace fhg
         menu->addSeparator();
 
         QMenu* toolbars (menu->addMenu (tr ("toolbars_menu")));
-        foreach (QToolBar* toolbar, findChildren<QToolBar*>())
+        for (QToolBar* toolbar : findChildren<QToolBar*>())
         {
           toolbars->addAction (toolbar->toggleViewAction());
         }
@@ -857,9 +857,9 @@ namespace fhg
           int slot_gen_count (0);
           int slot_store_count (0);
 
-          foreach ( const xml::parse::id::ref::transition& trans
-                  , net.get().transitions().ids()
-                  )
+          for ( const xml::parse::id::ref::transition& trans
+              : net.get().transitions().ids()
+              )
           {
             const xml::parse::id::ref::function fun
               (trans.get().resolved_function());
@@ -882,18 +882,18 @@ namespace fhg
               slot_store_count += fhg::util::read_int (pos);
             }
 
-            foreach ( const xml::parse::id::ref::port& pid
-                    , fun.get().ports().ids()
-                    )
+            for ( const xml::parse::id::ref::port& pid
+                : fun.get().ports().ids()
+                )
             {
               xml::parse::type::port_type& port (pid.get_ref());
 
               const std::string name (trans.get().name() + "__xxx__" + port.name());
 
               bool has_any_connection (false);
-              foreach ( const xml::parse::type::connect_type& connect
-                      , trans.get().connections().values()
-                      )
+              for ( const xml::parse::type::connect_type& connect
+                  : trans.get().connections().values()
+                  )
               {
                 if (connect.port() == port.name())
                 {
@@ -901,9 +901,9 @@ namespace fhg
                   break;
                 }
               }
-              foreach ( const xml::parse::type::place_map_type& place_map
-                      , trans.get().place_map().values()
-                      )
+              for ( const xml::parse::type::place_map_type& place_map
+                  : trans.get().place_map().values()
+                  )
               {
                 if (place_map.place_virtual() == port.name())
                 {
@@ -1186,9 +1186,9 @@ namespace fhg
 
           QMap<boost::optional<QString>, QMap<QString, QStringList> > port_groups;
 
-          BOOST_FOREACH ( const we::type::activity_t::token_on_port_t& top
-                        , activity_and_fun.first.output()
-                        )
+          for ( const we::type::activity_t::token_on_port_t& top
+              : activity_and_fun.first.output()
+              )
           {
             const QString token (token_to_string (top.first));
             const QString port_name
@@ -1207,7 +1207,7 @@ namespace fhg
             }
           }
 
-          foreach (const boost::optional<QString>& group, sort (port_groups.keys()))
+          for (const boost::optional<QString>& group : sort (port_groups.keys()))
           {
             QGroupBox* box (new QGroupBox (group.get_value_or ("Global")));
 
@@ -1215,7 +1215,7 @@ namespace fhg
 
             QFormLayout* box_layout (new QFormLayout (box));
 
-            foreach (const QString& port, sort (port_groups[group].keys()))
+            for (const QString& port : sort (port_groups[group].keys()))
             {
               const QString port_name (group ? *group + "__xxx__" + port : port);
 
@@ -1229,7 +1229,7 @@ namespace fhg
                           )
                 );
 
-              BOOST_FOREACH (const QString& token, port_groups[group][port])
+              for (const QString& token : port_groups[group][port])
               {
                 QWidget* wid
                   (widget_for_item (xml_port->get().type(), token).first);
@@ -1314,11 +1314,10 @@ namespace fhg
 
           QMap<boost::optional<QString>, QStringList> port_groups;
 
-          BOOST_FOREACH
-            ( const we::type::port_t& port
-            , activity_and_fun->first.transition().ports_input()
-            | boost::adaptors::map_values
-            )
+          for ( const we::type::port_t& port
+              : activity_and_fun->first.transition().ports_input()
+              | boost::adaptors::map_values
+              )
           {
             const QString port_name (QString::fromStdString (port.name()));
 
@@ -1333,7 +1332,7 @@ namespace fhg
             }
           }
 
-          foreach (const boost::optional<QString>& group, sort (port_groups.keys()))
+          for (const boost::optional<QString>& group : sort (port_groups.keys()))
           {
             QGroupBox* box (new QGroupBox (group.get_value_or ("Global")));
 
@@ -1341,7 +1340,7 @@ namespace fhg
 
             QFormLayout* box_layout (new QFormLayout (box));
 
-            BOOST_FOREACH (const QString& val, sort (port_groups[group]))
+            for (const QString& val : sort (port_groups[group]))
             {
               const QString port_name (group ? *group + "__xxx__" + val : val);
 
