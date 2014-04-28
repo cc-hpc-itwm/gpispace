@@ -1,143 +1,137 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/type/bitsetofint.hpp>
+#define BOOST_TEST_MODULE "we/type/bitsetofint"
+#include <boost/test/unit_test.hpp>
 
-typedef bitsetofint::type set_t;
+#include <we/type/bitsetofint.hpp>
 
 #include <iostream>
 #include <sstream>
 #include <set>
 
-using std::cout;
-using std::cerr;
-using std::endl;
-
-#define REQUIRE(b) if (!(b)) { cerr << "FAILURE in line " << __LINE__ << endl; ++ec; }
-
-int
-main ()
+BOOST_AUTO_TEST_CASE (NOTEST_various_tests)
 {
-  size_t ec (0); // error counter
+  bitsetofint::type set(1);
 
-  set_t set(1);
-
-  cout << set << endl;
+  std::cout << set << std::endl;
 
   for (unsigned int i (0); i < 80; ++i)
-    cout << set.is_element(i);
-  cout << endl;
+    std::cout << set.is_element(i);
+  std::cout << std::endl;
 
   set.ins (13);
   set.ins (22);
   set.ins (69);
 
   for (unsigned int i (0); i < 80; ++i)
-    cout << set.is_element(i);
-  cout << endl;
+    std::cout << set.is_element(i);
+  std::cout << std::endl;
 
   set.ins (13);
   set.del (22);
   set.ins (70);
 
   for (unsigned int i (0); i < 80; ++i)
-    cout << set.is_element(i);
-  cout << endl;
+    std::cout << set.is_element(i);
+  std::cout << std::endl;
 
-  cout << set << endl;
+  std::cout << set << std::endl;
 
-  cout << "*** filled up to " << (1 << 20) << endl;
+  std::cout << "*** filled up to " << (1 << 20) << std::endl;
 
   set.ins (1 << 20);
 
-  cout << "*** filled up to " << std::numeric_limits<unsigned int>::max() << endl;
+  std::cout << "*** filled up to " << std::numeric_limits<unsigned int>::max() << std::endl;
 
   set.ins (std::numeric_limits<unsigned int>::max());
 
-  cout << "*** bit operations" << endl;
-
+}
+BOOST_AUTO_TEST_CASE (bit_operations)
+{
   {
-    set_t a (1); // 64bit
-    set_t b (2); // 128bit
+    bitsetofint::type a (1); // 64bit
+    bitsetofint::type b (2); // 128bit
 
     a.ins (32);
     b.ins (96);
 
-    set_t c = a | b;
+    bitsetofint::type c = a | b;
 
-    REQUIRE (c.is_element(32));
-    REQUIRE (c.is_element(96));
+    BOOST_REQUIRE (c.is_element(32));
+    BOOST_REQUIRE (c.is_element(96));
   }
 
   {
-    set_t bs;
+    bitsetofint::type bs;
 
-    REQUIRE (bitsetofint::to_hex (bs) == "0x/");
+    BOOST_REQUIRE_EQUAL (bitsetofint::to_hex (bs), "0x/");
 
     bs.ins (0);
 
-    REQUIRE (bitsetofint::to_hex (bs) == "0x/0000000000000001/");
+    BOOST_REQUIRE_EQUAL (bitsetofint::to_hex (bs), "0x/0000000000000001/");
 
     bs.ins (1);
 
-    REQUIRE (bitsetofint::to_hex (bs) == "0x/0000000000000003/");
+    BOOST_REQUIRE_EQUAL (bitsetofint::to_hex (bs), "0x/0000000000000003/");
 
     bs.ins (2);
 
-    REQUIRE (bitsetofint::to_hex (bs) == "0x/0000000000000007/");
+    BOOST_REQUIRE_EQUAL (bitsetofint::to_hex (bs), "0x/0000000000000007/");
 
     bs.ins (3);
 
-    REQUIRE (bitsetofint::to_hex (bs) == "0x/000000000000000f/");
+    BOOST_REQUIRE_EQUAL (bitsetofint::to_hex (bs), "0x/000000000000000f/");
 
     bs.ins (4);
 
-    REQUIRE (bitsetofint::to_hex (bs) == "0x/000000000000001f/");
+    BOOST_REQUIRE_EQUAL (bitsetofint::to_hex (bs), "0x/000000000000001f/");
 
     bs.ins (64);
 
-    REQUIRE (bitsetofint::to_hex (bs) == "0x/000000000000001f/0000000000000001/");
+    BOOST_REQUIRE_EQUAL (bitsetofint::to_hex (bs), "0x/000000000000001f/0000000000000001/");
+  }
+}
+
+BOOST_AUTO_TEST_CASE (string_conversion)
+{
+  {
+    BOOST_REQUIRE_EQUAL (bitsetofint::from_hex ("0x/"), bitsetofint::type());
+
+    BOOST_REQUIRE_EQUAL ( bitsetofint::from_hex ("0x/0000000000000001/")
+                        , bitsetofint::type().ins (0)
+                        );
+
+    BOOST_REQUIRE_EQUAL ( bitsetofint::from_hex ("0x/0000000000000003/")
+                        , bitsetofint::type().ins (0).ins (1)
+                        );
+
+    BOOST_REQUIRE_EQUAL ( bitsetofint::from_hex ("0x/0000000000000007/")
+                        , bitsetofint::type().ins (0).ins (1).ins (2)
+                        );
+
+    BOOST_REQUIRE_EQUAL ( bitsetofint::from_hex ("0x/000000000000001f/0000000000000001/")
+                        , bitsetofint::type().ins (0).ins (1).ins (2).ins (3).ins (4).ins (64)
+                        );
   }
 
-  cout << "string conversion" << endl;
-
   {
-    REQUIRE (bitsetofint::from_hex ("0x/") == bitsetofint::type());
+    BOOST_REQUIRE_EQUAL (bitsetofint::from_hex ("0x"), bitsetofint::type());
 
-    REQUIRE (  bitsetofint::from_hex ("0x/0000000000000001/")
-            == bitsetofint::type().ins (0)
-            );
+    BOOST_REQUIRE_EQUAL ( bitsetofint::from_hex ("0x/0000000000000001")
+                        , bitsetofint::type().ins (0)
+                        );
 
-    REQUIRE (  bitsetofint::from_hex ("0x/0000000000000003/")
-            == bitsetofint::type().ins (0).ins (1)
-            );
+    BOOST_REQUIRE_EQUAL ( bitsetofint::from_hex ("0x/0000000000000003")
+                        , bitsetofint::type().ins (0).ins (1)
+                        );
 
-    REQUIRE (  bitsetofint::from_hex ("0x/0000000000000007/")
-            == bitsetofint::type().ins (0).ins (1).ins (2)
-            );
+    BOOST_REQUIRE_EQUAL ( bitsetofint::from_hex ("0x/0000000000000007")
+                        , bitsetofint::type().ins (0).ins (1).ins (2)
+                        );
 
-    REQUIRE (  bitsetofint::from_hex ("0x/000000000000001f/0000000000000001/")
-            == bitsetofint::type().ins (0).ins (1).ins (2).ins (3).ins (4).ins (64)
-            );
-  }
-
-  {
-    REQUIRE (bitsetofint::from_hex ("0x") == bitsetofint::type());
-
-    REQUIRE (  bitsetofint::from_hex ("0x/0000000000000001")
-            == bitsetofint::type().ins (0)
-            );
-
-    REQUIRE (  bitsetofint::from_hex ("0x/0000000000000003")
-            == bitsetofint::type().ins (0).ins (1)
-            );
-
-    REQUIRE (  bitsetofint::from_hex ("0x/0000000000000007")
-            == bitsetofint::type().ins (0).ins (1).ins (2)
-            );
-
-    REQUIRE (  bitsetofint::from_hex ("0x/000000000000001f/0000000000000001")
-            == bitsetofint::type().ins (0).ins (1).ins (2).ins (3).ins (4).ins (64)
-            );
+    BOOST_REQUIRE_EQUAL ( bitsetofint::from_hex ("0x/000000000000001f/0000000000000001")
+                        , bitsetofint::type().ins (0).ins (1).ins (2).ins (3).ins (4).ins (64)
+                        );
   }
 
   {
@@ -147,8 +141,8 @@ main ()
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
-    REQUIRE (!bs);
-    REQUIRE (pos == inp.begin());
+    BOOST_REQUIRE (!bs);
+    BOOST_REQUIRE_EQUAL (std::string (pos, end), inp);
   }
 
   {
@@ -158,8 +152,8 @@ main ()
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
-    REQUIRE (!bs);
-    REQUIRE (pos == inp.begin());
+    BOOST_REQUIRE (!bs);
+    BOOST_REQUIRE_EQUAL (std::string (pos, end), inp);
   }
 
   {
@@ -169,9 +163,9 @@ main ()
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
-    REQUIRE (bs);
-    REQUIRE (*bs == bitsetofint::type());
-    REQUIRE (pos == end);
+    BOOST_REQUIRE (bs);
+    BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type());
+    BOOST_REQUIRE_EQUAL (std::string (pos, end), "");
   }
 
   {
@@ -181,9 +175,9 @@ main ()
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
-    REQUIRE (bs);
-    REQUIRE (*bs == bitsetofint::type());
-    REQUIRE (pos == end);
+    BOOST_REQUIRE (bs);
+    BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type());
+    BOOST_REQUIRE_EQUAL (std::string (pos, end), "");
   }
 
   {
@@ -193,9 +187,9 @@ main ()
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
-    REQUIRE (bs);
-    REQUIRE (*bs == bitsetofint::type());
-    REQUIRE (std::string (pos, end) == "foo");
+    BOOST_REQUIRE (bs);
+    BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type());
+    BOOST_REQUIRE_EQUAL (std::string (pos, end), "foo");
   }
 
   {
@@ -205,9 +199,9 @@ main ()
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
-    REQUIRE (bs);
-    REQUIRE (*bs == bitsetofint::type());
-    REQUIRE (pos == end);
+    BOOST_REQUIRE (bs);
+    BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type());
+    BOOST_REQUIRE_EQUAL (std::string (pos, end), "");
   }
 
   {
@@ -217,9 +211,9 @@ main ()
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
-    REQUIRE (bs);
-    REQUIRE (*bs == bitsetofint::type());
-    REQUIRE (std::string (pos, end) == "000000000000000");
+    BOOST_REQUIRE (bs);
+    BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type());
+    BOOST_REQUIRE_EQUAL (std::string (pos, end), "000000000000000");
   }
 
   {
@@ -229,9 +223,9 @@ main ()
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
-    REQUIRE (bs);
-    REQUIRE (*bs == bitsetofint::type());
-    REQUIRE (pos == end);
+    BOOST_REQUIRE (bs);
+    BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type());
+    BOOST_REQUIRE_EQUAL (std::string (pos, end), "");
   }
 
   {
@@ -241,9 +235,9 @@ main ()
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
-    REQUIRE (bs);
-    REQUIRE (*bs == bitsetofint::type().ins (0).ins (1).ins (2).ins (3).ins (4).ins (64));
-    REQUIRE (pos == end);
+    BOOST_REQUIRE (bs);
+    BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type().ins (0).ins (1).ins (2).ins (3).ins (4).ins (64));
+    BOOST_REQUIRE_EQUAL (std::string (pos, end), "");
   }
 
   {
@@ -253,9 +247,9 @@ main ()
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
-    REQUIRE (bs);
-    REQUIRE (*bs == bitsetofint::type().ins (0).ins (1).ins (2).ins (3).ins (4).ins (64));
-    REQUIRE (std::string (pos, end) == "foo");
+    BOOST_REQUIRE (bs);
+    BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type().ins (0).ins (1).ins (2).ins (3).ins (4).ins (64));
+    BOOST_REQUIRE_EQUAL (std::string (pos, end), "foo");
   }
 
   {
@@ -265,9 +259,9 @@ main ()
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
-    REQUIRE (bs);
-    REQUIRE (*bs == bitsetofint::type().ins (0).ins (1).ins (2).ins (3).ins (4).ins (64));
-    REQUIRE (std::string (pos, end) == "!");
+    BOOST_REQUIRE (bs);
+    BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type().ins (0).ins (1).ins (2).ins (3).ins (4).ins (64));
+    BOOST_REQUIRE_EQUAL (std::string (pos, end), "!");
   }
 
   {
@@ -277,9 +271,9 @@ main ()
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
-    REQUIRE (bs);
-    REQUIRE (*bs == bitsetofint::type().ins (0).ins (1).ins (2).ins (3).ins (4).ins (64));
-    REQUIRE (std::string (pos, end) == " foo");
+    BOOST_REQUIRE (bs);
+    BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type().ins (0).ins (1).ins (2).ins (3).ins (4).ins (64));
+    BOOST_REQUIRE_EQUAL (std::string (pos, end), " foo");
   }
 
   {
@@ -289,9 +283,9 @@ main ()
 
     boost::optional<bitsetofint::type> bs (bitsetofint::from_hex (pos, end));
 
-    REQUIRE (bs);
-    REQUIRE (*bs == bitsetofint::type().ins (0));
-    REQUIRE (std::string (pos, end) == "!0000000000000001/");
+    BOOST_REQUIRE (bs);
+    BOOST_REQUIRE_EQUAL (*bs, bitsetofint::type().ins (0));
+    BOOST_REQUIRE_EQUAL (std::string (pos, end), "!0000000000000001/");
   }
 
   {
@@ -301,7 +295,7 @@ main ()
 
     std::size_t      exp = 0;
 
-    REQUIRE (res == exp);
+    BOOST_REQUIRE_EQUAL (res, exp);
   }
 
   {
@@ -311,7 +305,7 @@ main ()
 
     std::size_t      exp = 64;
 
-    REQUIRE (res == exp);
+    BOOST_REQUIRE_EQUAL (res, exp);
   }
 
   {
@@ -321,7 +315,7 @@ main ()
 
     std::size_t      exp = 8*4;
 
-    REQUIRE (res == exp);
+    BOOST_REQUIRE_EQUAL (res, exp);
   }
 
   {
@@ -331,7 +325,7 @@ main ()
 
     std::size_t      exp = 16;
 
-    REQUIRE (res == exp);
+    BOOST_REQUIRE_EQUAL (res, exp);
   }
 
   {
@@ -341,7 +335,7 @@ main ()
 
     std::size_t      exp = 64 + 16;
 
-    REQUIRE (res == exp);
+    BOOST_REQUIRE_EQUAL (res, exp);
   }
 
   {
@@ -352,7 +346,7 @@ main ()
 
     bitsetofint::type exp = bitsetofint::from_hex ("0x/0000000000000000");
 
-    REQUIRE (res == exp);
+    BOOST_REQUIRE_EQUAL (res, exp);
   }
 
   {
@@ -363,7 +357,7 @@ main ()
 
     bitsetofint::type exp = bitsetofint::from_hex ("0x/0000000000000000");
 
-    REQUIRE (res == exp);
+    BOOST_REQUIRE_EQUAL (res, exp);
   }
 
   {
@@ -374,7 +368,7 @@ main ()
 
     bitsetofint::type exp = bitsetofint::from_hex ("0x/ffffffffffffffff");
 
-    REQUIRE (res == exp);
+    BOOST_REQUIRE_EQUAL (res, exp);
   }
 
   {
@@ -385,7 +379,7 @@ main ()
 
     bitsetofint::type exp = bitsetofint::from_hex ("0x/1111111111111111");
 
-    REQUIRE (res == exp);
+    BOOST_REQUIRE_EQUAL (res, exp);
   }
 
   {
@@ -396,7 +390,7 @@ main ()
 
     bitsetofint::type exp = bitsetofint::from_hex ("0x/0000000000000000");
 
-    REQUIRE (res == exp);
+    BOOST_REQUIRE_EQUAL (res, exp);
   }
 
   {
@@ -407,11 +401,12 @@ main ()
 
     bitsetofint::type exp = bitsetofint::from_hex ("0x/1111111111111111");
 
-    REQUIRE (res == exp);
+    BOOST_REQUIRE_EQUAL (res, exp);
   }
+}
 
-  cout << "*** listing" << endl;
-
+BOOST_AUTO_TEST_CASE (listing)
+{
   {
     bitsetofint::type b;
 
@@ -419,7 +414,7 @@ main ()
 
     b.list (s);
 
-    REQUIRE (s.str() == "");
+    BOOST_REQUIRE_EQUAL (s.str(), "");
   }
 
   {
@@ -429,7 +424,7 @@ main ()
 
     b.list (s);
 
-    REQUIRE (s.str() == "0\n");
+    BOOST_REQUIRE_EQUAL (s.str(), "0\n");
   }
 
   {
@@ -439,7 +434,7 @@ main ()
 
     b.list (s);
 
-    REQUIRE (s.str() == "3141\n");
+    BOOST_REQUIRE_EQUAL (s.str(), "3141\n");
   }
 
   {
@@ -449,7 +444,7 @@ main ()
 
     b.list (s);
 
-    REQUIRE (s.str() == "0\n1\n13\n42\n");
+    BOOST_REQUIRE_EQUAL (s.str(), "0\n1\n13\n42\n");
   }
 
   {
@@ -458,8 +453,11 @@ main ()
 
     b.list ([&s] (std::size_t x) { s.insert (x); });
 
-    REQUIRE (s.size() == 0);
-    REQUIRE (s == b.elements());
+    BOOST_REQUIRE_EQUAL (s.size(), 0);
+    BOOST_REQUIRE_EQUAL (b.count(), 0);
+
+    const std::set<unsigned long> e (b.elements());
+    BOOST_REQUIRE_EQUAL_COLLECTIONS (s.begin(), s.end(), e.begin(), e.end());
   }
 
   {
@@ -468,9 +466,12 @@ main ()
 
     b.list ([&s] (std::size_t x) { s.insert (x); });
 
-    REQUIRE (s.size() == 1);
-    REQUIRE (s.count (42) == 1);
-    REQUIRE (s == b.elements());
+    BOOST_REQUIRE_EQUAL (s.size(), 1);
+    BOOST_REQUIRE_EQUAL (b.count(), 1);
+    BOOST_REQUIRE_EQUAL (s.count (42), 1);
+
+    const std::set<unsigned long> e (b.elements());
+    BOOST_REQUIRE_EQUAL_COLLECTIONS (s.begin(), s.end(), e.begin(), e.end());
   }
 
   {
@@ -479,13 +480,14 @@ main ()
 
     b.list ([&s] (std::size_t x) { s.insert (x); });
 
-    REQUIRE (s.size() == 4);
-    REQUIRE (s.count (0) == 1);
-    REQUIRE (s.count (1) == 1);
-    REQUIRE (s.count (13) == 1);
-    REQUIRE (s.count (42) == 1);
-    REQUIRE (s == b.elements());
-  }
+    BOOST_REQUIRE_EQUAL (s.size(), 4);
+    BOOST_REQUIRE_EQUAL (b.count(), 4);
+    BOOST_REQUIRE_EQUAL (s.count (0), 1);
+    BOOST_REQUIRE_EQUAL (s.count (1), 1);
+    BOOST_REQUIRE_EQUAL (s.count (13), 1);
+    BOOST_REQUIRE_EQUAL (s.count (42), 1);
 
-  return ec;
+    const std::set<unsigned long> e (b.elements());
+    BOOST_REQUIRE_EQUAL_COLLECTIONS (s.begin(), s.end(), e.begin(), e.end());
+  }
 }
