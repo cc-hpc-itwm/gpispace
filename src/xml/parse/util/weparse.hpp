@@ -15,11 +15,6 @@ namespace xml
   {
     namespace util
     {
-      std::string
-      format_parse_error ( const std::string&
-                         , const expr::exception::parse::exception&
-                         );
-
       expr::parse::parser generic_we_parse ( const std::string& input
                                            , const std::string& descr
                                            );

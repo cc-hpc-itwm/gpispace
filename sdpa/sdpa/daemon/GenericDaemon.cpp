@@ -412,16 +412,20 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
           if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
           {
             scheduler().workerCanceled (worker_id, jobId);
-            sdpa::worker_id_list_t
-              list_not_terminated_workers(scheduler().releaseReservation (jobId));
+            pJob->Reschedule();
 
-            for (const worker_id_t& wid : list_not_terminated_workers)
+            if (!scheduler().cancelNotTerminatedWorkerJobs
+                  ( [this, &jobId](const sdpa::worker_id_t& wid)
+                  {
+                    child_proxy (this, wid).cancel_job (jobId);
+                  }
+                  , jobId
+                  )
+                )
             {
-              child_proxy (this, wid).cancel_job (jobId);
+              scheduler().releaseReservation (jobId);
+              scheduler().enqueueJob (jobId);
             }
-
-            pJob->Reschedule(); // put the job back into the pending state
-            scheduler().enqueueJob (jobId);
           }
         }
 

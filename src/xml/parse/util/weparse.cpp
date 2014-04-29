@@ -11,22 +11,25 @@ namespace xml
   {
     namespace util
     {
-      std::string
-      format_parse_error ( const std::string& input
-                         , const expr::exception::parse::exception& e
-                         )
+      namespace
       {
-        std::ostringstream s;
+        std::string
+        format_parse_error ( const std::string& input
+                           , const expr::exception::parse::exception& e
+                           )
+        {
+          std::ostringstream s;
 
-        s << std::endl << input << std::endl;
-        for (std::size_t k (0); k < e.eaten; ++k)
+          s << std::endl << input << std::endl;
+          for (std::size_t k (0); k < e.eaten; ++k)
           {
             s << " ";
           }
-        s << "^" << std::endl;
-        s << e.what() << std::endl;
+          s << "^" << std::endl;
+          s << e.what() << std::endl;
 
-        return s.str();
+          return s.str();
+        }
       }
 
       expr::parse::parser generic_we_parse ( const std::string& input

@@ -1,74 +1,51 @@
 <defun name="workerlist">
-  <in  name="trigger" type="control" place="trigger_in"/>
+  <in name="num_workers" type="unsigned long" place="num_workers"/>
   <out name="workers" type="list" place="workers"/>
-
-  <struct name="worker_info">
-    <field name="workers" type="list" />
-  </struct>
+  <out name="hostnames" type="map" place="hostnames"/>
 
   <net>
-    <place name="trigger_in" type="control"/>
+    <place name="num_workers" type="unsigned long"/>
     <place name="workers" type="list"/>
-
-    <place name="worker_info" type="worker_info" />
+    <place name="hostnames" type="map"/>
 
     <transition name="run">
       <defun>
-        <in  name="trigger" type="control"/>
-        <out name="worker_info" type="worker_info"/>
-        <module name="workerlist" function="run (worker_info)" pass_context="true">
-          <cinclude href="fhglog/fhglog.hpp"/>
-          <cinclude href="sstream"/>
+        <in name="num_workers" type="unsigned long"/>
+        <out name="workers" type="list"/>
+        <out name="hostnames" type="map"/>
+        <properties name="fhg">
+          <properties name="drts">
+            <properties name="schedule">
+              <property key="num_worker">${num_workers}</property>
+            </properties>
+          </properties>
+        </properties>
+        <module name="workerlist" function="run (workers, hostnames)"
+                pass_context="true">
           <ld flag="-lwe-dev" />
           <code><![CDATA[
-            MLOG (INFO, "run ()");
-
-            std::list<std::string> wlist =
-              _pnetc_context->worker_list ();
+            const std::list<std::string> wlist (_pnetc_context->worker_list());
 
             if (wlist.empty())
             {
-              throw std::runtime_error ("worker list is empty!");
+              throw std::logic_error ("worker list is empty!");
             }
-            else
+
+            workers.assign (wlist.begin(), wlist.end());
+
+            for ( std::list<std::string>::const_iterator it (wlist.begin())
+                ; it != wlist.end()
+                ; ++it
+                )
             {
-              worker_info.workers.assign (wlist.begin(), wlist.end());
-
-              std::ostringstream worker_names;
-              std::list<std::string>::const_iterator it (wlist.begin());
-              while (it != wlist.end())
-              {
-                worker_names << *it << ", ";
-                ++it;
-              }
-
-              MLOG (INFO, "running on: " << worker_names.str());
-
-              MLOG ( INFO
-                   , "hostname of first worker: "
-                   << _pnetc_context->worker_to_hostname (wlist.front ())
-                   );
+              hostnames[*it] = _pnetc_context->worker_to_hostname (*it);
             }
-
-            return;
           ]]></code>
         </module>
       </defun>
-      <connect-in  port="trigger" place="trigger_in"/>
-      <connect-out port="worker_info" place="worker_info"/>
-    </transition>
-
-    <transition name="extract_worker_list">
-      <defun>
-        <in name="worker_info" type="worker_info" />
-        <out name="workers" type="list" />
-
-        <expression>
-          ${workers} := ${worker_info.workers};
-        </expression>
-      </defun>
-      <connect-in port="worker_info" place="worker_info" />
-      <connect-out port="workers" place="workers" />
+      <connect-in port="num_workers" place="num_workers"/>
+      <connect-out port="workers" place="workers"/>
+      <connect-out port="hostnames" place="hostnames"/>
     </transition>
   </net>
 </defun>

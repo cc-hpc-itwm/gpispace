@@ -17,7 +17,7 @@ make+=( -C "${DIR_SOURCE}")
 
 cleanup()
 {
-  sdpa stop
+  sdpa -s "${DIR_STATE}" stop
   rm -f "${HOSTFILE}"
   eval ${make[@]} uninstall
   eval ${make[@]} clean
@@ -42,7 +42,7 @@ actual=$("${DIR_BUILD}/hello")                              || die $EX_ERR_RUN
 
 test "Hello World" = "$actual"                              || die $EX_ERR_RES
 
-measured "stop" sdpa stop                                   || die $EX_ERR_STOP
+measured "stop" sdpa -s "${DIR_STATE}" stop                 || die $EX_ERR_STOP
 
 rm "${HOSTFILE}"                                         || die $EX_ERR_CLEANUP
 measured "uninstall" ${make[@]} uninstall                || die $EX_ERR_CLEANUP
