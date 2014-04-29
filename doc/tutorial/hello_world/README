@@ -13,15 +13,15 @@ The first step is to build the demonstration libraries by
 
 [source,bash]
 ----
-share/gspc/doc/tutorial/hello_world $ mkdir $HOME/build
-share/gspc/doc/tutorial/hello_world $ make BUILDDIR=$HOME/build -C src
-share/gspc/doc/tutorial/hello_world $ ls $HOME/build/*.*o
-$HOME/build/hello2.o
-$HOME/build/hello_world.o
-$HOME/build/libhello_util.so
+share/gspc/doc/tutorial/hello_world $ BUILDDIR=$(mktemp -d)
+share/gspc/doc/tutorial/hello_world $ make BUILDDIR=${BUILDDIR} -C src
+share/gspc/doc/tutorial/hello_world $ ls ${BUILDDIR}/*.*o
+${BUIDLDIR}/hello2.o
+${BUIDLDIR}/hello_world.o
+${BUIDLDIR}/libhello_util.so
 ----
 
-The location of the building directory is set to `$HOME/build` here as this is a place where users most probably have permissions to write. Any path will work that allows to write data. The link:Makefile[] is set up in a way that all outputs are located in the building directory. This makes it possible to build and run the project even in the case that for the source directory no write permissions have been granted.
+The location of the building directory is set to a temporary directory created by `mktemp`. Any path will work that allows to write data. The link:Makefile[] is set up in a way that all outputs are located in the building directory. This makes it possible to build and run the project even in the case that for the source directory no write permissions have been granted.
 
 NOTE: All paths are interpreted as absolute paths. A common way to make relative paths absolute is to prepend them with the current working directory, e.g. `$PWD/<relative_path>` in `bash`.
 
@@ -29,7 +29,7 @@ Now `hello_world` is started by
 
 [source,bash]
 ----
-share/gspc/doc/tutorial/hello_world $ make BUILDDIR=$HOME/build run
+share/gspc/doc/tutorial/hello_world $ make BUILDDIR=${BUILDDIR} run
 ----
 
 The output that is produced contains (near the end) lines like
@@ -55,7 +55,7 @@ Please note that the output could differ from system to system as it actually is
 
 [source,bash]
 ----
-share/gspc/doc/tutorial/hello_world $ make BUILDDIR=$HOME/build WE_EXEC_WORKER=1 run
+share/gspc/doc/tutorial/hello_world $ make BUILDDIR=${BUILDDIR} WE_EXEC_WORKER=1 run
 ----
 
 and the output will contain the lines:
