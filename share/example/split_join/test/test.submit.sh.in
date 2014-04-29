@@ -21,7 +21,7 @@ make+=( -C "${DIR_SOURCE}" )
 
 cleanup()
 {
-  sdpa stop
+  sdpa -s "${DIR_STATE}" stop
   rm -f "${HOSTFILE}"
   rm -f "${RESULT}"
   eval "${make[@]}" clean
@@ -41,7 +41,7 @@ measured "submit" PUT_PORT='@PUT_PORT@' "${make[@]}" submit || die $EX_ERR_RUN
 test "$(pnetget -i "${OUT}" -p O)" = "$(echo -e "@EXPECTED_OUTPUT@")"        \
                                                             || die $EX_ERR_RES
 
-measured "stop" sdpa stop                                   || die $EX_ERR_STOP
+measured "stop" sdpa -s "${DIR_STATE}" stop                 || die $EX_ERR_STOP
 
 rm -f "${HOSTFILE}"                                      || die $EX_ERR_CLEANUP
 rm -f "${RESULT}"                                        || die $EX_ERR_CLEANUP

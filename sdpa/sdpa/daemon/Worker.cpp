@@ -25,7 +25,7 @@ Worker::Worker(	const worker_id_t& name,
 bool Worker::has_job( const job_id_t& job_id )
 {
   lock_type const _ (mtx_);
-  return submitted_.count (job_id) || acknowledged_.count (job_id) || aborted_.count (job_id);
+  return submitted_.count (job_id) || acknowledged_.count (job_id);
 }
 
 void Worker::submit(const job_id_t& jobId)
@@ -45,20 +45,11 @@ void Worker::acknowledge(const job_id_t &job_id)
   acknowledged_.insert (job_id);
 }
 
-void Worker::abort (const job_id_t& job_id)
-{
-  lock_type const _ (mtx_);
-  submitted_.erase (job_id);
-  acknowledged_.erase(job_id);
-  aborted_.insert (job_id);
-}
-
 void Worker::deleteJob(const job_id_t &job_id)
 {
   lock_type const _ (mtx_);
   submitted_.erase (job_id);
   acknowledged_.erase (job_id);
-  aborted_.erase (job_id);
   free();
 }
 
@@ -126,12 +117,6 @@ bool Worker::isReserved()
   return reserved_;
 }
 
-bool Worker::isAborted (const job_id_t &job_id )
-{
-  lock_type const _ (mtx_);
-  return aborted_.count(job_id);
-}
-
 void Worker::free()
 {
   lock_type const _ (mtx_);
@@ -145,10 +130,8 @@ std::set<job_id_t> Worker::getJobListAndCleanQueues()
 
   listAssignedJobs.insert (submitted_.begin(), submitted_.end());
   listAssignedJobs.insert (acknowledged_.begin(), acknowledged_.end());
-  listAssignedJobs.insert (aborted_.begin(), aborted_.end());
   submitted_.clear();
   acknowledged_.clear();
-  aborted_.clear();
 
   return listAssignedJobs;
 }

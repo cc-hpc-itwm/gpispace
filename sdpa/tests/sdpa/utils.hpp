@@ -506,6 +506,37 @@ namespace utils
     }
   };
 
+  class fake_drts_worker_waiting_for_finished_ack
+    : public utils::fake_drts_worker_notifying_module_call_submission
+  {
+  public:
+    fake_drts_worker_waiting_for_finished_ack
+        ( std::function<void (std::string)> announce_job
+        , const utils::agent& master_agent
+        )
+      : utils::fake_drts_worker_notifying_module_call_submission
+        (announce_job, master_agent)
+    {}
+
+    void handleJobFinishedAckEvent
+      (const sdpa::events::JobFinishedAckEvent* e)
+    {
+      _finished_ack.notify (e->job_id());
+    }
+
+    void finish_and_wait_for_ack (std::string name)
+    {
+      const std::string expected_id (_jobs.at (name)._id);
+
+      finish (name);
+
+      BOOST_REQUIRE_EQUAL (_finished_ack.wait(), expected_id);
+    }
+
+  private:
+    fhg::util::thread::event<std::string> _finished_ack;
+  };
+
   struct client : boost::noncopyable
   {
     client (orchestrator const& orch)

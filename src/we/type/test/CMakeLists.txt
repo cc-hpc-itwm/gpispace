@@ -20,6 +20,7 @@ fhg_add_test (signature.cpp
 )
 
 fhg_add_test (bitsetofint.cpp
+  BOOST_UNIT_TEST
   PROJECT we_type
   LINK_LIBRARIES pnet
 )
