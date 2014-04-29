@@ -191,7 +191,7 @@ namespace xml
           {
             s.open ("token");
             s.open ("value");
-            s.content (pnet::type::value::show (token));
+            s.content (token);
             s.close();
             s.close();
           }
