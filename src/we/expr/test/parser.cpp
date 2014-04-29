@@ -7,13 +7,16 @@
 #include <we/expr/eval/context.hpp>
 #include <we/expr/parse/parser.hpp>
 #include <we/type/value/boost/test/printer.hpp>
+#include <we/type/value/show.hpp>
 
 #include <fhg/util/boost/test/require_exception.hpp>
+#include <fhg/util/random_string.hpp>
 
 #include <functional>
 #include <limits>
 #include <random>
 #include <string>
+#include <stack>
 
 #ifdef NDEBUG
 #include <fhg/util/now.hpp>
@@ -410,14 +413,14 @@ BOOST_AUTO_TEST_CASE (token_cmp)
   check_compare ("1.0f", "0.0f", false, false, true, true);
 
   check_equality ("{}", "{}", true);
-  check_equality ("{}", "bitset_insert {} 1L", false);
-  check_equality ("bitset_insert {} 1L", "{}", false);
-  check_equality ("bitset_insert {} 1L", "bitset_insert {} 2L", false);
-  check_equality ( "bitset_insert (bitset_insert {} 1L) 2L"
-                 , "bitset_insert {} 2L", false
+  check_equality ("{}", "bitset_insert {} 1UL", false);
+  check_equality ("bitset_insert {} 1UL", "{}", false);
+  check_equality ("bitset_insert {} 1UL", "bitset_insert {} 2UL", false);
+  check_equality ( "bitset_insert (bitset_insert {} 1UL) 2UL"
+                 , "bitset_insert {} 2UL", false
                  );
-  check_equality ( "bitset_insert (bitset_insert {} 1L) 2L"
-                 , "bitset_insert (bitset_insert {} 2L) 1L", true
+  check_equality ( "bitset_insert (bitset_insert {} 1UL) 2UL"
+                 , "bitset_insert (bitset_insert {} 2UL) 1UL", true
                  );
 
   check_equality ("y()", "y()", true);
@@ -456,7 +459,7 @@ namespace
     std::uniform_int_distribution<T> number
       (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
 
-    for (int i (0); i < 1000; ++i)
+    for (int i (0); i < 100; ++i)
     {
       check (number (generator), number (generator));
     }
@@ -471,6 +474,24 @@ namespace
   {
     require_evaluating_to
       ( ( boost::format ("%1%%3% %4% %2%%3%")
+        % l
+        % r
+        % suffix<T>()()
+        % operation_string
+        ).str()
+      , operation (l, r)
+      );
+  }
+
+  template<typename T>
+  void check_binop_prefix ( std::string const& operation_string
+                          , std::function<T (T const&, T const&)> operation
+                          , T const& l
+                          , T const& r
+                          )
+  {
+    require_evaluating_to
+      ( ( boost::format ("%4% (%1%%3%, %2%%3%)")
         % l
         % r
         % suffix<T>()()
@@ -502,7 +523,7 @@ namespace
       ,  std::numeric_limits<T>::max() / T (2.0)
       );
 
-    for (int i (0); i < 1000; ++i)
+    for (int i (0); i < 100; ++i)
     {
       check ( parse_showed (number (generator))
             , parse_showed (number (generator))
@@ -624,6 +645,131 @@ BOOST_AUTO_TEST_CASE (token_mul)
   require_evaluating_to ("1.0f * 1.0f", 1.0f);
   require_evaluating_to ("1.0f * 2.0f", 2.0f);
   require_evaluating_to ("2.0f * 1.0f", 2.0f);
+}
+
+namespace
+{
+  template<typename T>
+    T minimum (T const& l, T const& r)
+  {
+    return std::min (l, r);
+  }
+
+  template<typename T>
+    T maximum (T const& l, T const& r)
+  {
+    return std::max (l, r);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_min)
+{
+  require_random_integrals_evaluating_to<int>
+    (std::bind (&check_binop_prefix<int>, "min", &minimum<int>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<unsigned int>
+    (std::bind (&check_binop_prefix<unsigned int>, "min", &minimum<unsigned int>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<long>
+    (std::bind (&check_binop_prefix<long>, "min", &minimum<long>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<unsigned long>
+    (std::bind (&check_binop_prefix<unsigned long>, "min", &minimum<unsigned long>, std::placeholders::_1, std::placeholders::_2));
+
+  require_evaluating_to ("min (0, 0)", 0);
+  require_evaluating_to ("min (0, 1)", 0);
+  require_evaluating_to ("min (1, 0)", 0);
+  require_evaluating_to ("min (1, 1)", 1);
+  require_evaluating_to ("min (1, 2)", 1);
+  require_evaluating_to ("min (2, 1)", 1);
+  require_evaluating_to ("min (0U, 0U)", 0U);
+  require_evaluating_to ("min (0U, 1U)", 0U);
+  require_evaluating_to ("min (1U, 0U)", 0U);
+  require_evaluating_to ("min (1U, 1U)", 1U);
+  require_evaluating_to ("min (1U, 2U)", 1U);
+  require_evaluating_to ("min (2U, 1U)", 1U);
+  require_evaluating_to ("min (0L, 0L)", 0L);
+  require_evaluating_to ("min (0L, 1L)", 0L);
+  require_evaluating_to ("min (1L, 0L)", 0L);
+  require_evaluating_to ("min (1L, 1L)", 1L);
+  require_evaluating_to ("min (1L, 2L)", 1L);
+  require_evaluating_to ("min (2L, 1L)", 1L);
+  require_evaluating_to ("min (0UL, 0UL)", 0UL);
+  require_evaluating_to ("min (0UL, 1UL)", 0UL);
+  require_evaluating_to ("min (1UL, 0UL)", 0UL);
+  require_evaluating_to ("min (1UL, 1UL)", 1UL);
+  require_evaluating_to ("min (1UL, 2UL)", 1UL);
+  require_evaluating_to ("min (2UL, 1UL)", 1UL);
+
+  require_random_fractionals_evaluating_to<float>
+    (std::bind (&check_binop_prefix<float>, "min", &minimum<float>, std::placeholders::_1, std::placeholders::_2));
+  require_random_fractionals_evaluating_to<double>
+    (std::bind (&check_binop_prefix<double>, "min", &minimum<double>, std::placeholders::_1, std::placeholders::_2));
+
+  require_evaluating_to ("min (0.0, 0.0)", 0.0);
+  require_evaluating_to ("min (0.0, 1.0)", 0.0);
+  require_evaluating_to ("min (1.0, 0.0)", 0.0);
+  require_evaluating_to ("min (1.0, 1.0)", 1.0);
+  require_evaluating_to ("min (1.0, 2.0)", 1.0);
+  require_evaluating_to ("min (2.0, 1.0)", 1.0);
+  require_evaluating_to ("min (0.0f, 0.0f)", 0.0f);
+  require_evaluating_to ("min (0.0f, 1.0f)", 0.0f);
+  require_evaluating_to ("min (1.0f, 0.0f)", 0.0f);
+  require_evaluating_to ("min (1.0f, 1.0f)", 1.0f);
+  require_evaluating_to ("min (1.0f, 2.0f)", 1.0f);
+  require_evaluating_to ("min (2.0f, 1.0f)", 1.0f);
+}
+
+BOOST_AUTO_TEST_CASE (token_max)
+{
+  require_random_integrals_evaluating_to<int>
+    (std::bind (&check_binop_prefix<int>, "max", &maximum<int>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<unsigned int>
+    (std::bind (&check_binop_prefix<unsigned int>, "max", &maximum<unsigned int>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<long>
+    (std::bind (&check_binop_prefix<long>, "max", &maximum<long>, std::placeholders::_1, std::placeholders::_2));
+  require_random_integrals_evaluating_to<unsigned long>
+    (std::bind (&check_binop_prefix<unsigned long>, "max", &maximum<unsigned long>, std::placeholders::_1, std::placeholders::_2));
+
+  require_evaluating_to ("max (0, 0)", 0);
+  require_evaluating_to ("max (0, 1)", 1);
+  require_evaluating_to ("max (1, 0)", 1);
+  require_evaluating_to ("max (1, 1)", 1);
+  require_evaluating_to ("max (1, 2)", 2);
+  require_evaluating_to ("max (2, 1)", 2);
+  require_evaluating_to ("max (0U, 0U)", 0U);
+  require_evaluating_to ("max (0U, 1U)", 1U);
+  require_evaluating_to ("max (1U, 0U)", 1U);
+  require_evaluating_to ("max (1U, 1U)", 1U);
+  require_evaluating_to ("max (1U, 2U)", 2U);
+  require_evaluating_to ("max (2U, 1U)", 2U);
+  require_evaluating_to ("max (0L, 0L)", 0L);
+  require_evaluating_to ("max (0L, 1L)", 1L);
+  require_evaluating_to ("max (1L, 0L)", 1L);
+  require_evaluating_to ("max (1L, 1L)", 1L);
+  require_evaluating_to ("max (1L, 2L)", 2L);
+  require_evaluating_to ("max (2L, 1L)", 2L);
+  require_evaluating_to ("max (0UL, 0UL)", 0UL);
+  require_evaluating_to ("max (0UL, 1UL)", 1UL);
+  require_evaluating_to ("max (1UL, 0UL)", 1UL);
+  require_evaluating_to ("max (1UL, 1UL)", 1UL);
+  require_evaluating_to ("max (1UL, 2UL)", 2UL);
+  require_evaluating_to ("max (2UL, 1UL)", 2UL);
+
+  require_random_fractionals_evaluating_to<float>
+    (std::bind (&check_binop_prefix<float>, "max", &maximum<float>, std::placeholders::_1, std::placeholders::_2));
+  require_random_fractionals_evaluating_to<double>
+    (std::bind (&check_binop_prefix<double>, "max", &maximum<double>, std::placeholders::_1, std::placeholders::_2));
+
+  require_evaluating_to ("max (0.0, 0.0)", 0.0);
+  require_evaluating_to ("max (0.0, 1.0)", 1.0);
+  require_evaluating_to ("max (1.0, 0.0)", 1.0);
+  require_evaluating_to ("max (1.0, 1.0)", 1.0);
+  require_evaluating_to ("max (1.0, 2.0)", 2.0);
+  require_evaluating_to ("max (2.0, 1.0)", 2.0);
+  require_evaluating_to ("max (0.0f, 0.0f)", 0.0f);
+  require_evaluating_to ("max (0.0f, 1.0f)", 1.0f);
+  require_evaluating_to ("max (1.0f, 0.0f)", 1.0f);
+  require_evaluating_to ("max (1.0f, 1.0f)", 1.0f);
+  require_evaluating_to ("max (1.0f, 2.0f)", 2.0f);
+  require_evaluating_to ("max (2.0f, 1.0f)", 2.0f);
 }
 
 namespace
@@ -853,7 +999,7 @@ namespace
       ,  std::numeric_limits<T>::max() / T (2.0)
       );
 
-    for (int i (0); i < 1000; ++i)
+    for (int i (0); i < 100; ++i)
     {
       std::string const l
         ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
@@ -917,7 +1063,7 @@ namespace
       ,  std::numeric_limits<T>::max() / T (2.0)
       );
 
-    for (int i (0); i < 1000; ++i)
+    for (int i (0); i < 100; ++i)
     {
       std::string const l
         ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
@@ -967,4 +1113,991 @@ BOOST_AUTO_TEST_CASE (token_pow_int_signed_negative_exponent_throws)
     ( [] { require_evaluating_to ("0L ^ (-1L)", 0L); }
     , "negative exponent"
     );
+}
+
+namespace
+{
+  template<typename T, typename R>
+    void check_unary_for_fractional ( std::string const operation_string
+                                    , std::function <R (const T&)> operation
+                                    )
+  {
+    std::random_device generator;
+    std::uniform_real_distribution<T> number
+      ( -std::numeric_limits<T>::max() / T (2.0)
+      ,  std::numeric_limits<T>::max() / T (2.0)
+      );
+
+    for (int i (0); i < 100; ++i)
+    {
+      std::string const input
+        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+
+      expr::eval::context context;
+
+      BOOST_REQUIRE_EQUAL
+        ( boost::get<R>
+          ( expr::parse::parser
+            ((boost::format ("%1% (%2%)") % operation_string  % input).str())
+          .eval_front (context)
+          )
+        , operation
+          (boost::get<T> (expr::parse::parser (input).eval_front (context)))
+        );
+    }
+  }
+
+  template<typename T, typename R>
+    void check_unary_for_integral ( std::string const& operation_string
+                                  , std::function<R (T const&)> operation
+                                  )
+  {
+    std::random_device generator;
+    std::uniform_int_distribution<T> number
+      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+
+    for (int i (0); i < 100; ++i)
+    {
+      T const x (number (generator));
+
+      require_evaluating_to
+        (( boost::format ("%1% (%2%%3%)")
+         % operation_string % x % suffix<T>()()
+         ).str()
+        , operation (x)
+        );
+    }
+  }
+
+  template<typename T>
+    T negate (T const& x)
+  {
+    return -x;
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_neg)
+{
+  check_unary_for_fractional<float, float> ("-", &negate<float>);
+  check_unary_for_fractional<double, double> ("-", &negate<double>);
+  check_unary_for_integral<int, int> ("-", &negate<int>);
+  check_unary_for_integral<long, long> ("-", &negate<long>);
+}
+
+namespace
+{
+  template<typename T>
+    T absolute (T const& x)
+  {
+    return std::abs (x);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_abs)
+{
+  check_unary_for_fractional<float, float> ("abs", &absolute<float>);
+  check_unary_for_fractional<double, double> ("abs", &absolute<double>);
+  check_unary_for_integral<int, int> ("abs", &absolute<int>);
+  check_unary_for_integral<long, long> ("abs", &absolute<long>);
+}
+
+namespace
+{
+  template<typename T, typename R>
+    R sinus (T const& x)
+  {
+    return std::sin (x);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_sin)
+{
+  check_unary_for_fractional<float, float> ("sin", &sinus<float, float>);
+  check_unary_for_fractional<double, double> ("sin", &sinus<double, double>);
+  check_unary_for_integral<int, double> ("sin", &sinus<int, double>);
+  check_unary_for_integral<unsigned int, double> ("sin", &sinus<unsigned int, double>);
+  check_unary_for_integral<long, double> ("sin", &sinus<long, double>);
+  check_unary_for_integral<unsigned long, double> ("sin", &sinus<unsigned long, double>);
+}
+
+namespace
+{
+  template<typename T, typename R>
+    R cosinus (T const& x)
+  {
+    return std::cos (x);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_cos)
+{
+  check_unary_for_fractional<float, float> ("cos", &cosinus<float, float>);
+  check_unary_for_fractional<double, double> ("cos", &cosinus<double, double>);
+  check_unary_for_integral<int, double> ("cos", &cosinus<int, double>);
+  check_unary_for_integral<unsigned int, double> ("cos", &cosinus<unsigned int, double>);
+  check_unary_for_integral<long, double> ("cos", &cosinus<long, double>);
+  check_unary_for_integral<unsigned long, double> ("cos", &cosinus<unsigned long, double>);
+}
+
+namespace
+{
+  template<typename T>
+    T floor_fractional (T const& x)
+  {
+    return std::floor (x);
+  }
+  template<typename T>
+    T floor_integral (T const& x)
+  {
+    return x;
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_floor)
+{
+  check_unary_for_fractional<float, float> ("floor", &floor_fractional<float>);
+  check_unary_for_fractional<double, double> ("floor", &floor_fractional<double>);
+  check_unary_for_integral<int, int> ("floor", &floor_integral<int>);
+  check_unary_for_integral<unsigned int, unsigned int> ("floor", &floor_integral<unsigned int>);
+  check_unary_for_integral<long, long> ("floor", &floor_integral<long>);
+  check_unary_for_integral<unsigned long, unsigned long> ("floor", &floor_integral<unsigned long>);
+}
+
+namespace
+{
+  template<typename T>
+    T ceil_fractional (T const& x)
+  {
+    return std::ceil (x);
+  }
+  template<typename T>
+    T ceil_integral (T const& x)
+  {
+    return x;
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_ceil)
+{
+  check_unary_for_fractional<float, float> ("ceil", &ceil_fractional<float>);
+  check_unary_for_fractional<double, double> ("ceil", &ceil_fractional<double>);
+  check_unary_for_integral<int, int> ("ceil", &ceil_integral<int>);
+  check_unary_for_integral<unsigned int, unsigned int> ("ceil", &ceil_integral<unsigned int>);
+  check_unary_for_integral<long, long> ("ceil", &ceil_integral<long>);
+  check_unary_for_integral<unsigned long, unsigned long> ("ceil", &ceil_integral<unsigned long>);
+}
+
+namespace
+{
+  template<typename T>
+    T round_fractional (T const& x)
+  {
+    return std::round (x);
+  }
+  template<typename T>
+    T round_integral (T const& x)
+  {
+    return x;
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_round)
+{
+  check_unary_for_fractional<float, float> ("round", &round_fractional<float>);
+  check_unary_for_fractional<double, double> ("round", &round_fractional<double>);
+  check_unary_for_integral<int, int> ("round", &round_integral<int>);
+  check_unary_for_integral<unsigned int, unsigned int> ("round", &round_integral<unsigned int>);
+  check_unary_for_integral<long, long> ("round", &round_integral<long>);
+  check_unary_for_integral<unsigned long, unsigned long> ("round", &round_integral<unsigned long>);
+}
+
+namespace
+{
+  template<typename T, typename R>
+    R cast (T const& x)
+  {
+    return static_cast<R> (x);
+  }
+
+  template<typename T>
+  void check_token_cast (std::string const& tag)
+  {
+    check_unary_for_fractional<float, T> (tag, &cast<float, T>);
+    check_unary_for_fractional<double, T> (tag, &cast<double, T>);
+    check_unary_for_integral<int, T> (tag, &cast<int, T>);
+    check_unary_for_integral<unsigned int, T> (tag, &cast<unsigned int, T>);
+    check_unary_for_integral<long, T> (tag, &cast<long, T>);
+    check_unary_for_integral<unsigned long, T> (tag, &cast<unsigned long, T>);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (tokens_cast)
+{
+  check_token_cast<int> ("int");
+  check_token_cast<unsigned int> ("uint");
+  check_token_cast<long> ("long");
+  check_token_cast<unsigned long> ("ulong");
+  check_token_cast<float> ("float");
+  check_token_cast<double> ("double");
+
+  require_evaluating_to ("int (true)", 1);
+  require_evaluating_to ("int (false)", 0);
+  require_evaluating_to ("uint (true)", 1U);
+  require_evaluating_to ("uint (false)", 0U);
+  require_evaluating_to ("long (true)", 1L);
+  require_evaluating_to ("long (false)", 0L);
+  require_evaluating_to ("ulong (true)", 1UL);
+  require_evaluating_to ("ulong (false)", 0UL);
+}
+
+namespace
+{
+  template<typename T>
+  void check_square_root_for_fractional()
+  {
+    std::random_device generator;
+    std::uniform_real_distribution<T> number
+      ( -std::numeric_limits<T>::max() / T (2.0)
+      ,  std::numeric_limits<T>::max() / T (2.0)
+      );
+
+    for (int i (0); i < 100; ++i)
+    {
+      std::string const input
+        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+
+      expr::eval::context _;
+
+      std::string const expression
+        ((boost::format ("sqrt (%1%)") % input).str());
+
+      T const value
+        (boost::get<T> (expr::parse::parser (input).eval_front (_)));
+
+      if (value < 0)
+      {
+        require_ctor_exception
+          <expr::exception::eval::square_root_for_negative_argument<T>>
+          ( expression
+          , ( boost::format ("square root for negative argument '%1%'") % value
+            ).str()
+          );
+      }
+      else
+      {
+        BOOST_REQUIRE_EQUAL
+          ( boost::get<T> (expr::parse::parser (expression).eval_front (_))
+          , std::sqrt (value)
+          );
+      }
+    }
+  }
+
+  template<typename T>
+  void check_square_root_for_signed_integral()
+  {
+    std::random_device generator;
+    std::uniform_int_distribution<T> number
+      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+
+    for (int i (0); i < 100; ++i)
+    {
+      T const x (number (generator));
+
+      std::string const expression
+        ((boost::format ("sqrt (%1%%2%)") % x % suffix<T>()()).str());
+
+      if (x < 0)
+      {
+        require_ctor_exception
+          <expr::exception::eval::square_root_for_negative_argument<T>>
+          ( expression
+          , ( boost::format ("square root for negative argument '%1%'") % x
+            ).str()
+          );
+      }
+      else
+      {
+        require_evaluating_to (expression, std::sqrt (x));
+      }
+    }
+  }
+
+  template<typename T>
+    double square_root (T const& x)
+  {
+    return std::sqrt (x);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_sqrt)
+{
+  check_square_root_for_fractional<float>();
+  check_square_root_for_fractional<double>();
+  check_unary_for_integral<unsigned int, double> ("sqrt", &square_root<unsigned int>);
+  check_unary_for_integral<unsigned long, double> ("sqrt", &square_root<unsigned long>);
+  check_square_root_for_signed_integral<int>();
+  check_square_root_for_signed_integral<long>();
+}
+
+namespace
+{
+  template<typename T>
+  void check_logarithm_for_fractional()
+  {
+    std::random_device generator;
+    std::uniform_real_distribution<T> number
+      ( -std::numeric_limits<T>::max() / T (2.0)
+      ,  std::numeric_limits<T>::max() / T (2.0)
+      );
+
+    for (int i (0); i < 100; ++i)
+    {
+      std::string const input
+        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+
+      expr::eval::context _;
+
+      std::string const expression
+        ((boost::format ("log (%1%)") % input).str());
+
+      T const value
+        (boost::get<T> (expr::parse::parser (input).eval_front (_)));
+
+      if (value < 0)
+      {
+        require_ctor_exception
+          <expr::exception::eval::log_for_nonpositive_argument<T>>
+          ( expression
+          , ( boost::format ("logarithm for nonpositive argument '%1%'") % value
+            ).str()
+          );
+      }
+      else
+      {
+        BOOST_REQUIRE_EQUAL
+          ( boost::get<T> (expr::parse::parser (expression).eval_front (_))
+          , std::log (value)
+          );
+      }
+    }
+  }
+
+  template<typename T>
+  void check_logarithm_for_signed_integral()
+  {
+    std::random_device generator;
+    std::uniform_int_distribution<T> number
+      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+
+    for (int i (0); i < 100; ++i)
+    {
+      T const x (number (generator));
+
+      std::string const expression
+        ((boost::format ("log (%1%%2%)") % x % suffix<T>()()).str());
+
+      if (!(x > 0))
+      {
+        require_ctor_exception
+          <expr::exception::eval::log_for_nonpositive_argument<T>>
+          ( expression
+          , ( boost::format ("logarithm for nonpositive argument '%1%'") % x
+            ).str()
+          );
+      }
+      else
+      {
+        require_evaluating_to (expression, std::log (x));
+      }
+    }
+  }
+
+  template<typename T>
+    double logarithm (T const& x)
+  {
+    return std::log (x);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_log)
+{
+  check_logarithm_for_fractional<float>();
+  check_logarithm_for_fractional<double>();
+  check_unary_for_integral<unsigned int, double> ("log", &logarithm<unsigned int>);
+  check_unary_for_integral<unsigned long, double> ("log", &logarithm<unsigned long>);
+  check_logarithm_for_signed_integral<int>();
+  check_logarithm_for_signed_integral<long>();
+}
+
+namespace
+{
+  void check_random_bitsets
+    (std::function<void (bitsetofint::type const&)> check)
+  {
+    std::random_device generator;
+    std::uniform_int_distribution<int> count (0, 100);
+    std::uniform_int_distribution<unsigned long> number (0, 1UL << 10);
+
+    for (int _ (0); _ < 100; ++_)
+    {
+      bitsetofint::type bs;
+
+      int n (count (generator));
+
+      while (n --> 0)
+      {
+        bs.ins (number (generator));
+      }
+
+      check (bs);
+    }
+  }
+
+  void check_random_pairs_of_bitsets
+  ( std::function<void ( bitsetofint::type const&
+                       , bitsetofint::type const&
+                       )
+                 > check
+  )
+  {
+    std::random_device generator;
+    std::uniform_int_distribution<int> count (0, 100);
+    std::uniform_int_distribution<unsigned long> number (0, 1UL << 10);
+
+    for (int _ (0); _ < 100; ++_)
+    {
+      bitsetofint::type bs_l;
+
+      {
+        int n (count (generator));
+
+        while (n --> 0)
+        {
+          bs_l.ins (number (generator));
+        }
+      }
+
+      bitsetofint::type bs_r;
+
+      {
+        int n (count (generator));
+
+        while (n --> 0)
+        {
+          bs_r.ins (number (generator));
+        }
+      }
+
+      check (bs_l, bs_r);
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_bitset_count)
+{
+  check_random_bitsets
+    ([](bitsetofint::type const& bs)
+    {
+      require_evaluating_to
+        (boost::format ("bitset_count (%1%)") % bs, bs.count());
+    }
+    );
+}
+
+BOOST_AUTO_TEST_CASE (token_bitset_fromhex_tohex_is_id)
+{
+  check_random_bitsets
+    ([](bitsetofint::type const& bs)
+    {
+      require_evaluating_to
+        (boost::format ("bitset_fromhex (bitset_tohex (%1%))") % bs, bs);
+    }
+    );
+}
+
+BOOST_AUTO_TEST_CASE (token_bitset_logical)
+{
+  check_random_pairs_of_bitsets
+    ([](bitsetofint::type const& l, bitsetofint::type const& r)
+    {
+      require_evaluating_to
+        (boost::format ("bitset_or (%1%, %2%)") % l % r, l | r);
+    }
+    );
+  check_random_pairs_of_bitsets
+    ([](bitsetofint::type const& l, bitsetofint::type const& r)
+    {
+      require_evaluating_to
+        (boost::format ("bitset_and (%1%, %2%)") % l % r, l & r);
+    }
+    );
+  check_random_pairs_of_bitsets
+    ([](bitsetofint::type const& l, bitsetofint::type const& r)
+    {
+      require_evaluating_to
+        (boost::format ("bitset_xor (%1%, %2%)") % l % r, l ^ r);
+    }
+    );
+}
+
+BOOST_AUTO_TEST_CASE (token_bitset_ins_del_is_elem)
+{
+  std::random_device generator;
+  std::uniform_int_distribution<int> count (0, 100);
+  std::uniform_int_distribution<unsigned long> number (0, 1UL << 10);
+
+  for (int _ (0); _ < 100; ++_)
+  {
+    std::set<unsigned long> ks;
+    bitsetofint::type a;
+    bitsetofint::type b;
+
+    int n (count (generator));
+
+    while (n --> 0)
+    {
+      unsigned long const k (number (generator));
+
+      ks.insert (k);
+
+      require_evaluating_to
+        ( boost::format ("bitset_is_element (%1%, %2%UL)") % a % k
+        , b.is_element (k)
+        );
+
+      b.ins (k);
+
+      require_evaluating_to
+        (boost::format ("bitset_insert (%1%, %2%UL)") % a % k, b);
+
+      a.ins (k);
+
+      require_evaluating_to
+        (boost::format ("bitset_is_element (%1%, %2%UL)") % a % k, true);
+    }
+
+    for (unsigned long k : ks)
+    {
+      require_evaluating_to
+        (boost::format ("bitset_is_element (%1%, %2%UL)") % a % k, true);
+
+      b.del (k);
+
+      require_evaluating_to
+        (boost::format ("bitset_delete (%1%, %2%UL)") % a % k, b);
+
+      a.del (k);
+
+      require_evaluating_to
+        (boost::format ("bitset_is_element (%1%, %2%UL)") % a % k, false);
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE (tokens_stack_push_top_pop_empty_size)
+{
+  std::random_device generator;
+  std::uniform_int_distribution<unsigned long> count (0, 100);
+  std::uniform_int_distribution<int> number
+    (std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+
+  for (int _ (0); _ < 10; ++_)
+  {
+    std::list<pnet::type::value::value_type> a;
+    std::list<pnet::type::value::value_type> b;
+
+    require_evaluating_to
+      ( ( boost::format ("stack_empty (%1%)")
+        % pnet::type::value::show (a)
+        ).str()
+      , true
+      );
+
+    unsigned long n (count (generator));
+
+    std::stack<int> ks;
+
+    for (unsigned long i (0); i < n; ++i)
+    {
+      require_evaluating_to
+        (boost::format ("stack_size (%1%)") % pnet::type::value::show (a), i);
+
+      int const k (number (generator));
+
+      ks.push (k);
+
+      b.push_back (k);
+
+      require_evaluating_to
+        ( boost::format ("stack_push (%1%, %2%)")
+        % pnet::type::value::show (a) % k
+        , b
+        );
+
+      a.push_back (k);
+
+      require_evaluating_to
+        (boost::format ("stack_top (%1%)") % pnet::type::value::show (a), k);
+
+      require_evaluating_to
+        ( ( boost::format ("stack_empty (%1%)")
+          % pnet::type::value::show (a)
+          ).str()
+        , false
+        );
+    }
+
+    while (!ks.empty())
+    {
+      require_evaluating_to
+        ( boost::format ("stack_size (%1%)") % pnet::type::value::show (a)
+        , ks.size()
+        );
+
+      require_evaluating_to
+        ( boost::format ("stack_top (%1%)") % pnet::type::value::show (a)
+        , ks.top()
+        );
+
+      b.pop_back();
+
+      require_evaluating_to
+        (boost::format ("stack_pop (%1%)") % pnet::type::value::show (a), b);
+
+      a.pop_back();
+
+      ks.pop();
+    }
+
+    require_evaluating_to
+      ( ( boost::format ("stack_empty (%1%)")
+        % pnet::type::value::show (a)
+        ).str()
+      , true
+      );
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_stack_join)
+{
+  std::random_device generator;
+  std::uniform_int_distribution<unsigned long> count (0, 100);
+  std::uniform_int_distribution<int> number
+    (std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+
+  for (int _ (0); _ < 10; ++_)
+  {
+    std::list<pnet::type::value::value_type> a;
+    std::list<pnet::type::value::value_type> b;
+    std::list<pnet::type::value::value_type> joined;
+
+    unsigned long na (count (generator));
+    unsigned long nb (count (generator));
+
+    while (na --> 0)
+    {
+      a.push_back (number (generator));
+      joined.push_back (a.back());
+    }
+    while (nb --> 0)
+    {
+      b.push_back (number (generator));
+      joined.push_back (b.back());
+    }
+
+    require_evaluating_to
+      ( ( boost::format ("stack_join (%1%, %2%)")
+        % pnet::type::value::show (a)
+        % pnet::type::value::show (b)
+        ).str()
+      , joined
+      );
+  }
+}
+
+BOOST_AUTO_TEST_CASE
+  (tokens_map_assign_unassign_is_assigned_get_assignment_size_empty)
+{
+  std::random_device generator;
+  std::uniform_int_distribution<int> count (0, 100);
+  std::uniform_int_distribution<int> key
+    (std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+  std::uniform_int_distribution<long> value
+    (std::numeric_limits<long>::min(), std::numeric_limits<long>::max());
+
+  for (int _ (0); _ < 10; ++_)
+  {
+    std::map<pnet::type::value::value_type, pnet::type::value::value_type> a;
+    std::map<pnet::type::value::value_type, pnet::type::value::value_type> b;
+
+    require_evaluating_to
+      ( (boost::format ("map_empty (%1%)") % pnet::type::value::show (a)).str()
+      , true
+      );
+
+    int n (count (generator));
+    std::set<int> ks;
+
+    while (n --> 0)
+    {
+      require_evaluating_to
+        ( boost::format ("map_size (%1%)") % pnet::type::value::show (a)
+        , a.size()
+        );
+
+      int const k (key (generator));
+      long const v (value (generator));
+
+      ks.insert (k);
+
+      require_evaluating_to
+        ( boost::format ("map_is_assigned (%1%, %2%)")
+        % pnet::type::value::show (a)
+        % k
+        , a.find (k) != a.end()
+        );
+
+      b.emplace (k, v);
+
+      require_evaluating_to
+        ( ( boost::format ("map_assign (%1%, %2%, %3%L)")
+          % pnet::type::value::show (a)
+          % k
+          % v
+          ).str()
+        , b
+        );
+
+      a.emplace (k, v);
+
+      require_evaluating_to
+        ( boost::format ("map_is_assigned (%1%, %2%)")
+        % pnet::type::value::show (a)
+        % k
+        , true
+        );
+
+      require_evaluating_to
+        ( boost::format ("map_get_assignment (%1%, %2%)")
+        % pnet::type::value::show (a)
+        % k
+        , v
+        );
+
+      require_evaluating_to
+        ( ( boost::format ("map_empty (%1%)") % pnet::type::value::show (a)
+          ).str()
+        , false
+        );
+    }
+
+    for (int k : ks)
+    {
+      require_evaluating_to
+        ( boost::format ("map_is_assigned (%1%, %2%)")
+        % pnet::type::value::show (a)
+        % k
+        , true
+        );
+
+      require_evaluating_to
+        ( boost::format ("map_get_assignment (%1%, %2%)")
+        % pnet::type::value::show (a)
+        % k
+        , a.at (k)
+        );
+
+      require_evaluating_to
+        ( ( boost::format ("map_empty (%1%)") % pnet::type::value::show (a)
+          ).str()
+        , false
+        );
+
+      b.erase (k);
+
+      require_evaluating_to
+        ( ( boost::format ("map_unassign (%1%, %2%)")
+          % pnet::type::value::show (a)
+          % k
+          ).str()
+        , b
+        );
+
+      a.erase (k);
+    }
+
+    require_evaluating_to
+      ( (boost::format ("map_empty (%1%)") % pnet::type::value::show (a)).str()
+      , true
+      );
+  }
+}
+
+BOOST_AUTO_TEST_CASE (tokens_set_empty_size_insert_erase_is_element)
+{
+  std::random_device generator;
+  std::uniform_int_distribution<int> count (0, 100);
+  std::uniform_int_distribution<long> number
+    (std::numeric_limits<long>::min(), std::numeric_limits<long>::max());
+
+  for (int _ (0); _ < 10; ++_)
+  {
+    std::set<pnet::type::value::value_type> a;
+    std::set<pnet::type::value::value_type> b;
+
+    require_evaluating_to
+      ( (boost::format ("set_empty (%1%)") % pnet::type::value::show (a)).str()
+      , true
+      );
+
+    int n (count (generator));
+    std::set<long> ks;
+
+    while (n --> 0)
+    {
+      require_evaluating_to
+        ( boost::format ("set_size (%1%)") % pnet::type::value::show (a)
+        , a.size()
+        );
+
+      long const k (number (generator));
+      ks.insert (k);
+
+      require_evaluating_to
+        ( boost::format ("set_is_element (%1%, %2%L)")
+        % pnet::type::value::show (a)
+        % k
+        , a.find (k) != a.end()
+        );
+
+      b.insert (k);
+
+      require_evaluating_to
+        ( boost::format ("set_insert (%1%, %2%L)")
+        % pnet::type::value::show (a)
+        % k
+        , b
+        );
+
+      a.insert (k);
+    }
+
+    for (long k : ks)
+    {
+      require_evaluating_to
+        ( boost::format ("set_size (%1%)") % pnet::type::value::show (a)
+        , a.size()
+        );
+
+      require_evaluating_to
+        ( boost::format ("set_is_element (%1%, %2%L)")
+        % pnet::type::value::show (a)
+        % k
+        , true
+        );
+
+      b.erase (k);
+
+      require_evaluating_to
+        ( boost::format ("set_erase (%1%, %2%L)")
+        % pnet::type::value::show (a)
+        % k
+        , b
+        );
+
+      a.erase (k);
+    }
+
+    require_evaluating_to
+      ( (boost::format ("set_empty (%1%)") % pnet::type::value::show (a)).str()
+      , true
+      );
+  }
+}
+
+BOOST_AUTO_TEST_CASE (tokens_set_top_pop)
+{
+  std::random_device generator;
+  std::uniform_int_distribution<int> count (0, 100);
+  std::uniform_int_distribution<long> number
+    (std::numeric_limits<long>::min(), std::numeric_limits<long>::max());
+
+  for (int _ (0); _ < 10; ++_)
+  {
+    std::set<pnet::type::value::value_type> a;
+    std::set<pnet::type::value::value_type> b;
+
+    int n (count (generator));
+
+    while (n --> 0)
+    {
+      long const k (number (generator));
+
+      a.insert (k);
+      b.insert (k);
+
+      require_evaluating_to
+        ( (boost::format ("set_top (%1%)") % pnet::type::value::show (a)).str()
+        , *(a.begin())
+        );
+    }
+
+    while (!a.empty())
+    {
+      b.erase (b.begin());
+
+      require_evaluating_to
+        ( (boost::format ("set_pop (%1%)") % pnet::type::value::show (a)).str()
+        , b
+        );
+
+      a.erase (a.begin());
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_set_is_subset)
+{
+  require_evaluating_to ("set_is_subset (Set{}, Set{})", true);
+  require_evaluating_to
+    ("set_is_subset (set_insert (Set{}, 1L), Set{})", false);
+  require_evaluating_to
+    ("set_is_subset (set_insert (Set{}, 1L), set_insert (Set{}, 1L))", true);
+  require_evaluating_to
+    ("set_is_subset (Set{}, set_insert (Set{}, 1L))", true);
+  require_evaluating_to
+    ("set_is_subset (set_insert (Set{}, 1), set_insert (Set{}, 1L))", false);
+  require_evaluating_to
+    ("set_is_subset (set_insert (Set{}, 1), set_insert (Set{}, 2))", false);
+}
+
+BOOST_AUTO_TEST_CASE (token_len)
+{
+  for (int _ (0); _ < 100; ++_)
+  {
+    std::string const s (fhg::util::random_string_without ("\"\\"));
+
+    require_evaluating_to
+      ((boost::format ("len (\"%1%\")") % s).str(), s.size());
+  }
+}
+
+//! \todo find out where and why substr is used
+//! \todo mark it as deprecated
+//! \todo remove it
+BOOST_AUTO_TEST_CASE (token_substr)
+{
+  for (int _ (0); _ < 10; ++_)
+  {
+    std::string const s (fhg::util::random_string_without ("\"\\"));
+
+    for (long l (0); l < static_cast<long> (s.size()); ++l)
+    {
+      require_evaluating_to
+        ( (boost::format ("substr (\"%1%\", %2%L)") % s % l).str()
+        , s.substr (0, l)
+        );
+    }
+  }
 }
