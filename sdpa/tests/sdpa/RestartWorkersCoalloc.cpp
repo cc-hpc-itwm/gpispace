@@ -95,40 +95,6 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnin
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-namespace
-{
-  class fake_drts_worker_waiting_for_finished_ack
-    : public utils::fake_drts_worker_notifying_module_call_submission
-  {
-  public:
-    fake_drts_worker_waiting_for_finished_ack
-        ( std::function<void (std::string)> announce_job
-        , const utils::agent& master_agent
-        )
-      : utils::fake_drts_worker_notifying_module_call_submission
-        (announce_job, master_agent)
-    {}
-
-    void handleJobFinishedAckEvent
-      (const sdpa::events::JobFinishedAckEvent* e)
-    {
-      _finished_ack.notify (e->job_id());
-    }
-
-    void finish_and_wait_for_ack (std::string name)
-    {
-      const std::string expected_id (_jobs.at (name)._id);
-
-      finish (name);
-
-      BOOST_REQUIRE_EQUAL (_finished_ack.wait(), expected_id);
-    }
-
-  private:
-    fhg::util::thread::event<std::string> _finished_ack;
-  };
-}
-
 BOOST_AUTO_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is_missing)
 {
   const utils::kvs_server kvs_server;
@@ -142,7 +108,7 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
 
   fhg::util::thread::event<std::string> job_submitted_0;
-  fake_drts_worker_waiting_for_finished_ack worker_0
+  utils::fake_drts_worker_waiting_for_finished_ack worker_0
     ([&job_submitted_0] (std::string j) { job_submitted_0.notify (j); }, agent);
 
   {

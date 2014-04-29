@@ -35,14 +35,18 @@ namespace sdpa
       void workerCanceled (const worker_id_t&, const job_id_t&);
       bool allPartialResultsCollected (const job_id_t& jid);
       bool groupFinished (const sdpa::job_id_t&);
+      worker_id_list_t workers (job_id_t) const;
 
       // -- used by daemon and self
       void enqueueJob (const sdpa::job_id_t&);
       void request_scheduling();
 
       // used by daemon and self and test
-      sdpa::worker_id_list_t releaseReservation (const sdpa::job_id_t&);
+      void releaseReservation (const sdpa::job_id_t&);
       void assignJobsToWorkers();
+
+      bool cancelNotTerminatedWorkerJobs ( std::function<void (worker_id_t const&)> func
+                                         , const sdpa::job_id_t& job_id);
 
     private:
       std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)>
