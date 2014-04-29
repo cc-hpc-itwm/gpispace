@@ -13,9 +13,9 @@ The first step is to build the demonstration libraries by
 
 [source,bash]
 ----
-share/gspc/doc/tutorial/hello_world$ mkdir $HOME/build
-share/gspc/doc/tutorial/hello_world$ make BUILDDIR=$HOME/build -C src
-share/gspc/doc/tutorial/hello_world$ ls $HOME/build/*.*o
+share/gspc/doc/tutorial/hello_world $ mkdir $HOME/build
+share/gspc/doc/tutorial/hello_world $ make BUILDDIR=$HOME/build -C src
+share/gspc/doc/tutorial/hello_world $ ls $HOME/build/*.*o
 $HOME/build/hello2.o
 $HOME/build/hello_world.o
 $HOME/build/libhello_util.so
@@ -29,7 +29,7 @@ Now `hello_world` is started by
 
 [source,bash]
 ----
-share/gspc/doc/tutorial/hello_world$ make BUILDDIR=$HOME/build run
+share/gspc/doc/tutorial/hello_world $ make BUILDDIR=$HOME/build run
 ----
 
 The output that is produced contains (near the end) lines like
@@ -55,7 +55,7 @@ Please note that the output could differ from system to system as it actually is
 
 [source,bash]
 ----
-share/gspc/doc/tutorial/hello_world$ make BUILDDIR=$HOME/build WE_EXEC_WORKER=1 run
+share/gspc/doc/tutorial/hello_world $ make BUILDDIR=$HOME/build WE_EXEC_WORKER=1 run
 ----
 
 and the output will contain the lines:
