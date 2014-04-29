@@ -160,10 +160,10 @@ namespace sdpa
       }
     }
 
-    sdpa::worker_id_list_t CoallocationScheduler::releaseReservation (const sdpa::job_id_t& job_id)
+    bool CoallocationScheduler::cancelNotTerminatedWorkerJobs ( std::function<void (worker_id_t const&)> func
+                                                              , const sdpa::job_id_t& job_id)
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-
       sdpa::worker_id_list_t list_not_terminated_workers;
 
       const allocation_table_t::const_iterator it
@@ -173,17 +173,39 @@ namespace sdpa
       {
         Reservation* ptr_reservation(it->second);
         list_not_terminated_workers = ptr_reservation->getListNotTerminatedWorkers();
+      }
 
-        for (const worker_id_t& worker_id : list_not_terminated_workers)
+      for (worker_id_t worker_id : list_not_terminated_workers)
+      {
+        func (worker_id);
+      }
+
+      return !list_not_terminated_workers.empty();
+    }
+
+    void CoallocationScheduler::releaseReservation (const sdpa::job_id_t& job_id)
+    {
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      const allocation_table_t::const_iterator it
+       (allocation_table_.find (job_id));
+
+      if (it != allocation_table_.end())
+      {
+        Reservation* ptr_reservation(it->second);
+        for (std::string worker : ptr_reservation->getWorkerList())
         {
-          worker_manager().findWorker (worker_id)->abort (job_id);
+          try {
+              worker_manager().findWorker (worker)->deleteJob (job_id);
+          }
+          catch (const WorkerNotFoundException&)
+          {
+            // the worker might be gone in between
+          }
         }
 
         delete ptr_reservation;
         allocation_table_.erase (it);
       }
-
-      return list_not_terminated_workers;
     }
 
     void CoallocationScheduler::workerFinished

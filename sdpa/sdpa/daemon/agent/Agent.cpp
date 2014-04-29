@@ -25,12 +25,6 @@ namespace sdpa
     {
       child_proxy (this, pEvt->from()).job_finished_ack (pEvt->job_id());
 
-      if (scheduler().worker_manager().checkIfAbortedJobAndDelete (pEvt->from(), pEvt->job_id()))
-      {
-        request_scheduling();
-        return;
-      }
-
       Job* pJob (findJob (pEvt->job_id()));
       if (!hasWorkflowEngine())
       {
@@ -67,17 +61,20 @@ namespace sdpa
               (pEvt->job_id(), "One of tasks of the group failed with the actual reservation!");
           }
 
-          for (std::string worker : scheduler().workers (pJob->id()))
-          {
-            scheduler().worker_manager().findWorker (worker)->deleteJob (pJob->id());
-          }
           scheduler().releaseReservation (pJob->id());
         }
         request_scheduling();
 
         if(bAllPartResCollected)
         {
-          deleteJob (pEvt->job_id());
+          if(pJob->getStatus() != sdpa::status::PENDING)
+          {
+            deleteJob (pEvt->job_id());
+          }
+          else
+          {
+            scheduler().enqueueJob (pEvt->job_id());
+          }
         }
       }
     }
@@ -85,12 +82,6 @@ namespace sdpa
     void Agent::handleJobFailedEvent (const events::JobFailedEvent* pEvt)
     {
       child_proxy (this, pEvt->from()).job_failed_ack (pEvt->job_id());
-
-      if (scheduler().worker_manager().checkIfAbortedJobAndDelete (pEvt->from(), pEvt->job_id()))
-      {
-        request_scheduling();
-        return;
-      }
 
       Job* pJob (findJob (pEvt->job_id()));
       if (!hasWorkflowEngine())
@@ -117,17 +108,20 @@ namespace sdpa
             workflowEngine()->failed (pEvt->job_id(), pEvt->error_message());
           }
 
-          for (std::string worker : scheduler().workers (pJob->id()))
-          {
-            scheduler().worker_manager().findWorker (worker)->deleteJob (pJob->id());
-          }
           scheduler().releaseReservation (pJob->id());
         }
         request_scheduling();
 
         if (bAllPartResCollected)
         {
-          deleteJob (pEvt->job_id());
+          if(pJob->getStatus() != sdpa::status::PENDING)
+          {
+            deleteJob (pEvt->job_id());
+          }
+          else
+          {
+            scheduler().enqueueJob (pEvt->job_id());
+          }
         }
       }
     }
@@ -168,29 +162,11 @@ namespace sdpa
 
     void Agent::handleCancelJobAckEvent (const events::CancelJobAckEvent* pEvt)
     {
-      if (scheduler().worker_manager().checkIfAbortedJobAndDelete (pEvt->from(), pEvt->job_id()))
-      {
-        request_scheduling();
-        return;
-      }
-
       Job* pJob (findJob(pEvt->job_id()));
-
-      if (pJob)
-      {
-        try
-        {
-          pJob->CancelJobAck();
-        }
-        catch (std::exception const&)
-        {
-          workflowEngine()->canceled (pEvt->job_id());
-          throw;
-        }
-      }
 
       if (!hasWorkflowEngine())
       {
+        pJob->CancelJobAck();
         if (!isTop())
         {
           parent_proxy (this, pJob->owner()).cancel_job_ack (pEvt->job_id());
@@ -200,38 +176,33 @@ namespace sdpa
       }
       else
       {
-        LLOG (TRACE, _logger, "informing workflow engine that the activity "<< pEvt->job_id() <<" was canceled");
-
         scheduler().workerCanceled (pEvt->from(), pEvt->job_id());
         const bool bTaskGroupComputed
           (scheduler().allPartialResultsCollected (pEvt->job_id()));
 
         if (bTaskGroupComputed)
         {
-          workflowEngine()->canceled (pEvt->job_id());
+          if (pJob->getStatus() == sdpa::status::CANCELING)
+          {
+            pJob->CancelJobAck();
+            workflowEngine()->canceled (pEvt->job_id());
+          }
+
+          scheduler().releaseReservation (pEvt->job_id());
         }
 
-        try
-        {
-          if (bTaskGroupComputed)
-          {
-            for (std::string worker : scheduler().workers (pJob->id()))
-            {
-              scheduler().worker_manager().findWorker (worker)->deleteJob (pJob->id());
-            }
-            scheduler().releaseReservation (pEvt->job_id());
-          }
-          LLOG (TRACE, _logger, "Remove job " << pEvt->job_id() << " from the worker "<<pEvt->from());
-          request_scheduling();
-        }
-        catch (const WorkerNotFoundException&)
-        {
-            scheduler().delete_job (pEvt->job_id());
-        }
+        request_scheduling();
 
         if (bTaskGroupComputed)
         {
-          deleteJob(pEvt->job_id());
+          if(pJob->getStatus() != sdpa::status::PENDING)
+          {
+            deleteJob(pEvt->job_id());
+          }
+          else
+          {
+            scheduler().enqueueJob (pEvt->job_id());
+          }
         }
       }
     }

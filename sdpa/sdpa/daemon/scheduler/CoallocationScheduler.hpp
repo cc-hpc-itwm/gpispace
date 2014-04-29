@@ -42,8 +42,11 @@ namespace sdpa
       void request_scheduling();
 
       // used by daemon and self and test
-      sdpa::worker_id_list_t releaseReservation (const sdpa::job_id_t&);
+      void releaseReservation (const sdpa::job_id_t&);
       void assignJobsToWorkers();
+
+      bool cancelNotTerminatedWorkerJobs ( std::function<void (worker_id_t const&)> func
+                                         , const sdpa::job_id_t& job_id);
 
     private:
       std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)>
