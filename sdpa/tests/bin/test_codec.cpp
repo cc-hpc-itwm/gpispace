@@ -5,9 +5,9 @@
 #include <we/test/operator_equal.hpp>
 
 #include <fhg/util/random_string.hpp>
+#include <fhg/util/boost/test/printer/list.hpp>
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::capabilities_set_t);
-BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::worker_id_list_t);
 
 namespace
 {
