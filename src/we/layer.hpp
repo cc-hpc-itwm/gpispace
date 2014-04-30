@@ -19,6 +19,7 @@
 #include <boost/thread/scoped_thread.hpp>
 
 #include <functional>
+#include <random>
 #include <unordered_map>
 
 namespace we
@@ -43,7 +44,7 @@ namespace we
               // result of discover (parent) -> top level
             , std::function<void (id_type discover_id, sdpa::discovery_info_t)> rts_discovered
             , std::function<id_type()> rts_id_generator
-            , boost::mt19937& random_extraction_engine
+            , std::mt19937& random_extraction_engine
             );
 
       // initial from exec_layer -> top level
@@ -140,7 +141,7 @@ namespace we
         to_be_removed_type _to_be_removed;
       } _nets_to_extract_from;
 
-      boost::mt19937& _random_extraction_engine;
+      std::mt19937& _random_extraction_engine;
       void extract_from_nets();
 
       std::unordered_map<id_type, std::function<void()>>

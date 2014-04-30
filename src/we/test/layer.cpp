@@ -358,7 +358,7 @@ struct daemon
     return boost::lexical_cast<we::layer::id_type> (++_cnt);
   }
 
-  boost::mt19937 _random_engine;
+  std::mt19937 _random_engine;
   we::layer layer;
   mutable boost::mutex _in_progress_mutex;
   boost::condition_variable_any _in_progress_condition;
@@ -1016,7 +1016,7 @@ BOOST_AUTO_TEST_CASE
 
   bool finished (false);
 
-  boost::mt19937 _random_engine;
+  std::mt19937 _random_engine;
 
   we::layer layer
     ( std::bind (&submit_fake, &child_ids, std::placeholders::_1, std::placeholders::_2)
@@ -1331,7 +1331,7 @@ namespace
       _received_requirements;
 
   private:
-    boost::mt19937 _random_extraction_engine;
+    std::mt19937 _random_extraction_engine;
 
     boost::mutex _generate_id_mutex;
     unsigned long _cnt;

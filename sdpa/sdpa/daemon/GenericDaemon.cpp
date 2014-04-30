@@ -97,7 +97,7 @@ GenericDaemon::GenericDaemon( const std::string name
                )
   , _scheduling_thread_mutex()
   , _scheduling_thread_notifier()
-  , _random_extraction_engine (boost::make_optional (create_wfe, boost::mt19937()))
+  , _random_extraction_engine (boost::make_optional (create_wfe, std::mt19937()))
   , mtx_subscriber_()
   , mtx_master_()
   , mtx_cpb_()
