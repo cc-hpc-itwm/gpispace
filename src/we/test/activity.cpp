@@ -24,12 +24,12 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
   we::type::net_type net;
 
   we::place_id_type const pid_vid
-    (net.add_place (place::type ("vid", std::string ("long"))));
+    (net.add_place (place::type ("vid", std::string ("unsigned long"))));
 
   pnet::type::signature::structure_type sig_store_fields;
 
   sig_store_fields.push_back
-    (std::make_pair (std::string ("bid"), std::string ("long")));
+    (std::make_pair (std::string ("bid"), std::string ("unsigned long")));
   sig_store_fields.push_back
     (std::make_pair (std::string ("seen"), std::string ("bitset")));
 
@@ -56,9 +56,9 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
   pnet::type::signature::structure_type sig_pair_fields;
 
   sig_pair_fields.push_back
-    (std::make_pair (std::string ("bid"), std::string ("long")));
+    (std::make_pair (std::string ("bid"), std::string ("unsigned long")));
   sig_pair_fields.push_back
-    (std::make_pair (std::string ("vid"), std::string ("long")));
+    (std::make_pair (std::string ("vid"), std::string ("unsigned long")));
 
   pnet::type::signature::structured_type const sig_pair
     (std::make_pair (std::string ("pair"), sig_pair_fields));
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
 
   we::port_id_type const port_id_vid
     ( trans_inner.add_port
-        (we::type::port_t ("vid", we::type::PORT_IN, std::string("long")))
+        (we::type::port_t ("vid", we::type::PORT_IN, std::string("unsigned long")))
     );
   we::port_id_type const port_id_store_out
     ( trans_inner.add_port
@@ -94,13 +94,13 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
     net.add_connection (we::edge::TP, tid, pid_pair, port_id_pair, empty);
   }
 
-  net.put_value (pid_vid, 0L);
-  net.put_value (pid_vid, 1L);
+  net.put_value (pid_vid, 0UL);
+  net.put_value (pid_vid, 1UL);
 
   {
     pnet::type::value::structured_type m;
 
-    m.push_back (std::make_pair (std::string ("bid"), 0L));
+    m.push_back (std::make_pair (std::string ("bid"), 0UL));
     m.push_back (std::make_pair (std::string ("seen"), bitsetofint::type(0)));
 
     net.put_value (pid_store, m);
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
   {
     pnet::type::value::structured_type m;
 
-    m.push_back (std::make_pair (std::string ("bid"), 1L));
+    m.push_back (std::make_pair (std::string ("bid"), 1UL));
     m.push_back (std::make_pair (std::string ("seen"), bitsetofint::type(0)));
 
     net.put_value (pid_store, m);
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
                               , we::priority_type()
                               );
   tnet.add_port
-    (we::type::port_t ("vid", we::type::PORT_IN, std::string ("long"), pid_vid));
+    (we::type::port_t ("vid", we::type::PORT_IN, std::string ("unsigned long"), pid_vid));
   tnet.add_port
     (we::type::port_t ("store", we::type::PORT_IN, sig_store, pid_store));
   we::port_id_type const port_id_store_out_net
@@ -171,11 +171,11 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
   BOOST_REQUIRE_EQUAL (values_by_port_id.at (port_id_store_out_net).size(), 2);
   BOOST_REQUIRE_EQUAL (values_by_port_id.at (port_id_pair_net).size(), 4);
 
-  for (long bid (0); bid < 2; ++bid)
+  for (unsigned long bid (0); bid < 2; ++bid)
   {
     bitsetofint::type bs;
 
-    for (long vid (0); vid < 2; ++vid)
+    for (unsigned long vid (0); vid < 2; ++vid)
     {
       pnet::type::value::value_type s;
       pnet::type::value::poke ("bid", s, bid);
