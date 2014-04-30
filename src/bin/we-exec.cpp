@@ -451,8 +451,7 @@ try
     loader.append_search_path (p);
   }
 
-  std::random_device random_device;
-  std::mt19937 random_extraction_engine (random_device());
+  std::mt19937 random_extraction_engine {std::random_device()()};
   sdpa_daemon const daemon
     ( num_worker
     , &loader
