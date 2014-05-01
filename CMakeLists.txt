@@ -18,7 +18,6 @@ set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE ST
 
 OPTION (ENABLE_LICENSE_CHECK "enable license check" OFF)
 set (FHGLOG_STRIP_LEVEL "-1" CACHE STRING "Strip log messages with a level >= N")
-set (FHG_ASSERT_MODE CACHE INTEGER "fhg assert mode: 0 ignore, 1 throw")
 option (FHG_ASSERT_REPLACE_LEGACY "Replace legacy assert with fhg_assert" ON)
 option (ENABLE_BACKTRACE_ON_PARSE_ERROR "Show a backtrace on (pnet) parser errors" OFF)
 option (ENABLE_DOCUMENTATION "enable documentation" ON)
@@ -58,15 +57,12 @@ include (fhg_test_macros)
 
 include (CompilerFlags)
 
-if (NOT FHG_ASSERT_MODE)
-  if (${CMAKE_BUILD_TYPE} MATCHES "Release")
-    set (FHG_ASSERT_MODE "0")
-  else()
-    set (FHG_ASSERT_MODE "1")
-  endif()
+if (${CMAKE_BUILD_TYPE} MATCHES "Release")
+  add_definitions ("-DFHG_ASSERT_MODE=0")
+else()
+  add_definitions ("-DFHG_ASSERT_MODE=1")
 endif()
 
-add_definitions ("-DFHG_ASSERT_MODE=${FHG_ASSERT_MODE}")
 if (FHG_ASSERT_REPLACE_LEGACY)
   add_definitions ("-DFHG_ASSERT_REPLACE_LEGACY")
 endif()
