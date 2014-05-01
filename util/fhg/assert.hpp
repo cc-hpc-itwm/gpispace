@@ -12,7 +12,7 @@
    FHG_ASSERT_DISABLED    0
    make fhg_assert a nop
 
-   FHG_ASSERT_EXCEPTION 3
+   FHG_ASSERT_EXCEPTION 1
    throw an fhg::assertion_failed exception
 
    - the syntax is quite easy:
@@ -22,7 +22,7 @@
    the message is optional but if given, must be a C-string
  */
 #define FHG_ASSERT_DISABLED  0 //! \note ignore asserts
-#define FHG_ASSERT_EXCEPTION 3 //! \note throw fhg::assertion_failed
+#define FHG_ASSERT_EXCEPTION 1 //! \note throw fhg::assertion_failed
 
 #include <sstream>
 
