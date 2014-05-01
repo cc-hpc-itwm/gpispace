@@ -4,7 +4,6 @@ set (hdrs
   LogMacros.hpp
   Logger.hpp
   event.hpp
-  fhglog.hpp
   level.hpp
   )
 
