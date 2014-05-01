@@ -23,7 +23,6 @@ add_subdirectory(plugin)
 add_subdirectory (fhgcom)
 
 OPTION (ENABLE_REAL_GPI "Provide api for the *real* GPI" ON)
-OPTION (ENABLE_COMPATIBILITY_API "Provide a transitional api compatible with the old fvm-pc" ON)
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
