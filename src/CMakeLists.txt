@@ -28,8 +28,13 @@ OPTION (ENABLE_COMPATIBILITY_API "Provide a transitional api compatible with the
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
 if (ENABLE_REAL_GPI)
-  find_package (IBVerbs)
-  if (IBverbs_FOUND)
+  find_library (IBverbs_LIBRARY
+    NAMES ibverbs
+    HINTS ${LIBIBVERBS_HOME} ENV LIBIBVERBS_HOME
+    PATH_SUFFIXES lib lib64
+  )
+
+  if (IBverbs_LIBRARY)
     set (GPI_HOME ${CMAKE_CURRENT_SOURCE_DIR}/gpi-space/ext)
     set (GPI_INCLUDE_DIR ${GPI_HOME}/include)
     set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libGPI.a)
@@ -55,8 +60,7 @@ int main ()
       message (WARNING "Support for real-GPI requested but not available on your platform!")
       set (ENABLE_REAL_GPI OFF CACHE BOOL "Provide api for the *real* GPI" FORCE)
     endif()
-  else (IBverbs_FOUND)
-    message (STATUS "${IBverbs_FOUND}")
+  else ()
     message (WARNING "Support for real-GPI requested but not available on your platform (ibverbs not installed)!")
     set (ENABLE_REAL_GPI OFF CACHE BOOL "Provide api for the *real* GPI" FORCE)
   endif()
