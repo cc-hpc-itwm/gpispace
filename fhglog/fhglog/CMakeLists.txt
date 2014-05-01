@@ -1,12 +1,3 @@
-set (hdrs
-  Appender.hpp
-  Configuration.hpp
-  LogMacros.hpp
-  Logger.hpp
-  event.hpp
-  level.hpp
-)
-
 set (srcs
   Configuration.cpp
   Logger.cpp
@@ -45,7 +36,13 @@ set_target_properties (fhglog-shared
 target_link_libraries (fhglog fhg-util ${Boost_FILESYSTEM_LIBRARY})
 target_link_libraries (fhglog-shared fhg-util ${Boost_FILESYSTEM_LIBRARY})
 
-install (FILES ${hdrs}
+install (FILES
+  Appender.hpp
+  Configuration.hpp
+  LogMacros.hpp
+  Logger.hpp
+  event.hpp
+  level.hpp
   DESTINATION include/fhglog
 )
 
