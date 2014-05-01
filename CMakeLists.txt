@@ -62,7 +62,7 @@ if (NOT FHG_ASSERT_MODE)
   if (${CMAKE_BUILD_TYPE} MATCHES "Release")
     set (FHG_ASSERT_MODE "0")
   else()
-    set (FHG_ASSERT_MODE "1")
+    set (FHG_ASSERT_MODE "3")
   endif()
 endif()
 
