@@ -4,29 +4,14 @@ set (srcs
   color_map.cpp
   event.cpp
   level.cpp
-)
-
-set (source_appender
   appender/file.cpp
   appender/stream.cpp
-)
-
-set (remote_srcs
   remote/server.cpp
   remote/appender.cpp
 )
 
-ADD_LIBRARY (fhglog
-  ${srcs}
-  ${source_appender}
-  ${remote_srcs}
-)
-
-ADD_LIBRARY (fhglog-shared SHARED
-  ${srcs}
-  ${source_appender}
-  ${remote_srcs}
-)
+ADD_LIBRARY (fhglog ${srcs})
+ADD_LIBRARY (fhglog-shared SHARED ${srcs})
 
 set_target_properties (fhglog-shared
   PROPERTIES OUTPUT_NAME fhglog
