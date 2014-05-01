@@ -28,7 +28,7 @@ OPTION (ENABLE_COMPATIBILITY_API "Provide a transitional api compatible with the
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
 if (ENABLE_REAL_GPI)
-  find_package (IBVerbs QUIET)
+  find_package (IBVerbs)
   if (IBverbs_FOUND)
     set (GPI_HOME ${CMAKE_CURRENT_SOURCE_DIR}/gpi-space/ext)
     set (GPI_INCLUDE_DIR ${GPI_HOME}/include)
