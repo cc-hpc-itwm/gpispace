@@ -93,7 +93,7 @@
                 													input_n_slots_per_part, input_n_slots_per_red,
                                                						n_part, partition_slot_size,
                                                						n_part_slots, n_red_slots, n_partitions, reduce_slot_size)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="util/helper.hpp"/>
           <cinclude href="cstdio"/>
@@ -414,7 +414,7 @@
         <out name="read_chunk_info" type="read_chunk_info"/>
 
         <module name="mapredmod_read" function="read_chunk_info read_and_load_chunk(chunk_and_slot, config)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="util/memory.hpp"/>
           <cinclude href="util/helper.hpp"/>
           <cinclude href="iostream"/>
@@ -509,7 +509,7 @@
         <out name="read_slot_id" type="long"/>
 
         <module name="mapredmod_map" function="map_chunk(map_slot_id, read_chunk_info, config, read_slot_id, counter_partial_updates, map_chunk_info)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="util/helper.hpp"/>
           <cinclude href="util/map.hpp"/>
@@ -649,7 +649,7 @@
         <in name="config" type="config"/>
         <out name="partition_result" type="partition_result"/>
         <module name="store_into_partition_slot" function="shuffle(part_slice_info, partition_info, config, partition_result)">
-           <cinclude href="fhglog/fhglog.hpp"/>
+           <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="sstream"/>
           <cinclude href="ctype.h"/>
@@ -915,7 +915,7 @@
         <in name="config" type="config"/>
         <out name="partition_move_info" type="partition_move_info"/>
         <module name="move_partition" function="move_partition_into_the_reduce_slot(config, partition_result, reduce_info, partition_move_info)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="util/helper.hpp"/>
           <cinclude href="util/reduce.hpp"/>
@@ -1079,7 +1079,7 @@
         <in name="config" type="config"/>
         <out name="reduce_info" type="reduce_info"/>
         <module name="reduce" function="reduce(config, pre_reduce_info, reduce_info)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="util/time.hpp"/>
           <cinclude href="util/helper.hpp"/>
@@ -1251,7 +1251,7 @@
         <out name="new_reduce_info" type="reduce_info"/>
         <out name="reduce_result" type="reduce_result"/>
         <module name="reduce_and_save" function="reduce_and_save(config, partition_move_info, new_reduce_info, reduce_result)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="util/helper.hpp"/>
           <cinclude href="util/reduce.hpp"/>
@@ -1408,7 +1408,7 @@
      																	 	special_reduce_info,
      																	 	border_keys_recovered_part,
               																border_keys_recovered_red )">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="util/helper.hpp"/>
           <cinclude href="util/reduce.hpp"/>
@@ -1593,7 +1593,7 @@
      													reduce_info,
 	     	                                            new_reduce_info,
      													border_keys_recovered_part)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="util/helper.hpp"/>
           <cinclude href="util/partition.hpp"/>
@@ -1799,7 +1799,7 @@
 		<in name="part_slots_released_log" type="control" />
         <out name="part_slots_released" type="control" />
         <module name="log" function="log(part_slots_released_log, part_slots_released)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
 
           <code><![CDATA[
 
@@ -1829,7 +1829,7 @@
 	     												new_reduce_info,
 	     	     										config,
 	     												border_keys_recovered_red)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="util/helper.hpp"/>
           <cinclude href="util/partition.hpp"/>
@@ -1917,7 +1917,7 @@
         <in name="special_reduce_info" type="reduce_info"/>
         <out name="result" type="control"/>
         <module name="mapreduce_done" function="finalize_mapreduce(id, config, result)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="util/memory.hpp"/>
           <cinclude href="util/helper.hpp"/>   <ld flag="-lboost_regex"/>
           <code><![CDATA[

@@ -1,7 +1,7 @@
 // alexander.petry@itwm.fraunhofer.de
 
 #include <fhglog/appender/stream.hpp>
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhglog/format.hpp>
 #include <fhglog/remote/server.hpp>
 

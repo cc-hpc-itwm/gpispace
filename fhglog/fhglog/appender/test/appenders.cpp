@@ -5,7 +5,7 @@
 
 #include <fhglog/appender/test/utils.hpp>
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhglog/appender/stream.hpp>
 
 #include <sstream>

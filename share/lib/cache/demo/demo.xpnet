@@ -44,7 +44,7 @@
         <inout name="slot" type="long"/>
         <out name="id" type="long"/>
         <module name="demo" function="id work (cache, slot)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="stdlib.h"/>
           <code><![CDATA[
             const long id (cache.by_slot.id.at (slot));

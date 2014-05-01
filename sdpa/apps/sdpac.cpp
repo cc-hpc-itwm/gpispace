@@ -5,7 +5,7 @@
 //#include <unistd.h>
 #include <sys/stat.h> // for stat, to check if file exists
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhglog/Configuration.hpp>
 #include <fhglog/appender/file.hpp>
 #include <fhglog/appender/stream.hpp>

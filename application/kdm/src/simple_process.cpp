@@ -4,7 +4,7 @@
 #include <fcntl.h>
 
 #include <we/loader/macros.hpp>
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fvm-pc/pc.hpp>
 
 #include <iostream>

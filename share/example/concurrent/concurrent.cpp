@@ -1,7 +1,7 @@
 #include <we/loader/macros.hpp>
 #include <drts/worker/context.hpp>
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <map>
 

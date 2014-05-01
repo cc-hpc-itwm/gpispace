@@ -150,7 +150,7 @@
                                , maximum_trace_count
                                )">
           <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="stdexcept"/>
           <cinclude href="fstream"/>
           <cinclude href="determine_size.hpp"/>
@@ -457,7 +457,7 @@
         <in name="config" type="tracebytrace_config"/>
         <out name="package" type="tracebytrace_loaded_package"/>
         <module name="tracebytrace" function="load (package, config)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="do_load.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
@@ -503,7 +503,7 @@
         <in name="config" type="tracebytrace_config"/>
         <out name="package" type="tracebytrace_loaded_package"/>
         <module name="tracebytrace" function="tracebytrace (package, config)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
           <cinclude href="process/process.hpp"/>
@@ -628,7 +628,7 @@
         <module name="tracebytrace"
                 function="p write (package_to_be_written, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="do_write.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
@@ -715,7 +715,7 @@
         <out name="trigger" type="control"/>
         <module name="tracebytrace" function="finalize (trigger, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <code><![CDATA[
             LOG (INFO, "FINALIZE");
 

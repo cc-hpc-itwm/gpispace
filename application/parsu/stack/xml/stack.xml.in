@@ -141,7 +141,7 @@
                                , config
                                )">
           <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="stdexcept"/>
           <cinclude href="fstream"/>
           <cinclude href="determine_size.hpp"/>
@@ -292,7 +292,7 @@
         <in name="config" type="stack_config"/>
         <out name="package" type="stack_loaded_package"/>
         <module name="stack" function="load (package, config)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="do_load.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
@@ -337,7 +337,7 @@
         <in name="config" type="stack_config"/>
         <out name="package" type="stack_loaded_package"/>
         <module name="stack" function="stack (package, config)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
           <cinclude href="process/process.hpp"/>
@@ -483,7 +483,7 @@
         <out name="p" type="stack_pair_of_packages"/>
         <module name="stack" function="stack2 (p, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
           <cinclude href="process/process.hpp"/>
@@ -683,7 +683,7 @@
         <out name="p" type="stack_loaded_package"/>
         <module name="stack" function="p write (package_to_be_written, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="do_write.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
@@ -770,7 +770,7 @@
         <out name="trigger" type="control"/>
         <module name="stack" function="finalize (trigger, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <code><![CDATA[
             LOG (INFO, "FINALIZE");
 

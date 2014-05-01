@@ -2,7 +2,7 @@
 
 #include <fhglog/remote/appender.hpp>
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <fhg/util/split.hpp>
 

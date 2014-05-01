@@ -4,7 +4,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sstream> // std::ostringstream
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhglog/format.hpp>
 
 #include <fhg/util/now.hpp>

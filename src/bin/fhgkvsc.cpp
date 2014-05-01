@@ -1,4 +1,4 @@
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <iostream>
 #include <boost/program_options.hpp>

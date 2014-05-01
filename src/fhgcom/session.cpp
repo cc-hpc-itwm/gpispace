@@ -1,6 +1,6 @@
 #include <fhgcom/session.hpp>
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <functional>
 #include <iomanip>

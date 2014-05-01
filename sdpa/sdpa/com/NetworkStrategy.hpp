@@ -3,7 +3,7 @@
 
 #include <sdpa/events/SDPAEvent.hpp>
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>

@@ -14,7 +14,7 @@
                                           , std_out
                                           , std_err
                                           )">
-    <cinclude href="fhglog/fhglog.hpp"/>
+    <cinclude href="fhglog/LogMacros.hpp"/>
     <cinclude href="boost/foreach.hpp"/>
     <cinclude href="errno.h"/>
     <cinclude href="unistd.h"/>
