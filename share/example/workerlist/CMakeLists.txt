@@ -1,6 +1,5 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-if (ENABLE_DOCUMENTATION)
   ADD_ASCIIDOC (share_example_workerlist-asciidoc-html
     INPUT README
     OUTPUT README.html
@@ -11,7 +10,6 @@ if (ENABLE_DOCUMENTATION)
     ${CMAKE_CURRENT_BINARY_DIR}/README.html
     DESTINATION share/gspc/example/workerlist
   )
-endif()
 
 install (FILES README workerlist.xpnet DESTINATION share/gspc/example/workerlist)
 

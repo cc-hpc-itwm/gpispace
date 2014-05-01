@@ -1,6 +1,5 @@
 # mirko.rahn@itwm.fraunhofer.de
 
-if (ENABLE_DOCUMENTATION)
   ADD_ASCIIDOC (tutorial_hello_world-asciidoc-html
     INPUT README
     OUTPUT README.html
@@ -11,7 +10,6 @@ if (ENABLE_DOCUMENTATION)
     ${CMAKE_CURRENT_BINARY_DIR}/README.html
     DESTINATION share/gspc/doc/tutorial/hello_world
   )
-endif()
 
 install (FILES
   hello_world.xpnet
