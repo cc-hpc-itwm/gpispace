@@ -27,7 +27,7 @@ namespace fhg
     }
   };
 
-  class assertion_failed : public std::exception
+  class assertion_failed : public std::logic_error
   {
   public:
     assertion_failed ( std::string const & cond
@@ -35,16 +35,14 @@ namespace fhg
                      , std::string const & file
                      , int line
                      )
-      : m_cond (cond)
+      : std::logic_error (assert_helper::message(cond, message, file, line))
+      , m_cond (cond)
       , m_message (message)
       , m_file (file)
       , m_line (line)
-      , m_what_text (assert_helper::message(cond, message, file, line))
     {}
 
     virtual ~assertion_failed() throw() = default;
-
-    const char * what () const throw() { return m_what_text.c_str(); }
 
     std::string const & condition() const { return m_cond; }
     std::string const & message() const { return m_message; }
@@ -55,7 +53,6 @@ namespace fhg
     const std::string m_message;
     const std::string m_file;
     const int         m_line;
-    const std::string m_what_text;
   };
 }
 
