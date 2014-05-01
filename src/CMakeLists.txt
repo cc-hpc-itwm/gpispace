@@ -30,8 +30,6 @@ include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 if (ENABLE_REAL_GPI)
   find_package (IBVerbs QUIET)
   if (IBverbs_FOUND)
-    include_directories (SYSTEM ${IBverbs_INCLUDE_DIR})
-
     set (GPI_HOME ${CMAKE_CURRENT_SOURCE_DIR}/gpi-space/ext)
     set (GPI_INCLUDE_DIR ${GPI_HOME}/include)
     set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libGPI.a)
