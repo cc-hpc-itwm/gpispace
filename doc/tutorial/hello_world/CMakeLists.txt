@@ -1,15 +1,15 @@
 # mirko.rahn@itwm.fraunhofer.de
 
-  ADD_ASCIIDOC (tutorial_hello_world-asciidoc-html
-    INPUT README
-    OUTPUT README.html
-    BACKEND xhtml11
-  )
+ADD_ASCIIDOC (tutorial_hello_world-asciidoc-html
+  INPUT README
+  OUTPUT README.html
+  BACKEND xhtml11
+)
 
-  install (FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/README.html
-    DESTINATION share/gspc/doc/tutorial/hello_world
-  )
+install (FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/README.html
+  DESTINATION share/gspc/doc/tutorial/hello_world
+)
 
 install (FILES
   hello_world.xpnet
