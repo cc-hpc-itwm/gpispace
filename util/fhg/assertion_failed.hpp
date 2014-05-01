@@ -39,7 +39,7 @@ namespace fhg
       , m_message (message)
       , m_file (file)
       , m_line (line)
-      , m_what_text (fhg::assert_helper::message(cond, message, file, line))
+      , m_what_text (assert_helper::message(cond, message, file, line))
     {}
 
     virtual ~assertion_failed() throw() = default;
