@@ -1,0 +1,228 @@
+:doctype: book
+:toc:
+
+= Generating a sequence of tokens with values in a given range
+
+== Situation
+
+In order to split up a workload of size N, multiple tokens should be produced
+to allow processing parts of the workload in parallel. The tokens
+representing the parts shall be numbers from 0 to N-1.
+
+== Run `use_sequence`
+
+In order to run the example-workflow `use_sequence`, as usual one has
+to generate and compile module calls. The workflow has one input port
+`n` to represent the number of parts. In our example, `n` will be set
+to 10:
+
+[source,bash]
+----
+share/gspc/doc/tutorial/sequence $ BUILDDIR=$(mktemp -d)
+share/gspc/doc/tutorial/sequence $ make -f
+${GSPC_HOME}/share/sdpa/make/common.mk MAIN=use_sequence
+PUT_PORT="n=10L" run
+----
+
+A possible output of this may end with
+
+----
+[1398864287.814213] I: we-exec we-exec.cpp:161 - SDPA layer worker-1 started
+[1398864287.814248] I: we-exec we-exec.cpp:161 - SDPA layer worker-0 started
+WORK 0
+WORK 2
+WORK 1
+WORK 3
+WORK 4
+WORK 5
+WORK 6
+WORK 7
+WORK 8
+WORK 9
+finished [1]
+o => 0L
+o => 2L
+o => 1L
+o => 3L
+o => 4L
+o => 5L
+o => 6L
+o => 7L
+o => 8L
+o => 9L
+----
+
+Like in link:../hello_world/README.html[hello world], the output may
+show different interleavings of both, logging output (`WORK x`) and
+output tokens (`o => x`) highlighting that the "parts" may run in parallel.
+
+== Looping with condition based on single value
+
+In order to produce the sequence-tokens, a loop within the petri-net
+itself is used. The loop is equivalent to the following pseudo-code snippet
+
+[source,c]
+----
+int n;
+while (n > 0)
+{
+  n = n - 1;
+  emit_token (n);
+}
+return;
+----
+
+On the petri-net level, it is only possible to conditionally execute a transition. Thus, it is required to rewrite the `while` loop using conditional blocks for stepping and breaking, using `if` and `goto`
+
+todo: break is keyword!
+
+[source,c]
+----
+  int n;
+check:
+  if (n > 0)
+  {
+    goto step;
+  }
+  if (n <= 0)
+  {
+    goto break;
+  }
+  // note: never reached
+
+step:
+  n = n - 1;
+  emit_token (n);
+  goto check;
+
+break:
+  return;
+----
+
+This control flow can be represented in a petri net with two transitions: one per condition
+
+[graphviz,sequence.png]
+----
+digraph concurrent
+{
+ rankdir=LR
+
+ N_in [style = "invisible"]
+ I_out [style = "invisible"]
+
+ N [shape = "ellipse"]
+ I [shape = "ellipse"]
+
+ step [shape = "rectangle", label = "step\n[N > 0]"]
+ break [shape = "rectangle", label = "break\n[N <= 0]"]
+
+ N_in -> N [style = "dotted"]
+
+ N -> step
+ step -> N
+ step -> I
+
+ N -> break
+
+ I -> I_out [style = "dotted"]
+}
+----
+
+The workflow implemented in link:sequence.xpnet[] implements this. Both transitions are expressions. `break` only consumes the token and thus terminates the loop. `step` decreases `N` and outputs a copy of `N` to `I`.
+
+== Looping with condition based on multiple values
+
+Note that in the previous example, the net was counting from N-1 to 0, while it may be required to count the other way around. In structured programming languages, this would be simliar to
+
+[source,c]
+----
+int n;
+int c = 0;
+while (c < n)
+{
+  emit_token (c);
+  c = c + 1;
+}
+return;
+----
+
+While previously, a variable was equivalent to a token/place, we now can't simply add a second place and token: If two invocations happen in parallel, it is not possible to pair the correct `c` and `n`:
+
+[graphviz,sequence_two_place_fail.png]
+----
+digraph concurrent
+{
+ rankdir=LR
+
+ N_in [style = "invisible"]
+ C_in [style = "invisible"]
+ I_out [style = "invisible"]
+
+ N [shape = "ellipse", label = "N\n50\n100"]
+ C [shape = "ellipse", label = "C\n10\n21"]
+ I [shape = "ellipse"]
+
+ step [shape = "rectangle", label = "step\n[C < N]"]
+ break [shape = "rectangle", label = "break\n[C >= N]"]
+
+ N_in -> N [style = "dotted"]
+ C_in -> C [style = "dotted"]
+
+ N -> step [style = "dashed"]
+ C -> step
+ step -> C
+ step -> I
+
+ N -> break
+ C -> break
+
+ I -> I_out [style = "dotted"]
+}
+----
+
+Thus, one needs to pair both, `N` and `C` into a single token:
+
+[graphviz,sequence_two_place_good.png]
+----
+digraph concurrent
+{
+ rankdir=LR
+
+ N_in [style = "invisible"]
+ I_out [style = "invisible"]
+
+ State [shape = "ellipse", label = "State\n{C:=10, N:=50}\n{C:=21, N:=100}"]
+ I [shape = "ellipse"]
+
+ step [shape = "rectangle", label = "step\n[State.C < State.N]"]
+ break [shape = "rectangle", label = "break\n[State.C >= State.N]"]
+
+ N_in -> State [style = "dotted"]
+
+ State -> step [style = "dashed"]
+ step -> State
+ step -> I
+
+ State -> break
+
+ I -> I_out [style = "dotted"]
+}
+----
+
+Just like in the pseudocode snippet, there needs to be an initialization of the state, setting `State.C` to 0 and `State.N` to the given maximum. In link:sequence_forward.xpnet[] this happens in the `init` transition, which takes an `N` and produces the corresponding state-pair:
+
+[source,xml]
+----
+    <transition name="init">
+      <defun>
+        <in name="n" type="long"/>
+        <out name="state" type="state"/>
+        <expression>
+          ${state.max} := ${n};
+          ${state.i} := 0L;
+        </expression>
+      </defun>
+      <connect-in port="n" place="n"/>
+      <connect-out port="state" place="state"/>
+    </transition>
+----
