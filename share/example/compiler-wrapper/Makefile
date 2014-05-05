@@ -43,10 +43,14 @@ clean/sdpacc:
 install/sdpacc: gen-sdpacc
 	mkdir -p "$(DESTDIR)/bin"
 	cp "$(BUILDDIR)/sdpacc" "$(DESTDIR)/bin/sdpacc"
+	ln -sf "sdpacc" "${DESTDIR}/bin/sdpacc.gcc"
+	ln -sf "sdpacc" "${DESTDIR}/bin/sdpacc.g++"
 
 .PHONY: uninstall/sdpacc
 uninstall/sdpacc:
 	-$(RM) "$(DESTDIR)/bin/sdpacc"
+	-$(RM) "${DESTDIR}/bin/sdpacc.gcc"
+	-$(RM) "${DESTDIR}/bin/sdpacc.g++"
 	-rmdir "$(DESTDIR)/bin"
 
 .PHONY: install/example
