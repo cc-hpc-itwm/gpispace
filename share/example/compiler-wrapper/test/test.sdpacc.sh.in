@@ -7,12 +7,12 @@ source "@CMAKE_BINARY_DIR@/test/dir_state.sh"
 source "@CMAKE_BINARY_DIR@/test/measured.sh"
 
 DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
-
+DIR_INST="${DIR_BUILD}/inst"
 DIR_SOURCE="${DIR_TEST}/.."
 HOSTFILE="${DIR_BUILD}/hostfile"
 
 make+=( make BUILDDIR="${DIR_BUILD}" )
-make+=( LIB_DESTDIR="${DIR_BUILD}" )
+make+=( DESTDIR="${DIR_INST}" )
 make+=( -C "${DIR_SOURCE}")
 
 cleanup()
@@ -21,6 +21,8 @@ cleanup()
   rm -f "${HOSTFILE}"
   eval ${make[@]} uninstall
   eval ${make[@]} clean
+  rmdir "${DIR_INST}/modules" # can't automatically be deleted by 'moduninstall'
+  rmdir "${DIR_INST}"
   cleanup_dir_build
   cleanup_dir_state
 }
@@ -32,10 +34,10 @@ measured "install" ${make[@]} install                       || die $EX_ERR_RUN
 
 hostname > "${HOSTFILE}"                                    || die $EX_ERR_RUN
 
-measured "boot" sdpa boot -S "${DIR_STATE}" -A "${DIR_BUILD}" -M -f "${HOSTFILE}" worker:1      \
+measured "boot" sdpa boot -S "${DIR_STATE}" -A "${DIR_INST}/modules" -M -f "${HOSTFILE}" worker:1      \
                                                             || die $EX_ERR_BOOT
 
-measured "submit" "${DIR_BUILD}/sdpacc" -o "${DIR_BUILD}/hello" "${DIR_SOURCE}/src/hello.c" || die $EX_ERR_RUN
+measured "submit" "${DIR_INST}/bin/sdpacc" -o "${DIR_BUILD}/hello" "${DIR_INST}/example/hello.c" || die $EX_ERR_RUN
 
 test -x "${DIR_BUILD}/hello"                                || die $EX_ERR_RES
 actual=$("${DIR_BUILD}/hello")                              || die $EX_ERR_RUN
@@ -47,7 +49,9 @@ measured "stop" sdpa -s "${DIR_STATE}" stop                 || die $EX_ERR_STOP
 rm "${HOSTFILE}"                                         || die $EX_ERR_CLEANUP
 measured "uninstall" ${make[@]} uninstall                || die $EX_ERR_CLEANUP
 measured "clean" ${make[@]} clean                        || die $EX_ERR_CLEANUP
+rmdir "${DIR_INST}/modules"                              || die $EX_ERR_CLEANUP
+rmdir "${DIR_INST}"                                      || die $EX_ERR_CLEANUP
 cleanup_dir_build                                        || die $EX_ERR_CLEANUP
 cleanup_dir_state                                        || die $EX_ERR_CLEANUP
 
-trap - EXIT
+trap '' EXIT
