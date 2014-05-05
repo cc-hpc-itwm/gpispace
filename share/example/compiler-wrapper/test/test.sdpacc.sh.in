@@ -21,6 +21,8 @@ cleanup()
   rm -f "${HOSTFILE}"
   eval ${make[@]} uninstall
   eval ${make[@]} clean
+  rm "${DIR_BUILD}/hello.gcc"
+  rm "${DIR_BUILD}/hello.g++"
   rmdir "${DIR_INST}/modules" # can't automatically be deleted by 'moduninstall'
   rmdir "${DIR_INST}"
   cleanup_dir_build
@@ -37,16 +39,22 @@ hostname > "${HOSTFILE}"                                    || die $EX_ERR_RUN
 measured "boot" sdpa boot -S "${DIR_STATE}" -A "${DIR_INST}/modules" -M -f "${HOSTFILE}" worker:1      \
                                                             || die $EX_ERR_BOOT
 
-measured "submit" "${DIR_INST}/bin/sdpacc.gcc" -o "${DIR_BUILD}/hello" "${DIR_INST}/example/hello.c" || die $EX_ERR_RUN
+measured "submit" "${DIR_INST}/bin/sdpacc.gcc" -o "${DIR_BUILD}/hello.gcc" "${DIR_INST}/example/hello.c" || die $EX_ERR_RUN
+measured "submit" "${DIR_INST}/bin/sdpacc.g++" -o "${DIR_BUILD}/hello.g++" "${DIR_INST}/example/hello.c" || die $EX_ERR_RUN
 
-test -x "${DIR_BUILD}/hello"                                || die $EX_ERR_RES
-actual=$("${DIR_BUILD}/hello")                              || die $EX_ERR_RUN
+test -x "${DIR_BUILD}/hello.gcc"                                || die $EX_ERR_RES
+test -x "${DIR_BUILD}/hello.g++"                                || die $EX_ERR_RES
+actual_gcc=$("${DIR_BUILD}/hello.gcc")                          || die $EX_ERR_RUN
+actual_gxx=$("${DIR_BUILD}/hello.g++")                          || die $EX_ERR_RUN
 
-test "Hello World" = "$actual"                              || die $EX_ERR_RES
+test "Hello World" = "$actual_gcc"                              || die $EX_ERR_RES
+test "Hello World" = "$actual_gxx"                              || die $EX_ERR_RES
 
 measured "stop" sdpa -s "${DIR_STATE}" stop                 || die $EX_ERR_STOP
 
 rm "${HOSTFILE}"                                         || die $EX_ERR_CLEANUP
+rm "${DIR_BUILD}/hello.gcc"                              || die $EX_ERR_CLEANUP
+rm "${DIR_BUILD}/hello.g++"                              || die $EX_ERR_CLEANUP
 measured "uninstall" ${make[@]} uninstall                || die $EX_ERR_CLEANUP
 measured "clean" ${make[@]} clean                        || die $EX_ERR_CLEANUP
 rmdir "${DIR_INST}/modules"                              || die $EX_ERR_CLEANUP
