@@ -8,6 +8,8 @@ PUT_PORT += cwd=\""$(PWD)"\"
 PNETPUT_OPTS += -p "argv=List(\"-o\", \"$(BUILDDIR)/hello\", \"$(CURDIR)/src/hello.c\")"
 CLEAN += clean/hello clean/sdpacc
 BUILD += gen-sdpacc
+INSTALL += install/sdpacc
+UNINSTALL += uninstall/sdpacc
 
 ###############################################################################
 
@@ -36,3 +38,13 @@ clean/hello:
 .PHONY: clean/sdpacc
 clean/sdpacc:
 	-$(RM) '$(BUILDDIR)/sdpacc'
+
+.PHONY: install/sdpacc
+install/sdpacc: gen-sdpacc
+	mkdir -p "$(DESTDIR)/bin"
+	cp "$(BUILDDIR)/sdpacc" "$(DESTDIR)/bin/sdpacc"
+
+.PHONY: uninstall/sdpacc
+uninstall/sdpacc:
+	-$(RM) "$(DESTDIR)/bin/sdpacc"
+	-rmdir "$(DESTDIR)/bin"
