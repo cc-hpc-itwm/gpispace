@@ -18,7 +18,6 @@ set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE ST
 
 OPTION (ENABLE_LICENSE_CHECK "enable license check" OFF)
 option (FHG_ASSERT_REPLACE_LEGACY "Replace legacy assert with fhg_assert" ON)
-option (ENABLE_BACKTRACE_ON_PARSE_ERROR "Show a backtrace on (pnet) parser errors" OFF)
 
   execute_process (
     COMMAND git rev-parse HEAD

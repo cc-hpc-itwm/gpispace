@@ -16,7 +16,6 @@
 #include <we/type/signature/show.hpp>
 
 #include <fhg/util/join.hpp>
-#include <fhg/util/backtracing_exception.hpp>
 
 #include <xml/parse/rapidxml/1.13/rapidxml.hpp>
 
@@ -32,31 +31,21 @@ namespace xml
   {
     namespace error
     {
-      // ******************************************************************* //
-
-#ifndef NO_BACKTRACE_ON_PARSE_ERROR
-#define GENERIC_EXCEPTION_BASE_CLASS fhg::util::backtracing_exception
-#else
-#define GENERIC_EXCEPTION_BASE_CLASS std::runtime_error
-#endif
-
-      class generic : public GENERIC_EXCEPTION_BASE_CLASS
+      class generic : public std::runtime_error
       {
       public:
         generic (const std::string & msg)
-          : GENERIC_EXCEPTION_BASE_CLASS ("ERROR: " + msg)
+          : std::runtime_error ("ERROR: " + msg)
         { }
 
         generic (const boost::format& bf)
-          : GENERIC_EXCEPTION_BASE_CLASS ("ERROR: " + bf.str())
+          : std::runtime_error ("ERROR: " + bf.str())
         { }
 
         generic (const std::string & msg, const std::string & pre)
-          : GENERIC_EXCEPTION_BASE_CLASS ("ERROR: " + pre + ": " + msg)
+          : std::runtime_error ("ERROR: " + pre + ": " + msg)
         { }
       };
-
-#undef GENERIC_EXCEPTION_BASE_CLASS
 
       // ******************************************************************* //
 
