@@ -30,7 +30,7 @@
 #define FHG_ASSERT_STR(x) FHG_ASSERT_STR_(x)
 
 #ifndef FHG_ASSERT_MODE
-#  define FHG_ASSERT_MODE FHG_ASSERT_DISABLED
+#  error missing definition for FHG_ASSERT_MODE
 #endif
 
 #if   FHG_ASSERT_DISABLED == FHG_ASSERT_MODE
