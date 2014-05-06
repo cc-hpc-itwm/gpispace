@@ -253,7 +253,7 @@ private:
 
     shell_t & shell_t::get ()
     {
-      assert (instance != nullptr);
+      fhg_assert (instance != nullptr);
       return *instance;
     }
 

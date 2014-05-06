@@ -2,6 +2,7 @@
 
 #include <fhg/util/signal_handler_manager.hpp>
 
+#include <fhg/assert.hpp>
 #include <fhg/syscall.hpp>
 #include <fhg/util/backtracing_exception.hpp>
 
@@ -35,14 +36,14 @@ namespace fhg
     signal_handler_manager::signal_handler_manager()
     {
       boost::mutex::scoped_lock const _ (GLOBAL_manager_mutex);
-      assert (!GLOBAL_manager);
+      fhg_assert (!GLOBAL_manager);
       GLOBAL_manager = this;
     }
 
     signal_handler_manager::~signal_handler_manager()
     {
       boost::mutex::scoped_lock const _ (GLOBAL_manager_mutex);
-      assert (GLOBAL_manager == this);
+      fhg_assert (GLOBAL_manager == this);
       GLOBAL_manager = nullptr;
 
       for (int sig_num : _handlers | boost::adaptors::map_keys)

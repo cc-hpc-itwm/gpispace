@@ -256,7 +256,7 @@ namespace gpi
         new_child.name = detail::rank_to_name (rank);
 
         lock_type lock(m_mutex);
-        assert (m_peer);
+        fhg_assert (m_peer);
         m_children[rank] = new_child;
       }
 

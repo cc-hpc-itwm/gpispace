@@ -10,6 +10,8 @@
 
 #include <we/type/signature/is_literal.hpp>
 
+#include <fhg/assert.hpp>
+
 namespace xml
 {
   namespace parse
@@ -196,7 +198,7 @@ namespace xml
       void port_type::type_check
         (const boost::filesystem::path& path, const state::type& state) const
       {
-        assert (has_parent());
+        fhg_assert (has_parent());
 
         boost::apply_visitor
           (type_checker (make_reference_id(), path, state), parent()->content());

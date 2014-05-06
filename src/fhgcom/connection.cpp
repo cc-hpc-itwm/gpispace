@@ -68,7 +68,7 @@ namespace fhg
 
     void connection_t::start_read ()
     {
-      assert (in_message_ != nullptr);
+      fhg_assert (in_message_ != nullptr);
 
       boost::asio::async_read( socket_
                              , boost::asio::buffer (&in_message_->header, sizeof(p2p::header_t))
@@ -87,7 +87,7 @@ namespace fhg
     {
       if (! ec)
       {
-        assert (bytes_transferred == sizeof(p2p::header_t));
+        fhg_assert (bytes_transferred == sizeof(p2p::header_t));
 
         // WORK HERE: convert for local endianess!
         in_message_->resize ();
@@ -148,7 +148,7 @@ namespace fhg
 
     void connection_t::start_send ()
     {
-      assert (to_send_.size() > 0);
+      fhg_assert (to_send_.size() > 0);
 
       if (to_send_.empty ())
         return;

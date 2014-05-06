@@ -39,7 +39,7 @@ class VerificationResult {
     VerificationResult(Result result):
         result_(result)
     {
-        assert(result == TERMINATES);
+        fhg_assert(result == TERMINATES);
     }
 
     /**
@@ -52,7 +52,7 @@ class VerificationResult {
     VerificationResult(Result result, const std::vector<const Transition *> &init, const std::vector<const Transition *> &loop):
         result_(result), init_(init), loop_(loop)
     {
-        assert(result != TERMINATES);
+        fhg_assert(result != TERMINATES);
     }
 
     /**

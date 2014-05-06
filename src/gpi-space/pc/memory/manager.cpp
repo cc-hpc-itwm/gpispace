@@ -356,7 +356,7 @@ namespace gpi
       {
         area_ptr area (get_area (seg_id));
 
-        assert (area);
+        fhg_assert (area);
 
         gpi::pc::type::handle_t hdl (area->alloc (proc_id, size, name, flags));
 
@@ -370,7 +370,7 @@ namespace gpi
       {
         area_ptr area (get_area_by_handle (hdl));
 
-        assert (area);
+        fhg_assert (area);
 
         area->remote_free (hdl);
         del_handle (hdl);
@@ -381,7 +381,7 @@ namespace gpi
       {
         area_ptr area (get_area_by_handle (hdl));
 
-        assert (area);
+        fhg_assert (area);
 
         del_handle (hdl);
         area->free (hdl);
