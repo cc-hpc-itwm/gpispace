@@ -21,7 +21,6 @@ set (FHGLOG_STRIP_LEVEL "-1" CACHE STRING "Strip log messages with a level >= N"
 set (FHG_ASSERT_MODE CACHE INTEGER "fhg assert mode: 0 ignore, 1 enable, 2 use assert, 3 throw, 4 just log, 5 log and abort")
 option (FHG_ASSERT_REPLACE_LEGACY "Replace legacy assert with fhg_assert" ON)
 option (ENABLE_BACKTRACE_ON_PARSE_ERROR "Show a backtrace on (pnet) parser errors" OFF)
-option (ENABLE_DOCUMENTATION "enable documentation" ON)
 
   execute_process (
     COMMAND git rev-parse HEAD
@@ -166,40 +165,38 @@ INCLUDE (InstallRequiredSystemLibraries)
 add_subdirectory (playground/ap/licensing)
 add_subdirectory (playground/bl)
 
-if (ENABLE_DOCUMENTATION)
-  include (cmake_parse_arguments)
-  include (car_cdr_macros)
+include (cmake_parse_arguments)
+include (car_cdr_macros)
 
-  find_package (source_highlite REQUIRED QUIET)
-  find_package (asciidoc 8.6.7 REQUIRED QUIET)
+find_package (source_highlite REQUIRED QUIET)
+find_package (asciidoc 8.6.7 REQUIRED QUIET)
 
-  macro (ADD_ASCIIDOC)
-    parse_arguments (DOC
-      "INPUT;OUTPUT;BACKEND"
-      ""
-      ${ARGN}
-      )
-    car (DOC_TARGET ${DOC_DEFAULT_ARGS})
+macro (ADD_ASCIIDOC)
+  parse_arguments (DOC
+    "INPUT;OUTPUT;BACKEND"
+    ""
+    ${ARGN}
+    )
+  car (DOC_TARGET ${DOC_DEFAULT_ARGS})
 
-    if (ASCIIDOC_FOUND AND SOURCE_HIGHLITE_FOUND)
-      add_custom_command (
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}
-        COMMAND ${CMAKE_COMMAND}
-                -DPATH="${SOURCE_HIGHLITE_BINDIR}:$ENV{PATH}"
-                -DASCIIDOC="${ASCIIDOC_EXECUTABLE}"
-                -DBACKEND="${DOC_BACKEND}"
-                -DOUTPUT="${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}"
-                -DINPUT="${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}"
-                -P "${CMAKE_SOURCE_DIR}/modules/asciidoc.cmake"
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}
-      )
-      add_custom_target (${DOC_TARGET}
-        ALL
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}
-      )
-    endif()
-  endmacro()
-endif()
+  if (ASCIIDOC_FOUND AND SOURCE_HIGHLITE_FOUND)
+    add_custom_command (
+      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}
+      COMMAND ${CMAKE_COMMAND}
+              -DPATH="${SOURCE_HIGHLITE_BINDIR}:$ENV{PATH}"
+              -DASCIIDOC="${ASCIIDOC_EXECUTABLE}"
+              -DBACKEND="${DOC_BACKEND}"
+              -DOUTPUT="${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}"
+              -DINPUT="${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}"
+              -P "${CMAKE_SOURCE_DIR}/modules/asciidoc.cmake"
+      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}
+    )
+    add_custom_target (${DOC_TARGET}
+      ALL
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}
+    )
+  endif()
+endmacro()
 
 add_subdirectory (doc)
 add_subdirectory (share)
