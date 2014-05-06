@@ -36,7 +36,7 @@
         <out name="done" type="control"/>
         <module name="stresstest" function="done run (config, id, i)">
           <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="stdexcept"/>
           <cinclude href="string.h"/>
           <cinclude href="boost/random.hpp"/>

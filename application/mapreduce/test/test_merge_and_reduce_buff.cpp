@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <util/reduce.hpp>
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <vector>
 
 const int NTESTKEYS = 5;

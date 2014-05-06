@@ -186,7 +186,7 @@
         <in name="result" type="result"/>
         <out name="result" type="result"/>
         <module name="asian" function="done (result)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <code><![CDATA[
             LOG(INFO, "done row with result " << result);
           ]]></code>

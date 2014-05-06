@@ -3,7 +3,7 @@
       <in name="s" type="long"/>
       <inout name="k" type="long"/>
       <module name="capacity" function="wait (d, s, k)">
-        <cinclude href="fhglog/fhglog.hpp"/>
+        <cinclude href="fhglog/LogMacros.hpp"/>
         <code><![CDATA[
           LOG (INFO, d << "-" << k << ": sleeping for " << s << " seconds");
 

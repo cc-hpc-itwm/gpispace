@@ -61,7 +61,7 @@
 #include <fhg/util/thread/set.hpp>
 #include <fhg/util/thread/queue.hpp>
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <memory>
 #include <random>

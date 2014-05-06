@@ -57,7 +57,7 @@
                                                , n_read_slots
                                                , n_write_slots
                                                )">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="util/memory.hpp"/>
           <cinclude href="cstdio"/>
           <cinclude href="sstream"/>
@@ -225,7 +225,7 @@
         <out name="chunk_read_info" type="chunk_read_info"/>
 
         <module name="load_chunk" function="chunk_read_info read_and_load_chunk(chunk_and_slot, config)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="util/memory.hpp"/>
           <cinclude href="iostream"/>
           <cinclude href="stdio.h"/>
@@ -306,7 +306,7 @@
                                                            , config
                                                            , read_slot_id
                                                            )">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="ctype.h"/>
           <code><![CDATA[
@@ -373,7 +373,7 @@
                                                     , config
                                                     , write_slot_id
                                                     )">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="iostream"/>
           <cinclude href="sys/types.h"/>
@@ -474,7 +474,7 @@
         <in name="all_chunks_done_read" type="control"/>
         <out name="done" type="control"/>
         <module name="transformation_done" function="done finalize_transform_file(config)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="util/memory.hpp"/>
           <code><![CDATA[
           LOG (INFO, "finalize: " << config);

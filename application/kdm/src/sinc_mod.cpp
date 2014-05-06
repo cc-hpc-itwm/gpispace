@@ -1,5 +1,5 @@
 #include <we/loader/macros.hpp>
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <limits>
 #include "sinc_mod.hpp"
 

@@ -15,7 +15,7 @@
 
 #include <fhg/util/random_string.hpp>
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <plugin/core/kernel.hpp>
 #include <plugin/plugin.hpp>

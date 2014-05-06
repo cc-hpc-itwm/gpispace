@@ -7,7 +7,7 @@
 #include <fhg/revision.hpp>
 #include <fhg/util/thread/queue.hpp>
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <sdpa/job_states.hpp>
 

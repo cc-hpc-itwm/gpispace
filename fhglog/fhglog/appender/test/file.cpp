@@ -3,7 +3,7 @@
 #define BOOST_TEST_MODULE file_appender
 #include <boost/test/unit_test.hpp>
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhglog/appender/file.hpp>
 
 #include <fhg/util/read_file.hpp>

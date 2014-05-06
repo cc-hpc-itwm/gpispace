@@ -152,7 +152,7 @@
                                , config
                                )">
           <cinclude href="fvm-pc/pc.hpp" />
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="stdexcept"/>
           <cinclude href="fstream"/>
           <cinclude href="determine_size.hpp" />
@@ -332,7 +332,7 @@
         <in name="config" type="op2_config"/>
         <out name="package" type="op2_loaded_package"/>
         <module name="op2" function="load (package, config)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="do_load.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
@@ -388,7 +388,7 @@
         <in name="config" type="op2_config"/>
         <out name="package" type="op2_loaded_package"/>
         <module name="op2" function="op2 (package, config)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
           <cinclude href="process/process.hpp"/>
@@ -479,7 +479,7 @@
         <out name="p" type="op2_loaded_package"/>
         <module name="op2" function="p write (package_to_be_written, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="do_write.hpp"/>
           <cinclude href="print.hpp"/>
           <cinclude href="comm.hpp"/>
@@ -587,7 +587,7 @@
         <out name="trigger" type="control"/>
         <module name="op2" function="finalize (trigger, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <code><![CDATA[
             LOG (INFO, "FINALIZE");
 

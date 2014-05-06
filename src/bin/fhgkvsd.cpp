@@ -1,4 +1,4 @@
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <stdlib.h>
 #include <csignal>

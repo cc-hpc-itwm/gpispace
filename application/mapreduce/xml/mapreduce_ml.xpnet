@@ -66,7 +66,7 @@
     	<out name="mapreduce_id_1" type="string" />
     	<out name="mapreduce_id_2" type="string" />
     	<module name="multilevel_init" function="init(str_output_file_children, output_file_1, output_file_2, mapreduce_id_1, mapreduce_id_2)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="util/helper.hpp"/>
           <cinclude href="util/reduce.hpp"/>
           <cinclude href="fstream"/>
@@ -188,7 +188,7 @@
     	<in name="str_output_file_merge" type="string" />
     	<out name="partition_merged" type="control"/>
     	<module name="multilevel_merge" function="merge_results(part_id, str_output_file_merge, new_result_1, new_result_2, partition_merged)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="util/helper.hpp"/>
           <cinclude href="util/reduce.hpp"/>
           <cinclude href="fstream"/>
@@ -258,7 +258,7 @@
 		  	${done}:=[];
         </expression> -->
         <module name="multilevel_merge" function="stop(part_ids_released, new_result_1, new_result_2, done)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
 
           <code><![CDATA[
 

@@ -5,7 +5,7 @@
   <module name="selftest" function="selftest ( challenge
 				             , response
                                           )">
-    <cinclude href="fhglog/fhglog.hpp"/>
+    <cinclude href="fhglog/LogMacros.hpp"/>
     <code><![CDATA[
         LOG (INFO, "SDPA selftest");
 

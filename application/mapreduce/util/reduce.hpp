@@ -11,14 +11,14 @@
 #include <boost/utility.hpp>
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fstream>
 #include <list>
 #include <stdexcept>
 #include <boost/filesystem.hpp>
 #include <util/time.hpp>
 #include <util/helper.hpp>
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <vector>
 #include <cstdlib>
 #include <algorithm>
