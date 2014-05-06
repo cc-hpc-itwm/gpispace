@@ -403,12 +403,12 @@ submit: $(PUT)
 
 .PHONY: install modinstall uninstall moduninstall
 
-install: modinstall
+install: modinstall $(INSTALL)
 
 modinstall: lib
 	$(MAKE) LIB_DESTDIR=$(LIB_DESTDIR) -C $(GEN) install
 
-uninstall: moduninstall
+uninstall: moduninstall $(UNINSTALL)
 
 moduninstall:
 	$(MAKE) LIB_DESTDIR=$(LIB_DESTDIR) -C $(GEN) uninstall
@@ -475,10 +475,10 @@ help:
 	@echo "showconfig   show the actual configuration"
 	@echo
 	@echo "modinstall   'lib' & install module(s) to $(LIB_DESTDIR)"
-	@echo "install      'modinstall'"
+	@echo "install      'modinstall' & run recipes for targets in 'INSTALL'"
 	@echo
 	@echo "moduninstall uninstall module(s) from $(LIB_DESTDIR)"
-	@echo "uninstall    'moduninstall'"
+	@echo "uninstall    'moduninstall' & run recipes for targets in 'UNINSTALL'"
 
 ###############################################################################
 
@@ -559,6 +559,8 @@ showconfig:
 	@echo
 	@echo 'BUILD             = $(BUILD)'
 	@echo 'CLEAN             = $(CLEAN)'
+	@echo 'INSTALL           = $(INSTALL)'
+	@echo 'UNINSTALL         = $(UNINSTALL)'
 	@echo
 	@echo '*** Derived commands:'
 	@echo
