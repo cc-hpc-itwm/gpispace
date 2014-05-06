@@ -453,7 +453,7 @@ endif
 help:
 	@echo "default      'build'"
 	@echo
-	@echo "build        'put' & 'lib'"
+	@echo "build        'put' & 'lib' & run recipes for targets in BUILD"
 	@echo
 	@echo "net          build pnet from xml"
 	@echo "put          'net' & put tokens into the workflow"
@@ -470,7 +470,7 @@ help:
 	@echo "ps           'dot' & generate postscript"
 	@echo "svg          'dot' & generate svg"
 	@echo
-	@echo "clean        delete all generated files"
+	@echo "clean        delete all generated files & run recipes for targets in CLEAN"
 	@echo
 	@echo "showconfig   show the actual configuration"
 	@echo
