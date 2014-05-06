@@ -30,9 +30,7 @@
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/gpi/fake_api.hpp>
-#ifdef ENABLE_REAL_GPI
 #include <gpi-space/gpi/real_api.hpp>
-#endif
 
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/container/manager.hpp>
@@ -104,7 +102,6 @@ namespace
   std::unique_ptr<gpi_api_t> create_gpi_api
     (requested_api_t requested_api, bool is_master)
   {
-#ifdef ENABLE_REAL_GPI
     if (requested_api == API_auto)
     {
       try
@@ -124,7 +121,6 @@ namespace
       return fhg::util::make_unique <gpi::api::real_gpi_api_t> (is_master);
     }
     else // if (requested_api == API_fake)
-#endif
     {
       return fhg::util::make_unique <gpi::api::fake_gpi_api_t> (is_master);
     }
@@ -215,9 +211,7 @@ int main (int ac, char *av[])
       fprintf(stderr, "    --gpi-api STRING (%s)\n", "auto");
       fprintf(stderr, "      choose the GPI API to use\n");
       fprintf(stderr, "        fake - use the fake api\n");
-#ifdef ENABLE_REAL_GPI
       fprintf(stderr, "        real - use the real api\n");
-#endif
       fprintf(stderr, "        auto - choose the best api\n");
       fprintf(stderr, "\n");
       fprintf(stderr, "GPI options (expert)\n");
@@ -484,16 +478,10 @@ int main (int ac, char *av[])
       if (i < ac)
       {
         requested_api = strcmp (av[i], "auto") == 0 ? API_auto
-#ifdef ENABLE_REAL_GPI
           : strcmp (av[i], "real") == 0 ? API_real
-#endif
           : strcmp (av[i], "fake") == 0 ? API_fake
           : throw std::runtime_error
-#ifdef ENABLE_REAL_GPI
             ("invalid argument to --gpi-api: must be 'auto', 'real' or 'fake'");
-#else
-            ("invalid argument to --gpi-api: must be 'auto' or 'fake'");
-#endif
         ++i;
       }
       else
