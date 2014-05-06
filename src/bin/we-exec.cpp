@@ -19,6 +19,7 @@
 
 #include <functional>
 #include <list>
+#include <random>
 #include <unordered_map>
 #include <vector>
 
@@ -121,7 +122,7 @@ namespace
                 , we::loader::loader* loader
                 , we::type::activity_t const act
                 , boost::optional<std::size_t> const timeout
-                , boost::mt19937& random_extraction_engine
+                , std::mt19937& random_extraction_engine
                 )
         : _mutex_id()
         , _id (0)
@@ -450,7 +451,7 @@ try
     loader.append_search_path (p);
   }
 
-  boost::mt19937 random_extraction_engine;
+  std::mt19937 random_extraction_engine {std::random_device()()};
   sdpa_daemon const daemon
     ( num_worker
     , &loader

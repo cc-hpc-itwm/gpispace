@@ -64,6 +64,7 @@
 #include <fhglog/fhglog.hpp>
 
 #include <memory>
+#include <random>
 
 #define OVERWRITTEN_IN_TEST virtual
 
@@ -252,7 +253,7 @@ namespace sdpa {
       boost::condition_variable _scheduling_thread_notifier;
       void request_scheduling();
 
-      boost::optional<boost::mt19937> _random_extraction_engine;
+      boost::optional<std::mt19937> _random_extraction_engine;
 
     private:
 

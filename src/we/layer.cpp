@@ -19,7 +19,7 @@ namespace we
         , std::function<void (id_type, id_type)> rts_discover
         , std::function<void (id_type, sdpa::discovery_info_t)> rts_discovered
         , std::function<id_type()> rts_id_generator
-        , boost::mt19937& random_extraction_engine
+        , std::mt19937& random_extraction_engine
         )
       : _rts_submit (rts_submit)
       , _rts_cancel (rts_cancel)
