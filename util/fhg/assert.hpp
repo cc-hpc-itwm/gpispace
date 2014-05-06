@@ -1,8 +1,6 @@
 #ifndef FHG_ASSERT_HPP
 #define FHG_ASSERT_HPP
 
-#include <fhg/util/macros.hpp>
-
 /**
    - fhg_assert is a macro that provides a better mechanism than the
    legacy 'assert' and can be switched on/off independently
