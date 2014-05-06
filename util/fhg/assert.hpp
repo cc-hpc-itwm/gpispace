@@ -55,8 +55,4 @@
 #  error invalid FHG_ASSERT_MODE
 #endif
 
-#  ifndef assert
-#    define assert(cond)
-#  endif
-
 #endif
