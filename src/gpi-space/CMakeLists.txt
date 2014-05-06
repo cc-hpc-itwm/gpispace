@@ -42,6 +42,4 @@ add_subdirectory(gpi)
 add_subdirectory(pc)
 add_subdirectory (tests)
 
-if (ENABLE_COMPATIBILITY_API)
-  add_subdirectory (compat)
-endif()
+add_subdirectory (compat)
