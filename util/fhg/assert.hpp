@@ -55,14 +55,8 @@
 #  error invalid FHG_ASSERT_MODE
 #endif
 
-#ifdef FHG_ASSERT_REPLACE_LEGACY
-#    undef assert
-#    define assert(cond) fhg_assert(cond, #cond)
-
-#else
 #  ifndef assert
 #    define assert(cond)
 #  endif
-#endif
 
 #endif

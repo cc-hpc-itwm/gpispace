@@ -17,7 +17,6 @@ set (PROJECT_COPYRIGHT   "Copyright 2009-2014 Fraunhofer ITWM" CACHE STRING "Cop
 set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
 OPTION (ENABLE_LICENSE_CHECK "enable license check" OFF)
-option (FHG_ASSERT_REPLACE_LEGACY "Replace legacy assert with fhg_assert" ON)
 
   execute_process (
     COMMAND git rev-parse HEAD
@@ -58,10 +57,6 @@ if (${CMAKE_BUILD_TYPE} MATCHES "Release")
   add_definitions ("-DFHG_ASSERT_MODE=0")
 else()
   add_definitions ("-DFHG_ASSERT_MODE=1")
-endif()
-
-if (FHG_ASSERT_REPLACE_LEGACY)
-  add_definitions ("-DFHG_ASSERT_REPLACE_LEGACY")
 endif()
 
 add_definitions ("-DBOOST_FILESYSTEM_VERSION=3")
