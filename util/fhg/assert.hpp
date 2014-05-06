@@ -24,9 +24,6 @@
 #define FHG_ASSERT_DISABLED  0 //! \note ignore asserts
 #define FHG_ASSERT_EXCEPTION 1 //! \note throw fhg::assertion_failed
 
-#define FHG_ASSERT_STR_(x) #x
-#define FHG_ASSERT_STR(x) FHG_ASSERT_STR_(x)
-
 #ifndef FHG_ASSERT_MODE
 #  error missing definition for FHG_ASSERT_MODE
 #endif
@@ -38,6 +35,9 @@
 
 #elif FHG_ASSERT_EXCEPTION == FHG_ASSERT_MODE
 #  include <fhg/assertion_failed.hpp>
+#  define FHG_ASSERT_STR_(x) #x
+#  define FHG_ASSERT_STR(x) FHG_ASSERT_STR_(x)
+
 #  define IF_FHG_ASSERT(x...) x
 #  define fhg_assert(cond, ...)                                      \
   do                                                                    \
