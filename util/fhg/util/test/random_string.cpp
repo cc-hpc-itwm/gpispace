@@ -29,11 +29,7 @@ BOOST_AUTO_TEST_CASE (char_of_some)
   for (int i (0); i < 1000; ++i)
   {
     BOOST_REQUIRE_NE
-      ( chars.end()
-      , std::find ( chars.begin(), chars.end()
-                  , fhg::util::random_char_of (chars)
-                  )
-      );
+      (chars.find (fhg::util::random_char_of (chars)), std::string::npos);
   }
 }
 
@@ -62,15 +58,13 @@ BOOST_AUTO_TEST_CASE (string_of_empty)
     );
 }
 
-BOOST_TEST_DONT_PRINT_LOG_VALUE (std::string::const_iterator)
-
 BOOST_AUTO_TEST_CASE (string_of_one)
 {
   std::string const chars ("c");
 
   for (char const& c : fhg::util::random_string_of (chars))
   {
-    BOOST_REQUIRE_NE (chars.end(), std::find (chars.begin(), chars.end(), c));
+    BOOST_REQUIRE_NE (chars.find (c), std::string::npos);
   }
 }
 
@@ -80,7 +74,7 @@ BOOST_AUTO_TEST_CASE (string_of_some)
 
   for (char const& c : fhg::util::random_string_of (chars))
   {
-    BOOST_REQUIRE_NE (chars.end(), std::find (chars.begin(), chars.end(), c));
+    BOOST_REQUIRE_NE (chars.find (c), std::string::npos);
   }
 }
 
@@ -114,7 +108,6 @@ BOOST_AUTO_TEST_CASE (string_without)
 
   for (char const& c : fhg::util::random_string_without (except))
   {
-    BOOST_REQUIRE_EQUAL
-      (except.end(), std::find (except.begin(), except.end(), c));
+    BOOST_REQUIRE_EQUAL (except.find (c), std::string::npos);
   }
 }

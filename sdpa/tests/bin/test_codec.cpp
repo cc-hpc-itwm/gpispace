@@ -5,9 +5,18 @@
 #include <we/test/operator_equal.hpp>
 
 #include <fhg/util/random_string.hpp>
+#include <fhg/util/boost/test.hpp>
+#include <fhg/util/boost/test/printer/list.hpp>
+#include <fhg/util/boost/test/printer/set.hpp>
 
-BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::capabilities_set_t);
-BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::worker_id_list_t);
+FHG_BOOST_TEST_LOG_VALUE_PRINTER (sdpa::Capability, os, capability)
+{
+  os << "Capability ["
+     << " name = " << capability.name()
+     << ", owner = " << capability.owner()
+     << ", depth = " << capability.depth()
+     << "]";
+}
 
 namespace
 {
