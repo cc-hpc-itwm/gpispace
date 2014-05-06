@@ -4,7 +4,6 @@
 #include <fhglog/LogMacros.hpp>
 
 #include <fhg/assert.hpp>
-#include <fhg/util/macros.hpp>
 
 #include <boost/system/error_code.hpp>
 
@@ -82,7 +81,7 @@ namespace fhg
     }
 
     void connection_t::handle_read_header( const boost::system::error_code & ec
-                                         , std::size_t IFNDEF_NDEBUG (bytes_transferred)
+                                         , std::size_t IF_FHG_ASSERT (bytes_transferred)
                                          )
     {
       if (! ec)
