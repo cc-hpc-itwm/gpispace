@@ -2,7 +2,6 @@
 
 #include <fhg/assert.hpp>
 
-#include <cassert>
 #include <vector>
 
 namespace jpna {

@@ -9,14 +9,11 @@
 #include <sys/types.h> // uid_t
 
 #include <csignal>
-#include <cassert>
 #include <iostream>
 #include <fstream>
 
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
-
-#include <fhg/assert.hpp>
 
 #include <fhglog/LogMacros.hpp>
 #include <fhgcom/kvs/kvsc.hpp>

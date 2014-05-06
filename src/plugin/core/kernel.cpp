@@ -6,7 +6,6 @@
 #include <algorithm>
 
 #include <fhglog/LogMacros.hpp>
-#include <fhg/assert.hpp>
 
 #include <plugin/plugin.hpp>
 #include <plugin/core/plugin.hpp>

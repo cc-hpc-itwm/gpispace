@@ -8,7 +8,6 @@
 #include <algorithm>
 
 #include <fhglog/LogMacros.hpp>
-#include <fhg/assert.hpp>
 
 #include <plugin/core/kernel.hpp>
 #include <plugin/core/plugin.hpp>

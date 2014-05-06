@@ -1,5 +1,4 @@
 #include <sdpa/com/NetworkStrategy.hpp>
-#include <fhg/assert.hpp>
 
 #include <csignal>
 

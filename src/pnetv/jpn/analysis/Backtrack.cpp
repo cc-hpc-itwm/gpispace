@@ -5,7 +5,6 @@
 #include <fhg/assert.hpp>
 
 #include <algorithm> /* std::reverse() */
-#include <cassert>
 
 namespace jpn {
 namespace analysis {

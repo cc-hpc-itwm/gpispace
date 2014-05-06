@@ -2,8 +2,6 @@
 
 #include <pnetv/jpn/PlaceMarking.h>
 
-#include <fhg/assert.hpp>
-
 #include <vector>
 
 namespace jpn {
