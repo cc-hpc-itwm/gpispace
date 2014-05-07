@@ -2,6 +2,7 @@
 
   <struct name="config">
     <field name="description" type="string"/>
+    <field name="output_file" type="string"/>
   </struct>
 
   <in name="n" type="long" place="n"/>

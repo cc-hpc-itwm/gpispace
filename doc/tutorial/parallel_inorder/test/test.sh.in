@@ -19,7 +19,7 @@ make+=( BUILDDIR="${DIR_BUILD}" )
 make+=( WE_EXEC_WORKER=5 )
 make+=( WE_EXEC_OUTPUT="${RESULT}" )
 make+=( PNETC_OPTS="-I.." )
-make+=( 'PUT_PORT=n=5L\ c=5L\ config=Struct[description:=\\\"test\\\"]')
+make+=( 'PUT_PORT=n=5L\ c=5L\ config=Struct[description:=\\\"test\\\",output_file:=\\\"${OUT}\\\"]')
 make+=( -C "${DIR_SOURCE}" )
 
 cleanup()
