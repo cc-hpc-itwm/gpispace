@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE (show_and_read_showed)
   test_show_and_read_showed (bitsetofint::type(), "{}");
   test_show_and_read_showed (bitsetofint::type().ins (0), "{ 1}");
   test_show_and_read_showed (bitsetofint::type().ins (0).ins (64), "{ 1 1}");
-  test_show_and_read_showed (bytearray::type(), "y()");
+  test_show_and_read_showed (we::type::bytearray(), "y()");
   {
     std::list<value_type> l;
     test_show_and_read_showed (l, "List ()");
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE (_read)
     BOOST_CHECK_EQUAL (value_type (bs), read ("{ 1 1}"));
   }
   {
-    bytearray::type ba;
+    we::type::bytearray ba;
     BOOST_CHECK_EQUAL (value_type (ba), read ("y()"));
     ba.push_back (' ');
     BOOST_CHECK_EQUAL (value_type (ba), read ("y( 32)"));
@@ -440,7 +440,7 @@ BOOST_AUTO_TEST_CASE (signature_of_type)
   CHECK (CHAR, '\0');
   CHECK (STRING, std::string (""));
   CHECK (BITSET, bitsetofint::type());
-  CHECK (BYTEARRAY, bytearray::type());
+  CHECK (BYTEARRAY, we::type::bytearray());
   CHECK (LIST, std::list<value_type>());
   CHECK (SET, std::set<value_type>());
   std::map<value_type, value_type> m;
@@ -468,7 +468,7 @@ BOOST_AUTO_TEST_CASE (signature_name_of)
   CHECK (CHAR, '\0');
   CHECK (STRING, std::string (""));
   CHECK (BITSET, bitsetofint::type());
-  CHECK (BYTEARRAY, bytearray::type());
+  CHECK (BYTEARRAY, we::type::bytearray());
   CHECK (LIST, std::list<value_type>());
   CHECK (SET, std::set<value_type>());
   std::map<value_type, value_type> m;
@@ -524,7 +524,7 @@ BOOST_AUTO_TEST_CASE (wrap)
   CHECK_EMPTY_LIST (char);
   CHECK_EMPTY_LIST (std::string);
   CHECK_EMPTY_LIST (bitsetofint::type);
-  CHECK_EMPTY_LIST (bytearray::type);
+  CHECK_EMPTY_LIST (we::type::bytearray);
   CHECK_EMPTY_LIST (std::list<value::value_type>);
   CHECK_EMPTY_LIST (std::set<value::value_type>);
   CHECK_EMPTY_LIST (map_vv_type);
@@ -548,7 +548,7 @@ BOOST_AUTO_TEST_CASE (wrap)
   CHECK_EMPTY_SET (char);
   CHECK_EMPTY_SET (std::string);
   CHECK_EMPTY_SET (bitsetofint::type);
-  CHECK_EMPTY_SET (bytearray::type);
+  CHECK_EMPTY_SET (we::type::bytearray);
   CHECK_EMPTY_SET (std::list<value::value_type>);
   CHECK_EMPTY_SET (std::set<value::value_type>);
   CHECK_EMPTY_SET (map_vv_type);
@@ -567,7 +567,7 @@ BOOST_AUTO_TEST_CASE (wrap)
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::literal::control,char >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::literal::control,std::string >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::literal::control,bitsetofint::type >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::literal::control,bytearray::type >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::literal::control,we::type::bytearray >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::literal::control,std::list<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::literal::control,std::set<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::literal::control,std::map<value::value_type,value::value_type> >()));
@@ -583,7 +583,7 @@ BOOST_AUTO_TEST_CASE (wrap)
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bool,char >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bool,std::string >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bool,bitsetofint::type >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bool,bytearray::type >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bool,we::type::bytearray >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bool,std::list<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bool,std::set<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bool,std::map<value::value_type,value::value_type> >()));
@@ -599,7 +599,7 @@ BOOST_AUTO_TEST_CASE (wrap)
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< int,char >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< int,std::string >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< int,bitsetofint::type >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< int,bytearray::type >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< int,we::type::bytearray >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< int,std::list<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< int,std::set<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< int,std::map<value::value_type,value::value_type> >()));
@@ -615,7 +615,7 @@ BOOST_AUTO_TEST_CASE (wrap)
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< long,char >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< long,std::string >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< long,bitsetofint::type >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< long,bytearray::type >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< long,we::type::bytearray >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< long,std::list<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< long,std::set<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< long,std::map<value::value_type,value::value_type> >()));
@@ -631,7 +631,7 @@ BOOST_AUTO_TEST_CASE (wrap)
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< unsigned int,char >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< unsigned int,std::string >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< unsigned int,bitsetofint::type >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< unsigned int,bytearray::type >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< unsigned int,we::type::bytearray >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< unsigned int,std::list<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< unsigned int,std::set<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< unsigned int,std::map<value::value_type,value::value_type> >()));
@@ -647,7 +647,7 @@ BOOST_AUTO_TEST_CASE (wrap)
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< unsigned long,char >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< unsigned long,std::string >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< unsigned long,bitsetofint::type >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< unsigned long,bytearray::type >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< unsigned long,we::type::bytearray >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< unsigned long,std::list<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< unsigned long,std::set<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< unsigned long,std::map<value::value_type,value::value_type> >()));
@@ -663,7 +663,7 @@ BOOST_AUTO_TEST_CASE (wrap)
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< float,char >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< float,std::string >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< float,bitsetofint::type >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< float,bytearray::type >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< float,we::type::bytearray >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< float,std::list<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< float,std::set<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< float,std::map<value::value_type,value::value_type> >()));
@@ -679,7 +679,7 @@ BOOST_AUTO_TEST_CASE (wrap)
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< double,char >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< double,std::string >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< double,bitsetofint::type >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< double,bytearray::type >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< double,we::type::bytearray >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< double,std::list<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< double,std::set<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< double,std::map<value::value_type,value::value_type> >()));
@@ -695,7 +695,7 @@ BOOST_AUTO_TEST_CASE (wrap)
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< char,char >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< char,std::string >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< char,bitsetofint::type >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< char,bytearray::type >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< char,we::type::bytearray >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< char,std::list<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< char,std::set<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< char,std::map<value::value_type,value::value_type> >()));
@@ -711,7 +711,7 @@ BOOST_AUTO_TEST_CASE (wrap)
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::string,char >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::string,std::string >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::string,bitsetofint::type >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::string,bytearray::type >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::string,we::type::bytearray >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::string,std::list<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::string,std::set<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::string,std::map<value::value_type,value::value_type> >()));
@@ -727,27 +727,27 @@ BOOST_AUTO_TEST_CASE (wrap)
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bitsetofint::type,char >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bitsetofint::type,std::string >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bitsetofint::type,bitsetofint::type >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bitsetofint::type,bytearray::type >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bitsetofint::type,we::type::bytearray >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bitsetofint::type,std::list<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bitsetofint::type,std::set<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bitsetofint::type,std::map<value::value_type,value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bitsetofint::type,value::value_type >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bytearray::type,we::type::literal::control >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bytearray::type,bool >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bytearray::type,int >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bytearray::type,long >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bytearray::type,unsigned int >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bytearray::type,unsigned long >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bytearray::type,float >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bytearray::type,double >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bytearray::type,char >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bytearray::type,std::string >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bytearray::type,bitsetofint::type >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bytearray::type,bytearray::type >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bytearray::type,std::list<value::value_type> >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bytearray::type,std::set<value::value_type> >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bytearray::type,std::map<value::value_type,value::value_type> >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< bytearray::type,value::value_type >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::bytearray,we::type::literal::control >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::bytearray,bool >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::bytearray,int >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::bytearray,long >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::bytearray,unsigned int >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::bytearray,unsigned long >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::bytearray,float >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::bytearray,double >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::bytearray,char >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::bytearray,std::string >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::bytearray,bitsetofint::type >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::bytearray,we::type::bytearray >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::bytearray,std::list<value::value_type> >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::bytearray,std::set<value::value_type> >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::bytearray,std::map<value::value_type,value::value_type> >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< we::type::bytearray,value::value_type >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::list<value::value_type>,we::type::literal::control >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::list<value::value_type>,bool >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::list<value::value_type>,int >()));
@@ -759,7 +759,7 @@ BOOST_AUTO_TEST_CASE (wrap)
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::list<value::value_type>,char >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::list<value::value_type>,std::string >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::list<value::value_type>,bitsetofint::type >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::list<value::value_type>,bytearray::type >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::list<value::value_type>,we::type::bytearray >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::list<value::value_type>,std::list<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::list<value::value_type>,std::set<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::list<value::value_type>,std::map<value::value_type,value::value_type> >()));
@@ -775,7 +775,7 @@ BOOST_AUTO_TEST_CASE (wrap)
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::set<value::value_type>,char >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::set<value::value_type>,std::string >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::set<value::value_type>,bitsetofint::type >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::set<value::value_type>,bytearray::type >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::set<value::value_type>,we::type::bytearray >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::set<value::value_type>,std::list<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::set<value::value_type>,std::set<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::set<value::value_type>,std::map<value::value_type,value::value_type> >()));
@@ -791,7 +791,7 @@ BOOST_AUTO_TEST_CASE (wrap)
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::map<value::value_type,value::value_type>,char >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::map<value::value_type,value::value_type>,std::string >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::map<value::value_type,value::value_type>,bitsetofint::type >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::map<value::value_type,value::value_type>,bytearray::type >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::map<value::value_type,value::value_type>,we::type::bytearray >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::map<value::value_type,value::value_type>,std::list<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::map<value::value_type,value::value_type>,std::set<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< std::map<value::value_type,value::value_type>,std::map<value::value_type,value::value_type> >()));
@@ -807,7 +807,7 @@ BOOST_AUTO_TEST_CASE (wrap)
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< value::value_type,char >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< value::value_type,std::string >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< value::value_type,bitsetofint::type >()));
-  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< value::value_type,bytearray::type >()));
+  BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< value::value_type,we::type::bytearray >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< value::value_type,std::list<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< value::value_type,std::set<value::value_type> >()));
   BOOST_CHECK_EQUAL (map_vv_type(), value::wrap (std::map< value::value_type,std::map<value::value_type,value::value_type> >()));
@@ -1166,7 +1166,7 @@ BOOST_AUTO_TEST_CASE (positions)
   LITERAL ('c');
   LITERAL (std::string (""));
   LITERAL (bitsetofint::type());
-  LITERAL (bytearray::type());
+  LITERAL (we::type::bytearray());
   LITERAL (std::list<value_type>());
   LITERAL (std::set<value_type>());
   LITERAL (std::map<value_type, value_type>());

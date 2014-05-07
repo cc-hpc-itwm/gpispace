@@ -20,7 +20,7 @@
         <out name="ba" type="bytearray"/>
         <module name="test_bytearray" function="ba produce(p)">
           <code><![CDATA[
-            ::bytearray::type ba (&p);
+            ::we::type::bytearray ba (&p);
 
             return ba;
           ]]></code>

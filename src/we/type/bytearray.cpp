@@ -6,22 +6,24 @@
 
 #include <iostream>
 
-namespace bytearray
+namespace we
 {
-  void type::push_back (char c)
+namespace type
+{
+  void bytearray::push_back (char c)
   {
     _v.push_back (c);
   }
 
-  type::type()
+  bytearray::bytearray()
     : _v()
   {}
-  type::type (const char* const buf, const std::size_t size)
+  bytearray::bytearray (const char* const buf, const std::size_t size)
     : _v()
   {
     std::copy (buf, buf + size, std::back_inserter (_v));
   }
-  std::size_t type::copy (char* const buf, const std::size_t size) const
+  std::size_t bytearray::copy (char* const buf, const std::size_t size) const
   {
     const std::size_t s (std::min (_v.size(), size));
 
@@ -29,32 +31,33 @@ namespace bytearray
 
     return s;
   }
-  std::string type::to_string() const
+  std::string bytearray::to_string() const
   {
     return std::string (&_v[0], _v.size());
   }
 
-  std::ostream& operator<< (std::ostream& s, const type& t)
+  std::ostream& operator<< (std::ostream& s, const bytearray &t)
   {
     s << "y(";
     for (const char c : t._v)
-      {
-        s << " " << int (c);
-      }
+    {
+      s << " " << int (c);
+    }
     return s << ")";
   }
 
-  std::size_t hash_value (const type& t)
+  std::size_t hash_value (const bytearray &t)
   {
     return boost::hash<std::vector<char>>()(t._v);
   }
 
-  bool operator== (const type& x, const type& y)
+  bool operator== (const bytearray &x, const bytearray &y)
   {
     return x._v == y._v;
   }
-  bool operator< (const type& x, const type& y)
+  bool operator< (const bytearray &x, const bytearray &y)
   {
     return x._v < y._v;
   }
+}
 }

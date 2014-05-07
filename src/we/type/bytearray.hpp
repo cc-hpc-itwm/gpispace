@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _BYTEARRAY_HPP
-#define _BYTEARRAY_HPP
+#ifndef _WE_TYPE_BYTEARRAY_HPP
+#define _WE_TYPE_BYTEARRAY_HPP
 
 #include <algorithm>
 #include <vector>
@@ -9,19 +9,21 @@
 #include <iosfwd>
 #include <sstream>
 
-namespace bytearray
+namespace we
 {
-  class type
+  namespace type
+  {
+  class bytearray
   {
   public:
     void push_back (char c);
 
-    type();
-    type (const char* const, const std::size_t);
+    bytearray();
+    bytearray (const char* const, const std::size_t);
     std::size_t copy (char* const buf, const std::size_t size) const;
 
     template<typename T>
-    explicit type (const T* const x)
+    explicit bytearray (const T* const x)
       : _v()
     {
       std::copy ((char *)x, (char *)x + sizeof (*x), std::back_inserter(_v));
@@ -38,13 +40,13 @@ namespace bytearray
 
     std::string to_string() const;
 
-    friend std::ostream& operator<< (std::ostream&, const type&);
-    friend std::size_t hash_value (const type&);
-    friend bool operator== (const type&, const type&);
-    friend bool operator< (const type&, const type&);
+    friend std::ostream& operator<< (std::ostream&, const bytearray&);
+    friend std::size_t hash_value (const bytearray&);
+    friend bool operator== (const bytearray&, const bytearray&);
+    friend bool operator< (const bytearray&, const bytearray&);
 
     template<typename T>
-    type& operator= (const T& other)
+    bytearray& operator= (const T& other)
     {
       _v.clear();
 
@@ -59,6 +61,7 @@ namespace bytearray
   private:
     std::vector<char> _v;
   };
+  }
 }
 
 #endif
