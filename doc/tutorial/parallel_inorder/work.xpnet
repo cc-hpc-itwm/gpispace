@@ -97,7 +97,6 @@
 
             std::fstream output_file ( config.output_file.c_str ()
                                      , std::ios_base::binary
-                                     | std::ios_base::ate
                                      | std::ios_base::in
                                      | std::ios_base::out
                                      );
