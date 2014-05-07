@@ -86,6 +86,7 @@
           <in name="config" type="T"/>
           <module name="work" function="v write (wo, n, config)">
             <cinclude href="iostream"/>
+            <cinclude href="fstream"/>
             <code><![CDATA[
             std::cout << "### write " << wo.wl.v.id << " of [0.." << n << ")"
             << ", credit " << wo.wl.v.credit
@@ -93,6 +94,20 @@
             << ", offset " << wo.offset
             << std::endl
             ;
+
+            std::fstream output_file ( config.output_file.c_str ()
+                                     , std::ios_base::binary
+                                     | std::ios_base::ate
+                                     | std::ios_base::in
+                                     | std::ios_base::out
+                                     );
+            output_file.exceptions (std::fstream::failbit | std::fstream::badbit);
+            output_file.seekp (wo.offset);
+
+            for (size_t i = 0 ; i < wo.wl.length ; ++i)
+            {
+               output_file.put (static_cast<char> (wo.wl.v.id));
+            }
 
             return wo.wl.v;
             ]]></code>
