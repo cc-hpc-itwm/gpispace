@@ -25,6 +25,20 @@ usage: $(basename $0) [options]
   -C: capability specification
   -G: number of segments
   -x: GPI binary to execute
+
+        This binary has to point to the 'gpi-space' application found
+        in '\$SDPA_HOME/bin/gpi-space', but has to reside in the GPI
+        privileged folder in case you are executing on a cluster. One
+        also has to put dependencies besides the application:
+
+             PRIV_DIR=<gpi-privileged-dir>
+             mkdir -p "\$PRIV_DIR"/gpi-space.app/{bin,lib}
+             cp "\$SDPA_HOME/bin/gpi-space" "\$PRIV_DIR/gpi-space.app/bin"
+             "\$SDPA_HOME/bin/sdpa" bundle -o "\$PRIV_DIR/gpi-space.app/lib" "\$PRIV_DIR/gpi-space.app/bin/gpi-space"
+
+        Please contact your local administrator responsible for GPI in
+        case you don't have permissions for that folder.
+
   -k: kvs port (=$kvs_port)
   -l: log url (=${log_url})
   -g: gui url (=${gui_url})
