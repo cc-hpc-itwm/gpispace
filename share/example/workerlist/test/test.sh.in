@@ -2,6 +2,7 @@
 
 source "@CMAKE_BINARY_DIR@/test/env.sh"
 source "@CMAKE_BINARY_DIR@/test/dir_build.sh"
+source "@CMAKE_BINARY_DIR@/test/dir_state.sh"
 source "@CMAKE_BINARY_DIR@/test/measured.sh"
 
 DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
@@ -22,7 +23,7 @@ make+=( -C "${DIR_SOURCE}")
 
 cleanup()
 {
-  sdpa stop
+  sdpa -s "${DIR_STATE}" stop
   rm -f "${HOSTFILE}"
   eval ${make[@]} uninstall
   eval ${make[@]} clean
@@ -36,7 +37,7 @@ measured "install" ${make[@]} install                       || die $EX_ERR_RUN
 
 hostname > "${HOSTFILE}"                                    || die $EX_ERR_RUN
 
-measured "boot" sdpa boot -A "${DIR_BUILD}" -M -f "${HOSTFILE}" worker:1      \
+measured "boot" sdpa boot -S "${DIR_STATE}" -A "${DIR_BUILD}" -M -f "${HOSTFILE}" worker:1      \
                                                             || die $EX_ERR_BOOT
 
 measured "submit" ${make[@]} submit                         || die $EX_ERR_RUN
@@ -45,7 +46,7 @@ expected="List (\"worker-$(hostname)-1\")"
 
 test "$(pnetget -i "${OUT}" -p workers)" = "${expected}"    || die $EX_ERR_RES
 
-measured "stop" sdpa stop                                   || die $EX_ERR_STOP
+measured "stop" sdpa -s "${DIR_STATE}" stop                 || die $EX_ERR_STOP
 
 rm -f "${HOSTFILE}"                                      || die $EX_ERR_CLEANUP
 measured "uninstall" ${make[@]} uninstall                || die $EX_ERR_CLEANUP
