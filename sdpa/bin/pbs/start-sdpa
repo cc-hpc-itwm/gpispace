@@ -51,7 +51,7 @@ EOF
 on_ctrlC()
 {
         echo >&2 "Canceled..."
-        "${sdpa_home}/bin/sdpa" stop
+        "${sdpa}" -s "${state_dir}" stop
         exit 0
 }
 
@@ -409,7 +409,7 @@ dry_run rexec $master ${sdpa} -s "${state_dir}" start kvs ${kvs_port}
 ec=$?
 if [ $ec -ne 0 ]
 then
-    "${sdpa}" stop
+    "${sdpa}" -s "${state_dir}" stop
     error 3 "could not start kvs"
 fi
 dry_run rexec $master "${script_start_orchestrator}" \
@@ -424,7 +424,7 @@ dry_run rexec $master "${script_start_orchestrator}" \
 ec=$?
 if [ $ec -ne 0 ]
 then
-    "${sdpa}" stop
+    "${sdpa}" -s "${state_dir}" stop
     error 3 "could not start orchestrator"
 fi
 
@@ -452,7 +452,7 @@ if $gpi_enabled ; then
     ec=$?
     if [ $ec -ne 0 ]
     then
-        "${sdpa}" stop
+        "${sdpa}" -s "${state_dir}" stop
         error 3 "could not start gpi-space"
     fi
 fi
@@ -555,7 +555,7 @@ function start_agents
         ec=$?
         if [ $ec -ne 0 ]
         then
-            ${sdpa} stop
+            "${sdpa}" -s "${state_dir}" stop
             error 3 "at least one agent could not be started!"
         fi
     done
@@ -623,7 +623,7 @@ function start_workers_for_capability
         ec=$?
         if [ $ec -ne 0 ]
         then
-            ${sdpa} stop
+            "${sdpa}" -s "${state_dir}" stop
             error 3 "at least one worker could not be started!"
         fi
 
@@ -658,7 +658,7 @@ wait_on_pids
 ec=$?
 if [ $ec -ne 0 ]
 then
-    ${sdpa} stop
+    "${sdpa}" -s "${state_dir}" stop
     error 3 "at least one agent could not be started!"
 fi
 
@@ -667,6 +667,6 @@ wait_on_pids
 ec=$?
 if [ $ec -ne 0 ]
 then
-    ${sdpa} stop
+    "${sdpa}" -s "${state_dir}" stop
     error 3 "at least one worker could not be started!"
 fi
