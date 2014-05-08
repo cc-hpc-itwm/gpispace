@@ -53,7 +53,7 @@ namespace gpi
 
       void segment_t::create (const mode_t mode)
       {
-        assert (! is_special ());
+        fhg_assert (! is_special ());
 
         int fd (-1);
 
@@ -105,7 +105,7 @@ namespace gpi
 
       void segment_t::open ()
       {
-        assert (! is_special ());
+        fhg_assert (! is_special ());
 
         int fd (-1);
 
@@ -153,7 +153,7 @@ namespace gpi
 
       void segment_t::unlink ()
       {
-        assert (! is_special ());
+        fhg_assert (! is_special ());
         fhg::syscall::shm_unlink(name().c_str());
       }
 

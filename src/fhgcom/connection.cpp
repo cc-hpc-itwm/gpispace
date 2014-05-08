@@ -4,7 +4,6 @@
 #include <fhglog/LogMacros.hpp>
 
 #include <fhg/assert.hpp>
-#include <fhg/util/macros.hpp>
 
 #include <boost/system/error_code.hpp>
 
@@ -68,7 +67,7 @@ namespace fhg
 
     void connection_t::start_read ()
     {
-      assert (in_message_ != nullptr);
+      fhg_assert (in_message_ != nullptr);
 
       boost::asio::async_read( socket_
                              , boost::asio::buffer (&in_message_->header, sizeof(p2p::header_t))
@@ -82,12 +81,12 @@ namespace fhg
     }
 
     void connection_t::handle_read_header( const boost::system::error_code & ec
-                                         , std::size_t IFNDEF_NDEBUG (bytes_transferred)
+                                         , std::size_t IF_FHG_ASSERT (bytes_transferred)
                                          )
     {
       if (! ec)
       {
-        assert (bytes_transferred == sizeof(p2p::header_t));
+        fhg_assert (bytes_transferred == sizeof(p2p::header_t));
 
         // WORK HERE: convert for local endianess!
         in_message_->resize ();
@@ -148,7 +147,7 @@ namespace fhg
 
     void connection_t::start_send ()
     {
-      assert (to_send_.size() > 0);
+      fhg_assert (to_send_.size() > 0);
 
       if (to_send_.empty ())
         return;

@@ -206,8 +206,8 @@ namespace fhg
                             , peer_t::handler_t completion_handler
                             )
     {
-      assert (m);
-      assert (completion_handler);
+      fhg_assert (m);
+      fhg_assert (completion_handler);
 
       lock_type lock(mutex_);
 
@@ -315,7 +315,7 @@ namespace fhg
 
     void peer_t::send (const message_t *m)
     {
-      assert (m);
+      fhg_assert (m);
 
       typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
       async_op_t send_finished;
@@ -346,7 +346,7 @@ namespace fhg
 
     void peer_t::recv (message_t *m)
     {
-      assert (m);
+      fhg_assert (m);
 
       typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
       async_op_t recv_finished;
@@ -364,8 +364,8 @@ namespace fhg
 
     void peer_t::async_recv (message_t *m, peer_t::handler_t completion_handler)
     {
-      assert (m);
-      assert (completion_handler);
+      fhg_assert (m);
+      fhg_assert (completion_handler);
 
       {
         lock_type lock(mutex_);
@@ -544,7 +544,7 @@ namespace fhg
         if (cd.send_in_progress || cd.o_queue.empty())
           return;
 
-        assert (! cd.o_queue.empty());
+        fhg_assert (! cd.o_queue.empty());
 
         cd.send_in_progress = true;
         cd.connection->async_send ( &cd.o_queue.front().message
@@ -636,7 +636,7 @@ namespace fhg
 
       if (! ec && !stopping_)
       {
-        assert (listen_);
+        fhg_assert (listen_);
 
         // TODO: work here schedule timeout
         backlog_.insert (listen_);
@@ -709,7 +709,7 @@ namespace fhg
 
     void peer_t::handle_user_data   (connection_t::ptr_t, const message_t *m)
     {
-      assert (m);
+      fhg_assert (m);
 
       lock_type lock (mutex_);
       {
@@ -739,7 +739,7 @@ namespace fhg
 
     void peer_t::handle_error (connection_t::ptr_t c, const boost::system::error_code & ec)
     {
-      assert ( c != nullptr );
+      fhg_assert ( c != nullptr );
 
       lock_type lock (mutex_);
 

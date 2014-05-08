@@ -16,7 +16,6 @@
  * =====================================================================================
  */
 
-#include <fhg/assert.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <algorithm>
 #include <sdpa/types.hpp>

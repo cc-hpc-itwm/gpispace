@@ -87,7 +87,7 @@ namespace gpi
 
           safe_unlink (m_path);
           close_socket (m_socket);
-          assert (m_listener);
+          fhg_assert (m_listener);
           if (boost::this_thread::get_id() != m_listener->get_id())
           {
             m_listener->join ();

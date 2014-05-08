@@ -2,6 +2,7 @@
 
 #include <utility>
 
+#include <fhg/assert.hpp>
 #include <fhglog/LogMacros.hpp>
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/type/flags.hpp>
@@ -387,7 +388,7 @@ namespace gpi
                                               , task_list_t & tasks
                                               )
       {
-        assert (type () == dst_area.type ());
+        fhg_assert (type () == dst_area.type ());
 
         if (is_local (gpi::pc::type::memory_region_t (src, amount)))
         {

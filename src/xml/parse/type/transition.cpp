@@ -15,6 +15,8 @@
 #include <we/type/place.hpp>
 #include <we/type/expression.hpp>
 
+#include <fhg/assert.hpp>
+
 #include <boost/variant.hpp>
 
 #include <xml/parse/rewrite/validprefix.hpp>
@@ -457,7 +459,7 @@ namespace xml
                                        , const state::type &
                                        ) const
       {
-        assert (has_parent());
+        fhg_assert (has_parent());
 
         const std::string direction
           (we::edge::enum_to_string (connect.direction()));

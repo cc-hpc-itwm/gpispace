@@ -18,8 +18,6 @@
 #ifndef SDPA_DAEMON_GENERIC_DAEMON_HPP
 #define SDPA_DAEMON_GENERIC_DAEMON_HPP 1
 
-#include <fhg/assert.hpp>
-
 #include <sdpa/capability.hpp>
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 #include <sdpa/com/NetworkStrategy.hpp>

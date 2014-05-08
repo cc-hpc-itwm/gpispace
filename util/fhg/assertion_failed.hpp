@@ -1,7 +1,7 @@
 #ifndef FHG_ASSERT_ASSERTION_FAILED_HPP
 #define FHG_ASSERT_ASSERTION_FAILED_HPP
 
-#include <exception>
+#include <stdexcept>
 #include <sstream>
 #include <string>
 

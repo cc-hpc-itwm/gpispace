@@ -5,14 +5,13 @@
 #include <fhg/assert.hpp>
 
 #include <algorithm> /* std::reverse() */
-#include <cassert>
 
 namespace jpn {
 namespace analysis {
 
 std::vector<we::transition_id_type> backtrack(const State *state, const State *lastState) {
-    assert(state != nullptr);
-    assert(lastState != nullptr);
+    fhg_assert(state != nullptr);
+    fhg_assert(lastState != nullptr);
 
     std::vector<we::transition_id_type> result;
 

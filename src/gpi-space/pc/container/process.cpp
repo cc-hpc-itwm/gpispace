@@ -14,7 +14,6 @@
 #include <vector>
 
 #include <fhglog/LogMacros.hpp>
-#include <fhg/assert.hpp>
 #include <fhg/syscall.hpp>
 
 #include <boost/archive/text_oarchive.hpp>
