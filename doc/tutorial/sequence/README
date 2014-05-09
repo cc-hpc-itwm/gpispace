@@ -74,7 +74,7 @@ void sequence (int n)
 }
 ----
 
-On the petri-net level, it is only possible to conditionally execute a transition. Thus, it is required to rewrite the `while` loop using conditional blocks for stepping and breaking, using `if` and `goto`
+Every while-loop can be transformed to a petri-net workflow using conditionals: One needs to rewrite the `while` loop using conditional blocks for stepping and breaking. This is equivalent to using `if` and `goto`
 
 todo: break is keyword!
 
