@@ -5,9 +5,9 @@
 
 == Situation
 
-In order to split up a workload of size N, multiple tokens should be produced
-to allow processing parts of the workload in parallel. The tokens
-representing the parts shall be numbers from 0 to N-1.
+Often, work can be split into N independent packages identified by a
+number in the range of [0, N). When doing so, multiple tokens
+should be produced to allow processing parts of the workload in parallel.
 
 == Run `use_sequence`
 
