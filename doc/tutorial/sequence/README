@@ -164,7 +164,7 @@ digraph concurrent
  I_out [style = "invisible"]
 
  N [shape = "ellipse", label = "N\n50\n100"]
- C [shape = "ellipse", label = "C\n10\n21"]
+ C [shape = "ellipse", label = "C\n10\n61"]
  I [shape = "ellipse"]
 
  step [shape = "rectangle", label = "step\n[C < N]"]
@@ -184,6 +184,8 @@ digraph concurrent
  I -> I_out [style = "dotted"]
 }
 ----
+
+In this case, it would be possible that `C=61` and `N=50` trigger `break`, while `C=61` obviously should be paired with `N=100`, thus not enough tokens are produced. It may also be possible, that both tokens for `C` always get paired with `N=100`, so that too many tokens are produced.
 
 Thus, one needs to pair both, `N` and `C` into a single token:
 
