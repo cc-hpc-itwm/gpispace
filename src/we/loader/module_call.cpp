@@ -8,6 +8,24 @@
 
 namespace we
 {
+  namespace
+  {
+    expr::eval::context input (we::type::activity_t const& activity)
+    {
+      expr::eval::context context;
+
+      for (auto const& token_on_port : activity.input())
+      {
+        context.bind_ref
+          ( activity.transition().ports_input().at (token_on_port.second).name()
+          , token_on_port.first
+          );
+      }
+
+      return context;
+    }
+  }
+
   namespace loader
   {
     void module_call ( we::loader::loader& loader
@@ -16,25 +34,14 @@ namespace we
                      , const we::type::module_call_t& module_call
                      )
     {
-      typedef std::pair< pnet::type::value::value_type
-                       , we::port_id_type
-                       > token_on_port_type;
       typedef std::pair< we::port_id_type
                        , we::type::port_t
                        > port_by_id_type;
 
-      expr::eval::context in;
       expr::eval::context out;
 
-      for (const token_on_port_type& token_on_port : act.input())
-      {
-        in.bind_ref ( act.transition().ports_input().at (token_on_port.second).name()
-                    , token_on_port.first
-                    );
-      }
-
       loader[module_call.module()].call
-        (module_call.function(), context, in, out);
+        (module_call.function(), context, input (act), out);
 
       for (const port_by_id_type& port_by_id : act.transition().ports_output())
       {
