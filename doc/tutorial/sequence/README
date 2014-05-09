@@ -185,7 +185,7 @@ digraph concurrent
 }
 ----
 
-In this case, it would be possible that `C=61` and `N=50` trigger `break`, while `C=61` obviously should be paired with `N=100`, thus not enough tokens are produced. It may also be possible, that both tokens for `C` always get paired with `N=100`, so that too many tokens are produced.
+In this case, it would be possible that `C=61` and `N=50` trigger `break`, while `C=61` should be paired with `N=100`, thus not enough tokens are produced. It may also be possible, that both tokens for `C` always get paired with `N=100`, so that too many tokens are produced.
 
 Thus, one needs to pair both, `N` and `C` into a single token:
 
