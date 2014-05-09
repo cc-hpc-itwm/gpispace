@@ -902,11 +902,30 @@ namespace xml
                                    );
           }
 
+          std::list<we::type::memory_transfer> memory_gets;
+          std::list<we::type::memory_transfer> memory_puts;
+
+          for (memory_get const& mg : fun.memory_gets())
+          {
+            memory_gets.emplace_back (mg.global(), mg.local());
+          }
+          for (memory_put const& mp : fun.memory_puts())
+          {
+            memory_puts.emplace_back (mp.global(), mp.local());
+          }
+          for (memory_getput const& mgp : fun.memory_getputs())
+          {
+            memory_gets.emplace_back (mgp.global(), mgp.local());
+            memory_puts.emplace_back (mgp.global(), mgp.local());
+          }
+
           we_transition_type trans
             ( name()
             , we_module_type ( mod.name()
                              , mod.function()
                              , std::move (memory_buffers)
+                             , std::move (memory_gets)
+                             , std::move (memory_puts)
                              )
             , condition()
             , _internal.get_value_or (false)

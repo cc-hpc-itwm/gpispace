@@ -74,6 +74,8 @@ namespace utils
       , we::type::module_call_t ( fhg::util::random_string()
                                 , fhg::util::random_string()
                                 , std::unordered_map<std::string, std::string>()
+                                , std::list<we::type::memory_transfer>()
+                                , std::list<we::type::memory_transfer>()
                                 )
       , boost::none
       , true
@@ -112,6 +114,8 @@ namespace utils
       , we::type::module_call_t ( fhg::util::random_string()
                                 , fhg::util::random_string()
                                 , std::unordered_map<std::string, std::string>()
+                                , std::list<we::type::memory_transfer>()
+                                , std::list<we::type::memory_transfer>()
                                 )
       , boost::none
       , true

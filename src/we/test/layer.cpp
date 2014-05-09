@@ -472,7 +472,12 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
   we::type::transition_t transition
     ( "module call"
     , we::type::module_call_t
-      ("m", "f", std::unordered_map<std::string, std::string>())
+      ( "m"
+      , "f"
+      , std::unordered_map<std::string, std::string>()
+      , std::list<we::type::memory_transfer>()
+      , std::list<we::type::memory_transfer>()
+      )
     , boost::none
     , true
     , we::type::property::type()
@@ -534,7 +539,12 @@ namespace
     we::type::transition_t transition
       ( "module call"
       , we::type::module_call_t
-        ("m", "f", std::unordered_map<std::string, std::string>())
+        ( "m"
+        , "f"
+        , std::unordered_map<std::string, std::string>()
+        , std::list<we::type::memory_transfer>()
+        , std::list<we::type::memory_transfer>()
+        )
       , boost::none
       , true
       , we::type::property::type()
@@ -1242,6 +1252,8 @@ namespace
       , we::type::module_call_t ( fhg::util::random_string()
                                 , fhg::util::random_string()
                                 , std::unordered_map<std::string, std::string>()
+                                , std::list<we::type::memory_transfer>()
+                                , std::list<we::type::memory_transfer>()
                                 )
       , boost::none
       , true
