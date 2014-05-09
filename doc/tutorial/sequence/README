@@ -63,13 +63,15 @@ itself is used. The loop is equivalent to the following pseudo-code snippet
 
 [source,c]
 ----
-int n;
-while (n > 0)
+void sequence (int n)
 {
-  n = n - 1;
-  emit_token (n);
+  while (n > 0)
+  {
+    n = n - 1;
+    emit_token (n);
+  }
+  return;
 }
-return;
 ----
 
 On the petri-net level, it is only possible to conditionally execute a transition. Thus, it is required to rewrite the `while` loop using conditional blocks for stepping and breaking, using `if` and `goto`
@@ -78,7 +80,8 @@ todo: break is keyword!
 
 [source,c]
 ----
-  int n;
+void sequence (int n)
+{
 check:
   if (n > 0)
   {
@@ -97,6 +100,7 @@ step:
 
 break:
   return;
+}
 ----
 
 This control flow can be represented in a petri net with two transitions: one per condition
@@ -136,14 +140,16 @@ Note that in the previous example, the net was counting from N-1 to 0, while it 
 
 [source,c]
 ----
-int n;
-int c = 0;
-while (c < n)
+void sequence (int n)
 {
-  emit_token (c);
-  c = c + 1;
+  int c = 0;
+  while (c < n)
+  {
+    emit_token (c);
+    c = c + 1;
+  }
+  return;
 }
-return;
 ----
 
 While previously, a variable was equivalent to a token/place, we now can't simply add a second place and token: If two invocations happen in parallel, it is not possible to pair the correct `c` and `n`:
