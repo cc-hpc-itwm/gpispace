@@ -102,7 +102,7 @@ break:
 }
 ----
 
-This control flow can be represented in a petri net with two transitions: one per condition
+This control flow can be represented in a petri net with two transitions: one per condition, where the else case needs to be the inverse of all other conditions, in this case `!(N > 0)` or `N <= 0`
 
 [graphviz,sequence.png]
 ----
