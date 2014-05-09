@@ -5,6 +5,7 @@
 
 #include <xml/parse/id/generic.hpp>
 #include <xml/parse/type/expression.hpp>
+#include <xml/parse/type/memory_buffer.hpp>
 #include <xml/parse/type/mod.hpp>
 #include <xml/parse/type/port.hpp>
 #include <xml/parse/type/place_map.hpp>
@@ -148,6 +149,11 @@ namespace xml
 
         // ***************************************************************** //
 
+        void push_memory_buffer (const id::ref::memory_buffer&);
+        xml::util::unique<memory_buffer_type, id::ref::memory_buffer>
+          const& memory_buffers() const;
+        bool is_known_memory_buffer (std::string const&) const;
+
         void push_port (const id::ref::port&);
         void remove_port (const id::ref::port&);
 
@@ -234,6 +240,8 @@ namespace xml
         boost::optional<std::string> _name;
 
         ports_type _ports;
+        xml::util::unique<memory_buffer_type, id::ref::memory_buffer>
+          _memory_buffers;
 
         typenames_type _typenames;
 

@@ -125,6 +125,7 @@ add_library (pnet
   xml/parse/type/connect.cpp
   xml/parse/type/expression.cpp
   xml/parse/type/function.cpp
+  xml/parse/type/memory_buffer.cpp
   xml/parse/type/mod.cpp
   xml/parse/type/net.cpp
   xml/parse/type/place.cpp

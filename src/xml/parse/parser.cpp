@@ -23,6 +23,7 @@
 #include <xml/parse/type/connect.hpp>
 #include <xml/parse/type/expression.hpp>
 #include <xml/parse/type/function.hpp>
+#include <xml/parse/type/memory_buffer.hpp>
 #include <xml/parse/type/mod.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
@@ -375,6 +376,85 @@ namespace xml
       }
 
       // **************************************************************** //
+
+      id::ref::memory_buffer memory_buffer_type ( const xml_node_type* node
+                                                , state::type& state
+                                                )
+      {
+        std::string const name
+          ( validate_name
+            ( validate_prefix
+              ( required ("memory_buffer_type", node, "name", state)
+              , "memory_buffer"
+              , state.file_in_progress()
+              )
+            , "memory_buffer"
+            , state.file_in_progress()
+            )
+          );
+
+        boost::optional<std::string> size;
+
+        we::type::property::type properties;
+
+        for ( xml_node_type* child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
+        {
+          const std::string child_name (name_element (child, state));
+
+          if (child)
+          {
+            if (child_name == "properties")
+            {
+              property_map_type (properties, child, state);
+            }
+            else if (child_name == "include-properties")
+            {
+              util::property::join
+                ( state
+                , properties
+                , properties_include
+                  ( required ("memory_buffer_type", child, "href", state)
+                  , state
+                  )
+                );
+            }
+            else if (child_name == "size")
+            {
+              size = fhg::util::join (parse_cdata (child, state), ";");
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "memory_buffer_type"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
+          }
+        }
+
+        if (!size)
+        {
+          throw error::memory_buffer_without_size
+            (name, state.position (node));
+        }
+
+        return type::memory_buffer_type
+          ( state.id_mapper()->next_id()
+          , state.id_mapper()
+          , boost::none
+          , state.position (node)
+          , name
+          , *size
+          , fhg::util::boost::fmap<std::string, bool>
+            (fhg::util::read_bool, optional (node, "read-only"))
+          , properties
+          ).make_reference_id();
+      }
 
       id::ref::port port_type ( const xml_node_type* node
                               , state::type& state
@@ -917,6 +997,8 @@ namespace xml
         std::tuple< std::string
                   , boost::optional<std::string>
                   , std::list<std::string>
+                  , boost::optional<std::string>
+                  , std::list<std::string>
                   >
         parse_function_signature ( const std::string& input
                                  , const std::string& _name
@@ -940,19 +1022,31 @@ namespace xml
           std::string function (parse_name (pos));
           boost::optional<std::string> port_return;
           std::list<std::string> port_arg;
+          boost::optional<std::string> memory_buffer_return;
+          std::list<std::string> memory_buffer_arg;
 
           if (!pos.end())
           {
             if (*pos != '(')
             {
-              port_return = function;
+              std::string const port_or_memory_buffer (function);
               function = parse_name (pos);
 
-              if (!outer_function.get().is_known_port (*port_return))
+              if (outer_function.get().is_known_port (port_or_memory_buffer))
+              {
+                port_return = port_or_memory_buffer;
+              }
+              else if ( outer_function.get()
+                      . is_known_memory_buffer (port_or_memory_buffer)
+                      )
+              {
+                memory_buffer_return = port_or_memory_buffer;
+              }
+              else
               {
                 throw error::function_description_with_unknown_port
                   ( "return"
-                  , *port_return
+                  , port_or_memory_buffer
                   , module_name
                   , function
                   , outer_function.get().position_of_definition().path()
@@ -976,13 +1070,25 @@ namespace xml
 
               while (!pos.end() && *pos != ')')
               {
-                port_arg.push_back (parse_name (pos));
+                std::string const port_or_memory_buffer (parse_name (pos));
 
-                if (!outer_function.get().is_known_port (port_arg.back()))
+                if ( outer_function.get()
+                   . is_known_port (port_or_memory_buffer)
+                   )
+                {
+                  port_arg.push_back (port_or_memory_buffer);
+                }
+                else if ( outer_function.get()
+                        . is_known_memory_buffer (port_or_memory_buffer)
+                        )
+                {
+                  memory_buffer_arg.push_back (port_or_memory_buffer);
+                }
+                else
                 {
                   throw error::function_description_with_unknown_port
                     ( "argument"
-                    , port_arg.back()
+                    , port_or_memory_buffer
                     , module_name
                     , function
                     , outer_function.get().position_of_definition().path()
@@ -1034,7 +1140,12 @@ namespace xml
             }
           }
 
-          return std::make_tuple (function, port_return, port_arg);
+          return std::make_tuple ( function
+                                 , port_return
+                                 , port_arg
+                                 , memory_buffer_return
+                                 , memory_buffer_arg
+                                 );
         }
       }
 
@@ -1055,12 +1166,17 @@ namespace xml
           < std::string
           , boost::optional<std::string>
           , std::list<std::string>
+          , boost::optional<std::string>
+          , std::list<std::string>
           > sig ( parse_function_signature
                   (signature, name, pod, outer_function, name)
                 );
         const std::string function (std::get<0> (sig));
         const boost::optional<std::string> port_return (std::get<1> (sig));
         const std::list<std::string> port_arg (std::get<2> (sig));
+        const boost::optional<std::string> memory_buffer_return
+          (std::get<3> (sig));
+        const std::list<std::string> memory_buffer_arg (std::get<4> (sig));
 
         boost::optional<std::string> code;
         boost::optional<util::position_type> pod_of_code;
@@ -1128,6 +1244,8 @@ namespace xml
           , function
           , port_return
           , port_arg
+          , memory_buffer_return
+          , memory_buffer_arg
           , code
           , pod_of_code
           , cincludes
@@ -1422,6 +1540,11 @@ namespace xml
               function.get_ref().push_port
                 (port_type (child, state, we::type::PORT_TUNNEL));
             }
+            else if (child_name == "memory-buffer")
+            {
+              function.get_ref().push_memory_buffer
+                (memory_buffer_type (child, state));
+            }
             else if (child_name == "struct")
             {
               function.get_ref().structs.push_back (struct_type (child, state));
@@ -1440,6 +1563,11 @@ namespace xml
             }
             else if (child_name == "expression")
             {
+              if (!function.get_ref().memory_buffers().ids().empty())
+              {
+                throw error::memory_buffer_for_non_module (function);
+              }
+
               function.get_ref().add_expression (parse_cdata (child, state));
             }
             else if (child_name == "module")
@@ -1449,6 +1577,11 @@ namespace xml
             }
             else if (child_name == "net")
             {
+              if (!function.get_ref().memory_buffers().ids().empty())
+              {
+                throw error::memory_buffer_for_non_module (function);
+              }
+
               function.get_ref().content (net_type (child, state, function));
             }
             else if (child_name == "condition")

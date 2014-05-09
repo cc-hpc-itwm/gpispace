@@ -339,6 +339,45 @@ namespace xml
 
       // ***************************************************************** //
 
+      void function_type::push_memory_buffer
+        (id::ref::memory_buffer const& id)
+      {
+        id::ref::memory_buffer const& id_old (_memory_buffers.push (id));
+
+        if (id_old != id)
+        {
+          throw error::duplicate_memory_buffer (id_old, id);
+        }
+
+        id.get_ref().parent (_id);
+
+        {
+          boost::optional<id::ref::port const&> port_in
+            (get_port_in (id.get().name()));
+
+          if (port_in)
+          {
+            throw error::memory_buffer_with_same_name_as_port (id, *port_in);
+          }
+        }
+
+        {
+          boost::optional<id::ref::port const&> port_out
+            (get_port_out (id.get().name()));
+
+          if (port_out)
+          {
+            throw error::memory_buffer_with_same_name_as_port (id, *port_out);
+          }
+        }
+      }
+
+      xml::util::unique<memory_buffer_type, id::ref::memory_buffer>
+        const& function_type::memory_buffers() const
+      {
+        return _memory_buffers;
+      }
+
       void function_type::push_port (const id::ref::port& id)
       {
         const id::ref::port& id_old (_ports.push (id));
@@ -367,6 +406,21 @@ namespace xml
             throw error::port_type_mismatch (id, *id_other);
           }
         }
+
+        boost::optional<id::ref::memory_buffer const&>
+          memory_buffer (memory_buffers().get (id.get().name()));
+
+        if (memory_buffer)
+        {
+          throw error::memory_buffer_with_same_name_as_port
+            (*memory_buffer, id);
+        }
+      }
+
+      bool function_type::is_known_memory_buffer
+        (std::string const& name) const
+      {
+        return _memory_buffers.has (name);
       }
 
       void function_type::remove_port (const id::ref::port& id)
@@ -2530,6 +2584,7 @@ namespace xml
           xml::parse::type::dump::dump (s, f.requirements);
 
           dumps (s, f.ports().values());
+          dumps (s, f.memory_buffers().values());
 
           boost::apply_visitor (function_dump_visitor (s), f.content());
 
