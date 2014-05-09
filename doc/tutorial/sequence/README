@@ -12,7 +12,7 @@ should be produced to allow processing parts of the workload in parallel.
 == Run `use_sequence`
 
 In order to run the example-workflow `use_sequence`, as usual one has
-to generate and compile module calls. The workflow has one input port
+to generate and compile the module call wrappers. The workflow has one input port
 `n` to represent the number of parts. In our example, `n` will be set
 to 10:
 
