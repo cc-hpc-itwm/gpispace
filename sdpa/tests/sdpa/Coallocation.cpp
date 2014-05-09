@@ -34,8 +34,10 @@ namespace
     props.set ("fhg.drts.schedule.num_worker", std::to_string (n) + "UL");
     we::type::transition_t transition_0
       ( fhg::util::random_string()
-      , we::type::module_call_t
-        (fhg::util::random_string(), fhg::util::random_string())
+      , we::type::module_call_t ( fhg::util::random_string()
+                                , fhg::util::random_string()
+                                , std::unordered_map<std::string, std::string>()
+                                )
       , boost::none
       , true
       , props
@@ -43,8 +45,10 @@ namespace
       );
     we::type::transition_t transition_1
       ( fhg::util::random_string()
-      , we::type::module_call_t
-        (fhg::util::random_string(), fhg::util::random_string())
+      , we::type::module_call_t ( fhg::util::random_string()
+                                , fhg::util::random_string()
+                                , std::unordered_map<std::string, std::string>()
+                                )
       , boost::none
       , true
       , props

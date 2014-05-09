@@ -42,6 +42,7 @@ namespace
 static void init ( drts::worker::context * state
                  , const expr::eval::context & input
                  , expr::eval::context & output
+                 , std::map<std::string, void*> const&
                  )
 {
   const std::string& filename (boost::get<const std::string&> (input.value ("desc")));
@@ -263,6 +264,7 @@ static void init ( drts::worker::context * state
 static void finalize ( drts::worker::context * state
                      , const expr::eval::context & input
                      , expr::eval::context & output
+                     , std::map<std::string, void*> const&
                      )
 {
   const pnet::type::value::value_type& config (input.value("config"));
@@ -283,6 +285,7 @@ static void finalize ( drts::worker::context * state
 static void load ( drts::worker::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
+                 , std::map<std::string, void*> const&
 		 )
 {
   const long & part (boost::get<const long&> (input.value ("part")));
@@ -330,6 +333,7 @@ static void load ( drts::worker::context * state
 static void write ( drts::worker::context * state
                   , const expr::eval::context & input
                   , expr::eval::context & output
+                  , std::map<std::string, void*> const&
                   )
 {
   const pnet::type::value::value_type& config (input.value( "config"));

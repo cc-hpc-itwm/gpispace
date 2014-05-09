@@ -24,22 +24,35 @@
 #include <ostream>
 #include <boost/serialization/nvp.hpp>
 
+#include <unordered_map>
+
 namespace we { namespace type {
   struct module_call_t
   {
     module_call_t () = default;
 
-    module_call_t (const std::string & module, const std::string & function)
+    module_call_t
+      ( const std::string & module
+      , const std::string & function
+      , std::unordered_map<std::string, std::string>&& memory_buffers
+      )
       : module_(module)
       , function_(function)
+      , _memory_buffers (memory_buffers)
     {}
 
     const std::string & module () const { return module_; }
     const std::string & function () const { return function_; }
 
+    std::unordered_map<std::string, std::string> const& memory_buffers() const
+    {
+      return _memory_buffers;
+    }
+
     private:
     std::string module_;
     std::string function_;
+    std::unordered_map<std::string, std::string> _memory_buffers;
 
     friend class boost::serialization::access;
     template<typename Archive>
@@ -47,6 +60,7 @@ namespace we { namespace type {
     {
       ar & BOOST_SERIALIZATION_NVP(module_);
       ar & BOOST_SERIALIZATION_NVP(function_);
+      ar & BOOST_SERIALIZATION_NVP (_memory_buffers);
     }
   };
 

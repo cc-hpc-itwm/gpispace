@@ -115,6 +115,7 @@ static void unblank_impl (void * ptr, const long & num)
 static void unblank ( drts::worker::context * state
                     , const expr::eval::context & input
                     , expr::eval::context & output
+                    , std::map<std::string, void*> const&
                     )
 {
   generic_filter (state, input, output, unblank_impl);
@@ -159,6 +160,7 @@ static void clip_impl (void * ptr, const long & num
 static void clip ( drts::worker::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
+                 , std::map<std::string, void*> const&
 		 )
 {
   const float c (peek<double> (input.value ("config"), "param.clip.c"));
@@ -199,6 +201,7 @@ static void trap_impl (void * ptr, const long & num
 static void trap ( drts::worker::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
+                 , std::map<std::string, void*> const&
 		 )
 {
   const float t (peek<long> (input.value ("config"), "param.trap.t"));
@@ -288,6 +291,7 @@ static void bandpass_impl ( void * ptr, const long & num
 static void bandpass ( drts::worker::context * state
 		     , const expr::eval::context & input
 		     , expr::eval::context & output
+                     , std::map<std::string, void*> const&
 		     )
 {
   const float frequ1 (peek<long> (input.value ("config"), "param.bandpass.frequ1"));
@@ -371,6 +375,7 @@ static void frac_impl (void * ptr, const long & num)
 static void frac ( drts::worker::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
+                 , std::map<std::string, void*> const&
 		 )
 {
   generic_filter (state, input, output, frac_impl);
@@ -420,6 +425,7 @@ static void tpow_impl (void * ptr, const long & num,
 static void tpow ( drts::worker::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
+                 , std::map<std::string, void*> const&
 		 )
 {
   const float t (peek<double> (input.value ("config"), "param.tpow.tpow"));
@@ -432,6 +438,7 @@ static void tpow ( drts::worker::context * state
 static void execW ( drts::worker::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
+                  , std::map<std::string, void*> const&
 		 )
 {
   const pnet::type::value::value_type& config (input.value ("config"));

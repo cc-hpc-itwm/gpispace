@@ -78,7 +78,9 @@ BOOST_AUTO_TEST_CASE (call_not_found)
   fhg::util::boost::test::require_exception<we::loader::function_not_found>
     ( [&m, &context, &input, &output]
     {
-      m.call ("<name>", &context, input, output);
+      m.call ( "<name>", &context, input, output
+             , std::map<std::string, void*>()
+             );
     }
     , "function 'empty::<name>' not found"
     );
@@ -91,6 +93,7 @@ namespace
   void inc ( drts::worker::context*
            , expr::eval::context const&
            , expr::eval::context&
+           , std::map<std::string, void*> const&
            )
   {
     ++x;
@@ -108,7 +111,7 @@ BOOST_AUTO_TEST_CASE (call_local)
 
   x=0;
 
-  m.call ("f", &context, input, output);
+  m.call ("f", &context, input, output, std::map<std::string, void*>());
 
   BOOST_REQUIRE_EQUAL (x, 1);
 }
@@ -121,7 +124,7 @@ BOOST_AUTO_TEST_CASE (call_lib)
   expr::eval::context input;
   expr::eval::context output;
 
-  m.call ("answer", &context, input, output);
+  m.call ("answer", &context, input, output, std::map<std::string, void*>());
 
   BOOST_REQUIRE_EQUAL ( output.value ("out")
                       , pnet::type::value::value_type (42L)

@@ -71,8 +71,10 @@ namespace utils
   {
     we::type::transition_t transition
       ( name
-      , we::type::module_call_t
-        (fhg::util::random_string(), fhg::util::random_string())
+      , we::type::module_call_t ( fhg::util::random_string()
+                                , fhg::util::random_string()
+                                , std::unordered_map<std::string, std::string>()
+                                )
       , boost::none
       , true
       , we::type::property::type()
@@ -107,8 +109,10 @@ namespace utils
               );
     we::type::transition_t transition
       ( fhg::util::random_string()
-      , we::type::module_call_t
-        (fhg::util::random_string(), fhg::util::random_string())
+      , we::type::module_call_t ( fhg::util::random_string()
+                                , fhg::util::random_string()
+                                , std::unordered_map<std::string, std::string>()
+                                )
       , boost::none
       , true
       , props

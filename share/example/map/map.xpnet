@@ -272,7 +272,7 @@
           <ld flag="-lmap-impl"/>
           <code><![CDATA[
             ::map::produce ( user_data
-                           , std::make_pair ((void*)0 /*data*/, block_with_slot.slot.size)
+                           , std::make_pair (data, block_with_slot.slot.size)
                            , block_with_slot.block
                            );
           ]]></code>
@@ -355,8 +355,8 @@
           <ld flag="-lmap-impl"/>
           <code><![CDATA[
           ::map::process ( user_data
-                         , std::make_pair ((void const*)0 /*input*/, package.slot_input.size)
-                         , std::make_pair ((void*)0 /*output*/, package.slot_output.size)
+                         , std::make_pair (input, package.slot_input.size)
+                         , std::make_pair (output, package.slot_output.size)
                          );
           ]]></code>
         </module>
@@ -415,7 +415,7 @@
           <ld flag="-lmap-impl"/>
           <code><![CDATA[
           ::map::consume ( user_data
-                         , std::make_pair ((void const*)0 /*data*/, block_with_slot.slot.size)
+                         , std::make_pair (data, block_with_slot.slot.size)
                          , block_with_slot.block
                          );
           ]]></code>

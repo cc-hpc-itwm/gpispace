@@ -7,6 +7,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <map>
 
 #include <dlfcn.h>
 
@@ -30,6 +31,7 @@ namespace we
                 , drts::worker::context *context
                 , const expr::eval::context& in
                 , expr::eval::context& out
+                , std::map<std::string, void*> const& memory_buffer
                 );
 
       virtual void add_function (const std::string&, WrapperFunction) override;

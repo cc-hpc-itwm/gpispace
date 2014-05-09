@@ -5,6 +5,7 @@
 static void question ( drts::worker::context*
                      , const expr::eval::context&
                      , expr::eval::context& output
+                     , std::map<std::string, void*> const&
                      )
 {
   output.bind ("out", get_answer());

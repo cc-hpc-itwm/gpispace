@@ -890,9 +890,24 @@ namespace xml
         {
           const module_type& mod (id_mod.get());
 
+          std::unordered_map<std::string, std::string> memory_buffers;
+
+          for (std::string const& memory_buffer_name : mod.memory_buffer_arg())
+          {
+            id::ref::memory_buffer const& id_memory_buffer
+              (*fun.memory_buffers().get (memory_buffer_name));
+
+            memory_buffers.emplace ( id_memory_buffer.get().name()
+                                   , id_memory_buffer.get().size()
+                                   );
+          }
+
           we_transition_type trans
             ( name()
-            , we_module_type (mod.name(), mod.function())
+            , we_module_type ( mod.name()
+                             , mod.function()
+                             , std::move (memory_buffers)
+                             )
             , condition()
             , _internal.get_value_or (false)
             , _properties
@@ -1892,6 +1907,7 @@ namespace xml
                       , const ports_with_type_type & ports_mutable
                       , const ports_with_type_type & ports_out
                       , const module_type & mod
+                      , id::ref::function const& id_function
                       )
         {
           using fhg::util::deeper;
@@ -1901,6 +1917,10 @@ namespace xml
           if (port_return)
           {
             s << mk_type ((*port_return).type);
+          }
+          else if (mod.memory_buffer_return())
+          {
+            s << "void*";
           }
           else
           {
@@ -1934,6 +1954,21 @@ namespace xml
               << deeper (indent);
           }
 
+          for (std::string const& memory_buffer_name : mod.memory_buffer_arg())
+          {
+            id::ref::memory_buffer const& id_memory_buffer
+              (*id_function.get().memory_buffers().get (memory_buffer_name));
+
+            s << sep << "void";
+
+            if (id_memory_buffer.get().read_only())
+            {
+              s << " const";
+            }
+
+            s << "* " << id_memory_buffer.get().name() << deeper (indent);
+          }
+
           s << ")";
         }
 
@@ -1947,6 +1982,7 @@ namespace xml
                     , const ports_with_type_type & ports_out
                     , const boost::optional<port_with_type> & port_return
                     , std::unordered_set<std::string> const& types
+                    , id::ref::function const& id_function
                     )
         {
           namespace block = fhg::util::cpp::block;
@@ -1971,6 +2007,7 @@ namespace xml
           s << deeper (indent) << "( drts::worker::context *_pnetc_context";
           s << deeper (indent) << ", const expr::eval::context& _pnetc_input";
           s << deeper (indent) << ", expr::eval::context& _pnetc_output";
+          s << deeper (indent) << ", std::map<std::string, void*> const& _pnetc_memory_buffer";
           s << deeper (indent) << ")";
           s << block::open (indent);
 
@@ -2028,6 +2065,14 @@ namespace xml
           for (const port_with_type& port : ports_out)
           {
             s << sep << port.name;
+          }
+
+          for (std::string const& memory_buffer_name : mod.memory_buffer_arg())
+          {
+            id::ref::memory_buffer const& id_memory_buffer
+              (*id_function.get().memory_buffers().get (memory_buffer_name));
+
+            s << sep << "_pnetc_memory_buffer.at (\"" << id_memory_buffer.get().name() << "\")";
           }
 
           s << ")";
@@ -2225,6 +2270,7 @@ namespace xml
                           , ports_out
                           , port_return
                           , types
+                          , _id_function
                           );
 
               const fun_info_type fun_info ( mod.function()
@@ -2267,6 +2313,7 @@ namespace xml
                             , indent
                             , port_return
                             , ports_const, ports_mutable, ports_out, mod
+                            , _id_function
                             );
 
               stream << ";";
@@ -2321,6 +2368,7 @@ namespace xml
                             , indent
                             , port_return
                             , ports_const, ports_mutable, ports_out, mod
+                            , _id_function
                             );
 
               stream << block::open (indent);

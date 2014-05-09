@@ -79,7 +79,9 @@ static fvmAllocHandle_t alloc ( const long & size
 
 // ************************************************************************* //
 
-static void initialize (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
+static void initialize (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
+                       , std::map<std::string, void*> const&
+                       )
 {
   const std::string& filename (boost::get<const std::string&> (input.value ("config_file")));
   long memsizeGPI (boost::get<long> (input.value ("memsizeGPI")));
@@ -327,7 +329,9 @@ static void initialize (drts::worker::context *, const expr::eval::context & inp
 
 // ************************************************************************* //
 
-static void loadTT (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
+static void loadTT (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
+                   , std::map<std::string, void*> const&
+                   )
 {
   const pnet::type::value::value_type& config (input.value ("config"));
   const long& id (boost::get<const long&> (input.value ("id")));
@@ -382,7 +386,9 @@ static void loadTT (drts::worker::context *, const expr::eval::context & input, 
 
 // ************************************************************************* //
 
-static void load (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
+static void load (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
+                 , std::map<std::string, void*> const&
+                 )
 {
   const pnet::type::value::value_type& config (input.value ("config"));
   const pnet::type::value::value_type& bunch (input.value ("bunch"));
@@ -417,7 +423,9 @@ static void load (drts::worker::context *, const expr::eval::context & input, ex
 
 // ************************************************************************* //
 
-static void initialize_volume (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
+static void initialize_volume (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
+                              , std::map<std::string, void*> const&
+                              )
 {
   const pnet::type::value::value_type& config (input.value ("config"));
   const pnet::type::value::value_type& volume (input.value ("volume"));
@@ -476,7 +484,9 @@ static void initialize_volume (drts::worker::context *, const expr::eval::contex
 
 // ************************************************************************* //
 
-static void process (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
+static void process (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
+                    , std::map<std::string, void*> const&
+                    )
 {
   const pnet::type::value::value_type& config (input.value ("config"));
   const pnet::type::value::value_type& volume (input.value ("volume"));
@@ -566,7 +576,9 @@ static void process (drts::worker::context *, const expr::eval::context & input,
 
 // ************************************************************************* //
 
-static void reduce (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
+static void reduce (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
+                   , std::map<std::string, void*> const&
+                   )
 {
   const pnet::type::value::value_type& config (input.value("config"));
   const pnet::type::value::value_type& pair (input.value ("pair"));
@@ -653,7 +665,9 @@ static void reduce (drts::worker::context *, const expr::eval::context & input, 
 
 // ************************************************************************* //
 
-static void write (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
+static void write (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
+                  , std::map<std::string, void*> const&
+                  )
 {
   const pnet::type::value::value_type& config (input.value ("config"));
   const pnet::type::value::value_type& volume (input.value ("volume"));
@@ -717,7 +731,9 @@ static void write (drts::worker::context *, const expr::eval::context & input, e
 
 // ************************************************************************* //
 
-static void finalize (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
+static void finalize (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
+                     , std::map<std::string, void*> const&
+                     )
 {
   const pnet::type::value::value_type& config (input.value ("config"));
 
