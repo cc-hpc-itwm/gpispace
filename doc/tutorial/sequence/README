@@ -87,11 +87,10 @@ check:
   {
     goto step;
   }
-  if (n <= 0)
+  else // if (n <= 0)
   {
     goto break;
   }
-  // note: never reached
 
 step:
   n = n - 1;
