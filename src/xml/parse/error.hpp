@@ -623,6 +623,16 @@ namespace xml
         id::ref::function const _function;
       };
 
+      class memory_transfer_for_non_module : public generic
+      {
+      public:
+        memory_transfer_for_non_module (id::ref::function const&);
+        ~memory_transfer_for_non_module() throw() = default;
+
+      private:
+        id::ref::function const _function;
+      };
+
       class memory_buffer_with_same_name_as_port : public generic
       {
       public:

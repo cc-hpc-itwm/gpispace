@@ -339,6 +339,32 @@ namespace xml
 
       // ***************************************************************** //
 
+      void function_type::push_memory_get (memory_get const& mg)
+      {
+        _memory_gets.push_back (mg);
+      }
+      void function_type::push_memory_put (memory_put const& mp)
+      {
+        _memory_puts.push_back (mp);
+      }
+      void function_type::push_memory_getput (memory_getput const& mgp)
+      {
+        _memory_getputs.push_back (mgp);
+      }
+
+      std::list<memory_get> const& function_type::memory_gets() const
+      {
+        return _memory_gets;
+      }
+      std::list<memory_put> const& function_type::memory_puts() const
+      {
+        return _memory_puts;
+      }
+      std::list<memory_getput> const& function_type::memory_getputs() const
+      {
+        return _memory_getputs;
+      }
+
       void function_type::push_memory_buffer
         (id::ref::memory_buffer const& id)
       {
@@ -2585,6 +2611,9 @@ namespace xml
 
           dumps (s, f.ports().values());
           dumps (s, f.memory_buffers().values());
+          dumps (s, f.memory_gets());
+          dumps (s, f.memory_puts());
+          dumps (s, f.memory_getputs());
 
           boost::apply_visitor (function_dump_visitor (s), f.content());
 

@@ -24,6 +24,7 @@
 #include <xml/parse/type/expression.hpp>
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/memory_buffer.hpp>
+#include <xml/parse/type/memory_transfer.hpp>
 #include <xml/parse/type/mod.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
@@ -376,6 +377,133 @@ namespace xml
       }
 
       // **************************************************************** //
+
+      template<typename Memory_Transfer>
+        Memory_Transfer memory_transfer
+        ( const xml_node_type* node
+        , state::type& state
+        , std::function<Memory_Transfer ( const xml_node_type*
+                                        , state::type const&
+                                        , std::string const&
+                                        , std::string const&
+                                        , we::type::property::type const&
+                                        )> make_transfer
+        )
+      {
+        std::string global;
+        std::string local;
+        we::type::property::type properties;
+
+        for ( xml_node_type* child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
+        {
+          const std::string child_name (name_element (child, state));
+
+          if (child)
+          {
+            if (child_name == "properties")
+            {
+              property_map_type (properties, child, state);
+            }
+            else if (child_name == "include-properties")
+            {
+              util::property::join
+                ( state
+                , properties
+                , properties_include
+                ( required ("memory_transfer", child, "href", state)
+                , state
+                )
+                );
+            }
+            else if (child_name == "global")
+            {
+              global = fhg::util::join (parse_cdata (child, state), ";");
+            }
+            else if (child_name == "local")
+            {
+              local = fhg::util::join (parse_cdata (child, state), ";");
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "memory_transfer"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
+          }
+        }
+
+        return make_transfer (node, state, global, local, properties);
+      }
+
+      type::memory_get memory_get
+        (const xml_node_type* node, state::type& state)
+      {
+        return memory_transfer<type::memory_get>
+          ( node
+          , state
+          , [] ( const xml_node_type* node
+               , state::type const& state
+               , std::string const& global
+               , std::string const& local
+               , we::type::property::type const& properties
+               )
+          { return type::memory_get
+              ( state.position (node)
+              , global
+              , local
+              , properties
+              );
+          }
+          );
+      }
+
+      type::memory_put memory_put
+        (const xml_node_type* node, state::type& state)
+      {
+        return memory_transfer<type::memory_put>
+          ( node
+          , state
+          , [] ( const xml_node_type* node
+               , state::type const& state
+               , std::string const& global
+               , std::string const& local
+               , we::type::property::type const& properties
+               )
+          { return type::memory_put ( state.position (node)
+                                    , global
+                                    , local
+                                    , properties
+                                    );
+          }
+          );
+      }
+
+      type::memory_getput memory_getput
+        (const xml_node_type* node, state::type& state)
+      {
+        return memory_transfer<type::memory_getput>
+          ( node
+          , state
+          , [] ( const xml_node_type* node
+               , state::type const& state
+               , std::string const& global
+               , std::string const& local
+               , we::type::property::type const& properties
+               )
+          { return type::memory_getput ( state.position (node)
+                                       , global
+                                       , local
+                                       , properties
+                                       );
+          }
+          );
+      }
 
       id::ref::memory_buffer memory_buffer_type ( const xml_node_type* node
                                                 , state::type& state
@@ -1545,6 +1673,19 @@ namespace xml
               function.get_ref().push_memory_buffer
                 (memory_buffer_type (child, state));
             }
+            else if (child_name == "memory-get")
+            {
+              function.get_ref().push_memory_get (memory_get (child, state));
+            }
+            else if (child_name == "memory-put")
+            {
+              function.get_ref().push_memory_put (memory_put (child, state));
+            }
+            else if (child_name == "memory-getput")
+            {
+              function.get_ref().push_memory_getput
+                (memory_getput (child, state));
+            }
             else if (child_name == "struct")
             {
               function.get_ref().structs.push_back (struct_type (child, state));
@@ -1568,6 +1709,14 @@ namespace xml
                 throw error::memory_buffer_for_non_module (function);
               }
 
+              if (  !function.get_ref().memory_gets().empty()
+                 || !function.get_ref().memory_puts().empty()
+                 || !function.get_ref().memory_getputs().empty()
+                 )
+              {
+                throw error::memory_transfer_for_non_module (function);
+              }
+
               function.get_ref().add_expression (parse_cdata (child, state));
             }
             else if (child_name == "module")
@@ -1580,6 +1729,14 @@ namespace xml
               if (!function.get_ref().memory_buffers().ids().empty())
               {
                 throw error::memory_buffer_for_non_module (function);
+              }
+
+              if (  !function.get_ref().memory_gets().empty()
+                 || !function.get_ref().memory_puts().empty()
+                 || !function.get_ref().memory_getputs().empty()
+                 )
+              {
+                throw error::memory_transfer_for_non_module (function);
               }
 
               function.get_ref().content (net_type (child, state, function));

@@ -14,6 +14,7 @@
 
 #include <we/type/signature/show.hpp>
 
+#include <fhg/util/first_then.hpp>
 #include <fhg/util/print_container.hpp>
 
 #include <boost/format.hpp>
@@ -343,6 +344,89 @@ namespace xml
                       (function.get().memory_buffers().ids())
                     )
           , _function (function)
+      {}
+
+      namespace
+      {
+        std::string print_memory_transfer_positions_of_definition
+          (id::ref::function const& function)
+        {
+          fhg::util::first_then<std::string> sep (" ", ", ");
+
+          std::ostringstream oss;
+
+          if (!function.get_ref().memory_gets().empty())
+          {
+            oss << sep;
+
+            fhg::util::print_container
+              <std::list<xml::parse::type::memory_get>>
+              ( oss, "get: ", "(", ",", ")"
+              , function.get_ref().memory_gets()
+              , [&oss](xml::parse::type::memory_get const& mg)
+              {
+                oss << mg.position_of_definition();
+              }
+              );
+          }
+
+          if (!function.get_ref().memory_puts().empty())
+          {
+            oss << sep;
+
+            fhg::util::print_container
+              <std::list<xml::parse::type::memory_put>>
+              ( oss, "put: ", "(", ",", ")"
+              , function.get_ref().memory_puts()
+              , [&oss](xml::parse::type::memory_put const& mp)
+              {
+                oss << mp.position_of_definition();
+              }
+              );
+          }
+
+          if (!function.get_ref().memory_getputs().empty())
+          {
+            oss << sep;
+
+            fhg::util::print_container
+              <std::list<xml::parse::type::memory_getput>>
+              ( oss, "getput: ", "(", ",", ")"
+              , function.get_ref().memory_getputs()
+              , [&oss](xml::parse::type::memory_getput const& mgp)
+              {
+                oss << mgp.position_of_definition();
+              }
+              );
+          }
+
+          return oss.str();
+        }
+      }
+
+      memory_transfer_for_non_module::memory_transfer_for_non_module
+        (id::ref::function const& function)
+          : generic ( boost::format
+                      ( "non module call function '%1%'"
+                      " with %2% memory transfer%3%"
+                      ", function defined at %4%"
+                      ", memory transfer%3% defined at:%5%"
+                      )
+                    % function.get().name()
+                    % ( function.get().memory_gets().size()
+                      + function.get().memory_puts().size()
+                      + function.get().memory_getputs().size()
+                      )
+                    % ((( function.get().memory_gets().size()
+                        + function.get().memory_puts().size()
+                        + function.get().memory_getputs().size()
+                        ) > 1
+                       ) ? "s" : ""
+                      )
+                    % function.get().position_of_definition()
+                    % print_memory_transfer_positions_of_definition (function)
+                    )
+        , _function (function)
       {}
 
       memory_buffer_with_same_name_as_port
