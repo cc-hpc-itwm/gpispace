@@ -233,3 +233,5 @@ Just like in the pseudocode snippet, there needs to be an initialization of the 
       <connect-out port="state" place="state"/>
     </transition>
 ----
+
+The transformation shown in this tutorial is vital for many use cases where not a random, but a specific combination of tokens is required for a transition, which might not only be the case if a transition is called twice in parallel. It is good practice to let all workflows be reentrant and possible to be run in parallel.
