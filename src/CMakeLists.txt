@@ -74,6 +74,7 @@ add_library (pnet
   we/expr/token/type.cpp
   we/field.cpp
   we/loader/loader.cpp
+  we/loader/module_call.cpp
   we/layer.cpp
   we/type/activity.cpp
   we/require_type.cpp
