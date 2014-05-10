@@ -8,6 +8,8 @@
 //! \todo remove, needed to make a complete type
 #include <we/type/net.hpp>
 
+#include <fhg/assert.hpp>
+
 #include <unordered_map>
 
 #include <iostream>
@@ -20,7 +22,11 @@ namespace we
     {
       expr::eval::context context;
 
-      for (auto const& token_on_port : activity.input())
+      for ( std::pair< pnet::type::value::value_type
+                     , we::port_id_type
+                     > const& token_on_port
+          : activity.input()
+          )
       {
         context.bind_ref
           ( activity.transition().ports_input().at (token_on_port.second).name()
@@ -70,6 +76,44 @@ namespace we
       char* _buffer;
     };
 
+    struct interval
+    {
+    public:
+      interval (pnet::type::value::value_type const& value)
+        : _offset ( pnet::field_as<unsigned long>
+                    ("offset", value, std::string ("unsigned long"))
+                  )
+        , _size ( pnet::field_as<unsigned long>
+                  ("size", value, std::string ("unsigned long"))
+                )
+      {}
+      interval (interval const& r, unsigned long size)
+        : _offset (r.offset())
+        , _size (size)
+      {
+        fhg_assert (size <= r.size());
+      }
+      void shrink (unsigned long delta)
+      {
+        fhg_assert (delta <= _size);
+
+        _offset += delta;
+        _size -= delta;
+      }
+      unsigned long offset() const
+      {
+        return _offset;
+      }
+      unsigned long size() const
+      {
+        return _size;
+      }
+
+    private:
+      unsigned long _offset;
+      unsigned long _size;
+    };
+
     namespace global
     {
       struct handle
@@ -88,71 +132,49 @@ namespace we
         std::string _name;
       };
 
-      struct range
+      struct range : public interval
       {
       public:
         range (pnet::type::value::value_type const& value)
-          : _handle (pnet::field ("handle", value, std::string ("handle")))
-          , _offset ( pnet::field_as<unsigned long>
-                      ("offset", value, std::string ("unsigned long"))
-                    )
-          , _size ( pnet::field_as<unsigned long>
-                    ("size", value, std::string ("unsigned long"))
-                  )
+          : interval (value)
+          , _handle (pnet::field ("handle", value, std::string ("handle")))
+        {}
+        range (range const& r, unsigned long size)
+          : interval (r, size)
+          , _handle (r.handle())
         {}
         struct handle const& handle() const
         {
           return _handle;
         }
-        unsigned long offset() const
-        {
-          return _offset;
-        }
-        unsigned long size() const
-        {
-          return _size;
-        }
 
       private:
         struct handle _handle;
-        unsigned long _offset;
-        unsigned long _size;
       };
     }
 
     namespace local
     {
-      struct range
+      struct range : interval
       {
       public:
         range (pnet::type::value::value_type const& value)
-          : _buffer ( pnet::field_as<std::string>
+          : interval (value)
+          , _buffer ( pnet::field_as<std::string>
                       ("buffer", value, std::string ("string"))
                     )
-          , _offset ( pnet::field_as<unsigned long>
-                      ("offset", value, std::string ("unsigned long"))
-                    )
-          , _size ( pnet::field_as<unsigned long>
-                    ("size", value, std::string ("unsigned long"))
-                  )
+        {}
+        range (range const& r, unsigned long size)
+          : interval (r, size)
+          , _buffer (r.buffer())
         {}
         std::string const& buffer() const
         {
           return _buffer;
         }
-        unsigned long offset() const
-        {
-          return _offset;
-        }
-        unsigned long size() const
-        {
-          return _size;
-        }
 
       private:
         std::string _buffer;
-        unsigned long _offset;
-        unsigned long _size;
       };
     }
 
@@ -176,6 +198,50 @@ namespace we
       return ranges;
     }
 
+    std::list<std::pair<local::range, global::range>>
+      zip ( std::list<local::range>&& local_ranges
+          , std::list<global::range>&& global_ranges
+          )
+    {
+      std::list<std::pair<local::range, global::range>> zipped;
+
+      std::list<local::range>::iterator local (local_ranges.begin());
+      std::list<local::range>::iterator const local_end (local_ranges.end());
+      std::list<global::range>::iterator global (global_ranges.begin());
+      std::list<global::range>::iterator const global_end (global_ranges.end());
+
+      while (local != local_end && global != global_end)
+      {
+        unsigned long const min_size (std::min (local->size(), global->size()));
+
+        zipped.emplace_back
+          ( std::make_pair ( local::range (*local, min_size)
+                           , global::range (*global, min_size)
+                           )
+          );
+
+        local->shrink (min_size);
+        global->shrink (min_size);
+
+        if (local->size() == 0)
+        {
+          ++local;
+        }
+        if (global->size() == 0)
+        {
+          ++global;
+        }
+      }
+
+      if (local != local_end || global != global_end)
+      {
+        //! \todo specific exception
+        throw std::runtime_error ("sum of sizes of ranges differ");
+      }
+
+      return zipped;
+    }
+
     void transfer
       ( std::string const& head
       , std::string const& sep
@@ -185,41 +251,43 @@ namespace we
       , std::string const& local
       )
     {
-      std::cout << head << ' ';
-
-      for (local::range const& r : evaluate<local::range> (context, local))
+      for ( std::pair<local::range, global::range> const& transfer
+          : zip ( evaluate<local::range> (context, local)
+                , evaluate<global::range> (context, global)
+                )
+          )
       {
-        std::cout << "{" << r.buffer()
-                  << ", " << r.offset()
-                  << ", " << r.size()
-                  << "}";
+        local::range const& local (transfer.first);
+        global::range const& global (transfer.second);
 
-        if (!memory_buffer.count (r.buffer()))
+        std::cout << head << ' '
+                  << "local {" << local.buffer()
+                  << ", " << local.offset()
+                  << ", " << local.size()
+                  << '}'
+                  << ' ' << sep << ' '
+                  << "global {" << global.handle().name()
+                  << ", " << global.offset()
+                  << ", " << global.size()
+                  << '}'
+                  << std::endl;
+
+        if (!memory_buffer.count (local.buffer()))
         {
           //! \todo specific exception
-          throw std::runtime_error ("unknown memory buffer " + r.buffer());
+          throw std::runtime_error ("unknown memory buffer " + local.buffer());
         }
 
-        if (r.offset() + r.size() > memory_buffer.at (r.buffer())->size())
+        if ( local.offset() + local.size()
+           > memory_buffer.at (local.buffer())->size()
+           )
         {
           //! \todo specific exception
           throw std::runtime_error ("local range to large");
         }
+
+        //! \todo check global range, needs knowledge about global memory
       }
-
-      std::cout << ' ' << sep << ' ';
-
-      for (global::range const& r : evaluate<global::range> (context, global))
-      {
-        std::cout << "{" << r.handle().name()
-                  << ", " << r.offset()
-                  << ", " << r.size()
-                  << "}";
-
-        //! \todo check range, needs knowledge about global memory
-      }
-
-      std::cout << std::endl;
     }
   }
 
@@ -235,7 +303,9 @@ namespace we
       std::map<std::string, void*> pointers;
       std::unordered_map<std::string, memory_buffer*> memory_buffer;
 
-      for (auto const& buffer_and_size : module_call.memory_buffers())
+      for ( std::pair<std::string, std::string> const& buffer_and_size
+          : module_call.memory_buffers()
+          )
       {
         buffers.emplace_back (act, buffer_and_size.second);
         pointers.emplace (buffer_and_size.first, buffers.back().ptr());
