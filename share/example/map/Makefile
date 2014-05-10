@@ -34,7 +34,7 @@ include $(SDPA_HOME)/share/sdpa/make/common.mk
 ###############################################################################
 
 $(BUILDDIR)/log_impl.o: log_impl.cpp
-	$(CXX) $(CXXFLAGS) -isystem $(SDPA_HOME)/include -I$(CURDIR) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -isystem $(SDPA_HOME)/include -isystem $(SDPA_HOME)/external/boost/include -I$(CURDIR) -c $< -o $@
 
 .PHONY: clean_log_impl
 
@@ -44,7 +44,7 @@ clean_log_impl:
 ###############################################################################
 
 $(MAP_IMPL): $(BUILDDIR)/log_impl.o
-	$(CXX) -shared $^ -o $@ $(LDFLAGS) -lboost_system
+	$(CXX) -shared $^ -o $@ $(LDFLAGS) -L$(SDPA_HOME)/external/boost/lib -lboost_system
 
 .PHONY: clean_map_impl
 
