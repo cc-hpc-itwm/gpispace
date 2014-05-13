@@ -2,25 +2,25 @@
 #include <boost/test/unit_test.hpp>
 
 #include <fhg/assert.hpp>
-#include <fhg/assertion_failed.hpp>
-#include <iostream>
+
+#include <fhg/util/boost/test/require_exception.hpp>
 
 BOOST_AUTO_TEST_CASE(assert_true)
 {
   fhg_assert(1 == 1, "assert_true test case");
 }
 
-BOOST_AUTO_TEST_CASE(assert_false)
+BOOST_AUTO_TEST_CASE (assert_false)
 {
-  try
-  {
-    fhg_assert(1 == 0, "assert_false test case");
-    throw std::runtime_error("assert_false test case did not throw!");
-  }
-  catch (fhg::assertion_failed const & af)
-  {
-    std::cerr << af.what() << std::endl;
-  }
+  fhg::util::boost::test::require_exception<std::logic_error>
+    ( []() { fhg_assert (1 == 0, "util_assert_false"); }
+    , boost::format ("[%1%:%2%] assertion '%3%' failed%4%%5%.")
+    % __FILE__
+    % (__LINE__ - 3)
+    % "1 == 0"
+    % ": "
+    % "util_assert_false"
+    );
 }
 
 BOOST_AUTO_TEST_CASE(assert_true_empty_message)
@@ -28,15 +28,15 @@ BOOST_AUTO_TEST_CASE(assert_true_empty_message)
   fhg_assert(1 == 1);
 }
 
-BOOST_AUTO_TEST_CASE(assert_false_empty_message)
+BOOST_AUTO_TEST_CASE (assert_false_empty_message)
 {
-  try
-  {
-    fhg_assert(1 == 0);
-    throw std::runtime_error("assert_false_empty_message did not throw!");
-  }
-  catch (fhg::assertion_failed const & af)
-  {
-    std::cerr << af.what() << std::endl;
-  }
+  fhg::util::boost::test::require_exception<std::logic_error>
+    ( []() { fhg_assert (1 == 0); }
+    , boost::format ("[%1%:%2%] assertion '%3%' failed%4%%5%.")
+    % __FILE__
+    % (__LINE__ - 3)
+    % "1 == 0"
+    % ""
+    % ""
+    );
 }
