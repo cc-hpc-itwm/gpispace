@@ -38,8 +38,6 @@ namespace we { namespace type {
     const std::string & module () const { return module_; }
     const std::string & function () const { return function_; }
 
-    void module (const std::string & m) { module_ = m; }
-    void function (const std::string & f) { function_ = f; }
     private:
     std::string module_;
     std::string function_;
