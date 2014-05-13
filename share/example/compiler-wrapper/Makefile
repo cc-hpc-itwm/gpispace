@@ -55,10 +55,10 @@ uninstall/sdpacc:
 
 .PHONY: install/example
 install/example: $(CURDIR)/src/hello.c
-	mkdir -p "$(DESTDIR)/example"
-	cp $^ "$(DESTDIR)/example"
+	mkdir -p "$(DESTDIR)/src"
+	cp $^ "$(DESTDIR)/src"
 
 .PHONY: uninstall/example
 uninstall/example:
-	-$(RM) "$(DESTDIR)/example/hello.c"
-	-rmdir "$(DESTDIR)/example"
+	-$(RM) "$(DESTDIR)/src/hello.c"
+	-rmdir "$(DESTDIR)/src"

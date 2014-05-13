@@ -39,8 +39,8 @@ hostname > "${HOSTFILE}"                                    || die $EX_ERR_RUN
 measured "boot" sdpa boot -S "${DIR_STATE}" -A "${DIR_INST}/modules" -M -f "${HOSTFILE}" worker:1      \
                                                             || die $EX_ERR_BOOT
 
-measured "submit" "${DIR_INST}/bin/sdpacc.gcc" -o "${DIR_BUILD}/hello.gcc" "${DIR_INST}/example/hello.c" || die $EX_ERR_RUN
-measured "submit" "${DIR_INST}/bin/sdpacc.g++" -o "${DIR_BUILD}/hello.g++" "${DIR_INST}/example/hello.c" || die $EX_ERR_RUN
+measured "submit" "${DIR_INST}/bin/sdpacc.gcc" -o "${DIR_BUILD}/hello.gcc" "${DIR_INST}/src/hello.c" || die $EX_ERR_RUN
+measured "submit" "${DIR_INST}/bin/sdpacc.g++" -o "${DIR_BUILD}/hello.g++" "${DIR_INST}/src/hello.c" || die $EX_ERR_RUN
 
 test -x "${DIR_BUILD}/hello.gcc"                                || die $EX_ERR_RES
 test -x "${DIR_BUILD}/hello.g++"                                || die $EX_ERR_RES
