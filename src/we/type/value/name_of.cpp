@@ -28,7 +28,7 @@ namespace pnet
       NAME_OF (CHAR, char);
       NAME_OF (STRING, std::string);
       NAME_OF (BITSET, bitsetofint::type);
-      NAME_OF (BYTEARRAY, bytearray::type);
+      NAME_OF (BYTEARRAY, we::type::bytearray);
       NAME_OF (LIST, std::list<value_type>);
       NAME_OF (SET, std::set<value_type>);
       NAME_OF (MAP, std::map<value_type,value_type>);

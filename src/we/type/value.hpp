@@ -32,7 +32,7 @@ namespace pnet
               , char
               , std::string
               , bitsetofint::type
-              , bytearray::type
+              , we::type::bytearray
               , std::list<boost::recursive_variant_>
               , std::set<boost::recursive_variant_>
               , std::map<boost::recursive_variant_, boost::recursive_variant_>

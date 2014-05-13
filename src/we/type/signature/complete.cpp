@@ -32,7 +32,7 @@ namespace pnet
           tn[value::CHAR()] = "char";
           tn[value::STRING()] = "std::string";
           tn[value::BITSET()] = "bitsetofint::type";
-          tn[value::BYTEARRAY()] = "bytearray::type";
+          tn[value::BYTEARRAY()] = "we::type::bytearray";
           tn[value::LIST()] = "std::list<pnet::type::value::value_type>";
           tn[value::SET()] = "std::set<pnet::type::value::value_type>";
           tn[value::MAP()] = "std::map<pnet::type::value::value_type,pnet::type::value::value_type>";

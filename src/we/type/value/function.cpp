@@ -114,7 +114,7 @@ namespace pnet
             default: throw exception::eval (_token, x);
             }
           }
-          value_type operator() (bytearray::type x) const
+          value_type operator() (we::type::bytearray x) const
           {
             throw exception::eval (_token, x);
           }
@@ -326,7 +326,7 @@ namespace pnet
             default: throw exception::eval (_token, l, r);
             }
           }
-          value_type operator() (bytearray::type l, bytearray::type r) const
+          value_type operator() (we::type::bytearray l, we::type::bytearray r) const
           {
             switch (_token)
             {

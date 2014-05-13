@@ -31,7 +31,7 @@ namespace pnet
           by_name[CHAR()] = '\0';
           by_name[STRING()] = std::string();
           by_name[BITSET()] = bitsetofint::type();
-          by_name[BYTEARRAY()] = bytearray::type();
+          by_name[BYTEARRAY()] = we::type::bytearray();
           by_name[LIST()] = std::list<value_type>();
           by_name[SET()] = std::set<value_type>();
           by_name[MAP()] = std::map<value_type,value_type>();
