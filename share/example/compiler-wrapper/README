@@ -45,3 +45,7 @@ Erasing all the files and data generated during the compilation can be done by i
 ----
 $ make BUILDDIR="${BUILDDIR}" clean
 ----
+
+== Implementation details
+
+This example consists of a single module call, which takes the full path to the real compiler, its command line arguments and the current working directory as arguments. The execution itself then changes the current directory to the given working directory and executes the given compiler using `process::execute` - one of the utility functions provided by the GPI-Space runtime system. Standard-Output, Standard-Error and exit code are captured and provided as the module call's result, the wrapper will then emit those and exit with the same exit code.
