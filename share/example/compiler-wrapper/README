@@ -25,12 +25,12 @@ This will compile and install the `compiler-wrapper` application into `${BUILDDI
 
 == Running the example `compiler-wrapper`
 
-In the previous step the application has been installed to `$DESTDIR`, including a small hello world example which can be found in link:src/hello.c[`$DESTDIR/example/hello.c`]. To run the example, you first have to start the runtime system on a given set of hosts, for that please consult the link:../../doc/user.html#_start_and_stop[the user manual]. The following example will start four compilation workers on each host and compile the example.
+In the previous step the application has been installed to `$DESTDIR`, including a small hello world example which can be found in link:src/hello.c[`$DESTDIR/src/hello.c`]. To run the example, you first have to start the runtime system on a given set of hosts, for that please consult the link:../../doc/user.html#_start_and_stop[the user manual]. The following example will start four compilation workers on each host and compile the example.
 
 [source,bash]
 ----
 share/gspc/example/compiler-wrapper $ sdpa boot -M -f nodefile -A "${DESTDIR}/modules" worker:4
-share/gspc/example/compiler-wrapper $ ${DESTDIR}/bin/sdpacc.gcc -o "${BUILDDIR}/hello" "${DESTDIR}/example/hello.c"
+share/gspc/example/compiler-wrapper $ ${DESTDIR}/bin/sdpacc.gcc -o "${BUILDDIR}/hello" "${DESTDIR}/src/hello.c"
 share/gspc/example/compiler-wrapper $ ${BUILDDIR}/hello
 Hello World
 ----
