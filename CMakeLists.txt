@@ -1,11 +1,6 @@
 cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
 
-set (V_MAJOR 14)
-set (V_MINOR 03)
-set (V_PATCH )
-set (V_EXTRA )
-
-set (PROJECT_VERSION      CACHE STRING "Project version")
+set (PROJECT_VERSION "14.03")
 set (PROJECT_REVISION     CACHE STRING "Source code revision")
 set (PROJECT_DESCRIPTION_SUMMARY "GPI-Space - productive parallel programming and efficient execution" CACHE STRING "Project description summary")
 set (PROJECT_COPYRIGHT   "Copyright 2009-2014 Fraunhofer ITWM" CACHE STRING "Copyright")
@@ -29,16 +24,6 @@ if (NOT PROJECT_REVISION)
   message (FATAL_ERROR "could not discover revision info, please define -DPROJECT_REVISION by hand!")
 endif (NOT PROJECT_REVISION)
 set (PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" FORCE)
-
-set (__new_vsn "${V_MAJOR}.${V_MINOR}")
-if (NOT ${V_PATCH} STREQUAL "")
-  set(__new_vsn "${__new_vsn}-${V_PATCH}")
-endif()
-if (NOT ${V_EXTRA} STREQUAL "")
-  set(__new_vsn "${__new_vsn}-${V_EXTRA}")
-endif()
-set (PROJECT_VERSION "${__new_vsn}" CACHE STRING "Project version" FORCE)
-set (__new_vsn)
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
