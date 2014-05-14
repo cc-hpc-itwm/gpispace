@@ -1,9 +1,9 @@
 cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
 
-set(V_MAJOR 14)
-set(V_MINOR 03)
-set(V_PATCH )
-set(V_EXTRA )
+set (V_MAJOR 14)
+set (V_MINOR 03)
+set (V_PATCH )
+set (V_EXTRA )
 
 set (PROJECT_VERSION      CACHE STRING "Project version")
 set (PROJECT_REVISION     CACHE STRING "Source code revision")
@@ -16,24 +16,24 @@ set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE ST
 
 OPTION (ENABLE_LICENSE_CHECK "enable license check" OFF)
 
-  execute_process (
-    COMMAND git rev-parse HEAD
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE _out_git
-    ERROR_VARIABLE _err_git
-    RESULT_VARIABLE _res_git
-    )
-  if (${_res_git} EQUAL 0)
-    string (STRIP "${_out_git}" _out_git)
-    set (PROJECT_REVISION ${_out_git})
-  endif()
+execute_process (
+  COMMAND git rev-parse HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE _out_git
+  ERROR_VARIABLE _err_git
+  RESULT_VARIABLE _res_git
+)
+if (${_res_git} EQUAL 0)
+  string (STRIP "${_out_git}" _out_git)
+  set (PROJECT_REVISION ${_out_git})
+endif()
 
 if (NOT PROJECT_REVISION)
   message (FATAL_ERROR "could not discover revision info, please define -DPROJECT_REVISION by hand!")
 endif (NOT PROJECT_REVISION)
 set (PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" FORCE)
 
-set(__new_vsn "${V_MAJOR}.${V_MINOR}")
+set (__new_vsn "${V_MAJOR}.${V_MINOR}")
 if (NOT ${V_PATCH} STREQUAL "")
   set(__new_vsn "${__new_vsn}-${V_PATCH}")
 endif()
@@ -45,7 +45,11 @@ set (__new_vsn)
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
-set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
+set (CMAKE_MODULE_PATH
+  "${CMAKE_MODULE_PATH}"
+  "${CMAKE_SOURCE_DIR}/modules"
+  "$ENV{CMAKE_MODULE_PATH}"
+)
 
 include (fhg_test_macros)
 
@@ -76,8 +80,18 @@ if (BOOST_ROOT)
 endif()
 
 find_package (Boost 1.55 REQUIRED QUIET COMPONENTS
-  thread system filesystem serialization program_options
-  regex signals date_time test_exec_monitor unit_test_framework random)
+  date_time
+  filesystem
+  program_options
+  random
+  regex
+  serialization
+  signals
+  system
+  test_exec_monitor
+  thread
+  unit_test_framework
+)
 
 # Boost.Thread now throws when preconditions are not met.
 # This is the case when calling join() in some tests, while
@@ -97,14 +111,14 @@ add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
 
 set (FHG_QT_MOC_BOOST_HACK_OPTIONS "-DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED;-DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION")
 
-find_package(HWLOC REQUIRED QUIET)
+find_package (HWLOC REQUIRED QUIET)
 find_package (Graphviz COMPONENTS cdt gvc graph pathplan REQUIRED QUIET)
 
 # RPATH configuration
-set(CMAKE_SKIP_BUILD_RPATH FALSE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-set(CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../external/boost/lib:\$ORIGIN/../../../lib/")
+set (CMAKE_SKIP_BUILD_RPATH FALSE)
+set (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set (CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+set (CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../external/boost/lib:\$ORIGIN/../../../lib/")
 
 include_directories (${CMAKE_SOURCE_DIR}/src)
 
@@ -129,13 +143,12 @@ set (SDPA_APPS_DIR "libexec/sdpa/apps")
 
 include (CTest)
 add_subdirectory (fhglog)
-  add_subdirectory (fvm-pc)
+add_subdirectory (fvm-pc)
 add_subdirectory (util)
 add_subdirectory (application)
 add_subdirectory (src)
 add_subdirectory (sdpa)
-add_subdirectory(bundle)
-
+add_subdirectory (bundle)
 add_subdirectory (test)
 
 INCLUDE (InstallRequiredSystemLibraries)
