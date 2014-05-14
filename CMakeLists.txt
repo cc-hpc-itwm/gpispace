@@ -1,7 +1,5 @@
 cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
 
-project (sdpa_main)
-
 set(V_MAJOR 14)
 set(V_MINOR 03)
 set(V_PATCH )
