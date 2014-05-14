@@ -1,7 +1,6 @@
 cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
 
 set (PROJECT_VERSION "14.03")
-set (PROJECT_REVISION     CACHE STRING "Source code revision")
 set (PROJECT_DESCRIPTION_SUMMARY "GPI-Space - productive parallel programming and efficient execution" CACHE STRING "Project description summary")
 set (PROJECT_COPYRIGHT   "Copyright 2009-2014 Fraunhofer ITWM" CACHE STRING "Copyright")
 set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
@@ -18,12 +17,9 @@ execute_process (
 if (${_res_git} EQUAL 0)
   string (STRIP "${_out_git}" _out_git)
   set (PROJECT_REVISION ${_out_git})
-endif()
-
-if (NOT PROJECT_REVISION)
+else()
   message (FATAL_ERROR "could not discover revision info, please define -DPROJECT_REVISION by hand!")
-endif (NOT PROJECT_REVISION)
-set (PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" FORCE)
+endif()
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
