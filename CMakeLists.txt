@@ -7,10 +7,7 @@ set (V_EXTRA )
 
 set (PROJECT_VERSION      CACHE STRING "Project version")
 set (PROJECT_REVISION     CACHE STRING "Source code revision")
-set (PROJECT_BUILD    "0" CACHE STRING "Build number")
-set (PROJECT_DESCRIPTION "GPI-Space - productive parallel programming and efficient execution" CACHE STRING "Project description")
 set (PROJECT_DESCRIPTION_SUMMARY "GPI-Space - productive parallel programming and efficient execution" CACHE STRING "Project description summary")
-set (PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM" CACHE STRING "Project vendor")
 set (PROJECT_COPYRIGHT   "Copyright 2009-2014 Fraunhofer ITWM" CACHE STRING "Copyright")
 set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
