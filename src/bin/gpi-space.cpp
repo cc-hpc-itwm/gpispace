@@ -141,7 +141,7 @@ int main (int ac, char *av[])
   snprintf (pidfile, sizeof(pidfile), "%s", "");
   requested_api_t requested_api = API_auto;
   char socket_path[MAX_PATH_LEN];
-  snprintf (socket_path, sizeof(socket_path), "/var/tmp");
+  snprintf (socket_path, sizeof(socket_path), "/var/tmp/S.gpi-space.%d", getuid());
   char logfile[MAX_PATH_LEN];
   memset (logfile, 0, sizeof(logfile));
   std::string default_memory_url ("gpi://?buffer_size=4194304&buffers=8");
@@ -182,7 +182,7 @@ int main (int ac, char *av[])
       fprintf(stderr, "      fork to background when all checks were ok\n");
       fprintf(stderr, "\n");
       fprintf(stderr, "    --socket PATH (%s)\n", socket_path);
-      fprintf(stderr, "      create sockets in this base path\n");
+      fprintf(stderr, "      create socket at this location\n");
       fprintf(stderr, "\n");
       fprintf(stderr, "    --mem-url URL (%s)\n", default_memory_url.c_str());
       fprintf(stderr, "      url of the default memory segment (1)\n");
