@@ -121,8 +121,6 @@ set (FhgLog_LIBRARY_SHARED fhglog-shared)
 set (MMGR_LIBRARY mmgr)
 set (MMGR_LIBRARY_SHARED mmgr.shared)
 
-set (FhgKernel_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src)
-
 set (FhgCom_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src)
 set (FhgCom_LIBRARY fhgcom)
 
