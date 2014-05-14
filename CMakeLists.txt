@@ -1,8 +1,6 @@
 cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
 
 set (PROJECT_VERSION "14.03")
-set (PROJECT_DESCRIPTION_SUMMARY "GPI-Space - productive parallel programming and efficient execution" CACHE STRING "Project description summary")
-set (PROJECT_COPYRIGHT   "Copyright 2009-2014 Fraunhofer ITWM" CACHE STRING "Copyright")
 set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
 OPTION (ENABLE_LICENSE_CHECK "enable license check" OFF)
