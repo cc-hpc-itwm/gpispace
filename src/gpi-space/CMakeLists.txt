@@ -26,8 +26,6 @@ include_directories(${UTIL_INCLUDE_DIR})
 
 include_directories(${FhgKernel_INCLUDE_DIR})
 
-include_directories(${MMGR_INCLUDE_DIR})
-
 include_directories(${GPI_SPACE_INCLUDE_DIR})
 
 find_package (LibRT REQUIRED QUIET)
