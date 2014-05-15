@@ -628,6 +628,8 @@ namespace xml
         std::unordered_map<std::string, we::port_id_type>& _port_id_in;
         std::unordered_map<std::string, we::port_id_type>& _port_id_out;
         we::priority_type _priority;
+        xml::util::range_type<place_map_type const> _place_map;
+        std::unordered_map<we::port_id_type, std::string>& _real_place_names;
 
         typedef we::type::transition_t we_transition_type;
 
@@ -639,7 +641,7 @@ namespace xml
                                   , we::place_id_type
                                   > pid_of_place_type;
 
-        void add_port
+        we::port_id_type add_port
           (we_transition_type& transition, we::type::port_t const& port) const
         {
           we::port_id_type const port_id (transition.add_port (port));
@@ -652,6 +654,8 @@ namespace xml
           {
             _port_id_in.emplace (port.name(), port_id);
           }
+
+          return port_id;
         }
 
         void add_ports ( we_transition_type & trans
@@ -692,14 +696,29 @@ namespace xml
               // the existence and type safety of the place to
               // connect to
 
-              add_port ( trans
-                       , we::type::port_t ( port.name()
-                                          , port.direction()
-                                          , port.signature_or_throw()
-                                          , pid_of_place.at (*port.place)
-                                          , port.properties()
-                                          )
-                       );
+              we::port_id_type const port_id
+                ( add_port ( trans
+                           , we::type::port_t ( port.name()
+                                              , port.direction()
+                                              , port.signature_or_throw()
+                                              , pid_of_place.at (*port.place)
+                                              , port.properties()
+                                              )
+                           )
+                );
+
+              if (port.direction() == we::type::PORT_TUNNEL)
+              {
+                for (place_map_type const& place_map : _place_map)
+                {
+                  if (  place_map.place_virtual()
+                     == port.resolved_place()->get().name()
+                     )
+                  {
+                    _real_place_names.emplace (port_id, place_map.place_real());
+                  }
+                }
+              }
             }
           }
         }
@@ -746,6 +765,8 @@ namespace xml
           , std::unordered_map<std::string, we::port_id_type>& port_id_in
           , std::unordered_map<std::string, we::port_id_type>& port_id_out
           , we::priority_type priority
+          , xml::util::range_type<place_map_type const> place_map
+          , std::unordered_map<we::port_id_type, std::string>& real_place_names
           )
           : _name (name)
           , state (_state)
@@ -757,6 +778,8 @@ namespace xml
           , _port_id_in (port_id_in)
           , _port_id_out (port_id_out)
           , _priority (priority)
+          , _place_map (place_map)
+          , _real_place_names (real_place_names)
         {
           util::property::join (state, _properties, fun.properties());
         }
@@ -847,6 +870,8 @@ namespace xml
         , const we::type::property::type& trans_properties
         , const requirements_type& trans_requirements
         , we::priority_type priority
+        , xml::util::range_type<place_map_type const> place_map
+        , std::unordered_map<we::port_id_type, std::string>& real_place_names
         ) const
       {
         return boost::apply_visitor
@@ -860,6 +885,8 @@ namespace xml
                                 , port_id_in
                                 , port_id_out
                                 , priority
+                                , place_map
+                                , real_place_names
                                 )
           , content()
           );
