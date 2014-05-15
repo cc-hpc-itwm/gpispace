@@ -1,5 +1,3 @@
-include_directories (${MMGR_INCLUDE_DIR})
-
 set (pc-srcs pc.cpp)
 
 ADD_LIBRARY(fvm-pc-fake.shared SHARED ${pc-srcs})

@@ -1,53 +1,31 @@
 cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
 
-project (sdpa_main)
-
-set(V_MAJOR 14)
-set(V_MINOR 03)
-set(V_PATCH )
-set(V_EXTRA )
-
-set (PROJECT_VERSION      CACHE STRING "Project version")
-set (PROJECT_REVISION     CACHE STRING "Source code revision")
-set (PROJECT_BUILD    "0" CACHE STRING "Build number")
-set (PROJECT_DESCRIPTION "GPI-Space - productive parallel programming and efficient execution" CACHE STRING "Project description")
-set (PROJECT_DESCRIPTION_SUMMARY "GPI-Space - productive parallel programming and efficient execution" CACHE STRING "Project description summary")
-set (PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM" CACHE STRING "Project vendor")
-set (PROJECT_COPYRIGHT   "Copyright 2009-2014 Fraunhofer ITWM" CACHE STRING "Copyright")
+set (PROJECT_VERSION "14.03")
 set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
 OPTION (ENABLE_LICENSE_CHECK "enable license check" OFF)
 
-  execute_process (
-    COMMAND git rev-parse HEAD
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE _out_git
-    ERROR_VARIABLE _err_git
-    RESULT_VARIABLE _res_git
-    )
-  if (${_res_git} EQUAL 0)
-    string (STRIP "${_out_git}" _out_git)
-    set (PROJECT_REVISION ${_out_git})
-  endif()
-
-if (NOT PROJECT_REVISION)
+execute_process (
+  COMMAND git rev-parse HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE _out_git
+  ERROR_VARIABLE _err_git
+  RESULT_VARIABLE _res_git
+)
+if (${_res_git} EQUAL 0)
+  string (STRIP "${_out_git}" _out_git)
+  set (PROJECT_REVISION ${_out_git})
+else()
   message (FATAL_ERROR "could not discover revision info, please define -DPROJECT_REVISION by hand!")
-endif (NOT PROJECT_REVISION)
-set (PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" FORCE)
-
-set(__new_vsn "${V_MAJOR}.${V_MINOR}")
-if (NOT ${V_PATCH} STREQUAL "")
-  set(__new_vsn "${__new_vsn}-${V_PATCH}")
 endif()
-if (NOT ${V_EXTRA} STREQUAL "")
-  set(__new_vsn "${__new_vsn}-${V_EXTRA}")
-endif()
-set (PROJECT_VERSION "${__new_vsn}" CACHE STRING "Project version" FORCE)
-set (__new_vsn)
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
-set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
+set (CMAKE_MODULE_PATH
+  "${CMAKE_MODULE_PATH}"
+  "${CMAKE_SOURCE_DIR}/modules"
+  "$ENV{CMAKE_MODULE_PATH}"
+)
 
 include (fhg_test_macros)
 
@@ -78,8 +56,18 @@ if (BOOST_ROOT)
 endif()
 
 find_package (Boost 1.55 REQUIRED QUIET COMPONENTS
-  thread system filesystem serialization program_options
-  regex signals date_time test_exec_monitor unit_test_framework random)
+  date_time
+  filesystem
+  program_options
+  random
+  regex
+  serialization
+  signals
+  system
+  test_exec_monitor
+  thread
+  unit_test_framework
+)
 
 # Boost.Thread now throws when preconditions are not met.
 # This is the case when calling join() in some tests, while
@@ -99,14 +87,16 @@ add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
 
 set (FHG_QT_MOC_BOOST_HACK_OPTIONS "-DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED;-DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION")
 
-find_package(HWLOC REQUIRED QUIET)
+find_package (HWLOC REQUIRED QUIET)
 find_package (Graphviz COMPONENTS cdt gvc graph pathplan REQUIRED QUIET)
 
 # RPATH configuration
-set(CMAKE_SKIP_BUILD_RPATH FALSE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-set(CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../external/boost/lib:\$ORIGIN/../../../lib/")
+set (CMAKE_SKIP_BUILD_RPATH FALSE)
+set (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set (CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+set (CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../external/boost/lib:\$ORIGIN/../../../lib/")
+
+include_directories (${CMAKE_SOURCE_DIR}/src)
 
 # replacement for find_package (<one of our subprojects>)
 set (UTIL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/util)
@@ -116,21 +106,12 @@ set (FhgLog_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhglog)
 set (FhgLog_LIBRARY fhglog)
 set (FhgLog_LIBRARY_SHARED fhglog-shared)
 
-set (MMGR_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src)
 set (MMGR_LIBRARY mmgr)
 set (MMGR_LIBRARY_SHARED mmgr.shared)
 
-set (FhgKernel_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src)
-
-set (SDPA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/sdpa)
-
-set (FhgCom_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src)
 set (FhgCom_LIBRARY fhgcom)
 
 set (FVM_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fvm-pc)
-
-set (GPI_SPACE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src)
-set (GPI_SPACE_LIBRARY gpi-space-pc-client-static gpi-space-pc-segment)
 
 set (PNETC_LIB_DIR "share/sdpa/xml/lib")
 set (PNETC_EXAMPLES_DIR "share/sdpa/xml/examples")
@@ -138,13 +119,12 @@ set (SDPA_APPS_DIR "libexec/sdpa/apps")
 
 include (CTest)
 add_subdirectory (fhglog)
-  add_subdirectory (fvm-pc)
+add_subdirectory (fvm-pc)
 add_subdirectory (util)
 add_subdirectory (application)
 add_subdirectory (src)
 add_subdirectory (sdpa)
-add_subdirectory(bundle)
-
+add_subdirectory (bundle)
 add_subdirectory (test)
 
 INCLUDE (InstallRequiredSystemLibraries)
