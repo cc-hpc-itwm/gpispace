@@ -928,7 +928,7 @@ namespace xml
                                      , state::type & state
                                      )
       {
-        for (port_type& port : ports().values())
+        for (port_type& port : _ports.values())
         {
           port.specialize (map, state);
         }
