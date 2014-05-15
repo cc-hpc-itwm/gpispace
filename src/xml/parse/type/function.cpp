@@ -1599,7 +1599,7 @@ namespace xml
 
         n.contains_a_module_call = false;
 
-        for (transition_type& transition : n.transitions().values())
+        for (const transition_type& transition : n.transitions().values())
           {
             n.contains_a_module_call
               |= boost::apply_visitor
