@@ -670,15 +670,6 @@ namespace xml
         }
 
         template<typename Map>
-        typename Map::mapped_type
-        get_pid (const Map & pid_of_place, const std::string name) const
-        {
-          const typename Map::const_iterator pos (pid_of_place.find (name));
-
-          return pos->second;
-        }
-
-        template<typename Map>
         void add_ports ( we_transition_type & trans
                        , const function_type::ports_type& ports
                        , const Map & pid_of_place
@@ -701,12 +692,13 @@ namespace xml
               // the existence and type safety of the place to
               // connect to
 
-              add_port (trans, we::type::port_t ( port.name()
-                                                , port.direction()
-                                                , port.signature_or_throw()
-                                                , get_pid (pid_of_place, *port.place)
-                                                , port.properties()
-                                                )
+              add_port ( trans
+                       , we::type::port_t ( port.name()
+                                          , port.direction()
+                                          , port.signature_or_throw()
+                                          , pid_of_place.at (*port.place)
+                                          , port.properties()
+                                          )
                        );
             }
           }
