@@ -7,6 +7,7 @@
 #include <xml/parse/type/expression.hpp>
 #include <xml/parse/type/mod.hpp>
 #include <xml/parse/type/port.hpp>
+#include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/template.fwd.hpp>
@@ -203,6 +204,8 @@ namespace xml
           , const we::type::property::type&
           , const requirements_type&
           , we::priority_type
+          , xml::util::range_type<place_map_type const>
+          , std::unordered_map<we::port_id_type, std::string>& real_place_names
           ) const;
 
         // ***************************************************************** //

@@ -421,7 +421,7 @@ namespace xml
       {
         namespace st = xml::parse::structure_type_util;
 
-        for (specialize_type& specialize : specializes().values())
+        for (specialize_type& specialize : _specializes.values())
         {
           boost::optional<const id::ref::tmpl&> id_tmpl
             (get_template (specialize.use));
@@ -467,7 +467,7 @@ namespace xml
         _specializes.clear();
 
 
-        for (function_type& function : functions().values())
+        for (function_type& function : _functions.values())
         {
           function.specialize
             ( map
@@ -484,7 +484,7 @@ namespace xml
                         );
         }
 
-        for (transition_type& transition : transitions().values())
+        for (transition_type& transition : _transitions.values())
         {
           transition.specialize
             ( map
@@ -501,7 +501,7 @@ namespace xml
                         );
         }
 
-        for (place_type& place : places().values())
+        for (place_type& place : _places.values())
         {
           place.specialize (map, state);
         }

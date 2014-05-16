@@ -12,6 +12,7 @@
 #include <xml/parse/util/property.hpp>
 #include <xml/parse/util/required.hpp>
 #include <xml/parse/util/skip.hpp>
+#include <xml/parse/util/unique.hpp>
 #include <xml/parse/util/valid_name.hpp>
 #include <xml/parse/util/validprefix.hpp>
 #include <xml/parse/util/validstructfield.hpp>
@@ -1631,18 +1632,22 @@ namespace xml
 
       std::unordered_map<std::string, we::port_id_type> port_id_in;
       std::unordered_map<std::string, we::port_id_type> port_id_out;
+      std::unordered_map<we::port_id_type, std::string> real_place_names;
 
       we::type::transition_t trans
-        (function.get_ref().synthesize ( *function.get().name()
-                                       , state
-                                       , port_id_in
-                                       , port_id_out
-                                       , boost::none
-                                       , type::conditions_type()
-                                       , we::type::property::type()
-                                       , type::requirements_type()
-                                       , we::priority_type()
-                                       )
+        ( function.get_ref().synthesize
+          ( *function.get().name()
+          , state
+          , port_id_in
+          , port_id_out
+          , boost::none
+          , type::conditions_type()
+          , we::type::property::type()
+          , type::requirements_type()
+          , we::priority_type()
+          , xml::util::range_type<type::place_map_type const>()
+          , real_place_names
+          )
         );
 
       return we::type::activity_t (trans, boost::none);
