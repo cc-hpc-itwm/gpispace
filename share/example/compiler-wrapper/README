@@ -15,7 +15,7 @@ In order to compile and install this example one should use the provided link:Ma
 
 [source,bash]
 ----
-share/gspc/example/compiler-wrapper $ BUILDDIR=$(mktemp -d)
+share/gspc/example/compiler-wrapper $ BUILDDIR=$(mktemp -d -p <shared-folder>)
 share/gspc/example/compiler-wrapper $ mkdir -p "${BUILDDIR}"
 share/gspc/example/compiler-wrapper $ DESTDIR="${BUILDDIR}/inst"
 share/gspc/example/compiler-wrapper $ make BUILDDIR="${BUILDDIR}" DESTDIR="${DESTDIR}" install
