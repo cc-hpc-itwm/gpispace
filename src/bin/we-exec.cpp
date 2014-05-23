@@ -376,7 +376,7 @@ try
   std::size_t num_worker (8);
   std::string output;
   bool show_dots (false);
-  boost::optional<std::size_t> cancel_after;
+  boost::optional<std::size_t> cancel_after = boost::make_optional<size_t> (false, 0);
 
   desc.add_options()
     ("help,h", "this message")

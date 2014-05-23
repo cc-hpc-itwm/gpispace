@@ -94,7 +94,8 @@ namespace fhg
           if (event->modifiers() == Qt::ControlModifier)
           {
             _dragged_point = boost::none;
-            boost::optional<std::pair<int,qreal>> nearest_point (boost::none);
+            boost::optional<std::pair<int,qreal>> nearest_point =
+              boost::make_optional (false, std::pair<int, qreal>());
 
             {
               int i (0);
