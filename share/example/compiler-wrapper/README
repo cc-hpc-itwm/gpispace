@@ -21,7 +21,7 @@ share/gspc/example/compiler-wrapper $ DESTDIR="${BUILDDIR}/inst"
 share/gspc/example/compiler-wrapper $ make BUILDDIR="${BUILDDIR}" DESTDIR="${DESTDIR}" install
 ----
 
-This will compile and install the `compiler-wrapper` application into `${DESTDIR}`, please make sure that this directory points to a shared file system in case you intend to run the example on more than one machine.
+This will compile and install the `compiler-wrapper` application into `${DESTDIR}`, please make sure that this directory points to a shared file system in case you intend to run the example on more than one machine. In this example, we chose to create `BUILDDIR` (and therefor `DESTDIR`) within your `HOME` directory under the assumption that this directory is usually shared among different hosts.
 
 == Running the example `compiler-wrapper`
 
