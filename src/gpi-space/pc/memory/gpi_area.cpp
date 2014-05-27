@@ -294,7 +294,6 @@ namespace gpi
           {
             buf.used (0);
 
-            gpi_api.wait_dma (queue); // make sure previous iteration is finished
             const gpi::pc::type::size_t to_send =
               std::min (remaining, buf.size ());
 
@@ -318,6 +317,7 @@ namespace gpi
                          , queue
                          , gpi_api
                          );
+            gpi_api.wait_dma (queue);
 
             src_loc.offset += buf.used ();
             dst_loc.offset += buf.used ();
