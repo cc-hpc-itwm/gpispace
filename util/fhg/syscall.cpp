@@ -139,6 +139,11 @@ namespace fhg
       return negative_one_fails_with_errno<int> (::open (pathname, flags, mode));
     }
 
+    void pipe (int pipefd[2])
+    {
+      return negative_one_fails_with_errno<void> (::pipe (pipefd));
+    }
+
     ssize_t read (int fd, void* buf, size_t count)
     {
       return negative_one_fails_with_errno<ssize_t> (::read (fd, buf, count));

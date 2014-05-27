@@ -27,6 +27,7 @@ namespace fhg
     void munmap (void* addr, size_t length);
     int open (const char* pathname, int flags);
     int open (const char* pathname, int flags, mode_t mode);
+    void pipe (int pipefd[2]);
     ssize_t read (int fd, void* buf, size_t count);
     pid_t setsid();
     void setsockopt (int sockfd, int level, int optname, const void* optval, socklen_t optlen);

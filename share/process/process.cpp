@@ -20,6 +20,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem.hpp>
 
+#include <fhg/syscall.hpp>
 #include <fhg/util/split.hpp>
 
 #include <process.hpp>
@@ -99,20 +100,26 @@ namespace process
 
     /* ********************************************************************* */
 
-    inline void prepare_parent_pipes (int in[2], int out[2], int err[2])
+    inline void prepare_parent_pipes
+      (int in[2], int out[2], int err[2], int sync_pc[2], int sync_cp[2])
     {
       do_close (in + RD);
       do_close (out + WR);
       do_close (err + WR);
+      do_close (sync_pc + RD);
+      do_close (sync_cp + WR);
     }
 
     /* ********************************************************************* */
 
-    inline void prepare_child_pipes (int in[2], int out[2], int err[2])
+    inline void prepare_child_pipes
+      (int in[2], int out[2], int err[2], int sync_pc[2], int sync_cp[2])
     {
       do_close (in + WR);
       do_close (out + RD);
       do_close (err + RD);
+      do_close (sync_pc + WR);
+      do_close (sync_cp + RD);
 
       if (in[RD] != STDIN_FILENO)
         {
@@ -145,9 +152,12 @@ namespace process
         }
 
       for (int i (3); i < 1024; ++i)
+      {
+        if (i != sync_pc[RD] && i != sync_cp[WR])
         {
           close (i);
         }
+      }
     }
   } // namespace detail
 
@@ -579,6 +589,12 @@ namespace process
     sigaddset (&signals_to_block, SIGPIPE);
     sigprocmask (SIG_BLOCK, &signals_to_block, &signals_to_restore);
 
+    int synchronization_fd_parent_child[2] = { -1, -1 };
+    int synchronization_fd_child_parent[2] = { -1, -1 };
+    char synchronization_buffer = '0';
+    fhg::syscall::pipe (synchronization_fd_parent_child);
+    fhg::syscall::pipe (synchronization_fd_child_parent);
+
     pid = fork();
 
     if (pid < 0)
@@ -588,7 +604,39 @@ namespace process
     else if (pid == pid_t (0))
       {
         // child: should not produce any output on stdout/stderr
-        detail::prepare_child_pipes (in, out, err);
+        detail::prepare_child_pipes ( in
+                                    , out
+                                    , err
+                                    , synchronization_fd_parent_child
+                                    , synchronization_fd_child_parent
+                                    );
+
+        if ( fhg::syscall::write
+             ( synchronization_fd_child_parent[detail::WR]
+             , &synchronization_buffer
+             , sizeof (synchronization_buffer)
+             )
+           != sizeof (synchronization_buffer)
+           )
+        {
+          detail::do_error ("synchronization failed: parent did not read");
+        }
+
+        // wait for parent setting up threads
+
+        if ( fhg::syscall::read
+             ( synchronization_fd_parent_child[detail::RD]
+             , &synchronization_buffer
+             , sizeof (synchronization_buffer)
+             )
+           != sizeof (synchronization_buffer)
+           )
+        {
+          detail::do_error ("synchronization failed: parent did not write");
+        }
+
+        fhg::syscall::close (synchronization_fd_parent_child[detail::RD]);
+        fhg::syscall::close (synchronization_fd_child_parent[detail::WR]);
 
         if (execvp(av[0], av) < 0)
           {
@@ -609,7 +657,23 @@ namespace process
     else
       {
         // parent
-        detail::prepare_parent_pipes (in, out, err);
+        detail::prepare_parent_pipes ( in
+                                     , out
+                                     , err
+                                     , synchronization_fd_parent_child
+                                     , synchronization_fd_child_parent
+                                     );
+
+        if ( fhg::syscall::read
+             ( synchronization_fd_child_parent[detail::RD]
+             , &synchronization_buffer
+             , sizeof (synchronization_buffer)
+             )
+           != sizeof (synchronization_buffer)
+           )
+        {
+          detail::do_error ("synchronization failed: child did not write");
+        }
 
         boost::thread thread_buf_stdin
           ( thread::writer
@@ -621,8 +685,7 @@ namespace process
         boost::thread thread_buf_stdout
           ( thread::reader
           , out[detail::RD]
-          , buf_stdout.buf()
-          , buf_stdout.size()
+          , buf_stdout.buf(), buf_stdout.size()
           , std::ref (ret.bytes_read_stdout)
           );
 
@@ -632,6 +695,20 @@ namespace process
           , std::ref (buf_stderr)
           , std::ref (ret.bytes_read_stderr)
           );
+
+        if ( fhg::syscall::write
+             ( synchronization_fd_parent_child[detail::WR]
+             , &synchronization_buffer
+             , sizeof (synchronization_buffer)
+             )
+           != sizeof (synchronization_buffer)
+           )
+        {
+          detail::do_error ("synchronization failed: child did not read");
+        }
+
+        fhg::syscall::close (synchronization_fd_parent_child[detail::WR]);
+        fhg::syscall::close (synchronization_fd_child_parent[detail::RD]);
 
         int status (0);
 
