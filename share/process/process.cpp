@@ -359,7 +359,7 @@ namespace process
       while (ec != 0);
     }
 
-    struct tempfile_t
+    struct tempfile_t : boost::noncopyable
     {
       explicit
       tempfile_t (std::string const &p)
