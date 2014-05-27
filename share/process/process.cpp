@@ -168,7 +168,7 @@ namespace process
 
       while (fd != -1)
         {
-          const int r (read (fd, buf, PIPE_BUF));
+          const ssize_t r (read (fd, buf, PIPE_BUF));
 
           if (r < 0)
             {
@@ -204,7 +204,7 @@ namespace process
           const std::size_t to_read
             (std::min (std::size_t (PIPE_BUF), max_size - bytes_read));
 
-          const int r (read (fd, buf, to_read));
+          const ssize_t r (read (fd, buf, to_read));
 
           if (r < 0)
             {
@@ -258,7 +258,7 @@ namespace process
           const std::size_t to_write
             (std::min (std::size_t (PIPE_BUF), bytes_left));
 
-          const int w (write (fd, buf, to_write));
+          const ssize_t w (write (fd, buf, to_write));
 
           if (w < 0)
             {
