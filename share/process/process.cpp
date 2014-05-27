@@ -377,8 +377,6 @@ namespace process
                                   , std::size_t bytes_left
                                   )
     {
-      detail::fifo (filename);
-
       return new boost::thread ( thread::writer_from_file
                                , std::ref (barrier)
                                , filename
@@ -394,8 +392,6 @@ namespace process
                                   , std::size_t & bytes_read
                                   )
     {
-      detail::fifo (filename);
-
       return new boost::thread ( thread::reader_from_file
                                , std::ref (barrier)
                                , filename
@@ -487,6 +483,8 @@ namespace process
       {
         std::string filename (detail::tempname());
 
+        detail::fifo (filename);
+
         writers.add_thread (start::writer ( writer_barrier
                                           , file_input->buf()
                                           , filename
@@ -519,6 +517,8 @@ namespace process
         )
       {
         std::string filename (detail::tempname());
+
+        detail::fifo (filename);
 
         readers.add_thread (start::reader ( reader_barrier
                                           , file_output->buf()
