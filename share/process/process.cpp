@@ -344,8 +344,6 @@ namespace process
     {
       int ec = 0;
 
-      do
-        {
           filename = detail::tempname ();
 
           ec = mkfifo (filename.c_str(), S_IWUSR | S_IRUSR);
@@ -355,8 +353,6 @@ namespace process
             unlink (filename.c_str ());
             detail::do_error ("mkfifo failed", filename);
           }
-        }
-      while (ec != 0);
     }
 
     struct tempfile_t : boost::noncopyable
