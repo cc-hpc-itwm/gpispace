@@ -340,10 +340,8 @@ namespace process
       return fname;
     }
 
-    static void fifo (std::string & filename)
+    static void fifo (std::string const& filename)
     {
-          filename = detail::tempname ();
-
           if (mkfifo (filename.c_str(), S_IWUSR | S_IRUSR) != 0)
           {
             unlink (filename.c_str ());
@@ -375,7 +373,7 @@ namespace process
   {
     static boost::thread * writer ( boost::barrier & barrier
                                   , const void * buf
-                                  , std::string & filename
+                                  , std::string const& filename
                                   , std::size_t bytes_left
                                   )
     {
@@ -391,7 +389,7 @@ namespace process
 
     static boost::thread * reader ( boost::barrier & barrier
                                   , void * buf
-                                  , std::string & filename
+                                  , std::string const& filename
                                   , const std::size_t max_size
                                   , std::size_t & bytes_read
                                   )
@@ -487,7 +485,7 @@ namespace process
         ; ++file_input
         )
       {
-        std::string filename;
+        std::string filename (detail::tempname());
 
         writers.add_thread (start::writer ( writer_barrier
                                           , file_input->buf()
@@ -520,7 +518,7 @@ namespace process
         ; ++file_output, ++i
         )
       {
-        std::string filename;
+        std::string filename (detail::tempname());
 
         readers.add_thread (start::reader ( reader_barrier
                                           , file_output->buf()
