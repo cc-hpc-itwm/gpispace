@@ -342,13 +342,9 @@ namespace process
 
     static void fifo (std::string & filename)
     {
-      int ec = 0;
-
           filename = detail::tempname ();
 
-          ec = mkfifo (filename.c_str(), S_IWUSR | S_IRUSR);
-
-          if (ec != 0)
+          if (mkfifo (filename.c_str(), S_IWUSR | S_IRUSR) != 0)
           {
             unlink (filename.c_str ());
             detail::do_error ("mkfifo failed", filename);
