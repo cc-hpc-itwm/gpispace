@@ -361,10 +361,6 @@ namespace process
 
     struct tempfile_t
     {
-      tempfile_t ()
-        : m_path ()
-      {}
-
       explicit
       tempfile_t (std::string const &p)
         : m_path (p)
