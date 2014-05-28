@@ -163,7 +163,8 @@ namespace process
       {
         if (i != sync_pc[RD] && i != sync_cp[WR])
         {
-          close (i);
+          int fd (i);
+          try_close (&fd);
         }
       }
     }
