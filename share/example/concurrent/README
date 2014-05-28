@@ -49,7 +49,7 @@ The commands
 [source, bash]
 ----
 share/gspc/example/concurrent $ BUILDDIR=$(mktemp -d)
-share/gspc/example/concurrent $ make -f /var/tmp/mr/inst/share/sdpa/make/common.mk PUT_PORT="N=1000L" MAIN=concurrent BUILDDIR=${BUILDDIR} run | grep call_count
+share/gspc/example/concurrent $ make -f ${SDPA_HOME}/share/sdpa/make/common.mk PUT_PORT="N=1000L" MAIN=concurrent BUILDDIR=${BUILDDIR} run | grep call_count
 ----
 
 will start the example workflow and produce output similar to
@@ -66,13 +66,13 @@ All four transitions have fired more or less 250 times and the sum of all firing
 
 [source, bash]
 ----
-share/gspc/example/concurrent $ make -f /var/tmp/mr/inst/share/sdpa/make/common.mk PUT_PORT="N=1000L" MAIN=concurrent BUILDDIR=${BUILDDIR} run | grep call_count
+share/gspc/example/concurrent $ make -f ${SDPA_HOME}/share/sdpa/make/common.mk PUT_PORT="N=1000L" MAIN=concurrent BUILDDIR=${BUILDDIR} run | grep call_count
 sum_call_count => 1000L
 call_count_D => 232L
 call_count_C => 233L
 call_count_B => 272L
 call_count_A => 263L
-share/gspc/example/concurrent $ make -f /var/tmp/mr/inst/share/sdpa/make/common.mk PUT_PORT="N=1000L" MAIN=concurrent BUILDDIR=${BUILDDIR} run | grep call_count
+share/gspc/example/concurrent $ make -f ${SDPA_HOME}/share/sdpa/make/common.mk PUT_PORT="N=1000L" MAIN=concurrent BUILDDIR=${BUILDDIR} run | grep call_count
 sum_call_count => 1000L
 call_count_D => 249L
 call_count_C => 243L
@@ -86,7 +86,7 @@ Runs with higher numbers of tokens make clear that all four transitions have the
 
 [source,makefile]
 ----
-share/gspc/example/concurrent $ make -f $SDPA_HOME/share/sdpa/make/common.mk PUT_PORT="N=1000000L" MAIN=concurrent BUILDDIR=${BUILDDIR} -B run | grep call_count
+share/gspc/example/concurrent $ make -f ${SDPA_HOME}/share/sdpa/make/common.mk PUT_PORT="N=1000000L" MAIN=concurrent BUILDDIR=${BUILDDIR} -B run | grep call_count
 sum_call_count => 1000000L
 call_count_D => 250498L
 call_count_C => 250143L
@@ -160,7 +160,7 @@ That allows to use the sum of the ids as a second control parameter. The call
 
 [source, bash]
 ----
-share/gspc/example/concurrent $ make -f /var/tmp/mr/inst/share/sdpa/make/common.mk PUT_PORT="N=10000L" MAIN=concurrent BUILDDIR=${BUILDDIR} -B run WE_EXEC_WORKER=12 | grep "call_count\|sum_ids"
+share/gspc/example/concurrent $ make -f ${SDPA_HOME}/share/sdpa/make/common.mk PUT_PORT="N=10000L" MAIN=concurrent BUILDDIR=${BUILDDIR} -B run WE_EXEC_WORKER=12 | grep "call_count\|sum_ids"
 ----
 
 produces output like
