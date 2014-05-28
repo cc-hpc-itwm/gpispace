@@ -185,13 +185,13 @@ namespace process
 
       bytes_read = 0;
 
-      while (fd != -1)
+      for (;;)
         {
           const ssize_t r (fhg::syscall::read (fd, buf.data(), PIPE_BUF));
 
           if (r == 0)
             {
-              fd = -1;
+              break;
             }
           else
             {
@@ -212,7 +212,7 @@ namespace process
 
       bytes_read = 0;
 
-      while (fd != -1)
+      for (;;)
         {
           const std::size_t to_read
             (std::min (std::size_t (PIPE_BUF), max_size - bytes_read));
@@ -221,7 +221,7 @@ namespace process
 
           if (r == 0)
             {
-              fd = -1;
+              break;
             }
           else
             {
