@@ -78,10 +78,7 @@ namespace process
 
     inline void do_close (int * fd)
     {
-      if (close (*fd) < 0)
-        {
-          do_error("close failed");
-        }
+      fhg::syscall::close (*fd);
 
       *fd = -1;
     }
@@ -90,7 +87,18 @@ namespace process
 
     inline void try_close (int * fd)
     {
-      close (*fd);
+      try
+      {
+        fhg::syscall::close (*fd);
+      }
+      catch (boost::system::system_error const& err)
+      {
+        if (err.code() != boost::system::errc::bad_file_descriptor)
+        {
+          throw;
+        }
+        // ignore: fd wasn't open
+      }
 
       *fd = -1;
     }
