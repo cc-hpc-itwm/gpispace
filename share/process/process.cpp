@@ -187,13 +187,9 @@ namespace process
 
       while (fd != -1)
         {
-          const ssize_t r (read (fd, buf.data(), PIPE_BUF));
+          const ssize_t r (fhg::syscall::read (fd, buf.data(), PIPE_BUF));
 
-          if (r < 0)
-            {
-              detail::do_error ("circ read failed", errno);
-            }
-          else if (r == 0)
+          if (r == 0)
             {
               fd = -1;
             }
@@ -221,14 +217,9 @@ namespace process
           const std::size_t to_read
             (std::min (std::size_t (PIPE_BUF), max_size - bytes_read));
 
-          const ssize_t r (read (fd, buf, to_read));
+          const ssize_t r (fhg::syscall::read (fd, buf, to_read));
 
-          if (r < 0)
-            {
-              detail::do_error ("read from stdout failed", errno);
-              break;
-            }
-          else if (r == 0)
+          if (r == 0)
             {
               fd = -1;
             }
