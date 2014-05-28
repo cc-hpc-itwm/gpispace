@@ -102,7 +102,7 @@ namespace process
     /* ********************************************************************* */
 
     inline void prepare_parent_pipes
-      (int in[2], int out[2], int err[2], int sync_pc[2], int sync_cp[2])
+      (int out[2], int err[2], int sync_pc[2], int sync_cp[2])
     {
       do_close (out + WR);
       do_close (err + WR);
@@ -713,8 +713,7 @@ namespace process
     else
       {
         // parent
-        detail::prepare_parent_pipes ( in
-                                     , out
+        detail::prepare_parent_pipes ( out
                                      , err
                                      , synchronization_fd_parent_child
                                      , synchronization_fd_child_parent
