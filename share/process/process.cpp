@@ -19,6 +19,7 @@
 #include <boost/thread/barrier.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 #include <fhg/syscall.hpp>
 #include <fhg/util/split.hpp>
@@ -465,12 +466,9 @@ namespace process
 
       ~param_map ()
       {
-        for ( param_map_t::const_iterator param (_map.begin())
-            ; param != _map.end()
-            ; ++param
-            )
+        for (std::string entry : _map | boost::adaptors::map_values)
           {
-            unlink (param->second.c_str());
+            unlink (entry.c_str());
           }
       }
     };
@@ -505,25 +503,22 @@ namespace process
     tempfile_list_t tempfiles;
 
     boost::barrier writer_barrier (1 + files_input.size ());
-    for ( file_const_buffer_list::const_iterator file_input (files_input.begin())
-        ; file_input != files_input.end()
-        ; ++file_input
-        )
+    for (file_const_buffer const& file_input : files_input)
       {
         std::string filename (detail::tempname());
 
         detail::fifo (filename);
 
         writers.add_thread (start::writer ( writer_barrier
-                                          , file_input->buf()
+                                          , file_input.buf()
                                           , filename
-                                          , file_input->size()
+                                          , file_input.size()
                                           )
                            );
         tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
         try
         {
-          param_map[file_input->param()] = filename;
+          param_map[file_input.param()] = filename;
         }
         catch (...)
         {
@@ -540,19 +535,16 @@ namespace process
     std::size_t i (0);
 
     boost::barrier reader_barrier (1 + files_output.size ());
-    for ( file_buffer_list::const_iterator file_output (files_output.begin())
-        ; file_output != files_output.end()
-        ; ++file_output, ++i
-        )
+    for (file_buffer const& file_output : files_output)
       {
         std::string filename (detail::tempname());
 
         detail::fifo (filename);
 
         readers.add_thread (start::reader ( reader_barrier
-                                          , file_output->buf()
+                                          , file_output.buf()
                                           , filename
-                                          , file_output->size()
+                                          , file_output.size()
                                           , ret.bytes_read_files_output[i]
                                           )
                            );
@@ -560,7 +552,7 @@ namespace process
         tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
         try
         {
-          param_map[file_output->param()] = filename;
+          param_map[file_output.param()] = filename;
         }
         catch (...)
         {
@@ -568,6 +560,7 @@ namespace process
           readers.join_all ();
           throw;
         }
+        ++i;
       }
 
     reader_barrier.wait ();
@@ -580,21 +573,19 @@ namespace process
 
     {
       std::size_t idx (0);
-      for ( std::list<std::string>::const_iterator it (cmdline.begin())
-          ; it != cmdline.end()
-          ; ++it, ++idx
-          )
+      for (std::string raw_param : cmdline)
         {
-          const detail::param_map::const_iterator repl (param_map.find (*it));
+          const detail::param_map::const_iterator repl (param_map.find (raw_param));
 
           const std::string param ( (repl != param_map.end())
                                   ? std::string (repl->second)
-                                  : *it
+                                  : raw_param
                                   );
 
           av[idx] = new char[param.size()+1];
           memcpy(av[idx], param.c_str(), param.size());
           av[idx][param.size()] = '\0';
+          ++idx;
         }
     }
 
@@ -784,12 +775,7 @@ namespace process
       }
 
     {
-      std::size_t idx (0);
-
-      for ( std::list<std::string>::const_iterator it (cmdline.begin())
-          ; it != cmdline.end()
-          ; ++it, ++idx
-          )
+      for (std::size_t idx (0); idx < cmdline.size(); ++idx)
         {
           delete[] av[idx];
         }
