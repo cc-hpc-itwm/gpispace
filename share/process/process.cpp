@@ -103,7 +103,6 @@ namespace process
     inline void prepare_parent_pipes
       (int in[2], int out[2], int err[2], int sync_pc[2], int sync_cp[2])
     {
-      do_close (in + RD);
       do_close (out + WR);
       do_close (err + WR);
       do_close (sync_pc + RD);
@@ -259,8 +258,24 @@ namespace process
     static void writer ( int fd
                        , const void * input
                        , std::size_t bytes_left
+                       , std::size_t* written = nullptr
                        )
     {
+      struct maybe_try_close_on_scope_exit_t : boost::noncopyable
+      {
+        maybe_try_close_on_scope_exit_t (int* fd)
+          : _fd (fd)
+        {}
+        ~maybe_try_close_on_scope_exit_t()
+        {
+          if (*_fd != -1)
+          {
+            detail::try_close (_fd);
+          }
+        }
+        int* _fd;
+      } const maybe_try_close_on_scope_exit (&fd);
+
       const char * buf (static_cast<const char*> (input));
 
       while (fd != -1 && bytes_left > 0)
@@ -272,6 +287,12 @@ namespace process
 
           if (w < 0)
             {
+              if (errno == EPIPE)
+              {
+                fd = -1;
+                break;
+              }
+
               detail::do_error ("write stdin failed", errno);
             }
           else if (w == 0)
@@ -281,14 +302,12 @@ namespace process
           else
             {
               buf += w;
+              if (written) *written += w;
               bytes_left -= w;
             }
-        }
 
-      if (fd != -1)
-      {
-        detail::try_close(&fd);
-      }
+          boost::this_thread::interruption_point();
+        }
     }
 
     static void writer_from_file ( boost::barrier & barrier
@@ -580,6 +599,7 @@ namespace process
     }
 
     ret.exit_code = 255;
+    ret.bytes_written_stdin = 0;
     ret.bytes_read_stdout = 0;
     ret.bytes_read_stderr = 0;
 
@@ -676,10 +696,12 @@ namespace process
         }
 
         boost::thread thread_buf_stdin
-          ( [&buf_stdin, &in]
+          ( [&buf_stdin, &in, &ret]
           {
-            thread::writer
-              (in[detail::WR], buf_stdin.buf(), buf_stdin.size());
+            thread::writer ( in[detail::WR]
+                           , buf_stdin.buf(), buf_stdin.size()
+                           , &ret.bytes_written_stdin
+                           );
           }
           );
 
@@ -718,6 +740,23 @@ namespace process
         int status (0);
 
         waitpid (pid, &status, 0);
+
+        thread_buf_stdin.interrupt();
+
+        {
+          ssize_t still_unconsumed (0);
+
+          char buffer[PIPE_BUF];
+          bool try_read (true);
+          while (try_read)
+          {
+            const ssize_t consumed
+              (fhg::syscall::read (in[detail::RD], buffer, sizeof (buffer)));
+            try_read = consumed > 0;
+            still_unconsumed += consumed;
+          }
+          ret.bytes_written_stdin -= still_unconsumed;
+        }
 
         thread_buf_stdin.join();
         thread_buf_stdout.join();

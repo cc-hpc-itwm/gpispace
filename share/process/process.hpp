@@ -69,13 +69,15 @@ namespace process
     typedef std::size_t size_type;
     typedef std::vector<size_type> size_list_type;
 
+    size_type bytes_written_stdin;
     size_type bytes_read_stdout;
     size_type bytes_read_stderr;
     size_list_type bytes_read_files_output;
     int exit_code;
 
     execute_return_type ()
-      : bytes_read_stdout (0)
+      : bytes_written_stdin (0)
+      , bytes_read_stdout (0)
       , bytes_read_stderr (0)
       , bytes_read_files_output (0)
       , exit_code (0)
