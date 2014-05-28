@@ -5,6 +5,8 @@
 
 #include <process.hpp>
 
+#include <fhg/util/boost/test/printer/vector.hpp>
+
 BOOST_AUTO_TEST_CASE (process_all)
 {
   BOOST_REQUIRE_GT (boost::unit_test::framework::master_test_suite().argc, 1);
@@ -49,6 +51,8 @@ BOOST_AUTO_TEST_CASE (process_all)
                        )
     );
 
+  BOOST_REQUIRE_EQUAL (ret.bytes_written_stdin, 5);
+
   BOOST_REQUIRE_EQUAL (ret.bytes_read_stdout, 7);
   BOOST_REQUIRE_EQUAL (out_stdout[0], 'a');
   BOOST_REQUIRE_EQUAL (out_stdout[1], 'b');
@@ -57,6 +61,12 @@ BOOST_AUTO_TEST_CASE (process_all)
   BOOST_REQUIRE_EQUAL (out_stdout[4], 'e');
   BOOST_REQUIRE_EQUAL (out_stdout[5], 'f');
   BOOST_REQUIRE_EQUAL (out_stdout[6], 'g');
+
+  {
+    process::execute_return_type::size_list_type sizes
+      {file1.size(), file2.size()};
+    BOOST_REQUIRE_EQUAL (ret.bytes_written_files_input, sizes);
+  }
 
   BOOST_REQUIRE_EQUAL (ret.bytes_read_files_output.size(), 2);
 

@@ -37,8 +37,14 @@ BOOST_AUTO_TEST_CASE (process_file_input)
                       )
     );
 
+  BOOST_REQUIRE_EQUAL (ret.bytes_written_stdin, 0);
   BOOST_REQUIRE_EQUAL (ret.bytes_read_stdout, 10);
   BOOST_REQUIRE_EQUAL (ret.bytes_read_stderr, 0);
+  {
+    process::execute_return_type::size_list_type sizes
+      {file1.size(), file2.size()};
+    BOOST_REQUIRE_EQUAL (ret.bytes_written_files_input, sizes);
+  }
   BOOST_REQUIRE_EQUAL ( ret.bytes_read_files_output
                       , process::execute_return_type::size_list_type()
                       );

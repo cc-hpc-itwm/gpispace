@@ -34,8 +34,10 @@ BOOST_AUTO_TEST_CASE (no_such_file_or_directory)
                      , m_input_files
                      , m_output_files
                      );
-
   BOOST_REQUIRE_EQUAL (result.exit_code, 127);
+  BOOST_REQUIRE_EQUAL (result.bytes_written_stdin, 0);
+  BOOST_REQUIRE_EQUAL (result.bytes_read_stdout, 0);
+  BOOST_REQUIRE_EQUAL (result.bytes_read_stderr, 0);
 }
 
 BOOST_AUTO_TEST_CASE (not_executable)
@@ -50,6 +52,9 @@ BOOST_AUTO_TEST_CASE (not_executable)
                      , m_output_files
                      );
   BOOST_REQUIRE_EQUAL (result.exit_code, 126);
+  BOOST_REQUIRE_EQUAL (result.bytes_written_stdin, 0);
+  BOOST_REQUIRE_EQUAL (result.bytes_read_stdout, 0);
+  BOOST_REQUIRE_EQUAL (result.bytes_read_stderr, 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
