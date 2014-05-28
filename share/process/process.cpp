@@ -315,6 +315,7 @@ namespace process
                                  , const std::string & filename
                                  , const void * buf
                                  , std::size_t bytes_left
+                                 , std::size_t* bytes_written
                                  )
     {
       barrier.wait ();
@@ -326,7 +327,7 @@ namespace process
           detail::do_error ("open file " + filename + "for writing failed", errno);
         }
 
-      thread::writer (fd, buf, bytes_left);
+      thread::writer (fd, buf, bytes_left, bytes_written);
 
       close (fd);
     }
@@ -405,6 +406,7 @@ namespace process
                                   , const void * buf
                                   , std::string const& filename
                                   , std::size_t bytes_left
+                                  , std::size_t* bytes_written
                                   )
     {
       return new boost::thread ( thread::writer_from_file
@@ -412,6 +414,7 @@ namespace process
                                , filename
                                , buf
                                , bytes_left
+                               , bytes_written
                                );
     }
 
@@ -476,6 +479,41 @@ namespace process
 
   /* *********************************************************************** */
 
+  namespace
+  {
+    std::size_t consume_everything (int fd)
+    {
+      std::size_t consumed_accum (0);
+
+      char buffer[PIPE_BUF];
+      for (;;)
+      {
+        try
+        {
+          const ssize_t consumed (fhg::syscall::read (fd, buffer, sizeof (buffer)));
+
+          if (consumed == 0)
+          {
+            break;
+          }
+
+          consumed_accum += consumed;
+        }
+        catch (boost::system::system_error const& err)
+        {
+          //! \note if fd is nonblocking and there is nothing to read
+          if (err.code() == boost::system::errc::resource_unavailable_try_again)
+          {
+            break;
+          }
+          throw;
+        }
+      }
+
+      return consumed_accum;
+    }
+  }
+
   execute_return_type execute ( std::string const & command
                               , const_buffer const & buf_stdin
                               , buffer const & buf_stdout
@@ -502,6 +540,10 @@ namespace process
     boost::thread_group readers;
     tempfile_list_t tempfiles;
 
+    ret.bytes_written_files_input.resize (files_input.size());
+
+    std::size_t writer_i (0);
+
     boost::barrier writer_barrier (1 + files_input.size ());
     for (file_const_buffer const& file_input : files_input)
       {
@@ -509,12 +551,14 @@ namespace process
 
         detail::fifo (filename);
 
-        writers.add_thread (start::writer ( writer_barrier
-                                          , file_input.buf()
-                                          , filename
-                                          , file_input.size()
-                                          )
-                           );
+        writers.add_thread
+          (start::writer ( writer_barrier
+                         , file_input.buf()
+                         , filename
+                         , file_input.size()
+                         , &ret.bytes_written_files_input[writer_i]
+                         )
+          );
         tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
         try
         {
@@ -526,13 +570,14 @@ namespace process
           writers.join_all ();
           throw;
         }
+        ++writer_i;
       }
 
     writer_barrier.wait ();
 
     ret.bytes_read_files_output.resize (files_output.size());
 
-    std::size_t i (0);
+    std::size_t reader_i (0);
 
     boost::barrier reader_barrier (1 + files_output.size ());
     for (file_buffer const& file_output : files_output)
@@ -545,7 +590,7 @@ namespace process
                                           , file_output.buf()
                                           , filename
                                           , file_output.size()
-                                          , ret.bytes_read_files_output[i]
+                                          , ret.bytes_read_files_output[reader_i]
                                           )
                            );
 
@@ -560,7 +605,7 @@ namespace process
           readers.join_all ();
           throw;
         }
-        ++i;
+        ++reader_i;
       }
 
     reader_barrier.wait ();
@@ -734,28 +779,48 @@ namespace process
 
         thread_buf_stdin.interrupt();
 
+        //! \note first consume, then subtract: bytes_written_stdin still
+        //! grows while consuming!
         {
-          ssize_t still_unconsumed (0);
-
-          char buffer[PIPE_BUF];
-          bool try_read (true);
-          while (try_read)
-          {
-            const ssize_t consumed
-              (fhg::syscall::read (in[detail::RD], buffer, sizeof (buffer)));
-            try_read = consumed > 0;
-            still_unconsumed += consumed;
-          }
-          ret.bytes_written_stdin -= still_unconsumed;
+          const std::size_t consumed (consume_everything (in[detail::RD]));
+          ret.bytes_written_stdin -= consumed;
         }
 
         thread_buf_stdin.join();
         thread_buf_stdout.join();
         thread_buf_stderr.join();
 
+        writers.interrupt_all();
+
+        {
+          std::size_t i (0);
+          for (file_const_buffer const& file_input : files_input)
+          {
+            struct scoped_file
+            {
+              scoped_file (const char* name)
+                : _fd (fhg::syscall::open (name, O_RDONLY | O_NONBLOCK))
+              {}
+              ~scoped_file()
+              {
+                fhg::syscall::close (_fd);
+              }
+              int _fd;
+            } file (param_map.find (file_input.param())->second.c_str());
+
+            {
+              const std::size_t consumed (consume_everything (file._fd));
+              ret.bytes_written_files_input[i] -= consumed;
+            }
+
+            ++i;
+          }
+        }
+
         writers.join_all();
         readers.join_all();
 
+        fhg::syscall::close (in[detail::RD]);
         detail::try_close (in + detail::WR);
         detail::try_close (out + detail::RD);
         detail::try_close (err + detail::RD);

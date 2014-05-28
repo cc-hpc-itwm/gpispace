@@ -72,6 +72,7 @@ namespace process
     size_type bytes_written_stdin;
     size_type bytes_read_stdout;
     size_type bytes_read_stderr;
+    size_list_type bytes_written_files_input;
     size_list_type bytes_read_files_output;
     int exit_code;
 
@@ -79,6 +80,7 @@ namespace process
       : bytes_written_stdin (0)
       , bytes_read_stdout (0)
       , bytes_read_stderr (0)
+      , bytes_written_files_input (0)
       , bytes_read_files_output (0)
       , exit_code (0)
     {}
