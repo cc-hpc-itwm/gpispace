@@ -131,7 +131,7 @@ namespace process
 
       if (in[RD] != STDIN_FILENO)
         {
-          if (dup2 (in[RD], STDIN_FILENO) != STDIN_FILENO)
+          if (fhg::syscall::dup (in[RD], STDIN_FILENO) != STDIN_FILENO)
             {
               do_error ("dup to stdin failed");
             }
@@ -141,7 +141,7 @@ namespace process
 
       if (out[WR] != STDOUT_FILENO)
         {
-          if (dup2 (out[WR], STDOUT_FILENO) != STDOUT_FILENO)
+          if (fhg::syscall::dup (out[WR], STDOUT_FILENO) != STDOUT_FILENO)
             {
               do_error ("dup to stdout failed");
             }
@@ -151,7 +151,7 @@ namespace process
 
       if (err[WR] != STDERR_FILENO)
         {
-          if (dup2 (err[WR], STDERR_FILENO) != STDERR_FILENO)
+          if (fhg::syscall::dup (err[WR], STDERR_FILENO) != STDERR_FILENO)
             {
               do_error ("dup to stderr failed");
             }
