@@ -181,13 +181,13 @@ namespace process
                                 , std::size_t & bytes_read
                                 )
     {
-      char * buf (new char[PIPE_BUF]);
+      std::vector<char> buf (PIPE_BUF);
 
       bytes_read = 0;
 
       while (fd != -1)
         {
-          const ssize_t r (read (fd, buf, PIPE_BUF));
+          const ssize_t r (read (fd, buf.data(), PIPE_BUF));
 
           if (r < 0)
             {
@@ -201,11 +201,9 @@ namespace process
             {
               bytes_read += r;
 
-              std::copy (buf, buf + r, std::back_inserter (circ_buf));
+              std::copy (buf.data(), buf.data() + r, std::back_inserter (circ_buf));
             }
         }
-
-      delete[] buf;
     }
 
     static void reader ( int fd
