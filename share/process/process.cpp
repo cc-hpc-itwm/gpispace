@@ -395,6 +395,8 @@ namespace process
           ( new boost::thread
             ([filename, file_input, &ret, writer_i]
             {
+              scoped_SIGPIPE_block const sigpipe_block;
+
               scoped_file const file
                 (filename.c_str(), O_WRONLY);
 
@@ -437,8 +439,6 @@ namespace process
         param_map.emplace (file_output.param(), filename);
         ++reader_i;
       }
-
-    scoped_SIGPIPE_block const sigpipe_block;
 
     int synchronization_fd_parent_child[2] = { -1, -1 };
     int synchronization_fd_child_parent[2] = { -1, -1 };
@@ -539,6 +539,8 @@ namespace process
       boost::thread thread_buf_stdin
         ( [&buf_stdin, &in, &ret]
         {
+          scoped_SIGPIPE_block const sigpipe_block;
+
           close_on_scope_exit const _ (in[detail::WR]);
           thread::writer ( in[detail::WR]
                          , buf_stdin.buf(), buf_stdin.size()
