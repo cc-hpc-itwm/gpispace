@@ -399,11 +399,9 @@ namespace process
     pid_t pid;
 
     int in[2], out[2], err[2];
-
-    if ((pipe (in) < 0) || (pipe (out) < 0) || (pipe (err) < 0))
-      {
-        detail::do_error ("pipe failed");
-      }
+    fhg::syscall::pipe (in);
+    fhg::syscall::pipe (out);
+    fhg::syscall::pipe (err);
 
     {
       std::set<std::string> seen_params;
