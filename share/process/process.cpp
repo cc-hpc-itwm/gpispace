@@ -392,7 +392,7 @@ namespace process
                               , file_buffer_list const & files_output
                               )
   {
-    typedef boost::shared_ptr<detail::tempfile_t> tempfile_ptr;
+    typedef std::unique_ptr<detail::tempfile_t> tempfile_ptr;
     typedef std::list<tempfile_ptr> tempfile_list_t;
     execute_return_type ret;
 
