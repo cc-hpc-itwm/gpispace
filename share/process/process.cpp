@@ -240,12 +240,7 @@ namespace process
     {
       barrier.wait ();
 
-      int fd (open (filename.c_str(), O_RDONLY));
-
-      if (fd == -1)
-        {
-          detail::do_error ("open file " + filename + " for reading failed", errno);
-        }
+      int fd (fhg::syscall::open (filename.c_str(), O_RDONLY));
 
       thread::reader (fd, buf, max_size, bytes_read);
 
@@ -318,12 +313,7 @@ namespace process
     {
       barrier.wait ();
 
-      int fd (open (filename.c_str(), O_WRONLY));
-
-      if (fd == -1)
-        {
-          detail::do_error ("open file " + filename + "for writing failed", errno);
-        }
+      int fd (fhg::syscall::open (filename.c_str(), O_WRONLY));
 
       thread::writer (fd, buf, bytes_left, bytes_written);
 
