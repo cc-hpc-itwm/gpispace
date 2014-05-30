@@ -33,35 +33,6 @@ namespace process
 {
   namespace detail
   {
-    /* ********************************************************************* */
-
-    template<typename T>
-      inline void do_error (const std::string & msg, T x)
-    {
-      std::ostringstream sstr;
-
-      sstr << msg << ": " << x;
-
-      do_error (sstr.str(), errno);
-    }
-
-    template<>
-      inline void do_error<int> (const std::string & msg, int err)
-    {
-      std::ostringstream sstr;
-
-      sstr << msg << ": " << strerror (err);
-
-      throw std::runtime_error (sstr.str());
-    }
-
-    inline void do_error (const std::string & msg)
-    {
-      do_error (msg, errno);
-    }
-
-    /* ********************************************************************* */
-
     inline void try_close (int fd)
     {
       try
