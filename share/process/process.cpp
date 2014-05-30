@@ -382,13 +382,7 @@ namespace process
                               )
   {
     typedef std::list<std::unique_ptr<detail::tempfifo_t>> tempfifo_list_t;
-    execute_return_type ret;
-    ret.bytes_written_files_input.resize (files_input.size());
-    ret.bytes_read_files_output.resize (files_output.size());
-    ret.exit_code = 255;
-    ret.bytes_written_stdin = 0;
-    ret.bytes_read_stdout = 0;
-    ret.bytes_read_stderr = 0;
+    execute_return_type ret (files_input.size(), files_output.size());
 
     pid_t pid;
 

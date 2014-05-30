@@ -25,15 +25,14 @@ BOOST_FIXTURE_TEST_SUITE( suite, F )
 
 BOOST_AUTO_TEST_CASE (no_such_file_or_directory)
 {
-  process::execute_return_type result;
-
-  result =
-    process::execute ( "no.such.file.373f5565-a8f4-42de-a515-9271812fedd6"
-                     , process::const_buffer (m_input, max_buffer_length)
-                     , process::buffer (m_output, max_buffer_length)
-                     , m_input_files
-                     , m_output_files
-                     );
+  process::execute_return_type result
+    ( process::execute ( "no.such.file.373f5565-a8f4-42de-a515-9271812fedd6"
+                       , process::const_buffer (m_input, max_buffer_length)
+                       , process::buffer (m_output, max_buffer_length)
+                       , m_input_files
+                       , m_output_files
+                       )
+    );
   BOOST_REQUIRE_EQUAL (result.exit_code, 127);
   BOOST_REQUIRE_EQUAL (result.bytes_written_stdin, 0);
   BOOST_REQUIRE_EQUAL (result.bytes_read_stdout, 0);
@@ -42,15 +41,14 @@ BOOST_AUTO_TEST_CASE (no_such_file_or_directory)
 
 BOOST_AUTO_TEST_CASE (not_executable)
 {
-  process::execute_return_type result;
-
-  result =
-    process::execute ( "/etc/passwd"
-                     , process::const_buffer (m_input, max_buffer_length)
-                     , process::buffer (m_output, max_buffer_length)
-                     , m_input_files
-                     , m_output_files
-                     );
+  process::execute_return_type result
+    ( process::execute ( "/etc/passwd"
+                       , process::const_buffer (m_input, max_buffer_length)
+                       , process::buffer (m_output, max_buffer_length)
+                       , m_input_files
+                       , m_output_files
+                       )
+    );
   BOOST_REQUIRE_EQUAL (result.exit_code, 126);
   BOOST_REQUIRE_EQUAL (result.bytes_written_stdin, 0);
   BOOST_REQUIRE_EQUAL (result.bytes_read_stdout, 0);
