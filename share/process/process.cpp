@@ -22,6 +22,7 @@
 #include <boost/range/adaptor/map.hpp>
 
 #include <fhg/syscall.hpp>
+#include <fhg/util/make_unique.hpp>
 #include <fhg/util/split.hpp>
 
 #include <process.hpp>
@@ -421,7 +422,8 @@ namespace process
       {
         std::string filename (detail::tempname());
 
-        tempfifos.push_back (tempfifo_ptr (new detail::tempfifo_t (filename)));
+        tempfifos.emplace_back
+          (fhg::util::make_unique<detail::tempfifo_t> (filename));
 
         writers.add_thread
           ( new boost::thread
@@ -449,7 +451,8 @@ namespace process
       {
         std::string filename (detail::tempname());
 
-        tempfifos.push_back (tempfifo_ptr (new detail::tempfifo_t (filename)));
+        tempfifos.emplace_back
+          (fhg::util::make_unique<detail::tempfifo_t> (filename));
 
         readers.add_thread
           ( new boost::thread
