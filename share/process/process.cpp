@@ -471,7 +471,7 @@ namespace process
       (fhg::util::split<std::string, std::string> (command, ' '));
 
     char ** av = new char*[cmdline.size()+1];
-    av[cmdline.size()] = (char*)(nullptr);
+    av[cmdline.size()] = nullptr;
 
     {
       std::size_t idx (0);
