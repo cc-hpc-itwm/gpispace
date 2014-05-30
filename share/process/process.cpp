@@ -33,24 +33,6 @@ namespace process
 {
   namespace detail
   {
-    inline void try_close (int fd)
-    {
-      try
-      {
-        fhg::syscall::close (fd);
-      }
-      catch (boost::system::system_error const& err)
-      {
-        if (err.code() != boost::system::errc::bad_file_descriptor)
-        {
-          throw;
-        }
-        // ignore: fd wasn't open
-      }
-    }
-
-    /* ********************************************************************* */
-
     enum {RD = 0, WR = 1};
 
     /* ********************************************************************* */
@@ -98,7 +80,18 @@ namespace process
       {
         if (i != sync_pc[RD] && i != sync_cp[WR])
         {
-          try_close (i);
+          try
+          {
+            fhg::syscall::close (i);
+          }
+          catch (boost::system::system_error const& err)
+          {
+            if (err.code() != boost::system::errc::bad_file_descriptor)
+            {
+              throw;
+            }
+            // ignore: fd wasn't open
+          }
         }
       }
     }
