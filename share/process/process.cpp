@@ -1,33 +1,32 @@
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
+#include <process.hpp>
 
+#include <fhg/syscall.hpp>
+#include <fhg/util/make_unique.hpp>
+#include <fhg/util/split.hpp>
+
+#include <boost/filesystem.hpp>
+#include <boost/range/adaptor/map.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
+#include <boost/thread/barrier.hpp>
+
+#include <errno.h>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
 
-#include <boost/thread.hpp>
-#include <boost/thread/barrier.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/range/adaptor/map.hpp>
-
-#include <fhg/syscall.hpp>
-#include <fhg/util/make_unique.hpp>
-#include <fhg/util/split.hpp>
-
-#include <process.hpp>
-
-#include <functional>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 namespace process
 {
@@ -41,7 +40,7 @@ namespace process
     }
 
     template<typename T>
-    inline void put_error (const std::string & msg, T x)
+      inline void put_error (const std::string & msg, T x)
     {
       std::ostringstream sstr;
 
@@ -51,7 +50,7 @@ namespace process
     }
 
     template<typename T>
-    inline void do_error (const std::string & msg, T x)
+      inline void do_error (const std::string & msg, T x)
     {
       std::ostringstream sstr;
 
@@ -61,8 +60,8 @@ namespace process
     }
 
     template<>
-    inline void do_error<int> (const std::string & msg, int err)
-   {
+      inline void do_error<int> (const std::string & msg, int err)
+    {
       std::ostringstream sstr;
 
       sstr << msg << ": " << strerror (err);
@@ -120,22 +119,22 @@ namespace process
       fhg::syscall::close (sync_cp[RD]);
 
       if (in[RD] != STDIN_FILENO)
-        {
-          fhg::syscall::dup (in[RD], STDIN_FILENO);
-          fhg::syscall::close (in[RD]);
-        }
+      {
+        fhg::syscall::dup (in[RD], STDIN_FILENO);
+        fhg::syscall::close (in[RD]);
+      }
 
       if (out[WR] != STDOUT_FILENO)
-        {
-          fhg::syscall::dup (out[WR], STDOUT_FILENO);
-          fhg::syscall::close (out[WR]);
-        }
+      {
+        fhg::syscall::dup (out[WR], STDOUT_FILENO);
+        fhg::syscall::close (out[WR]);
+      }
 
       if (err[WR] != STDERR_FILENO)
-        {
-          fhg::syscall::dup (err[WR], STDERR_FILENO);
-          fhg::syscall::close (err[WR]);
-        }
+      {
+        fhg::syscall::dup (err[WR], STDERR_FILENO);
+        fhg::syscall::close (err[WR]);
+      }
 
       int maximum_open_files (sysconf (_SC_OPEN_MAX));
       for (int i (3); i < maximum_open_files; ++i)
@@ -179,20 +178,20 @@ namespace process
       bytes_read = 0;
 
       for (;;)
+      {
+        const ssize_t r (fhg::syscall::read (fd, buf.data(), PIPE_BUF));
+
+        if (r == 0)
         {
-          const ssize_t r (fhg::syscall::read (fd, buf.data(), PIPE_BUF));
-
-          if (r == 0)
-            {
-              break;
-            }
-          else
-            {
-              bytes_read += r;
-
-              std::copy (buf.data(), buf.data() + r, std::back_inserter (circ_buf));
-            }
+          break;
         }
+        else
+        {
+          bytes_read += r;
+
+          std::copy (buf.data(), buf.data() + r, std::back_inserter (circ_buf));
+        }
+      }
     }
 
     static void reader ( int fd
@@ -206,22 +205,22 @@ namespace process
       bytes_read = 0;
 
       for (;;)
+      {
+        const std::size_t to_read
+          (std::min (std::size_t (PIPE_BUF), max_size - bytes_read));
+
+        const ssize_t r (fhg::syscall::read (fd, buf, to_read));
+
+        if (r == 0)
         {
-          const std::size_t to_read
-            (std::min (std::size_t (PIPE_BUF), max_size - bytes_read));
-
-          const ssize_t r (fhg::syscall::read (fd, buf, to_read));
-
-          if (r == 0)
-            {
-              break;
-            }
-          else
-            {
-              buf += r;
-              bytes_read += r;
-            }
+          break;
         }
+        else
+        {
+          buf += r;
+          bytes_read += r;
+        }
+      }
     }
 
     /* ********************************************************************* */
@@ -235,36 +234,36 @@ namespace process
       const char * buf (static_cast<const char*> (input));
 
       while (bytes_left > 0)
+      {
+        const std::size_t to_write
+          (std::min (std::size_t (PIPE_BUF), bytes_left));
+
+        try
         {
-          const std::size_t to_write
-            (std::min (std::size_t (PIPE_BUF), bytes_left));
+          const ssize_t w (fhg::syscall::write (fd, buf, to_write));
 
-          try
+          if (w == 0)
           {
-            const ssize_t w (fhg::syscall::write (fd, buf, to_write));
-
-            if (w == 0)
-            {
-              break;
-            }
+            break;
+          }
           else
-            {
-              buf += w;
-              written += w;
-              bytes_left -= w;
-            }
-          }
-          catch (boost::system::system_error const& err)
           {
-            if (err.code() == boost::system::errc::broken_pipe)
-            {
-              break;
-            }
-            throw;
+            buf += w;
+            written += w;
+            bytes_left -= w;
           }
-
-          boost::this_thread::interruption_point();
         }
+        catch (boost::system::system_error const& err)
+        {
+          if (err.code() == boost::system::errc::broken_pipe)
+          {
+            break;
+          }
+          throw;
+        }
+
+        boost::this_thread::interruption_point();
+      }
     }
   } // namespace thread
 
@@ -272,7 +271,7 @@ namespace process
 
   namespace detail
   {
-    static std::string tempname ()
+    static std::string tempname()
     {
       static unsigned long i (0);
 
@@ -281,9 +280,9 @@ namespace process
       std::string dir ((TMPDIR != nullptr) ? TMPDIR : P_tmpdir);
 
       if (dir.size() == 0)
-        {
-          throw std::runtime_error ("neither TMPDIR nor P_tmpdir are set");
-        }
+      {
+        throw std::runtime_error ("neither TMPDIR nor P_tmpdir are set");
+      }
 
       bool file_already_exists = true;
       std::string fname;
@@ -308,16 +307,15 @@ namespace process
 
     struct tempfifo_t : boost::noncopyable
     {
-      explicit
-      tempfifo_t (std::string const &p)
+      explicit tempfifo_t (std::string const &p)
         : m_path (p)
       {
         fhg::syscall::mkfifo (m_path.c_str(), S_IWUSR | S_IRUSR);
       }
 
-      ~tempfifo_t ()
+      ~tempfifo_t()
       {
-        fhg::syscall::unlink (m_path.c_str ());
+        fhg::syscall::unlink (m_path.c_str());
       }
 
     private:
@@ -338,7 +336,8 @@ namespace process
       {
         try
         {
-          const ssize_t consumed (fhg::syscall::read (fd, buffer, sizeof (buffer)));
+          const ssize_t consumed
+            (fhg::syscall::read (fd, buffer, sizeof (buffer)));
 
           if (consumed == 0)
           {
@@ -509,182 +508,182 @@ namespace process
     pid_t pid (fhg::syscall::fork());
 
     if (pid == pid_t (0))
+    {
+      // child: should not produce any output on stdout/stderr
+      detail::prepare_child_pipes ( in
+                                  , out
+                                  , err
+                                  , synchronization_fd_parent_child
+                                  , synchronization_fd_child_parent
+                                  );
+
+      sync::ping (synchronization_fd_child_parent[detail::WR]);
+
+      // wait for parent setting up threads
+      sync::wait_for_ping (synchronization_fd_parent_child[detail::RD]);
+
+      fhg::syscall::close (synchronization_fd_parent_child[detail::RD]);
+      fhg::syscall::close (synchronization_fd_child_parent[detail::WR]);
+
+      std::vector<char> argv_buffer;
+      std::vector<char*> argv;
+
       {
-        // child: should not produce any output on stdout/stderr
-        detail::prepare_child_pipes ( in
-                                    , out
-                                    , err
-                                    , synchronization_fd_parent_child
-                                    , synchronization_fd_child_parent
-                                    );
+        std::vector<std::size_t> argv_offsets;
 
-        sync::ping (synchronization_fd_child_parent[detail::WR]);
-
-        // wait for parent setting up threads
-        sync::wait_for_ping (synchronization_fd_parent_child[detail::RD]);
-
-        fhg::syscall::close (synchronization_fd_parent_child[detail::RD]);
-        fhg::syscall::close (synchronization_fd_child_parent[detail::WR]);
-
-        std::vector<char> argv_buffer;
-        std::vector<char*> argv;
-
+        for ( std::string raw_param
+            : fhg::util::split<std::string, std::string> (command, ' ')
+            )
         {
-          std::vector<std::size_t> argv_offsets;
+          const decltype (param_map)::const_iterator repl
+            (param_map.find (raw_param));
+          const std::string param ( (repl != param_map.end())
+                                  ? std::string (repl->second)
+                                  : raw_param
+                                  );
 
-          for ( std::string raw_param
-              : fhg::util::split<std::string, std::string> (command, ' ')
-              )
-          {
-            const decltype (param_map)::const_iterator repl
-              (param_map.find (raw_param));
-            const std::string param ( (repl != param_map.end())
-                                    ? std::string (repl->second)
-                                    : raw_param
-                                    );
-
-            std::size_t pos (argv_buffer.size());
-            argv_buffer.resize (argv_buffer.size() + param.size() + 1);
-            std::copy (param.begin(), param.end(), argv_buffer.data() + pos);
-            argv_buffer[argv_buffer.size() - 1] = '\0';
-            argv_offsets.push_back (pos);
-          }
-          for (std::size_t offset : argv_offsets)
-          {
-            argv.push_back (argv_buffer.data() + offset);
-          }
-          argv.push_back (nullptr);
+          std::size_t pos (argv_buffer.size());
+          argv_buffer.resize (argv_buffer.size() + param.size() + 1);
+          std::copy (param.begin(), param.end(), argv_buffer.data() + pos);
+          argv_buffer[argv_buffer.size() - 1] = '\0';
+          argv_offsets.push_back (pos);
         }
-
-        try
+        for (std::size_t offset : argv_offsets)
         {
-          fhg::syscall::execvp (argv[0], argv.data());
+          argv.push_back (argv_buffer.data() + offset);
         }
-        catch (boost::system::system_error const& err)
-          {
-            fhg::syscall::close (STDIN_FILENO);
-            fhg::syscall::close (STDOUT_FILENO);
-            fhg::syscall::close (STDERR_FILENO);
-
-            _exit ( err.code() == boost::system::errc::permission_denied ? 126
-                  : err.code() == boost::system::errc::no_such_file_or_directory ? 127
-                  : 254
-                  );
-          }
+        argv.push_back (nullptr);
       }
+
+      try
+      {
+        fhg::syscall::execvp (argv[0], argv.data());
+      }
+      catch (boost::system::system_error const& err)
+      {
+        fhg::syscall::close (STDIN_FILENO);
+        fhg::syscall::close (STDOUT_FILENO);
+        fhg::syscall::close (STDERR_FILENO);
+
+        _exit ( err.code() == boost::system::errc::permission_denied ? 126
+              : err.code() == boost::system::errc::no_such_file_or_directory ? 127
+              : 254
+              );
+      }
+    }
     else
+    {
+      // parent
+      detail::prepare_parent_pipes ( out
+                                   , err
+                                   , synchronization_fd_parent_child
+                                   , synchronization_fd_child_parent
+                                   );
+
+      // wait for child setting up pipes
+      sync::wait_for_ping (synchronization_fd_child_parent[detail::RD]);
+
+      //! \note threads get ownership of respective file descriptors
+      struct close_on_scope_exit : boost::noncopyable
       {
-        // parent
-        detail::prepare_parent_pipes ( out
-                                     , err
-                                     , synchronization_fd_parent_child
-                                     , synchronization_fd_child_parent
-                                     );
-
-        // wait for child setting up pipes
-        sync::wait_for_ping (synchronization_fd_child_parent[detail::RD]);
-
-        //! \note threads get ownership of respective file descriptors
-        struct close_on_scope_exit : boost::noncopyable
+        close_on_scope_exit (int fd)
+          : _fd (fd)
+        {}
+        ~close_on_scope_exit()
         {
-          close_on_scope_exit (int fd)
-            : _fd (fd)
-          {}
-          ~close_on_scope_exit()
-          {
-            fhg::syscall::close (_fd);
-          }
-          int _fd;
-        };
-
-        boost::thread thread_buf_stdin
-          ( [&buf_stdin, &in, &ret]
-          {
-            close_on_scope_exit const _ (in[detail::WR]);
-            thread::writer ( in[detail::WR]
-                           , buf_stdin.buf(), buf_stdin.size()
-                           , ret.bytes_written_stdin
-                           );
-          }
-          );
-
-        boost::thread thread_buf_stdout
-          ( [&buf_stdout, &out, &ret]
-          {
-            close_on_scope_exit const _ (out[detail::RD]);
-            thread::reader ( out[detail::RD]
-                           , buf_stdout.buf(), buf_stdout.size()
-                           , ret.bytes_read_stdout
-                           );
-          }
-          );
-
-        boost::thread thread_buf_stderr
-          ( [&buf_stderr, &err, &ret]
-          {
-            close_on_scope_exit const _ (err[detail::RD]);
-            thread::circular_reader
-              (err[detail::RD], buf_stderr, ret.bytes_read_stderr);
-          }
-          );
-
-        sync::ping (synchronization_fd_parent_child[detail::WR]);
-
-        fhg::syscall::close (synchronization_fd_parent_child[detail::WR]);
-        fhg::syscall::close (synchronization_fd_child_parent[detail::RD]);
-
-        int status (0);
-
-        fhg::syscall::waitpid (pid, &status, 0);
-
-        thread_buf_stdin.interrupt();
-
-        //! \note first consume, then subtract: bytes_written_stdin still
-        //! grows while consuming!
-        {
-          const std::size_t consumed (consume_everything (in[detail::RD]));
-          ret.bytes_written_stdin -= consumed;
+          fhg::syscall::close (_fd);
         }
-        fhg::syscall::close (in[detail::RD]);
+        int _fd;
+      };
 
-        thread_buf_stdin.join();
-        thread_buf_stdout.join();
-        thread_buf_stderr.join();
-
-        writers.interrupt_all();
-
+      boost::thread thread_buf_stdin
+        ( [&buf_stdin, &in, &ret]
         {
-          std::size_t i (0);
-          for (file_const_buffer const& file_input : files_input)
-          {
-            scoped_file const file
-              (param_map.at (file_input.param()).c_str(), O_RDONLY | O_NONBLOCK);
-
-            {
-              const std::size_t consumed (consume_everything (file._fd));
-              ret.bytes_written_files_input[i] -= consumed;
-            }
-
-            ++i;
-          }
+          close_on_scope_exit const _ (in[detail::WR]);
+          thread::writer ( in[detail::WR]
+                         , buf_stdin.buf(), buf_stdin.size()
+                         , ret.bytes_written_stdin
+                         );
         }
+        );
 
-        writers.join_all();
-        readers.join_all();
+      boost::thread thread_buf_stdout
+        ( [&buf_stdout, &out, &ret]
+        {
+          close_on_scope_exit const _ (out[detail::RD]);
+          thread::reader ( out[detail::RD]
+                         , buf_stdout.buf(), buf_stdout.size()
+                         , ret.bytes_read_stdout
+                         );
+        }
+        );
 
-        if (WIFEXITED (status))
-          {
-            ret.exit_code = WEXITSTATUS (status);
-          }
-        else if (WIFSIGNALED (status))
-          {
-            ret.exit_code = 128 + WTERMSIG (status);
-          }
-        else
-          {
-            detail::do_error ("strange child status: ", status);
-          }
+      boost::thread thread_buf_stderr
+        ( [&buf_stderr, &err, &ret]
+        {
+          close_on_scope_exit const _ (err[detail::RD]);
+          thread::circular_reader
+            (err[detail::RD], buf_stderr, ret.bytes_read_stderr);
+        }
+        );
+
+      sync::ping (synchronization_fd_parent_child[detail::WR]);
+
+      fhg::syscall::close (synchronization_fd_parent_child[detail::WR]);
+      fhg::syscall::close (synchronization_fd_child_parent[detail::RD]);
+
+      int status (0);
+
+      fhg::syscall::waitpid (pid, &status, 0);
+
+      thread_buf_stdin.interrupt();
+
+      //! \note first consume, then subtract: bytes_written_stdin still
+      //! grows while consuming!
+      {
+        const std::size_t consumed (consume_everything (in[detail::RD]));
+        ret.bytes_written_stdin -= consumed;
       }
+      fhg::syscall::close (in[detail::RD]);
+
+      thread_buf_stdin.join();
+      thread_buf_stdout.join();
+      thread_buf_stderr.join();
+
+      writers.interrupt_all();
+
+      {
+        std::size_t i (0);
+        for (file_const_buffer const& file_input : files_input)
+        {
+          scoped_file const file
+            (param_map.at (file_input.param()).c_str(), O_RDONLY | O_NONBLOCK);
+
+          {
+            const std::size_t consumed (consume_everything (file._fd));
+            ret.bytes_written_files_input[i] -= consumed;
+          }
+
+          ++i;
+        }
+      }
+
+      writers.join_all();
+      readers.join_all();
+
+      if (WIFEXITED (status))
+      {
+        ret.exit_code = WEXITSTATUS (status);
+      }
+      else if (WIFSIGNALED (status))
+      {
+        ret.exit_code = 128 + WTERMSIG (status);
+      }
+      else
+      {
+        detail::do_error ("strange child status: ", status);
+      }
+    }
 
     return ret;
   }
