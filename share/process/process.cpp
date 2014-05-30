@@ -467,36 +467,6 @@ namespace process
         ++reader_i;
       }
 
-    std::list<std::string> const cmdline
-      (fhg::util::split<std::string, std::string> (command, ' '));
-
-    std::vector<char> argv_buffer;
-    std::vector<char*> argv;
-
-    {
-      std::vector<std::size_t> argv_offsets;
-      for (std::string raw_param : cmdline)
-      {
-        const decltype (param_map)::const_iterator repl
-          (param_map.find (raw_param));
-        const std::string param ( (repl != param_map.end())
-                                ? std::string (repl->second)
-                                : raw_param
-                                );
-
-        std::size_t pos (argv_buffer.size());
-        argv_buffer.resize (argv_buffer.size() + param.size() + 1);
-        std::copy (param.begin(), param.end(), argv_buffer.data() + pos);
-        argv_buffer[argv_buffer.size() - 1] = '\0';
-        argv_offsets.push_back (pos);
-      }
-      for (std::size_t offset : argv_offsets)
-      {
-        argv.push_back (argv_buffer.data() + offset);
-      }
-      argv.push_back (nullptr);
-    }
-
     sigset_t signals_to_block;
     sigset_t signals_to_restore;
     sigemptyset (&signals_to_block);
@@ -547,6 +517,36 @@ namespace process
 
         fhg::syscall::close (synchronization_fd_parent_child[detail::RD]);
         fhg::syscall::close (synchronization_fd_child_parent[detail::WR]);
+
+        std::vector<char> argv_buffer;
+        std::vector<char*> argv;
+
+        {
+          std::vector<std::size_t> argv_offsets;
+
+          for ( std::string raw_param
+              : fhg::util::split<std::string, std::string> (command, ' ')
+              )
+          {
+            const decltype (param_map)::const_iterator repl
+              (param_map.find (raw_param));
+            const std::string param ( (repl != param_map.end())
+                                    ? std::string (repl->second)
+                                    : raw_param
+                                    );
+
+            std::size_t pos (argv_buffer.size());
+            argv_buffer.resize (argv_buffer.size() + param.size() + 1);
+            std::copy (param.begin(), param.end(), argv_buffer.data() + pos);
+            argv_buffer[argv_buffer.size() - 1] = '\0';
+            argv_offsets.push_back (pos);
+          }
+          for (std::size_t offset : argv_offsets)
+          {
+            argv.push_back (argv_buffer.data() + offset);
+          }
+          argv.push_back (nullptr);
+        }
 
         if (execvp(argv[0], argv.data()) < 0)
           {
