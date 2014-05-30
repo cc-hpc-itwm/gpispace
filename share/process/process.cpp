@@ -318,15 +318,7 @@ namespace process
 
     static void fifo (std::string const& filename)
     {
-      try
-      {
-        fhg::syscall::mkfifo (filename.c_str(), S_IWUSR | S_IRUSR);
-      }
-      catch (...)
-      {
-        fhg::syscall::unlink (filename.c_str());
-        throw;
-      }
+      fhg::syscall::mkfifo (filename.c_str(), S_IWUSR | S_IRUSR);
     }
 
     struct tempfile_t : boost::noncopyable
