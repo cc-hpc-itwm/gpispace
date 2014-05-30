@@ -371,6 +371,22 @@ namespace process
 
       return consumed_accum;
     }
+
+    struct scoped_SIGPIPE_block
+    {
+      scoped_SIGPIPE_block()
+      {
+        sigset_t signals_to_block;
+        sigemptyset (&signals_to_block);
+        sigaddset (&signals_to_block, SIGPIPE);
+        pthread_sigmask (SIG_BLOCK, &signals_to_block, &_signals_to_restore);
+      }
+      ~scoped_SIGPIPE_block()
+      {
+        pthread_sigmask (SIG_UNBLOCK, &_signals_to_restore, nullptr);
+      }
+      sigset_t _signals_to_restore;
+    };
   }
 
   execute_return_type execute ( std::string const & command
@@ -467,11 +483,7 @@ namespace process
         ++reader_i;
       }
 
-    sigset_t signals_to_block;
-    sigset_t signals_to_restore;
-    sigemptyset (&signals_to_block);
-    sigaddset (&signals_to_block, SIGPIPE);
-    pthread_sigmask (SIG_BLOCK, &signals_to_block, &signals_to_restore);
+    scoped_SIGPIPE_block const sigpipe_block;
 
     int synchronization_fd_parent_child[2] = { -1, -1 };
     int synchronization_fd_child_parent[2] = { -1, -1 };
@@ -696,8 +708,6 @@ namespace process
             detail::do_error ("strange child status: ", status);
           }
       }
-
-    pthread_sigmask (SIG_UNBLOCK, &signals_to_restore, nullptr);
 
     return ret;
   }
