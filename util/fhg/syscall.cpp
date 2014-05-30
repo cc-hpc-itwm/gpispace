@@ -125,6 +125,11 @@ namespace fhg
         (::mmap (addr, length, prot, flags, fd, offset));
     }
 
+    void mkfifo (const char* pathname, mode_t mode)
+    {
+      return negative_one_fails_with_errno<void> (::mkfifo (pathname, mode));
+    }
+
     void munmap (void* addr, size_t length)
     {
       return negative_one_fails_with_errno<void> (::munmap (addr, length));
