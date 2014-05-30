@@ -433,6 +433,7 @@ namespace process
         std::string filename (detail::tempname());
 
         detail::fifo (filename);
+        tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
 
         writers.add_thread
           ( new boost::thread
@@ -449,7 +450,6 @@ namespace process
             }
             )
           );
-        tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
         param_map.emplace (file_input.param(), filename);
         ++writer_i;
       }
@@ -462,6 +462,7 @@ namespace process
         std::string filename (detail::tempname());
 
         detail::fifo (filename);
+        tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
 
         readers.add_thread
           ( new boost::thread
@@ -479,7 +480,6 @@ namespace process
             )
           );
 
-        tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
         param_map.emplace (file_output.param(), filename);
         ++reader_i;
       }
