@@ -504,13 +504,9 @@ namespace process
     fhg::syscall::pipe (synchronization_fd_parent_child);
     fhg::syscall::pipe (synchronization_fd_child_parent);
 
-    pid_t pid (fork());
+    pid_t pid (fhg::syscall::fork());
 
-    if (pid < 0)
-      {
-        detail::do_error ("fork failed", errno);
-      }
-    else if (pid == pid_t (0))
+    if (pid == pid_t (0))
       {
         // child: should not produce any output on stdout/stderr
         detail::prepare_child_pipes ( in
