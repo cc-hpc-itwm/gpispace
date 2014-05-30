@@ -252,7 +252,7 @@ namespace process
     static void writer ( int fd
                        , const void * input
                        , std::size_t bytes_left
-                       , std::size_t* written = nullptr
+                       , std::size_t& written
                        )
     {
       struct maybe_try_close_on_scope_exit_t : boost::noncopyable
@@ -288,7 +288,7 @@ namespace process
           else
             {
               buf += w;
-              if (written) *written += w;
+              written += w;
               bytes_left -= w;
             }
           }
@@ -310,7 +310,7 @@ namespace process
                                  , const std::string & filename
                                  , const void * buf
                                  , std::size_t bytes_left
-                                 , std::size_t* bytes_written
+                                 , std::size_t& bytes_written
                                  )
     {
       barrier.wait ();
@@ -396,7 +396,7 @@ namespace process
                                   , const void * buf
                                   , std::string const& filename
                                   , std::size_t bytes_left
-                                  , std::size_t* bytes_written
+                                  , std::size_t& bytes_written
                                   )
     {
       return new boost::thread ( thread::writer_from_file
@@ -404,7 +404,7 @@ namespace process
                                , filename
                                , buf
                                , bytes_left
-                               , bytes_written
+                               , std::ref (bytes_written)
                                );
     }
 
@@ -546,7 +546,7 @@ namespace process
                          , file_input.buf()
                          , filename
                          , file_input.size()
-                         , &ret.bytes_written_files_input[writer_i]
+                         , ret.bytes_written_files_input[writer_i]
                          )
           );
         tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
