@@ -661,9 +661,23 @@ namespace process
           detail::do_error ("synchronization failed: child did not write");
         }
 
+        //! \note threads get ownership of respective file descriptors
+        struct close_on_scope_exit : boost::noncopyable
+        {
+          close_on_scope_exit (int fd)
+            : _fd (fd)
+          {}
+          ~close_on_scope_exit()
+          {
+            fhg::syscall::close (_fd);
+          }
+          int _fd;
+        };
+
         boost::thread thread_buf_stdin
           ( [&buf_stdin, &in, &ret]
           {
+            close_on_scope_exit const _ (in[detail::WR]);
             thread::writer ( in[detail::WR]
                            , buf_stdin.buf(), buf_stdin.size()
                            , ret.bytes_written_stdin
@@ -674,6 +688,7 @@ namespace process
         boost::thread thread_buf_stdout
           ( [&buf_stdout, &out, &ret]
           {
+            close_on_scope_exit const _ (out[detail::RD]);
             thread::reader ( out[detail::RD]
                            , buf_stdout.buf(), buf_stdout.size()
                            , ret.bytes_read_stdout
@@ -684,6 +699,7 @@ namespace process
         boost::thread thread_buf_stderr
           ( [&buf_stderr, &err, &ret]
           {
+            close_on_scope_exit const _ (err[detail::RD]);
             thread::circular_reader
               (err[detail::RD], buf_stderr, ret.bytes_read_stderr);
           }
@@ -715,6 +731,7 @@ namespace process
           const std::size_t consumed (consume_everything (in[detail::RD]));
           ret.bytes_written_stdin -= consumed;
         }
+        fhg::syscall::close (in[detail::RD]);
 
         thread_buf_stdin.join();
         thread_buf_stdout.join();
@@ -742,11 +759,6 @@ namespace process
 
         writers.join_all();
         readers.join_all();
-
-        fhg::syscall::close (in[detail::RD]);
-        detail::try_close (in[detail::WR]);
-        detail::try_close (out[detail::RD]);
-        detail::try_close (err[detail::RD]);
 
         if (WIFEXITED (status))
           {
