@@ -349,7 +349,8 @@ namespace process
            != sizeof (synchronization_buffer)
            )
         {
-          detail::do_error ("synchronization failed: other side did not write");
+          throw std::runtime_error
+            ("synchronization failed: other side did not write");
         }
       }
 
@@ -360,7 +361,8 @@ namespace process
            != sizeof (synchronization_buffer)
            )
         {
-          detail::do_error ("synchronization failed: other side did not read");
+          throw std::runtime_error
+            ("synchronization failed: other side did not read");
         }
       }
     }
