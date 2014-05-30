@@ -361,11 +361,6 @@ namespace process
     public:
       param_map_t::mapped_type & operator [] (const param_map_t::key_type & key)
       {
-        if (this->find (key) != this->end())
-          {
-            put_error ("redefinition of key", key);
-          }
-
         return _map[key];
       }
 
@@ -447,6 +442,24 @@ namespace process
         detail::do_error ("pipe failed");
       }
 
+    {
+      std::set<std::string> seen_params;
+      for (file_const_buffer const& file : files_input)
+      {
+        if (!seen_params.insert (file.param()).second)
+        {
+          detail::put_error ("redefinition of key", file.param());
+        }
+      }
+      for (file_buffer const& file : files_output)
+      {
+        if (!seen_params.insert (file.param()).second)
+        {
+          detail::put_error ("redefinition of key", file.param());
+        }
+      }
+    }
+
     detail::param_map param_map;
     boost::thread_group writers;
     boost::thread_group readers;
@@ -481,16 +494,7 @@ namespace process
             )
           );
         tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
-        try
-        {
-          param_map[file_input.param()] = filename;
-        }
-        catch (...)
-        {
-          writers.interrupt_all ();
-          writers.join_all ();
-          throw;
-        }
+        param_map[file_input.param()] = filename;
         ++writer_i;
       }
 
@@ -526,16 +530,7 @@ namespace process
           );
 
         tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
-        try
-        {
-          param_map[file_output.param()] = filename;
-        }
-        catch (...)
-        {
-          readers.interrupt_all ();
-          readers.join_all ();
-          throw;
-        }
+        param_map[file_output.param()] = filename;
         ++reader_i;
       }
 
