@@ -76,13 +76,6 @@ namespace process
 
     /* ********************************************************************* */
 
-    inline void do_close (int * fd)
-    {
-      fhg::syscall::close (*fd);
-    }
-
-    /* ********************************************************************* */
-
     inline void try_close (int * fd)
     {
       try
@@ -108,10 +101,10 @@ namespace process
     inline void prepare_parent_pipes
       (int out[2], int err[2], int sync_pc[2], int sync_cp[2])
     {
-      do_close (out + WR);
-      do_close (err + WR);
-      do_close (sync_pc + RD);
-      do_close (sync_cp + WR);
+      fhg::syscall::close (out[WR]);
+      fhg::syscall::close (err[WR]);
+      fhg::syscall::close (sync_pc[RD]);
+      fhg::syscall::close (sync_cp[WR]);
     }
 
     /* ********************************************************************* */
@@ -119,11 +112,11 @@ namespace process
     inline void prepare_child_pipes
       (int in[2], int out[2], int err[2], int sync_pc[2], int sync_cp[2])
     {
-      do_close (in + WR);
-      do_close (out + RD);
-      do_close (err + RD);
-      do_close (sync_pc + WR);
-      do_close (sync_cp + RD);
+      fhg::syscall::close (in[WR]);
+      fhg::syscall::close (out[RD]);
+      fhg::syscall::close (err[RD]);
+      fhg::syscall::close (sync_pc[WR]);
+      fhg::syscall::close (sync_cp[RD]);
 
       if (in[RD] != STDIN_FILENO)
         {
@@ -132,7 +125,7 @@ namespace process
               do_error ("dup to stdin failed");
             }
 
-          do_close (in + RD);
+          fhg::syscall::close (in[RD]);
         }
 
       if (out[WR] != STDOUT_FILENO)
@@ -142,7 +135,7 @@ namespace process
               do_error ("dup to stdout failed");
             }
 
-          do_close (out + WR);
+          fhg::syscall::close (out[WR]);
         }
 
       if (err[WR] != STDERR_FILENO)
@@ -152,7 +145,7 @@ namespace process
               do_error ("dup to stderr failed");
             }
 
-          do_close (err + WR);
+          fhg::syscall::close (err[WR]);
         }
 
       for (int i (3); i < 1024; ++i)
