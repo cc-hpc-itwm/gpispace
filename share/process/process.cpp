@@ -349,35 +349,6 @@ namespace process
 
   /* *********************************************************************** */
 
-  namespace detail
-  {
-    struct param_map
-    {
-    private:
-      typedef std::unordered_map <std::string, std::string> param_map_t;
-
-      param_map_t _map;
-
-    public:
-      param_map_t::mapped_type & operator [] (const param_map_t::key_type & key)
-      {
-        return _map[key];
-      }
-
-      param_map_t::const_iterator find (const param_map_t::key_type & key) const
-      {
-        return _map.find (key);
-      }
-
-      typedef param_map_t::const_iterator const_iterator;
-
-      const_iterator begin (void) const { return _map.begin(); }
-      const_iterator end (void) const { return _map.end(); }
-    };
-  }
-
-  /* *********************************************************************** */
-
   namespace
   {
     std::size_t consume_everything (int fd)
@@ -452,7 +423,7 @@ namespace process
       }
     }
 
-    detail::param_map param_map;
+    std::unordered_map <std::string, std::string> param_map;
     boost::thread_group writers;
     boost::thread_group readers;
     tempfile_list_t tempfiles;
@@ -482,7 +453,7 @@ namespace process
             )
           );
         tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
-        param_map[file_input.param()] = filename;
+        param_map.emplace (file_input.param(), filename);
         ++writer_i;
       }
 
@@ -512,7 +483,7 @@ namespace process
           );
 
         tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
-        param_map[file_output.param()] = filename;
+        param_map.emplace (file_output.param(), filename);
         ++reader_i;
       }
 
@@ -526,7 +497,8 @@ namespace process
       std::size_t idx (0);
       for (std::string raw_param : cmdline)
         {
-          const detail::param_map::const_iterator repl (param_map.find (raw_param));
+          const decltype (param_map)::const_iterator repl
+            (param_map.find (raw_param));
 
           const std::string param ( (repl != param_map.end())
                                   ? std::string (repl->second)
@@ -719,7 +691,7 @@ namespace process
           for (file_const_buffer const& file_input : files_input)
           {
             scoped_file const file
-              ( param_map.find (file_input.param())->second.c_str()
+              ( param_map.at (file_input.param()).c_str()
               , O_RDONLY | O_NONBLOCK
               );
 
