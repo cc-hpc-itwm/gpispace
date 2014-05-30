@@ -655,7 +655,8 @@ namespace process
       }
       else
       {
-        detail::do_error ("strange child status: ", status);
+        throw std::runtime_error
+          ("strange child status: " + std::to_string (status));
       }
     }
 
