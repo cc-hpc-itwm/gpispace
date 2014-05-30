@@ -217,6 +217,8 @@ namespace process
     {
       const char * buf (static_cast<const char*> (input));
 
+      written = 0;
+
       while (bytes_left > 0)
       {
         const std::size_t to_write
