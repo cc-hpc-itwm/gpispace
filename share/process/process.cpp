@@ -353,7 +353,7 @@ namespace process
                               , file_buffer_list const & files_output
                               )
   {
-    execute_return_type ret (files_input.size(), files_output.size());
+    execute_return_type ret (files_output.size());
 
     int in[2], out[2], err[2];
     fhg::syscall::pipe (in);
@@ -383,7 +383,6 @@ namespace process
     boost::thread_group readers;
     std::list<std::unique_ptr<detail::tempfifo_t>> tempfifos;
 
-    std::size_t writer_i (0);
     for (file_const_buffer const& file_input : files_input)
       {
         std::string filename (detail::tempname());
@@ -393,23 +392,26 @@ namespace process
 
         writers.add_thread
           ( new boost::thread
-            ([filename, file_input, &ret, writer_i]
+            ([filename, file_input, &ret]
             {
               scoped_SIGPIPE_block const sigpipe_block;
 
               scoped_file const file
                 (filename.c_str(), O_WRONLY);
 
+              //! \note Is correct, but value has no use as writes
+              //! more than other side consumes, thus is not what user
+              //! expects.
+              std::size_t dummy_written;
               thread::writer ( file._fd
                              , file_input.buf()
                              , file_input.size()
-                             , ret.bytes_written_files_input[writer_i]
+                             , dummy_written
                              );
             }
             )
           );
         param_map.emplace (file_input.param(), filename);
-        ++writer_i;
       }
 
     std::size_t reader_i (0);
@@ -591,24 +593,6 @@ namespace process
       thread_buf_stdin.join();
       thread_buf_stdout.join();
       thread_buf_stderr.join();
-
-      writers.interrupt_all();
-
-      {
-        std::size_t i (0);
-        for (file_const_buffer const& file_input : files_input)
-        {
-          scoped_file const file
-            (param_map.at (file_input.param()).c_str(), O_RDONLY | O_NONBLOCK);
-
-          {
-            const std::size_t consumed (consume_everything (file._fd));
-            ret.bytes_written_files_input[i] -= consumed;
-          }
-
-          ++i;
-        }
-      }
 
       writers.join_all();
       readers.join_all();

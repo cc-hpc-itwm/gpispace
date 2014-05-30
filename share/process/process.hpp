@@ -72,15 +72,13 @@ namespace process
     size_type bytes_written_stdin;
     size_type bytes_read_stdout;
     size_type bytes_read_stderr;
-    size_list_type bytes_written_files_input;
     size_list_type bytes_read_files_output;
     int exit_code;
 
-    execute_return_type (size_type files_input, size_type files_output)
+    execute_return_type (size_type files_output)
       : bytes_written_stdin (0)
       , bytes_read_stdout (0)
       , bytes_read_stderr (0)
-      , bytes_written_files_input (files_input)
       , bytes_read_files_output (files_output)
       , exit_code (255)
     {}

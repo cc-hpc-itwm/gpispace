@@ -5,7 +5,7 @@
 
 #include <process.hpp>
 
-BOOST_AUTO_TEST_CASE (consume_everything_stdin)
+BOOST_AUTO_TEST_CASE (consume_everything)
 {
   char m_input [2 << 20];
   char m_output [sizeof (m_input)];
@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE (consume_everything_stdin)
   BOOST_REQUIRE_EQUAL (result.bytes_read_stderr, 0);
 }
 
-BOOST_AUTO_TEST_CASE (consume_half_stdin)
+BOOST_AUTO_TEST_CASE (consume_half)
 {
   char m_input [2 << 20];
   char m_output [sizeof (m_input)];
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE (consume_half_stdin)
   BOOST_REQUIRE_EQUAL (result.bytes_read_stderr, 0);
 }
 
-BOOST_AUTO_TEST_CASE (consume_nothing_stdin)
+BOOST_AUTO_TEST_CASE (consume_nothing)
 {
   char m_input [2 << 20];
   char m_output [sizeof (m_input)];
@@ -69,76 +69,4 @@ BOOST_AUTO_TEST_CASE (consume_nothing_stdin)
   BOOST_REQUIRE_EQUAL (result.bytes_written_stdin, to_read);
   BOOST_REQUIRE_EQUAL (result.bytes_read_stdout, to_read);
   BOOST_REQUIRE_EQUAL (result.bytes_read_stderr, 0);
-}
-
-BOOST_AUTO_TEST_CASE (consume_everything_file)
-{
-  char m_input [2 << 20];
-  char m_output [sizeof (m_input)];
-
-  const std::size_t to_read (sizeof (m_input));
-
-  process::execute_return_type result
-    ( process::execute
-      ( "/usr/bin/head -c " + std::to_string (to_read) + " %FILE%"
-      , process::const_buffer (nullptr, 0)
-      , process::buffer (m_output, sizeof (m_output))
-      , {process::file_const_buffer (m_input, sizeof (m_input), "%FILE%")}
-      , {}
-      )
-    );
-
-  BOOST_REQUIRE_EQUAL (result.exit_code, 0);
-  BOOST_REQUIRE_EQUAL (result.bytes_written_stdin, 0);
-  BOOST_REQUIRE_EQUAL (result.bytes_read_stdout, to_read);
-  BOOST_REQUIRE_EQUAL (result.bytes_read_stderr, 0);
-  BOOST_REQUIRE_EQUAL (result.bytes_written_files_input[0], to_read);
-}
-
-BOOST_AUTO_TEST_CASE (consume_half_file)
-{
-  char m_input [2 << 20];
-  char m_output [sizeof (m_input)];
-
-  const std::size_t to_read (sizeof (m_input) / 2);
-
-  process::execute_return_type result
-    ( process::execute
-      ( "/usr/bin/head -c " + std::to_string (to_read) + " %FILE%"
-      , process::const_buffer (nullptr, 0)
-      , process::buffer (m_output, sizeof (m_output))
-      , {process::file_const_buffer (m_input, sizeof (m_input), "%FILE%")}
-      , {}
-      )
-    );
-
-  BOOST_REQUIRE_EQUAL (result.exit_code, 0);
-  BOOST_REQUIRE_EQUAL (result.bytes_written_stdin, 0);
-  BOOST_REQUIRE_EQUAL (result.bytes_read_stdout, to_read);
-  BOOST_REQUIRE_EQUAL (result.bytes_read_stderr, 0);
-  BOOST_REQUIRE_EQUAL (result.bytes_written_files_input[0], to_read);
-}
-
-BOOST_AUTO_TEST_CASE (consume_nothing_file)
-{
-  char m_input [2 << 20];
-  char m_output [sizeof (m_input)];
-
-  const std::size_t to_read (0);
-
-  process::execute_return_type result
-    ( process::execute
-      ( "/usr/bin/head -c " + std::to_string (to_read) + " %FILE%"
-      , process::const_buffer (nullptr, 0)
-      , process::buffer (m_output, sizeof (m_output))
-      , {process::file_const_buffer (m_input, sizeof (m_input), "%FILE%")}
-      , {}
-      )
-    );
-
-  BOOST_REQUIRE_EQUAL (result.exit_code, 0);
-  BOOST_REQUIRE_EQUAL (result.bytes_written_stdin, 0);
-  BOOST_REQUIRE_EQUAL (result.bytes_read_stdout, to_read);
-  BOOST_REQUIRE_EQUAL (result.bytes_read_stderr, 0);
-  BOOST_REQUIRE_EQUAL (result.bytes_written_files_input[0], to_read);
 }
