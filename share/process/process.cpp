@@ -317,7 +317,7 @@ namespace process
 
       thread::writer (fd, buf, bytes_left, bytes_written);
 
-      close (fd);
+      detail::try_close (&fd);
     }
   } // namespace thread
 
