@@ -76,11 +76,11 @@ namespace process
 
     /* ********************************************************************* */
 
-    inline void try_close (int * fd)
+    inline void try_close (int fd)
     {
       try
       {
-        fhg::syscall::close (*fd);
+        fhg::syscall::close (fd);
       }
       catch (boost::system::system_error const& err)
       {
@@ -152,8 +152,7 @@ namespace process
       {
         if (i != sync_pc[RD] && i != sync_cp[WR])
         {
-          int fd (i);
-          try_close (&fd);
+          try_close (i);
         }
       }
     }
@@ -252,7 +251,7 @@ namespace process
         {
           if (*_fd != -1)
           {
-            detail::try_close (_fd);
+            detail::try_close (*_fd);
           }
         }
         int* _fd;
@@ -491,7 +490,7 @@ namespace process
                              , ret.bytes_written_files_input[writer_i]
                              );
 
-              detail::try_close (&fd);
+              detail::try_close (fd);
             }
             )
           );
@@ -759,9 +758,9 @@ namespace process
         readers.join_all();
 
         fhg::syscall::close (in[detail::RD]);
-        detail::try_close (in + detail::WR);
-        detail::try_close (out + detail::RD);
-        detail::try_close (err + detail::RD);
+        detail::try_close (in[detail::WR]);
+        detail::try_close (out[detail::RD]);
+        detail::try_close (err[detail::RD]);
 
         if (WIFEXITED (status))
           {
