@@ -5,6 +5,7 @@
 #include <fhg/util/split.hpp>
 
 #include <boost/filesystem.hpp>
+#include <boost/format.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
@@ -284,23 +285,14 @@ namespace process
         throw std::runtime_error ("neither TMPDIR nor P_tmpdir are set");
       }
 
-      bool file_already_exists = true;
       std::string fname;
-      while (file_already_exists)
+      do
       {
-        namespace fs = boost::filesystem;
-
-        std::ostringstream sstr;
-        sstr << dir
-             << "/"
-             << "process." << getuid () << "." << getpid() << "." << i++;
-        fname = sstr.str ();
-
-        if (not fs::exists (fname))
-        {
-          file_already_exists = false;
-        }
+        fname = ( boost::format ("%1%/process.%2%.%3%.%4%")
+                % dir % getuid() % getpid() % i++
+                ).str();
       }
+      while (boost::filesystem::exists (fname));
 
       return fname;
     }
