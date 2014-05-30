@@ -172,6 +172,21 @@ namespace process
 
   /* *********************************************************************** */
 
+  namespace
+  {
+    struct scoped_file
+    {
+      scoped_file (const char* name, int flags)
+        : _fd (fhg::syscall::open (name, flags))
+      {}
+      ~scoped_file()
+      {
+        fhg::syscall::close (_fd);
+      }
+      int _fd;
+    };
+  }
+
   namespace thread
   {
     /* ********************************************************************* */
@@ -240,11 +255,9 @@ namespace process
     {
       barrier.wait ();
 
-      int fd (fhg::syscall::open (filename.c_str(), O_RDONLY));
+      scoped_file const file (filename.c_str(), O_RDONLY);
 
-      thread::reader (fd, buf, max_size, bytes_read);
-
-      fhg::syscall::close (fd);
+      thread::reader (file._fd, buf, max_size, bytes_read);
     }
 
     /* ********************************************************************* */
@@ -751,17 +764,10 @@ namespace process
           std::size_t i (0);
           for (file_const_buffer const& file_input : files_input)
           {
-            struct scoped_file
-            {
-              scoped_file (const char* name)
-                : _fd (fhg::syscall::open (name, O_RDONLY | O_NONBLOCK))
-              {}
-              ~scoped_file()
-              {
-                fhg::syscall::close (_fd);
-              }
-              int _fd;
-            } file (param_map.find (file_input.param())->second.c_str());
+            scoped_file const file
+              ( param_map.find (file_input.param())->second.c_str()
+              , O_RDONLY | O_NONBLOCK
+              );
 
             {
               const std::size_t consumed (consume_everything (file._fd));
