@@ -242,24 +242,9 @@ namespace process
                        , std::size_t& written
                        )
     {
-      struct maybe_try_close_on_scope_exit_t : boost::noncopyable
-      {
-        maybe_try_close_on_scope_exit_t (int* fd)
-          : _fd (fd)
-        {}
-        ~maybe_try_close_on_scope_exit_t()
-        {
-          if (*_fd != -1)
-          {
-            detail::try_close (*_fd);
-          }
-        }
-        int* _fd;
-      } const maybe_try_close_on_scope_exit (&fd);
-
       const char * buf (static_cast<const char*> (input));
 
-      while (fd != -1 && bytes_left > 0)
+      while (bytes_left > 0)
         {
           const std::size_t to_write
             (std::min (std::size_t (PIPE_BUF), bytes_left));
@@ -270,7 +255,7 @@ namespace process
 
             if (w == 0)
             {
-              fd = -1;
+              break;
             }
           else
             {
@@ -283,7 +268,6 @@ namespace process
           {
             if (err.code() == boost::system::errc::broken_pipe)
             {
-              fd = -1;
               break;
             }
             throw;
@@ -481,16 +465,14 @@ namespace process
             {
               writer_barrier.wait();
 
-              int fd
-                (fhg::syscall::open (filename.c_str(), O_WRONLY));
+              scoped_file const file
+                (filename.c_str(), O_WRONLY);
 
-              thread::writer ( fd
+              thread::writer ( file._fd
                              , file_input.buf()
                              , file_input.size()
                              , ret.bytes_written_files_input[writer_i]
                              );
-
-              detail::try_close (fd);
             }
             )
           );
@@ -680,7 +662,7 @@ namespace process
           {
             thread::writer ( in[detail::WR]
                            , buf_stdin.buf(), buf_stdin.size()
-                           , &ret.bytes_written_stdin
+                           , ret.bytes_written_stdin
                            );
           }
           );
