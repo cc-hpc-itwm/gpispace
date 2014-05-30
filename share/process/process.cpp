@@ -121,31 +121,19 @@ namespace process
 
       if (in[RD] != STDIN_FILENO)
         {
-          if (fhg::syscall::dup (in[RD], STDIN_FILENO) != STDIN_FILENO)
-            {
-              do_error ("dup to stdin failed");
-            }
-
+          fhg::syscall::dup (in[RD], STDIN_FILENO);
           fhg::syscall::close (in[RD]);
         }
 
       if (out[WR] != STDOUT_FILENO)
         {
-          if (fhg::syscall::dup (out[WR], STDOUT_FILENO) != STDOUT_FILENO)
-            {
-              do_error ("dup to stdout failed");
-            }
-
+          fhg::syscall::dup (out[WR], STDOUT_FILENO);
           fhg::syscall::close (out[WR]);
         }
 
       if (err[WR] != STDERR_FILENO)
         {
-          if (fhg::syscall::dup (err[WR], STDERR_FILENO) != STDERR_FILENO)
-            {
-              do_error ("dup to stderr failed");
-            }
-
+          fhg::syscall::dup (err[WR], STDERR_FILENO);
           fhg::syscall::close (err[WR]);
         }
 
