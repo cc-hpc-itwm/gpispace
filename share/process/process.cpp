@@ -669,9 +669,7 @@ namespace process
           for (file_const_buffer const& file_input : files_input)
           {
             scoped_file const file
-              ( param_map.at (file_input.param()).c_str()
-              , O_RDONLY | O_NONBLOCK
-              );
+              (param_map.at (file_input.param()).c_str(), O_RDONLY | O_NONBLOCK);
 
             {
               const std::size_t consumed (consume_everything (file._fd));
