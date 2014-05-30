@@ -148,23 +148,6 @@ namespace process
     }
   } // namespace detail
 
-  /* *********************************************************************** */
-
-  namespace
-  {
-    struct scoped_file
-    {
-      scoped_file (const char* name, int flags)
-        : _fd (fhg::syscall::open (name, flags))
-      {}
-      ~scoped_file()
-      {
-        fhg::syscall::close (_fd);
-      }
-      int _fd;
-    };
-  }
-
   namespace thread
   {
     /* ********************************************************************* */
@@ -394,6 +377,18 @@ namespace process
         }
       }
     }
+
+    struct scoped_file
+    {
+      scoped_file (const char* name, int flags)
+        : _fd (fhg::syscall::open (name, flags))
+      {}
+      ~scoped_file()
+      {
+        fhg::syscall::close (_fd);
+      }
+      int _fd;
+    };
   }
 
   execute_return_type execute ( std::string const & command
