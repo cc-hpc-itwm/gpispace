@@ -137,7 +137,8 @@ namespace process
           fhg::syscall::close (err[WR]);
         }
 
-      for (int i (3); i < 1024; ++i)
+      int maximum_open_files (sysconf (_SC_OPEN_MAX));
+      for (int i (3); i < maximum_open_files; ++i)
       {
         if (i != sync_pc[RD] && i != sync_cp[WR])
         {
