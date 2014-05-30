@@ -548,9 +548,13 @@ namespace process
           argv.push_back (nullptr);
         }
 
-        if (execvp(argv[0], argv.data()) < 0)
+        try
+        {
+          fhg::syscall::execvp (argv[0], argv.data());
+        }
+        catch (boost::system::system_error const& err)
           {
-            int ec = errno;
+            int ec = (int)err.code();
 
             fhg::syscall::close (STDIN_FILENO);
             fhg::syscall::close (STDOUT_FILENO);
