@@ -383,6 +383,12 @@ namespace process
   {
     typedef std::list<std::unique_ptr<detail::tempfifo_t>> tempfifo_list_t;
     execute_return_type ret;
+    ret.bytes_written_files_input.resize (files_input.size());
+    ret.bytes_read_files_output.resize (files_output.size());
+    ret.exit_code = 255;
+    ret.bytes_written_stdin = 0;
+    ret.bytes_read_stdout = 0;
+    ret.bytes_read_stderr = 0;
 
     pid_t pid;
 
@@ -414,8 +420,6 @@ namespace process
     boost::thread_group readers;
     tempfifo_list_t tempfifos;
 
-    ret.bytes_written_files_input.resize (files_input.size());
-
     std::size_t writer_i (0);
     for (file_const_buffer const& file_input : files_input)
       {
@@ -442,8 +446,6 @@ namespace process
         param_map.emplace (file_input.param(), filename);
         ++writer_i;
       }
-
-    ret.bytes_read_files_output.resize (files_output.size());
 
     std::size_t reader_i (0);
     for (file_buffer const& file_output : files_output)
@@ -497,11 +499,6 @@ namespace process
           ++idx;
         }
     }
-
-    ret.exit_code = 255;
-    ret.bytes_written_stdin = 0;
-    ret.bytes_read_stdout = 0;
-    ret.bytes_read_stderr = 0;
 
     sigset_t signals_to_block;
     sigset_t signals_to_restore;
