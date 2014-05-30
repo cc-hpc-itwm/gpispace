@@ -384,8 +384,6 @@ namespace process
     typedef std::list<std::unique_ptr<detail::tempfifo_t>> tempfifo_list_t;
     execute_return_type ret (files_input.size(), files_output.size());
 
-    pid_t pid;
-
     int in[2], out[2], err[2];
     fhg::syscall::pipe (in);
     fhg::syscall::pipe (out);
@@ -506,7 +504,7 @@ namespace process
     fhg::syscall::pipe (synchronization_fd_parent_child);
     fhg::syscall::pipe (synchronization_fd_child_parent);
 
-    pid = fork();
+    pid_t pid (fork());
 
     if (pid < 0)
       {
