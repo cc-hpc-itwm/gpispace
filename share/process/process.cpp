@@ -86,11 +86,12 @@ namespace process
           }
           catch (boost::system::system_error const& err)
           {
-            if (err.code() != boost::system::errc::bad_file_descriptor)
+            if (err.code() == boost::system::errc::bad_file_descriptor)
             {
-              throw;
+              // ignore: fd wasn't open
+              continue;
             }
-            // ignore: fd wasn't open
+            throw;
           }
         }
       }
