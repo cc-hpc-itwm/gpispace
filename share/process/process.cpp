@@ -554,18 +554,14 @@ namespace process
         }
         catch (boost::system::system_error const& err)
           {
-            int ec = (int)err.code();
-
             fhg::syscall::close (STDIN_FILENO);
             fhg::syscall::close (STDOUT_FILENO);
             fhg::syscall::close (STDERR_FILENO);
 
-            if (ec == EACCES)
-              _exit (126);
-            if (ec == ENOENT)
-              _exit (127);
-            else
-              _exit (254);
+            _exit ( err.code() == boost::system::errc::permission_denied ? 126
+                  : err.code() == boost::system::errc::no_such_file_or_directory ? 127
+                  : 254
+                  );
           }
       }
     else
