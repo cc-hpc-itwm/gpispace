@@ -338,8 +338,7 @@ namespace process
 
       ~tempfile_t ()
       {
-        if (not m_path.empty ())
-          unlink (m_path.c_str ());
+        fhg::syscall::unlink (m_path.c_str ());
       }
 
     private:
