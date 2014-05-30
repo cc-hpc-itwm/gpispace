@@ -49,3 +49,9 @@ fhg_add_test (basics.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES process
 )
+
+fhg_add_test (child_stops_consuming.cpp
+  PROJECT share_process
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES process
+)
