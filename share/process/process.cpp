@@ -79,8 +79,6 @@ namespace process
     inline void do_close (int * fd)
     {
       fhg::syscall::close (*fd);
-
-      *fd = -1;
     }
 
     /* ********************************************************************* */
@@ -99,8 +97,6 @@ namespace process
         }
         // ignore: fd wasn't open
       }
-
-      *fd = -1;
     }
 
     /* ********************************************************************* */
