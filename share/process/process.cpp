@@ -246,20 +246,6 @@ namespace process
         }
     }
 
-    static void reader_from_file ( boost::barrier & barrier
-                                 , const std::string & filename
-                                 , void * buf
-                                 , const std::size_t max_size
-                                 , std::size_t & bytes_read
-                                 )
-    {
-      barrier.wait ();
-
-      scoped_file const file (filename.c_str(), O_RDONLY);
-
-      thread::reader (file._fd, buf, max_size, bytes_read);
-    }
-
     /* ********************************************************************* */
 
     static void writer ( int fd
@@ -317,22 +303,6 @@ namespace process
 
           boost::this_thread::interruption_point();
         }
-    }
-
-    static void writer_from_file ( boost::barrier & barrier
-                                 , const std::string & filename
-                                 , const void * buf
-                                 , std::size_t bytes_left
-                                 , std::size_t& bytes_written
-                                 )
-    {
-      barrier.wait ();
-
-      int fd (fhg::syscall::open (filename.c_str(), O_WRONLY));
-
-      thread::writer (fd, buf, bytes_left, bytes_written);
-
-      detail::try_close (&fd);
     }
   } // namespace thread
 
@@ -518,13 +488,23 @@ namespace process
         detail::fifo (filename);
 
         writers.add_thread
-          (new boost::thread ( thread::writer_from_file
-                             , std::ref (writer_barrier)
-                             , filename
+          ( new boost::thread
+            ([&writer_barrier, filename, file_input, &ret, writer_i]
+            {
+              writer_barrier.wait();
+
+              int fd
+                (fhg::syscall::open (filename.c_str(), O_WRONLY));
+
+              thread::writer ( fd
                              , file_input.buf()
                              , file_input.size()
-                             , std::ref (ret.bytes_written_files_input[writer_i])
-                             )
+                             , ret.bytes_written_files_input[writer_i]
+                             );
+
+              detail::try_close (&fd);
+            }
+            )
           );
         tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
         try
@@ -554,13 +534,21 @@ namespace process
         detail::fifo (filename);
 
         readers.add_thread
-          ( new boost::thread ( thread::reader_from_file
-                              , std::ref (reader_barrier)
-                              , filename
-                              , file_output.buf()
-                              , file_output.size()
-                              , std::ref (ret.bytes_read_files_output[reader_i])
-                              )
+          ( new boost::thread
+            ([&reader_barrier, filename, file_output, &ret, reader_i]
+            {
+              reader_barrier.wait();
+
+              scoped_file const file
+                (filename.c_str(), O_RDONLY);
+
+              thread::reader ( file._fd
+                             , file_output.buf()
+                             , file_output.size()
+                             , ret.bytes_read_files_output[reader_i]
+                             );
+            }
+            )
           );
 
         tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
