@@ -468,8 +468,6 @@ namespace process
     ret.bytes_written_files_input.resize (files_input.size());
 
     std::size_t writer_i (0);
-
-    boost::barrier writer_barrier (1 + files_input.size ());
     for (file_const_buffer const& file_input : files_input)
       {
         std::string filename (detail::tempname());
@@ -478,10 +476,8 @@ namespace process
 
         writers.add_thread
           ( new boost::thread
-            ([&writer_barrier, filename, file_input, &ret, writer_i]
+            ([filename, file_input, &ret, writer_i]
             {
-              writer_barrier.wait();
-
               scoped_file const file
                 (filename.c_str(), O_WRONLY);
 
@@ -498,13 +494,9 @@ namespace process
         ++writer_i;
       }
 
-    writer_barrier.wait ();
-
     ret.bytes_read_files_output.resize (files_output.size());
 
     std::size_t reader_i (0);
-
-    boost::barrier reader_barrier (1 + files_output.size ());
     for (file_buffer const& file_output : files_output)
       {
         std::string filename (detail::tempname());
@@ -513,10 +505,8 @@ namespace process
 
         readers.add_thread
           ( new boost::thread
-            ([&reader_barrier, filename, file_output, &ret, reader_i]
+            ([filename, file_output, &ret, reader_i]
             {
-              reader_barrier.wait();
-
               scoped_file const file
                 (filename.c_str(), O_RDONLY);
 
@@ -533,8 +523,6 @@ namespace process
         param_map[file_output.param()] = filename;
         ++reader_i;
       }
-
-    reader_barrier.wait ();
 
     std::list<std::string> const cmdline
       (fhg::util::split<std::string, std::string> (command, ' '));
