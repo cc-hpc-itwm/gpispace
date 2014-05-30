@@ -244,7 +244,7 @@ namespace process
 
       thread::reader (fd, buf, max_size, bytes_read);
 
-      close (fd);
+      fhg::syscall::close (fd);
     }
 
     /* ********************************************************************* */
