@@ -35,21 +35,6 @@ namespace process
   {
     /* ********************************************************************* */
 
-    inline void put_error (const std::string & msg)
-    {
-      throw std::runtime_error (msg);
-    }
-
-    template<typename T>
-      inline void put_error (const std::string & msg, T x)
-    {
-      std::ostringstream sstr;
-
-      sstr << msg << ": " << x;
-
-      put_error (sstr.str());
-    }
-
     template<typename T>
       inline void do_error (const std::string & msg, T x)
     {
@@ -67,7 +52,7 @@ namespace process
 
       sstr << msg << ": " << strerror (err);
 
-      put_error (sstr.str());
+      throw std::runtime_error (sstr.str());
     }
 
     inline void do_error (const std::string & msg)
@@ -415,14 +400,14 @@ namespace process
       {
         if (!seen_params.insert (file.param()).second)
         {
-          detail::put_error ("redefinition of key", file.param());
+          throw std::runtime_error ("redefinition of key: " + file.param());
         }
       }
       for (file_buffer const& file : files_output)
       {
         if (!seen_params.insert (file.param()).second)
         {
-          detail::put_error ("redefinition of key", file.param());
+          throw std::runtime_error ("redefinition of key: " + file.param());
         }
       }
     }
