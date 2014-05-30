@@ -381,8 +381,7 @@ namespace process
                               , file_buffer_list const & files_output
                               )
   {
-    typedef std::unique_ptr<detail::tempfifo_t> tempfifo_ptr;
-    typedef std::list<tempfifo_ptr> tempfifo_list_t;
+    typedef std::list<std::unique_ptr<detail::tempfifo_t>> tempfifo_list_t;
     execute_return_type ret;
 
     pid_t pid;
