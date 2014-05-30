@@ -470,26 +470,31 @@ namespace process
     std::list<std::string> const cmdline
       (fhg::util::split<std::string, std::string> (command, ' '));
 
-    char ** av = new char*[cmdline.size()+1];
-    av[cmdline.size()] = nullptr;
+    std::vector<char> argv_buffer;
+    std::vector<char*> argv;
 
     {
-      std::size_t idx (0);
+      std::vector<std::size_t> argv_offsets;
       for (std::string raw_param : cmdline)
-        {
-          const decltype (param_map)::const_iterator repl
-            (param_map.find (raw_param));
+      {
+        const decltype (param_map)::const_iterator repl
+          (param_map.find (raw_param));
+        const std::string param ( (repl != param_map.end())
+                                ? std::string (repl->second)
+                                : raw_param
+                                );
 
-          const std::string param ( (repl != param_map.end())
-                                  ? std::string (repl->second)
-                                  : raw_param
-                                  );
-
-          av[idx] = new char[param.size()+1];
-          memcpy(av[idx], param.c_str(), param.size());
-          av[idx][param.size()] = '\0';
-          ++idx;
-        }
+        std::size_t pos (argv_buffer.size());
+        argv_buffer.resize (argv_buffer.size() + param.size() + 1);
+        std::copy (param.begin(), param.end(), argv_buffer.data() + pos);
+        argv_buffer[argv_buffer.size() - 1] = '\0';
+        argv_offsets.push_back (pos);
+      }
+      for (std::size_t offset : argv_offsets)
+      {
+        argv.push_back (argv_buffer.data() + offset);
+      }
+      argv.push_back (nullptr);
     }
 
     sigset_t signals_to_block;
@@ -543,7 +548,7 @@ namespace process
         fhg::syscall::close (synchronization_fd_parent_child[detail::RD]);
         fhg::syscall::close (synchronization_fd_child_parent[detail::WR]);
 
-        if (execvp(av[0], av) < 0)
+        if (execvp(argv[0], argv.data()) < 0)
           {
             int ec = errno;
 
@@ -691,15 +696,6 @@ namespace process
             detail::do_error ("strange child status: ", status);
           }
       }
-
-    {
-      for (std::size_t idx (0); idx < cmdline.size(); ++idx)
-        {
-          delete[] av[idx];
-        }
-
-      delete[] av;
-    }
 
     sigprocmask (SIG_UNBLOCK, &signals_to_restore, nullptr);
 
