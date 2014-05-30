@@ -644,7 +644,7 @@ namespace process
 
         int status (0);
 
-        waitpid (pid, &status, 0);
+        fhg::syscall::waitpid (pid, &status, 0);
 
         thread_buf_stdin.interrupt();
 

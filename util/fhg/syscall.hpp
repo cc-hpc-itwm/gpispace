@@ -42,6 +42,7 @@ namespace fhg
     void stat (const char* path, struct stat* buf);
     void unlink (const char* pathname);
     pid_t wait (pid_t pid, int* status, int options, struct rusage* rusage);
+    pid_t waitpid (pid_t pid, int* status, int options);
     ssize_t write (int fd, const void* buf, size_t count);
     int connect (int sock, const struct sockaddr *address, socklen_t addr_len);
   }

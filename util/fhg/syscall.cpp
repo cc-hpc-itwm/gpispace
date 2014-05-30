@@ -219,6 +219,12 @@ namespace fhg
         (::wait4 (pid, status, options, rusage));
     }
 
+    pid_t waitpid (pid_t pid, int* status, int options)
+    {
+      return negative_one_fails_with_errno<pid_t>
+        (::waitpid (pid, status, options));
+    }
+
     ssize_t write (int fd, const void* buf, size_t count)
     {
       return negative_one_fails_with_errno<ssize_t> (::write (fd, buf, count));
