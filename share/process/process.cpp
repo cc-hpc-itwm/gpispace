@@ -353,7 +353,6 @@ namespace process
                               , file_buffer_list const & files_output
                               )
   {
-    typedef std::list<std::unique_ptr<detail::tempfifo_t>> tempfifo_list_t;
     execute_return_type ret (files_input.size(), files_output.size());
 
     int in[2], out[2], err[2];
@@ -382,7 +381,7 @@ namespace process
     std::unordered_map <std::string, std::string> param_map;
     boost::thread_group writers;
     boost::thread_group readers;
-    tempfifo_list_t tempfifos;
+    std::list<std::unique_ptr<detail::tempfifo_t>> tempfifos;
 
     std::size_t writer_i (0);
     for (file_const_buffer const& file_input : files_input)
