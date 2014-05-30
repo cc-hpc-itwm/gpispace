@@ -316,19 +316,16 @@ namespace process
       return fname;
     }
 
-    static void fifo (std::string const& filename)
-    {
-      fhg::syscall::mkfifo (filename.c_str(), S_IWUSR | S_IRUSR);
-    }
-
-    struct tempfile_t : boost::noncopyable
+    struct tempfifo_t : boost::noncopyable
     {
       explicit
-      tempfile_t (std::string const &p)
+      tempfifo_t (std::string const &p)
         : m_path (p)
-      {}
+      {
+        fhg::syscall::mkfifo (m_path.c_str(), S_IWUSR | S_IRUSR);
+      }
 
-      ~tempfile_t ()
+      ~tempfifo_t ()
       {
         fhg::syscall::unlink (m_path.c_str ());
       }
@@ -383,8 +380,8 @@ namespace process
                               , file_buffer_list const & files_output
                               )
   {
-    typedef std::unique_ptr<detail::tempfile_t> tempfile_ptr;
-    typedef std::list<tempfile_ptr> tempfile_list_t;
+    typedef std::unique_ptr<detail::tempfifo_t> tempfifo_ptr;
+    typedef std::list<tempfifo_ptr> tempfifo_list_t;
     execute_return_type ret;
 
     pid_t pid;
@@ -415,7 +412,7 @@ namespace process
     std::unordered_map <std::string, std::string> param_map;
     boost::thread_group writers;
     boost::thread_group readers;
-    tempfile_list_t tempfiles;
+    tempfifo_list_t tempfifos;
 
     ret.bytes_written_files_input.resize (files_input.size());
 
@@ -424,8 +421,7 @@ namespace process
       {
         std::string filename (detail::tempname());
 
-        detail::fifo (filename);
-        tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
+        tempfifos.push_back (tempfifo_ptr (new detail::tempfifo_t (filename)));
 
         writers.add_thread
           ( new boost::thread
@@ -453,8 +449,7 @@ namespace process
       {
         std::string filename (detail::tempname());
 
-        detail::fifo (filename);
-        tempfiles.push_back (tempfile_ptr (new detail::tempfile_t (filename)));
+        tempfifos.push_back (tempfifo_ptr (new detail::tempfifo_t (filename)));
 
         readers.add_thread
           ( new boost::thread
