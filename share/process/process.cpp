@@ -629,9 +629,9 @@ namespace process
           {
             int ec = errno;
 
-            close (0);
-            close (1);
-            close (2);
+            fhg::syscall::close (STDIN_FILENO);
+            fhg::syscall::close (STDOUT_FILENO);
+            fhg::syscall::close (STDERR_FILENO);
 
             if (ec == EACCES)
               _exit (126);
