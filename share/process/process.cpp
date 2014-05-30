@@ -387,6 +387,33 @@ namespace process
       }
       sigset_t _signals_to_restore;
     };
+
+    namespace sync
+    {
+      char synchronization_buffer = '0';
+
+      void wait_for_ping (int fd)
+      {
+        if ( fhg::syscall::read
+             (fd, &synchronization_buffer, sizeof (synchronization_buffer))
+           != sizeof (synchronization_buffer)
+           )
+        {
+          detail::do_error ("synchronization failed: other side did not write");
+        }
+      }
+
+      void ping (int fd)
+      {
+        if ( fhg::syscall::write
+             (fd, &synchronization_buffer, sizeof (synchronization_buffer))
+           != sizeof (synchronization_buffer)
+           )
+        {
+          detail::do_error ("synchronization failed: other side did not read");
+        }
+      }
+    }
   }
 
   execute_return_type execute ( std::string const & command
@@ -487,7 +514,6 @@ namespace process
 
     int synchronization_fd_parent_child[2] = { -1, -1 };
     int synchronization_fd_child_parent[2] = { -1, -1 };
-    char synchronization_buffer = '0';
     fhg::syscall::pipe (synchronization_fd_parent_child);
     fhg::syscall::pipe (synchronization_fd_child_parent);
 
@@ -503,29 +529,10 @@ namespace process
                                     , synchronization_fd_child_parent
                                     );
 
-        if ( fhg::syscall::write
-             ( synchronization_fd_child_parent[detail::WR]
-             , &synchronization_buffer
-             , sizeof (synchronization_buffer)
-             )
-           != sizeof (synchronization_buffer)
-           )
-        {
-          detail::do_error ("synchronization failed: parent did not read");
-        }
+        sync::ping (synchronization_fd_child_parent[detail::WR]);
 
         // wait for parent setting up threads
-
-        if ( fhg::syscall::read
-             ( synchronization_fd_parent_child[detail::RD]
-             , &synchronization_buffer
-             , sizeof (synchronization_buffer)
-             )
-           != sizeof (synchronization_buffer)
-           )
-        {
-          detail::do_error ("synchronization failed: parent did not write");
-        }
+        sync::wait_for_ping (synchronization_fd_parent_child[detail::RD]);
 
         fhg::syscall::close (synchronization_fd_parent_child[detail::RD]);
         fhg::syscall::close (synchronization_fd_child_parent[detail::WR]);
@@ -585,16 +592,8 @@ namespace process
                                      , synchronization_fd_child_parent
                                      );
 
-        if ( fhg::syscall::read
-             ( synchronization_fd_child_parent[detail::RD]
-             , &synchronization_buffer
-             , sizeof (synchronization_buffer)
-             )
-           != sizeof (synchronization_buffer)
-           )
-        {
-          detail::do_error ("synchronization failed: child did not write");
-        }
+        // wait for child setting up pipes
+        sync::wait_for_ping (synchronization_fd_child_parent[detail::RD]);
 
         //! \note threads get ownership of respective file descriptors
         struct close_on_scope_exit : boost::noncopyable
@@ -640,16 +639,7 @@ namespace process
           }
           );
 
-        if ( fhg::syscall::write
-             ( synchronization_fd_parent_child[detail::WR]
-             , &synchronization_buffer
-             , sizeof (synchronization_buffer)
-             )
-           != sizeof (synchronization_buffer)
-           )
-        {
-          detail::do_error ("synchronization failed: child did not read");
-        }
+        sync::ping (synchronization_fd_parent_child[detail::WR]);
 
         fhg::syscall::close (synchronization_fd_parent_child[detail::WR]);
         fhg::syscall::close (synchronization_fd_child_parent[detail::RD]);
