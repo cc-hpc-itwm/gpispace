@@ -277,19 +277,11 @@ namespace process
           const std::size_t to_write
             (std::min (std::size_t (PIPE_BUF), bytes_left));
 
-          const ssize_t w (write (fd, buf, to_write));
+          try
+          {
+            const ssize_t w (fhg::syscall::write (fd, buf, to_write));
 
-          if (w < 0)
-            {
-              if (errno == EPIPE)
-              {
-                fd = -1;
-                break;
-              }
-
-              detail::do_error ("write stdin failed", errno);
-            }
-          else if (w == 0)
+            if (w == 0)
             {
               fd = -1;
             }
@@ -299,6 +291,16 @@ namespace process
               if (written) *written += w;
               bytes_left -= w;
             }
+          }
+          catch (boost::system::system_error const& err)
+          {
+            if (err.code() == boost::system::errc::broken_pipe)
+            {
+              fd = -1;
+              break;
+            }
+            throw;
+          }
 
           boost::this_thread::interruption_point();
         }
