@@ -373,14 +373,6 @@ namespace process
 
       const_iterator begin (void) const { return _map.begin(); }
       const_iterator end (void) const { return _map.end(); }
-
-      ~param_map ()
-      {
-        for (std::string entry : _map | boost::adaptors::map_values)
-          {
-            unlink (entry.c_str());
-          }
-      }
     };
   }
 
