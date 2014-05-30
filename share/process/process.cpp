@@ -471,7 +471,7 @@ namespace process
     sigset_t signals_to_restore;
     sigemptyset (&signals_to_block);
     sigaddset (&signals_to_block, SIGPIPE);
-    sigprocmask (SIG_BLOCK, &signals_to_block, &signals_to_restore);
+    pthread_sigmask (SIG_BLOCK, &signals_to_block, &signals_to_restore);
 
     int synchronization_fd_parent_child[2] = { -1, -1 };
     int synchronization_fd_child_parent[2] = { -1, -1 };
@@ -697,7 +697,7 @@ namespace process
           }
       }
 
-    sigprocmask (SIG_UNBLOCK, &signals_to_restore, nullptr);
+    pthread_sigmask (SIG_UNBLOCK, &signals_to_restore, nullptr);
 
     return ret;
   }
