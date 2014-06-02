@@ -30,6 +30,7 @@ namespace fhg
     int open (const char* pathname, int flags);
     int open (const char* pathname, int flags, mode_t mode);
     void pipe (int pipefd[2]);
+    void pthread_sigmask (int how, const sigset_t* set, sigset_t* oset);
     ssize_t read (int fd, void* buf, size_t count);
     pid_t setsid();
     void setsockopt (int sockfd, int level, int optname, const void* optval, socklen_t optlen);

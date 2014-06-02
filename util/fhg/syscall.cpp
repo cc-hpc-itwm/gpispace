@@ -56,6 +56,16 @@ namespace fhg
         }
         return rc;
       }
+
+      template<typename R>
+        void non_zero_is_error_code (R rc)
+      {
+        if (rc != R (0))
+        {
+          throw boost::system::system_error
+            (boost::system::error_code (rc, boost::system::system_category()));
+        }
+      }
     }
 
     int accept (int sockfd, struct sockaddr* addr, socklen_t* addrlen)
@@ -154,6 +164,11 @@ namespace fhg
     void pipe (int pipefd[2])
     {
       return negative_one_fails_with_errno<void> (::pipe (pipefd));
+    }
+
+    void pthread_sigmask (int how, const sigset_t* set, sigset_t* oset)
+    {
+      return non_zero_is_error_code (::pthread_sigmask (how, set, oset));
     }
 
     ssize_t read (int fd, void* buf, size_t count)

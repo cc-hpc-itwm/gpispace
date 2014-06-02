@@ -294,11 +294,13 @@ namespace process
         sigset_t signals_to_block;
         fhg::syscall::sigemptyset (&signals_to_block);
         fhg::syscall::sigaddset (&signals_to_block, SIGPIPE);
-        pthread_sigmask (SIG_BLOCK, &signals_to_block, &_signals_to_restore);
+        fhg::syscall::pthread_sigmask
+          (SIG_BLOCK, &signals_to_block, &_signals_to_restore);
       }
       ~scoped_SIGPIPE_block()
       {
-        pthread_sigmask (SIG_UNBLOCK, &_signals_to_restore, nullptr);
+        fhg::syscall::pthread_sigmask
+          (SIG_UNBLOCK, &_signals_to_restore, nullptr);
       }
       sigset_t _signals_to_restore;
     };
