@@ -292,8 +292,8 @@ namespace process
       scoped_SIGPIPE_block()
       {
         sigset_t signals_to_block;
-        sigemptyset (&signals_to_block);
-        sigaddset (&signals_to_block, SIGPIPE);
+        fhg::syscall::sigemptyset (&signals_to_block);
+        fhg::syscall::sigaddset (&signals_to_block, SIGPIPE);
         pthread_sigmask (SIG_BLOCK, &signals_to_block, &_signals_to_restore);
       }
       ~scoped_SIGPIPE_block()

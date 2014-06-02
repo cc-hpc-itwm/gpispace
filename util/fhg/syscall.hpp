@@ -37,6 +37,8 @@ namespace fhg
     void shm_unlink (const char* name);
     void shutdown (int sockfd, int how);
     void sigaction (int signum, const struct sigaction* act, struct sigaction* oldact);
+    void sigaddset (sigset_t* set, int signum);
+    void sigemptyset (sigset_t* set);
     sighandler_t signal (int signum, sighandler_t handler);
     int socket (int domain, int type, int protocol);
     void stat (const char* path, struct stat* buf);

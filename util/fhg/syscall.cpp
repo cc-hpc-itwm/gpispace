@@ -193,6 +193,16 @@ namespace fhg
         (::sigaction (signum, act, oldact));
     }
 
+    void sigaddset (sigset_t* set, int signum)
+    {
+      return negative_one_fails_with_errno<void> (::sigaddset (set, signum));
+    }
+
+    void sigemptyset (sigset_t* set)
+    {
+      return negative_one_fails_with_errno<void> (::sigemptyset (set));
+    }
+
     sighandler_t signal (int signum, sighandler_t handler)
     {
       return SIG_ERR_fails_with_errno (::signal (signum, handler));
