@@ -22,6 +22,9 @@ namespace fhg
     [[noreturn]] void execvp (const char* filename, char* const argv[]);
     pid_t fork();
     void ftruncate (int fd, off_t length);
+    char* getenv (const char* name);
+    pid_t getpid();
+    uid_t getuid();
     void kill (pid_t pid, int sig);
     void listen (int sockfd, int backlog);
     void* mmap (void* addr, size_t length, int prot, int flags, int fd, off_t offset);

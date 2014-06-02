@@ -66,6 +66,12 @@ namespace fhg
             (boost::system::error_code (rc, boost::system::system_category()));
         }
       }
+
+      template<typename R>
+        R cannot_fail (R rc)
+      {
+        return rc;
+      }
     }
 
     int accept (int sockfd, struct sockaddr* addr, socklen_t* addrlen)
@@ -124,6 +130,21 @@ namespace fhg
     void ftruncate (int fd, off_t length)
     {
       return negative_one_fails_with_errno<void> (::ftruncate (fd, length));
+    }
+
+    char* getenv (const char* name)
+    {
+      return cannot_fail (::getenv (name));
+    }
+
+    pid_t getpid()
+    {
+      return cannot_fail (::getpid());
+    }
+
+    uid_t getuid()
+    {
+      return cannot_fail (::getuid());
     }
 
     void kill (pid_t pid, int sig)

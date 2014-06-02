@@ -211,7 +211,7 @@ namespace process
     {
       static unsigned long i (0);
 
-      char * TMPDIR (getenv ("TMPDIR"));
+      char * TMPDIR (fhg::syscall::getenv ("TMPDIR"));
 
       std::string dir ((TMPDIR != nullptr) ? TMPDIR : P_tmpdir);
 
@@ -224,7 +224,7 @@ namespace process
       do
       {
         fname = ( boost::format ("%1%/process.%2%.%3%.%4%")
-                % dir % getuid() % getpid() % i++
+                % dir % fhg::syscall::getuid() % fhg::syscall::getpid() % i++
                 ).str();
       }
       while (boost::filesystem::exists (fname));
