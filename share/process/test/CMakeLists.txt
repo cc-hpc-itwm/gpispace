@@ -55,3 +55,12 @@ fhg_add_test (child_stops_consuming.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES process
 )
+
+add_executable (threadsafety_binary threadsafety_binary.cpp)
+fhg_add_test (threadsafety.cpp
+  ARGS ${CMAKE_CURRENT_BINARY_DIR}/threadsafety_binary --catch_system_errors=no
+  PROJECT share_process
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES process
+  DEPENDS threadsafety_binary
+)
