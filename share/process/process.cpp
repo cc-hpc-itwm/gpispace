@@ -209,7 +209,16 @@ namespace process
   {
     static std::string tempname()
     {
-      static unsigned long i (0);
+      static struct
+      {
+        unsigned long operator++(int)
+        {
+          boost::mutex::scoped_lock const _ (_mutex);
+          return _counter++;
+        }
+        boost::mutex _mutex;
+        unsigned long _counter = 0;
+      } count;
 
       char * TMPDIR (fhg::syscall::getenv ("TMPDIR"));
 
@@ -224,7 +233,7 @@ namespace process
       do
       {
         fname = ( boost::format ("%1%/process.%2%.%3%.%4%")
-                % dir % fhg::syscall::getuid() % fhg::syscall::getpid() % i++
+                % dir % fhg::syscall::getuid() % fhg::syscall::getpid() % count++
                 ).str();
       }
       while (boost::filesystem::exists (fname));
