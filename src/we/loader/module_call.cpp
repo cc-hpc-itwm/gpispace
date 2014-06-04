@@ -251,16 +251,14 @@ namespace we
 
       //! \todo wait
 
-      typedef std::pair< we::port_id_type
-                       , we::type::port_t
-                       > port_by_id_type;
-
       expr::eval::context out;
 
       loader[module_call.module()].call
         (module_call.function(), context, input (act), out, pointers);
 
-      for (const port_by_id_type& port_by_id : act.transition().ports_output())
+      for ( std::pair<we::port_id_type, we::type::port_t> const& port_by_id
+          : act.transition().ports_output()
+          )
       {
         const we::port_id_type& port_id (port_by_id.first);
         const we::type::port_t& port (port_by_id.second);
