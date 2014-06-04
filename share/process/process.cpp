@@ -676,24 +676,29 @@ namespace process
         }
 
         boost::thread thread_buf_stdin
-          ( thread::writer
-          , in[detail::WR]
-          , buf_stdin.buf()
-          , buf_stdin.size()
+          ( [&buf_stdin, &in]
+          {
+            thread::writer
+              (in[detail::WR], buf_stdin.buf(), buf_stdin.size());
+          }
           );
 
         boost::thread thread_buf_stdout
-          ( thread::reader
-          , out[detail::RD]
-          , buf_stdout.buf(), buf_stdout.size()
-          , std::ref (ret.bytes_read_stdout)
+          ( [&buf_stdout, &out, &ret]
+          {
+            thread::reader ( out[detail::RD]
+                           , buf_stdout.buf(), buf_stdout.size()
+                           , ret.bytes_read_stdout
+                           );
+          }
           );
 
         boost::thread thread_buf_stderr
-          ( thread::circular_reader
-          , err[detail::RD]
-          , std::ref (buf_stderr)
-          , std::ref (ret.bytes_read_stderr)
+          ( [&buf_stderr, &err, &ret]
+          {
+            thread::circular_reader
+              (err[detail::RD], buf_stderr, ret.bytes_read_stderr);
+          }
           );
 
         if ( fhg::syscall::write
