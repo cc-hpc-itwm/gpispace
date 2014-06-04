@@ -5,14 +5,27 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/field.hpp>
 
+#include <fvm-pc/pc.hpp>
+// used
+// fvmGetShmemPtr
+// fvmGetShmemSize
+// fvmGetGlobalData
+// fvmPutGlobalData
+// waitComm
+
 //! \todo remove, needed to make a complete type
 #include <we/type/net.hpp>
 
 #include <fhg/assert.hpp>
 
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
+
+#include <functional>
 #include <unordered_map>
 
 #include <iostream>
+#include <string>
 
 namespace we
 {
@@ -47,24 +60,17 @@ namespace we
         (expr::parse::parser (expression).eval_all (context));
     }
 
-    class memory_buffer : boost::noncopyable
+    class buffer
     {
     public:
-      memory_buffer ( we::type::activity_t const& activity
-                    , std::string const& expression
-                    )
-        : _size (evaluate_size_or_die (activity, expression))
-        , _buffer (new char[_size])
+      buffer (unsigned long position, unsigned long size)
+        : _size (size)
+        , _position (position)
       {}
 
-      ~memory_buffer()
+      unsigned long position() const
       {
-        delete _buffer;
-      }
-
-      void* ptr() const
-      {
-        return static_cast<void*> (_buffer);
+        return _position;
       }
       unsigned long size() const
       {
@@ -73,7 +79,7 @@ namespace we
 
     private:
       unsigned long _size;
-      char* _buffer;
+      unsigned long _position;
     };
 
     struct interval
@@ -243,9 +249,14 @@ namespace we
     }
 
     void transfer
-      ( std::string const& head
-      , std::string const& sep
-      , std::unordered_map<std::string, memory_buffer*> memory_buffer
+    ( std::function<fvmCommHandle_t ( const fvmAllocHandle_t
+                                    , const fvmOffset_t
+                                    , const fvmSize_t
+                                    , const fvmShmemOffset_t
+                                    , const fvmAllocHandle_t
+                                    )
+                   > do_transfer
+      , std::unordered_map<std::string, buffer> memory_buffer
       , expr::eval::context& context
       , std::string const& global
       , std::string const& local
@@ -260,17 +271,7 @@ namespace we
         local::range const& local (transfer.first);
         global::range const& global (transfer.second);
 
-        std::cout << head << ' '
-                  << "local {" << local.buffer()
-                  << ", " << local.offset()
-                  << ", " << local.size()
-                  << '}'
-                  << ' ' << sep << ' '
-                  << "global {" << global.handle().name()
-                  << ", " << global.offset()
-                  << ", " << global.size()
-                  << '}'
-                  << std::endl;
+        fhg_assert (local.size() == global.size());
 
         if (!memory_buffer.count (local.buffer()))
         {
@@ -279,7 +280,7 @@ namespace we
         }
 
         if ( local.offset() + local.size()
-           > memory_buffer.at (local.buffer())->size()
+           > memory_buffer.at (local.buffer()).size()
            )
         {
           //! \todo specific exception
@@ -287,6 +288,27 @@ namespace we
         }
 
         //! \todo check global range, needs knowledge about global memory
+
+        std::cout << "local {" << local.buffer()
+                  << ", " << local.offset()
+                  << ", " << local.size()
+                  << '}'
+                  << ' '
+                  << "global {" << global.handle().name()
+                  << ", " << global.offset()
+                  << ", " << global.size()
+                  << '}'
+                  << std::endl;
+
+        waitComm
+          ( do_transfer
+            ( std::stoul (global.handle().name(), nullptr, 16)
+            , global.offset()
+            , local.size()
+            , memory_buffer.at (local.buffer()).position() + local.offset()
+            , 0
+            )
+          );
       }
     }
   }
@@ -299,27 +321,44 @@ namespace we
                      , const we::type::module_call_t& module_call
                      )
     {
-      std::list<memory_buffer> buffers;
+      unsigned long position (0);
+
       std::map<std::string, void*> pointers;
-      std::unordered_map<std::string, memory_buffer*> memory_buffer;
+      std::unordered_map<std::string, buffer> memory_buffer;
 
       for ( std::pair<std::string, std::string> const& buffer_and_size
           : module_call.memory_buffers()
           )
       {
-        buffers.emplace_back (act, buffer_and_size.second);
-        pointers.emplace (buffer_and_size.first, buffers.back().ptr());
-        memory_buffer.emplace (buffer_and_size.first, &buffers.back());
+        char* const local_memory (static_cast<char*> (fvmGetShmemPtr()));
+
+        unsigned long const size
+          (evaluate_size_or_die (act, buffer_and_size.second));
+
+        memory_buffer.emplace (buffer_and_size.first, buffer (position, size));
+        pointers.emplace (buffer_and_size.first, local_memory + position);
+
+        position += size;
+
+        if (position > fvmGetShmemSize())
+        {
+          //! \todo specific exception
+          throw std::runtime_error
+            ( ( boost::format ("not enough local memory: %1% > %2%")
+              % position
+              % fvmGetShmemSize()
+              ).str()
+            );
+        }
       }
 
       for (type::memory_transfer const& mg : module_call.memory_gets())
       {
         expr::eval::context context (input (act));
 
-        transfer ("GET", "<<", memory_buffer, context, mg.global(), mg.local());
+        transfer
+          (fvmGetGlobalData, memory_buffer, context, mg.global(), mg.local());
       }
-
-      //! \todo wait
 
       expr::eval::context out;
 
@@ -340,10 +379,9 @@ namespace we
       {
         expr::eval::context context (out);
 
-        transfer ("PUT", ">>", memory_buffer, context, mp.global(), mp.local());
+        transfer
+          (fvmPutGlobalData, memory_buffer, context, mp.global(), mp.local());
       }
-
-      //! \todo wait
     }
   }
 }

@@ -23,6 +23,7 @@ add_subdirectory(plugin)
 add_subdirectory (fhgcom)
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
+include_directories (${CMAKE_SOURCE_DIR}/fvm-pc)
 
 find_library (IBverbs_LIBRARY
   NAMES ibverbs
@@ -163,6 +164,7 @@ target_link_libraries (pnet
   ${Boost_SERIALIZATION_LIBRARY}
   ${Boost_DATE_TIME_LIBRARY}
   ${CMAKE_DL_LIBS}
+  fvm-pc-compat
 )
 
 add_subdirectory (xml/tests)
