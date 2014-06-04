@@ -22,6 +22,15 @@ DEP += $(MAP_IMPL)
 
 ###############################################################################
 
+WE_EXEC_ENV += FVM_PC_SHMSZ=524288000
+WE_EXEC_ENV += FVM_PC_FVMSZ=524288000
+
+WE_EXEC_LOAD += $(SDPA_HOME)/libexec/sdpa/fake/libfvm-pc.so
+WE_EXEC_CMD = we-exec
+WE_EXEC_WORKER = 1
+
+###############################################################################
+
 ifndef SDPA_HOME
  $(error variable SDPA_HOME not set)
 endif
