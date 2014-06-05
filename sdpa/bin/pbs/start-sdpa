@@ -194,7 +194,12 @@ function wait_for_port_on_host ()
     local host="${1}"; shift
     local port="${1}"; shift
 
-    local check_port=$(which nc)
+    local check_port=$(which nc 2>/dev/null)
+    if [ $? -ne 0 ]
+    then
+        error 1 "could not locate tool 'nc', cannot wait for '${host}:${port}'"
+    fi
+
     until [ ${deadline} -eq 0 ]
     do
         ${check_port} -w 1 "${host}" "${port}" </dev/null
