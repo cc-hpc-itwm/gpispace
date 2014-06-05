@@ -187,6 +187,49 @@ parse_capability()
     return 0
 }
 
+# wait_for_port_on_host timeout host port
+function wait_for_port_on_host ()
+{
+    local deadline="${1}"; shift
+    local host="${1}"; shift
+    local port="${1}"; shift
+
+    local check_port=$(which nc)
+    until [ ${deadline} -eq 0 ]
+    do
+        ${check_port} -w 1 "${host}" "${port}"
+        if [ $? -eq 0 ]
+        then
+            return 0
+        fi
+        deadline=$((deadline - 1))
+    done
+}
+
+function wait_for_process ()
+{
+    local deadline="${1}"; shift
+    local name="${1}"; shift
+    local kvs_host="${1}"; shift
+    local kvs_port="${1}"; shift
+
+    local host_port=()
+
+    until [ $deadline -eq 0 ]
+    do
+        host_port=( $("${sdpa_home}/bin/fhgkvsc" -H "${kvs_host}" -P "${kvs_port}" -g p2p.peer | grep -B 2 "$name" | head -n 2 | awk '{print $3}') )
+        if [ ${#host_port[@]} -eq 2 ]
+        then
+            if wait_for_port_on_host 1 "${host_port[0]}" "${host_port[1]}"
+            then
+                return 0
+            fi
+        fi
+        sleep 1
+        deadline=$((deadline - 1))
+    done
+}
+
 # Execute function on_ctrlC() receiving SIGINT signal
 #
 trap 'on_ctrlC' SIGINT
@@ -198,6 +241,7 @@ gpi_enabled=true
 delete_logfiles=true
 app_path=
 number_of_groups=1
+kvs_timeout=15
 
 # guess memory sizes
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
@@ -426,6 +470,13 @@ then
     "${sdpa}" -s "${state_dir}" stop
     error 3 "could not start kvs"
 fi
+
+if ! wait_for_port_on_host ${kvs_timeout} "${master}" "${kvs_port}"
+then
+    "${sdpa}" -s "${state_dir}" stop
+    error 3 "could not start kvs: failed after ${kvs_timeout} seconds"
+fi
+
 dry_run rexec $master "${script_start_orchestrator}" \
     $opt_verbose_flag \
     -s "$state_dir" \
@@ -440,6 +491,12 @@ if [ $ec -ne 0 ]
 then
     "${sdpa}" -s "${state_dir}" stop
     error 3 "could not start orchestrator"
+fi
+
+if ! wait_for_process ${kvs_timeout} "orchestrator" "${master}" "${kvs_port}"
+then
+    "${sdpa}" -s "${state_dir}" stop
+    error 3 "could not start orchestrator after ${kvs_timeout} seconds"
 fi
 
 if $gpi_enabled ; then
