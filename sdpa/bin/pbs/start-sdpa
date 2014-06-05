@@ -197,7 +197,7 @@ function wait_for_port_on_host ()
     local check_port=$(which nc)
     until [ ${deadline} -eq 0 ]
     do
-        ${check_port} -w 1 "${host}" "${port}"
+        ${check_port} -w 1 "${host}" "${port}" </dev/null
         if [ $? -eq 0 ]
         then
             return 0
