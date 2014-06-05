@@ -202,12 +202,13 @@ function wait_for_port_on_host ()
 
     until [ ${deadline} -eq 0 ]
     do
-        ${check_port} -w 1 "${host}" "${port}" </dev/null
-        if [ $? -eq 0 ]
+        if ${check_port} -w 0 "${host}" "${port}" </dev/null
         then
             return 0
+        else
+            sleep 1
+            deadline=$((deadline - 1))
         fi
-        deadline=$((deadline - 1))
     done
 }
 
