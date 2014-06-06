@@ -112,20 +112,16 @@ namespace process
         }
       }
 
-      void reader ( int fd
-                  , void * output
-                  , const std::size_t & max_size
-                  , std::size_t & bytes_read
-                  )
+      void reader (int fd, buffer output, std::size_t& bytes_read)
       {
-        char * buf (static_cast<char *>(output));
+        char* buf (static_cast<char*> (output.buf()));
 
         bytes_read = 0;
 
         for (;;)
         {
           const std::size_t to_read
-            (std::min (std::size_t (PIPE_BUF), max_size - bytes_read));
+            (std::min (std::size_t (PIPE_BUF), output.size() - bytes_read));
 
           const ssize_t r (fhg::syscall::read (fd, buf, to_read));
 
@@ -141,16 +137,13 @@ namespace process
         }
       }
 
-      void writer ( int fd
-                  , const void * input
-                  , std::size_t bytes_left
-                  , std::size_t& written
-                  )
+      void writer (int fd, const_buffer input, std::size_t& written)
       {
-        const char * buf (static_cast<const char*> (input));
+        const char* buf (static_cast<const char*> (input.buf()));
 
         written = 0;
 
+        std::size_t bytes_left (input.size());
         while (bytes_left > 0)
         {
           const std::size_t to_write
@@ -397,8 +390,7 @@ namespace process
               //! expects.
               std::size_t dummy_written;
               thread::writer ( file._fd
-                             , file_input.buf()
-                             , file_input.size()
+                             , file_input.to_buffer()
                              , dummy_written
                              );
             }
@@ -428,8 +420,7 @@ namespace process
               output_file_unopened[reader_i] = boost::none;
 
               thread::reader ( file._fd
-                             , file_output.buf()
-                             , file_output.size()
+                             , file_output.to_buffer()
                              , ret.bytes_read_files_output[reader_i]
                              );
             }
@@ -543,7 +534,7 @@ namespace process
 
           close_on_scope_exit const _ (in.write);
           thread::writer ( in.write
-                         , buf_stdin.buf(), buf_stdin.size()
+                         , buf_stdin
                          , ret.bytes_written_stdin
                          );
         }
@@ -554,7 +545,7 @@ namespace process
         {
           close_on_scope_exit const _ (out.read);
           thread::reader ( out.read
-                         , buf_stdout.buf(), buf_stdout.size()
+                         , buf_stdout
                          , ret.bytes_read_stdout
                          );
         }

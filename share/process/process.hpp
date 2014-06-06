@@ -47,6 +47,7 @@ namespace process
         , _param (param)
       {}
 
+      buffer_t const& to_buffer() const { return _buf; }
       T buf (void) const { return _buf.buf(); }
       const std::size_t & size (void) const { return _buf.size(); }
       const std::string & param (void) const { return _param; }
