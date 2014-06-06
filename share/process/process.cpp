@@ -25,11 +25,8 @@ namespace process
         int write;
       };
     };
-  }
 
-  namespace detail
-  {
-    inline void prepare_parent_pipes
+    void prepare_parent_pipes
       (pipe_fds out, pipe_fds err, pipe_fds sync_pc, pipe_fds sync_cp)
     {
       fhg::syscall::close (out.write);
@@ -40,7 +37,7 @@ namespace process
 
     /* ********************************************************************* */
 
-    inline void prepare_child_pipes
+    void prepare_child_pipes
       (pipe_fds in, pipe_fds out, pipe_fds err, pipe_fds sync_pc, pipe_fds sync_cp)
     {
       fhg::syscall::close (in.write);
@@ -88,7 +85,7 @@ namespace process
         }
       }
     }
-  } // namespace detail
+  }
 
   namespace thread
   {
@@ -469,12 +466,12 @@ namespace process
     if (pid == pid_t (0))
     {
       // child: should not produce any output on stdout/stderr
-      detail::prepare_child_pipes ( in
-                                  , out
-                                  , err
-                                  , synchronization_fd_parent_child
-                                  , synchronization_fd_child_parent
-                                  );
+      prepare_child_pipes ( in
+                          , out
+                          , err
+                          , synchronization_fd_parent_child
+                          , synchronization_fd_child_parent
+                          );
 
       sync::ping (synchronization_fd_child_parent.write);
 
@@ -533,11 +530,11 @@ namespace process
     else
     {
       // parent
-      detail::prepare_parent_pipes ( out
-                                   , err
-                                   , synchronization_fd_parent_child
-                                   , synchronization_fd_child_parent
-                                   );
+      prepare_parent_pipes ( out
+                           , err
+                           , synchronization_fd_parent_child
+                           , synchronization_fd_child_parent
+                           );
 
       // wait for child setting up pipes
       sync::wait_for_ping (synchronization_fd_child_parent.read);
