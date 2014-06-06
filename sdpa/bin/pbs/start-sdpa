@@ -510,10 +510,17 @@ then
     error 3 "could not start orchestrator"
 fi
 
-if ! wait_for_process ${network_retries} "orchestrator" "${master}" "${kvs_port}"
+wait_for_process ${network_retries} "orchestrator" "${master}" "${kvs_port}"
+ec=$?
+if [ $ec -ne 0 ]
 then
     "${sdpa}" -s "${state_dir}" stop
-    error 3 "could not start orchestrator, failed to appear after ${network_retries} seconds"
+    if [ $ec -eq 1 ]
+    then
+        error 3 "could not start orchestrator, failed to appear after ${network_retries} seconds"
+    else
+        error 3 "could not start orchestrator, could not connect after ${network_retries} seconds"
+    fi
 fi
 
 if $gpi_enabled ; then
