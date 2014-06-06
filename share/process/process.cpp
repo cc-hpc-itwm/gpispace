@@ -393,7 +393,12 @@ namespace process
     boost::thread_group writers;
     boost::thread_group readers;
     std::list<std::unique_ptr<detail::tempfifo_t>> tempfifos;
+    std::vector<boost::optional<std::string>> output_file_unopened
+      (files_output.size(), boost::none);
+    std::vector<boost::optional<std::string>> input_file_unopened
+      (files_input.size(), boost::none);
 
+    std::size_t writer_i (0);
     for (file_const_buffer const& file_input : files_input)
       {
         std::string filename (detail::tempname());
@@ -403,12 +408,16 @@ namespace process
 
         writers.add_thread
           ( new boost::thread
-            ([filename, file_input, &ret]
+            ([filename, file_input, &ret, writer_i, &input_file_unopened]
             {
               scoped_SIGPIPE_block const sigpipe_block;
 
+              input_file_unopened[writer_i] = filename;
+
               scoped_file const file
                 (filename.c_str(), O_WRONLY);
+
+              input_file_unopened[writer_i] = boost::none;
 
               //! \note Is correct, but value has no use as writes
               //! more than other side consumes, thus is not what user
@@ -423,6 +432,7 @@ namespace process
             )
           );
         param_map.emplace (file_input.param(), filename);
+        ++writer_i;
       }
 
     std::size_t reader_i (0);
@@ -435,10 +445,14 @@ namespace process
 
         readers.add_thread
           ( new boost::thread
-            ([filename, file_output, &ret, reader_i]
+            ([filename, file_output, &ret, reader_i, &output_file_unopened]
             {
+              output_file_unopened[reader_i] = filename;
+
               scoped_file const file
                 (filename.c_str(), O_RDONLY);
+
+              output_file_unopened[reader_i] = boost::none;
 
               thread::reader ( file._fd
                              , file_output.buf()
@@ -604,6 +618,21 @@ namespace process
       thread_buf_stdin.join();
       thread_buf_stdout.join();
       thread_buf_stderr.join();
+
+      for (boost::optional<std::string> const& e : input_file_unopened)
+      {
+        if (e)
+        {
+          scoped_file const file (e->c_str(), O_RDONLY);
+        }
+      }
+      for (boost::optional<std::string> const& e : output_file_unopened)
+      {
+        if (e)
+        {
+          scoped_file const file (e->c_str(), O_WRONLY);
+        }
+      }
 
       writers.join_all();
       readers.join_all();
