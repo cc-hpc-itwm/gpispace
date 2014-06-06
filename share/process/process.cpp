@@ -35,8 +35,6 @@ namespace process
       fhg::syscall::close (sync_cp.write);
     }
 
-    /* ********************************************************************* */
-
     void prepare_child_pipes
       (pipe_fds in, pipe_fds out, pipe_fds err, pipe_fds sync_pc, pipe_fds sync_cp)
     {
@@ -89,8 +87,6 @@ namespace process
 
   namespace thread
   {
-    /* ********************************************************************* */
-
     static void circular_reader ( int fd
                                 , circular_buffer & circ_buf
                                 , std::size_t & bytes_read
@@ -146,8 +142,6 @@ namespace process
       }
     }
 
-    /* ********************************************************************* */
-
     static void writer ( int fd
                        , const void * input
                        , std::size_t bytes_left
@@ -191,8 +185,6 @@ namespace process
       }
     }
   } // namespace thread
-
-  /* *********************************************************************** */
 
   namespace
   {
