@@ -488,7 +488,7 @@ fi
 if ! wait_for_port_on_host ${network_retries} "${master}" "${kvs_port}"
 then
     "${sdpa}" -s "${state_dir}" stop
-    error 3 "could not start kvs: failed after ${network_retries} seconds"
+    error 3 "could not start kvs: failed to appear at ${master}:${kvs_port} after ${network_retries} seconds"
 fi
 
 dry_run rexec $master "${script_start_orchestrator}" \
@@ -510,7 +510,7 @@ fi
 if ! wait_for_process ${network_retries} "orchestrator" "${master}" "${kvs_port}"
 then
     "${sdpa}" -s "${state_dir}" stop
-    error 3 "could not start orchestrator after ${network_retries} seconds"
+    error 3 "could not start orchestrator, failed to appear after ${network_retries} seconds"
 fi
 
 if $gpi_enabled ; then
