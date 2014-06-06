@@ -83,111 +83,108 @@ namespace process
         }
       }
     }
-  }
 
-  namespace thread
-  {
-    static void circular_reader ( int fd
-                                , circular_buffer & circ_buf
-                                , std::size_t & bytes_read
-                                )
+    namespace thread
     {
-      std::vector<char> buf (PIPE_BUF);
-
-      bytes_read = 0;
-
-      for (;;)
+      void circular_reader ( int fd
+                           , circular_buffer & circ_buf
+                           , std::size_t & bytes_read
+                           )
       {
-        const ssize_t r (fhg::syscall::read (fd, buf.data(), PIPE_BUF));
+        std::vector<char> buf (PIPE_BUF);
 
-        if (r == 0)
+        bytes_read = 0;
+
+        for (;;)
         {
-          break;
-        }
-        else
-        {
-          bytes_read += r;
+          const ssize_t r (fhg::syscall::read (fd, buf.data(), PIPE_BUF));
 
-          std::copy (buf.data(), buf.data() + r, std::back_inserter (circ_buf));
-        }
-      }
-    }
-
-    static void reader ( int fd
-                       , void * output
-                       , const std::size_t & max_size
-                       , std::size_t & bytes_read
-                       )
-    {
-      char * buf (static_cast<char *>(output));
-
-      bytes_read = 0;
-
-      for (;;)
-      {
-        const std::size_t to_read
-          (std::min (std::size_t (PIPE_BUF), max_size - bytes_read));
-
-        const ssize_t r (fhg::syscall::read (fd, buf, to_read));
-
-        if (r == 0)
-        {
-          break;
-        }
-        else
-        {
-          buf += r;
-          bytes_read += r;
-        }
-      }
-    }
-
-    static void writer ( int fd
-                       , const void * input
-                       , std::size_t bytes_left
-                       , std::size_t& written
-                       )
-    {
-      const char * buf (static_cast<const char*> (input));
-
-      written = 0;
-
-      while (bytes_left > 0)
-      {
-        const std::size_t to_write
-          (std::min (std::size_t (PIPE_BUF), bytes_left));
-
-        try
-        {
-          const ssize_t w (fhg::syscall::write (fd, buf, to_write));
-
-          if (w == 0)
+          if (r == 0)
           {
             break;
           }
           else
           {
-            buf += w;
-            written += w;
-            bytes_left -= w;
+            bytes_read += r;
+
+            std::copy (buf.data(), buf.data() + r, std::back_inserter (circ_buf));
           }
         }
-        catch (boost::system::system_error const& err)
+      }
+
+      void reader ( int fd
+                  , void * output
+                  , const std::size_t & max_size
+                  , std::size_t & bytes_read
+                  )
+      {
+        char * buf (static_cast<char *>(output));
+
+        bytes_read = 0;
+
+        for (;;)
         {
-          if (err.code() == boost::system::errc::broken_pipe)
+          const std::size_t to_read
+            (std::min (std::size_t (PIPE_BUF), max_size - bytes_read));
+
+          const ssize_t r (fhg::syscall::read (fd, buf, to_read));
+
+          if (r == 0)
           {
             break;
           }
-          throw;
+          else
+          {
+            buf += r;
+            bytes_read += r;
+          }
         }
+      }
 
-        boost::this_thread::interruption_point();
+      void writer ( int fd
+                  , const void * input
+                  , std::size_t bytes_left
+                  , std::size_t& written
+                  )
+      {
+        const char * buf (static_cast<const char*> (input));
+
+        written = 0;
+
+        while (bytes_left > 0)
+        {
+          const std::size_t to_write
+            (std::min (std::size_t (PIPE_BUF), bytes_left));
+
+          try
+          {
+            const ssize_t w (fhg::syscall::write (fd, buf, to_write));
+
+            if (w == 0)
+            {
+              break;
+            }
+            else
+            {
+              buf += w;
+              written += w;
+              bytes_left -= w;
+            }
+          }
+          catch (boost::system::system_error const& err)
+          {
+            if (err.code() == boost::system::errc::broken_pipe)
+            {
+              break;
+            }
+            throw;
+          }
+
+          boost::this_thread::interruption_point();
+        }
       }
     }
-  } // namespace thread
 
-  namespace
-  {
     std::string make_unique_temporary_filename()
     {
       static struct
