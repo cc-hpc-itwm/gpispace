@@ -14,54 +14,63 @@
 
 namespace process
 {
+  namespace
+  {
+    union pipe_fds
+    {
+      int both[2];
+      struct
+      {
+        int read;
+        int write;
+      };
+    };
+  }
+
   namespace detail
   {
-    enum {RD = 0, WR = 1};
-
-    /* ********************************************************************* */
-
     inline void prepare_parent_pipes
-      (int out[2], int err[2], int sync_pc[2], int sync_cp[2])
+      (pipe_fds out, pipe_fds err, pipe_fds sync_pc, pipe_fds sync_cp)
     {
-      fhg::syscall::close (out[WR]);
-      fhg::syscall::close (err[WR]);
-      fhg::syscall::close (sync_pc[RD]);
-      fhg::syscall::close (sync_cp[WR]);
+      fhg::syscall::close (out.write);
+      fhg::syscall::close (err.write);
+      fhg::syscall::close (sync_pc.read);
+      fhg::syscall::close (sync_cp.write);
     }
 
     /* ********************************************************************* */
 
     inline void prepare_child_pipes
-      (int in[2], int out[2], int err[2], int sync_pc[2], int sync_cp[2])
+      (pipe_fds in, pipe_fds out, pipe_fds err, pipe_fds sync_pc, pipe_fds sync_cp)
     {
-      fhg::syscall::close (in[WR]);
-      fhg::syscall::close (out[RD]);
-      fhg::syscall::close (err[RD]);
-      fhg::syscall::close (sync_pc[WR]);
-      fhg::syscall::close (sync_cp[RD]);
+      fhg::syscall::close (in.write);
+      fhg::syscall::close (out.read);
+      fhg::syscall::close (err.read);
+      fhg::syscall::close (sync_pc.write);
+      fhg::syscall::close (sync_cp.read);
 
-      if (in[RD] != STDIN_FILENO)
+      if (in.read != STDIN_FILENO)
       {
-        fhg::syscall::dup (in[RD], STDIN_FILENO);
-        fhg::syscall::close (in[RD]);
+        fhg::syscall::dup (in.read, STDIN_FILENO);
+        fhg::syscall::close (in.read);
       }
 
-      if (out[WR] != STDOUT_FILENO)
+      if (out.write != STDOUT_FILENO)
       {
-        fhg::syscall::dup (out[WR], STDOUT_FILENO);
-        fhg::syscall::close (out[WR]);
+        fhg::syscall::dup (out.write, STDOUT_FILENO);
+        fhg::syscall::close (out.write);
       }
 
-      if (err[WR] != STDERR_FILENO)
+      if (err.write != STDERR_FILENO)
       {
-        fhg::syscall::dup (err[WR], STDERR_FILENO);
-        fhg::syscall::close (err[WR]);
+        fhg::syscall::dup (err.write, STDERR_FILENO);
+        fhg::syscall::close (err.write);
       }
 
       int maximum_open_files (sysconf (_SC_OPEN_MAX));
       for (int i (3); i < maximum_open_files; ++i)
       {
-        if (i != sync_pc[RD] && i != sync_cp[WR])
+        if (i != sync_pc.read && i != sync_cp.write)
         {
           try
           {
@@ -349,10 +358,10 @@ namespace process
   {
     execute_return_type ret (files_output.size());
 
-    int in[2], out[2], err[2];
-    fhg::syscall::pipe (in);
-    fhg::syscall::pipe (out);
-    fhg::syscall::pipe (err);
+    pipe_fds in, out, err;
+    fhg::syscall::pipe (in.both);
+    fhg::syscall::pipe (out.both);
+    fhg::syscall::pipe (err.both);
 
     {
       std::set<std::string> seen_params;
@@ -450,10 +459,10 @@ namespace process
         ++reader_i;
       }
 
-    int synchronization_fd_parent_child[2] = { -1, -1 };
-    int synchronization_fd_child_parent[2] = { -1, -1 };
-    fhg::syscall::pipe (synchronization_fd_parent_child);
-    fhg::syscall::pipe (synchronization_fd_child_parent);
+    pipe_fds synchronization_fd_parent_child;
+    pipe_fds synchronization_fd_child_parent;
+    fhg::syscall::pipe (synchronization_fd_parent_child.both);
+    fhg::syscall::pipe (synchronization_fd_child_parent.both);
 
     pid_t pid (fhg::syscall::fork());
 
@@ -467,13 +476,13 @@ namespace process
                                   , synchronization_fd_child_parent
                                   );
 
-      sync::ping (synchronization_fd_child_parent[detail::WR]);
+      sync::ping (synchronization_fd_child_parent.write);
 
       // wait for parent setting up threads
-      sync::wait_for_ping (synchronization_fd_parent_child[detail::RD]);
+      sync::wait_for_ping (synchronization_fd_parent_child.read);
 
-      fhg::syscall::close (synchronization_fd_parent_child[detail::RD]);
-      fhg::syscall::close (synchronization_fd_child_parent[detail::WR]);
+      fhg::syscall::close (synchronization_fd_parent_child.read);
+      fhg::syscall::close (synchronization_fd_child_parent.write);
 
       std::vector<char> argv_buffer;
       std::vector<char*> argv;
@@ -531,7 +540,7 @@ namespace process
                                    );
 
       // wait for child setting up pipes
-      sync::wait_for_ping (synchronization_fd_child_parent[detail::RD]);
+      sync::wait_for_ping (synchronization_fd_child_parent.read);
 
       //! \note threads get ownership of respective file descriptors
       struct close_on_scope_exit : boost::noncopyable
@@ -551,8 +560,8 @@ namespace process
         {
           scoped_SIGPIPE_block const sigpipe_block;
 
-          close_on_scope_exit const _ (in[detail::WR]);
-          thread::writer ( in[detail::WR]
+          close_on_scope_exit const _ (in.write);
+          thread::writer ( in.write
                          , buf_stdin.buf(), buf_stdin.size()
                          , ret.bytes_written_stdin
                          );
@@ -562,8 +571,8 @@ namespace process
       boost::thread thread_buf_stdout
         ( [&buf_stdout, &out, &ret]
         {
-          close_on_scope_exit const _ (out[detail::RD]);
-          thread::reader ( out[detail::RD]
+          close_on_scope_exit const _ (out.read);
+          thread::reader ( out.read
                          , buf_stdout.buf(), buf_stdout.size()
                          , ret.bytes_read_stdout
                          );
@@ -573,16 +582,16 @@ namespace process
       boost::thread thread_buf_stderr
         ( [&buf_stderr, &err, &ret]
         {
-          close_on_scope_exit const _ (err[detail::RD]);
+          close_on_scope_exit const _ (err.read);
           thread::circular_reader
-            (err[detail::RD], buf_stderr, ret.bytes_read_stderr);
+            (err.read, buf_stderr, ret.bytes_read_stderr);
         }
         );
 
-      sync::ping (synchronization_fd_parent_child[detail::WR]);
+      sync::ping (synchronization_fd_parent_child.write);
 
-      fhg::syscall::close (synchronization_fd_parent_child[detail::WR]);
-      fhg::syscall::close (synchronization_fd_child_parent[detail::RD]);
+      fhg::syscall::close (synchronization_fd_parent_child.write);
+      fhg::syscall::close (synchronization_fd_child_parent.read);
 
       int status (0);
 
@@ -593,10 +602,10 @@ namespace process
       //! \note first consume, then subtract: bytes_written_stdin still
       //! grows while consuming!
       {
-        const std::size_t consumed (consume_everything (in[detail::RD]));
+        const std::size_t consumed (consume_everything (in.read));
         ret.bytes_written_stdin -= consumed;
       }
-      fhg::syscall::close (in[detail::RD]);
+      fhg::syscall::close (in.read);
 
       thread_buf_stdin.join();
       thread_buf_stdout.join();
