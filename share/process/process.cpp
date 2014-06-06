@@ -194,9 +194,9 @@ namespace process
 
   /* *********************************************************************** */
 
-  namespace detail
+  namespace
   {
-    static std::string tempname()
+    std::string make_unique_temporary_filename()
     {
       static struct
       {
@@ -246,12 +246,7 @@ namespace process
     private:
       std::string m_path;
     };
-  }
 
-  /* *********************************************************************** */
-
-  namespace
-  {
     std::size_t consume_everything (int fd)
     {
       std::size_t consumed_accum (0);
@@ -381,7 +376,7 @@ namespace process
     std::unordered_map <std::string, std::string> param_map;
     boost::thread_group writers;
     boost::thread_group readers;
-    std::list<std::unique_ptr<detail::tempfifo_t>> tempfifos;
+    std::list<std::unique_ptr<tempfifo_t>> tempfifos;
     std::vector<boost::optional<std::string>> output_file_unopened
       (files_output.size(), boost::none);
     std::vector<boost::optional<std::string>> input_file_unopened
@@ -390,10 +385,10 @@ namespace process
     std::size_t writer_i (0);
     for (file_const_buffer const& file_input : files_input)
       {
-        std::string filename (detail::tempname());
+        std::string filename (make_unique_temporary_filename());
 
         tempfifos.emplace_back
-          (fhg::util::make_unique<detail::tempfifo_t> (filename));
+          (fhg::util::make_unique<tempfifo_t> (filename));
 
         writers.add_thread
           ( new boost::thread
@@ -427,10 +422,10 @@ namespace process
     std::size_t reader_i (0);
     for (file_buffer const& file_output : files_output)
       {
-        std::string filename (detail::tempname());
+        std::string filename (make_unique_temporary_filename());
 
         tempfifos.emplace_back
-          (fhg::util::make_unique<detail::tempfifo_t> (filename));
+          (fhg::util::make_unique<tempfifo_t> (filename));
 
         readers.add_thread
           ( new boost::thread
