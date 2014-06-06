@@ -241,7 +241,7 @@ gpi_enabled=true
 delete_logfiles=true
 app_path=
 number_of_groups=1
-kvs_timeout=15
+network_retries=15
 
 # guess memory sizes
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
@@ -481,10 +481,10 @@ then
     error 3 "could not start kvs"
 fi
 
-if ! wait_for_port_on_host ${kvs_timeout} "${master}" "${kvs_port}"
+if ! wait_for_port_on_host ${network_retries} "${master}" "${kvs_port}"
 then
     "${sdpa}" -s "${state_dir}" stop
-    error 3 "could not start kvs: failed after ${kvs_timeout} seconds"
+    error 3 "could not start kvs: failed after ${network_retries} seconds"
 fi
 
 dry_run rexec $master "${script_start_orchestrator}" \
@@ -503,10 +503,10 @@ then
     error 3 "could not start orchestrator"
 fi
 
-if ! wait_for_process ${kvs_timeout} "orchestrator" "${master}" "${kvs_port}"
+if ! wait_for_process ${network_retries} "orchestrator" "${master}" "${kvs_port}"
 then
     "${sdpa}" -s "${state_dir}" stop
-    error 3 "could not start orchestrator after ${kvs_timeout} seconds"
+    error 3 "could not start orchestrator after ${network_retries} seconds"
 fi
 
 if $gpi_enabled ; then
