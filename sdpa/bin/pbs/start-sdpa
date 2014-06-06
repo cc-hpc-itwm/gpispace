@@ -194,12 +194,6 @@ function wait_for_port_on_host ()
     local host="${1}"; shift
     local port="${1}"; shift
 
-    local check_port=$(which nc 2>/dev/null)
-    if [ $? -ne 0 ]
-    then
-        error 1 "could not locate tool 'nc', cannot wait for '${host}:${port}'"
-    fi
-
     until [ ${deadline} -eq 0 ]
     do
         if ${check_port} -w 0 "${host}" "${port}" </dev/null
@@ -446,6 +440,16 @@ fi
 script_start_gpi="${sdpa_home}/libexec/sdpa/scripts/start-gpi"
 if [ ! -x "${script_start_gpi}" ] ; then
     error 2 "utility script '${script_start_gpi}' is not executable"
+fi
+
+check_port=$(which nc 2>/dev/null)
+if [ $? -ne 0 ]
+then
+    check_port=$(which netcat 2>/dev/null)
+    if [ $? -ne 0 ]
+    then
+        error 2 "utility tool 'nc' or 'netcat' could not be found"
+    fi
 fi
 
 info "using nodefile: $nodefile"
