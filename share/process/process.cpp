@@ -86,10 +86,8 @@ namespace process
 
     namespace thread
     {
-      void circular_reader ( int fd
-                           , circular_buffer & circ_buf
-                           , std::size_t & bytes_read
-                           )
+      void circular_reader
+        (int fd, circular_buffer& circ_buf, std::size_t& bytes_read)
       {
         std::vector<char> buf (PIPE_BUF);
 
@@ -182,7 +180,7 @@ namespace process
     {
       static struct
       {
-        unsigned long operator++(int)
+        unsigned long operator++ (int)
         {
           boost::mutex::scoped_lock const _ (_mutex);
           return _counter++;
@@ -191,11 +189,11 @@ namespace process
         unsigned long _counter = 0;
       } count;
 
-      char * TMPDIR (fhg::syscall::getenv ("TMPDIR"));
+      char* TMPDIR (fhg::syscall::getenv ("TMPDIR"));
 
-      std::string dir ((TMPDIR != nullptr) ? TMPDIR : P_tmpdir);
+      std::string dir (TMPDIR ? TMPDIR : P_tmpdir);
 
-      if (dir.size() == 0)
+      if (dir.empty())
       {
         throw std::runtime_error ("neither TMPDIR nor P_tmpdir are set");
       }
@@ -214,19 +212,19 @@ namespace process
 
     struct tempfifo_t : boost::noncopyable
     {
-      explicit tempfifo_t (std::string const &p)
-        : m_path (p)
+      explicit tempfifo_t (std::string const& path)
+        : _path (path)
       {
-        fhg::syscall::mkfifo (m_path.c_str(), S_IWUSR | S_IRUSR);
+        fhg::syscall::mkfifo (_path.c_str(), S_IWUSR | S_IRUSR);
       }
 
       ~tempfifo_t()
       {
-        fhg::syscall::unlink (m_path.c_str());
+        fhg::syscall::unlink (_path.c_str());
       }
 
     private:
-      std::string m_path;
+      std::string _path;
     };
 
     std::size_t consume_everything (int fd)
@@ -322,17 +320,19 @@ namespace process
     };
   }
 
-  execute_return_type execute ( std::string const & command
-                              , const_buffer const & buf_stdin
-                              , buffer const & buf_stdout
-                              , circular_buffer & buf_stderr
-                              , file_const_buffer_list const & files_input
-                              , file_buffer_list const & files_output
+  execute_return_type execute ( std::string const& command
+                              , const_buffer const& buf_stdin
+                              , buffer const& buf_stdout
+                              , circular_buffer& buf_stderr
+                              , file_const_buffer_list const& files_input
+                              , file_buffer_list const& files_output
                               )
   {
     execute_return_type ret (files_output.size());
 
-    pipe_fds in, out, err;
+    pipe_fds in;
+    pipe_fds out;
+    pipe_fds err;
     fhg::syscall::pipe (in.both);
     fhg::syscall::pipe (out.both);
     fhg::syscall::pipe (err.both);
@@ -364,53 +364,49 @@ namespace process
     std::vector<boost::optional<std::string>> input_file_unopened
       (files_input.size(), boost::none);
 
-    std::size_t writer_i (0);
-    for (file_const_buffer const& file_input : files_input)
+    {
+      std::size_t writer_i (0);
+      for (file_const_buffer const& file_input : files_input)
       {
         std::string filename (make_unique_temporary_filename());
 
-        tempfifos.emplace_back
-          (fhg::util::make_unique<tempfifo_t> (filename));
+        tempfifos.emplace_back (fhg::util::make_unique<tempfifo_t> (filename));
 
         writers.add_thread
           ( new boost::thread
-            ([filename, file_input, &ret, writer_i, &input_file_unopened]
+            ( [filename, file_input, &ret, writer_i, &input_file_unopened]
             {
               scoped_SIGPIPE_block const sigpipe_block;
 
               input_file_unopened[writer_i] = filename;
 
-              scoped_file const file
-                (filename.c_str(), O_WRONLY);
+              scoped_file const file (filename.c_str(), O_WRONLY);
 
               input_file_unopened[writer_i] = boost::none;
 
-              //! \note Is correct, but value has no use as writes
-              //! more than other side consumes, thus is not what user
-              //! expects.
+              //! \todo Maybe somehow also consume_everything from fifos.
               std::size_t dummy_written;
-              thread::writer ( file._fd
-                             , file_input.to_buffer()
-                             , dummy_written
-                             );
+              thread::writer (file._fd, file_input.to_buffer(), dummy_written);
             }
             )
           );
+
         param_map.emplace (file_input.param(), filename);
         ++writer_i;
       }
+    }
 
-    std::size_t reader_i (0);
-    for (file_buffer const& file_output : files_output)
+    {
+      std::size_t reader_i (0);
+      for (file_buffer const& file_output : files_output)
       {
         std::string filename (make_unique_temporary_filename());
 
-        tempfifos.emplace_back
-          (fhg::util::make_unique<tempfifo_t> (filename));
+        tempfifos.emplace_back (fhg::util::make_unique<tempfifo_t> (filename));
 
         readers.add_thread
           ( new boost::thread
-            ([filename, file_output, &ret, reader_i, &output_file_unopened]
+            ( [filename, file_output, &ret, reader_i, &output_file_unopened]
             {
               output_file_unopened[reader_i] = filename;
 
@@ -430,6 +426,8 @@ namespace process
         param_map.emplace (file_output.param(), filename);
         ++reader_i;
       }
+    }
+
 
     pipe_fds synchronization_fd_parent_child;
     pipe_fds synchronization_fd_child_parent;
@@ -456,6 +454,7 @@ namespace process
       fhg::syscall::close (synchronization_fd_parent_child.read);
       fhg::syscall::close (synchronization_fd_child_parent.write);
 
+
       std::vector<char> argv_buffer;
       std::vector<char*> argv;
 
@@ -468,10 +467,8 @@ namespace process
         {
           const decltype (param_map)::const_iterator repl
             (param_map.find (raw_param));
-          const std::string param ( (repl != param_map.end())
-                                  ? std::string (repl->second)
-                                  : raw_param
-                                  );
+          const std::string param
+            ((repl != param_map.end()) ? std::string (repl->second) : raw_param);
 
           std::size_t pos (argv_buffer.size());
           argv_buffer.resize (argv_buffer.size() + param.size() + 1);
@@ -533,10 +530,7 @@ namespace process
           scoped_SIGPIPE_block const sigpipe_block;
 
           close_on_scope_exit const _ (in.write);
-          thread::writer ( in.write
-                         , buf_stdin
-                         , ret.bytes_written_stdin
-                         );
+          thread::writer (in.write, buf_stdin, ret.bytes_written_stdin);
         }
         );
 
@@ -544,10 +538,7 @@ namespace process
         ( [&buf_stdout, &out, &ret]
         {
           close_on_scope_exit const _ (out.read);
-          thread::reader ( out.read
-                         , buf_stdout
-                         , ret.bytes_read_stdout
-                         );
+          thread::reader (out.read, buf_stdout, ret.bytes_read_stdout);
         }
         );
 
@@ -555,8 +546,7 @@ namespace process
         ( [&buf_stderr, &err, &ret]
         {
           close_on_scope_exit const _ (err.read);
-          thread::circular_reader
-            (err.read, buf_stderr, ret.bytes_read_stderr);
+          thread::circular_reader (err.read, buf_stderr, ret.bytes_read_stderr);
         }
         );
 
@@ -564,6 +554,7 @@ namespace process
 
       fhg::syscall::close (synchronization_fd_parent_child.write);
       fhg::syscall::close (synchronization_fd_child_parent.read);
+
 
       int status (0);
 
