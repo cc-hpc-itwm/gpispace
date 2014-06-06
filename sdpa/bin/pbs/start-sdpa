@@ -204,6 +204,8 @@ function wait_for_port_on_host ()
             retries=$((retries - 1))
         fi
     done
+
+    return 1
 }
 
 function wait_for_process ()
@@ -228,6 +230,8 @@ function wait_for_process ()
         sleep 1
         retries=$((retries - 1))
     done
+
+    return 1
 }
 
 # Execute function on_ctrlC() receiving SIGINT signal
