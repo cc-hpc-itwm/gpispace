@@ -6,28 +6,11 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
-#include <boost/range/adaptor/map.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
-#include <boost/thread/barrier.hpp>
 
-#include <errno.h>
-#include <fstream>
-#include <functional>
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
-#include <string>
 #include <unordered_map>
 
 #include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
 
 namespace process
 {
