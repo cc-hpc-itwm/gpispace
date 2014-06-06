@@ -187,35 +187,35 @@ parse_capability()
     return 0
 }
 
-# wait_for_port_on_host timeout host port
+# wait_for_port_on_host retries host port
 function wait_for_port_on_host ()
 {
-    local deadline="${1}"; shift
+    local retries="${1}"; shift
     local host="${1}"; shift
     local port="${1}"; shift
 
-    until [ ${deadline} -eq 0 ]
+    until [ ${retries} -eq 0 ]
     do
         if ${check_port} -w 0 "${host}" "${port}" </dev/null
         then
             return 0
         else
             sleep 1
-            deadline=$((deadline - 1))
+            retries=$((retries - 1))
         fi
     done
 }
 
 function wait_for_process ()
 {
-    local deadline="${1}"; shift
+    local retries="${1}"; shift
     local name="${1}"; shift
     local kvs_host="${1}"; shift
     local kvs_port="${1}"; shift
 
     local host_port=()
 
-    until [ $deadline -eq 0 ]
+    until [ $retries -eq 0 ]
     do
         host_port=( $("${sdpa_home}/bin/fhgkvsc" -H "${kvs_host}" -P "${kvs_port}" -g p2p.peer | grep -B 2 "$name" | head -n 2 | awk '{print $3}') )
         if [ ${#host_port[@]} -eq 2 ]
@@ -226,7 +226,7 @@ function wait_for_process ()
             fi
         fi
         sleep 1
-        deadline=$((deadline - 1))
+        retries=$((retries - 1))
     done
 }
 
