@@ -187,6 +187,56 @@ parse_capability()
     return 0
 }
 
+# wait_for_port_on_host retries host port
+function wait_for_port_on_host ()
+{
+    local retries="${1}"; shift
+    local host="${1}"; shift
+    local port="${1}"; shift
+
+    until [ ${retries} -eq 0 ]
+    do
+        if ${check_port} -w 0 "${host}" "${port}" </dev/null
+        then
+            return 0
+        else
+            sleep 1
+            retries=$((retries - 1))
+        fi
+    done
+
+    return 1
+}
+
+function wait_for_process ()
+{
+    local retries="${1}"; shift
+    local name="${1}"; shift
+    local kvs_host="${1}"; shift
+    local kvs_port="${1}"; shift
+
+    local host_port=()
+
+    until [ $retries -eq 0 ]
+    do
+        host_port=( $("${sdpa_home}/bin/fhgkvsc" -H "${kvs_host}" -P "${kvs_port}" -g p2p.peer | grep -B 2 "$name" | head -n 2 | awk '{print $3}') )
+        if [ ${#host_port[@]} -eq 2 ]
+        then
+            if wait_for_port_on_host ${retries} "${host_port[0]}" "${host_port[1]}"
+            then
+                return 0
+            else
+                return 2
+            fi
+        else
+            sleep 1
+            retries=$((retries - 1))
+        fi
+    done
+
+    return 1
+}
+
 # Execute function on_ctrlC() receiving SIGINT signal
 #
 trap 'on_ctrlC' SIGINT
@@ -198,6 +248,7 @@ gpi_enabled=true
 delete_logfiles=true
 app_path=
 number_of_groups=1
+network_retries=15
 
 # guess memory sizes
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
@@ -398,6 +449,16 @@ if [ ! -x "${script_start_gpi}" ] ; then
     error 2 "utility script '${script_start_gpi}' is not executable"
 fi
 
+check_port=$(which nc 2>/dev/null)
+if [ $? -ne 0 ]
+then
+    check_port=$(which netcat 2>/dev/null)
+    if [ $? -ne 0 ]
+    then
+        error 2 "utility tool 'nc' or 'netcat' could not be found"
+    fi
+fi
+
 info "using nodefile: $nodefile"
 
 dry_run rexec $master /usr/bin/env "${sdpa}" -s "${state_dir}" init "$nodefile" </dev/null || {
@@ -426,6 +487,13 @@ then
     "${sdpa}" -s "${state_dir}" stop
     error 3 "could not start kvs"
 fi
+
+if ! wait_for_port_on_host ${network_retries} "${master}" "${kvs_port}"
+then
+    "${sdpa}" -s "${state_dir}" stop
+    error 3 "could not start kvs: failed to appear at ${master}:${kvs_port} after ${network_retries} seconds"
+fi
+
 dry_run rexec $master "${script_start_orchestrator}" \
     $opt_verbose_flag \
     -s "$state_dir" \
@@ -440,6 +508,19 @@ if [ $ec -ne 0 ]
 then
     "${sdpa}" -s "${state_dir}" stop
     error 3 "could not start orchestrator"
+fi
+
+wait_for_process ${network_retries} "orchestrator" "${master}" "${kvs_port}"
+ec=$?
+if [ $ec -ne 0 ]
+then
+    "${sdpa}" -s "${state_dir}" stop
+    if [ $ec -eq 1 ]
+    then
+        error 3 "could not start orchestrator, failed to appear after ${network_retries} seconds"
+    else
+        error 3 "could not start orchestrator, could not connect after ${network_retries} seconds"
+    fi
 fi
 
 if $gpi_enabled ; then
