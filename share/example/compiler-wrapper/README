@@ -5,7 +5,7 @@
 
 == Situation
 
-This example demonstrates how one can wrap a compiler (or any command line tool) within GPI-Space and use the runtime system to distribute the compilation jobs to several hosts. Suppose you have a large project that you want to compile using `make` and some compiler (e.g. `gcc`). On a single host, you only have a limited number of cores available to run the compilation in parallel - but what if you have a whole cluster or a bunch of host at hand that you may use as well? There are other tools available that do basically the same (i.e. link:http://distcc.googlecode.com[distcc], link:https://github.com/icecc/icecream[icecream]) as this simple wrapper but have to be installed separately and can only do this task. This example aims to demonstrate how easy it is to provide a similar function.
+This example demonstrates how one can wrap a compiler (or any command line tool) within GPI-Space and use the runtime system to distribute the compilation jobs to several hosts. Suppose you have a large project that you want to compile using `make` and some compiler (e.g. `gcc`). On a single host, you only have a limited number of cores available to run the compilation in parallel - but what if you have a whole cluster or a bunch of host at hand that you may use as well? There are other tools available that do basically the same (e.g. link:http://distcc.googlecode.com[distcc], link:https://github.com/icecc/icecream[icecream]) as this simple wrapper but have to be installed separately and can only do this task. This example aims to demonstrate how easy it is to provide a similar function.
 
 == Compiling the example `compiler-wrapper`
 
