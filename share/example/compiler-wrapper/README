@@ -15,13 +15,13 @@ In order to compile and install this example one should use the provided link:Ma
 
 [source,bash]
 ----
-share/gspc/example/compiler-wrapper $ BUILDDIR=$(mktemp -d -p "$HOME")
+share/gspc/example/compiler-wrapper $ BUILDDIR=$(mktemp -d)
 share/gspc/example/compiler-wrapper $ mkdir -p "${BUILDDIR}"
-share/gspc/example/compiler-wrapper $ DESTDIR="${BUILDDIR}/inst"
+share/gspc/example/compiler-wrapper $ DESTDIR="${SHARED_FOLDER}/compiler-wrapper"
 share/gspc/example/compiler-wrapper $ make BUILDDIR="${BUILDDIR}" DESTDIR="${DESTDIR}" install
 ----
 
-This will compile and install the `compiler-wrapper` application into `${DESTDIR}`, please make sure that this directory points to a shared file system in case you intend to run the example on more than one machine. In this example, we chose to create `BUILDDIR` (and therefor `DESTDIR`) within your `HOME` directory under the assumption that this directory is usually shared among different hosts.
+This will compile and install the `compiler-wrapper` application into `${DESTDIR}`, please make sure that `SHARED_FOLDER` points to a folder on a shared file system in case you intend to run the example on more than one machine.
 
 == Running the example `compiler-wrapper`
 
@@ -30,8 +30,8 @@ In the previous step the application has been installed to `$DESTDIR`, including
 [source,bash]
 ----
 share/gspc/example/compiler-wrapper $ sdpa boot -M -f nodefile -A "${DESTDIR}/modules" worker:4
-share/gspc/example/compiler-wrapper $ ${DESTDIR}/bin/sdpacc.gcc -o "${BUILDDIR}/hello" "${DESTDIR}/src/hello.c"
-share/gspc/example/compiler-wrapper $ ${BUILDDIR}/hello
+share/gspc/example/compiler-wrapper $ ${DESTDIR}/bin/sdpacc.gcc -o "${SHARED_FOLDER}/hello" "${DESTDIR}/src/hello.c"
+share/gspc/example/compiler-wrapper $ ${SHARED_FOLDER}/hello
 Hello World
 ----
 
