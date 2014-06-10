@@ -1,5 +1,3 @@
-include_directories (${FhgCom_INCLUDE_DIR})
-
 include_directories (${FhgLog_INCLUDE_DIR})
 
 include_directories (${UTIL_INCLUDE_DIR})

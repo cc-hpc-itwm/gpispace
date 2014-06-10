@@ -9,14 +9,11 @@
 #include <sys/types.h> // uid_t
 
 #include <csignal>
-#include <cassert>
 #include <iostream>
 #include <fstream>
 
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
-
-#include <fhg/assert.hpp>
 
 #include <fhglog/LogMacros.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
@@ -30,9 +27,7 @@
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/gpi/fake_api.hpp>
-#ifdef ENABLE_REAL_GPI
 #include <gpi-space/gpi/real_api.hpp>
-#endif
 
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/container/manager.hpp>
@@ -104,7 +99,6 @@ namespace
   std::unique_ptr<gpi_api_t> create_gpi_api
     (requested_api_t requested_api, bool is_master)
   {
-#ifdef ENABLE_REAL_GPI
     if (requested_api == API_auto)
     {
       try
@@ -124,7 +118,6 @@ namespace
       return fhg::util::make_unique <gpi::api::real_gpi_api_t> (is_master);
     }
     else // if (requested_api == API_fake)
-#endif
     {
       return fhg::util::make_unique <gpi::api::fake_gpi_api_t> (is_master);
     }
@@ -148,7 +141,7 @@ int main (int ac, char *av[])
   snprintf (pidfile, sizeof(pidfile), "%s", "");
   requested_api_t requested_api = API_auto;
   char socket_path[MAX_PATH_LEN];
-  snprintf (socket_path, sizeof(socket_path), "/var/tmp");
+  memset (socket_path, 0, sizeof(socket_path));
   char logfile[MAX_PATH_LEN];
   memset (logfile, 0, sizeof(logfile));
   std::string default_memory_url ("gpi://?buffer_size=4194304&buffers=8");
@@ -189,7 +182,7 @@ int main (int ac, char *av[])
       fprintf(stderr, "      fork to background when all checks were ok\n");
       fprintf(stderr, "\n");
       fprintf(stderr, "    --socket PATH (%s)\n", socket_path);
-      fprintf(stderr, "      create sockets in this base path\n");
+      fprintf(stderr, "      create socket at this location\n");
       fprintf(stderr, "\n");
       fprintf(stderr, "    --mem-url URL (%s)\n", default_memory_url.c_str());
       fprintf(stderr, "      url of the default memory segment (1)\n");
@@ -215,9 +208,7 @@ int main (int ac, char *av[])
       fprintf(stderr, "    --gpi-api STRING (%s)\n", "auto");
       fprintf(stderr, "      choose the GPI API to use\n");
       fprintf(stderr, "        fake - use the fake api\n");
-#ifdef ENABLE_REAL_GPI
       fprintf(stderr, "        real - use the real api\n");
-#endif
       fprintf(stderr, "        auto - choose the best api\n");
       fprintf(stderr, "\n");
       fprintf(stderr, "GPI options (expert)\n");
@@ -484,16 +475,10 @@ int main (int ac, char *av[])
       if (i < ac)
       {
         requested_api = strcmp (av[i], "auto") == 0 ? API_auto
-#ifdef ENABLE_REAL_GPI
           : strcmp (av[i], "real") == 0 ? API_real
-#endif
           : strcmp (av[i], "fake") == 0 ? API_fake
           : throw std::runtime_error
-#ifdef ENABLE_REAL_GPI
             ("invalid argument to --gpi-api: must be 'auto', 'real' or 'fake'");
-#else
-            ("invalid argument to --gpi-api: must be 'auto' or 'fake'");
-#endif
         ++i;
       }
       else
@@ -633,6 +618,14 @@ int main (int ac, char *av[])
 
   if (is_master)
   {
+    // check parameters (only works on the master node since we don't
+    // have control over how the workers are started)
+    if (0 == strlen (socket_path))
+    {
+      fprintf (stderr, "parameter 'socket' not given (--socket <path-to-socket>)\n");
+      exit (EX_USAGE);
+    }
+
     if (0 != configure_logging (&config, logfile))
     {
       LOG(WARN, "could not setup logging");

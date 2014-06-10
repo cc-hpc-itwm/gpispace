@@ -93,8 +93,6 @@ make+=( -C "${SDPA_HOME}/libexec/sdpa/apps/selftest" )
 
 log_info "+ compiling selftest..."
 
-export BOOST_ROOT="${SDPA_HOME}"
-
 "${make[@]}" lib install put >> "${builddir}/compile.log"
 ec=$?
 if [ $ec -ne 0 ]

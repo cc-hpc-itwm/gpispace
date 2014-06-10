@@ -8,6 +8,7 @@
 
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/optional.hpp>
+#include <boost/range/any_range.hpp>
 
 #include <functional>
 #include <unordered_map>
@@ -18,6 +19,14 @@ namespace xml
   //! \todo Missing namespace parse
   namespace util
   {
+    template<typename VALUE_TYPE>
+      using range_type = boost::any_range
+                       < VALUE_TYPE
+                       , boost::single_pass_traversal_tag
+                       , VALUE_TYPE&
+                       , std::ptrdiff_t
+                       >;
+
     template<typename VALUE_TYPE, typename ID_TYPE>
     class unique
     {
@@ -150,7 +159,15 @@ namespace xml
       }
 
       const ids_type& ids() const { return _values._ids; }
-      values_type& values() const { return _values; }
+
+      range_type<value_type> values()
+      {
+        return range_type<value_type> (_values.begin(), _values.end());
+      }
+      range_type<value_type const> values() const
+      {
+        return range_type<value_type const> (_values.begin(), _values.end());
+      }
 
       void clear() { _values._ids.clear(); _by_key.clear(); }
       bool empty() const { return _by_key.empty(); }
@@ -181,12 +198,7 @@ namespace xml
       }
 
     private:
-      //! \note Needs to be mutable, as values() must return a
-      //! non-const reference from a const method. Else, would need to
-      //! const_cast this, which is ugly as well. See note in
-      //! values_type.
-      mutable values_type _values;
-
+      values_type _values;
       by_key_type _by_key;
     };
   }

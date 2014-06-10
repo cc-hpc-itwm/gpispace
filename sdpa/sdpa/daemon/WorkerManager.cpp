@@ -16,7 +16,6 @@
  * =====================================================================================
  */
 
-#include <fhg/assert.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <algorithm>
 #include <sdpa/types.hpp>
@@ -161,7 +160,7 @@ boost::optional<sdpa::worker_id_t> WorkerManager::getBestMatchingWorker
 {
   boost::mutex::scoped_lock const _ (mtx_);
 
-  boost::optional<double> last_schedule_time;
+  boost::optional<double> last_schedule_time = boost::make_optional<double> (false, 0.0);
   boost::optional<worker_id_t> bestMatchingWorkerId;
   boost::optional<std::size_t> maxMatchingDeg;
 

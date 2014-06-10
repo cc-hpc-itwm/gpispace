@@ -1,6 +1,6 @@
 #include <we/loader/macros.hpp>
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fvm-pc/pc.hpp>
 
 #include <we/type/value/peek.hpp>

@@ -37,6 +37,7 @@ BOOST_AUTO_TEST_CASE (process_file_input)
                       )
     );
 
+  BOOST_REQUIRE_EQUAL (ret.bytes_written_stdin, 0);
   BOOST_REQUIRE_EQUAL (ret.bytes_read_stdout, 10);
   BOOST_REQUIRE_EQUAL (ret.bytes_read_stderr, 0);
   BOOST_REQUIRE_EQUAL ( ret.bytes_read_files_output
@@ -54,4 +55,29 @@ BOOST_AUTO_TEST_CASE (process_file_input)
   BOOST_REQUIRE_EQUAL (res[7], 'd');
   BOOST_REQUIRE_EQUAL (res[8], '5');
   BOOST_REQUIRE_EQUAL (res[9], 'e');
+}
+
+BOOST_AUTO_TEST_CASE (unused_file_parameter_does_not_hang)
+{
+  //! \note Test case will hang on failure and hopefully time-out.
+
+  char buffer[1024];
+
+  process::execute_return_type ret
+    (process::execute ( "/bin/true %FILE%"
+                      , process::const_buffer (nullptr, 0)
+                      , process::buffer (buffer, sizeof (buffer))
+                      , {{buffer, sizeof (buffer), "%FILE%"}}
+                      , process::file_buffer_list()
+                      )
+    );
+
+  BOOST_REQUIRE_EQUAL (ret.exit_code, 0);
+  BOOST_REQUIRE_EQUAL (ret.bytes_written_stdin, 0);
+  BOOST_REQUIRE_EQUAL (ret.bytes_read_stdout, 0);
+  BOOST_REQUIRE_EQUAL (ret.bytes_read_stderr, 0);
+  //! \todo check that no file was read if information available
+  const std::vector<std::size_t> expected_bytes_read_files_output;
+  BOOST_REQUIRE_EQUAL
+    (ret.bytes_read_files_output, expected_bytes_read_files_output);
 }

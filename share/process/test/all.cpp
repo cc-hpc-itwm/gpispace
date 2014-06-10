@@ -5,6 +5,8 @@
 
 #include <process.hpp>
 
+#include <fhg/util/boost/test/printer/vector.hpp>
+
 BOOST_AUTO_TEST_CASE (process_all)
 {
   BOOST_REQUIRE_GT (boost::unit_test::framework::master_test_suite().argc, 1);
@@ -48,6 +50,8 @@ BOOST_AUTO_TEST_CASE (process_all)
                        , files_output
                        )
     );
+
+  BOOST_REQUIRE_EQUAL (ret.bytes_written_stdin, 5);
 
   BOOST_REQUIRE_EQUAL (ret.bytes_read_stdout, 7);
   BOOST_REQUIRE_EQUAL (out_stdout[0], 'a');

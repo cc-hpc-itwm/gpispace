@@ -8,11 +8,13 @@ target_link_libraries (process
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_THREAD_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}
+  fhg-util
 )
 target_link_libraries (process.shared
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_THREAD_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}
+  fhg-util
 )
 
 install (FILES process.hpp

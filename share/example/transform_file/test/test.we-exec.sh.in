@@ -50,8 +50,6 @@ grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
 
 test "$(pnetget -i "${RESULT}" -p done)" = "[]"             || die $EX_ERR_RES
 
-ls -l "${DIR_BUILD}"
-
 diff -q "${COMPARE}" "${OUTPUT}"                            || die $EX_ERR_RES
 
 rm -f "${INPUT}"                                         || die $EX_ERR_CLEANUP

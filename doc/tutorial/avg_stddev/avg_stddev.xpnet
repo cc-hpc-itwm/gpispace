@@ -114,7 +114,7 @@
         <module name="avg_stddev"
                 function="sum work (configuration, range_file)"
         >
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="reader.hpp"/>
           <cinclude href="boost/thread.hpp"/>
           <code><![CDATA[

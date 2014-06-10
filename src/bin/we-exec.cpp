@@ -7,7 +7,7 @@
 #include <fhg/revision.hpp>
 #include <fhg/util/thread/queue.hpp>
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <sdpa/job_states.hpp>
 
@@ -19,6 +19,7 @@
 
 #include <functional>
 #include <list>
+#include <random>
 #include <unordered_map>
 #include <vector>
 
@@ -121,7 +122,7 @@ namespace
                 , we::loader::loader* loader
                 , we::type::activity_t const act
                 , boost::optional<std::size_t> const timeout
-                , boost::mt19937& random_extraction_engine
+                , std::mt19937& random_extraction_engine
                 )
         : _mutex_id()
         , _id (0)
@@ -375,7 +376,7 @@ try
   std::size_t num_worker (8);
   std::string output;
   bool show_dots (false);
-  boost::optional<std::size_t> cancel_after;
+  boost::optional<std::size_t> cancel_after = boost::make_optional<size_t> (false, 0);
 
   desc.add_options()
     ("help,h", "this message")
@@ -450,7 +451,7 @@ try
     loader.append_search_path (p);
   }
 
-  boost::mt19937 random_extraction_engine;
+  std::mt19937 random_extraction_engine {std::random_device()()};
   sdpa_daemon const daemon
     ( num_worker
     , &loader

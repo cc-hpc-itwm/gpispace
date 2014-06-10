@@ -41,7 +41,7 @@ namespace gpi
 
     void fake_gpi_api_t::start (int, char **, const gpi::timeout_t)
     {
-      assert (! m_startup_done);
+      fhg_assert (! m_startup_done);
       if (m_dma)
         free (m_dma);
 
@@ -176,7 +176,7 @@ namespace gpi
 
     void * fake_gpi_api_t::dma_ptr (void)
     {
-      assert (m_startup_done);
+      fhg_assert (m_startup_done);
       return m_dma;
     }
 
@@ -290,7 +290,7 @@ namespace gpi
     {
       lock_type lock (m_mutex);
 
-      assert (m_startup_done);
+      fhg_assert (m_startup_done);
 
       if (from_node != 0)
       {
@@ -337,7 +337,7 @@ namespace gpi
     {
       lock_type lock (m_mutex);
 
-      assert (m_startup_done);
+      fhg_assert (m_startup_done);
 
       if (to_node != 0)
       {
@@ -415,7 +415,7 @@ namespace gpi
 
     size_t fake_gpi_api_t::wait_dma (const queue_desc_t queue)
     {
-      assert (m_startup_done);
+      fhg_assert (m_startup_done);
 
       size_t cnt (m_dma_request_count[queue]);
       m_dma_request_count[queue] = 0;

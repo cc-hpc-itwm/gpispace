@@ -38,16 +38,10 @@ namespace fhg
     ::fhg::log::suppress_unused_variable_warning (_1e872d1a_6dcf_11e3_9e3b_13f239ecd3ca); \
     ::fhg::log::configure()
 
-#ifndef FHGLOG_STRIP_LEVEL
-#define FHGLOG_STRIP_LEVEL -1
-#endif
-
 #define __LOG(logger, level, msg)                               \
     do                                                          \
     {                                                           \
-      if (  (::fhg::log::level > FHGLOG_STRIP_LEVEL)            \
-         && logger->isLevelEnabled (::fhg::log::level)          \
-         )                                                      \
+      if (logger->isLevelEnabled (::fhg::log::level))           \
       {                                                         \
         std::ostringstream msg_;                                \
         msg_ << msg;                                            \

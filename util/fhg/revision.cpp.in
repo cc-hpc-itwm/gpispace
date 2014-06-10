@@ -6,7 +6,7 @@ namespace fhg
 {
   const char* project_summary()
   {
-    return "@PROJECT_DESCRIPTION_SUMMARY@";
+    return "GPI-Space - productive parallel programming and efficient execution";
   }
 
   const char* project_version()
@@ -30,7 +30,7 @@ namespace fhg
       << std::endl << "built:    @FHG_BUILD_TIMESTAMP@"
       << std::endl << "contact:  @PROJECT_CONTACT@"
       << std::endl
-      << std::endl << "@PROJECT_COPYRIGHT@"
+      << std::endl << "Copyright 2009-2014 Fraunhofer ITWM"
       << std::endl
       ;
 

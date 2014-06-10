@@ -5,7 +5,7 @@
 #include <fhgcom/session.hpp>
 #include <fhgcom/session_manager.hpp>
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>

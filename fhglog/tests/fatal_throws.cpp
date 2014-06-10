@@ -1,4 +1,4 @@
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #define BOOST_TEST_MODULE error_handler
 #include <boost/test/unit_test.hpp>

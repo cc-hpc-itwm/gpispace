@@ -119,7 +119,7 @@ namespace pnet
 
             fhg::util::parse::require::require (pos, '(');
 
-            bytearray::type ba;
+            we::type::bytearray ba;
 
             fhg::util::parse::require::skip_spaces (pos);
 

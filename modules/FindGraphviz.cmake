@@ -36,6 +36,15 @@ find_path (GRAPHVIZ_PLUGIN_DIR
   PATH_SUFFIXES graphviz
   )
 
+find_program (GRAPHVIZ_DOT_EXECUTABLE
+  NAMES dot
+  ENV GRAPHVIZ_HOME
+  HINTS $ENV{GRAPHVIZ_HOME}
+  PATH_SUFFIXES bin
+  NO_SYSTEM_ENVIRONMENT_PATH
+)
+get_filename_component (GRAPHVIZ_BIN_DIR ${GRAPHVIZ_DOT_EXECUTABLE} PATH)
+
 foreach (comp ${Graphviz_FIND_COMPONENTS})
   find_library ( GRAPHVIZ_${comp}_LIBRARY
                  NAMES ${comp}
@@ -60,6 +69,7 @@ find_package_handle_standard_args ( Graphviz
 
 mark_as_advanced (GRAPHVIZ_FOUND GRAPHVIZ_INCLUDE_DIR GRAPHVIZ_LIBRARIES)
 mark_as_advanced (GRAPHVIZ_PLUGIN_DIR)
+mark_as_advanced (GRAPHVIZ_BIN_DIR)
 
 set (CMAKE_FIND_LIBRARY_SUFFIXES ${_graphviz_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES})
 unset (_graphviz_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES)

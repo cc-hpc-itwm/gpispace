@@ -1,0 +1,181 @@
+:doctype: book
+:toc:
+
+= `share/gspc/example/concurrent`: Fairness between concurrent transitions, randomized execution
+
+== Situation
+
+When multiple transitions compete for the same input, then all get the same chance to actually fire. Internally the workflow engine uses a random number generator to break the tie between multiple transitions that are able to fire simultaneously.
+
+In `share/gspc/example/concurrent` the basic structure of the workflow is
+
+[graphviz,concurrent.png]
+----
+digraph concurrent
+{
+ rankdir=LR
+
+ generate [shape = "rectangle"]
+
+ generate -> id
+
+ id [shape = "ellipse"]
+
+ id -> A
+ id -> B
+ id -> C
+ id -> D
+
+ A [shape = "rectangle"]
+ B [shape = "rectangle"]
+ C [shape = "rectangle"]
+ D [shape = "rectangle"]
+
+ A -> id_done
+ B -> id_done
+ C -> id_done
+ D -> id_done
+
+ id_done [shape = "ellipse"]
+}
+----
+
+That means that four transitions are competing for one place and one generator fills the place with a number of token.
+
+== Run `concurrent`
+
+The commands
+
+[source, bash]
+----
+share/gspc/example/concurrent $ BUILDDIR=$(mktemp -d)
+share/gspc/example/concurrent $ make -f ${SDPA_HOME}/share/sdpa/make/common.mk PUT_PORT="N=1000L" MAIN=concurrent BUILDDIR=${BUILDDIR} run | grep call_count
+----
+
+will start the example workflow and produce output similar to
+
+----
+sum_call_count => 1000L
+call_count_D => 254L
+call_count_C => 256L
+call_count_B => 252L
+call_count_A => 238L
+----
+
+All four transitions have fired more or less 250 times and the sum of all firings is 1000. More runs will give different distributions, e.g.
+
+[source, bash]
+----
+share/gspc/example/concurrent $ make -f ${SDPA_HOME}/share/sdpa/make/common.mk PUT_PORT="N=1000L" MAIN=concurrent BUILDDIR=${BUILDDIR} run | grep call_count
+sum_call_count => 1000L
+call_count_D => 232L
+call_count_C => 233L
+call_count_B => 272L
+call_count_A => 263L
+share/gspc/example/concurrent $ make -f ${SDPA_HOME}/share/sdpa/make/common.mk PUT_PORT="N=1000L" MAIN=concurrent BUILDDIR=${BUILDDIR} run | grep call_count
+sum_call_count => 1000L
+call_count_D => 249L
+call_count_C => 243L
+call_count_B => 270L
+call_count_A => 238L
+----
+
+which makes clear that the execution is random and not deterministic. To be clear, the randomness not only comes from the internal random number generator but also from the fact that the execution times of the several transitions differ slightly from run to run and the so changed timing has influence of the assignment as well.
+
+Runs with higher numbers of tokens make clear that all four transitions have the same chance to get a token from the place `id`.
+
+[source,makefile]
+----
+share/gspc/example/concurrent $ make -f ${SDPA_HOME}/share/sdpa/make/common.mk PUT_PORT="N=1000000L" MAIN=concurrent BUILDDIR=${BUILDDIR} -B run | grep call_count
+sum_call_count => 1000000L
+call_count_D => 250498L
+call_count_C => 250143L
+call_count_B => 249625L
+call_count_A => 249734L
+----
+
+In that particular run the deviation is '0.2%' for one million tokens.
+
+
+== How is the number of invocations called?
+
+The workflow in link:concurrent.xpnet[] uses counters for each of the four transitions that are increases by one after a transition has fired. At the same time all ids that are processed by a transitions are summed up too. The following picture shows the workflow additions to the basic structure for the transition `A`:
+
+[graphviz,counting.png]
+----
+digraph concurrent
+{
+ rankdir=LR
+
+ generate [shape = "rectangle"]
+
+ generate -> id
+
+ id [shape = "ellipse"]
+
+ id -> A
+ id -> B
+ id -> C
+ id -> D
+
+ A [shape = "rectangle"]
+ B [shape = "rectangle"]
+ C [shape = "rectangle"]
+ D [shape = "rectangle"]
+
+ A -> id_done_A
+ B -> id_done_B [style = "dotted"]
+ C -> id_done_C [style = "dotted"]
+ D -> id_done_D [style = "dotted"]
+
+ id_done_B -> id_done [style = "dotted" ]
+ id_done_C -> id_done [style = "dotted" ]
+ id_done_D -> id_done [style = "dotted" ]
+
+ id_done_A [shape = "ellipse"]
+ id_done_B [style = "invisible"]
+ id_done_C [style = "invisible"]
+ id_done_D [style = "invisible"]
+
+ call_count_A [style = "ellipse"]
+ sum_ids_A [style = "ellipse"]
+
+ post_A [shape = "rectangle"]
+
+ post_A -> call_count_A [label = "+1" ]
+ call_count_A -> post_A
+
+ post_A -> sum_ids_A [label = "+id" ]
+ sum_ids_A -> post_A
+
+ id_done_A -> post_A
+
+ post_A -> id_done
+
+ id_done [shape = "ellipse"]
+}
+----
+
+That allows to use the sum of the ids as a second control parameter. The call
+
+[source, bash]
+----
+share/gspc/example/concurrent $ make -f ${SDPA_HOME}/share/sdpa/make/common.mk PUT_PORT="N=10000L" MAIN=concurrent BUILDDIR=${BUILDDIR} -B run WE_EXEC_WORKER=12 | grep "call_count\|sum_ids"
+----
+
+produces output like
+
+----
+sum_ids_D => 12550478L
+sum_ids_C => 12642679L
+sum_ids_B => 12346438L
+sum_ids_A => 12455405L
+sum_call_count => 10000L
+call_count_D => 2496L
+call_count_C => 2551L
+call_count_B => 2449L
+call_count_A => 2504L
+sum_ids => 49995000L
+----
+
+Indeed, it the sum of the numbers '0,...,9999' equals to '49995000'.

@@ -5,10 +5,6 @@ if (${CMAKE_BUILD_TYPE} MATCHES "Release")
   add_definitions ("-DNDEBUG")
 endif()
 
-if (NOT ENABLE_BACKTRACE_ON_PARSE_ERROR)
-  add_definitions ("-DNO_BACKTRACE_ON_PARSE_ERROR")
-endif()
-
 check_cxx_compiler_flag ("-std=c++11" COMPILER_SUPPORTS_CXX11)
 
 if (COMPILER_SUPPORTS_CXX11)

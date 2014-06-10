@@ -18,8 +18,6 @@
 #ifndef SDPA_DAEMON_GENERIC_DAEMON_HPP
 #define SDPA_DAEMON_GENERIC_DAEMON_HPP 1
 
-#include <fhg/assert.hpp>
-
 #include <sdpa/capability.hpp>
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 #include <sdpa/com/NetworkStrategy.hpp>
@@ -61,9 +59,10 @@
 #include <fhg/util/thread/set.hpp>
 #include <fhg/util/thread/queue.hpp>
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <memory>
+#include <random>
 
 #define OVERWRITTEN_IN_TEST virtual
 
@@ -252,7 +251,7 @@ namespace sdpa {
       boost::condition_variable _scheduling_thread_notifier;
       void request_scheduling();
 
-      boost::optional<boost::mt19937> _random_extraction_engine;
+      boost::optional<std::mt19937> _random_extraction_engine;
 
     private:
 

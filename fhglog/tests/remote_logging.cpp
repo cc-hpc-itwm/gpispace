@@ -4,7 +4,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sstream> // ostringstream
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhglog/appender/stream.hpp>
 #include <fhglog/remote/appender.hpp>
 #include <fhglog/remote/server.hpp>

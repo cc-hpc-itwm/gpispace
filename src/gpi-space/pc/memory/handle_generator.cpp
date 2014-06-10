@@ -53,7 +53,7 @@ namespace gpi
       gpi::pc::type::handle_t
       handle_generator_t::next (const gpi::pc::type::segment::segment_type seg)
       {
-        assert (seg >= 0);
+        fhg_assert (seg >= 0);
 
         if ( size_t(seg) >= m_counter.size())
           throw std::invalid_argument ("invalid segment type");
@@ -69,7 +69,7 @@ namespace gpi
                                              , gpi::pc::type::size_t start
                                              )
       {
-        assert (seg >= 0);
+        fhg_assert (seg >= 0);
 
         if ( (size_t)seg >= m_counter.size())
           throw std::invalid_argument ("invalid segment type");
