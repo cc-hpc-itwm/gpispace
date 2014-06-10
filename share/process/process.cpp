@@ -63,9 +63,11 @@ namespace process
       }
 
       const int maximum_open_files (sysconf (_SC_OPEN_MAX));
-      for (int i (3); i < maximum_open_files; ++i)
+      for (int i (0); i < maximum_open_files; ++i)
       {
-        if (i != sync_pc.read && i != sync_cp.write)
+        if ( i != sync_pc.read && i != sync_cp.write
+          && i != STDIN_FILENO && i != STDOUT_FILENO && i != STDERR_FILENO
+           )
         {
           try
           {
