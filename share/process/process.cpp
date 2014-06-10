@@ -564,8 +564,10 @@ namespace process
 
       thread_buf_stdin.interrupt();
 
-      //! \note first consume, then subtract: bytes_written_stdin still
-      //! grows while consuming!
+      //! \note first consume, then subtract: bytes_written_stdin is
+      //! also written to in the writer thread. the thread will stop
+      //! modifying it as soon as comsume_everything returned. thus, a
+      //! sequence point is required.
       {
         const std::size_t consumed (consume_everything (in.read));
         ret.bytes_written_stdin -= consumed;
