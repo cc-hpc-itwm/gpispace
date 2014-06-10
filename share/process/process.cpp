@@ -62,7 +62,7 @@ namespace process
         fhg::syscall::close (err.write);
       }
 
-      int maximum_open_files (sysconf (_SC_OPEN_MAX));
+      const int maximum_open_files (sysconf (_SC_OPEN_MAX));
       for (int i (3); i < maximum_open_files; ++i)
       {
         if (i != sync_pc.read && i != sync_cp.write)
@@ -368,7 +368,7 @@ namespace process
       std::size_t writer_i (0);
       for (file_const_buffer const& file_input : files_input)
       {
-        std::string filename (make_unique_temporary_filename());
+        const std::string filename (make_unique_temporary_filename());
 
         tempfifos.emplace_back (fhg::util::make_unique<tempfifo_t> (filename));
 
@@ -400,7 +400,7 @@ namespace process
       std::size_t reader_i (0);
       for (file_buffer const& file_output : files_output)
       {
-        std::string filename (make_unique_temporary_filename());
+        const std::string filename (make_unique_temporary_filename());
 
         tempfifos.emplace_back (fhg::util::make_unique<tempfifo_t> (filename));
 
@@ -434,7 +434,7 @@ namespace process
     fhg::syscall::pipe (synchronization_fd_parent_child.both);
     fhg::syscall::pipe (synchronization_fd_child_parent.both);
 
-    pid_t pid (fhg::syscall::fork());
+    const pid_t pid (fhg::syscall::fork());
 
     if (pid == pid_t (0))
     {
