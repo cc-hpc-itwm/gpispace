@@ -95,21 +95,14 @@ namespace process
 
         bytes_read = 0;
 
-        for (;;)
+        ssize_t r;
+        do
         {
-          const ssize_t r (fhg::syscall::read (fd, buf.data(), PIPE_BUF));
-
-          if (r == 0)
-          {
-            break;
-          }
-          else
-          {
-            bytes_read += r;
-
-            std::copy (buf.data(), buf.data() + r, std::back_inserter (circ_buf));
-          }
+          r = fhg::syscall::read (fd, buf.data(), PIPE_BUF);
+          bytes_read += r;
+          std::copy (buf.data(), buf.data() + r, std::back_inserter (circ_buf));
         }
+        while (r != 0);
       }
 
       void reader (int fd, buffer output, std::size_t& bytes_read)
@@ -118,23 +111,17 @@ namespace process
 
         bytes_read = 0;
 
-        for (;;)
+        ssize_t r;
+        do
         {
           const std::size_t to_read
             (std::min (std::size_t (PIPE_BUF), output.size() - bytes_read));
 
-          const ssize_t r (fhg::syscall::read (fd, buf, to_read));
-
-          if (r == 0)
-          {
-            break;
-          }
-          else
-          {
-            buf += r;
-            bytes_read += r;
-          }
+          r = fhg::syscall::read (fd, buf, to_read);
+          buf += r;
+          bytes_read += r;
         }
+        while (r != 0);
       }
 
       void writer (int fd, const_buffer input, std::size_t& written)
@@ -234,18 +221,13 @@ namespace process
       std::size_t consumed_accum (0);
 
       char buffer[PIPE_BUF];
-      for (;;)
+      ssize_t consumed;
+      do
       {
-        const ssize_t consumed
-          (fhg::syscall::read (fd, buffer, sizeof (buffer)));
-
-        if (consumed == 0)
-        {
-          break;
-        }
-
+        consumed = fhg::syscall::read (fd, buffer, sizeof (buffer));
         consumed_accum += consumed;
       }
+      while (consumed != 0);
 
       return consumed_accum;
     }
