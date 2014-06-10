@@ -89,7 +89,7 @@ namespace process
       void circular_reader
         (int fd, circular_buffer& circ_buf, std::size_t& bytes_read)
       {
-        std::vector<char> buf (PIPE_BUF);
+        std::array<char, PIPE_BUF> buf;
 
         bytes_read = 0;
 
