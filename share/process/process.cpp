@@ -236,27 +236,15 @@ namespace process
       char buffer[PIPE_BUF];
       for (;;)
       {
-        try
-        {
-          const ssize_t consumed
-            (fhg::syscall::read (fd, buffer, sizeof (buffer)));
+        const ssize_t consumed
+          (fhg::syscall::read (fd, buffer, sizeof (buffer)));
 
-          if (consumed == 0)
-          {
-            break;
-          }
-
-          consumed_accum += consumed;
-        }
-        catch (boost::system::system_error const& err)
+        if (consumed == 0)
         {
-          //! \note if fd is nonblocking and there is nothing to read
-          if (err.code() == boost::system::errc::resource_unavailable_try_again)
-          {
-            break;
-          }
-          throw;
+          break;
         }
+
+        consumed_accum += consumed;
       }
 
       return consumed_accum;
