@@ -43,32 +43,32 @@ namespace
 
 BOOST_AUTO_TEST_CASE (consume_everything)
 {
-  std::size_t const base (1 << 20);
-  consume (0, base, base, base, base, base);
+  std::size_t const size (1 << 20);
+  consume (0, size, size, size, size, size);
 }
 
 BOOST_AUTO_TEST_CASE (consume_half)
 {
-  std::size_t const base (1 << 20);
-  consume (0, base, base / 2,  base / 2, base / 2, base / 2);
+  std::size_t const size (1 << 20);
+  consume (0, size, size / 2,  size / 2, size / 2, size / 2);
 }
 
 BOOST_AUTO_TEST_CASE (consume_nothing)
 {
-  std::size_t const base (1 << 20);
-  consume (0, base, base, 0UL, 0UL, 0UL);
+  std::size_t const size (1 << 20);
+  consume (0, size, size, 0UL, 0UL, 0UL);
 }
 
 BOOST_AUTO_TEST_CASE (try_consume_more_than_available)
 {
-  std::size_t const base (1 << 20);
-  consume (0, base, base * 2, base * 2, base, base);
+  std::size_t const size (1 << 20);
+  consume (0, size, size * 2, size * 2, size, size);
 }
 
 BOOST_AUTO_TEST_CASE (try_produce_more_than_available)
 {
-  std::size_t const base (1 << 20);
+  std::size_t const size (1 << 20);
   //! \note Not possible to assert a specific amount written, as child
   //! may consume more from stdin before getting SIGPIPE for stdout
-  consume (128 + SIGPIPE, base * 2, base, base * 2, boost::none, base);
+  consume (128 + SIGPIPE, size * 2, size, size * 2, boost::none, size);
 }
