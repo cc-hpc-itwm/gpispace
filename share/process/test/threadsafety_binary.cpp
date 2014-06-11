@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
 #include <array>
-#include <cassert>
 #include <cstdio>
 #include <iostream>
 #include <string>
@@ -11,7 +10,10 @@
 
 int main (int argc, char** argv)
 {
-  assert (argc == 4);
+  if (argc != 4)
+  {
+    throw std::logic_error ("<binary> thread_id in_file out_file");
+  }
 
   const std::size_t thread_id (std::strtoull (argv[1], nullptr, 10));
 
