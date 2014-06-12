@@ -196,7 +196,7 @@ function wait_for_port_on_host ()
 
     until [ ${retries} -eq 0 ]
     do
-        if ${check_port} -w 0 "${host}" "${port}" </dev/null
+        if ${check_port} -z "${host}" "${port}" </dev/null
         then
             return 0
         else
