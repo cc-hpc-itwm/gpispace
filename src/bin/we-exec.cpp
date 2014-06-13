@@ -442,7 +442,7 @@ try
   case sdpa::status::CANCELED:
     break;
   default:
-    throw std::runtime_error ("STRANGE: is_running is not consistent!?");
+    throw std::logic_error ("STRANGE: is_running is not consistent!?");
   }
 
   return rc;
