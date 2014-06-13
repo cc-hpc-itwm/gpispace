@@ -375,7 +375,6 @@ try
   std::vector<std::string> mods_to_load;
   std::size_t num_worker (8);
   std::string output;
-  bool show_dots (false);
   boost::optional<std::size_t> cancel_after = boost::make_optional<size_t> (false, 0);
 
   desc.add_options()
@@ -400,10 +399,6 @@ try
     ( "output,o"
     , po::value<std::string>(&output)->default_value(output)
     , "where to write the result pnet to"
-    )
-    ( "show-dots,d"
-    , po::value<bool>(&show_dots)->default_value(show_dots)
-    , "show dots while waiting for progress"
     )
     ( "cancel-after"
     , po::value<std::size_t>()
