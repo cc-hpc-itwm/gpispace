@@ -46,8 +46,6 @@ measured "generate" '${GENERATOR} $((2**27)) > "${INPUT}" 2> "${COMPARE}"'   \
 measured "build-wrapper" ${make[@]} lib                     || die $EX_ERR_RUN
 measured "run" WE_EXEC_WORKER=1 ${make[@]} run              || die $EX_ERR_RUN
 
-grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
-
 test "$(pnetget -i "${RESULT}" -p done)" = "[]"             || die $EX_ERR_RES
 
 diff -q "${COMPARE}" "${OUTPUT}"                            || die $EX_ERR_RES
