@@ -157,6 +157,8 @@ add_library (pnet
   xml/parse/util/weparse.cpp
   xml/parse/util/position.cpp
   xml/parse/warning.cpp
+
+  gpi-space/pc/plugin/gpi_compat.cpp
 )
 
 target_link_libraries (pnet
@@ -164,7 +166,6 @@ target_link_libraries (pnet
   ${Boost_SERIALIZATION_LIBRARY}
   ${Boost_DATE_TIME_LIBRARY}
   ${CMAKE_DL_LIBS}
-  fvm-pc-compat
 )
 
 add_subdirectory (xml/tests)
