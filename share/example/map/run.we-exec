@@ -1,0 +1,94 @@
+set -euo pipefail
+
+SDPA_HOME=${1}
+
+source ${SDPA_HOME}/etc/sdpa/sdpa.env
+
+size_input=50
+size_output=50
+size_block=10
+
+KVSD_PID_FILE=$(mktemp)
+GPI_SPACE_PID_FILE=$(mktemp)
+STATE_DIR=$(mktemp -d)
+DIR_INST=$(mktemp -d)
+DIR_BUILD=$(mktemp -d)
+VMEM_SOCKET=$(mktemp -u)
+
+mkdir -p "${STATE_DIR}/log"
+
+make=(make)
+make+=( BUILDDIR="${DIR_BUILD}" )
+make+=( LIB_DESTDIR="${DIR_INST}" )
+
+handle_input=
+handle_output=
+
+cleanup()
+{
+  test -n ${handle_input} && echo memory-free ${handle_input} | gpish -s "${VMEM_SOCKET}"
+  test -n ${handle_output} && echo memory-free ${handle_output} | gpish -s "${VMEM_SOCKET}"
+  test ! -s "${KVSD_PID_FILE}" && kill -9 $(cat "${KVSD_PID_FILE}")
+  test ! -s "${GPI_SPACE_PID_FILE}" && kill -9 $(cat "${GPI_SPACE_PID_FILE}")
+  rm -rf "${VMEM_SOCKET}"
+  rm -rf "${STATE_DIR}"
+  rm -rf "${KVSD_PID_FILE}"
+  rm -rf "${GPI_SPACE_PID_FILE}"
+  ${make[@]} uninstall
+  rmdir "${DIR_INST}"
+  ${make[@]} clean
+  rmdir "${DIR_BUILD}"
+}
+
+trap cleanup EXIT
+
+kvs_host=$(hostname)
+kvs_port=${UID}
+
+"$SDPA_HOME/bin/fhgkvsd"        \
+  -p ${kvs_port}                \
+  --pidfile "${KVSD_PID_FILE}"  \
+  --daemonize
+
+"${SDPA_HOME}/libexec/sdpa/scripts/start-gpi" \
+  -x ${SDPA_HOME}/bin/gpi-space               \
+  -m $((64*2**20))                            \
+  -k ${kvs_host}                              \
+  -K ${kvs_port}                              \
+  -s "${STATE_DIR}"                           \
+  -S "${VMEM_SOCKET}"                         \
+  -P "${GPI_SPACE_PID_FILE}"                  \
+  -D
+
+#  -m $((size_input + size_output))
+
+echo -n "CHECK: gpi-space"
+
+while [ ! -S "${VMEM_SOCKET}" ]
+do
+  sleep 0.2
+  echo -n '.'
+done
+
+echo " [OK]"
+
+handle_input=$(echo memory-alloc ${size_input} gpi input p | TERM=linux gpish -s "${VMEM_SOCKET}")
+handle_output=$(echo memory-alloc ${size_output} gpi output p | TERM=linux gpish -s "${VMEM_SOCKET}")
+
+cat > Makefile.put <<EOF
+PUT_PORT += input=Struct[handle:=Struct[name:=\"${handle_input}\"],offset:=0UL,size:=${size_input}UL]
+PUT_PORT += output=Struct[handle:=Struct[name:=\"${handle_output}\"],offset:=0UL,size:=${size_output}UL]
+PUT_PORT += num_block=10UL
+PUT_PORT += size_block=${size_block}UL
+PUT_PORT += user_data="y(31)"
+EOF
+
+${make[@]} lib put install
+
+${make[@]} WE_EXEC_WORKER=1 \
+           WE_EXEC_OPTS="--mod-path=${DIR_INST} \
+                         --plugin-path=${SDPA_HOME}/libexec/fhg/plugins \
+                         --vmem-enabled \
+                         --vmem-shm-size=$((2 * size_block)) \
+                         --vmem-socket=${VMEM_SOCKET}" \
+           run
