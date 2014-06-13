@@ -270,6 +270,7 @@
         >
           <cinclude href="map_interface.hpp"/>
           <ld flag="-lmap-impl"/>
+          <ld flag="-Wl,-rpath='$$ORIGIN/../../../'"/>
           <code><![CDATA[
             ::map::produce ( user_data
                            , std::make_pair (data, block_with_slot.slot.size)
