@@ -76,6 +76,9 @@ fhg_add_runtime_executable (
   LINK_LIBRARIES fhg-revision
                  pnet
                  we-dev # for the client only
+                 fhg-plugin
+                 sdpa
+                 fake-drts-kernel-plugin
                  ${FhgLog_LIBRARY}
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}

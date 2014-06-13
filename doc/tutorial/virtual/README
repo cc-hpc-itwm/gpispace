@@ -7,8 +7,6 @@ run:
   WORK 2
   WORK 3
   WORK 4
-  finished [1]
-  done => []
 
 how: add place in subnet, mark as virtual, add tunnel to that place. use place like normal place in subnet, connecting to counting-transition. include subnet in net, add place-map to tell subnet the place it should observe.
 
