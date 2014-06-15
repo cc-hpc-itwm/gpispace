@@ -50,15 +50,14 @@ kvs_port=${UID}
   --pidfile "${KVSD_PID_FILE}"  \
   --daemonize
 
-"${SDPA_HOME}/libexec/sdpa/scripts/start-gpi" \
-  -x ${SDPA_HOME}/bin/gpi-space               \
-  -m $((64*2**20))                            \
-  -k ${kvs_host}                              \
-  -K ${kvs_port}                              \
-  -s "${STATE_DIR}"                           \
-  -S "${VMEM_SOCKET}"                         \
-  -P "${GPI_SPACE_PID_FILE}"                  \
-  -D
+"${SDPA_HOME}/bin/gpi-space"                  \
+  --gpi-mem $((64*2**20))                     \
+  --kvs-host ${kvs_host}                      \
+  --kvs-port ${kvs_port}                      \
+  --log-file "${STATE_DIR}/log/gpi-space.log" \
+  --socket "${VMEM_SOCKET}"                   \
+  --pidfile "${GPI_SPACE_PID_FILE}"           \
+  --daemonize
 
 #  -m $((size_input + size_output))
 
