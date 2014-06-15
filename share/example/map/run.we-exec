@@ -55,7 +55,8 @@ done
   --pidfile "${KVSD_PID_FILE}"  \
   --daemonize
 
-"${SDPA_HOME}/bin/gpi-space"                  \
+FHGLOG_disabled=true                          \
+  "${SDPA_HOME}/bin/gpi-space"                \
   --gpi-mem $((64*2**20))                     \
   --kvs-host ${kvs_host}                      \
   --kvs-port ${kvs_port}                      \
