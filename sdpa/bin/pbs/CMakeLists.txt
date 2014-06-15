@@ -4,7 +4,6 @@ set (prgs
 
 set (scripts
   bundle.sh
-  start-gpi
   start-orch
   start-agent
   start-drts
