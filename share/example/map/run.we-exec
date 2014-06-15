@@ -77,8 +77,8 @@ done
 
 echo " [OK]"
 
-handle_input=$(echo memory-alloc ${size_input} gpi input p | TERM=linux gpish -s "${VMEM_SOCKET}")
-handle_output=$(echo memory-alloc ${size_output} gpi output p | TERM=linux gpish -s "${VMEM_SOCKET}")
+handle_input=$(echo memory-alloc ${size_input} gpi input p | TERM=linux gpish -s "${VMEM_SOCKET}" | tail -1)
+handle_output=$(echo memory-alloc ${size_output} gpi output p | TERM=linux gpish -s "${VMEM_SOCKET}" | tail -1)
 
 cat > Makefile.put <<EOF
 PUT_PORT += input=Struct[handle:=Struct[name:=\"${handle_input}\"],offset:=0UL,size:=${size_input}UL]
