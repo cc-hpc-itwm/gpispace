@@ -45,6 +45,11 @@ trap cleanup EXIT
 kvs_host=$(hostname)
 kvs_port=${UID}
 
+while [ $kvs_port -le 1024 ]
+do
+    kvs_port=$((kvs_port * 2))
+done
+
 "$SDPA_HOME/bin/fhgkvsd"        \
   -p ${kvs_port}                \
   --pidfile "${KVSD_PID_FILE}"  \
