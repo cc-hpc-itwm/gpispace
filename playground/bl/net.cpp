@@ -32,7 +32,6 @@
 
 using buffer_type = std::vector<char>;
 using filter_type = std::function<buffer_type (buffer_type)>;
-using timeout_type = boost::posix_time::time_duration;
 using handler_type = std::function<void (buffer_type)>;
 
 /// connection_type ------------------------------------------------------------
