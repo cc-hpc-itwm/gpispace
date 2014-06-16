@@ -125,13 +125,6 @@ struct connection_type : boost::noncopyable
 
               *_remaining_bytes_for_receiving_message -= to_eat;
               transferred -= to_eat;
-
-              if (*_remaining_bytes_for_receiving_message == 0)
-              {
-                _on_message (this, _decrypt (*_partial_receiving_message));
-                _partial_receiving_message = boost::none;
-                _remaining_bytes_for_receiving_message = boost::none;
-              }
             }
             else
             {
@@ -153,6 +146,15 @@ struct connection_type : boost::noncopyable
                 return;
               }
             }
+
+            if ( _remaining_bytes_for_receiving_message
+               && *_remaining_bytes_for_receiving_message == 0
+               )
+            {
+              _on_message (this, _decrypt (*_partial_receiving_message));
+              _partial_receiving_message = boost::none;
+              _remaining_bytes_for_receiving_message = boost::none;
+            }
           }
 
           start_read();
@@ -169,11 +171,6 @@ struct connection_type : boost::noncopyable
   void send (buffer_type what)
   {
     boost::mutex::scoped_lock _ (_pending_send_mutex);
-
-    if (what.empty())
-    {
-      throw std::logic_error ("can't send empty packet");
-    }
 
     const std::string header (std::to_string (what.size()) + ' ');
     what.insert (what.begin(), header.begin(), header.end());
