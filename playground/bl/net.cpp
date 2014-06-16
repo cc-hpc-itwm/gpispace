@@ -128,7 +128,6 @@ struct connection_type : boost::noncopyable
 
               if (*_remaining_bytes_for_receiving_message == 0)
               {
-                //! \todo calls message handler and decrypt sync. maybe do async?
                 _on_message (this, _decrypt (*_partial_receiving_message));
                 _partial_receiving_message = boost::none;
                 _remaining_bytes_for_receiving_message = boost::none;
