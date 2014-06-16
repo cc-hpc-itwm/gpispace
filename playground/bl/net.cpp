@@ -16,6 +16,7 @@
 #include <boost/asio/write.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/optional.hpp>
+#include <boost/range/adaptor/map.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/thread.hpp>
@@ -614,19 +615,20 @@ struct remote_endpoint
 
           packet_header* header ((packet_header*)b.data());
 
-          _promise_by_id.at (header->message_id)->set_value
+          _promises.at (header->message_id).set_value
             ( buffer_type
               (header->buffer, header->buffer + header->buffer_size)
             );
-          _promises.erase (_promise_by_id.at (header->message_id));
-          _promise_by_id.erase (header->message_id);
+          _promises.erase (header->message_id);
         }
         , [this] (connection_type*)
         {
           const std::lock_guard<std::mutex> _ (_promises_and_disconnect_mutex);
 
           _disconnected = true;
-          for (std::promise<buffer_type>& promise : _promises)
+          for ( std::promise<buffer_type>& promise
+              : _promises | boost::adaptors::map_values
+              )
           {
             promise.set_exception
               ( std::make_exception_ptr
@@ -665,19 +667,17 @@ struct remote_endpoint
     packet.insert
       (packet.begin(), (char*)&header, (char*)&header + sizeof (header));
 
-    _promises.emplace_back();
-    _promise_by_id.emplace (message_id, std::prev (_promises.end()));
+    _promises.emplace (message_id, std::promise<buffer_type>{});
 
     _connection->send (packet);
 
-    return _promises.back().get_future();
+    return _promises.at (message_id).get_future();
   }
 
   std::unique_ptr<connection_type> _connection;
 
   mutable std::mutex _promises_and_disconnect_mutex;
-  std::list<std::promise<buffer_type>> _promises;
-  std::unordered_map<uint64_t, decltype (_promises)::iterator> _promise_by_id;
+  std::unordered_map<uint64_t, std::promise<buffer_type>> _promises;
   bool _disconnected;
 
   uint64_t _message_counter;
