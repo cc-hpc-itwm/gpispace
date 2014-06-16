@@ -49,7 +49,7 @@ struct connection_type : boost::noncopyable
     , _decrypt (decrypt)
     , _on_message (on_message)
     , _on_disconnect (on_disconnect)
-    , _receive_buffer (1024)
+    , _receive_buffer (1 << 16)
     , _receive_buffer_previous_rest()
     , _partial_receiving_message()
     , _remaining_bytes_for_receiving_message()
