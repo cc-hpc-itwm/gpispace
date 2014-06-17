@@ -14,19 +14,20 @@
 
 int main (int argc, char** argv)
 {
-  boost::asio::io_service io_service;
-
-  if (argc <= 1)
+  if (argc < 4)
   {
     throw std::logic_error
-      ("usage: " + std::string (argv[0]) + " <binary_to_start> [<arg>]...");
+      ( "usage: "
+      + std::string (argv[0]) + " <host> <port> <binary_to_start> [<arg>]..."
+      );
   }
 
+  boost::asio::io_service io_service;
   boost::asio::io_service::work io_service_work_ (io_service);
   const boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
     io_service_thread ([&io_service]() { io_service.run(); });
 
-  remote_endpoint endpoint (io_service, "localhost", 13331);
+  remote_endpoint endpoint (io_service, argv[1], std::stoi (argv[2]));
 
   remote_function<pid_t (std::string, std::vector<std::string>)> start
     (endpoint, "start");
@@ -34,11 +35,11 @@ int main (int argc, char** argv)
     (endpoint, "stop");
 
   std::vector<std::string> args;
-  for (int i (2); i < argc; ++i)
+  for (int i (4); i < argc; ++i)
   {
     args.push_back (argv[i]);
   }
-  std::future<pid_t> future_pid (start (argv[1], args));
+  std::future<pid_t> future_pid (start (argv[3], args));
 
   std::future_status status;
   do
