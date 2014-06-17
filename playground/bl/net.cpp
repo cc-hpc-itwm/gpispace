@@ -10,6 +10,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/asio/connect.hpp>
+#include <boost/asio/generic/stream_protocol.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/placeholders.hpp>
 #include <boost/asio/strand.hpp>
@@ -39,7 +40,7 @@ using handler_type = std::function<void (buffer_type)>;
 
 struct connection_type : boost::noncopyable
 {
-  connection_type ( boost::asio::ip::tcp::socket* socket
+  connection_type ( boost::asio::generic::stream_protocol::socket* socket
                   , filter_type encrypt
                   , filter_type decrypt
                   , std::function<void (connection_type*, buffer_type)> on_message
@@ -216,7 +217,7 @@ struct connection_type : boost::noncopyable
       );
   }
 
-  std::unique_ptr<boost::asio::ip::tcp::socket> _socket;
+  std::unique_ptr<boost::asio::generic::stream_protocol::socket> _socket;
   filter_type _encrypt;
   filter_type _decrypt;
   std::function<void (connection_type*, buffer_type)> _on_message;
@@ -233,6 +234,7 @@ struct connection_type : boost::noncopyable
   boost::asio::io_service::strand _receive_strand;
 };
 
+template<typename Protocol>
 std::unique_ptr<connection_type> connect_client
   ( std::string host
   , unsigned short port
@@ -243,20 +245,15 @@ std::unique_ptr<connection_type> connect_client
   , std::function<void (connection_type*)> on_disconnect
   )
 {
-  std::unique_ptr<boost::asio::ip::tcp::socket> socket
-    (fhg::util::make_unique<boost::asio::ip::tcp::socket> (io_service));
+  typename Protocol::socket socket (io_service);
 
-  boost::asio::connect
-    ( *socket
-    , boost::asio::ip::tcp::resolver (io_service).resolve
-      ({ host, std::to_string (port)
-       , boost::asio::ip::tcp::resolver::query::numeric_service
-       }
-      )
-    );
+  boost::asio::connect ( socket
+                       , typename Protocol::resolver (io_service).resolve
+                         ({host, std::to_string (port)})
+                       );
 
   return fhg::util::make_unique<connection_type>
-    ( socket.release()
+    ( new boost::asio::generic::stream_protocol::socket (std::move (socket))
     , encrypt
     , decrypt
     , [handler] (connection_type*, buffer_type buffer) { handler (buffer); }
@@ -267,10 +264,11 @@ std::unique_ptr<connection_type> connect_client
 
 /// continous_acceptor ---------------------------------------------------------
 
+template<typename Protocol>
 class continous_acceptor
 {
 public:
-  continous_acceptor ( boost::asio::ip::tcp::endpoint endpoint
+  continous_acceptor ( typename Protocol::endpoint endpoint
                      , boost::asio::io_service& io_service
                      , filter_type encrypt
                      , filter_type decrypt
@@ -292,13 +290,8 @@ public:
 private:
   void accept()
   {
-    {
-      std::unique_ptr<boost::asio::ip::tcp::socket> new_pending_socket
-        ( fhg::util::make_unique<boost::asio::ip::tcp::socket>
-          (_acceptor.get_io_service())
-        );
-      std::swap (_pending_socket, new_pending_socket);
-    }
+    _pending_socket = fhg::util::make_unique<typename Protocol::socket>
+      (_acceptor.get_io_service());
 
     _acceptor.async_accept
       ( *_pending_socket
@@ -311,7 +304,8 @@ private:
 
         _accept_handler
           ( fhg::util::make_unique<connection_type>
-            ( _pending_socket.release()
+            ( new boost::asio::generic::stream_protocol::socket
+              (std::move (*_pending_socket))
             , _encrypt
             , _decrypt
             , _on_message
@@ -319,12 +313,14 @@ private:
             )
           );
 
+        _pending_socket = nullptr;
+
         accept();
       }
       );
   }
 
-  boost::asio::ip::tcp::acceptor _acceptor;
+  typename Protocol::acceptor _acceptor;
 
   filter_type _encrypt;
   filter_type _decrypt;
@@ -332,7 +328,7 @@ private:
   std::function<void (connection_type*)> _on_disconnect;
   std::function<void (std::unique_ptr<connection_type>)> _accept_handler;
 
-  std::unique_ptr<boost::asio::ip::tcp::socket> _pending_socket;
+  std::unique_ptr<typename Protocol::socket> _pending_socket;
 };
 
 
@@ -604,7 +600,7 @@ struct remote_endpoint
                   , unsigned short port
                   )
     : _connection
-      ( connect_client
+      ( connect_client<boost::asio::ip::tcp>
         ( host, port
         , io_service
         , [] (buffer_type b) { return b; }
@@ -781,7 +777,7 @@ struct rif
 
   std::vector<std::unique_ptr<connection_type>> _connections;
 
-  continous_acceptor _acceptor;
+  continous_acceptor<boost::asio::ip::tcp> _acceptor;
 
   rif (unsigned short port, boost::asio::io_service& io_service)
     : _service_dispatcher()
