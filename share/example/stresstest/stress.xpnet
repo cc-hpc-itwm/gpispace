@@ -121,8 +121,6 @@
               }
             }
 
-            usleep (config.sleeptime);
-
             return we::type::literal::control();
           ]]></code>
         </module>

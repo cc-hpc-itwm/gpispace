@@ -1,7 +1,6 @@
 <defun name="stresstest">
   <in name="outer" type="long" place="N"/>
   <in name="inner" type="long" place="M"/>
-  <in name="sleeptime" type="long" place="sleeptime"/>
   <in name="num_long_to_transfer" type="long" place="num_long"/>
   <in name="seed" type="long" place="seed"/>
   <in name="verify_all_mem" type="bool" place="verify_all_mem"/>
@@ -13,7 +12,6 @@
     <struct name="config">
       <field name="handle" type="long"/>
       <field name="scratch" type="long"/>
-      <field name="sleeptime" type="long"/>
       <field name="num_long" type="long"/>
       <field name="seed" type="long"/>
       <field name="verify_all_mem" type="bool"/>
@@ -21,7 +19,6 @@
       <field name="communicate" type="bool"/>
     </struct>
 
-    <place name="sleeptime" type="long"/>
     <place name="N" type="long"/>
     <place name="M" type="long"/>
     <place name="num_long" type="long"/>
@@ -53,7 +50,6 @@
 
     <transition name="initialize">
       <defun>
-        <in name="sleeptime" type="long"/>
         <in name="seed" type="long"/>
         <in name="num_long" type="long"/>
         <in name="verify_all_mem" type="bool"/>
@@ -64,7 +60,6 @@
                                                        , seed
                                                        , verify
                                                        , verify_all_mem
-                                                       , sleeptime
                                                        , config
                                                        , communicate
                                                        )">
@@ -120,7 +115,6 @@
 
             config.handle = static_cast<long>(handle);
             config.scratch = static_cast<long>(scratch);
-            config.sleeptime = sleeptime;
             config.num_long = num_long;
             config.seed = seed;
             config.verify_all_mem = verify_all_mem;
@@ -131,7 +125,6 @@
           ]]></code>
         </module>
       </defun>
-      <connect-in port="sleeptime" place="sleeptime"/>
       <connect-in port="seed" place="seed"/>
       <connect-in port="num_long" place="num_long"/>
       <connect-in port="verify_all_mem" place="verify_all_mem"/>
