@@ -21,7 +21,9 @@
 struct rif
 {
 public:
-  rif (unsigned short port, boost::asio::io_service& io_service)
+  rif ( boost::asio::ip::tcp::endpoint endpoint
+      , boost::asio::io_service& io_service
+      )
     : _service_dispatcher()
     , _start_service ( _service_dispatcher
                      , "start"
@@ -33,7 +35,7 @@ public:
                     , thunk<void (std::size_t)>
                       (std::bind (&rif::stop, this, std::placeholders::_1))
                     )
-    , _acceptor ( boost::asio::ip::tcp::endpoint (boost::asio::ip::tcp::v4(), port)
+    , _acceptor ( endpoint
                 , io_service
                 , [] (buffer_type buf) { return buf; }
                 , [] (buffer_type buf) { return buf; }
@@ -123,7 +125,10 @@ int main (int argc, char** argv)
 {
   boost::asio::io_service io_service;
 
-  const rif _ (13331, io_service);
+  const rif _
+    ( boost::asio::ip::tcp::endpoint (boost::asio::ip::tcp::v4(), 13331)
+    , io_service
+    );
   const boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
     io_service_thread ([&io_service]() { io_service.run(); });
 
