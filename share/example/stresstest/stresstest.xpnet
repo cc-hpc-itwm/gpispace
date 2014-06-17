@@ -11,7 +11,6 @@
   <net>
     <struct name="config">
       <field name="handle" type="long"/>
-      <field name="scratch" type="long"/>
       <field name="num_long" type="long"/>
       <field name="seed" type="long"/>
       <field name="verify_all_mem" type="bool"/>
@@ -82,16 +81,10 @@
             }
 
             const fvmAllocHandle_t handle (fvmGlobalAlloc (size / fvmGetNodeCount()));
-            const fvmAllocHandle_t scratch (fvmGlobalAlloc (size));
 
             if (size > 0 && !handle)
             {
               throw std::runtime_error ("BUMMER: alloc (handle) returned 0");
-            }
-
-            if (size > 0 && !scratch)
-            {
-              throw std::runtime_error ("BUMMER: alloc (scratch) returned 0");
             }
 
             if (verify)
@@ -110,11 +103,10 @@
                 *a = rand (engine);
               }
 
-              waitComm (fvmPutGlobalData (handle, 0, size, 0, scratch));
+              waitComm (fvmPutGlobalData (handle, 0, size, 0, 0));
             }
 
             config.handle = static_cast<long>(handle);
-            config.scratch = static_cast<long>(scratch);
             config.num_long = num_long;
             config.seed = seed;
             config.verify_all_mem = verify_all_mem;
@@ -143,16 +135,10 @@
           <cinclude href="fhglog/LogMacros.hpp"/>
           <code><![CDATA[
           const fvmAllocHandle_t& handle (config.handle);
-          const fvmAllocHandle_t& scratch (config.scratch);
 
           if (handle)
           {
             fvmGlobalFree (handle);
-          }
-
-          if (scratch)
-          {
-            fvmGlobalFree (scratch);
           }
 
           MLOG (INFO, "finalized");
