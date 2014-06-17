@@ -40,13 +40,13 @@ using handler_type = std::function<void (buffer_type)>;
 
 struct connection_type : boost::noncopyable
 {
-  connection_type ( boost::asio::generic::stream_protocol::socket* socket
+  connection_type ( boost::asio::generic::stream_protocol::socket socket
                   , filter_type encrypt
                   , filter_type decrypt
                   , std::function<void (connection_type*, buffer_type)> on_message
                   , std::function<void (connection_type*)> on_disconnect
                   )
-    : _socket (socket)
+    : _socket (std::move (socket))
     , _encrypt (encrypt)
     , _decrypt (decrypt)
     , _on_message (on_message)
@@ -55,7 +55,7 @@ struct connection_type : boost::noncopyable
     , _receive_buffer_previous_rest()
     , _partial_receiving_message()
     , _remaining_bytes_for_receiving_message()
-    , _receive_strand (_socket->get_io_service())
+    , _receive_strand (_socket.get_io_service())
   {
     start_read();
   }
@@ -78,7 +78,7 @@ struct connection_type : boost::noncopyable
 
   void start_read()
   {
-    _socket->async_read_some
+    _socket.async_read_some
       ( boost::asio::buffer (_receive_buffer)
       , _receive_strand.wrap
         ( [this] ( const boost::system::error_code & error
@@ -189,7 +189,7 @@ struct connection_type : boost::noncopyable
   void start_write()
   {
     boost::asio::async_write
-      ( *_socket
+      ( _socket
       , boost::asio::buffer (_pending_send.front())
       , [this] (boost::system::error_code error, std::size_t /*written*/)
       {
@@ -217,7 +217,7 @@ struct connection_type : boost::noncopyable
       );
   }
 
-  std::unique_ptr<boost::asio::generic::stream_protocol::socket> _socket;
+  boost::asio::generic::stream_protocol::socket _socket;
   filter_type _encrypt;
   filter_type _decrypt;
   std::function<void (connection_type*, buffer_type)> _on_message;
@@ -253,7 +253,7 @@ std::unique_ptr<connection_type> connect_client
                        );
 
   return fhg::util::make_unique<connection_type>
-    ( new boost::asio::generic::stream_protocol::socket (std::move (socket))
+    ( std::move (socket)
     , encrypt
     , decrypt
     , [handler] (connection_type*, buffer_type buffer) { handler (buffer); }
@@ -304,8 +304,7 @@ private:
 
         _accept_handler
           ( fhg::util::make_unique<connection_type>
-            ( new boost::asio::generic::stream_protocol::socket
-              (std::move (*_pending_socket))
+            ( std::move (*_pending_socket)
             , _encrypt
             , _decrypt
             , _on_message
