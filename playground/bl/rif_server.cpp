@@ -123,10 +123,16 @@ private:
 
 int main (int argc, char** argv)
 {
+  if (argc < 2)
+  {
+    throw std::logic_error ("usage: " + std::string (argv[0]) + " <port>");
+  }
+
   boost::asio::io_service io_service;
 
   const rif _
-    ( boost::asio::ip::tcp::endpoint (boost::asio::ip::tcp::v4(), 13331)
+    ( boost::asio::ip::tcp::endpoint
+      (boost::asio::ip::address(), std::stoi (argv[1]))
     , io_service
     );
   const boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
