@@ -3,15 +3,17 @@
 #define BOOST_TEST_MODULE append
 #include <boost/test/unit_test.hpp>
 
-#include <fhglog/appender/test/utils.hpp>
-
 #include <fhglog/LogMacros.hpp>
 #include <fhglog/appender/stream.hpp>
 
 #include <sstream>
 
-BOOST_FIXTURE_TEST_CASE (stream_appender, utils::logger_with_minimum_log_level)
+BOOST_AUTO_TEST_CASE (stream_appender)
 {
+  fhg::log::Logger::ptr_t log
+    (fhg::log::Logger::get ("logger-stream_appender"));
+  log->setLevel (fhg::log::TRACE);
+
   std::ostringstream logstream;
   log->addAppender (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender (logstream, "%m")));
 
@@ -20,8 +22,12 @@ BOOST_FIXTURE_TEST_CASE (stream_appender, utils::logger_with_minimum_log_level)
   BOOST_REQUIRE_EQUAL (logstream.str(), "hello world!");
 }
 
-BOOST_FIXTURE_TEST_CASE (two_stream_appenders, utils::logger_with_minimum_log_level)
+BOOST_AUTO_TEST_CASE (two_stream_appenders)
 {
+  fhg::log::Logger::ptr_t log
+    (fhg::log::Logger::get ("logger-two_stream_appenders"));
+  log->setLevel (fhg::log::TRACE);
+
   std::ostringstream logstream_0;
   std::ostringstream logstream_1;
 
