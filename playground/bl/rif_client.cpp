@@ -41,26 +41,9 @@ int main (int argc, char** argv)
   }
   std::future<pid_t> future_pid (start (argv[3], args));
 
-  std::future_status status;
-  do
-  {
-    status = future_pid.wait_for (std::chrono::milliseconds (500));
-    if (status == std::future_status::deferred)
-    {
-      std::cout << "deferred\n";
-    }
-    else if (status == std::future_status::timeout)
-    {
-      std::cout << "timeout\n";
-    }
-    else if (status == std::future_status::ready)
-    {
-      std::cout << "ready!\n";
-    }
-  }
-  while (status != std::future_status::ready);
+  future_pid.wait();
 
-  std::this_thread::sleep_for (std::chrono::seconds (2));
+  std::this_thread::sleep_for (std::chrono::seconds (1));
 
   stop (future_pid.get());
 
