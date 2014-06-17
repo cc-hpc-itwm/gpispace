@@ -70,17 +70,13 @@
           <code><![CDATA[
             const size_t size (num_long * sizeof (long));
 
-            if (size % fvmGetNodeCount() != 0)
-            {
-              throw std::runtime_error ("BUMMER: size % fvmGetNodeCount() != 0");
-            }
-
             if (size > fvmGetShmemSize())
             {
               throw std::runtime_error ("BUMMER: size > fvmGetShmemSize()");
             }
 
-            const fvmAllocHandle_t handle (fvmGlobalAlloc (size / fvmGetNodeCount()));
+            const fvmAllocHandle_t handle
+              (fvmGlobalAllocExact (size, "stresstest"));
 
             if (size > 0 && !handle)
             {
