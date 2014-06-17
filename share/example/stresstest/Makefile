@@ -18,6 +18,8 @@ WE_EXEC_LOAD += $(SDPA_HOME)/libexec/sdpa/fake/libfvm-pc.so
 WE_EXEC_CMD = we-exec
 WE_EXEC_WORKER = 1
 
+include Makefile.put
+
 ###############################################################################
 
 ifndef SDPA_HOME

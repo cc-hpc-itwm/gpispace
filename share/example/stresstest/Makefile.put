@@ -1,0 +1,8 @@
+PUT_PORT += outer=5L
+PUT_PORT += inner=5L
+PUT_PORT += sleeptime=0L
+PUT_PORT += num_long_to_transfer="(192L*2L^20L)div8L"
+PUT_PORT += seed=3141L
+PUT_PORT += verify_all_mem=true
+PUT_PORT += communicate=true
+PUT_PORT += verify=true
