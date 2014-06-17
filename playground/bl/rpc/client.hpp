@@ -5,6 +5,8 @@
 
 #include <playground/bl/rpc/common.hpp>
 
+#include <fhg/util/boost/serialization/tuple.hpp>
+
 #include <playground/bl/net/connection.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
