@@ -60,22 +60,6 @@ struct connection_type : boost::noncopyable
     start_read();
   }
 
-  // connection_type (connection_type&& other)
-  //   : _socket (std::move (other._socket))
-  //   , _encrypt (other._encrypt)
-  //   , _decrypt (other._decrypt)
-  //   , _on_message (other._on_message)
-  //   , _on_disconnect (other._on_disconnect)
-  //   , _receive_buffer (other._receive_buffer)
-  //   , _receive_buffer_previous_rest (other._receive_buffer_previous_rest)
-  //   , _partial_receiving_message (other._partial_receiving_message)
-  //   , _remaining_bytes_for_receiving_message
-  //     (other._remaining_bytes_for_receiving_message)
-  //   , _pending_send (other._pending_send)
-  //   , _receive_strand (other._receive_strand)
-  // {
-  // }
-
   void start_read()
   {
     _socket.async_read_some
