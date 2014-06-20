@@ -102,8 +102,6 @@ namespace drts
       return *this;
     }
   private:
-    Job () = default;
-
     friend class boost::serialization::access;
     template <typename Archive>
     void serialize (Archive & ar, const unsigned int version)
