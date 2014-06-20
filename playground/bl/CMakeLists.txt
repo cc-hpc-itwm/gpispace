@@ -25,7 +25,7 @@ add_library (net net/connection.cpp)
 target_link_libraries (net fhg-util ${Boost_SYSTEM_LIBRARY})
 
 add_library (rpc rpc/client.cpp rpc/server.cpp)
-target_link_libraries ( rpc fhg-util net ${Boost_SERIALIZATION_LIBRARY})
+target_link_libraries (rpc fhg-util net ${Boost_SERIALIZATION_LIBRARY})
 
 add_executable (rif_client rif_client.cpp)
 target_link_libraries (rif_client
