@@ -146,7 +146,7 @@ namespace fhg
           { &QObject::staticMetaObject
           , qt_meta_stringdata_binding_object
           , qt_meta_data_binding_object
-          , 0
+          , nullptr
           }};
 
         const QMetaObject* binding_object::metaObject() const
@@ -161,7 +161,7 @@ namespace fhg
         {
           if (!_clname)
           {
-            return 0;
+            return nullptr;
           }
           if (!strcmp (_clname, qt_meta_stringdata_binding_object))
           {

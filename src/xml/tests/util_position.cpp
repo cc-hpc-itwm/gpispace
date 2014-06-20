@@ -20,14 +20,14 @@ namespace
 BOOST_AUTO_TEST_CASE (path)
 {
   const boost::filesystem::path p ("/some/path");
-  const xml::parse::util::position_type position (0, 0, p);
+  const xml::parse::util::position_type position (nullptr, nullptr, p);
 
   BOOST_REQUIRE_EQUAL (position.path(), p);
 }
 
 BOOST_AUTO_TEST_CASE (null)
 {
-  const xml::parse::util::position_type position (0, 0, "");
+  const xml::parse::util::position_type position (nullptr, nullptr, "");
 
   BOOST_REQUIRE_EQUAL (position.line(), 1U);
   BOOST_REQUIRE_EQUAL (position.column(), 0U);

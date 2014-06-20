@@ -146,7 +146,7 @@ BOOST_FIXTURE_TEST_CASE (member_function, boost_connect_fixture)
       , this
       , bind ( &boost_connect_fixture::function
              , this
-             , bind (&QByteArray::toInt, _1, (bool*)0, 10)
+             , bind (&QByteArray::toInt, _1, nullptr, 10)
              )
       )
     );

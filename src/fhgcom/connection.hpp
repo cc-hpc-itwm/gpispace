@@ -72,7 +72,7 @@ namespace fhg
 
         std::vector<boost::asio::const_buffer> const & to_buffers() const
         {
-          fhg_assert (message != 0);
+          fhg_assert (message != nullptr);
 
           if (message->data.size () != message->header.length)
           {

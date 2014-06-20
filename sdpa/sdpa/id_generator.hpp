@@ -28,7 +28,7 @@ namespace sdpa {
       , _prefix ( ( boost::format ("%1%.%2%.%3%.%4%.")
                   % fhg::util::hostname()
                   % name
-                  % time (0)
+                  % time (nullptr)
                   % getpid()
                   ).str()
                 )
