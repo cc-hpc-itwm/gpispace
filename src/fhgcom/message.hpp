@@ -11,9 +11,7 @@ namespace fhg
   {
     struct message_t
     {
-      message_t ()
-        : data()
-      {}
+      message_t () = default;
 
       explicit
       message_t (std::size_t len)

@@ -14,7 +14,7 @@ namespace fhg
     {
     public:
       remove_prefix_failed (const std::string word, const std::string prefix);
-      virtual ~remove_prefix_failed() { }
+      virtual ~remove_prefix_failed() = default;
 
       const std::string& word() const { return _word; }
       const std::string& prefix() const { return _prefix; }

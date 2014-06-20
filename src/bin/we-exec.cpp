@@ -88,8 +88,7 @@ namespace
 
   struct job_t
   {
-    job_t()
-    {}
+    job_t() = default;
 
     job_t (const we::layer::id_type& id_, const we::type::activity_t& act_)
       : id (id_)

@@ -32,7 +32,7 @@ namespace fhg
         {
         public:
           expected (const std::string&, const position&);
-          virtual ~expected() {}
+          virtual ~expected() = default;
         };
 
         template<typename From, typename To>
@@ -46,7 +46,7 @@ namespace fhg
                       , pos
                       )
           {}
-          virtual ~value_too_big() {}
+          virtual ~value_too_big() = default;
         };
 
         template<typename I>
@@ -62,7 +62,7 @@ namespace fhg
                       , pos
                       )
           {}
-          virtual ~unexpected_digit() {}
+          virtual ~unexpected_digit() = default;
         };
       }
     }

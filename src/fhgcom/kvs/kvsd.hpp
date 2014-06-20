@@ -201,8 +201,7 @@ namespace fhg
           template <typename T>
           struct entry_t
           {
-            entry_t ()
-            {}
+            entry_t () = default;
 
             entry_t ( T const &value
                     , boost::posix_time::ptime exp = boost::posix_time::min_date_time

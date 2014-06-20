@@ -102,7 +102,7 @@ namespace drts
       return *this;
     }
   private:
-    Job () {}
+    Job () = default;
 
     friend class boost::serialization::access;
     template <typename Archive>

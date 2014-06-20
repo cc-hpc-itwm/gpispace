@@ -16,7 +16,7 @@ namespace fhg
     public:
       typedef boost::shared_ptr<Appender> ptr_t;
 
-      virtual ~Appender() {}
+      virtual ~Appender() = default;
 
       virtual void append (const LogEvent&) = 0;
       virtual void flush() = 0;

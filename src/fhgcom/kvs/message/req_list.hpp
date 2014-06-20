@@ -18,7 +18,7 @@ namespace fhg
       {
         struct req_list
         {
-          req_list () {}
+          req_list () = default;
 
           explicit req_list (const std::string & regexp)
             : regexp_(regexp)

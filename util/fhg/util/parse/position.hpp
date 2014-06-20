@@ -16,7 +16,7 @@ namespace fhg
       class position
       {
       public:
-        virtual ~position() {}
+        virtual ~position() = default;
 
         virtual char operator*() const = 0;
         virtual void operator++() = 0;
