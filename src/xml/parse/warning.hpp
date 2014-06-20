@@ -128,7 +128,7 @@ namespace xml
         struct_shadowed ( const type::structure_type& early
                         , const type::structure_type& late
                         );
-        ~struct_shadowed() throw() = default;
+        ~struct_shadowed() = default;
       };
 
       // ******************************************************************* //
@@ -287,7 +287,7 @@ namespace xml
       {
       public:
         port_not_connected (const id::ref::port&, const boost::filesystem::path&);
-        virtual ~port_not_connected() throw() = default;
+        virtual ~port_not_connected() = default;
 
       private:
         const id::ref::port _port;
@@ -302,7 +302,7 @@ namespace xml
         overwrite_function_name_trans ( const id::ref::transition&
                                       , const id::ref::function&
                                       );
-        virtual ~overwrite_function_name_trans() throw() = default;
+        virtual ~overwrite_function_name_trans() = default;
 
       private:
         const id::ref::transition _transition;
@@ -317,7 +317,7 @@ namespace xml
         overwrite_function_internal_trans ( const id::ref::transition&
                                           , const id::ref::function&
                                           );
-        virtual ~overwrite_function_internal_trans() throw() = default;
+        virtual ~overwrite_function_internal_trans() = default;
 
       private:
         const id::ref::transition _transition;
@@ -523,7 +523,7 @@ namespace xml
                                , const id::ref::port& out
                                , const boost::filesystem::path&
                                );
-        virtual ~conflicting_port_types() throw() = default;
+        virtual ~conflicting_port_types() = default;
 
       private:
         const id::ref::transition _transition;
@@ -584,7 +584,7 @@ namespace xml
         duplicate_external_function ( const id::ref::module& mod
                                     , const id::ref::module& old
                                     );
-        ~duplicate_external_function() throw() = default;
+        ~duplicate_external_function() = default;
 
       private:
         const id::ref::module _mod;
@@ -631,7 +631,7 @@ namespace xml
       {
       public:
         synthesize_anonymous_function (const id::ref::function&);
-        ~synthesize_anonymous_function() throw() = default;
+        ~synthesize_anonymous_function() = default;
 
       private:
         const id::ref::function _function;

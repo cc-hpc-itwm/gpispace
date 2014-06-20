@@ -8,7 +8,7 @@ namespace daemon {
 	class WorkerNotFoundException : public std::runtime_error {
 		public:
 		WorkerNotFoundException() : std::runtime_error ("worker not found") {}
-		virtual ~WorkerNotFoundException() throw() = default;
+		virtual ~WorkerNotFoundException() = default;
 	};
 }}
 

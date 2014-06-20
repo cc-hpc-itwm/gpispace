@@ -33,7 +33,7 @@ namespace gpi
           , queue (via_queue)
         {}
 
-        virtual ~dma_error () throw () = default;
+        virtual ~dma_error () = default;
 
         const offset_t local_offset;
         const offset_t remote_offset;

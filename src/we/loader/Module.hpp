@@ -20,7 +20,7 @@ namespace we
       Module ( const std::string& path
              , int flags = RTLD_NOW | RTLD_GLOBAL
              );
-      virtual ~Module() throw();
+      virtual ~Module();
 
       virtual void name (const std::string&) override;
       const std::string &name() const;

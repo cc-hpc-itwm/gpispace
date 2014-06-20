@@ -150,7 +150,7 @@ namespace gpi
         , message ("gpi::error[" + boost::lexical_cast<std::string>(value) + "]: " + ec.name() + ": " + user_message)
       {}
 
-      virtual ~gpi_error () throw () = default;
+      virtual ~gpi_error () = default;
 
       virtual const char * what () const throw () override
       {
