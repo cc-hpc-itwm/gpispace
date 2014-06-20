@@ -30,7 +30,6 @@ namespace we
         , _file (file)
         , _reason (reason)
       {}
-      virtual ~module_load_failed() = default;
 
       MEMBER (file, std::string);
       MEMBER (reason, std::string);
@@ -51,7 +50,6 @@ namespace we
         , _file (file)
         , _search_path (search_path)
       {}
-      virtual ~module_not_found() = default;
 
       MEMBER (file, std::string);
       MEMBER (search_path, std::string);
@@ -65,7 +63,6 @@ namespace we
           ((boost::format ("module '%1%' already registered") % name).str())
         , _name (name)
       {}
-      virtual ~module_already_registered() = default;
 
       MEMBER (name, std::string);
     };
@@ -85,7 +82,6 @@ namespace we
         , _module (module)
         , _name (name)
       {}
-      virtual ~function_not_found() = default;
 
       MEMBER (module, std::string);
       MEMBER (name, std::string);
@@ -106,7 +102,6 @@ namespace we
         , _module (module)
         , _name (name)
       {}
-      virtual ~duplicate_function() = default;
 
       MEMBER (module, std::string);
       MEMBER (name, std::string);

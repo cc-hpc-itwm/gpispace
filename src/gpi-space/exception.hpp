@@ -66,7 +66,6 @@ namespace gpi
         , m_detail (detail)
       {}
 
-      virtual ~code_t () = default;
       const std::string & name() const    { return m_txt; }
       const std::string & detail () const { return m_detail; }
       int value () const { return m_val; }
