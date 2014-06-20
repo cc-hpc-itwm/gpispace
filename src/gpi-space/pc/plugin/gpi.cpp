@@ -212,7 +212,7 @@ private:
     }
   }
 
-  virtual void restart_loop ()
+  void restart_loop ()
   {
     while (! try_start())
     {
