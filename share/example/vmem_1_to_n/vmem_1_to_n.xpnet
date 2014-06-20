@@ -1,4 +1,4 @@
-<defun name="stresstest">
+<defun name="vmem_1_to_n">
   <in name="outer" type="long" place="N"/>
   <in name="inner" type="long" place="M"/>
   <in name="num_long_to_transfer" type="long" place="num_long"/>
@@ -43,10 +43,10 @@
         <in name="seed" type="long"/>
         <in name="num_long" type="long"/>
         <out name="config" type="config"/>
-        <module name="stresstest" function="initialize ( num_long
-                                                       , seed
-                                                       , config
-                                                       )">
+        <module name="vmem_1_to_n" function="initialize ( num_long
+                                                        , seed
+                                                        , config
+                                                        )">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="boost/random.hpp"/>
@@ -61,7 +61,7 @@
             }
 
             const fvmAllocHandle_t handle
-              (fvmGlobalAllocExact (size, "stresstest"));
+              (fvmGlobalAllocExact (size, "vmem_1_to_n"));
 
             if (size > 0 && !handle)
             {
@@ -102,7 +102,7 @@
         <in name="trigger" type="control"/>
         <in name="config" type="config"/>
         <out name="trigger" type="control"/>
-        <module name="stresstest" function="finalize (trigger, config)">
+        <module name="vmem_1_to_n" function="finalize (trigger, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/LogMacros.hpp"/>
           <code><![CDATA[
@@ -131,7 +131,7 @@
     </transition>
 
     <transition name="inner" inline="false">
-      <include-function href="stress.xpnet"/>
+      <include-function href="inner.xpnet"/>
       <connect-read port="N" place="M"/>
       <connect-read port="config" place="config"/>
       <connect-out port="done" place="done"/>

@@ -9,7 +9,7 @@ DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
 DIR_SOURCE="${DIR_TEST}/.."
 RESULT="$(mktemp -p "${DIR_BUILD}")"
 
-OUT="${DIR_BUILD}/stresstest.out"
+OUT="${DIR_BUILD}/vmem_1_to_n.out"
 
 make+=( make BUILDDIR="${DIR_BUILD}" )
 make+=( WE_EXEC_OUTPUT="${RESULT}" )
