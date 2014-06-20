@@ -34,7 +34,7 @@ namespace fhg
           { }
 
         protected:
-          virtual QWidget* createWidget (QWidget* parent)
+          virtual QWidget* createWidget (QWidget* parent) override
           {
             QWidget* base (new QWidget (parent));
 

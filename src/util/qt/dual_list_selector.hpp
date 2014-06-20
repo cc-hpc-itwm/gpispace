@@ -28,16 +28,16 @@ namespace fhg
           dual_list_move_and_drag_proxy
             (QAbstractItemModel*, QObject* = nullptr);
 
-          virtual Qt::ItemFlags flags (const QModelIndex&) const;
-          virtual Qt::DropActions supportedDropActions() const;
-          virtual QStringList mimeTypes() const;
-          virtual QMimeData* mimeData (const QModelIndexList&) const;
+          virtual Qt::ItemFlags flags (const QModelIndex&) const override;
+          virtual Qt::DropActions supportedDropActions() const override;
+          virtual QStringList mimeTypes() const override;
+          virtual QMimeData* mimeData (const QModelIndexList&) const override;
           virtual bool dropMimeData ( const QMimeData*
                                     , Qt::DropAction
                                     , int row
                                     , int column
                                     , const QModelIndex& parent
-                                    );
+                                    ) override;
         };
 
         class list_view_with_drop_source_check : public QListView
@@ -51,7 +51,7 @@ namespace fhg
           QSet<QWidget*> allowed_drop_sources() const;
 
         protected:
-          void dragMoveEvent (QDragMoveEvent*);
+          virtual void dragMoveEvent (QDragMoveEvent*) override;
 
         private:
           QSet<QWidget*> _sources;

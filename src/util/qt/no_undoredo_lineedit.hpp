@@ -20,9 +20,9 @@ namespace fhg
         no_undoredo_lineedit (const QString& content, QWidget* parent = nullptr);
 
       protected:
-        virtual void contextMenuEvent (QContextMenuEvent*);
-        virtual void keyPressEvent (QKeyEvent*);
-        virtual bool event (QEvent*);
+        virtual void contextMenuEvent (QContextMenuEvent*) override;
+        virtual void keyPressEvent (QKeyEvent*) override;
+        virtual bool event (QEvent*) override;
       };
     }
   }

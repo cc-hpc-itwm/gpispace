@@ -28,7 +28,7 @@ namespace
     }
 
     void handleCancelJobEvent
-      (const sdpa::events::CancelJobEvent* pEvt)
+      (const sdpa::events::CancelJobEvent* pEvt) override
     {
       _network.perform
         ( sdpa::events::SDPAEvent::Ptr

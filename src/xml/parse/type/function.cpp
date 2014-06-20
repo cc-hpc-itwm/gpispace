@@ -1685,7 +1685,7 @@ namespace xml
               _inc[value::MAP()].insert ("we/type/value.hpp");
             }
 
-            std::ostream& operator() (std::ostream& os) const
+            virtual std::ostream& operator() (std::ostream& os) const override
             {
               if (!pnet::type::signature::is_literal (_tname))
               {
@@ -1725,7 +1725,7 @@ namespace xml
           mk_type (const std::string& type)
             : _type (type)
           {}
-          std::ostream& operator() (std::ostream& os) const
+          virtual std::ostream& operator() (std::ostream& os) const override
           {
             if (pnet::type::signature::is_literal (_type))
             {
@@ -1755,7 +1755,7 @@ namespace xml
             , _modif (modif)
             , _amper (amper)
           {}
-          std::ostream& operator() (std::ostream& os) const
+          virtual std::ostream& operator() (std::ostream& os) const override
           {
             os << _indent << _modif;
 

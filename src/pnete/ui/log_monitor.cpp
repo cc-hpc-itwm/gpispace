@@ -273,7 +273,7 @@ namespace detail
     }
 
   protected:
-    virtual bool filterAcceptsRow (int row, const QModelIndex& parent) const
+    virtual bool filterAcceptsRow (int row, const QModelIndex& parent) const override
     {
       return sourceModel()->data
         (sourceModel()->index (row, 0, parent), Qt::UserRole).toInt()

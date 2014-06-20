@@ -152,7 +152,7 @@ namespace gpi
 
       virtual ~gpi_error () throw () = default;
 
-      virtual const char * what () const throw ()
+      virtual const char * what () const throw () override
       {
         return message.c_str();
       }

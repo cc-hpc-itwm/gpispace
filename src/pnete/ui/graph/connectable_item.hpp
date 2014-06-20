@@ -37,9 +37,9 @@ namespace fhg
 
           virtual const std::string& we_type() const = 0;
 
-          virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
+          virtual void mousePressEvent (QGraphicsSceneMouseEvent* event) override;
 
-          virtual QLinkedList<base_item*> childs() const;
+          virtual QLinkedList<base_item*> childs() const override;
 
         signals:
           void association_added (association* c);

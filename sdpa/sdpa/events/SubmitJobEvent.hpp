@@ -40,7 +40,7 @@ namespace sdpa
         return worker_list_;
       }
 
-      virtual void handleBy (EventHandler* handler)
+      virtual void handleBy (EventHandler* handler) override
       {
         handler->handleSubmitJobEvent (this);
       }

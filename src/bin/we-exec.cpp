@@ -41,23 +41,23 @@ namespace
       , _new_id (new_id)
     {}
 
-    virtual void handle_internally (we::type::activity_t& act, net_t const& n)
+    virtual void handle_internally (we::type::activity_t& act, net_t const& n) override
     {
       handle_externally (act, n);
     }
-    virtual void handle_internally (we::type::activity_t&, mod_t const&)
+    virtual void handle_internally (we::type::activity_t&, mod_t const&) override
     {
       throw std::runtime_error ("NO internal mod here!");
     }
-    virtual void handle_internally (we::type::activity_t&, expr_t const&)
+    virtual void handle_internally (we::type::activity_t&, expr_t const&) override
     {
       throw std::runtime_error ("NO internal expr here!");
     }
-    virtual void handle_externally (we::type::activity_t& act, net_t const&)
+    virtual void handle_externally (we::type::activity_t& act, net_t const&) override
     {
       _layer->submit (_new_id (_id), act);
     }
-    virtual void handle_externally (we::type::activity_t& act, mod_t const& mod)
+    virtual void handle_externally (we::type::activity_t& act, mod_t const& mod) override
     {
       try
       {
@@ -72,7 +72,7 @@ namespace
         _layer->failed (_id, std::string ("Module call failed: ") + ex.what());
       }
     }
-    virtual void handle_externally (we::type::activity_t&, expr_t const&)
+    virtual void handle_externally (we::type::activity_t&, expr_t const&) override
     {
       throw std::runtime_error ("NO external expr here!");
     }

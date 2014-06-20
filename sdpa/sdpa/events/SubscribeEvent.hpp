@@ -30,7 +30,7 @@ namespace sdpa
         return _job_id;
       }
 
-      virtual void handleBy (EventHandler* handler)
+      virtual void handleBy (EventHandler* handler) override
       {
     	handler->handleSubscribeEvent (this);
       }

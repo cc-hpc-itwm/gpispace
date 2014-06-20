@@ -54,7 +54,7 @@ namespace fhg
             , _sep (sep)
           { }
 
-          virtual QString operator() (QModelIndex index) const
+          virtual QString operator() (QModelIndex index) const override
           {
             return util::qt::value<QString>
               (index.data (worker_model::name_role)).split (_sep)[_n];

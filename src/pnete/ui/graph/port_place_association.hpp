@@ -36,12 +36,12 @@ namespace fhg
           port_place_association
             (port_item*, place_item*, const data::handle::port&);
 
-          virtual const data::handle::port& handle() const;
+          virtual const data::handle::port& handle() const override;
 
-          virtual QPainterPath shape() const;
+          virtual QPainterPath shape() const override;
 
           enum { Type = port_place_association_graph_type };
-          virtual int type() const { return Type; }
+          virtual int type() const override { return Type; }
 
         public slots:
           void place_association_set

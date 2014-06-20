@@ -24,7 +24,7 @@ namespace fhg
         public:
           open (fhg::util::indenter&);
           open (fhg::util::indenter&, const std::string&);
-          std::ostream& operator() (std::ostream&) const;
+          virtual std::ostream& operator() (std::ostream&) const override;
 
         private:
           fhg::util::indenter& _indent;
@@ -35,7 +35,7 @@ namespace fhg
         {
         public:
           close (fhg::util::indenter&);
-          std::ostream& operator() (std::ostream&) const;
+          virtual std::ostream& operator() (std::ostream&) const override;
 
         private:
           fhg::util::indenter& _indent;

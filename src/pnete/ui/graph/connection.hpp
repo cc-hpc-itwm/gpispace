@@ -37,10 +37,10 @@ namespace fhg
                           , const data::handle::connect& handle
                           );
 
-          virtual const data::handle::connect& handle() const;
+          virtual const data::handle::connect& handle() const override;
 
           enum { Type = connection_graph_type };
-          virtual int type() const { return Type; }
+          virtual int type() const override { return Type; }
 
         public slots:
           void connection_removed (const data::handle::connect&);

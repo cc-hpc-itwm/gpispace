@@ -21,7 +21,7 @@ namespace sdpa
         , m_error_message (error_message)
       {}
 
-      virtual void handleBy (EventHandler* handler)
+      virtual void handleBy (EventHandler* handler) override
       {
         handler->handleJobFailedEvent (this);
       }

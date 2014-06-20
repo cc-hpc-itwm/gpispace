@@ -449,8 +449,8 @@ namespace fhg
             }
           }
         protected:
-          void on_data_hook
-            (boost::shared_ptr<session> client, const std::string &s)
+          virtual void on_data_hook
+            (boost::shared_ptr<session> client, const std::string &s) override
           {
             try
             {

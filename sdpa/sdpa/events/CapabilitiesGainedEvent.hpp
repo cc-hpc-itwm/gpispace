@@ -37,7 +37,7 @@ namespace sdpa
         return capabilities_;
       }
 
-      virtual void handleBy (EventHandler* handler)
+      virtual void handleBy (EventHandler* handler) override
       {
         handler->handleCapabilitiesGainedEvent (this);
       }

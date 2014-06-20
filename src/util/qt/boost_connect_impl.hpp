@@ -68,9 +68,9 @@ namespace fhg
           // core QObject stuff: we implement this ourselves rather than
           // via moc, since qt_metacall() is the core of the binding
           static const QMetaObject staticMetaObject;
-          virtual const QMetaObject *metaObject() const;
-          virtual void *qt_metacast (const char *);
-          virtual int qt_metacall (QMetaObject::Call, int, void **argv);
+          virtual const QMetaObject *metaObject() const override;
+          virtual void *qt_metacast (const char *) override;
+          virtual int qt_metacall (QMetaObject::Call, int, void **argv) override;
 
         private:
           struct binding

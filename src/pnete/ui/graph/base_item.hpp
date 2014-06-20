@@ -83,7 +83,7 @@ namespace fhg
 
           virtual QLinkedList<base_item*> childs() const;
           virtual QPainterPath shape() const = 0;
-          virtual QRectF boundingRect() const;
+          virtual QRectF boundingRect() const override;
 
           virtual void handle_property_change
             ( const ::we::type::property::key_type& key
@@ -97,11 +97,11 @@ namespace fhg
           std::stack<mode::type> _mode;
           QPointF _move_start;
 
-          virtual void hoverEnterEvent (QGraphicsSceneHoverEvent* event);
-          virtual void hoverLeaveEvent (QGraphicsSceneHoverEvent* event);
-          virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* event);
-          virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
-          virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
+          virtual void hoverEnterEvent (QGraphicsSceneHoverEvent* event) override;
+          virtual void hoverLeaveEvent (QGraphicsSceneHoverEvent* event) override;
+          virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* event) override;
+          virtual void mousePressEvent (QGraphicsSceneMouseEvent* event) override;
+          virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event) override;
 
           virtual const data::handle::base& handle() const;
         };

@@ -39,12 +39,12 @@ namespace fhg
 
           virtual void set_property ( const ::we::type::property::key_type&
                                     , const ::we::type::property::value_type&
-                                    ) const;
+                                    ) const override;
 
           virtual void move
-            (const QPointF& position, const bool outer) const;
+            (const QPointF& position, const bool outer) const override;
 
-          virtual void no_undo_move (const QPointF& position) const;
+          virtual void no_undo_move (const QPointF& position) const override;
 
           bool is_implicit() const;
           void make_explicit() const;

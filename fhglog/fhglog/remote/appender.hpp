@@ -22,8 +22,8 @@ namespace fhg
         RemoteAppender (const std::string &location);
         virtual ~RemoteAppender();
 
-        void append (const LogEvent&);
-        void flush() {}
+        virtual void append (const LogEvent&) override;
+        virtual void flush() override {}
 
       private:
         boost::asio::io_service io_service_;

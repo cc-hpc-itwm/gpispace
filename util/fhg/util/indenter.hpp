@@ -19,7 +19,7 @@ namespace fhg
       indenter operator++ (int);
       indenter& operator--();
       indenter operator-- (int);
-      std::ostream& operator() (std::ostream&) const;
+      virtual std::ostream& operator() (std::ostream&) const override;
 
     private:
       unsigned int _depth;
@@ -29,7 +29,7 @@ namespace fhg
     {
     public:
       deeper (indenter&);
-      std::ostream& operator() (std::ostream&) const;
+      virtual std::ostream& operator() (std::ostream&) const override;
     private:
       indenter& _indenter;
     };

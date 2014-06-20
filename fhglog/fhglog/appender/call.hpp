@@ -23,12 +23,12 @@ namespace fhg
        : _handler (handler)
        {}
 
-       void append (const LogEvent& evt)
+       virtual void append (const LogEvent& evt) override
        {
          _handler (evt);
        }
 
-       void flush()
+       virtual void flush() override
        {}
 
      private:
