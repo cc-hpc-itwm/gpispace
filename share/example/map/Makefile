@@ -5,9 +5,9 @@ MAIN = map
 
 ###############################################################################
 
-include Makefile.put
+include $(MAKEFILE_PUT)
 
-DEP += Makefile Makefile.put
+DEP += Makefile $(MAKEFILE_PUT)
 
 ###############################################################################
 

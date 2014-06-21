@@ -19,6 +19,7 @@ VMEM_SOCKET=$(mktemp -u)
 mkdir -p "${STATE_DIR}/log"
 
 make=(make)
+make+=( MAKEFILE_PUT=Makefile.put )
 make+=( BUILDDIR="${DIR_BUILD}" )
 make+=( LIB_DESTDIR="${DIR_INST}" )
 
