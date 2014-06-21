@@ -27,8 +27,8 @@ handle_output=
 
 cleanup()
 {
-  test -n ${handle_input} && echo memory-free ${handle_input} | gpish -s "${VMEM_SOCKET}"
-  test -n ${handle_output} && echo memory-free ${handle_output} | gpish -s "${VMEM_SOCKET}"
+  test -n "${handle_input}" && echo memory-free ${handle_input} | gpish -s "${VMEM_SOCKET}"
+  test -n "${handle_output}" && echo memory-free ${handle_output} | gpish -s "${VMEM_SOCKET}"
   test -s "${KVSD_PID_FILE}" && kill -9 $(cat "${KVSD_PID_FILE}")
   test -s "${GPI_SPACE_PID_FILE}" && kill -9 $(cat "${GPI_SPACE_PID_FILE}")
   rm -rf "${VMEM_SOCKET}"
