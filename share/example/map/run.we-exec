@@ -7,6 +7,7 @@ source ${SDPA_HOME}/etc/sdpa/sdpa.env
 size_input=50
 size_output=50
 size_block=10
+num_block=10
 
 KVSD_PID_FILE=$(mktemp)
 GPI_SPACE_PID_FILE=$(mktemp)
@@ -83,7 +84,7 @@ handle_output=$(echo memory-alloc ${size_output} gpi output p | TERM=linux gpish
 cat > Makefile.put <<EOF
 PUT_PORT += input=Struct[handle:=Struct[name:=\"${handle_input}\"],offset:=0UL,size:=${size_input}UL]
 PUT_PORT += output=Struct[handle:=Struct[name:=\"${handle_output}\"],offset:=0UL,size:=${size_output}UL]
-PUT_PORT += num_block=10UL
+PUT_PORT += num_block=${num_block}UL
 PUT_PORT += size_block=${size_block}UL
 PUT_PORT += user_data="y(31)"
 EOF
