@@ -362,7 +362,6 @@ try
   std::vector<std::string> mods_to_load;
   std::size_t num_worker (8);
   std::string output;
-  bool show_dots (false);
 
   desc.add_options()
     ("help,h", "this message")
@@ -386,10 +385,6 @@ try
     ( "output,o"
     , po::value<std::string>(&output)->default_value(output)
     , "where to write the result pnet to"
-    )
-    ( "show-dots,d"
-    , po::value<bool>(&show_dots)->default_value(show_dots)
-    , "show dots while waiting for progress"
     )
     ;
 
