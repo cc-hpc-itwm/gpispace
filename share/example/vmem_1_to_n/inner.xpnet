@@ -46,26 +46,13 @@
             MLOG (INFO, "run (" << id << ", " << i << ")");
 
             const fvmAllocHandle_t & handle (config.handle);
-            const fvmAllocHandle_t & scratch  (config.scratch);
             const size_t size (config.num_long * sizeof (long));
             const int rank (fvmGetRank());
 
-            if (config.verify_all_mem)
-            {
-              memset (fvmGetShmemPtr(), rank, fvmGetShmemSize());
-            }
-            else if (config.verify)
-            {
-              memset (fvmGetShmemPtr(), rank, size);
-            }
+            memset (fvmGetShmemPtr(), rank, fvmGetShmemSize());
 
-            if (config.communicate)
-            {
-              waitComm (fvmGetGlobalData (handle, 0, size, 0, config.scratch));
-            }
+              waitComm (fvmGetGlobalData (handle, 0, size, 0, 0));
 
-            if (config.verify)
-            {
               MLOG (INFO, "verifiying " << config.num_long << " values with seed " << config.seed);
 
               long* a (static_cast<long*> (fvmGetShmemPtr()));
@@ -92,9 +79,8 @@
                   throw std::runtime_error (s.str());
                 }
               }
-            }
 
-            if (config.verify_all_mem && fvmGetShmemSize() > size)
+            if (fvmGetShmemSize() > size)
             {
               MLOG ( INFO
                    , "verifiying mem behind data ("
@@ -120,8 +106,6 @@
                 }
               }
             }
-
-            usleep (config.sleeptime);
 
             return we::type::literal::control();
           ]]></code>

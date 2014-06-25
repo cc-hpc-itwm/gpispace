@@ -1,0 +1,4 @@
+PUT_PORT += outer=5L
+PUT_PORT += inner=5L
+PUT_PORT += num_long_to_transfer="(192L*2L^20L)div8L"
+PUT_PORT += seed=3141L

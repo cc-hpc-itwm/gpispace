@@ -1,34 +1,21 @@
-<defun name="stresstest">
+<defun name="vmem_1_to_n">
   <in name="outer" type="long" place="N"/>
   <in name="inner" type="long" place="M"/>
-  <in name="sleeptime" type="long" place="sleeptime"/>
   <in name="num_long_to_transfer" type="long" place="num_long"/>
   <in name="seed" type="long" place="seed"/>
-  <in name="verify_all_mem" type="bool" place="verify_all_mem"/>
-  <in name="communicate" type="bool" place="communicate"/>
-  <in name="verify" type="bool" place="verify"/>
   <out name="out" type="control" place="out"/>
 
   <net>
     <struct name="config">
       <field name="handle" type="long"/>
-      <field name="scratch" type="long"/>
-      <field name="sleeptime" type="long"/>
       <field name="num_long" type="long"/>
       <field name="seed" type="long"/>
-      <field name="verify_all_mem" type="bool"/>
-      <field name="verify" type="bool"/>
-      <field name="communicate" type="bool"/>
     </struct>
 
-    <place name="sleeptime" type="long"><token><value>0L</value></token></place>
-    <place name="N" type="long"><token><value>5L</value></token></place>
-    <place name="M" type="long"><token><value>5L</value></token></place>
-    <place name="num_long" type="long"><token><value>(192L*2L^20L) div 8L</value></token></place>
-    <place name="seed" type="long"><token><value>3141L</value></token></place>
-    <place name="verify_all_mem" type="bool"><token><value>true</value></token></place>
-    <place name="verify" type="bool"><token><value>true</value></token></place>
-    <place name="communicate" type="bool"><token><value>true</value></token></place>
+    <place name="N" type="long"/>
+    <place name="M" type="long"/>
+    <place name="num_long" type="long"/>
+    <place name="seed" type="long"/>
     <place name="Nstep" type="long"/>
     <place name="wait" type="long"/>
 
@@ -53,21 +40,13 @@
 
     <transition name="initialize">
       <defun>
-        <in name="sleeptime" type="long"/>
         <in name="seed" type="long"/>
         <in name="num_long" type="long"/>
-        <in name="verify_all_mem" type="bool"/>
-        <in name="verify" type="bool"/>
-        <in name="communicate" type="bool"/>
         <out name="config" type="config"/>
-        <module name="stresstest" function="initialize ( num_long
-                                                       , seed
-                                                       , verify
-                                                       , verify_all_mem
-                                                       , sleeptime
-                                                       , config
-                                                       , communicate
-                                                       )">
+        <module name="vmem_1_to_n" function="initialize ( num_long
+                                                        , seed
+                                                        , config
+                                                        )">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="boost/random.hpp"/>
@@ -76,31 +55,19 @@
           <code><![CDATA[
             const size_t size (num_long * sizeof (long));
 
-            if (size % fvmGetNodeCount() != 0)
-            {
-              throw std::runtime_error ("BUMMER: size % fvmGetNodeCount() != 0");
-            }
-
             if (size > fvmGetShmemSize())
             {
               throw std::runtime_error ("BUMMER: size > fvmGetShmemSize()");
             }
 
-            const fvmAllocHandle_t handle (fvmGlobalAlloc (size / fvmGetNodeCount()));
-            const fvmAllocHandle_t scratch (fvmGlobalAlloc (size));
+            const fvmAllocHandle_t handle
+              (fvmGlobalAllocExact (size, "vmem_1_to_n"));
 
             if (size > 0 && !handle)
             {
               throw std::runtime_error ("BUMMER: alloc (handle) returned 0");
             }
 
-            if (size > 0 && !scratch)
-            {
-              throw std::runtime_error ("BUMMER: alloc (scratch) returned 0");
-            }
-
-            if (verify)
-            {
               MLOG (INFO, "generating " << num_long << " values with seed " << seed);
               long *a (static_cast<long*>(fvmGetShmemPtr()));
 
@@ -115,28 +82,18 @@
                 *a = rand (engine);
               }
 
-              waitComm (fvmPutGlobalData (handle, 0, size, 0, scratch));
-            }
+              waitComm (fvmPutGlobalData (handle, 0, size, 0, 0));
 
             config.handle = static_cast<long>(handle);
-            config.scratch = static_cast<long>(scratch);
-            config.sleeptime = sleeptime;
             config.num_long = num_long;
             config.seed = seed;
-            config.verify_all_mem = verify_all_mem;
-            config.verify = verify;
-            config.communicate = communicate;
 
             MLOG (INFO, "initialize: config " << config);
           ]]></code>
         </module>
       </defun>
-      <connect-in port="sleeptime" place="sleeptime"/>
       <connect-in port="seed" place="seed"/>
       <connect-in port="num_long" place="num_long"/>
-      <connect-in port="verify_all_mem" place="verify_all_mem"/>
-      <connect-in port="verify" place="verify"/>
-      <connect-in port="communicate" place="communicate"/>
       <connect-out port="config" place="config"/>
     </transition>
 
@@ -145,21 +102,15 @@
         <in name="trigger" type="control"/>
         <in name="config" type="config"/>
         <out name="trigger" type="control"/>
-        <module name="stresstest" function="finalize (trigger, config)">
+        <module name="vmem_1_to_n" function="finalize (trigger, config)">
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/LogMacros.hpp"/>
           <code><![CDATA[
           const fvmAllocHandle_t& handle (config.handle);
-          const fvmAllocHandle_t& scratch (config.scratch);
 
           if (handle)
           {
             fvmGlobalFree (handle);
-          }
-
-          if (scratch)
-          {
-            fvmGlobalFree (scratch);
           }
 
           MLOG (INFO, "finalized");
@@ -180,7 +131,7 @@
     </transition>
 
     <transition name="inner" inline="false">
-      <include-function href="stress.xpnet"/>
+      <include-function href="inner.xpnet"/>
       <connect-read port="N" place="M"/>
       <connect-read port="config" place="config"/>
       <connect-out port="done" place="done"/>
