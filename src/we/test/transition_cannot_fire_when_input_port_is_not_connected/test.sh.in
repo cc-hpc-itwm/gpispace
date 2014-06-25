@@ -27,7 +27,6 @@ trap 'cleanup' EXIT
 
 measured "run" ${make[@]} run                               || die $EX_ERR_RUN
 
-grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
 test -z $(pnetget -i "${RES}" -p o)                         || die $EX_ERR_RES
 
 rm -f "${RES}"                                           || die $EX_ERR_CLEANUP

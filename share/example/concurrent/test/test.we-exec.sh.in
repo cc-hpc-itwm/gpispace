@@ -32,8 +32,6 @@ trap 'cleanup' EXIT
 
 measured "run" WE_EXEC_WORKER=12 ${make[@]} run             || die $EX_ERR_RUN
 
-grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
-
 test "$(pnetget -i "${RESULT}" -p call_count_A | tr -d 'L')" -lt 300 || die $EX_ERR_RES
 test "$(pnetget -i "${RESULT}" -p call_count_B | tr -d 'L')" -lt 300 || die $EX_ERR_RES
 test "$(pnetget -i "${RESULT}" -p call_count_C | tr -d 'L')" -lt 300 || die $EX_ERR_RES

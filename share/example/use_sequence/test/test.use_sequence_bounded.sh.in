@@ -34,8 +34,6 @@ trap 'cleanup' EXIT
 
 measured "run" ${make[@]} run                               || die $EX_ERR_RUN
 
-grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
-
 pnetget -i "${RESULT}" -p out > "${OUTPUT}"                 || die $EX_ERR_ENV
 
 diff "${OUTPUT}" "${COMPARE}"                            || die $EX_ERR_RES
