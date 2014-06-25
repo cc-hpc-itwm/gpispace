@@ -41,7 +41,7 @@ namespace we
       s << "y(";
       for (const char c : t._v)
       {
-        s << " " << int (c);
+        s << " " << static_cast<unsigned long> (c);
       }
       return s << ")";
     }
