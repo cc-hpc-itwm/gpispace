@@ -121,7 +121,6 @@ namespace
     sdpa_daemon ( std::size_t num_worker
                 , we::loader::loader* loader
                 , we::type::activity_t const act
-                , boost::optional<std::size_t> const timeout
                 , std::mt19937& random_extraction_engine
                 )
         : _mutex_id()
@@ -143,7 +142,6 @@ namespace
         , _job_status (sdpa::status::RUNNING)
         , _result()
         , _job_id (gen_id())
-        , _timeout_thread (&sdpa_daemon::maybe_cancel_after_ms, this, timeout)
         , worker_()
     {
       for (std::size_t n (0); n < num_worker; ++n)
@@ -333,15 +331,6 @@ namespace
       _condition_job_status_changed.notify_all();
     }
 
-    void maybe_cancel_after_ms (boost::optional<std::size_t> timeout)
-    {
-      if (timeout)
-      {
-        boost::this_thread::sleep (boost::posix_time::milliseconds (*timeout));
-        mgmt_layer_.cancel (_job_id);
-      }
-    }
-
     mutable boost::mutex _mutex_job_status;
     mutable boost::condition_variable _condition_job_status_changed;
     boost::recursive_mutex _mutex_id;
@@ -354,8 +343,6 @@ namespace
     sdpa::status::code _job_status;
     boost::optional<std::string> _result;
     we::layer::id_type _job_id;
-    boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-      _timeout_thread;
     boost::ptr_vector<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
       worker_;
   };
@@ -376,7 +363,6 @@ try
   std::size_t num_worker (8);
   std::string output;
   bool show_dots (false);
-  boost::optional<std::size_t> cancel_after = boost::make_optional<size_t> (false, 0);
 
   desc.add_options()
     ("help,h", "this message")
@@ -405,10 +391,6 @@ try
     , po::value<bool>(&show_dots)->default_value(show_dots)
     , "show dots while waiting for progress"
     )
-    ( "cancel-after"
-    , po::value<std::size_t>()
-    , "cancel the workflow after this many milliseconds"
-    )
     ;
 
   po::positional_options_description p;
@@ -434,11 +416,6 @@ try
     return EXIT_SUCCESS;
   }
 
-  if (vm.count ("cancel-after"))
-  {
-    cancel_after = vm ["cancel-after"].as<std::size_t>();
-  }
-
   we::loader::loader loader;
 
   for (std::string const& m : mods_to_load)
@@ -458,7 +435,6 @@ try
     , path_to_act == "-"
     ? we::type::activity_t (std::cin)
     : we::type::activity_t (boost::filesystem::path (path_to_act))
-    , cancel_after
     , random_extraction_engine
     );
 
