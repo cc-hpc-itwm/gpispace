@@ -83,6 +83,8 @@ namespace fhg
           return;
         }
       }
+
+      throw std::runtime_error ("no search path contained " + name + ".so");
     }
     catch (std::runtime_error const& ex)
     {
