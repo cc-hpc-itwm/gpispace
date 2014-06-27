@@ -12,6 +12,14 @@ namespace fhg
 {
   namespace network
   {
+    namespace protocol
+    {
+      struct packet_header
+      {
+        uint64_t size;
+      };
+    }
+
     connection_type::connection_type
         ( boost::asio::generic::stream_protocol::socket socket
         , filter_type encrypt
@@ -85,25 +93,26 @@ namespace fhg
               *_remaining_bytes_for_receiving_message -= to_eat;
               transferred -= to_eat;
             }
+            else if (_receive_buffer.size() >= sizeof (protocol::packet_header))
+            {
+              protocol::packet_header const header
+                ( *static_cast<protocol::packet_header*>
+                  (static_cast<void*> (_receive_buffer.data()))
+                );
+
+              _receive_buffer.erase
+                ( _receive_buffer.begin()
+                , _receive_buffer.begin() + sizeof (protocol::packet_header)
+                );
+
+              _remaining_bytes_for_receiving_message = header.size;
+              _partial_receiving_message = std::vector<char>();
+              transferred -= sizeof (protocol::packet_header);
+            }
             else
             {
-              util::parse::position_vector_of_char pos (_receive_buffer);
-              const std::size_t len (util::read_size_t (pos));
-              if (!pos.end() && *pos == ' ')
-              {
-                ++pos;
-
-                _receive_buffer.erase
-                  (_receive_buffer.begin(), _receive_buffer.begin() + pos.eaten());
-                _remaining_bytes_for_receiving_message = len;
-                _partial_receiving_message = std::vector<char>();
-                transferred -= pos.eaten();
-              }
-              else
-              {
-                std::swap (_receive_buffer_previous_rest, _receive_buffer);
-                return;
-              }
+              std::swap (_receive_buffer_previous_rest, _receive_buffer);
+              return;
             }
 
             if ( _remaining_bytes_for_receiving_message
@@ -126,10 +135,10 @@ namespace fhg
     {
       std::lock_guard<std::mutex> const _ (_pending_send_mutex);
 
-      const std::string header (std::to_string (what.size()) + ' ');
+      protocol::packet_header const header {what.size()};
 
       const bool has_pending (!_pending_send.empty());
-      _pending_send.emplace_back (header.begin(), header.end());
+      _pending_send.emplace_back ((char*)&header, (char*)&header + sizeof (header));
       _pending_send.emplace_back (std::move (what));
 
       if (!has_pending)
