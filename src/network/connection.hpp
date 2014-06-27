@@ -36,7 +36,11 @@ namespace fhg
       {
         send (buffer_type (std::begin (c), std::end (c)));
       }
-      void send (buffer_type what);
+      void send (buffer_type what)
+      {
+        send ({std::move (what)});
+      }
+      void send (std::initializer_list<buffer_type>);
 
     private:
       void start_read();

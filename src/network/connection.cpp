@@ -131,15 +131,26 @@ namespace fhg
         );
     }
 
-    void connection_type::send (buffer_type what)
+    void connection_type::send (std::initializer_list<buffer_type> list)
     {
+      uint64_t accumulated_size (0);
+      for (buffer_type const& buffer : list)
+      {
+        accumulated_size += buffer.size();
+      }
+
+      protocol::packet_header const header {accumulated_size};
+
       std::lock_guard<std::mutex> const _ (_pending_send_mutex);
 
-      protocol::packet_header const header {what.size()};
-
       const bool has_pending (!_pending_send.empty());
+
       _pending_send.emplace_back ((char*)&header, (char*)&header + sizeof (header));
-      _pending_send.emplace_back (std::move (what));
+
+      for (buffer_type const& buffer : list)
+      {
+        _pending_send.emplace_back (std::move (buffer));
+      }
 
       if (!has_pending)
       {

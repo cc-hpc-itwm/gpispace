@@ -72,15 +72,10 @@ namespace fhg
       uint64_t message_id (++_message_counter);
 
       packet_header header {message_id, buffer.size()};
-
-      network::buffer_type packet (buffer);
-      packet.insert
-        (packet.begin(), (char*)&header, (char*)&header + sizeof (header));
+      _connection->send
+        ({{(char*)&header, (char*)&header + sizeof (header)}, std::move (buffer)});
 
       _promises.emplace (message_id, std::promise<network::buffer_type>{});
-
-      _connection->send (packet);
-
       return _promises.at (message_id).get_future();
     }
   }
