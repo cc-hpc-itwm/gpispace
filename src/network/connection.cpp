@@ -127,10 +127,10 @@ namespace fhg
       std::lock_guard<std::mutex> const _ (_pending_send_mutex);
 
       const std::string header (std::to_string (what.size()) + ' ');
-      what.insert (what.begin(), header.begin(), header.end());
 
       const bool has_pending (!_pending_send.empty());
-      _pending_send.push_back (what);
+      _pending_send.emplace_back (header.begin(), header.end());
+      _pending_send.emplace_back (std::move (what));
 
       if (!has_pending)
       {
