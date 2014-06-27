@@ -27,37 +27,37 @@ public:
     : _service_dispatcher()
     , _start_service ( _service_dispatcher
                      , "start"
-                     , thunk<pid_t (std::string, std::vector<std::string>)>
+                     , fhg::rpc::thunk<pid_t (std::string, std::vector<std::string>)>
                        (std::bind (&rif::start, this, std::placeholders::_1, std::placeholders::_2))
                      )
     , _stop_service ( _service_dispatcher
                     , "stop"
-                    , thunk<void (std::size_t)>
+                    , fhg::rpc::thunk<void (std::size_t)>
                       (std::bind (&rif::stop, this, std::placeholders::_1))
                     )
     , _acceptor ( endpoint
                 , io_service
-                , [] (buffer_type buf) { return buf; }
-                , [] (buffer_type buf) { return buf; }
-                , [this] (connection_type* connection, buffer_type message)
+                , [] (fhg::network::buffer_type buf) { return buf; }
+                , [] (fhg::network::buffer_type buf) { return buf; }
+                , [this] (fhg::network::connection_type* connection, fhg::network::buffer_type message)
                 {
                   _service_dispatcher.dispatch (connection, message);
                 }
-                , [this] (connection_type* connection)
+                , [this] (fhg::network::connection_type* connection)
                 {
                   _connections.erase
                     ( std::find_if
                       ( _connections.begin()
                       , _connections.end()
                       , [&connection]
-                        (std::unique_ptr<connection_type> const& other)
+                        (std::unique_ptr<fhg::network::connection_type> const& other)
                       {
                         return other.get() == connection;
                       }
                       )
                     );
                 }
-                , [this] (std::unique_ptr<connection_type> connection)
+                , [this] (std::unique_ptr<fhg::network::connection_type> connection)
                 {
                   _connections.push_back (std::move (connection));
                 }
@@ -111,13 +111,13 @@ private:
     fhg::syscall::kill (pid, 9);
   }
 
-  service_dispatcher _service_dispatcher;
-  service_handler _start_service;
-  service_handler _stop_service;
+  fhg::rpc::service_dispatcher _service_dispatcher;
+  fhg::rpc::service_handler _start_service;
+  fhg::rpc::service_handler _stop_service;
 
-  std::vector<std::unique_ptr<connection_type>> _connections;
+  std::vector<std::unique_ptr<fhg::network::connection_type>> _connections;
 
-  continous_acceptor<boost::asio::ip::tcp> _acceptor;
+  fhg::network::continous_acceptor<boost::asio::ip::tcp> _acceptor;
 };
 
 
