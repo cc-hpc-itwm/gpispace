@@ -1,9 +1,9 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef PLAYGROUND_BL_NET_CLIENT_HPP
-#define PLAYGROUND_BL_NET_CLIENT_HPP
+#ifndef NETWORK_CLIENT_HPP
+#define NETWORK_CLIENT_HPP
 
-#include <playground/bl/net/connection.hpp>
+#include <network/connection.hpp>
 
 #include <fhg/util/make_unique.hpp>
 

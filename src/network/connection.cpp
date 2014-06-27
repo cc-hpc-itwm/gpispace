@@ -1,6 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <playground/bl/net/connection.hpp>
+#include <network/connection.hpp>
 
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/position.hpp>

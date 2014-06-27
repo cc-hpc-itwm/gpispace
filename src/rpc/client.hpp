@@ -1,13 +1,13 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef PLAYGROUND_BL_RPC_CLIENT_HPP
-#define PLAYGROUND_BL_RPC_CLIENT_HPP
+#ifndef RPC_CLIENT_HPP
+#define RPC_CLIENT_HPP
 
-#include <playground/bl/rpc/common.hpp>
+#include <rpc/common.hpp>
 
 #include <fhg/util/boost/serialization/tuple.hpp>
 
-#include <playground/bl/net/connection.hpp>
+#include <network/connection.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>

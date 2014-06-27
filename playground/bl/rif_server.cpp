@@ -1,10 +1,10 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <playground/bl/rpc/server.hpp>
-
 #include <fhg/syscall.hpp>
 
-#include <playground/bl/net/server.hpp>
+#include <network/server.hpp>
+
+#include <rpc/server.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>

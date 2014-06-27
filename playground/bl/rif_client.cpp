@@ -1,6 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <playground/bl/rpc/client.hpp>
+#include <rpc/client.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/serialization/vector.hpp>

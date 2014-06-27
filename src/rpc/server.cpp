@@ -1,6 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <playground/bl/rpc/server.hpp>
+#include <rpc/server.hpp>
 
 void service_dispatcher::dispatch
   (connection_type* connection, buffer_type packet) const

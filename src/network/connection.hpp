@@ -1,7 +1,7 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef PLAYGROUND_BL_NET_CONNECTION_HPP
-#define PLAYGROUND_BL_NET_CONNECTION_HPP
+#ifndef NETWORK_CONNECTION_HPP
+#define NETWORK_CONNECTION_HPP
 
 #include <boost/asio/generic/stream_protocol.hpp>
 #include <boost/asio/strand.hpp>

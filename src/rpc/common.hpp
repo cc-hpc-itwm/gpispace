@@ -1,7 +1,7 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef PLAYGROUND_BL_RPC_COMMON_HPP
-#define PLAYGROUND_BL_RPC_COMMON_HPP
+#ifndef RPC_COMMON_HPP
+#define RPC_COMMON_HPP
 
 #include <cstdint>
 

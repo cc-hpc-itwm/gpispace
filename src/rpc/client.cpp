@@ -1,8 +1,8 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <playground/bl/rpc/client.hpp>
+#include <rpc/client.hpp>
 
-#include <playground/bl/net/client.hpp>
+#include <network/client.hpp>
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/range/adaptor/map.hpp>

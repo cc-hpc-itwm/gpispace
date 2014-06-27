@@ -1,16 +1,16 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef PLAYGROUND_BL_RPC_SERVER_HPP
-#define PLAYGROUND_BL_RPC_SERVER_HPP
+#ifndef RPC_SERVER_HPP
+#define RPC_SERVER_HPP
 
-#include <playground/bl/rpc/common.hpp>
+#include <rpc/common.hpp>
 
 #include <fhg/util/boost/serialization/tuple.hpp>
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
 
-#include <playground/bl/net/connection.hpp>
+#include <network/connection.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
