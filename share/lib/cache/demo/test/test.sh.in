@@ -34,8 +34,6 @@ trap 'cleanup' EXIT
 measured "build-wrapper" ${make[@]} lib put                 || die $EX_ERR_RUN
 measured "run" ${make[@]} run                               || die $EX_ERR_RUN
 
-grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
-
 pnetget -i "${RESULT}" -p id | sort | uniq -c > "${CMP}"    || die $EX_ERR_ENV
 
 diff "${CMP}" "${CMP_ORIG}"                                 || die $EX_ERR_ENV
