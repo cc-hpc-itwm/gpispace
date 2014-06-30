@@ -9,7 +9,7 @@
 static void selftest (drts::worker::context *, const expr::eval::context & , expr::eval::context & output)
 {
   std::cerr << "rank := " << fvmGetRank() << std::endl;
-  output.bind ("result", 0L);
+  output.bind_and_discard_ref ("result", 0L);
 }
 
 // ************************************************************************* //

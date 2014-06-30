@@ -91,7 +91,7 @@ generic_filter ( drts::worker::context * state
                              )
            );
 
-  output.bind ("out", part_in_store);
+  output.bind_and_discard_ref ("out", part_in_store);
 }
 
 // ************************************************************************* //
@@ -503,7 +503,7 @@ static void execW ( drts::worker::context * state
                              )
            );
 
-  output.bind ("out", part_in_store);
+  output.bind_and_discard_ref ("out", part_in_store);
 }
 
 // ************************************************************************* //

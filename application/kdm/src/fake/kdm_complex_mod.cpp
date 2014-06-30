@@ -43,7 +43,7 @@ static void initialize (void *, const expr::eval::context & input, expr::eval::c
       file >> v;
       if (s.size())
         {
-          output.bind ("config", s, v);
+          output.bind_and_discard_ref ("config", s, v);
         }
     }
 
@@ -64,7 +64,7 @@ static void loadTT (void *, const expr::eval::context & input, expr::eval::conte
 
   MLOG (INFO, "loadTT: id " << id);
 
-  output.bind ("done", we::type::literal::control());
+  output.bind_and_discard_ref ("done", we::type::literal::control());
 }
 
 static void load (void *, const expr::eval::context & input, expr::eval::context & output)
@@ -73,7 +73,7 @@ static void load (void *, const expr::eval::context & input, expr::eval::context
 
   MLOG (INFO, "load: bunch " << pnet::type::value::show (bunch));
 
-  output.bind ("bunch", bunch);
+  output.bind_and_discard_ref ("bunch", bunch);
 }
 
 static void process (void *, const expr::eval::context & input, expr::eval::context & output)
@@ -109,7 +109,7 @@ static void process (void *, const expr::eval::context & input, expr::eval::cont
 
   MLOG (INFO, "process: volume " << pnet::type::value::show (volume));
 
-  output.bind ("volume", volume);
+  output.bind_and_discard_ref ("volume", volume);
 }
 
 static void write (void *, const expr::eval::context & input, expr::eval::context & output)
@@ -118,7 +118,7 @@ static void write (void *, const expr::eval::context & input, expr::eval::contex
 
   MLOG (INFO, "write: volume " << pnet::type::value::show (volume));
 
-  output.bind ("volume", volume);
+  output.bind_and_discard_ref ("volume", volume);
 }
 
 static void finalize (void *, const expr::eval::context & input, expr::eval::context & output)
@@ -127,7 +127,7 @@ static void finalize (void *, const expr::eval::context & input, expr::eval::con
 
   MLOG (INFO, "finalize: config " << pnet::type::value::show (config));
 
-  output.bind ("trigger", we::type::literal::control());
+  output.bind_and_discard_ref ("trigger", we::type::literal::control());
 }
 
 static void init_volume (void *, const expr::eval::context & input, expr::eval::context & output)
@@ -136,7 +136,7 @@ static void init_volume (void *, const expr::eval::context & input, expr::eval::
 
   MLOG (INFO, "init_volume: volume " << pnet::type::value::show (volume));
 
-  output.bind ("volume", volume);
+  output.bind_and_discard_ref ("volume", volume);
 }
 
 // ************************************************************************* //

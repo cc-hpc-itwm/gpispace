@@ -360,7 +360,7 @@ namespace we
           (fvmGetGlobalData, memory_buffer, context, mg.global(), mg.local());
       }
 
-      expr::eval::context out;
+      expr::eval::context out (input (act));
 
       loader[module_call.module()].call
         (module_call.function(), context, input (act), out, pointers);

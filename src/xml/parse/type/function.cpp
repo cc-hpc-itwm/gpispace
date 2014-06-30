@@ -2047,7 +2047,7 @@ namespace xml
 
           if (port_return)
           {
-            s << indent << "_pnetc_output.bind ("
+            s << indent << "_pnetc_output.bind_and_discard_ref ("
               << "\"" << (*port_return).name << "\""
               << ", "
               ;
@@ -2111,7 +2111,7 @@ namespace xml
           for (const port_with_type& port : ports_mutable)
           {
             s << indent
-              << "_pnetc_output.bind ("
+              << "_pnetc_output.bind_and_discard_ref ("
               << "\"" << port.name << "\""
               << ", " << mk_value (port)
               << ")"
@@ -2122,7 +2122,7 @@ namespace xml
           for (const port_with_type& port : ports_out)
           {
             s << indent
-              << "_pnetc_output.bind ("
+              << "_pnetc_output.bind_and_discard_ref ("
               << "\"" << port.name << "\""
               << ", " << mk_value (port)
               << ")"

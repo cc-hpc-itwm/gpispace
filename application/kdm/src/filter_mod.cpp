@@ -69,7 +69,7 @@ static void generic_filter ( drts::worker::context *
 
   filter (Bunch);
 
-  output.bind ("bunch", bunch);
+  output.bind_and_discard_ref ("bunch", bunch);
 }
 
 static void
@@ -98,7 +98,7 @@ generic_filter_with_float ( drts::worker::context *
 
   filter (Bunch, f);
 
-  output.bind ("bunch", bunch);
+  output.bind_and_discard_ref ("bunch", bunch);
 }
 
 // ************************************************************************* //
@@ -316,7 +316,7 @@ bandpass ( drts::worker::context *
 
   bandpass_impl (Bunch, Job.frequ1, Job.frequ2, Job.frequ3, Job.frequ4);
 
-  output.bind ("bunch", bunch);
+  output.bind_and_discard_ref ("bunch", bunch);
 }
 
 // ************************************************************************* //

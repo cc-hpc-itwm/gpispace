@@ -190,21 +190,21 @@ static void initialize (drts::worker::context *, const expr::eval::context & inp
 
   LOG(INFO, "Job.globTTbufsizelocal = " << Job.globTTbufsizelocal);
 
-  output.bind ("config.handle_Job", static_cast<long>(handle_Job));
-  output.bind ("config.scratch_Job", static_cast<long>(scratch_Job));
-  output.bind ("config.handle_TT", static_cast<long>(handle_TT));
-  output.bind ("config.NThreads", static_cast<long>(NThreads));
+  output.bind_and_discard_ref ("config.handle_Job", static_cast<long>(handle_Job));
+  output.bind_and_discard_ref ("config.scratch_Job", static_cast<long>(scratch_Job));
+  output.bind_and_discard_ref ("config.handle_TT", static_cast<long>(handle_TT));
+  output.bind_and_discard_ref ("config.NThreads", static_cast<long>(NThreads));
 
-  output.bind ("config.OFFSETS", static_cast<long>(Job.n_offset));
-  output.bind ("config.SUBVOLUMES_PER_OFFSET", static_cast<long>(Job.NSubVols));
-  output.bind ("config.BUNCHES_PER_OFFSET", static_cast<long>(Nbid_in_pid (1, 1, Job)));
-  output.bind ("config.PARALLEL_LOADTT", static_cast<long>(fvmGetNodeCount()));
+  output.bind_and_discard_ref ("config.OFFSETS", static_cast<long>(Job.n_offset));
+  output.bind_and_discard_ref ("config.SUBVOLUMES_PER_OFFSET", static_cast<long>(Job.NSubVols));
+  output.bind_and_discard_ref ("config.BUNCHES_PER_OFFSET", static_cast<long>(Nbid_in_pid (1, 1, Job)));
+  output.bind_and_discard_ref ("config.PARALLEL_LOADTT", static_cast<long>(fvmGetNodeCount()));
 
-  output.bind ("config.VOLUME_CREDITS", 4 * static_cast<long>(fvmGetNodeCount()));
+  output.bind_and_discard_ref ("config.VOLUME_CREDITS", 4 * static_cast<long>(fvmGetNodeCount()));
 
-  output.bind ("config.filter.clip", static_cast<double>(Job.clip));
-  output.bind ("config.filter.trap", static_cast<double>(Job.trap));
-  output.bind ("config.filter.tpow", static_cast<double>(Job.tpow));
+  output.bind_and_discard_ref ("config.filter.clip", static_cast<double>(Job.clip));
+  output.bind_and_discard_ref ("config.filter.trap", static_cast<double>(Job.trap));
+  output.bind_and_discard_ref ("config.filter.tpow", static_cast<double>(Job.tpow));
 
 }
 
@@ -503,7 +503,7 @@ static void loadTT (drts::worker::context *, const expr::eval::context & input, 
 {
   kdm_loadTT (input.value ("config"), boost::get<long> (input.value ("id")));
 
-  output.bind ("done", we::type::literal::control());
+  output.bind_and_discard_ref ("done", we::type::literal::control());
 }
 
 static void load (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
@@ -514,7 +514,7 @@ static void load (drts::worker::context *, const expr::eval::context & input, ex
 
   kdm_load (input.value ("config"), bunch);
 
-  output.bind ("bunch", bunch);
+  output.bind_and_discard_ref ("bunch", bunch);
 }
 
 static void process (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
@@ -525,7 +525,7 @@ static void process (drts::worker::context *, const expr::eval::context & input,
 
   kdm_process (input.value ("config"), bunch);
 
-  output.bind ("bunch", bunch);
+  output.bind_and_discard_ref ("bunch", bunch);
 }
 
 static void write (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
@@ -537,7 +537,7 @@ static void write (drts::worker::context *, const expr::eval::context & input, e
 
   kdm_write (config, volume);
 
-  output.bind ("volume", volume);
+  output.bind_and_discard_ref ("volume", volume);
 }
 
 static void finalize (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
@@ -546,7 +546,7 @@ static void finalize (drts::worker::context *, const expr::eval::context & input
 {
   kdm_finalize (input.value ("config"));
 
-  output.bind ("trigger", we::type::literal::control());
+  output.bind_and_discard_ref ("trigger", we::type::literal::control());
 }
 
 static void init_volume (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
@@ -557,7 +557,7 @@ static void init_volume (drts::worker::context *, const expr::eval::context & in
 
   kdm_init_volume (input.value ("config"), volume);
 
-  output.bind ("volume", volume);
+  output.bind_and_discard_ref ("volume", volume);
 }
 
 static void debug (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
@@ -566,7 +566,7 @@ static void debug (drts::worker::context *, const expr::eval::context & input, e
 {
   const pnet::type::value::value_type& volume (input.value ("volume"));
 
-  output.bind ("volume", volume);
+  output.bind_and_discard_ref ("volume", volume);
 }
 
 // ************************************************************************* //
