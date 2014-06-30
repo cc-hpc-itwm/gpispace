@@ -17,7 +17,7 @@ WE_EXEC_ENV += FVM_PC_FVMSZ=524288000
 WE_EXEC_CMD = we-exec
 WE_EXEC_WORKER = 1
 
-include Makefile.put
+include $(MAKEFILE_PUT)
 
 ###############################################################################
 

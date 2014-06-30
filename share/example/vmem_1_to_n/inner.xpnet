@@ -2,9 +2,11 @@
   <in name="N" type="long" place="Nin"/>
   <in name="config" type="config" place="config"/>
   <in name="trigger" type="long" place="id"/>
+  <in name="memory" type="global_memory_range" place="memory"/>
   <out name="done" type="control" place="out"/>
 
   <net>
+    <place name="memory" type="global_memory_range"/>
     <place name="Nin" type="long"/>
 
     <transition name="scatter_N" inline="true">
@@ -33,9 +35,25 @@
         <in name="id" type="long"/>
         <in name="i" type="long"/>
         <in name="config" type="config"/>
+        <in name="memory" type="global_memory_range"/>
         <out name="done" type="control"/>
-        <module name="stresstest" function="done run (config, id, i)">
-          <cinclude href="fvm-pc/pc.hpp"/>
+        <memory-buffer name="data">
+          <size>
+            ulong (${config.num_long} * 8L)
+          </size>
+        </memory-buffer>
+        <memory-get>
+          <global>
+            stack_push (List(), ${memory})
+          </global>
+          <local>
+            ${range.buffer} := "data";
+            ${range.offset} := 0UL;
+            ${range.size} := ulong (${config.num_long} * 8L);
+            stack_push (List(), ${range})
+          </local>
+        </memory-get>
+        <module name="vmem_1_to_n" function="done run (config, id, i, data)">
           <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="stdexcept"/>
           <cinclude href="string.h"/>
@@ -45,17 +63,9 @@
           <code><![CDATA[
             MLOG (INFO, "run (" << id << ", " << i << ")");
 
-            const fvmAllocHandle_t & handle (config.handle);
-            const size_t size (config.num_long * sizeof (long));
-            const int rank (fvmGetRank());
-
-            memset (fvmGetShmemPtr(), rank, fvmGetShmemSize());
-
-              waitComm (fvmGetGlobalData (handle, 0, size, 0, 0));
-
               MLOG (INFO, "verifiying " << config.num_long << " values with seed " << config.seed);
 
-              long* a (static_cast<long*> (fvmGetShmemPtr()));
+              long* a (static_cast<long*> (data));
 
               boost::uniform_int<long> rand ( std::numeric_limits<long>::min()
                                             , std::numeric_limits<long>::max()
@@ -80,33 +90,6 @@
                 }
               }
 
-            if (fvmGetShmemSize() > size)
-            {
-              MLOG ( INFO
-                   , "verifiying mem behind data ("
-                   << fvmGetShmemSize() - size
-                   << " bytes)"
-                   << " to contain the value " << rank
-                   );
-
-              char * a ((char *)fvmGetShmemPtr() + size);
-
-              for (size_t i (size); i < fvmGetShmemSize(); ++i, ++a)
-              {
-                if (*a != rank)
-                {
-                  std::ostringstream s;
-
-                  s << "BUMMER! memory behind data corrupted: "
-                    << " expected in slot " << i << " the value " << rank
-                    << " but got the value " << *a
-                  ;
-
-                  throw std::runtime_error (s.str());
-                }
-              }
-            }
-
             return we::type::literal::control();
           ]]></code>
         </module>
@@ -114,6 +97,7 @@
       <connect-in port="i" place="pending"/>
       <connect-read port="id" place="id"/>
       <connect-read port="config" place="config"/>
+      <connect-read port="memory" place="memory"/>
       <connect-out port="done" place="done"/>
     </transition>
 
@@ -129,6 +113,7 @@
     <transition name="cleanup">
       <defun>
         <in name="config" type="config"/>
+        <in name="memory" type="global_memory_range"/>
         <in name="id" type="long"/>
         <in name="trigger" type="control"/>
         <out name="done" type="control"/>
@@ -137,6 +122,7 @@
         </expression>
       </defun>
       <connect-in port="config" place="config"/>
+      <connect-in port="memory" place="memory"/>
       <connect-in port="id" place="id"/>
       <connect-in port="trigger" place="all_done"/>
       <connect-out port="done" place="out"/>
