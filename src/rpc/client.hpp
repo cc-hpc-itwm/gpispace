@@ -54,18 +54,16 @@ namespace fhg
     };
 
     template<typename T>
-      inline T deserialize_from_buffer (network::buffer_type buffer)
+      inline T deserialize_from_buffer (std::string blob)
     {
-      const std::string blob (buffer.begin(), buffer.end());
       std::istringstream is (blob);
       boost::archive::text_iarchive ia (is);
       T value;
       ia & value;
       return value;
     }
-    template<> inline void deserialize_from_buffer (network::buffer_type buffer)
+    template<> inline void deserialize_from_buffer (std::string blob)
     {
-      const std::string blob (buffer.begin(), buffer.end());
       std::istringstream is (blob);
       boost::archive::text_iarchive ia (is);
       if (!is.eof())
@@ -109,7 +107,10 @@ namespace fhg
           , [] (std::future<network::buffer_type>&& buffer)
           {
             network::buffer_type buf (buffer.get());
-            return deserialize_from_buffer<R> (buf);
+            protocol::function_call_result* result
+              ((protocol::function_call_result*)buf.data());
+
+            return deserialize_from_buffer<R> (result->return_value());
           }
           , std::move (_endpoint.send_and_receive (std::move (call_function)))
           );

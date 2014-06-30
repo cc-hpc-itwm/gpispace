@@ -23,7 +23,10 @@ namespace fhg
       }
 
       std::string return_value (handler->second (call_function->arguments()));
-      network::buffer_type response (return_value.begin(), return_value.end());
+      network::buffer_type response
+        (protocol::function_call_result::required_size (return_value));
+      new (response.data()) protocol::function_call_result
+        (std::move (return_value));
 
       packet_header const response_header (header->message_id, response.size());
       connection->send ({{ (char*)&response_header

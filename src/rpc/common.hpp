@@ -60,6 +60,30 @@ namespace fhg
           return std::string (buffer + size_function_name, size_arguments);
         }
       };
+
+      struct function_call_result
+      {
+        uint64_t size_return_value;
+        char buffer[0];
+
+        static std::size_t required_size (std::string const& return_value)
+        {
+          return sizeof (function_call_result) + return_value.size();
+        }
+
+        //! \note Assumes to be allocated with underlying storage of
+        //! size required_size (return_value)
+        function_call_result (std::string return_value)
+          : size_return_value (return_value.size())
+        {
+          std::copy (return_value.begin(), return_value.end(), buffer);
+        }
+
+        std::string return_value() const
+        {
+          return std::string (buffer, size_return_value);
+        }
+      };
     }
   }
 }
