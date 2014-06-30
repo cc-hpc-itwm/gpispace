@@ -39,7 +39,7 @@
         <out name="done" type="control"/>
         <memory-buffer name="data">
           <size>
-            ${config.num_long} * 8UL
+            ${memory.size}
           </size>
         </memory-buffer>
         <memory-get>
@@ -49,11 +49,13 @@
           <local>
             ${range.buffer} := "data";
             ${range.offset} := 0UL;
-            ${range.size} := ${config.num_long} * 8UL;
+            ${range.size} := ${memory.size};
             stack_push (List(), ${range})
           </local>
         </memory-get>
-        <module name="vmem_1_to_n" function="done run (config, id, i, data)">
+        <module name="vmem_1_to_n"
+                function="done run (config, id, i, data, memory)"
+        >
           <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="stdexcept"/>
           <cinclude href="string.h"/>
@@ -63,7 +65,9 @@
           <code><![CDATA[
             MLOG (INFO, "run (" << id << ", " << i << ")");
 
-            MLOG (INFO, "verifiying " << config.num_long << " values with seed " << config.seed);
+            unsigned long const num_long (memory.size / sizeof (long));
+
+            MLOG (INFO, "verifiying " << num_long << " values with seed " << config.seed);
 
             long* a (static_cast<long*> (data));
 
@@ -73,7 +77,7 @@
 
             boost::mt19937 engine (config.seed);
 
-            for (unsigned long k (0); k < config.num_long; ++k, ++a)
+            for (unsigned long k (0); k < num_long; ++k, ++a)
             {
               const long v (rand(engine));
 

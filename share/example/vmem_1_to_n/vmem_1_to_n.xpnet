@@ -11,20 +11,17 @@
 
   <in name="outer" type="long" place="N"/>
   <in name="inner" type="long" place="M"/>
-  <in name="num_long_to_transfer" type="unsigned long" place="num_long"/>
   <in name="seed" type="long" place="seed"/>
   <in name="memory" type="global_memory_range" place="memory"/>
   <out name="out" type="control" place="out"/>
 
   <net>
     <struct name="config">
-      <field name="num_long" type="unsigned long"/>
       <field name="seed" type="long"/>
     </struct>
 
     <place name="N" type="long"/>
     <place name="M" type="long"/>
-    <place name="num_long" type="unsigned long"/>
     <place name="seed" type="long"/>
     <place name="Nstep" type="long"/>
     <place name="wait" type="long"/>
@@ -52,12 +49,11 @@
     <transition name="initialize">
       <defun>
         <in name="seed" type="long"/>
-        <in name="num_long" type="unsigned long"/>
         <in name="memory" type="global_memory_range"/>
         <out name="config" type="config"/>
         <memory-buffer name="data">
           <size>
-            ${num_long} * 8UL
+            ${memory.size}
           </size>
         </memory-buffer>
         <memory-put>
@@ -67,20 +63,22 @@
           <local>
             ${range.buffer} := "data";
             ${range.offset} := 0UL;
-            ${range.size} := ${config.num_long} * 8UL;
+            ${range.size} := ${memory.size};
             stack_push (List(), ${range})
           </local>
         </memory-put>
-        <module name="vmem_1_to_n" function="initialize ( num_long
-                                                        , seed
+        <module name="vmem_1_to_n" function="initialize ( seed
                                                         , config
                                                         , data
+                                                        , memory
                                                         )">
           <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="boost/random.hpp"/>
           <cinclude href="limits"/>
           <cinclude href="stdexcept"/>
           <code><![CDATA[
+          unsigned long const num_long (memory.size / sizeof (long));
+
           MLOG (INFO, "generating " << num_long << " values with seed " << seed);
           long *a (static_cast<long*>(data));
 
@@ -95,7 +93,6 @@
             *a = rand (engine);
           }
 
-          config.num_long = num_long;
           config.seed = seed;
 
           MLOG (INFO, "initialize: config " << config);
@@ -103,7 +100,6 @@
         </module>
       </defun>
       <connect-in port="seed" place="seed"/>
-      <connect-in port="num_long" place="num_long"/>
       <connect-read port="memory" place="memory"/>
       <connect-out port="config" place="config"/>
     </transition>
