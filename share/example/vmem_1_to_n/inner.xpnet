@@ -63,32 +63,32 @@
           <code><![CDATA[
             MLOG (INFO, "run (" << id << ", " << i << ")");
 
-              MLOG (INFO, "verifiying " << config.num_long << " values with seed " << config.seed);
+            MLOG (INFO, "verifiying " << config.num_long << " values with seed " << config.seed);
 
-              long* a (static_cast<long*> (data));
+            long* a (static_cast<long*> (data));
 
-              boost::uniform_int<long> rand ( std::numeric_limits<long>::min()
-                                            , std::numeric_limits<long>::max()
-                                            );
+            boost::uniform_int<long> rand ( std::numeric_limits<long>::min()
+                                          , std::numeric_limits<long>::max()
+                                          );
 
-              boost::mt19937 engine (config.seed);
+            boost::mt19937 engine (config.seed);
 
-              for (unsigned long k (0); k < config.num_long; ++k, ++a)
+            for (unsigned long k (0); k < config.num_long; ++k, ++a)
+            {
+              const long v (rand(engine));
+
+              if (*a != v)
               {
-                const long v (rand(engine));
+                std::ostringstream s;
 
-                if (*a != v)
-                {
-                  std::ostringstream s;
+                s << "BUMMER! wrong value read"
+                  << " expected in slot " << k << " the value " << v
+                  << " but got the value " << *a
+                  ;
 
-                  s << "BUMMER! wrong value read"
-                    << " expected in slot " << k << " the value " << v
-                    << " but got the value " << *a
-                    ;
-
-                  throw std::runtime_error (s.str());
-                }
+                throw std::runtime_error (s.str());
               }
+            }
 
             return we::type::literal::control();
           ]]></code>
