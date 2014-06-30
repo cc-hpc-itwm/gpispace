@@ -17,7 +17,17 @@ namespace fhg
       const std::size_t len (util::read_size_t (pos));
       util::parse::require::require (pos, ' ');
 
-      network::buffer_type response (_handlers.at (pos.eat (len)) (pos));
+      std::string const function_name (pos.eat (len));
+
+      decltype (_handlers)::const_iterator const handler
+        (_handlers.find (function_name));
+
+      if (handler == _handlers.end())
+      {
+        throw std::logic_error ("function '" + function_name + "' does not exist");
+      }
+
+      network::buffer_type response (handler->second (pos));
 
       packet_header response_header (header->message_id, response.size());
       network::buffer_type response_packet (response);
