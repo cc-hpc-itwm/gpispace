@@ -12,10 +12,10 @@ namespace fhg
     struct packet_header
     {
       uint64_t message_id;
-      std::size_t buffer_size;
+      uint64_t buffer_size;
       char buffer[0];
 
-      packet_header (uint64_t id, std::size_t size)
+      packet_header (uint64_t id, uint64_t size)
         : message_id (id)
         , buffer_size (size)
       {}
