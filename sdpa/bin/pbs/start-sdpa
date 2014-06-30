@@ -444,11 +444,6 @@ if [ ! -x "${script_start_orchestrator}" ] ; then
     error 2 "utility script '${script_start_orchestrator}' is not executable"
 fi
 
-script_start_gpi="${sdpa_home}/libexec/sdpa/scripts/start-gpi"
-if [ ! -x "${script_start_gpi}" ] ; then
-    error 2 "utility script '${script_start_gpi}' is not executable"
-fi
-
 check_port=$(which nc 2>/dev/null)
 if [ $? -ne 0 ]
 then
@@ -533,16 +528,15 @@ if $gpi_enabled ; then
     info "using GPI mem: ${gpi_mem} bytes per node"
     info "starting GPI using: '$gpi_exe' on '${gpi_socket}'"
 
-    dry_run "${script_start_gpi}" \
-        -s "$state_dir" \
-        -x "${gpi_exe}" \
-        -D \
-        -f \
-        -P "$state_dir/gpi-space.pid" \
-        -m "$gpi_mem" \
-        -k "${master}" -K "$kvs_port" \
-        -l "${log_host}" -L "${log_port}" \
-        -S "${gpi_socket}"
+    dry_run FHGLOG_to_server="${log_host}:${log_port}" \
+        "${gpi_exe}" \
+        --log-file "$state_dir/log/gpi-space.log" \
+        --daemonize \
+        --pid-file "$state_dir/gpi-space.pid" \
+        --gpi-mem "$gpi_mem" \
+        --kvs-host "${master}" --kvs-port "$kvs_port" \
+        --log-host "${log_host}" --log-port "${log_port}" \
+        --socket "${gpi_socket}"
 
     ec=$?
     if [ $ec -ne 0 ]
