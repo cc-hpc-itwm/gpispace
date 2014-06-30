@@ -18,7 +18,7 @@ namespace fhg
       {
         struct del
         {
-          del () {}
+          del () = default;
 
           explicit
           del (const std::string & k)

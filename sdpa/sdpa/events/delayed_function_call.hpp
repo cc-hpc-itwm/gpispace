@@ -19,7 +19,7 @@ namespace sdpa
         , _function (function)
       {}
 
-      virtual void handleBy (EventHandler*)
+      virtual void handleBy (EventHandler*) override
       {
         _function();
       }

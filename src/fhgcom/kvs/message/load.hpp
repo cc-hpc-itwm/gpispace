@@ -18,7 +18,7 @@ namespace fhg
       {
         struct msg_load
         {
-          msg_load () {}
+          msg_load () = default;
 
           explicit
           msg_load (const std::string & file)

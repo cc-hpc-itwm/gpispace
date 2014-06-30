@@ -267,7 +267,7 @@ namespace
     }
 
     void handleCancelJobEvent
-      (const sdpa::events::CancelJobEvent* pEvt)
+      (const sdpa::events::CancelJobEvent* pEvt) override
     {
       boost::mutex::scoped_lock const _ (_cancels_mutex);
 

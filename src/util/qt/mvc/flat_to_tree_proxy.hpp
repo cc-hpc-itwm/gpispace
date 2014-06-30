@@ -34,15 +34,15 @@ namespace fhg
           //! \note Exists for ~unique_ptr<fwd-decl-type>() only.
           ~flat_to_tree_proxy();
 
-          virtual int rowCount (const QModelIndex& = QModelIndex()) const;
-          virtual int columnCount (const QModelIndex& = QModelIndex()) const;
+          virtual int rowCount (const QModelIndex& = QModelIndex()) const override;
+          virtual int columnCount (const QModelIndex& = QModelIndex()) const override;
           virtual QModelIndex index
-            (int row, int column, const QModelIndex& parent = QModelIndex()) const;
-          virtual QModelIndex parent (const QModelIndex&) const;
-          virtual QVariant data (const QModelIndex&, int role = Qt::DisplayRole) const;
+            (int row, int column, const QModelIndex& parent = QModelIndex()) const override;
+          virtual QModelIndex parent (const QModelIndex&) const override;
+          virtual QVariant data (const QModelIndex&, int role = Qt::DisplayRole) const override;
           virtual QVariant headerData
-            (int section, Qt::Orientation, int role = Qt::DisplayRole) const;
-          virtual bool removeRows (int from, int n, const QModelIndex& = QModelIndex());
+            (int section, Qt::Orientation, int role = Qt::DisplayRole) const override;
+          virtual bool removeRows (int from, int n, const QModelIndex& = QModelIndex()) override;
 
         private slots:
           void rebuild_transformation_tree();
@@ -80,13 +80,13 @@ namespace fhg
 
           transform_functions_model (QObject* parent = nullptr);
 
-          virtual QVariant data (const QModelIndex&, int role = Qt::DisplayRole) const;
+          virtual QVariant data (const QModelIndex&, int role = Qt::DisplayRole) const override;
           virtual bool setData
-            (const QModelIndex&, const QVariant&, int role = Qt::EditRole);
-          virtual QMap<int, QVariant> itemData (const QModelIndex&) const;
-          virtual int rowCount (const QModelIndex& = QModelIndex()) const;
-          virtual bool insertRows (int from, int n, const QModelIndex& = QModelIndex());
-          virtual bool removeRows (int from, int n, const QModelIndex& = QModelIndex());
+            (const QModelIndex&, const QVariant&, int role = Qt::EditRole) override;
+          virtual QMap<int, QVariant> itemData (const QModelIndex&) const override;
+          virtual int rowCount (const QModelIndex& = QModelIndex()) const override;
+          virtual bool insertRows (int from, int n, const QModelIndex& = QModelIndex()) override;
+          virtual bool removeRows (int from, int n, const QModelIndex& = QModelIndex()) override;
 
           struct transform_function
           {

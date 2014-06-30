@@ -92,7 +92,7 @@ namespace fhg
           }
 
         private:
-          virtual void invoke (void** args)
+          virtual void invoke (void** args) override
           {
 #if QTBI_ITERATION == 0
             Q_UNUSED(args);

@@ -40,7 +40,7 @@ namespace we
 
       MLOG (TRACE, "loaded module " << name_ << " from " << path_);
     }
-    Module::~Module() throw()
+    Module::~Module()
     {
       MLOG (TRACE, "unloading " << name_);
 

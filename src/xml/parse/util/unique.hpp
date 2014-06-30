@@ -76,18 +76,13 @@ namespace xml
       private:
         friend class unique<value_type, id_type>;
 
-        values_type()
-          : _ids()
-        { }
+        values_type() = default;
 
         ids_type _ids;
       };
 
     public:
-      unique()
-        : _values()
-        , _by_key()
-      {}
+      unique() = default;
 
       unique ( const unique<value_type, id_type>& other
              , const typename value_type::parent_id_type& parent

@@ -18,7 +18,7 @@ namespace fhg
       {
         struct msg_ping
         {
-          msg_ping () {}
+          msg_ping () = default;
 
           bool operator==(const msg_ping&) const
           {

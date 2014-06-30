@@ -20,9 +20,9 @@ namespace we
       Module ( const std::string& path
              , int flags = RTLD_NOW | RTLD_GLOBAL
              );
-      virtual ~Module() throw();
+      virtual ~Module();
 
-      void name (const std::string&);
+      virtual void name (const std::string&) override;
       const std::string &name() const;
       const std::string &path() const;
 
@@ -32,7 +32,7 @@ namespace we
                 , expr::eval::context& out
                 );
 
-      void add_function (const std::string&, WrapperFunction);
+      virtual void add_function (const std::string&, WrapperFunction) override;
 
     private:
       std::string name_;

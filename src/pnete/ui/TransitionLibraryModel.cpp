@@ -260,7 +260,7 @@ namespace fhg
           return mimeData;
         }
 
-        return 0;
+        return nullptr;
       }
 
       QModelIndex

@@ -27,8 +27,7 @@
 namespace we { namespace type {
   struct module_call_t
   {
-    module_call_t ()
-    {}
+    module_call_t () = default;
 
     module_call_t (const std::string & module, const std::string & function)
       : module_(module)

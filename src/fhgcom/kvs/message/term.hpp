@@ -19,7 +19,7 @@ namespace fhg
       {
         struct msg_term
         {
-          msg_term () {}
+          msg_term () = default;
 
           explicit
           msg_term (int ec, std::string const &rsn)

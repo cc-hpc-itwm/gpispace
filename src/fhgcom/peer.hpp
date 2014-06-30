@@ -76,7 +76,7 @@ namespace fhg
       {
         to_send_t ()
           : message ()
-          , handler (0)
+          , handler()
         {}
 
         message_t  message;
@@ -87,7 +87,7 @@ namespace fhg
       {
         to_recv_t ()
           : message (nullptr)
-          , handler (0)
+          , handler()
         {}
 
         message_t  *message;

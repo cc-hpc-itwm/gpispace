@@ -42,7 +42,7 @@ namespace fhg
 
           virtual void set_property ( const ::we::type::property::key_type&
                                     , const ::we::type::property::value_type&
-                                    ) const;
+                                    ) const override;
 
           void set_name (const QString& name) const;
 

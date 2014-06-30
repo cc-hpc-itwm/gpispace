@@ -22,12 +22,12 @@ namespace fhg
         {
         public:
           cogwheel_button (transition_item* linked_transition);
-          virtual QRectF boundingRect() const;
-          virtual void paint (QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*);
+          virtual QRectF boundingRect() const override;
+          virtual void paint (QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*) override;
 
         protected:
-          virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
-          virtual void mousePressEvent (QGraphicsSceneMouseEvent* event);
+          virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event) override;
+          virtual void mousePressEvent (QGraphicsSceneMouseEvent* event) override;
 
         private:
           //          transition_item* _linked_transition;

@@ -274,12 +274,12 @@ namespace gpi
           }
           else
           {
-            return 0;
+            return nullptr;
           }
         }
         catch (std::exception const &)
         {
-          return 0;
+          return nullptr;
         }
       }
 

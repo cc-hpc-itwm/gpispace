@@ -32,11 +32,11 @@ namespace
       : _container (container)
     {}
 
-    void append (const fhg::log::LogEvent &evt)
+    virtual void append (const fhg::log::LogEvent &evt) override
     {
       _container->push_back (fhg::log::format ("%m", evt));
     }
-    void flush () {}
+    virtual void flush () override {}
 
     std::vector<std::string>* _container;
   };
@@ -47,13 +47,13 @@ namespace
       : _container (container)
     {}
 
-    void append (const fhg::log::LogEvent &evt)
+    virtual void append (const fhg::log::LogEvent &evt) override
     {
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex);
 
       _container->push_back (fhg::log::format ("%m", evt));
     }
-    void flush () {}
+    virtual void flush () override {}
 
     std::vector<std::string>* _container;
     boost::recursive_mutex _mutex;

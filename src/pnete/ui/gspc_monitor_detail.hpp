@@ -102,13 +102,13 @@ namespace fhg
                           , QWidget* parent = nullptr
                           );
 
-        virtual int heightForWidth (int) const;
+        virtual int heightForWidth (int) const override;
 
       protected:
-        virtual void paintEvent (QPaintEvent*);
-        virtual bool event (QEvent*);
+        virtual void paintEvent (QPaintEvent*) override;
+        virtual bool event (QEvent*) override;
 
-        virtual void mouseReleaseEvent (QMouseEvent*);
+        virtual void mouseReleaseEvent (QMouseEvent*) override;
 
       private:
         //! \note Moc breaks with namespaces..

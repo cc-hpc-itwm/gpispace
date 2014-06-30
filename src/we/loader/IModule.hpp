@@ -23,7 +23,7 @@ namespace we
     class IModule
     {
     public:
-      virtual ~IModule() throw () {}
+      virtual ~IModule() {}
 
       virtual void name (const std::string &name) = 0;
       virtual void add_function (const std::string&, WrapperFunction) = 0;

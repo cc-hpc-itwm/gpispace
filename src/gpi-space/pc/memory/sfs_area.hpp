@@ -47,42 +47,42 @@ namespace gpi
       protected:
         int get_type_id () const;
 
-        bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const;
-        Arena_t grow_direction (const gpi::pc::type::flags_t) const;
+        virtual bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const override;
+        virtual Arena_t grow_direction (const gpi::pc::type::flags_t) const override;
 
-        void alloc_hook (const gpi::pc::type::handle::descriptor_t &);
-        void  free_hook (const gpi::pc::type::handle::descriptor_t &);
+        virtual void alloc_hook (const gpi::pc::type::handle::descriptor_t &) override;
+        virtual void  free_hook (const gpi::pc::type::handle::descriptor_t &) override;
 
-        int get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
+        virtual int get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
                                         , const gpi::pc::type::memory_location_t dst
                                         , area_t & dst_area
                                         , gpi::pc::type::size_t amount
                                         , gpi::pc::type::size_t queue
                                         , task_list_t & tasks
-                                        );
+                                        ) override;
       private:
-        bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
+        virtual bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
                             , const gpi::pc::type::offset_t begin
                             , const gpi::pc::type::size_t   range_size
-                            ) const;
+                            ) const override;
 
-        void *raw_ptr (gpi::pc::type::offset_t off);
+        virtual void *raw_ptr (gpi::pc::type::offset_t off) override;
 
-        gpi::pc::type::size_t get_local_size ( const gpi::pc::type::size_t size
+        virtual gpi::pc::type::size_t get_local_size ( const gpi::pc::type::size_t size
                                              , const gpi::pc::type::flags_t flags
-                                             ) const;
+                                             ) const override;
 
-        gpi::pc::type::size_t
+        virtual gpi::pc::type::size_t
         read_from_impl ( gpi::pc::type::offset_t off
                        , void *buffer
                        , gpi::pc::type::size_t amount
-                       );
+                       ) override;
 
-        gpi::pc::type::size_t
+        virtual gpi::pc::type::size_t
         write_to_impl ( gpi::pc::type::offset_t off
                       , const void *buffer
                       , gpi::pc::type::size_t amount
-                      );
+                      ) override;
 
         bool initialize ( path_t const & path
                         , const gpi::pc::type::size_t size

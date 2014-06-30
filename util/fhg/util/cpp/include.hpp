@@ -20,7 +20,7 @@ namespace fhg
       {
       public:
         include (const std::string&);
-        std::ostream& operator() (std::ostream&) const;
+        virtual std::ostream& operator() (std::ostream&) const override;
       private:
         const std::string& _fname;
       };

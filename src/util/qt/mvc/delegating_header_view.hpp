@@ -25,19 +25,19 @@ namespace fhg
         public:
           delegating_header_view (QWidget* parent = nullptr);
 
-          virtual void setModel (QAbstractItemModel*);
+          virtual void setModel (QAbstractItemModel*) override;
 
           void delegate_for_section (int, header_delegate*);
           header_delegate* delegate_for_section (int) const;
           void delegate (header_delegate*);
 
         protected:
-          virtual void paintSection (QPainter*, const QRect&, int) const;
-          virtual QSize sizeHint() const;
-          virtual void keyPressEvent (QKeyEvent*);
-          virtual void contextMenuEvent (QContextMenuEvent*);
-          virtual void wheelEvent (QWheelEvent*);
-          virtual bool event (QEvent*);
+          virtual void paintSection (QPainter*, const QRect&, int) const override;
+          virtual QSize sizeHint() const override;
+          virtual void keyPressEvent (QKeyEvent*) override;
+          virtual void contextMenuEvent (QContextMenuEvent*) override;
+          virtual void wheelEvent (QWheelEvent*) override;
+          virtual bool event (QEvent*) override;
 
         private slots:
           void sections_inserted (const QModelIndex&, int, int);

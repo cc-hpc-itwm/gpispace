@@ -26,29 +26,29 @@ namespace gpi
 
         ~shm_area_t ();
       protected:
-        Arena_t grow_direction (const gpi::pc::type::flags_t) const;
+        virtual Arena_t grow_direction (const gpi::pc::type::flags_t) const override;
         int get_type_id () const;
 
-        void alloc_hook (const gpi::pc::type::handle::descriptor_t &){}
-        void  free_hook (const gpi::pc::type::handle::descriptor_t &){}
+        virtual void alloc_hook (const gpi::pc::type::handle::descriptor_t &) override{}
+        virtual void  free_hook (const gpi::pc::type::handle::descriptor_t &) override{}
 
-        int get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
+        virtual int get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
                                         , const gpi::pc::type::memory_location_t dst
                                         , area_t & dst_area
                                         , gpi::pc::type::size_t amount
                                         , gpi::pc::type::size_t queue
                                         , task_list_t & tasks
-                                        );
+                                        ) override;
       private:
-        void *raw_ptr (gpi::pc::type::offset_t off);
+        virtual void *raw_ptr (gpi::pc::type::offset_t off) override;
 
-        bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
+        virtual bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
                             , const gpi::pc::type::offset_t a
                             , const gpi::pc::type::offset_t b
-                            ) const;
-        gpi::pc::type::size_t get_local_size ( const gpi::pc::type::size_t size
+                            ) const override;
+        virtual gpi::pc::type::size_t get_local_size ( const gpi::pc::type::size_t size
                                              , const gpi::pc::type::flags_t flgs
-                                             ) const;
+                                             ) const override;
 
 
         static bool unlink_after_open (const gpi::pc::type::flags_t);

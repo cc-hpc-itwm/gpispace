@@ -86,7 +86,7 @@ namespace
     {}
 
     virtual void handleDiscoverJobStatesEvent
-      (const sdpa::events::DiscoverJobStatesEvent* e)
+      (const sdpa::events::DiscoverJobStatesEvent* e) override
     {
       _network.perform
         ( sdpa::events::SDPAEvent::Ptr

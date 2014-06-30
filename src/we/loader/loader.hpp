@@ -19,7 +19,7 @@ namespace we
     class loader : boost::noncopyable
     {
     public:
-      loader();
+      loader() = default;
       loader (std::list<boost::filesystem::path>);
       ~loader();
 

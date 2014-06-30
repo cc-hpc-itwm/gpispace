@@ -10,26 +10,26 @@ namespace gpi
     class dummy_topology : public gpi::pc::global::itopology_t
     {
     public:
-      int alloc ( const gpi::pc::type::segment_id_t /* segment */
+      virtual int alloc ( const gpi::pc::type::segment_id_t /* segment */
                 , const gpi::pc::type::handle_t /* handle */
                 , const gpi::pc::type::offset_t /* offset */
                 , const gpi::pc::type::size_t /* size */
                 , const gpi::pc::type::size_t /* local_size */
                 , const std::string & /* name */
-                );
+                ) override;
 
-      int free (const gpi::pc::type::handle_t);
+      virtual int free (const gpi::pc::type::handle_t) override;
 
-      int add_memory ( const gpi::pc::type::segment_id_t seg_id
+      virtual int add_memory ( const gpi::pc::type::segment_id_t seg_id
                      , const std::string & url
-                     );
+                     ) override;
 
-      int del_memory (const gpi::pc::type::segment_id_t seg_id);
+      virtual int del_memory (const gpi::pc::type::segment_id_t seg_id) override;
 
-      bool is_master () const;
+      virtual bool is_master () const override;
 
-      int go ();
-      int wait_for_go ();
+      virtual int go () override;
+      virtual int wait_for_go () override;
     };
   }
 }

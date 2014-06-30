@@ -24,7 +24,7 @@ namespace fhg
 
     struct flush_at_end_of_scope_t
     {
-      ~flush_at_end_of_scope_t() throw ()
+      ~flush_at_end_of_scope_t()
       {
         ::fhg::log::Logger::get()->flush();
       }

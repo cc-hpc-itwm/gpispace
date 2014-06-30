@@ -614,7 +614,7 @@ namespace fhg
             : loader (module_loader)
           { }
 
-          virtual void handle_internally (we::type::activity_t& act, net_t const&)
+          virtual void handle_internally (we::type::activity_t& act, net_t const&) override
           {
             if (act.transition().net())
             {
@@ -629,27 +629,27 @@ namespace fhg
             }
           }
 
-          virtual void handle_internally (we::type::activity_t& act, mod_t const& mod)
+          virtual void handle_internally (we::type::activity_t& act, mod_t const& mod) override
           {
             //!\todo pass a real drts::worker::context here
             we::loader::module_call (loader, nullptr, act, mod);
           }
 
-          virtual void handle_internally (we::type::activity_t& , expr_t const&)
+          virtual void handle_internally (we::type::activity_t& , expr_t const&) override
           {
           }
 
-          virtual void handle_externally (we::type::activity_t& act, net_t const& n)
+          virtual void handle_externally (we::type::activity_t& act, net_t const& n) override
           {
             handle_internally (act, n);
           }
 
-          virtual void handle_externally (we::type::activity_t& act, mod_t const& mod)
+          virtual void handle_externally (we::type::activity_t& act, mod_t const& mod) override
           {
             handle_internally (act, mod);
           }
 
-          virtual void handle_externally (we::type::activity_t& act, expr_t const& e)
+          virtual void handle_externally (we::type::activity_t& act, expr_t const& e) override
           {
             handle_internally (act, e);
           }

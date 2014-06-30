@@ -27,12 +27,12 @@ namespace sdpa {
       public:
       Orchestrator (const std::string &name, const std::string& url, std::string kvs_host, std::string kvs_port);
 
-      virtual void handleJobFinishedEvent( const sdpa::events::JobFinishedEvent* );
-      virtual void handleJobFailedEvent( const sdpa::events::JobFailedEvent* );
+      virtual void handleJobFinishedEvent( const sdpa::events::JobFinishedEvent* ) override;
+      virtual void handleJobFailedEvent( const sdpa::events::JobFailedEvent* ) override;
 
-      virtual void handleCancelJobEvent( const sdpa::events::CancelJobEvent* pEvt );
-      virtual void handleCancelJobAckEvent( const sdpa::events::CancelJobAckEvent* pEvt );
-      virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );
+      virtual void handleCancelJobEvent( const sdpa::events::CancelJobEvent* pEvt ) override;
+      virtual void handleCancelJobAckEvent( const sdpa::events::CancelJobAckEvent* pEvt ) override;
+      virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* ) override;
 
     private:
       std::list<agent_id_t> subscribers (job_id_t job_id) const;

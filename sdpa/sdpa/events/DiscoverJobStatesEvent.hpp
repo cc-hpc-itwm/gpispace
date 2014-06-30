@@ -26,7 +26,7 @@ namespace sdpa
         return discover_id_;
       }
 
-      virtual void handleBy (EventHandler* handler)
+      virtual void handleBy (EventHandler* handler) override
       {
         handler->handleDiscoverJobStatesEvent (this);
       }

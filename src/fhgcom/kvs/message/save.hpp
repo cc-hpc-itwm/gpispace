@@ -18,7 +18,7 @@ namespace fhg
       {
         struct msg_save
         {
-          msg_save () {}
+          msg_save () = default;
 
           explicit
           msg_save (const std::string & file)

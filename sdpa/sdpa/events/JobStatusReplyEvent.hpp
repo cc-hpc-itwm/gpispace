@@ -34,7 +34,7 @@ namespace sdpa
         return m_error_message;
       }
 
-      virtual void handleBy (EventHandler* handler)
+      virtual void handleBy (EventHandler* handler) override
       {
         handler->handleJobStatusReplyEvent (this);
       }

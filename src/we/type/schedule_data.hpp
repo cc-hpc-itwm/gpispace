@@ -12,7 +12,7 @@ namespace we
     struct schedule_data
     {
     public:
-      schedule_data();
+      schedule_data() = default;
       schedule_data (const boost::optional<unsigned long>& num_worker);
 
       const boost::optional<unsigned long>& num_worker() const;
