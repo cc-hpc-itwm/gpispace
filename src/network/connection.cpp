@@ -133,13 +133,14 @@ namespace fhg
 
     void connection_type::send (std::initializer_list<buffer_type> list)
     {
-      uint64_t accumulated_size (0);
-      for (buffer_type const& buffer : list)
-      {
-        accumulated_size += buffer.size();
-      }
-
-      protocol::packet_header const header {accumulated_size};
+      protocol::packet_header const header
+        { std::accumulate
+            ( list.begin()
+            , list.end()
+            , static_cast<uint64_t> (0)
+            , [] (uint64_t s, buffer_type const& x) { return s + x.size(); }
+            )
+        };
 
       std::lock_guard<std::mutex> const _ (_pending_send_mutex);
 
