@@ -29,14 +29,13 @@ namespace fhg
 
       network::buffer_type response (handler->second (pos));
 
-      packet_header response_header (header->message_id, response.size());
-      network::buffer_type response_packet (response);
-      response_packet.insert ( response_packet.begin()
-                             , (char*)&response_header
-                             , (char*)&response_header + sizeof (response_header)
-                             );
-
-      connection->send (response_packet);
+      packet_header const response_header (header->message_id, response.size());
+      connection->send ({{ (char*)&response_header
+                         , (char*)&response_header + sizeof (response_header)
+                         }
+                        , std::move (response)
+                        }
+                       );
     }
 
     service_handler::service_handler
