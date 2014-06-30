@@ -100,7 +100,7 @@ test -n "${handle_data}"                                   || die $EX_ERR_ALLOC
 cat > "${MAKEFILE_PUT}" <<EOF
 PUT_PORT += outer=${outer}L
 PUT_PORT += inner=${inner}L
-PUT_PORT += num_long_to_transfer="${num_bytes}Ldiv8L"
+PUT_PORT += num_long_to_transfer="${num_bytes}ULdiv8UL"
 PUT_PORT += seed=${seed}L
 PUT_PORT += memory=Struct[handle:=Struct[name:=\"${handle_data}\"],offset:=0UL,size:=${num_bytes}UL]
 EOF

@@ -39,7 +39,7 @@
         <out name="done" type="control"/>
         <memory-buffer name="data">
           <size>
-            ulong (${config.num_long} * 8L)
+            ${config.num_long} * 8UL
           </size>
         </memory-buffer>
         <memory-get>
@@ -49,7 +49,7 @@
           <local>
             ${range.buffer} := "data";
             ${range.offset} := 0UL;
-            ${range.size} := ulong (${config.num_long} * 8L);
+            ${range.size} := ${config.num_long} * 8UL;
             stack_push (List(), ${range})
           </local>
         </memory-get>
