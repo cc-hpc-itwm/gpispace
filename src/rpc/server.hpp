@@ -6,9 +6,6 @@
 #include <rpc/common.hpp>
 
 #include <fhg/util/boost/serialization/tuple.hpp>
-#include <fhg/util/num.hpp>
-#include <fhg/util/parse/position.hpp>
-#include <fhg/util/parse/require.hpp>
 
 #include <network/connection.hpp>
 
@@ -37,7 +34,7 @@ namespace fhg
 
       std::unordered_map
         < std::string
-        , std::function<network::buffer_type (util::parse::position&)>
+        , std::function<network::buffer_type (std::string)>
         > _handlers;
     };
 
@@ -48,7 +45,7 @@ namespace fhg
       service_handler
         ( service_dispatcher& manager
         , std::string name
-        , std::function<network::buffer_type (util::parse::position&)> handler
+        , std::function<network::buffer_type (std::string)> handler
         );
       ~service_handler();
 
@@ -125,13 +122,9 @@ namespace fhg
       // }
 
       template<typename arguments_type>
-        arguments_type unwrap_arguments (util::parse::position& buffer)
+        arguments_type unwrap_arguments (std::string blob)
       {
         //! \todo extract istream directly from buffer?
-
-        const std::size_t len (util::read_size_t (buffer));
-        util::parse::require::require (buffer, ' ');
-        const std::string blob (buffer.eat (len));
         std::istringstream is (blob);
 
         boost::archive::text_iarchive ia (is);
@@ -156,10 +149,10 @@ namespace fhg
         : _fun (fun)
       {}
 
-      network::buffer_type operator() (util::parse::position& buffer)
+      network::buffer_type operator() (std::string blob)
       {
         result_type ret
-          (apply_tuple (_fun, unwrap_arguments<arguments_type> (buffer)));
+          (apply_tuple (_fun, unwrap_arguments<arguments_type> (std::move (blob))));
 
         std::ostringstream os;
         boost::archive::text_oarchive oa (os);
@@ -183,9 +176,9 @@ namespace fhg
         : _fun (fun)
       {}
 
-      network::buffer_type operator() (util::parse::position& buffer)
+      network::buffer_type operator() (std::string blob)
       {
-        apply_tuple (_fun, unwrap_arguments<arguments_type> (buffer));
+        apply_tuple (_fun, unwrap_arguments<arguments_type> (std::move (blob)));
 
         std::ostringstream os;
         boost::archive::text_oarchive oa (os);

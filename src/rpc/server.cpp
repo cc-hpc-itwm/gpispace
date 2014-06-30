@@ -10,24 +10,20 @@ namespace fhg
       (network::connection_type* connection, network::buffer_type packet) const
     {
       packet_header* header ((packet_header*)packet.data());
-      network::buffer_type message
-        (header->buffer, header->buffer + header->buffer_size);
-
-      util::parse::position_vector_of_char pos (message);
-      const std::size_t len (util::read_size_t (pos));
-      util::parse::require::require (pos, ' ');
-
-      std::string const function_name (pos.eat (len));
+      protocol::call_function* call_function
+        ((protocol::call_function*)header->buffer);
 
       decltype (_handlers)::const_iterator const handler
-        (_handlers.find (function_name));
+        (_handlers.find (call_function->function_name()));
 
       if (handler == _handlers.end())
       {
-        throw std::logic_error ("function '" + function_name + "' does not exist");
+        throw std::logic_error
+          ("function '" + call_function->function_name() + "' does not exist");
       }
 
-      network::buffer_type response (handler->second (pos));
+      network::buffer_type response
+        (handler->second (call_function->arguments()));
 
       packet_header const response_header (header->message_id, response.size());
       connection->send ({{ (char*)&response_header
@@ -41,7 +37,7 @@ namespace fhg
     service_handler::service_handler
         ( service_dispatcher& manager
         , std::string name
-        , std::function<network::buffer_type (util::parse::position&)> handler
+        , std::function<network::buffer_type (std::string)> handler
         )
       : _manager (manager)
       , _name (name)

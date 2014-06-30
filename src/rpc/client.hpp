@@ -97,6 +97,13 @@ namespace fhg
         const std::function<std::string (std::string)> prepend_size
           ([](std::string str) { return std::to_string (str.size()) + ' ' + str; });
 
+        std::string const args_string (args_stringstream.str());
+
+        network::buffer_type call_function
+          (protocol::call_function::required_size (_function, args_string));
+        new (call_function.data()) protocol::call_function
+          (_function, std::move (args_string));
+
         return std::async
           ( std::launch::async
           , [] (std::future<network::buffer_type>&& buffer)
@@ -104,10 +111,7 @@ namespace fhg
             network::buffer_type buf (buffer.get());
             return deserialize_from_buffer<R> (buf);
           }
-          , std::move
-            ( _endpoint.send_and_receive
-              (prepend_size (_function) + prepend_size (args_stringstream.str()))
-            )
+          , std::move (_endpoint.send_and_receive (std::move (call_function)))
           );
       }
 
