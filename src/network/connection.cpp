@@ -145,6 +145,10 @@ namespace fhg
 
       const bool has_pending (!_pending_send.empty());
 
+      //! \note We trade avoiding concat (header, list…) with possibly
+      //! multiple network transfers. It may be better to just concat
+      //! buffers and transfer once.
+
       _pending_send.emplace_back ((char*)&header, (char*)&header + sizeof (header));
 
       for (buffer_type const& buffer : list)
