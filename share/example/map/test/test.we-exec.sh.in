@@ -43,6 +43,7 @@ handle_output=
 
 cleanup()
 {
+  set +e
   test -n "${handle_input}" && echo memory-free ${handle_input} | $SDPA_HOME/bin/gpish -s "${VMEM_SOCKET}"
   test -n "${handle_output}" && echo memory-free ${handle_output} | $SDPA_HOME/bin/gpish -s "${VMEM_SOCKET}"
   test -s "${GPI_SPACE_PID_FILE}" && kill -9 $(cat "${GPI_SPACE_PID_FILE}")
