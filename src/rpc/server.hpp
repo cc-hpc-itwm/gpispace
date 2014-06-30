@@ -34,7 +34,7 @@ namespace fhg
 
       std::unordered_map
         < std::string
-        , std::function<network::buffer_type (std::string)>
+        , std::function<std::string (std::string)>
         > _handlers;
     };
 
@@ -45,7 +45,7 @@ namespace fhg
       service_handler
         ( service_dispatcher& manager
         , std::string name
-        , std::function<network::buffer_type (std::string)> handler
+        , std::function<std::string (std::string)> handler
         );
       ~service_handler();
 
@@ -149,7 +149,7 @@ namespace fhg
         : _fun (fun)
       {}
 
-      network::buffer_type operator() (std::string blob)
+      std::string operator() (std::string blob)
       {
         result_type ret
           (apply_tuple (_fun, unwrap_arguments<arguments_type> (std::move (blob))));
@@ -157,8 +157,8 @@ namespace fhg
         std::ostringstream os;
         boost::archive::text_oarchive oa (os);
         oa & ret;
-        const std::string os_str (os.str());
-        return network::buffer_type (os_str.begin(), os_str.end());
+
+        return os.str();
       }
 
     private:
@@ -176,14 +176,14 @@ namespace fhg
         : _fun (fun)
       {}
 
-      network::buffer_type operator() (std::string blob)
+      std::string operator() (std::string blob)
       {
         apply_tuple (_fun, unwrap_arguments<arguments_type> (std::move (blob)));
 
         std::ostringstream os;
         boost::archive::text_oarchive oa (os);
-        const std::string os_str (os.str());
-        return network::buffer_type (os_str.begin(), os_str.end());
+
+        return os.str();
       }
 
     private:

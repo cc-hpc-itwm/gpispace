@@ -22,8 +22,8 @@ namespace fhg
           ("function '" + call_function->function_name() + "' does not exist");
       }
 
-      network::buffer_type response
-        (handler->second (call_function->arguments()));
+      std::string return_value (handler->second (call_function->arguments()));
+      network::buffer_type response (return_value.begin(), return_value.end());
 
       packet_header const response_header (header->message_id, response.size());
       connection->send ({{ (char*)&response_header
@@ -37,7 +37,7 @@ namespace fhg
     service_handler::service_handler
         ( service_dispatcher& manager
         , std::string name
-        , std::function<network::buffer_type (std::string)> handler
+        , std::function<std::string (std::string)> handler
         )
       : _manager (manager)
       , _name (name)
