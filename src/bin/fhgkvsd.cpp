@@ -8,55 +8,11 @@
 
 #include <fhgcom/kvs/kvsd.hpp>
 #include <fhgcom/peer_info.hpp>
-#include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/tcp_server.hpp>
 
 #include <fhg/util/daemonize.hpp>
 
-static fhg::com::io_service_pool pool (4);
-static fhg::com::kvs::server::kvsd *g_kvsd (nullptr);
-
 static const int EX_STILL_RUNNING = 4;
-
-void save_state (int)
-{
-  try
-  {
-    g_kvsd->save();
-  }
-  catch (std::exception const & ex)
-  {
-    LOG(WARN, "could not persist state: " << ex.what());
-  }
-}
-void load_state (int)
-{
-  try
-  {
-    g_kvsd->load();
-  }
-  catch (std::exception const & ex)
-  {
-    LOG(WARN, "could not load state: " << ex.what());
-  }
-}
-void clear_state (int)
-{
-  try
-  {
-    g_kvsd->clear("");
-  }
-  catch (std::exception const & ex)
-  {
-    LOG(WARN, "could not clear state: " << ex.what());
-  }
-}
-
-void signal_handler (int s)
-{
-  pool.stop();
-  save_state (s);
-}
 
 int main(int ac, char *av[])
 {
@@ -85,7 +41,7 @@ int main(int ac, char *av[])
   }
 
   bool reuse_address (true);
-  std::string store_path ("");
+  std::string store_path;
 
   po::options_description desc ("options");
   desc.add_options()
@@ -93,7 +49,7 @@ int main(int ac, char *av[])
     ("bind,b", po::value<std::string>(&server_address)->default_value(server_address), "bind to this address")
     ("port,p", po::value<std::string>(&server_port)->default_value(server_port), "port or service name to use")
     ("reuse-address", po::value<bool>(&reuse_address)->default_value(reuse_address), "reuse address")
-    ("store,s", po::value<std::string>(&store_path)->default_value(store_path), "path to persistent store")
+    ("store,s", po::value<std::string>(&store_path), "path to persistent store")
     ("clear,C", "start with an empty store")
     ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
     ("daemonize", "daemonize after all checks were successful")
@@ -150,60 +106,77 @@ int main(int ac, char *av[])
     }
   }
 
-  if (daemonize)
-  {
-    fhg::util::fork_and_daemonize_child_and_abandon_parent();
-  }
-
-  if (pidfile_fd >= 0)
-  {
-    if (lockf(pidfile_fd, F_LOCK, 0) < 0)
-    {
-      LOG( ERROR, "could not lock pidfile: "
-         << strerror(errno)
-         );
-      exit(EX_STILL_RUNNING);
-    }
-
-    char buf[32];
-    if (ftruncate(pidfile_fd, 0) < 0)
-    {
-      LOG (WARN, "could not truncate file: " << strerror (errno));
-    }
-    snprintf(buf, sizeof(buf), "%d\n", getpid());
-    if (write(pidfile_fd, buf, strlen(buf)) != (ssize_t)strlen (buf))
-    {
-      LOG (WARN, "PID could not be written completely: " << strerror (errno));
-    }
-    fsync(pidfile_fd);
-  }
-
-  fhg::com::kvs::server::kvsd kvsd (store_path);
-  g_kvsd = &kvsd;
-
-  if (vm.count ("clear")) kvsd.clear ("");
-
-  signal(SIGINT, signal_handler);
-  signal(SIGTERM, signal_handler);
-  signal(SIGUSR1, save_state);
-  signal(SIGUSR2, clear_state);
-  signal(SIGHUP, load_state);
-
   try
   {
-    fhg::com::tcp_server server ( pool.get_io_service()
+    boost::asio::io_service io_service;
+    boost::optional<std::string> optional_store_path;
+    if (not store_path.empty())
+      optional_store_path = store_path;
+    fhg::com::kvs::server::kvsd kvsd (optional_store_path);
+
+    if (vm.count ("clear")) kvsd.clear ("");
+
+    boost::asio::signal_set term_signals (io_service, SIGINT, SIGTERM);
+    term_signals.async_wait
+      (boost::bind (&boost::asio::io_service::stop, &io_service));
+
+    boost::asio::signal_set hup_signal (io_service, SIGHUP);
+    hup_signal.async_wait
+      (boost::bind (&fhg::com::kvs::server::kvsd::clear, &kvsd, ""));
+
+    boost::asio::signal_set usr1_signal (io_service, SIGUSR1);
+    usr1_signal.async_wait
+      (boost::bind (&fhg::com::kvs::server::kvsd::save, &kvsd));
+
+    boost::asio::signal_set usr2_signal (io_service, SIGUSR2);
+    usr2_signal.async_wait
+      (boost::bind (&fhg::com::kvs::server::kvsd::load, &kvsd));
+
+    fhg::com::tcp_server server ( io_service
                                 , kvsd
                                 , server_address
                                 , server_port
                                 , reuse_address
                                 );
 
-    pool.run ();
+    io_service.notify_fork (boost::asio::io_service::fork_prepare);
+    if (daemonize)
+    {
+      fhg::util::fork_and_daemonize_child_and_abandon_parent();
+    }
+
+    if (pidfile_fd >= 0)
+    {
+      if (lockf(pidfile_fd, F_LOCK, 0) < 0)
+      {
+        LOG( ERROR, "could not lock pidfile: "
+           << strerror(errno)
+           );
+        exit(EX_STILL_RUNNING);
+      }
+
+      char buf[32];
+      if (ftruncate(pidfile_fd, 0) < 0)
+      {
+        LOG (WARN, "could not truncate file: " << strerror (errno));
+      }
+      snprintf(buf, sizeof(buf), "%d\n", getpid());
+      if (write(pidfile_fd, buf, strlen(buf)) != (ssize_t)strlen (buf))
+      {
+        LOG (WARN, "PID could not be written completely: " << strerror (errno));
+      }
+      fsync(pidfile_fd);
+    }
+
+    io_service.notify_fork(boost::asio::io_service::fork_child);
+    io_service.run();
+
+    kvsd.save();
   }
-  catch (std::exception const & ex)
+  catch (std::exception const &ex)
   {
-    std::cerr << "could not start server: " << ex.what () << std::endl;
-    return EXIT_FAILURE;
+    std::cerr << "failed: " << ex.what () << std::endl;
+    exit (EXIT_FAILURE);
   }
 
   return 0;
