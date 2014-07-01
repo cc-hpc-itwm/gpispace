@@ -11,6 +11,7 @@
 #include <fhgcom/tcp_server.hpp>
 
 #include <fhg/util/daemonize.hpp>
+#include <fhg/syscall.hpp>
 
 static const int EX_STILL_RUNNING = 4;
 
@@ -170,6 +171,11 @@ int main(int ac, char *av[])
     io_service.run();
 
     kvsd.save();
+
+    if (not pidfile.empty ())
+    {
+      fhg::syscall::unlink (pidfile.c_str());
+    }
   }
   catch (std::exception const &ex)
   {
