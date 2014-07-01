@@ -173,8 +173,8 @@ int main(int ac, char *av[])
   }
   catch (std::exception const &ex)
   {
-    std::cerr << "failed: " << ex.what () << std::endl;
-    exit (EXIT_FAILURE);
+    std::cerr << "could not start server: " << ex.what () << std::endl;
+    return EXIT_FAILURE;
   }
 
   return 0;
