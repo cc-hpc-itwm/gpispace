@@ -528,11 +528,13 @@ if $gpi_enabled ; then
     info "using GPI mem: ${gpi_mem} bytes per node"
     info "starting GPI using: '$gpi_exe' on '${gpi_socket}'"
 
-    dry_run FHGLOG_to_server="${log_host}:${log_port}" \
+    export FHGLOG_to_server="${log_host}:${log_port}"
+
+    dry_run \
         "${gpi_exe}" \
         --log-file "$state_dir/log/gpi-space.log" \
         --daemonize \
-        --pid-file "$state_dir/gpi-space.pid" \
+        --pidfile "$state_dir/gpi-space.pid" \
         --gpi-mem "$gpi_mem" \
         --kvs-host "${master}" --kvs-port "$kvs_port" \
         --log-host "${log_host}" --log-port "${log_port}" \
