@@ -109,9 +109,7 @@ int main(int ac, char *av[])
   try
   {
     boost::asio::io_service io_service;
-    boost::optional<std::string> optional_store_path;
-    if (not store_path.empty())
-      optional_store_path = store_path;
+    boost::optional<std::string> const optional_store_path (! store_path.empty (), store_path);
     fhg::com::kvs::server::kvsd kvsd (optional_store_path);
 
     if (vm.count ("clear")) kvsd.clear ("");
