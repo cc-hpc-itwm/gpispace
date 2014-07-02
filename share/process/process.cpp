@@ -325,9 +325,11 @@ namespace process
       for (const std::pair<std::string, std::string> entry : environment)
       {
         const std::size_t pos (envp_buffer.size ());
-        const std::string raw_entry (entry.first + "=" + entry.second);
-        envp_buffer.resize (envp_buffer.size () + raw_entry.size () + 1);
-        std::copy (raw_entry.begin (), raw_entry.end (), envp_buffer.data () + pos);
+
+        envp_buffer.resize (entry.first.size() + 1 + entry.second.size() +1);
+        std::copy (entry.first.begin(), entry.first.end(), envp_buffer.data () + pos);
+        envp_buffer.data()[pos + entry.first.size()]='=';
+        std::copy (entry.second.begin(), entry.second.end(), envp_buffer.data () + pos + entry.first.size()+1);
         envp_buffer [envp_buffer.size () - 1] = '\0';
         envp_offsets.push_back (pos);
       }
