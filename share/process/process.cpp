@@ -314,7 +314,7 @@ namespace process
                               , circular_buffer& buf_stderr
                               , file_const_buffer_list const& files_input
                               , file_buffer_list const& files_output
-                              , std::map<std::string, std::string> const &environment
+                              , std::map<std::string, std::string> const& environment
                               )
   {
     execute_return_type ret (files_output.size());
@@ -496,7 +496,7 @@ namespace process
 
       try
       {
-        fhg::syscall::execvpe (argv[0], argv.data(), envp.data ());
+        fhg::syscall::execvpe (argv[0], argv.data(), envp.data());
       }
       catch (boost::system::system_error const& err)
       {
