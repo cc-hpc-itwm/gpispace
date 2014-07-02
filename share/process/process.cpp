@@ -3,6 +3,7 @@
 #include <fhg/syscall.hpp>
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/split.hpp>
+#include <fhg/util/environment.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
@@ -292,12 +293,28 @@ namespace process
     };
   }
 
+  extern execute_return_type execute ( std::string const& command
+                                     , const_buffer const& buf_stdin
+                                     , buffer const& buf_stdout
+                                     , circular_buffer& buf_stderr
+                                     , file_const_buffer_list const& files_input
+                                     , file_buffer_list const& files_output
+                                     )
+  {
+    return execute ( command
+                   , buf_stdin, buf_stdout, buf_stderr
+                   , files_input, files_output
+                   , fhg::util::environment ()
+                   );
+  }
+
   execute_return_type execute ( std::string const& command
                               , const_buffer const& buf_stdin
                               , buffer const& buf_stdout
                               , circular_buffer& buf_stderr
                               , file_const_buffer_list const& files_input
                               , file_buffer_list const& files_output
+                              , std::map<std::string, std::string> const &environment
                               )
   {
     execute_return_type ret (files_output.size());
@@ -455,9 +472,31 @@ namespace process
         argv.push_back (nullptr);
       }
 
+      std::vector<char> envp_buffer;
+      std::vector<char*> envp;
+
+      {
+        std::vector<std::size_t> envp_offsets;
+
+        for (const std::pair<std::string, std::string> entry : environment)
+        {
+          std::size_t pos (envp_buffer.size ());
+          const std::string raw_entry (entry.first + "=" + entry.second);
+          envp_buffer.resize (envp_buffer.size () + raw_entry.size () + 1);
+          std::copy (raw_entry.begin (), raw_entry.end (), envp_buffer.data () + pos);
+          envp_buffer [envp_buffer.size () - 1] = '\0';
+          envp_offsets.push_back (pos);
+        }
+        for (std::size_t offset : envp_offsets)
+        {
+          envp.push_back (envp_buffer.data () + offset);
+        }
+        envp.push_back (nullptr);
+      }
+
       try
       {
-        fhg::syscall::execvp (argv[0], argv.data());
+        fhg::syscall::execvpe (argv[0], argv.data(), envp.data ());
       }
       catch (boost::system::system_error const& err)
       {
