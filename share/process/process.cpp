@@ -459,7 +459,7 @@ namespace process
           const std::string param
             ((repl != param_map.end()) ? std::string (repl->second) : raw_param);
 
-          std::size_t pos (argv_buffer.size());
+          const std::size_t pos (argv_buffer.size());
           argv_buffer.resize (argv_buffer.size() + param.size() + 1);
           std::copy (param.begin(), param.end(), argv_buffer.data() + pos);
           argv_buffer[argv_buffer.size() - 1] = '\0';
@@ -480,7 +480,7 @@ namespace process
 
         for (const std::pair<std::string, std::string> entry : environment)
         {
-          std::size_t pos (envp_buffer.size ());
+          const std::size_t pos (envp_buffer.size ());
           const std::string raw_entry (entry.first + "=" + entry.second);
           envp_buffer.resize (envp_buffer.size () + raw_entry.size () + 1);
           std::copy (raw_entry.begin (), raw_entry.end (), envp_buffer.data () + pos);
