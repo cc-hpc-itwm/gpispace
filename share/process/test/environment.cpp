@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE (process_empty_environment)
   std::map<std::string, std::string> env;
 
   process::circular_buffer buf_stderr;
-  char out_stdout [1024];
+  char out_stdout [1]; // one additional character to verify that no more than the 0 bytes were written
 
   process::execute_return_type ret
     ( process::execute ( env_program
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE (process_single_variable_environment)
   env ["FOO"] = "BAR";
 
   process::circular_buffer buf_stderr;
-  char out_stdout [1024];
+  char out_stdout [8+1]; // one additional character to verify that no more than the 8 bytes were written
 
   process::execute_return_type ret
     ( process::execute ( env_program
