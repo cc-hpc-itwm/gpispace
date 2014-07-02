@@ -32,6 +32,7 @@ set (srcs
   read_file.cpp
 
   hostname.cpp
+  environment.cpp
 )
 
 add_library (fhg-util ${srcs})
