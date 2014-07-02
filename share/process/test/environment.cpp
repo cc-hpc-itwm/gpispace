@@ -4,7 +4,6 @@
 #include <boost/test/unit_test.hpp>
 
 #include <process.hpp>
-#include <fhg/util/environment.hpp>
 
 BOOST_AUTO_TEST_CASE (process_empty_environment)
 {
@@ -83,9 +82,10 @@ BOOST_AUTO_TEST_CASE (process_full_environment)
 
   std::string expected_output;
   {
-    for (std::pair<std::string, std::string> env_entry : fhg::util::environment ())
+    for (char **entry = environ; entry && *entry != nullptr; ++entry)
     {
-      expected_output += env_entry.first + '=' + env_entry.second + '\n';
+      expected_output += *entry;
+      expected_output += '\n';
     }
   }
 
