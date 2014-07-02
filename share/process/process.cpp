@@ -316,29 +316,34 @@ namespace process
                               , std::map<std::string, std::string> const& environment
                               )
   {
-    std::vector<char> envp_buffer;
+    std::vector<char> envp_buffer
+      ( std::accumulate
+      ( environment.begin()
+      , environment.end()
+      , std::size_t (0)
+      , [] (std::size_t s, std::pair<std::string, std::string> const& entry)
+      {
+        return s + entry.first.size() + 1 + entry.second.size() + 1;
+      }
+      )
+      );
+
     std::vector<char*> envp;
+    std::size_t pos (0);
 
+    for (std::pair<std::string, std::string> const& entry : environment)
     {
-      std::vector<std::size_t> envp_offsets;
-
-      for (const std::pair<std::string, std::string> entry : environment)
-      {
-        const std::size_t pos (envp_buffer.size ());
-
-        envp_buffer.resize (entry.first.size() + 1 + entry.second.size() +1);
-        std::copy (entry.first.begin(), entry.first.end(), envp_buffer.data () + pos);
-        envp_buffer.data()[pos + entry.first.size()]='=';
-        std::copy (entry.second.begin(), entry.second.end(), envp_buffer.data () + pos + entry.first.size()+1);
-        envp_buffer [envp_buffer.size () - 1] = '\0';
-        envp_offsets.push_back (pos);
-      }
-      for (std::size_t offset : envp_offsets)
-      {
-        envp.push_back (envp_buffer.data () + offset);
-      }
-      envp.push_back (nullptr);
+      envp.push_back (envp_buffer.data() + pos);
+      std::copy (entry.first.begin(), entry.first.end(), envp_buffer.data() + pos);
+      pos += entry.first.size();
+      *(envp_buffer.data() + pos) = '=';
+      pos += 1;
+      std::copy (entry.second.begin(), entry.second.end(), envp_buffer.data() + pos);
+      pos += entry.second.size();
+      *(envp_buffer.data() + pos) = '\0';
+      pos += 1;
     }
+    envp.push_back (nullptr);
 
     return execute ( command
                    , buf_stdin, buf_stdout, buf_stderr
