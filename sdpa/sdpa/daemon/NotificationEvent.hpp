@@ -28,19 +28,6 @@ namespace sdpa
       , STATE_MAX = STATE_CANCELED
       };
 
-      NotificationEvent ( const std::string& component
-                        , const std::string& activity_id
-                        , const state_t& activity_state
-                        , const we::type::activity_t& activity
-                        )
-        : _components ()
-        , _activity_id (activity_id)
-        , _activity_name (activity.transition().name())
-        , _activity_state (activity_state)
-      {
-        _components.push_back (component);
-      }
-
       NotificationEvent ( const std::list<std::string>& components
                         , const std::string& activity_id
                         , const state_t& activity_state

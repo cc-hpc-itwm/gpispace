@@ -193,7 +193,7 @@ void WFEImpl::emit_task (const wfe_task_t& task)
     using sdpa::daemon::NotificationEvent;
     _notification_service->notify
       ( NotificationEvent
-        ( _worker_name
+        ( {_worker_name}
         , task.id
         , task.state == wfe_task_t::PENDING ? NotificationEvent::STATE_STARTED
         : task.state == wfe_task_t::FINISHED ? NotificationEvent::STATE_FINISHED
