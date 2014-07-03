@@ -292,74 +292,14 @@ namespace process
     };
   }
 
-  extern execute_return_type execute ( std::string const& command
+  static execute_return_type execute ( std::string const& command
                                      , const_buffer const& buf_stdin
                                      , buffer const& buf_stdout
                                      , circular_buffer& buf_stderr
                                      , file_const_buffer_list const& files_input
                                      , file_buffer_list const& files_output
+                                     , char *const envp[]
                                      )
-  {
-    return execute ( command
-                   , buf_stdin, buf_stdout, buf_stderr
-                   , files_input, files_output
-                   , environ
-                   );
-  }
-
-  execute_return_type execute ( std::string const& command
-                              , const_buffer const& buf_stdin
-                              , buffer const& buf_stdout
-                              , circular_buffer& buf_stderr
-                              , file_const_buffer_list const& files_input
-                              , file_buffer_list const& files_output
-                              , std::map<std::string, std::string> const& environment
-                              )
-  {
-    std::vector<char> envp_buffer
-      ( std::accumulate
-      ( environment.begin()
-      , environment.end()
-      , std::size_t (0)
-      , [] (std::size_t s, std::pair<std::string, std::string> const& entry)
-      {
-        return s + entry.first.size() + 1 + entry.second.size() + 1;
-      }
-      )
-      );
-
-    std::vector<char*> envp;
-    std::size_t pos (0);
-
-    for (std::pair<std::string, std::string> const& entry : environment)
-    {
-      envp.push_back (envp_buffer.data() + pos);
-      std::copy (entry.first.begin(), entry.first.end(), envp_buffer.data() + pos);
-      pos += entry.first.size();
-      *(envp_buffer.data() + pos) = '=';
-      pos += 1;
-      std::copy (entry.second.begin(), entry.second.end(), envp_buffer.data() + pos);
-      pos += entry.second.size();
-      *(envp_buffer.data() + pos) = '\0';
-      pos += 1;
-    }
-    envp.push_back (nullptr);
-
-    return execute ( command
-                   , buf_stdin, buf_stdout, buf_stderr
-                   , files_input, files_output
-                   , envp.data ()
-                   );
-  }
-
-  execute_return_type execute ( std::string const& command
-                              , const_buffer const& buf_stdin
-                              , buffer const& buf_stdout
-                              , circular_buffer& buf_stderr
-                              , file_const_buffer_list const& files_input
-                              , file_buffer_list const& files_output
-                              , char *const envp[]
-                              )
   {
     execute_return_type ret (files_output.size());
 
@@ -643,5 +583,65 @@ namespace process
     }
 
     return ret;
+  }
+
+  extern execute_return_type execute ( std::string const& command
+                                     , const_buffer const& buf_stdin
+                                     , buffer const& buf_stdout
+                                     , circular_buffer& buf_stderr
+                                     , file_const_buffer_list const& files_input
+                                     , file_buffer_list const& files_output
+                                     )
+  {
+    return execute ( command
+                   , buf_stdin, buf_stdout, buf_stderr
+                   , files_input, files_output
+                   , environ
+                   );
+  }
+
+  execute_return_type execute ( std::string const& command
+                              , const_buffer const& buf_stdin
+                              , buffer const& buf_stdout
+                              , circular_buffer& buf_stderr
+                              , file_const_buffer_list const& files_input
+                              , file_buffer_list const& files_output
+                              , std::map<std::string, std::string> const& environment
+                              )
+  {
+    std::vector<char> envp_buffer
+      ( std::accumulate
+      ( environment.begin()
+      , environment.end()
+      , std::size_t (0)
+      , [] (std::size_t s, std::pair<std::string, std::string> const& entry)
+      {
+        return s + entry.first.size() + 1 + entry.second.size() + 1;
+      }
+      )
+      );
+
+    std::vector<char*> envp;
+    std::size_t pos (0);
+
+    for (std::pair<std::string, std::string> const& entry : environment)
+    {
+      envp.push_back (envp_buffer.data() + pos);
+      std::copy (entry.first.begin(), entry.first.end(), envp_buffer.data() + pos);
+      pos += entry.first.size();
+      *(envp_buffer.data() + pos) = '=';
+      pos += 1;
+      std::copy (entry.second.begin(), entry.second.end(), envp_buffer.data() + pos);
+      pos += entry.second.size();
+      *(envp_buffer.data() + pos) = '\0';
+      pos += 1;
+    }
+    envp.push_back (nullptr);
+
+    return execute ( command
+                   , buf_stdin, buf_stdout, buf_stderr
+                   , files_input, files_output
+                   , envp.data ()
+                   );
   }
 }
