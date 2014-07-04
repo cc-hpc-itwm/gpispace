@@ -314,7 +314,7 @@ namespace we
             . fire_expressions_and_extract_activity_random
               (_random_extraction_engine);
         }
-        catch (pnet::exception::type_error const &ex)
+        catch (pnet::exception::type_error const& ex)
         {
           _rts_failed (activity_data._id, ex.what ());
           return;
@@ -337,9 +337,9 @@ namespace we
           rts_finished_and_forget
             ( activity_data._id
             , fhg::util::starts_with
-            ( wrapped_activity_prefix()
-            , activity_data._activity.transition().name()
-            )
+              ( wrapped_activity_prefix()
+              , activity_data._activity.transition().name()
+              )
             ? unwrap (activity_data._activity)
             : activity_data._activity
             );
