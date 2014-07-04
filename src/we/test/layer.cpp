@@ -426,6 +426,47 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
   }
 }
 
+BOOST_FIXTURE_TEST_CASE (invalid_expressions_shall_fail, daemon)
+{
+  we::type::transition_t transition
+    ( "expression"
+    , we::type::expression_t ("${out} := ${in} + 1UL")
+    , boost::none
+    , true
+    , we::type::property::type()
+    , we::priority_type()
+    );
+  transition.add_port
+    (we::type::port_t ( "in"
+                      , we::type::PORT_IN
+                      , signature::LONG
+                      , we::type::property::type()
+                      )
+    );
+  transition.add_port
+    (we::type::port_t ( "out"
+                      , we::type::PORT_OUT
+                      , signature::LONG
+                      , we::type::property::type()
+                      )
+    );
+
+  we::type::activity_t activity (transition, boost::none);
+  activity.add_input ( transition.input_port_by_name ("in")
+                     , pnet::type::value::read ("1L")
+                     );
+
+  we::layer::id_type const id (generate_id());
+
+  {
+    const std::string message ("type error: eval  +  (1L, 1UL)");
+
+    expect_failed const _ (this, id, message);
+
+    do_submit (id, activity);
+  }
+}
+
 BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
 {
   we::type::transition_t transition
