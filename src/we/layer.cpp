@@ -306,37 +306,37 @@ namespace we
 
         try
         {
-        if ( boost::optional<type::activity_t> activity
+          if ( boost::optional<type::activity_t> activity
 
-             //! \note We wrap all input activites in a net.
-           = boost::get<we::type::net_type&>
-             (activity_data._activity.transition().data())
-           . fire_expressions_and_extract_activity_random
-               (_random_extraction_engine)
-           )
-        {
-          const id_type child_id (_rts_id_generator());
-          _running_jobs.started (activity_data._id, child_id);
-          _rts_submit (child_id, *activity);
-          was_active = true;
-        }
+               //! \note We wrap all input activites in a net.
+             = boost::get<we::type::net_type&>
+               (activity_data._activity.transition().data())
+             . fire_expressions_and_extract_activity_random
+                 (_random_extraction_engine)
+             )
+          {
+            const id_type child_id (_rts_id_generator());
+            _running_jobs.started (activity_data._id, child_id);
+            _rts_submit (child_id, *activity);
+            was_active = true;
+          }
 
-        if (_running_jobs.contains (activity_data._id))
-        {
-          _nets_to_extract_from.put (activity_data, was_active);
-        }
-        else
-        {
-          rts_finished_and_forget
-            ( activity_data._id
-            , fhg::util::starts_with
-              ( wrapped_activity_prefix()
-              , activity_data._activity.transition().name()
-              )
-            ? unwrap (activity_data._activity)
-            : activity_data._activity
-            );
-        }
+          if (_running_jobs.contains (activity_data._id))
+          {
+            _nets_to_extract_from.put (activity_data, was_active);
+          }
+          else
+          {
+            rts_finished_and_forget
+              ( activity_data._id
+              , fhg::util::starts_with
+                ( wrapped_activity_prefix()
+                , activity_data._activity.transition().name()
+                )
+              ? unwrap (activity_data._activity)
+              : activity_data._activity
+              );
+          }
         }
         catch (std::exception const &ex)
         {
