@@ -1,6 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/layer.hpp>
+#include <we/exception.hpp>
 
 #include <fhg/assert.hpp>
 #include <fhg/util/starts_with.hpp>
@@ -313,7 +314,7 @@ namespace we
             . fire_expressions_and_extract_activity_random
               (_random_extraction_engine);
         }
-        catch (std::runtime_error const &ex)
+        catch (pnet::exception::type_error const &ex)
         {
           _rts_failed (activity_data._id, ex.what ());
           return;
