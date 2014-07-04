@@ -304,6 +304,8 @@ namespace we
         //! fire_expression_and_extract_activity_random (endless loop
         //! in expressions)?
 
+        try
+        {
         if ( boost::optional<type::activity_t> activity
 
              //! \note We wrap all input activites in a net.
@@ -334,6 +336,11 @@ namespace we
             ? unwrap (activity_data._activity)
             : activity_data._activity
             );
+        }
+        }
+        catch (std::exception const &ex)
+        {
+          _rts_failed (activity_data._id, ex.what ());
         }
       }
     }
