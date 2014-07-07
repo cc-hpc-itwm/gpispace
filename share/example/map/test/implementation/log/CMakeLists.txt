@@ -3,6 +3,7 @@
 include_directories (${CMAKE_SOURCE_DIR}/share/example/map)
 include_directories (${FhgLog_INCLUDE_DIR})
 
-add_library (map-impl SHARED
+add_library (log_map-impl SHARED
   implementation.cpp
 )
+set_target_properties (log_map-impl PROPERTIES OUTPUT_NAME map-impl)
