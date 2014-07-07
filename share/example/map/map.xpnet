@@ -268,7 +268,7 @@
                                              , data
                                              )"
         >
-          <cinclude href="map_interface.hpp"/>
+          <cinclude href="interface.hpp"/>
           <ld flag="-lmap-impl"/>
           <ld flag="-Wl,-rpath='$$ORIGIN/../../../'"/>
           <code><![CDATA[
@@ -352,7 +352,7 @@
                                              , output
                                              )"
         >
-          <cinclude href="map_interface.hpp"/>
+          <cinclude href="interface.hpp"/>
           <ld flag="-lmap-impl"/>
           <code><![CDATA[
           ::map::process ( user_data
@@ -412,7 +412,7 @@
                                              , data
                                              )"
         >
-          <cinclude href="map_interface.hpp"/>
+          <cinclude href="interface.hpp"/>
           <ld flag="-lmap-impl"/>
           <code><![CDATA[
           ::map::consume ( user_data
