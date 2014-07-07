@@ -36,6 +36,7 @@ make+=( MAKEFILE_PUT="${MAKEFILE_PUT}" )
 make+=( BUILDDIR="${DIR_BUILD}" )
 make+=( LIB_DESTDIR="${DIR_INST}" )
 make+=( WE_EXEC_OUTPUT="${RESULT}" )
+make+=( CXXLIBRARYPATHS="${DIR_INST}" )
 make+=( -C "${DIR_SOURCE}" )
 
 handle_input=
@@ -52,6 +53,7 @@ cleanup()
   test -s "${KVSD_PID_FILE}" && kill -9 $(cat "${KVSD_PID_FILE}")
   rm -rf "${KVSD_PID_FILE}"
   ${make[@]} uninstall
+  rm -rf "${DIR_INST}/libmap-impl.so"
   rmdir "${DIR_INST}"
   ${make[@]} clean
   cleanup_dir_build
@@ -108,6 +110,9 @@ PUT_PORT += num_block=${num_block}UL
 PUT_PORT += size_block=${size_block}UL
 PUT_PORT += user_data="y(31)"
 EOF
+
+cp "@CMAKE_CURRENT_BINARY_DIR@/implementation/log/libmap-impl.so" \
+   "${DIR_INST}/libmap-impl.so"                             || die $EX_ERR_ENV
 
 ${make[@]} lib put install                                  || die $EX_ERR_RUN
 
