@@ -28,15 +28,16 @@ mkdir -p "${DIR_INST}"                                      || die $EX_ERR_ENV
 KVSD_PID_FILE="${DIR_PID}/kvsd"
 GPI_SPACE_PID_FILE="${DIR_PID}/gpi-space"
 VMEM_SOCKET=$(mktemp -u -p "${DIR_STATE}")
-MAKEFILE_PUT=$(mktemp -p "${DIR_STATE}")
 RESULT=$(mktemp -p "${DIR_STATE}")
 
 make=(make)
-make+=( MAKEFILE_PUT="${MAKEFILE_PUT}" )
+make+=( -f "${SDPA_HOME}/share/sdpa/make/common.mk" )
+make+=( MAIN=map )
 make+=( BUILDDIR="${DIR_BUILD}" )
 make+=( LIB_DESTDIR="${DIR_INST}" )
 make+=( WE_EXEC_OUTPUT="${RESULT}" )
 make+=( CXXLIBRARYPATHS="${DIR_INST}" )
+make+=( CXXINCLUDEPATHS="${DIR_SOURCE}" )
 make+=( -C "${DIR_SOURCE}" )
 
 handle_input=
@@ -102,19 +103,19 @@ handle_output=$(echo memory-alloc ${size_output} gpi output p | TERM=linux $SDPA
 test -n "${handle_input}"                                  || die $EX_ERR_ALLOC
 test -n "${handle_output}"                                 || die $EX_ERR_ALLOC
 
-# \todo how to OR-DIE the cat?
-cat > "${MAKEFILE_PUT}" <<EOF
-PUT_PORT += input=Struct[handle:=Struct[name:=\"${handle_input}\"],offset:=0UL,size:=${size_input}UL]
-PUT_PORT += output=Struct[handle:=Struct[name:=\"${handle_output}\"],offset:=0UL,size:=${size_output}UL]
-PUT_PORT += num_block=${num_block}UL
-PUT_PORT += size_block=${size_block}UL
-PUT_PORT += user_data="y(31)"
-EOF
-
 cp "@CMAKE_CURRENT_BINARY_DIR@/implementation/log/libmap-impl.so" \
    "${DIR_INST}/libmap-impl.so"                             || die $EX_ERR_ENV
 
-${make[@]} lib put install                                  || die $EX_ERR_RUN
+${make[@]} lib net install                                  || die $EX_ERR_RUN
+
+"${SDPA_HOME}/bin/pnetput" \
+  -p input=Struct[handle:=Struct[name:=\"${handle_input}\"],offset:=0UL,size:=${size_input}UL] \
+  -p output=Struct[handle:=Struct[name:=\"${handle_output}\"],offset:=0UL,size:=${size_output}UL] \
+  -p num_block=${num_block}UL \
+  -p size_block=${size_block}UL \
+  -p user_data=y\(31\) \
+  --if "${DIR_BUILD}/map.pnet" \
+  --of "${DIR_BUILD}/map.pnet.put"
 
 ${make[@]} WE_EXEC_WORKER=1                                             \
            WE_EXEC_OPTS="--mod-path=${DIR_INST}                         \
