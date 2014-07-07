@@ -103,8 +103,7 @@ handle_output=$(echo memory-alloc ${size_output} gpi output p | TERM=linux $SDPA
 test -n "${handle_input}"                                  || die $EX_ERR_ALLOC
 test -n "${handle_output}"                                 || die $EX_ERR_ALLOC
 
-cp "@CMAKE_CURRENT_BINARY_DIR@/implementation/log/libmap-impl.so" \
-   "${DIR_INST}/libmap-impl.so"                             || die $EX_ERR_ENV
+cp "${1}" "${DIR_INST}/libmap-impl.so"                      || die $EX_ERR_ENV
 
 ${make[@]} lib net install                                  || die $EX_ERR_RUN
 

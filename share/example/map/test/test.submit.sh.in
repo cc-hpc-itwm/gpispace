@@ -55,8 +55,7 @@ cleanup()
 
 trap cleanup EXIT
 
-cp "@CMAKE_CURRENT_BINARY_DIR@/implementation/log/libmap-impl.so" \
-   "${DIR_INST}/libmap-impl.so"                             || die $EX_ERR_ENV
+cp "${1}" "${DIR_INST}/libmap-impl.so"                      || die $EX_ERR_ENV
 
 ${make[@]} lib net install                                  || die $EX_ERR_RUN
 
