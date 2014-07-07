@@ -14,7 +14,6 @@ usage: $(basename $0) [options]
 
   -h: this help
   -v: be verbose
-  -n: dry run
   -A path: add a path to the list of application search paths
   -f: node file to use
   -S: state directory to use
@@ -99,16 +98,6 @@ assert_not_empty()
     if [ -z "$val" ]
     then
         error 2 "'${var}' must not be empty"
-    fi
-}
-
-dry_run_p=false
-dry_run()
-{
-    if $dry_run_p ; then
-        log "would run: $@"
-    else
-        "$@"
     fi
 }
 
@@ -275,10 +264,6 @@ while getopts ":hvnf:S:m:s:C:p:MA:dG:k:x:l:g:H:" opt; do
         v)
             verbose=true
             shiftcount=$((shiftcount + 1))
-            ;;
-        n)
-            dry_run_p=true
-            shiftcount=$(( shiftcount + 1 ))
             ;;
         f)
             nodefile="$OPTARG"
@@ -456,7 +441,7 @@ fi
 
 info "using nodefile: $nodefile"
 
-dry_run rexec $master /usr/bin/env "${sdpa}" -s "${state_dir}" init "$nodefile" </dev/null || {
+rexec $master /usr/bin/env "${sdpa}" -s "${state_dir}" init "$nodefile" </dev/null || {
     error 2 "could not initialize SDPA!"
 }
 
@@ -475,7 +460,7 @@ else
     opt_verbose_flag=""
 fi
 
-dry_run rexec $master ${sdpa} -s "${state_dir}" start kvs ${kvs_port}
+rexec $master ${sdpa} -s "${state_dir}" start kvs ${kvs_port}
 ec=$?
 if [ $ec -ne 0 ]
 then
@@ -489,7 +474,7 @@ then
     error 3 "could not start kvs: failed to appear at ${master}:${kvs_port} after ${network_retries} seconds"
 fi
 
-dry_run rexec $master "${script_start_orchestrator}" \
+rexec $master "${script_start_orchestrator}" \
     $opt_verbose_flag \
     -s "$state_dir" \
     -P "$state_dir/orchestrator.pid" \
@@ -530,8 +515,7 @@ if $gpi_enabled ; then
 
     export FHGLOG_to_server="${log_host}:${log_port}"
 
-    dry_run \
-        "${gpi_exe}" \
+    "${gpi_exe}" \
         --log-file "$state_dir/log/gpi-space.log" \
         --daemonize \
         --pidfile "$state_dir/gpi-space.pid" \
@@ -613,7 +597,7 @@ function start_agent
 
     info "starting agent: ${name} on host ${host} with parent ${parent}"
 
-    dry_run rexec ${host} "${script_start_agent}" \
+    rexec ${host} "${script_start_agent}" \
         $opt_verbose_flag \
         -D \
         -n "${name}" \
@@ -706,7 +690,7 @@ function start_workers_for_capability
         fi
         argv+=(-H "${sdpa_home}")
 
-        dry_run rexec $host "$script_start_drts" "${argv[@]}" &
+        rexec $host "$script_start_drts" "${argv[@]}" &
 
         pids+=( $! )
 
