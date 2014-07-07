@@ -47,7 +47,7 @@ macro(FHG_ADD_TEST)
 endmacro()
 
 macro (fhg_add_application_test)
-  parse_arguments (TEST "SCRIPT;SCRIPT_OUT;RESOURCE_LOCK" "" ${ARGN})
+  parse_arguments (TEST "SCRIPT;ARGS;SCRIPT_OUT;RESOURCE_LOCK" "" ${ARGN})
 
   car (TEST_NAME ${TEST_DEFAULT_ARGS})
 
@@ -63,7 +63,7 @@ macro (fhg_add_application_test)
       @ONLY
     )
 
-    add_test (NAME ${TEST_NAME} COMMAND bash ${SCRIPT_OUT})
+    add_test (NAME ${TEST_NAME} COMMAND bash ${SCRIPT_OUT} ${TEST_ARGS})
 
     set (REQUIRED_FILES
       ${CMAKE_BINARY_DIR}/test/die.sh
