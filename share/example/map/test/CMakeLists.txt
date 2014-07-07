@@ -15,3 +15,4 @@ fhg_add_application_test (example_map_log_submit
 )
 
 add_subdirectory (implementation/log)
+add_subdirectory (implementation/transform_file)
