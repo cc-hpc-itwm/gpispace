@@ -89,4 +89,4 @@ job_id=$("${SDPA_HOME}/bin/sdpac" -w submit "${DIR_BUILD}/map.pnet.put") \
 
 "${SDPA_HOME}/bin/sdpac" results "${job_id}" -o "${RESULT}" || die $EX_ERR_RUN
 
-test "$(pnetget -i "${RESULT}" -p done)" = "[]"             || die $EX_ERR_RES
+source "${2}"
