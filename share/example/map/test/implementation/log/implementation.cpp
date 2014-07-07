@@ -1,4 +1,4 @@
-#include <interface.hpp>
+#include <map/interface.hpp>
 
 #include <fhglog/LogMacros.hpp>
 
