@@ -68,6 +68,7 @@ macro (fhg_add_application_test)
     set (REQUIRED_FILES
       ${CMAKE_BINARY_DIR}/test/die.sh
       ${CMAKE_BINARY_DIR}/test/dir_build.sh
+      ${CMAKE_BINARY_DIR}/test/dir_state.sh
       ${CMAKE_BINARY_DIR}/test/env.sh
       ${CMAKE_BINARY_DIR}/test/error.sh
       ${CMAKE_BINARY_DIR}/test/measured.sh
