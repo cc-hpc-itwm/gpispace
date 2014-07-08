@@ -4,14 +4,7 @@ set -euo pipefail
 
 IMPLEMENTATION_SO=${1}
 VERIFY=${2}
-
-size_input=50
-size_output=50
-size_block=10
-num_block=10
-user_data=y\(\)
-# \note 8 communication buffers of size 4 MiB are allocated automatically
-size_vmem=$((8*4*2**20 + size_input + size_output))
+SETUP=${3}
 
 source "@CMAKE_BINARY_DIR@/test/env.sh"
 source "@CMAKE_BINARY_DIR@/test/dir_build.sh"
@@ -38,6 +31,11 @@ make+=( WE_EXEC_OUTPUT="${RESULT}" )
 make+=( CXXLIBRARYPATHS="${DIR_INST}" )
 make+=( CXXINCLUDEPATHS="${DIR_SOURCE}" )
 make+=( -C "${DIR_SOURCE}" )
+
+source "${SETUP}"
+
+# \note 8 communication buffers of size 4 MiB are allocated automatically
+size_vmem=$((8*4*2**20 + size_input + size_output))
 
 handle_input=
 handle_output=
