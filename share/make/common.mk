@@ -256,7 +256,6 @@ endif
 WE_EXEC += $(WE_EXEC_ENV)
 WE_EXEC += $(WE_EXEC_CMD)
 WE_EXEC += --w $(WE_EXEC_WORKER)
-WE_EXEC += $(addprefix --load ,$(WE_EXEC_LOAD))
 WE_EXEC += $(addprefix -L,$(WE_EXEC_LIBPATHS))
 WE_EXEC += -o $(WE_EXEC_OUTPUT)
 WE_EXEC += $(WE_EXEC_OPTS)
@@ -553,7 +552,6 @@ showconfig:
 	@echo 'WE_EXEC_CMD       = $(WE_EXEC_CMD)'
 	@echo 'WE_EXEC_OUTPUT    = $(WE_EXEC_OUTPUT)'
 	@echo 'WE_EXEC_WORKER    = $(WE_EXEC_WORKER)'
-	@echo 'WE_EXEC_LOAD      = $(WE_EXEC_LOAD)'
 	@echo 'WE_EXEC_LIBPATHS  = $(WE_EXEC_LIBPATHS)'
 	@echo 'WE_EXEC_OPTS      = $(WE_EXEC_OPTS)'
 	@echo

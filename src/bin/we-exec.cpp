@@ -356,7 +356,6 @@ try
 
   std::string path_to_act;
   std::vector<std::string> mod_path;
-  std::vector<std::string> mods_to_load;
   std::size_t num_worker (8);
   std::string output;
 
@@ -374,10 +373,6 @@ try
     ( "worker"
     , po::value<std::size_t>(&num_worker)->default_value(num_worker)
     , "number of workers"
-    )
-    ( "load"
-    , po::value<std::vector<std::string>>(&mods_to_load)
-    , "modules to load a priori"
     )
     ( "output,o"
     , po::value<std::string>(&output)->default_value(output)
@@ -409,11 +404,6 @@ try
   }
 
   we::loader::loader loader;
-
-  for (std::string const& m : mods_to_load)
-  {
-    loader.load (m, m);
-  }
 
   for (std::string const& p : mod_path)
   {
