@@ -31,6 +31,15 @@ namespace fhg
   {
     void wait_until_stopped::wait()
     {
+      //! \note this strange looking thread is required to avoid a
+      //! deadlock that may happen when we are blocked within this
+      //! function and handle a terminating signal as well (which in
+      //! turn calls stop()).
+      //!
+      //! the deadlock is between the events '_stop_requested' and '_stopped',
+      //! we first block in '_stop_requested.wait()' and are released by
+      //! '_stop_requested.notify()', however after that call we
+      //! block again in '_stopped.wait()' and get never released.
       std::thread ([this]
                   {
                     _stop_requested.wait();
