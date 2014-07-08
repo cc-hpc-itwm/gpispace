@@ -39,8 +39,12 @@ namespace fhg
 
     void wait_until_stopped::stop()
     {
-      _stop_requested.notify();
-      _stopped.wait();
+      boost::thread ([this]
+                    {
+                      _stop_requested.notify();
+                      _stopped.wait();
+                    }
+                    ).join();
     }
 
     std::function<void()> wait_until_stopped::make_request_stop()
