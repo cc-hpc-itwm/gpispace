@@ -19,7 +19,6 @@
 #include <fhg/assert.hpp>
 
 #include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include <functional>
 #include <unordered_map>
