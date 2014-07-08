@@ -14,6 +14,8 @@
 #include <fhg/util/daemonize.hpp>
 #include <fhg/util/split.hpp>
 
+#include <thread>
+
 #include <boost/range/adaptor/reversed.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
@@ -29,22 +31,22 @@ namespace fhg
   {
     void wait_until_stopped::wait()
     {
-      boost::thread ([this]
-                    {
-                      _stop_requested.wait();
-                      _stopped.notify();
-                    }
-                    ).join();
+      std::thread ([this]
+                  {
+                    _stop_requested.wait();
+                    _stopped.notify();
+                  }
+                  ).join();
     }
 
     void wait_until_stopped::stop()
     {
-      boost::thread ([this]
-                    {
-                      _stop_requested.notify();
-                      _stopped.wait();
-                    }
-                    ).join();
+      std::thread ([this]
+                  {
+                    _stop_requested.notify();
+                    _stopped.wait();
+                  }
+                  ).join();
     }
 
     std::function<void()> wait_until_stopped::make_request_stop()
