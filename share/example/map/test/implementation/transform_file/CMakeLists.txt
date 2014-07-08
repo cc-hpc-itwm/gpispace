@@ -31,3 +31,9 @@ target_link_libraries (mk_user_parameter
   ${Boost_FILESYSTEM_LIBRARY}
   transform_file_type
 )
+
+configure_file (
+  ${CMAKE_CURRENT_SOURCE_DIR}/setup.sh.in
+  ${CMAKE_CURRENT_BINARY_DIR}/setup.sh
+  @ONLY
+)
