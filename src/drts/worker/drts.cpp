@@ -904,7 +904,7 @@ void DRTSImpl::start_connect ()
   }
 
 
-  if (at_least_one_disconnected)
+  if (at_least_one_disconnected and not m_shutting_down)
   {
     request_registration_soon();
   }
