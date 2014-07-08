@@ -87,4 +87,6 @@ test -n "${handle_output}"                                 || die $EX_ERR_ALLOC
   | "${SDPA_HOME}/bin/sdpa" -s "${DIR_SDPA} " submit /dev/stdin "${RESULT}" \
                                                             || die $EX_ERR_RUN
 
+test "$(pnetget -i "${RESULT}" -p done)" = "[]"             || die $EX_ERR_RES
+
 source "${VERIFY}"

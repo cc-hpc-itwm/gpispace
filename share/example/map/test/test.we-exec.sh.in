@@ -126,4 +126,6 @@ ${make[@]} WE_EXEC_WORKER=1                                             \
                          --vmem-socket=${VMEM_SOCKET}"                  \
            run                                              || die $EX_ERR_RUN
 
+test "$(pnetget -i "${RESULT}" -p done)" = "[]"             || die $EX_ERR_RES
+
 source "${VERIFY}"
