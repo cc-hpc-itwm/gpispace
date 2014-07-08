@@ -528,9 +528,7 @@ if $gpi_enabled ; then
     info "using GPI mem: ${gpi_mem} bytes per node"
     info "starting GPI using: '$gpi_exe' on '${gpi_socket}'"
 
-    export FHGLOG_to_server="${log_host}:${log_port}"
-
-    dry_run \
+    dry_run rexec $master /usr/bin/env FHGLOG_to_server="${log_host}:${log_port}" \
         "${gpi_exe}" \
         --log-file "$state_dir/log/gpi-space.log" \
         --daemonize \
