@@ -24,7 +24,6 @@
 #include <functional>
 #include <unordered_map>
 
-#include <iostream>
 #include <string>
 
 namespace we
@@ -288,17 +287,6 @@ namespace we
         }
 
         //! \todo check global range, needs knowledge about global memory
-
-        std::cout << "local {" << local.buffer()
-                  << ", " << local.offset()
-                  << ", " << local.size()
-                  << '}'
-                  << ' '
-                  << "global {" << global.handle().name()
-                  << ", " << global.offset()
-                  << ", " << global.size()
-                  << '}'
-                  << std::endl;
 
         waitComm
           ( do_transfer
