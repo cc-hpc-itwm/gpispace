@@ -82,11 +82,7 @@ test -n "${handle_output}"                                 || die $EX_ERR_ALLOC
   -p size_block=${size_block}UL \
   -p user_data=y\(31\) \
   --if "${DIR_BUILD}/map.pnet" \
-  --of "${DIR_BUILD}/map.pnet.put"
-
-job_id=$("${SDPA_HOME}/bin/sdpac" -w submit "${DIR_BUILD}/map.pnet.put") \
+  | "${SDPA_HOME}/bin/sdpa" -s "${DIR_SDPA} " submit /dev/stdin "${RESULT}" \
                                                             || die $EX_ERR_RUN
-
-"${SDPA_HOME}/bin/sdpac" results "${job_id}" -o "${RESULT}" || die $EX_ERR_RUN
 
 source "${2}"
