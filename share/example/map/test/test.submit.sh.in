@@ -9,6 +9,7 @@ size_input=50
 size_output=50
 size_block=10
 num_block=10
+user_data=y\(\)
 # \note 8 communication buffers of size 4 MiB are allocated automatically
 size_vmem=$((8*4*2**20 + size_input + size_output))
 
@@ -83,7 +84,7 @@ test -n "${handle_output}"                                 || die $EX_ERR_ALLOC
   -p output=Struct[handle:=Struct[name:=\"${handle_output}\"],offset:=0UL,size:=${size_output}UL] \
   -p num_block=${num_block}UL \
   -p size_block=${size_block}UL \
-  -p user_data=y\(31\) \
+  -p user_data="${user_data}" \
   --if "${DIR_BUILD}/map.pnet" \
   | "${SDPA_HOME}/bin/sdpa" -s "${DIR_SDPA} " submit /dev/stdin "${RESULT}" \
                                                             || die $EX_ERR_RUN
