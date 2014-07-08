@@ -2,6 +2,9 @@
 
 set -euo pipefail
 
+IMPLEMENTATION_SO=${1}
+VERIFY=${2}
+
 size_input=50
 size_output=50
 size_block=10
@@ -55,7 +58,7 @@ cleanup()
 
 trap cleanup EXIT
 
-cp "${1}" "${DIR_INST}/libmap-impl.so"                      || die $EX_ERR_ENV
+cp "${IMPLEMENTATION_SO}" "${DIR_INST}/libmap-impl.so"      || die $EX_ERR_ENV
 
 ${make[@]} lib net install                                  || die $EX_ERR_RUN
 
@@ -85,4 +88,4 @@ test -n "${handle_output}"                                 || die $EX_ERR_ALLOC
   | "${SDPA_HOME}/bin/sdpa" -s "${DIR_SDPA} " submit /dev/stdin "${RESULT}" \
                                                             || die $EX_ERR_RUN
 
-source "${2}"
+source "${VERIFY}"
