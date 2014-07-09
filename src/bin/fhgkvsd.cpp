@@ -91,8 +91,8 @@ int main(int ac, char *av[])
 
   if (pidfile.empty())
   {
-    std::cerr << "pidfile '" << pidfile << "'"
-              << " is invalid, please specify --pidfile=<file> correctly"
+    std::cerr << "parameter to --pidfile is empty!" << std::endl
+              << "it has to point to a file that one can write to - if the file doesn't exist, it will be created."
               << std::endl;
     return EXIT_FAILURE;
   }
