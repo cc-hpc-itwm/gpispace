@@ -5,6 +5,8 @@
 
 #include <rpc/common.hpp>
 
+#include <rpc/exception_serialization.hpp>
+
 #include <fhg/util/boost/serialization/tuple.hpp>
 
 #include <network/connection.hpp>
@@ -26,6 +28,8 @@ namespace fhg
     struct service_dispatcher
     {
     public:
+      service_dispatcher (exception::serialization_functions);
+
       void dispatch
         (network::connection_type* connection, network::buffer_type packet) const;
 
@@ -36,6 +40,8 @@ namespace fhg
         < std::string
         , std::function<std::string (std::string)>
         > _handlers;
+
+      exception::serialization_functions _from_exception_ptr_functions;
     };
 
     //! \note helper to register service scoped

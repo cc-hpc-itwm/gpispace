@@ -6,6 +6,11 @@ namespace fhg
 {
   namespace rpc
   {
+    service_dispatcher::service_dispatcher
+        (exception::serialization_functions functions)
+      : _from_exception_ptr_functions (std::move (functions))
+    {}
+
     void service_dispatcher::dispatch
       (network::connection_type* connection, network::buffer_type packet) const
     {
@@ -22,11 +27,29 @@ namespace fhg
           ("function '" + call_function->function_name() + "' does not exist");
       }
 
-      std::string return_value (handler->second (call_function->arguments()));
+      std::pair<bool, std::string> result
+        ( [&]()
+        {
+          try
+          {
+            return std::make_pair
+              (false, handler->second (call_function->arguments()));
+          }
+          catch (...)
+          {
+            return std::make_pair
+              ( true
+              , exception::serialize
+                (std::current_exception(), _from_exception_ptr_functions)
+              );
+          }
+        }()
+        );
+
       network::buffer_type response
-        (protocol::function_call_result::required_size (return_value));
+        (protocol::function_call_result::required_size (result.second));
       new (response.data()) protocol::function_call_result
-        (std::move (return_value));
+        (std::move (result.second), result.first);
 
       packet_header const response_header (header->message_id, response.size());
       connection->send ({{ (char*)&response_header

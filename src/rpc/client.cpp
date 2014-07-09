@@ -13,11 +13,14 @@ namespace fhg
 {
   namespace rpc
   {
-    remote_endpoint::remote_endpoint ( boost::asio::io_service& io_service
-                                     , std::string host
-                                     , unsigned short port
-                                     )
-      : _connection
+    remote_endpoint::remote_endpoint
+        ( boost::asio::io_service& io_service
+        , std::string host
+        , unsigned short port
+        , exception::deserialization_functions functions
+        )
+      : _deserialization_functions (std::move (functions))
+      , _connection
         ( network::connect_client<boost::asio::ip::tcp>
           ( host, port
           , io_service
@@ -77,6 +80,12 @@ namespace fhg
 
       _promises.emplace (message_id, std::promise<network::buffer_type>{});
       return _promises.at (message_id).get_future();
+    }
+
+    exception::deserialization_functions const&
+      remote_endpoint::deserialization_functions() const
+    {
+      return _deserialization_functions;
     }
   }
 }

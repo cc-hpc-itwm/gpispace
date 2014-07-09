@@ -4,6 +4,7 @@
 #define FHG_RPC_CLIENT_HPP
 
 #include <rpc/common.hpp>
+#include <rpc/exception_serialization.hpp>
 
 #include <fhg/util/boost/serialization/tuple.hpp>
 
@@ -32,6 +33,7 @@ namespace fhg
       remote_endpoint ( boost::asio::io_service& io_service
                       , std::string host
                       , unsigned short port
+                      , exception::deserialization_functions
                       );
 
       template<typename C>
@@ -43,7 +45,11 @@ namespace fhg
       std::future<network::buffer_type>
         send_and_receive (network::buffer_type buffer);
 
+      exception::deserialization_functions const& deserialization_functions() const;
+
     private:
+      exception::deserialization_functions _deserialization_functions;
+
       std::unique_ptr<network::connection_type> _connection;
 
       mutable std::mutex _promises_and_disconnect_mutex;
@@ -72,6 +78,18 @@ namespace fhg
       }
     }
 
+    //! \note While exceptions will be transferred from remote, note
+    //! that it requires custom exception types to be registered in
+    //! the remote_endpoint and service_dispatcher. Else, exceptions
+    //! will be down-cast to the nearest std::* exception class; or
+    //! service_dispatcher will std::terminate() when the exception
+    //! does not inherit from a std::* exception class. Note that if
+    //! an exception serialization is registered in
+    //! service_dispatcher, it needs to be registered in
+    //! remote_endpoint as well to properly deserialize and avoid an
+    //! std::terminate() it does not inherit from a std::* exception
+    //! class. If it does, it will be downcasted automatically. On the
+    //! API to implement, see src/rpc/exception_serialization.hpp.
     template<typename> struct remote_function;
     template<typename R, typename... Args>
       struct remote_function<R (Args...)>
@@ -104,13 +122,23 @@ namespace fhg
 
         return std::async
           ( std::launch::async
-          , [] (std::future<network::buffer_type>&& buffer)
+          , [this] (std::future<network::buffer_type>&& buffer)
           {
             network::buffer_type buf (buffer.get());
             protocol::function_call_result* result
               ((protocol::function_call_result*)buf.data());
 
-            return deserialize_from_buffer<R> (result->return_value());
+            if (result->blob_is_exception())
+            {
+              std::rethrow_exception
+                ( exception::deserialize
+                  (result->blob(), _endpoint.deserialization_functions())
+                );
+            }
+            else
+            {
+              return deserialize_from_buffer<R> (result->blob());
+            }
           }
           , std::move (_endpoint.send_and_receive (std::move (call_function)))
           );

@@ -24,7 +24,7 @@ public:
   rif ( boost::asio::ip::tcp::endpoint endpoint
       , boost::asio::io_service& io_service
       )
-    : _service_dispatcher()
+    : _service_dispatcher (fhg::rpc::exception::serialization_functions())
     , _start_service ( _service_dispatcher
                      , "start"
                      , fhg::rpc::thunk<pid_t (std::string, std::vector<std::string>)>

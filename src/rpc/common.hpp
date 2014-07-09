@@ -63,25 +63,31 @@ namespace fhg
 
       struct function_call_result
       {
-        uint64_t size_return_value;
+        uint64_t size_blob;
+        bool is_exception;
         char buffer[0];
 
-        static std::size_t required_size (std::string const& return_value)
+        static std::size_t required_size (std::string const& blob)
         {
-          return sizeof (function_call_result) + return_value.size();
+          return sizeof (function_call_result) + blob.size();
         }
 
         //! \note Assumes to be allocated with underlying storage of
-        //! size required_size (return_value)
-        function_call_result (std::string return_value)
-          : size_return_value (return_value.size())
+        //! size required_size (blob)
+        function_call_result (std::string blob, bool is_exception)
+          : size_blob (blob.size())
+          , is_exception (is_exception)
         {
-          std::copy (return_value.begin(), return_value.end(), buffer);
+          std::copy (blob.begin(), blob.end(), buffer);
         }
 
-        std::string return_value() const
+        std::string blob() const
         {
-          return std::string (buffer, size_return_value);
+          return std::string (buffer, size_blob);
+        }
+        bool blob_is_exception() const
+        {
+          return is_exception;
         }
       };
     }

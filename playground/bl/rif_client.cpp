@@ -27,7 +27,11 @@ int main (int argc, char** argv)
   const boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
     io_service_thread ([&io_service]() { io_service.run(); });
 
-  fhg::rpc::remote_endpoint endpoint (io_service, argv[1], std::stoi (argv[2]));
+  fhg::rpc::remote_endpoint endpoint
+    ( io_service
+    , argv[1], std::stoi (argv[2])
+    , fhg::rpc::exception::deserialization_functions()
+    );
 
   fhg::rpc::remote_function<pid_t (std::string, std::vector<std::string>)> start
     (endpoint, "start");
