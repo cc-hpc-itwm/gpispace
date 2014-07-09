@@ -55,7 +55,7 @@ int main(int ac, char *av[])
     ("reuse-address", po::value<bool>(&reuse_address)->default_value(reuse_address), "reuse address")
     ("store,s", po::value<std::string>(&store_path), "path to persistent store")
     ("clear,C", "start with an empty store")
-    ("pidfile", po::value<std::string>(&pidfile), "write pid to pidfile (required)")
+    ("pidfile", po::value<std::string>(&pidfile)->required(), "write pid to pidfile (required)")
     ("daemonize", "daemonize after all checks were successful")
     ;
 
