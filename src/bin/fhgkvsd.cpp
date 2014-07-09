@@ -63,6 +63,15 @@ int main(int ac, char *av[])
   try
   {
     po::store (po::parse_command_line (ac, av, desc), vm);
+
+    if (vm.count ("help"))
+    {
+      std::cerr << "usage: " << av[0] << std::endl;
+      std::cerr << std::endl;
+      std::cerr << desc << std::endl;
+      return EXIT_SUCCESS;
+    }
+
     po::notify (vm);
   }
   catch (std::exception const & ex)
@@ -70,14 +79,6 @@ int main(int ac, char *av[])
     std::cerr << "invalid argument: " << ex.what() << std::endl;
     std::cerr << "try " << av[0] << " -h to get some help" << std::endl;
     return EXIT_FAILURE;
-  }
-
-  if (vm.count ("help"))
-  {
-    std::cerr << "usage: " << av[0] << std::endl;
-    std::cerr << std::endl;
-    std::cerr << desc << std::endl;
-    return EXIT_SUCCESS;
   }
 
   if (vm.count ("daemonize"))
