@@ -56,6 +56,13 @@ namespace expr
       _ref_container[key] = &value;
     }
 
+    void context::bind_and_discard_ref ( const std::string& path
+                                       , const pnet::type::value::value_type& value
+                                       )
+    {
+      bind_and_discard_ref (split (path), value);
+    }
+
     void context::bind_and_discard_ref ( const std::list<std::string>& key_vec
                                        , const pnet::type::value::value_type& value
                                        )

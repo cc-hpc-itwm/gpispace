@@ -365,6 +365,7 @@ namespace xml
       DUPLICATE (place_map);
       DUPLICATE_WITH_ID (external_function,module);
       DUPLICATE (connect);
+      DUPLICATE (memory_buffer);
 
 #undef DUPLICATE
 #undef DUPLICATE_WITH_ID
@@ -597,6 +598,51 @@ namespace xml
         const id::ref::connect _connection;
         const id::ref::port _port;
         const id::ref::place _place;
+      };
+
+      class memory_buffer_without_size : public generic
+      {
+      public:
+        memory_buffer_without_size ( std::string const&
+                                   , util::position_type const&
+                                   );
+        virtual ~memory_buffer_without_size() throw() = default;
+
+      private:
+        std::string const _name;
+        util::position_type const _position_of_definition;
+      };
+
+      class memory_buffer_for_non_module : public generic
+      {
+      public:
+        memory_buffer_for_non_module (id::ref::function const&);
+        ~memory_buffer_for_non_module() throw() = default;
+
+      private:
+        id::ref::function const _function;
+      };
+
+      class memory_transfer_for_non_module : public generic
+      {
+      public:
+        memory_transfer_for_non_module (id::ref::function const&);
+        ~memory_transfer_for_non_module() throw() = default;
+
+      private:
+        id::ref::function const _function;
+      };
+
+      class memory_buffer_with_same_name_as_port : public generic
+      {
+      public:
+        memory_buffer_with_same_name_as_port
+          (id::ref::memory_buffer const&, id::ref::port const&);
+        virtual ~memory_buffer_with_same_name_as_port() throw() = default;
+
+      private:
+        id::ref::memory_buffer const _memory_buffer;
+        id::ref::port const _port;
       };
 
       // ******************************************************************* //

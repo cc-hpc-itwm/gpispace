@@ -339,6 +339,71 @@ namespace xml
 
       // ***************************************************************** //
 
+      void function_type::push_memory_get (memory_get const& mg)
+      {
+        _memory_gets.push_back (mg);
+      }
+      void function_type::push_memory_put (memory_put const& mp)
+      {
+        _memory_puts.push_back (mp);
+      }
+      void function_type::push_memory_getput (memory_getput const& mgp)
+      {
+        _memory_getputs.push_back (mgp);
+      }
+
+      std::list<memory_get> const& function_type::memory_gets() const
+      {
+        return _memory_gets;
+      }
+      std::list<memory_put> const& function_type::memory_puts() const
+      {
+        return _memory_puts;
+      }
+      std::list<memory_getput> const& function_type::memory_getputs() const
+      {
+        return _memory_getputs;
+      }
+
+      void function_type::push_memory_buffer
+        (id::ref::memory_buffer const& id)
+      {
+        id::ref::memory_buffer const& id_old (_memory_buffers.push (id));
+
+        if (id_old != id)
+        {
+          throw error::duplicate_memory_buffer (id_old, id);
+        }
+
+        id.get_ref().parent (_id);
+
+        {
+          boost::optional<id::ref::port const&> port_in
+            (get_port_in (id.get().name()));
+
+          if (port_in)
+          {
+            throw error::memory_buffer_with_same_name_as_port (id, *port_in);
+          }
+        }
+
+        {
+          boost::optional<id::ref::port const&> port_out
+            (get_port_out (id.get().name()));
+
+          if (port_out)
+          {
+            throw error::memory_buffer_with_same_name_as_port (id, *port_out);
+          }
+        }
+      }
+
+      xml::util::unique<memory_buffer_type, id::ref::memory_buffer>
+        const& function_type::memory_buffers() const
+      {
+        return _memory_buffers;
+      }
+
       void function_type::push_port (const id::ref::port& id)
       {
         const id::ref::port& id_old (_ports.push (id));
@@ -367,6 +432,21 @@ namespace xml
             throw error::port_type_mismatch (id, *id_other);
           }
         }
+
+        boost::optional<id::ref::memory_buffer const&>
+          memory_buffer (memory_buffers().get (id.get().name()));
+
+        if (memory_buffer)
+        {
+          throw error::memory_buffer_with_same_name_as_port
+            (*memory_buffer, id);
+        }
+      }
+
+      bool function_type::is_known_memory_buffer
+        (std::string const& name) const
+      {
+        return _memory_buffers.has (name);
       }
 
       void function_type::remove_port (const id::ref::port& id)
@@ -810,9 +890,43 @@ namespace xml
         {
           const module_type& mod (id_mod.get());
 
+          std::unordered_map<std::string, std::string> memory_buffers;
+
+          for (std::string const& memory_buffer_name : mod.memory_buffer_arg())
+          {
+            id::ref::memory_buffer const& id_memory_buffer
+              (*fun.memory_buffers().get (memory_buffer_name));
+
+            memory_buffers.emplace ( id_memory_buffer.get().name()
+                                   , id_memory_buffer.get().size()
+                                   );
+          }
+
+          std::list<we::type::memory_transfer> memory_gets;
+          std::list<we::type::memory_transfer> memory_puts;
+
+          for (memory_get const& mg : fun.memory_gets())
+          {
+            memory_gets.emplace_back (mg.global(), mg.local());
+          }
+          for (memory_put const& mp : fun.memory_puts())
+          {
+            memory_puts.emplace_back (mp.global(), mp.local());
+          }
+          for (memory_getput const& mgp : fun.memory_getputs())
+          {
+            memory_gets.emplace_back (mgp.global(), mgp.local());
+            memory_puts.emplace_back (mgp.global(), mgp.local());
+          }
+
           we_transition_type trans
             ( name()
-            , we_module_type (mod.name(), mod.function())
+            , we_module_type ( mod.name()
+                             , mod.function()
+                             , std::move (memory_buffers)
+                             , std::move (memory_gets)
+                             , std::move (memory_puts)
+                             )
             , condition()
             , _internal.get_value_or (false)
             , _properties
@@ -1812,6 +1926,7 @@ namespace xml
                       , const ports_with_type_type & ports_mutable
                       , const ports_with_type_type & ports_out
                       , const module_type & mod
+                      , id::ref::function const& id_function
                       )
         {
           using fhg::util::deeper;
@@ -1821,6 +1936,10 @@ namespace xml
           if (port_return)
           {
             s << mk_type ((*port_return).type);
+          }
+          else if (mod.memory_buffer_return())
+          {
+            s << "void*";
           }
           else
           {
@@ -1854,6 +1973,21 @@ namespace xml
               << deeper (indent);
           }
 
+          for (std::string const& memory_buffer_name : mod.memory_buffer_arg())
+          {
+            id::ref::memory_buffer const& id_memory_buffer
+              (*id_function.get().memory_buffers().get (memory_buffer_name));
+
+            s << sep << "void";
+
+            if (id_memory_buffer.get().read_only())
+            {
+              s << " const";
+            }
+
+            s << "* " << id_memory_buffer.get().name() << deeper (indent);
+          }
+
           s << ")";
         }
 
@@ -1867,6 +2001,7 @@ namespace xml
                     , const ports_with_type_type & ports_out
                     , const boost::optional<port_with_type> & port_return
                     , std::unordered_set<std::string> const& types
+                    , id::ref::function const& id_function
                     )
         {
           namespace block = fhg::util::cpp::block;
@@ -1891,6 +2026,7 @@ namespace xml
           s << deeper (indent) << "( drts::worker::context *_pnetc_context";
           s << deeper (indent) << ", const expr::eval::context& _pnetc_input";
           s << deeper (indent) << ", expr::eval::context& _pnetc_output";
+          s << deeper (indent) << ", std::map<std::string, void*> const& _pnetc_memory_buffer";
           s << deeper (indent) << ")";
           s << block::open (indent);
 
@@ -1911,7 +2047,7 @@ namespace xml
 
           if (port_return)
           {
-            s << indent << "_pnetc_output.bind ("
+            s << indent << "_pnetc_output.bind_and_discard_ref ("
               << "\"" << (*port_return).name << "\""
               << ", "
               ;
@@ -1950,6 +2086,14 @@ namespace xml
             s << sep << port.name;
           }
 
+          for (std::string const& memory_buffer_name : mod.memory_buffer_arg())
+          {
+            id::ref::memory_buffer const& id_memory_buffer
+              (*id_function.get().memory_buffers().get (memory_buffer_name));
+
+            s << sep << "_pnetc_memory_buffer.at (\"" << id_memory_buffer.get().name() << "\")";
+          }
+
           s << ")";
 
           if (port_return)
@@ -1967,7 +2111,7 @@ namespace xml
           for (const port_with_type& port : ports_mutable)
           {
             s << indent
-              << "_pnetc_output.bind ("
+              << "_pnetc_output.bind_and_discard_ref ("
               << "\"" << port.name << "\""
               << ", " << mk_value (port)
               << ")"
@@ -1978,7 +2122,7 @@ namespace xml
           for (const port_with_type& port : ports_out)
           {
             s << indent
-              << "_pnetc_output.bind ("
+              << "_pnetc_output.bind_and_discard_ref ("
               << "\"" << port.name << "\""
               << ", " << mk_value (port)
               << ")"
@@ -2145,6 +2289,7 @@ namespace xml
                           , ports_out
                           , port_return
                           , types
+                          , _id_function
                           );
 
               const fun_info_type fun_info ( mod.function()
@@ -2187,6 +2332,7 @@ namespace xml
                             , indent
                             , port_return
                             , ports_const, ports_mutable, ports_out, mod
+                            , _id_function
                             );
 
               stream << ";";
@@ -2241,6 +2387,7 @@ namespace xml
                             , indent
                             , port_return
                             , ports_const, ports_mutable, ports_out, mod
+                            , _id_function
                             );
 
               stream << block::open (indent);
@@ -2530,6 +2677,10 @@ namespace xml
           xml::parse::type::dump::dump (s, f.requirements);
 
           dumps (s, f.ports().values());
+          dumps (s, f.memory_buffers().values());
+          dumps (s, f.memory_gets());
+          dumps (s, f.memory_puts());
+          dumps (s, f.memory_getputs());
 
           boost::apply_visitor (function_dump_visitor (s), f.content());
 

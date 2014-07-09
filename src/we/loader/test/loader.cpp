@@ -44,7 +44,9 @@ BOOST_AUTO_TEST_CASE (answer_question)
   {
     expr::eval::context out;
 
-    loader["answer"].call ("answer", nullptr, expr::eval::context(), out);
+    loader["answer"].call ( "answer", nullptr, expr::eval::context(), out
+                          , std::map<std::string, void*>()
+                          );
 
     BOOST_REQUIRE_EQUAL
       (out.value ("out"), pnet::type::value::value_type (42L));
@@ -53,7 +55,9 @@ BOOST_AUTO_TEST_CASE (answer_question)
   {
     expr::eval::context out;
 
-    loader["question"].call ("question", nullptr, expr::eval::context(), out);
+    loader["question"].call ( "question", nullptr, expr::eval::context(), out
+                            , std::map<std::string, void*>()
+                            );
 
     BOOST_REQUIRE_EQUAL
       (out.value ("out"), pnet::type::value::value_type (44L));
@@ -64,7 +68,9 @@ BOOST_AUTO_TEST_CASE (answer_question)
   {
     expr::eval::context out;
 
-    loader["answer"].call ("answer", nullptr, expr::eval::context(), out);
+    loader["answer"].call ( "answer", nullptr, expr::eval::context(), out
+                          , std::map<std::string, void*>()
+                          );
 
     BOOST_REQUIRE_EQUAL
       (out.value ("out"), pnet::type::value::value_type (42L));

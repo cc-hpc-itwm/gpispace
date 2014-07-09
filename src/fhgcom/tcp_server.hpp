@@ -24,7 +24,7 @@ namespace fhg
 
       void stop ();
 
-      unsigned short TESTONLY_port () const;
+      unsigned short port () const;
     private:
       void accept ();
       void handle_accept ( boost::shared_ptr<session> session

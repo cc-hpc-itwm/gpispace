@@ -1,436 +1,264 @@
-#include <we/loader/loader.hpp>
-#include <we/loader/module_call.hpp>
-#include <we/context.hpp>
-#include <we/layer.hpp>
-#include <we/type/activity.hpp>
+#include <drts/worker/drts.hpp>
 
 #include <fhg/revision.hpp>
-#include <fhg/util/thread/queue.hpp>
+#include <fhg/util/join.hpp>
+#include <fhg/util/make_unique.hpp>
+#include <fhg/util/signal_handler_manager.hpp>
+#include <fhg/util/split.hpp>
 
-#include <fhglog/LogMacros.hpp>
+#include <fhgcom/io_service_pool.hpp>
+#include <fhgcom/kvs/kvsd.hpp>
+#include <fhgcom/tcp_server.hpp>
 
-#include <sdpa/job_states.hpp>
+#include <plugin/core/kernel.hpp>
 
+#include <sdpa/client.hpp>
+#include <sdpa/daemon/agent/Agent.hpp>
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
+
+#include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/program_options.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
-#include <boost/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>
-
-#include <functional>
-#include <list>
-#include <random>
-#include <unordered_map>
-#include <vector>
-
-#include <sysexits.h>
-
-namespace
-{
-  struct context : public we::context
-  {
-    context ( const we::layer::id_type& id
-            , we::loader::loader* loader
-            , we::layer* layer
-            , std::function<we::layer::id_type (we::layer::id_type const&)
-                           > const& new_id
-            )
-      : _id (id)
-      , _loader (loader)
-      , _layer (layer)
-      , _new_id (new_id)
-    {}
-
-    virtual void handle_internally (we::type::activity_t& act, net_t const& n) override
-    {
-      handle_externally (act, n);
-    }
-    virtual void handle_internally (we::type::activity_t&, mod_t const&) override
-    {
-      throw std::runtime_error ("NO internal mod here!");
-    }
-    virtual void handle_internally (we::type::activity_t&, expr_t const&) override
-    {
-      throw std::runtime_error ("NO internal expr here!");
-    }
-    virtual void handle_externally (we::type::activity_t& act, net_t const&) override
-    {
-      _layer->submit (_new_id (_id), act);
-    }
-    virtual void handle_externally (we::type::activity_t& act, mod_t const& mod) override
-    {
-      try
-      {
-        //!\todo pass a real drts::worker::context
-        we::loader::module_call (*_loader, nullptr, act, mod);
-        _layer->finished (_id, act);
-      }
-      catch (std::exception const& ex)
-      {
-        std::cerr << "handle-ext(" << act.transition().name() << ") failed: " << ex.what() << std::endl;
-
-        _layer->failed (_id, std::string ("Module call failed: ") + ex.what());
-      }
-    }
-    virtual void handle_externally (we::type::activity_t&, expr_t const&) override
-    {
-      throw std::runtime_error ("NO external expr here!");
-    }
-
-
-  private:
-    we::layer::id_type _id;
-    we::loader::loader* _loader;
-    we::layer* _layer;
-    std::function<we::layer::id_type (we::layer::id_type const&)>
-      _new_id;
-  };
-
-  struct job_t
-  {
-    job_t (const we::layer::id_type& id_, const we::type::activity_t& act_)
-      : id (id_)
-      , act (act_)
-    {}
-
-    we::layer::id_type id;
-    we::type::activity_t act;
-  };
-
-  namespace
-  {
-    void discover (we::layer::id_type, we::layer::id_type)
-    {
-      throw std::runtime_error ("discover called: NYI");
-    }
-    void discovered (we::layer::id_type, sdpa::discovery_info_t)
-    {
-      throw std::runtime_error ("discovered called: NYI");
-    }
-  }
-
-  struct sdpa_daemon
-  {
-    typedef std::unordered_map< we::layer::id_type
-                              , we::layer::id_type
-                              > id_map_t;
-
-    sdpa_daemon ( std::size_t num_worker
-                , we::loader::loader* loader
-                , we::type::activity_t const act
-                , std::mt19937& random_extraction_engine
-                )
-        : _mutex_id()
-        , _id (0)
-        , mgmt_layer_ ( std::bind (&sdpa_daemon::submit, this, std::placeholders::_1, std::placeholders::_2)
-                      , std::bind (&sdpa_daemon::cancel, this, std::placeholders::_1)
-                      , std::bind (&sdpa_daemon::finished, this, std::placeholders::_1, std::placeholders::_2)
-                      , std::bind (&sdpa_daemon::failed, this, std::placeholders::_1, std::placeholders::_2)
-                      , std::bind (&sdpa_daemon::canceled, this, std::placeholders::_1)
-                      , &discover
-                      , &discovered
-                      , std::bind (&sdpa_daemon::gen_id, this)
-                      , random_extraction_engine
-                      )
-        , _mutex_id_map()
-        , id_map_()
-        , jobs_()
-        , _loader (loader)
-        , _job_status (sdpa::status::RUNNING)
-        , _result()
-        , _job_id (gen_id())
-        , worker_()
-    {
-      for (std::size_t n (0); n < num_worker; ++n)
-      {
-        worker_.push_back
-          ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-            (&sdpa_daemon::worker, this, n)
-          );
-      }
-
-      mgmt_layer_.submit (_job_id, act);
-    }
-
-    void worker (const std::size_t rank)
-    {
-      MLOG (INFO, "SDPA layer worker-" << rank << " started");
-
-      for (;;)
-      {
-        job_t job (jobs_.get());
-
-        context ctxt ( job.id
-                     , _loader
-                     , &mgmt_layer_
-                     , std::bind (&sdpa_daemon::add_mapping, this, std::placeholders::_1)
-                     );
-
-        job.act.execute (&ctxt);
-      }
-
-      MLOG (INFO, "SDPA layer worker-" << rank << " stopped");
-    }
-
-    we::layer::id_type gen_id()
-    {
-      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_id);
-
-      return boost::lexical_cast<std::string> (++_id);
-    }
-
-    we::layer::id_type
-      add_mapping (const we::layer::id_type& old_id)
-    {
-      we::layer::id_type const new_id (gen_id());
-
-      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_id_map);
-
-      id_map_[new_id] = old_id;
-
-      return new_id;
-    }
-    boost::optional<we::layer::id_type>
-      get_and_delete_mapping (const we::layer::id_type& id)
-    {
-      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_id_map);
-
-      boost::optional<we::layer::id_type> mapped;
-
-      id_map_t::iterator pos (id_map_.find (id));
-
-      if (pos != id_map_.end())
-      {
-        mapped = pos->second;
-
-        id_map_.erase (pos);
-      }
-
-      return mapped;
-    }
-
-    sdpa::status::code wait_while_job_is_running() const
-    {
-      boost::unique_lock<boost::mutex> _ (_mutex_job_status);
-
-      while (_job_status == sdpa::status::RUNNING)
-      {
-        _condition_job_status_changed.wait (_);
-      }
-
-      return _job_status;
-    }
-
-    std::string const& result() const
-    {
-      if (not _result)
-      {
-        throw std::runtime_error ("missing result");
-      }
-
-      return *_result;
-    }
-
-     void submit ( const we::layer::id_type& id
-                , const we::type::activity_t& act
-                )
-    {
-      jobs_.put (job_t (id, act));
-    }
-
-    void cancel (const we::layer::id_type& id)
-    {
-      std::cout << "cancel[" << id << "]" << std::endl;
-
-      boost::optional<we::layer::id_type> const mapped
-        (get_and_delete_mapping (id));
-
-      if (mapped)
-      {
-        mgmt_layer_.canceled (*mapped);
-      }
-    }
-
-    void finished (const we::layer::id_type& id, we::type::activity_t act)
-    {
-      boost::optional<we::layer::id_type> const mapped
-        (get_and_delete_mapping (id));
-
-      if (mapped)
-      {
-        mgmt_layer_.finished (*mapped, act);
-      }
-      else if (id == _job_id)
-      {
-        std::cout << "finished [" << id << "]" << std::endl;
-        for (const we::type::activity_t::token_on_port_t& top : act.output())
-        {
-          std::cout << act.transition().ports_output().at (top.second).name()
-                    << " => " << pnet::type::value::show (top.first) << std::endl;
-        }
-
-        _result = act.to_string();
-        set_job_status (sdpa::status::FINISHED);
-      }
-      else
-      {
-        throw std::invalid_argument ("finished(" + id + "): no such id");
-      }
-    }
-
-    void failed (const we::layer::id_type& id, const std::string& reason)
-    {
-      boost::optional<we::layer::id_type> const mapped
-        (get_and_delete_mapping (id));
-
-      if (mapped)
-      {
-        mgmt_layer_.failed (*mapped, reason);
-      }
-      else if (id == _job_id)
-      {
-        std::cout << "failed [" << id << "] = ";
-        std::cout << " reason := " << reason
-                  << std::endl;
-        set_job_status (sdpa::status::FAILED);
-      }
-      else
-      {
-        throw std::invalid_argument ("failed(" + id + "): no such id");
-      }
-    }
-
-    void canceled (const we::layer::id_type& id)
-    {
-      boost::optional<we::layer::id_type> const mapped
-        (get_and_delete_mapping (id));
-
-      if (mapped)
-      {
-        mgmt_layer_.canceled (*mapped);
-      }
-      else if (id == _job_id)
-      {
-        std::cout << "canceled [" << id << "]" << std::endl;
-        set_job_status (sdpa::status::CANCELED);
-      }
-      else
-      {
-        throw std::invalid_argument ("canceled(" + id + "): no such id");
-      }
-    }
-
-  private:
-    void set_job_status (sdpa::status::code const c)
-    {
-      boost::unique_lock<boost::mutex> const _ (_mutex_job_status);
-      _job_status = c;
-      _condition_job_status_changed.notify_all();
-    }
-
-    mutable boost::mutex _mutex_job_status;
-    mutable boost::condition_variable _condition_job_status_changed;
-    boost::recursive_mutex _mutex_id;
-    unsigned long _id;
-    we::layer mgmt_layer_;
-    mutable boost::recursive_mutex _mutex_id_map;
-    id_map_t  id_map_;
-    fhg::thread::queue<job_t> jobs_;
-    we::loader::loader* _loader;
-    sdpa::status::code _job_status;
-    boost::optional<std::string> _result;
-    we::layer::id_type _job_id;
-    boost::ptr_vector<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
-      worker_;
-  };
-}
 
 int main (int argc, char **argv)
 try
 {
-  namespace po = boost::program_options;
-
   FHGLOG_SETUP();
+  fhg::log::Logger::ptr_t logger (fhg::log::Logger::get());
 
-  po::options_description desc ("options");
+  boost::program_options::options_description desc ("options");
 
+  std::vector<std::string> config_vars;
   std::string path_to_act;
   std::vector<std::string> mod_path;
-  std::vector<std::string> mods_to_load;
+  std::vector<std::string> plugin_path;
   std::size_t num_worker (8);
   std::string output;
+  bool vmem_enabled (false);
 
   desc.add_options()
     ("help,h", "this message")
     ("version,V", "print version information")
     ( "net"
-    , po::value<std::string>(&path_to_act)->default_value("-")
+    , boost::program_options::value<std::string> (&path_to_act)
+      ->default_value ("-")
     , "path to encoded activity or - for stdin"
     )
     ( "mod-path,L"
-    , po::value<std::vector<std::string>>(&mod_path)
+    , boost::program_options::value<std::vector<std::string>> (&mod_path)
     , "where can modules be located"
     )
+    ( "plugin-path"
+    , boost::program_options::value<std::vector<std::string>> (&plugin_path)
+    , "where can plugins be located"
+    )
     ( "worker"
-    , po::value<std::size_t>(&num_worker)->default_value(num_worker)
+    , boost::program_options::value<std::size_t> (&num_worker)
+      ->default_value (num_worker)
     , "number of workers"
     )
-    ( "load"
-    , po::value<std::vector<std::string>>(&mods_to_load)
-    , "modules to load a priori"
-    )
     ( "output,o"
-    , po::value<std::string>(&output)->default_value(output)
+    , boost::program_options::value<std::string> (&output)
+      ->default_value (output)
     , "where to write the result pnet to"
+    )
+    ( "set,s"
+    , boost::program_options::value<std::vector<std::string>> (&config_vars)
+    , "set a parameter to a value key=value"
+    )
+    ( "vmem-enabled"
+    , boost::program_options::value<bool> (&vmem_enabled)
+      ->default_value (vmem_enabled)->implicit_value (true)
+    , "whether or not vmem is enabled. requires --worker == 1. requires --vmem-shm-size and --vmem-socket"
+    )
+    ( "vmem-shm-size"
+    , boost::program_options::value<unsigned long>()
+    , "local memory size"
+    )
+    ( "vmem-socket"
+    , boost::program_options::value<std::string>()
+    , "local gpi-space binary's socket"
     )
     ;
 
-  po::positional_options_description p;
+  boost::program_options::positional_options_description p;
   p.add ("input", -1);
 
-  po::variables_map vm;
-  po::store ( po::command_line_parser(argc, argv)
-            . options(desc).positional(p).run()
-            , vm
-            );
-  po::notify (vm);
+  boost::program_options::variables_map vm;
+  boost::program_options::store
+    ( boost::program_options::command_line_parser(argc, argv)
+    . options(desc).positional(p).run()
+    , vm
+    );
 
   if (vm.count ("help"))
   {
     std::cout << desc << std::endl;
-    return EXIT_SUCCESS;
+    return 0;
   }
 
   if (vm.count ("version"))
   {
     std::cout << fhg::project_info ("Parallel Workflow Execution");
 
-    return EXIT_SUCCESS;
+    return 0;
   }
 
-  we::loader::loader loader;
+  boost::program_options::notify (vm);
 
-  for (std::string const& m : mods_to_load)
+  std::string const host ("localhost");
+
+  struct kvs_server : boost::noncopyable
   {
-    loader.load (m, m);
-  }
+    kvs_server (std::string const& host)
+      : _io_service_pool (1)
+      , _kvs_daemon (boost::none)
+      , _tcp_server
+        (_io_service_pool.get_io_service(), _kvs_daemon, host, "0", true)
+      , _io_thread (&fhg::com::io_service_pool::run, &_io_service_pool)
+    {}
+    ~kvs_server()
+    {
+      _tcp_server.stop();
+      _io_service_pool.stop();
+    }
 
-  for (std::string const& p : mod_path)
-  {
-    loader.append_search_path (p);
-  }
+    std::string port() const
+    {
+      return boost::lexical_cast<std::string> (_tcp_server.port());
+    }
 
-  std::mt19937 random_extraction_engine {std::random_device()()};
-  sdpa_daemon const daemon
-    ( num_worker
-    , &loader
-    , path_to_act == "-"
-    ? we::type::activity_t (std::cin)
-    : we::type::activity_t (boost::filesystem::path (path_to_act))
-    , random_extraction_engine
+  private:
+    fhg::com::io_service_pool _io_service_pool;
+    fhg::com::kvs::server::kvsd _kvs_daemon;
+    fhg::com::tcp_server _tcp_server;
+    boost::scoped_thread<boost::join_if_joinable> _io_thread;
+  } const kvs_server (host);
+
+  std::string const kvs_port (kvs_server.port());
+  std::string const orchestrator_name ("orchestrator");
+  std::string const agent_name ("agent");
+
+  sdpa::daemon::Orchestrator const orchestrator
+    (orchestrator_name, host, host, kvs_port);
+
+  sdpa::daemon::Agent const agent
+    ( agent_name
+    , host
+    , host, kvs_port
+    , {sdpa::MasterInfo (orchestrator_name)}
+    , boost::none
     );
 
-  sdpa::status::code const rc (daemon.wait_while_job_is_running());
+  std::vector<std::unique_ptr<boost::strict_scoped_thread<boost::join_if_joinable>>>
+    workers_list;
+
+  std::map<std::string, std::string> config_variables;
+  for (std::string const& config_var : config_vars)
+  {
+    std::pair<std::string, std::string> const key_value
+      (fhg::util::split_string (config_var, '='));
+
+    if (key_value.first.empty())
+    {
+      throw std::runtime_error ("invalid config variable: must not be empty");
+    }
+
+    config_variables.insert (key_value);
+  }
+
+  config_variables.emplace ("plugin.drts.kvs_host", host);
+  config_variables.emplace ("plugin.drts.kvs_port", kvs_port);
+  config_variables.emplace ("plugin.drts.master", agent_name);
+  config_variables.emplace
+    ("plugin.drts.library_path", fhg::util::join (mod_path, ":"));
+
+  if (vmem_enabled)
+  {
+    if (num_worker != 1)
+    {
+      throw std::runtime_error ("enabled vmem but has more than one worker");
+    }
+
+    config_variables.emplace
+      ( "plugin.gpi_compat.shm_size"
+      , std::to_string (vm["vmem-shm-size"].as<unsigned long>())
+      );
+    config_variables.emplace
+      ("plugin.gpi.socket", vm["vmem-socket"].as<std::string>());
+  }
+
+  std::vector<std::function<void()>> request_stops (num_worker);
+
+  while (num_worker --> 0)
+  {
+    workers_list.emplace_back
+      ( fhg::util::make_unique
+        <boost::strict_scoped_thread<boost::join_if_joinable>>
+        ( [ vmem_enabled
+          , config_variables
+          , &plugin_path
+          , num_worker
+          , &logger
+          , &request_stops
+          ]() mutable
+        {
+          fhg::core::wait_until_stopped waiter;
+          const std::function<void()> request_stop (waiter.make_request_stop());
+
+          fhg::util::signal_handler_manager signal_handlers;
+
+          signal_handlers
+            .add_log_backtrace_and_exit_for_critical_errors (logger);
+
+          signal_handlers.add (SIGTERM, std::bind (request_stop));
+          signal_handlers.add (SIGINT, std::bind (request_stop));
+
+          request_stops[num_worker] = request_stop;
+
+          config_variables["kernel_name"]
+            = "worker_" + std::to_string (num_worker);
+
+          fhg::core::kernel_t kernel
+            (plugin_path, request_stop, config_variables);
+
+          if (vmem_enabled)
+          {
+            kernel.load_plugin_by_name ("gpi");
+            kernel.load_plugin_by_name ("gpi_compat");
+          }
+
+          DRTSImpl const plugin (request_stop, config_variables);
+
+          waiter.wait();
+        }
+        )
+      );
+  }
+
+  we::type::activity_t const activity
+    ( path_to_act == "-"
+    ? we::type::activity_t (std::cin)
+    : we::type::activity_t (boost::filesystem::path (path_to_act))
+    );
+
+  sdpa::client::Client client (orchestrator_name, host, kvs_port);
+
+  sdpa::job_id_t const job_id (client.submitJob (activity.to_string()));
+
+  sdpa::client::job_info_t UNUSED_job_info;
+  sdpa::status::code const rc
+    (client.wait_for_terminal_state (job_id, UNUSED_job_info));
+
+  std::string const result (client.retrieveResults (job_id));
+
+  client.deleteJob (job_id);
+
+  for (std::function<void()> const& request_stop : request_stops)
+  {
+    request_stop();
+  }
 
   switch (rc)
   {
@@ -439,20 +267,22 @@ try
     {
       if (output == "-")
       {
-        std::cout << daemon.result();
+        std::cout << result;
       }
       else
       {
         boost::filesystem::ofstream ofs (output);
-        ofs << daemon.result();
+        ofs << result;
       }
     }
     break;
+
   case sdpa::status::FAILED:
   case sdpa::status::CANCELED:
     break;
+
   default:
-    throw std::runtime_error ("STRANGE: is_running is not consistent!?");
+    throw std::logic_error ("STRANGE: is_running is not consistent!?");
   }
 
   return rc;
@@ -460,5 +290,5 @@ try
 catch (const std::exception& e)
 {
   std::cerr << e.what() << std::endl;
-  return EX_SOFTWARE;
+  return 1;
 }

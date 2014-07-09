@@ -32,5 +32,27 @@ fhg_add_test (util_position.cpp
   DESCRIPTION "test xml_util_position"
 )
 
+fhg_add_test (memory_buffer.cpp
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES pnet
+)
+
+fhg_add_test (memory_transfer.cpp
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES pnet
+)
+
+fhg_add_test (parse_memory_buffer.cpp
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES pnet
+                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+)
+
+fhg_add_test (parse_memory_transfer.cpp
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES pnet
+                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+)
+
 add_subdirectory (bytearray)
 add_subdirectory (diagnostics)

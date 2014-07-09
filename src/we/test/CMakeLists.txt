@@ -49,3 +49,4 @@ fhg_add_test (net.cpp
 )
 
 add_subdirectory (transition_cannot_fire_when_input_port_is_not_connected)
+add_subdirectory (input_is_copied_to_output_in_module_calls)

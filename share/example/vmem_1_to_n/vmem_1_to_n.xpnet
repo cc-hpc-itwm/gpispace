@@ -1,23 +1,31 @@
 <defun name="vmem_1_to_n">
+  <struct name="global_memory_handle_type">
+    <field name="name" type="string"/>
+  </struct>
+
+  <struct name="global_memory_range">
+    <field name="handle" type="global_memory_handle_type"/>
+    <field name="offset" type="unsigned long"/>
+    <field name="size" type="unsigned long"/>
+  </struct>
+
   <in name="outer" type="long" place="N"/>
   <in name="inner" type="long" place="M"/>
-  <in name="num_long_to_transfer" type="long" place="num_long"/>
   <in name="seed" type="long" place="seed"/>
+  <in name="memory" type="global_memory_range" place="memory"/>
   <out name="out" type="control" place="out"/>
 
   <net>
     <struct name="config">
-      <field name="handle" type="long"/>
-      <field name="num_long" type="long"/>
       <field name="seed" type="long"/>
     </struct>
 
     <place name="N" type="long"/>
     <place name="M" type="long"/>
-    <place name="num_long" type="long"/>
     <place name="seed" type="long"/>
     <place name="Nstep" type="long"/>
     <place name="wait" type="long"/>
+    <place name="memory" type="global_memory_range"/>
 
     <place name="pending" type="long"/>
 
@@ -41,59 +49,58 @@
     <transition name="initialize">
       <defun>
         <in name="seed" type="long"/>
-        <in name="num_long" type="long"/>
+        <in name="memory" type="global_memory_range"/>
         <out name="config" type="config"/>
-        <module name="vmem_1_to_n" function="initialize ( num_long
-                                                        , seed
+        <memory-buffer name="data">
+          <size>
+            ${memory.size}
+          </size>
+        </memory-buffer>
+        <memory-put>
+          <global>
+            stack_push (List(), ${memory})
+          </global>
+          <local>
+            ${range.buffer} := "data";
+            ${range.offset} := 0UL;
+            ${range.size} := ${memory.size};
+            stack_push (List(), ${range})
+          </local>
+        </memory-put>
+        <module name="vmem_1_to_n" function="initialize ( seed
                                                         , config
+                                                        , data
+                                                        , memory
                                                         )">
-          <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="boost/random.hpp"/>
           <cinclude href="limits"/>
           <cinclude href="stdexcept"/>
           <code><![CDATA[
-            const size_t size (num_long * sizeof (long));
+          unsigned long const num_long (memory.size / sizeof (long));
 
-            if (size > fvmGetShmemSize())
-            {
-              throw std::runtime_error ("BUMMER: size > fvmGetShmemSize()");
-            }
+          MLOG (INFO, "generating " << num_long << " values with seed " << seed);
+          long *a (static_cast<long*>(data));
 
-            const fvmAllocHandle_t handle
-              (fvmGlobalAllocExact (size, "vmem_1_to_n"));
+          boost::uniform_int<long> rand ( std::numeric_limits<long>::min()
+                                        , std::numeric_limits<long>::max()
+                                        );
 
-            if (size > 0 && !handle)
-            {
-              throw std::runtime_error ("BUMMER: alloc (handle) returned 0");
-            }
+          boost::mt19937 engine (seed);
 
-              MLOG (INFO, "generating " << num_long << " values with seed " << seed);
-              long *a (static_cast<long*>(fvmGetShmemPtr()));
+          for (unsigned long i (0); i < num_long; ++i, ++a)
+          {
+            *a = rand (engine);
+          }
 
-              boost::uniform_int<long> rand ( std::numeric_limits<long>::min()
-                                            , std::numeric_limits<long>::max()
-                                            );
+          config.seed = seed;
 
-              boost::mt19937 engine (seed);
-
-              for (unsigned long i (0); i < num_long; ++i, ++a)
-              {
-                *a = rand (engine);
-              }
-
-              waitComm (fvmPutGlobalData (handle, 0, size, 0, 0));
-
-            config.handle = static_cast<long>(handle);
-            config.num_long = num_long;
-            config.seed = seed;
-
-            MLOG (INFO, "initialize: config " << config);
+          MLOG (INFO, "initialize: config " << config);
           ]]></code>
         </module>
       </defun>
       <connect-in port="seed" place="seed"/>
-      <connect-in port="num_long" place="num_long"/>
+      <connect-read port="memory" place="memory"/>
       <connect-out port="config" place="config"/>
     </transition>
 
@@ -102,20 +109,7 @@
         <in name="trigger" type="control"/>
         <in name="config" type="config"/>
         <out name="trigger" type="control"/>
-        <module name="vmem_1_to_n" function="finalize (trigger, config)">
-          <cinclude href="fvm-pc/pc.hpp"/>
-          <cinclude href="fhglog/LogMacros.hpp"/>
-          <code><![CDATA[
-          const fvmAllocHandle_t& handle (config.handle);
-
-          if (handle)
-          {
-            fvmGlobalFree (handle);
-          }
-
-          MLOG (INFO, "finalized");
-          ]]></code>
-        </module>
+        <expression/>
       </defun>
       <connect-in port="trigger" place="all_done"/>
       <connect-read port="config" place="config"/>
@@ -134,6 +128,7 @@
       <include-function href="inner.xpnet"/>
       <connect-read port="N" place="M"/>
       <connect-read port="config" place="config"/>
+      <connect-read port="memory" place="memory"/>
       <connect-out port="done" place="done"/>
       <connect-in port="trigger" place="pending"/>
     </transition>

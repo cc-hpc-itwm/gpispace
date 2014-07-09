@@ -2,9 +2,11 @@
   <in name="N" type="long" place="Nin"/>
   <in name="config" type="config" place="config"/>
   <in name="trigger" type="long" place="id"/>
+  <in name="memory" type="global_memory_range" place="memory"/>
   <out name="done" type="control" place="out"/>
 
   <net>
+    <place name="memory" type="global_memory_range"/>
     <place name="Nin" type="long"/>
 
     <transition name="scatter_N" inline="true">
@@ -33,9 +35,27 @@
         <in name="id" type="long"/>
         <in name="i" type="long"/>
         <in name="config" type="config"/>
+        <in name="memory" type="global_memory_range"/>
         <out name="done" type="control"/>
-        <module name="stresstest" function="done run (config, id, i)">
-          <cinclude href="fvm-pc/pc.hpp"/>
+        <memory-buffer name="data">
+          <size>
+            ${memory.size}
+          </size>
+        </memory-buffer>
+        <memory-get>
+          <global>
+            stack_push (List(), ${memory})
+          </global>
+          <local>
+            ${range.buffer} := "data";
+            ${range.offset} := 0UL;
+            ${range.size} := ${memory.size};
+            stack_push (List(), ${range})
+          </local>
+        </memory-get>
+        <module name="vmem_1_to_n"
+                function="done run (config, id, i, data, memory)"
+        >
           <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="stdexcept"/>
           <cinclude href="string.h"/>
@@ -45,65 +65,32 @@
           <code><![CDATA[
             MLOG (INFO, "run (" << id << ", " << i << ")");
 
-            const fvmAllocHandle_t & handle (config.handle);
-            const size_t size (config.num_long * sizeof (long));
-            const int rank (fvmGetRank());
+            unsigned long const num_long (memory.size / sizeof (long));
 
-            memset (fvmGetShmemPtr(), rank, fvmGetShmemSize());
+            MLOG (INFO, "verifiying " << num_long << " values with seed " << config.seed);
 
-              waitComm (fvmGetGlobalData (handle, 0, size, 0, 0));
+            long* a (static_cast<long*> (data));
 
-              MLOG (INFO, "verifiying " << config.num_long << " values with seed " << config.seed);
+            boost::uniform_int<long> rand ( std::numeric_limits<long>::min()
+                                          , std::numeric_limits<long>::max()
+                                          );
 
-              long* a (static_cast<long*> (fvmGetShmemPtr()));
+            boost::mt19937 engine (config.seed);
 
-              boost::uniform_int<long> rand ( std::numeric_limits<long>::min()
-                                            , std::numeric_limits<long>::max()
-                                            );
-
-              boost::mt19937 engine (config.seed);
-
-              for (unsigned long k (0); k < config.num_long; ++k, ++a)
-              {
-                const long v (rand(engine));
-
-                if (*a != v)
-                {
-                  std::ostringstream s;
-
-                  s << "BUMMER! wrong value read"
-                    << " expected in slot " << k << " the value " << v
-                    << " but got the value " << *a
-                    ;
-
-                  throw std::runtime_error (s.str());
-                }
-              }
-
-            if (fvmGetShmemSize() > size)
+            for (unsigned long k (0); k < num_long; ++k, ++a)
             {
-              MLOG ( INFO
-                   , "verifiying mem behind data ("
-                   << fvmGetShmemSize() - size
-                   << " bytes)"
-                   << " to contain the value " << rank
-                   );
+              const long v (rand(engine));
 
-              char * a ((char *)fvmGetShmemPtr() + size);
-
-              for (size_t i (size); i < fvmGetShmemSize(); ++i, ++a)
+              if (*a != v)
               {
-                if (*a != rank)
-                {
-                  std::ostringstream s;
+                std::ostringstream s;
 
-                  s << "BUMMER! memory behind data corrupted: "
-                    << " expected in slot " << i << " the value " << rank
-                    << " but got the value " << *a
+                s << "BUMMER! wrong value read"
+                  << " expected in slot " << k << " the value " << v
+                  << " but got the value " << *a
                   ;
 
-                  throw std::runtime_error (s.str());
-                }
+                throw std::runtime_error (s.str());
               }
             }
 
@@ -114,6 +101,7 @@
       <connect-in port="i" place="pending"/>
       <connect-read port="id" place="id"/>
       <connect-read port="config" place="config"/>
+      <connect-read port="memory" place="memory"/>
       <connect-out port="done" place="done"/>
     </transition>
 
@@ -129,6 +117,7 @@
     <transition name="cleanup">
       <defun>
         <in name="config" type="config"/>
+        <in name="memory" type="global_memory_range"/>
         <in name="id" type="long"/>
         <in name="trigger" type="control"/>
         <out name="done" type="control"/>
@@ -137,6 +126,7 @@
         </expression>
       </defun>
       <connect-in port="config" place="config"/>
+      <connect-in port="memory" place="memory"/>
       <connect-in port="id" place="id"/>
       <connect-in port="trigger" place="all_done"/>
       <connect-out port="done" place="out"/>

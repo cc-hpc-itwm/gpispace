@@ -79,7 +79,9 @@ static fvmAllocHandle_t alloc ( const long & size
 
 // ************************************************************************* //
 
-static void initialize (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
+static void initialize (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
+                       , std::map<std::string, void*> const&
+                       )
 {
   const std::string& filename (boost::get<const std::string&> (input.value ("config_file")));
   long memsizeGPI (boost::get<long> (input.value ("memsizeGPI")));
@@ -268,25 +270,25 @@ static void initialize (drts::worker::context *, const expr::eval::context & inp
     (alloc ((bunch_store_per_node - 1) * Job.BunchMemSize, "handle_bunch", memsizeGPI));
 
   // machine
-  output.bind ("config.threads.N", static_cast<long>(NThreads));
+  output.bind_and_discard_ref ("config.threads.N", static_cast<long>(NThreads));
 
   // system
-  output.bind ("config.handle.job", static_cast<long>(handle_Job));
+  output.bind_and_discard_ref ("config.handle.job", static_cast<long>(handle_Job));
 
   // problem, derived
-  output.bind ("config.offsets", offsets);
-  output.bind ("config.per.offset.volumes", per_offset_volumes);
-  output.bind ("config.per.offset.bunches", per_offset_bunches);
+  output.bind_and_discard_ref ("config.offsets", offsets);
+  output.bind_and_discard_ref ("config.per.offset.volumes", per_offset_volumes);
+  output.bind_and_discard_ref ("config.per.offset.bunches", per_offset_bunches);
 
-  output.bind ("config.loadTT.parallel"
+  output.bind_and_discard_ref ("config.loadTT.parallel"
               , static_cast<long>(fvmGetNodeCount()) * 2
       //      , std::max (1L, static_cast<long>(fvmGetNodeCount())/2L)
       );
-  output.bind ("config.handle.TT", static_cast<long>(handle_TT));
+  output.bind_and_discard_ref ("config.handle.TT", static_cast<long>(handle_TT));
 
   // tuning
-  output.bind ("config.size.store.bunch", size_store_bunch);
-  output.bind ("config.per.volume.copies", copies);
+  output.bind_and_discard_ref ("config.size.store.bunch", size_store_bunch);
+  output.bind_and_discard_ref ("config.per.volume.copies", copies);
 
   LOG_IF ( WARN
          , copies > 8
@@ -298,16 +300,16 @@ static void initialize (drts::worker::context *, const expr::eval::context & inp
   // tuning: volumes_per_node could be higher
   const long size_store_volume (volumes_per_node * node_count);
 
-  output.bind ("config.size.store.volume", size_store_volume);
+  output.bind_and_discard_ref ("config.size.store.volume", size_store_volume);
 
   // tuning, derived?
-  output.bind ("config.assign.most"
+  output.bind_and_discard_ref ("config.assign.most"
               , divru (size_store_bunch, offsets_at_once) / 2
               );
 
   // tuning induced
-  output.bind ("config.handle.bunch", static_cast<long>(handle_bunch));
-  output.bind ("config.handle.volume", static_cast<long>(handle_volume));
+  output.bind_and_discard_ref ("config.handle.bunch", static_cast<long>(handle_bunch));
+  output.bind_and_discard_ref ("config.handle.volume", static_cast<long>(handle_volume));
 
   // WORK HERE: overcome this by using virtual offsetclasses
   if ( peek<long> (output.value ("config"), "size.store.volume")
@@ -327,7 +329,9 @@ static void initialize (drts::worker::context *, const expr::eval::context & inp
 
 // ************************************************************************* //
 
-static void loadTT (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
+static void loadTT (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
+                   , std::map<std::string, void*> const&
+                   )
 {
   const pnet::type::value::value_type& config (input.value ("config"));
   const long& id (boost::get<const long&> (input.value ("id")));
@@ -377,12 +381,14 @@ static void loadTT (drts::worker::context *, const expr::eval::context & input, 
 
   TTVMMem.InitVol(Job,Job.RTFileName,GSrc,GVol,NThreads,0, id, parallel, handle_TT);
 
-  output.bind ("done", we::type::literal::control());
+  output.bind_and_discard_ref ("done", we::type::literal::control());
 }
 
 // ************************************************************************* //
 
-static void load (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
+static void load (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
+                 , std::map<std::string, void*> const&
+                 )
 {
   const pnet::type::value::value_type& config (input.value ("config"));
   const pnet::type::value::value_type& bunch (input.value ("bunch"));
@@ -412,12 +418,14 @@ static void load (drts::worker::context *, const expr::eval::context & input, ex
                               )
            );
 
-  output.bind ("bunch", bunch);
+  output.bind_and_discard_ref ("bunch", bunch);
 }
 
 // ************************************************************************* //
 
-static void initialize_volume (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
+static void initialize_volume (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
+                              , std::map<std::string, void*> const&
+                              )
 {
   const pnet::type::value::value_type& config (input.value ("config"));
   const pnet::type::value::value_type& volume (input.value ("volume"));
@@ -471,12 +479,14 @@ static void initialize_volume (drts::worker::context *, const expr::eval::contex
                              )
            );
 
-  output.bind ("volume", volume);
+  output.bind_and_discard_ref ("volume", volume);
 }
 
 // ************************************************************************* //
 
-static void process (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
+static void process (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
+                    , std::map<std::string, void*> const&
+                    )
 {
   const pnet::type::value::value_type& config (input.value ("config"));
   const pnet::type::value::value_type& volume (input.value ("volume"));
@@ -561,12 +571,14 @@ static void process (drts::worker::context *, const expr::eval::context & input,
                              )
            );
 
-  output.bind ("volume", volume);
+  output.bind_and_discard_ref ("volume", volume);
 }
 
 // ************************************************************************* //
 
-static void reduce (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
+static void reduce (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
+                   , std::map<std::string, void*> const&
+                   )
 {
   const pnet::type::value::value_type& config (input.value("config"));
   const pnet::type::value::value_type& pair (input.value ("pair"));
@@ -648,12 +660,14 @@ static void reduce (drts::worker::context *, const expr::eval::context & input, 
                              )
            );
 
-  output.bind ("pair", pair);
+  output.bind_and_discard_ref ("pair", pair);
 }
 
 // ************************************************************************* //
 
-static void write (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
+static void write (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
+                  , std::map<std::string, void*> const&
+                  )
 {
   const pnet::type::value::value_type& config (input.value ("config"));
   const pnet::type::value::value_type& volume (input.value ("volume"));
@@ -712,12 +726,14 @@ static void write (drts::worker::context *, const expr::eval::context & input, e
     , Job.MigFileMode
     );
 
-  output.bind ("volume", volume);
+  output.bind_and_discard_ref ("volume", volume);
 }
 
 // ************************************************************************* //
 
-static void finalize (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
+static void finalize (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output
+                     , std::map<std::string, void*> const&
+                     )
 {
   const pnet::type::value::value_type& config (input.value ("config"));
 
@@ -728,7 +744,7 @@ static void finalize (drts::worker::context *, const expr::eval::context & input
   fvmGlobalFree (peek<long> (config, "handle.bunch"));
   fvmGlobalFree (peek<long> (config, "handle.TT"));
 
-  output.bind ("trigger", we::type::literal::control());
+  output.bind_and_discard_ref ("trigger", we::type::literal::control());
 }
 
 // ************************************************************************* //

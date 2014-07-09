@@ -5,10 +5,11 @@
 static void question ( drts::worker::context*
                      , const expr::eval::context&
                      , expr::eval::context& output
+                     , std::map<std::string, void*> const&
                      )
 {
-  output.bind ("out", get_answer());
-  output.bind ("ans", the_answer);
+  output.bind_and_discard_ref ("out", get_answer());
+  output.bind_and_discard_ref ("ans", the_answer);
   get_answer();
 }
 
