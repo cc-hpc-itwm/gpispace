@@ -11,9 +11,9 @@
 #include <fhgcom/tcp_server.hpp>
 
 #include <fhg/util/daemonize.hpp>
+#include <fhg/util/pidfile_writer.hpp>
 #include <fhg/syscall.hpp>
 
-static const int EX_STILL_RUNNING = 4;
 
 int main(int ac, char *av[])
 {
@@ -52,7 +52,7 @@ int main(int ac, char *av[])
     ("reuse-address", po::value<bool>(&reuse_address)->default_value(reuse_address), "reuse address")
     ("store,s", po::value<std::string>(&store_path), "path to persistent store")
     ("clear,C", "start with an empty store")
-    ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
+    ("pidfile", po::value<std::string>(&pidfile), "write pid to pidfile (required)")
     ("daemonize", "daemonize after all checks were successful")
     ;
 
@@ -85,26 +85,12 @@ int main(int ac, char *av[])
     server_address = "0";
   }
 
-  int pidfile_fd = -1;
-
-  if (not pidfile.empty())
+  if (pidfile.empty())
   {
-    pidfile_fd = open(pidfile.c_str(), O_CREAT|O_RDWR, 0640);
-    if (pidfile_fd < 0)
-    {
-      LOG( ERROR, "could not open pidfile for writing: "
-         << strerror(errno)
-         );
-      exit(EXIT_FAILURE);
-    }
-
-    if (lockf(pidfile_fd, F_TLOCK, 0) < 0)
-    {
-      LOG( ERROR, "could not lock pidfile: "
-         << strerror(errno)
-         );
-      exit(EX_STILL_RUNNING);
-    }
+    std::cerr << "pidfile '" << pidfile << "'"
+              << " is invalid, please specify --pidfile=<file> correctly"
+              << std::endl;
+    return EXIT_FAILURE;
   }
 
   try
@@ -118,6 +104,7 @@ int main(int ac, char *av[])
     boost::asio::signal_set term_signals (io_service, SIGINT, SIGTERM);
     term_signals.async_wait
       (boost::bind (&boost::asio::io_service::stop, &io_service));
+    fhg::util::pidfile_writer pidfile_writer (pidfile);
 
     boost::asio::signal_set hup_signal (io_service, SIGHUP);
     hup_signal.async_wait
@@ -144,28 +131,7 @@ int main(int ac, char *av[])
       fhg::util::fork_and_daemonize_child_and_abandon_parent();
     }
 
-    if (pidfile_fd >= 0)
-    {
-      if (lockf(pidfile_fd, F_LOCK, 0) < 0)
-      {
-        LOG( ERROR, "could not lock pidfile: "
-           << strerror(errno)
-           );
-        exit(EX_STILL_RUNNING);
-      }
-
-      char buf[32];
-      if (ftruncate(pidfile_fd, 0) < 0)
-      {
-        LOG (WARN, "could not truncate file: " << strerror (errno));
-      }
-      snprintf(buf, sizeof(buf), "%d\n", getpid());
-      if (write(pidfile_fd, buf, strlen(buf)) != (ssize_t)strlen (buf))
-      {
-        LOG (WARN, "PID could not be written completely: " << strerror (errno));
-      }
-      fsync(pidfile_fd);
-    }
+    pidfile_writer.write();
 
     io_service.notify_fork(boost::asio::io_service::fork_child);
     io_service.run();
