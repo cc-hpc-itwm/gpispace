@@ -247,13 +247,13 @@ namespace we
     }
 
     void transfer
-    ( std::function<fvmCommHandle_t ( const fvmAllocHandle_t
-                                    , const fvmOffset_t
-                                    , const fvmSize_t
-                                    , const fvmShmemOffset_t
-                                    , const fvmAllocHandle_t
-                                    )
-                   > do_transfer
+      ( std::function<fvmCommHandle_t ( const fvmAllocHandle_t
+                                      , const fvmOffset_t
+                                      , const fvmSize_t
+                                      , const fvmShmemOffset_t
+                                      , const fvmAllocHandle_t
+                                      )
+                     > do_transfer
       , std::unordered_map<std::string, buffer> memory_buffer
       , expr::eval::context& context
       , std::string const& global
