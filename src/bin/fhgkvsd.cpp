@@ -109,7 +109,10 @@ int main(int ac, char *av[])
 
     boost::optional<std::string> const optional_store_path (! store_path.empty (), store_path);
     fhg::com::kvs::server::kvsd kvsd (optional_store_path);
-    if (vm.count ("clear")) kvsd.clear ("");
+    if (vm.count ("clear"))
+    {
+      kvsd.clear ("");
+    }
 
     signal_handler.add (SIGHUP, boost::bind ( &fhg::com::kvs::server::kvsd::clear
                                             , &kvsd
