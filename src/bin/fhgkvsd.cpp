@@ -11,6 +11,7 @@
 #include <fhgcom/tcp_server.hpp>
 
 #include <fhg/util/daemonize.hpp>
+#include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/pidfile_writer.hpp>
 #include <fhg/syscall.hpp>
 
@@ -18,6 +19,8 @@
 int main(int ac, char *av[])
 {
   FHGLOG_SETUP();
+
+  fhg::log::Logger::ptr_t logger (fhg::log::Logger::get ("fhgkvsd"));
 
   namespace po = boost::program_options;
 
@@ -96,27 +99,31 @@ int main(int ac, char *av[])
   try
   {
     boost::asio::io_service io_service;
-    boost::optional<std::string> const optional_store_path (! store_path.empty (), store_path);
-    fhg::com::kvs::server::kvsd kvsd (optional_store_path);
+    fhg::util::signal_handler_manager signal_handler;
+    signal_handler.add_log_backtrace_and_exit_for_critical_errors (logger);
 
-    if (vm.count ("clear")) kvsd.clear ("");
+    signal_handler.add (SIGTERM, std::bind (&boost::asio::io_service::stop, &io_service));
+    signal_handler.add (SIGINT, std::bind (&boost::asio::io_service::stop, &io_service));
 
-    boost::asio::signal_set term_signals (io_service, SIGINT, SIGTERM);
-    term_signals.async_wait
-      (boost::bind (&boost::asio::io_service::stop, &io_service));
     fhg::util::pidfile_writer pidfile_writer (pidfile);
 
-    boost::asio::signal_set hup_signal (io_service, SIGHUP);
-    hup_signal.async_wait
-      (boost::bind (&fhg::com::kvs::server::kvsd::clear, &kvsd, ""));
+    boost::optional<std::string> const optional_store_path (! store_path.empty (), store_path);
+    fhg::com::kvs::server::kvsd kvsd (optional_store_path);
+    if (vm.count ("clear")) kvsd.clear ("");
 
-    boost::asio::signal_set usr1_signal (io_service, SIGUSR1);
-    usr1_signal.async_wait
-      (boost::bind (&fhg::com::kvs::server::kvsd::save, &kvsd));
-
-    boost::asio::signal_set usr2_signal (io_service, SIGUSR2);
-    usr2_signal.async_wait
-      (boost::bind (&fhg::com::kvs::server::kvsd::load, &kvsd));
+    signal_handler.add (SIGHUP, boost::bind ( &fhg::com::kvs::server::kvsd::clear
+                                            , &kvsd
+                                            , ""
+                                            )
+                       );
+    signal_handler.add (SIGUSR1, boost::bind ( &fhg::com::kvs::server::kvsd::save
+                                             , &kvsd
+                                             )
+                       );
+    signal_handler.add (SIGUSR2, boost::bind ( &fhg::com::kvs::server::kvsd::load
+                                             , &kvsd
+                                             )
+                       );
 
     fhg::com::tcp_server server ( io_service
                                 , kvsd
