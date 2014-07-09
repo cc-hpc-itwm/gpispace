@@ -79,8 +79,7 @@ done
   --pidfile "${KVSD_PID_FILE}"  \
   --daemonize                                               || die $EX_ERR_BOOT
 
-FHGLOG_disabled=true                          \
-  "${SDPA_HOME}/bin/gpi-space"                \
+"${SDPA_HOME}/bin/gpi-space"                  \
   --gpi-mem ${size_vmem}                      \
   --kvs-host ${kvs_host}                      \
   --kvs-port ${kvs_port}                      \

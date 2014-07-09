@@ -63,7 +63,7 @@ ${make[@]} lib net install                                  || die $EX_ERR_RUN
 
 hostname > "${DIR_STATE}/nodefile"                          || die $EX_ERR_ENV
 
-FHGLOG_disabled=true "${SDPA_HOME}/bin/sdpa" boot \
+"${SDPA_HOME}/bin/sdpa" boot \
   -S "${DIR_SDPA}" \
   -f "${DIR_STATE}/nodefile" \
   -x "${SDPA_HOME}/bin/gpi-space" \
