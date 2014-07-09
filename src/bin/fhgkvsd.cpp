@@ -107,8 +107,8 @@ int main(int ac, char *av[])
 
     fhg::util::pidfile_writer pidfile_writer (pidfile);
 
-    boost::optional<std::string> const optional_store_path (! store_path.empty (), store_path);
-    fhg::com::kvs::server::kvsd kvsd (optional_store_path);
+    fhg::com::kvs::server::kvsd kvsd
+      (boost::optional<std::string> (!store_path.empty(), store_path));
     if (vm.count ("clear"))
     {
       kvsd.clear ("");
