@@ -21,6 +21,8 @@
 #include <boost/program_options.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
+#include <mutex>
+
 int main (int argc, char **argv)
 try
 {
