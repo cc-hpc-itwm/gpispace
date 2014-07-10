@@ -21,6 +21,8 @@
 #include <boost/program_options.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
+#include <mutex>
+
 int main (int argc, char **argv)
 try
 {
@@ -191,6 +193,12 @@ try
 
   std::vector<std::function<void()>> request_stops (num_worker);
 
+  fhg::util::signal_handler_manager signal_handlers;
+
+  signal_handlers.add_log_backtrace_and_exit_for_critical_errors (logger);
+
+  std::mutex mutex_signal_manager;
+
   while (num_worker --> 0)
   {
     workers_list.emplace_back
@@ -202,18 +210,19 @@ try
           , num_worker
           , &logger
           , &request_stops
+          , &signal_handlers
+          , &mutex_signal_manager
           ]() mutable
         {
           fhg::core::wait_until_stopped waiter;
           const std::function<void()> request_stop (waiter.make_request_stop());
 
-          fhg::util::signal_handler_manager signal_handlers;
+          {
+            std::unique_lock<std::mutex> const _ (mutex_signal_manager);
 
-          signal_handlers
-            .add_log_backtrace_and_exit_for_critical_errors (logger);
-
-          signal_handlers.add (SIGTERM, std::bind (request_stop));
-          signal_handlers.add (SIGINT, std::bind (request_stop));
+            signal_handlers.add (SIGTERM, std::bind (request_stop));
+            signal_handlers.add (SIGINT, std::bind (request_stop));
+          }
 
           request_stops[num_worker] = request_stop;
 
