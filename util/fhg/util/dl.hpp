@@ -6,8 +6,6 @@
 #include <errno.h>
 #include <string>
 
-#include <functional>
-
 namespace dl
 {
   class scoped_dlhandle
