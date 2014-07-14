@@ -7,7 +7,7 @@
 
 BOOST_AUTO_TEST_CASE (process_empty_environment)
 {
-  BOOST_REQUIRE_GT (boost::unit_test::framework::master_test_suite().argc, 1);
+  BOOST_REQUIRE_EQUAL (boost::unit_test::framework::master_test_suite().argc, 2);
 
   const std::string env_program
     (boost::unit_test::framework::master_test_suite().argv[1]);
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE (process_empty_environment)
 
 BOOST_AUTO_TEST_CASE (process_single_variable_environment)
 {
-  BOOST_REQUIRE_GT (boost::unit_test::framework::master_test_suite().argc, 1);
+  BOOST_REQUIRE_EQUAL (boost::unit_test::framework::master_test_suite().argc, 2);
 
   const std::string env_program
     (boost::unit_test::framework::master_test_suite().argv[1]);
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE (process_single_variable_environment)
 
 BOOST_AUTO_TEST_CASE (process_full_environment)
 {
-  BOOST_REQUIRE_GT (boost::unit_test::framework::master_test_suite().argc, 1);
+  BOOST_REQUIRE_EQUAL (boost::unit_test::framework::master_test_suite().argc, 2);
 
   const std::string env_program
     (boost::unit_test::framework::master_test_suite().argv[1]);
