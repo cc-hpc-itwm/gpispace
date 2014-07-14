@@ -5,6 +5,8 @@
 
 #include <process.hpp>
 
+#include <fhg/util/random_string.hpp>
+
 BOOST_AUTO_TEST_CASE (process_empty_environment)
 {
   BOOST_REQUIRE_EQUAL (boost::unit_test::framework::master_test_suite().argc, 2);
@@ -41,11 +43,12 @@ BOOST_AUTO_TEST_CASE (process_single_variable_environment)
   const std::string env_program
     (boost::unit_test::framework::master_test_suite().argv[1]);
 
-  std::map<std::string, std::string> env;
-  env ["FOO"] = "BAR";
+  const std::string expected_key (fhg::util::random_identifier());
+  const std::string expected_value (fhg::util::random_identifier());
+  const std::map<std::string, std::string> env {{expected_key, expected_value}};
 
   process::circular_buffer buf_stderr;
-  char out_stdout [8];
+  char out_stdout [expected_key.size()+1+expected_value.size()+1];
 
   process::execute_return_type ret
     ( process::execute ( env_program
@@ -58,17 +61,11 @@ BOOST_AUTO_TEST_CASE (process_single_variable_environment)
                        )
     );
 
+  const std::string expected_result (expected_key + '=' + expected_value + '\n');
   BOOST_REQUIRE_EQUAL (ret.exit_code, 0);
   BOOST_REQUIRE_EQUAL (ret.bytes_written_stdin, 0);
-  BOOST_REQUIRE_EQUAL (ret.bytes_read_stdout, 8);
-  BOOST_REQUIRE_EQUAL (out_stdout[0], 'F');
-  BOOST_REQUIRE_EQUAL (out_stdout[1], 'O');
-  BOOST_REQUIRE_EQUAL (out_stdout[2], 'O');
-  BOOST_REQUIRE_EQUAL (out_stdout[3], '=');
-  BOOST_REQUIRE_EQUAL (out_stdout[4], 'B');
-  BOOST_REQUIRE_EQUAL (out_stdout[5], 'A');
-  BOOST_REQUIRE_EQUAL (out_stdout[6], 'R');
-  BOOST_REQUIRE_EQUAL (out_stdout[7], '\n');
+  BOOST_REQUIRE_EQUAL (ret.bytes_read_stdout, sizeof (out_stdout));
+  BOOST_REQUIRE_EQUAL (std::string (out_stdout, sizeof (out_stdout)), expected_result);
 
   BOOST_REQUIRE_EQUAL (ret.bytes_read_stderr, 0);
 }
