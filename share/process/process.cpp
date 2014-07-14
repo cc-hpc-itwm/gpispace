@@ -292,7 +292,9 @@ namespace process
     };
   }
 
-  static execute_return_type execute ( std::string const& command
+  namespace
+  {
+  execute_return_type execute ( std::string const& command
                                      , const_buffer const& buf_stdin
                                      , buffer const& buf_stdout
                                      , circular_buffer& buf_stderr
@@ -583,6 +585,7 @@ namespace process
     }
 
     return ret;
+  }
   }
 
   extern execute_return_type execute ( std::string const& command
