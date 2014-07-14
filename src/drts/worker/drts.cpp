@@ -872,7 +872,28 @@ void DRTSImpl::start_connect ()
                                                   )
         );
 
-      send_event(evt);
+      try
+      {
+        send_event(evt);
+      }
+      catch (boost::system::system_error const& ex)
+      {
+        if (  ex.code() == boost::system::errc::no_such_process
+           || ex.code() == boost::asio::error::connection_refused
+           )
+        {
+          LLOG ( WARN, _logger
+               , "could not connect to master '" << master_it->first << "' := " << ex.what()
+               );
+        }
+        else
+        {
+          LLOG ( ERROR, _logger
+               , "could not connect to master '" << master_it->first << "' := " << ex.what()
+               );
+          throw;
+        }
+      }
 
       at_least_one_disconnected = true;
     }
@@ -904,7 +925,7 @@ void DRTSImpl::start_connect ()
   }
 
 
-  if (at_least_one_disconnected)
+  if (at_least_one_disconnected and not m_shutting_down)
   {
     request_registration_soon();
   }
