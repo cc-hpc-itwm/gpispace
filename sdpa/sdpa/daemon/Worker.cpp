@@ -9,33 +9,33 @@ namespace sdpa
 {
   namespace daemon
   {
-    Worker::Worker(	const worker_id_t& name,
-                                    const boost::optional<unsigned int>& cap
-                  , const capabilities_set_t& capabilities
-                  )
-      : name_(name),
-        capacity_(cap)
+    Worker::Worker ( const worker_id_t& name
+                   , const boost::optional<unsigned int>& cap
+                   , const capabilities_set_t& capabilities
+                   )
+      : name_(name)
+      , capacity_(cap)
       , capabilities_ (capabilities)
-      , last_schedule_time_(0),
-        reserved_(false)
+      , last_schedule_time_(0)
+      , reserved_(false)
     {
 
     }
 
-    bool Worker::has_job( const job_id_t& job_id )
+    bool Worker::has_job (const job_id_t& job_id)
     {
       lock_type const _ (mtx_);
       return submitted_.count (job_id) || acknowledged_.count (job_id);
     }
 
-    void Worker::submit(const job_id_t& jobId)
+    void Worker::submit (const job_id_t& jobId)
     {
       lock_type const _ (mtx_);
       submitted_.insert (jobId);
       reserve();
     }
 
-    void Worker::acknowledge(const job_id_t &job_id)
+    void Worker::acknowledge (const job_id_t &job_id)
     {
       lock_type const _ (mtx_);
       if (submitted_.erase (job_id) == 0)
@@ -45,7 +45,7 @@ namespace sdpa
       acknowledged_.insert (job_id);
     }
 
-    void Worker::deleteJob(const job_id_t &job_id)
+    void Worker::deleteJob (const job_id_t &job_id)
     {
       lock_type const _ (mtx_);
       submitted_.erase (job_id);
@@ -59,7 +59,7 @@ namespace sdpa
       return capabilities_;
     }
 
-    bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
+    bool Worker::addCapabilities (const capabilities_set_t& recvCpbSet)
     {
       lock_type const _ (mtx_);
 
@@ -83,7 +83,7 @@ namespace sdpa
       return bModified;
     }
 
-    void Worker::removeCapabilities( const capabilities_set_t& cpbset )
+    void Worker::removeCapabilities (const capabilities_set_t& cpbset)
     {
       lock_type const _ (mtx_);
       for (Capability const& capability : cpbset)
@@ -92,15 +92,15 @@ namespace sdpa
       }
     }
 
-    bool Worker::hasCapability(const std::string& cpbName)
+    bool Worker::hasCapability (const std::string& cpbName)
     {
       lock_type const _ (mtx_);
 
       return std::find_if ( capabilities_.begin(), capabilities_.end()
                           , [&cpbName] (capability_t const& cap)
-                          {
-                            return cap.name() == cpbName;
-                          }
+                            {
+                              return cap.name() == cpbName;
+                            }
                           ) != capabilities_.end();
     }
 
