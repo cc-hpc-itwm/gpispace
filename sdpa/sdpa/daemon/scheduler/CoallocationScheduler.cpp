@@ -116,32 +116,32 @@ namespace sdpa
 
           boost::mutex::scoped_lock const _ (mtx_alloc_table_);
 
-            allocation_table_t::iterator it (allocation_table_.find (jobId));
-            if (it != allocation_table_.end())
+          allocation_table_t::iterator it (allocation_table_.find (jobId));
+          if (it != allocation_table_.end())
+          {
+            throw std::runtime_error ("already have reservation for job");
+          }
+
+          try
+          {
+            for (worker_id_t const& worker : matching_workers)
             {
-              throw std::runtime_error ("already have reservation for job");
+              worker_manager().findWorker (worker)->submit (jobId);
+            }
+            _serve_job (worker_id_list_t (matching_workers.begin(), matching_workers.end()), jobId);
+
+            Reservation* pReservation (new Reservation (matching_workers));
+            allocation_table_.emplace (jobId, pReservation);
+          }
+          catch (std::runtime_error const&)
+          {
+            for (const worker_id_t& wid : matching_workers)
+            {
+              worker_manager().findWorker (wid)->deleteJob (jobId);
             }
 
-            try
-            {
-              for (worker_id_t const& worker : matching_workers)
-              {
-                worker_manager().findWorker (worker)->submit (jobId);
-              }
-              _serve_job (worker_id_list_t (matching_workers.begin(), matching_workers.end()), jobId);
-
-              Reservation* pReservation (new Reservation (matching_workers));
-              allocation_table_.emplace (jobId, pReservation);
-            }
-            catch (std::runtime_error const&)
-            {
-              for (const worker_id_t& wid : matching_workers)
-              {
-                worker_manager().findWorker (wid)->deleteJob (jobId);
-              }
-
-              jobs_to_schedule.push_front (jobId);
-            }
+            jobs_to_schedule.push_front (jobId);
+          }
         }
         else
         {
