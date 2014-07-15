@@ -9,6 +9,7 @@
 #include <sdpa/daemon/exceptions.hpp>
 
 #include <boost/optional.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace sdpa { namespace daemon {
 
@@ -52,6 +53,10 @@ namespace sdpa { namespace daemon {
     */
     const worker_id_t &name() const { lock_type lock(mtx_); return name_; }
 
+    /**
+       Return the host name (the worker name already contains the name of the host!)
+    */
+    const std::string hostname (const std::string& worker_id) const;
     /**
          Return the rank of the worker.
      */

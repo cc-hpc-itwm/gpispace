@@ -22,6 +22,16 @@ namespace sdpa
 
     }
 
+    const std::string Worker::hostname (const std::string& worker_id) const
+    {
+      std::vector<std::string> tokens;
+      boost::algorithm::split (tokens, worker_id, boost::is_any_of("-"));
+      if (tokens.size() != 3)
+        throw std::runtime_error(std::string("Invalid worker id: ") + worker_id);
+
+      return tokens[1];
+    }
+
     bool Worker::has_job (const job_id_t& job_id)
     {
       lock_type const _ (mtx_);
