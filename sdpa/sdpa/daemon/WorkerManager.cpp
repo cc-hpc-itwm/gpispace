@@ -196,5 +196,52 @@ namespace sdpa
 
       return bestMatchingWorkerId;
     }
+
+    const sdpa::worker_id_list_t WorkerManager::getListMatchingWorkers
+      ( const job_requirements_t& job_reqs
+      , const sdpa::worker_id_list_t& worker_list
+      ) const
+    {
+      boost::mutex::scoped_lock const _ (mtx_);
+
+      typedef std::pair<worker_id_t, int> matching_pair_t;
+      sdpa::worker_id_list_t list_matching_workers;
+
+      if (worker_list.size() < job_reqs.numWorkers())
+        return list_matching_workers;
+
+      if (job_reqs.empty())
+        return worker_list;
+
+      typedef boost::function<bool (const matching_pair_t&, const matching_pair_t&)> Comparator;
+      Comparator comp = boost::bind (&matching_pair_t::second, _1) < boost::bind (&matching_pair_t::second, _2)
+                        || (  boost::bind (&matching_pair_t::second, _1) == boost::bind (&matching_pair_t::second, _2)
+                           && boost::bind (&matching_pair_t::first, _1) < boost::bind (&matching_pair_t::first, _2)
+                           );
+
+      std::set<matching_pair_t, Comparator> set_matching_pairs(comp);
+
+      for (const sdpa::worker_id_t& worker_id : worker_list)
+      {
+        const worker_map_t::const_iterator it (worker_map_.find (worker_id));
+        if (it == worker_map_.end())
+          continue;
+
+        const boost::optional<std::size_t> matchingDeg
+          (matchRequirements (it->second, job_reqs));
+
+        if (matchingDeg)
+        {
+          set_matching_pairs.emplace (worker_id, *matchingDeg);
+        }
+      }
+
+      for (const matching_pair_t& matching_pair : set_matching_pairs)
+      {
+        list_matching_workers.push_front (matching_pair.first);
+      }
+
+      return list_matching_workers;
+    }
   }
 }
