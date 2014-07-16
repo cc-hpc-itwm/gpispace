@@ -4,7 +4,6 @@ add_subdirectory (worker)
 
 install (FILES
   drts.hpp
-  system.hpp
   virtual_memory.hpp
   DESTINATION include/drts/
 )

@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <drts/vmem.hpp>
+#include <drts/virtual_memory.hpp>
 #include <drts/system.hpp>
 
 #include <boost/format.hpp>
