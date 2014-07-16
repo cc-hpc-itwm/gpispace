@@ -64,6 +64,10 @@ namespace gspc
     {
       return _virtual_memory_per_node;
     }
+    unsigned long virtual_memory_total() const
+    {
+      return _nodes.size() * (*_virtual_memory_per_node - 32UL * (1UL << 20UL));
+    }
     boost::optional<boost::filesystem::path> const& virtual_memory_socket() const
     {
       return _virtual_memory_socket;
