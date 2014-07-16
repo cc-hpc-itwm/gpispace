@@ -81,3 +81,10 @@ fhg_add_test (Topologies.cpp
   LINK_LIBRARIES sdpa
                  ${FhgLog_LIBRARY}
 )
+
+fhg_add_test (WorkerManager.cpp
+  PROJECT sdpa_test
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES sdpa
+                 ${FhgLog_LIBRARY}
+)
