@@ -35,7 +35,7 @@ namespace sdpa
         return cpbset_;
       }
 
-      virtual void handleBy (EventHandler* handler)
+      virtual void handleBy (EventHandler* handler) override
       {
         handler->handleWorkerRegistrationEvent (this);
       }

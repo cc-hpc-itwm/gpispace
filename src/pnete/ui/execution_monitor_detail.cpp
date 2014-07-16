@@ -397,7 +397,7 @@ namespace fhg
             {
               subranges.push_back (range);
             }
-            block() {}
+            block() = default;
           };
           QHash<worker_model::state_type, QVector<block>> blocks;
           bool distribute_vertically;

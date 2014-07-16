@@ -36,12 +36,12 @@ namespace fhg
           void open_end (const QPointF&);
           const connectable_item* fixed_end() const;
 
-          virtual QPainterPath shape() const;
+          virtual QPainterPath shape() const override;
           virtual void paint
-            (QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
+            (QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
 
           enum { Type = pending_connection_graph_type };
-          virtual int type() const { return Type; }
+          virtual int type() const override { return Type; }
 
         private:
           const connectable_item* _fixed_end;

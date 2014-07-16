@@ -34,7 +34,7 @@ namespace fhg
 
           virtual void set_property ( const ::we::type::property::key_type&
                                     , const ::we::type::property::value_type&
-                                    ) const;
+                                    ) const override;
 
           place resolved_real_place() const;
           port tunnel_port() const;

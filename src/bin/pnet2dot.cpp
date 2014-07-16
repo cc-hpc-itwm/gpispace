@@ -376,6 +376,11 @@ namespace
                  ? brackets (keyval ("style", style::read_connection))
                  : ""
                  );
+
+            if (place_to_port.info.get ("pnetc.tunnel"))
+            {
+              s << association();
+            }
           }
         }
       }

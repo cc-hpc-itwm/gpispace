@@ -1,8 +1,5 @@
 #include "Marking.h"
 
-#include <fhg/assert.hpp>
-
-#include <cassert>
 #include <algorithm>
 
 namespace jpn {

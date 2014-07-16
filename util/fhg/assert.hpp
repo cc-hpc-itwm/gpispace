@@ -1,8 +1,6 @@
 #ifndef FHG_ASSERT_HPP
 #define FHG_ASSERT_HPP
 
-#include <fhg/util/macros.hpp>
-
 /**
    - fhg_assert is a macro that provides a better mechanism than the
    legacy 'assert' and can be switched on/off independently
@@ -12,20 +10,8 @@
    FHG_ASSERT_DISABLED    0
    make fhg_assert a nop
 
-   FHG_ASSERT_ENABLED   1
-   log to std::cerr and abort()
-
-   FHG_ASSERT_LEGACY    2
-   redirect to legacy assert()
-
-   FHG_ASSERT_EXCEPTION 3
+   FHG_ASSERT_EXCEPTION 1
    throw an fhg::assertion_failed exception
-
-   FHG_ASSERT_LOG       4
-   just log to std::cerr
-
-   FHG_ASSERT_LOG_ABORT 5
-   just log to std::cerr
 
    - the syntax is quite easy:
 
@@ -34,20 +20,10 @@
    the message is optional but if given, must be a C-string
  */
 #define FHG_ASSERT_DISABLED  0 //! \note ignore asserts
-#define FHG_ASSERT_ENABLED   1 //! \note enable asserts
-#define FHG_ASSERT_LEGACY    2 //! \note fall back to assert()
-#define FHG_ASSERT_EXCEPTION 3 //! \note throw fhg::assertion_failed
-#define FHG_ASSERT_LOG       4 //! \note just log
-#define FHG_ASSERT_LOG_ABORT 5 //! \note log and abort
-
-#include <sstream>
-#include <fhg/assert_helper.hpp>
-
-#define FHG_ASSERT_STR_(x) #x
-#define FHG_ASSERT_STR(x) FHG_ASSERT_STR_(x)
+#define FHG_ASSERT_EXCEPTION 1 //! \note throw std::logic_error
 
 #ifndef FHG_ASSERT_MODE
-#  define FHG_ASSERT_MODE FHG_ASSERT_DISABLED
+#  error missing definition for FHG_ASSERT_MODE
 #endif
 
 #if   FHG_ASSERT_DISABLED == FHG_ASSERT_MODE
@@ -55,87 +31,32 @@
 #  define IF_FHG_ASSERT(x...)
 #  define fhg_assert(cond, ...)
 
-#elif FHG_ASSERT_ENABLED == FHG_ASSERT_MODE
-#  include <stdlib.h>
-#  include <iostream>
-
-#  define IF_FHG_ASSERT(x...) x
-#  define fhg_assert(cond, ...)                                      \
-  do                                                                    \
-  {                                                                     \
-    if (! (cond))                                                       \
-    {                                                                   \
-      std::cerr << fhg::assert_helper::message                          \
-                   (FHG_ASSERT_STR(cond),  "" __VA_ARGS__, __FILE__, __LINE__)  \
-                << std::endl                                            \
-                << std::flush;                                          \
-      abort();                                                          \
-    }                                                                   \
-  } while (0)
-
-#elif FHG_ASSERT_LEGACY == FHG_ASSERT_MODE
-#  include <cassert>
-#  define IF_FHG_ASSERT(x...) IFNDEF_NDEBUG (x)
-#  define fhg_assert(cond, ...) assert(cond)
-
 #elif FHG_ASSERT_EXCEPTION == FHG_ASSERT_MODE
-#  include <fhg/assertion_failed.hpp>
-#  define IF_FHG_ASSERT(x...) x
-#  define fhg_assert(cond, ...)                                      \
-  do                                                                    \
-  {                                                                     \
-    if (! (cond))                                                       \
-    {                                                                   \
-      throw fhg::assertion_failed                                       \
-            (FHG_ASSERT_STR(cond), "" __VA_ARGS__, __FILE__, __LINE__);         \
-    }                                                                   \
-  } while (0)
+#  include <stdexcept>
+#  include <boost/format.hpp>
+#  define FHG_ASSERT_STR_(x) #x
+#  define FHG_ASSERT_STR(x) FHG_ASSERT_STR_(x)
 
-#elif FHG_ASSERT_LOG == FHG_ASSERT_MODE
-#  include <fhglog/LogMacros.hpp>
 #  define IF_FHG_ASSERT(x...) x
-#  define fhg_assert(cond, ...)                                      \
+#  define fhg_assert(cond, ...)                                         \
   do                                                                    \
   {                                                                     \
     if (! (cond))                                                       \
     {                                                                   \
-      LOG(ERROR, fhg::assert_helper::message                            \
-         (FHG_ASSERT_STR(cond),  "" __VA_ARGS__, __FILE__, __LINE__)            \
-         );                                                             \
-    }                                                                   \
-  } while (0)
-
-#elif FHG_ASSERT_LOG_ABORT == FHG_ASSERT_MODE
-#  include <fhglog/LogMacros.hpp>
-#  define IF_FHG_ASSERT(x...) x
-#  define fhg_assert(cond, ...)                                      \
-  do                                                                    \
-  {                                                                     \
-    if (! (cond))                                                       \
-    {                                                                   \
-      LOG(ERROR, fhg::assert_helper::message                            \
-                 (FHG_ASSERT_STR(cond), "" __VA_ARGS__, __FILE__, __LINE__)     \
-         );                                                             \
-      abort();                                                          \
+      throw std::logic_error                                            \
+        ( ( boost::format ("[%1%:%2%] assertion '%3%' failed%4%%5%.")   \
+          % __FILE__                                                    \
+          % __LINE__                                                    \
+          % FHG_ASSERT_STR (cond)                                       \
+          % (std::string ("" __VA_ARGS__).empty() ? "" : ": ")          \
+          % std::string ("" __VA_ARGS__)                                \
+          ).str()                                                       \
+        );                                                              \
     }                                                                   \
   } while (0)
 
 #else
 #  error invalid FHG_ASSERT_MODE
-#endif
-
-#ifdef FHG_ASSERT_REPLACE_LEGACY
-#  if FHG_ASSERT_LEGACY != FHG_ASSERT_MODE
-#    undef assert
-#    define assert(cond) fhg_assert(cond, #cond)
-#  else
-#    error cannot replace legacy 'assert' statements in FHG_ASSERT_LEGACY mode!
-#  endif
-
-#else
-#  ifndef assert
-#    define assert(cond)
-#  endif
 #endif
 
 #endif

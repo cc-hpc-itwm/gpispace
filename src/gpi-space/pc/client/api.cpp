@@ -3,6 +3,7 @@
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/type/flags.hpp>
 
+#include <fhg/assert.hpp>
 #include <fhglog/LogMacros.hpp>
 
 #include <boost/archive/binary_oarchive.hpp>
@@ -273,12 +274,12 @@ namespace gpi
           }
           else
           {
-            return 0;
+            return nullptr;
           }
         }
         catch (std::exception const &)
         {
-          return 0;
+          return nullptr;
         }
       }
 
@@ -436,7 +437,7 @@ namespace gpi
           m_segments.erase(seg->id());
         }
 
-        assert (m_segments.find (seg->id()) == m_segments.end());
+        fhg_assert (m_segments.find (seg->id()) == m_segments.end());
 
         m_segments [seg->id()] = seg;
 

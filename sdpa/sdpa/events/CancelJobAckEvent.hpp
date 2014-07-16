@@ -20,7 +20,7 @@ namespace sdpa
         :  sdpa::events::JobEvent (a_from, a_to, a_job_id)
       {}
 
-      virtual void handleBy (EventHandler* handler)
+      virtual void handleBy (EventHandler* handler) override
       {
         handler->handleCancelJobAckEvent (this);
       }

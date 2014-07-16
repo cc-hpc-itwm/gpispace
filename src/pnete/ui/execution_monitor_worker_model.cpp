@@ -93,12 +93,12 @@ namespace fhg
               , _flush (flush)
           { }
 
-          void append (const log::LogEvent& evt)
+          virtual void append (const log::LogEvent& evt) override
           {
             _append (evt);
           }
 
-          void flush()
+          virtual void flush() override
           {
             _flush();
           }

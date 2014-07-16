@@ -25,7 +25,7 @@ namespace fhg
           open ( fhg::util::indenter&
                , const boost::optional<std::string>& = boost::none
                );
-          std::ostream& operator() (std::ostream&) const;
+          virtual std::ostream& operator() (std::ostream&) const override;
 
         private:
           fhg::util::indenter& _indent;
@@ -36,7 +36,7 @@ namespace fhg
         {
         public:
           close (fhg::util::indenter&);
-          std::ostream& operator() (std::ostream&) const;
+          virtual std::ostream& operator() (std::ostream&) const override;
 
         private:
           fhg::util::indenter& _indent;

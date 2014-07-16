@@ -80,13 +80,13 @@ namespace fhg
           void update_scene_rect();
 
         protected:
-          virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event);
-          virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent);
-          virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event);
-          virtual void keyPressEvent (QKeyEvent* event);
-          virtual void dragEnterEvent (QGraphicsSceneDragDropEvent* event);
-          virtual void dragMoveEvent (QGraphicsSceneDragDropEvent* event);
-          virtual void dropEvent (QGraphicsSceneDragDropEvent* event);
+          virtual void contextMenuEvent (QGraphicsSceneContextMenuEvent* event) override;
+          virtual void mouseMoveEvent (QGraphicsSceneMouseEvent* mouseEvent) override;
+          virtual void mouseReleaseEvent (QGraphicsSceneMouseEvent* event) override;
+          virtual void keyPressEvent (QKeyEvent* event) override;
+          virtual void dragEnterEvent (QGraphicsSceneDragDropEvent* event) override;
+          virtual void dragMoveEvent (QGraphicsSceneDragDropEvent* event) override;
+          virtual void dropEvent (QGraphicsSceneDragDropEvent* event) override;
 
         private:
           template<typename item_type, typename handle_type>

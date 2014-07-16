@@ -18,8 +18,7 @@ namespace fhg
       {
         struct msg_inc
         {
-          msg_inc ()
-          {}
+          msg_inc () = default;
 
           explicit
           msg_inc (const std::string & k, int step=1)

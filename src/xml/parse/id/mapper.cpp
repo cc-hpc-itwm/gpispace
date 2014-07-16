@@ -5,6 +5,7 @@
 #include <xml/parse/type/connect.hpp>
 #include <xml/parse/type/expression.hpp>
 #include <xml/parse/type/function.hpp>
+#include <xml/parse/type/memory_buffer.hpp>
 #include <xml/parse/type/mod.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>

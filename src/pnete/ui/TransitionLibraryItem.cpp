@@ -90,7 +90,7 @@ namespace fhg
               }
           }
 
-        return 0;
+        return nullptr;
       }
 
       int TransitionLibraryItem::childCount() const

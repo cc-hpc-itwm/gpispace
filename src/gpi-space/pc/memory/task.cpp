@@ -1,5 +1,7 @@
 #include <gpi-space/pc/memory/task.hpp>
 
+#include <fhg/assert.hpp>
+
 namespace gpi
 {
   namespace pc
@@ -17,7 +19,7 @@ namespace gpi
       void
       task_t::execute ()
       {
-        assert (task_state::pending == get_state());
+        fhg_assert (task_state::pending == get_state());
 
           try
           {

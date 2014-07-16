@@ -7,6 +7,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <map>
 
 #include <dlfcn.h>
 
@@ -20,9 +21,9 @@ namespace we
       Module ( const std::string& path
              , int flags = RTLD_NOW | RTLD_GLOBAL
              );
-      virtual ~Module() throw();
+      virtual ~Module();
 
-      void name (const std::string&);
+      virtual void name (const std::string&) override;
       const std::string &name() const;
       const std::string &path() const;
 
@@ -30,9 +31,10 @@ namespace we
                 , drts::worker::context *context
                 , const expr::eval::context& in
                 , expr::eval::context& out
+                , std::map<std::string, void*> const& memory_buffer
                 );
 
-      void add_function (const std::string&, WrapperFunction);
+      virtual void add_function (const std::string&, WrapperFunction) override;
 
     private:
       std::string name_;

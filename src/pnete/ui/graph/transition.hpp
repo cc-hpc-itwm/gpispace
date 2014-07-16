@@ -36,9 +36,9 @@ namespace fhg
                                    , base_item* parent = nullptr
                                    );
 
-          virtual const data::handle::transition& handle() const;
+          virtual const data::handle::transition& handle() const override;
 
-          virtual QPainterPath shape() const;
+          virtual QPainterPath shape() const override;
           QRectF rectangle() const;
 
           std::string name() const;
@@ -46,9 +46,9 @@ namespace fhg
           void repositionChildrenAndResize();
 
           enum { Type = transition_graph_type };
-          virtual int type() const { return Type; }
+          virtual int type() const override { return Type; }
 
-          virtual void setPos (const QPointF&);
+          virtual void setPos (const QPointF&) override;
 
         public slots:
           void transition_deleted (const data::handle::transition&);
@@ -67,7 +67,7 @@ namespace fhg
           virtual void paint ( QPainter *painter
                              , const QStyleOptionGraphicsItem *option
                              , QWidget *widget
-                             );
+                             ) override;
 
         private:
           //! \todo size verstellbar

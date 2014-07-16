@@ -349,7 +349,7 @@ fi
 
 export LD_LIBRARY_PATH="${sdpa_home}/lib:${sdpa_home}/libexec/sdpa:$LD_LIBRARY_PATH"
 export FHGLOG_to_file="${logprefix}.log"
-echo >&2 "Running $cmd on node $hostname"
+echo >&2 "Running $cmd on node $(hostname)"
 if [ x"$daemonize" = x"true" ] ; then
     $cmd --daemonize
 else

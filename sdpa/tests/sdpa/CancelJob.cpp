@@ -28,7 +28,7 @@ namespace
       , _announce_cancel (announce_cancel)
     {}
 
-    void handleCancelJobEvent (const sdpa::events::CancelJobEvent* e)
+    void handleCancelJobEvent (const sdpa::events::CancelJobEvent* e) override
     {
       const std::map<std::string, job_t>::const_iterator it
         ( std::find_if

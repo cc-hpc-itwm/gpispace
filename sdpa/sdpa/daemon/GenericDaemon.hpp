@@ -18,8 +18,6 @@
 #ifndef SDPA_DAEMON_GENERIC_DAEMON_HPP
 #define SDPA_DAEMON_GENERIC_DAEMON_HPP 1
 
-#include <fhg/assert.hpp>
-
 #include <sdpa/capability.hpp>
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 #include <sdpa/com/NetworkStrategy.hpp>
@@ -61,9 +59,10 @@
 #include <fhg/util/thread/set.hpp>
 #include <fhg/util/thread/queue.hpp>
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <memory>
+#include <random>
 
 #define OVERWRITTEN_IN_TEST virtual
 
@@ -109,7 +108,7 @@ namespace sdpa {
 
       // masters and subscribers
       void unsubscribe(const sdpa::agent_id_t&);
-      virtual void handleSubscribeEvent (const sdpa::events::SubscribeEvent*);
+      virtual void handleSubscribeEvent (const sdpa::events::SubscribeEvent*) override;
       bool isSubscriber(const sdpa::agent_id_t&);
       bool subscribedFor(const sdpa::agent_id_t&, const sdpa::job_id_t&);
 
@@ -124,27 +123,27 @@ namespace sdpa {
     public:
       virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* ) = 0;
       virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*) = 0;
-      virtual void handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent*);
-      virtual void handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent*);
+      virtual void handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent*) override;
+      virtual void handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent*) override;
       virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* )=0;
-      virtual void handleErrorEvent(const sdpa::events::ErrorEvent* );
-      virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent* );
+      virtual void handleErrorEvent(const sdpa::events::ErrorEvent* ) override;
+      virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent* ) override;
       virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent* ) = 0;
-      virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* );
+      virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* ) override;
       virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* ) = 0;
       //virtual void handleJobResultsReplyEvent (const sdpa::events::JobResultsReplyEvent *) ?!
-      virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* );
-      virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
+      virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* ) override;
+      virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* ) override;
       //virtual void handleSubscribeAckEvent (const sdpa::events::SubscribeAckEvent*) ?!
-      virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*);
-      virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* );
-      virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
-      virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* );
+      virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*) override;
+      virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* ) override;
+      virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* ) override;
+      virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* ) override;
 
       virtual void handleDiscoverJobStatesReplyEvent
-        (const sdpa::events::DiscoverJobStatesReplyEvent*);
+        (const sdpa::events::DiscoverJobStatesReplyEvent*) override;
       virtual void handleDiscoverJobStatesEvent
-        (const sdpa::events::DiscoverJobStatesEvent*);
+        (const sdpa::events::DiscoverJobStatesEvent*) override;
 
     protected:
       // event communication
@@ -252,7 +251,7 @@ namespace sdpa {
       boost::condition_variable _scheduling_thread_notifier;
       void request_scheduling();
 
-      boost::optional<boost::mt19937> _random_extraction_engine;
+      boost::optional<std::mt19937> _random_extraction_engine;
 
     private:
 

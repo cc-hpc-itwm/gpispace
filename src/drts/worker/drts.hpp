@@ -112,13 +112,13 @@ public:
   DRTSImpl (std::function<void()> request_stop, std::map<std::string, std::string> config_variables);
   ~DRTSImpl();
 
-  virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent *e);
-  virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *e);
-  virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent *e);
-  virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *e);
-  virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent *e);
+  virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent *e) override;
+  virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *e) override;
+  virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent *e) override;
+  virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *e) override;
+  virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent *e) override;
   virtual void handleDiscoverJobStatesEvent
-    (const sdpa::events::DiscoverJobStatesEvent*);
+    (const sdpa::events::DiscoverJobStatesEvent*) override;
 
 private:
   // threads

@@ -1273,7 +1273,7 @@
           </properties>
         </out>
         <module name="asian" function="done (result)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <code>
             <![CDATA[
             LOG(INFO, "done row with result " << result);

@@ -6,7 +6,6 @@
 #include <algorithm>
 
 #include <fhglog/LogMacros.hpp>
-#include <fhg/assert.hpp>
 
 #include <plugin/plugin.hpp>
 #include <plugin/core/plugin.hpp>
@@ -14,6 +13,8 @@
 
 #include <fhg/util/daemonize.hpp>
 #include <fhg/util/split.hpp>
+
+#include <thread>
 
 #include <boost/range/adaptor/reversed.hpp>
 #include <boost/lexical_cast.hpp>
@@ -30,14 +31,31 @@ namespace fhg
   {
     void wait_until_stopped::wait()
     {
-      _stop_requested.wait();
-      _stopped.notify();
+      //! \note this strange looking thread is required to avoid a
+      //! deadlock that may happen when we are blocked within this
+      //! function and handle a terminating signal as well (which in
+      //! turn calls stop()).
+      //!
+      //! the deadlock is between the events '_stop_requested' and '_stopped',
+      //! we first block in '_stop_requested.wait()' and are released by
+      //! '_stop_requested.notify()', however after that call we
+      //! block again in '_stopped.wait()' and get never released.
+      std::thread ([this]
+                  {
+                    _stop_requested.wait();
+                    _stopped.notify();
+                  }
+                  ).join();
     }
 
     void wait_until_stopped::stop()
     {
-      _stop_requested.notify();
-      _stopped.wait();
+      std::thread ([this]
+                  {
+                    _stop_requested.notify();
+                    _stopped.wait();
+                  }
+                  ).join();
     }
 
     std::function<void()> wait_until_stopped::make_request_stop()
@@ -84,6 +102,8 @@ namespace fhg
           return;
         }
       }
+
+      throw std::runtime_error ("no search path contained " + name + ".so");
     }
     catch (std::runtime_error const& ex)
     {

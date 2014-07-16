@@ -3,7 +3,7 @@
 #define BOOST_TEST_MODULE thread_safety
 #include <boost/test/unit_test.hpp>
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhglog/format.hpp>
 #include <fhglog/appender/stream.hpp>
 
@@ -32,11 +32,11 @@ namespace
       : _container (container)
     {}
 
-    void append (const fhg::log::LogEvent &evt)
+    virtual void append (const fhg::log::LogEvent &evt) override
     {
       _container->push_back (fhg::log::format ("%m", evt));
     }
-    void flush () {}
+    virtual void flush () override {}
 
     std::vector<std::string>* _container;
   };
@@ -47,13 +47,13 @@ namespace
       : _container (container)
     {}
 
-    void append (const fhg::log::LogEvent &evt)
+    virtual void append (const fhg::log::LogEvent &evt) override
     {
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex);
 
       _container->push_back (fhg::log::format ("%m", evt));
     }
-    void flush () {}
+    virtual void flush () override {}
 
     std::vector<std::string>* _container;
     boost::recursive_mutex _mutex;

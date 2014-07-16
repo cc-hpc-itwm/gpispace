@@ -5,8 +5,11 @@
 
 #include <xml/parse/id/generic.hpp>
 #include <xml/parse/type/expression.hpp>
+#include <xml/parse/type/memory_buffer.hpp>
+#include <xml/parse/type/memory_transfer.hpp>
 #include <xml/parse/type/mod.hpp>
 #include <xml/parse/type/port.hpp>
+#include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/template.fwd.hpp>
@@ -147,6 +150,19 @@ namespace xml
 
         // ***************************************************************** //
 
+        void push_memory_get (memory_get const&);
+        void push_memory_put (memory_put const&);
+        void push_memory_getput (memory_getput const&p);
+
+        std::list<memory_get> const& memory_gets() const;
+        std::list<memory_put> const& memory_puts() const;
+        std::list<memory_getput> const& memory_getputs() const;
+
+        void push_memory_buffer (const id::ref::memory_buffer&);
+        xml::util::unique<memory_buffer_type, id::ref::memory_buffer>
+          const& memory_buffers() const;
+        bool is_known_memory_buffer (std::string const&) const;
+
         void push_port (const id::ref::port&);
         void remove_port (const id::ref::port&);
 
@@ -203,6 +219,8 @@ namespace xml
           , const we::type::property::type&
           , const requirements_type&
           , we::priority_type
+          , xml::util::range_type<place_map_type const>
+          , std::unordered_map<we::port_id_type, std::string>& real_place_names
           ) const;
 
         // ***************************************************************** //
@@ -231,6 +249,12 @@ namespace xml
         boost::optional<std::string> _name;
 
         ports_type _ports;
+        xml::util::unique<memory_buffer_type, id::ref::memory_buffer>
+          _memory_buffers;
+
+        std::list<memory_get> _memory_gets;
+        std::list<memory_put> _memory_puts;
+        std::list<memory_getput> _memory_getputs;
 
         typenames_type _typenames;
 

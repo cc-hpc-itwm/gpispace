@@ -1,6 +1,6 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhglog/remote/appender.hpp>
 
 #include <boost/program_options.hpp>

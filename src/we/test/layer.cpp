@@ -358,7 +358,7 @@ struct daemon
     return boost::lexical_cast<we::layer::id_type> (++_cnt);
   }
 
-  boost::mt19937 _random_engine;
+  std::mt19937 _random_engine;
   we::layer layer;
   mutable boost::mutex _in_progress_mutex;
   boost::condition_variable_any _in_progress_condition;
@@ -426,11 +426,58 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
   }
 }
 
+BOOST_FIXTURE_TEST_CASE (invalid_expressions_shall_fail, daemon)
+{
+  we::type::transition_t transition
+    ( "expression"
+    , we::type::expression_t ("${out} := ${in} + 1UL")
+    , boost::none
+    , true
+    , we::type::property::type()
+    , we::priority_type()
+    );
+  transition.add_port
+    (we::type::port_t ( "in"
+                      , we::type::PORT_IN
+                      , signature::LONG
+                      , we::type::property::type()
+                      )
+    );
+  transition.add_port
+    (we::type::port_t ( "out"
+                      , we::type::PORT_OUT
+                      , signature::LONG
+                      , we::type::property::type()
+                      )
+    );
+
+  we::type::activity_t activity (transition, boost::none);
+  activity.add_input ( transition.input_port_by_name ("in")
+                     , pnet::type::value::read ("1L")
+                     );
+
+  we::layer::id_type const id (generate_id());
+
+  {
+    const std::string message ("type error: eval  +  (1L, 1UL)");
+
+    expect_failed const _ (this, id, message);
+
+    do_submit (id, activity);
+  }
+}
+
 BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
 {
   we::type::transition_t transition
     ( "module call"
-    , we::type::module_call_t ("m", "f")
+    , we::type::module_call_t
+      ( "m"
+      , "f"
+      , std::unordered_map<std::string, std::string>()
+      , std::list<we::type::memory_transfer>()
+      , std::list<we::type::memory_transfer>()
+      )
     , boost::none
     , true
     , we::type::property::type()
@@ -491,7 +538,13 @@ namespace
   {
     we::type::transition_t transition
       ( "module call"
-      , we::type::module_call_t ("m", "f")
+      , we::type::module_call_t
+        ( "m"
+        , "f"
+        , std::unordered_map<std::string, std::string>()
+        , std::list<we::type::memory_transfer>()
+        , std::list<we::type::memory_transfer>()
+        )
       , boost::none
       , true
       , we::type::property::type()
@@ -1016,7 +1069,7 @@ BOOST_AUTO_TEST_CASE
 
   bool finished (false);
 
-  boost::mt19937 _random_engine;
+  std::mt19937 _random_engine;
 
   we::layer layer
     ( std::bind (&submit_fake, &child_ids, std::placeholders::_1, std::placeholders::_2)
@@ -1196,8 +1249,12 @@ namespace
   {
     we::type::transition_t transition
       ( fhg::util::random_string()
-      , we::type::module_call_t
-        (fhg::util::random_string(), fhg::util::random_string())
+      , we::type::module_call_t ( fhg::util::random_string()
+                                , fhg::util::random_string()
+                                , std::unordered_map<std::string, std::string>()
+                                , std::list<we::type::memory_transfer>()
+                                , std::list<we::type::memory_transfer>()
+                                )
       , boost::none
       , true
       , we::type::property::type()
@@ -1331,7 +1388,7 @@ namespace
       _received_requirements;
 
   private:
-    boost::mt19937 _random_extraction_engine;
+    std::mt19937 _random_extraction_engine;
 
     boost::mutex _generate_id_mutex;
     unsigned long _cnt;

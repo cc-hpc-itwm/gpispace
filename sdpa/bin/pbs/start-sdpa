@@ -14,7 +14,6 @@ usage: $(basename $0) [options]
 
   -h: this help
   -v: be verbose
-  -n: dry run
   -A path: add a path to the list of application search paths
   -f: node file to use
   -S: state directory to use
@@ -25,6 +24,20 @@ usage: $(basename $0) [options]
   -C: capability specification
   -G: number of segments
   -x: GPI binary to execute
+
+        This binary has to point to the 'gpi-space' application found
+        in '\$SDPA_HOME/bin/gpi-space', but has to reside in the GPI
+        privileged folder in case you are executing on a cluster. One
+        also has to put dependencies besides the application:
+
+             PRIV_DIR=<gpi-privileged-dir>
+             mkdir -p "\$PRIV_DIR"/gpi-space.app/{bin,lib}
+             cp "\$SDPA_HOME/bin/gpi-space" "\$PRIV_DIR/gpi-space.app/bin"
+             "\$SDPA_HOME/bin/sdpa" bundle -o "\$PRIV_DIR/gpi-space.app/lib" "\$PRIV_DIR/gpi-space.app/bin/gpi-space"
+
+        Please contact your local administrator responsible for GPI in
+        case you don't have permissions for that folder.
+
   -k: kvs port (=$kvs_port)
   -l: log url (=${log_url})
   -g: gui url (=${gui_url})
@@ -51,7 +64,7 @@ EOF
 on_ctrlC()
 {
         echo >&2 "Canceled..."
-        "${sdpa_home}/bin/sdpa" stop
+        "${sdpa}" -s "${state_dir}" stop
         exit 0
 }
 
@@ -85,16 +98,6 @@ assert_not_empty()
     if [ -z "$val" ]
     then
         error 2 "'${var}' must not be empty"
-    fi
-}
-
-dry_run_p=false
-dry_run()
-{
-    if $dry_run_p ; then
-        log "would run: $@"
-    else
-        "$@"
     fi
 }
 
@@ -173,6 +176,56 @@ parse_capability()
     return 0
 }
 
+# wait_for_port_on_host retries host port
+function wait_for_port_on_host ()
+{
+    local retries="${1}"; shift
+    local host="${1}"; shift
+    local port="${1}"; shift
+
+    until [ ${retries} -eq 0 ]
+    do
+        if ${check_port} -z "${host}" "${port}" </dev/null
+        then
+            return 0
+        else
+            sleep 1
+            retries=$((retries - 1))
+        fi
+    done
+
+    return 1
+}
+
+function wait_for_process ()
+{
+    local retries="${1}"; shift
+    local name="${1}"; shift
+    local kvs_host="${1}"; shift
+    local kvs_port="${1}"; shift
+
+    local host_port=()
+
+    until [ $retries -eq 0 ]
+    do
+        host_port=( $("${sdpa_home}/bin/fhgkvsc" -H "${kvs_host}" -P "${kvs_port}" -g p2p.peer | grep -B 2 "$name" | head -n 2 | awk '{print $3}') )
+        if [ ${#host_port[@]} -eq 2 ]
+        then
+            if wait_for_port_on_host ${retries} "${host_port[0]}" "${host_port[1]}"
+            then
+                return 0
+            else
+                return 2
+            fi
+        else
+            sleep 1
+            retries=$((retries - 1))
+        fi
+    done
+
+    return 1
+}
+
 # Execute function on_ctrlC() receiving SIGINT signal
 #
 trap 'on_ctrlC' SIGINT
@@ -184,6 +237,7 @@ gpi_enabled=true
 delete_logfiles=true
 app_path=
 number_of_groups=1
+network_retries=15
 
 # guess memory sizes
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
@@ -210,10 +264,6 @@ while getopts ":hvnf:S:m:s:C:p:MA:dG:k:x:l:g:H:" opt; do
         v)
             verbose=true
             shiftcount=$((shiftcount + 1))
-            ;;
-        n)
-            dry_run_p=true
-            shiftcount=$(( shiftcount + 1 ))
             ;;
         f)
             nodefile="$OPTARG"
@@ -379,14 +429,19 @@ if [ ! -x "${script_start_orchestrator}" ] ; then
     error 2 "utility script '${script_start_orchestrator}' is not executable"
 fi
 
-script_start_gpi="${sdpa_home}/libexec/sdpa/scripts/start-gpi"
-if [ ! -x "${script_start_gpi}" ] ; then
-    error 2 "utility script '${script_start_gpi}' is not executable"
+check_port=$(which nc 2>/dev/null)
+if [ $? -ne 0 ]
+then
+    check_port=$(which netcat 2>/dev/null)
+    if [ $? -ne 0 ]
+    then
+        error 2 "utility tool 'nc' or 'netcat' could not be found"
+    fi
 fi
 
 info "using nodefile: $nodefile"
 
-dry_run rexec $master /usr/bin/env "${sdpa}" -s "${state_dir}" init "$nodefile" </dev/null || {
+rexec $master /usr/bin/env "${sdpa}" -s "${state_dir}" init "$nodefile" </dev/null || {
     error 2 "could not initialize SDPA!"
 }
 
@@ -405,14 +460,21 @@ else
     opt_verbose_flag=""
 fi
 
-dry_run rexec $master ${sdpa} -s "${state_dir}" start kvs ${kvs_port}
+rexec $master ${sdpa} -s "${state_dir}" start kvs ${kvs_port}
 ec=$?
 if [ $ec -ne 0 ]
 then
-    "${sdpa}" stop
+    "${sdpa}" -s "${state_dir}" stop
     error 3 "could not start kvs"
 fi
-dry_run rexec $master "${script_start_orchestrator}" \
+
+if ! wait_for_port_on_host ${network_retries} "${master}" "${kvs_port}"
+then
+    "${sdpa}" -s "${state_dir}" stop
+    error 3 "could not start kvs: failed to appear at ${master}:${kvs_port} after ${network_retries} seconds"
+fi
+
+rexec $master "${script_start_orchestrator}" \
     $opt_verbose_flag \
     -s "$state_dir" \
     -P "$state_dir/orchestrator.pid" \
@@ -424,8 +486,21 @@ dry_run rexec $master "${script_start_orchestrator}" \
 ec=$?
 if [ $ec -ne 0 ]
 then
-    "${sdpa}" stop
+    "${sdpa}" -s "${state_dir}" stop
     error 3 "could not start orchestrator"
+fi
+
+wait_for_process ${network_retries} "orchestrator" "${master}" "${kvs_port}"
+ec=$?
+if [ $ec -ne 0 ]
+then
+    "${sdpa}" -s "${state_dir}" stop
+    if [ $ec -eq 1 ]
+    then
+        error 3 "could not start orchestrator, failed to appear after ${network_retries} seconds"
+    else
+        error 3 "could not start orchestrator, could not connect after ${network_retries} seconds"
+    fi
 fi
 
 if $gpi_enabled ; then
@@ -438,21 +513,20 @@ if $gpi_enabled ; then
     info "using GPI mem: ${gpi_mem} bytes per node"
     info "starting GPI using: '$gpi_exe' on '${gpi_socket}'"
 
-    dry_run "${script_start_gpi}" \
-        -s "$state_dir" \
-        -x "${gpi_exe}" \
-        -D \
-        -f \
-        -P "$state_dir/gpi-space.pid" \
-        -m "$gpi_mem" \
-        -k "${master}" -K "$kvs_port" \
-        -l "${log_host}" -L "${log_port}" \
-        -S "${gpi_socket}"
+    rexec $master /usr/bin/env FHGLOG_to_server="${log_host}:${log_port}" \
+        "${gpi_exe}" \
+        --log-file "$state_dir/log/gpi-space.log" \
+        --daemonize \
+        --pidfile "$state_dir/gpi-space.pid" \
+        --gpi-mem "$gpi_mem" \
+        --kvs-host "${master}" --kvs-port "$kvs_port" \
+        --log-host "${log_host}" --log-port "${log_port}" \
+        --socket "${gpi_socket}"
 
     ec=$?
     if [ $ec -ne 0 ]
     then
-        "${sdpa}" stop
+        "${sdpa}" -s "${state_dir}" stop
         error 3 "could not start gpi-space"
     fi
 fi
@@ -522,7 +596,7 @@ function start_agent
 
     info "starting agent: ${name} on host ${host} with parent ${parent}"
 
-    dry_run rexec ${host} "${script_start_agent}" \
+    rexec ${host} "${script_start_agent}" \
         $opt_verbose_flag \
         -D \
         -n "${name}" \
@@ -555,7 +629,7 @@ function start_agents
         ec=$?
         if [ $ec -ne 0 ]
         then
-            ${sdpa} stop
+            "${sdpa}" -s "${state_dir}" stop
             error 3 "at least one agent could not be started!"
         fi
     done
@@ -615,7 +689,7 @@ function start_workers_for_capability
         fi
         argv+=(-H "${sdpa_home}")
 
-        dry_run rexec $host "$script_start_drts" "${argv[@]}" &
+        rexec $host "$script_start_drts" "${argv[@]}" &
 
         pids+=( $! )
 
@@ -623,7 +697,7 @@ function start_workers_for_capability
         ec=$?
         if [ $ec -ne 0 ]
         then
-            ${sdpa} stop
+            "${sdpa}" -s "${state_dir}" stop
             error 3 "at least one worker could not be started!"
         fi
 
@@ -658,7 +732,7 @@ wait_on_pids
 ec=$?
 if [ $ec -ne 0 ]
 then
-    ${sdpa} stop
+    "${sdpa}" -s "${state_dir}" stop
     error 3 "at least one agent could not be started!"
 fi
 
@@ -667,6 +741,6 @@ wait_on_pids
 ec=$?
 if [ $ec -ne 0 ]
 then
-    ${sdpa} stop
+    "${sdpa}" -s "${state_dir}" stop
     error 3 "at least one worker could not be started!"
 fi

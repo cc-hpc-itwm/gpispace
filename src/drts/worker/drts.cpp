@@ -81,7 +81,7 @@ namespace
       , task (target)
     {}
 
-    virtual void handle_internally (we::type::activity_t& act, net_t const&)
+    virtual void handle_internally (we::type::activity_t& act, net_t const&) override
     {
       if (act.transition().net())
       {
@@ -101,7 +101,7 @@ namespace
       }
     }
 
-    virtual void handle_internally (we::type::activity_t& act, mod_t const& mod)
+    virtual void handle_internally (we::type::activity_t& act, mod_t const& mod) override
     {
       try
       {
@@ -116,21 +116,21 @@ namespace
       }
     }
 
-    virtual void handle_internally (we::type::activity_t&, expr_t const&)
+    virtual void handle_internally (we::type::activity_t&, expr_t const&) override
     {
     }
 
-    virtual void handle_externally (we::type::activity_t& act, net_t const& n)
+    virtual void handle_externally (we::type::activity_t& act, net_t const& n) override
     {
       handle_internally (act, n);
     }
 
-    virtual void handle_externally (we::type::activity_t& act, mod_t const& module_call)
+    virtual void handle_externally (we::type::activity_t& act, mod_t const& module_call) override
     {
       handle_internally (act, module_call);
     }
 
-    virtual void handle_externally (we::type::activity_t& act, expr_t const& e)
+    virtual void handle_externally (we::type::activity_t& act, expr_t const& e) override
     {
       handle_internally (act, e);
     }
@@ -193,7 +193,7 @@ void WFEImpl::emit_task (const wfe_task_t& task)
     using sdpa::daemon::NotificationEvent;
     _notification_service->notify
       ( NotificationEvent
-        ( _worker_name
+        ( {_worker_name}
         , task.id
         , task.state == wfe_task_t::PENDING ? NotificationEvent::STATE_STARTED
         : task.state == wfe_task_t::FINISHED ? NotificationEvent::STATE_FINISHED

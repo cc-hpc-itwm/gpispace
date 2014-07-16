@@ -183,7 +183,7 @@ namespace gpi
       bool area_t::is_eligible_for_deletion () const
       {
         lock_type lock (m_mutex);
-        assert (m_descriptor.nref == m_attached_processes.size());
+        fhg_assert (m_descriptor.nref == m_attached_processes.size());
         if (m_descriptor.nref)
         {
           return false;
@@ -775,7 +775,7 @@ namespace gpi
                                                         , buffer->used ()
                                                         );
 
-              assert (num_read == num_written);
+              fhg_assert (num_read == num_written);
 
               buffer->used (num_read - num_written);
 

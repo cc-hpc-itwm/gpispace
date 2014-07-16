@@ -7,7 +7,7 @@
 #include <fhglog/event.hpp>
 #include <fhglog/level.hpp>
 #include <fhglog/appender/stream.hpp>
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhglog/remote/appender.hpp>
 
 #include <fhg/util/read_bool.hpp>

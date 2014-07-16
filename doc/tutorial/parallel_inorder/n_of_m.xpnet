@@ -2,11 +2,12 @@
 
   <struct name="config">
     <field name="description" type="string"/>
+    <field name="output_file" type="string"/>
   </struct>
 
   <in name="n" type="long" place="n"/>
   <in name="c" type="long" place="c"/>
-  <in name="config" type="config" place="config"/>
+  <in name="config" type="config" place="config_in"/>
   <out name="done" type="control" place="done"/>
 
   <net>
@@ -14,6 +15,30 @@
     <place name="n" type="long"/>
     <place name="c" type="long"/>
     <place name="done" type="control"/>
+    <place name="config_in" type="config"/>
+
+    <transition name="init">
+      <defun>
+        <inout name="config" type="config"/>
+        <module name="work" function="init (config)">
+          <cinclude href="iostream"/>
+          <cinclude href="fstream"/>
+          <code><![CDATA[
+          std::fstream output_file ( config.output_file.c_str ()
+                                   , std::ios_base::binary
+                                   | std::ios_base::out
+                                   | std::ios_base::trunc
+                                   );
+          if (not output_file)
+          {
+            throw std::runtime_error ("init: could not open output file");
+          }
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="config" place="config_in"/>
+      <connect-out port="config" place="config"/>
+    </transition>
 
     <transition name="generate_credit" inline="true">
       <include-function href="sequence/sequence_forward.xpnet"/>

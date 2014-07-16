@@ -40,7 +40,7 @@
         <in name="description" type="string"/>
         <out name="config" type="config"/>
         <module name="ufbmig_oldschool" function="config init (description)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="fvm-pc/pc.hpp"/>
           <code><![CDATA[
             LOG (INFO, "INIT " << description);
@@ -134,7 +134,7 @@
         <in name="assigned_package" type="assigned_package"/>
         <out name="assigned_package" type="assigned_package"/>
         <module name="ufbmig_oldschool" function="work (config, assigned_package)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <code><![CDATA[
             const ::pnetc::type::package::package & package (assigned_package.package);
             const ::pnetc::type::store::store & store (assigned_package.store);
@@ -180,7 +180,7 @@
         <out name="finished" type="assigned_package"/>
         <module name="ufbmig_oldschool"
                 function="reduce_step (config, done, in_reduction, finished)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <code><![CDATA[
             LOG (INFO, "REDUCE " << done << " and " << in_reduction);
 
@@ -251,7 +251,7 @@
         <out name="offset" type="offset"/>
         <module name="ufbmig_oldschool"
                 function="finalize_offset (config, reduced, store, offset)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <code><![CDATA[
             LOG (INFO, "FINALIZE OFFSET " << reduced);
 
@@ -288,7 +288,7 @@
         <in name="trigger" type="control"/>
         <out name="trigger" type="control"/>
         <module name="ufbmig_oldschool" function="finalize (config)">
-          <cinclude href="fhglog/fhglog.hpp"/>
+          <cinclude href="fhglog/LogMacros.hpp"/>
           <code><![CDATA[
             LOG (INFO, "FINALIZE TOTAL " << config);
           ]]></code>

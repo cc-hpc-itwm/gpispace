@@ -6,10 +6,6 @@ namespace we
 {
   namespace type
   {
-    schedule_data::schedule_data()
-      : _num_worker (boost::none)
-    {}
-
     schedule_data::schedule_data
       (const boost::optional<unsigned long>& num_worker)
         : _num_worker (num_worker)

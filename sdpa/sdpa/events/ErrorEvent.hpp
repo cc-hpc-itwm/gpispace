@@ -52,7 +52,7 @@ namespace sdpa
         return job_id_;
       }
 
-      virtual void handleBy (EventHandler* handler)
+      virtual void handleBy (EventHandler* handler) override
       {
         handler->handleErrorEvent (this);
       }

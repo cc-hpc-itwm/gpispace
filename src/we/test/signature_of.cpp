@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE (signature)
   SIG_LITERAL ("char", 'c');
   SIG_LITERAL ("string", std::string (""));
   SIG_LITERAL ("bitset", bitsetofint::type());
-  SIG_LITERAL ("bytearray", bytearray::type());
+  SIG_LITERAL ("bytearray", we::type::bytearray());
   SIG_LITERAL ("list", std::list<value_type>());
   SIG_LITERAL ("set", std::set<value_type>());
   SIG_LITERAL ("map", std::map<value_type, value_type>());

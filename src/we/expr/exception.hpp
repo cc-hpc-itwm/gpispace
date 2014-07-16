@@ -80,7 +80,7 @@ namespace expr
             )
           , _value (value)
         {}
-        virtual ~square_root_for_negative_argument() throw() = default;
+        virtual ~square_root_for_negative_argument() = default;
 
       private:
         T _value;
@@ -98,7 +98,7 @@ namespace expr
             )
           , _value (value)
         {}
-        virtual ~log_for_nonpositive_argument() throw() = default;
+        virtual ~log_for_nonpositive_argument() = default;
 
       private:
         T _value;

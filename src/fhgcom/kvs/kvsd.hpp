@@ -5,7 +5,7 @@
 #include <fhgcom/session.hpp>
 #include <fhgcom/session_manager.hpp>
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -201,8 +201,7 @@ namespace fhg
           template <typename T>
           struct entry_t
           {
-            entry_t ()
-            {}
+            entry_t () = default;
 
             entry_t ( T const &value
                     , boost::posix_time::ptime exp = boost::posix_time::min_date_time
@@ -449,8 +448,8 @@ namespace fhg
             }
           }
         protected:
-          void on_data_hook
-            (boost::shared_ptr<session> client, const std::string &s)
+          virtual void on_data_hook
+            (boost::shared_ptr<session> client, const std::string &s) override
           {
             try
             {

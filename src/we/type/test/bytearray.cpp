@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE (ba_char)
       buf[i] = i + 'a';
     }
 
-  const bytearray::type x (buf, 10);
+  const we::type::bytearray x (buf, 10);
 
   std::fill (buf, buf + 10, 0);
 
@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE (ba_uint64_t)
 {
   uint64_t v (1UL << 63);
 
-  const bytearray::type x (&v);
+  const we::type::bytearray x (&v);
 
   v = 0;
 
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE (ba_convert)
 {
   uint64_t v (1UL << 63);
 
-  const bytearray::type x (&v);
+  const we::type::bytearray x (&v);
 
   BOOST_REQUIRE_EQUAL (sizeof (uint64_t), 8);
 
@@ -77,7 +77,7 @@ struct p
   double _x;
   long _y;
 
-  p () : _x(), _y() {}
+  p () = default;
   p (const double & x, const long & y) : _x (x), _y (y) {}
 
   friend class boost::serialization::access;
@@ -99,7 +99,7 @@ struct q
   p _p;
   std::string _s;
 
-  q () : _p(), _s() {}
+  q () = default;
   q (const p & p, const std::string & s) : _p(p), _s(s) {}
 
   friend class boost::serialization::access;
@@ -125,10 +125,10 @@ BOOST_AUTO_TEST_CASE (ba_assign_from_ba)
       buf[i] = i + 'a';
     }
 
-  bytearray::type y;
+  we::type::bytearray y;
 
   {
-    const bytearray::type x (buf, 10);
+    const we::type::bytearray x (buf, 10);
 
     y = x;
   }
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE (ba_assign_from_ba)
 
 BOOST_AUTO_TEST_CASE (ba_assign_from_alien)
 {
-  bytearray::type ba;
+  we::type::bytearray ba;
 
   ba = 1.0f;
 

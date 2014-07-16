@@ -43,7 +43,7 @@ namespace fhg
 
           virtual void set_property ( const ::we::type::property::key_type&
                                     , const ::we::type::property::value_type&
-                                    ) const;
+                                    ) const override;
 
           using connect_meta_base::operator==;
         };

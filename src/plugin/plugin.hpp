@@ -5,8 +5,6 @@
 #include <map>
 #include <list>
 
-#include <fhg/assert.hpp>
-
 #include <boost/utility.hpp>
 
 #include <functional>

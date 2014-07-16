@@ -21,28 +21,54 @@
 
 #include <we/type/module_call.fwd.hpp>
 
+#include <we/type/memory_transfer.hpp>
+
 #include <ostream>
 #include <boost/serialization/nvp.hpp>
+
+#include <unordered_map>
 
 namespace we { namespace type {
   struct module_call_t
   {
-    module_call_t ()
-    {}
+    module_call_t () = default;
 
-    module_call_t (const std::string & module, const std::string & function)
+    module_call_t
+      ( const std::string & module
+      , const std::string & function
+      , std::unordered_map<std::string, std::string>&& memory_buffers
+      , std::list<memory_transfer>&& memory_gets
+      , std::list<memory_transfer>&& memory_puts
+      )
       : module_(module)
       , function_(function)
+      , _memory_buffers (memory_buffers)
+      , _memory_gets (memory_gets)
+      , _memory_puts (memory_puts)
     {}
 
     const std::string & module () const { return module_; }
     const std::string & function () const { return function_; }
 
-    void module (const std::string & m) { module_ = m; }
-    void function (const std::string & f) { function_ = f; }
+    std::unordered_map<std::string, std::string> const& memory_buffers() const
+    {
+      return _memory_buffers;
+    }
+    std::list<memory_transfer> const& memory_gets() const
+    {
+      return _memory_gets;
+    }
+    std::list<memory_transfer> const& memory_puts() const
+    {
+      return _memory_puts;
+    }
+
     private:
     std::string module_;
     std::string function_;
+    std::unordered_map<std::string, std::string> _memory_buffers;
+    std::list<memory_transfer> _memory_gets;
+    std::list<memory_transfer> _memory_puts;
 
     friend class boost::serialization::access;
     template<typename Archive>
@@ -50,6 +76,9 @@ namespace we { namespace type {
     {
       ar & BOOST_SERIALIZATION_NVP(module_);
       ar & BOOST_SERIALIZATION_NVP(function_);
+      ar & BOOST_SERIALIZATION_NVP (_memory_buffers);
+      ar & BOOST_SERIALIZATION_NVP (_memory_gets);
+      ar & BOOST_SERIALIZATION_NVP (_memory_puts);
     }
   };
 

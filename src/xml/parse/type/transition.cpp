@@ -15,6 +15,8 @@
 #include <we/type/place.hpp>
 #include <we/type/expression.hpp>
 
+#include <fhg/assert.hpp>
+
 #include <boost/variant.hpp>
 
 #include <xml/parse/rewrite/validprefix.hpp>
@@ -457,7 +459,7 @@ namespace xml
                                        , const state::type &
                                        ) const
       {
-        assert (has_parent());
+        fhg_assert (has_parent());
 
         const std::string direction
           (we::edge::enum_to_string (connect.direction()));
@@ -941,6 +943,8 @@ namespace xml
               port_id_in;
             std::unordered_map<std::string, we::port_id_type>
               port_id_out;
+            std::unordered_map<we::port_id_type, std::string>
+              real_place_names;
 
             we::type::transition_t we_trans
               ( fun.synthesize ( trans.name()
@@ -953,6 +957,8 @@ namespace xml
                                , trans.requirements
                                , trans.priority
                                ? *trans.priority : we::priority_type()
+                               , trans.place_map().values()
+                               , real_place_names
                                )
               );
 
@@ -981,6 +987,23 @@ namespace xml
                   , connect.properties()
                   );
               }
+            }
+
+            for ( std::pair<we::port_id_type, std::string> const& association
+                : real_place_names
+                )
+            {
+              we::type::property::type properties;
+
+              properties.set ("pnetc.tunnel", we::type::property::value_type());
+
+              we_net.add_connection
+                ( we::edge::PT
+                , tid
+                , get_pid (pids, association.second)
+                , association.first
+                , properties
+                );
             }
           } // not unfold
 

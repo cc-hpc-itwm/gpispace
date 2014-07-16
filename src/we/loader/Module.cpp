@@ -40,7 +40,7 @@ namespace we
 
       MLOG (TRACE, "loaded module " << name_ << " from " << path_);
     }
-    Module::~Module() throw()
+    Module::~Module()
     {
       MLOG (TRACE, "unloading " << name_);
 
@@ -94,6 +94,7 @@ namespace we
                       , drts::worker::context *info
                       , const expr::eval::context& input
                       , expr::eval::context& output
+                      , std::map<std::string, void*> const& memory_buffer
                       )
     {
       const std::unordered_map<std::string, WrapperFunction>::const_iterator
@@ -105,7 +106,7 @@ namespace we
       }
       else
       {
-        (*fun->second)(info, input, output);
+        (*fun->second)(info, input, output, memory_buffer);
       }
     }
     void Module::add_function (const std::string& name, WrapperFunction f)

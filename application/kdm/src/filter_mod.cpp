@@ -1,6 +1,6 @@
 #include <we/loader/macros.hpp>
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fvm-pc/pc.hpp>
 
 #include <iostream>
@@ -69,7 +69,7 @@ static void generic_filter ( drts::worker::context *
 
   filter (Bunch);
 
-  output.bind ("bunch", bunch);
+  output.bind_and_discard_ref ("bunch", bunch);
 }
 
 static void
@@ -98,7 +98,7 @@ generic_filter_with_float ( drts::worker::context *
 
   filter (Bunch, f);
 
-  output.bind ("bunch", bunch);
+  output.bind_and_discard_ref ("bunch", bunch);
 }
 
 // ************************************************************************* //
@@ -131,6 +131,7 @@ static void shrink_impl (TraceBunch & Bunch)
 static void shrink ( drts::worker::context * state
 		   , const expr::eval::context & input
 		   , expr::eval::context & output
+                   , std::map<std::string, void*> const&
 		   )
 {
   generic_filter (state, input, output, shrink_impl);
@@ -170,6 +171,7 @@ static void clip_impl (TraceBunch & Bunch, const float & c)
 static void clip ( drts::worker::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
+                 , std::map<std::string, void*> const&
 		 )
 {
   generic_filter_with_float (state, input, output, clip_impl, "filter.clip");
@@ -204,6 +206,7 @@ static void trap_impl (TraceBunch & Bunch, const float & t)
 static void trap ( drts::worker::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
+                 , std::map<std::string, void*> const&
 		 )
 {
   generic_filter_with_float (state, input, output, trap_impl, "filter.trap");
@@ -294,6 +297,7 @@ static void
 bandpass ( drts::worker::context *
 	 , const expr::eval::context & input
 	 , expr::eval::context & output
+         , std::map<std::string, void*> const&
 	 )
 {
   const pnet::type::value::value_type& config (input.value ("config"));
@@ -312,7 +316,7 @@ bandpass ( drts::worker::context *
 
   bandpass_impl (Bunch, Job.frequ1, Job.frequ2, Job.frequ3, Job.frequ4);
 
-  output.bind ("bunch", bunch);
+  output.bind_and_discard_ref ("bunch", bunch);
 }
 
 // ************************************************************************* //
@@ -378,6 +382,7 @@ static void frac_impl (TraceBunch & Bunch)
 static void frac ( drts::worker::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
+                 , std::map<std::string, void*> const&
 		 )
 {
   generic_filter (state, input, output, frac_impl);
@@ -429,6 +434,7 @@ static void tpow_impl (TraceBunch & Bunch,
 static void tpow ( drts::worker::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
+                 , std::map<std::string, void*> const&
 		 )
 {
   generic_filter_with_float (state, input, output, tpow_impl, "filter.tpow");

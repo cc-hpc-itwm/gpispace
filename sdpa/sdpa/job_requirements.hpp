@@ -11,7 +11,7 @@ typedef std::list<we::type::requirement_t> requirement_list_t;
 class job_requirements_t
 {
 public:
-  job_requirements_t() : m_requirementList(), m_scheduleData() {}
+  job_requirements_t() = default;
   job_requirements_t(const requirement_list_t& r_list, const we::type::schedule_data& schedule_data)
     : m_requirementList(r_list), m_scheduleData(schedule_data)
   {}

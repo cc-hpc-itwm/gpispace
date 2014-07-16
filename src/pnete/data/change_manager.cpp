@@ -308,12 +308,12 @@ namespace fhg
               , _old_value (*handle.get().properties().get (key))
           { }
 
-          virtual void undo()
+          virtual void undo() override
           {
             set_property (ACTION_IMPL_ARGS, _handle, _key, _old_value);
           }
 
-          virtual void redo()
+          virtual void redo() override
           {
             set_property (ACTION_IMPL_ARGS, _handle, _key, _new_value);
           }
@@ -368,12 +368,12 @@ namespace fhg
               , _new_type (type)
           { }
 
-          virtual void undo()
+          virtual void undo() override
           {
             set_type_impl (ACTION_IMPL_ARGS, _handle, _old_type);
           }
 
-          virtual void redo()
+          virtual void redo() override
           {
             set_type_impl (ACTION_IMPL_ARGS, _handle, _new_type);
           }
@@ -417,12 +417,12 @@ namespace fhg
               , _new_name (name)
           { }
 
-          virtual void undo()
+          virtual void undo() override
           {
             set_name_impl (ACTION_IMPL_ARGS, _handle, _old_name);
           }
 
-          virtual void redo()
+          virtual void redo() override
           {
             set_name_impl (ACTION_IMPL_ARGS, _handle, _new_name);
           }
@@ -474,24 +474,24 @@ namespace fhg
                               )
           { }
 
-          virtual void undo()
+          virtual void undo() override
           {
             _set_x_action->undo();
             _set_y_action->undo();
           }
 
-          virtual void redo()
+          virtual void redo() override
           {
             _set_x_action->redo();
             _set_y_action->redo();
           }
 
-          virtual int id() const
+          virtual int id() const override
           {
             return _id;
           }
 
-          virtual bool mergeWith (const QUndoCommand* other_)
+          virtual bool mergeWith (const QUndoCommand* other_) override
           {
             if (id() == other_->id())
             {
@@ -560,12 +560,12 @@ namespace fhg
               , _connect (connect)
           { }
 
-          virtual void undo()
+          virtual void undo() override
           {
             remove_connection_impl (ACTION_IMPL_ARGS, _transition, _connect);
           }
 
-          virtual void redo()
+          virtual void redo() override
           {
             add_connection_impl (ACTION_IMPL_ARGS, _transition, _connect);
           }
@@ -586,12 +586,12 @@ namespace fhg
               , _transition (_connect.get().parent()->make_reference_id())
           { }
 
-          virtual void undo()
+          virtual void undo() override
           {
             add_connection_impl (ACTION_IMPL_ARGS, _transition, _connect);
           }
 
-          virtual void redo()
+          virtual void redo() override
           {
             remove_connection_impl (ACTION_IMPL_ARGS, _transition, _connect);
           }
@@ -623,12 +623,12 @@ namespace fhg
               , _new_value (read)
           { }
 
-          virtual void undo()
+          virtual void undo() override
           {
             connection_is_read_impl (ACTION_IMPL_ARGS, _connect, _old_value);
           }
 
-          virtual void redo()
+          virtual void redo() override
           {
             connection_is_read_impl (ACTION_IMPL_ARGS, _connect, _new_value);
           }
@@ -680,12 +680,12 @@ namespace fhg
               , _place_map (place_map)
           { }
 
-          virtual void undo()
+          virtual void undo() override
           {
             remove_place_map_impl (ACTION_IMPL_ARGS, _transition, _place_map);
           }
 
-          virtual void redo()
+          virtual void redo() override
           {
             add_place_map_impl (ACTION_IMPL_ARGS, _transition, _place_map);
           }
@@ -706,12 +706,12 @@ namespace fhg
               , _transition (_place_map.get().parent()->make_reference_id())
           { }
 
-          virtual void undo()
+          virtual void undo() override
           {
             add_place_map_impl (ACTION_IMPL_ARGS, _transition, _place_map);
           }
 
-          virtual void redo()
+          virtual void redo() override
           {
             remove_place_map_impl (ACTION_IMPL_ARGS, _transition, _place_map);
           }
@@ -762,12 +762,12 @@ namespace fhg
               , _net (net)
           { }
 
-          virtual void undo()
+          virtual void undo() override
           {
             remove_transition_impl (ACTION_IMPL_ARGS, _net, _transition);
           }
 
-          virtual void redo()
+          virtual void redo() override
           {
             add_transition_impl (ACTION_IMPL_ARGS, _net, _transition);
           }
@@ -789,12 +789,12 @@ namespace fhg
             , _net (_transition.get().parent()->make_reference_id())
           { }
 
-          virtual void undo()
+          virtual void undo() override
           {
             add_transition_impl (ACTION_IMPL_ARGS, _net, _transition);
           }
 
-          virtual void redo()
+          virtual void redo() override
           {
             remove_transition_impl (ACTION_IMPL_ARGS, _net, _transition);
           }
@@ -838,12 +838,12 @@ namespace fhg
             , _net (net)
           { }
 
-          virtual void undo()
+          virtual void undo() override
           {
             remove_place_impl (ACTION_IMPL_ARGS, _net, _place);
           }
 
-          virtual void redo()
+          virtual void redo() override
           {
             add_place_impl (ACTION_IMPL_ARGS, _net, _place);
           }
@@ -864,12 +864,12 @@ namespace fhg
               , _net (_place.get().parent()->make_reference_id())
           { }
 
-          virtual void undo()
+          virtual void undo() override
           {
             add_place_impl (ACTION_IMPL_ARGS, _net, _place);
           }
 
-          virtual void redo()
+          virtual void redo() override
           {
             remove_place_impl (ACTION_IMPL_ARGS, _net, _place);
           }
@@ -904,12 +904,12 @@ namespace fhg
             , _new_value (new_value)
           { }
 
-          virtual void undo()
+          virtual void undo() override
           {
             place_set_virtual_impl (ACTION_IMPL_ARGS, _place, _old_value);
           }
 
-          virtual void redo()
+          virtual void redo() override
           {
             place_set_virtual_impl (ACTION_IMPL_ARGS, _place, _new_value);
           }
@@ -961,12 +961,12 @@ namespace fhg
             , _function (function)
           { }
 
-          virtual void undo()
+          virtual void undo() override
           {
             remove_port_impl (ACTION_IMPL_ARGS, _function, _port);
           }
 
-          virtual void redo()
+          virtual void redo() override
           {
             add_port_impl (ACTION_IMPL_ARGS, _function, _port);
           }
@@ -986,12 +986,12 @@ namespace fhg
             , _function (_port.get().parent()->make_reference_id())
           { }
 
-          virtual void undo()
+          virtual void undo() override
           {
             add_port_impl (ACTION_IMPL_ARGS, _function, _port);
           }
 
-          virtual void redo()
+          virtual void redo() override
           {
             remove_port_impl (ACTION_IMPL_ARGS, _function, _port);
           }
@@ -1026,12 +1026,12 @@ namespace fhg
               , _new_place (place)
           { }
 
-          virtual void undo()
+          virtual void undo() override
           {
             set_place_association_impl (ACTION_IMPL_ARGS, _port, _old_place);
           }
 
-          virtual void redo()
+          virtual void redo() override
           {
             set_place_association_impl (ACTION_IMPL_ARGS, _port, _new_place);
           }
@@ -1074,12 +1074,12 @@ namespace fhg
                 (boost::make_optional (!name.isEmpty(), name.toStdString()))
           { }
 
-          virtual void undo()
+          virtual void undo() override
           {
             set_function_name_impl (ACTION_IMPL_ARGS, _function, _old_name);
           }
 
-          virtual void redo()
+          virtual void redo() override
           {
             set_function_name_impl (ACTION_IMPL_ARGS, _function, _new_name);
           }
@@ -1127,13 +1127,13 @@ namespace fhg
               , _new_content (new_content.toStdString())
           { }
 
-          virtual void undo()
+          virtual void undo() override
           {
             set_expression_content_impl
               (ACTION_IMPL_ARGS, _expression, _old_content);
           }
 
-          virtual void redo()
+          virtual void redo() override
           {
             set_expression_content_impl
               (ACTION_IMPL_ARGS, _expression, _new_content);

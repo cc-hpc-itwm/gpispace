@@ -81,101 +81,101 @@ public:
     _try_start_loop = nullptr;
   }
 
-  gpi::pc::type::handle_id_t alloc ( const gpi::pc::type::segment_id_t seg_id
+  virtual gpi::pc::type::handle_id_t alloc ( const gpi::pc::type::segment_id_t seg_id
                                    , const gpi::pc::type::size_t sz
                                    , const std::string & desc
                                    , const gpi::pc::type::flags_t flgs
-                                   )
+                                   ) override
   {
     return api.alloc(seg_id, sz, desc, flgs);
   }
 
-  void free (const gpi::pc::type::handle_id_t hdl)
+  virtual void free (const gpi::pc::type::handle_id_t hdl) override
   {
     return api.free(hdl);
   }
 
-  gpi::pc::type::handle::list_t list_allocations (const gpi::pc::type::segment_id_t seg)
+  virtual gpi::pc::type::handle::list_t list_allocations (const gpi::pc::type::segment_id_t seg) override
   {
     return api.list_allocations(seg);
   }
 
-  gpi::pc::type::queue_id_t memcpy ( gpi::pc::type::memory_location_t const & dst
+  virtual gpi::pc::type::queue_id_t memcpy ( gpi::pc::type::memory_location_t const & dst
                                    , gpi::pc::type::memory_location_t const & src
                                    , const gpi::pc::type::size_t amount
                                    , const gpi::pc::type::queue_id_t queue
-                                   )
+                                   ) override
   {
     return api.memcpy(dst, src, amount, queue);
   }
 
-  gpi::pc::type::handle_t memset (const gpi::pc::type::handle_t h
+  virtual gpi::pc::type::handle_t memset (const gpi::pc::type::handle_t h
                                  , int value
                                  , size_t count
-                                 )
+                                 ) override
   {
     return api.memset(h,value,count);
   }
 
-  void * ptr(const gpi::pc::type::handle_t h)
+  virtual void * ptr(const gpi::pc::type::handle_t h) override
   {
     return api.ptr(h);
   }
 
-  gpi::pc::type::size_t wait (const gpi::pc::type::queue_id_t q)
+  virtual gpi::pc::type::size_t wait (const gpi::pc::type::queue_id_t q) override
   {
     return api.wait(q);
   }
 
-  std::vector<gpi::pc::type::size_t> wait ()
+  virtual std::vector<gpi::pc::type::size_t> wait () override
   {
     return api.wait();
   }
 
-  gpi::pc::type::segment_id_t register_segment( std::string const & name
+  virtual gpi::pc::type::segment_id_t register_segment( std::string const & name
                                               , const gpi::pc::type::size_t sz
                                               , const gpi::pc::type::flags_t flgs
-                                              )
+                                              ) override
   {
     return api.register_segment(name,sz,flgs);
   }
 
-  void unregister_segment(const gpi::pc::type::segment_id_t id)
+  virtual void unregister_segment(const gpi::pc::type::segment_id_t id) override
   {
     return api.unregister_segment(id);
   }
 
-  void attach_segment(const gpi::pc::type::segment_id_t id)
+  virtual void attach_segment(const gpi::pc::type::segment_id_t id) override
   {
     return api.attach_segment(id);
   }
 
-  void detach_segment(const gpi::pc::type::segment_id_t id)
+  virtual void detach_segment(const gpi::pc::type::segment_id_t id) override
   {
     return api.detach_segment(id);
   }
 
-  gpi::pc::type::segment::list_t list_segments ()
+  virtual gpi::pc::type::segment::list_t list_segments () override
   {
     return api.list_segments();
   }
 
-  gpi::pc::type::info::descriptor_t collect_info ()
+  virtual gpi::pc::type::info::descriptor_t collect_info () override
   {
     return api.collect_info();
   }
 
-  void garbage_collect ()
+  virtual void garbage_collect () override
   {
     return api.garbage_collect();
   }
 
-  bool is_connected () const
+  virtual bool is_connected () const override
   {
     return api.is_connected();
   }
 
-  bool connect ()
+  virtual bool connect () override
   {
     lock_type lock (m_state_mtx);
 
@@ -189,7 +189,7 @@ public:
     }
   }
 
-  bool ping ()
+  virtual bool ping () override
   {
     return api.ping();
   }

@@ -16,7 +16,6 @@
 #include <we/type/signature/show.hpp>
 
 #include <fhg/util/join.hpp>
-#include <fhg/util/backtracing_exception.hpp>
 
 #include <xml/parse/rapidxml/1.13/rapidxml.hpp>
 
@@ -32,31 +31,21 @@ namespace xml
   {
     namespace error
     {
-      // ******************************************************************* //
-
-#ifndef NO_BACKTRACE_ON_PARSE_ERROR
-#define GENERIC_EXCEPTION_BASE_CLASS fhg::util::backtracing_exception
-#else
-#define GENERIC_EXCEPTION_BASE_CLASS std::runtime_error
-#endif
-
-      class generic : public GENERIC_EXCEPTION_BASE_CLASS
+      class generic : public std::runtime_error
       {
       public:
         generic (const std::string & msg)
-          : GENERIC_EXCEPTION_BASE_CLASS ("ERROR: " + msg)
+          : std::runtime_error ("ERROR: " + msg)
         { }
 
         generic (const boost::format& bf)
-          : GENERIC_EXCEPTION_BASE_CLASS ("ERROR: " + bf.str())
+          : std::runtime_error ("ERROR: " + bf.str())
         { }
 
         generic (const std::string & msg, const std::string & pre)
-          : GENERIC_EXCEPTION_BASE_CLASS ("ERROR: " + pre + ": " + msg)
+          : std::runtime_error ("ERROR: " + pre + ": " + msg)
         { }
       };
-
-#undef GENERIC_EXCEPTION_BASE_CLASS
 
       // ******************************************************************* //
 
@@ -204,7 +193,6 @@ namespace xml
                        , const std::string& type
                        , const type::structure_type&
                        );
-        virtual ~cannot_resolve() throw() = default;
 
       private:
         const std::string _field;
@@ -217,7 +205,6 @@ namespace xml
         struct_redefined ( const type::structure_type& early
                          , const type::structure_type& late
                          );
-        virtual ~struct_redefined() throw() = default;
       };
 
       class struct_field_redefined : public generic
@@ -236,7 +223,6 @@ namespace xml
       {
       public:
         place_type_unknown (const id::ref::place&);
-        virtual ~place_type_unknown() throw() = default;
 
       private:
         const id::ref::place _place;
@@ -300,7 +286,6 @@ namespace xml
                             , const type::structure_type& late
                             , const std::string& port_name
                             );
-        virtual ~forbidden_shadowing() throw() = default;
       };
 
       // ******************************************************************* //
@@ -312,7 +297,6 @@ namespace xml
                           , const std::string& input
                           , const std::size_t& pos
                           );
-        virtual ~parse_link_prefix() throw() = default;
 
       private:
         const std::string _reason;
@@ -324,7 +308,6 @@ namespace xml
       {
       public:
         link_prefix_missing (const std::string&);
-        virtual ~link_prefix_missing() throw() = default;
       private:
         const std::string _key;
       };
@@ -349,8 +332,6 @@ namespace xml
           , _early (early)
           , _late (late)
         {}
-
-        virtual ~generic_duplicate() throw() = default;
 
         const Id& early() const
         {
@@ -384,6 +365,7 @@ namespace xml
       DUPLICATE (place_map);
       DUPLICATE_WITH_ID (external_function,module);
       DUPLICATE (connect);
+      DUPLICATE (memory_buffer);
 
 #undef DUPLICATE
 #undef DUPLICATE_WITH_ID
@@ -459,7 +441,6 @@ namespace xml
         port_connected_place_nonexistent ( const id::ref::port&
                                          , const boost::filesystem::path&
                                          );
-        virtual ~port_connected_place_nonexistent() throw() = default;
 
       private:
         const id::ref::port _port;
@@ -475,7 +456,6 @@ namespace xml
                                      , const id::ref::place&
                                      , const boost::filesystem::path&
                                      );
-        virtual ~tunnel_connected_non_virtual() throw() = default;
 
       private:
         const id::ref::port _port;
@@ -492,7 +472,6 @@ namespace xml
                              , const id::ref::place&
                              , const boost::filesystem::path&
                              );
-        virtual ~tunnel_name_mismatch() throw() = default;
 
       private:
         const id::ref::port _port;
@@ -506,7 +485,6 @@ namespace xml
       {
       public:
         port_not_connected (const id::ref::port&, const boost::filesystem::path&);
-        virtual ~port_not_connected() throw() = default;
 
       private:
         const id::ref::port _port;
@@ -522,7 +500,6 @@ namespace xml
                                   , const id::ref::place&
                                   , const boost::filesystem::path&
                                   );
-        virtual ~port_connected_type_error() throw() = default;
 
       private:
         const id::ref::port _port;
@@ -563,7 +540,6 @@ namespace xml
         connect_to_nonexistent_place ( const id::ref::transition&
                                      , const id::ref::connect&
                                      );
-        virtual ~connect_to_nonexistent_place() throw() = default;
 
       private:
         const id::ref::transition _transition;
@@ -576,7 +552,6 @@ namespace xml
         connect_to_nonexistent_port ( const id::ref::transition&
                                     , const id::ref::connect&
                                     );
-        virtual ~connect_to_nonexistent_port() throw() = default;
 
       private:
         const id::ref::transition _transition;
@@ -589,7 +564,6 @@ namespace xml
       {
       public:
         unknown_function (const std::string&, const id::ref::transition&);
-        virtual ~unknown_function() throw() = default;
 
       private:
         const std::string _function_name;
@@ -602,7 +576,6 @@ namespace xml
       {
       public:
         unknown_template (const id::ref::specialize&, const id::ref::net&);
-        virtual ~unknown_template() throw() = default;
 
       private:
         const id::ref::specialize _specialize;
@@ -619,13 +592,57 @@ namespace xml
                            , const id::ref::port&
                            , const id::ref::place&
                            );
-        virtual ~connect_type_error() throw() = default;
 
       private:
         const id::ref::transition _transition;
         const id::ref::connect _connection;
         const id::ref::port _port;
         const id::ref::place _place;
+      };
+
+      class memory_buffer_without_size : public generic
+      {
+      public:
+        memory_buffer_without_size ( std::string const&
+                                   , util::position_type const&
+                                   );
+        virtual ~memory_buffer_without_size() throw() = default;
+
+      private:
+        std::string const _name;
+        util::position_type const _position_of_definition;
+      };
+
+      class memory_buffer_for_non_module : public generic
+      {
+      public:
+        memory_buffer_for_non_module (id::ref::function const&);
+        ~memory_buffer_for_non_module() throw() = default;
+
+      private:
+        id::ref::function const _function;
+      };
+
+      class memory_transfer_for_non_module : public generic
+      {
+      public:
+        memory_transfer_for_non_module (id::ref::function const&);
+        ~memory_transfer_for_non_module() throw() = default;
+
+      private:
+        id::ref::function const _function;
+      };
+
+      class memory_buffer_with_same_name_as_port : public generic
+      {
+      public:
+        memory_buffer_with_same_name_as_port
+          (id::ref::memory_buffer const&, id::ref::port const&);
+        virtual ~memory_buffer_with_same_name_as_port() throw() = default;
+
+      private:
+        id::ref::memory_buffer const _memory_buffer;
+        id::ref::port const _port;
       };
 
       // ******************************************************************* //
@@ -828,7 +845,6 @@ namespace xml
         port_type_mismatch ( const id::ref::port& port
                            , const id::ref::port& other_port
                            );
-        virtual ~port_type_mismatch() throw() = default;
 
       private:
         const id::ref::port _port;

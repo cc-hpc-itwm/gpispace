@@ -1,7 +1,9 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/layer.hpp>
+#include <we/exception.hpp>
 
+#include <fhg/assert.hpp>
 #include <fhg/util/starts_with.hpp>
 
 #include <boost/range/adaptor/map.hpp>
@@ -19,7 +21,7 @@ namespace we
         , std::function<void (id_type, id_type)> rts_discover
         , std::function<void (id_type, sdpa::discovery_info_t)> rts_discovered
         , std::function<id_type()> rts_id_generator
-        , boost::mt19937& random_extraction_engine
+        , std::mt19937& random_extraction_engine
         )
       : _rts_submit (rts_submit)
       , _rts_cancel (rts_cancel)
@@ -52,7 +54,7 @@ namespace we
         we::transition_id_type const transition_id
           (net.add_transition (activity.transition()));
 
-        assert (activity.transition().ports_tunnel().size() == 0);
+        fhg_assert (activity.transition().ports_tunnel().size() == 0);
 
         std::unordered_map<std::string, we::place_id_type> place_ids;
 
@@ -155,7 +157,7 @@ namespace we
     void layer::finished (id_type id, type::activity_t result)
     {
       boost::optional<id_type> const parent (_running_jobs.parent (id));
-      assert (parent);
+      fhg_assert (parent);
 
       _nets_to_extract_from.apply
         ( *parent
@@ -195,7 +197,7 @@ namespace we
     void layer::failed (id_type id, std::string reason)
     {
       boost::optional<id_type> const parent (_running_jobs.parent (id));
-      assert (parent);
+      fhg_assert (parent);
 
       _nets_to_extract_from.remove_and_apply
         ( *parent
@@ -223,7 +225,7 @@ namespace we
     void layer::canceled (id_type child)
     {
       boost::optional<id_type> const parent (_running_jobs.parent (child));
-      assert (parent);
+      fhg_assert (parent);
 
       if (_running_jobs.terminated (*parent, child))
       {
@@ -244,7 +246,7 @@ namespace we
           const id_type id (activity_data._id);
 
           boost::mutex::scoped_lock const _ (_discover_state_mutex);
-          assert (_discover_state.find (discover_id) == _discover_state.end());
+          fhg_assert (_discover_state.find (discover_id) == _discover_state.end());
 
           std::pair<std::size_t, sdpa::discovery_info_t > state
             (0, sdpa::discovery_info_t(id, boost::none, sdpa::discovery_info_set_t()));
@@ -274,7 +276,7 @@ namespace we
       (id_type discover_id, sdpa::discovery_info_t result)
     {
       boost::mutex::scoped_lock const _ (_discover_state_mutex);
-      assert (_discover_state.find (discover_id) != _discover_state.end());
+      fhg_assert (_discover_state.find (discover_id) != _discover_state.end());
 
       std::pair<std::size_t, sdpa::discovery_info_t >& state
         (_discover_state.find (discover_id)->second);
@@ -303,14 +305,22 @@ namespace we
         //! fire_expression_and_extract_activity_random (endless loop
         //! in expressions)?
 
-        if ( boost::optional<type::activity_t> activity
+        boost::optional<type::activity_t> activity;
+        try
+        {
+          //! \note We wrap all input activites in a net.
+          activity = boost::get<we::type::net_type&>
+            (activity_data._activity.transition().data())
+            . fire_expressions_and_extract_activity_random
+              (_random_extraction_engine);
+        }
+        catch (pnet::exception::type_error const& ex)
+        {
+          _rts_failed (activity_data._id, ex.what ());
+          return;
+        }
 
-             //! \note We wrap all input activites in a net.
-           = boost::get<we::type::net_type&>
-             (activity_data._activity.transition().data())
-           . fire_expressions_and_extract_activity_random
-               (_random_extraction_engine)
-           )
+        if (activity)
         {
           const id_type child_id (_rts_id_generator());
           _running_jobs.started (activity_data._id, child_id);

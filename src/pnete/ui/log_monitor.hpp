@@ -1,7 +1,7 @@
 #ifndef FHG_PNETE_UI_LOG_MONITOR_HPP
 #define FHG_PNETE_UI_LOG_MONITOR_HPP
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhglog/remote/server.hpp>
 
 #include <boost/thread.hpp>
@@ -37,15 +37,15 @@ namespace detail
   public:
     log_table_model (QObject* parent = nullptr);
 
-    virtual int rowCount (const QModelIndex& = QModelIndex()) const;
-    virtual int columnCount (const QModelIndex& = QModelIndex()) const;
+    virtual int rowCount (const QModelIndex& = QModelIndex()) const override;
+    virtual int columnCount (const QModelIndex& = QModelIndex()) const override;
 
     virtual QVariant headerData ( int section
                                 , Qt::Orientation orientation
                                 , int role = Qt::DisplayRole
-                                ) const;
+                                ) const override;
     virtual QVariant
-      data (const QModelIndex& index, int role = Qt::DisplayRole) const;
+      data (const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     std::vector<fhg::log::LogEvent> data() const;
     void add (const fhg::log::LogEvent& event);

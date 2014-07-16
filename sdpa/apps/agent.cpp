@@ -4,7 +4,7 @@
 #include <vector>
 #include <csignal>
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <boost/program_options.hpp>
 

@@ -41,19 +41,19 @@ namespace fhg
         worker_model (unsigned short port, QObject* parent = nullptr);
         ~worker_model();
 
-        virtual int rowCount (const QModelIndex& = QModelIndex()) const;
-        virtual int columnCount (const QModelIndex& = QModelIndex()) const;
+        virtual int rowCount (const QModelIndex& = QModelIndex()) const override;
+        virtual int columnCount (const QModelIndex& = QModelIndex()) const override;
         virtual QVariant data
-          (const QModelIndex&, int role = Qt::DisplayRole) const;
+          (const QModelIndex&, int role = Qt::DisplayRole) const override;
         virtual QVariant headerData
-          (int section, Qt::Orientation, int role = Qt::DisplayRole) const;
+          (int section, Qt::Orientation, int role = Qt::DisplayRole) const override;
         virtual QModelIndex index
-          (int row, int column, const QModelIndex& = QModelIndex()) const;
-        virtual QModelIndex parent (const QModelIndex&) const;
+          (int row, int column, const QModelIndex& = QModelIndex()) const override;
+        virtual QModelIndex parent (const QModelIndex&) const override;
 
         void clear();
         virtual bool removeRows
-          (int row, int count, const QModelIndex& parent = QModelIndex());
+          (int row, int count, const QModelIndex& parent = QModelIndex()) override;
 
         typedef long timestamp_type;
         typedef long duration_type;

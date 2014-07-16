@@ -1,7 +1,7 @@
 // bernd.loerwald@itwm.fraunhofer.de
 //! \note This "test" does not test anything, but is a pressure-generator for sdpa-gui only.
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <cstdlib>
 #include <boost/format.hpp>
 #include <boost/optional.hpp>

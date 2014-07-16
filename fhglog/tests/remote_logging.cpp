@@ -4,7 +4,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sstream> // ostringstream
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhglog/appender/stream.hpp>
 #include <fhglog/remote/appender.hpp>
 #include <fhglog/remote/server.hpp>
@@ -25,13 +25,13 @@ namespace
       , service_ (s)
     {}
 
-    void append (const fhg::log::LogEvent& event)
+    virtual void append (const fhg::log::LogEvent& event) override
     {
       _appender->append (event);
       service_.stop();
     }
 
-    void flush()
+    virtual void flush() override
     {
       _appender->flush();
     }

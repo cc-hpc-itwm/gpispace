@@ -18,8 +18,7 @@ namespace fhg
       {
         struct msg_get
         {
-          msg_get ()
-          {}
+          msg_get () = default;
 
           explicit
           msg_get (const std::string & k)

@@ -52,7 +52,7 @@ namespace gpi
 
     void real_gpi_api_t::start (int ac, char *av[], const gpi::timeout_t timeout)
     {
-      assert (! m_startup_done);
+      fhg_assert (! m_startup_done);
 
       if (sys::get_total_memory_size() < m_mem_size)
       {
@@ -172,7 +172,7 @@ namespace gpi
 
     gpi::size_t real_gpi_api_t::open_dma_requests (const queue_desc_t q) const
     {
-      assert (m_startup_done);
+      fhg_assert (m_startup_done);
       int rc (openDmaRequestsGPI (q));
       if (rc < 0)
       {
@@ -188,7 +188,7 @@ namespace gpi
 
     gpi::size_t real_gpi_api_t::open_passive_requests () const
     {
-      assert (m_startup_done);
+      fhg_assert (m_startup_done);
       int rc (openDmaPassiveRequestsGPI ());
       if (rc < 0)
       {
@@ -209,13 +209,13 @@ namespace gpi
 
     gpi::rank_t real_gpi_api_t::rank () const
     {
-      assert (m_startup_done);
+      fhg_assert (m_startup_done);
       return m_rank;
     }
 
     gpi::error_vector_t real_gpi_api_t::get_error_vector (const gpi::queue_desc_t q) const
     {
-      assert (m_startup_done);
+      fhg_assert (m_startup_done);
       unsigned char *gpi_err_vec (getErrorVectorGPI(q));
       if (! gpi_err_vec)
       {
@@ -233,7 +233,7 @@ namespace gpi
 
     void * real_gpi_api_t::dma_ptr (void)
     {
-      assert (m_startup_done);
+      fhg_assert (m_startup_done);
       return m_dma;
     }
 
@@ -428,14 +428,14 @@ namespace gpi
     {
       lock_type lock (m_mutex);
 
-      assert (m_startup_done);
+      fhg_assert (m_startup_done);
       barrierGPI();
     }
 
     bool real_gpi_api_t::try_lock (void) const
     {
       lock_type lock (m_mutex);
-      assert (m_startup_done);
+      fhg_assert (m_startup_done);
 
       return 0 == globalResourceLockGPI();
     }
@@ -463,7 +463,7 @@ namespace gpi
                                   , const queue_desc_t queue
                                   )
     {
-      assert (m_startup_done);
+      fhg_assert (m_startup_done);
 
       size_t remaining (amount);
       const size_t chunk_size (max_transfer_size ());
@@ -515,7 +515,7 @@ namespace gpi
                               , const queue_desc_t queue
                               )
     {
-      assert (m_startup_done);
+      fhg_assert (m_startup_done);
 
       size_t remaining (amount);
       const size_t chunk_size (max_transfer_size ());
@@ -566,7 +566,7 @@ namespace gpi
                              , const queue_desc_t queue
                              )
     {
-      assert (m_startup_done);
+      fhg_assert (m_startup_done);
       int rc
         (sendDmaGPI ( local_offset
                     , amount
@@ -594,7 +594,7 @@ namespace gpi
                              , const queue_desc_t queue
                              )
     {
-      assert (m_startup_done);
+      fhg_assert (m_startup_done);
       int rc
         (recvDmaGPI ( local_offset
                     , amount
@@ -619,7 +619,7 @@ namespace gpi
 
     size_t real_gpi_api_t::wait_dma (const queue_desc_t queue)
     {
-      assert (m_startup_done);
+      fhg_assert (m_startup_done);
       int rc
         (waitDma2GPI(queue));
       if (rc < 0)
@@ -650,7 +650,7 @@ namespace gpi
                                       , const rank_t to_node
                                       )
     {
-      assert (m_startup_done);
+      fhg_assert (m_startup_done);
       int rc
         (sendDmaPassiveGPI ( local_offset
                            , amount
@@ -676,7 +676,7 @@ namespace gpi
                                  , rank_t & from_node
                                  )
     {
-      assert (m_startup_done);
+      fhg_assert (m_startup_done);
       int tmp;
       int rc
         (recvDmaPassiveGPI ( local_offset
@@ -702,7 +702,7 @@ namespace gpi
 
     size_t real_gpi_api_t::wait_passive ( void )
     {
-      assert (m_startup_done);
+      fhg_assert (m_startup_done);
       int rc(waitDmaPassiveGPI());
       if (rc < 0)
       {

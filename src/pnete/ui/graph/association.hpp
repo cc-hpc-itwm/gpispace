@@ -45,14 +45,14 @@ namespace fhg
 
           void trigger_geometry_change();
 
-          virtual bool is_movable() const;
+          virtual bool is_movable() const override;
 
-          virtual QPainterPath shape() const;
+          virtual QPainterPath shape() const override;
           virtual void paint
-            (QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
+            (QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
 
           enum { Type = association_graph_type };
-          virtual int type() const { return Type; }
+          virtual int type() const override { return Type; }
 
         private:
           connectable_item* _start;

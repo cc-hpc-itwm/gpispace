@@ -11,7 +11,7 @@ namespace sdpa
   class Capability
   {
   public:
-    Capability(){}
+    Capability() = default;
     explicit Capability(const std::string& name,
                         const std::string& owner);
 

@@ -21,12 +21,12 @@ namespace sdpa
             );
 
     protected:
-      virtual void handleJobFinishedEvent (const sdpa::events::JobFinishedEvent*);
-      virtual void handleJobFailedEvent (const sdpa::events::JobFailedEvent*);
+      virtual void handleJobFinishedEvent (const sdpa::events::JobFinishedEvent*) override;
+      virtual void handleJobFailedEvent (const sdpa::events::JobFailedEvent*) override;
 
-      virtual void handleCancelJobEvent (const sdpa::events::CancelJobEvent*);
-      virtual void handleCancelJobAckEvent (const sdpa::events::CancelJobAckEvent*);
-      virtual void handleDeleteJobEvent (const sdpa::events::DeleteJobEvent*)
+      virtual void handleCancelJobEvent (const sdpa::events::CancelJobEvent*) override;
+      virtual void handleCancelJobAckEvent (const sdpa::events::CancelJobAckEvent*) override;
+      virtual void handleDeleteJobEvent (const sdpa::events::DeleteJobEvent*) override
       {
         throw std::runtime_error("The agent should not call handleDeleteJobEvent!");
       }

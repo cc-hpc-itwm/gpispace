@@ -14,6 +14,9 @@
 
 #include <we/type/signature/show.hpp>
 
+#include <fhg/util/first_then.hpp>
+#include <fhg/util/print_container.hpp>
+
 #include <boost/format.hpp>
 
 namespace xml
@@ -290,6 +293,160 @@ namespace xml
           , _place (place)
         {}
 
+      memory_buffer_without_size::memory_buffer_without_size
+        ( std::string const& name
+        , util::position_type const& position_of_definition
+        )
+        : generic ( boost::format ("memory-buffer '%1%' without size, at %2%")
+                  % name
+                  % position_of_definition
+                  )
+        , _name (name)
+        , _position_of_definition (position_of_definition)
+      {}
+
+      namespace
+      {
+        std::string print_memory_buffer_positions_of_definition
+          (std::unordered_set<id::ref::memory_buffer> const& ids)
+        {
+          std::ostringstream oss;
+
+          fhg::util::print_container
+            <std::unordered_set<id::ref::memory_buffer>>
+            ( oss, "", "{", ",", "}"
+            , ids
+            , [&oss](id::ref::memory_buffer const& id)
+            {
+              oss << id.get().position_of_definition();
+            }
+            );
+
+          return oss.str();
+        }
+      }
+
+      memory_buffer_for_non_module::memory_buffer_for_non_module
+        (id::ref::function const& function)
+          : generic ( boost::format
+                      ( "non module call function '%1%'"
+                      " with %2% memory buffer%3%"
+                      ", function defined at %4%"
+                      ", memory buffer%3% defined at %5%"
+                      )
+                    % function.get().name()
+                    % function.get().memory_buffers().ids().size()
+                    % ((function.get().memory_buffers().ids().size() > 1)
+                       ? "s" : ""
+                      )
+                    % function.get().position_of_definition()
+                    % print_memory_buffer_positions_of_definition
+                      (function.get().memory_buffers().ids())
+                    )
+          , _function (function)
+      {}
+
+      namespace
+      {
+        std::string print_memory_transfer_positions_of_definition
+          (id::ref::function const& function)
+        {
+          fhg::util::first_then<std::string> sep (" ", ", ");
+
+          std::ostringstream oss;
+
+          if (!function.get_ref().memory_gets().empty())
+          {
+            oss << sep;
+
+            fhg::util::print_container
+              <std::list<xml::parse::type::memory_get>>
+              ( oss, "get: ", "(", ",", ")"
+              , function.get_ref().memory_gets()
+              , [&oss](xml::parse::type::memory_get const& mg)
+              {
+                oss << mg.position_of_definition();
+              }
+              );
+          }
+
+          if (!function.get_ref().memory_puts().empty())
+          {
+            oss << sep;
+
+            fhg::util::print_container
+              <std::list<xml::parse::type::memory_put>>
+              ( oss, "put: ", "(", ",", ")"
+              , function.get_ref().memory_puts()
+              , [&oss](xml::parse::type::memory_put const& mp)
+              {
+                oss << mp.position_of_definition();
+              }
+              );
+          }
+
+          if (!function.get_ref().memory_getputs().empty())
+          {
+            oss << sep;
+
+            fhg::util::print_container
+              <std::list<xml::parse::type::memory_getput>>
+              ( oss, "getput: ", "(", ",", ")"
+              , function.get_ref().memory_getputs()
+              , [&oss](xml::parse::type::memory_getput const& mgp)
+              {
+                oss << mgp.position_of_definition();
+              }
+              );
+          }
+
+          return oss.str();
+        }
+      }
+
+      memory_transfer_for_non_module::memory_transfer_for_non_module
+        (id::ref::function const& function)
+          : generic ( boost::format
+                      ( "non module call function '%1%'"
+                      " with %2% memory transfer%3%"
+                      ", function defined at %4%"
+                      ", memory transfer%3% defined at:%5%"
+                      )
+                    % function.get().name()
+                    % ( function.get().memory_gets().size()
+                      + function.get().memory_puts().size()
+                      + function.get().memory_getputs().size()
+                      )
+                    % ((( function.get().memory_gets().size()
+                        + function.get().memory_puts().size()
+                        + function.get().memory_getputs().size()
+                        ) > 1
+                       ) ? "s" : ""
+                      )
+                    % function.get().position_of_definition()
+                    % print_memory_transfer_positions_of_definition (function)
+                    )
+        , _function (function)
+      {}
+
+      memory_buffer_with_same_name_as_port
+        ::memory_buffer_with_same_name_as_port
+        ( id::ref::memory_buffer const& memory_buffer
+        , id::ref::port const& port
+        )
+          : generic ( boost::format
+                      ("memory buffer '%1%' defined at %2%"
+                      " with the same name as the %3%-port defined at %4%"
+                      )
+                    % memory_buffer.get().name()
+                    % memory_buffer.get().position_of_definition()
+                    % we::type::enum_to_string (port.get().direction())
+                    % port.get().position_of_definition()
+                    )
+          , _memory_buffer (memory_buffer)
+          , _port (port)
+      {}
+
       cannot_resolve::cannot_resolve ( const std::string& field
                                      , const std::string& type
                                      , const type::structure_type& strct
@@ -414,6 +571,17 @@ namespace xml
             % late.get().place()
             % late.get().port()
             % we::edge::enum_to_string (early.get().direction())
+            )
+      {}
+
+      duplicate_memory_buffer::duplicate_memory_buffer
+        ( id::ref::memory_buffer const& early
+        , id::ref::memory_buffer const& late
+        )
+          : generic_duplicate<id::ref::memory_buffer>
+            ( early
+            , late
+            , boost::format ("memory-buffer '%1%'") % late.get().name()
             )
       {}
 

@@ -30,8 +30,8 @@ namespace fhg
                   | std::ios_base::binary
                   );
 
-     virtual void flush();
-     virtual void append (const LogEvent&);
+     virtual void flush() override;
+     virtual void append (const LogEvent&) override;
 
    private:
      std::ofstream _stream;

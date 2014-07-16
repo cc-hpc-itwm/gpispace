@@ -19,92 +19,92 @@ namespace gpi
       ~real_gpi_api_t();
 
       // wrapped C function calls
-      void clear_caches ();
-      void set_binary_path (const char *path);
-      void start (int ac, char *av[], const gpi::timeout_t timeout);
-      void stop ();
-      void kill ();
-      void shutdown ();
+      virtual void clear_caches () override;
+      virtual void set_binary_path (const char *path) override;
+      virtual void start (int ac, char *av[], const gpi::timeout_t timeout) override;
+      virtual void stop () override;
+      virtual void kill () override;
+      virtual void shutdown () override;
 
-      gpi::size_t number_of_counters () const;
-      gpi::size_t number_of_queues () const;
-      gpi::size_t queue_depth () const;
-      gpi::version_t version () const;
-      gpi::port_t port () const;
-      gpi::size_t number_of_nodes () const;
-      gpi::size_t memory_size () const;
-      gpi::size_t max_transfer_size () const;
+      virtual gpi::size_t number_of_counters () const override;
+      virtual gpi::size_t number_of_queues () const override;
+      virtual gpi::size_t queue_depth () const override;
+      virtual gpi::version_t version () const override;
+      virtual gpi::port_t port () const override;
+      virtual gpi::size_t number_of_nodes () const override;
+      virtual gpi::size_t memory_size () const override;
+      virtual gpi::size_t max_transfer_size () const;
 
-      gpi::size_t open_dma_requests (const queue_desc_t) const;
-      bool max_dma_requests_reached (const queue_desc_t) const;
+      virtual gpi::size_t open_dma_requests (const queue_desc_t) const override;
+      virtual bool max_dma_requests_reached (const queue_desc_t) const override;
 
-      gpi::size_t open_passive_requests () const;
-      bool max_passive_requests_reached () const;
+      virtual gpi::size_t open_passive_requests () const override;
+      virtual bool max_passive_requests_reached () const override;
 
-      const char * hostname (const gpi::rank_t) const;
-      gpi::rank_t rank () const;
-      gpi::error_vector_t get_error_vector(const queue_desc_t) const;
-      void *dma_ptr (void);
+      virtual const char * hostname (const gpi::rank_t) const override;
+      virtual gpi::rank_t rank () const override;
+      virtual gpi::error_vector_t get_error_vector(const queue_desc_t) const override;
+      virtual void *dma_ptr (void) override;
 
       template <typename T>
       T* dma_ptr (void) { return (T*)(dma_ptr()); }
 
-      void set_network_type (const gpi::network_type_t);
-      void set_port (const gpi::port_t);
-      void set_mtu (const gpi::size_t);
-      void set_number_of_processes (const gpi::size_t);
-      void set_memory_size (const gpi::size_t);
+      virtual void set_network_type (const gpi::network_type_t) override;
+      virtual void set_port (const gpi::port_t) override;
+      virtual void set_mtu (const gpi::size_t) override;
+      virtual void set_number_of_processes (const gpi::size_t) override;
+      virtual void set_memory_size (const gpi::size_t) override;
 
-      bool ping (const gpi::rank_t) const;
-      bool ping (const char * hostname) const;
+      virtual bool ping (const gpi::rank_t) const override;
+      virtual bool ping (const char * hostname) const override;
 
-      int check (const gpi::rank_t) const;
-      int check (const char *) const;
-      int check () const;
+      virtual int check (const gpi::rank_t) const override;
+      virtual int check (const char *) const override;
+      virtual int check () const override;
 
-      bool is_master (void) const;
-      bool is_slave (void) const;
+      virtual bool is_master (void) const override;
+      virtual bool is_slave (void) const override;
 
-      void barrier (void) const;
-      bool try_lock (void) const;
-      void lock (void) const;
-      void unlock (void) const;
+      virtual void barrier (void) const override;
+      virtual bool try_lock (void) const override;
+      virtual void lock (void) const override;
+      virtual void unlock (void) const override;
 
-      void read_dma ( const offset_t local_offset
+      virtual void read_dma ( const offset_t local_offset
                     , const offset_t remote_offset
                     , const size_t amount
                     , const rank_t from_node
                     , const queue_desc_t queue
-                    );
-      void write_dma ( const offset_t local_offset
+                    ) override;
+      virtual void write_dma ( const offset_t local_offset
                      , const offset_t remote_offset
                      , const size_t amount
                      , const rank_t to_node
                      , const queue_desc_t queue
-                     );
+                     ) override;
 
-      void send_dma ( const offset_t local_offset
+      virtual void send_dma ( const offset_t local_offset
                     , const size_t amount
                     , const rank_t to_node
                     , const queue_desc_t queue
-                    );
-      void recv_dma ( const offset_t local_offset
+                    ) override;
+      virtual void recv_dma ( const offset_t local_offset
                     , const size_t size
                     , const rank_t from_node
                     , const queue_desc_t queue
-                    );
+                    ) override;
 
-      size_t wait_dma (const queue_desc_t queue);
+      virtual size_t wait_dma (const queue_desc_t queue) override;
 
-      void send_passive ( const offset_t local_offset
+      virtual void send_passive ( const offset_t local_offset
                         , const size_t amount
                         , const rank_t to_node
-                        );
-      void recv_passive ( const offset_t local_offset
+                        ) override;
+      virtual void recv_passive ( const offset_t local_offset
                         , const size_t amount
                         , rank_t & from_node
-                        );
-      size_t wait_passive ( void );
+                        ) override;
+      virtual size_t wait_passive ( void ) override;
 
     private:
       typedef boost::recursive_mutex mutex_type;

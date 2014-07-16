@@ -9,6 +9,7 @@
 #include <drts/worker/context_fwd.hpp>
 
 #include <list>
+#include <map>
 #include <string>
 
 namespace we
@@ -18,12 +19,13 @@ namespace we
     typedef void (*WrapperFunction)( drts::worker::context *
                                    , const expr::eval::context&
                                    , expr::eval::context&
+                                   , std::map<std::string, void*> const&
                                    );
 
     class IModule
     {
     public:
-      virtual ~IModule() throw () {}
+      virtual ~IModule() {}
 
       virtual void name (const std::string &name) = 0;
       virtual void add_function (const std::string&, WrapperFunction) = 0;

@@ -3,7 +3,8 @@
 source "@CMAKE_CURRENT_BINARY_DIR@/error.sh"
 source "@CMAKE_CURRENT_BINARY_DIR@/die.sh"
 
-DIR_BUILD=$(mktemp -d)                                      || die $EX_ERR_OTHER
+DIR_BUILD=$(mktemp -d -p ${TMPDIR:-/tmp} test.gpispace.XXXXXXXX) \
+                                                            || die $EX_ERR_OTHER
 
 echo "DIR_BUILD = ${DIR_BUILD}"                             || die $EX_ERR_OTHER
 

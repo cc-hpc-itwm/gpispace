@@ -22,47 +22,23 @@ add_subdirectory(plugin)
 
 add_subdirectory (fhgcom)
 
-OPTION (ENABLE_REAL_GPI "Provide api for the *real* GPI" ON)
-OPTION (ENABLE_COMPATIBILITY_API "Provide a transitional api compatible with the old fvm-pc" ON)
-
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
+include_directories (${CMAKE_SOURCE_DIR}/fvm-pc)
 
-if (ENABLE_REAL_GPI)
-  find_package (IBVerbs QUIET)
-  if (IBverbs_FOUND)
-    include_directories (SYSTEM ${IBverbs_INCLUDE_DIR})
+find_library (IBverbs_LIBRARY
+  NAMES ibverbs
+  HINTS ${LIBIBVERBS_HOME} ENV LIBIBVERBS_HOME
+  PATH_SUFFIXES lib lib64
+)
 
-    set (GPI_HOME ${CMAKE_CURRENT_SOURCE_DIR}/gpi-space/ext)
-    set (GPI_INCLUDE_DIR ${GPI_HOME}/include)
-    set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libGPI.a)
-    set (GPI_LIBRARIES ${GPI_LIBRARIES} ${IBverbs_LIBRARY})
-
-    # check if we can actually use the GPI version in ext
-    set (CMAKE_REQUIRED_INCLUDES ${GPI_INCLUDE_DIR})
-    set (CMAKE_REQUIRED_LIBRARIES ${GPI_LIBRARIES})
-    include (CheckCSourceRuns)
-    CHECK_C_SOURCE_RUNS (
-      "
-#include <stdio.h>
-#include <GPI.h>
-int main ()
-{
-   printf(\"%f\", getVersionGPI());
-   return 0;
-}"
-    REAL_GPI_CHECK)
-    if ("${REAL_GPI_CHECK}" EQUAL 1)
-      add_definitions (-DENABLE_REAL_GPI=1)
-    else()
-      message (WARNING "Support for real-GPI requested but not available on your platform!")
-      set (ENABLE_REAL_GPI OFF CACHE BOOL "Provide api for the *real* GPI" FORCE)
-    endif()
-  else (IBverbs_FOUND)
-    message (STATUS "${IBverbs_FOUND}")
-    message (WARNING "Support for real-GPI requested but not available on your platform (ibverbs not installed)!")
-    set (ENABLE_REAL_GPI OFF CACHE BOOL "Provide api for the *real* GPI" FORCE)
-  endif()
+if (NOT IBverbs_LIBRARY)
+  message (FATAL_ERROR "IBverbs missing")
 endif()
+
+set (GPI_HOME ${CMAKE_CURRENT_SOURCE_DIR}/gpi-space/ext)
+set (GPI_INCLUDE_DIR ${GPI_HOME}/include)
+set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libGPI.a)
+set (GPI_LIBRARIES ${GPI_LIBRARIES} ${IBverbs_LIBRARY})
 
 add_subdirectory (gpi-space)
 
@@ -99,6 +75,7 @@ add_library (pnet
   we/expr/token/type.cpp
   we/field.cpp
   we/loader/loader.cpp
+  we/loader/module_call.cpp
   we/layer.cpp
   we/type/activity.cpp
   we/require_type.cpp
@@ -150,6 +127,8 @@ add_library (pnet
   xml/parse/type/connect.cpp
   xml/parse/type/expression.cpp
   xml/parse/type/function.cpp
+  xml/parse/type/memory_buffer.cpp
+  xml/parse/type/memory_transfer.cpp
   xml/parse/type/mod.cpp
   xml/parse/type/net.cpp
   xml/parse/type/place.cpp
@@ -178,6 +157,8 @@ add_library (pnet
   xml/parse/util/weparse.cpp
   xml/parse/util/position.cpp
   xml/parse/warning.cpp
+
+  gpi-space/pc/plugin/gpi_compat.cpp
 )
 
 target_link_libraries (pnet

@@ -25,9 +25,6 @@ namespace we
 {
     namespace type
     {
-      activity_t::activity_t ()
-      {}
-
       activity_t::activity_t
         ( const we::type::transition_t& transition
         , boost::optional<we::transition_id_type> const& transition_id

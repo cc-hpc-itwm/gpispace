@@ -13,8 +13,11 @@ OUT="${DIR_BUILD}/concurrent.out"
 CMP="${DIR_BUILD}/run.out"
 CMP_ORIG="${DIR_TEST}/out.cmp"
 
-make+=( make BUILDDIR="${DIR_BUILD}" )
+make=( make -f "${SDPA_HOME}/share/sdpa/make/common.mk" )
+make+=( MAIN=concurrent )
+make+=( BUILDDIR="${DIR_BUILD}" )
 make+=( WE_EXEC_OUTPUT="${RESULT}" )
+make+=( PUT_PORT="N=1000L" )
 make+=( -C "${DIR_SOURCE}" )
 
 cleanup()
@@ -27,20 +30,18 @@ cleanup()
 
 trap 'cleanup' EXIT
 
-measured "run" WE_EXEC_WORKER=4 ${make[@]} run              || die $EX_ERR_RUN
+measured "run" WE_EXEC_WORKER=12 ${make[@]} run             || die $EX_ERR_RUN
 
-grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
-test "$(pnetget -i "${RESULT}" -p done)" = "[]"             || die $EX_ERR_RES
-cat "${OUT}" | grep call_cnt_        \
-             | sed 's/.*call_cnt_//' \
-             | awk '{print $1}'      \
-             | sort > "${CMP}"                              || die $EX_ERR_OTHER
-diff "${CMP}" "${CMP_ORIG}"                                 || die $EX_ERR_RES
-test 1000 -eq $(cat "${OUT}" | grep call_cnt         \
-                             | sed 's/.*call_cnt_//' \
-                             | awk '{print $3}'      \
-                             | tr '\n' '+'           \
-                             | sed 's/\+$/\n/' | bc)        || die $EX_ERR_RES
+test "$(pnetget -i "${RESULT}" -p call_count_A | tr -d 'L')" -lt 300 || die $EX_ERR_RES
+test "$(pnetget -i "${RESULT}" -p call_count_B | tr -d 'L')" -lt 300 || die $EX_ERR_RES
+test "$(pnetget -i "${RESULT}" -p call_count_C | tr -d 'L')" -lt 300 || die $EX_ERR_RES
+test "$(pnetget -i "${RESULT}" -p call_count_D | tr -d 'L')" -lt 300 || die $EX_ERR_RES
+test "$(pnetget -i "${RESULT}" -p call_count_A | tr -d 'L')" -gt 200 || die $EX_ERR_RES
+test "$(pnetget -i "${RESULT}" -p call_count_B | tr -d 'L')" -gt 200 || die $EX_ERR_RES
+test "$(pnetget -i "${RESULT}" -p call_count_C | tr -d 'L')" -gt 200 || die $EX_ERR_RES
+test "$(pnetget -i "${RESULT}" -p call_count_D | tr -d 'L')" -gt 200 || die $EX_ERR_RES
+test "$(pnetget -i "${RESULT}" -p sum_call_count)" = "1000L"|| die $EX_ERR_RES
+test "$(pnetget -i "${RESULT}" -p sum_ids)" = "499500L"     || die $EX_ERR_RES
 
 rm -f "${CMP}"                                           || die $EX_ERR_CLEANUP
 rm -f "${RESULT}"                                        || die $EX_ERR_CLEANUP

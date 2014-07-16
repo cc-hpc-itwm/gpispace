@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _BYTEARRAY_HPP
-#define _BYTEARRAY_HPP
+#ifndef _WE_TYPE_BYTEARRAY_HPP
+#define _WE_TYPE_BYTEARRAY_HPP
 
 #include <algorithm>
 #include <vector>
@@ -9,56 +9,59 @@
 #include <iosfwd>
 #include <sstream>
 
-namespace bytearray
+namespace we
 {
-  class type
+  namespace type
   {
-  public:
-    void push_back (char c);
-
-    type();
-    type (const char* const, const std::size_t);
-    std::size_t copy (char* const buf, const std::size_t size) const;
-
-    template<typename T>
-    explicit type (const T* const x)
-      : _v()
+    class bytearray
     {
-      std::copy ((char *)x, (char *)x + sizeof (*x), std::back_inserter(_v));
-    }
-    template<typename T>
-    std::size_t copy (T* const x) const
-    {
-      const std::size_t s (std::min (_v.size(), sizeof (*x)));
+    public:
+      void push_back (char c);
 
-      std::copy (_v.begin(), _v.begin() + s, (char *)x);
+      bytearray();
+      bytearray (const char* const, const std::size_t);
+      std::size_t copy (char* const buf, const std::size_t size) const;
 
-      return s;
-    }
+      template<typename T>
+      explicit bytearray (const T* const x)
+        : _v()
+      {
+        std::copy ((char *)x, (char *)x + sizeof (*x), std::back_inserter(_v));
+      }
+      template<typename T>
+      std::size_t copy (T* const x) const
+      {
+        const std::size_t s (std::min (_v.size(), sizeof (*x)));
 
-    std::string to_string() const;
+        std::copy (_v.begin(), _v.begin() + s, (char *)x);
 
-    friend std::ostream& operator<< (std::ostream&, const type&);
-    friend std::size_t hash_value (const type&);
-    friend bool operator== (const type&, const type&);
-    friend bool operator< (const type&, const type&);
+        return s;
+      }
 
-    template<typename T>
-    type& operator= (const T& other)
-    {
-      _v.clear();
+      std::string to_string() const;
 
-      std::copy ( (char*)&other
-                , (char*)&other + sizeof (T)
-                , std::back_inserter(_v)
-                );
+      friend std::ostream& operator<< (std::ostream&, const bytearray&);
+      friend std::size_t hash_value (const bytearray&);
+      friend bool operator== (const bytearray&, const bytearray&);
+      friend bool operator< (const bytearray&, const bytearray&);
 
-      return *this;
-    }
+      template<typename T>
+      bytearray& operator= (const T& other)
+      {
+        _v.clear();
 
-  private:
-    std::vector<char> _v;
-  };
+        std::copy ( (char*)&other
+                  , (char*)&other + sizeof (T)
+                  , std::back_inserter(_v)
+                  );
+
+        return *this;
+      }
+
+    private:
+      std::vector<char> _v;
+    };
+  }
 }
 
 #endif

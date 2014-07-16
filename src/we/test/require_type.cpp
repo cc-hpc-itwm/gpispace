@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE (require_type)
   OKAY_LITERAL ("char", 'c');
   OKAY_LITERAL ("string", std::string (""));
   OKAY_LITERAL ("bitset", bitsetofint::type());
-  OKAY_LITERAL ("bytearray", bytearray::type());
+  OKAY_LITERAL ("bytearray", we::type::bytearray());
   OKAY_LITERAL ("list", std::list<value_type>());
   OKAY_LITERAL ("set", std::set<value_type>());
   OKAY_LITERAL ("map", std::map<value_type, value_type>());

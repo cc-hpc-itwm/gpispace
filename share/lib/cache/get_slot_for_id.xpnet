@@ -11,7 +11,6 @@
       <defun>
         <inout name="cache" type="cache_type"/>
         <in name="id" type="long"/>
-        <in name="in_cache" type="bool"/>
         <out name="slot" type="long"/>
         <expression>
           ${slot} := map_get_assignment (${cache.by_id.slot}, ${id});

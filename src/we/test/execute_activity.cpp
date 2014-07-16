@@ -93,7 +93,7 @@ struct exec_context : public we::context
 {
   boost::mt19937 _engine;
 
-  virtual void handle_internally (activity_t& act, net_t const&)
+  virtual void handle_internally (activity_t& act, net_t const&) override
   {
     // submit to self
     if (act.transition().net())
@@ -110,27 +110,27 @@ struct exec_context : public we::context
     }
   }
 
-  virtual void handle_internally (activity_t&, mod_t const&)
+  virtual void handle_internally (activity_t&, mod_t const&) override
   {
     throw std::runtime_error ("cannot handle module calls internally");
   }
 
-  virtual void handle_internally (activity_t&, expr_t const&)
+  virtual void handle_internally (activity_t&, expr_t const&) override
   {
     // nothing to do
   }
 
-  virtual void handle_externally (activity_t& act, net_t const& n)
+  virtual void handle_externally (activity_t& act, net_t const& n) override
   {
     handle_internally (act, n);
   }
 
-  virtual void handle_externally (activity_t& act, mod_t const& module_call)
+  virtual void handle_externally (activity_t& act, mod_t const& module_call) override
   {
     module::call (act, module_call);
   }
 
-  virtual void handle_externally (activity_t& act, expr_t const& e)
+  virtual void handle_externally (activity_t& act, expr_t const& e) override
   {
     handle_internally (act, e );
   }

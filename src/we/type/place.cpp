@@ -31,11 +31,6 @@ namespace place
     return _prop;
   }
 
-  type::type ()
-    : _name()
-    , _signature()
-  {}
-
   type::type ( const std::string& name
 	     , const pnet::type::signature::signature_type& signature
 	     , const we::type::property::type& prop

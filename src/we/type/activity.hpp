@@ -41,7 +41,7 @@ namespace we
         typedef token_on_port_list_t output_t;
 
       public:
-        explicit activity_t ();
+        explicit activity_t () = default;
         explicit activity_t
           ( const we::type::transition_t&
           , boost::optional<we::transition_id_type> const&

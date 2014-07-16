@@ -56,6 +56,22 @@ namespace fhg
         }
         return rc;
       }
+
+      template<typename R>
+        void non_zero_is_error_code (R rc)
+      {
+        if (rc != R (0))
+        {
+          throw boost::system::system_error
+            (boost::system::error_code (rc, boost::system::system_category()));
+        }
+      }
+
+      template<typename R>
+        R cannot_fail (R rc)
+      {
+        return rc;
+      }
     }
 
     int accept (int sockfd, struct sockaddr* addr, socklen_t* addrlen)
@@ -99,6 +115,13 @@ namespace fhg
       abort(); // execve either does not return, or returns negative, thus throws
     }
 
+    void execvp (const char* filename, char* const argv[])
+    {
+      negative_one_fails_with_errno<void> (::execvp (filename, argv));
+
+      abort(); // execve either does not return, or returns negative, thus throws
+    }
+
     pid_t fork()
     {
       return negative_one_fails_with_errno<pid_t> (::fork());
@@ -107,6 +130,21 @@ namespace fhg
     void ftruncate (int fd, off_t length)
     {
       return negative_one_fails_with_errno<void> (::ftruncate (fd, length));
+    }
+
+    char* getenv (const char* name)
+    {
+      return cannot_fail (::getenv (name));
+    }
+
+    pid_t getpid()
+    {
+      return cannot_fail (::getpid());
+    }
+
+    uid_t getuid()
+    {
+      return cannot_fail (::getuid());
     }
 
     void kill (pid_t pid, int sig)
@@ -125,6 +163,11 @@ namespace fhg
         (::mmap (addr, length, prot, flags, fd, offset));
     }
 
+    void mkfifo (const char* pathname, mode_t mode)
+    {
+      return negative_one_fails_with_errno<void> (::mkfifo (pathname, mode));
+    }
+
     void munmap (void* addr, size_t length)
     {
       return negative_one_fails_with_errno<void> (::munmap (addr, length));
@@ -137,6 +180,16 @@ namespace fhg
     int open (const char* pathname, int flags, mode_t mode)
     {
       return negative_one_fails_with_errno<int> (::open (pathname, flags, mode));
+    }
+
+    void pipe (int pipefd[2])
+    {
+      return negative_one_fails_with_errno<void> (::pipe (pipefd));
+    }
+
+    void pthread_sigmask (int how, const sigset_t* set, sigset_t* oset)
+    {
+      return non_zero_is_error_code (::pthread_sigmask (how, set, oset));
     }
 
     ssize_t read (int fd, void* buf, size_t count)
@@ -176,6 +229,16 @@ namespace fhg
         (::sigaction (signum, act, oldact));
     }
 
+    void sigaddset (sigset_t* set, int signum)
+    {
+      return negative_one_fails_with_errno<void> (::sigaddset (set, signum));
+    }
+
+    void sigemptyset (sigset_t* set)
+    {
+      return negative_one_fails_with_errno<void> (::sigemptyset (set));
+    }
+
     sighandler_t signal (int signum, sighandler_t handler)
     {
       return SIG_ERR_fails_with_errno (::signal (signum, handler));
@@ -200,6 +263,12 @@ namespace fhg
     {
       return negative_one_fails_with_errno<pid_t>
         (::wait4 (pid, status, options, rusage));
+    }
+
+    pid_t waitpid (pid_t pid, int* status, int options)
+    {
+      return negative_one_fails_with_errno<pid_t>
+        (::waitpid (pid, status, options));
     }
 
     ssize_t write (int fd, const void* buf, size_t count)

@@ -20,7 +20,7 @@ namespace fhg
         explicit transition_library_view (int width1, int margin, QWidget* = nullptr);
 
       protected:
-        virtual void resizeEvent (QResizeEvent*);
+        virtual void resizeEvent (QResizeEvent*) override;
 
       private:
         int _width1;

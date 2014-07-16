@@ -99,7 +99,7 @@ namespace pnet
           {
             return _os << bs;
           }
-          std::ostream& operator() (const bytearray::type& ba) const
+          std::ostream& operator() (const we::type::bytearray& ba) const
           {
             return _os << ba;
           }

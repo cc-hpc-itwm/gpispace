@@ -20,15 +20,7 @@ endif()
 
 include_directories(${FhgLog_INCLUDE_DIR})
 
-include_directories(${FhgCom_INCLUDE_DIR})
-
 include_directories(${UTIL_INCLUDE_DIR})
-
-include_directories(${FhgKernel_INCLUDE_DIR})
-
-include_directories(${MMGR_INCLUDE_DIR})
-
-include_directories(${GPI_SPACE_INCLUDE_DIR})
 
 find_package (LibRT REQUIRED QUIET)
 include_directories(SYSTEM ${LIBRT_INCLUDE_DIR})
@@ -41,7 +33,3 @@ set (hdrs
 add_subdirectory(gpi)
 add_subdirectory(pc)
 add_subdirectory (tests)
-
-if (ENABLE_COMPATIBILITY_API)
-  add_subdirectory (compat)
-endif()

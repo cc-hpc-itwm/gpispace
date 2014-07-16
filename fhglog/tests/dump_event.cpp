@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE fhglog_event
 #include <boost/test/unit_test.hpp>
 
-#include <fhglog/fhglog.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <fhg/util/now.hpp>
 
