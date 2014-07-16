@@ -55,8 +55,10 @@ namespace sdpa
         {
           const boost::optional<worker_id_t> matching_worker
             ( available_workers.empty() ? boost::none
-            : requirements.empty() ? available_workers.front()
-            : best_match (requirements, available_workers)
+                                        : requirements.empty() ? available_workers.front()
+                                                               : best_match ( requirements
+                                                                            , available_workers
+                                                                            )
             );
 
           if (!matching_worker)
