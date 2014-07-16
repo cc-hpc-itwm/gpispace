@@ -5,14 +5,14 @@ add_subdirectory (worker)
 install (FILES
   drts.hpp
   system.hpp
-  vmem.hpp
+  virtual_memory.hpp
   DESTINATION include/drts/
 )
 
 add_library (gspc
   drts.cpp
   system.cpp
-  vmem.cpp
+  virtual_memory.cpp
 )
 target_link_libraries (gspc
   ${Boost_FILESYSTEM_LIBRARY}
