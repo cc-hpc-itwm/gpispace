@@ -24,25 +24,6 @@ namespace gspc
 
   namespace options
   {
-    namespace name
-    {
-      constexpr char const* const log_host {"log-host"};
-      constexpr char const* const log_port {"log-port"};
-      constexpr char const* const gui_host {"gui-host"};
-      constexpr char const* const gui_port {"gui-port"};
-
-      constexpr char const* const state_directory {"state-directory"};
-      constexpr char const* const gspc_home {"gspc-home"};
-      constexpr char const* const nodefile {"nodefile"};
-
-      constexpr char const* const virtual_memory_manager
-        {"virtual-memory-manager"};
-      constexpr char const* const virtual_memory_per_node
-        {"virtual-memory-per-node"};
-      constexpr char const* const virtual_memory_socket
-        {"virtual-memory-socket"};
-    }
-
     boost::program_options::options_description logging()
     {
       boost::program_options::options_description logging ("Logging");
@@ -91,6 +72,11 @@ namespace gspc
         , boost::program_options::value<validators::is_directory_if_exists>()
         ->required()
         , "directory where to store drts runtime state information"
+        )
+        //! \todo let it be a list of existing_directories
+        ( name::application_search_path
+        , boost::program_options::value<validators::existing_directory>()
+        , "adds a path to the list of application search paths"
         )
         ;
 
@@ -193,6 +179,18 @@ namespace gspc
         << " -y " << *_virtual_memory_socket
         << " -m " << *_virtual_memory_per_node
         ;
+    }
+
+    if (vm.count (options::name::application_search_path))
+    {
+      for ( boost::filesystem::path const& path
+          : { vm[options::name::application_search_path]
+            . as<validators::existing_directory>()
+            }
+          )
+      {
+        command_boot << " -A " << boost::filesystem::canonical (path);
+      }
     }
 
     command_boot << boot_options;
