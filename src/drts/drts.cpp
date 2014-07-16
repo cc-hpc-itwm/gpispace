@@ -109,8 +109,8 @@ namespace gspc
   }
 
   scoped_runtime_system::scoped_runtime_system
-    ( std::string const& boot_options
-    , boost::program_options::variables_map const& vm
+    ( boost::program_options::variables_map const& vm
+    , std::string const& topology_description
     )
       : _gspc_home
         ( boost::filesystem::canonical
@@ -193,7 +193,7 @@ namespace gspc
       }
     }
 
-    command_boot << boot_options;
+    command_boot << topology_description;
 
     system (command_boot.str(), "start runtime system");
 

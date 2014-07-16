@@ -41,8 +41,8 @@ namespace gspc
 
   struct scoped_runtime_system
   {
-    scoped_runtime_system ( std::string const& command_boot
-                          , boost::program_options::variables_map const& vm
+    scoped_runtime_system ( boost::program_options::variables_map const& vm
+                          , std::string const& topology_description
                           );
 
     ~scoped_runtime_system();
