@@ -773,6 +773,7 @@ namespace fhg
             tns.insert ("Binary");
             tns.insert ("long");
             tns.insert ("double");
+            tns.insert ("float");
 
             return tns;
           }
@@ -1038,6 +1039,12 @@ namespace fhg
           fhg::util::parse::position_string pos (stdstr);
           return fhg::util::read_int (pos);
         }
+        float string_to_float (const QString& str)
+        {
+          const std::string stdstr (str.toStdString());
+          fhg::util::parse::position_string pos (stdstr);
+          return fhg::util::read_float (pos);
+        }
 
         QString checkbox_to_string (const QCheckBox* box)
         {
@@ -1046,6 +1053,11 @@ namespace fhg
         QString spinbox_to_string (const QSpinBox* box)
         {
           return QString ("%1L").arg (box->value());
+        }
+        QString doublespinbox_to_float (const QDoubleSpinBox* box)
+        {
+          QString const num (QString ("%1").arg (box->value()));
+          return num.contains ('.') ? (num + "f") : (num + ".f");
         }
         QString spinbox_to_memory_size_type (const QSpinBox* box)
         {
@@ -1143,6 +1155,16 @@ namespace fhg
             QLineEdit* edit (new QLineEdit (maybe_string_token_or_string (def.get_value_or (""))));
             return std::pair<QWidget*, boost::function<QString()> >
               (edit, boost::bind (&QLineEdit::text, edit));
+          }
+          else if (type == "float")
+          {
+            QDoubleSpinBox* edit (new QDoubleSpinBox);
+            edit->setSuffix ("f");
+            edit->setMinimum (std::numeric_limits<float>::lowest());
+            edit->setMaximum (std::numeric_limits<float>::max());
+            edit->setValue (string_to_float (def.get_value_or ("0.0f")));
+            return std::pair<QWidget*, boost::function<QString()> >
+              (edit, boost::bind (doublespinbox_to_float, edit));
           }
           else
           {
