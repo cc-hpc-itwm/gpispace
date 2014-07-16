@@ -19,7 +19,11 @@ namespace gspc
                     , std::string const& description
                     );
     ~vmem_allocation();
-    std::string const& handle() const;
+
+    std::string const& handle() const
+    {
+      return _handle;
+    }
 
   private:
     boost::filesystem::path const _gspc_home;

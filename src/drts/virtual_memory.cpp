@@ -105,8 +105,4 @@ namespace gspc
            , (boost::format ("free %1%") % _handle).str()
            );
   }
-  std::string const& vmem_allocation::handle() const
-  {
-    return _handle;
-  }
 }
