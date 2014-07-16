@@ -21,7 +21,7 @@ namespace gspc
   {
     system ( ( boost::format ("%1% -s %2% stop")
              % (_gspc_home / "bin" / "sdpa")
-             % (_state_directory / "gspc")
+             % _state_directory
              ).str()
            , "stop runtime system"
            );
