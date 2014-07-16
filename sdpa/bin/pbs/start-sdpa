@@ -37,6 +37,7 @@ usage: $(basename $0) [options]
 
         Please contact your local administrator responsible for GPI in
         case you don't have permissions for that folder.
+  -y: Socket file to communicate with the virtual memory manager
 
   -k: kvs port (=$kvs_port)
   -l: log url (=${log_url})
@@ -255,7 +256,7 @@ if [ ${#@} -eq 0 ] ; then
 fi
 
 shiftcount=0
-while getopts ":hvnf:S:m:s:C:p:MA:dG:k:x:l:g:H:" opt; do
+while getopts ":hvnf:S:m:s:C:p:MA:dG:k:x:l:g:H:y:" opt; do
     case $opt in
         h)
             usage
@@ -320,6 +321,11 @@ while getopts ":hvnf:S:m:s:C:p:MA:dG:k:x:l:g:H:" opt; do
         x)
             gpi_exe="$OPTARG"
             assert_not_empty gpi_exe
+            shiftcount=$((shiftcount + 2))
+            ;;
+        y)
+            gpi_socket="${OPTARG}"
+            assert_not_empty gpi_socket
             shiftcount=$((shiftcount + 2))
             ;;
         l)
