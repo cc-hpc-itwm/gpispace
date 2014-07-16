@@ -8,6 +8,7 @@
 #include <boost/program_options.hpp>
 
 #include <string>
+#include <unordered_set>
 
 namespace gspc
 {
@@ -67,6 +68,10 @@ namespace gspc
     {
       return _virtual_memory_socket;
     }
+    std::unordered_set<std::string> const& nodes() const
+    {
+      return _nodes;
+    }
 
   private:
     boost::filesystem::path const _gspc_home;
@@ -74,6 +79,7 @@ namespace gspc
     boost::filesystem::path const _nodefile;
     boost::optional<unsigned long> _virtual_memory_per_node;
     boost::optional<boost::filesystem::path> _virtual_memory_socket;
+    std::unordered_set<std::string> _nodes;
   };
 }
 

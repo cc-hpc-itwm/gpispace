@@ -14,9 +14,11 @@
 #include <boost/format.hpp>
 
 #include <chrono>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <thread>
+#include <unordered_set>
 
 namespace gspc
 {
@@ -108,6 +110,28 @@ namespace gspc
     }
   }
 
+  namespace
+  {
+    std::unordered_set<std::string> read_nodes
+      (boost::filesystem::path const& nodefile)
+    {
+      std::unordered_set<std::string> nodes;
+
+      {
+        std::ifstream stream (nodefile.string());
+
+        std::string node;
+
+        while (std::getline (stream, node))
+        {
+          nodes.insert (node);
+        }
+      }
+
+      return nodes;
+    }
+  }
+
   scoped_runtime_system::scoped_runtime_system
     ( boost::program_options::variables_map const& vm
     , std::string const& topology_description
@@ -140,6 +164,7 @@ namespace gspc
           )
         : boost::none
         )
+    , _nodes (read_nodes (_nodefile))
   {
     std::string const log_host
       (vm[options::name::log_host].as<validators::nonempty_string>());
