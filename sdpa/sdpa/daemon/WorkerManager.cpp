@@ -33,7 +33,7 @@ namespace sdpa
 {
   namespace daemon
   {
-    Worker::ptr_t WorkerManager::findWorker(const worker_id_t& worker_id )
+    Worker::ptr_t WorkerManager::findWorker (const worker_id_t& worker_id)
     {
       boost::mutex::scoped_lock const _ (mtx_);
       worker_map_t::iterator it = worker_map_.find(worker_id);
@@ -49,7 +49,7 @@ namespace sdpa
       return worker_map_.find(worker_id) != worker_map_.end();
     }
 
-    const boost::optional<worker_id_t> WorkerManager::findSubmOrAckWorker(const sdpa::job_id_t& job_id) const
+    const boost::optional<worker_id_t> WorkerManager::findSubmOrAckWorker (const sdpa::job_id_t& job_id) const
     {
       boost::mutex::scoped_lock const _ (mtx_);
 
@@ -66,9 +66,10 @@ namespace sdpa
       return boost::none;
     }
 
-    bool WorkerManager::addWorker(  const worker_id_t& workerId,
-                                    boost::optional<unsigned int> capacity,
-                                    const capabilities_set_t& cpbSet )
+    bool WorkerManager::addWorker ( const worker_id_t& workerId
+                                  , boost::optional<unsigned int> capacity
+                                  , const capabilities_set_t& cpbSet
+                                  )
     {
       boost::mutex::scoped_lock const _ (mtx_);
 
@@ -84,7 +85,7 @@ namespace sdpa
     }
 
 
-    void WorkerManager::deleteWorker( const worker_id_t& workerId )
+    void WorkerManager::deleteWorker (const worker_id_t& workerId)
     {
       boost::mutex::scoped_lock const _ (mtx_);
       worker_map_t::iterator w (worker_map_.find (workerId));
@@ -109,7 +110,7 @@ namespace sdpa
       return workerList;
     }
 
-    void WorkerManager::getCapabilities(sdpa::capabilities_set_t& agentCpbSet)
+    void WorkerManager::getCapabilities (sdpa::capabilities_set_t& agentCpbSet)
     {
       boost::mutex::scoped_lock const _ (mtx_);
 
@@ -135,7 +136,9 @@ namespace sdpa
     namespace
     {
       boost::optional<std::size_t> matchRequirements
-        (const Worker::ptr_t& pWorker, const job_requirements_t& job_req_set)
+        ( const Worker::ptr_t& pWorker
+        , const job_requirements_t& job_req_set
+        )
       {
         std::size_t matchingDeg (0);
 
@@ -156,7 +159,9 @@ namespace sdpa
     }
 
     boost::optional<sdpa::worker_id_t> WorkerManager::getBestMatchingWorker
-      (const job_requirements_t& listJobReq, const sdpa::worker_id_list_t& workerList) const
+      ( const job_requirements_t& listJobReq
+      , const sdpa::worker_id_list_t& workerList
+      ) const
     {
       boost::mutex::scoped_lock const _ (mtx_);
 
