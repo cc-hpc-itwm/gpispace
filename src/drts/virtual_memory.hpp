@@ -3,6 +3,8 @@
 #ifndef DRTS_VMEM_HPP
 #define DRTS_VMEM_HPP
 
+#include <drts/drts.hpp>
+
 #include <boost/filesystem.hpp>
 
 #include <string>
@@ -12,8 +14,7 @@ namespace gspc
   class vmem_allocation
   {
   public:
-    vmem_allocation ( boost::filesystem::path const& gspc_home
-                    , boost::filesystem::path const& vmem_socket
+    vmem_allocation ( scoped_runtime_system const& drts
                     , unsigned long size
                     , std::string const& description
                     );

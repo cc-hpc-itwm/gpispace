@@ -87,14 +87,13 @@ namespace gspc
   }
 
   vmem_allocation::vmem_allocation
-    ( boost::filesystem::path const& gspc_home
-    , boost::filesystem::path const& vmem_socket
+    ( scoped_runtime_system const& drts
     , unsigned long size
     , std::string const& description
     )
-      : _gspc_home (gspc_home)
-      , _vmem_socket (vmem_socket)
-      , _handle (vmem_alloc (gspc_home, vmem_socket, size, description))
+      : _gspc_home (drts.gspc_home())
+      , _vmem_socket (*drts.virtual_memory_socket())
+      , _handle (vmem_alloc (_gspc_home, _vmem_socket, size, description))
   {}
   vmem_allocation::~vmem_allocation()
   {
