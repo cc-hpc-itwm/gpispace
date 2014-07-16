@@ -1045,6 +1045,12 @@ namespace fhg
           fhg::util::parse::position_string pos (stdstr);
           return fhg::util::read_float (pos);
         }
+        double string_to_double (const QString& str)
+        {
+          const std::string stdstr (str.toStdString());
+          fhg::util::parse::position_string pos (stdstr);
+          return fhg::util::read_double (pos);
+        }
 
         QString checkbox_to_string (const QCheckBox* box)
         {
@@ -1058,6 +1064,11 @@ namespace fhg
         {
           QString const num (QString ("%1").arg (box->value()));
           return num.contains ('.') ? (num + "f") : (num + ".f");
+        }
+        QString doublespinbox_to_double (const QDoubleSpinBox* box)
+        {
+          QString const num (QString ("%1").arg (box->value()));
+          return num.contains ('.') ? num : (num + ".");
         }
         QString spinbox_to_memory_size_type (const QSpinBox* box)
         {
@@ -1165,6 +1176,16 @@ namespace fhg
             edit->setValue (string_to_float (def.get_value_or ("0.0f")));
             return std::pair<QWidget*, boost::function<QString()> >
               (edit, boost::bind (doublespinbox_to_float, edit));
+          }
+          else if (type == "double")
+          {
+            QDoubleSpinBox* edit (new QDoubleSpinBox);
+            edit->setSuffix ("f");
+            edit->setMinimum (std::numeric_limits<double>::lowest());
+            edit->setMaximum (std::numeric_limits<double>::max());
+            edit->setValue (string_to_double (def.get_value_or ("0.0f")));
+            return std::pair<QWidget*, boost::function<QString()> >
+              (edit, boost::bind (doublespinbox_to_double, edit));
           }
           else
           {
