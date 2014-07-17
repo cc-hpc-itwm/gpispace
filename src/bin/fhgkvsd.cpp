@@ -103,8 +103,8 @@ int main(int ac, char *av[])
     fhg::util::signal_handler_manager signal_handler;
     signal_handler.add_log_backtrace_and_exit_for_critical_errors (logger);
 
-    signal_handler.add (SIGTERM, std::bind (&boost::asio::io_service::stop, &io_service));
-    signal_handler.add (SIGINT, std::bind (&boost::asio::io_service::stop, &io_service));
+    signal_handler.add (SIGTERM, [&io_service] (int, siginfo_t*, void*) { io_service.stop(); });
+    signal_handler.add (SIGINT, [&io_service] (int, siginfo_t*, void*) { io_service.stop(); });
 
     fhg::util::pidfile_writer pidfile_writer (pidfile);
 
@@ -115,18 +115,14 @@ int main(int ac, char *av[])
       kvsd.clear ("");
     }
 
-    signal_handler.add (SIGHUP, boost::bind ( &fhg::com::kvs::server::kvsd::clear
-                                            , &kvsd
-                                            , ""
-                                            )
+    signal_handler.add ( SIGHUP
+                       , [&kvsd] (int, siginfo_t*, void*) { kvsd.clear (""); }
                        );
-    signal_handler.add (SIGUSR1, boost::bind ( &fhg::com::kvs::server::kvsd::save
-                                             , &kvsd
-                                             )
+    signal_handler.add ( SIGUSR1
+                       , [&kvsd] (int, siginfo_t*, void*) { kvsd.save(); }
                        );
-    signal_handler.add (SIGUSR2, boost::bind ( &fhg::com::kvs::server::kvsd::load
-                                             , &kvsd
-                                             )
+    signal_handler.add ( SIGUSR2
+                       , [&kvsd] (int, siginfo_t*, void*) { kvsd.load(); }
                        );
 
     fhg::com::tcp_server server ( io_service
