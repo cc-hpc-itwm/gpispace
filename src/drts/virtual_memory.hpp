@@ -22,10 +22,7 @@ namespace gspc
   public:
     ~vmem_allocation();
 
-    std::string const& handle() const
-    {
-      return _handle;
-    }
+    std::string const& handle() const;
 
     vmem_allocation (vmem_allocation const&) = delete;
     vmem_allocation& operator= (vmem_allocation const&) = delete;
@@ -34,9 +31,9 @@ namespace gspc
     vmem_allocation& operator= (vmem_allocation&&) = delete;
 
   private:
-    boost::filesystem::path _vmem_socket;
-    std::string _handle;
-    bool _disowned;
+    struct implementation;
+
+    implementation* _;
   };
 }
 

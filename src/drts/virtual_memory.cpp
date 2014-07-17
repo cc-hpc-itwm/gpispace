@@ -59,31 +59,59 @@ namespace gspc
     }
   }
 
+  struct vmem_allocation::implementation
+  {
+    implementation ( boost::filesystem::path const& virtual_memory_socket
+                   , unsigned long size
+                   , std::string const& description
+                   )
+      : _vmem_socket (virtual_memory_socket)
+      , _handle (vmem_alloc (_vmem_socket, size, description))
+      , _disowned (false)
+    {}
+    ~implementation()
+    {
+      if (!_disowned)
+      {
+        // taken from bin/gpish
+        gpi::pc::client::api_t capi (_vmem_socket.string());
+        capi.start();
+        capi.free (boost::lexical_cast<gpi::pc::type::handle_t> (_handle));
+      }
+    }
+    implementation (implementation&& other)
+      : _vmem_socket (std::move (other._vmem_socket))
+      , _handle (std::move (other._handle))
+      , _disowned (std::move (other._disowned))
+    {
+      other._disowned = true;
+    }
+
+    boost::filesystem::path _vmem_socket;
+    std::string _handle;
+    bool _disowned;
+  };
+
   vmem_allocation::vmem_allocation
     ( boost::filesystem::path const& virtual_memory_socket
     , unsigned long size
     , std::string const& description
     )
-      : _vmem_socket (virtual_memory_socket)
-      , _handle (vmem_alloc (_vmem_socket, size, description))
-      , _disowned (false)
+      : _ ( new vmem_allocation::implementation
+            (virtual_memory_socket, size, description)
+          )
   {}
   vmem_allocation::~vmem_allocation()
   {
-    if (!_disowned)
-    {
-      // taken from bin/gpish
-      gpi::pc::client::api_t capi (_vmem_socket.string());
-      capi.start();
-      capi.free (boost::lexical_cast<gpi::pc::type::handle_t> (_handle));
-    }
+    delete _;
   }
-
-  vmem_allocation::vmem_allocation (vmem_allocation&& other)
-    : _vmem_socket (std::move (other._vmem_socket))
-    , _handle (std::move (other._handle))
-    , _disowned (std::move (other._disowned))
+  std::string const vmem_allocation::handle() const
   {
-    other._disowned = true;
+    return _->_handle;
+  }
+  vmem_allocation::vmem_allocation (vmem_allocation&& other)
+    : _ (std::move (other._))
+  {
+    other._ = nullptr;
   }
 }
