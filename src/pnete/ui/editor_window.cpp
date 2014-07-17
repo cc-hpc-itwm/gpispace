@@ -1177,10 +1177,9 @@ namespace fhg
           else if (type == "double")
           {
             QDoubleSpinBox* edit (new QDoubleSpinBox);
-            edit->setSuffix ("f");
             edit->setMinimum (std::numeric_limits<double>::lowest());
             edit->setMaximum (std::numeric_limits<double>::max());
-            edit->setValue (string_to_double (def.get_value_or ("0.0f")));
+            edit->setValue (string_to_double (def.get_value_or ("0.0")));
             return std::pair<QWidget*, boost::function<QString()> >
               (edit, boost::bind (doublespinbox_to_double, edit));
           }
