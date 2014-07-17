@@ -300,9 +300,6 @@ namespace gspc
   vmem_allocation scoped_runtime_system::alloc
     (unsigned long size, std::string const& description) const
   {
-    return vmem_allocation ( *_virtual_memory_socket
-                           , size
-                           , description
-                           );
+    return vmem_allocation (this, size, description);
   }
 }

@@ -3,18 +3,18 @@
 #ifndef DRTS_VMEM_HPP
 #define DRTS_VMEM_HPP
 
-#include <boost/filesystem.hpp>
-
 #include <string>
 
 namespace gspc
 {
+  class scoped_runtime_system;
+
   class vmem_allocation
   {
   private:
     friend class scoped_runtime_system;
 
-    vmem_allocation ( boost::filesystem::path const& vmem_socket
+    vmem_allocation ( scoped_runtime_system const* const
                     , unsigned long size
                     , std::string const& description
                     );

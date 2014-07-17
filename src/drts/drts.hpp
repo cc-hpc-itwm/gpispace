@@ -70,6 +70,8 @@ namespace gspc
     }
 
   private:
+    friend class vmem_allocation;
+
     boost::filesystem::path const _gspc_home;
     boost::filesystem::path const _state_directory;
     boost::filesystem::path const _nodefile;

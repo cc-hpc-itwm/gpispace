@@ -1,5 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
+#include <drts/drts.hpp>
 #include <drts/virtual_memory.hpp>
 
 #include <gpi-space/pc/client/api.hpp>
@@ -83,14 +84,13 @@ namespace gspc
     bool _disowned;
   };
 
-  vmem_allocation::vmem_allocation
-    ( boost::filesystem::path const& virtual_memory_socket
-    , unsigned long size
-    , std::string const& description
-    )
-      : _ ( new vmem_allocation::implementation
-            (virtual_memory_socket, size, description)
-          )
+  vmem_allocation::vmem_allocation ( scoped_runtime_system const* const drts
+                                   , unsigned long size
+                                   , std::string const& description
+                                   )
+    : _ ( new vmem_allocation::implementation
+          (*drts->_virtual_memory_socket, size, description)
+        )
   {}
   vmem_allocation::~vmem_allocation()
   {
