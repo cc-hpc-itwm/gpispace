@@ -17,19 +17,16 @@ namespace gspc
   namespace
   {
     gpi::pc::type::handle_id_t vmem_alloc
-      ( boost::filesystem::path const& vmem_socket
+      ( gpi::pc::client::api_t* api
       , unsigned long const size
       , std::string const& description
       )
     {
       // taken from bin/gpish
-      gpi::pc::client::api_t capi (vmem_socket.string());
-      capi.start();
-
       gpi::pc::type::segment_id_t const segment_id (1);
 
       gpi::pc::type::handle_id_t handle_id
-        (capi.alloc ( segment_id
+        (api->alloc ( segment_id
                     , size
                     , description
                     , gpi::pc::F_GLOBAL | gpi::pc::F_PERSISTENT
@@ -53,12 +50,12 @@ namespace gspc
 
   struct vmem_allocation::implementation
   {
-    implementation ( boost::filesystem::path const& virtual_memory_socket
+    implementation ( gpi::pc::client::api_t* api
                    , unsigned long size
                    , std::string const& description
                    )
-      : _vmem_socket (virtual_memory_socket)
-      , _handle_id (vmem_alloc (_vmem_socket, size, description))
+      : _api (api)
+      , _handle_id (vmem_alloc (_api, size, description))
       , _disowned (false)
     {}
     ~implementation()
@@ -66,20 +63,18 @@ namespace gspc
       if (!_disowned)
       {
         // taken from bin/gpish
-        gpi::pc::client::api_t capi (_vmem_socket.string());
-        capi.start();
-        capi.free (gpi::pc::type::handle_t (_handle_id));
+        _api->free (gpi::pc::type::handle_t (_handle_id));
       }
     }
     implementation (implementation&& other)
-      : _vmem_socket (std::move (other._vmem_socket))
+      : _api (std::move (other._api))
       , _handle_id (std::move (other._handle_id))
       , _disowned (std::move (other._disowned))
     {
       other._disowned = true;
     }
 
-    boost::filesystem::path _vmem_socket;
+    gpi::pc::client::api_t* _api;
     gpi::pc::type::handle_id_t _handle_id;
     bool _disowned;
   };
@@ -89,7 +84,7 @@ namespace gspc
                                    , std::string const& description
                                    )
     : _ ( new vmem_allocation::implementation
-          (*drts->_virtual_memory_socket, size, description)
+          (drts->_virtual_memory_api, size, description)
         )
   {}
   vmem_allocation::~vmem_allocation()

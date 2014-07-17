@@ -13,6 +13,17 @@
 #include <unordered_map>
 #include <unordered_set>
 
+namespace gpi
+{
+  namespace pc
+  {
+    namespace client
+    {
+      class api_t;
+    }
+  }
+}
+
 namespace gspc
 {
   namespace options
@@ -83,6 +94,7 @@ namespace gspc
     boost::optional<unsigned long> _virtual_memory_per_node;
     boost::optional<boost::filesystem::path> _virtual_memory_socket;
     std::unordered_set<std::string> _nodes;
+    gpi::pc::client::api_t* _virtual_memory_api;
   };
 }
 

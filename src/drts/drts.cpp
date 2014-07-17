@@ -8,6 +8,8 @@
 //! \todo eliminate this include (that completes type transition_t::data)
 #include <we/type/net.hpp>
 
+#include <gpi-space/pc/client/api.hpp>
+
 #include <sdpa/client.hpp>
 
 #include <fhg/util/boost/program_options/validators/executable.hpp>
@@ -172,6 +174,11 @@ namespace gspc
         : boost::none
         )
     , _nodes (read_nodes (_nodefile))
+    , _virtual_memory_api
+      ( _virtual_memory_socket
+      ? new gpi::pc::client::api_t (_virtual_memory_socket->string())
+      : nullptr
+      )
   {
     std::string const log_host
       (vm[options::name::log_host].as<validators::nonempty_string>());
@@ -241,11 +248,15 @@ namespace gspc
       }
 
       std::cerr << " OKAY" << std::endl;
+
+      _virtual_memory_api->start();
     }
   }
 
   scoped_runtime_system::~scoped_runtime_system()
   {
+    delete _virtual_memory_api;
+
     system ( ( boost::format ("%1% -s %2% stop")
              % (_gspc_home / "bin" / "sdpa")
              % _state_directory
