@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <drts/drts.hpp>
-#include <drts/system.hpp>
 
 #include <we/expr/parse/parser.hpp>
 #include <we/type/activity.hpp>
@@ -26,6 +25,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <thread>
 #include <unordered_set>
 
@@ -138,6 +138,21 @@ namespace gspc
       }
 
       return nodes;
+    }
+
+    void system (std::string const& command, std::string const& description)
+    {
+      if (int ec = std::system (command.c_str()) != 0)
+      {
+        throw std::runtime_error
+          (( boost::format
+           ("Could not '%3%': error code '%1%', command was '%2%'")
+           % ec
+           % command
+           % description
+           ).str()
+          );
+      };
     }
   }
 

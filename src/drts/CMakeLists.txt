@@ -10,7 +10,6 @@ install (FILES
 
 add_library (gspc SHARED
   drts.cpp
-  system.cpp
   virtual_memory.cpp
 )
 target_link_libraries (gspc
