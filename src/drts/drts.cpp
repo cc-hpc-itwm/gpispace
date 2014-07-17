@@ -246,4 +246,33 @@ namespace gspc
            , "stop runtime system"
            );
   }
+
+  void scoped_runtime_system::put_and_run
+    ( boost::filesystem::path const& workflow
+    , std::unordered_map<std::string, std::string> const& values_on_ports
+    ) const
+  {
+    std::ostringstream command_put_and_run;
+
+    command_put_and_run
+      << (_gspc_home / "bin" / "pnetput")
+      << " --if " << workflow;
+
+    for ( std::pair<std::string, std::string> const& value_on_port
+        : values_on_ports
+        )
+    {
+      command_put_and_run
+        << " -p " << value_on_port.first << "='" << value_on_port.second << "'";
+    }
+
+    command_put_and_run
+      << " | "
+      << (_gspc_home / "bin" / "sdpa")
+      << " -s " << _state_directory
+      << " submit /dev/stdin"
+      ;
+
+    system (command_put_and_run.str(), "put and run");
+  }
 }

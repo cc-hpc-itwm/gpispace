@@ -8,6 +8,7 @@
 #include <boost/program_options.hpp>
 
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 
 namespace gspc
@@ -47,6 +48,11 @@ namespace gspc
                           );
 
     ~scoped_runtime_system();
+
+    void put_and_run
+      ( boost::filesystem::path const& workflow
+      , std::unordered_map<std::string, std::string> const& values_on_ports
+      ) const;
 
     boost::filesystem::path const& gspc_home() const
     {
