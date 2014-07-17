@@ -1,5 +1,8 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
+#ifndef FHG_UTIL_DL_HPP
+#define FHG_UTIL_DL_HPP
+
 #include <cstdio>
 #include <cstdlib>
 #include <dlfcn.h>
@@ -78,3 +81,5 @@ namespace dl
     }
   };
 }
+
+#endif
