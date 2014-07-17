@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <drts/virtual_memory.hpp>
-#include <drts/system.hpp>
 
 #include <gpi-space/pc/client/api.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
@@ -9,6 +8,7 @@
 #include <gpi-space/pc/type/handle.hpp>
 
 #include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <exception>
 
@@ -74,13 +74,10 @@ namespace gspc
   {
     if (!_disowned)
     {
-      system (( boost::format ("echo memory-free %1% | %2% -s %3%")
-              % _handle
-              % (_gspc_home / "bin" / "gpish")
-              % _vmem_socket
-              ).str()
-             , (boost::format ("free %1%") % _handle).str()
-             );
+      // taken from bin/gpish
+      gpi::pc::client::api_t capi (_vmem_socket.string());
+      capi.start();
+      capi.free (boost::lexical_cast<gpi::pc::type::handle_t> (_handle));
     }
   }
 
