@@ -3,7 +3,7 @@ include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable (interleave interleave.c)
 add_executable (deinterleave deinterleave.c)
-add_executable (env env.c)
+add_executable (env env.cpp)
 
 add_executable (rotate rotate.c)
 set_target_properties (rotate PROPERTIES COMPILE_FLAGS -std=c99)
