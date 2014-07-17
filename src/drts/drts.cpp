@@ -173,12 +173,12 @@ namespace gspc
           )
         : boost::none
         )
-    , _nodes (read_nodes (_nodefile))
-    , _virtual_memory_api
-      ( _virtual_memory_socket
-      ? new gpi::pc::client::api_t (_virtual_memory_socket->string())
-      : nullptr
-      )
+      , _nodes (read_nodes (_nodefile))
+      , _virtual_memory_api
+        ( _virtual_memory_socket
+        ? new gpi::pc::client::api_t (_virtual_memory_socket->string())
+        : nullptr
+        )
   {
     std::string const log_host
       (vm[options::name::log_host].as<validators::nonempty_string>());
@@ -303,8 +303,7 @@ namespace gspc
     {
       std::cerr << "failed: "
                 << "error-message := " << job_info.error_message
-                << std::endl
-        ;
+                << std::endl;
     }
   }
 

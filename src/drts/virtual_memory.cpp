@@ -16,11 +16,10 @@ namespace gspc
 {
   namespace
   {
-    gpi::pc::type::handle_id_t vmem_alloc
-      ( gpi::pc::client::api_t* api
-      , unsigned long const size
-      , std::string const& description
-      )
+    gpi::pc::type::handle_id_t vmem_alloc ( gpi::pc::client::api_t* api
+                                          , unsigned long const size
+                                          , std::string const& description
+                                          )
     {
       // taken from bin/gpish
       gpi::pc::type::segment_id_t const segment_id (1);
@@ -62,7 +61,6 @@ namespace gspc
     {
       if (!_disowned)
       {
-        // taken from bin/gpish
         _api->free (gpi::pc::type::handle_t (_handle_id));
       }
     }
