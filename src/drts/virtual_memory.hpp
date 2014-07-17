@@ -22,7 +22,7 @@ namespace gspc
   public:
     ~vmem_allocation();
 
-    std::string const& handle() const;
+    std::string const handle() const;
 
     vmem_allocation (vmem_allocation const&) = delete;
     vmem_allocation& operator= (vmem_allocation const&) = delete;

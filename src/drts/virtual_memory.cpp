@@ -8,7 +8,6 @@
 #include <gpi-space/pc/type/handle.hpp>
 
 #include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include <exception>
 
@@ -16,10 +15,11 @@ namespace gspc
 {
   namespace
   {
-    std::string vmem_alloc ( boost::filesystem::path const& vmem_socket
-                           , unsigned long const size
-                           , std::string const& description
-                           )
+    gpi::pc::type::handle_id_t vmem_alloc
+      ( boost::filesystem::path const& vmem_socket
+      , unsigned long const size
+      , std::string const& description
+      )
     {
       // taken from bin/gpish
       gpi::pc::client::api_t capi (vmem_socket.string());
@@ -46,16 +46,7 @@ namespace gspc
           );
       }
 
-      // taken from gpi-space/pc/type/handle.hpp
-      std::ostringstream oss;
-
-      oss << "0x";
-      oss.flags (std::ios::hex);
-      oss.width (18);
-      oss.fill ('0');
-      oss << handle_id;
-
-      return oss.str();
+      return handle_id;
     }
   }
 
@@ -66,7 +57,7 @@ namespace gspc
                    , std::string const& description
                    )
       : _vmem_socket (virtual_memory_socket)
-      , _handle (vmem_alloc (_vmem_socket, size, description))
+      , _handle_id (vmem_alloc (_vmem_socket, size, description))
       , _disowned (false)
     {}
     ~implementation()
@@ -76,19 +67,19 @@ namespace gspc
         // taken from bin/gpish
         gpi::pc::client::api_t capi (_vmem_socket.string());
         capi.start();
-        capi.free (boost::lexical_cast<gpi::pc::type::handle_t> (_handle));
+        capi.free (gpi::pc::type::handle_t (_handle_id));
       }
     }
     implementation (implementation&& other)
       : _vmem_socket (std::move (other._vmem_socket))
-      , _handle (std::move (other._handle))
+      , _handle_id (std::move (other._handle_id))
       , _disowned (std::move (other._disowned))
     {
       other._disowned = true;
     }
 
     boost::filesystem::path _vmem_socket;
-    std::string _handle;
+    gpi::pc::type::handle_id_t _handle_id;
     bool _disowned;
   };
 
@@ -107,7 +98,16 @@ namespace gspc
   }
   std::string const vmem_allocation::handle() const
   {
-    return _->_handle;
+    // taken from gpi-space/pc/type/handle.hpp
+    std::ostringstream oss;
+
+    oss << "0x";
+    oss.flags (std::ios::hex);
+    oss.width (18);
+    oss.fill ('0');
+    oss << _->_handle_id;
+
+    return oss.str();
   }
   vmem_allocation::vmem_allocation (vmem_allocation&& other)
     : _ (std::move (other._))
