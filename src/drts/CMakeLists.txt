@@ -8,12 +8,14 @@ install (FILES
   DESTINATION include/drts/
 )
 
-add_library (gspc
+add_library (gspc SHARED
   drts.cpp
   system.cpp
   virtual_memory.cpp
 )
 target_link_libraries (gspc
+  sdpa
+  pnet
   ${Boost_FILESYSTEM_LIBRARY}
 )
 

@@ -3,6 +3,13 @@
 #include <drts/drts.hpp>
 #include <drts/system.hpp>
 
+#include <we/expr/parse/parser.hpp>
+#include <we/type/activity.hpp>
+//! \todo eliminate this include (that completes type transition_t::data)
+#include <we/type/net.hpp>
+
+#include <sdpa/client.hpp>
+
 #include <fhg/util/boost/program_options/validators/executable.hpp>
 #include <fhg/util/boost/program_options/validators/existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
@@ -252,28 +259,42 @@ namespace gspc
     , std::unordered_map<std::string, std::string> const& values_on_ports
     ) const
   {
-    std::ostringstream command_put_and_run;
-
-    command_put_and_run
-      << (_gspc_home / "bin" / "pnetput")
-      << " --if " << workflow;
+    // taken from bin/pnetput
+    we::type::activity_t activity (workflow);
 
     for ( std::pair<std::string, std::string> const& value_on_port
         : values_on_ports
         )
     {
-      command_put_and_run
-        << " -p " << value_on_port.first << "='" << value_on_port.second << "'";
+      activity.add_input
+        ( activity.transition().input_port_by_name (value_on_port.first)
+        , expr::parse::parser (value_on_port.second).eval_all()
+        );
     }
 
-    command_put_and_run
-      << " | "
-      << (_gspc_home / "bin" / "sdpa")
-      << " -s " << _state_directory
-      << " submit /dev/stdin"
-      ;
+    // taken from pbs/sdpa and bin/sdpac
+    std::string const kvs_host ("localhost");
+    unsigned short const kvs_port (2439);
 
-    system (command_put_and_run.str(), "put and run");
+    sdpa::client::Client api
+      ("orchestrator", kvs_host, std::to_string (kvs_port));
+
+    std::string const job_id (api.submitJob (activity.to_string()));
+
+    std::cerr << "waiting for job " << job_id << std::endl;
+
+    sdpa::client::job_info_t job_info;
+
+    sdpa::status::code const status
+      (api.wait_for_terminal_state (job_id, job_info));
+
+    if (sdpa::status::FAILED == status)
+    {
+      std::cerr << "failed: "
+                << "error-message := " << job_info.error_message
+                << std::endl
+        ;
+    }
   }
 
   vmem_allocation scoped_runtime_system::alloc
