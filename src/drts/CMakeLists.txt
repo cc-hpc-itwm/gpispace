@@ -16,6 +16,8 @@ add_library (gspc SHARED
 target_link_libraries (gspc
   sdpa
   pnet
+  gpi-space-pc-client-static
+  gpi-space-pc-segment
   ${Boost_FILESYSTEM_LIBRARY}
 )
 

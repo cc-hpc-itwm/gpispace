@@ -3,6 +3,11 @@
 #include <drts/virtual_memory.hpp>
 #include <drts/system.hpp>
 
+#include <gpi-space/pc/client/api.hpp>
+#include <gpi-space/pc/segment/segment.hpp>
+#include <gpi-space/pc/type/flags.hpp>
+#include <gpi-space/pc/type/handle.hpp>
+
 #include <boost/format.hpp>
 
 #include <exception>
@@ -11,78 +16,46 @@ namespace gspc
 {
   namespace
   {
-    struct popened_file
-    {
-    public:
-      popened_file (const char* command, const char* type)
-        : _command (command)
-        , _file (popen (command, type))
-      {
-        if (!_file)
-        {
-          throw std::runtime_error
-            ((boost::format ("Could not popen '%1%'") % _command).str());
-        }
-      }
-      ~popened_file()
-      {
-        if (pclose (_file) == -1)
-        {
-          throw std::runtime_error
-            ((boost::format ("Could not pclose '%1%'") % _command).str());
-        }
-      }
-      FILE* file() const
-      {
-        return _file;
-      }
-
-    private:
-      std::string const _command;
-      FILE* _file;
-    };
-
-    std::string vmem_alloc ( boost::filesystem::path const& gspc_home
-                           , boost::filesystem::path const& vmem_socket
+    std::string vmem_alloc ( boost::filesystem::path const& vmem_socket
                            , unsigned long const size
                            , std::string const& description
                            )
     {
-      std::string const command
-        (( boost::format
-           ("echo memory-alloc %1% gpi \"%2%\" p | TERM=linux %3% -s %4% | tail -1")
-         % size
-         % description
-         % (gspc_home / "bin" / "gpish")
-         % vmem_socket
-         ).str()
+      // taken from bin/gpish
+      gpi::pc::client::api_t capi (vmem_socket.string());
+      capi.start();
+
+      gpi::pc::type::segment_id_t const segment_id (1);
+
+      gpi::pc::type::handle_id_t handle_id
+        (capi.alloc ( segment_id
+                    , size
+                    , description
+                    , gpi::pc::F_GLOBAL | gpi::pc::F_PERSISTENT
+                    )
         );
 
-      popened_file const handle (command.c_str(), "r");
-
-      std::size_t const handle_string_size (18);
-
-      char buf[handle_string_size];
-
-      size_t const read (fread (buf, 1, handle_string_size, handle.file()));
-
-      if (read != handle_string_size)
+      if (gpi::pc::type::handle::is_null (handle_id))
       {
-        int const e (errno);
-
         throw std::runtime_error
-          (( boost::format
-             ("Failed to read %5% bytes output of '%1%' (%4%): %2%: %3%")
-           % command
-           % e
-           % strerror (e)
-           % read
-           % handle_string_size
-           ).str()
+          ( ( boost::format
+              ("Could not allocate %1% bytes with description '%2%'")
+            % size
+            % description
+            ).str()
           );
       }
 
-      return std::string (buf, buf + handle_string_size);
+      // taken from gpi-space/pc/type/handle.hpp
+      std::ostringstream oss;
+
+      oss << "0x";
+      oss.flags (std::ios::hex);
+      oss.width (18);
+      oss.fill ('0');
+      oss << handle_id;
+
+      return oss.str();
     }
   }
 
@@ -94,7 +67,7 @@ namespace gspc
     )
       : _gspc_home (gspc_home)
       , _vmem_socket (virtual_memory_socket)
-      , _handle (vmem_alloc (_gspc_home, _vmem_socket, size, description))
+      , _handle (vmem_alloc (_vmem_socket, size, description))
       , _disowned (false)
   {}
   vmem_allocation::~vmem_allocation()
