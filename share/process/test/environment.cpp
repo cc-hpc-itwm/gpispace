@@ -17,12 +17,11 @@ BOOST_AUTO_TEST_CASE (process_empty_environment)
   std::map<std::string, std::string> env;
 
   process::circular_buffer buf_stderr;
-  char out_stdout [0];
 
   process::execute_return_type ret
     ( process::execute ( env_program
                        , process::const_buffer (0, 0)
-                       , process::buffer (out_stdout, sizeof (out_stdout))
+                       , process::buffer (0, 0)
                        , buf_stderr
                        , process::file_const_buffer_list()
                        , process::file_buffer_list()
