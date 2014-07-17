@@ -30,6 +30,7 @@ int main (int argc, char *argv[])
   setting::path_list_type paths_trusted_new;
   setting::path_list_type paths_untrusted_new;
   bool show_splash (setting::splash::show());
+  std::vector<std::string> plugin_paths;
 
   desc.add_options()
     ( "help,h", "this message")
@@ -48,6 +49,10 @@ int main (int argc, char *argv[])
     ( "show-splash,s"
     , po::value<bool>(&show_splash)->default_value(show_splash)
     , "show splash screen"
+    )
+    ( "load-plugin"
+    , po::value<decltype (plugin_paths)> (&plugin_paths)
+    , "paths of plugins to load"
     )
     ;
 
@@ -78,7 +83,7 @@ int main (int argc, char *argv[])
 
   try
   {
-    fhg::pnete::PetriNetEditor pente (argc, argv);
+    fhg::pnete::PetriNetEditor pente (plugin_paths, argc, argv);
     pente.startup ();
 
     return pente.exec ();
@@ -103,11 +108,17 @@ namespace fhg
           processEvents ();
         }
     }
-    PetriNetEditor::PetriNetEditor (int& argc, char *argv[])
+    PetriNetEditor::PetriNetEditor
+        (std::vector<std::string> plugin_paths, int& argc, char *argv[])
       : QApplication (argc, argv)
       , _splash (QPixmap (":/pente.png"))
       , _editor_windows ()
-    {}
+    {
+      for (std::string path : plugin_paths)
+      {
+        _plugins.emplace_back (path);
+      }
+    }
 
     void PetriNetEditor::startup ()
     {
@@ -154,7 +165,7 @@ namespace fhg
 
     ui::editor_window* PetriNetEditor::create_editor_window()
     {
-      _editor_windows << new ui::editor_window();
+      _editor_windows << new ui::editor_window (_plugins);
 
       return _editor_windows.back();
     }

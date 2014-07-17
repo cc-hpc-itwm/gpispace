@@ -7,6 +7,7 @@
 #include <pnete/data/handle/net.hpp>
 #include <pnete/data/internal.hpp>
 #include <pnete/data/manager.hpp>
+#include <pnete/plugin/plugin_api.hpp>
 #include <pnete/ui/StructureView.hpp>
 #include <pnete/ui/TransitionLibraryModel.hpp>
 #include <pnete/ui/dock_widget.hpp>
@@ -20,6 +21,7 @@
 #include <pnete/ui/size.hpp>
 #include <pnete/ui/transition_library_view.hpp>
 
+#include <fhg/util/dl.hpp>
 #include <fhg/util/temporary_path.hpp>
 
 #include <sdpa/client.hpp>
@@ -67,7 +69,9 @@ namespace fhg
   {
     namespace ui
     {
-      editor_window::editor_window (QWidget* parent)
+      editor_window::editor_window ( std::list<util::scoped_dlhandle> const& plugins
+                                   , QWidget* parent
+                                   )
         : QMainWindow (parent)
         , _transition_library (new transition_library_view (20, 5, this))
         , _transition_library_dock
@@ -98,7 +102,7 @@ namespace fhg
         addDockWidget (_structure_view_dock);
         addDockWidget (_undo_view_dock);
 
-        setup_menu_and_toolbar();
+        setup_menu_and_toolbar (plugins);
 
         _transition_library->setModel (new TransitionLibraryModel (this));
 
@@ -477,7 +481,8 @@ namespace fhg
         }
       }
 
-      void editor_window::setup_menu_and_toolbar()
+      void editor_window::setup_menu_and_toolbar
+        (std::list<util::scoped_dlhandle> const& plugins)
       {
         QMenuBar* menu_bar (new QMenuBar (this));
         setMenuBar (menu_bar);
@@ -530,6 +535,36 @@ namespace fhg
           (_action_execute_current_file_locally_from_file);
         runtime_toolbar->addAction
           (_action_execute_current_file_remote_via_prompt);
+
+        for (util::scoped_dlhandle const& dl_handle : plugins)
+        {
+          plugin::plugin_base const* const plugin
+            ( dl_handle.sym<decltype (fhg_pnete_create_plugin)>
+              ("fhg_pnete_create_plugin") (this)
+            );
+
+          for (QPair<QString, QList<QAction*>> menu_desc : plugin->menus())
+          {
+            QMenu* menu (new QMenu (menu_desc.first, this));
+            menu_bar->addMenu (menu);
+
+            for (QAction* action : menu_desc.second)
+            {
+              menu->addAction (action);
+            }
+          }
+          for (QPair<QString, QList<QAction*>> toolbar_desc : plugin->toolbars())
+          {
+            QToolBar* toolbar (new QToolBar (toolbar_desc.first, this));
+            addToolBar (Qt::TopToolBarArea, toolbar);
+            toolbar->setFloatable (false);
+
+            for (QAction* action : toolbar_desc.second)
+            {
+              toolbar->addAction (action);
+            }
+          }
+        }
       }
 
       void editor_window::setup_file_actions (QMenuBar* menu_bar)

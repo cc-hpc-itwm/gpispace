@@ -119,10 +119,14 @@ set (monitor_ui_tomoc
   ui/log_monitor.hpp
 )
 
+set (plugin_tomoc
+  plugin/plugin_base.hpp
+)
 
   qt4_wrap_cpp (base_wrapped_cpps ${base_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
   qt4_wrap_cpp (base_ui_wrapped_cpps ${base_ui_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
   qt4_wrap_cpp (editor_ui_wrapped_cpps ${editor_ui_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
+qt4_wrap_cpp (plugin_wrapped_cpps ${plugin_tomoc})
   qt4_wrap_ui (editor_ui_wrapped_uis ${editor_ui_uis})
   qt4_add_resources (editor_ui_resource_cpps ${editor_ui_resources})
   qt4_wrap_cpp (monitor_ui_wrapped_cpps ${monitor_ui_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
@@ -131,7 +135,8 @@ set (monitor_ui_tomoc
     pnete.cpp setting.cpp ${base_sources} ${base_wrapped_cpps}
     ${base_ui_sources} ${base_ui_wrapped_cpps} ${editor_ui_sources}
     ${editor_ui_wrapped_cpps} ${editor_ui_wrapped_uis} ${editor_ui_resource_cpps}
-    ${monitor_ui_sources} ${monitor_ui_wrapped_cpps})
+    ${monitor_ui_sources} ${monitor_ui_wrapped_cpps}
+    ${plugin_wrapped_cpps})
 
   target_link_libraries ( pnete
                           "${LIB_PREFIX}graphviz-wrapper"
@@ -147,6 +152,18 @@ set (monitor_ui_tomoc
                           ${QT_LIBRARIES})
 
   install (TARGETS pnete RUNTIME DESTINATION bin)
+
+qt4_wrap_cpp (hello_world-plugion_wrapped "plugin/demo/hello_world.hpp")
+
+add_library (hello_world-plugin MODULE
+  "plugin/demo/hello_world.cpp" ${hello_world-plugion_wrapped}
+)
+
+target_link_libraries (hello_world-plugin ${QT_LIBRARIES})
+
+install (FILES "plugin/plugin_api.hpp" "plugin/plugin_base.hpp"
+  DESTINATION "share/pnete/include"
+)
 
   add_subdirectory (ui/graph/style/test)
 

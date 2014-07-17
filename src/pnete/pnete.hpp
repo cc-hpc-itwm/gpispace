@@ -3,10 +3,14 @@
 #ifndef _PENTE_HPP
 #define _PENTE_HPP 1
 
+#include <fhg/util/dl.hpp>
+
 #include <QApplication>
 #include <QList>
 #include <QTranslator>
 #include <QSplashScreen>
+
+#include <list>
 
 namespace fhg
 {
@@ -20,7 +24,8 @@ namespace fhg
     class PetriNetEditor : public QApplication
     {
     public:
-      PetriNetEditor (int& argc, char *argv[]);
+      PetriNetEditor
+        (std::vector<std::string> plugin_paths, int& argc, char *argv[]);
       virtual ~PetriNetEditor ();
 
       void startup ();
@@ -29,6 +34,7 @@ namespace fhg
       QSplashScreen _splash;
       QTranslator _qtTranslator;
       QTranslator _penteTranslator;
+      std::list<util::scoped_dlhandle> _plugins;
       QList<ui::editor_window*> _editor_windows;
 
       void showSplashScreen();
