@@ -3,6 +3,8 @@
 #ifndef DRTS_DRTS_HPP
 #define DRTS_DRTS_HPP
 
+#include <drts/virtual_memory.hpp>
+
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
@@ -41,8 +43,9 @@ namespace gspc
     boost::program_options::options_description virtual_memory();
   }
 
-  struct scoped_runtime_system
+  class scoped_runtime_system
   {
+  public:
     scoped_runtime_system ( boost::program_options::variables_map const& vm
                           , std::string const& topology_description
                           );
@@ -54,17 +57,12 @@ namespace gspc
       , std::unordered_map<std::string, std::string> const& values_on_ports
       ) const;
 
-    boost::filesystem::path const& gspc_home() const
-    {
-      return _gspc_home;
-    }
+    vmem_allocation alloc
+      (unsigned long size, std::string const& description) const;
+
     unsigned long virtual_memory_total() const
     {
       return _nodes.size() * (*_virtual_memory_per_node - 32UL * (1UL << 20UL));
-    }
-    boost::optional<boost::filesystem::path> const& virtual_memory_socket() const
-    {
-      return _virtual_memory_socket;
     }
     std::unordered_set<std::string> const& nodes() const
     {

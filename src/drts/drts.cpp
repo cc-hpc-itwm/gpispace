@@ -275,4 +275,14 @@ namespace gspc
 
     system (command_put_and_run.str(), "put and run");
   }
+
+  vmem_allocation scoped_runtime_system::alloc
+    (unsigned long size, std::string const& description) const
+  {
+    return vmem_allocation ( _gspc_home
+                           , *_virtual_memory_socket
+                           , size
+                           , description
+                           );
+  }
 }

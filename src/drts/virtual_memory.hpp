@@ -3,8 +3,6 @@
 #ifndef DRTS_VMEM_HPP
 #define DRTS_VMEM_HPP
 
-#include <drts/drts.hpp>
-
 #include <boost/filesystem.hpp>
 
 #include <string>
@@ -13,11 +11,16 @@ namespace gspc
 {
   class vmem_allocation
   {
-  public:
-    vmem_allocation ( scoped_runtime_system const& drts
+  private:
+    friend class scoped_runtime_system;
+
+    vmem_allocation ( boost::filesystem::path const& gspc_home
+                    , boost::filesystem::path const& vmem_socket
                     , unsigned long size
                     , std::string const& description
                     );
+
+  public:
     ~vmem_allocation();
 
     std::string const& handle() const
@@ -25,10 +28,17 @@ namespace gspc
       return _handle;
     }
 
+    vmem_allocation (vmem_allocation const&) = delete;
+    vmem_allocation& operator= (vmem_allocation const&) = delete;
+
+    vmem_allocation (vmem_allocation&&);
+    vmem_allocation& operator= (vmem_allocation&&) = delete;
+
   private:
-    boost::filesystem::path const _gspc_home;
-    boost::filesystem::path const _vmem_socket;
-    std::string const _handle;
+    boost::filesystem::path _gspc_home;
+    boost::filesystem::path _vmem_socket;
+    std::string _handle;
+    bool _disowned;
   };
 }
 
