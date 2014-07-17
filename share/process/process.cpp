@@ -614,14 +614,14 @@ namespace process
   {
     std::vector<char> envp_buffer
       ( std::accumulate
-      ( environment.begin()
-      , environment.end()
-      , std::size_t (0)
-      , [] (std::size_t s, std::pair<std::string, std::string> const& entry)
-      {
-        return s + entry.first.size() + 1 + entry.second.size() + 1;
-      }
-      )
+        ( environment.begin()
+        , environment.end()
+        , std::size_t (0)
+        , [] (std::size_t s, std::pair<std::string, std::string> const& entry)
+        {
+          return s + entry.first.size() + 1 + entry.second.size() + 1;
+        }
+        )
       );
 
     std::vector<char*> envp;
