@@ -69,6 +69,11 @@ namespace gspc
       return _nodes;
     }
 
+    scoped_runtime_system (scoped_runtime_system const&) = delete;
+    scoped_runtime_system& operator= (scoped_runtime_system const&) = delete;
+    scoped_runtime_system (scoped_runtime_system&&) = delete;
+    scoped_runtime_system& operator= (scoped_runtime_system&&) = delete;
+
   private:
     friend class vmem_allocation;
 
