@@ -60,13 +60,11 @@ namespace gspc
   }
 
   vmem_allocation::vmem_allocation
-    ( boost::filesystem::path const& gspc_home
-    , boost::filesystem::path const& virtual_memory_socket
+    ( boost::filesystem::path const& virtual_memory_socket
     , unsigned long size
     , std::string const& description
     )
-      : _gspc_home (gspc_home)
-      , _vmem_socket (virtual_memory_socket)
+      : _vmem_socket (virtual_memory_socket)
       , _handle (vmem_alloc (_vmem_socket, size, description))
       , _disowned (false)
   {}
@@ -82,8 +80,7 @@ namespace gspc
   }
 
   vmem_allocation::vmem_allocation (vmem_allocation&& other)
-    : _gspc_home (std::move (other._gspc_home))
-    , _vmem_socket (std::move (other._vmem_socket))
+    : _vmem_socket (std::move (other._vmem_socket))
     , _handle (std::move (other._handle))
     , _disowned (std::move (other._disowned))
   {
