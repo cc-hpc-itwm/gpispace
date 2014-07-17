@@ -86,12 +86,12 @@ BOOST_AUTO_TEST_CASE (process_full_environment)
   }
 
   process::circular_buffer buf_stderr;
-  std::vector<char> out_stdout (expected_output.size ());
+  std::vector<char> out_stdout (expected_output.size());
 
   process::execute_return_type ret
     ( process::execute ( env_program
                        , process::const_buffer (0, 0)
-                       , process::buffer (out_stdout.data (), out_stdout.size())
+                       , process::buffer (out_stdout.data(), out_stdout.size())
                        , buf_stderr
                        , process::file_const_buffer_list()
                        , process::file_buffer_list()
@@ -100,8 +100,8 @@ BOOST_AUTO_TEST_CASE (process_full_environment)
 
   BOOST_REQUIRE_EQUAL (ret.exit_code, 0);
   BOOST_REQUIRE_EQUAL (ret.bytes_written_stdin, 0);
-  BOOST_REQUIRE_EQUAL (ret.bytes_read_stdout, expected_output.size ());
+  BOOST_REQUIRE_EQUAL (ret.bytes_read_stdout, expected_output.size());
   BOOST_REQUIRE_EQUAL (ret.bytes_read_stderr, 0);
 
-  BOOST_REQUIRE_EQUAL (std::string (out_stdout.data (), ret.bytes_read_stdout), expected_output);
+  BOOST_REQUIRE_EQUAL (std::string (out_stdout.data(), ret.bytes_read_stdout), expected_output);
 }
