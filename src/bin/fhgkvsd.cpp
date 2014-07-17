@@ -144,19 +144,19 @@ int main(int ac, char *av[])
 
     pidfile_writer.write();
 
-    io_service.notify_fork(boost::asio::io_service::fork_child);
+    io_service.notify_fork (boost::asio::io_service::fork_child);
     io_service.run();
 
     kvsd.save();
 
-    if (not pidfile.empty ())
+    if (not pidfile.empty())
     {
       fhg::syscall::unlink (pidfile.c_str());
     }
   }
-  catch (std::exception const &ex)
+  catch (std::exception const& ex)
   {
-    std::cerr << "could not start server: " << ex.what () << std::endl;
+    std::cerr << "could not start server: " << ex.what() << std::endl;
     return EXIT_FAILURE;
   }
 
