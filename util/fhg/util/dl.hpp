@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <dlfcn.h>
 #include <errno.h>
+#include <stdexcept>
 #include <string>
 
 namespace dl
