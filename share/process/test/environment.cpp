@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE (process_single_variable_environment)
   const std::map<std::string, std::string> env {{expected_key, expected_value}};
 
   process::circular_buffer buf_stderr;
-  char out_stdout [expected_key.size()+1+expected_value.size()+1];
+  char out_stdout [expected_key.size() + 1 + expected_value.size() + 1];
 
   process::execute_return_type ret
     ( process::execute ( env_program
