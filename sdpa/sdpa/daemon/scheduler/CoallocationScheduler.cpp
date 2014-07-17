@@ -41,41 +41,30 @@ namespace sdpa
     namespace
     {
       std::set<worker_id_t> find_assignment_for_job
-        ( worker_id_list_t available_workers
-        , job_requirements_t requirements
-        , std::function<boost::optional<worker_id_t>
-                          (job_requirements_t, worker_id_list_t)
-                       > best_match
+        ( const worker_id_list_t& available_workers
+        , const job_requirements_t& requirements
+        , std::function<const worker_id_list_t
+                          ( const job_requirements_t&
+                          , const worker_id_list_t&
+                          )
+                       > match_requirements
         )
       {
-        std::size_t remaining_workers_needed (requirements.numWorkers());
-        std::set<worker_id_t> workers;
+        std::set<worker_id_t> assigned_workers;
 
-        while (remaining_workers_needed --> 0)
+        worker_id_list_t
+          list_matching_workers (match_requirements (requirements, available_workers));
+
+        if (list_matching_workers.size() >= requirements.numWorkers())
         {
-          const boost::optional<worker_id_t> matching_worker
-            ( available_workers.empty() ? boost::none
-                                        : requirements.empty() ? available_workers.front()
-                                                               : best_match ( requirements
-                                                                            , available_workers
-                                                                            )
-            );
-
-          if (!matching_worker)
+          for (size_t k=0; k<requirements.numWorkers(); k++)
           {
-            return std::set<worker_id_t>();
+            assigned_workers.insert(list_matching_workers.front());
+            list_matching_workers.pop_front();
           }
-
-          available_workers.erase
-            ( std::find ( available_workers.begin(), available_workers.end()
-                        , *matching_worker
-                        )
-            );
-
-          workers.insert (*matching_worker);
         }
 
-        return workers;
+        return assigned_workers;
       }
     }
 
@@ -98,7 +87,7 @@ namespace sdpa
             ( listAvailWorkers
             , _job_requirements (jobId)
             , std::bind
-              ( &WorkerManager::getBestMatchingWorker
+              ( &WorkerManager::getListMatchingWorkers
               , &worker_manager()
               , std::placeholders::_1
               , std::placeholders::_2
