@@ -287,19 +287,23 @@ namespace gspc
   std::multimap<std::string, pnet::type::value::value_type>
     scoped_runtime_system::put_and_run
     ( boost::filesystem::path const& workflow
-    , std::multimap<std::string, std::string> const& values_on_ports
+    , std::multimap< std::string
+                   , pnet::type::value::value_type
+                   > const& values_on_ports
     ) const
   {
     // taken from bin/pnetput
     we::type::activity_t activity (workflow);
 
-    for ( std::pair<std::string, std::string> const& value_on_port
+    for ( std::pair< std::string
+                   , pnet::type::value::value_type
+                   > const& value_on_port
         : values_on_ports
         )
     {
       activity.add_input
         ( activity.transition().input_port_by_name (value_on_port.first)
-        , expr::parse::parser (value_on_port.second).eval_all()
+        , value_on_port.second
         );
     }
 
