@@ -97,6 +97,40 @@ namespace gspc
     std::unordered_set<std::string> _nodes;
     gpi::pc::client::api_t* _virtual_memory_api;
   };
+
+  void set_gspc_home ( boost::program_options::variables_map&
+                     , boost::filesystem::path const&
+                     );
+  void set_state_directory ( boost::program_options::variables_map&
+                           , boost::filesystem::path const&
+                           );
+  void set_nodefile ( boost::program_options::variables_map&
+                    , boost::filesystem::path const&
+                    );
+  void set_virtual_memory_manager ( boost::program_options::variables_map&
+                                  , boost::filesystem::path const&
+                                  );
+  void set_virtual_memory_per_node ( boost::program_options::variables_map&
+                                   , unsigned long
+                                   );
+  void set_virtual_memory_socket ( boost::program_options::variables_map&
+                                 , boost::filesystem::path const&
+                                 );
+  void set_application_search_path ( boost::program_options::variables_map&
+                                   , boost::filesystem::path const&
+                                   );
+  void set_log_host ( boost::program_options::variables_map&
+                    , std::string const&
+                    );
+  void set_gui_host ( boost::program_options::variables_map&
+                    , std::string const&
+                    );
+  void set_log_port ( boost::program_options::variables_map&
+                    , unsigned short
+                    );
+  void set_gui_port ( boost::program_options::variables_map&
+                    , unsigned short
+                    );
 }
 
 #endif

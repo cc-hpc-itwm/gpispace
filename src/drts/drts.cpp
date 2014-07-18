@@ -336,4 +336,97 @@ namespace gspc
   {
     return vmem_allocation (this, size, description);
   }
+
+  namespace
+  {
+    template<typename T>
+      void set_as ( boost::program_options::variables_map& vm
+                  , std::string const& option_name
+                  , std::string const& value
+                  )
+    {
+      vm.insert
+        ( std::make_pair
+          ( option_name
+          , boost::program_options::variable_value (T (value), false)
+          )
+        );
+    }
+  }
+
+  void set_gspc_home ( boost::program_options::variables_map& vm
+                     , boost::filesystem::path const& path
+                     )
+  {
+    set_as<validators::existing_directory>
+      (vm, options::name::gspc_home, path.string());
+  }
+  void set_state_directory ( boost::program_options::variables_map& vm
+                           , boost::filesystem::path const& path
+                           )
+  {
+    set_as<validators::is_directory_if_exists>
+      (vm, options::name::state_directory, path.string());
+  }
+  void set_nodefile ( boost::program_options::variables_map& vm
+                    , boost::filesystem::path const& path
+                    )
+  {
+    set_as<validators::existing_path>
+      (vm, options::name::nodefile, path.string());
+  }
+  void set_virtual_memory_manager ( boost::program_options::variables_map& vm
+                                  , boost::filesystem::path const& path
+                                  )
+  {
+    set_as<validators::executable>
+      (vm, options::name::virtual_memory_manager, path.string());
+  }
+  void set_virtual_memory_per_node ( boost::program_options::variables_map& vm
+                                   , unsigned long size
+                                  )
+  {
+    set_as<validators::positive_integral<unsigned long>>
+      (vm, options::name::virtual_memory_per_node, std::to_string (size));
+  }
+  void set_virtual_memory_socket ( boost::program_options::variables_map& vm
+                                 , boost::filesystem::path const& path
+                                  )
+  {
+    set_as<validators::nonexisting_path>
+      (vm, options::name::virtual_memory_socket, path.string());
+  }
+  void set_application_search_path ( boost::program_options::variables_map& vm
+                                   , boost::filesystem::path const& path
+                                  )
+  {
+    set_as<validators::existing_directory>
+      (vm, options::name::application_search_path, path.string());
+  }
+  void set_log_host ( boost::program_options::variables_map& vm
+                    , std::string const& host
+                    )
+  {
+    set_as<validators::nonempty_string> (vm, options::name::log_host, host);
+  }
+  void set_gui_host ( boost::program_options::variables_map& vm
+                    , std::string const& host
+                    )
+  {
+    set_as<validators::nonempty_string> (vm, options::name::gui_host, host);
+  }
+  void set_log_port ( boost::program_options::variables_map& vm
+                    , unsigned short port
+                    )
+  {
+    set_as<validators::positive_integral<unsigned short>>
+      (vm, options::name::log_port, std::to_string (port));
+  }
+  void set_gui_port ( boost::program_options::variables_map& vm
+                    , unsigned short port
+                    )
+  {
+    set_as<validators::positive_integral<unsigned short>>
+      (vm, options::name::gui_port, std::to_string (port));
+  }
 }
