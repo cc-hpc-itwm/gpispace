@@ -212,12 +212,14 @@ namespace sdpa
         return worker_list;
 
       typedef boost::function<bool (const matching_pair_t&, const matching_pair_t&)> Comparator;
-      Comparator comp = boost::bind (&matching_pair_t::second, _1) < boost::bind (&matching_pair_t::second, _2)
-                        || (  boost::bind (&matching_pair_t::second, _1) == boost::bind (&matching_pair_t::second, _2)
-                           && boost::bind (&matching_pair_t::first, _1) < boost::bind (&matching_pair_t::first, _2)
-                           );
+      Comparator  Smaller_matching_degree_or_smaller_worker_id
+        = boost::bind (&matching_pair_t::second, _1) < boost::bind (&matching_pair_t::second, _2)
+        || (  boost::bind (&matching_pair_t::second, _1) == boost::bind (&matching_pair_t::second, _2)
+           && boost::bind (&matching_pair_t::first, _1) < boost::bind (&matching_pair_t::first, _2)
+           );
 
-      std::set<matching_pair_t, Comparator> set_matching_pairs(comp);
+      std::set<matching_pair_t, Comparator>
+        set_matching_pairs (Smaller_matching_degree_or_smaller_worker_id);
 
       boost::mutex::scoped_lock const _ (mtx_);
       for (const sdpa::worker_id_t& worker_id : worker_list)
