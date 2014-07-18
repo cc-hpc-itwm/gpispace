@@ -284,7 +284,8 @@ namespace gspc
            );
   }
 
-  void scoped_runtime_system::put_and_run
+  std::multimap<std::string, pnet::type::value::value_type>
+    scoped_runtime_system::put_and_run
     ( boost::filesystem::path const& workflow
     , std::unordered_map<std::string, std::unordered_set<std::string>> const&
         values_on_ports
@@ -329,6 +330,24 @@ namespace gspc
                 << "error-message := " << job_info.error_message
                 << std::endl;
     }
+
+    we::type::activity_t const result_activity (api.retrieveResults (job_id));
+
+    std::multimap<std::string, pnet::type::value::value_type> result;
+
+    for ( std::pair<pnet::type::value::value_type, we::port_id_type>
+           const& value_on_port
+        : result_activity.output()
+        )
+    {
+      result.emplace
+        ( result_activity.transition().ports_output()
+        . at (value_on_port.second).name()
+        , value_on_port.first
+        );
+    }
+
+    return result;
   }
 
   vmem_allocation scoped_runtime_system::alloc

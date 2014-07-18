@@ -5,10 +5,13 @@
 
 #include <drts/virtual_memory.hpp>
 
+#include <we/type/value.hpp>
+
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
 
+#include <map>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -63,7 +66,8 @@ namespace gspc
 
     ~scoped_runtime_system();
 
-    void put_and_run
+    std::multimap<std::string, pnet::type::value::value_type>
+      put_and_run
       ( boost::filesystem::path const& workflow
       , std::unordered_map<std::string, std::unordered_set<std::string>> const&
           values_on_ports
