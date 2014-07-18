@@ -66,6 +66,7 @@ int main (int argc, char *argv[])
     ( "port-exec"
     , po::value<int>(&port_exec)
     , "execution monitor port"
+    )
     ( "load-plugin"
     , po::value<decltype (plugin_paths)> (&plugin_paths)
     , "paths of plugins to load"
