@@ -41,6 +41,7 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
     )
     ;
 
+  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::logging());
 

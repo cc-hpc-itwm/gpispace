@@ -53,6 +53,7 @@ namespace gspc
     }
 
     boost::program_options::options_description logging();
+    boost::program_options::options_description installation();
     boost::program_options::options_description drts();
     boost::program_options::options_description virtual_memory();
   }
@@ -66,19 +67,9 @@ namespace gspc
     {
       return _gspc_home;
     }
-    boost::filesystem::path const& state_directory() const
-    {
-      return _state_directory;
-    }
-    boost::filesystem::path const& nodefile() const
-    {
-      return _nodefile;
-    }
 
   private:
     boost::filesystem::path const _gspc_home;
-    boost::filesystem::path const _state_directory;
-    boost::filesystem::path const _nodefile;
   };
 
   class scoped_runtime_system
@@ -120,6 +111,8 @@ namespace gspc
     friend class vmem_allocation;
 
     installation const _installation;
+    boost::filesystem::path const _state_directory;
+    boost::filesystem::path const _nodefile;
     boost::optional<unsigned long> _virtual_memory_per_node;
     boost::optional<boost::filesystem::path> _virtual_memory_socket;
     std::unordered_set<std::string> _nodes;
