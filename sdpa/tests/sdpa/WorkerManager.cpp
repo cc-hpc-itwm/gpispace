@@ -57,12 +57,6 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
 BOOST_AUTO_TEST_CASE (add_worker)
 {
   std::vector<std::string> workers (generate_worker_names (3));
-  std::transform ( workers.begin()
-                 , workers.end()
--                , workers.begin()
--                , [](std::string) { return fhg::util::random_string(); }
--                );
-
 
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker (workers[0], 1, {sdpa::capability_t ("A", workers[0])});
