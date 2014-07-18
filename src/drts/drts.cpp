@@ -156,22 +156,36 @@ namespace gspc
     }
   }
 
+  installation::installation
+    (boost::program_options::variables_map const& vm)
+    : _gspc_home
+      ( boost::filesystem::canonical
+        (vm[options::name::gspc_home].as<validators::existing_directory>())
+      )
+    , _state_directory
+      ( vm[options::name::state_directory]
+      . as<validators::is_directory_if_exists>()
+      )
+    , _nodefile
+      ( boost::filesystem::canonical
+        (vm[options::name::nodefile].as<validators::existing_path>())
+      )
+    , _application_search_path
+        ( vm.count (options::name::application_search_path)
+        ? boost::make_optional
+          ( vm[options::name::application_search_path]
+          . as<validators::existing_directory>()
+          )
+        : boost::none
+        )
+  {}
+
   scoped_runtime_system::scoped_runtime_system
     ( boost::program_options::variables_map const& vm
+    , installation const& installation
     , std::string const& topology_description
     )
-      : _gspc_home
-        ( boost::filesystem::canonical
-          (vm[options::name::gspc_home].as<validators::existing_directory>())
-        )
-      , _state_directory
-        ( vm[options::name::state_directory]
-        . as<validators::is_directory_if_exists>()
-        )
-      , _nodefile
-        ( boost::filesystem::canonical
-          (vm[options::name::nodefile].as<validators::existing_path>())
-        )
+      : _installation (installation)
       , _virtual_memory_per_node
         ( vm.count (options::name::virtual_memory_per_node)
         ? boost::make_optional
@@ -188,7 +202,7 @@ namespace gspc
           )
         : boost::none
         )
-      , _nodes (read_nodes (_nodefile))
+      , _nodes (read_nodes (_installation.nodefile()))
       , _virtual_memory_api
         ( _virtual_memory_socket
         ? new gpi::pc::client::api_t (_virtual_memory_socket->string())
@@ -211,10 +225,10 @@ namespace gspc
     std::ostringstream command_boot;
 
     command_boot
-      << (_gspc_home / "bin" / "sdpa")
+      << (_installation.gspc_home() / "bin" / "sdpa")
       << " boot"
-      << " -S " << _state_directory
-      << " -f " << _nodefile
+      << " -S " << _installation.state_directory()
+      << " -f " << _installation.nodefile()
       << " -l " << log_host << ":" << log_port
       << " -g " << gui_host << ":" << gui_port
       ;
@@ -239,16 +253,9 @@ namespace gspc
       command_boot << " -M";
     }
 
-    if (vm.count (options::name::application_search_path))
+    if (_installation.application_search_path())
     {
-      for ( boost::filesystem::path const& path
-          : { vm[options::name::application_search_path]
-            . as<validators::existing_directory>()
-            }
-          )
-      {
-        command_boot << " -A " << boost::filesystem::canonical (path);
-      }
+      command_boot << " -A " << *_installation.application_search_path();
     }
 
     command_boot << topology_description;
@@ -277,8 +284,8 @@ namespace gspc
     delete _virtual_memory_api;
 
     system ( ( boost::format ("%1% -s %2% stop")
-             % (_gspc_home / "bin" / "sdpa")
-             % _state_directory
+             % (_installation.gspc_home() / "bin" / "sdpa")
+             % _installation.state_directory()
              ).str()
            , "stop runtime system"
            );

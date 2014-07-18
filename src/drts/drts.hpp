@@ -57,10 +57,41 @@ namespace gspc
     boost::program_options::options_description virtual_memory();
   }
 
+  class installation
+  {
+  public:
+    installation (boost::program_options::variables_map const& vm);
+
+    boost::filesystem::path const& gspc_home() const
+    {
+      return _gspc_home;
+    }
+    boost::filesystem::path const& state_directory() const
+    {
+      return _state_directory;
+    }
+    boost::filesystem::path const& nodefile() const
+    {
+      return _nodefile;
+    }
+    boost::optional<boost::filesystem::path> const&
+      application_search_path() const
+    {
+      return _application_search_path;
+    }
+
+  private:
+    boost::filesystem::path const _gspc_home;
+    boost::filesystem::path const _state_directory;
+    boost::filesystem::path const _nodefile;
+    boost::optional<boost::filesystem::path> const _application_search_path;
+  };
+
   class scoped_runtime_system
   {
   public:
     scoped_runtime_system ( boost::program_options::variables_map const& vm
+                          , installation const&
                           , std::string const& topology_description
                           );
 
@@ -77,10 +108,6 @@ namespace gspc
     vmem_allocation alloc
       (unsigned long size, std::string const& description) const;
 
-    boost::filesystem::path const& gspc_home() const
-    {
-      return _gspc_home;
-    }
     unsigned long virtual_memory_total() const
     {
       return _nodes.size() * (*_virtual_memory_per_node - 32UL * (1UL << 20UL));
@@ -98,9 +125,7 @@ namespace gspc
   private:
     friend class vmem_allocation;
 
-    boost::filesystem::path const _gspc_home;
-    boost::filesystem::path const _state_directory;
-    boost::filesystem::path const _nodefile;
+    installation const _installation;
     boost::optional<unsigned long> _virtual_memory_per_node;
     boost::optional<boost::filesystem::path> _virtual_memory_socket;
     std::unordered_set<std::string> _nodes;

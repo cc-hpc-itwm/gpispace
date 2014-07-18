@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
 
   vm.notify();
 
-  gspc::scoped_runtime_system const drts (vm, " worker:12");
+  gspc::installation const installation (vm);
 
   fhg::util::temporary_path const _build_dir
     ( boost::filesystem::temp_directory_path()
@@ -87,9 +87,9 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
 
   command_build
     << " make -f "
-    << (drts.gspc_home() / "share" / "sdpa" / "make" / "common.mk")
-    << " SDPA_HOME=" << drts.gspc_home()
-    << " BOOST_ROOT=" << (drts.gspc_home() / "external" / "boost")
+    << (installation.gspc_home() / "share" / "sdpa" / "make" / "common.mk")
+    << " SDPA_HOME=" << installation.gspc_home()
+    << " BOOST_ROOT=" << (installation.gspc_home() / "external" / "boost")
     << " BUILDDIR=" << build_dir
     << " MAIN=pi"
     << " LIB_DESTDIR=" << installation_dir
@@ -107,6 +107,8 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
        ).str()
       );
   }
+
+  gspc::scoped_runtime_system const drts (vm, installation, " worker:12");
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     (drts.put_and_run ( build_dir / "pi.pnet"
