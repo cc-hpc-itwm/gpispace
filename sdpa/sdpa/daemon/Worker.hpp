@@ -37,14 +37,14 @@ namespace sdpa { namespace daemon {
                     , const capabilities_set_t&
                     );
 
-    void submit(const job_id_t&);
+    void submit (const job_id_t&);
 
     /**
 	 Acknowledge a given job id and move it to the acknowledged_ queue.
 
 	 @param job_id the job_id to acknowledge
 	 */
-    void acknowledge(const job_id_t&);
+    void acknowledge (const job_id_t&);
 
     // update last service time
     double lastScheduleTime() {lock_type lock(mtx_); return last_schedule_time_; }
@@ -66,14 +66,14 @@ namespace sdpa { namespace daemon {
     // capabilities
     const capabilities_set_t& capabilities() const;
 
-    bool addCapabilities(const capabilities_set_t& cpbset);
-    void removeCapabilities(const capabilities_set_t& cpbset);
-    bool hasCapability(const std::string& cpbName);
+    bool addCapabilities (const capabilities_set_t& cpbset);
+    void removeCapabilities (const capabilities_set_t& cpbset);
+    bool hasCapability (const std::string& cpbName);
 
     /**
          Checks if the worker has job
     */
-    bool has_job( const job_id_t& job_id );
+    bool has_job (const job_id_t& job_id);
 
 
     /**
@@ -82,7 +82,7 @@ namespace sdpa { namespace daemon {
       a second flag is needed in the case the job is canceled (in order to look into the other queues, as well)
       @param last_job_id the id of the last sucessfully submitted job
     */
-    void deleteJob(const job_id_t &job_id );
+    void deleteJob (const job_id_t &job_id );
 
     // methods related to reservation
     bool isReserved();
