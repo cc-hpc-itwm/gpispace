@@ -35,6 +35,7 @@ int main (int argc, char *argv[])
   std::string template_filename (setting::template_filename::show().toStdString());
   int port_exec;
   int port_log;
+  std::vector<std::string> plugin_paths;
 
   desc.add_options()
     ( "help,h", "this message")
@@ -65,6 +66,9 @@ int main (int argc, char *argv[])
     ( "port-exec"
     , po::value<int>(&port_exec)
     , "execution monitor port"
+    ( "load-plugin"
+    , po::value<decltype (plugin_paths)> (&plugin_paths)
+    , "paths of plugins to load"
     )
     ;
 
@@ -96,7 +100,7 @@ int main (int argc, char *argv[])
 
   try
   {
-    fhg::pnete::PetriNetEditor pente (argc, argv);
+    fhg::pnete::PetriNetEditor pente (plugin_paths, argc, argv);
     pente.startup();
 
     if (vm.count ("port-log"))
@@ -130,11 +134,17 @@ namespace fhg
           processEvents ();
         }
     }
-    PetriNetEditor::PetriNetEditor (int& argc, char *argv[])
+    PetriNetEditor::PetriNetEditor
+        (std::vector<std::string> plugin_paths, int& argc, char *argv[])
       : QApplication (argc, argv)
       , _splash (QPixmap (":/pente.png"))
       , _editor_windows ()
-    {}
+    {
+      for (std::string path : plugin_paths)
+      {
+        _plugins.emplace_back (path);
+      }
+    }
 
     void PetriNetEditor::startup()
     {
@@ -193,7 +203,7 @@ namespace fhg
 
     ui::editor_window* PetriNetEditor::create_editor_window()
     {
-      _editor_windows << new ui::editor_window();
+      _editor_windows << new ui::editor_window (_plugins);
 
       return _editor_windows.back();
     }
