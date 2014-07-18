@@ -16,7 +16,7 @@ std::vector<std::string> generate_worker_names (const int n)
 
 BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
 {
-  std::vector<std::string> worker_ids (generate_worker_names (4));
+  const std::vector<std::string> worker_ids (generate_worker_names (4));
 
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker (worker_ids[0], 1, {sdpa::capability_t ("A", worker_ids[0])});
@@ -34,13 +34,13 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
 
   sdpa::worker_id_list_t list_workers (worker_manager.getListWorkersNotReserved());
 
-  job_requirements_t job_req ({{ we::type::requirement_t ("A", true)
-                               , we::type::requirement_t ("B", false)
-                               , we::type::requirement_t ("C", false)
-                               }
-                              , we::type::schedule_data()
-                              }
-                             );
+  const job_requirements_t job_req ({{ we::type::requirement_t ("A", true)
+                                     , we::type::requirement_t ("B", false)
+                                     , we::type::requirement_t ("C", false)
+                                     }
+                                    , we::type::schedule_data()
+                                    }
+                                   );
 
   sdpa::worker_id_list_t
     list_matching_workers
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
 
 BOOST_AUTO_TEST_CASE (add_worker)
 {
-  std::vector<std::string> worker_ids (generate_worker_names (3));
+  const std::vector<std::string> worker_ids (generate_worker_names (3));
 
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker (worker_ids[0], 1, {sdpa::capability_t ("A", worker_ids[0])});
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
 
 BOOST_AUTO_TEST_CASE (delete_worker)
 {
-  std::vector<std::string> worker_ids (generate_worker_names (3));
+  const std::vector<std::string> worker_ids (generate_worker_names (3));
 
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker (worker_ids[0], 1, {sdpa::capability_t ("A", worker_ids[0])});
@@ -85,12 +85,12 @@ BOOST_AUTO_TEST_CASE (delete_worker)
 
 BOOST_AUTO_TEST_CASE (get_capabilities)
 {
-  std::vector<std::string> worker_ids (generate_worker_names (3));
+  const std::vector<std::string> worker_ids (generate_worker_names (3));
 
-  sdpa::capabilities_set_t expected_ccapabilities ({ sdpa::capability_t ("A", worker_ids[0])
-                                                   , sdpa::capability_t ("B", worker_ids[1])
-                                                   , sdpa::capability_t ("C", worker_ids[2])
-                                                   });
+  const sdpa::capabilities_set_t expected_ccapabilities ({ sdpa::capability_t ("A", worker_ids[0])
+                                                         , sdpa::capability_t ("B", worker_ids[1])
+                                                         , sdpa::capability_t ("C", worker_ids[2])
+                                                        });
 
   sdpa::capabilities_set_t::iterator it (expected_ccapabilities.begin());
 
@@ -107,12 +107,12 @@ BOOST_AUTO_TEST_CASE (get_capabilities)
 
 BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
 {
-  std::vector<std::string> worker_ids (generate_worker_names (1));
+  const std::vector<std::string> worker_ids (generate_worker_names (1));
 
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker (worker_ids[0], 1, {sdpa::capability_t ("A", worker_ids[0])});
 
-  sdpa::daemon::Worker::ptr_t ptrWorker (worker_manager.findWorker (worker_ids[0]));
+  const sdpa::daemon::Worker::ptr_t ptrWorker (worker_manager.findWorker (worker_ids[0]));
   const sdpa::job_id_t job_id (fhg::util::random_string());
   ptrWorker->submit (job_id);
 
