@@ -72,6 +72,10 @@ namespace gspc
     vmem_allocation alloc
       (unsigned long size, std::string const& description) const;
 
+    boost::filesystem::path const& gspc_home() const
+    {
+      return _gspc_home;
+    }
     unsigned long virtual_memory_total() const
     {
       return _nodes.size() * (*_virtual_memory_per_node - 32UL * (1UL << 20UL));
