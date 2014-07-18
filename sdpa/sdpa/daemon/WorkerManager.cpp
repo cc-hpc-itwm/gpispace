@@ -206,10 +206,14 @@ namespace sdpa
       sdpa::worker_id_list_t list_matching_workers;
 
       if (worker_list.size() < job_reqs.numWorkers())
+      {
         return list_matching_workers;
+      }
 
       if (job_reqs.empty())
+      {
         return worker_list;
+      }
 
       typedef boost::function<bool (const matching_pair_t&, const matching_pair_t&)> Comparator;
       Comparator  Smaller_matching_degree_or_smaller_worker_id
