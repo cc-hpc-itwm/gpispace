@@ -164,7 +164,7 @@ add_library (hello_world-plugin MODULE
 target_link_libraries (hello_world-plugin ${QT_LIBRARIES})
 
 install (FILES "plugin/plugin_api.hpp" "plugin/plugin_base.hpp"
-  DESTINATION "share/pnete/include"
+  DESTINATION "include/pnete/"
 )
 
   add_subdirectory (ui/graph/style/test)
