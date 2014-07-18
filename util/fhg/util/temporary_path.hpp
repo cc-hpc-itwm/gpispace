@@ -12,11 +12,14 @@ namespace fhg
     class temporary_path : boost::noncopyable
     {
     public:
-      temporary_path()
-        : _path (boost::filesystem::unique_path())
+      temporary_path (boost::filesystem::path const& path)
+        : _path (path)
       {
         boost::filesystem::create_directories (_path);
       }
+      temporary_path()
+        : temporary_path (boost::filesystem::unique_path())
+      {}
       ~temporary_path()
       {
         boost::filesystem::remove_all (_path);
