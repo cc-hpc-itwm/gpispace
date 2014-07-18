@@ -4,14 +4,13 @@
 #include <fhg/util/random_string.hpp>
 #include <boost/test/unit_test.hpp>
 
-std::vector<std::string> generate_worker_names(const int& n)
+std::vector<std::string> generate_worker_names (const int n)
 {
   std::vector<std::string> workers (n);
-  std::transform ( workers.begin()
-                 , workers.end()
-                 , workers.begin()
-                 , [](std::string) { return fhg::util::random_string(); }
-                 );
+  std::generate ( workers.begin()
+                , workers.end()
+                , fhg::util::random_string
+                );
   return workers;
 }
 
