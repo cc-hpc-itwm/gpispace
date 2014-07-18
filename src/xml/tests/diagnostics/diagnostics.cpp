@@ -20,7 +20,7 @@ namespace
       )
     {
       const fhg::util::temporary_path tp;
-      state.path_to_cpp() = tp;
+      state.path_to_cpp() = boost::filesystem::path (tp).string();
 
       try
       {

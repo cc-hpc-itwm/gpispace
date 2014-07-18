@@ -25,10 +25,6 @@ namespace fhg
       {
         return _path;
       }
-      operator std::string() const
-      {
-        return _path.string();
-      }
 
     private:
       boost::filesystem::path _path;
