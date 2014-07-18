@@ -170,14 +170,6 @@ namespace gspc
       ( boost::filesystem::canonical
         (vm[options::name::nodefile].as<validators::existing_path>())
       )
-    , _application_search_path
-        ( vm.count (options::name::application_search_path)
-        ? boost::make_optional
-          ( vm[options::name::application_search_path]
-          . as<validators::existing_directory>()
-          )
-        : boost::none
-        )
   {}
 
   scoped_runtime_system::scoped_runtime_system
@@ -253,9 +245,16 @@ namespace gspc
       command_boot << " -M";
     }
 
-    if (_installation.application_search_path())
+    if (vm.count (options::name::application_search_path))
     {
-      command_boot << " -A " << *_installation.application_search_path();
+      for ( boost::filesystem::path const& path
+              : { vm[options::name::application_search_path]
+              . as<validators::existing_directory>()
+              }
+          )
+      {
+        command_boot << " -A " << boost::filesystem::canonical (path);
+      }
     }
 
     command_boot << topology_description;

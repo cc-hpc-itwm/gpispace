@@ -74,17 +74,11 @@ namespace gspc
     {
       return _nodefile;
     }
-    boost::optional<boost::filesystem::path> const&
-      application_search_path() const
-    {
-      return _application_search_path;
-    }
 
   private:
     boost::filesystem::path const _gspc_home;
     boost::filesystem::path const _state_directory;
     boost::filesystem::path const _nodefile;
-    boost::optional<boost::filesystem::path> const _application_search_path;
   };
 
   class scoped_runtime_system
