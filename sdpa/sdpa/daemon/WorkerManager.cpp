@@ -202,8 +202,6 @@ namespace sdpa
       , const sdpa::worker_id_list_t& worker_list
       ) const
     {
-      boost::mutex::scoped_lock const _ (mtx_);
-
       typedef std::pair<worker_id_t, int> matching_pair_t;
       sdpa::worker_id_list_t list_matching_workers;
 
@@ -221,6 +219,7 @@ namespace sdpa
 
       std::set<matching_pair_t, Comparator> set_matching_pairs(comp);
 
+      boost::mutex::scoped_lock const _ (mtx_);
       for (const sdpa::worker_id_t& worker_id : worker_list)
       {
         const worker_map_t::const_iterator it (worker_map_.find (worker_id));
