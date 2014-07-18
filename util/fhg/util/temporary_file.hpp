@@ -21,6 +21,11 @@ namespace fhg
         boost::filesystem::remove (_path);
       }
 
+      operator boost::filesystem::path() const
+      {
+        return _path;
+      }
+
     private:
       boost::filesystem::path _path;
     };
