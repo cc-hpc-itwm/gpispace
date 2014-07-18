@@ -234,6 +234,10 @@ namespace gspc
         << " -m " << *_virtual_memory_per_node
         ;
     }
+    else
+    {
+      command_boot << " -M";
+    }
 
     if (vm.count (options::name::application_search_path))
     {
