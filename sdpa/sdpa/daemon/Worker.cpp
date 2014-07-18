@@ -27,7 +27,9 @@ namespace sdpa
       std::vector<std::string> tokens;
       boost::algorithm::split (tokens, worker_id, boost::is_any_of ("-"));
       if (tokens.size() != 3)
+      {
         throw std::runtime_error (std::string ("Invalid worker id: ") + worker_id);
+      }
 
       return tokens[1];
     }
