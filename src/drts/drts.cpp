@@ -107,7 +107,7 @@ namespace gspc
 
     boost::program_options::options_description virtual_memory()
     {
-      boost::program_options::options_description vmem ("Runtime system");
+      boost::program_options::options_description vmem ("Virtual memory");
 
       vmem.add_options()
         ( name::virtual_memory_manager
