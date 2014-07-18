@@ -282,20 +282,25 @@ namespace gspc
 
   void scoped_runtime_system::put_and_run
     ( boost::filesystem::path const& workflow
-    , std::unordered_map<std::string, std::string> const& values_on_ports
+    , std::unordered_map<std::string, std::unordered_set<std::string>> const&
+        values_on_ports
     ) const
   {
     // taken from bin/pnetput
     we::type::activity_t activity (workflow);
 
-    for ( std::pair<std::string, std::string> const& value_on_port
+    for ( std::pair<std::string, std::unordered_set<std::string>> const&
+            values_on_port
         : values_on_ports
         )
     {
-      activity.add_input
-        ( activity.transition().input_port_by_name (value_on_port.first)
-        , expr::parse::parser (value_on_port.second).eval_all()
-        );
+      for (std::string const& value : values_on_port.second)
+      {
+        activity.add_input
+          ( activity.transition().input_port_by_name (values_on_port.first)
+          , expr::parse::parser (value).eval_all()
+          );
+      }
     }
 
     // taken from pbs/sdpa and bin/sdpac

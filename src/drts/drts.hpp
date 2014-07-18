@@ -65,7 +65,8 @@ namespace gspc
 
     void put_and_run
       ( boost::filesystem::path const& workflow
-      , std::unordered_map<std::string, std::string> const& values_on_ports
+      , std::unordered_map<std::string, std::unordered_set<std::string>> const&
+          values_on_ports
       ) const;
 
     vmem_allocation alloc
