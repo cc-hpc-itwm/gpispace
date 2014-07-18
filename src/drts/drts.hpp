@@ -69,8 +69,7 @@ namespace gspc
     std::multimap<std::string, pnet::type::value::value_type>
       put_and_run
       ( boost::filesystem::path const& workflow
-      , std::unordered_map<std::string, std::unordered_set<std::string>> const&
-          values_on_ports
+      , std::multimap<std::string, std::string> const& values_on_ports
       ) const;
 
     vmem_allocation alloc

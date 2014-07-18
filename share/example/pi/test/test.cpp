@@ -110,12 +110,12 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     (drts.put_and_run ( build_dir / "pi.pnet"
-                      , { {"num_packet", {"500L"}}
-                        , {"points_per_packet", {"1000000L"}}
-                        , {"credit_generate", {"20L"}}
-                        , {"credit_run", {"10L"}}
-                        , {"credit_get_key", {"20L"}}
-                        , {"seed", {"3141L"}}
+                      , { {"num_packet", "500L"}
+                        , {"points_per_packet", "1000000L"}
+                        , {"credit_generate", "20L"}
+                        , {"credit_run", "10L"}
+                        , {"credit_get_key", "20L"}
+                        , {"seed", "3141L"}
                         }
                       )
     );
