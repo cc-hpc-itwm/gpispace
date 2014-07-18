@@ -5,6 +5,9 @@
 
 #include <drts/drts.hpp>
 
+#include <test/scoped_nodefile_with_localhost.hpp>
+#include <test/scoped_state_directory.hpp>
+
 #include <we/type/value.hpp>
 #include <we/type/value/poke.hpp>
 #include <we/type/value/boost/test/printer.hpp>
@@ -12,37 +15,15 @@
 #include <fhg/util/boost/program_options/validators/existing_directory.hpp>
 
 #include <fhg/util/hostname.hpp>
-#include <fhg/util/temporary_file.hpp>
 #include <fhg/util/temporary_path.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
 
-#include <fstream>
 #include <map>
+#include <sstream>
 #include <stdexcept>
-
-namespace
-{
-  class scoped_state_directory
-  {
-  public:
-    scoped_state_directory (boost::program_options::variables_map& vm)
-      : _temporary_path ( boost::filesystem::temp_directory_path()
-                        / boost::filesystem::unique_path()
-                        )
-    {
-      boost::filesystem::create_directories (_temporary_path);
-
-      gspc::set_state_directory (vm, _temporary_path);
-    }
-
-  private:
-    fhg::util::temporary_path const _temporary_path;
-  };
-
-}
 
 BOOST_AUTO_TEST_CASE (share_example_pi)
 {
@@ -73,8 +54,8 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
     , vm
     );
 
-  scoped_state_directory const scoped_state_directory (vm);
-  scoped_nodefile_with_localhost const scoped_nodefile_with_localhost (vm);
+  test::scoped_state_directory const state_directory (vm);
+  test::scoped_nodefile_with_localhost const nodefile_with_localhost (vm);
 
   //! \todo start logger with specific port
   gspc::set_log_host (vm, fhg::util::hostname());
