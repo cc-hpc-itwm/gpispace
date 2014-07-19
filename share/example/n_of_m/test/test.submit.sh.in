@@ -14,7 +14,7 @@ HOSTFILE="${DIR_BUILD}/hostfile"
 
 make=( make BUILDDIR="${DIR_BUILD}" )
 make+=( LIB_DESTDIR="${DIR_BUILD}" )
-make+=( 'PUT_PORT=m=25L\ parallel=2L\ cmd=\\\"${DIR_BUILD}/demo.bin\\\"' )
+make+=( 'PUT_PORT=m=25L\ parallel=2L\ cmd=\\\"@CMAKE_CURRENT_BINARY_DIR@/demo.bin\\\"' )
 make+=( -C "${DIR_SOURCE}" )
 
 cleanup()
