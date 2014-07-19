@@ -20,6 +20,7 @@ include_directories (${UTIL_INCLUDE_DIR})
 add_library (test-utilities SHARED
   scoped_nodefile_with_localhost.cpp
   scoped_state_directory.cpp
+  setup_logging.cpp
   source_directory.cpp
 )
 target_link_libraries (test-utilities
