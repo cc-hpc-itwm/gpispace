@@ -122,7 +122,7 @@ namespace gspc
         ( name::virtual_memory_socket
         , boost::program_options::value<validators::nonexisting_path>()
         ->required()
-        , "virtual memory per node in bytes"
+        , "socket file to communicate with the virtual memory manager"
         )
         ;
 
