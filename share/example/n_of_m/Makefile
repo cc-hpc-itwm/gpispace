@@ -10,7 +10,6 @@ NOT_STARTS_WITH += eat
 
 ###############################################################################
 
-CXXINCLUDEPATHS += $(SDPA_INCLUDE)/process
 CXXLIBRARYPATHS += $(SDPA_HOME)/libexec/sdpa
 
 ###############################################################################
