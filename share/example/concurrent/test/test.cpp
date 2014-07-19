@@ -5,6 +5,7 @@
 
 #include <drts/drts.hpp>
 
+#include <test/make.hpp>
 #include <test/scoped_nodefile_with_localhost.hpp>
 #include <test/scoped_state_directory.hpp>
 #include <test/setup_logging.hpp>
@@ -13,15 +14,10 @@
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
-#include <fhg/util/temporary_path.hpp>
-
 #include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 #include <boost/program_options.hpp>
 
 #include <map>
-#include <sstream>
-#include <stdexcept>
 
 BOOST_AUTO_TEST_CASE (share_example_concurrent)
 {
@@ -50,39 +46,21 @@ BOOST_AUTO_TEST_CASE (share_example_concurrent)
 
   gspc::installation const installation (vm);
 
-  fhg::util::temporary_path const _build_dir
-    ( boost::filesystem::temp_directory_path()
-    / boost::filesystem::unique_path()
+  test::make const make
+    ( installation
+    , "concurrent"
+    , test::source_directory (vm)
+    , std::unordered_map<std::string, std::string>()
+    , "net"
     );
-  boost::filesystem::path const build_dir (_build_dir);
-
-  std::ostringstream command_build;
-
-  command_build
-    << " make -f "
-    << (installation.gspc_home() / "share" / "sdpa" / "make" / "common.mk")
-    << " SDPA_HOME=" << installation.gspc_home()
-    << " BOOST_ROOT=" << (installation.gspc_home() / "external" / "boost")
-    << " BUILDDIR=" << build_dir
-    << " MAIN=concurrent"
-    << " -C " << test::source_directory(vm)
-    << " net"
-    ;
-
-  if (int ec = std::system (command_build.str().c_str()) != 0)
-  {
-    throw std::runtime_error
-      (( boost::format ("Could not run '%1%': error code '%1%'")
-       % command_build.str()
-       % ec
-       ).str()
-      );
-  }
 
   gspc::scoped_runtime_system const drts (vm, installation, "");
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    (drts.put_and_run (build_dir / "concurrent.pnet", {{"N", 1000L}}));
+    (drts.put_and_run ( make.build_directory() / "concurrent.pnet"
+                      , {{"N", 1000L}}
+                      )
+    );
 
   BOOST_REQUIRE_EQUAL (result.size(), 10);
 

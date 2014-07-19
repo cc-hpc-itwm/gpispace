@@ -5,6 +5,7 @@
 
 #include <drts/drts.hpp>
 
+#include <test/make.hpp>
 #include <test/scoped_nodefile_with_localhost.hpp>
 #include <test/scoped_state_directory.hpp>
 #include <test/setup_logging.hpp>
@@ -19,12 +20,9 @@
 #include <fhg/util/temporary_path.hpp>
 
 #include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 #include <boost/program_options.hpp>
 
 #include <map>
-#include <sstream>
-#include <stdexcept>
 
 BOOST_AUTO_TEST_CASE (share_example_n_of_m)
 {
@@ -71,42 +69,23 @@ BOOST_AUTO_TEST_CASE (share_example_n_of_m)
 
   gspc::installation const installation (vm);
 
-  fhg::util::temporary_path const _build_dir
-    ( boost::filesystem::temp_directory_path()
-    / boost::filesystem::unique_path()
+  test::make const make
+    ( installation
+    , "n_of_m"
+    , test::source_directory (vm)
+    , { { "LIB_DESTDIR", installation_dir.string()}
+      , { "CXXLIBRARYPATHS"
+        , (installation.gspc_home() / "libexec" / "sdpa").string()
+        }
+      }
+    , "net lib install"
     );
-  boost::filesystem::path const build_dir (_build_dir);
-
-  std::ostringstream command_build;
-
-  command_build
-    << " make -f "
-    << (installation.gspc_home() / "share" / "sdpa" / "make" / "common.mk")
-    << " SDPA_HOME=" << installation.gspc_home()
-    << " BOOST_ROOT=" << (installation.gspc_home() / "external" / "boost")
-    << " BUILDDIR=" << build_dir
-    << " MAIN=n_of_m"
-    << " LIB_DESTDIR=" << installation_dir
-    << " CXXLIBRARYPATHS=" << (installation.gspc_home() / "libexec" / "sdpa")
-    << " -C " << test::source_directory(vm)
-    << " net lib install"
-    ;
-
-  if (int ec = std::system (command_build.str().c_str()) != 0)
-  {
-    throw std::runtime_error
-      (( boost::format ("Could not run '%1%': error code '%1%'")
-       % command_build.str()
-       % ec
-       ).str()
-      );
-  }
 
   gspc::scoped_runtime_system const drts (vm, installation, " worker:12");
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( drts.put_and_run
-      ( build_dir / "n_of_m.pnet"
+      ( make.build_directory() / "n_of_m.pnet"
       , { {"m", 25L}
         , {"parallel", 2L}
         , {"cmd"
