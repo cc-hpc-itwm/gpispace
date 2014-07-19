@@ -157,7 +157,7 @@ namespace gspc
       {
         throw std::runtime_error
           (( boost::format
-           ("Could not '%3%': error code '%1%', command was '%2%'")
+             ("Could not '%3%': error code '%1%', command was '%2%'")
            % ec
            % command
            % description
@@ -187,7 +187,7 @@ namespace gspc
         )
       , _nodefile
         ( boost::filesystem::canonical
-        (vm[options::name::nodefile].as<validators::existing_path>())
+          (vm[options::name::nodefile].as<validators::existing_path>())
         )
       , _virtual_memory_per_node
         ( vm.count (options::name::virtual_memory_per_node)
@@ -259,9 +259,9 @@ namespace gspc
     if (vm.count (options::name::application_search_path))
     {
       for ( boost::filesystem::path const& path
-              : { vm[options::name::application_search_path]
-              . as<validators::existing_directory>()
-              }
+          : { vm[options::name::application_search_path]
+            . as<validators::existing_directory>()
+            }
           )
       {
         command_boot << " -A " << boost::filesystem::canonical (path);
