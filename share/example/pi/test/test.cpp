@@ -7,12 +7,11 @@
 
 #include <test/scoped_nodefile_with_localhost.hpp>
 #include <test/scoped_state_directory.hpp>
+#include <test/source_directory.hpp>
 
 #include <we/type/value.hpp>
 #include <we/type/value/poke.hpp>
 #include <we/type/value/boost/test/printer.hpp>
-
-#include <fhg/util/boost/program_options/validators/existing_directory.hpp>
 
 #include <fhg/util/hostname.hpp>
 #include <fhg/util/temporary_path.hpp>
@@ -27,20 +26,9 @@
 
 BOOST_AUTO_TEST_CASE (share_example_pi)
 {
-  namespace validators = fhg::util::boost::program_options;
-
-  constexpr char const* const source_directory {"source-directory"};
-
   boost::program_options::options_description options_description;
 
-  options_description.add_options()
-    ( source_directory
-    , boost::program_options::value<validators::existing_directory>()
-    ->required()
-    , "source directory"
-    )
-    ;
-
+  options_description.add (test::options::source_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::logging());
@@ -94,8 +82,7 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
     << " BUILDDIR=" << build_dir
     << " MAIN=pi"
     << " LIB_DESTDIR=" << installation_dir
-    << " -C "
-    << vm[source_directory].as<validators::existing_directory>()
+    << " -C " << test::source_directory(vm)
     << " net lib install"
     ;
 
