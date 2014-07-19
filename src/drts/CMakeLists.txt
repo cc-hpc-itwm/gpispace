@@ -17,6 +17,7 @@ target_link_libraries (gspc
   pnet
   gpi-space-pc-client-static
   gpi-space-pc-segment
+  fhg-util
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
 )

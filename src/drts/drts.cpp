@@ -18,6 +18,7 @@
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <fhg/util/hostname.hpp>
 
 #include <boost/format.hpp>
 
@@ -325,7 +326,7 @@ namespace gspc
     }
 
     // taken from pbs/sdpa and bin/sdpac
-    std::string const kvs_host ("localhost");
+    std::string const kvs_host (fhg::util::hostname());
     unsigned short const kvs_port (2439);
 
     sdpa::client::Client api
