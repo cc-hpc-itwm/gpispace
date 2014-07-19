@@ -7,13 +7,13 @@
 
 #include <test/scoped_nodefile_with_localhost.hpp>
 #include <test/scoped_state_directory.hpp>
+#include <test/setup_logging.hpp>
 #include <test/source_directory.hpp>
 
 #include <we/type/value.hpp>
 #include <we/type/value/poke.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
-#include <fhg/util/hostname.hpp>
 #include <fhg/util/temporary_path.hpp>
 
 #include <boost/filesystem.hpp>
@@ -45,14 +45,7 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
 
   test::scoped_state_directory const state_directory (vm);
   test::scoped_nodefile_with_localhost const nodefile_with_localhost (vm);
-
-  //! \todo start logger with specific port
-  gspc::set_log_host (vm, fhg::util::hostname());
-  gspc::set_log_port (vm, 47095);
-
-  //! \todo either disable gui logging or get the port from a gui manager
-  gspc::set_gui_host (vm, fhg::util::hostname());
-  gspc::set_gui_port (vm, 47096);
+  test::setup_logging (vm);
 
   fhg::util::temporary_path const _installation_dir
     ( boost::filesystem::temp_directory_path()
