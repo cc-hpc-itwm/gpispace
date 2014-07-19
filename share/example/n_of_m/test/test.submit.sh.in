@@ -12,7 +12,11 @@ DIR_SOURCE="${DIR_TEST}/.."
 OUT="${DIR_BUILD}/n_of_m.out"
 HOSTFILE="${DIR_BUILD}/hostfile"
 
-make=( make BUILDDIR="${DIR_BUILD}" )
+make=( make )
+make+=( -f "${SDPA_HOME}/share/sdpa/make/common.mk" )
+make+=( MAIN=n_of_m )
+make+=( BUILDDIR="${DIR_BUILD}" )
+make+=( CXXLIBRARYPATHS="${SDPA_HOME}/libexec/sdpa" )
 make+=( LIB_DESTDIR="${DIR_BUILD}" )
 make+=( 'PUT_PORT=m=25L\ parallel=2L\ cmd=\\\"@CMAKE_CURRENT_BINARY_DIR@/demo.bin\\\"' )
 make+=( -C "${DIR_SOURCE}" )
