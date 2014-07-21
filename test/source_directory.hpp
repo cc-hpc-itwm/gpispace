@@ -10,11 +10,6 @@ namespace test
 {
   namespace options
   {
-    namespace name
-    {
-      constexpr char const* const source_directory {"source-directory"};
-    }
-
     boost::program_options::options_description source_directory();
   }
 
