@@ -12,6 +12,7 @@
 #include <boost/program_options.hpp>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -116,7 +117,7 @@ namespace gspc
     boost::optional<unsigned long> _virtual_memory_per_node;
     boost::optional<boost::filesystem::path> _virtual_memory_socket;
     std::unordered_set<std::string> _nodes;
-    gpi::pc::client::api_t* _virtual_memory_api;
+    std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
   };
 
   void set_gspc_home ( boost::program_options::variables_map&

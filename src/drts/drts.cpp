@@ -19,6 +19,7 @@
 #include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/hostname.hpp>
+#include <fhg/util/make_unique.hpp>
 
 #include <boost/format.hpp>
 
@@ -209,7 +210,8 @@ namespace gspc
       , _nodes (read_nodes (_nodefile))
       , _virtual_memory_api
         ( _virtual_memory_socket
-        ? new gpi::pc::client::api_t (_virtual_memory_socket->string())
+        ? fhg::util::make_unique<gpi::pc::client::api_t>
+          (_virtual_memory_socket->string())
         : nullptr
         )
   {
@@ -304,7 +306,7 @@ namespace gspc
 
   scoped_runtime_system::~scoped_runtime_system()
   {
-    delete _virtual_memory_api;
+    _virtual_memory_api.reset();
 
     system ( ( boost::format ("%1% -s %2% stop")
              % (_installation.gspc_home() / "bin" / "sdpa")
