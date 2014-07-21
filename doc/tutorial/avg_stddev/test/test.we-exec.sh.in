@@ -14,9 +14,19 @@ OUT="${DIR_BUILD}/avg_stddev.out"
 DAT="${DIR_BUILD}/dat"
 HOSTFILE="${DIR_BUILD}/hostfile"
 
-make+=( make BUILDDIR="${DIR_BUILD}" )
+num_values=$((100*1048576))
+size_chunk=$((8*2**20))
+size_buffer=$((8*2**20))
+num_buffer=10
+
+make=( make )
+make+=( -f "${SDPA_HOME}/share/sdpa/make/common.mk" )
+make+=( BUILDDIR="${DIR_BUILD}" )
+make+=( MAIN=avg_stddev )
+make+=( CXXINCLUDEPATHS="${DIR_SOURCE}/src" )
 make+=( WE_EXEC_OUTPUT="${RESULT}" )
 make+=( DATFILE="${DAT}" )
+make+=( 'PUT_PORT=name_file=\\\"${DAT}\\\"\ size_file=$((8*num_values))L\ size_chunk=${size_chunk}L\ size_buffer=${size_buffer}L\ num_buffer=${num_buffer}L'  )
 make+=( -C "${DIR_SOURCE}" )
 
 make_gen='make DIR_BUILD="${DIR_BUILD}" -C "${DIR_MODULE}"'
@@ -37,8 +47,8 @@ trap 'cleanup' EXIT
 measured "build-module" ${make_gen}                         || die $EX_ERR_RUN
 measured "setup-data"                                                        \
          "${DIR_BUILD}/gen.bin"                                              \
-         -b 8388608                                                          \
-         -n $((100*1048576))                                                 \
+         -b ${size_buffer}                                                   \
+         -n ${num_values}                                                    \
          -s 31415926                                                         \
          -m 0                                                                \
          -g 1                                                                \
