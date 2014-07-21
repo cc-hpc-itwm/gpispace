@@ -20,6 +20,7 @@
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/hostname.hpp>
 #include <fhg/util/make_unique.hpp>
+#include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
 #include <boost/format.hpp>
 
@@ -179,7 +180,7 @@ namespace gspc
 
     void system (std::string const& command, std::string const& description)
     {
-      if (int ec = std::system (command.c_str()) != 0)
+      if (int ec = fhg::util::system_with_blocked_SIGCHLD (command.c_str()))
       {
         throw std::runtime_error
           (( boost::format
