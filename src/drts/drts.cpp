@@ -364,6 +364,8 @@ namespace gspc
 
     we::type::activity_t const result_activity (api.retrieveResults (job_id));
 
+    api.deleteJob (job_id);
+
     std::multimap<std::string, pnet::type::value::value_type> result;
 
     for ( std::pair<pnet::type::value::value_type, we::port_id_type>
