@@ -31,6 +31,7 @@ make+=( LIB_DESTDIR="${DIR_INST}" )
 make+=( WE_EXEC_OUTPUT="${RESULT}" )
 make+=( CXXLIBRARYPATHS="${DIR_INST}" )
 make+=( CXXINCLUDEPATHS="${DIR_SOURCE}" )
+make+=( 'PNETC_OPTS=--gen-cxxflags=--std=c++11' )
 make+=( -C "${DIR_SOURCE}" )
 
 IMPLEMENTATION_SO=${1}
@@ -104,8 +105,6 @@ handle_output=$(echo memory-alloc ${size_output} gpi output p | TERM=linux $SDPA
 test -n "${handle_input}"                                  || die $EX_ERR_ALLOC
 test -n "${handle_output}"                                 || die $EX_ERR_ALLOC
 
-cp "${IMPLEMENTATION_SO}" "${DIR_INST}/libmap-impl.so"     || die $EX_ERR_ENV
-
 ${make[@]} lib net install                                  || die $EX_ERR_RUN
 
 "${SDPA_HOME}/bin/pnetput" \
@@ -114,6 +113,7 @@ ${make[@]} lib net install                                  || die $EX_ERR_RUN
   -p num_block=${num_block}UL \
   -p size_block=${size_block}UL \
   -p user_data="${user_data}" \
+  -p implementation=\"${IMPLEMENTATION_SO}\" \
   --if "${DIR_BUILD}/map.pnet" \
   --of "${DIR_BUILD}/map.pnet.put"
 
