@@ -17,7 +17,6 @@ namespace test
 
   private:
     fhg::util::temporary_file const _temporary_file;
-    boost::filesystem::path const _path;
   };
 }
 

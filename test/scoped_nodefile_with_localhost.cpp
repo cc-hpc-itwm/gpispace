@@ -18,18 +18,19 @@ namespace test
       : _temporary_file ( boost::filesystem::temp_directory_path()
                         / boost::filesystem::unique_path()
                         )
-      , _path (_temporary_file)
   {
-    std::ofstream stream (_path.string());
+    boost::filesystem::path const path (_temporary_file);
+
+    std::ofstream stream (path.string());
 
     if (!stream)
     {
       throw std::runtime_error
-        ((boost::format ("Could not open '%1%' for writing") % _path).str());
+        ((boost::format ("Could not open '%1%' for writing") % path).str());
     }
 
     stream << fhg::util::hostname() << std::endl;
 
-    gspc::set_nodefile (vm, _path);
+    gspc::set_nodefile (vm, path);
   }
 }
