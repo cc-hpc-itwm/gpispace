@@ -43,7 +43,7 @@ namespace test
     if (int ec = std::system (command.str().c_str()) != 0)
     {
       throw std::runtime_error
-        (( boost::format ("Could not run '%1%': error code '%1%'")
+        (( boost::format ("Could not run '%1%': error code '%2%'")
          % command.str()
          % ec
          ).str()
