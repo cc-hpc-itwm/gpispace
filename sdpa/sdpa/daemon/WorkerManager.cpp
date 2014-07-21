@@ -197,56 +197,41 @@ namespace sdpa
       return bestMatchingWorkerId;
     }
 
-    const sdpa::worker_id_list_t WorkerManager::getListMatchingWorkers
+    mmap_match_deg_worker_id_t WorkerManager::getListMatchingWorkers
       ( const job_requirements_t& job_reqs
       , const sdpa::worker_id_list_t& worker_list
       ) const
     {
-      typedef std::pair<worker_id_t, int> matching_pair_t;
-      sdpa::worker_id_list_t list_matching_workers;
-
       if (worker_list.size() < job_reqs.numWorkers())
       {
-        return list_matching_workers;
+        return {};
       }
 
-      if (job_reqs.empty())
-      {
-        return worker_list;
-      }
+      mmap_match_deg_worker_id_t mmap_match_deg_worker_id;
 
-      typedef boost::function<bool (const matching_pair_t&, const matching_pair_t&)> Comparator;
-      Comparator  Smaller_matching_degree_or_smaller_worker_id
-        = boost::bind (&matching_pair_t::second, _1) < boost::bind (&matching_pair_t::second, _2)
-        || (  boost::bind (&matching_pair_t::second, _1) == boost::bind (&matching_pair_t::second, _2)
-           && boost::bind (&matching_pair_t::first, _1) < boost::bind (&matching_pair_t::first, _2)
-           );
+      // note: the multimap container maintains the elements
+      // sorted according to the specified comparison criteria
+      // (here std::greater<int>, i.e. in the descending order of the matching degrees).
+      // Searching and insertion operations have logarithmic complexity, as the
+      // multimaps are implemented as binary search trees
 
-      std::set<matching_pair_t, Comparator>
-        set_matching_pairs (Smaller_matching_degree_or_smaller_worker_id);
-
-      boost::mutex::scoped_lock const _ (mtx_);
+      boost::mutex::scoped_lock const lock_worker_map (mtx_);
       for (const sdpa::worker_id_t& worker_id : worker_list)
       {
         const worker_map_t::const_iterator it (worker_map_.find (worker_id));
         if (it == worker_map_.end())
           continue;
 
-        const boost::optional<std::size_t> matchingDeg
-          (matchRequirements (it->second, job_reqs));
+        const boost::optional<std::size_t>
+          matchingDeg (matchRequirements (it->second, job_reqs));
 
         if (matchingDeg)
         {
-          set_matching_pairs.emplace (worker_id, *matchingDeg);
+          mmap_match_deg_worker_id.emplace (*matchingDeg, worker_id);
         }
       }
 
-      for (const matching_pair_t& matching_pair : set_matching_pairs)
-      {
-        list_matching_workers.push_front (matching_pair.first);
-      }
-
-      return list_matching_workers;
+      return mmap_match_deg_worker_id;
     }
   }
 }

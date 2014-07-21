@@ -42,15 +42,15 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
                                     }
                                    );
 
-  sdpa::worker_id_list_t
-    list_matching_workers
+  sdpa::mmap_match_deg_worker_id_t
+    mmap_match_deg_worker_id
       (worker_manager.getListMatchingWorkers (job_req, list_workers));
 
-  BOOST_REQUIRE_EQUAL (list_matching_workers.size(), worker_ids.size()-1);
-  sdpa::worker_id_list_t::iterator it (list_matching_workers.begin());
-  BOOST_REQUIRE_EQUAL (*it++, worker_ids[2]);
-  BOOST_REQUIRE_EQUAL (*it++, worker_ids[3]);
-  BOOST_REQUIRE_EQUAL (*it++, worker_ids[0]);
+  BOOST_REQUIRE_EQUAL (mmap_match_deg_worker_id.size(), worker_ids.size()-1);
+  sdpa::mmap_match_deg_worker_id_t::iterator it (mmap_match_deg_worker_id.begin());
+  BOOST_REQUIRE_EQUAL (it++->second, worker_ids[2]);
+  BOOST_REQUIRE_EQUAL (it++->second, worker_ids[3]);
+  BOOST_REQUIRE_EQUAL (it++->second, worker_ids[0]);
 }
 
 BOOST_AUTO_TEST_CASE (add_worker)
