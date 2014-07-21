@@ -9,6 +9,7 @@
 #include <test/scoped_nodefile_with_localhost.hpp>
 #include <test/scoped_state_directory.hpp>
 #include <test/source_directory.hpp>
+#include <test/shared_directory.hpp>
 
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
@@ -23,6 +24,7 @@ BOOST_AUTO_TEST_CASE (share_example_concurrent)
   boost::program_options::options_description options_description;
 
   options_description.add (test::options::source_directory());
+  options_description.add (test::options::shared_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
 
@@ -36,8 +38,12 @@ BOOST_AUTO_TEST_CASE (share_example_concurrent)
     , vm
     );
 
-  test::scoped_state_directory const state_directory (vm);
-  test::scoped_nodefile_with_localhost const nodefile_with_localhost (vm);
+  fhg::util::temporary_path const shared_directory
+    (test::shared_directory (vm) / "share_example_concurrent");
+
+  test::scoped_state_directory const state_directory (shared_directory, vm);
+  test::scoped_nodefile_with_localhost const nodefile_with_localhost
+    (shared_directory, vm);
 
   vm.notify();
 

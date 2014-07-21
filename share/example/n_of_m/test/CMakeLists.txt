@@ -11,6 +11,7 @@ fhg_add_test (test.cpp
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/../"
        --command "${CMAKE_CURRENT_BINARY_DIR}/demo.bin"
+       --shared-directory "$ENV{HOME}"
   LINK_LIBRARIES gspc
                  test-utilities
                  ${UTIL_LIBRARIES}

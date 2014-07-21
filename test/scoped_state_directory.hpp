@@ -5,6 +5,7 @@
 
 #include <fhg/util/temporary_path.hpp>
 
+#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
 namespace test
@@ -12,7 +13,10 @@ namespace test
   class scoped_state_directory
   {
   public:
-    scoped_state_directory (boost::program_options::variables_map&);
+    scoped_state_directory
+      ( boost::filesystem::path const& shared_directory
+      , boost::program_options::variables_map&
+      );
 
   private:
     fhg::util::temporary_path const _temporary_path;

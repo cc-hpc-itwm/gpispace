@@ -4,15 +4,13 @@
 
 #include <drts/drts.hpp>
 
-#include <boost/filesystem.hpp>
-
 namespace test
 {
   scoped_state_directory::scoped_state_directory
-    (boost::program_options::variables_map& vm)
-      : _temporary_path ( boost::filesystem::temp_directory_path()
-                        / boost::filesystem::unique_path()
-                        )
+    ( boost::filesystem::path const& shared_directory
+    , boost::program_options::variables_map& vm
+    )
+      : _temporary_path (shared_directory / boost::filesystem::unique_path())
   {
     boost::filesystem::create_directories (_temporary_path);
 

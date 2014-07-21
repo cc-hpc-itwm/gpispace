@@ -14,10 +14,10 @@
 namespace test
 {
   scoped_nodefile_with_localhost::scoped_nodefile_with_localhost
-    (boost::program_options::variables_map& vm)
-      : _temporary_file ( boost::filesystem::temp_directory_path()
-                        / boost::filesystem::unique_path()
-                        )
+    ( boost::filesystem::path const& shared_directory
+    , boost::program_options::variables_map& vm
+    )
+      : _temporary_file (shared_directory / boost::filesystem::unique_path())
   {
     boost::filesystem::path const path (_temporary_file);
 

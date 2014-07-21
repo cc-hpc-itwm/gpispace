@@ -13,7 +13,10 @@ namespace test
   class scoped_nodefile_with_localhost
   {
   public:
-    scoped_nodefile_with_localhost (boost::program_options::variables_map&);
+    scoped_nodefile_with_localhost
+      ( boost::filesystem::path const& shared_directory
+      , boost::program_options::variables_map&
+      );
 
   private:
     fhg::util::temporary_file const _temporary_file;

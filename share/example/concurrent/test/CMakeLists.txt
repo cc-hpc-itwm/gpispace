@@ -10,6 +10,7 @@ fhg_add_test (test.cpp
   BOOST_UNIT_TEST
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/../"
+       --shared-directory "$ENV{HOME}"
   LINK_LIBRARIES gspc
                  test-utilities
                  ${UTIL_LIBRARIES}
