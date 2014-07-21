@@ -22,7 +22,7 @@ namespace test
     std::ostringstream command;
 
     command
-      << " make -f "
+      << "make -f "
       << (installation.gspc_home() / "share" / "sdpa" / "make" / "common.mk")
       << " SDPA_HOME=" << installation.gspc_home()
       << " BOOST_ROOT=" << (installation.gspc_home() / "external" / "boost")
