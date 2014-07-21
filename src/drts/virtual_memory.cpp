@@ -3,6 +3,8 @@
 #include <drts/drts.hpp>
 #include <drts/virtual_memory.hpp>
 
+#include <fhg/util/make_unique.hpp>
+
 #include <gpi-space/pc/client/api.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/type/flags.hpp>
@@ -81,14 +83,12 @@ namespace gspc
                                    , unsigned long size
                                    , std::string const& description
                                    )
-    : _ ( new vmem_allocation::implementation
+    : _ ( fhg::util::make_unique<vmem_allocation::implementation>
           (drts->_virtual_memory_api, size, description)
         )
   {}
   vmem_allocation::~vmem_allocation()
-  {
-    delete _;
-  }
+  {}
   std::string const vmem_allocation::handle() const
   {
     // taken from gpi-space/pc/type/handle.hpp
@@ -104,7 +104,5 @@ namespace gspc
   }
   vmem_allocation::vmem_allocation (vmem_allocation&& other)
     : _ (std::move (other._))
-  {
-    other._ = nullptr;
-  }
+  {}
 }

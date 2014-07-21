@@ -3,6 +3,7 @@
 #ifndef DRTS_VMEM_HPP
 #define DRTS_VMEM_HPP
 
+#include <memory>
 #include <string>
 
 namespace gspc
@@ -20,6 +21,7 @@ namespace gspc
                     );
 
   public:
+    //! \note default, but implementation::~implementation() only known in .cpp
     ~vmem_allocation();
 
     std::string const handle() const;
@@ -33,7 +35,7 @@ namespace gspc
   private:
     struct implementation;
 
-    implementation* _;
+    std::unique_ptr<implementation> _;
   };
 }
 
