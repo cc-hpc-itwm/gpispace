@@ -8,7 +8,6 @@
 #include <test/make.hpp>
 #include <test/scoped_nodefile_with_localhost.hpp>
 #include <test/scoped_state_directory.hpp>
-#include <test/setup_logging.hpp>
 #include <test/source_directory.hpp>
 
 #include <we/type/value.hpp>
@@ -26,7 +25,6 @@ BOOST_AUTO_TEST_CASE (share_example_concurrent)
   options_description.add (test::options::source_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
-  options_description.add (gspc::options::logging());
 
   boost::program_options::variables_map vm;
   boost::program_options::store
@@ -40,7 +38,6 @@ BOOST_AUTO_TEST_CASE (share_example_concurrent)
 
   test::scoped_state_directory const state_directory (vm);
   test::scoped_nodefile_with_localhost const nodefile_with_localhost (vm);
-  test::setup_logging (vm);
 
   vm.notify();
 

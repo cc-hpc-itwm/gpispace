@@ -213,29 +213,41 @@ namespace gspc
         : nullptr
         )
   {
-    std::string const log_host
-      (vm[options::name::log_host].as<validators::nonempty_string>());
-    unsigned short const log_port
-      ( vm[options::name::log_port]
-      . as<validators::positive_integral<unsigned short>>()
-      );
-    std::string const gui_host
-      (vm[options::name::gui_host].as<validators::nonempty_string>());
-    unsigned short const gui_port
-      ( vm[options::name::gui_port]
-      . as<validators::positive_integral<unsigned short>>()
-      );
-
     std::ostringstream command_boot;
 
     command_boot
       << (_installation.gspc_home() / "bin" / "sdpa")
       << " boot"
       << " -S " << _state_directory
-      << " -f " << _nodefile
-      << " -l " << log_host << ":" << log_port
-      << " -g " << gui_host << ":" << gui_port
-      ;
+      << " -f " << _nodefile;
+
+    if (vm.count (options::name::log_host))
+    {
+      command_boot << " -l " <<
+        (vm[options::name::log_host].as<validators::nonempty_string>());
+
+      if (vm.count (options::name::log_port))
+      {
+        command_boot << ":" <<
+          ( vm[options::name::log_port]
+          . as<validators::positive_integral<unsigned short>>()
+          );
+      }
+    }
+
+    if (vm.count (options::name::gui_host))
+    {
+      command_boot << " -g " <<
+        (vm[options::name::gui_host].as<validators::nonempty_string>());
+
+      if (vm.count (options::name::gui_port))
+      {
+        command_boot << ":" <<
+          ( vm[options::name::gui_port]
+          . as<validators::positive_integral<unsigned short>>()
+          );
+      }
+    }
 
     if (_virtual_memory_per_node)
     {

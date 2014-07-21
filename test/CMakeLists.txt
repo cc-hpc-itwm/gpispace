@@ -21,7 +21,6 @@ add_library (test-utilities SHARED
   make.cpp
   scoped_nodefile_with_localhost.cpp
   scoped_state_directory.cpp
-  setup_logging.cpp
   source_directory.cpp
 )
 target_link_libraries (test-utilities
