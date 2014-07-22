@@ -18,7 +18,6 @@
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
-#include <fhg/util/hostname.hpp>
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
@@ -367,7 +366,8 @@ namespace gspc
     }
 
     // taken from pbs/sdpa and bin/sdpac
-    std::string const kvs_host (fhg::util::hostname());
+    std::string const kvs_host
+      (*_nodes_and_number_of_unique_nodes.first.begin());
     unsigned short const kvs_port (2439);
 
     sdpa::client::Client api
