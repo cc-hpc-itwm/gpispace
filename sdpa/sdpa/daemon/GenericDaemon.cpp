@@ -35,6 +35,7 @@
 #include <sdpa/daemon/exceptions.hpp>
 
 #include <fhg/util/macros.hpp>
+#include <fhg/util/hostname.hpp>
 
 #include <boost/tokenizer.hpp>
 #include <boost/range/adaptor/filtered.hpp>
@@ -1319,7 +1320,7 @@ namespace sdpa
       _that->sendEventToOther
         ( events::WorkerRegistrationEvent::Ptr
           ( new events::WorkerRegistrationEvent
-            (_that->name(), _name, capacity, capabilities)
+            (_that->name(), _name, capacity, capabilities, fhg::util::hostname())
           )
         );
     }
