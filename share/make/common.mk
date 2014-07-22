@@ -395,8 +395,17 @@ endif
 
 ###############################################################################
 
+ifeq "$(SDPA_STATE_DIR)" ""
+
+submit:
+	$(error Missing SDPA_STATE_DIR.)
+
+else
+
 submit: $(PUT)
-	$(SDPA) submit $(PUT) $(OUT)
+	$(SDPA) -s $(SDPA_STATE_DIR) submit $(PUT) $(OUT)
+
+endif
 
 ###############################################################################
 

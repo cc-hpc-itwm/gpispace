@@ -40,7 +40,8 @@ hostname > "${HOSTFILE}"                                    || die $EX_ERR_RUN
 measured "boot" sdpa boot -S "${DIR_STATE}" -A "${DIR_BUILD}" -M -f "${HOSTFILE}" worker:1      \
                                                             || die $EX_ERR_BOOT
 
-measured "submit" ${make[@]} submit                         || die $EX_ERR_RUN
+measured "submit"                                           \
+  ${make[@]} SDPA_STATE_DIR="${DIR_STATE}" submit           || die $EX_ERR_RUN
 
 expected="List (\"worker-$(hostname)-1\")"
 
