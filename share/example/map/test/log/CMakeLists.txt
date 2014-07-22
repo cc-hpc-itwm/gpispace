@@ -43,5 +43,7 @@ fhg_add_test (test.cpp
                  ${UTIL_LIBRARIES}
                  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARIES}
+  DEPENDS gpi-space
+          log_map-impl
   RESOURCE_LOCK starts_drts_environment
 )
