@@ -12,7 +12,7 @@ source "@CMAKE_BINARY_DIR@/test/dir_state.sh"
 source "@CMAKE_BINARY_DIR@/test/measured.sh"
 
 DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
-DIR_SOURCE="${DIR_TEST}/.."
+DIR_SOURCE="${DIR_TEST}/../.."
 
 DIR_INST="${DIR_STATE}/inst"
 DIR_SDPA="${DIR_STATE}/sdpa"

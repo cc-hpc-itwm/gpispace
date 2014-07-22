@@ -38,3 +38,11 @@ configure_file (
   ${CMAKE_CURRENT_BINARY_DIR}/setup.sh
   @ONLY
 )
+
+fhg_add_application_test (example_map_transform_file_submit
+  SCRIPT test.submit
+  ARGS "${CMAKE_CURRENT_BINARY_DIR}/libmap-impl.so"
+       "${CMAKE_CURRENT_SOURCE_DIR}/verify.sh"
+       "${CMAKE_CURRENT_BINARY_DIR}/setup.sh"
+  RESOURCE_LOCK starts_drts_environment
+)
