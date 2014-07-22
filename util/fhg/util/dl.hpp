@@ -16,8 +16,21 @@ namespace dl
     {}
     ~scoped_dlhandle()
     {
-      dl_safe ("dlclose", &dlclose, _);
+      if (_)
+      {
+        dl_safe ("dlclose", &dlclose, _);
+      }
     }
+
+    scoped_dlhandle (scoped_dlhandle&& other)
+      : _ (std::move (other._))
+    {
+      other._ = nullptr;
+    }
+
+    scoped_dlhandle (scoped_dlhandle const&) = delete;
+    scoped_dlhandle& operator= (scoped_dlhandle const&) = delete;
+    scoped_dlhandle& operator= (scoped_dlhandle&&) = delete;
 
     template<typename T> T* sym (std::string const& name) const
     {
