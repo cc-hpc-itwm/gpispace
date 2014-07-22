@@ -27,10 +27,10 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <list>
 #include <sstream>
 #include <stdexcept>
 #include <thread>
-#include <unordered_set>
 
 namespace gspc
 {
@@ -159,10 +159,11 @@ namespace gspc
 
   namespace
   {
-    std::unordered_set<std::string> read_nodes
-      (boost::filesystem::path const& nodefile)
+    std::pair<std::list<std::string>, unsigned long>
+      read_nodes (boost::filesystem::path const& nodefile)
     {
-      std::unordered_set<std::string> nodes;
+      std::unordered_set<std::string> unique_nodes;
+      std::list<std::string> nodes;
 
       {
         std::ifstream stream (nodefile.string());
@@ -171,11 +172,12 @@ namespace gspc
 
         while (std::getline (stream, node))
         {
-          nodes.insert (node);
+          unique_nodes.insert (node);
+          nodes.emplace_back (node);
         }
       }
 
-      return nodes;
+      return std::make_pair (nodes, unique_nodes.size());
     }
 
     void system (std::string const& command, std::string const& description)
@@ -232,7 +234,7 @@ namespace gspc
           )
         : boost::none
         )
-      , _nodes (read_nodes (_nodefile))
+      , _nodes_and_number_of_unique_nodes (read_nodes (_nodefile))
       , _virtual_memory_api
         ( _virtual_memory_socket
         ? fhg::util::make_unique<gpi::pc::client::api_t>

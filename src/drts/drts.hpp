@@ -11,11 +11,11 @@
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
 
+#include <list>
 #include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 
 namespace gpi
 {
@@ -75,11 +75,12 @@ namespace gspc
 
     unsigned long virtual_memory_total() const
     {
-      return _nodes.size() * (*_virtual_memory_per_node - 32UL * (1UL << 20UL));
+      return number_of_unique_nodes()
+        * (*_virtual_memory_per_node - 32UL * (1UL << 20UL));
     }
-    std::unordered_set<std::string> const& nodes() const
+    unsigned long number_of_unique_nodes() const
     {
-      return _nodes;
+      return _nodes_and_number_of_unique_nodes.second;
     }
 
     scoped_runtime_system (scoped_runtime_system const&) = delete;
@@ -95,7 +96,8 @@ namespace gspc
     boost::filesystem::path const _nodefile;
     boost::optional<unsigned long> _virtual_memory_per_node;
     boost::optional<boost::filesystem::path> _virtual_memory_socket;
-    std::unordered_set<std::string> _nodes;
+    std::pair<std::list<std::string>, unsigned long> const
+      _nodes_and_number_of_unique_nodes;
     std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
   };
 
