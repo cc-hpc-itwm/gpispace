@@ -393,9 +393,13 @@ namespace gspc
 
     if (sdpa::status::FAILED == status)
     {
-      std::cerr << "failed: "
-                << "error-message := " << job_info.error_message
-                << std::endl;
+      //! \todo decorate the exception with the most progressed activity
+      throw std::runtime_error
+        (( boost::format ("Job %1%: failed: error-message := %2%")
+         % job_id
+         % job_info.error_message
+         ).str()
+        );
     }
 
     we::type::activity_t const result_activity (api.retrieveResults (job_id));
