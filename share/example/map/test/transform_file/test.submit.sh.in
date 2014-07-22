@@ -81,9 +81,9 @@ test -n "${handle_output}"                                 || die $EX_ERR_ALLOC
   -p num_block=${num_block}UL \
   -p size_block=${size_block}UL \
   -p user_data="${user_data}" \
-  -p implementation="${IMPLEMENTATION_SO}\" \
+  -p implementation=\"${IMPLEMENTATION_SO}\" \
   --if "${DIR_BUILD}/map.pnet" \
-  | "${SDPA_HOME}/bin/sdpa" -s "${DIR_SDPA} " submit /dev/stdin "${RESULT}" \
+  | "${SDPA_HOME}/bin/sdpa" -s "${DIR_SDPA}" submit /dev/stdin "${RESULT}" \
                                                             || die $EX_ERR_RUN
 
 test "$(pnetget -i "${RESULT}" -p done)" = "[]"             || die $EX_ERR_RES
