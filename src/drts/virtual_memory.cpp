@@ -31,7 +31,7 @@ namespace gspc
         (api->alloc ( segment_id
                     , size
                     , description
-                    , gpi::pc::F_GLOBAL | gpi::pc::F_PERSISTENT
+                    , gpi::pc::F_GLOBAL
                     )
         );
 
