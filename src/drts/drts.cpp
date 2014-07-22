@@ -254,8 +254,8 @@ namespace gspc
 
     command_boot
       << (_installation.gspc_home() / "bin" / "sdpa")
+      << " -s " << _state_directory
       << " boot"
-      << " -S " << _state_directory
       << " -f " << _nodefile;
 
     if (vm.count (options::name::log_host))
