@@ -437,12 +437,27 @@ namespace gspc
                   , std::string const& value
                   )
     {
-      vm.insert
-        ( std::make_pair
-          ( option_name
-          , boost::program_options::variable_value (T (value), false)
+      std::pair<boost::program_options::variables_map::iterator, bool> const
+        pos_and_success
+        ( vm.insert
+          ( std::make_pair
+            ( option_name
+            , boost::program_options::variable_value (T (value), false)
+            )
           )
         );
+
+      if (!pos_and_success.second)
+      {
+        throw std::runtime_error
+          (( boost::format
+             ("Failed to set option '%1%' to '%2%': Found old value '%3%'")
+           % option_name
+           % value
+           % pos_and_success.first->second.as<T>()
+           ).str()
+          );
+      }
     }
   }
 
