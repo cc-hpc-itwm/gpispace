@@ -12,26 +12,21 @@ namespace sdpa
     Worker::Worker ( const worker_id_t& name
                    , const boost::optional<unsigned int>& cap
                    , const capabilities_set_t& capabilities
+                   , const std::string& hostname
                    )
       : name_ (name)
       , capacity_ (cap)
       , capabilities_ (capabilities)
+      , hostname_(hostname)
       , last_schedule_time_ (0)
       , reserved_ (false)
     {
 
     }
 
-    const std::string Worker::hostname (const std::string& worker_id) const
+    const std::string Worker::hostname () const
     {
-      std::vector<std::string> tokens;
-      boost::algorithm::split (tokens, worker_id, boost::is_any_of ("-"));
-      if (tokens.size() != 3)
-      {
-        throw std::runtime_error ("Invalid worker id: " + worker_id);
-      }
-
-      return tokens[1];
+      return hostname_;
     }
 
     bool Worker::has_job (const job_id_t& job_id)

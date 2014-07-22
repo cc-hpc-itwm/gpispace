@@ -69,6 +69,7 @@ namespace sdpa
     bool WorkerManager::addWorker ( const worker_id_t& workerId
                                   , boost::optional<unsigned int> capacity
                                   , const capabilities_set_t& cpbSet
+                                  , const std::string& hostname
                                   )
     {
       boost::mutex::scoped_lock const _ (mtx_);
@@ -78,7 +79,7 @@ namespace sdpa
         return false;
       }
 
-      Worker::ptr_t pWorker( new Worker( workerId, capacity, cpbSet ) );
+      Worker::ptr_t pWorker( new Worker( workerId, capacity, cpbSet, hostname) );
       worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
 
       return true;

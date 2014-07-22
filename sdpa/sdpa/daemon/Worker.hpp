@@ -35,6 +35,7 @@ namespace sdpa { namespace daemon {
     explicit Worker ( const worker_id_t&
                     , const boost::optional<unsigned int>&
                     , const capabilities_set_t&
+                    , const std::string&
                     );
 
     void submit (const job_id_t&);
@@ -57,7 +58,7 @@ namespace sdpa { namespace daemon {
     /**
        Return the host name (the worker name already contains the name of the host!)
     */
-    const std::string hostname (const std::string& worker_id) const;
+    const std::string hostname() const;
     /**
          Return the rank of the worker.
      */
@@ -97,6 +98,7 @@ namespace sdpa { namespace daemon {
     worker_id_t name_; //! name of the worker
     boost::optional<unsigned int> capacity_;
     capabilities_set_t capabilities_;
+    std::string hostname_;
     double last_schedule_time_;
 
     std::set<job_id_t> submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)

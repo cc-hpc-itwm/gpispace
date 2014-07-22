@@ -25,6 +25,7 @@ namespace sdpa {
       bool addWorker ( const worker_id_t& workerId
                      , boost::optional<unsigned int> capacity
                      , const capabilities_set_t& cpbset = capabilities_set_t()
+                     , const std::string& hostname = ""
                      );
 
       void deleteWorker (const worker_id_t& workerId);
