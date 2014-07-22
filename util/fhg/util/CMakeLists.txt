@@ -32,6 +32,8 @@ set (srcs
   read_file.cpp
 
   hostname.cpp
+
+  system_with_blocked_SIGCHLD.cpp
 )
 
 add_library (fhg-util ${srcs})

@@ -23,6 +23,7 @@ add_executable (gen gen.cpp)
 target_link_libraries (gen
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}
 )
 
 add_executable (mk_user_parameter mk_user_parameter.cpp)
