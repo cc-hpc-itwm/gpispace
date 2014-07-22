@@ -252,7 +252,7 @@ int main (int argc, char **argv) {
     ("force,f", "force the operation")
     ("kvs,k", po::value<std::string>(&kvs_url)->default_value(kvs_url), "The kvs daemon's url")
     ("revision", "Dump the revision identifier")
-    ("command", po::value<std::string>(),
+    ("command", po::value<std::string>()->required(),
      "The command that shall be performed. Possible values are:\n\n"
      "submit: \tsubmits a job to an orchestrator, arg must point to the job-description\n"
      "cancel: \tcancels a running job, arg must specify the job-id\n"
@@ -272,19 +272,33 @@ int main (int argc, char **argv) {
   cfg.parse_command_line(argc, argv);
   cfg.parse_environment();
 
-  cfg.notify();
-
   if (cfg.is_set("help"))
   {
     cfg.printHelp(std::cout);
     return 0;
   }
-
   if (cfg.is_set("help-module"))
   {
     cfg.printModuleHelp(std::cout);
     return 0;
   }
+  if (cfg.is_set("version"))
+  {
+    std::cerr << fhg::project_info ("GPI-Space Client");
+    return 0;
+  }
+  if (cfg.is_set("dumpversion"))
+  {
+    std::cout << fhg::project_version() << std::endl;
+    return 0;
+  }
+  if (cfg.is_set("revision"))
+  {
+    std::cout << fhg::project_revision() << std::endl;
+    return 0;
+  }
+
+  cfg.notify();
 
   if (cfg.is_set("logging.file"))
   {
@@ -331,22 +345,6 @@ int main (int argc, char **argv) {
 
   try
   {
-    if (cfg.is_set("version"))
-    {
-      std::cerr << fhg::project_info ("GPI-Space Client");
-      return 0;
-    }
-    if (cfg.is_set("dumpversion"))
-    {
-      std::cout << fhg::project_version() << std::endl;
-      return 0;
-    }
-    if (cfg.is_set("revision"))
-    {
-      std::cout << fhg::project_revision() << std::endl;
-      return 0;
-    }
-
     fhg::log::Logger::ptr_t logger (fhg::log::Logger::get ("sdpac"));
 
     std::vector< std::string > vec;
@@ -366,13 +364,6 @@ int main (int argc, char **argv) {
 
     const std::string kvs_host (vec[0]);
     const std::string kvs_port (vec[1]);
-
-    if (! cfg.is_set("command"))
-    {
-        std::cerr << "E: a command is required!" << std::endl;
-        std::cerr << "E: type --help to get a list of available options!" << std::endl;
-        return ERR_USAGE;
-    }
 
     const std::string &command(cfg.get("command"));
 
