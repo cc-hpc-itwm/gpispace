@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE share_example_map
+#define BOOST_TEST_MODULE share_example_map_log
 #include <boost/test/unit_test.hpp>
 
 #include <drts/drts.hpp>
