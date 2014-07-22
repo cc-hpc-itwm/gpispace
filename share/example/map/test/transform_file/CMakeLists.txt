@@ -36,6 +36,5 @@ target_link_libraries (mk_user_parameter
 fhg_add_application_test (example_map_transform_file_submit
   SCRIPT test.submit
   ARGS "${CMAKE_CURRENT_BINARY_DIR}/libmap-impl.so"
-       "${CMAKE_CURRENT_SOURCE_DIR}/verify.sh"
   RESOURCE_LOCK starts_drts_environment
 )
