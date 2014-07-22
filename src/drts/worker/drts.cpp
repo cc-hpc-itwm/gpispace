@@ -4,6 +4,7 @@
 #include <plugin/plugin.hpp>
 #include <fhg/util/getenv.hpp>
 #include <fhg/util/split.hpp>
+#include <fhg/util/hostname.hpp>
 
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/events.hpp>
@@ -869,6 +870,8 @@ void DRTSImpl::start_connect ()
         (new sdpa::events::WorkerRegistrationEvent( m_my_name
                                                   , master_it->first
                                                   , m_backlog_size
+                                                  , {}
+                                                  , fhg::util::hostname()
                                                   )
         );
 
