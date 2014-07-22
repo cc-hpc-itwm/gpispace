@@ -1,0 +1,263 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#define BOOST_TEST_MODULE share_example_map_transform_file
+#include <boost/test/unit_test.hpp>
+
+#include <map/test/transform_file/type.hpp>
+
+#include <drts/drts.hpp>
+#include <drts/virtual_memory.hpp>
+
+#include <test/make.hpp>
+#include <test/scoped_nodefile_with_localhost.hpp>
+#include <test/scoped_state_directory.hpp>
+#include <test/shared_directory.hpp>
+#include <test/source_directory.hpp>
+
+#include <we/type/bytearray.hpp>
+#include <we/type/literal/control.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/boost/test/printer.hpp>
+#include <we/type/value/poke.hpp>
+#include <we/type/value/read.hpp>
+
+#include <fhg/util/boost/program_options/validators/executable.hpp>
+#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <fhg/util/read_file.hpp>
+#include <fhg/util/temporary_path.hpp>
+
+#include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
+
+#include <algorithm>
+#include <fstream>
+#include <map>
+#include <random>
+#include <vector>
+
+namespace
+{
+  std::vector<char> generate_data ( boost::filesystem::path const& data_file
+                                  , unsigned long size
+                                  , unsigned long chunk_size
+                                  )
+  {
+    std::ofstream data (data_file.string(), std::ostream::binary);
+
+    if (!data)
+    {
+      std::runtime_error
+        ((boost::format ("Could not open '%1%'") % data_file).str());
+    }
+
+    std::mt19937 generator;
+    std::uniform_int_distribution<> number (0, 255);
+
+    std::vector<char> chunk (chunk_size);
+    std::vector<char> verify;
+
+    unsigned long bytes_left (size);
+
+    while (bytes_left)
+    {
+      unsigned long const bytes (std::min (chunk_size, bytes_left));
+
+      for (unsigned long i (0); i < bytes; ++i)
+      {
+        chunk[i] = number (generator);
+      }
+
+      data << std::string (chunk.data(), chunk.data() + bytes);
+
+      std::transform ( chunk.data(), chunk.data() + bytes
+                     , std::back_inserter (verify)
+                     , [](char c) { return std::tolower (c); }
+                     );
+
+      bytes_left -= bytes;
+    }
+
+    return verify;
+  }
+}
+
+BOOST_AUTO_TEST_CASE (share_example_map_transform_file)
+{
+  namespace validators = fhg::util::boost::program_options;
+
+  boost::program_options::options_description options_description;
+
+  constexpr char const* const option_implementation ("implementation");
+  constexpr char const* const option_size_input ("size-input");
+  constexpr char const* const option_size_output ("size-output");
+  constexpr char const* const option_size_block ("size-block");
+  constexpr char const* const option_num_block ("num-block");
+
+  options_description.add_options()
+    ( option_implementation
+    , boost::program_options::value<validators::executable>()->required()
+    , "implementation to use"
+    )
+    ( option_size_input
+    , boost::program_options::value
+      <validators::positive_integral<unsigned long>>()->required()
+    , "size for allocation for input data"
+    )
+    ( option_size_output
+    , boost::program_options::value
+      <validators::positive_integral<unsigned long>>()->required()
+    , "size for allocation for output data"
+    )
+    ( option_size_block
+    , boost::program_options::value
+      <validators::positive_integral<unsigned long>>()->required()
+    , "chunk size, data will be processed in chunks of that size"
+    )
+    ( option_num_block
+    , boost::program_options::value
+      <validators::positive_integral<unsigned long>>()->required()
+    , "maximum number of parallel tasks"
+    )
+    ;
+
+  options_description.add (test::options::shared_directory());
+  options_description.add (test::options::source_directory());
+  options_description.add (gspc::options::installation());
+  options_description.add (gspc::options::drts());
+  options_description.add (gspc::options::virtual_memory());
+
+  boost::program_options::variables_map vm;
+  boost::program_options::store
+    ( boost::program_options::command_line_parser
+      ( boost::unit_test::framework::master_test_suite().argc
+      , boost::unit_test::framework::master_test_suite().argv
+      )
+    . options (options_description).run()
+    , vm
+    );
+
+  fhg::util::temporary_path const shared_directory
+    (test::shared_directory (vm) / "share_example_map_transform_file");
+
+  test::scoped_state_directory const state_directory (shared_directory, vm);
+  test::scoped_nodefile_with_localhost const nodefile_with_localhost
+    (shared_directory, vm);
+
+  fhg::util::temporary_path const _installation_dir
+    (shared_directory / boost::filesystem::unique_path());
+  boost::filesystem::path const installation_dir (_installation_dir);
+
+  gspc::set_application_search_path (vm, installation_dir);
+  gspc::set_virtual_memory_socket ( vm
+                                  , boost::filesystem::path (shared_directory)
+                                  / boost::filesystem::unique_path()
+                                  );
+
+  vm.notify();
+
+  gspc::installation const installation (vm);
+
+  test::make const make
+    ( installation
+    , "map"
+    , test::source_directory (vm)
+    , { {"LIB_DESTDIR", installation_dir.string()}
+      , {"CXXINCLUDEPATHS", test::source_directory (vm).string()}
+      , {"PNETC_OPTS", std::string ("--gen-cxxflags=--std=c++11")}
+      }
+    , "net lib install"
+    );
+
+  boost::filesystem::path const implementation
+    ( boost::filesystem::canonical
+      (vm[option_implementation].as<validators::executable>())
+    );
+  unsigned long const size_input
+    (vm[option_size_input].as<validators::positive_integral<unsigned long>>());
+  unsigned long const size_output
+    (vm[option_size_output].as<validators::positive_integral<unsigned long>>());
+  unsigned long const size_block
+    (vm[option_size_block].as<validators::positive_integral<unsigned long>>());
+  unsigned long const num_block
+    (vm[option_num_block].as<validators::positive_integral<unsigned long>>());
+
+  fhg::util::temporary_file const file_data
+    (shared_directory / boost::filesystem::unique_path());
+  fhg::util::temporary_file const file_output
+    (shared_directory / boost::filesystem::unique_path());
+
+  {
+    std::ofstream (boost::filesystem::path (file_output).string());
+  }
+
+  unsigned long const size (num_block * size_block);
+
+  std::vector<char> const verify (generate_data (file_data, size, 2 << 20));
+
+  we::type::bytearray const user_data
+    ( transform_file::to_bytearray
+      (transform_file::parameter (file_data, file_output, size))
+    );
+
+  std::ostringstream topology_description;
+
+  topology_description << " worker:2," << (2 * size_block);
+
+  gspc::scoped_runtime_system const drts
+    (vm, installation, topology_description.str());
+
+  gspc::vmem_allocation const allocation_input
+    (drts.alloc (size_input, "map_input"));
+  gspc::vmem_allocation const allocation_output
+    (drts.alloc (size_output, "map_output"));
+
+  auto const global_memory_range
+    ([] (gspc::vmem_allocation const& allocation, unsigned long size)
+     -> pnet::type::value::value_type
+     {
+       auto const name
+         ([&allocation]() -> pnet::type::value::value_type
+          {
+            pnet::type::value::value_type v;
+            pnet::type::value::poke ("name", v, allocation.handle());
+            return v;
+          }
+         );
+       pnet::type::value::value_type v;
+       pnet::type::value::poke ("handle", v, name());
+       pnet::type::value::poke ("offset", v, 0UL);
+       pnet::type::value::poke ("size", v, size);
+
+       return v;
+     }
+    );
+
+  std::multimap<std::string, pnet::type::value::value_type> const result
+    ( drts.put_and_run
+      ( make.build_directory() / "map.pnet"
+      , { {"input", global_memory_range (allocation_input, size_input)}
+        , {"output", global_memory_range (allocation_output, size_output)}
+        , {"num_block", num_block}
+        , {"size_block", size_block}
+        , {"user_data", user_data}
+        , {"implementation", implementation.string()}
+        }
+      )
+    );
+
+  BOOST_REQUIRE_EQUAL (result.size(), 1);
+
+  std::string const port_done ("done");
+
+  BOOST_REQUIRE_EQUAL (result.count (port_done), 1);
+
+  BOOST_CHECK_EQUAL
+    ( result.find (port_done)->second
+    , pnet::type::value::value_type (we::type::literal::control())
+    );
+
+  std::string const output (fhg::util::read_file (file_output));
+
+  BOOST_REQUIRE_EQUAL_COLLECTIONS
+    (verify.begin(), verify.end(), output.begin(), output.end());
+}

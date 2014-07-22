@@ -17,24 +17,45 @@ add_library (transform_file_map-impl SHARED
 target_link_libraries (transform_file_map-impl
   transform_file_type
 )
-set_target_properties (transform_file_map-impl PROPERTIES OUTPUT_NAME map-impl)
 
-add_executable (gen gen.cpp)
-target_link_libraries (gen
-  ${Boost_PROGRAM_OPTIONS_LIBRARY}
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}
+include_directories (${UTIL_INCLUDE_DIR})
+include_directories (${CMAKE_SOURCE_DIR})
+
+get_target_property (
+  location_transform_file_map-impl transform_file_map-impl LOCATION
 )
+get_target_property (location_virtual_memory_manager gpi-space LOCATION)
 
-add_executable (mk_user_parameter mk_user_parameter.cpp)
-target_link_libraries (mk_user_parameter
-  ${Boost_PROGRAM_OPTIONS_LIBRARY}
-  ${Boost_FILESYSTEM_LIBRARY}
-  transform_file_type
-)
+math (EXPR size_communication_buffer "8 * 4 << 20")
 
-fhg_add_application_test (example_map_transform_file_submit
-  SCRIPT test.submit
-  ARGS "${CMAKE_CURRENT_BINARY_DIR}/libmap-impl.so"
+math (EXPR size_input "20 << 20")
+math (EXPR size_output "20 << 20")
+math (EXPR size_block "2 << 20")
+math (EXPR num_block "120")
+math (EXPR size_virtual_memory
+           "${size_input} + ${size_output} + ${size_communication_buffer}"
+     )
+
+fhg_add_test (test.cpp
+  PROJECT share_example_map_transform_file
+  BOOST_UNIT_TEST
+  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
+       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/../../"
+       --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
+       --virtual-memory-manager "${location_virtual_memory_manager}"
+       --virtual-memory-per-node ${size_virtual_memory}
+       --implementation "${location_transform_file_map-impl}"
+       --size-input ${size_input}
+       --size-output ${size_output}
+       --size-block ${size_block}
+       --num-block ${num_block}
+  LINK_LIBRARIES gspc
+                 test-utilities
+                 transform_file_type
+                 ${UTIL_LIBRARIES}
+                 ${Boost_PROGRAM_OPTIONS_LIBRARIES}
+                 ${Boost_FILESYSTEM_LIBRARIES}
+  DEPENDS gpi-space
+          transform_file_map-impl
   RESOURCE_LOCK starts_drts_environment
 )
