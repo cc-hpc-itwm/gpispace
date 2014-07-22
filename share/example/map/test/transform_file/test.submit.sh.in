@@ -4,7 +4,6 @@ set -euo pipefail
 
 IMPLEMENTATION_SO=${1}
 VERIFY=${2}
-SETUP=${3}
 
 source "@CMAKE_BINARY_DIR@/test/env.sh"
 source "@CMAKE_BINARY_DIR@/test/dir_build.sh"
@@ -32,7 +31,22 @@ make+=( CXXINCLUDEPATHS="${DIR_SOURCE}" )
 make+=( 'PNETC_OPTS=--gen-cxxflags=--std=c++11' )
 make+=( -C "${DIR_SOURCE}" )
 
-source "${SETUP}"
+GENERATOR="@CMAKE_CURRENT_BINARY_DIR@/gen"
+MK_USER_PARAMETER="@CMAKE_CURRENT_BINARY_DIR@/mk_user_parameter"
+INPUT_FILE="${DIR_STATE}/input"
+OUTPUT_FILE="${DIR_STATE}/output"
+VERIFY_FILE="${DIR_STATE}/verify"
+
+size_input=$((20*2**20))
+size_output=$((20*2**20))
+size_block=$((2**20))
+num_block=$((120))
+size=$((num_block * size_block))
+user_data="$("${MK_USER_PARAMETER}" \
+             --input "${INPUT_FILE}" --output "${OUTPUT_FILE}" --size ${size})"
+"${GENERATOR}" --data "${INPUT_FILE}" --verify "${VERIFY_FILE}" --size ${size}
+
+touch "${OUTPUT_FILE}"
 
 # \note 8 communication buffers of size 4 MiB are allocated automatically
 size_vmem=$((8*4*2**20 + size_input + size_output))
