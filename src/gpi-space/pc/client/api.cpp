@@ -232,6 +232,16 @@ namespace gpi
         throw std::runtime_error("memset: not yet implemented");
       }
 
+      std::function<double (std::string const&)>
+      api_t::transfer_costs (std::list<transfer_t> const&)
+      {
+        //! \todo get actual values from vmem backend
+        return [] (std::string const &) -> double
+        {
+          return 0.0;
+        };
+      }
+
       gpi::pc::type::handle::descriptor_t
       api_t::info(const gpi::pc::type::handle_t h)
       {
