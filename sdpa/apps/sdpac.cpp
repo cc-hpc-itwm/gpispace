@@ -157,11 +157,6 @@ namespace
       ( "orchestrator"
       , po::value<std::string>()->default_value ("orchestrator")
       , "name of the orchestrator"
-      )
-      ( "config,C"
-      , po::value<std::string>()->default_value
-      (std::getenv ("HOME") + std::string ("/.sdpa/configs/sdpac.rc"))
-      , "path to the configuration file"
       );
   }
 
@@ -178,30 +173,6 @@ namespace
              .positional(positional_opts_)
              .run()
              , opts_);
-  }
-
-  void NewConfig::parse_config_file()
-  {
-    if (is_set("config"))
-    {
-      const std::string &cfg_file = get("config");
-      if (is_set("verbose"))
-      {
-        std::cerr << "I: using config file: " << cfg_file << std::endl;
-      }
-      std::ifstream stream(cfg_file.c_str());
-      if (! stream)
-      {
-        throw std::runtime_error ("could not read config file: " + cfg_file);
-      }
-      else
-      {
-        po::options_description desc;
-        desc.add(logging_opts_)
-          .add(specific_opts_);
-        po::store(po::parse_config_file(stream, desc), opts_);
-      }
-    }
   }
 
   struct environment_variable_to_option
@@ -301,18 +272,6 @@ int main (int argc, char **argv) {
   cfg.parse_command_line(argc, argv);
   cfg.parse_environment();
 
-  cfg.notify();
-
-  try
-  {
-    cfg.parse_config_file();
-  }
-  catch (std::exception const &)
-  {
-    // std::cerr << "W: could not parse config file: "
-    //           << cfg.get("config")
-    //           << std::endl;
-  }
   cfg.notify();
 
   if (cfg.is_set("help"))
