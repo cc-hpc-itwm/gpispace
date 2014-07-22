@@ -275,7 +275,7 @@
           <cinclude href="interface.hpp"/>
           <cinclude href="fhg/util/dl.hpp"/>
           <code><![CDATA[
-            dl::scoped_dlhandle (implementation)
+            fhg::util::scoped_dlhandle (implementation)
               .sym<decltype (map_produce)> ("map_produce")
                 ( user_data
                 , std::make_pair (data, block_with_slot.slot.size)
@@ -363,7 +363,7 @@
           <cinclude href="interface.hpp"/>
           <cinclude href="fhg/util/dl.hpp"/>
           <code><![CDATA[
-            dl::scoped_dlhandle (implementation)
+            fhg::util::scoped_dlhandle (implementation)
               .sym<decltype (map_process)> ("map_process")
                 ( user_data
                 , std::make_pair (input, package.slot_input.size)
@@ -428,7 +428,7 @@
           <cinclude href="interface.hpp"/>
           <cinclude href="fhg/util/dl.hpp"/>
           <code><![CDATA[
-            dl::scoped_dlhandle (implementation)
+            fhg::util::scoped_dlhandle (implementation)
               .sym<decltype (map_consume)> ("map_consume")
                 ( user_data
                 , std::make_pair (data, block_with_slot.slot.size)
