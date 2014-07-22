@@ -13,8 +13,12 @@ OUT="${DIR_BUILD}/pi.out"
 CMP="${DIR_BUILD}/run.out"
 CMP_ORIG="${DIR_TEST}/out.cmp"
 
-make+=( make BUILDDIR="${DIR_BUILD}" )
+make=(make)
+make+=( -f "${SDPA_HOME}/share/sdpa/make/common.mk" )
+make+=( BUILDDIR="${DIR_BUILD}" )
+make+=( MAIN=pi )
 make+=( WE_EXEC_OUTPUT="${RESULT}" )
+make+=( PUT_PORT="num_packet=500L\ points_per_packet=1000000L\ credit_generate=20L\ credit_run=10L\ credit_get_key=20L\ seed=3141L" )
 make+=( -C "${DIR_SOURCE}" )
 
 cleanup()

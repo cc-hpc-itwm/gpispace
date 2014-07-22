@@ -3,6 +3,9 @@ cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
 set (PROJECT_VERSION "14.03")
 set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
+SET (SHARED_DIRECTORY_FOR_TESTS "$ENV{HOME}" CACHE PATH
+  "shared directory for tests"
+)
 OPTION (ENABLE_LICENSE_CHECK "enable license check" OFF)
 
 execute_process (

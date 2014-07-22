@@ -5,6 +5,7 @@
 #include <iostream>
 #include <list>
 #include <vector>
+#include <map>
 
 namespace process
 {
@@ -84,6 +85,15 @@ namespace process
   };
 
   // ********************************************************************** //
+
+  extern execute_return_type execute ( std::string const& command
+                                     , const_buffer const& buf_stdin
+                                     , buffer const& buf_stdout
+                                     , circular_buffer& buf_stderr
+                                     , file_const_buffer_list const& files_input
+                                     , file_buffer_list const& files_output
+                                     , std::map<std::string, std::string> const& environment
+                                     );
 
   extern execute_return_type execute ( std::string const& command
                                      , const_buffer const& buf_stdin
