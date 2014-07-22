@@ -176,6 +176,15 @@ namespace gspc
         }
       }
 
+      if (unique_nodes.empty())
+      {
+        throw std::runtime_error
+          (( boost::format ("nodefile %1% does not contain nodes")
+           % nodefile
+           ).str()
+          );
+      }
+
       return std::make_pair (nodes, unique_nodes.size());
     }
 
