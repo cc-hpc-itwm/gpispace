@@ -19,6 +19,7 @@
 #include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/make_unique.hpp>
+#include <fhg/util/read_file.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
 #include <boost/format.hpp>
@@ -375,9 +376,14 @@ namespace gspc
     }
 
     // taken from pbs/sdpa and bin/sdpac
+    //! \todo Remove magic: specify filenames instead of relying on
+    //! file? Let an c++-ified sdpa-boot() return them.
     std::string const kvs_host
-      (*_nodes_and_number_of_unique_nodes.first.begin());
-    unsigned short const kvs_port (2439);
+      (fhg::util::read_file (_state_directory / "kvs.host"));
+    unsigned short const kvs_port
+      ( boost::lexical_cast<unsigned short>
+        (fhg::util::read_file (_state_directory / "kvs.port"))
+      );
 
     sdpa::client::Client api
       ("orchestrator", kvs_host, std::to_string (kvs_port));

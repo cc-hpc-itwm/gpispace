@@ -22,24 +22,6 @@ int main(int ac, char *av[])
 
   namespace po = boost::program_options;
 
-  std::string server_address ("localhost");
-  std::string server_port ("2439");
-
-  if (getenv("KVS_URL") != nullptr)
-  {
-    try
-    {
-      using namespace fhg::com;
-      peer_info_t pi (getenv("KVS_URL"));
-      server_address = pi.host(server_address);
-      server_port = pi.port(server_port);
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "W: malformed environment variable KVS_URL: " << ex.what() << std::endl;
-    }
-  }
-
   std::string key;
   std::string value;
   size_t timeout (120 * 1000);
@@ -49,8 +31,8 @@ int main(int ac, char *av[])
   po::options_description desc ("options");
   desc.add_options()
     ("help,h", "print this help")
-    ("host,H", po::value<std::string>(&server_address)->default_value(server_address), "use this host")
-    ("port,P", po::value<std::string>(&server_port)->default_value(server_port), "port or service name to use")
+    ("host", po::value<std::string>()->required(), "use this host")
+    ("port", po::value<std::string>()->required(), "port or service name to use")
     ("key,k", po::value<std::string>(&key), "key to put or get")
     ("value,v", po::value<std::string>(&value), "value to store")
     ("full,f", "key must match completely")
@@ -88,8 +70,8 @@ int main(int ac, char *av[])
     return EX_OK;
   }
 
-  fhg::com::kvs::client::kvsc client ( server_address
-                                     , server_port
+  fhg::com::kvs::client::kvsc client ( vm["host"].as<std::string>()
+                                     , vm["port"].as<std::string>()
                                      , true
                                      , boost::posix_time::milliseconds(timeout)
                                      , 1

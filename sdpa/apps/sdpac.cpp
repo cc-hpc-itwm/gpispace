@@ -242,15 +242,14 @@ namespace
 int main (int argc, char **argv) {
   const std::string name(argv[0]);
 
-  std::string kvs_url (fhg::util::getenv("KVS_URL").get_value_or ("localhost:2439"));
-
   NewConfig cfg;
   cfg.tool_opts().add_options()
     ("output,o", po::value<std::string>(), "path to output file")
     ("wait,w", "wait until job is finished")
     ("polling", po::value<std::string>()->default_value ("true"), "use polling when waiting for job completion")
     ("force,f", "force the operation")
-    ("kvs,k", po::value<std::string>(&kvs_url)->default_value(kvs_url), "The kvs daemon's url")
+    ("kvs-host", po::value<std::string>()->required(), "The kvs daemon's host")
+    ("kvs-port", po::value<std::string>()->required(), "The kvs daemon's port")
     ("revision", "Dump the revision identifier")
     ("command", po::value<std::string>()->required(),
      "The command that shall be performed. Possible values are:\n\n"
@@ -347,24 +346,6 @@ int main (int argc, char **argv) {
   {
     fhg::log::Logger::ptr_t logger (fhg::log::Logger::get ("sdpac"));
 
-    std::vector< std::string > vec;
-
-    {
-      boost::char_separator<char> sep(":");
-      boost::tokenizer<boost::char_separator<char>> tok(kvs_url, sep);
-
-      vec.assign(tok.begin(),tok.end());
-
-      if( vec.size() != 2 )
-      {
-        throw std::runtime_error
-          ("Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
-      }
-    }
-
-    const std::string kvs_host (vec[0]);
-    const std::string kvs_port (vec[1]);
-
     const std::string &command(cfg.get("command"));
 
     std::vector<std::string> args;
@@ -380,7 +361,7 @@ int main (int argc, char **argv) {
     sdpa::client::Client api ( cfg.is_set("orchestrator")
                              ? cfg.get<std::string>("orchestrator")
                              : throw std::runtime_error ("no orchestrator specified!")
-                             , kvs_host, kvs_port
+                             , cfg.get ("kvs-host"), cfg.get ("kvs-port")
                              );
 
     if (command == "submit")

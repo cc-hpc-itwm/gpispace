@@ -18,7 +18,8 @@ name_prefix="drts"
 master=
 gpi_socket=
 lib_path=
-kvs_url=
+kvs_host=
+kvs_port=
 log_url=
 count=
 capabilities=""
@@ -46,7 +47,8 @@ usage: $(basename "$0") [options]
     -b N (=$backlog): set the backlog
     -S path (=$gpi_socket): gpi socket path
     -L path: library path
-    -k kvs-url (=$kvs_url): url to the key-value-store
+    -k kvs-host (=$kvs_host): host of the key-value-store
+    -K kvs-port (=$kvs_port): port of the key-value-store
     -c count: start this many processes (0==#cores)
     -C capability: start with this capability (can be specified more than once
     -D daemonize
@@ -57,7 +59,7 @@ usage: $(basename "$0") [options]
 EOF
 }
 
-while getopts ":hvfg:l:m:i:b:S:k:Dc:C:L:s:n:M:N:H:" opt; do
+while getopts ":hvfg:l:m:i:b:S:k:K:Dc:C:L:s:n:M:N:H:" opt; do
     case $opt in
         h)
             usage
@@ -102,7 +104,10 @@ while getopts ":hvfg:l:m:i:b:S:k:Dc:C:L:s:n:M:N:H:" opt; do
             gpi_socket=$OPTARG
             ;;
         k)
-            kvs_url=$OPTARG
+            kvs_host=$OPTARG
+            ;;
+        K)
+            kvs_port=$OPTARG
             ;;
         D)
             daemonize=true
@@ -165,9 +170,14 @@ then
     exit 4
 fi
 
-if [ -z "$kvs_url" ]
+if [ -z "$kvs_host" ]
 then
-    echo >&2 "kvs url is required, please specify -k"
+    echo >&2 "kvs host is required, please specify -k"
+    exit 4
+fi
+if [ -z "$kvs_port" ]
+then
+    echo >&2 "kvs port is required, please specify -K"
     exit 4
 fi
 
@@ -191,7 +201,8 @@ if [ x"$identity" = x"0" ] ; then
         opts=
         opts="$opts -H $sdpa_home"
         opts="$opts -m $master"
-        opts="$opts -k $kvs_url"
+        opts="$opts -k ${kvs_host}"
+        opts="$opts -K ${kvs_port}"
         opts="$opts -b $backlog"
         if [ -n "$gpi_socket" ] ; then
             opts="$opts -S $gpi_socket"
@@ -323,8 +334,6 @@ if [ x"$gpi_enabled" = x"true" ] ; then
 fi
 
 # config values (drts plugin)
-kvs_host=$(echo "$kvs_url" | cut -d: -f1)
-kvs_port=$(echo "$kvs_url" | cut -d: -f2)
 cfg="$cfg -s plugin.drts.kvs_host=$kvs_host"
 cfg="$cfg -s plugin.drts.kvs_port=$kvs_port"
 cfg="$cfg -s plugin.drts.master=$master"

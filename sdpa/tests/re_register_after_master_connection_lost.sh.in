@@ -15,7 +15,6 @@ ORCHESTRATOR_2_PID_FILE="$(mktemp -p "${DIR_TEST}" orch2.pid.XXXXX)" || die ${EX
 TIMEOUT_UNTIL_A_REGISTRATION_SHOULD_BE_LOST=2
 TIMEOUT_UNTIL_A_REREGISTRATION_SHOULD_BE_DONE=5
 TIMEOUT_UNTIL_A_STARTED_ORCHESTRATOR_SHOULD_LISTEN=1
-TIMEOUT_UNTIL_FHGKVSD_SHOULD_BE_SETUP=5
 
 cleanup()
 {
@@ -31,33 +30,38 @@ trap 'cleanup' EXIT
 
 echo "<defun/>" | pnetc > "${DUMMY_NET}"                        || die ${EX_ERR_RUN}
 
-KVS_PORT=4102 # todo: random port until free port is found?
-KVS_URL="$(hostname):${KVS_PORT}"
+KVS_HOST="$(hostname)"
+KVS_PORT=$(fhgkvsd --bind "${KVS_HOST}"                        \
+                   --port '*'                                  \
+                   --pidfile "${KVS_PID_FILE}"                 \
+                   --daemonize                                 || die ${EX_ERR_BOOT}
+)
 
-fhgkvsd --port ${KVS_PORT} \
-        --pidfile "${KVS_PID_FILE}" --daemonize                 || die ${EX_ERR_BOOT}
-
-sleep ${TIMEOUT_UNTIL_FHGKVSD_SHOULD_BE_SETUP}
-
-orchestrator --kvs_url "${KVS_URL}" --name "orchestrator" \
+orchestrator --kvs-host "${KVS_HOST}" --kvs-port ${KVS_PORT}    \
+             --name "orchestrator"                              \
              --pidfile "${ORCHESTRATOR_1_PID_FILE}" --daemonize || die ${EX_ERR_BOOT}
 
-agent --kvs_url "${KVS_URL}" --master "orchestrator" --name "agent" \
-      --pidfile "${AGENT_PID_FILE}" --daemonize                 || die ${EX_ERR_BOOT}
+agent --kvs-host "${KVS_HOST}" --kvs-port ${KVS_PORT}          \
+      --master "orchestrator" --name "agent"                   \
+      --pidfile "${AGENT_PID_FILE}" --daemonize                || die ${EX_ERR_BOOT}
 
-kill $(cat "${ORCHESTRATOR_1_PID_FILE}")                          || die ${EX_ERR_RUN}
+kill $(cat "${ORCHESTRATOR_1_PID_FILE}")                        || die ${EX_ERR_RUN}
 rm "${ORCHESTRATOR_1_PID_FILE}"
 
 sleep ${TIMEOUT_UNTIL_A_REGISTRATION_SHOULD_BE_LOST}
 
-orchestrator --kvs_url "${KVS_URL}" --name "orchestrator" \
+orchestrator --kvs-host "${KVS_HOST}" --kvs-port ${KVS_PORT}    \
+             --name "orchestrator"                              \
              --pidfile "${ORCHESTRATOR_2_PID_FILE}" --daemonize || die ${EX_ERR_RUN}
 
 sleep ${TIMEOUT_UNTIL_A_STARTED_ORCHESTRATOR_SHOULD_LISTEN}
 
-JOB_ID=$(sdpac --kvs "${KVS_URL}" submit "${DUMMY_NET}")        || die ${EX_ERR_RUN}
-timeout ${TIMEOUT_UNTIL_A_REREGISTRATION_SHOULD_BE_DONE} \
-  sdpac --kvs "${KVS_URL}" wait "${JOB_ID}"                     || die ${EX_ERR_RUN}
-JOB_STATUS=$(sdpac --kvs "${KVS_URL}" status "${JOB_ID}")       || die ${EX_ERR_RUN}
+JOB_ID=$(sdpac --kvs-host "${KVS_HOST}" --kvs-port ${KVS_PORT}  \
+               submit "${DUMMY_NET}")                           || die ${EX_ERR_RUN}
+timeout ${TIMEOUT_UNTIL_A_REREGISTRATION_SHOULD_BE_DONE}        \
+  sdpac --kvs-host "${KVS_HOST}" --kvs-port ${KVS_PORT}         \
+        wait "${JOB_ID}"                                        || die ${EX_ERR_RUN}
+JOB_STATUS=$(sdpac --kvs-host "${KVS_HOST}" --kvs-port ${KVS_PORT} \
+                   status "${JOB_ID}")                          || die ${EX_ERR_RUN}
 
 [[ "x${JOB_STATUS}" = "xSDPA::Finished" ]]                      || die ${EX_ERR_RUN}
