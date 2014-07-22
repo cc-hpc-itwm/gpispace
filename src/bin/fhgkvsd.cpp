@@ -24,25 +24,8 @@ int main(int ac, char *av[])
 
   namespace po = boost::program_options;
 
-  std::string server_address ("*");
-  std::string server_port ("2439");
   std::string pidfile;
   bool daemonize = false;
-
-  if (getenv("KVS_URL") != nullptr)
-  {
-    try
-    {
-      using namespace fhg::com;
-      peer_info_t pi (getenv("KVS_URL"));
-      server_address = pi.host(server_address);
-      server_port = pi.port(server_port);
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "W: malformed environment variable KVS_URL: " << ex.what() << std::endl;
-    }
-  }
 
   bool reuse_address (true);
   std::string store_path;
@@ -50,8 +33,8 @@ int main(int ac, char *av[])
   po::options_description desc ("options");
   desc.add_options()
     ("help,h", "print this help")
-    ("bind,b", po::value<std::string>(&server_address)->default_value(server_address), "bind to this address")
-    ("port,p", po::value<std::string>(&server_port)->default_value(server_port), "port or service name to use")
+    ("bind", po::value<std::string>()->required(), "bind to this address")
+    ("port", po::value<std::string>()->required(), "port or service name to use")
     ("reuse-address", po::value<bool>(&reuse_address)->default_value(reuse_address), "reuse address")
     ("store,s", po::value<std::string>(&store_path), "path to persistent store")
     ("clear,C", "start with an empty store")
@@ -83,11 +66,6 @@ int main(int ac, char *av[])
 
   if (vm.count ("daemonize"))
     daemonize = true;
-
-  if (server_address == "*")
-  {
-    server_address = "0";
-  }
 
   if (pidfile.empty())
   {
@@ -127,10 +105,14 @@ int main(int ac, char *av[])
 
     fhg::com::tcp_server server ( io_service
                                 , kvsd
-                                , server_address
-                                , server_port
+                                , vm["bind"].as<std::string>() == "*"
+                                ? "0"
+                                : vm["bind"].as<std::string>()
+                                , vm["port"].as<std::string>()
                                 , reuse_address
                                 );
+
+    std::cout << server.port() << std::endl;
 
     io_service.notify_fork (boost::asio::io_service::fork_prepare);
     if (daemonize)
