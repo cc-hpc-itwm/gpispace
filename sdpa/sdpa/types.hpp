@@ -26,7 +26,6 @@ namespace sdpa {
 
   typedef std::list<std::pair<sdpa::worker_id_t, int>> list_match_workers_t;
 
-  typedef std::map<sdpa::worker_id_t, int> map_degs_t;
   typedef std::multimap<int, sdpa::worker_id_t, std::greater<int>> mmap_match_deg_worker_id_t;
 
   class MasterInfo
