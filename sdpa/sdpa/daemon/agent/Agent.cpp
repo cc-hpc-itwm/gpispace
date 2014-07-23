@@ -17,8 +17,9 @@ namespace sdpa
                  , std::string kvs_port
                  , const sdpa::master_info_list_t arrMasterNames
                  , const boost::optional<std::string>& guiUrl
+                 , boost::optional<boost::filesystem::path> const & virtual_memory_socket
                  )
-      : GenericDaemon (name, url, kvs_host, kvs_port, arrMasterNames, guiUrl, true)
+      : GenericDaemon (name, url, kvs_host, kvs_port, arrMasterNames, guiUrl, true, virtual_memory_socket)
     {}
 
     void Agent::handleJobFinishedEvent (const events::JobFinishedEvent* pEvt)

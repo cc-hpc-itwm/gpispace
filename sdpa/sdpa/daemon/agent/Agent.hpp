@@ -18,6 +18,7 @@ namespace sdpa
             , std::string kvs_port
             , const sdpa::master_info_list_t arrMasterNames
             , const boost::optional<std::string>& guiUrl
+            , boost::optional<boost::filesystem::path> const & vmem_socket = boost::none
             );
 
     protected:
