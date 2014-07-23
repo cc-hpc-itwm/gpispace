@@ -79,8 +79,8 @@ namespace sdpa
         return false;
       }
 
-      Worker::ptr_t pWorker( new Worker( workerId, capacity, cpbSet, hostname) );
-      worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
+      Worker::ptr_t pWorker (new Worker (workerId, capacity, cpbSet, hostname));
+      worker_map_.insert (worker_map_t::value_type (pWorker->name(), pWorker));
 
       return true;
     }
@@ -101,10 +101,10 @@ namespace sdpa
     {
       boost::mutex::scoped_lock const _ (mtx_);
       worker_id_list_t workerList;
-      for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
+      for (worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
       {
         Worker::ptr_t ptrWorker = iter->second;
-        if( !ptrWorker->isReserved() )
+        if (!ptrWorker->isReserved())
             workerList.push_back(ptrWorker->name());
       }
 

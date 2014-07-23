@@ -38,7 +38,7 @@ namespace sdpa
       sdpa::job_id_list_t getJobListAndCleanQueues (const  Worker::ptr_t& pWorker);
       worker_id_list_t getListWorkersNotReserved();
 
-      boost::optional<sdpa::worker_id_t> getBestMatchingWorker ( const job_requirements_t&, const sdpa::worker_id_list_t&) const;
+      boost::optional<sdpa::worker_id_t> getBestMatchingWorker (const job_requirements_t&, const sdpa::worker_id_list_t&) const;
       mmap_match_deg_worker_id_t getListMatchingWorkers (const job_requirements_t&, const sdpa::worker_id_list_t&) const;
 
   private:
