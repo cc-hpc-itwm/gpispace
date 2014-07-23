@@ -27,8 +27,8 @@ namespace sdpa
       //! returns whether worker was actually added (i.e. false when already there)
       bool addWorker ( const worker_id_t& workerId
                      , boost::optional<unsigned int> capacity
-                     , const capabilities_set_t& cpbset = capabilities_set_t()
-                     , const std::string& hostname = ""
+                     , const capabilities_set_t&
+                     , const std::string& hostname
                      );
 
       void deleteWorker (const worker_id_t& workerId);

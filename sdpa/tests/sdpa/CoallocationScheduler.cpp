@@ -2,7 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
-
+#include <fhg/util/random_string.hpp>
 #include <functional>
 
 struct serveJob_checking_scheduler_and_job_manager
@@ -83,8 +83,8 @@ namespace
 
 BOOST_FIXTURE_TEST_CASE (testLoadBalancing, serveJob_checking_scheduler_and_job_manager)
 {
-  _scheduler.worker_manager().addWorker ("worker_0", 1, {});
-  _scheduler.worker_manager().addWorker ("worker_1", 1, {});
+  _scheduler.worker_manager().addWorker ("worker_0", 1, {}, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("worker_1", 1, {}, fhg::util::random_string());
 
   add_job ("job_0", {});
   add_job ("job_1", {});
@@ -114,7 +114,7 @@ BOOST_FIXTURE_TEST_CASE (testLoadBalancing, serveJob_checking_scheduler_and_job_
 
 BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_and_job_manager)
 {
-  _scheduler.worker_manager().addWorker ("worker_0", 1, {});
+  _scheduler.worker_manager().addWorker ("worker_0", 1, {}, fhg::util::random_string());
 
   add_job ("job_0", {});
   add_job ("job_1", {});
@@ -128,7 +128,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_a
   _scheduler.assignJobsToWorkers();
 
 
-  _scheduler.worker_manager().addWorker ("worker_1", 1, {});
+  _scheduler.worker_manager().addWorker ("worker_1", 1, {}, fhg::util::random_string());
 
   expect_serveJob_call ("job_1", {"worker_1"});
 
@@ -137,8 +137,8 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_a
 
 BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_scheduler_and_job_manager)
 {
-  _scheduler.worker_manager().addWorker ("worker_0", 1, {sdpa::capability_t ("C", "worker_0")});
-  _scheduler.worker_manager().addWorker ("worker_1", 1);
+  _scheduler.worker_manager().addWorker ("worker_0", 1, {sdpa::capability_t ("C", "worker_0")}, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("worker_1", 1, {}, fhg::util::random_string());
 
   add_job ("job_0", require ("C"));
   add_job ("job_1", require ("C"));
@@ -161,10 +161,10 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_schedule
 
 BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_manager)
 {
-  _scheduler.worker_manager().addWorker ("A0", 1, {sdpa::capability_t ("A", "A0")});
-  _scheduler.worker_manager().addWorker ("B0", 1, {sdpa::capability_t ("B", "B0")});
-  _scheduler.worker_manager().addWorker ("A1", 1, {sdpa::capability_t ("A", "A1")});
-  _scheduler.worker_manager().addWorker ("B1", 1, {sdpa::capability_t ("B", "B1")});
+  _scheduler.worker_manager().addWorker ("A0", 1, {sdpa::capability_t ("A", "A0")}, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("B0", 1, {sdpa::capability_t ("B", "B0")}, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("A1", 1, {sdpa::capability_t ("A", "A1")}, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("B1", 1, {sdpa::capability_t ("B", "B1")}, fhg::util::random_string());
 
   add_job ("2A", require ("A", 2));
   add_job ("2B", require ("B", 2));
@@ -197,8 +197,8 @@ BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_m
 
 BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and_job_manager)
 {
-  _scheduler.worker_manager().addWorker ("worker_0", 1, {});
-  _scheduler.worker_manager().addWorker ("worker_1", 1, {});
+  _scheduler.worker_manager().addWorker ("worker_0", 1, {}, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("worker_1", 1, {}, fhg::util::random_string());
 
   add_job ("job_0", {});
   add_job ("job_1", {});
@@ -218,7 +218,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and
   _scheduler.worker_manager().deleteWorker ("worker_1");
   _scheduler.enqueueJob ("job_0");
 
-  _scheduler.worker_manager().addWorker ("worker_1", 1, {});
+  _scheduler.worker_manager().addWorker ("worker_1", 1, {}, fhg::util::random_string());
 
   expect_serveJob_call ("job_0", {"worker_1"});
 
@@ -228,7 +228,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and
 BOOST_FIXTURE_TEST_CASE
   (not_schedulable_job_does_not_block_others, serveJob_checking_scheduler_and_job_manager)
 {
-  _scheduler.worker_manager().addWorker ("worker", 1);
+  _scheduler.worker_manager().addWorker ("worker", 1, {}, fhg::util::random_string());
 
   add_job ("2", require (2));
   _scheduler.enqueueJob ("2");
