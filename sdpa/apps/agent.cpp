@@ -17,6 +17,7 @@
 #include <fhg/util/pidfile_writer.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
+#include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 
 #include <boost/tokenizer.hpp>
 
@@ -24,6 +25,12 @@
 
 namespace bfs = boost::filesystem;
 namespace po = boost::program_options;
+namespace validators = fhg::util::boost::program_options;
+
+namespace name
+{
+  constexpr const char * vmem_socket {"vmem-socket"};
+}
 
 int main (int argc, char **argv)
 {
@@ -34,6 +41,7 @@ int main (int argc, char **argv)
   std::string appGuiUrl;
   std::string kvsUrl;
   std::string pidfile;
+  boost::optional<bfs::path> vmem_socket;
 
   FHGLOG_SETUP();
 
@@ -48,6 +56,10 @@ int main (int argc, char **argv)
     ("kvs_url,k",  po::value<std::string>()->required(), "The kvs daemon's url")
     ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
     ("daemonize", "daemonize after all checks were successful")
+    ( name::vmem_socket
+    , boost::program_options::value<validators::nonempty_string>()
+    , "socket file to communicate with the virtual memory manager"
+    )
     ;
 
   po::variables_map vm;
@@ -64,6 +76,11 @@ int main (int argc, char **argv)
 
   po::notify(vm);
 
+  if (vm.count(name::vmem_socket))
+  {
+    vmem_socket = boost::make_optional
+      (bfs::path (vm[name::vmem_socket].as<validators::nonempty_string>()));
+  }
   std::vector< std::string > vec;
 
   {
@@ -120,7 +137,7 @@ int main (int argc, char **argv)
   }
 
   const sdpa::daemon::Agent agent
-    (agentName, agentUrl, kvs_host, kvs_port, listMasterInfo, appGuiUrl);
+    (agentName, agentUrl, kvs_host, kvs_port, listMasterInfo, appGuiUrl, vmem_socket);
 
 
   fhg::util::thread::event<> stop_requested;
