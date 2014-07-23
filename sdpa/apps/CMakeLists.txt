@@ -4,6 +4,7 @@ target_link_libraries (orchestrator
   ${FhgLog_LIBRARY}
   pnet
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}
 )
 install (TARGETS orchestrator
   RUNTIME
@@ -15,8 +16,6 @@ target_link_libraries (agent
   sdpa
   ${FhgLog_LIBRARY}
   pnet
-  gpi-space-pc-client-static
-  gpi-space-pc-segment
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}
 )
