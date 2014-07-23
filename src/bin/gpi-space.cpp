@@ -46,21 +46,15 @@ struct config_t
     : magic (0)
     // socket
     // kvs_host
-    , kvs_port (2439)
+    , kvs_port (0)
     , kvs_retry_count (2)
     // log_host
     , log_port (2438)
     , log_level ('I')
   {
     memset (socket, 0, sizeof(socket));
+    memset (kvs_host, 0, sizeof (kvs_host));
 
-    if (gethostname (kvs_host, MAX_HOST_LEN) != 0)
-    {
-      snprintf ( kvs_host
-               , sizeof(this->kvs_host)
-               , "localhost"
-               );
-    }
     if (gethostname (log_host, MAX_HOST_LEN) != 0)
     {
       snprintf ( log_host
@@ -623,6 +617,17 @@ int main (int ac, char *av[])
     if (0 == strlen (socket_path))
     {
       fprintf (stderr, "parameter 'socket' not given (--socket <path-to-socket>)\n");
+      exit (EX_USAGE);
+    }
+
+    if (0 == strlen (config.kvs_host))
+    {
+      fprintf (stderr, "parameter 'kvs-host' not given (--kvs-host <host-of-kvs-daemon>\n");
+      exit (EX_USAGE);
+    }
+    if (0 == config.kvs_port)
+    {
+      fprintf (stderr, "parameter 'kvs-port' not given (--kvs-port <port-of-kvs-daemon>\n");
       exit (EX_USAGE);
     }
 

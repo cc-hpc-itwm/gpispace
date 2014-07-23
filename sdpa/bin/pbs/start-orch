@@ -8,7 +8,8 @@
 ###
 bind_addr='0'
 name="orchestrator"
-kvs_url=
+kvs_host=
+kvs_port=
 log_url=
 daemonize=false
 pidfile=
@@ -17,13 +18,16 @@ logdir=
 verbose=false
 sdpa_home=
 
-while getopts ":hvn:d:l:k:DP:L:s:H:" opt; do
+while getopts ":hvn:d:l:k:K:DP:L:s:H:" opt; do
     case $opt in
         n)
             name=$OPTARG
             ;;
         k)
-            kvs_url=$OPTARG
+            kvs_host=$OPTARG
+            ;;
+        K)
+            kvs_port=$OPTARG
             ;;
         l)
             log_url=$OPTARG
@@ -51,7 +55,8 @@ while getopts ":hvn:d:l:k:DP:L:s:H:" opt; do
             echo "    -h : print this help" >&2
             echo "    -v : be verbose" >&2
             echo "    -n : name (default: $name)" >&2
-            echo "    -k : kvs url" >&2
+            echo "    -k : kvs host" >&2
+            echo "    -K : kvs port" >&2
             echo "    -l : log url" >&2
             echo "    -D : daemonize" >&2
             echo "    -P pidfile: write pid to this file and lock it" >&2
@@ -83,9 +88,14 @@ fi
 
 logprefix="${logdir}/${name}"
 
-if [ -z "$kvs_url" ]
+if [ -z "$kvs_host" ]
 then
-    echo >&2 "kvs url is required, please specify -k"
+    echo >&2 "kvs host is required, please specify -k"
+    exit 4
+fi
+if [ -z "$kvs_port" ]
+then
+    echo >&2 "kvs port is required, please specify -K"
     exit 4
 fi
 
@@ -98,7 +108,8 @@ fi
 
 echo >&2 "Running $name on $(hostname)"
 
-argv="$sdpa_home/bin/orchestrator -u $bind_addr -n ${name} -k ${kvs_url}"
+argv="$sdpa_home/bin/orchestrator -u $bind_addr -n ${name}"
+argv="${argv} --kvs-host ${kvs_host} --kvs-port ${kvs_port}"
 if $daemonize ; then
     argv="$argv --daemonize"
 fi
