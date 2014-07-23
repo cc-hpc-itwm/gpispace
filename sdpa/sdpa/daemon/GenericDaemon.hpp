@@ -55,6 +55,8 @@
 #include <sdpa/types.hpp>
 #include <sdpa/capability.hpp>
 
+#include <gpi-space/pc/client/api.hpp>
+
 #include <fhg/util/std/pair.hpp>
 #include <fhg/util/thread/set.hpp>
 #include <fhg/util/thread/queue.hpp>
@@ -82,6 +84,7 @@ namespace sdpa {
                    , const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t()
                    , const boost::optional<std::string>& guiUrl = boost::none
                    , bool create_wfe = false
+                   , boost::optional<boost::filesystem::path> const & vmem_socket = boost::none
                    );
       virtual ~GenericDaemon() = default;
 
@@ -290,6 +293,7 @@ namespace sdpa {
         _event_handler_thread;
       void handle_events();
 
+      std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
     protected:
       struct child_proxy
       {

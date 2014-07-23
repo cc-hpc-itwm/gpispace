@@ -35,6 +35,7 @@
 #include <sdpa/daemon/exceptions.hpp>
 
 #include <fhg/util/macros.hpp>
+#include <fhg/util/make_unique.hpp>
 
 #include <boost/tokenizer.hpp>
 #include <boost/range/adaptor/filtered.hpp>
@@ -42,6 +43,8 @@
 #include <functional>
 #include <sstream>
 #include <algorithm>
+#include <thread>
+#include <chrono>
 
 namespace sdpa {
   namespace daemon {
@@ -80,6 +83,7 @@ GenericDaemon::GenericDaemon( const std::string name
                             , const master_info_list_t arrMasterInfo
                             , const boost::optional<std::string>& guiUrl
                             , bool create_wfe
+                            , boost::optional<boost::filesystem::path> const & vmem_socket
                             )
   : _logger (fhg::log::Logger::get (name))
   , _name (name)
@@ -142,7 +146,23 @@ GenericDaemon::GenericDaemon( const std::string name
   , _registration_threads()
   , _scheduling_thread (&GenericDaemon::scheduling_thread, this)
   , _event_handler_thread (&GenericDaemon::handle_events, this)
+  , _virtual_memory_api
+    ( vmem_socket
+    ? fhg::util::make_unique<gpi::pc::client::api_t> (vmem_socket->string())
+    : nullptr
+    )
 {
+  if (vmem_socket)
+  {
+    LLOG(TRACE, _logger, "waiting for vmem socket '" << *vmem_socket << "' to appear");
+
+    while (!boost::filesystem::exists (*vmem_socket))
+    {
+      std::this_thread::sleep_for (std::chrono::milliseconds (200));
+    }
+
+    _virtual_memory_api->start();
+  }
   // ask kvs if there is already an entry for (name.id = m_strAgentUID)
   //     e.g. kvs::get ("sdpa.daemon.<name>")
   //          if exists: throw
