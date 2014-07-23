@@ -17,7 +17,7 @@ namespace sdpa
       : name_ (name)
       , capacity_ (cap)
       , capabilities_ (capabilities)
-      , hostname_(hostname)
+      , hostname_ (hostname)
       , last_schedule_time_ (0)
       , reserved_ (false)
     {
