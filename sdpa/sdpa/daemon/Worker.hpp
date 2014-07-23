@@ -11,66 +11,69 @@
 #include <boost/optional.hpp>
 #include <boost/algorithm/string.hpp>
 
-namespace sdpa { namespace daemon {
+namespace sdpa
+{
+  namespace daemon
+  {
+    class Worker
+    {
+    public:
+      typedef boost::shared_ptr<Worker> ptr_t;
+      typedef boost::recursive_mutex mutex_type;
+      typedef boost::unique_lock<mutex_type> lock_type;
 
-  class Worker {
-  public:
+      explicit Worker ( const worker_id_t&
+                      , const boost::optional<unsigned int>&
+                      , const capabilities_set_t&
+                      , const std::string&
+                      );
 
-    typedef boost::shared_ptr<Worker> ptr_t;
-    typedef boost::recursive_mutex mutex_type;
-    typedef boost::unique_lock<mutex_type> lock_type;
+      void submit (const job_id_t&);
+      void acknowledge (const job_id_t&);
 
-    explicit Worker ( const worker_id_t&
-                    , const boost::optional<unsigned int>&
-                    , const capabilities_set_t&
-                    , const std::string&
-                    );
+      // update last service time
+      double lastScheduleTime() {lock_type lock(mtx_); return last_schedule_time_; }
 
-    void submit (const job_id_t&);
-    void acknowledge (const job_id_t&);
+      const worker_id_t &name() const { lock_type lock(mtx_); return name_; }
+      const std::string hostname() const;
 
-    // update last service time
-    double lastScheduleTime() {lock_type lock(mtx_); return last_schedule_time_; }
+      boost::optional<unsigned int> capacity() const { lock_type lock(mtx_); return capacity_; }
 
-    const worker_id_t &name() const { lock_type lock(mtx_); return name_; }
-    const std::string hostname() const;
+      // capabilities
+      const capabilities_set_t& capabilities() const;
 
-    boost::optional<unsigned int> capacity() const { lock_type lock(mtx_); return capacity_; }
+      bool addCapabilities (const capabilities_set_t& cpbset);
+      void removeCapabilities (const capabilities_set_t& cpbset);
+      bool hasCapability (const std::string& cpbName);
 
-    // capabilities
-    const capabilities_set_t& capabilities() const;
+      bool has_job (const job_id_t& job_id);
 
-    bool addCapabilities (const capabilities_set_t& cpbset);
-    void removeCapabilities (const capabilities_set_t& cpbset);
-    bool hasCapability (const std::string& cpbName);
+      void deleteJob (const job_id_t &job_id );
 
-    bool has_job (const job_id_t& job_id);
+      // methods related to reservation
+      bool isReserved();
+    private:
+      void reserve();
+      void free();
+    public:
 
-    void deleteJob (const job_id_t &job_id );
+      std::set<job_id_t> getJobListAndCleanQueues();
 
-    // methods related to reservation
-    bool isReserved();
-  private:
-    void reserve();
-    void free();
-  public:
+    private:
+      worker_id_t name_; //! name of the worker
+      boost::optional<unsigned int> capacity_;
+      capabilities_set_t capabilities_;
+      std::string hostname_;
+      double last_schedule_time_;
 
-    std::set<job_id_t> getJobListAndCleanQueues();
+      std::set<job_id_t> submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
+      std::set<job_id_t> acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
 
-  private:
-    worker_id_t name_; //! name of the worker
-    boost::optional<unsigned int> capacity_;
-    capabilities_set_t capabilities_;
-    std::string hostname_;
-    double last_schedule_time_;
+      bool reserved_;
 
-    std::set<job_id_t> submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
-    std::set<job_id_t> acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
-
-    bool reserved_;
-
-    mutable mutex_type mtx_;
-  };
-}}
+      mutable mutex_type mtx_;
+    };
+  }
+}
 
 #endif
