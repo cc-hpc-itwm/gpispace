@@ -26,6 +26,24 @@ namespace sdpa {
 
   typedef std::list<std::pair<sdpa::worker_id_t, int>> list_match_workers_t;
 
+  class worker_id_host_info_t
+  {
+  public:
+    worker_id_host_info_t ( const worker_id_t& worker_id
+                          , const std::string& worker_host
+                          )
+      : worker_id_ (worker_id)
+      , worker_host_ (worker_host)
+    {}
+
+    const worker_id_t& worker_id() const {return worker_id_;}
+    const worker_id_t& worker_host() const {return worker_host_;}
+
+  private:
+    worker_id_t worker_id_;
+    std::string worker_host_;
+  };
+
   typedef std::multimap<int, sdpa::worker_id_t, std::greater<int>> mmap_match_deg_worker_id_t;
 
   class MasterInfo
