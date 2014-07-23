@@ -50,9 +50,9 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
 
   BOOST_REQUIRE_EQUAL (mmap_match_deg_worker_id.size(), worker_ids.size()-1);
   sdpa::mmap_match_deg_worker_id_t::iterator it (mmap_match_deg_worker_id.begin());
-  BOOST_REQUIRE_EQUAL (it++->second, worker_ids[2]);
-  BOOST_REQUIRE_EQUAL (it++->second, worker_ids[3]);
-  BOOST_REQUIRE_EQUAL (it++->second, worker_ids[0]);
+  BOOST_REQUIRE_EQUAL (it++->second.worker_id(), worker_ids[2]);
+  BOOST_REQUIRE_EQUAL (it++->second.worker_id(), worker_ids[3]);
+  BOOST_REQUIRE_EQUAL (it++->second.worker_id(), worker_ids[0]);
 }
 
 BOOST_AUTO_TEST_CASE (add_worker)

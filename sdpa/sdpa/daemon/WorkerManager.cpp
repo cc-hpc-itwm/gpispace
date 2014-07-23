@@ -228,7 +228,9 @@ namespace sdpa
 
         if (matchingDeg)
         {
-          mmap_match_deg_worker_id.emplace (*matchingDeg, worker_id);
+          mmap_match_deg_worker_id.emplace ( *matchingDeg
+                                           , worker_id_host_info_t (worker_id, it->second->hostname())
+                                           );
         }
       }
 

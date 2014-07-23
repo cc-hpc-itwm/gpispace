@@ -44,7 +44,7 @@ namespace sdpa {
     std::string worker_host_;
   };
 
-  typedef std::multimap<int, sdpa::worker_id_t, std::greater<int>> mmap_match_deg_worker_id_t;
+  typedef std::multimap<int, worker_id_host_info_t, std::greater<int>> mmap_match_deg_worker_id_t;
 
   class MasterInfo
   {

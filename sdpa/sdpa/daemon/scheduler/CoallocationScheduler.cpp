@@ -64,7 +64,7 @@ namespace sdpa
             ; it++
             )
         {
-          assigned_workers.insert(it->second);
+          assigned_workers.insert(it->second.worker_id());
         }
 
         return assigned_workers;
