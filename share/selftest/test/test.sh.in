@@ -41,7 +41,8 @@ hostname > "${HOSTFILE}"                                    || die $EX_ERR_ENV
 measured "boot" sdpa boot -S "${DIR_STATE}" -A "${DIR_BUILD}" -M -f "${HOSTFILE}" work:1        \
                                                             || die $EX_ERR_BOOT
 
-measured "submit" ${make[@]} submit                         || die $EX_ERR_RUN
+measured "submit"                                           \
+  ${make[@]} SDPA_STATE_DIR="${DIR_STATE}" submit           || die $EX_ERR_RUN
 
 test "$(pnetget -i "${OUT}" -p response)" = "\"sdpa.response.$$\""           \
                                                             || die $EX_ERR_RES

@@ -42,13 +42,13 @@ measured "boot" sdpa boot -S "${DIR_STATE}" -A "${DIR_BUILD}" -M -f "${HOSTFILE}
                                                             || die $EX_ERR_BOOT
 
 timeout ${TIMEOUT_AFTER_WHICH_SELFTEST_SHOULD_BE_DONE} \
-  ${make[@]} submit                                         || die $EX_ERR_RUN
+  ${make[@]} SDPA_STATE_DIR="${DIR_STATE}" submit           || die $EX_ERR_RUN
 
 test "$(pnetget -i "${OUT}" -p response)" = "\"sdpa.response.$$\""           \
                                                             || die $EX_ERR_RES
 
 timeout ${TIMEOUT_AFTER_WHICH_SELFTEST_SHOULD_BE_DONE} \
-  ${make[@]} submit                                         || die $EX_ERR_RUN
+  ${make[@]} SDPA_STATE_DIR="${DIR_STATE}" submit           || die $EX_ERR_RUN
 
 test "$(pnetget -i "${OUT}" -p response)" = "\"sdpa.response.$$\""           \
                                                             || die $EX_ERR_RES
