@@ -24,7 +24,7 @@ namespace sdpa
 
     }
 
-    const std::string Worker::hostname () const
+    const std::string Worker::hostname() const
     {
       return hostname_;
     }
