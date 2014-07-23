@@ -11,9 +11,12 @@
 
 #include <unordered_map>
 
-namespace sdpa {
-  namespace daemon {
-    class WorkerManager {
+namespace sdpa
+{
+  namespace daemon
+  {
+    class WorkerManager
+    {
     public:
       typedef std::unordered_map<worker_id_t, Worker::ptr_t> worker_map_t;
 
