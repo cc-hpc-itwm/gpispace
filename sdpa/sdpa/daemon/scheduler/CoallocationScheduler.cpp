@@ -121,13 +121,17 @@ namespace sdpa
 
         if (!matching_workers.empty())
         {
-          for (worker_id_t const& worker : matching_workers)
-          {
-            setAvailWorkers.erase
-              ( std::find
-                (setAvailWorkers.begin(), setAvailWorkers.end(), worker)
-              );
-          }
+          worker_id_set_t set_free_workers_left;
+          std::set_difference ( setAvailWorkers.begin()
+                              , setAvailWorkers.end()
+                              , matching_workers.begin()
+                              , matching_workers.end()
+                              , std::inserter ( set_free_workers_left
+                                              , set_free_workers_left.begin()
+                                              )
+                              );
+
+          setAvailWorkers.swap (set_free_workers_left);
 
           boost::mutex::scoped_lock const _ (mtx_alloc_table_);
 
