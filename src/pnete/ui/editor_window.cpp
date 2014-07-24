@@ -1452,9 +1452,9 @@ namespace fhg
               const std::pair<QWidget*, boost::function<QString()> > ret
                 ( widget_for_item ( xml_port->get().type()
                                   , opt_std_to_qstring
-                                  ( xml_port->get().properties().get
-                                  ("fhg.pnete.port.default")
-                                  )
+                                    ( xml_port->get().properties().get
+                                      ("fhg.pnete.port.default")
+                                    )
                                   )
                 );
               box_layout->addRow (val, ret.first);
