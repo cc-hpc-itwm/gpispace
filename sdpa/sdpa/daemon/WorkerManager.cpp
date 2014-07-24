@@ -97,18 +97,18 @@ namespace sdpa
       worker_map_.erase (w);
     }
 
-    sdpa::worker_id_list_t WorkerManager::getListWorkersNotReserved()
+    sdpa::worker_id_set_t WorkerManager::getSetOfWorkersNotReserved()
     {
       boost::mutex::scoped_lock const _ (mtx_);
-      worker_id_list_t workerList;
+      worker_id_set_t workerSet;
       for (worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
       {
         Worker::ptr_t ptrWorker = iter->second;
         if (!ptrWorker->isReserved())
-            workerList.push_back(ptrWorker->name());
+          workerSet.insert (ptrWorker->name());
       }
 
-      return workerList;
+      return workerSet;
     }
 
     void WorkerManager::getCapabilities (sdpa::capabilities_set_t& agentCpbSet)
@@ -200,10 +200,10 @@ namespace sdpa
 
     mmap_match_deg_worker_id_t WorkerManager::getListMatchingWorkers
       ( const job_requirements_t& job_reqs
-      , const sdpa::worker_id_list_t& worker_list
+      , const sdpa::worker_id_set_t& worker_set
       ) const
     {
-      if (worker_list.size() < job_reqs.numWorkers())
+      if (worker_set.size() < job_reqs.numWorkers())
       {
         return {};
       }
@@ -217,7 +217,7 @@ namespace sdpa
       // multimaps are implemented as binary search trees
 
       boost::mutex::scoped_lock const lock_worker_map (mtx_);
-      for (const sdpa::worker_id_t& worker_id : worker_list)
+      for (const sdpa::worker_id_t& worker_id : worker_set)
       {
         const worker_map_t::const_iterator it (worker_map_.find (worker_id));
         if (it == worker_map_.end())

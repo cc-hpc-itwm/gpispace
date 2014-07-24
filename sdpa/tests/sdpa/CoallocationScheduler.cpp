@@ -94,20 +94,20 @@ BOOST_FIXTURE_TEST_CASE (testLoadBalancing, serveJob_checking_scheduler_and_job_
   _scheduler.enqueueJob ("job_1");
   _scheduler.enqueueJob ("job_2");
 
-  expect_serveJob_call ("job_0", {"worker_1"});
-  expect_serveJob_call ("job_1", {"worker_0"});
+  expect_serveJob_call ("job_0", {"worker_0"});
+  expect_serveJob_call ("job_1", {"worker_1"});
 
   _scheduler.assignJobsToWorkers();
 
 
-  _scheduler.worker_manager().findWorker ("worker_1")->deleteJob ("job_0");
-  _scheduler.worker_manager().findWorker ("worker_0")->deleteJob ("job_1");
+  _scheduler.worker_manager().findWorker ("worker_0")->deleteJob ("job_0");
+  _scheduler.worker_manager().findWorker ("worker_1")->deleteJob ("job_1");
 
   _scheduler.releaseReservation ("job_0");
   _scheduler.releaseReservation ("job_1");
 
 
-  expect_serveJob_call ("job_2", {"worker_1"});
+  expect_serveJob_call ("job_2", {"worker_0"});
 
   _scheduler.assignJobsToWorkers();
 }
@@ -206,21 +206,20 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and
   _scheduler.enqueueJob ("job_0");
   _scheduler.enqueueJob ("job_1");
 
-
-  expect_serveJob_call ("job_0", {"worker_1"});
-  expect_serveJob_call ("job_1", {"worker_0"});
+  expect_serveJob_call ("job_0", {"worker_0"});
+  expect_serveJob_call ("job_1", {"worker_1"});
 
   _scheduler.assignJobsToWorkers();
 
 
-  _scheduler.worker_manager().findWorker ("worker_1")->deleteJob ("job_0");
+  _scheduler.worker_manager().findWorker ("worker_0")->deleteJob ("job_0");
   _scheduler.releaseReservation ("job_0");
-  _scheduler.worker_manager().deleteWorker ("worker_1");
+  _scheduler.worker_manager().deleteWorker ("worker_0");
   _scheduler.enqueueJob ("job_0");
 
-  _scheduler.worker_manager().addWorker ("worker_1", 1, {}, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("worker_0", 1, {}, fhg::util::random_string());
 
-  expect_serveJob_call ("job_0", {"worker_1"});
+  expect_serveJob_call ("job_0", {"worker_0"});
 
   _scheduler.assignJobsToWorkers();
 }

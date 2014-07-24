@@ -69,11 +69,11 @@ namespace sdpa
       }
 
       worker_id_set_t find_assignment_for_job
-        ( const worker_id_list_t& available_workers
+        ( const worker_id_set_t& available_workers
         , const job_requirements_t& requirements
         , std::function<mmap_match_deg_worker_id_t
                           ( const job_requirements_t&
-                          , const worker_id_list_t&
+                          , const worker_id_set_t&
                           )
                        > match_requirements
         )
@@ -94,21 +94,21 @@ namespace sdpa
 
     void CoallocationScheduler::assignJobsToWorkers()
     {
-      sdpa::worker_id_list_t listAvailWorkers
-        (worker_manager().getListWorkersNotReserved());
+      sdpa::worker_id_set_t setAvailWorkers
+        (worker_manager().getSetOfWorkersNotReserved());
 
       std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
 
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
 
-      while (!listAvailWorkers.empty() && !jobs_to_schedule.empty())
+      while (!setAvailWorkers.empty() && !jobs_to_schedule.empty())
       {
         sdpa::job_id_t jobId (jobs_to_schedule.front());
         jobs_to_schedule.pop_front();
 
         const worker_id_set_t matching_workers
           ( find_assignment_for_job
-            ( listAvailWorkers
+            ( setAvailWorkers
             , _job_requirements (jobId)
             , std::bind
               ( &WorkerManager::getListMatchingWorkers
@@ -123,9 +123,9 @@ namespace sdpa
         {
           for (worker_id_t const& worker : matching_workers)
           {
-            listAvailWorkers.erase
+            setAvailWorkers.erase
               ( std::find
-                (listAvailWorkers.begin(), listAvailWorkers.end(), worker)
+                (setAvailWorkers.begin(), setAvailWorkers.end(), worker)
               );
           }
 

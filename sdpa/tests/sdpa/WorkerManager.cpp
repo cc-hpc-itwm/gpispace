@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
                                               , fhg::util::random_string()
                            );
 
-  sdpa::worker_id_list_t list_workers (worker_manager.getListWorkersNotReserved());
+  sdpa::worker_id_set_t set_workers (worker_manager.getSetOfWorkersNotReserved());
 
   const job_requirements_t job_req ({{ we::type::requirement_t ("A", true)
                                      , we::type::requirement_t ("B", false)
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
 
   sdpa::mmap_match_deg_worker_id_t
     mmap_match_deg_worker_id
-      (worker_manager.getListMatchingWorkers (job_req, list_workers));
+      (worker_manager.getListMatchingWorkers (job_req, set_workers));
 
   BOOST_REQUIRE_EQUAL (mmap_match_deg_worker_id.size(), worker_ids.size()-1);
   sdpa::mmap_match_deg_worker_id_t::iterator it (mmap_match_deg_worker_id.begin());
