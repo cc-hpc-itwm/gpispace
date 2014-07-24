@@ -265,7 +265,7 @@ XMLLINT += --schema $(SDPA_XML_SCHEMA)
 
 ###############################################################################
 
-.PHONY: default build dot ps svg net verify validate put gen lib run submit
+.PHONY: default build dot ps svg net verify validate put gen lib run
 
 default: build
 
@@ -395,20 +395,6 @@ endif
 
 ###############################################################################
 
-ifeq "$(SDPA_STATE_DIR)" ""
-
-submit:
-	$(error Missing SDPA_STATE_DIR.)
-
-else
-
-submit: $(PUT)
-	$(SDPA) -s $(SDPA_STATE_DIR) submit $(PUT) $(OUT)
-
-endif
-
-###############################################################################
-
 .PHONY: install modinstall uninstall moduninstall
 
 install: modinstall $(INSTALL)
@@ -469,7 +455,6 @@ help:
 	@echo "gen          generate code into gen"
 	@echo "lib          'gen' & build libs from code in gen"
 	@echo "run          'lib' & 'put' & execute workflow"
-	@echo "submit       'put' & submit to a running SDPA system"
 	@echo
 	@echo "validate     validate the xml"
 	@echo "verify       'net' & verify the pnet"
