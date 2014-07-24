@@ -57,7 +57,8 @@ namespace gspc
                    , std::string const& description
                    )
       : _api (api)
-      , _handle_id (vmem_alloc (_api, size, description))
+      , _size (size)
+      , _handle_id (vmem_alloc (_api, _size, description))
       , _disowned (false)
     {}
     ~implementation()
@@ -69,6 +70,7 @@ namespace gspc
     }
     implementation (implementation&& other)
       : _api (std::move (other._api))
+      , _size (std::move (other._size))
       , _handle_id (std::move (other._handle_id))
       , _disowned (std::move (other._disowned))
     {
@@ -76,6 +78,7 @@ namespace gspc
     }
 
     std::unique_ptr<gpi::pc::client::api_t> const& _api;
+    unsigned long const _size;
     gpi::pc::type::handle_id_t _handle_id;
     bool _disowned;
   };
