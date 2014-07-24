@@ -15,7 +15,6 @@
 #include <we/type/literal/control.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
-#include <we/type/value/poke.hpp>
 
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/temporary_path.hpp>
@@ -93,31 +92,10 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
 
   gspc::vmem_allocation const allocation_data (drts.alloc (num_bytes, "data"));
 
-  auto const global_memory_range
-    ([] (gspc::vmem_allocation const& allocation, unsigned long size)
-     -> pnet::type::value::value_type
-     {
-       auto const name
-         ([&allocation]() -> pnet::type::value::value_type
-          {
-            pnet::type::value::value_type v;
-            pnet::type::value::poke ("name", v, allocation.handle());
-            return v;
-          }
-         );
-       pnet::type::value::value_type v;
-       pnet::type::value::poke ("handle", v, name());
-       pnet::type::value::poke ("offset", v, 0UL);
-       pnet::type::value::poke ("size", v, size);
-
-       return v;
-     }
-    );
-
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( drts.put_and_run
       ( make.build_directory() / "vmem_1_to_n.pnet"
-      , { {"memory", global_memory_range (allocation_data, num_bytes)}
+      , { {"memory", allocation_data.global_memory_range()}
         , {"outer", 5L}
         , {"inner", 5L}
         , {"seed", 3141L}
