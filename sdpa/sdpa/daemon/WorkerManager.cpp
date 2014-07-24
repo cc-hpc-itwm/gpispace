@@ -101,12 +101,15 @@ namespace sdpa
     {
       boost::mutex::scoped_lock const _ (mtx_);
       worker_id_set_t workerSet;
-      for (worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
-      {
-        Worker::ptr_t ptrWorker = iter->second;
-        if (!ptrWorker->isReserved())
-          workerSet.insert (ptrWorker->name());
-      }
+
+      std::for_each ( worker_map_.begin()
+                    , worker_map_.end()
+                    , [&workerSet] (const worker_map_t::value_type& pair_worker_id_ptr)
+                      {
+                        if (!pair_worker_id_ptr.second->isReserved())
+                          workerSet.insert (pair_worker_id_ptr.first);
+                      }
+                    );
 
       return workerSet;
     }
