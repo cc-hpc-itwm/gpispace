@@ -76,6 +76,21 @@ namespace
   }
 }
 
+    GenericDaemon::virtual_memory_api::virtual_memory_api (boost::filesystem::path const& socket)
+      : _ (socket.string())
+    {
+      while (!boost::filesystem::exists (socket))
+      {
+        std::this_thread::sleep_for (std::chrono::milliseconds (200));
+      }
+
+      _.start();
+    }
+    GenericDaemon::virtual_memory_api::~virtual_memory_api ()
+    {
+      _.stop();
+    }
+
 GenericDaemon::GenericDaemon( const std::string name
                             , const std::string url
                             , std::string kvs_host
@@ -148,21 +163,10 @@ GenericDaemon::GenericDaemon( const std::string name
   , _event_handler_thread (&GenericDaemon::handle_events, this)
   , _virtual_memory_api
     ( vmem_socket
-    ? fhg::util::make_unique<gpi::pc::client::api_t> (vmem_socket->string())
+    ? fhg::util::make_unique<virtual_memory_api> (*vmem_socket)
     : nullptr
     )
 {
-  if (vmem_socket)
-  {
-    LLOG(TRACE, _logger, "waiting for vmem socket '" << *vmem_socket << "' to appear");
-
-    while (!boost::filesystem::exists (*vmem_socket))
-    {
-      std::this_thread::sleep_for (std::chrono::milliseconds (200));
-    }
-
-    _virtual_memory_api->start();
-  }
   // ask kvs if there is already an entry for (name.id = m_strAgentUID)
   //     e.g. kvs::get ("sdpa.daemon.<name>")
   //          if exists: throw

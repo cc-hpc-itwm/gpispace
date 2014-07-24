@@ -293,7 +293,15 @@ namespace sdpa {
         _event_handler_thread;
       void handle_events();
 
-      std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
+      struct virtual_memory_api
+      {
+        explicit
+        virtual_memory_api (boost::filesystem::path const& socket);
+        ~virtual_memory_api ();
+      private:
+        gpi::pc::client::api_t _;
+      };
+      std::unique_ptr<virtual_memory_api> _virtual_memory_api;
     protected:
       struct child_proxy
       {
