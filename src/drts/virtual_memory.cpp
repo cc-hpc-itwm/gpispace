@@ -3,6 +3,8 @@
 #include <drts/drts.hpp>
 #include <drts/virtual_memory.hpp>
 
+#include <we/type/value/poke.hpp>
+
 #include <fhg/util/make_unique.hpp>
 
 #include <gpi-space/pc/client/api.hpp>
@@ -105,6 +107,17 @@ namespace gspc
     oss << _->_handle_id;
 
     return oss.str();
+  }
+  pnet::type::value::value_type vmem_allocation::global_memory_range() const
+  {
+    pnet::type::value::value_type name;
+    pnet::type::value::poke ("name", name, handle());
+    pnet::type::value::value_type range;
+    pnet::type::value::poke ("handle", range, name);
+    pnet::type::value::poke ("offset", range, 0UL);
+    pnet::type::value::poke ("size", range, _->_size);
+
+    return range;
   }
   vmem_allocation::vmem_allocation (vmem_allocation&& other)
     : _ (std::move (other._))
