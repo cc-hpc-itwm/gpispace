@@ -80,10 +80,10 @@ GenericDaemon::GenericDaemon( const std::string name
                             , const std::string url
                             , std::string kvs_host
                             , std::string kvs_port
+                            , boost::optional<boost::filesystem::path> const & vmem_socket
                             , const master_info_list_t arrMasterInfo
                             , const boost::optional<std::string>& guiUrl
                             , bool create_wfe
-                            , boost::optional<boost::filesystem::path> const & vmem_socket
                             )
   : _logger (fhg::log::Logger::get (name))
   , _name (name)

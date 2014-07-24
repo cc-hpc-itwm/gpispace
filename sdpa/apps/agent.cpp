@@ -137,7 +137,7 @@ int main (int argc, char **argv)
   }
 
   const sdpa::daemon::Agent agent
-    (agentName, agentUrl, kvs_host, kvs_port, listMasterInfo, appGuiUrl, vmem_socket);
+    (agentName, agentUrl, kvs_host, kvs_port, vmem_socket, listMasterInfo, appGuiUrl);
 
 
   fhg::util::thread::event<> stop_requested;

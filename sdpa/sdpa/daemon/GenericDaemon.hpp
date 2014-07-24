@@ -81,10 +81,10 @@ namespace sdpa {
                    , const std::string url
                    , std::string kvs_host
                    , std::string kvs_port
+                   , boost::optional<boost::filesystem::path> const & vmem_socket
                    , const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t()
                    , const boost::optional<std::string>& guiUrl = boost::none
                    , bool create_wfe = false
-                   , boost::optional<boost::filesystem::path> const & vmem_socket = boost::none
                    );
       virtual ~GenericDaemon() = default;
 
