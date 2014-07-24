@@ -40,13 +40,13 @@ namespace sdpa
 
     namespace
     {
-      std::set<worker_id_t> find_job_assignment_minimizing_memory_transfer_cost
+      worker_id_set_t find_job_assignment_minimizing_memory_transfer_cost
         ( const mmap_match_deg_worker_id_t& mmap_matching_workers
         , size_t n_req_workers
         /*,  const we::type::activity_t& job_activity*/
         )
       {
-        std::set<worker_id_t> assigned_workers;
+        worker_id_set_t assigned_workers;
 
         // to do: pass as parameter the associated activity
         // and calculate the memory transfer costs w.r.t. the corresponding module call
@@ -68,7 +68,7 @@ namespace sdpa
         return assigned_workers;
       }
 
-      std::set<worker_id_t> find_assignment_for_job
+      worker_id_set_t find_assignment_for_job
         ( const worker_id_list_t& available_workers
         , const job_requirements_t& requirements
         , std::function<mmap_match_deg_worker_id_t
@@ -88,7 +88,7 @@ namespace sdpa
                                                                      );
         }
 
-        return  std::set<worker_id_t>();
+        return  worker_id_set_t();
       }
     }
 
@@ -106,7 +106,7 @@ namespace sdpa
         sdpa::job_id_t jobId (jobs_to_schedule.front());
         jobs_to_schedule.pop_front();
 
-        const std::set<worker_id_t> matching_workers
+        const worker_id_set_t matching_workers
           ( find_assignment_for_job
             ( listAvailWorkers
             , _job_requirements (jobId)
