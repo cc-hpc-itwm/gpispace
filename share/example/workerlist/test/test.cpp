@@ -23,6 +23,58 @@
 
 #include <map>
 
+namespace
+{
+  void run_test ( unsigned long num_worker
+                , boost::program_options::variables_map const& vm
+                , gspc::installation const& installation
+                , test::make const& make
+                )
+  {
+    gspc::scoped_runtime_system const drts
+      (vm, installation, " worker:" + std::to_string (num_worker));
+
+    std::multimap<std::string, pnet::type::value::value_type> const result
+      (drts.put_and_run ( make.build_directory() / "workerlist.pnet"
+                        , {{"num_workers", num_worker}}
+                        )
+      );
+
+    BOOST_REQUIRE_EQUAL (result.size(), 2);
+
+    std::string const port_workers ("workers");
+    std::string const port_hostnames ("hostnames");
+
+    BOOST_REQUIRE_EQUAL (result.count (port_workers), 1);
+    BOOST_REQUIRE_EQUAL (result.count (port_hostnames), 1);
+
+    std::list<pnet::type::value::value_type> worker_names;
+    std::map
+      <pnet::type::value::value_type, pnet::type::value::value_type> host_names;
+
+    for (unsigned long i (0); i < num_worker; ++i)
+    {
+      std::string const worker_name ( ( boost::format ("worker-%1%-%2%")
+                                      % fhg::util::hostname()
+                                      % (i + 1)
+                                      ).str()
+                                    );
+
+      worker_names.emplace_back (worker_name);
+      host_names.emplace (worker_name, fhg::util::hostname());
+    }
+
+    BOOST_CHECK_EQUAL
+      ( result.find (port_workers)->second
+      , pnet::type::value::value_type (worker_names)
+      );
+    BOOST_CHECK_EQUAL
+      ( result.find (port_hostnames)->second
+      , pnet::type::value::value_type (host_names)
+      );
+  }
+}
+
 BOOST_AUTO_TEST_CASE (share_example_workerlist)
 {
   boost::program_options::options_description options_description;
@@ -69,47 +121,7 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
     , "net lib install"
     );
 
-  unsigned long const num_worker (1);
-
-  gspc::scoped_runtime_system const drts
-    (vm, installation, " worker:" + std::to_string (num_worker));
-
-  std::multimap<std::string, pnet::type::value::value_type> const result
-    (drts.put_and_run ( make.build_directory() / "workerlist.pnet"
-                      , {{"num_workers", num_worker}}
-                      )
-    );
-
-  BOOST_REQUIRE_EQUAL (result.size(), 2);
-
-  std::string const port_workers ("workers");
-  std::string const port_hostnames ("hostnames");
-
-  BOOST_REQUIRE_EQUAL (result.count (port_workers), 1);
-  BOOST_REQUIRE_EQUAL (result.count (port_hostnames), 1);
-
-  std::list<pnet::type::value::value_type> worker_names;
-  std::map
-    <pnet::type::value::value_type, pnet::type::value::value_type> host_names;
-
-  for (unsigned long i (0); i < num_worker; ++i)
-  {
-    std::string const worker_name ( ( boost::format ("worker-%1%-%2%")
-                                    % fhg::util::hostname()
-                                    % (i + 1)
-                                    ).str()
-                                  );
-
-    worker_names.emplace_back (worker_name);
-    host_names.emplace (worker_name, fhg::util::hostname());
-  }
-
-  BOOST_CHECK_EQUAL
-    ( result.find (port_workers)->second
-    , pnet::type::value::value_type (worker_names)
-    );
-  BOOST_CHECK_EQUAL
-    ( result.find (port_hostnames)->second
-    , pnet::type::value::value_type (host_names)
-    );
+  run_test (1, vm, installation, make);
+  run_test (2, vm, installation, make);
+  run_test (5, vm, installation, make);
 }
