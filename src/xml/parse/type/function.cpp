@@ -130,6 +130,10 @@ namespace xml
         , const util::position_type& pod
         , const boost::optional<std::string>& name
         , const ports_type& ports
+        , xml::util::unique<memory_buffer_type, id::ref::memory_buffer> const& memory_buffers
+        , std::list<memory_get> const& memory_gets
+        , std::list<memory_put> const& memory_puts
+        , std::list<memory_getput> const& memory_getputs
         , const typenames_type& typenames
         , const bool& contains_a_module_call
         , const boost::optional<bool>& internal
@@ -144,6 +148,10 @@ namespace xml
         , _parent (parent)
         , _name (name)
         , _ports (ports, _id)
+        , _memory_buffers (memory_buffers, _id)
+        , _memory_gets (memory_gets)
+        , _memory_puts (memory_puts)
+        , _memory_getputs (memory_getputs)
         , _typenames (typenames)
         , contains_a_module_call (contains_a_module_call)
         , internal (internal)
@@ -1147,6 +1155,10 @@ namespace xml
           , _position_of_definition
           , _name
           , _ports.clone (new_id, new_mapper)
+          , _memory_buffers.clone (new_id, new_mapper)
+          , _memory_gets
+          , _memory_puts
+          , _memory_getputs
           , _typenames
           , contains_a_module_call
           , internal
