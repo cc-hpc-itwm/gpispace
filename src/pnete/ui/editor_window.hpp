@@ -10,6 +10,8 @@
 
 #include <fhg/util/dl.hpp>
 
+#include <sdpa/client.hpp>
+
 #include <xml/parse/id/types.hpp>
 
 #include <QMainWindow>
@@ -27,14 +29,6 @@ class QUndoGroup;
 class QUndoView;
 class QWidget;
 
-namespace sdpa
-{
-  namespace client
-  {
-    class Client;
-  }
-}
-
 namespace fhg
 {
   namespace pnete
@@ -49,7 +43,12 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        remote_job_waiting (sdpa::client::Client*, const std::string&, const xml::parse::id::ref::function&);
+        remote_job_waiting
+          ( std::pair<we::type::activity_t, xml::parse::id::ref::function>
+          , std::string kvs_host
+          , std::string kvs_port
+          , std::string orchestrator_name
+          );
 
       protected:
         virtual void run() override;
@@ -59,7 +58,7 @@ namespace fhg
         void remote_job_failed (sdpa::client::Client*, const QString&);
 
       private:
-        sdpa::client::Client* _client;
+        sdpa::client::Client _client;
         std::string _job_id;
         xml::parse::id::ref::function _function;
       };

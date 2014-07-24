@@ -26,8 +26,6 @@
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/temporary_path.hpp>
 
-#include <sdpa/client.hpp>
-
 #include <util/qt/file_line_edit.hpp>
 #include <util/qt/parent.hpp>
 
@@ -1328,25 +1326,29 @@ namespace fhg
       }
 
       remote_job_waiting::remote_job_waiting
-        (sdpa::client::Client* client, const std::string& job_id, const xml::parse::id::ref::function& fun)
-          : _client (client)
-          , _job_id (job_id)
-          , _function (fun)
-      { }
+        ( std::pair<we::type::activity_t, xml::parse::id::ref::function> act_fun
+        , std::string kvs_host
+        , std::string kvs_port
+        , std::string orchestrator_name
+        )
+          : _client (orchestrator_name, kvs_host, kvs_port)
+          , _job_id (_client.submitJob (act_fun.first.to_string()))
+          , _function (act_fun.second)
+      {}
 
       void remote_job_waiting::run()
       {
         sdpa::client::job_info_t UNUSED_job_info;
         sdpa::status::code status
-          (_client->wait_for_terminal_state (_job_id, UNUSED_job_info));
+          (_client.wait_for_terminal_state (_job_id, UNUSED_job_info));
 
         if (status != sdpa::status::FINISHED)
         {
-          emit remote_job_failed (_client, QString::fromStdString (_job_id));
+          emit remote_job_failed (&_client, QString::fromStdString (_job_id));
         }
         else
         {
-          emit remote_job_finished (_client, QString::fromStdString (_job_id), new xml::parse::id::ref::function (_function));
+          emit remote_job_finished (&_client, QString::fromStdString (_job_id), new xml::parse::id::ref::function (_function));
         }
       }
 
@@ -1373,17 +1375,39 @@ namespace fhg
 
       namespace
       {
-        bool request_tokens_for_ports
+        bool request_drts_info_and_tokens_for_ports
           ( std::pair < we::type::activity_t
                       , xml::parse::id::ref::function
                       >* activity_and_fun
+          , std::string* kvs_host
+          , std::string* kvs_port
+          , std::string* orchestrator_name
           )
         {
           QMap<QString, boost::function<QString()> > value_getters;
 
           QDialog dialog (new QDialog);
-          dialog.setWindowTitle ("Please enter input values");
+          dialog.setWindowTitle ("Please enter input values and drts info");
           new QVBoxLayout (&dialog);
+
+          QLineEdit* kvs_host_edit (new QLineEdit ("localhost"));
+          QSpinBox* kvs_port_edit (new QSpinBox);
+          kvs_port_edit->setMinimum (1 << 10);
+          kvs_port_edit->setMaximum (1 << 16);
+          QLineEdit* orchestrator_name_edit (new QLineEdit ("orchestrator"));
+
+          {
+            QGroupBox* box (new QGroupBox (QObject::tr ("drts_info")));
+
+            dialog.layout()->addWidget (box);
+
+            QFormLayout* box_layout (new QFormLayout (box));
+
+            box_layout->addRow (QObject::tr ("kvs_host"), kvs_host_edit);
+            box_layout->addRow (QObject::tr ("kvs_port"), kvs_port_edit);
+            box_layout->addRow
+              (QObject::tr ("orchestrator_name"), orchestrator_name_edit);
+          }
 
           QMap<boost::optional<QString>, QStringList> port_groups;
 
@@ -1466,6 +1490,10 @@ namespace fhg
             ++i;
           }
 
+          *kvs_host = kvs_host_edit->text().toStdString();
+          *kvs_port = std::to_string (kvs_port_edit->value());
+          *orchestrator_name = orchestrator_name_edit->text().toStdString();
+
           return true;
         }
       }
@@ -1478,7 +1506,17 @@ namespace fhg
         std::pair<we::type::activity_t, xml::parse::id::ref::function>
           activity_and_fun (prepare_activity (_accessed_widgets, temporary_path));
 
-        if (!request_tokens_for_ports (&activity_and_fun))
+        std::string kvs_host;
+        std::string kvs_port;
+        std::string orchestrator_name;
+
+        if ( !request_drts_info_and_tokens_for_ports
+             ( &activity_and_fun
+             , &kvs_host
+             , &kvs_port
+             , &orchestrator_name
+             )
+           )
         {
           return;
         }
@@ -1486,15 +1524,11 @@ namespace fhg
         //! \todo Add search path into config (temporarily)!
         // loader.append_search_path (temporary_path / "pnetc" / "op");
 
-        //! \todo Use real kvs host+port
-        //! \todo Configurable name of orchestrator, non-static
-        static sdpa::client::Client client ("orchestrator", "localhost", "2439");
-
-        const std::string job_id
-          (client.submitJob (activity_and_fun.first.to_string()));
         _action_execute_current_file_remote_via_prompt->setEnabled (false);
-          remote_job_waiting* waiter
-            (new remote_job_waiting (&client, job_id, activity_and_fun.second));
+        remote_job_waiting* waiter
+          ( new remote_job_waiting
+            (activity_and_fun, kvs_host, kvs_port, orchestrator_name)
+          );
         connect ( waiter
                 , SIGNAL (remote_job_failed (sdpa::client::Client*,QString))
                 , this
