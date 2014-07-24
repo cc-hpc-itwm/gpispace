@@ -16,7 +16,6 @@
 #include <we/type/literal/control.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
-#include <we/type/value/poke.hpp>
 #include <we/type/value/read.hpp>
 
 #include <fhg/util/boost/program_options/validators/executable.hpp>
@@ -150,32 +149,11 @@ BOOST_AUTO_TEST_CASE (share_example_map_log)
   gspc::vmem_allocation const allocation_output
     (drts.alloc (size_output, "map_output"));
 
-  auto const global_memory_range
-    ([] (gspc::vmem_allocation const& allocation, unsigned long size)
-     -> pnet::type::value::value_type
-     {
-       auto const name
-         ([&allocation]() -> pnet::type::value::value_type
-          {
-            pnet::type::value::value_type v;
-            pnet::type::value::poke ("name", v, allocation.handle());
-            return v;
-          }
-         );
-       pnet::type::value::value_type v;
-       pnet::type::value::poke ("handle", v, name());
-       pnet::type::value::poke ("offset", v, 0UL);
-       pnet::type::value::poke ("size", v, size);
-
-       return v;
-     }
-    );
-
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( drts.put_and_run
       ( make.build_directory() / "map.pnet"
-      , { {"input", global_memory_range (allocation_input, size_input)}
-        , {"output", global_memory_range (allocation_output, size_output)}
+      , { {"input", allocation_input.global_memory_range()}
+        , {"output", allocation_output.global_memory_range()}
         , {"num_block", num_block}
         , {"size_block", size_block}
         , {"user_data", pnet::type::value::read (user_data)}
