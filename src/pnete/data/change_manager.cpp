@@ -1575,7 +1575,7 @@ namespace fhg
                 )
         {
           const boost::optional<std::string> place_name
-            (port.get().properties().get ("fhg.pnete.auto-connect"));
+            (port.get().properties().get ("fhg.pnete.auto_connect"));
           if (place_name)
           {
             boost::optional<xml::parse::id::ref::place> place
@@ -1589,7 +1589,7 @@ namespace fhg
             else
             {
               throw std::runtime_error
-                (std::string ("auto-connect to unknown place") + *place_name);
+                (std::string ("auto_connect to unknown place") + *place_name);
             }
           }
         }
