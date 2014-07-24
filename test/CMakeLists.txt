@@ -3,7 +3,6 @@
   set (prefixes
     die
     dir_build
-    dir_state
     env
     error
     measured
