@@ -59,13 +59,11 @@ namespace sdpa
         mmap_match_deg_worker_id_t::const_iterator it_last (mmap_matching_workers.begin());
         std::advance (it_last, n_req_workers);
 
-        for ( mmap_match_deg_worker_id_t::const_iterator it(mmap_matching_workers.begin())
-            ; it != it_last && it != mmap_matching_workers.end()
-            ; it++
-            )
-        {
-          assigned_workers.insert(it->second.worker_id());
-        }
+        std::for_each ( mmap_matching_workers.begin()
+                      , it_last
+                      , [&assigned_workers] (const std::pair<int, worker_id_host_info_t>& pair_deg_worker_info)
+                          {assigned_workers.insert (pair_deg_worker_info.second.worker_id());}
+                      );
 
         return assigned_workers;
       }
