@@ -145,7 +145,7 @@ function agent_status ()
 {
     local name="$1" ; shift
     local sill_running
-    still_running=( $(ps -C agent -o pid=) )
+    still_running=( $(ps -C agent -o uid=,pid= | grep -e "^\s\+$(id -u)" | awk '{print $2}') )
     local pids=()
 
     for p in ${still_running[@]} ; do

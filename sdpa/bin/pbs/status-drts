@@ -44,7 +44,7 @@ function status ()
 {
     local name="$1" ; shift
     local pids=
-    pids=$(ps -C drts-kernel -o pid=)
+    pids=$(ps -C drts-kernel -o uid=,pid= | grep -e "^\s\+$(id -u)" | awk '{print $2}')
 
     if [ -n "$name" ] ; then
         for p in $pids ; do
