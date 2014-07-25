@@ -104,7 +104,6 @@ add_library (pnet
   we/type/value/function.cpp
   we/type/value/name.cpp
   we/type/value/name_of.cpp
-  we/type/value/of_type.cpp
   we/type/value/path/append.cpp
   we/type/value/path/join.cpp
   we/type/value/path/split.cpp
