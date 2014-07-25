@@ -77,7 +77,7 @@ namespace
 }
 
     GenericDaemon::virtual_memory_api::virtual_memory_api (boost::filesystem::path const& socket)
-      : _(socket.string())
+      : _ (socket.string())
     {
       while (!boost::filesystem::exists (socket))
       {
