@@ -100,18 +100,17 @@ namespace sdpa
     sdpa::worker_id_set_t WorkerManager::getSetOfWorkersNotReserved()
     {
       boost::mutex::scoped_lock const _ (mtx_);
-      worker_id_set_t workerSet;
+      worker_id_set_t set_workers;
 
-      std::for_each ( worker_map_.begin()
-                    , worker_map_.end()
-                    , [&workerSet] (const worker_map_t::value_type& pair_worker_id_ptr)
-                      {
-                        if (!pair_worker_id_ptr.second->isReserved())
-                          workerSet.insert (pair_worker_id_ptr.first);
-                      }
-                    );
+      for (Worker::ptr_t const& worker : worker_map_ | boost::adaptors::map_values)
+      {
+        if (!worker->isReserved())
+        {
+          set_workers.insert (worker->name());
+        }
+      }
 
-      return workerSet;
+      return set_workers;
     }
 
     void WorkerManager::getCapabilities (sdpa::capabilities_set_t& agentCpbSet)
