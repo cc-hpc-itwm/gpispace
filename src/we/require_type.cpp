@@ -6,8 +6,8 @@
 #include <we/type/value/name_of.hpp>
 #include <we/type/value/path/append.hpp>
 
+#include <we/type/signature.hpp>
 #include <we/type/signature/name.hpp>
-#include <we/type/signature/signature.hpp>
 
 #include <we/type/value/show.hpp>
 #include <we/type/signature/show.hpp>
@@ -19,6 +19,28 @@ namespace pnet
 {
   namespace
   {
+    class visitor_signature
+      : public boost::static_visitor<type::signature::signature_type>
+    {
+    public:
+      type::signature::signature_type operator()
+        (const std::pair<std::string, std::string>& f) const
+      {
+        return f.second;
+      }
+      type::signature::signature_type operator()
+        (const type::signature::structured_type& s) const
+      {
+        return s;
+      }
+    };
+
+    type::signature::signature_type signature
+      (const type::signature::field_type& s)
+    {
+      return boost::apply_visitor (visitor_signature(), s);
+    }
+
     using type::value::path::append;
 
     void require_type ( std::list<std::string>&
@@ -55,7 +77,7 @@ namespace pnet
         {
           require_type ( append (_path, v_pos->first)
                        , v_pos->second
-                       , type::signature::signature (*s_pos)
+                       , signature (*s_pos)
                        );
 
           ++v_pos;

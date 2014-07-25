@@ -98,7 +98,6 @@ add_library (pnet
   we/type/signature/names.cpp
   we/type/signature/resolve.cpp
   we/type/signature/show.cpp
-  we/type/signature/signature.cpp
   we/type/signature/specialize.cpp
   we/type/transition.cpp
   we/type/value/function.cpp
