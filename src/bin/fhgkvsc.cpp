@@ -28,7 +28,7 @@ int main(int ac, char *av[])
   desc.add_options()
     ("host", po::value<std::string>()->required(), "use this host")
     ("port", po::value<std::string>()->required(), "port or service name to use")
-    ("get,g", po::value<std::vector<std::string>>(&key_list), "get values from the key-value store")
+    ("get,g", po::value<std::vector<std::string>>(&key_list)->required(), "get values from the key-value store")
     ;
 
   po::variables_map vm;
@@ -51,8 +51,6 @@ int main(int ac, char *av[])
                                      , 1
                                      );
 
-  if (vm.count ("get"))
-  {
     std::size_t count (0);
 
     for ( std::vector<std::string>::const_iterator k (key_list.begin())
@@ -78,7 +76,4 @@ int main(int ac, char *av[])
       }
     }
     return count > 0 ? EX_OK : EX_ERR;
-  }
-
-  return EX_OK;
 }
