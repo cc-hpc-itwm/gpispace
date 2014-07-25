@@ -26,7 +26,6 @@ int main(int ac, char *av[])
 
   po::options_description desc ("options");
   desc.add_options()
-    ("help,h", "print this help")
     ("host", po::value<std::string>()->required(), "use this host")
     ("port", po::value<std::string>()->required(), "port or service name to use")
     ("get,g", po::value<std::vector<std::string>>(&key_list), "get values from the key-value store")
@@ -41,16 +40,8 @@ int main(int ac, char *av[])
   catch (std::exception const & ex)
   {
     std::cerr << "invalid argument: " << ex.what() << std::endl;
-    std::cerr << "try " << av[0] << " -h to get some help" << std::endl;
+    std::cerr << "usage: " << desc << std::endl;
     return EX_INVAL;
-  }
-
-  if (vm.count ("help"))
-  {
-    std::cerr << "usage: " << av[0] << std::endl;
-    std::cerr << std::endl;
-    std::cerr << desc << std::endl;
-    return EX_OK;
   }
 
   fhg::com::kvs::client::kvsc client ( vm["host"].as<std::string>()
