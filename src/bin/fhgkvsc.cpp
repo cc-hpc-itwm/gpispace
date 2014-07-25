@@ -38,6 +38,8 @@ int main(int ac, char *av[])
     return EX_INVAL;
   }
 
+  try
+  {
   fhg::com::kvs::client::kvsc client  ( vm["host"].as<std::string>()
                                       , vm["port"].as<std::string>()
                                       , true
@@ -49,19 +51,18 @@ int main(int ac, char *av[])
 
     for (std::string const& k : vm["get"].as<std::vector<std::string>>())
     {
-      try
-      {
         std::map<std::string, std::string> entries (client.get(k));
           for (std::pair<std::string, std::string> const& key_value : entries)
           {
             std::cout << key_value.first << " = " << key_value.second << std::endl;
             ++count;
           }
-      }
-      catch (std::exception const & ex)
-      {
-        std::cerr << "E: " << ex.what() << std::endl;
-      }
     }
     return count > 0 ? EX_OK : EX_ERR;
+  }
+  catch (std::exception const& ex)
+  {
+    std::cerr << "E: " << ex.what() << std::endl;
+    return EX_ERR;
+  }
 }
