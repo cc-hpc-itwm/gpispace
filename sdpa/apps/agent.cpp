@@ -25,7 +25,6 @@
 
 namespace bfs = boost::filesystem;
 namespace po = boost::program_options;
-namespace validators = fhg::util::boost::program_options;
 
 namespace name
 {
@@ -34,6 +33,8 @@ namespace name
 
 int main (int argc, char **argv)
 {
+  namespace validators = fhg::util::boost::program_options;
+
   std::string agentName;
   std::string agentUrl;
   std::vector<std::string> arrMasterNames;
