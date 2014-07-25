@@ -18,22 +18,20 @@ int main(int ac, char *av[])
 {
   FHGLOG_SETUP();
 
-  namespace po = boost::program_options;
-
   std::vector<std::string> key_list;
 
-  po::options_description desc ("options");
+  boost::program_options::options_description desc ("options");
   desc.add_options()
-    ("host", po::value<std::string>()->required(), "use this host")
-    ("port", po::value<std::string>()->required(), "port or service name to use")
-    ("get,g", po::value<std::vector<std::string>>(&key_list)->required(), "get values from the key-value store")
+    ("host", boost::program_options::value<std::string>()->required(), "use this host")
+    ("port", boost::program_options::value<std::string>()->required(), "port or service name to use")
+    ("get,g", boost::program_options::value<std::vector<std::string>>(&key_list)->required(), "get values from the key-value store")
     ;
 
-  po::variables_map vm;
+  boost::program_options::variables_map vm;
   try
   {
-    po::store (po::parse_command_line (ac, av, desc), vm);
-    po::notify (vm);
+    boost::program_options::store (boost::program_options::parse_command_line (ac, av, desc), vm);
+    boost::program_options::notify (vm);
   }
   catch (std::exception const & ex)
   {
