@@ -49,20 +49,14 @@ int main(int ac, char *av[])
 
     std::size_t count (0);
 
-    for ( std::vector<std::string>::const_iterator k (key_list.begin())
-        ; k != key_list.end()
-        ; ++k
-        )
+    for (std::string const& k : key_list)
     {
       try
       {
-        std::map<std::string, std::string> entries (client.get(*k));
-          for ( std::map<std::string, std::string>::const_iterator e (entries.begin())
-              ; e != entries.end()
-              ; ++e
-              )
+        std::map<std::string, std::string> entries (client.get(k));
+          for (std::pair<std::string, std::string> const& key_value : entries)
           {
-            std::cout << e->first << " = " << e->second << std::endl;
+            std::cout << key_value.first << " = " << key_value.second << std::endl;
             ++count;
           }
       }
