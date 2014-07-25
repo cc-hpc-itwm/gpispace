@@ -138,7 +138,7 @@ namespace gspc
 
       vmem.add_options()
         ( name::virtual_memory_manager
-        , boost::program_options::value<validators::executable>()
+        , boost::program_options::value<validators::executable>()->required()
         , "memory manager, typically installed in the privilegded folder"
         )
         ( name::virtual_memory_per_node
