@@ -319,7 +319,7 @@ namespace gspc
       }
     }
 
-    command_boot << topology_description;
+    command_boot << " " << topology_description;
 
     system (command_boot.str(), "start runtime system");
 
