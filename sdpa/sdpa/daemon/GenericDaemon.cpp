@@ -86,10 +86,6 @@ namespace
 
       _.start();
     }
-    GenericDaemon::virtual_memory_api::~virtual_memory_api ()
-    {
-      _.stop();
-    }
 
 GenericDaemon::GenericDaemon( const std::string name
                             , const std::string url

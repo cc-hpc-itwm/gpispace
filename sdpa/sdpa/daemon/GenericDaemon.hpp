@@ -297,7 +297,6 @@ namespace sdpa {
       {
         explicit
         virtual_memory_api (boost::filesystem::path const& socket);
-        ~virtual_memory_api ();
       private:
         gpi::pc::client::api_t _;
       };
