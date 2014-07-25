@@ -12,12 +12,12 @@
 #include <we/layer.hpp>
 #include <boost/filesystem/path.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
-#include <fhg/util/read_bool.hpp>
+#include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/daemonize.hpp>
 #include <fhg/util/pidfile_writer.hpp>
+#include <fhg/util/read_bool.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
-#include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 
 #include <boost/tokenizer.hpp>
 
