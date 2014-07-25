@@ -26,9 +26,12 @@
 namespace bfs = boost::filesystem;
 namespace po = boost::program_options;
 
-namespace name
+namespace
 {
-  constexpr const char * vmem_socket {"vmem-socket"};
+  namespace option_name
+  {
+    constexpr const char* vmem_socket {"vmem-socket"};
+  }
 }
 
 int main (int argc, char **argv)
@@ -57,7 +60,7 @@ int main (int argc, char **argv)
     ("kvs_url,k",  po::value<std::string>()->required(), "The kvs daemon's url")
     ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
     ("daemonize", "daemonize after all checks were successful")
-    ( name::vmem_socket
+    ( option_name::vmem_socket
     , boost::program_options::value<validators::nonempty_string>()
     , "socket file to communicate with the virtual memory manager"
     )
@@ -77,10 +80,9 @@ int main (int argc, char **argv)
 
   po::notify (vm);
 
-  if (vm.count(name::vmem_socket))
+  if (vm.count (option_name::vmem_socket))
   {
-    vmem_socket = boost::make_optional
-      (bfs::path (vm[name::vmem_socket].as<validators::nonempty_string>()));
+    vmem_socket = bfs::path (vm[option_name::vmem_socket].as<validators::nonempty_string>());
   }
   std::vector< std::string > vec;
 
