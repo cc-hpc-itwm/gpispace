@@ -94,7 +94,6 @@ add_library (pnet
   we/type/signature/cpp.cpp
   we/type/signature/dump.cpp
   we/type/signature/is_literal.cpp
-  we/type/signature/name.cpp
   we/type/signature/names.cpp
   we/type/signature/resolve.cpp
   we/type/signature/show.cpp

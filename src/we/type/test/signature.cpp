@@ -7,7 +7,6 @@
 #include <we/type/signature/show.hpp>
 #include <we/type/signature/cpp.hpp>
 #include <we/type/signature/dump.hpp>
-#include <we/type/signature/name.hpp>
 #include <we/type/signature/names.hpp>
 #include <we/type/signature/resolve.hpp>
 
@@ -614,27 +613,6 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
       );
   }
 #undef CHECK
-}
-
-BOOST_AUTO_TEST_CASE (name)
-{
-  using pnet::type::signature::signature_type;
-  using pnet::type::signature::name;
-  using pnet::type::signature::structured_type;
-  using pnet::type::signature::structure_type;
-  using pnet::type::signature::field_type;
-
-  const field_type
-    f (std::make_pair (std::string ("name"), std::string ("type")));
-
-  BOOST_CHECK_EQUAL (std::string ("name"), name (f));
-
-  structure_type s;
-  s.push_back (f);
-  structured_type ss (structured_type (std::make_pair ("s", s)));
-  const field_type fs (ss);
-
-  BOOST_CHECK_EQUAL (std::string ("s"), name (fs));
 }
 
 namespace
