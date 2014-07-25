@@ -18,13 +18,11 @@ int main(int ac, char *av[])
 {
   FHGLOG_SETUP();
 
-  std::vector<std::string> key_list;
-
   boost::program_options::options_description desc ("options");
   desc.add_options()
     ("host", boost::program_options::value<std::string>()->required(), "use this host")
     ("port", boost::program_options::value<std::string>()->required(), "port or service name to use")
-    ("get,g", boost::program_options::value<std::vector<std::string>>(&key_list)->required(), "get values from the key-value store")
+    ("get,g", boost::program_options::value<std::vector<std::string>>()->required(), "get values from the key-value store")
     ;
 
   boost::program_options::variables_map vm;
@@ -49,7 +47,7 @@ int main(int ac, char *av[])
 
     std::size_t count (0);
 
-    for (std::string const& k : key_list)
+    for (std::string const& k : vm["get"].as<std::vector<std::string>>())
     {
       try
       {
