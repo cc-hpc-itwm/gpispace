@@ -11,8 +11,6 @@ enum my_exit_codes
      EX_OK = EXIT_SUCCESS
    , EX_ERR = EXIT_FAILURE
      , EX_INVAL // invalid argument
-     , EX_SEARCH // key not found
-     , EX_CONN // connection failed
   };
 
 
@@ -22,8 +20,6 @@ int main(int ac, char *av[])
 
   namespace po = boost::program_options;
 
-  std::string key;
-  std::string value;
   size_t timeout (120 * 1000);
 
   std::vector<std::string> key_list;
@@ -33,20 +29,7 @@ int main(int ac, char *av[])
     ("help,h", "print this help")
     ("host", po::value<std::string>()->required(), "use this host")
     ("port", po::value<std::string>()->required(), "port or service name to use")
-    ("key,k", po::value<std::string>(&key), "key to put or get")
-    ("value,v", po::value<std::string>(&value), "value to store")
-    ("full,f", "key must match completely")
-
-    ("save,S", "save the database on the server")
-    ("load,L", "reload the database on the server")
-    ("list-all,l", "list all entries in the server")
-    ("clear,C", "clear entries on the server")
-    ("term", "terminate a running kvs daemon")
-    ("timeout,T", po::value<size_t>(&timeout)->default_value (timeout), "timeout in milliseconds")
-    ("put,p", po::value<std::string>(&key), "store a value in the key-value store")
     ("get,g", po::value<std::vector<std::string>>(&key_list), "get values from the key-value store")
-    ("del,d", po::value<std::vector<std::string>>(&key_list), "delete entries from the key-value store")
-    ("cnt", po::value<std::string>(&key), "atomically increment/decrement a numeric entry")
     ;
 
   po::variables_map vm;
@@ -77,74 +60,7 @@ int main(int ac, char *av[])
                                      , 1
                                      );
 
-  if (vm.count ("load"))
-  {
-    try
-    {
-      client.load();
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "E: " << ex.what() << std::endl;
-      return EX_CONN;
-    }
-  }
-  else if (vm.count ("save"))
-  {
-    try
-    {
-      client.save();
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "E: " << ex.what() << std::endl;
-      return EX_CONN;
-    }
-  }
-  else if (vm.count ("term"))
-  {
-    try
-    {
-      client.term (15, "client requested termination");
-    }
-    catch (std::exception const &ex)
-    {
-      std::cerr << "E: " << ex.what() << std::endl;
-      return EX_CONN;
-    }
-  }
-  else if (vm.count ("list-all"))
-  {
-    try
-    {
-      std::map<std::string, std::string> entries (client.list());
-      for ( std::map<std::string, std::string>::const_iterator e (entries.begin())
-          ; e != entries.end()
-          ; ++e
-        )
-      {
-        std::cout << e->first << " = " << e->second << std::endl;
-      }
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "E: " << ex.what() << std::endl;
-      return EX_CONN;
-    }
-  }
-  else if (vm.count ("clear"))
-  {
-    try
-    {
-      client.clear();
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "E: " << ex.what() << std::endl;
-      return EX_CONN;
-    }
-  }
-  else if (vm.count ("get"))
+  if (vm.count ("get"))
   {
     std::size_t count (0);
 
@@ -156,24 +72,6 @@ int main(int ac, char *av[])
       try
       {
         std::map<std::string, std::string> entries (client.get(*k));
-        if (vm.count("full"))
-        {
-          if (entries.find(*k) != entries.end())
-          {
-            std::cout << entries.at(*k) << std::endl;
-            count = 1;
-          }
-          else if (! value.empty())
-          {
-            std::cout << value << std::endl;
-          }
-          else
-          {
-            throw std::runtime_error ("no such entry: " + *k);
-          }
-        }
-        else
-        {
           for ( std::map<std::string, std::string>::const_iterator e (entries.begin())
               ; e != entries.end()
               ; ++e
@@ -182,71 +80,6 @@ int main(int ac, char *av[])
             std::cout << e->first << " = " << e->second << std::endl;
             ++count;
           }
-        }
-      }
-      catch (std::exception const & ex)
-      {
-        std::cerr << "E: " << ex.what() << std::endl;
-      }
-    }
-    return count > 0 ? EX_OK : EX_ERR;
-  }
-  else if (vm.count("put"))
-  {
-    if (value.empty())
-    {
-      std::cerr << "E: put: value must not be empty" << std::endl;
-      return EX_INVAL;
-    }
-
-    try
-    {
-        client.put (key, value);
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "E: " << ex.what() << std::endl;
-      return EX_CONN;
-    }
-  }
-  else if (vm.count("cnt"))
-  {
-    int step = 1;
-    if (! value.empty())
-    {
-      try
-      {
-        step = boost::lexical_cast<int>(value);
-      }
-      catch (std::exception const &)
-      {
-        std::cerr << "invalid argument: value must be an integer: " << value << std::endl;
-        return EX_INVAL;
-      }
-    }
-
-    try
-    {
-      std::cout << client.inc (key, step) << std::endl;
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "E: cnt operation failed: " << ex.what() << std::endl;
-      return EX_CONN;
-    }
-  }
-  else if (vm.count ("del"))
-  {
-    std::size_t count (0);
-    for ( std::vector<std::string>::const_iterator k (key_list.begin())
-        ; k != key_list.end()
-        ; ++k
-        )
-    {
-      try
-      {
-        client.del (*k);
-        ++count;
       }
       catch (std::exception const & ex)
       {

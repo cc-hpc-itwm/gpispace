@@ -8,7 +8,6 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/thread.hpp>
-#include <boost/utility.hpp>
 
 #include <sstream>
 #include <string>
@@ -45,11 +44,6 @@ namespace fhg
             boost::lock_guard<boost::recursive_mutex> lock (mtx_);
 
             kvs_.stop();
-          }
-
-          void put (fhg::com::kvs::message::put::map_type const & e)
-          {
-            timed_put (e, 0);
           }
 
           void timed_put ( fhg::com::kvs::message::put::map_type const & e
@@ -89,20 +83,6 @@ namespace fhg
             return boost::get<fhg::com::kvs::message::list>(m).entries();
           }
 
-          int
-          inc(key_type const & k, int step) const
-          {
-            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
-
-            fhg::com::kvs::message::type m;
-            request ( kvs_
-                    , fhg::com::kvs::message::msg_inc(k, step)
-                    , m
-                    );
-            return boost::lexical_cast<int>
-              (boost::get<fhg::com::kvs::message::list>(m).entries().begin()->second);
-          }
-
           void del (key_type const & k)
           {
             boost::lock_guard<boost::recursive_mutex> lock (mtx_);
@@ -114,81 +94,6 @@ namespace fhg
                     );
           }
 
-          void save () const
-          {
-            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
-
-            fhg::com::kvs::message::type m;
-            request ( kvs_
-                    , fhg::com::kvs::message::msg_save()
-                    , m
-                    );
-          }
-
-          void load ()
-          {
-            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
-
-            fhg::com::kvs::message::type m;
-            request ( kvs_
-                    , fhg::com::kvs::message::msg_load()
-                    , m
-                    );
-          }
-
-          fhg::com::kvs::message::list::map_type
-          list (std::string const & regexp = "")
-          {
-            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
-
-            fhg::com::kvs::message::type m;
-            request ( kvs_
-                    , fhg::com::kvs::message::req_list(regexp)
-                    , m
-                    );
-            return boost::get<fhg::com::kvs::message::list>(m).entries();
-          }
-
-          void clear()
-          {
-            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
-
-            fhg::com::kvs::message::type m;
-            request ( kvs_
-                    , fhg::com::kvs::message::clear()
-                    , m
-                    );
-          }
-
-          void term (int code, std::string const & reason)
-          {
-            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
-
-            fhg::com::kvs::message::type m;
-            request ( kvs_
-                    , fhg::com::kvs::message::msg_term(code, reason)
-                    , m
-                    );
-          }
-
-          bool ping ()
-          {
-            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
-
-            fhg::com::kvs::message::type m;
-            try
-            {
-              request ( kvs_
-                      , fhg::com::kvs::message::msg_ping()
-                      , m
-                      );
-              return true;
-            }
-            catch (std::exception const &)
-            {
-              return false;
-            }
-          }
         private:
           mutable boost::recursive_mutex mtx_;
           mutable tcp_client kvs_;
