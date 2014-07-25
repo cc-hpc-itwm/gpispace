@@ -20,8 +20,6 @@ int main(int ac, char *av[])
 
   namespace po = boost::program_options;
 
-  size_t timeout (120 * 1000);
-
   std::vector<std::string> key_list;
 
   po::options_description desc ("options");
@@ -44,12 +42,12 @@ int main(int ac, char *av[])
     return EX_INVAL;
   }
 
-  fhg::com::kvs::client::kvsc client ( vm["host"].as<std::string>()
-                                     , vm["port"].as<std::string>()
-                                     , true
-                                     , boost::posix_time::milliseconds(timeout)
-                                     , 1
-                                     );
+  fhg::com::kvs::client::kvsc client  ( vm["host"].as<std::string>()
+                                      , vm["port"].as<std::string>()
+                                      , true
+                                      , boost::posix_time::seconds (120)
+                                      , 1
+                                      );
 
     std::size_t count (0);
 
