@@ -36,10 +36,10 @@ namespace sdpa
       void getCapabilities (sdpa::capabilities_set_t& cpbset);
 
       sdpa::job_id_list_t getJobListAndCleanQueues (const  Worker::ptr_t& pWorker);
-      worker_id_set_t getSetOfWorkersNotReserved();
+      std::set<worker_id_t> getSetOfWorkersNotReserved();
 
       boost::optional<sdpa::worker_id_t> getBestMatchingWorker (const job_requirements_t&, const sdpa::worker_id_list_t&) const;
-      mmap_match_deg_worker_id_t getListMatchingWorkers (const job_requirements_t&, const sdpa::worker_id_set_t&) const;
+      mmap_match_deg_worker_id_t getListMatchingWorkers (const job_requirements_t&, const std::set<worker_id_t>&) const;
 
   private:
       worker_map_t  worker_map_;

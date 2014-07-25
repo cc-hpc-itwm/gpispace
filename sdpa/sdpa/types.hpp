@@ -21,7 +21,6 @@ namespace sdpa {
 	typedef worker_id_t agent_id_t;
 	typedef std::string job_result_t;
 	typedef std::list<sdpa::worker_id_t> worker_id_list_t;
-	typedef std::set<sdpa::worker_id_t> worker_id_set_t;
 	typedef worker_id_list_t agent_id_list_t;
 	typedef std::pair<worker_id_t, job_id_t> worker_job_pair_t;
 

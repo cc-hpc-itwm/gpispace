@@ -97,10 +97,10 @@ namespace sdpa
       worker_map_.erase (w);
     }
 
-    sdpa::worker_id_set_t WorkerManager::getSetOfWorkersNotReserved()
+    std::set<worker_id_t> WorkerManager::getSetOfWorkersNotReserved()
     {
       boost::mutex::scoped_lock const _ (mtx_);
-      worker_id_set_t set_workers;
+      std::set<worker_id_t> set_workers;
 
       for (Worker::ptr_t const& worker : worker_map_ | boost::adaptors::map_values)
       {
@@ -202,7 +202,7 @@ namespace sdpa
 
     mmap_match_deg_worker_id_t WorkerManager::getListMatchingWorkers
       ( const job_requirements_t& job_reqs
-      , const sdpa::worker_id_set_t& worker_set
+      , const std::set<worker_id_t>& worker_set
       ) const
     {
       if (worker_set.size() < job_reqs.numWorkers())

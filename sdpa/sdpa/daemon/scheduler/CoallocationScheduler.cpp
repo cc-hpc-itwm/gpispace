@@ -40,13 +40,13 @@ namespace sdpa
 
     namespace
     {
-      worker_id_set_t find_job_assignment_minimizing_memory_transfer_cost
+      std::set<worker_id_t> find_job_assignment_minimizing_memory_transfer_cost
         ( const mmap_match_deg_worker_id_t& mmap_matching_workers
         , size_t n_req_workers
         /*,  const we::type::activity_t& job_activity*/
         )
       {
-        worker_id_set_t assigned_workers;
+        std::set<worker_id_t> assigned_workers;
 
         // to do: pass as parameter the associated activity
         // and calculate the memory transfer costs w.r.t. the corresponding module call
@@ -68,12 +68,12 @@ namespace sdpa
         return assigned_workers;
       }
 
-      worker_id_set_t find_assignment_for_job
-        ( const worker_id_set_t& available_workers
+      std::set<worker_id_t> find_assignment_for_job
+        ( const std::set<worker_id_t>& available_workers
         , const job_requirements_t& requirements
         , std::function<mmap_match_deg_worker_id_t
                           ( const job_requirements_t&
-                          , const worker_id_set_t&
+                          , const std::set<worker_id_t>&
                           )
                        > match_requirements
         )
@@ -88,13 +88,13 @@ namespace sdpa
                                                                      );
         }
 
-        return  worker_id_set_t();
+        return  std::set<worker_id_t>();
       }
     }
 
     void CoallocationScheduler::assignJobsToWorkers()
     {
-      sdpa::worker_id_set_t setAvailWorkers
+      std::set<worker_id_t> setAvailWorkers
         (worker_manager().getSetOfWorkersNotReserved());
 
       std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
@@ -106,7 +106,7 @@ namespace sdpa
         sdpa::job_id_t jobId (jobs_to_schedule.front());
         jobs_to_schedule.pop_front();
 
-        const worker_id_set_t matching_workers
+        const std::set<worker_id_t> matching_workers
           ( find_assignment_for_job
             ( setAvailWorkers
             , _job_requirements (jobId)
@@ -121,7 +121,7 @@ namespace sdpa
 
         if (!matching_workers.empty())
         {
-          worker_id_set_t set_free_workers_left;
+          std::set<worker_id_t> set_free_workers_left;
           std::set_difference ( setAvailWorkers.begin()
                               , setAvailWorkers.end()
                               , matching_workers.begin()
