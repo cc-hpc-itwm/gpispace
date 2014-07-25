@@ -15,7 +15,7 @@ namespace sdpa
                  , const std::string& url
                  , std::string kvs_host
                  , std::string kvs_port
-                 , boost::optional<boost::filesystem::path> const & virtual_memory_socket
+                 , boost::optional<boost::filesystem::path> const& virtual_memory_socket
                  , const sdpa::master_info_list_t arrMasterNames
                  , const boost::optional<std::string>& guiUrl
                  )

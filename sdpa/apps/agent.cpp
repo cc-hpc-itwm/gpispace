@@ -67,14 +67,14 @@ int main (int argc, char **argv)
 
   fhg::log::Logger::ptr_t logger (fhg::log::Logger::get (agentName));
 
-  if( vm.count("help") )
+  if (vm.count ("help"))
   {
     LLOG (ERROR, logger, "usage: agent [options] ....");
     LLOG (ERROR, logger, desc);
     return 0;
   }
 
-  po::notify(vm);
+  po::notify (vm);
 
   if (vm.count(name::vmem_socket))
   {

@@ -77,7 +77,7 @@ namespace
 }
 
     GenericDaemon::virtual_memory_api::virtual_memory_api (boost::filesystem::path const& socket)
-      : _ (socket.string())
+      : _(socket.string())
     {
       while (!boost::filesystem::exists (socket))
       {
@@ -91,7 +91,7 @@ GenericDaemon::GenericDaemon( const std::string name
                             , const std::string url
                             , std::string kvs_host
                             , std::string kvs_port
-                            , boost::optional<boost::filesystem::path> const & vmem_socket
+                            , boost::optional<boost::filesystem::path> const& vmem_socket
                             , const master_info_list_t arrMasterInfo
                             , const boost::optional<std::string>& guiUrl
                             , bool create_wfe
