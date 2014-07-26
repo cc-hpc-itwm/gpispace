@@ -875,12 +875,6 @@ namespace xml
               {
                 if (cdata.empty())
                 {
-//                           throw error::property_generic
-//                             ( "no value given"
-//                             , state.prop_path()
-//                             , state.file_in_progress()
-//                             );
-
                   util::property::set_state
                     ( state
                     , prop
