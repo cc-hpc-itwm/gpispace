@@ -5,7 +5,6 @@
 #include <we/type/value/path/split.hpp>
 #include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
-#include <we/type/value/remove.hpp>
 #include <we/type/value/dump.hpp>
 
 #include <fhg/util/boost/variant.hpp>
@@ -13,6 +12,91 @@
 
 #include <boost/optional.hpp>
 #include <boost/utility.hpp>
+
+#include <functional>
+#include <iterator>
+
+namespace
+{
+  struct first_is : public std::unary_function<const std::string&, bool>
+  {
+    first_is (const std::string& what)
+      : _what (what)
+    {}
+
+    template<typename T>
+    bool operator() (const T& x)
+    {
+      return x.first == _what;
+    }
+
+  private:
+    const std::string _what;
+  };
+
+  class visitor_remove : public boost::static_visitor<void>
+  {
+  public:
+    visitor_remove ( const std::list<std::string>::const_iterator& key
+                   , const std::list<std::string>::const_iterator& end
+                   , pnet::type::value::value_type& node
+                   )
+      : _key (key)
+      , _end (end)
+      , _node (node)
+    {}
+
+    void operator() (pnet::type::value::structured_type& m) const
+    {
+      if (_key == _end)
+      {
+        _node = pnet::type::value::value_type();
+      }
+      else
+      {
+        pnet::type::value::structured_type::iterator pos
+          (std::find_if (m.begin(), m.end(), first_is (*_key)));
+
+        if (pos == m.end())
+        {
+          throw std::runtime_error ("value_type::remove: key not found");
+        }
+
+        const std::list<std::string>::const_iterator next
+          (std::next (_key));
+
+        if (next == _end)
+        {
+          m.erase (pos);
+        }
+        else
+        {
+          pnet::type::value::value_type& v (pos->second);
+
+          boost::apply_visitor (visitor_remove (next, _end, v), v);
+        }
+      }
+    }
+
+    template<typename T> void operator() (T&) const
+    {
+      if (_key == _end)
+      {
+        _node = pnet::type::value::value_type();
+      }
+      else
+      {
+        throw std::runtime_error
+          ("value_type::remove: trying to remove from unstructured value");
+      }
+    }
+
+  private:
+    const std::list<std::string>::const_iterator& _key;
+    const std::list<std::string>::const_iterator& _end;
+    pnet::type::value::value_type& _node;
+  };
+}
 
 namespace we
 {
@@ -84,7 +168,7 @@ namespace we
                      , const path_type::const_iterator& end
                      )
       {
-        pnet::type::value::remove (pos, end, _value);
+        boost::apply_visitor (visitor_remove (pos, end, _value), _value);
       }
 
       void type::del (const path_type& path)

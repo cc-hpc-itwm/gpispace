@@ -18,7 +18,6 @@ add_library (we-dev SHARED
   type/value/poke.cpp
   type/value/show.cpp
   type/value/read.cpp
-  type/value/remove.cpp
 
   loader/Module.cpp
 )
@@ -56,7 +55,6 @@ install (FILES
   type/value/peek.hpp
   type/value/poke.hpp
   type/value/read.hpp
-  type/value/remove.hpp
   type/value/show.hpp
   type/value/to_value.hpp
   type/value/wrap.hpp
