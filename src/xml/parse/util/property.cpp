@@ -19,17 +19,19 @@ namespace xml
       {
         namespace property = we::type::property;
 
-        void set ( const state::type& state
-                 , property::type& prop
-                 , const property::path_type& path
-                 , const property::value_type& value
-                 )
+        namespace
         {
-          const boost::optional<pnet::type::value::value_type> old
-            (prop.get (path));
-          prop.set (path, value);
+          void set ( const state::type& state
+                   , property::type& prop
+                   , const property::path_type& path
+                   , const property::value_type& value
+                   )
+          {
+            const boost::optional<pnet::type::value::value_type> old
+              (prop.get (path));
+            prop.set (path, value);
 
-          if (old)
+            if (old)
             {
               state.warn
                 ( warning::property_overwritten ( path
@@ -39,6 +41,7 @@ namespace xml
                                                 )
                 );
             }
+          }
         }
 
         void set_state ( state::type& state
