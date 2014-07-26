@@ -36,7 +36,8 @@ hostname > "${HOSTFILE}"                                    || die $EX_ERR_ENV
 measured "boot" sdpa boot -S "${DIR_STATE}" -A "${DIR_BUILD}" -M -f "${HOSTFILE}" work:4        \
                                                             || die $EX_ERR_BOOT
 
-measured "submit" PUT_PORT='@PUT_PORT@' "${make[@]}" submit || die $EX_ERR_RUN
+measured "submit" PUT_PORT='@PUT_PORT@'                     \
+  "${make[@]}" SDPA_STATE_DIR="${DIR_STATE}" submit         || die $EX_ERR_RUN
 
 test "$(pnetget -i "${OUT}" -p O)" = "$(echo -e "@EXPECTED_OUTPUT@")"        \
                                                             || die $EX_ERR_RES

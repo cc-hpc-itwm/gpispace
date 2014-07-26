@@ -10,7 +10,8 @@
 state_dir=
 logdir=
 gui=
-kvs_url=
+kvs_host=
+kvs_port=
 log_url=
 debug=false
 daemonize=false
@@ -35,7 +36,8 @@ usage: $(basename "$0") [options]
     -n name (*): name of this agent
     -m master (*): master to connect to
     -g ip:port: gui address
-    -k kvs-url: url to the key-value-store
+    -k kvs-host: host of the key-value-store
+    -K kvs-port: port of the key-value-store
     -D daemonize
     -P pidfile
     -L logdir
@@ -44,7 +46,7 @@ usage: $(basename "$0") [options]
 EOF
 }
 
-while getopts ":hvDfdm:g:l:n:k:L:P:s:H:" opt; do
+while getopts ":hvDfdm:g:l:n:k:K:L:P:s:H:" opt; do
     case $opt in
         h)
             usage
@@ -72,7 +74,10 @@ while getopts ":hvDfdm:g:l:n:k:L:P:s:H:" opt; do
             log_url=$OPTARG
             ;;
         k)
-            kvs_url=$OPTARG
+            kvs_host=$OPTARG
+            ;;
+        K)
+            kvs_port=$OPTARG
             ;;
         D)
             daemonize=true
@@ -119,9 +124,14 @@ fi
 
 logprefix="${logdir}/${name}"
 
-if [ -z "$kvs_url" ]
+if [ -z "$kvs_host" ]
 then
-    echo >&2 "kvs url is required, please specify -k"
+    echo >&2 "kvs host is required, please specify -k"
+    exit 4
+fi
+if [ -z "$kvs_port" ]
+then
+    echo >&2 "kvs port is required, please specify -K"
     exit 4
 fi
 
@@ -135,7 +145,7 @@ function agent_status ()
 {
     local name="$1" ; shift
     local sill_running
-    still_running=( $(ps -C agent -o pid=) )
+    still_running=( $(ps -C agent -o uid=,pid= | grep -e "^\s\+$(id -u)" | awk '{print $2}') )
     local pids=()
 
     for p in ${still_running[@]} ; do
@@ -168,7 +178,7 @@ fi
 opts="$opts -n ${name} "
 opts="$opts -u ${bind_addr}"
 opts="$opts -m ${master}"
-opts="$opts -k ${kvs_url}"
+opts="$opts --kvs-host ${kvs_host} --kvs-port ${kvs_port}"
 
 if $daemonize && ! $debug ; then
     opts="$opts --daemonize"

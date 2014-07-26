@@ -96,6 +96,10 @@ namespace xml
                       , const util::position_type&
                       , const boost::optional<std::string>& name
                       , const ports_type& ports
+                      , xml::util::unique<memory_buffer_type, id::ref::memory_buffer> const&
+                      , std::list<memory_get> const&
+                      , std::list<memory_put> const&
+                      , std::list<memory_getput> const&
                       , const typenames_type& typenames
                       , const bool& contains_a_module_call
                       , const boost::optional<bool>& internal

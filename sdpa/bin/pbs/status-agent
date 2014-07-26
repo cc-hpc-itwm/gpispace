@@ -37,7 +37,7 @@ function agent_status ()
 {
     local name="$1" ; shift
     local pids=
-    pids=$(ps -C agent -o pid=)
+    pids=$(ps -C agent -o uid=,pid= | grep -e "^\s\+$(id -u)" | awk '{print $2}')
 
     if [ -n "$name" ] ; then
         for p in $pids ; do
