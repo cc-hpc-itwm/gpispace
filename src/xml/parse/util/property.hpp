@@ -19,7 +19,6 @@ namespace xml
                        , we::type::property::type& prop
                        , const we::type::property::path_type& path
                        , const we::type::property::value_type& value
-                       = we::type::property::value_type()
                        );
         void join ( const state::type& state
                   , we::type::property::type& x
