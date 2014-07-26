@@ -61,22 +61,6 @@ namespace pnet
           P _p;
         };
 
-        template<typename P>
-        void apply (P p, structured_type& structured)
-        {
-          boost::apply_visitor (apply_struct<P> (p), structured);
-        }
-        template<typename P>
-        void apply (P p, field_type& field)
-        {
-          boost::apply_visitor (apply_field<P> (p), field);
-        }
-        template<typename P>
-        void apply (P p, std::pair<std::string, structure_type>& s)
-        {
-          p._struct (s);
-        }
-
         class mapper
         {
         public:
@@ -89,7 +73,7 @@ namespace pnet
 
             for (field_type& f : s.second)
             {
-              apply (*this, f);
+              boost::apply_visitor (apply_field<mapper> (*this), f);
             }
           }
           void _field (std::pair<std::string, std::string>& f) const
@@ -98,7 +82,7 @@ namespace pnet
           }
           void _field_struct (std::pair<std::string, structure_type>& s) const
           {
-            apply (*this, s);
+            _struct (s);
           }
 
         private:
@@ -119,7 +103,7 @@ namespace pnet
         , const std::unordered_map<std::string, std::string>& m
         )
       {
-        apply (mapper (m), s);
+        boost::apply_visitor (apply_struct<mapper> (mapper (m)), s);
       }
     }
   }
