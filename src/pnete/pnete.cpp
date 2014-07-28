@@ -101,7 +101,13 @@ int main (int argc, char *argv[])
 
   try
   {
-    fhg::pnete::PetriNetEditor pente (plugin_paths, argc, argv);
+    std::list<util::scoped_dlhandle> plugins;
+    for (std::string path : plugin_paths)
+    {
+      plugins.emplace_back (path);
+    }
+
+    fhg::pnete::PetriNetEditor pente (plugins, argc, argv);
     pente.startup();
 
     if (vm.count ("port-log"))
@@ -136,16 +142,12 @@ namespace fhg
         }
     }
     PetriNetEditor::PetriNetEditor
-        (std::vector<std::string> plugin_paths, int& argc, char *argv[])
+        (std::list<util::scoped_dlhandle> const& plugins, int& argc, char *argv[])
       : QApplication (argc, argv)
       , _splash (QPixmap (":/pente.png"))
+      , _plugins (plugins)
       , _editor_windows ()
-    {
-      for (std::string path : plugin_paths)
-      {
-        _plugins.emplace_back (path);
-      }
-    }
+    {}
 
     void PetriNetEditor::startup()
     {
