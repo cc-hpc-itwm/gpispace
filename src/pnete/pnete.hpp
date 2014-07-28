@@ -25,7 +25,7 @@ namespace fhg
     {
     public:
       PetriNetEditor
-        (std::vector<std::string> plugin_paths, int& argc, char *argv[]);
+        (std::list<util::scoped_dlhandle> const& plugins, int& argc, char *argv[]);
       virtual ~PetriNetEditor ();
 
       void startup ();
@@ -34,7 +34,7 @@ namespace fhg
       QSplashScreen _splash;
       QTranslator _qtTranslator;
       QTranslator _penteTranslator;
-      std::list<util::scoped_dlhandle> _plugins;
+      std::list<util::scoped_dlhandle> const& _plugins;
       QList<ui::editor_window*> _editor_windows;
 
       void showSplashScreen();
