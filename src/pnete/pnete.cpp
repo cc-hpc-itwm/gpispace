@@ -101,7 +101,7 @@ int main (int argc, char *argv[])
 
   try
   {
-    std::list<util::scoped_dlhandle> plugins;
+    std::list<fhg::util::scoped_dlhandle> plugins;
     for (std::string path : plugin_paths)
     {
       plugins.emplace_back (path);
