@@ -21,11 +21,14 @@
 
 #include <we/type/module_call.fwd.hpp>
 
+#include <we/expr/eval/context.hpp>
 #include <we/type/memory_transfer.hpp>
+#include <we/type/range.hpp>
 
 #include <ostream>
 #include <boost/serialization/nvp.hpp>
 
+#include <list>
 #include <unordered_map>
 
 namespace we { namespace type {
@@ -62,6 +65,11 @@ namespace we { namespace type {
     {
       return _memory_puts;
     }
+
+    std::list<std::pair<local::range, global::range>>
+      puts (expr::eval::context const&) const;
+    std::list<std::pair<local::range, global::range>>
+      gets (expr::eval::context const&) const;
 
     private:
     std::string module_;

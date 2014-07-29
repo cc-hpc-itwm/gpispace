@@ -78,6 +78,7 @@ add_library (pnet
   we/loader/module_call.cpp
   we/layer.cpp
   we/type/activity.cpp
+  we/type/module_call.cpp
   we/require_type.cpp
   we/signature_of.cpp
   we/type/bitsetofint.cpp
