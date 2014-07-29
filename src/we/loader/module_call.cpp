@@ -254,7 +254,7 @@ namespace we
                                       , const fvmAllocHandle_t
                                       )
                      > do_transfer
-      , std::unordered_map<std::string, buffer> memory_buffer
+      , std::unordered_map<std::string, buffer> const& memory_buffer
       , std::list<std::pair<local::range, global::range>> const& transfers
       )
     {
