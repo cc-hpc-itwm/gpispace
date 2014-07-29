@@ -28,7 +28,6 @@ set (srcs
   cpp/struct.cpp
 
   xml.cpp
-  hex.cpp
   read_file.cpp
 
   hostname.cpp
