@@ -45,4 +45,5 @@ fhg_add_test (test.cpp
   DEPENDS gpi-space
           log_map-impl
   RESOURCE_LOCK starts_drts_environment
+  REQUIRES_INSTALLATION
 )
