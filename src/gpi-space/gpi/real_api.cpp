@@ -18,7 +18,6 @@ namespace gpi
   {
     real_gpi_api_t::real_gpi_api_t (bool is_master)
       : m_is_master (is_master)
-      , m_binary_path ("")
       , m_startup_done (false)
       , m_rank (std::numeric_limits<rank_t>::max())
       , m_mem_size (0)
@@ -45,11 +44,6 @@ namespace gpi
     }
 
     // wrapped C function calls
-    void real_gpi_api_t::set_binary_path (const char *path)
-    {
-      m_binary_path = path;
-    }
-
     void real_gpi_api_t::start (int ac, char *av[], const gpi::timeout_t timeout)
     {
       fhg_assert (! m_startup_done);
@@ -78,11 +72,11 @@ namespace gpi
       if (timeout) alarm (timeout);
       if (is_master())
       {
-        rc = startGPI (1, av, m_binary_path, m_mem_size);
+        rc = startGPI (1, av, av[0], m_mem_size);
       }
       else
       {
-        rc = startGPI (ac, av, m_binary_path, m_mem_size);
+        rc = startGPI (ac, av, av[0], m_mem_size);
       }
       if (timeout) alarm (0);
 
@@ -237,32 +231,6 @@ namespace gpi
       return m_dma;
     }
 
-    void real_gpi_api_t::set_network_type (const gpi::network_type_t n)
-    {
-      int rc (setNetworkGPI (GPI_NETWORK_TYPE(n)));
-      if (rc != 0)
-        throw gpi::exception::gpi_error(gpi::error::set_network_type_failed());
-    }
-
-    void real_gpi_api_t::set_port (const gpi::port_t p)
-    {
-      int rc (setPortGPI (p));
-      if (rc != 0)
-        throw gpi::exception::gpi_error(gpi::error::set_port_failed());
-    }
-
-    void real_gpi_api_t::set_mtu (const gpi::size_t mtu)
-    {
-      int rc (setMtuSizeGPI (mtu));
-      if (rc != 0)
-        throw gpi::exception::gpi_error(gpi::error::set_mtu_failed());
-    }
-
-    void real_gpi_api_t::set_number_of_processes (const gpi::size_t n)
-    {
-      setNpGPI (n);
-    }
-
     bool real_gpi_api_t::ping (const gpi::rank_t rank) const
     {
       return ping (hostname (rank));
@@ -270,149 +238,6 @@ namespace gpi
     bool real_gpi_api_t::ping (const char * hostname) const
     {
       return (pingDaemonGPI(hostname) == 0);
-    }
-
-    void real_gpi_api_t::clear_caches ()
-    {
-      if (! is_master())
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::operation_not_permitted()
-          , "clear_caches is not allowed on a slave"
-          );
-      }
-
-      int node_count = generateHostlistGPI();
-      for (int i = 0 ; i < node_count ; ++i)
-      {
-        const char * hostname = getHostnameGPI(i);
-        int error_code = clearFileCacheGPI(hostname);
-        if (-42 == error_code)
-        {
-          LOG(WARN, "clear cache on " << hostname << " timed out");
-        }
-        else if (error_code)
-        {
-          LOG(WARN, "clear cache on " << hostname << " failed: " << error_code);
-        }
-      }
-    }
-
-    int real_gpi_api_t::check (const gpi::rank_t node) const
-    {
-      if (! is_master())
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::operation_not_permitted()
-          , "check(rank) is not allowed on a slave"
-          );
-      }
-
-      const char * host (hostname (node));
-      return check (host);
-    }
-
-
-    int real_gpi_api_t::check (const char *host) const
-    {
-      if (!ping (host))
-      {
-        LOG(ERROR, "failed to ping GPI daemon on host := " << host);
-        throw gpi::exception::gpi_error
-          ( gpi::error::ping_check_failed ()
-          , "host = " + std::string(host)
-          );
-      }
-
-      int rc (0);
-
-      rc = findProcGPI (host);
-      if (rc == 0)
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::another_binary_running()
-          , "[" + std::string(host) + "]:" + boost::lexical_cast<std::string>(port())
-          );
-      }
-
-      rc = checkPortGPI(host, port());
-      if (rc != 0)
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::port_check_failed()
-          , "[" + std::string(host) + "]:" + boost::lexical_cast<std::string>(port())
-          );
-      }
-
-      rc = checkSharedLibsGPI(host);
-      if (rc != 0)
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::libs_check_failed ()
-          , "[" + std::string(host) + "]:" + boost::lexical_cast<std::string>(port())
-          );
-      }
-
-      rc = runIBTestGPI (host);
-      if (rc != 0)
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::ib_check_failed ()
-          , "[" + std::string(host) + "]:" + boost::lexical_cast<std::string>(port())
-          );
-      }
-
-      return rc;
-    }
-
-    int real_gpi_api_t::check (void) const
-    {
-      if (!is_master())
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::operation_not_permitted()
-          , "check() is not allowed on a slave"
-          );
-      }
-
-      size_t max_rank = 0;
-      {
-        int tmp = generateHostlistGPI();
-        if (tmp <= 0)
-        {
-          throw gpi::exception::gpi_error
-            ( gpi::error::internal_error()
-            , "generateHostlist() failed"
-            );
-        }
-        max_rank  = (size_t)(tmp);
-      }
-
-      LOG( TRACE, "running GPI check...");
-      int rc (0);
-      for (rank_t nd (0); nd < max_rank; ++nd)
-      {
-        try
-        {
-          check (nd);
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "check on host " << hostname(nd) << " failed: " << ex.what());
-          rc += 1;
-        }
-      }
-
-      if (rc)
-      {
-        LOG(ERROR, "GPI check failed on " << rc << " hosts");
-        throw gpi::exception::gpi_error
-          ( gpi::error::unknown()
-          , "GPI check failed"
-          );
-      }
-
-      return 0;
     }
 
     bool real_gpi_api_t::is_master (void) const

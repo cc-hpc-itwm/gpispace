@@ -19,8 +19,6 @@ namespace gpi
       ~real_gpi_api_t();
 
       // wrapped C function calls
-      virtual void clear_caches () override;
-      virtual void set_binary_path (const char *path) override;
       virtual void start (int ac, char *av[], const gpi::timeout_t timeout) override;
       virtual void stop () override;
       virtual void kill () override;
@@ -49,18 +47,10 @@ namespace gpi
       template <typename T>
       T* dma_ptr (void) { return (T*)(dma_ptr()); }
 
-      virtual void set_network_type (const gpi::network_type_t) override;
-      virtual void set_port (const gpi::port_t) override;
-      virtual void set_mtu (const gpi::size_t) override;
-      virtual void set_number_of_processes (const gpi::size_t) override;
       virtual void set_memory_size (const gpi::size_t) override;
 
       virtual bool ping (const gpi::rank_t) const override;
       virtual bool ping (const char * hostname) const override;
-
-      virtual int check (const gpi::rank_t) const override;
-      virtual int check (const char *) const override;
-      virtual int check () const override;
 
       virtual bool is_master (void) const override;
       virtual bool is_slave (void) const override;
@@ -114,7 +104,6 @@ namespace gpi
 
       mutable mutex_type m_mutex;
       bool m_is_master;
-      const char *m_binary_path;
       bool  m_startup_done;
       rank_t m_rank;
       size_t m_mem_size;

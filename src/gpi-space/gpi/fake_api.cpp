@@ -13,7 +13,6 @@ namespace gpi
   {
     fake_gpi_api_t::fake_gpi_api_t (bool is_master)
       : m_is_master (is_master)
-      , m_binary_path("")
       , m_startup_done (false)
       , m_rank (0)
       , m_mem_size (0)
@@ -34,11 +33,6 @@ namespace gpi
     }
 
     // wrapped C function calls
-    void fake_gpi_api_t::set_binary_path (const char *path)
-    {
-      m_binary_path = path;
-    }
-
     void fake_gpi_api_t::start (int, char **, const gpi::timeout_t)
     {
       fhg_assert (! m_startup_done);
@@ -180,18 +174,6 @@ namespace gpi
       return m_dma;
     }
 
-    void fake_gpi_api_t::set_network_type (const gpi::network_type_t)
-    {}
-
-    void fake_gpi_api_t::set_port (const gpi::port_t)
-    {}
-
-    void fake_gpi_api_t::set_mtu (const gpi::size_t)
-    {}
-
-    void fake_gpi_api_t::set_number_of_processes (const gpi::size_t)
-    {}
-
     bool fake_gpi_api_t::ping (const gpi::rank_t r) const
     {
       return ping (hostname (r));
@@ -200,44 +182,6 @@ namespace gpi
     bool fake_gpi_api_t::ping (const char *) const
     {
       return true;
-    }
-
-    int fake_gpi_api_t::check (const gpi::rank_t node) const
-    {
-      return check (hostname (node));
-    }
-
-    int fake_gpi_api_t::check (const char * host) const
-    {
-      if (ping(host)) return 0;
-      else            return 1;
-    }
-
-    int fake_gpi_api_t::check (void) const
-    {
-      lock_type lock (m_mutex);
-      if (!is_master())
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::operation_not_permitted()
-          , "check() is not allowed on a slave"
-          );
-      }
-
-      int ec = 0;
-      for (rank_t nd (0); nd < number_of_nodes(); ++nd)
-      {
-        ec += check (nd);
-      }
-      if (ec)
-      {
-        LOG(WARN, "gpi check failed!");
-      }
-      else
-      {
-        LOG(INFO, "GPI check successful.");
-      }
-      return ec;
     }
 
     bool fake_gpi_api_t::is_master (void) const
