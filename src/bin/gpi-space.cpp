@@ -129,8 +129,6 @@ int main (int ac, char *av[])
   int i = 0;
   bool daemonize = false;
   bool is_master = true;
-  bool gpi_perform_checks = true;
-  bool gpi_clear_caches = true;
   char pidfile[MAX_PATH_LEN];
   snprintf (pidfile, sizeof(pidfile), "%s", "");
   requested_api_t requested_api = API_auto;
@@ -141,10 +139,6 @@ int main (int ac, char *av[])
   std::string default_memory_url ("gpi://?buffer_size=4194304&buffers=8");
 
   unsigned long long gpi_mem = (1<<26);
-  unsigned short gpi_port = 0;
-  unsigned int gpi_mtu = 0;
-  int gpi_net = -1;
-  int gpi_np = -1;
   unsigned int gpi_timeout = 120;
 
   std::vector<std::string> mem_urls;
@@ -206,20 +200,7 @@ int main (int ac, char *av[])
       fprintf(stderr, "        auto - choose the best api\n");
       fprintf(stderr, "\n");
       fprintf(stderr, "GPI options (expert)\n");
-      fprintf(stderr, "    --gpi-port|-p PORT (%hu)\n", gpi_port);
-      fprintf(stderr, "    --gpi-np NUM (%d)\n", gpi_np);
-      fprintf(stderr, "      number of processes to start\n");
-      fprintf(stderr, "        -1 - one per host in hostlist\n");
-      fprintf(stderr, "         N - only on the first N hosts\n");
-      fprintf(stderr, "    --gpi-mtu BYTES (%u)\n", gpi_mtu);
-      fprintf(stderr, "    --gpi-net TYPE (%d)\n", gpi_net);
-      fprintf(stderr, "              0=IB\n");
-      fprintf(stderr, "              1=ETH\n");
       fprintf(stderr, "    --gpi-timeout SECONDS (%u)\n", gpi_timeout);
-      fprintf(stderr, "    --no-gpi-checks\n");
-      fprintf(stderr, "      do not perform checks before gpi startup\n");
-      fprintf(stderr, "    --no-clear-file-cache\n");
-      fprintf(stderr, "      do not clear file caches on all nodes\n");
       exit(EXIT_SUCCESS);
     }
     else if (strcmp(av[i], "--version") == 0 || strcmp(av[i], "-V") == 0)
@@ -481,60 +462,6 @@ int main (int ac, char *av[])
         exit(EX_USAGE);
       }
     }
-    else if (strcmp(av[i], "--gpi-port") == 0 || strcmp(av[i], "-p") == 0)
-    {
-      ++i;
-      if (i < ac)
-      {
-        if (sscanf(av[i], "%hu", &gpi_port) == 0)
-        {
-          fprintf(stderr, "%s: gpi-port invalid: %s\n", program_name, av[i]);
-          exit(EX_INVAL);
-        }
-        ++i;
-      }
-      else
-      {
-        fprintf(stderr, "%s: missing argument to --gpi-port\n", program_name);
-        exit(EX_USAGE);
-      }
-    }
-    else if (strcmp(av[i], "--gpi-mtu") == 0)
-    {
-      ++i;
-      if (i < ac)
-      {
-        if (sscanf(av[i], "%u", &gpi_mtu) == 0)
-        {
-          fprintf(stderr, "%s: gpi-mtu invalid: %s\n", program_name, av[i]);
-          exit(EX_INVAL);
-        }
-        ++i;
-      }
-      else
-      {
-        fprintf(stderr, "%s: missing argument to --gpi-mtu\n", program_name);
-        exit(EX_USAGE);
-      }
-    }
-    else if (strcmp(av[i], "--gpi-net") == 0)
-    {
-      ++i;
-      if (i < ac)
-      {
-        if (sscanf(av[i], "%d", &gpi_net) == 0)
-        {
-          fprintf(stderr, "%s: gpi-net invalid: %s\n", program_name, av[i]);
-          exit(EX_INVAL);
-        }
-        ++i;
-      }
-      else
-      {
-        fprintf(stderr, "%s: missing argument to --gpi-net\n", program_name);
-        exit(EX_USAGE);
-      }
-    }
     else if (strcmp(av[i], "--gpi-timeout") == 0)
     {
       ++i;
@@ -552,34 +479,6 @@ int main (int ac, char *av[])
         fprintf(stderr, "%s: missing argument to --gpi-timeout\n", program_name);
         exit(EX_USAGE);
       }
-    }
-    else if (strcmp(av[i], "--gpi-np") == 0)
-    {
-      ++i;
-      if (i < ac)
-      {
-        if (sscanf(av[i], "%d", &gpi_np) == 0)
-        {
-          fprintf(stderr, "%s: gpi-np invalid: %s\n", program_name, av[i]);
-          exit(EX_INVAL);
-        }
-        ++i;
-      }
-      else
-      {
-        fprintf(stderr, "%s: missing argument to --gpi-np\n", program_name);
-        exit(EX_USAGE);
-      }
-    }
-    else if (strcmp(av[i], "--no-gpi-checks") == 0)
-    {
-      ++i;
-      gpi_perform_checks = false;
-    }
-    else if (strcmp(av[i], "--no-clear-file-cache") == 0)
-    {
-      ++i;
-      gpi_clear_caches = false;
     }
     else if (strcmp(av[i], "--") == 0)
     {
@@ -648,52 +547,13 @@ int main (int ac, char *av[])
     (create_gpi_api (requested_api, is_master));
   gpi_api_t& gpi_api (*gpi_api_);
 
-  gpi_api.set_binary_path (av[0]);
   gpi_api.set_memory_size (gpi_mem);
-
-  if (gpi_port)
-  {
-    gpi_api.set_port (gpi_port);
-  }
-
-  if (gpi_mtu)
-  {
-    gpi_api.set_mtu (gpi_mtu);
-  }
-
-  if (gpi_np != -1)
-  {
-    gpi_api.set_number_of_processes (gpi_np);
-  }
-
-  if (gpi_net != -1)
-  {
-    gpi_api.set_network_type ((gpi::network_type_t)gpi_net);
-  }
 
   if (gpi_api.is_master())
   {
     LOG(INFO, "GPISpace version: " << fhg::project_version());
     LOG(INFO, "GPISpace revision: " << fhg::project_revision());
     LOG(INFO, "GPIApi version: " << gpi_api.version());
-
-    if (gpi_perform_checks)
-    {
-      try
-      {
-        gpi_api.check();
-      }
-      catch (std::exception const & ex)
-      {
-        LOG(ERROR, "*** gpi check failed: " << ex.what());
-        exit (EXIT_FAILURE);
-      }
-    }
-
-    if (gpi_clear_caches)
-    {
-      gpi_api.clear_caches();
-    }
 
     if (0 != strlen (pidfile))
     {
