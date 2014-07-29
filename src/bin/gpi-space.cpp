@@ -542,19 +542,8 @@ int main (int ac, char *av[])
            , socket_path
            );
 
-  // initialize gpi api
-  std::unique_ptr<gpi_api_t> gpi_api_
-    (create_gpi_api (requested_api, is_master));
-  gpi_api_t& gpi_api (*gpi_api_);
-
-  gpi_api.set_memory_size (gpi_mem);
-
-  if (gpi_api.is_master())
+  if (is_master)
   {
-    LOG(INFO, "GPISpace version: " << fhg::project_version());
-    LOG(INFO, "GPISpace revision: " << fhg::project_revision());
-    LOG(INFO, "GPIApi version: " << gpi_api.version());
-
     if (0 != strlen (pidfile))
     {
       try
@@ -581,6 +570,20 @@ int main (int ac, char *av[])
         fhg::util::fork_and_daemonize_child_and_abandon_parent();
       }
     }
+  }
+
+  // initialize gpi api
+  std::unique_ptr<gpi_api_t> gpi_api_
+    (create_gpi_api (requested_api, is_master));
+  gpi_api_t& gpi_api (*gpi_api_);
+
+  gpi_api.set_memory_size (gpi_mem);
+
+  if (is_master)
+  {
+    LOG(INFO, "GPISpace version: " << fhg::project_version());
+    LOG(INFO, "GPISpace revision: " << fhg::project_revision());
+    LOG(INFO, "GPIApi version: " << gpi_api.version());
   }
 
   try
