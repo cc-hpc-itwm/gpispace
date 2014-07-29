@@ -23,6 +23,7 @@ namespace
                   , std::function<Transfer ( std::string const&
                                            , std::string const&
                                            )> make_transfer
+                  , boost::optional<bool> not_modified_in_module_call
                   )
   {
     std::list<std::string> expressions_global;
@@ -50,13 +51,19 @@ namespace
       );
 
     const std::string expected
-      ( ( boost::format (R"EOS(<memory-%1%>
+      ( ( boost::format (R"EOS(<memory-%1%%4%>
   <global>%2%</global>
   <local>%3%</local>
 </memory-%1%>)EOS")
         % tag
         % fhg::util::join (expressions_global, ";")
         % fhg::util::join (expressions_local, ";")
+        % ( not_modified_in_module_call
+          ? ( boost::format (" not-modified-in-module-call=\"%1%\"")
+            % (*not_modified_in_module_call ? "true" : "false")
+            ).str()
+          : ""
+          )
         ).str()
       );
 
@@ -82,18 +89,21 @@ namespace
           , we::type::property::type()
           );
       }
+      , boost::none
       );
   }
 
   void check_dump_put ( std::size_t num_expressions_global
                       , std::size_t num_expressions_local
+                      , boost::optional<bool> not_modified_in_module_call
                       )
   {
     check_dump<xml::parse::type::memory_put>
       ( num_expressions_global
       , num_expressions_local
       , "put"
-      , []( std::string const& expressions_global
+      , [&not_modified_in_module_call]
+          ( std::string const& expressions_global
           , std::string const& expressions_local
           )
       { return xml::parse::type::memory_put
@@ -102,20 +112,24 @@ namespace
           , expressions_global
           , expressions_local
           , we::type::property::type()
+          , not_modified_in_module_call
           );
       }
+      , not_modified_in_module_call
       );
   }
 
   void check_dump_getput ( std::size_t num_expressions_global
                          , std::size_t num_expressions_local
+                         , boost::optional<bool> not_modified_in_module_call
                          )
   {
     check_dump<xml::parse::type::memory_getput>
       ( num_expressions_global
       , num_expressions_local
       , "getput"
-      , []( std::string const& expressions_global
+      , [&not_modified_in_module_call]
+          ( std::string const& expressions_global
           , std::string const& expressions_local
           )
       { return xml::parse::type::memory_getput
@@ -124,8 +138,10 @@ namespace
           , expressions_global
           , expressions_local
           , we::type::property::type()
+          , not_modified_in_module_call
           );
       }
+      , not_modified_in_module_call
       );
   }
 }
@@ -137,8 +153,12 @@ BOOST_AUTO_TEST_CASE (dump_get)
     for (std::size_t local (0); local < 4; ++local)
     {
       check_dump_get (global, local);
-      check_dump_put (global, local);
-      check_dump_getput (global, local);
+      check_dump_put (global, local, boost::none);
+      check_dump_put (global, local, true);
+      check_dump_put (global, local, false);
+      check_dump_getput (global, local, boost::none);
+      check_dump_getput (global, local, true);
+      check_dump_getput (global, local, false);
     }
   }
 }
