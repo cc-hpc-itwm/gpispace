@@ -24,14 +24,7 @@ namespace we
             (expr::parse::parser (expression).eval_all (context))
           );
 
-        std::list<Range> ranges;
-
-        for (pnet::type::value::value_type const& value : values)
-        {
-          ranges.emplace_back (value);
-        }
-
-        return ranges;
+        return {values.begin(), values.end()};
       }
 
       void zip ( std::list<local::range>&& local_ranges
