@@ -292,6 +292,54 @@ namespace we
           );
       }
     }
+
+    std::list<std::pair<local::range, global::range>>
+      gets ( expr::eval::context const& input
+           , we::type::module_call_t const& module_call
+           )
+    {
+      std::list<std::pair<local::range, global::range>> gets;
+
+      for (type::memory_transfer const& mg : module_call.memory_gets())
+      {
+        expr::eval::context context (input);
+
+        for ( std::pair<local::range, global::range> const& transfer
+            : zip ( evaluate<local::range> (context, mg.local())
+                  , evaluate<global::range> (context, mg.global())
+                  )
+            )
+        {
+          gets.emplace_back (transfer);
+        }
+      }
+
+      return gets;
+    }
+
+    std::list<std::pair<local::range, global::range>>
+      puts ( expr::eval::context const& output
+           , we::type::module_call_t const& module_call
+           )
+    {
+      std::list<std::pair<local::range, global::range>> puts;
+
+      for (type::memory_transfer const& mp : module_call.memory_puts())
+      {
+        expr::eval::context context (output);
+
+        for ( std::pair<local::range, global::range> const& transfer
+            : zip ( evaluate<local::range> (context, mp.local())
+                  , evaluate<global::range> (context, mp.global())
+                  )
+            )
+        {
+          puts.emplace_back (transfer);
+        }
+      }
+
+      return puts;
+    }
   }
 
   namespace loader
@@ -333,23 +381,8 @@ namespace we
         }
       }
 
-      std::list<std::pair<local::range, global::range>> gets;
-
-      for (type::memory_transfer const& mg : module_call.memory_gets())
-      {
-        expr::eval::context context (input (act));
-
-        for ( std::pair<local::range, global::range> const& transfer
-            : zip ( evaluate<local::range>  (context, mg.local())
-                  , evaluate<global::range> (context, mg.global())
-                  )
-            )
-        {
-          gets.emplace_back (transfer);
-        }
-      }
-
-      transfer (fvmGetGlobalData, memory_buffer, gets);
+      transfer
+        (fvmGetGlobalData, memory_buffer, gets (input (act), module_call));
 
       expr::eval::context out (input (act));
 
@@ -366,23 +399,7 @@ namespace we
         act.add_output (port_id, out.value (port.name()));
       }
 
-      std::list<std::pair<local::range, global::range>> puts;
-
-      for (type::memory_transfer const& mp : module_call.memory_puts())
-      {
-        expr::eval::context context (out);
-
-        for ( std::pair<local::range, global::range> const& transfer
-            : zip ( evaluate<local::range>  (context, mp.local())
-                  , evaluate<global::range> (context, mp.global())
-                  )
-            )
-        {
-          puts.emplace_back (transfer);
-        }
-      }
-
-      transfer (fvmPutGlobalData, memory_buffer, puts);
+      transfer (fvmPutGlobalData, memory_buffer, puts (out, module_call));
     }
   }
 }
