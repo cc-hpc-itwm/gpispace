@@ -34,13 +34,11 @@ namespace we
         return ranges;
       }
 
-      std::list<std::pair<local::range, global::range>>
-        zip ( std::list<local::range>&& local_ranges
-            , std::list<global::range>&& global_ranges
-            )
+      void zip ( std::list<local::range>&& local_ranges
+               , std::list<global::range>&& global_ranges
+               , std::list<std::pair<local::range, global::range>>& zipped
+               )
       {
-        std::list<std::pair<local::range, global::range>> zipped;
-
         std::list<local::range>::iterator local (local_ranges.begin());
         std::list<local::range>::iterator const local_end (local_ranges.end());
         std::list<global::range>::iterator global (global_ranges.begin());
@@ -75,8 +73,6 @@ namespace we
           //! \todo specific exception
           throw std::runtime_error ("sum of sizes of ranges differ");
         }
-
-        return zipped;
       }
     }
 
@@ -89,14 +85,10 @@ namespace we
       {
         expr::eval::context context (input);
 
-        for ( std::pair<local::range, global::range> const& transfer
-            : zip ( evaluate<local::range> (context, mg.local())
-                  , evaluate<global::range> (context, mg.global())
-                  )
-            )
-        {
-          gets.emplace_back (transfer);
-        }
+        zip ( evaluate<local::range> (context, mg.local())
+            , evaluate<global::range> (context, mg.global())
+            , gets
+            );
       }
 
       return gets;
@@ -111,14 +103,10 @@ namespace we
       {
         expr::eval::context context (output);
 
-        for ( std::pair<local::range, global::range> const& transfer
-            : zip ( evaluate<local::range> (context, mp.local())
-                  , evaluate<global::range> (context, mp.global())
-                  )
-            )
-        {
-          puts.emplace_back (transfer);
-        }
+        zip ( evaluate<local::range> (context, mp.local())
+            , evaluate<global::range> (context, mp.global())
+            , puts
+            );
       }
 
       return puts;
