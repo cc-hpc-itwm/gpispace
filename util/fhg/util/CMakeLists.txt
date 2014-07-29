@@ -5,7 +5,6 @@ set (srcs
   daemonize.cpp
   signal_handler_manager.cpp
   pidfile_writer.cpp
-  program_info.c
   random_string.cpp
   remove_prefix.cpp
   read_bool.cpp
