@@ -67,7 +67,9 @@ namespace we { namespace type {
     }
 
     std::list<std::pair<local::range, global::range>>
-      puts (expr::eval::context const&) const;
+      puts_evaluated_before_call (expr::eval::context const&) const;
+    std::list<std::pair<local::range, global::range>>
+      puts_evaluated_after_call (expr::eval::context const&) const;
     std::list<std::pair<local::range, global::range>>
       gets (expr::eval::context const&) const;
 
