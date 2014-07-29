@@ -19,6 +19,7 @@ fhg_add_test (test.cpp
                  ${Boost_FILESYSTEM_LIBRARIES}
   RESOURCE_LOCK starts_drts_environment
   DEPENDS demo.bin
+  REQUIRES_INSTALLATION
 )
 
 
