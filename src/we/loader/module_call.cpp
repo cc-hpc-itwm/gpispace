@@ -333,18 +333,23 @@ namespace we
         }
       }
 
+      std::list<std::pair<local::range, global::range>> gets;
+
       for (type::memory_transfer const& mg : module_call.memory_gets())
       {
         expr::eval::context context (input (act));
 
-        std::list<std::pair<local::range, global::range>> const transfers
-          (zip ( evaluate<local::range>  (context, mg.local())
-               , evaluate<global::range> (context, mg.global())
-               )
-          );
-
-        transfer (fvmGetGlobalData, memory_buffer, transfers);
+        for ( std::pair<local::range, global::range> const& transfer
+            : zip ( evaluate<local::range>  (context, mg.local())
+                  , evaluate<global::range> (context, mg.global())
+                  )
+            )
+        {
+          gets.emplace_back (transfer);
+        }
       }
+
+      transfer (fvmGetGlobalData, memory_buffer, gets);
 
       expr::eval::context out (input (act));
 
@@ -361,18 +366,23 @@ namespace we
         act.add_output (port_id, out.value (port.name()));
       }
 
+      std::list<std::pair<local::range, global::range>> puts;
+
       for (type::memory_transfer const& mp : module_call.memory_puts())
       {
         expr::eval::context context (out);
 
-        std::list<std::pair<local::range, global::range>> const transfers
-          (zip ( evaluate<local::range>  (context, mp.local())
-               , evaluate<global::range> (context, mp.global())
-               )
-          );
-
-        transfer (fvmPutGlobalData, memory_buffer, transfers);
+        for ( std::pair<local::range, global::range> const& transfer
+            : zip ( evaluate<local::range>  (context, mp.local())
+                  , evaluate<global::range> (context, mp.global())
+                  )
+            )
+        {
+          puts.emplace_back (transfer);
+        }
       }
+
+      transfer (fvmPutGlobalData, memory_buffer, puts);
     }
   }
 }
