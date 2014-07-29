@@ -3,6 +3,8 @@
 #ifndef DRTS_VMEM_HPP
 #define DRTS_VMEM_HPP
 
+#include <we/type/value.hpp>
+
 #include <memory>
 #include <string>
 
@@ -25,6 +27,8 @@ namespace gspc
     ~vmem_allocation();
 
     std::string const handle() const;
+
+    pnet::type::value::value_type global_memory_range() const;
 
     vmem_allocation (vmem_allocation const&) = delete;
     vmem_allocation& operator= (vmem_allocation const&) = delete;
