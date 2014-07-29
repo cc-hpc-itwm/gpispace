@@ -236,7 +236,7 @@ namespace gpi
       api_t::transfer_costs (std::list<transfer_t> const&)
       {
         //! \todo get actual values from vmem backend
-        return [] (std::string const &) -> double
+        return [] (std::string const&) -> double
         {
           return 0.0;
         };

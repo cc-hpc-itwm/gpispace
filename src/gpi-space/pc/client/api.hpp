@@ -25,8 +25,8 @@ namespace gpi
     {
       struct transfer_t
       {
-        transfer_t ( gpi::pc::type::memory_location_t const & src
-                   , gpi::pc::type::memory_location_t const & dst
+        transfer_t ( gpi::pc::type::memory_location_t const& src
+                   , gpi::pc::type::memory_location_t const& dst
                    , std::size_t amount
                    )
           : src (src)
