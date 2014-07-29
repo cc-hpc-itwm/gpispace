@@ -255,16 +255,10 @@ namespace we
                                       )
                      > do_transfer
       , std::unordered_map<std::string, buffer> memory_buffer
-      , expr::eval::context& context
-      , std::string const& global
-      , std::string const& local
+      , std::list<std::pair<local::range, global::range>> const& transfers
       )
     {
-      for ( std::pair<local::range, global::range> const& transfer
-          : zip ( evaluate<local::range> (context, local)
-                , evaluate<global::range> (context, global)
-                )
-          )
+      for (std::pair<local::range, global::range> const& transfer : transfers)
       {
         local::range const& local (transfer.first);
         global::range const& global (transfer.second);
@@ -343,8 +337,13 @@ namespace we
       {
         expr::eval::context context (input (act));
 
-        transfer
-          (fvmGetGlobalData, memory_buffer, context, mg.global(), mg.local());
+        std::list<std::pair<local::range, global::range>> const transfers
+          (zip ( evaluate<local::range>  (context, mg.local())
+               , evaluate<global::range> (context, mg.global())
+               )
+          );
+
+        transfer (fvmGetGlobalData, memory_buffer, transfers);
       }
 
       expr::eval::context out (input (act));
@@ -366,8 +365,13 @@ namespace we
       {
         expr::eval::context context (out);
 
-        transfer
-          (fvmPutGlobalData, memory_buffer, context, mp.global(), mp.local());
+        std::list<std::pair<local::range, global::range>> const transfers
+          (zip ( evaluate<local::range>  (context, mp.local())
+               , evaluate<global::range> (context, mp.global())
+               )
+          );
+
+        transfer (fvmPutGlobalData, memory_buffer, transfers);
       }
     }
   }
