@@ -24,7 +24,6 @@ include_directories (${CMAKE_SOURCE_DIR})
 get_target_property (
   location_transform_file_map-impl transform_file_map-impl LOCATION
 )
-get_target_property (location_virtual_memory_manager gpi-space LOCATION)
 
 math (EXPR size_communication_buffer "8 * 4 << 20")
 
@@ -42,7 +41,7 @@ fhg_add_test (test.cpp
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/../../"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-       --virtual-memory-manager "${location_virtual_memory_manager}"
+       --virtual-memory-manager "${CMAKE_INSTALL_PREFIX}/bin/gpi-space"
        --virtual-memory-per-node ${size_virtual_memory}
        --implementation "${location_transform_file_map-impl}"
        --size-input ${size_input}
@@ -55,8 +54,7 @@ fhg_add_test (test.cpp
                  ${UTIL_LIBRARIES}
                  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARIES}
-  DEPENDS gpi-space
-          transform_file_map-impl
+  DEPENDS transform_file_map-impl
   RESOURCE_LOCK starts_drts_environment
   REQUIRES_INSTALLATION
 )
