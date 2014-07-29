@@ -2,7 +2,6 @@
 
 #include <we/type/id.hpp>
 #include <we/type/port.hpp>
-#include <we/expr/parse/parser.hpp>
 #include <we/type/range.hpp>
 
 #include <fvm-pc/pc.hpp>
@@ -78,70 +77,6 @@ namespace we
       unsigned long _position;
     };
 
-    template<typename Range>
-      std::list<Range> evaluate ( expr::eval::context& context
-                                , std::string const& expression
-                                )
-    {
-      std::list<pnet::type::value::value_type> const values
-        ( boost::get<std::list<pnet::type::value::value_type>>
-          (expr::parse::parser (expression).eval_all (context))
-        );
-
-      std::list<Range> ranges;
-
-      for (pnet::type::value::value_type const& value : values)
-      {
-        ranges.emplace_back (value);
-      }
-
-      return ranges;
-    }
-
-    std::list<std::pair<local::range, global::range>>
-      zip ( std::list<local::range>&& local_ranges
-          , std::list<global::range>&& global_ranges
-          )
-    {
-      std::list<std::pair<local::range, global::range>> zipped;
-
-      std::list<local::range>::iterator local (local_ranges.begin());
-      std::list<local::range>::iterator const local_end (local_ranges.end());
-      std::list<global::range>::iterator global (global_ranges.begin());
-      std::list<global::range>::iterator const global_end (global_ranges.end());
-
-      while (local != local_end && global != global_end)
-      {
-        unsigned long const min_size (std::min (local->size(), global->size()));
-
-        zipped.emplace_back
-          ( std::make_pair ( local::range (*local, min_size)
-                           , global::range (*global, min_size)
-                           )
-          );
-
-        local->shrink (min_size);
-        global->shrink (min_size);
-
-        if (local->size() == 0)
-        {
-          ++local;
-        }
-        if (global->size() == 0)
-        {
-          ++global;
-        }
-      }
-
-      if (local != local_end || global != global_end)
-      {
-        //! \todo specific exception
-        throw std::runtime_error ("sum of sizes of ranges differ");
-      }
-
-      return zipped;
-    }
-
     void transfer
       ( std::function<fvmCommHandle_t ( const fvmAllocHandle_t
                                       , const fvmOffset_t
@@ -188,54 +123,6 @@ namespace we
           );
       }
     }
-
-    std::list<std::pair<local::range, global::range>>
-      gets ( expr::eval::context const& input
-           , we::type::module_call_t const& module_call
-           )
-    {
-      std::list<std::pair<local::range, global::range>> gets;
-
-      for (type::memory_transfer const& mg : module_call.memory_gets())
-      {
-        expr::eval::context context (input);
-
-        for ( std::pair<local::range, global::range> const& transfer
-            : zip ( evaluate<local::range> (context, mg.local())
-                  , evaluate<global::range> (context, mg.global())
-                  )
-            )
-        {
-          gets.emplace_back (transfer);
-        }
-      }
-
-      return gets;
-    }
-
-    std::list<std::pair<local::range, global::range>>
-      puts ( expr::eval::context const& output
-           , we::type::module_call_t const& module_call
-           )
-    {
-      std::list<std::pair<local::range, global::range>> puts;
-
-      for (type::memory_transfer const& mp : module_call.memory_puts())
-      {
-        expr::eval::context context (output);
-
-        for ( std::pair<local::range, global::range> const& transfer
-            : zip ( evaluate<local::range> (context, mp.local())
-                  , evaluate<global::range> (context, mp.global())
-                  )
-            )
-        {
-          puts.emplace_back (transfer);
-        }
-      }
-
-      return puts;
-    }
   }
 
   namespace loader
@@ -278,7 +165,7 @@ namespace we
       }
 
       transfer
-        (fvmGetGlobalData, memory_buffer, gets (input (act), module_call));
+        (fvmGetGlobalData, memory_buffer, module_call.gets (input (act)));
 
       expr::eval::context out (input (act));
 
@@ -295,7 +182,7 @@ namespace we
         act.add_output (port_id, out.value (port.name()));
       }
 
-      transfer (fvmPutGlobalData, memory_buffer, puts (out, module_call));
+      transfer (fvmPutGlobalData, memory_buffer, module_call.puts (out));
     }
   }
 }
