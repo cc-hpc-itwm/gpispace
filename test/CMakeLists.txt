@@ -26,6 +26,6 @@ add_library (test-utilities SHARED
 )
 target_link_libraries (test-utilities
   fhg-util
-  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
-  ${Boost_FILESYSTEM_LIBRARIES}
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${Boost_FILESYSTEM_LIBRARY}
 )
