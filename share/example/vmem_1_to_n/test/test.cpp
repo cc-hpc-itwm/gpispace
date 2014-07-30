@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
 
   gspc::set_application_search_path (vm, installation_dir);
   gspc::set_virtual_memory_socket ( vm
-                                  , boost::filesystem::path (shared_directory)
+                                  , boost::filesystem::temp_directory_path()
                                   / boost::filesystem::unique_path()
                                   );
 
