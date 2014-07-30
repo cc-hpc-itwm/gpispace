@@ -3,7 +3,6 @@
 #include <drts/worker/drts.hpp>
 
 #include <plugin/core/kernel.hpp>
-#include <plugin/core/license.hpp>
 #include <fhg/util/daemonize.hpp>
 #include <fhg/util/pidfile_writer.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
@@ -89,8 +88,6 @@ int main(int ac, char **av)
   config_variables["kernel_name"] = kernel_name;
 
   const bool daemonize (vm.count ("daemonize"));
-
-  fhg::plugin::magically_check_license (logger);
 
   if (not pidfile.empty())
   {
