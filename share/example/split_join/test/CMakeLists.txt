@@ -3,8 +3,6 @@
 include_directories (${UTIL_INCLUDE_DIR})
 include_directories (${CMAKE_SOURCE_DIR})
 
-set (PUT_PORT "I=10000L")
-set (EXPECTED_OUTPUT "333383335000L")
 set (REENTRANT_VERSION not_reentrant)
 
 foreach (SPLIT_VERSION ${SPLIT_JOIN_SPLIT_VERSIONS})
@@ -29,8 +27,6 @@ foreach (SPLIT_VERSION ${SPLIT_JOIN_SPLIT_VERSIONS})
   )
 endforeach()
 
-set (PUT_PORT "\"I=10000L I=20000L\"")
-set (EXPECTED_OUTPUT "333383335000L\\n2666866670000L")
 set (REENTRANT_VERSION reentrant.sequential)
 
 foreach (SPLIT_VERSION ${SPLIT_JOIN_SPLIT_VERSIONS})
