@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <map/test/implementation/transform_file/type.hpp>
+#include <map/test/transform_file/type.hpp>
 
 namespace transform_file
 {

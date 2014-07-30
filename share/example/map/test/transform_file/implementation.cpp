@@ -1,5 +1,5 @@
 #include <map/interface.hpp>
-#include <map/test/implementation/transform_file/type.hpp>
+#include <map/test/transform_file/type.hpp>
 
 #include <fhglog/LogMacros.hpp>
 
