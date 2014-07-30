@@ -1,7 +1,5 @@
 # mirko.rahn@itwm.fraunhofer.de
 
-fhg_add_application_test (tutorial_avg_stddev_we-exec SCRIPT test.we-exec)
-
 include_directories (${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 add_executable (gen.bin gen.cpp)
