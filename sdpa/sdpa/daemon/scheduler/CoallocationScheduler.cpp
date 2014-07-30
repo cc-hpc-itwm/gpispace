@@ -4,7 +4,10 @@
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 
+#include <boost/math/special_functions/sign.hpp>
+#include <climits>
 #include <functional>
+#include <queue>
 
 namespace sdpa
 {
@@ -38,6 +41,58 @@ namespace sdpa
       _jobs_to_schedule.push (jobId);
     }
 
+    std::set<worker_id_t> CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
+      ( const mmap_match_deg_worker_id_t& mmap_matching_workers
+      , const size_t n_req_workers
+      , const std::map<std::string, double>& map_host_transfer_cost
+      )
+    {
+      typedef std::tuple<double, int, worker_id_t> tuple_cost_deg_wid_t;
+
+      std::set<worker_id_t> assigned_workers;
+
+      std::priority_queue< tuple_cost_deg_wid_t
+                         , std::vector<tuple_cost_deg_wid_t>
+                         > pq_selected_workers;
+
+      size_t k = 0;
+      for ( mmap_match_deg_worker_id_t::const_iterator it = mmap_matching_workers.begin()
+          ; it != mmap_matching_workers.end()
+          ; ++it
+          )
+      {
+        const worker_id_host_info_t& worker_info = it->second;
+        const double cost = map_host_transfer_cost.at (worker_info.worker_host());
+
+        tuple_cost_deg_wid_t next_tuple
+          (std::make_tuple (cost, boost::math::changesign (it->first), worker_info.worker_id()));
+
+        if (k++ < n_req_workers)
+        {
+          pq_selected_workers.push (next_tuple);
+        }
+        else
+        {
+          if (next_tuple < pq_selected_workers.top())
+          {
+            pq_selected_workers.pop();
+            pq_selected_workers.push (next_tuple);
+          }
+        }
+      }
+
+      std::transform ( &(pq_selected_workers.top())
+                     , &(pq_selected_workers.top()) + pq_selected_workers.size()
+                     , std::inserter (assigned_workers, assigned_workers.begin())
+                     , [] (const tuple_cost_deg_wid_t& tuple_cost_deg_wid) -> worker_id_t
+                       {
+                         return  std::get<2> (tuple_cost_deg_wid);
+                       }
+                     );
+
+      return assigned_workers;
+    }
+
     namespace
     {
       std::map<std::string, double> getMemoryTransferCosts(const mmap_match_deg_worker_id_t& mmap_matching_workers)
@@ -58,34 +113,6 @@ namespace sdpa
         return map_host_transfer_cost;
       }
 
-      std::set<worker_id_t> find_job_assignment_minimizing_memory_transfer_cost
-        ( const mmap_match_deg_worker_id_t& mmap_matching_workers
-        , size_t n_req_workers
-        /*,  const we::type::activity_t& job_activity*/
-        )
-      {
-        std::set<worker_id_t> assigned_workers;
-
-        // to do: pass as parameter the associated activity
-        // and calculate the memory transfer costs w.r.t. the corresponding module call
-        // and the matching multimap of workers (sorted in decreasing order of their matching
-        // degrees, the multimap being implemented as a binary search tree.
-        // Among all the workers matcbing the requirements,
-        // choose n_req_workers s.t. the the total memory transfer cost
-        // for the activity given as argument is minimized
-
-        mmap_match_deg_worker_id_t::const_iterator it_last (mmap_matching_workers.begin());
-        std::advance (it_last, n_req_workers);
-
-        std::for_each ( mmap_matching_workers.begin()
-                      , it_last
-                      , [&assigned_workers] (const std::pair<int, worker_id_host_info_t>& pair_deg_worker_info)
-                          {assigned_workers.insert (pair_deg_worker_info.second.worker_id());}
-                      );
-
-        return assigned_workers;
-      }
-
       std::set<worker_id_t> find_assignment_for_job
         ( const std::set<worker_id_t>& available_workers
         , const job_requirements_t& requirements
@@ -101,9 +128,8 @@ namespace sdpa
 
         if (mmap_matching_workers.size() >= requirements.numWorkers())
         {
-          return find_job_assignment_minimizing_memory_transfer_cost ( mmap_matching_workers
-                                                                     , requirements.numWorkers()
-                                                                     );
+          return CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
+            (mmap_matching_workers, requirements.numWorkers(), getMemoryTransferCosts (mmap_matching_workers));
         }
 
         return  std::set<worker_id_t>();
