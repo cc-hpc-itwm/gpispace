@@ -3,7 +3,7 @@
 #ifndef _PENTE_HPP
 #define _PENTE_HPP 1
 
-#include <pnete/data/manager.fwd.hpp>
+#include <pnete/data/manager.hpp>
 
 #include <fhg/util/dl.hpp>
 
@@ -36,7 +36,7 @@ namespace fhg
       QSplashScreen _splash;
       QTranslator _qtTranslator;
       QTranslator _penteTranslator;
-      data::manager& _data_manager;
+      data::manager _data_manager;
       std::list<util::scoped_dlhandle> const& _plugins;
       QList<ui::editor_window*> _editor_windows;
 
