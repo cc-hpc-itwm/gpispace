@@ -40,6 +40,24 @@ namespace sdpa
 
     namespace
     {
+      std::map<std::string, double> getMemoryTransferCosts(const mmap_match_deg_worker_id_t& mmap_matching_workers)
+      {
+        // Note: this is the default implementation when the transfer costs are uniform.
+        // It will be replaced later by a real implementation which gets the costs
+        // from the associated activity
+
+        std::map<std::string, double> map_host_transfer_cost;
+        for (const worker_id_host_info_t& pair_wid_host : mmap_matching_workers | boost::adaptors::map_values )
+        {
+          if (!map_host_transfer_cost.count(pair_wid_host.worker_host()))
+          {
+            map_host_transfer_cost.emplace (pair_wid_host.worker_host(), 1.0);
+          }
+        }
+
+        return map_host_transfer_cost;
+      }
+
       std::set<worker_id_t> find_job_assignment_minimizing_memory_transfer_cost
         ( const mmap_match_deg_worker_id_t& mmap_matching_workers
         , size_t n_req_workers
