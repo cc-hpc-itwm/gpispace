@@ -23,7 +23,8 @@ namespace fhg
   {
     namespace ui
     {
-      net_widget::net_widget ( const data::handle::net& net
+      net_widget::net_widget ( data::manager& data_manager
+                             , const data::handle::net& net
                              , const data::handle::function& function
                              , QWidget* parent
                              )
@@ -32,7 +33,9 @@ namespace fhg
         , _name_edit (new util::qt::no_undoredo_lineedit())
       {
         const graph_view* const gv
-          (new graph_view (weaver::display::net (net, function), this));
+          ( new graph_view
+            (weaver::display::net (data_manager, net, function), this)
+          );
         addActions (gv->actions());
       }
 

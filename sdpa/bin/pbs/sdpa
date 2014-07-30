@@ -299,7 +299,7 @@ function start_kvs ()
         log "E: kvs must be started on the master node"
         exit 1
     fi
-    if ! start_proc "fhgkvsd" "$SDPA_HOME/bin/fhgkvsd" -s "" "-C" --bind "0" --port '*' "--pidfile" "$state_dir/fhgkvsd.pid" "--daemonize" > "${state_dir}/kvs.port"; then
+    if ! start_proc "fhgkvsd" "$SDPA_HOME/bin/fhgkvsd" --bind "0" --port '*' "--pidfile" "$state_dir/fhgkvsd.pid" "--daemonize" > "${state_dir}/kvs.port"; then
         log "E: could not start kvs, giving up!"
         return 1
     fi

@@ -255,7 +255,7 @@
             ${block_with_slot.slot.size}
           </size>
         </memory-buffer>
-        <memory-put>
+        <memory-put not-modified-in-module-call="true">
           <global>
             stack_push (List(), ${block_with_slot.slot})
           </global>
@@ -342,7 +342,7 @@
             stack_push (List(), ${range})
           </local>
         </memory-get>
-        <memory-put>
+        <memory-put not-modified-in-module-call="true">
           <global>
             stack_push (List(), ${package.slot_output})
           </global>

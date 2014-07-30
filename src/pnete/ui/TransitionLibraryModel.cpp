@@ -21,8 +21,10 @@ namespace fhg
     {
       const QString TransitionLibraryModel::mimeType ("pnete/transition"); // hardcoded constant
 
-      TransitionLibraryModel::TransitionLibraryModel (QWidget* parent)
+      TransitionLibraryModel::TransitionLibraryModel
+          (data::manager& data_manager, QWidget* parent)
         : QAbstractItemModel (parent)
+        , _data_manager (data_manager)
         , _fileSystemWatcher (nullptr)
         , _items (new TransitionLibraryItem(this))
       {}
@@ -69,6 +71,7 @@ namespace fhg
             {
               currentRoot->appendChild
                 ( newRoot = new TransitionLibraryItem ( fileinfo
+                                                      , _data_manager
                                                       , true
                                                       , trusted
                                                       , currentRoot
@@ -92,6 +95,7 @@ namespace fhg
           {
             currentRoot->appendChild
               ( new TransitionLibraryItem ( fileinfo
+                                          , _data_manager
                                           , false
                                           , trusted
                                           , currentRoot

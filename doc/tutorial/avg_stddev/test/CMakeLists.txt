@@ -28,4 +28,5 @@ fhg_add_test (test.cpp
                  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARIES}
   RESOURCE_LOCK starts_drts_environment
+  REQUIRES_INSTALLATION
 )

@@ -9,15 +9,6 @@ include_directories(${UTIL_INCLUDE_DIR})
 find_package(HWLOC REQUIRED QUIET)
 include_directories(SYSTEM ${HWLOC_INCLUDE_DIR})
 
-find_package (NACL QUIET)
-if (NACL_FOUND)
-  if (ENABLE_LICENSE_CHECK)
-    include_directories (${NACL_INCLUDE_DIR})
-  endif()
-else()
-  set(ENABLE_LICENSE_CHECK CACHE BOOL OFF FORCE)
-endif()
-
 add_subdirectory(plugin)
 
 add_subdirectory (fhgcom)
@@ -78,6 +69,7 @@ add_library (pnet
   we/loader/module_call.cpp
   we/layer.cpp
   we/type/activity.cpp
+  we/type/module_call.cpp
   we/require_type.cpp
   we/signature_of.cpp
   we/type/bitsetofint.cpp
@@ -94,17 +86,14 @@ add_library (pnet
   we/type/signature/cpp.cpp
   we/type/signature/dump.cpp
   we/type/signature/is_literal.cpp
-  we/type/signature/name.cpp
   we/type/signature/names.cpp
   we/type/signature/resolve.cpp
   we/type/signature/show.cpp
-  we/type/signature/signature.cpp
   we/type/signature/specialize.cpp
   we/type/transition.cpp
   we/type/value/function.cpp
   we/type/value/name.cpp
   we/type/value/name_of.cpp
-  we/type/value/of_type.cpp
   we/type/value/path/append.cpp
   we/type/value/path/join.cpp
   we/type/value/path/split.cpp
@@ -112,7 +101,6 @@ add_library (pnet
   we/type/value/poke.cpp
   we/type/value/positions.cpp
   we/type/value/read.cpp
-  we/type/value/remove.cpp
   we/type/value/show.cpp
   we/type/value/dump.cpp
 

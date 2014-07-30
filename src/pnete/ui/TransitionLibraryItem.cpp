@@ -17,10 +17,9 @@ namespace fhg
     {
       namespace
       {
-        QString name_for_file (const QString& filename)
+        QString name_for_file (data::manager& data_manager, const QString& filename)
         {
-          const data::handle::function f
-            (data::manager::instance().load (filename));
+          const data::handle::function f (data_manager.load (filename));
           return QString::fromStdString (f.get().properties()
             .get ("fhg.pnete.library_name")
             .get_value_or (f.get().name()
@@ -28,10 +27,9 @@ namespace fhg
         }
       }
 
-      bool is_disabled (const QString& filename)
+      bool is_disabled (data::manager& data_manager, const QString& filename)
       {
-        const data::handle::function f
-          (data::manager::instance().load (filename));
+        const data::handle::function f (data_manager.load (filename));
         return fhg::util::read_bool
           ( f.get().properties().get ("fhg.pnete.library_disabled")
           .get_value_or ("false")
@@ -50,6 +48,7 @@ namespace fhg
       {}
 
       TransitionLibraryItem::TransitionLibraryItem ( const QFileInfo& fileinfo
+                                                   , data::manager& data_manager
                                                    , bool is_folder
                                                    , bool trusted
                                                    , QObject* parent
@@ -57,12 +56,12 @@ namespace fhg
         : QObject(parent)
         , _is_folder (is_folder)
         , _disabled
-          (_is_folder ? false : is_disabled (fileinfo.absoluteFilePath()))
+          (!_is_folder && is_disabled (data_manager, fileinfo.absoluteFilePath()))
         , _fileinfo (fileinfo)
         , _trusted (trusted)
         , _name ( _is_folder
                 ? _fileinfo.baseName()
-                : name_for_file (_fileinfo.absoluteFilePath())
+                : name_for_file (data_manager, _fileinfo.absoluteFilePath())
                 )
         , _children ()
         , _parent (qobject_cast<TransitionLibraryItem*>(parent))

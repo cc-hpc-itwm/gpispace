@@ -6,6 +6,7 @@
 #include <pnete/ui/dock_widget.fwd.hpp>
 
 #include <pnete/data/handle/function.fwd.hpp>
+#include <pnete/data/manager.fwd.hpp>
 #include <pnete/ui/document_view.fwd.hpp>
 
 #include <fhg/util/dl.hpp>
@@ -68,7 +69,8 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        editor_window ( std::list<util::scoped_dlhandle> const& plugins
+        editor_window ( data::manager&
+                      , std::list<util::scoped_dlhandle> const& plugins
                       , QWidget *parent = nullptr
                       );
 
@@ -109,6 +111,8 @@ namespace fhg
         virtual void closeEvent (QCloseEvent*) override;
 
       private:
+        data::manager& _data_manager;
+
         transition_library_view* _transition_library;
         dock_widget* _transition_library_dock;
         QUndoGroup* _undo_group;

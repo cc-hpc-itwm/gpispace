@@ -64,7 +64,15 @@ namespace xml
                    , std::string const& global
                    , std::string const& local
                    , const we::type::property::type&
+                   , boost::optional<bool> const&
                    );
+        boost::optional<bool> const& not_modified_in_module_call() const
+        {
+          return _not_modified_in_module_call;
+        }
+
+      private:
+        boost::optional<bool> _not_modified_in_module_call;
       };
 
       struct memory_getput : memory_transfer_type
@@ -74,7 +82,15 @@ namespace xml
                       , std::string const& global
                       , std::string const& local
                       , const we::type::property::type&
+                      , boost::optional<bool> const&
                       );
+        boost::optional<bool> const& not_modified_in_module_call() const
+        {
+          return _not_modified_in_module_call;
+        }
+
+      private:
+        boost::optional<bool> _not_modified_in_module_call;
       };
 
       namespace dump

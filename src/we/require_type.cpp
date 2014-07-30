@@ -6,8 +6,7 @@
 #include <we/type/value/name_of.hpp>
 #include <we/type/value/path/append.hpp>
 
-#include <we/type/signature/name.hpp>
-#include <we/type/signature/signature.hpp>
+#include <we/type/signature.hpp>
 
 #include <we/type/value/show.hpp>
 #include <we/type/signature/show.hpp>
@@ -19,6 +18,59 @@ namespace pnet
 {
   namespace
   {
+    class visitor_name_structured
+      : public boost::static_visitor<const std::string&>
+    {
+    public:
+      const std::string& operator()
+        (const std::pair<std::string, type::signature::structure_type>& s) const
+      {
+        return s.first;
+      }
+    };
+
+    class visitor_name : public boost::static_visitor<const std::string&>
+    {
+    public:
+      const std::string& operator()
+        (const std::pair<std::string, std::string>& f) const
+      {
+        return f.first;
+      }
+      const std::string& operator()
+        (const type::signature::structured_type& s) const
+      {
+        return boost::apply_visitor (visitor_name_structured(), s);
+      }
+    };
+
+    const std::string& name (const type::signature::field_type& s)
+    {
+      return boost::apply_visitor (visitor_name(), s);
+    }
+
+    class visitor_signature
+      : public boost::static_visitor<type::signature::signature_type>
+    {
+    public:
+      type::signature::signature_type operator()
+        (const std::pair<std::string, std::string>& f) const
+      {
+        return f.second;
+      }
+      type::signature::signature_type operator()
+        (const type::signature::structured_type& s) const
+      {
+        return s;
+      }
+    };
+
+    type::signature::signature_type signature
+      (const type::signature::field_type& s)
+    {
+      return boost::apply_visitor (visitor_signature(), s);
+    }
+
     using type::value::path::append;
 
     void require_type ( std::list<std::string>&
@@ -50,12 +102,12 @@ namespace pnet
 
         while (  v_pos != v_end
               && s_pos != s_end
-              && v_pos->first == type::signature::name (*s_pos)
+              && v_pos->first == name (*s_pos)
               )
         {
           require_type ( append (_path, v_pos->first)
                        , v_pos->second
-                       , type::signature::signature (*s_pos)
+                       , signature (*s_pos)
                        );
 
           ++v_pos;
@@ -71,7 +123,7 @@ namespace pnet
         if (s_pos != s_end)
         {
           throw exception::missing_field
-            (s, _value, append (_path, type::signature::name (*s_pos)));
+            (s, _value, append (_path, name (*s_pos)));
         }
       }
 

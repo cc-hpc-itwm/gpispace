@@ -3,7 +3,6 @@
 #include <we/type/signature/complete.hpp>
 #include <we/type/signature/cpp.hpp>
 #include <we/type/signature/is_literal.hpp>
-#include <we/type/signature/name.hpp>
 #include <we/type/signature/traverse.hpp>
 #include <we/type/value/name.hpp>
 #include <we/type/value/path/append.hpp>

@@ -26,12 +26,6 @@ namespace fhg
         , _unnamed_current (0)
       {}
 
-      manager& manager::instance()
-      {
-        static manager _instance;
-        return _instance;
-      }
-
       handle::function manager::load (const QString& filename)
       {
         bimap_type::left_map::iterator pos (_files.left.find (filename));

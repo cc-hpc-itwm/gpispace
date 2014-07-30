@@ -182,7 +182,7 @@
     <xsd:attribute name="read-only" type="xsd:boolean" use="optional"/>
   </xsd:complexType>
 
-  <xsd:complexType name="memory_transfer_type">
+  <xsd:complexType name="memory_transfer_get_type">
     <xsd:sequence>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="properties" type="property_map_type"/>
@@ -191,6 +191,18 @@
       <xsd:element minOccurs="1" maxOccurs="1" name="global" type="xsd:string"/>
       <xsd:element minOccurs="1" maxOccurs="1" name="local" type="xsd:string"/>
     </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="memory_transfer_put_type">
+    <xsd:sequence>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="properties" type="property_map_type"/>
+        <xsd:element name="include-properties" type="properties_include_type"/>
+      </xsd:choice>
+      <xsd:element minOccurs="1" maxOccurs="1" name="global" type="xsd:string"/>
+      <xsd:element minOccurs="1" maxOccurs="1" name="local" type="xsd:string"/>
+    </xsd:sequence>
+    <xsd:attribute name="not-modified-in-module-call" type="xsd:boolean" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="connect_type">
@@ -236,9 +248,9 @@
       </xsd:choice>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="memory-buffer" type="memory_buffer_type"/>
-        <xsd:element name="memory-get" type="memory_transfer_type"/>
-        <xsd:element name="memory-put" type="memory_transfer_type"/>
-        <xsd:element name="memory-getput" type="memory_transfer_type"/>
+        <xsd:element name="memory-get" type="memory_transfer_get_type"/>
+        <xsd:element name="memory-put" type="memory_transfer_put_type"/>
+        <xsd:element name="memory-getput" type="memory_transfer_put_type"/>
       </xsd:choice>
       <xsd:choice>
         <xsd:element minOccurs="1" maxOccurs="unbounded" name="expression" type="xsd:string"/>

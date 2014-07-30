@@ -85,10 +85,12 @@ namespace fhg
   {
     namespace ui
     {
-      editor_window::editor_window ( std::list<util::scoped_dlhandle> const& plugins
+      editor_window::editor_window ( data::manager& data_manager
+                                   , std::list<util::scoped_dlhandle> const& plugins
                                    , QWidget* parent
                                    )
         : QMainWindow (parent)
+        , _data_manager (data_manager)
         , _transition_library (new transition_library_view (20, 5, this))
         , _transition_library_dock
           (new dock_widget (tr ("library_window"), _transition_library))
@@ -114,7 +116,8 @@ namespace fhg
 
         setup_menu_and_toolbar (plugins);
 
-        _transition_library->setModel (new TransitionLibraryModel (this));
+        _transition_library->setModel
+          (new TransitionLibraryModel (_data_manager, this));
 
         //! \todo Hand down qApp instead of accessing global state.
         connect ( qApp
@@ -170,21 +173,15 @@ namespace fhg
 
       void editor_window::slot_new_expression()
       {
-        create_windows ( data::manager::instance()
-                       . create (data::internal_type::expression)
-                       );
+        create_windows (_data_manager.create (data::internal_type::expression));
       }
       void editor_window::slot_new_module_call()
       {
-        create_windows ( data::manager::instance()
-                       . create (data::internal_type::module_call)
-                       );
+        create_windows (_data_manager.create (data::internal_type::module_call));
       }
       void editor_window::slot_new_net()
       {
-        create_windows ( data::manager::instance()
-                       . create (data::internal_type::net)
-                       );
+        create_windows (_data_manager.create (data::internal_type::net));
       }
 
       void editor_window::open()
@@ -197,7 +194,7 @@ namespace fhg
           return;
         }
 
-        create_windows (data::manager::instance().load (filename));
+        create_windows (_data_manager.load (filename));
       }
 
       void editor_window::save_file()
@@ -225,7 +222,7 @@ namespace fhg
           filename.append (".xpnet");
         }
 
-        data::manager::instance().save
+        _data_manager.save
           (_accessed_widgets.top()->function().document(), filename);
       }
 
@@ -247,11 +244,15 @@ namespace fhg
           : public boost::static_visitor<document_view*>
         {
         private:
+          data::manager& _data_manager;
           const data::handle::function& _function;
 
         public:
-          document_view_for_handle (const data::handle::function& function)
-            : _function (function)
+          document_view_for_handle ( data::manager& data_manager
+                                   , const data::handle::function& function
+                                   )
+            : _data_manager (data_manager)
+            , _function (function)
           { }
 
           document_view* operator() (const data::handle::expression& expr) const
@@ -277,13 +278,13 @@ namespace fhg
             return new document_view
               ( _function
               , QObject::tr ("<<anonymous net>>")
-              , new net_widget (net, _function)
+              , new net_widget (_data_manager, net, _function)
               );
           }
         };
 
         document_view* document_view_factory
-          (const data::handle::function& function)
+          (data::manager& data_manager, const data::handle::function& function)
         {
           //! \todo Why is putting a temporary into apply_visitor impossible?!
           const boost::variant < data::handle::expression
@@ -291,7 +292,7 @@ namespace fhg
                                , data::handle::net
                                > content (function.content_handle());
           return boost::apply_visitor
-            (document_view_for_handle (function), content);
+            (document_view_for_handle (data_manager, function), content);
         }
       }
 
@@ -300,7 +301,7 @@ namespace fhg
       {
         _undo_group->addStack (&function.document()->change_manager());
 
-        document_view* doc_view (document_view_factory (function));
+        document_view* doc_view (document_view_factory (_data_manager, function));
 
         if (!_accessed_widgets.empty())
         {
