@@ -13,6 +13,7 @@
 #include <pnete/data/handle/place_map.fwd.hpp>
 #include <pnete/data/handle/port.fwd.hpp>
 #include <pnete/data/handle/transition.fwd.hpp>
+#include <pnete/data/manager.fwd.hpp>
 #include <pnete/ui/graph/base_item.fwd.hpp>
 #include <pnete/ui/graph/connectable_item.fwd.hpp>
 #include <pnete/ui/graph/connection.fwd.hpp>
@@ -48,7 +49,8 @@ namespace fhg
           Q_OBJECT;
 
         public:
-          explicit scene_type ( const data::handle::net& net
+          explicit scene_type ( data::manager&
+                              , const data::handle::net& net
                               , const data::handle::function& function
                               , QObject* parent = nullptr
                               );
@@ -105,6 +107,7 @@ namespace fhg
           pending_connection* _pending_connection;
           QPointF _mouse_position;
 
+          data::manager& _data_manager;
           data::handle::net _net;
           data::handle::function _function;
 

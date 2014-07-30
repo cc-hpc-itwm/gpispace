@@ -24,6 +24,7 @@ namespace fhg
       {}
 
       TransitionLibraryItem::TransitionLibraryItem ( const QFileInfo& fileinfo
+                                                   , data::manager& data_manager
                                                    , bool is_folder
                                                    , bool trusted
                                                    , QObject* parent
@@ -35,7 +36,7 @@ namespace fhg
         , _name ( _is_folder
                 ? _fileinfo.baseName()
                 : QString::fromStdString
-                  ( data::manager::instance().load (_fileinfo.absoluteFilePath())
+                  ( data_manager.load (_fileinfo.absoluteFilePath())
                   .get().name().get_value_or ("<<anonymous>>")
                   )
                 )

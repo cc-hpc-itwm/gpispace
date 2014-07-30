@@ -2,6 +2,8 @@
 
 #include <pnete/pnete.hpp>
 
+#include <pnete/data/manager.hpp>
+
 #include <iostream>
 #include <stdexcept>
 
@@ -118,6 +120,7 @@ namespace fhg
         (std::list<util::scoped_dlhandle> const& plugins, int& argc, char *argv[])
       : QApplication (argc, argv)
       , _splash (QPixmap (":/pente.png"))
+      , _data_manager (data::manager::instance())
       , _plugins (plugins)
       , _editor_windows ()
     {}
@@ -167,7 +170,7 @@ namespace fhg
 
     ui::editor_window* PetriNetEditor::create_editor_window()
     {
-      _editor_windows << new ui::editor_window (_plugins);
+      _editor_windows << new ui::editor_window (_data_manager, _plugins);
 
       return _editor_windows.back();
     }
