@@ -1,7 +1,5 @@
 # mirko.rahn@itwm.fraunhofer.de
 
-fhg_add_application_test (example_concurrent_we-exec SCRIPT test.we-exec)
-
 include_directories (${UTIL_INCLUDE_DIR})
 include_directories (${CMAKE_SOURCE_DIR})
 
