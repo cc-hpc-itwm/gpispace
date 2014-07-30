@@ -5,6 +5,7 @@
 
 #include <pnete/data/handle/function.hpp>
 #include <pnete/data/handle/net.fwd.hpp>
+#include <pnete/data/manager.fwd.hpp>
 
 #include <util/qt/no_undoredo_lineedit.fwd.hpp>
 
@@ -21,7 +22,8 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        net_widget ( const data::handle::net&
+        net_widget ( data::manager&
+                   , const data::handle::net&
                    , const data::handle::function&
                    , QWidget* parent = nullptr
                    );

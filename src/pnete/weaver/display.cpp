@@ -266,11 +266,13 @@ namespace fhg
 
       namespace display
       {
-        ui::graph::scene_type* net ( const data::handle::net& net
+        ui::graph::scene_type* net ( data::manager& data_manager
+                                   , const data::handle::net& net
                                    , const data::handle::function& parent
                                    )
         {
-          ui::graph::scene_type* scene (new ui::graph::scene_type (net, parent));
+          ui::graph::scene_type* scene
+            (new ui::graph::scene_type (data_manager, net, parent));
 
           weaver::net wn (net.document(), scene, parent.id());
           from::net (&wn, net.id());

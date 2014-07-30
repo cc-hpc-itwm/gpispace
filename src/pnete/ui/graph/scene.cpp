@@ -100,13 +100,15 @@ namespace fhg
           }
         }
 
-        scene_type::scene_type ( const data::handle::net& net
+        scene_type::scene_type ( data::manager& data_manager
+                               , const data::handle::net& net
                                , const data::handle::function& function
                                , QObject* parent
                                )
           : QGraphicsScene (parent)
           , _pending_connection (nullptr)
           , _mouse_position (QPointF (0.0, 0.0))
+          , _data_manager (data_manager)
           , _net (net)
           , _function (function)
           //! \todo Don't default to center of scene, but center of visible scene!
@@ -887,7 +889,7 @@ namespace fhg
             for (const QString& path : paths)
             {
               net().add_transition
-                ( data::manager::instance().load (path).get().clone
+                ( _data_manager.load (path).get().clone
                   (boost::none, net().id().id_mapper())
                 , event->scenePos()
                 );

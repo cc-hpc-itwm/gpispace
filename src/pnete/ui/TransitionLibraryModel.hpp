@@ -3,6 +3,8 @@
 #ifndef _PNETE_UI_TRANSITION_LIBRARY_MODEL_HPP
 #define _PNETE_UI_TRANSITION_LIBRARY_MODEL_HPP 1
 
+#include <pnete/data/manager.fwd.hpp>
+
 #include <QAbstractItemModel>
 #include <QObject>
 
@@ -25,7 +27,7 @@ namespace fhg
         Q_OBJECT
 
         public:
-          TransitionLibraryModel (QWidget* parent = nullptr);
+          TransitionLibraryModel (data::manager&, QWidget* parent = nullptr);
 
           static const QString mimeType;
 
@@ -49,6 +51,8 @@ namespace fhg
         private:
           void setFileSystemWatcher(const QString& path);
           void readContentFromDirectoryRecursive(TransitionLibraryItem* currentRoot, const bool& trusted, const QString& path);
+
+          data::manager& _data_manager;
 
           QFileSystemWatcher* _fileSystemWatcher;
           TransitionLibraryItem* _items;
