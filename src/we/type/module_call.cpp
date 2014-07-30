@@ -88,18 +88,44 @@ namespace we
     }
 
     std::list<std::pair<local::range, global::range>>
-      module_call_t::puts (expr::eval::context const& output) const
+      module_call_t::puts_evaluated_before_call
+        (expr::eval::context const& output) const
     {
       std::list<std::pair<local::range, global::range>> puts;
 
       for (type::memory_transfer const& mp : memory_puts())
       {
-        expr::eval::context context (output);
+        if (mp.not_modified_in_module_call().get_value_or (false))
+        {
+          expr::eval::context context (output);
 
-        zip ( evaluate<local::range> (context, mp.local())
-            , evaluate<global::range> (context, mp.global())
-            , puts
-            );
+          zip ( evaluate<local::range> (context, mp.local())
+              , evaluate<global::range> (context, mp.global())
+              , puts
+              );
+        }
+      }
+
+      return puts;
+    }
+
+    std::list<std::pair<local::range, global::range>>
+      module_call_t::puts_evaluated_after_call
+        (expr::eval::context const& output) const
+    {
+      std::list<std::pair<local::range, global::range>> puts;
+
+      for (type::memory_transfer const& mp : memory_puts())
+      {
+        if (!mp.not_modified_in_module_call().get_value_or (false))
+        {
+          expr::eval::context context (output);
+
+          zip ( evaluate<local::range> (context, mp.local())
+              , evaluate<global::range> (context, mp.global())
+              , puts
+              );
+        }
       }
 
       return puts;

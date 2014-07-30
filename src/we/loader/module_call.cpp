@@ -167,6 +167,10 @@ namespace we
       transfer
         (fvmGetGlobalData, memory_buffer, module_call.gets (input (act)));
 
+      std::list<std::pair<local::range, global::range>> const
+        puts_evaluated_before_call
+          (module_call.puts_evaluated_before_call (input (act)));
+
       expr::eval::context out (input (act));
 
       loader[module_call.module()].call
@@ -182,7 +186,11 @@ namespace we
         act.add_output (port_id, out.value (port.name()));
       }
 
-      transfer (fvmPutGlobalData, memory_buffer, module_call.puts (out));
+      transfer (fvmPutGlobalData, memory_buffer, puts_evaluated_before_call);
+      transfer ( fvmPutGlobalData
+               , memory_buffer
+               , module_call.puts_evaluated_after_call (out)
+               );
     }
   }
 }

@@ -15,9 +15,14 @@ namespace we
     struct memory_transfer
     {
     public:
-      memory_transfer (std::string const& global, std::string const& local)
+      memory_transfer
+        ( std::string const& global
+        , std::string const& local
+        , boost::optional<bool> const& not_modified_in_module_call
+        )
         : _global (global)
         , _local (local)
+        , _not_modified_in_module_call (not_modified_in_module_call)
       {}
       std::string const& global() const
       {
@@ -27,9 +32,14 @@ namespace we
       {
         return _local;
       }
+      boost::optional<bool> const& not_modified_in_module_call() const
+      {
+        return _not_modified_in_module_call;
+      }
     private:
       std::string _global;
       std::string _local;
+      boost::optional<bool> _not_modified_in_module_call;
 
       friend class boost::serialization::access;
       template<class Archive>
@@ -49,6 +59,7 @@ namespace boost
     {
       ar << BOOST_SERIALIZATION_NVP (mt->global());
       ar << BOOST_SERIALIZATION_NVP (mt->local());
+      ar << BOOST_SERIALIZATION_NVP (mt->not_modified_in_module_call());
     }
 
     template<class Archive>
@@ -57,9 +68,12 @@ namespace boost
     {
       std::string global;
       std::string local;
+      boost::optional<bool> not_modified_in_module_call;
       ar >> BOOST_SERIALIZATION_NVP (global);
       ar >> BOOST_SERIALIZATION_NVP (local);
-      ::new (mt) we::type::memory_transfer (global, local);
+      ar >> BOOST_SERIALIZATION_NVP (not_modified_in_module_call);
+      ::new (mt) we::type::memory_transfer
+          (global, local, not_modified_in_module_call);
     }
   }
 }
