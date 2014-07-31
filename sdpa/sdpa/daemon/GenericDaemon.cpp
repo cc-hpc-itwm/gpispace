@@ -79,11 +79,6 @@ namespace
     GenericDaemon::virtual_memory_api::virtual_memory_api (boost::filesystem::path const& socket)
       : _ (socket.string())
     {
-      while (!boost::filesystem::exists (socket))
-      {
-        std::this_thread::sleep_for (std::chrono::milliseconds (200));
-      }
-
       _.start();
     }
 
