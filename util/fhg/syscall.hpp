@@ -20,7 +20,6 @@ namespace fhg
     int dup (int olfd, int newfd);
     [[noreturn]] void execve (const char* filename, char* const argv[], char* const envp[]);
     [[noreturn]] void execvp (const char* filename, char* const argv[]);
-    [[noreturn]] void execvpe (const char* filename, char* const argv[], char *const envp[]);
     pid_t fork();
     void ftruncate (int fd, off_t length);
     char* getenv (const char* name);
