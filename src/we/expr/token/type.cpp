@@ -82,7 +82,6 @@ namespace expr
         case _set_empty: return os << "set_empty";
         case _set_size: return os << "set_size";
         case _set_is_subset: return os << "set_is_subset";
-        case _len: return os << "len";
         case _substr: return os << "substr";
         case abs: return os << "abs";
         case sep: return os << ", ";
