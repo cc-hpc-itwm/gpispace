@@ -296,14 +296,6 @@ namespace pnet
             default: throw exception::eval (_token, l, r);
             }
           }
-          value_type operator() (std::string l, long r) const
-          {
-            switch (_token)
-            {
-            case expr::token::_substr: return l.substr (0, r);
-            default: throw exception::eval (_token, l, r);
-            }
-          }
           value_type operator() (bitsetofint::type l, bitsetofint::type r) const
           {
             switch (_token)

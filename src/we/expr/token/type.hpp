@@ -41,7 +41,6 @@ namespace expr
     , _set_pop, _set_top, _set_empty, _set_size
     , _set_is_subset
     , _len
-    , _substr
 
     , sep                     // comma
     , lpr, rpr                // parenthesis
