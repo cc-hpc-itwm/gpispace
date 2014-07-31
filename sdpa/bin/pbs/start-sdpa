@@ -537,8 +537,8 @@ if $gpi_enabled ; then
     # the user specified the same as GPI uses!
     for host in $(sort -u "${nodefile}")
     do
-      echo -n "I: Checking for virtual memory socket on '$host' "
-      ssh "$host" "for ((i=0; i < $((10 * ${time_to_wait_per_vmem_socket_in_seconds})); ++i)); do \
+      echo -n "I: Checking for virtual memory socket on '${host}' "
+      ssh "${host}" "for ((i=0; i < $((10 * ${time_to_wait_per_vmem_socket_in_seconds})); ++i)); do \
                      if [ ! -e ${gpi_socket} ]; then \
                        echo -n .; \
                        sleep 0.1; \
@@ -547,10 +547,10 @@ if $gpi_enabled ; then
                      fi \
                    done; \
                    exit 1"
-      if [ $? -ne 0 ]
+      if [ ${?} -ne 0 ]
       then
         echo "FAILED"
-        error 3 "could not start virtual memory layer: socket failed to on '$host' appear after ${time_to_wait_per_vmem_socket_in_seconds} seconds"
+        error 3 "could not start virtual memory layer: socket failed to on '${host}' appear after ${time_to_wait_per_vmem_socket_in_seconds} seconds"
       else
         echo "OK"
       fi
