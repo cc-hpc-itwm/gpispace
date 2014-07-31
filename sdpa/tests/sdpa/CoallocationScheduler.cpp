@@ -287,13 +287,13 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_different_matching_degs_diff
                                                               , "worker_08"
                                                               };
 
-  const std::set<sdpa::worker_id_t> set_assigned_jobs
+  const std::set<sdpa::worker_id_t> set_assigned_workers
     (sdpa::daemon::CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
        (mmap_match_deg_worker, n_req_workers, map_host_transfer_cost)
     );
 
 
-  BOOST_REQUIRE (set_assigned_jobs == set_expected_assignment);
+  BOOST_REQUIRE (set_assigned_workers == set_expected_assignment);
 }
 
 BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_different_matching_degs_equal_costs)
@@ -342,13 +342,13 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_different_matching_degs_equa
                                                               , "worker_16"
                                                               };
 
-  const std::set<sdpa::worker_id_t> set_assigned_jobs
+  const std::set<sdpa::worker_id_t> set_assigned_workers
     (sdpa::daemon::CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
       (mmap_match_deg_worker, n_req_workers, map_host_transfer_cost)
     );
 
 
-  BOOST_REQUIRE (set_assigned_jobs == set_expected_assignment);
+  BOOST_REQUIRE (set_assigned_workers == set_expected_assignment);
 }
 
 BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_different_costs)
@@ -397,12 +397,12 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_differen
                                                               , "worker_13"
                                                               };
 
- const std::set<sdpa::worker_id_t> set_assigned_jobs
+ const std::set<sdpa::worker_id_t> set_assigned_workers
     (sdpa::daemon::CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
       (mmap_match_deg_worker, n_req_workers, map_host_transfer_cost)
     );
 
-  BOOST_REQUIRE (set_assigned_jobs == set_expected_assignment);
+  BOOST_REQUIRE (set_assigned_workers == set_expected_assignment);
 }
 
 BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_equal_costs)
@@ -451,10 +451,10 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_equal_co
                                                               , "worker_05"
                                                               };
 
-  const std::set<sdpa::worker_id_t> set_assigned_jobs
+  const std::set<sdpa::worker_id_t> set_assigned_workers
     (sdpa::daemon::CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
       (mmap_match_deg_worker, n_req_workers, map_host_transfer_cost)
     );
 
-  BOOST_REQUIRE (set_assigned_jobs == set_expected_assignment);
+  BOOST_REQUIRE (set_assigned_workers == set_expected_assignment);
 }
