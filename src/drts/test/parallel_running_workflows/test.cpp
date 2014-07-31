@@ -58,8 +58,6 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
 
   gspc::installation const installation (vm);
 
-  gspc::scoped_runtime_system const drts (vm, installation, "worker:2");
-
   fhg::util::temporary_file const temporary_file_a
     (shared_directory / boost::filesystem::unique_path());
   fhg::util::temporary_file const temporary_file_b
@@ -82,6 +80,8 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
     , {{"LIB_DESTDIR", installation_dir.string()}}
     , "net lib install"
     );
+
+  gspc::scoped_runtime_system const drts (vm, installation, "worker:2");
 
   auto submit_fun
     ( [&filename_a, &filename_b, &drts]
