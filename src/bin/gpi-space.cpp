@@ -28,6 +28,7 @@
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/gpi/fake_api.hpp>
 #include <gpi-space/gpi/real_api.hpp>
+#include <gpi-space/gpi/gaspi.hpp>
 
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/container/manager.hpp>
@@ -89,7 +90,7 @@ static int configure_logging (const config_t *cfg, const char* logfile);
 
 namespace
 {
-  enum requested_api_t { API_auto, API_real, API_fake };
+  enum requested_api_t { API_auto, API_real, API_fake, API_gaspi };
   std::unique_ptr<gpi_api_t> create_gpi_api
     (requested_api_t requested_api, bool is_master)
   {
@@ -110,6 +111,10 @@ namespace
     else if (requested_api == API_real)
     {
       return fhg::util::make_unique <gpi::api::real_gpi_api_t> (is_master);
+    }
+    else if (requested_api == API_gaspi)
+    {
+      return fhg::util::make_unique <gpi::api::gaspi_t> (is_master);
     }
     else // if (requested_api == API_fake)
     {
@@ -451,9 +456,10 @@ int main (int ac, char *av[])
       {
         requested_api = strcmp (av[i], "auto") == 0 ? API_auto
           : strcmp (av[i], "real") == 0 ? API_real
+          : strcmp (av[i], "gaspi") == 0 ? API_gaspi
           : strcmp (av[i], "fake") == 0 ? API_fake
           : throw std::runtime_error
-            ("invalid argument to --gpi-api: must be 'auto', 'real' or 'fake'");
+            ("invalid argument to --gpi-api: must be 'auto', 'real', 'gaspi' or 'fake'");
         ++i;
       }
       else
