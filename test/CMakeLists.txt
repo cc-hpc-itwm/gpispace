@@ -1,5 +1,3 @@
-  find_package (HWLOC REQUIRED QUIET)
-
 include_directories (${CMAKE_SOURCE_DIR})
 include_directories (${UTIL_INCLUDE_DIR})
 
