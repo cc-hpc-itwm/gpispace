@@ -28,6 +28,9 @@ namespace we
       {
         std::copy ((char *)x, (char *)x + sizeof (*x), std::back_inserter(_v));
       }
+      template<typename T> explicit bytearray (T const& x)
+        : bytearray (&x)
+      {}
       template<typename T>
       std::size_t copy (T* const x) const
       {
