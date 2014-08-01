@@ -1,13 +1,33 @@
 add_subdirectory(sdpa)
 add_subdirectory(bin)
 
-fhg_add_application_test (re_register_after_master_connection_lost
-  SCRIPT re_register_after_master_connection_lost
-  RESOURCE_LOCK starts_drts_environment)
+configure_file (
+  re_register_after_master_connection_lost.sh.in
+  re_register_after_master_connection_lost.sh
+  @ONLY
+)
+add_test (NAME re_register_after_master_connection_lost
+  COMMAND bash re_register_after_master_connection_lost.sh
+)
+set_tests_properties (re_register_after_master_connection_lost
+  PROPERTIES REQUIRED_FILES "${FILES_REQUIRED_IN_INSTALLATION}"
+             LABELS "requires_installation"
+             RESOURCE_LOCK starts_drts_environment
+)
 
-fhg_add_application_test (properly_find_master_when_started_after_agent
-  SCRIPT properly_find_master_when_started_after_agent
-  RESOURCE_LOCK starts_drts_environment)
+configure_file (
+  properly_find_master_when_started_after_agent.sh.in
+  properly_find_master_when_started_after_agent.sh
+  @ONLY
+)
+add_test (NAME properly_find_master_when_started_after_agent
+  COMMAND bash properly_find_master_when_started_after_agent.sh
+)
+set_tests_properties (properly_find_master_when_started_after_agent
+  PROPERTIES REQUIRED_FILES "${FILES_REQUIRED_IN_INSTALLATION}"
+             LABELS "requires_installation"
+             RESOURCE_LOCK starts_drts_environment
+)
 
 include_directories (${UTIL_INCLUDE_DIR})
 include_directories (${CMAKE_SOURCE_DIR})
