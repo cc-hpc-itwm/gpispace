@@ -1,9 +1,5 @@
 # mirko.rahn@itwm.fraunhofer.de
 
-fhg_add_application_test (tutorial_sum_mod
-  SCRIPT mod
-)
-
 include_directories (${UTIL_INCLUDE_DIR})
 include_directories (${CMAKE_SOURCE_DIR})
 
