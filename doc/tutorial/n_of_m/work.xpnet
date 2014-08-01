@@ -18,13 +18,12 @@
           <in name="n" type="long"/>
           <in name="config" type="T"/>
           <module name="work" function="work (v, n, config)">
-            <cinclude href="iostream"/>
+            <cinclude href="fhglog/LogMacros.hpp"/>
             <code><![CDATA[
-            std::cout << "### work " << v.id << " of [0.." << n << ")"
-            << std::endl << "credit " << v.credit
-            << std::endl << "config " << config
-            << std::endl
-            ;
+            LOG (INFO, "### work " << v.id << " of [0.." << n << ")"
+                    << " credit " << v.credit
+                    << " config " << config
+            );
             ]]></code>
           </module>
         </defun>
