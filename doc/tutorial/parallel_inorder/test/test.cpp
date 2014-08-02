@@ -102,11 +102,11 @@ BOOST_AUTO_TEST_CASE (tutorial_parallel_inorder)
     );
 
   std::vector<char> const expected_file_content
-    { '\0','\0','\0'
-    , '\1','\1','\1'
-    , '\2','\2','\2','\2','\2','\2','\2','\2','\2','\2'
-    , '\3','\3','\3','\3','\3','\3'
-    , '\4'
+    { 0, 0, 0
+    , 1, 1, 1
+    , 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+    , 3, 3, 3, 3, 3, 3
+    , 4
     };
 
   std::string const file_content (fhg::util::read_file (output_file.string()));
