@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
     {
       throw std::runtime_error
         (( boost::format
-           ("Could not 'make sum_modul': error code '%1%', command was '%2%'")
+           ("Could not 'make sum_module': error code '%1%', command was '%2%'")
          % ec
          % make_module.str()
          ).str()
