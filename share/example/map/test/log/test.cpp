@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE (share_example_map_log)
 
   std::ostringstream topology_description;
 
-  topology_description << " worker:2," << (2 * size_block);
+  topology_description << "worker:2," << (2 * size_block);
 
   gspc::scoped_runtime_system const drts
     (vm, installation, topology_description.str());

@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
     (vm[option_num_bytes].as<validators::positive_integral<unsigned long>>());
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, " worker:1," + std::to_string (num_bytes));
+    (vm, installation, "worker:1," + std::to_string (num_bytes));
 
   gspc::vmem_allocation const allocation_data (drts.alloc (num_bytes, "data"));
 
