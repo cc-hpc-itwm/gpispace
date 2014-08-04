@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE (sdpa_test_drts_should_handle_multiple_workflows_being_subm
     , "net lib install"
     );
 
-    gspc::scoped_runtime_system const drts (vm, installation, " work:1");
+    gspc::scoped_runtime_system const drts (vm, installation, "work:1");
 
     std::string const challenge (fhg::util::random_string_without ("\"\\"));
 

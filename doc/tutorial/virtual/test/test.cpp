@@ -1,62 +1,46 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE share_example_vmem_1_to_n
+#define BOOST_TEST_MODULE tutorial_virtual
 #include <boost/test/unit_test.hpp>
 
 #include <drts/drts.hpp>
-#include <drts/virtual_memory.hpp>
 
 #include <test/make.hpp>
 #include <test/scoped_nodefile_with_localhost.hpp>
 #include <test/scoped_state_directory.hpp>
-#include <test/shared_directory.hpp>
 #include <test/source_directory.hpp>
+#include <test/shared_directory.hpp>
 
-#include <we/type/literal/control.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
-#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/temporary_path.hpp>
 
-#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
 #include <map>
 
-BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
+BOOST_AUTO_TEST_CASE (tutorial_virtual)
 {
-  namespace validators = fhg::util::boost::program_options;
-
   boost::program_options::options_description options_description;
 
-  constexpr char const* const option_num_bytes ("num-bytes");
-
-  options_description.add_options()
-    ( option_num_bytes
-    , boost::program_options::value
-      <validators::positive_integral<unsigned long>>()->required()
-    , "size of bytes per worker"
-    )
-    ;
-
-  options_description.add (test::options::shared_directory());
   options_description.add (test::options::source_directory());
+  options_description.add (test::options::shared_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
-  options_description.add (gspc::options::virtual_memory());
 
   boost::program_options::variables_map vm;
   boost::program_options::store
     ( boost::program_options::command_line_parser
       ( boost::unit_test::framework::master_test_suite().argc
       , boost::unit_test::framework::master_test_suite().argv
-      ).options (options_description).run()
+      )
+    . options (options_description).run()
     , vm
     );
 
   fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "share_example_vmem_1_to_n");
+    (test::shared_directory (vm) / "tutorial_virtual");
 
   test::scoped_state_directory const state_directory (shared_directory, vm);
   test::scoped_nodefile_with_localhost const nodefile_with_localhost
@@ -67,10 +51,6 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
   boost::filesystem::path const installation_dir (_installation_dir);
 
   gspc::set_application_search_path (vm, installation_dir);
-  gspc::set_virtual_memory_socket ( vm
-                                  , boost::filesystem::temp_directory_path()
-                                  / boost::filesystem::unique_path()
-                                  );
 
   vm.notify();
 
@@ -78,39 +58,28 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
 
   test::make const make
     ( installation
-    , "vmem_1_to_n"
+    , "work_and_wait"
     , test::source_directory (vm)
-    , {{"LIB_DESTDIR", installation_dir.string()}}
+    , { {"LIB_DESTDIR", installation_dir.string()}
+      , {"PNETC_OPTS", "-I.."}
+      }
     , "net lib install"
     );
 
-  unsigned long const num_bytes
-    (vm[option_num_bytes].as<validators::positive_integral<unsigned long>>());
-
-  gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:1," + std::to_string (num_bytes));
-
-  gspc::vmem_allocation const allocation_data (drts.alloc (num_bytes, "data"));
+  gspc::scoped_runtime_system const drts (vm, installation, "work:4");
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( drts.put_and_run
-      ( make.build_directory() / "vmem_1_to_n.pnet"
-      , { {"memory", allocation_data.global_memory_range()}
-        , {"outer", 5L}
-        , {"inner", 5L}
-        , {"seed", 3141L}
-        }
-      )
+      (make.build_directory() / "work_and_wait.pnet", {{"n", 5L}})
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 1);
 
-  std::string const port_out ("out");
+  std::string const port_done ("done");
 
-  BOOST_REQUIRE_EQUAL (result.count (port_out), 1);
-
+  BOOST_REQUIRE_EQUAL (result.count (port_done), 1);
   BOOST_CHECK_EQUAL
-    ( result.find (port_out)->second
+    ( result.find (port_done)->second
     , pnet::type::value::value_type (we::type::literal::control())
     );
 }

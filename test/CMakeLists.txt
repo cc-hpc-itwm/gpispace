@@ -1,18 +1,3 @@
-  find_package (HWLOC REQUIRED QUIET)
-
-  set (prefixes
-    die
-    dir_build
-    env
-    error
-    measured
-    measurement
-  )
-
-  foreach (prefix ${prefixes})
-    configure_file (${prefix}.sh.in ${prefix}.sh @ONLY)
-  endforeach()
-
 include_directories (${CMAKE_SOURCE_DIR})
 include_directories (${UTIL_INCLUDE_DIR})
 

@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE share_example_n_of_m
+#define BOOST_TEST_MODULE xml_transport_bytearray
 #include <boost/test/unit_test.hpp>
 
 #include <drts/drts.hpp>
@@ -8,38 +8,25 @@
 #include <test/make.hpp>
 #include <test/scoped_nodefile_with_localhost.hpp>
 #include <test/scoped_state_directory.hpp>
-#include <test/shared_directory.hpp>
 #include <test/source_directory.hpp>
+#include <test/shared_directory.hpp>
 
-#include <we/type/literal/control.hpp>
 #include <we/type/value.hpp>
+#include <we/type/value/read.hpp>
 #include <we/type/value/boost/test/printer.hpp>
-
-#include <fhg/util/boost/program_options/validators/executable.hpp>
 
 #include <fhg/util/temporary_path.hpp>
 
-#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
 #include <map>
 
-BOOST_AUTO_TEST_CASE (share_example_n_of_m)
+BOOST_AUTO_TEST_CASE (xml_transport_bytearray)
 {
-  namespace validators = fhg::util::boost::program_options;
-
   boost::program_options::options_description options_description;
 
-  constexpr char const* const option_command ("command");
-
-  options_description.add_options()
-    ( option_command
-    , boost::program_options::value<validators::executable>()->required()
-    , "command to execute"
-    );
-
-  options_description.add (test::options::shared_directory());
   options_description.add (test::options::source_directory());
+  options_description.add (test::options::shared_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
 
@@ -54,7 +41,7 @@ BOOST_AUTO_TEST_CASE (share_example_n_of_m)
     );
 
   fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "share_example_n_of_m");
+    (test::shared_directory (vm) / "xml_transport_bytearray");
 
   test::scoped_state_directory const state_directory (shared_directory, vm);
   test::scoped_nodefile_with_localhost const nodefile_with_localhost
@@ -72,39 +59,26 @@ BOOST_AUTO_TEST_CASE (share_example_n_of_m)
 
   test::make const make
     ( installation
-    , "n_of_m"
+    , "bytearray"
     , test::source_directory (vm)
-    , { { "LIB_DESTDIR", installation_dir.string()}
-      , { "CXXLIBRARYPATHS"
-        , (installation.gspc_home() / "libexec" / "sdpa").string()
-        }
-      }
+    , {{"LIB_DESTDIR", installation_dir.string()}}
     , "net lib install"
     );
 
-  gspc::scoped_runtime_system const drts (vm, installation, "worker:12");
+  pnet::type::value::value_type const point
+    (pnet::type::value::read ("Struct [x := 1.0, y := 2.0]"));
+
+  gspc::scoped_runtime_system const drts (vm, installation, "work:2");
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( drts.put_and_run
-      ( make.build_directory() / "n_of_m.pnet"
-      , { {"m", 25L}
-        , {"parallel", 2L}
-        , {"cmd"
-          , boost::filesystem::path
-              (vm[option_command].as<validators::executable>()).string()
-          }
-        }
-      )
+      (make.build_directory() / "bytearray.pnet", {{"point", point}})
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 1);
 
-  std::string const port_done ("done");
+  std::string const port_point ("point");
 
-  BOOST_REQUIRE_EQUAL (result.count (port_done), 1);
-
-  BOOST_CHECK_EQUAL
-    ( result.find (port_done)->second
-    , pnet::type::value::value_type (we::type::literal::control())
-    );
+  BOOST_REQUIRE_EQUAL (result.count (port_point), 1);
+  BOOST_CHECK_EQUAL (result.find (port_point)->second, point);
 }

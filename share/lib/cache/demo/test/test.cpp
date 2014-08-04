@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE share_example_n_of_m
+#define BOOST_TEST_MODULE share_lib_cache_demo
 #include <boost/test/unit_test.hpp>
 
 #include <drts/drts.hpp>
@@ -8,38 +8,26 @@
 #include <test/make.hpp>
 #include <test/scoped_nodefile_with_localhost.hpp>
 #include <test/scoped_state_directory.hpp>
-#include <test/shared_directory.hpp>
 #include <test/source_directory.hpp>
+#include <test/shared_directory.hpp>
 
-#include <we/type/literal/control.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
-#include <fhg/util/boost/program_options/validators/executable.hpp>
-
 #include <fhg/util/temporary_path.hpp>
 
-#include <boost/filesystem.hpp>
+#include <boost/format.hpp>
 #include <boost/program_options.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 #include <map>
 
-BOOST_AUTO_TEST_CASE (share_example_n_of_m)
+BOOST_AUTO_TEST_CASE (share_lib_cache_demo)
 {
-  namespace validators = fhg::util::boost::program_options;
-
   boost::program_options::options_description options_description;
 
-  constexpr char const* const option_command ("command");
-
-  options_description.add_options()
-    ( option_command
-    , boost::program_options::value<validators::executable>()->required()
-    , "command to execute"
-    );
-
-  options_description.add (test::options::shared_directory());
   options_description.add (test::options::source_directory());
+  options_description.add (test::options::shared_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
 
@@ -54,7 +42,7 @@ BOOST_AUTO_TEST_CASE (share_example_n_of_m)
     );
 
   fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "share_example_n_of_m");
+    (test::shared_directory (vm) / "share_lib_cache_demo");
 
   test::scoped_state_directory const state_directory (shared_directory, vm);
   test::scoped_nodefile_with_localhost const nodefile_with_localhost
@@ -72,39 +60,56 @@ BOOST_AUTO_TEST_CASE (share_example_n_of_m)
 
   test::make const make
     ( installation
-    , "n_of_m"
+    , "demo"
     , test::source_directory (vm)
-    , { { "LIB_DESTDIR", installation_dir.string()}
-      , { "CXXLIBRARYPATHS"
-        , (installation.gspc_home() / "libexec" / "sdpa").string()
+    , { {"LIB_DESTDIR", installation_dir.string()}
+      , {"PNETC_OPTS", ( boost::format ("-I%1%")
+                       % (installation.gspc_home() / "share" / "sdpa" / "xml")
+                       ).str()
         }
       }
     , "net lib install"
     );
 
-  gspc::scoped_runtime_system const drts (vm, installation, "worker:12");
+  gspc::scoped_runtime_system const drts (vm, installation, "work:4");
+
+  long const num_id (6);
+  long const multiplicity (4);
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( drts.put_and_run
-      ( make.build_directory() / "n_of_m.pnet"
-      , { {"m", 25L}
-        , {"parallel", 2L}
-        , {"cmd"
-          , boost::filesystem::path
-              (vm[option_command].as<validators::executable>()).string()
-          }
+      ( make.build_directory() / "demo.pnet"
+      , { {"num_slots", 4L}
+        , {"num_id", num_id}
+        , {"multiplicity", multiplicity}
         }
       )
     );
 
-  BOOST_REQUIRE_EQUAL (result.size(), 1);
+  BOOST_REQUIRE_EQUAL (result.size(), num_id * multiplicity);
 
-  std::string const port_done ("done");
+  std::string const port_id ("id");
 
-  BOOST_REQUIRE_EQUAL (result.count (port_done), 1);
+  BOOST_REQUIRE_EQUAL (result.count (port_id), num_id * multiplicity);
 
-  BOOST_CHECK_EQUAL
-    ( result.find (port_done)->second
-    , pnet::type::value::value_type (we::type::literal::control())
-    );
+  std::map<pnet::type::value::value_type, int> number_of_id_in_output;
+
+  for ( pnet::type::value::value_type id
+      : result.equal_range (port_id) | boost::adaptors::map_values
+      )
+  {
+    ++number_of_id_in_output[id];
+  }
+
+  BOOST_REQUIRE_EQUAL (number_of_id_in_output.size(), num_id);
+
+  for (long id (0); id < num_id; ++id)
+  {
+    BOOST_REQUIRE_EQUAL
+      (number_of_id_in_output.count (pnet::type::value::value_type (id)), 1);
+    BOOST_REQUIRE_EQUAL
+      ( number_of_id_in_output.at (pnet::type::value::value_type (id))
+      , multiplicity
+      );
+  }
 }

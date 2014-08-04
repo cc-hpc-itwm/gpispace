@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE (share_example_split_join)
     , "net"
     );
 
-  gspc::scoped_runtime_system const drts (vm, installation, " work:4");
+  gspc::scoped_runtime_system const drts (vm, installation, "work:4");
 
   std::multimap<std::string, pnet::type::value::value_type> input;
 

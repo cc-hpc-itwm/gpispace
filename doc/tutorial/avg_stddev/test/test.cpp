@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
       );
   }
 
-  gspc::scoped_runtime_system const drts (vm, installation, " worker:4");
+  gspc::scoped_runtime_system const drts (vm, installation, "worker:4");
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     (drts.put_and_run ( make.build_directory() / "avg_stddev.pnet"

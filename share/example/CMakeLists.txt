@@ -2,7 +2,6 @@
 
 add_subdirectory (compiler-wrapper)
 add_subdirectory (concurrent)
-add_subdirectory (inotify/test)
 add_subdirectory (n_of_m/test)
 add_subdirectory (map/test/log)
 add_subdirectory (map/test/transform_file)
