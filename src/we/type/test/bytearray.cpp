@@ -5,6 +5,8 @@
 
 #include <we/type/bytearray.hpp>
 
+#include <fhg/util/random_string.hpp>
+
 #include <inttypes.h>
 
 BOOST_AUTO_TEST_CASE (ba_char)
@@ -59,6 +61,13 @@ BOOST_AUTO_TEST_CASE (ba_convert)
 
   BOOST_CHECK_EQUAL (x.copy (&v), 8);
   BOOST_CHECK_EQUAL (v, (1UL << 63));
+}
+
+BOOST_AUTO_TEST_CASE (ba_to_string_after_ctor_string_is_id)
+{
+  std::string const s (fhg::util::random_string());
+
+  BOOST_REQUIRE_EQUAL (we::type::bytearray (s).to_string(), s);
 }
 
 #include <sstream>
