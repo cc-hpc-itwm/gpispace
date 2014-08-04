@@ -253,7 +253,6 @@ namespace expr
         case token::_set_top:
         case token::_set_empty:
         case token::_set_size: unary (op_stack.top(), k); break;
-        case token::_substr:
         case token::mul:
         case token::div:
         case token::divint:
