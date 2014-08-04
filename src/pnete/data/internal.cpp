@@ -13,6 +13,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QSettings>
 
 namespace fhg
 {
@@ -72,8 +73,32 @@ namespace fhg
         , _change_manager (nullptr)
       {}
 
+      namespace
+      {
+        std::vector<std::string> get_includes_from_settings()
+        {
+          std::vector<std::string> includes;
+
+          QSettings settings;
+
+          const int size (settings.beginReadArray ("template_includes"));
+
+          for (int i (0); i < size; ++i)
+          {
+            settings.setArrayIndex (i);
+
+            includes.emplace_back
+              (settings.value ("path").toString().toStdString());
+          }
+
+          settings.endArray();
+
+          return includes;
+        }
+      }
+
       internal_type::internal_type (const QString& filename)
-        : _state()
+        : _state (get_includes_from_settings())
         , _function ( ::xml::parse::just_parse ( _state
                                                , filename.toStdString()
                                                )
