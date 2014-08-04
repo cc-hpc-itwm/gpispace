@@ -32,7 +32,7 @@ namespace
                 )
   {
     gspc::scoped_runtime_system const drts
-      (vm, installation, " worker:" + std::to_string (num_worker));
+      (vm, installation, "worker:" + std::to_string (num_worker));
 
     std::multimap<std::string, pnet::type::value::value_type> const result
       (drts.put_and_run ( make.build_directory() / "workerlist.pnet"

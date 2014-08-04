@@ -75,7 +75,7 @@ namespace
     pnet::type::value::poke ("description", config, std::string ("test"));
 
     gspc::scoped_runtime_system const drts
-      (vm, installation, " work:" + std::to_string (num_worker));
+      (vm, installation, "work:" + std::to_string (num_worker));
 
     std::multimap<std::string, pnet::type::value::value_type> const result
       ( drts.put_and_run

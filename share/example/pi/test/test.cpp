@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
     , "net lib install"
     );
 
-  gspc::scoped_runtime_system const drts (vm, installation, " worker:12");
+  gspc::scoped_runtime_system const drts (vm, installation, "worker:12");
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     (drts.put_and_run ( make.build_directory() / "pi.pnet"
