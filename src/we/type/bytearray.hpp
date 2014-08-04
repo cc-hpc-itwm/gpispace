@@ -28,7 +28,11 @@ namespace we
       {
         std::copy ((char *)x, (char *)x + sizeof (*x), std::back_inserter(_v));
       }
-      template<typename T> explicit bytearray (T const& x)
+      template<typename T>
+        explicit bytearray
+          ( T const& x
+          , typename std::enable_if<not std::is_pointer<T>::value>::type* = nullptr
+          )
         : bytearray (&x)
       {}
       template<typename T>
