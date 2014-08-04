@@ -3,6 +3,9 @@
 #ifndef _WE_TYPE_BYTEARRAY_HPP
 #define _WE_TYPE_BYTEARRAY_HPP
 
+#include <boost/type_traits/is_pointer.hpp>
+#include <boost/utility/enable_if.hpp>
+
 #include <algorithm>
 #include <vector>
 
@@ -31,7 +34,7 @@ namespace we
       template<typename T>
         explicit bytearray
           ( T const& x
-          , typename std::enable_if<not std::is_pointer<T>::value>::type* = nullptr
+          , typename boost::enable_if_c<not boost::is_pointer<T>::value>::type* = nullptr
           )
         : bytearray (&x)
       {}
