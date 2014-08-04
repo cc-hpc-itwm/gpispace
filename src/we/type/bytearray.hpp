@@ -34,7 +34,7 @@ namespace we
       template<typename T>
         explicit bytearray
           ( T const& x
-          , typename boost::enable_if_c<not boost::is_pointer<T>::value>::type* = nullptr
+          , typename boost::enable_if_c<not boost::is_pointer<T>::value>::type* = 0
           )
         : bytearray (&x)
       {}
