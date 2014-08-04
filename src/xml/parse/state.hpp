@@ -48,6 +48,7 @@ namespace xml
 
       public:
         type();
+        type (search_path_type);
 
         const gen_param_type& gen_ldflags() const;
         const gen_param_type& gen_cxxflags() const;

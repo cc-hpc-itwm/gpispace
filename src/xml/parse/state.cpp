@@ -183,6 +183,15 @@ namespace xml
         , _id_mapper()
       {}
 
+      type::type (search_path_type search_path)
+        : type()
+      {
+        for (std::string& path : search_path)
+        {
+          _search_path.emplace_back (std::move (path));
+        }
+      }
+
       const gen_param_type& type::gen_ldflags() const
       {
         return _gen_ldflags;
