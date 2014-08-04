@@ -7,6 +7,7 @@
 #include <util/qt/mvc/header_delegate.hpp>
 #include <util/qt/painter_state_saver.hpp>
 
+#include <QApplication>
 #include <QContextMenuEvent>
 #include <QKeyEvent>
 #include <QMenu>
@@ -23,6 +24,7 @@ namespace fhg
         delegating_header_view::delegating_header_view (QWidget* parent)
           : QHeaderView (Qt::Horizontal, parent)
           , _delegate (nullptr)
+          , _double_click_delay()
         {
           connect ( this
                   , SIGNAL (sectionResized (int, int, int))
@@ -39,6 +41,13 @@ namespace fhg
 
           setSizePolicy (sizePolicy().horizontalPolicy(), QSizePolicy::Preferred);
           setFocusPolicy (Qt::WheelFocus); // |= StrongFocus | TabFocus | ClickFocus
+
+          _double_click_delay.setInterval (QApplication::doubleClickInterval());
+          _double_click_delay.setSingleShot (true);
+          connect ( &_double_click_delay
+                  , SIGNAL (timeout())
+                  , SLOT (delayed_mouseReleaseEvent())
+                  );
         }
 
         void delegating_header_view::setModel (QAbstractItemModel* m)
@@ -299,6 +308,34 @@ namespace fhg
           //     break;
           QEvent event (QEvent::StyleChange);
           QHeaderView::viewportEvent (&event);
+        }
+
+        void delegating_header_view::mousePressEvent (QMouseEvent* event)
+        {
+          if (_ignore_next_click)
+          {
+            _ignore_next_click = false;
+            event->ignore();
+            return;
+          }
+
+          QHeaderView::mousePressEvent (event);
+        }
+        void delegating_header_view::mouseReleaseEvent (QMouseEvent* event)
+        {
+          _double_click_delayed_event = *event;
+          _double_click_delay.start();
+        }
+        void delegating_header_view::delayed_mouseReleaseEvent()
+        {
+          QHeaderView::mouseReleaseEvent (&*_double_click_delayed_event);
+          _double_click_delayed_event = boost::none;
+        }
+        void delegating_header_view::mouseDoubleClickEvent (QMouseEvent* event)
+        {
+          _double_click_delay.stop();
+          _ignore_next_click = true;
+          QHeaderView::mouseDoubleClickEvent (event);
         }
       }
     }

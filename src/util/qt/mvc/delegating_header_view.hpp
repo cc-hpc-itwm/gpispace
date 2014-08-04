@@ -9,6 +9,8 @@
 #include <boost/optional.hpp>
 
 #include <QHeaderView>
+#include <QMouseEvent>
+#include <QTimer>
 
 namespace fhg
 {
@@ -38,6 +40,9 @@ namespace fhg
           virtual void contextMenuEvent (QContextMenuEvent*) override;
           virtual void wheelEvent (QWheelEvent*) override;
           virtual bool event (QEvent*) override;
+          virtual void mousePressEvent (QMouseEvent*) override;
+          virtual void mouseReleaseEvent (QMouseEvent*) override;
+          virtual void mouseDoubleClickEvent (QMouseEvent*) override;
 
         private slots:
           void sections_inserted (const QModelIndex&, int, int);
@@ -47,6 +52,8 @@ namespace fhg
           void request_editor (int section);
           void set_editor_geometry();
           void close_editor();
+
+          void delayed_mouseReleaseEvent();
 
         private:
           QRect editor_geometry() const;
@@ -62,6 +69,10 @@ namespace fhg
             mini_button* close_button;
             _editor_type() : section (boost::none), widget (nullptr), close_button (nullptr) {}
           } _editor;
+
+          QTimer _double_click_delay;
+          bool _ignore_next_click;
+          boost::optional<QMouseEvent> _double_click_delayed_event;
 
           friend class header_delegate;
         };
