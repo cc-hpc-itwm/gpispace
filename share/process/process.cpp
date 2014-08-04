@@ -460,7 +460,7 @@ namespace process
 
         try
         {
-          fhg::syscall::execvpe (argv[0], argv.data(), envp);
+          fhg::syscall::execve (argv[0], argv.data(), envp);
         }
         catch (boost::system::system_error const& err)
         {

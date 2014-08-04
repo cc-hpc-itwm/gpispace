@@ -1298,7 +1298,12 @@ namespace xml
                                   )
       {
         const id::module id (state.id_mapper()->next_id());
-        const std::string name (required ("module_type", node, "name", state));
+        const std::string name
+          (validate_name ( required ("module_type", node, "name", state)
+                         , "module_type"
+                         , state.file_in_progress()
+                         )
+          );
         const std::string signature
           (required ("module_type", node, "function", state));
         const boost::optional<bool> pass_context

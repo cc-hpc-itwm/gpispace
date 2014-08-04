@@ -25,3 +25,5 @@ install (TARGETS
   gspc
   DESTINATION lib/
 )
+
+add_subdirectory (test/parallel_running_workflows)

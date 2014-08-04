@@ -149,7 +149,6 @@ namespace expr
         SET_TOKEN ("min", min);
         SET_TOKEN ("mod", modint);
         SET_TOKEN ("round", _round);
-        SET_TOKEN ("substr", _substr);
 
         SET_TOKEN ("map_assign", _map_assign);
         SET_TOKEN ("map_get_assignment", _map_get_assignment);
@@ -168,7 +167,6 @@ namespace expr
         UNARY ("ceil", _ceil);
         UNARY ("cos", _cos);
         UNARY ("floor", _floor);
-        UNARY ("len", _len);
         UNARY ("log", _log);
         UNARY ("sin", _sin);
         UNARY ("sqrt", _sqrt);

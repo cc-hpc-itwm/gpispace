@@ -8,6 +8,7 @@
 
 #include <iosfwd>
 #include <sstream>
+#include <string>
 
 namespace we
 {
@@ -20,6 +21,7 @@ namespace we
 
       bytearray();
       bytearray (const char* const, const std::size_t);
+      bytearray (std::string const&);
       std::size_t copy (char* const buf, const std::size_t size) const;
 
       template<typename T>

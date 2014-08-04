@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_sequence)
     , "net"
     );
 
-  gspc::scoped_runtime_system const drts (vm, installation, " work:1");
+  gspc::scoped_runtime_system const drts (vm, installation, "work:1");
 
   long const n (5);
 

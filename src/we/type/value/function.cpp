@@ -100,7 +100,6 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_len: return x.size();
             case expr::token::_bitset_fromhex: return bitsetofint::from_hex (x);
             default: throw exception::eval (_token, x);
             }
@@ -293,14 +292,6 @@ namespace pnet
             case expr::token::add: { std::string s; s += l; s += r; return s; }
             case expr::token::min: return std::min (l, r);
             case expr::token::max: return std::max (l, r);
-            default: throw exception::eval (_token, l, r);
-            }
-          }
-          value_type operator() (std::string l, long r) const
-          {
-            switch (_token)
-            {
-            case expr::token::_substr: return l.substr (0, r);
             default: throw exception::eval (_token, l, r);
             }
           }

@@ -23,6 +23,9 @@ namespace we
     {
       std::copy (buf, buf + size, std::back_inserter (_v));
     }
+    bytearray::bytearray (std::string const& s)
+      : bytearray (s.data(), s.size())
+    {}
     std::size_t bytearray::copy (char* const buf, const std::size_t size) const
     {
       const std::size_t s (std::min (_v.size(), size));

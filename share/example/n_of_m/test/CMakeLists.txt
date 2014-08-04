@@ -1,7 +1,5 @@
 # mirko.rahn@itwm.fraunhofer.de
 
-fhg_add_application_test (example_n_of_m_we-exec SCRIPT test.we-exec)
-
 include_directories (${UTIL_INCLUDE_DIR})
 include_directories (${CMAKE_SOURCE_DIR})
 
@@ -15,8 +13,8 @@ fhg_add_test (test.cpp
   LINK_LIBRARIES gspc
                  test-utilities
                  ${UTIL_LIBRARIES}
-                 ${Boost_PROGRAM_OPTIONS_LIBRARIES}
-                 ${Boost_FILESYSTEM_LIBRARIES}
+                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                 ${Boost_FILESYSTEM_LIBRARY}
   RESOURCE_LOCK starts_drts_environment
   DEPENDS demo.bin
   REQUIRES_INSTALLATION
