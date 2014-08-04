@@ -167,7 +167,6 @@ namespace expr
         UNARY ("ceil", _ceil);
         UNARY ("cos", _cos);
         UNARY ("floor", _floor);
-        UNARY ("len", _len);
         UNARY ("log", _log);
         UNARY ("sin", _sin);
         UNARY ("sqrt", _sqrt);

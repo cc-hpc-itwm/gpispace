@@ -40,7 +40,6 @@ namespace expr
     , _set_insert, _set_erase, _set_is_element
     , _set_pop, _set_top, _set_empty, _set_size
     , _set_is_subset
-    , _len
 
     , sep                     // comma
     , lpr, rpr                // parenthesis

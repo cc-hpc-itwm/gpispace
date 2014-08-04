@@ -100,7 +100,6 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_len: return x.size();
             case expr::token::_bitset_fromhex: return bitsetofint::from_hex (x);
             default: throw exception::eval (_token, x);
             }

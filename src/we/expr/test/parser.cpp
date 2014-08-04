@@ -2071,14 +2071,3 @@ BOOST_AUTO_TEST_CASE (token_set_is_subset)
   require_evaluating_to
     ("set_is_subset (set_insert (Set{}, 1), set_insert (Set{}, 2))", false);
 }
-
-BOOST_AUTO_TEST_CASE (token_len)
-{
-  for (int _ (0); _ < 100; ++_)
-  {
-    std::string const s (fhg::util::random_string_without ("\"\\"));
-
-    require_evaluating_to
-      ((boost::format ("len (\"%1%\")") % s).str(), s.size());
-  }
-}

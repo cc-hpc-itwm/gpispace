@@ -269,7 +269,6 @@ namespace expr
         case token::_cos:
         case token::_sqrt:
         case token::_log:
-        case token::_len:
         case token::_toint:
         case token::_tolong:
         case token::_touint:
