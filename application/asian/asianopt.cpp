@@ -4,7 +4,7 @@
 //#include "StdAfx.h"
 #include <vector>
 #include "basics.h"
-#include "random.h"
+#include <random>
 #include "prob.h"
 #include "asianopt.h"
 
@@ -49,8 +49,13 @@ double AsianMonteCarlo (
 
 #endif /* __LINUX__ */
 
-  NormalNumber Norm (0,1.0);
-  Norm.SetSeed(ran);
+  unsigned long seed (ran);
+
+  using engine_type = std::mt19937_64;
+  using distribution_type = std::normal_distribution<double>;
+
+  engine_type random_engine (seed);
+  distribution_type random_distribution;
 
 //	printf("\npid = %i\n",ran);
 
@@ -121,7 +126,7 @@ double AsianMonteCarlo (
   {
     DeltaT = TimeV[pstParam->m_nFirstFixing]-TimeV[0];
     GewT   = GewV[pstParam->m_nFirstFixing];
-    StdNorm = Norm();
+    StdNorm = random_distribution (random_engine);
 
     // Spot1, Spot2 (AntiThetic)
     S1 = exp(mu*DeltaT-pstParam->m_dSigma*sqrt(DeltaT)*StdNorm);
@@ -141,7 +146,7 @@ double AsianMonteCarlo (
     {
       DeltaT = TimeV[i]-TimeV[i-1];
 
-      StdNorm = Norm();
+      StdNorm = random_distribution (random_engine);
 
       G = GewV[i];
 

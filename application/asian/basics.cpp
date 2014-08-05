@@ -1,6 +1,5 @@
 //#include "StdAfx.h"
 #include "prob.h"
-#include "random.h"
 #include "basics.h"
 #include <stdio.h>
 #include <stdlib.h>
