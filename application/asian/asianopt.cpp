@@ -29,23 +29,9 @@ double AsianMonteCarlo (
   AsianTyp Art,
   bool CVBool
   , unsigned long number_of_rolls
-  )
+  , unsigned long seed
+ )
 {
-  // Initialisierung des Pseudo-Zufallsgenerators
-
-  int ran = 0;
-#ifdef __USE_GNU
-  FILE *fp = fopen("/dev/urandom", "r");
-
-  fread(&ran,4,1,fp);
-  fclose(fp);
-#else /* __LINUX__ */
-  ran = time(NULL);
-
-#endif /* __LINUX__ */
-
-  unsigned long seed (ran);
-
   using engine_type = std::mt19937_64;
   using distribution_type = std::normal_distribution<double>;
 

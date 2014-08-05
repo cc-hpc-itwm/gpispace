@@ -30,7 +30,9 @@ double AsianMonteCarlo ( double &Ergebnis,
 						 double *GewV,
 						 AsianTyp Art,
 						 bool CVBool
-                       , unsigned long number_of_rolls );
+                       , unsigned long number_of_rolls
+                       , unsigned long seed
+                       );
 
 
 bool CheckAsianParameters ( param_t *pstParam,

@@ -115,12 +115,14 @@ int main()
 
 	CVBool = false;
 
+  unsigned long seed (3134UL);
 
 	AsianMonteCarlo (Ergebnis, StdDev,
                               &stParam,
                               LastFixing,
                               TimeV, GewV, Art, CVBool
                   , number_of_rolls
+                  , seed
                   );
 
     printf("Sum1 = %lf\n", Ergebnis);
