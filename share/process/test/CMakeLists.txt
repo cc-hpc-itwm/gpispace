@@ -38,10 +38,12 @@ fhg_add_test (redefine.cpp
   LINK_LIBRARIES process
 )
 
+find_program (CAT_BINARY "cat" PATH_SUFFIXES "bin")
+
 fhg_add_test (big.cpp
   PROJECT share_process
   BOOST_UNIT_TEST
-  ARGS 1048576
+  ARGS 1048576 "${CAT_BINARY}"
   LINK_LIBRARIES process
 )
 
