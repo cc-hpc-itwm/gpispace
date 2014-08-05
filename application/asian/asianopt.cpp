@@ -28,6 +28,7 @@ double AsianMonteCarlo (
   double *GewV,
   AsianTyp Art,
   bool CVBool
+  , unsigned long number_of_rolls
   )
 {
   // Initialisierung des Pseudo-Zufallsgenerators
@@ -103,7 +104,7 @@ double AsianMonteCarlo (
     cv = 0.0;
   };
 
-  for (long int j=1; j<=pstParam->m_nn; j++)
+  for (unsigned long roll (0); roll < number_of_rolls; ++roll)
   {
     DeltaT = TimeV[pstParam->m_nFirstFixing]-TimeV[0];
     GewT   = GewV[pstParam->m_nFirstFixing];
@@ -165,9 +166,9 @@ double AsianMonteCarlo (
 
   // compute final result
 
-//   double Wert    = exp(-pstParam->m_dr * pstParam->m_dT) * ( Sum1 / pstParam->m_nn );
+//   double Wert    = exp(-pstParam->m_dr * pstParam->m_dT) * ( Sum1 / number_of_rolls );
 //   //+cv*valueana*exp(r*T) ); --> ignore this part now since valueana is 0 always!
-//   double Varianz = ( 1.0/pstParam->m_nn * ( Sum2 - 1.0/pstParam->m_nn * Sum1 * Sum1 ) ) / pstParam->m_nn;
+//   double Varianz = ( 1.0/number_of_rolls * ( Sum2 - 1.0/number_of_rolls * Sum1 * Sum1 ) ) / number_of_rolls;
 
 //   Ergebnis =Wert;
 //   StdDev   =sqrt(Varianz)*exp(-pstParam->m_dr*pstParam->m_dT);

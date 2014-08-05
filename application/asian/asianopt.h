@@ -10,7 +10,6 @@ typedef struct param_s {
   double   m_dd;
   int      m_nFirstFixing;
   double   m_dFixingsProJahr;
-  long int m_nn;
 
 } param_t;
 
@@ -30,7 +29,8 @@ double AsianMonteCarlo ( double &Ergebnis,
 						 double *TimeV,
 						 double *GewV,
 						 AsianTyp Art,
-						 bool CVBool );
+						 bool CVBool
+                       , unsigned long number_of_rolls );
 
 
 bool CheckAsianParameters ( param_t *pstParam,

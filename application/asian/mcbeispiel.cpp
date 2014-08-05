@@ -24,6 +24,8 @@ int main()
   double dx;
 
 
+  unsigned long number_of_rolls;
+
   // Konfigurationsdatei einlesen
   char var[512],
 	line[512];
@@ -44,7 +46,7 @@ int main()
       else if (!strcmp (var,"d")) stParam.m_dd = (double) i;
       else if (!strcmp (var,"FirstFixing")) stParam.m_nFirstFixing = (int) i;
       else if (!strcmp (var,"FixingsProJahr"))  stParam.m_dFixingsProJahr= (int) i;
-      else if (!strcmp (var,"n")) stParam.m_nn = (long int) i;
+      else if (!strcmp (var,"n")) number_of_rolls = (long int) i;
 
     }
   }
@@ -117,7 +119,9 @@ int main()
 	AsianMonteCarlo (Ergebnis, StdDev,
                               &stParam,
                               LastFixing,
-                              TimeV, GewV, Art, CVBool);
+                              TimeV, GewV, Art, CVBool
+                  , number_of_rolls
+                  );
 
     printf("Sum1 = %lf\n", Ergebnis);
     printf("Sum2 = %lf\n", StdDev);
