@@ -15,8 +15,6 @@ int main()
   int LastFixing;
 
 
-  // sonstige Parameter
-
   long AnzahlderFixings;
   long lFixing;
   double dx;
@@ -34,7 +32,6 @@ int main()
     while (fgets(line, sizeof(line), stdin)) {
       memset(var, 0, sizeof(var));
       sscanf (line,"%s = %f",var,&i);
-      //printf ("%s -> %f\n",var,i);
 
       if (!strcmp (var,"S")) stParam.m_dS = (double) i;
       else if (!strcmp (var,"K")) stParam.m_dK = (double) i;
@@ -49,40 +46,9 @@ int main()
     }
   }
 
-
-	// Aktienpreis
-//	S = 100.0;
-
-
-	// Strike
-
-//	K = 90.0;
-
-
-	// Faelligkeit
-
-//	T = 1.0027;
-
-	// Volatilitaet
-
-//	sigma = 0.2;
-
-
-	// Zinsrate
-
-//	r = 0.05;
-
-
-	// Fixings
-
-//	FixingsProJahr = 5.0;
 	AnzahlderFixings = (long)(stParam.m_dFixingsProJahr * stParam.m_dT);
 
-//	FirstFixing = 1;
 	LastFixing = AnzahlderFixings;
-
-	//TimeV.resize(AnzahlderFixings + 1);
-	//GewV.resize(AnzahlderFixings + 1);
 
 	double *TimeV = new double[LastFixing + 1];
 	double *GewV = new double[LastFixing + 1];
@@ -101,13 +67,6 @@ int main()
 
 	for (lFixing=0; lFixing<=AnzahlderFixings; lFixing++)
 		//printf("\n%e - %e", TimeV[lFixing], GewV[lFixing]);
-
-	// Simulations-Schritte
-
-//	n = 500000;
-
-
-	// Optionstyp
 
 	stParam.type = FixC;
 

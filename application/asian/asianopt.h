@@ -6,12 +6,12 @@
 enum AsianTyp {FloC,FloP,FixC,FixP};
 
 typedef struct param_s {
-  double   m_dS;
-  double   m_dK;
-  double   m_dT;
+  double   m_dS; // Aktienpreis
+  double   m_dK; // Strike
+  double   m_dT; // Faelligkeit
 
-  double   m_dSigma;
-  double   m_dr;
+  double   m_dSigma; // Volatilitaet
+  double   m_dr; // Zinsrate
   double   m_dd;
   int      m_nFirstFixing;
   double   m_dFixingsProJahr;
