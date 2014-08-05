@@ -23,44 +23,11 @@ int main()
   unsigned long const number_of_rolls (100000);
 
   double Ergebnis, StdDev;
-  int LastFixing;
-
-
-  long AnzahlderFixings;
-  long lFixing;
-  double dx;
-
-
-	AnzahlderFixings = (long)(stParam.m_dFixingsProJahr * stParam.m_dT);
-
-	LastFixing = AnzahlderFixings;
-
-	double *TimeV = new double[LastFixing + 1];
-	double *GewV = new double[LastFixing + 1];
-
-	GewV[0] = 0.0;
-	for (lFixing=1; lFixing<=AnzahlderFixings; lFixing++)
-		GewV[lFixing] = 1.0;
-
-	dx = stParam.m_dT / 365.0;
-
-	TimeV[0] = 0.0;
-
-	TimeV[AnzahlderFixings] = stParam.m_dT;
-	for (lFixing=(AnzahlderFixings-1); lFixing>=1; lFixing--)
-		TimeV[lFixing] = TimeV[lFixing + 1] - dx;
-
-	for (lFixing=0; lFixing<=AnzahlderFixings; lFixing++)
-  {
-		//printf("\n%e - %e", TimeV[lFixing], GewV[lFixing]);
-  }
 
   unsigned long seed (3134UL);
 
 	AsianMonteCarlo (Ergebnis, StdDev,
-                              &stParam,
-                              LastFixing,
-                              TimeV, GewV
+                              &stParam
                   , number_of_rolls
                   , seed
                   );

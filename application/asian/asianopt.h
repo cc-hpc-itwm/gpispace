@@ -26,10 +26,7 @@ typedef struct param_s {
 
 double AsianMonteCarlo ( double &Ergebnis,
 			 		     double &StdDev,
-                         param_t *pstParam,
-						 int LastFixing,
-						 double *TimeV,
-						 double *GewV
+                         param_t *pstParam
                        , unsigned long number_of_rolls
                        , unsigned long seed
                        );

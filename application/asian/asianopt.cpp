@@ -22,10 +22,7 @@
 double AsianMonteCarlo (
   double &Ergebnis,
   double &StdDev,
-  param_t *pstParam,
-  int LastFixing,
-  double *TimeV,
-  double *GewV
+  param_t *pstParam
   , unsigned long number_of_rolls
   , unsigned long seed
  )
@@ -36,6 +33,37 @@ double AsianMonteCarlo (
   engine_type random_engine (seed);
   distribution_type random_distribution;
 
+  int LastFixing;
+
+
+  long AnzahlderFixings;
+  long lFixing;
+  double dx;
+
+
+	AnzahlderFixings = (long)(pstParam->m_dFixingsProJahr * pstParam->m_dT);
+
+	LastFixing = AnzahlderFixings;
+
+	double *TimeV = new double[LastFixing + 1];
+	double *GewV = new double[LastFixing + 1];
+
+	GewV[0] = 0.0;
+	for (lFixing=1; lFixing<=AnzahlderFixings; lFixing++)
+		GewV[lFixing] = 1.0;
+
+	dx = pstParam->m_dT / 365.0;
+
+	TimeV[0] = 0.0;
+
+	TimeV[AnzahlderFixings] = pstParam->m_dT;
+	for (lFixing=(AnzahlderFixings-1); lFixing>=1; lFixing--)
+		TimeV[lFixing] = TimeV[lFixing + 1] - dx;
+
+	for (lFixing=0; lFixing<=AnzahlderFixings; lFixing++)
+  {
+		//printf("\n%e - %e", TimeV[lFixing], GewV[lFixing]);
+  }
 
     if (!CheckAsianParameters (pstParam, LastFixing,TimeV,GewV))
   {
