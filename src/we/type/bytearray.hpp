@@ -33,11 +33,8 @@ namespace we
       template<typename T>
       std::size_t copy (T* const x) const
       {
-        const std::size_t s (std::min (_v.size(), sizeof (*x)));
-
-        std::copy (_v.begin(), _v.begin() + s, (char *)x);
-
-        return s;
+        return copy
+          (static_cast<char* const> (static_cast<void* const> (x)), sizeof (*x));
       }
 
       std::string to_string() const;
