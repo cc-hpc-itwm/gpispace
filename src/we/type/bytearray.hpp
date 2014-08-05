@@ -26,10 +26,10 @@ namespace we
 
       template<typename T>
       explicit bytearray (const T* const x)
-        : _v()
-      {
-        std::copy ((char *)x, (char *)x + sizeof (*x), std::back_inserter(_v));
-      }
+        : _v ( static_cast<const char*> (static_cast<const void*> (x))
+             , static_cast<const char*> (static_cast<const void*> (x)) + sizeof (*x)
+             )
+      {}
       template<typename T>
       std::size_t copy (T* const x) const
       {
@@ -50,12 +50,10 @@ namespace we
       template<typename T>
       bytearray& operator= (const T& other)
       {
-        _v.clear();
-
-        std::copy ( (char*)&other
-                  , (char*)&other + sizeof (T)
-                  , std::back_inserter(_v)
-                  );
+        _v = std::vector<char>
+          ( static_cast<const char*> (static_cast<const void*> (&other))
+          , static_cast<const char*> (static_cast<const void*> (&other)) + sizeof (T)
+          );
 
         return *this;
       }
