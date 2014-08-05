@@ -1,5 +1,4 @@
 #include<vector>
-#include"basics.h"
 #include <asian.h>
 
 #ifndef __ASIAN_H__
@@ -17,7 +16,6 @@ double AsianMonteCarlo ( double &Ergebnis,
 						 int LastFixing,
 						 double *TimeV,
 						 double *GewV,
-						 Dividenden &Div,
 						 AsianTyp Art,
 						 bool CVBool );
 
@@ -25,5 +23,4 @@ double AsianMonteCarlo ( double &Ergebnis,
 bool CheckAsianParameters ( param_t *pstParam,
 					        int LastFixing,
 					        double *TimeV,
-						 	double *GewV,
-					        Dividenden &Div);
+						 	double *GewV);

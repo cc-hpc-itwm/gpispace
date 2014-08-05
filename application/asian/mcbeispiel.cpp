@@ -20,10 +20,8 @@ int main()
   // sonstige Parameter
 
   long AnzahlderFixings;
-  long lDiv, lFixing;
+  long lFixing;
   double dx;
-  double *pDivZeit = 0;
-  double *pDivWert;
 
 
   // Konfigurationsdatei einlesen
@@ -46,7 +44,6 @@ int main()
       else if (!strcmp (var,"d")) stParam.m_dd = (double) i;
       else if (!strcmp (var,"FirstFixing")) stParam.m_nFirstFixing = (int) i;
       else if (!strcmp (var,"FixingsProJahr"))  stParam.m_dFixingsProJahr= (int) i;
-      else if (!strcmp (var,"AnzahlderDividende")) stParam.m_nAnzahlderDividende = (int) i;
       else if (!strcmp (var,"n")) stParam.m_nn = (long int) i;
 
     }
@@ -75,10 +72,6 @@ int main()
 
 //	r = 0.05;
 
-
-	// Dividende
-
-//	d = 0.0;
 
 	// Fixings
 
@@ -109,22 +102,6 @@ int main()
 	for (lFixing=0; lFixing<=AnzahlderFixings; lFixing++)
 		//printf("\n%e - %e", TimeV[lFixing], GewV[lFixing]);
 
-	// Dividende
-
-//	AnzahlderDividende = 3;
-	pDivZeit = new double[stParam.m_nAnzahlderDividende + 1];
-	pDivWert = new double[stParam.m_nAnzahlderDividende + 1];
-
-	for (lDiv=1; lDiv<=stParam.m_nAnzahlderDividende; lDiv++) {
-		pDivZeit[lDiv] = 0.0;
-		pDivWert[lDiv] = 0.0;
-	}
-
-	Dividenden Div(pDivZeit, pDivWert, stParam.m_nAnzahlderDividende + 1);
-	free(pDivZeit);
-	free(pDivWert);
-
-
 	// Simulations-Schritte
 
 //	n = 500000;
@@ -140,7 +117,7 @@ int main()
 	AsianMonteCarlo (Ergebnis, StdDev,
                               &stParam,
                               LastFixing,
-                              TimeV, GewV, Div, Art, CVBool);
+                              TimeV, GewV, Art, CVBool);
 
     printf("Sum1 = %lf\n", Ergebnis);
     printf("Sum2 = %lf\n", StdDev);

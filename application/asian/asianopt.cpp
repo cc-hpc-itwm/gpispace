@@ -2,7 +2,6 @@
 #include <cstdlib>
 #include <math.h>
 #include <vector>
-#include "basics.h"
 #include <random>
 #include "asianopt.h"
 
@@ -27,7 +26,6 @@ double AsianMonteCarlo (
   int LastFixing,
   double *TimeV,
   double *GewV,
-  Dividenden &Div,
   AsianTyp Art,
   bool CVBool
   )
@@ -54,19 +52,13 @@ double AsianMonteCarlo (
   distribution_type random_distribution;
 
 
-    if (!CheckAsianParameters (pstParam, LastFixing,TimeV,GewV,Div))
+    if (!CheckAsianParameters (pstParam, LastFixing,TimeV,GewV))
   {
     return -999.999;
   };
 
-	// Berechnungs des arithmetischen Mittels der Dividende als Bond
-  double DivMean = Div.Mean(pstParam->m_nFirstFixing,LastFixing,
-                            pstParam->m_dr,pstParam->m_dT,TimeV,GewV);
   // Berechnung des reduzierten Spots;
-  double S0 = Div.FitS(0.0,
-                       pstParam->m_dT,
-                       pstParam->m_dr,
-                       pstParam->m_dS);
+  double S0 = pstParam->m_dS;
 
   //double TimeSteps = LastFixing-1;
 
@@ -94,15 +86,14 @@ double AsianMonteCarlo (
   // Festlegung der Berechnungskoeffizienten
   switch (Art)
   {
-      case FixC : Ak= 1.0;Sk= 0.0;Kk=-1.0;pstParam->m_dK=pstParam->m_dK-DivMean;break;
-      case FixP : Ak=-1.0;Sk= 0.0;Kk= 1.0;pstParam->m_dK=pstParam->m_dK-DivMean;break;
-      case FloP : Ak= 1.0;Sk=-1.0;Kk= 1.0;pstParam->m_dK=DivMean;break;
-      case FloC : Ak=-1.0;Sk= 1.0;Kk=-1.0;pstParam->m_dK=DivMean;break;
+      case FixC : Ak= 1.0;Sk= 0.0;Kk=-1.0;pstParam->m_dK=pstParam->m_dK;break;
+      case FixP : Ak=-1.0;Sk= 0.0;Kk= 1.0;pstParam->m_dK=pstParam->m_dK;break;
+      case FloP : Ak= 1.0;Sk=-1.0;Kk= 1.0;pstParam->m_dK=0.0;break;
+      case FloC : Ak=-1.0;Sk= 1.0;Kk=-1.0;pstParam->m_dK=0.0;break;
       default : printf("Switcherror");
   };
 
   // Berechnung der anal. L�sung der Controle Variate
-  Dividenden leer;
   if (CVBool==true)
   {
     cv = 1.0;
@@ -191,8 +182,7 @@ bool CheckAsianParameters (
   param_t *pstParam,
   int LastFixing,
   double *TimeV,
-  double *GewV,
-  Dividenden &Div)
+  double *GewV)
 
 {
 	bool OK = true;
@@ -200,7 +190,5 @@ bool CheckAsianParameters (
          pstParam->m_dSigma<=0.0 ||
          pstParam->m_dr<0.0 || pstParam->m_dT <= 0.0) OK = false;
 	if (pstParam->m_nFirstFixing >= LastFixing || pstParam->m_nFirstFixing <= 0) OK = false;
-    if (Div.Mean(pstParam->m_nFirstFixing,LastFixing, pstParam->m_dr,
-                 pstParam->m_dT, TimeV, GewV) < 0.0) OK = false;
 	return OK;
 };

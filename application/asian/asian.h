@@ -8,7 +8,6 @@ typedef struct param_s {
   double   m_dd;
   int      m_nFirstFixing;
   double   m_dFixingsProJahr;
-  long     m_nAnzahlderDividende;
   long int m_nn;
 
 } param_t;
