@@ -1,16 +1,16 @@
 #include <gpi-space/gpi/gaspi.hpp>
 
-#include <csignal> // sigwait
-#include <cstring> // strerror
-#include <limits>
-
-#include <GASPI.h>
-
 #include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
 #include <gpi-space/exception.hpp>
 #include <gpi-space/gpi/system.hpp>
+
+#include <GASPI.h>
+
+#include <csignal> // sigwait
+#include <cstring> // strerror
+#include <limits>
 
 namespace gpi
 {
