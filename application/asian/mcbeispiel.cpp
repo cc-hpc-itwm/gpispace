@@ -35,6 +35,13 @@ int main()
     printf("Sum1 = %lf\n", result.sum1);
     printf("Sum2 = %lf\n", result.sum2);
 
+//   double Wert    = exp(-pstParam->m_dr * pstParam->m_dT) * ( Sum1 / number_of_rolls );
+//   //+cv*valueana*exp(r*T) ); --> ignore this part now since valueana is 0 always!
+//   double Varianz = ( 1.0/number_of_rolls * ( Sum2 - 1.0/number_of_rolls * Sum1 * Sum1 ) ) / number_of_rolls;
+
+//   Ergebnis =Wert;
+//   StdDev   =sqrt(Varianz)*exp(-pstParam->m_dr*pstParam->m_dT);
+
   //printf(" \n\nErgebnis = %f, Standardabweichung = %f\n", Ergebnis, StdDev);
 
   return 0;
