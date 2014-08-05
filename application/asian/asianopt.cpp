@@ -4,6 +4,7 @@
 #include <vector>
 #include <random>
 #include "asianopt.h"
+#include <stdexcept>
 
 // ****************************************************************************
 // *****     Asian - Option                                               *****
@@ -67,7 +68,7 @@ double AsianMonteCarlo (
 
     if (!CheckAsianParameters (pstParam, LastFixing,TimeV,GewV))
   {
-    return -999.999;
+    throw std::logic_error ("CheckAsianParameters");
   };
 
   // Berechnung des reduzierten Spots;
