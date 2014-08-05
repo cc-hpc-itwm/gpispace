@@ -20,10 +20,8 @@
 // ****************************************************************************
 
 
-double AsianMonteCarlo (
-  double &Ergebnis,
-  double &StdDev,
-  param_t *pstParam
+roll_result_type AsianMonteCarlo (
+    param_t *pstParam
   , unsigned long number_of_rolls
   , unsigned long seed
  )
@@ -186,10 +184,7 @@ double AsianMonteCarlo (
 //   Ergebnis =Wert;
 //   StdDev   =sqrt(Varianz)*exp(-pstParam->m_dr*pstParam->m_dT);
 
-  Ergebnis = Sum1;
-  StdDev   = Sum2;
-
-	return 0;
+	return {Sum1, Sum2};
 };
 
 bool CheckAsianParameters (

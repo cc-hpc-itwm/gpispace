@@ -20,12 +20,17 @@ typedef struct param_s {
   bool controle_variate;
 } param_t;
 
+struct roll_result_type
+{
+  double sum1;
+  double sum2;
+};
+
 #endif
 
 
 
-double AsianMonteCarlo ( double &Ergebnis,
-			 		     double &StdDev,
+roll_result_type AsianMonteCarlo (
                          param_t *pstParam
                        , unsigned long number_of_rolls
                        , unsigned long seed

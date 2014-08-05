@@ -26,14 +26,14 @@ int main()
 
   unsigned long seed (3134UL);
 
-	AsianMonteCarlo (Ergebnis, StdDev,
+	roll_result_type result (AsianMonteCarlo (
                               &stParam
                   , number_of_rolls
                   , seed
-                  );
+                  ));
 
-    printf("Sum1 = %lf\n", Ergebnis);
-    printf("Sum2 = %lf\n", StdDev);
+    printf("Sum1 = %lf\n", result.sum1);
+    printf("Sum2 = %lf\n", result.sum2);
 
   //printf(" \n\nErgebnis = %f, Standardabweichung = %f\n", Ergebnis, StdDev);
 
