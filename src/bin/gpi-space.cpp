@@ -33,6 +33,8 @@
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/container/manager.hpp>
 
+#include <boost/optional.hpp>
+
 #include <memory>
 
 static const char * program_name = "gpi-space";
@@ -92,7 +94,7 @@ namespace
 {
   enum requested_api_t { API_auto, API_real, API_fake, API_gaspi };
   std::unique_ptr<gpi_api_t> create_gpi_api
-    (requested_api_t requested_api, bool is_master)
+    (requested_api_t requested_api, bool is_master, const boost::optional<unsigned short>& p)
   {
     if (requested_api == API_auto)
     {
@@ -114,7 +116,11 @@ namespace
     }
     else if (requested_api == API_gaspi)
     {
-      return fhg::util::make_unique <gpi::api::gaspi_t> (is_master);
+      if (!p)
+      {
+        throw std::runtime_error ("port (--port) is missing, required for GASPI");
+      }
+      return fhg::util::make_unique <gpi::api::gaspi_t> (is_master, *p);
     }
     else // if (requested_api == API_fake)
     {
@@ -145,6 +151,7 @@ int main (int ac, char *av[])
 
   unsigned long long gpi_mem = (1<<26);
   unsigned int gpi_timeout = 120;
+  boost::optional<unsigned short> port (false, 0u);
 
   std::vector<std::string> mem_urls;
 
@@ -203,6 +210,7 @@ int main (int ac, char *av[])
       fprintf(stderr, "        fake - use the fake api\n");
       fprintf(stderr, "        real - use the real api\n");
       fprintf(stderr, "        auto - choose the best api\n");
+      fprintf(stderr, "    --port PORT\n");
       fprintf(stderr, "\n");
       fprintf(stderr, "GPI options (expert)\n");
       fprintf(stderr, "    --gpi-timeout SECONDS (%u)\n", gpi_timeout);
@@ -486,6 +494,26 @@ int main (int ac, char *av[])
         exit(EX_USAGE);
       }
     }
+    else if (strcmp(av[i], "--port") == 0)
+    {
+      ++i;
+      if (i < ac)
+      {
+        unsigned short p;
+        if (sscanf(av[i], "%hu", &p) == 0)
+        {
+          fprintf(stderr, "%s: port invalid: %s\n", program_name, av[i]);
+          exit(EX_INVAL);
+        }
+        ++i;
+        port = p;
+      }
+      else
+      {
+        fprintf(stderr, "%s: missing argument to --gpi-timeout\n", program_name);
+        exit(EX_USAGE);
+      }
+    }
     else if (strcmp(av[i], "--") == 0)
     {
       ++i;
@@ -580,7 +608,7 @@ int main (int ac, char *av[])
 
   // initialize gpi api
   std::unique_ptr<gpi_api_t> gpi_api_
-    (create_gpi_api (requested_api, is_master));
+    (create_gpi_api (requested_api, is_master, port));
   gpi_api_t& gpi_api (*gpi_api_);
 
   gpi_api.set_memory_size (gpi_mem);

@@ -16,13 +16,18 @@ namespace gpi
 {
   namespace api
   {
-    gaspi_t::gaspi_t (bool is_master)
+    gaspi_t::gaspi_t (bool is_master, const unsigned short port)
       : m_is_master (is_master)
       , m_startup_done (false)
       , m_mem_size (0)
       , m_dma (nullptr)
       , m_replacement_gpi_segment (0)
-    {}
+    {
+      gaspi_config_t config;
+      gaspi_config_get (&config);
+      config.sn_port = port;
+      gaspi_config_set (config);
+    }
 
     gaspi_t::~gaspi_t()
     {
