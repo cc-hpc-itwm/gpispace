@@ -115,13 +115,6 @@ namespace fhg
       abort(); // execve either does not return, or returns negative, thus throws
     }
 
-    void execvp (const char* filename, char* const argv[])
-    {
-      negative_one_fails_with_errno<void> (::execvp (filename, argv));
-
-      abort(); // execve either does not return, or returns negative, thus throws
-    }
-
     pid_t fork()
     {
       return negative_one_fails_with_errno<pid_t> (::fork());
