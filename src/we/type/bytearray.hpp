@@ -36,7 +36,9 @@ namespace we
           ( T const& x
           , typename boost::enable_if_c<not boost::is_pointer<T>::value>::type* = 0
           )
-        : bytearray (&x)
+        : _v ( static_cast<const char*> (static_cast<const void*> (&x))
+             , static_cast<const char*> (static_cast<const void*> (&x)) + sizeof (x)
+             )
       {}
       template<typename T>
       std::size_t copy (T* const x) const
