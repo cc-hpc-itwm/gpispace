@@ -25,9 +25,7 @@ double AsianMonteCarlo (
   param_t *pstParam,
   int LastFixing,
   double *TimeV,
-  double *GewV,
-  AsianTyp Art,
-  bool CVBool
+  double *GewV
   , unsigned long number_of_rolls
   , unsigned long seed
  )
@@ -71,7 +69,7 @@ double AsianMonteCarlo (
 
 
   // Festlegung der Berechnungskoeffizienten
-  switch (Art)
+  switch (pstParam->type)
   {
       case FixC : Ak= 1.0;Sk= 0.0;Kk=-1.0;pstParam->m_dK=pstParam->m_dK;break;
       case FixP : Ak=-1.0;Sk= 0.0;Kk= 1.0;pstParam->m_dK=pstParam->m_dK;break;
@@ -81,7 +79,7 @@ double AsianMonteCarlo (
   };
 
   // Berechnung der anal. L�sung der Controle Variate
-  if (CVBool==true)
+  if (pstParam->controle_variate)
   {
     cv = 1.0;
   }

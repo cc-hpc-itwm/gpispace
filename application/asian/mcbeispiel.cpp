@@ -13,8 +13,6 @@ int main()
 
   double Ergebnis, StdDev;
   int LastFixing;
-  AsianTyp Art;
-  bool CVBool;
 
 
   // sonstige Parameter
@@ -111,16 +109,16 @@ int main()
 
 	// Optionstyp
 
-	Art = FixC;
+	stParam.type = FixC;
 
-	CVBool = false;
+	stParam.controle_variate = false;
 
   unsigned long seed (3134UL);
 
 	AsianMonteCarlo (Ergebnis, StdDev,
                               &stParam,
                               LastFixing,
-                              TimeV, GewV, Art, CVBool
+                              TimeV, GewV
                   , number_of_rolls
                   , seed
                   );

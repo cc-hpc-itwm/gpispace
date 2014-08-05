@@ -1,5 +1,10 @@
 #include<vector>
 
+#ifndef __ASIAN_H__
+#define __ASIAN_H__
+
+enum AsianTyp {FloC,FloP,FixC,FixP};
+
 typedef struct param_s {
   double   m_dS;
   double   m_dK;
@@ -11,12 +16,9 @@ typedef struct param_s {
   int      m_nFirstFixing;
   double   m_dFixingsProJahr;
 
+  AsianTyp type;
+  bool controle_variate;
 } param_t;
-
-#ifndef __ASIAN_H__
-#define __ASIAN_H__
-
-enum AsianTyp {FloC,FloP,FixC,FixP};
 
 #endif
 
@@ -27,9 +29,7 @@ double AsianMonteCarlo ( double &Ergebnis,
                          param_t *pstParam,
 						 int LastFixing,
 						 double *TimeV,
-						 double *GewV,
-						 AsianTyp Art,
-						 bool CVBool
+						 double *GewV
                        , unsigned long number_of_rolls
                        , unsigned long seed
                        );
