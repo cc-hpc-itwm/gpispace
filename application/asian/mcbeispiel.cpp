@@ -66,7 +66,9 @@ int main()
 		TimeV[lFixing] = TimeV[lFixing + 1] - dx;
 
 	for (lFixing=0; lFixing<=AnzahlderFixings; lFixing++)
+  {
 		//printf("\n%e - %e", TimeV[lFixing], GewV[lFixing]);
+  }
 
 	stParam.type = FixC;
 
