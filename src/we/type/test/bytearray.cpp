@@ -2,6 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <fhg/util/boost/test/printer/tuple.hpp>
+#include <fhg/util/boost/test.hpp>
 
 #include <fhglog/LogMacros.hpp>
 
@@ -169,14 +170,15 @@ namespace
     int x;
     int y;
   };
-  std::ostream& operator<< (std::ostream& os, pod_t const& pod)
-  {
-    return os << pod.x << ", " << pod.y;
-  }
   bool operator== (pod_t const& lhs, pod_t const& rhs)
   {
     return lhs.x == rhs.x && lhs.y == rhs.y;
   }
+}
+
+FHG_BOOST_TEST_LOG_VALUE_PRINTER (pod_t, os, pod)
+{
+  os << pod.x << ", " << pod.y;
 }
 
 BOOST_AUTO_TEST_CASE (ctor_from_T)
