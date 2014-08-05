@@ -13,9 +13,6 @@ int main()
 
   double Ergebnis, StdDev;
   int LastFixing;
-  //std::vector<double> TimeV;
-  //std::vector<double> GewV;
-  //Dividenden Div;
   AsianTyp Art;
   bool CVBool;
 
