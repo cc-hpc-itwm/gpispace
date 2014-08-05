@@ -178,7 +178,9 @@ namespace gpi
 
     gpi::port_t gaspi_t::port() const
     {
-      return GASPI_SN_PORT;
+      gaspi_config_t config;
+      gaspi_config_get (&config);
+      return config.sn_port;
     }
 
     gpi::size_t gaspi_t::number_of_nodes() const
