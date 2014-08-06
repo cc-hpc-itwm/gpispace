@@ -236,7 +236,7 @@ delete_logfiles=true
 app_path=
 number_of_groups=1
 network_retries=15
-time_to_wait_per_vmem_socket_in_seconds=15
+time_to_wait_per_vmem_socket_in_seconds=60
 
 # guess memory sizes
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
