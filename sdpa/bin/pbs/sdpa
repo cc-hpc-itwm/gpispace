@@ -237,7 +237,7 @@ function stop_proc ()
         echo -n "    sending SIGTERM to $name ($pid)..." >&2
         for (( i=0; i<3; ++i )); do
             if is_proc_alive "$name" "$pid" ; then
-                echo -n "."
+                echo -n "." >&2
                 kill -TERM "$pid" >/dev/null 2>&1
                 sleep 1
             else
