@@ -48,7 +48,7 @@ namespace fhg
           }
 
           m_signalled = false;
-          return m_event;
+          return std::move (m_event);
         }
 
         template <typename U>
@@ -67,10 +67,10 @@ namespace fhg
           return true;
         }
 
-        void notify(value_type const & u)
+        void notify (value_type u)
         {
           lock_type lock(m_mutex);
-          m_event = u;
+          m_event = std::move (u);
           m_signalled = true;
           m_condition.notify_one();
         }
