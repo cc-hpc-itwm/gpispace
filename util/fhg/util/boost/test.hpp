@@ -3,6 +3,8 @@
 #ifndef FHG_UTIL_BOOST_TEST_HPP
 #define FHG_UTIL_BOOST_TEST_HPP
 
+#include <boost/test/test_tools.hpp>
+
 //! \note If this ever breaks, check BOOST_TEST_DONT_PRINT_LOG_VALUE.
 #define FHG_BOOST_TEST_TEMPLATED_LOG_VALUE_PRINTER(TMPL, SPEC_PARAM, OS_NAME, VAL_NAME) \
   namespace boost                                                       \
