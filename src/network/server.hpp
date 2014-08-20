@@ -41,6 +41,11 @@ namespace fhg
         accept();
       }
 
+      typename Protocol::endpoint local_endpoint()
+      {
+        return _acceptor.local_endpoint();
+      }
+
     private:
       void accept()
       {
