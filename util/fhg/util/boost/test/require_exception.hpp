@@ -28,19 +28,43 @@ namespace fhg
           try
           {
             f();
+          }
+          catch (E const& e)
+          {
+            BOOST_REQUIRE_EQUAL (e.what(), what);
 
+            return;
+          }
+          catch (std::exception const& ex)
+          {
             BOOST_FAIL
               ( boost::format ( "missing exception '%1%' with message '%2%'"
-                                ", got no exception at all"
+                                ", got exception of type '%3%' with message '%4%'"
+                              )
+              % typeid (E).name()
+              % what
+              % typeid (ex).name()
+              % ex.what()
+              );
+          }
+          catch (...)
+          {
+            BOOST_FAIL
+              ( boost::format ( "missing exception '%1%' with message '%2%'"
+                                ", got non std::exception type"
                               )
               % typeid (E).name()
               % what
               );
           }
-          catch (E const& e)
-          {
-            BOOST_REQUIRE_EQUAL (e.what(), what);
-          }
+
+          BOOST_FAIL
+            ( boost::format ( "missing exception '%1%' with message '%2%'"
+                              ", got no exception at all"
+                            )
+            % typeid (E).name()
+            % what
+            );
         }
 
         template<typename E>
