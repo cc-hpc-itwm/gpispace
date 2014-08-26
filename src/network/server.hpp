@@ -56,7 +56,14 @@ namespace fhg
           ( *_pending_socket
           , [this] (boost::system::error_code error)
           {
-            if (error)
+            if (error == boost::asio::error::operation_aborted)
+            {
+              //! \note Ignore: This is fine: dtor tells read to
+              //! cancel. we do not need to clean up anything, as
+              //! everything is scoped. just silently stop the thread
+              return;
+            }
+            else if (error)
             {
               throw boost::system::system_error (error);
             }
