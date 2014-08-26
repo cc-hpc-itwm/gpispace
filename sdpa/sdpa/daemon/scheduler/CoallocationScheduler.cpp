@@ -4,7 +4,6 @@
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 
-#include <boost/math/special_functions/sign.hpp>
 #include <climits>
 #include <functional>
 #include <queue>
@@ -41,21 +40,72 @@ namespace sdpa
       _jobs_to_schedule.push (jobId);
     }
 
+    namespace
+    {
+      typedef std::tuple<double, int, worker_id_t> cost_deg_wid_t;
+
+      bool operator< (cost_deg_wid_t const& lhs, cost_deg_wid_t const& rhs)
+      {
+        return (  std::get<0>(lhs) < std::get<0>(rhs)
+               || (  std::get<0>(lhs) == std::get<0>(rhs)
+                  && std::get<1>(lhs) > std::get<1>(rhs)
+                  )
+               );
+      };
+
+      struct min_cost_max_deg_comp
+      {
+        bool operator() (const cost_deg_wid_t& lhs, const cost_deg_wid_t& rhs) const
+        {
+          return (lhs<rhs);
+        }
+      };
+
+      typedef std::priority_queue < cost_deg_wid_t
+                                  , std::vector<cost_deg_wid_t>
+                                  , min_cost_max_deg_comp
+                                  > base_priority_queue_t;
+
+      class bounded_priority_queue_t : public base_priority_queue_t
+      {
+      public:
+        explicit bounded_priority_queue_t (std::size_t capacity)
+          : capacity_ (capacity)
+        {}
+
+      void push (cost_deg_wid_t next_tuple)
+      {
+        if (size() < capacity())
+        {
+          base_priority_queue_t::push (next_tuple);
+          return;
+        }
+
+        if (next_tuple < top())
+        {
+          base_priority_queue_t::pop();
+          base_priority_queue_t::push (next_tuple);
+        }
+      }
+
+      const size_t capacity() const { return capacity_;}
+
+      private:
+        size_t capacity_;
+      };
+    }
+
     std::set<worker_id_t> CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
       ( const mmap_match_deg_worker_id_t& mmap_matching_workers
       , const size_t n_req_workers
-      , const std::map<std::string, double>& map_host_transfer_cost
+      , const std::map<std::string
+      , double>& map_host_transfer_cost
       )
     {
-      typedef std::tuple<double, int, worker_id_t> tuple_cost_deg_wid_t;
-
       std::set<worker_id_t> assigned_workers;
 
-      std::priority_queue< tuple_cost_deg_wid_t
-                         , std::vector<tuple_cost_deg_wid_t>
-                         > pq_selected_workers;
+      bounded_priority_queue_t bpq (n_req_workers);
 
-      size_t k = 0;
       for ( mmap_match_deg_worker_id_t::const_iterator it = mmap_matching_workers.begin()
           ; it != mmap_matching_workers.end()
           ; ++it
@@ -64,29 +114,15 @@ namespace sdpa
         const worker_id_host_info_t& worker_info = it->second;
         const double cost = map_host_transfer_cost.at (worker_info.worker_host());
 
-        tuple_cost_deg_wid_t next_tuple
-          (std::make_tuple (cost, boost::math::changesign (it->first), worker_info.worker_id()));
-
-        if (k++ < n_req_workers)
-        {
-          pq_selected_workers.push (next_tuple);
-        }
-        else
-        {
-          if (next_tuple < pq_selected_workers.top())
-          {
-            pq_selected_workers.pop();
-            pq_selected_workers.push (next_tuple);
-          }
-        }
+        bpq.push (std::make_tuple (cost, it->first, worker_info.worker_id()));
       }
 
-      std::transform ( &(pq_selected_workers.top())
-                     , &(pq_selected_workers.top()) + pq_selected_workers.size()
+      std::transform ( &(bpq.top())
+                     , &(bpq.top()) + bpq.size()
                      , std::inserter (assigned_workers, assigned_workers.begin())
-                     , [] (const tuple_cost_deg_wid_t& tuple_cost_deg_wid) -> worker_id_t
+                     , [] (const cost_deg_wid_t& cost_deg_wid) -> worker_id_t
                        {
-                         return  std::get<2> (tuple_cost_deg_wid);
+                         return  std::get<2> (cost_deg_wid);
                        }
                      );
 
