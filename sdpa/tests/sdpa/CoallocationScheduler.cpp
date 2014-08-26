@@ -245,12 +245,12 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_different_matching_degs_diff
 {
   // assume we have 5 nodes and the transfer cost for each is its rank
   const std::map<std::string, double> map_host_transfer_cost
-    = { {"node_1", 1.0}
-      , {"node_2", 2.0}
-      , {"node_3", 3.0}
-      , {"node_4", 4.0}
-      , {"node_5", 5.0}
-      };
+    { {"node_1", 1.0}
+    , {"node_2", 2.0}
+    , {"node_3", 3.0}
+    , {"node_4", 4.0}
+    , {"node_5", 5.0}
+    };
 
   // find an allocation minimizing the transfer costs for 5 workers
   const size_t n_req_workers (5);
@@ -258,34 +258,35 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_different_matching_degs_diff
   // assume that we have 20 workers, i.e. 4 workers per host
   // first 4 on the "node_0", the next 4 on the "node_1" and so on
   const sdpa::mmap_match_deg_worker_id_t mmap_match_deg_worker
-    = { {20, {"worker_20", "node_5"}}
-      , {19, {"worker_19", "node_5"}}
-      , {18, {"worker_18", "node_5"}}
-      , {17, {"worker_17", "node_5"}}
-      , {16, {"worker_16", "node_4"}}
-      , {15, {"worker_15", "node_4"}}
-      , {14, {"worker_14", "node_4"}}
-      , {13, {"worker_13", "node_4"}}
-      , {12, {"worker_12", "node_3"}}
-      , {11, {"worker_11", "node_3"}}
-      , {10, {"worker_10", "node_3"}}
-      , { 9, {"worker_09", "node_3"}}
-      , { 8, {"worker_08", "node_2"}}
-      , { 7, {"worker_07", "node_2"}}
-      , { 6, {"worker_06", "node_2"}}
-      , { 5, {"worker_05", "node_2"}}
-      , { 4, {"worker_04", "node_1"}}
-      , { 3, {"worker_03", "node_1"}}
-      , { 2, {"worker_02", "node_1"}}
-      , { 1, {"worker_01", "node_1"}}
-      };
+    { {20, {"worker_20", "node_5"}}
+    , {19, {"worker_19", "node_5"}}
+    , {18, {"worker_18", "node_5"}}
+    , {17, {"worker_17", "node_5"}}
+    , {16, {"worker_16", "node_4"}}
+    , {15, {"worker_15", "node_4"}}
+    , {14, {"worker_14", "node_4"}}
+    , {13, {"worker_13", "node_4"}}
+    , {12, {"worker_12", "node_3"}}
+    , {11, {"worker_11", "node_3"}}
+    , {10, {"worker_10", "node_3"}}
+    , { 9, {"worker_09", "node_3"}}
+    , { 8, {"worker_08", "node_2"}}
+    , { 7, {"worker_07", "node_2"}}
+    , { 6, {"worker_06", "node_2"}}
+    , { 5, {"worker_05", "node_2"}}
+    , { 4, {"worker_04", "node_1"}}
+    , { 3, {"worker_03", "node_1"}}
+    , { 2, {"worker_02", "node_1"}}
+    , { 1, {"worker_01", "node_1"}}
+    };
 
-  const std::set<sdpa::worker_id_t> set_expected_assignment = { "worker_01"
-                                                              , "worker_02"
-                                                              , "worker_03"
-                                                              , "worker_04"
-                                                              , "worker_08"
-                                                              };
+  const std::set<sdpa::worker_id_t> set_expected_assignment
+    { "worker_01"
+    , "worker_02"
+    , "worker_03"
+    , "worker_04"
+    , "worker_08"
+    };
 
   const std::set<sdpa::worker_id_t> set_assigned_workers
     (sdpa::daemon::CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
@@ -300,12 +301,12 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_different_matching_degs_equa
 {
   // assume we have 5 nodes and the transfer cost is the same for all hosts
   const std::map<std::string, double> map_host_transfer_cost
-    = { {"node_1", 1.0}
-      , {"node_2", 1.0}
-      , {"node_3", 1.0}
-      , {"node_4", 1.0}
-      , {"node_5", 1.0}
-      };
+    { {"node_1", 1.0}
+    , {"node_2", 1.0}
+    , {"node_3", 1.0}
+    , {"node_4", 1.0}
+    , {"node_5", 1.0}
+    };
 
   // find an allocation minimizing the transfer costs for 5 workers
   const size_t n_req_workers (5);
@@ -314,27 +315,27 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_different_matching_degs_equa
   // assume that we have 20 workers, i.e. 4 workers per host
   // first 4 on "node_0", the next 4 on the "node_1" and so on
   const sdpa::mmap_match_deg_worker_id_t mmap_match_deg_worker
-    = { {20, {"worker_20", "node_5"}}
-      , {19, {"worker_19", "node_5"}}
-      , {18, {"worker_18", "node_5"}}
-      , {17, {"worker_17", "node_5"}}
-      , {16, {"worker_16", "node_4"}}
-      , {15, {"worker_15", "node_4"}}
-      , {14, {"worker_14", "node_4"}}
-      , {13, {"worker_13", "node_4"}}
-      , {12, {"worker_12", "node_3"}}
-      , {11, {"worker_11", "node_3"}}
-      , {10, {"worker_10", "node_3"}}
-      , { 9, {"worker_09", "node_3"}}
-      , { 8, {"worker_08", "node_2"}}
-      , { 7, {"worker_07", "node_2"}}
-      , { 6, {"worker_06", "node_2"}}
-      , { 5, {"worker_05", "node_2"}}
-      , { 4, {"worker_04", "node_1"}}
-      , { 3, {"worker_03", "node_1"}}
-      , { 2, {"worker_02", "node_1"}}
-      , { 1, {"worker_01", "node_1"}}
-      };
+    { {20, {"worker_20", "node_5"}}
+    , {19, {"worker_19", "node_5"}}
+    , {18, {"worker_18", "node_5"}}
+    , {17, {"worker_17", "node_5"}}
+    , {16, {"worker_16", "node_4"}}
+    , {15, {"worker_15", "node_4"}}
+    , {14, {"worker_14", "node_4"}}
+    , {13, {"worker_13", "node_4"}}
+    , {12, {"worker_12", "node_3"}}
+    , {11, {"worker_11", "node_3"}}
+    , {10, {"worker_10", "node_3"}}
+    , { 9, {"worker_09", "node_3"}}
+    , { 8, {"worker_08", "node_2"}}
+    , { 7, {"worker_07", "node_2"}}
+    , { 6, {"worker_06", "node_2"}}
+    , { 5, {"worker_05", "node_2"}}
+    , { 4, {"worker_04", "node_1"}}
+    , { 3, {"worker_03", "node_1"}}
+    , { 2, {"worker_02", "node_1"}}
+    , { 1, {"worker_01", "node_1"}}
+    };
 
   const std::set<sdpa::worker_id_t> set_assigned_workers
     (sdpa::daemon::CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
@@ -367,12 +368,12 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_differen
 {
   // assume we have 5 nodes and the transfer cost is different for any host
   const std::map<std::string, double> map_host_transfer_cost
-    = { {"node_1", 5.0}
-      , {"node_2", 4.0}
-      , {"node_3", 3.0}
-      , {"node_4", 2.0}
-      , {"node_5", 1.0}
-      };
+    { {"node_1", 5.0}
+    , {"node_2", 4.0}
+    , {"node_3", 3.0}
+    , {"node_4", 2.0}
+    , {"node_5", 1.0}
+    };
 
   // find an allocation minimizing the transfer costs for 5 workers
   const size_t n_req_workers (5);
@@ -381,27 +382,27 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_differen
   // assume that we have 20 workers, i.e. 4 workers per host
   // first 4 on "node_0", the next 4 on the "node_1" and so on
   const sdpa::mmap_match_deg_worker_id_t mmap_match_deg_worker
-    = { {1, {"worker_20", "node_5"}}
-      , {1, {"worker_19", "node_5"}}
-      , {1, {"worker_18", "node_5"}}
-      , {1, {"worker_17", "node_5"}}
-      , {1, {"worker_16", "node_4"}}
-      , {1, {"worker_15", "node_4"}}
-      , {1, {"worker_14", "node_4"}}
-      , {1, {"worker_13", "node_4"}}
-      , {1, {"worker_12", "node_3"}}
-      , {1, {"worker_11", "node_3"}}
-      , {1, {"worker_10", "node_3"}}
-      , {1, {"worker_09", "node_3"}}
-      , {1, {"worker_08", "node_2"}}
-      , {1, {"worker_07", "node_2"}}
-      , {1, {"worker_06", "node_2"}}
-      , {1, {"worker_05", "node_2"}}
-      , {1, {"worker_04", "node_1"}}
-      , {1, {"worker_03", "node_1"}}
-      , {1, {"worker_02", "node_1"}}
-      , {1, {"worker_01", "node_1"}}
-      };
+    { {1, {"worker_20", "node_5"}}
+    , {1, {"worker_19", "node_5"}}
+    , {1, {"worker_18", "node_5"}}
+    , {1, {"worker_17", "node_5"}}
+    , {1, {"worker_16", "node_4"}}
+    , {1, {"worker_15", "node_4"}}
+    , {1, {"worker_14", "node_4"}}
+    , {1, {"worker_13", "node_4"}}
+    , {1, {"worker_12", "node_3"}}
+    , {1, {"worker_11", "node_3"}}
+    , {1, {"worker_10", "node_3"}}
+    , {1, {"worker_09", "node_3"}}
+    , {1, {"worker_08", "node_2"}}
+    , {1, {"worker_07", "node_2"}}
+    , {1, {"worker_06", "node_2"}}
+    , {1, {"worker_05", "node_2"}}
+    , {1, {"worker_04", "node_1"}}
+    , {1, {"worker_03", "node_1"}}
+    , {1, {"worker_02", "node_1"}}
+    , {1, {"worker_01", "node_1"}}
+    };
 
   const std::set<sdpa::worker_id_t> set_assigned_workers
     (sdpa::daemon::CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
@@ -435,12 +436,12 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_equal_co
 {
   // assume we have 5 nodes and the transfer cost is the same for all hosts
   const std::map<std::string, double> map_host_transfer_cost
-    = { {"node_1", 1.0}
-      , {"node_2", 1.0}
-      , {"node_3", 1.0}
-      , {"node_4", 1.0}
-      , {"node_5", 1.0}
-      };
+    { {"node_1", 1.0}
+    , {"node_2", 1.0}
+    , {"node_3", 1.0}
+    , {"node_4", 1.0}
+    , {"node_5", 1.0}
+    };
 
   // find an allocation minimizing the transfer costs for 5 workers
   const size_t n_req_workers (5);
@@ -449,27 +450,27 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_equal_co
   // assume that we have 20 workers, i.e. 4 workers per host
   // first 4 on "node_0", the next 4 on the "node_1" and so on
   const sdpa::mmap_match_deg_worker_id_t mmap_match_deg_worker
-    = { {1, {"worker_20", "node_5"}}
-      , {1, {"worker_19", "node_5"}}
-      , {1, {"worker_18", "node_5"}}
-      , {1, {"worker_17", "node_5"}}
-      , {1, {"worker_16", "node_4"}}
-      , {1, {"worker_15", "node_4"}}
-      , {1, {"worker_14", "node_4"}}
-      , {1, {"worker_13", "node_4"}}
-      , {1, {"worker_12", "node_3"}}
-      , {1, {"worker_11", "node_3"}}
-      , {1, {"worker_10", "node_3"}}
-      , {1, {"worker_09", "node_3"}}
-      , {1, {"worker_08", "node_2"}}
-      , {1, {"worker_07", "node_2"}}
-      , {1, {"worker_06", "node_2"}}
-      , {1, {"worker_05", "node_2"}}
-      , {1, {"worker_04", "node_1"}}
-      , {1, {"worker_03", "node_1"}}
-      , {1, {"worker_02", "node_1"}}
-      , {1, {"worker_01", "node_1"}}
-      };
+    { {1, {"worker_20", "node_5"}}
+    , {1, {"worker_19", "node_5"}}
+    , {1, {"worker_18", "node_5"}}
+    , {1, {"worker_17", "node_5"}}
+    , {1, {"worker_16", "node_4"}}
+    , {1, {"worker_15", "node_4"}}
+    , {1, {"worker_14", "node_4"}}
+    , {1, {"worker_13", "node_4"}}
+    , {1, {"worker_12", "node_3"}}
+    , {1, {"worker_11", "node_3"}}
+    , {1, {"worker_10", "node_3"}}
+    , {1, {"worker_09", "node_3"}}
+    , {1, {"worker_08", "node_2"}}
+    , {1, {"worker_07", "node_2"}}
+    , {1, {"worker_06", "node_2"}}
+    , {1, {"worker_05", "node_2"}}
+    , {1, {"worker_04", "node_1"}}
+    , {1, {"worker_03", "node_1"}}
+    , {1, {"worker_02", "node_1"}}
+    , {1, {"worker_01", "node_1"}}
+    };
 
   const std::set<sdpa::worker_id_t> set_assigned_workers
     (sdpa::daemon::CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
