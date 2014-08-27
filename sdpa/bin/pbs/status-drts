@@ -48,7 +48,7 @@ function status ()
 
     if [ -n "$name" ] ; then
         for p in $pids ; do
-            drts_name=$(cat /proc/$p/cmdline | tr '\0' '\n' | grep -A1 -e '^-n$' | tail -n 1)
+            drts_name=$(cat /proc/$p/cmdline 2>/dev/null | tr '\0' '\n' | grep -A1 -e '^-n$' | tail -n 1)
             if [ "$drts_name" = "$name" ] ; then
                 echo "$p"
                 return 0
