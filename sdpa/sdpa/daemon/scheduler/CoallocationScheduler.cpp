@@ -75,7 +75,7 @@ namespace sdpa
 
       void push (cost_deg_wid_t next_tuple)
       {
-        if (size() < capacity())
+        if (size() < capacity_)
         {
           base_priority_queue_t::push (next_tuple);
           return;
@@ -87,8 +87,6 @@ namespace sdpa
           base_priority_queue_t::push (next_tuple);
         }
       }
-
-      const size_t capacity() const { return capacity_;}
 
       private:
         size_t capacity_;
