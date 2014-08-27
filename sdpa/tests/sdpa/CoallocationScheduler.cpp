@@ -355,13 +355,14 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_different_matching_degs_equa
                    }
                  );
 
-  double total_cost (0.0);
-  for (const sdpa::worker_id_t wid : set_assigned_workers)
-  {
-    total_cost += map_worker_cost.at(wid);
-  }
-
-  BOOST_REQUIRE_EQUAL (total_cost, min_total_cost);
+  BOOST_REQUIRE_EQUAL ( min_total_cost
+                      , std::accumulate ( set_assigned_workers.begin()
+                                        , set_assigned_workers.end()
+                                        , 0
+                                        , [&map_worker_cost] (const int total, const sdpa::worker_id_t wid)
+                                          {return total + map_worker_cost.at (wid);}
+                                        )
+                      );
 }
 
 BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_different_costs)
@@ -422,13 +423,14 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_differen
                    }
                  );
 
-  double total_cost (0.0);
-  for (const sdpa::worker_id_t wid : set_assigned_workers)
-  {
-    total_cost += map_worker_cost.at(wid);
-  }
-
-  BOOST_REQUIRE_EQUAL (total_cost, min_total_cost);
+  BOOST_REQUIRE_EQUAL ( min_total_cost
+                      , std::accumulate ( set_assigned_workers.begin()
+                                        , set_assigned_workers.end()
+                                        , 0
+                                        , [&map_worker_cost] (const int total, const sdpa::worker_id_t wid)
+                                          {return total + map_worker_cost.at (wid);}
+                                        )
+                      );
 }
 
 
@@ -489,11 +491,12 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_equal_co
                    }
                  );
 
-   double total_cost (0.0);
-   for (const sdpa::worker_id_t wid : set_assigned_workers)
-   {
-     total_cost += map_worker_cost.at(wid);
-   }
-
-   BOOST_REQUIRE_EQUAL (total_cost, min_total_cost);
+  BOOST_REQUIRE_EQUAL ( min_total_cost
+                      , std::accumulate ( set_assigned_workers.begin()
+                                        , set_assigned_workers.end()
+                                        , 0
+                                        , [&map_worker_cost] (const int total, const sdpa::worker_id_t wid)
+                                          {return total + map_worker_cost.at (wid);}
+                                        )
+                      );
 }
