@@ -66,7 +66,7 @@ namespace sdpa
                                   , min_cost_max_deg_comp
                                   > base_priority_queue_t;
 
-      class bounded_priority_queue_t : public base_priority_queue_t
+      class bounded_priority_queue_t : private base_priority_queue_t
       {
       public:
         explicit bounded_priority_queue_t (std::size_t capacity)
@@ -83,10 +83,14 @@ namespace sdpa
 
         if (next_tuple < top())
         {
-          base_priority_queue_t::pop();
+          pop();
           base_priority_queue_t::push (next_tuple);
         }
       }
+
+      using base_priority_queue_t::pop;
+      using base_priority_queue_t::top;
+      using base_priority_queue_t::size;
 
       private:
         size_t capacity_;
