@@ -344,10 +344,10 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_different_matching_degs_equa
 
   BOOST_REQUIRE_EQUAL (set_assigned_workers.size(), n_req_workers);
 
-  std::map<sdpa::worker_id_t, double> arr_worker_cost;
+  std::map<sdpa::worker_id_t, double> map_worker_cost;
   std::transform ( mmap_match_deg_worker.begin()
                  , mmap_match_deg_worker.end()
-                 , std::inserter (arr_worker_cost, arr_worker_cost.begin())
+                 , std::inserter (map_worker_cost, map_worker_cost.begin())
                  , [&map_host_transfer_cost] (const sdpa::mmap_match_deg_worker_id_t::value_type p)
                    { return std::make_pair ( p.second.worker_id()
                                            , map_host_transfer_cost.at(p.second.worker_host())
@@ -358,7 +358,7 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_different_matching_degs_equa
   double total_cost (0.0);
   for (const sdpa::worker_id_t wid : set_assigned_workers)
   {
-    total_cost += arr_worker_cost.at(wid);
+    total_cost += map_worker_cost.at(wid);
   }
 
   BOOST_REQUIRE_EQUAL (total_cost, min_total_cost);
@@ -411,10 +411,10 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_differen
 
   BOOST_REQUIRE_EQUAL (set_assigned_workers.size(), n_req_workers);
 
-  std::map<sdpa::worker_id_t, double> arr_worker_cost;
+  std::map<sdpa::worker_id_t, double> map_worker_cost;
   std::transform ( mmap_match_deg_worker.begin()
                  , mmap_match_deg_worker.end()
-                 , std::inserter (arr_worker_cost, arr_worker_cost.begin())
+                 , std::inserter (map_worker_cost, map_worker_cost.begin())
                  , [&map_host_transfer_cost] (const sdpa::mmap_match_deg_worker_id_t::value_type p)
                    { return std::make_pair ( p.second.worker_id()
                                            , map_host_transfer_cost.at(p.second.worker_host())
@@ -425,7 +425,7 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_differen
   double total_cost (0.0);
   for (const sdpa::worker_id_t wid : set_assigned_workers)
   {
-    total_cost += arr_worker_cost.at(wid);
+    total_cost += map_worker_cost.at(wid);
   }
 
   BOOST_REQUIRE_EQUAL (total_cost, min_total_cost);
@@ -478,10 +478,10 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_equal_co
     );
   BOOST_REQUIRE_EQUAL (set_assigned_workers.size(), n_req_workers);
 
-  std::map<sdpa::worker_id_t, double> arr_worker_cost;
+  std::map<sdpa::worker_id_t, double> map_worker_cost;
   std::transform ( mmap_match_deg_worker.begin()
                  , mmap_match_deg_worker.end()
-                 , std::inserter (arr_worker_cost, arr_worker_cost.begin())
+                 , std::inserter (map_worker_cost, map_worker_cost.begin())
                  , [&map_host_transfer_cost] (const sdpa::mmap_match_deg_worker_id_t::value_type p)
                    { return std::make_pair ( p.second.worker_id()
                                            , map_host_transfer_cost.at(p.second.worker_host())
@@ -492,7 +492,7 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_equal_co
    double total_cost (0.0);
    for (const sdpa::worker_id_t wid : set_assigned_workers)
    {
-     total_cost += arr_worker_cost.at(wid);
+     total_cost += map_worker_cost.at(wid);
    }
 
    BOOST_REQUIRE_EQUAL (total_cost, min_total_cost);
