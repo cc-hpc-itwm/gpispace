@@ -41,7 +41,7 @@ namespace fhg
         accept();
       }
 
-      typename Protocol::endpoint local_endpoint()
+      typename Protocol::endpoint local_endpoint() const
       {
         return _acceptor.local_endpoint();
       }
