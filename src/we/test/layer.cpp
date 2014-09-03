@@ -69,6 +69,7 @@ struct daemon
             , std::bind (&daemon::canceled, this, std::placeholders::_1)
             , std::bind (&daemon::discover, this, std::placeholders::_1, std::placeholders::_2)
             , std::bind (&daemon::discovered, this, std::placeholders::_1, std::placeholders::_2)
+            , std::bind (&daemon::token_put, this, std::placeholders::_1)
             , std::bind (&daemon::generate_id, this)
             , _random_engine
             )
@@ -295,6 +296,12 @@ struct daemon
     _to_discovered.erase (e);
 
     DEC_IN_PROGRESS (replies);
+  }
+
+  void token_put (std::string put_token_id)
+  {
+    //! \todo implement for test.
+    abort();
   }
 
   void do_submit ( we::layer::id_type id
@@ -1043,6 +1050,7 @@ namespace
   void canceled (we::layer::id_type){}
   void discover (we::layer::id_type, we::layer::id_type){}
   void discovered (we::layer::id_type, sdpa::discovery_info_t){}
+  void token_put (std::string){}
 
   boost::mutex generate_id_mutex;
   we::layer::id_type generate_id()
@@ -1081,6 +1089,7 @@ BOOST_AUTO_TEST_CASE
     , &canceled
     , &discover
     , &discovered
+    , &token_put
     , &generate_id
     , _random_engine
     );
@@ -1352,6 +1361,7 @@ namespace
                , std::bind (&disallow, "canceled")
                , std::bind (&disallow, "discover")
                , std::bind (&disallow, "discovered")
+               , std::bind (&disallow, "token_put")
                , std::bind
                  (&wfe_and_counter_of_submitted_requirements::generate_id, this)
                , _random_extraction_engine

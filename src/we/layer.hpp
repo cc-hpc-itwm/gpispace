@@ -43,6 +43,8 @@ namespace we
             , std::function<void (id_type discover_id, id_type)> rts_discover
               // result of discover (parent) -> top level
             , std::function<void (id_type discover_id, sdpa::discovery_info_t)> rts_discovered
+              // result of put_token (parent) -> top level
+            , std::function<void (std::string put_token_id)> rts_token_put
             , std::function<id_type()> rts_id_generator
             , std::mt19937& random_extraction_engine
             );
@@ -70,6 +72,13 @@ namespace we
       // shall not be called from within rts_discover!
       void discovered (id_type discover_id, sdpa::discovery_info_t);
 
+      // initial from exec_layer -> top level, unique put_token_id
+      void put_token ( id_type
+                     , std::string put_token_id
+                     , std::string place_name
+                     , pnet::type::value::value_type
+                     );
+
     private:
       std::function<void (id_type, type::activity_t)> _rts_submit;
       std::function<void (id_type)> _rts_cancel;
@@ -78,6 +87,7 @@ namespace we
       std::function<void (id_type)> _rts_canceled;
       std::function<void (id_type, id_type)> _rts_discover;
       std::function<void (id_type, sdpa::discovery_info_t)> _rts_discovered;
+      std::function<void (std::string)> _rts_token_put;
       std::function<id_type()> _rts_id_generator;
 
       void rts_finished_and_forget (id_type, type::activity_t);
