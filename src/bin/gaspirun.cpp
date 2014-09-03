@@ -336,7 +336,5 @@ int main (int argc, char *argv[])
     usleep (1000);
   }
 
-  std::cerr << "I am done" << std::endl;
-
   return 0;
 }
