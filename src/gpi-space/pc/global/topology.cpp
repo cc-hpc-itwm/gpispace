@@ -332,9 +332,6 @@ namespace gpi
         // lock, so that no other process can make a global alloc
         lock_type alloc_lock(m_global_alloc_mutex);
 
-        // acquire cluster wide access to the gpi resource
-        boost::unique_lock<gpi::api::gpi_api_t> gpi_lock (_gpi_api);
-
         try
         {
           rank_result_t res (all_reduce(  detail::command_t("ALLOC")
