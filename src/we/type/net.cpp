@@ -8,8 +8,11 @@
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/join.hpp>
 
+#include <boost/format.hpp>
+
 #include <functional>
 #include <iterator>
+#include <stdexcept>
 #include <stack>
 #include <unordered_map>
 
@@ -237,6 +240,27 @@ namespace we
                         )
     {
       do_update (do_put_value (pid, value));
+    }
+
+    void net_type::put_value ( std::string place_name
+                             , pnet::type::value::value_type const& value
+                             )
+    {
+      //! \todo maybe use a bimap
+      for (std::pair<we::place_id_type, place::type> const& p : _pmap)
+      {
+        if (p.second.name() == place_name)
+        {
+          return put_value (p.first, value);
+        }
+      }
+
+      throw std::invalid_argument
+        ( ( boost::format ("put_value (\"%1%\", %2%): not found")
+          % place_name
+          % pnet::type::value::show (value)
+          ).str()
+        );
     }
 
     net_type::to_be_updated_type net_type::do_put_value

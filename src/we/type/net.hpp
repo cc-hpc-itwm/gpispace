@@ -93,6 +93,7 @@ namespace we
       place_to_port_type const& place_to_port() const;
 
       void put_value (place_id_type, const pnet::type::value::value_type&);
+      void put_value (std::string place_name, pnet::type::value::value_type const&);
 
       const std::list<pnet::type::value::value_type>&
         get_token (place_id_type) const;
