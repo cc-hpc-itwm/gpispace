@@ -60,6 +60,8 @@ namespace gspc
           {"virtual-memory-per-node"};
         constexpr char const* const virtual_memory_socket
           {"virtual-memory-socket"};
+        constexpr char const* const virtual_memory_port
+          {"virtual-memory-port"};
       }
     }
 
@@ -155,6 +157,11 @@ namespace gspc
         , boost::program_options::value<validators::nonexisting_path>()
         ->required()
         , "socket file to communicate with the virtual memory manager"
+        )
+        ( name::virtual_memory_port
+        , boost::program_options::value<validators::positive_integral<unsigned short>>()
+        ->required()
+        , "internal communication port that shall be used by the virtual memory manager"
         )
         ;
 
