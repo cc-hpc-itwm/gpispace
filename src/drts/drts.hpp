@@ -5,6 +5,8 @@
 
 #include <drts/virtual_memory.hpp>
 
+#include <sdpa/types.hpp>
+
 #include <we/type/value.hpp>
 
 #include <boost/filesystem.hpp>
@@ -62,13 +64,25 @@ namespace gspc
 
     ~scoped_runtime_system();
 
+    sdpa::job_id_t submit
+      ( boost::filesystem::path const& workflow
+      , std::multimap< std::string
+                     , pnet::type::value::value_type
+                     > const& values_on_ports
+      ) const;
+    std::multimap<std::string, pnet::type::value::value_type>
+      wait_and_extract (sdpa::job_id_t) const;
+
     std::multimap<std::string, pnet::type::value::value_type>
       put_and_run
       ( boost::filesystem::path const& workflow
       , std::multimap< std::string
                      , pnet::type::value::value_type
                      > const& values_on_ports
-      ) const;
+      ) const
+    {
+      return wait_and_extract (submit (workflow, values_on_ports));
+    }
 
     vmem_allocation alloc
       (unsigned long size, std::string const& description) const;

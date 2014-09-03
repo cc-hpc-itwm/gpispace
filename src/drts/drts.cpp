@@ -341,8 +341,7 @@ namespace gspc
            );
   }
 
-  std::multimap<std::string, pnet::type::value::value_type>
-    scoped_runtime_system::put_and_run
+  sdpa::job_id_t scoped_runtime_system::submit
     ( boost::filesystem::path const& workflow
     , std::multimap< std::string
                    , pnet::type::value::value_type
@@ -377,7 +376,24 @@ namespace gspc
     sdpa::client::Client api
       ("orchestrator", kvs_host, std::to_string (kvs_port));
 
-    std::string const job_id (api.submitJob (activity.to_string()));
+    return api.submitJob (activity.to_string());
+  }
+
+  std::multimap<std::string, pnet::type::value::value_type>
+    scoped_runtime_system::wait_and_extract (sdpa::job_id_t job_id) const
+  {
+    // taken from pbs/sdpa and bin/sdpac
+    //! \todo Remove magic: specify filenames instead of relying on
+    //! file? Let an c++-ified sdpa-boot() return them.
+    std::string const kvs_host
+      (fhg::util::read_file (_state_directory / "kvs.host"));
+    unsigned short const kvs_port
+      ( boost::lexical_cast<unsigned short>
+        (fhg::util::read_file (_state_directory / "kvs.port"))
+      );
+
+    sdpa::client::Client api
+      ("orchestrator", kvs_host, std::to_string (kvs_port));
 
     std::cerr << "waiting for job " << job_id << std::endl;
 
