@@ -113,6 +113,9 @@ namespace gspc
     std::pair<std::list<std::string>, unsigned long> const
       _nodes_and_number_of_unique_nodes;
     std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
+
+    std::string _kvs_host;
+    unsigned short _kvs_port;
   };
 
   void set_gspc_home ( boost::program_options::variables_map&
