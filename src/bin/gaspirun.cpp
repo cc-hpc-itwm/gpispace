@@ -215,11 +215,9 @@ namespace
     {
       if (machinefile.size() > 1)
       {
-        std::cerr << "stopping vmem workers..." << std::endl;
         _rif.stop ({}, "gaspi-worker");
       }
 
-      std::cerr << "stopping vmem master..." << std::endl;
       _rif.stop ({}, "gaspi-master");
     }
 
@@ -327,34 +325,6 @@ int main (int argc, char *argv[])
     });
 
   std::cout << "running with PID " << getpid() << std::endl;
-
-  /*
-  auto result (vmem.wait ());
-
-  for (std::pair<std::string, int> const &host_and_status : result)
-  {
-    const std::string & host (host_and_status.first);
-    const int status (host_and_status.second);
-
-    if (host_and_status.second == -1)
-    {
-      std::cerr << "fork failed for process on node " << host << std::endl;
-    }
-    else if (WIFEXITED (status))
-    {
-      std::cerr << "process on node " << host << " terminated with exit code: " << WEXITSTATUS (status) << std::endl;
-    }
-    else if (WIFSIGNALED (status))
-    {
-      std::cerr << "process on node " << host << " terminated by signal: " << WTERMSIG (status) << std::endl;
-    }
-    else
-    {
-      std::cerr << "process on node " << host << " strange status: " << status << std::endl;
-    }
-  }
-  pause ();
-  */
 
   while (! done)
   {
