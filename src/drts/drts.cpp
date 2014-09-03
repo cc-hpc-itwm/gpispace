@@ -247,7 +247,7 @@ namespace gspc
       if (0 == child)
       {
         std::vector<std::string> command {
-          "ssh", "-n", "-tt", host, "/usr/bin/env"
+          "ssh", "-q", "-n", "-tt", host, "/usr/bin/env"
             };
         for (auto kv : environment)
         {
