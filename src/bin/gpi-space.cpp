@@ -27,7 +27,6 @@
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/gpi/fake_api.hpp>
-#include <gpi-space/gpi/real_api.hpp>
 #include <gpi-space/gpi/gaspi.hpp>
 
 #include <gpi-space/pc/proto/message.hpp>
@@ -85,36 +84,15 @@ static const int EX_INVAL = 3;
 
 static const int GPI_MAGIC_MISMATCH = 23;
 
-static void distribute_config_or_die(const config_t *c, gpi_api_t & gpi_api);
-static void receive_config_or_die(config_t *c, gpi_api_t& gpi_api);
-
 static int configure_logging (const config_t *cfg, const char* logfile);
 
 namespace
 {
-  enum requested_api_t { API_auto, API_real, API_fake, API_gaspi };
+  enum requested_api_t { API_fake, API_gaspi };
   std::unique_ptr<gpi_api_t> create_gpi_api
     (requested_api_t requested_api, bool is_master, const boost::optional<unsigned short>& p)
   {
-    if (requested_api == API_auto)
-    {
-      try
-      {
-        return fhg::util::make_unique <gpi::api::real_gpi_api_t> (is_master);
-      }
-      catch (gpi::exception::gpi_error const& ex)
-      {
-        fprintf (stderr, "%s: %s\n", program_name, ex.what());
-        fprintf (stderr, "%s: fallback to fake API\n", program_name);
-
-        return fhg::util::make_unique <gpi::api::fake_gpi_api_t> (is_master);
-      }
-    }
-    else if (requested_api == API_real)
-    {
-      return fhg::util::make_unique <gpi::api::real_gpi_api_t> (is_master);
-    }
-    else if (requested_api == API_gaspi)
+    if (requested_api == API_gaspi)
     {
       if (!p)
       {
@@ -122,9 +100,14 @@ namespace
       }
       return fhg::util::make_unique <gpi::api::gaspi_t> (is_master, *p);
     }
-    else // if (requested_api == API_fake)
+    else if (requested_api == API_fake)
     {
       return fhg::util::make_unique <gpi::api::fake_gpi_api_t> (is_master);
+    }
+    else
+    {
+      throw std::runtime_error
+        ("internal error: unhandled enum value for 'requested_api': " + std::to_string (requested_api));
     }
   }
 
@@ -142,7 +125,7 @@ int main (int ac, char *av[])
   bool is_master = true;
   char pidfile[MAX_PATH_LEN];
   snprintf (pidfile, sizeof(pidfile), "%s", "");
-  requested_api_t requested_api = API_auto;
+  requested_api_t requested_api = API_gaspi;
   char socket_path[MAX_PATH_LEN];
   memset (socket_path, 0, sizeof(socket_path));
   char logfile[MAX_PATH_LEN];
@@ -150,7 +133,7 @@ int main (int ac, char *av[])
   std::string default_memory_url ("gpi://?buffer_size=4194304&buffers=8");
 
   unsigned long long gpi_mem = (1<<26);
-  unsigned int gpi_timeout = 120;
+  unsigned int gpi_timeout = 120 * 1000;
   boost::optional<unsigned short> port (false, 0u);
 
   std::vector<std::string> mem_urls;
@@ -205,11 +188,10 @@ int main (int ac, char *av[])
       fprintf(stderr, "\n");
       fprintf(stderr, "GPI options\n");
       fprintf(stderr, "    --gpi-mem|-s BYTES (%llu)\n", gpi_mem);
-      fprintf(stderr, "    --gpi-api STRING (%s)\n", "auto");
+      fprintf(stderr, "    --gpi-api STRING (%s)\n", "gaspi");
       fprintf(stderr, "      choose the GPI API to use\n");
       fprintf(stderr, "        fake - use the fake api\n");
-      fprintf(stderr, "        real - use the real api\n");
-      fprintf(stderr, "        auto - choose the best api\n");
+      fprintf(stderr, "        gaspi - use the GASPI api\n");
       fprintf(stderr, "    --port PORT\n");
       fprintf(stderr, "\n");
       fprintf(stderr, "GPI options (expert)\n");
@@ -462,12 +444,10 @@ int main (int ac, char *av[])
       ++i;
       if (i < ac)
       {
-        requested_api = strcmp (av[i], "auto") == 0 ? API_auto
-          : strcmp (av[i], "real") == 0 ? API_real
-          : strcmp (av[i], "gaspi") == 0 ? API_gaspi
+        requested_api = strcmp (av[i], "gaspi") == 0 ? API_gaspi
           : strcmp (av[i], "fake") == 0 ? API_fake
           : throw std::runtime_error
-            ("invalid argument to --gpi-api: must be 'auto', 'real', 'gaspi' or 'fake'");
+            ("invalid argument to --gpi-api: must be 'gaspi' or 'fake'");
         ++i;
       }
       else
@@ -543,6 +523,11 @@ int main (int ac, char *av[])
     }
   }
 
+  if (getenv ("GASPI_TYPE") && strcmp (getenv ("GASPI_TYPE"), "GASPI_WORKER") == 0)
+  {
+    is_master = false;
+  }
+
   if (is_master)
   {
     // check parameters (only works on the master node since we don't
@@ -606,6 +591,16 @@ int main (int ac, char *av[])
     }
   }
 
+  fhg::com::kvs::kvsc_ptr_t kvs_client
+    ( new fhg::com::kvs::client::kvsc
+    ( config.kvs_host
+    , boost::lexical_cast<std::string> (config.kvs_port)
+    , true
+    , boost::posix_time::seconds (1)
+    , config.kvs_retry_count
+    )
+    );
+
   // initialize gpi api
   std::unique_ptr<gpi_api_t> gpi_api_
     (create_gpi_api (requested_api, is_master, port));
@@ -632,21 +627,7 @@ int main (int ac, char *av[])
     LOG(ERROR, "GPI could not be started: " << ex.what());
     return EXIT_FAILURE;
   }
-  LOG(INFO, "GPI started");
-
-  if (gpi_api.is_master())
-  {
-    config.magic = CONFIG_MAGIC;
-    distribute_config_or_die (&config, gpi_api);
-  }
-  else
-  {
-    receive_config_or_die (&config, gpi_api);
-    if (CONFIG_MAGIC != config.magic)
-    {
-      exit(GPI_MAGIC_MISMATCH);
-    }
-  }
+  LOG(INFO, "GPI started: " << gpi_api.rank());
 
   if (!is_master)
   {
@@ -667,16 +648,6 @@ int main (int ac, char *av[])
 
     if (mem_urls.empty ())
       mem_urls.push_back (default_memory_url);
-
-    fhg::com::kvs::kvsc_ptr_t kvs_client
-      ( new fhg::com::kvs::client::kvsc
-        ( config.kvs_host
-        , boost::lexical_cast<std::string> (config.kvs_port)
-        , true
-        , boost::posix_time::seconds (1)
-        , config.kvs_retry_count
-        )
-      );
 
     const gpi::pc::container::manager_t container_manager
       (config.socket, mem_urls, gpi_api, kvs_client);
@@ -749,72 +720,4 @@ static int configure_logging (const config_t *cfg, const char* logfile)
   FHGLOG_SETUP();
 
   return 0;
-}
-
-static void distribute_config_or_die(const config_t *c, gpi_api_t& gpi_api)
-{
-  memcpy(gpi_api.dma_ptr(), c, sizeof(config_t));
-  const size_t max_enqueued_requests (gpi_api.queue_depth());
-  for (size_t rank (1); rank < gpi_api.number_of_nodes(); ++rank)
-  {
-    if (gpi_api.open_passive_requests () >= max_enqueued_requests)
-    {
-      try
-      {
-        gpi_api.wait_passive ();
-      }
-      catch (std::exception const & ex)
-      {
-        LOG(ERROR, "could not wait on passive channel: " << ex.what());
-        gpi_api.kill();
-        exit(EXIT_FAILURE);
-      }
-    }
-
-    try
-    {
-      gpi_api.send_passive( 0, sizeof(config_t), rank );
-    }
-    catch (std::exception const & ex)
-    {
-      LOG(ERROR, "could not send config to: " << rank << ": " << ex.what());
-      gpi_api.kill();
-      exit(EXIT_FAILURE);
-    }
-  }
-
-  try
-  {
-    gpi_api.wait_passive ();
-  }
-  catch (std::exception const & ex)
-  {
-    LOG(ERROR, "could not wait on passive channel: " << ex.what());
-    gpi_api.kill();
-    exit(EXIT_FAILURE);
-  }
-  memset(gpi_api.dma_ptr(), 0, sizeof(config_t));
-}
-
-static void receive_config_or_die(config_t *c, gpi_api_t& gpi_api)
-{
-  try
-  {
-    gpi::rank_t source (-1);
-    gpi_api.recv_passive( 0, sizeof(config_t), source );
-    if (0 != source)
-    {
-      LOG(ERROR, "got passive dma message from unexpected source: " << source);
-      throw std::runtime_error
-        ("got passive dma message from unexpected source");
-    }
-  }
-  catch (std::exception const & ex)
-  {
-    LOG(ERROR, "could not receive passive dma message: " << ex.what());
-    exit(EXIT_FAILURE);
-  }
-
-  memcpy(c, gpi_api.dma_ptr(), sizeof(config_t));
-  memset(gpi_api.dma_ptr(), 0, sizeof(config_t));
 }
