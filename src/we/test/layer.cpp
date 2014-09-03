@@ -94,6 +94,8 @@ struct daemon
     BOOST_REQUIRE (_to_finished.empty());
     BOOST_REQUIRE (_to_failed.empty());
     BOOST_REQUIRE (_to_canceled.empty());
+    BOOST_REQUIRE (_to_discover.empty());
+    BOOST_REQUIRE (_to_discovered.empty());
   }
 
 #define INC_IN_PROGRESS(COUNTER)                                \
