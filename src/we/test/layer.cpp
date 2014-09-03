@@ -97,6 +97,7 @@ struct daemon
     BOOST_REQUIRE (_to_canceled.empty());
     BOOST_REQUIRE (_to_discover.empty());
     BOOST_REQUIRE (_to_discovered.empty());
+    BOOST_REQUIRE (_to_token_put.empty());
   }
 
 #define INC_IN_PROGRESS(COUNTER)                                \
@@ -298,10 +299,27 @@ struct daemon
     DEC_IN_PROGRESS (replies);
   }
 
+  DECLARE_EXPECT_CLASS ( token_put
+                       , std::string put_token_id
+                       , _put_token_id (put_token_id)
+                       , we::layer::id_type _put_token_id
+                       , _put_token_id == put_token_id
+                       );
+
   void token_put (std::string put_token_id)
   {
-    //! \todo implement for test.
-    abort();
+    std::list<expect_token_put*>::iterator const e
+      ( boost::find_if ( _to_token_put
+                       , std::bind (&expect_token_put::eq, std::placeholders::_1, put_token_id)
+                       )
+      );
+
+    BOOST_REQUIRE (e != _to_token_put.end());
+
+    (*e)->happened();
+    _to_token_put.erase (e);
+
+    DEC_IN_PROGRESS (replies);
   }
 
   void do_submit ( we::layer::id_type id
@@ -357,6 +375,17 @@ struct daemon
     DEC_IN_PROGRESS (replies);
 
     layer.discovered (discover_id, result);
+  }
+
+  void do_put_token ( we::layer::id_type id
+                    , std::string put_token_id
+                    , std::string place_name
+                    , pnet::type::value::value_type value
+                    )
+  {
+    INC_IN_PROGRESS (replies);
+
+    layer.put_token (id, put_token_id, place_name, value);
   }
 
   boost::mutex _generate_id_mutex;
@@ -1236,6 +1265,46 @@ BOOST_FIXTURE_TEST_CASE
 
     do_finished (child_id_A, activity_result);
     do_finished (child_id_B, activity_result);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE (layer_properly_puts_token, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_output;
+  we::type::activity_t activity_child;
+  we::type::activity_t activity_result;
+  std::tie (activity_input, std::ignore, activity_child, activity_result)
+    = activity_with_child (1);
+  std::tie (std::ignore, activity_output, std::ignore, std::ignore)
+    = activity_with_child (2);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
+
+  {
+    expect_submit const _ (this, &child_id_a, activity_child);
+
+    do_submit (id, activity_input);
+  }
+
+  {
+    std::string const put_token_id (fhg::util::random_string());
+    expect_token_put const token_put (this, put_token_id);
+    //! \note Race: can't ensure that child_id_b is triggered by putting token
+    expect_submit const submitted (this, &child_id_b, activity_child);
+
+    do_put_token (id, put_token_id, "in", value::CONTROL);
+  }
+
+  {
+    //! \note Race: can't ensure that both finishes are required
+    expect_finished const _ (this, id, activity_output);
+
+    do_finished (child_id_a, activity_result);
+    do_finished (child_id_b, activity_result);
   }
 }
 
