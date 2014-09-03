@@ -1,7 +1,6 @@
 #include <fhg/syscall.hpp>
-#include <fhg/util/boost/program_options/validators/executable.hpp>
+#include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
-#include <fhg/util/boost/program_options/validators/nonempty_file.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 
@@ -13,6 +12,7 @@
 #include <fstream>
 #include <future>
 #include <iostream>
+#include <unordered_set>
 #include <string>
 #include <vector>
 
@@ -56,181 +56,35 @@ namespace
     static const _ timeout ("timeout");
   }
 
-  typedef std::vector<std::string> machinefile_t;
-
-  machinefile_t
-  read_machinefile (const boost::filesystem::path& mfile)
+  std::pair<std::list<std::string>, unsigned long>
+  read_nodes (boost::filesystem::path const& nodefile)
   {
-    machinefile_t machinefile;
+    std::unordered_set<std::string> unique_nodes;
+    std::list<std::string> nodes;
 
-    std::ifstream ifs (mfile.c_str());
-
-    boost::optional<std::string> previous;
-    while (ifs)
     {
-      std::string line;
-      std::getline (ifs, line);
+      std::ifstream stream (nodefile.string());
 
-      if (line.empty() || line.front() == '#')
-      {
-        continue;
-      }
+      std::string node;
 
-      if (previous != line)
+      while (std::getline (stream, node))
       {
-        machinefile.push_back (line);
-        previous = line;
+        unique_nodes.insert (node);
+        nodes.emplace_back (node);
       }
     }
 
-    return machinefile;
+    if (unique_nodes.empty())
+    {
+      throw std::runtime_error
+        (( boost::format ("nodefile %1% does not contain nodes")
+         % nodefile
+         ).str()
+        );
+    }
+
+    return std::make_pair (nodes, unique_nodes.size());
   }
-
-  namespace validators = fhg::util::boost::program_options;
-  class vmem_t
-  {
-  public:
-    vmem_t ( boost::program_options::variables_map const& vm
-           , gspc::installation const &installation
-           , gspc::rif_t& rif
-           )
-      : machinefile_path (vm [option::machinefile.name].as<validators::nonempty_file>())
-      , machinefile (read_machinefile (machinefile_path))
-      , _rif (rif)
-    {
-      const std::string& kvs_host (vm[option::kvs_host.name].as<validators::nonempty_string>());
-      const unsigned short kvs_port (vm[option::kvs_port.name].as<validators::positive_integral<unsigned short>>());
-      const std::string& log_host (vm[option::log_host.name].as<validators::nonempty_string>());
-      const unsigned short log_port (vm[option::log_port.name].as<validators::positive_integral<unsigned short>>());
-      const std::string& log_level (vm[option::log_level.name].as<std::string>());
-      const boost::filesystem::path socket (vm[option::socket.name].as<std::string>());
-      const unsigned short port (vm[option::port.name].as<validators::positive_integral<unsigned short>>());
-      const std::uint64_t memory_size (vm[option::memsize.name].as<validators::positive_integral<std::uint64_t>>());
-      const std::uint64_t timeout (vm[option::timeout.name].as<validators::positive_integral<std::uint64_t>>());
-
-      if (machinefile.empty())
-      {
-        throw std::runtime_error ("at least one node is required in machinefile");
-      }
-
-      const validators::executable vmem_binary
-        ((installation.gspc_home() / "bin" / "gpi-space").string());
-
-      if (boost::filesystem::exists (socket))
-      {
-        throw std::runtime_error ("socket file already exists: " + socket.string());
-      }
-
-      const std::string& master (machinefile.front());
-
-      const std::list<gspc::rif_t::endpoint_t> rif_endpoints
-        ([] (const machinefile_t& m) -> std::list<gspc::rif_t::endpoint_t> {
-          std::list<gspc::rif_t::endpoint_t> ep;
-          for (std::string const&h : m)
-          {
-            ep.emplace_back (gspc::rif_t::endpoint_t (h, 22));
-          }
-          return std::move (ep);
-        }(machinefile));
-
-      // create in memory hostlist
-      // rif.store (machinefile, hostlist, "<rif-root>/machinefile");
-      // rif.exec (machinefile - master, [...]);
-      // rif.exec ({master}, [...]);
-
-      {
-        std::map<std::string, std::string> env;
-        env["GASPI_MFILE"] = machinefile_path.string();
-        env["GASPI_MASTER"] = master;
-        env["GASPI_SOCKET"] = "0";
-        env["GASPI_TYPE"] = "GASPI_MASTER";
-        env["GASPI_SET_NUMA_SOCKET"] = "0";
-
-        std::vector<std::string> command
-          ({ vmem_binary.string()
-              , "--kvs-host", kvs_host, "--kvs-port", std::to_string (kvs_port)
-              , "--log-host", log_host, "--log-port", std::to_string (log_port)
-              , "--log-level", log_level
-              , "--gpi-mem", std::to_string (memory_size)
-              , "--socket", socket.string()
-              , "--port", std::to_string (port)
-              , "--gpi-api", machinefile.size() > 1 ? "gaspi" : "fake"
-              , "--gpi-timeout", std::to_string (timeout)
-              });
-
-        _rif.exec ({rif_endpoints.front()}
-                  , "gaspi-master"
-                  , command
-                  , env
-                  );
-      }
-
-      if (machinefile.size () > 1)
-      {
-        std::map<std::string, std::string> env;
-        env["GASPI_MFILE"] = machinefile_path.string();
-        env["GASPI_MASTER"] = master;
-        env["GASPI_SOCKET"] = "0";
-        env["GASPI_TYPE"] = "GASPI_WORKER";
-        env["GASPI_SET_NUMA_SOCKET"] = "0";
-
-        std::vector<std::string> command
-          ({ vmem_binary.string()
-              , "--kvs-host", kvs_host, "--kvs-port", std::to_string (kvs_port)
-              , "--log-host", log_host, "--log-port", std::to_string (log_port)
-              , "--log-level", log_level
-              , "--gpi-mem", std::to_string (memory_size)
-              , "--socket", socket.string()
-              , "--port", std::to_string (port)
-              , "--gpi-api", machinefile.size() > 1 ? "gaspi" : "fake"
-              , "--gpi-timeout", std::to_string (timeout)
-              });
-
-        _rif.exec ( std::list<gspc::rif_t::endpoint_t> (++rif_endpoints.begin(), rif_endpoints.end())
-                  , "gaspi-worker"
-                  , command
-                  , env
-                  );
-      }
-
-      std::uint64_t slept (0);
-      while (!boost::filesystem::exists (socket))
-      {
-        const std::uint64_t sleep_duration (1000);
-
-        usleep (sleep_duration * 1000);
-        slept += sleep_duration;
-
-        if (slept > timeout)
-        {
-          throw std::runtime_error
-            ( "timeout while waiting for: " + socket.string()
-            + " waited: " + std::to_string (slept) + " seconds"
-            );
-        }
-      }
-    }
-
-    void stop()
-    {
-      if (machinefile.size() > 1)
-      {
-        _rif.stop ({}, "gaspi-worker");
-      }
-
-      _rif.stop ({}, "gaspi-master");
-    }
-
-    ~vmem_t()
-    {
-      stop();
-    }
-  private:
-    boost::filesystem::path machinefile_path;
-    machinefile_t machinefile;
-    gspc::rif_t& _rif;
-    boost::mutex status_mutex;
-  };
 }
 
 int main (int argc, char *argv[])
@@ -240,33 +94,9 @@ int main (int argc, char *argv[])
   boost::program_options::options_description visible_options ("Allowed options");
   boost::program_options::options_description cmdline_options;
   boost::program_options::options_description generic_options ("Generic options");
-  boost::program_options::options_description gaspi_options ("GASPI options");
-  boost::program_options::options_description hidden_options;
 
   generic_options.add_options()
     (option::help, "print usage information")
-    ( option::machinefile
-    , boost::program_options::value<validators::nonempty_file>()->required()
-    , "machinefile to use, this file has to reside in a shared folder, we currently do not transfer it"
-    )
-    ;
-  gaspi_options.add_options()
-    ( option::socket
-    , boost::program_options::value<std::string>()->required()
-    , "socket to listen on"
-    )
-    ( option::timeout
-    , boost::program_options::value<validators::positive_integral<std::uint64_t>>()->required()
-    , "time to wait until we think that the start-up failed in milliseconds"
-    )
-    ( option::memsize
-    , boost::program_options::value<validators::positive_integral<std::uint64_t>>()->required()
-    , "amount of memory to use for GASPI"
-    )
-    ( option::port
-    , boost::program_options::value<validators::positive_integral<unsigned short>>()->required()
-    , "port to use for GASPI communication"
-    )
     ( option::kvs_host
     , boost::program_options::value<validators::nonempty_string>()->required()
     , "kvs host to use"
@@ -280,10 +110,11 @@ int main (int argc, char *argv[])
   visible_options
     .add (generic_options)
     .add (gspc::options::installation())
-    .add (gaspi_options)
+    .add (gspc::options::drts())
+    .add (gspc::options::virtual_memory())
     .add (gspc::options::logging())
     ;
-  cmdline_options.add (visible_options).add (hidden_options);
+  cmdline_options.add (visible_options);
 
   boost::program_options::variables_map vm;
   boost::program_options::parsed_options parsed
@@ -295,10 +126,7 @@ int main (int argc, char *argv[])
 
   if (vm.count (option::help.name))
   {
-    std::cout << "usage: " << argv[0] << " -m machinefile [options] [--] binary args..." << std::endl
-              << std::endl
-              << "hint: use '--' in case args contains allowed parameters to gaspirun"
-              << std::endl
+    std::cout << "usage: " << argv[0] << "[options]" << std::endl
               << std::endl
               << visible_options;
     return EXIT_SUCCESS;
@@ -312,7 +140,13 @@ int main (int argc, char *argv[])
 
   volatile bool done = false;
 
-  vmem_t vmem (vm, gspc::installation (vm), rif);
+  gspc::vmem_t vmem ( vm
+                    , gspc::installation (vm)
+                    , rif
+                    , read_nodes (vm["nodefile"].as<validators::existing_path>())
+                    , vm[option::kvs_host.name].as<validators::nonempty_string>()
+                    , vm[option::kvs_port.name].as<validators::positive_integral<unsigned short>>()
+                    );
   signal_handlers.add (SIGINT, [&done] (int, siginfo_t*, void*) {
       std::async (std::launch::async, [&done] {
           done = true;
@@ -328,8 +162,6 @@ int main (int argc, char *argv[])
           done = true;
         });
     });
-
-  std::cout << "running with PID " << getpid() << std::endl;
 
   while (! done)
   {
