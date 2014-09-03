@@ -1,4 +1,4 @@
-find_package (GASPI REQUIRED)
+find_package (GASPI 1.1.0 REQUIRED)
 include_directories(${GASPI_INCLUDE_DIR})
 
 include_directories(${GPI_INCLUDE_DIR})
