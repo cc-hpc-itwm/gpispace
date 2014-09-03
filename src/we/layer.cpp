@@ -301,8 +301,18 @@ namespace we
                           , pnet::type::value::value_type value
                           )
     {
-      abort();
-      //! \todo implement and _rts_token_put (put_token_id);
+      _nets_to_extract_from.apply
+        ( id
+        , [this, put_token_id, place_name, value]
+          (activity_data_type& activity_data)
+        {
+          boost::get<we::type::net_type&>
+            (activity_data._activity.transition().data())
+            .put_value (place_name, value);
+
+          _rts_token_put (put_token_id);
+        }
+        );
     }
 
     void layer::extract_from_nets()
