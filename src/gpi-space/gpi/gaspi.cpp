@@ -121,14 +121,6 @@ namespace gpi
       }
     }
 
-    void gaspi_t::kill()
-    {
-      throw gpi::exception::gpi_error
-        ( gpi::error::operation_not_implemented()
-        , "gaspi_t::kill()"
-        );
-    }
-
     void gaspi_t::shutdown()
     {
       stop();
@@ -158,14 +150,6 @@ namespace gpi
           );
       }
       return queue_size_max;
-    }
-
-    gpi::size_t gaspi_t::number_of_counters() const
-    {
-      throw gpi::exception::gpi_error
-        ( gpi::error::operation_not_implemented()
-        , "gaspi_t::number_of_counters()"
-        );
     }
 
     gpi::version_t gaspi_t::version() const
@@ -239,30 +223,6 @@ namespace gpi
       return (open_dma_requests (q) >= queue_depth());
     }
 
-    gpi::size_t gaspi_t::open_passive_requests() const
-    {
-      throw gpi::exception::gpi_error
-        ( gpi::error::operation_not_implemented()
-        , "gaspi_t::open_passive_requests()"
-        );
-    }
-
-    bool gaspi_t::max_passive_requests_reached (void) const
-    {
-      throw gpi::exception::gpi_error
-        ( gpi::error::operation_not_implemented()
-        , "gaspi_t::open_passive_requests()"
-        );
-    }
-
-    const char * gaspi_t::hostname (const gpi::rank_t) const
-    {
-      throw gpi::exception::gpi_error
-        ( gpi::error::operation_not_implemented()
-        , "gaspi_t::hostname (rank)"
-        );
-    }
-
     gpi::rank_t gaspi_t::rank() const
     {
       fhg_assert (m_startup_done);
@@ -303,21 +263,6 @@ namespace gpi
       return m_dma;
     }
 
-    bool gaspi_t::ping (const gpi::rank_t) const
-    {
-      throw gpi::exception::gpi_error
-        ( gpi::error::operation_not_implemented()
-        , "gaspi_t::ping (rank)"
-        );
-    }
-    bool gaspi_t::ping (const char *) const
-    {
-      throw gpi::exception::gpi_error
-        ( gpi::error::operation_not_implemented()
-        , "gaspi_t::ping (hostname)"
-        );
-    }
-
     bool gaspi_t::is_master (void) const
     {
       return m_is_master;
@@ -325,38 +270,6 @@ namespace gpi
     bool gaspi_t::is_slave (void) const
     {
       return !is_master();
-    }
-
-    void gaspi_t::barrier (void) const
-    {
-      throw gpi::exception::gpi_error
-        ( gpi::error::operation_not_implemented()
-        , "gaspi_t::barrier()"
-        );
-    }
-
-    bool gaspi_t::try_lock (void) const
-    {
-      throw gpi::exception::gpi_error
-        ( gpi::error::operation_not_implemented()
-        , "gaspi_t::try_lock()"
-        );
-    }
-
-    void gaspi_t::lock (void) const
-    {
-      throw gpi::exception::gpi_error
-        ( gpi::error::operation_not_implemented()
-        , "gaspi_t::lock()"
-        );
-    }
-
-    void gaspi_t::unlock (void) const
-    {
-      throw gpi::exception::gpi_error
-        ( gpi::error::operation_not_implemented()
-        , "gaspi_t::unlock()"
-        );
     }
 
     void gaspi_t::read_dma ( const offset_t local_offset
@@ -479,60 +392,6 @@ namespace gpi
           );
       }
       return 0; // not sure what to return here, 0 or something > 0
-    }
-
-    void gaspi_t::send_dma ( const offset_t // local_offset
-                           , const size_t // amount
-                           , const rank_t // to_node
-                           , const queue_desc_t //queue
-                           )
-    {
-      throw gpi::exception::gpi_error
-        ( gpi::error::operation_not_implemented()
-        , "gaspi_t::send_dma()"
-        );
-    }
-
-    void gaspi_t::recv_dma ( const offset_t // local_offset
-                           , const size_t // amount
-                           , const rank_t // from_node
-                           , const queue_desc_t // queue
-                           )
-    {
-      throw gpi::exception::gpi_error
-        ( gpi::error::operation_not_implemented()
-        , "gaspi_t::recv_dma()"
-        );
-    }
-
-    void gaspi_t::send_passive ( const offset_t // local_offset
-                               , const size_t // amount
-                               , const rank_t // to_node
-                               )
-    {
-      throw gpi::exception::gpi_error
-        ( gpi::error::operation_not_implemented()
-        , "gaspi_t::send_passive()"
-        );
-    }
-
-    void gaspi_t::recv_passive ( const offset_t // local_offset
-                               , const size_t // amount
-                               , rank_t & // from_node
-                               )
-    {
-      throw gpi::exception::gpi_error
-        ( gpi::error::operation_not_implemented()
-        , "gaspi_t::recv_passive()"
-        );
-    }
-
-    size_t gaspi_t::wait_passive ( void )
-    {
-      throw gpi::exception::gpi_error
-        ( gpi::error::operation_not_implemented()
-        , "gaspi_t::wait_passive()"
-        );
     }
   }
 }

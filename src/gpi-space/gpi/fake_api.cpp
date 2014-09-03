@@ -84,9 +84,6 @@ namespace gpi
       }
     }
 
-    void fake_gpi_api_t::kill ()
-    {}
-
     void fake_gpi_api_t::shutdown ()
     {
       stop ();
@@ -100,11 +97,6 @@ namespace gpi
     gpi::size_t fake_gpi_api_t::queue_depth () const
     {
       return 1024;
-    }
-
-    gpi::size_t fake_gpi_api_t::number_of_counters () const
-    {
-      return 0;
     }
 
     gpi::version_t fake_gpi_api_t::version () const
@@ -138,21 +130,6 @@ namespace gpi
       return (open_dma_requests(q) >= queue_depth());
     }
 
-    gpi::size_t fake_gpi_api_t::open_passive_requests () const
-    {
-      return 0;
-    }
-
-    bool fake_gpi_api_t::max_passive_requests_reached (void) const
-    {
-      return (open_passive_requests() >= queue_depth());
-    }
-
-    const char * fake_gpi_api_t::hostname (const gpi::rank_t) const
-    {
-      return "localhost";
-    }
-
     gpi::rank_t fake_gpi_api_t::rank () const
     {
       return m_rank;
@@ -174,16 +151,6 @@ namespace gpi
       return m_dma;
     }
 
-    bool fake_gpi_api_t::ping (const gpi::rank_t r) const
-    {
-      return ping (hostname (r));
-    }
-
-    bool fake_gpi_api_t::ping (const char *) const
-    {
-      return true;
-    }
-
     bool fake_gpi_api_t::is_master (void) const
     {
       return m_is_master;
@@ -191,38 +158,6 @@ namespace gpi
     bool fake_gpi_api_t::is_slave (void) const
     {
       return !is_master();
-    }
-
-    void fake_gpi_api_t::barrier (void) const
-    {}
-
-    bool fake_gpi_api_t::try_lock (void) const
-    {
-      return true;
-    }
-
-    void fake_gpi_api_t::lock (void) const
-    {
-      {
-        lock_type lock (m_mutex);
-        if (! m_startup_done)
-        {
-          throw gpi::exception::gpi_error
-            (gpi::error::operation_not_permitted("lock: gpi not started"));
-        }
-      }
-    }
-
-    void fake_gpi_api_t::unlock (void) const
-    {
-      {
-        lock_type lock (m_mutex);
-        if (! m_startup_done)
-        {
-          throw gpi::exception::gpi_error
-            (gpi::error::operation_not_permitted("unlock: gpi not started"));
-        }
-      }
     }
 
     void fake_gpi_api_t::read_dma ( const offset_t local_offset
@@ -321,42 +256,6 @@ namespace gpi
       }
     }
 
-    void fake_gpi_api_t::send_dma ( const offset_t local_offset
-                                  , const size_t amount
-                                  , const rank_t to_node
-                                  , const queue_desc_t queue
-                                  )
-    {
-      lock_type lock (m_mutex);
-      throw exception::dma_error
-        ( gpi::error::send_dma_failed()
-        , local_offset
-        , 0
-        , rank()
-        , to_node
-        , amount
-        , queue
-        );
-    }
-
-    void fake_gpi_api_t::recv_dma ( const offset_t local_offset
-                                  , const size_t amount
-                                  , const rank_t from_node
-                                  , const queue_desc_t queue
-                                  )
-    {
-      lock_type lock (m_mutex);
-      throw exception::dma_error
-        ( gpi::error::recv_dma_failed()
-        , local_offset
-        , 0
-        , from_node
-        , rank()
-        , amount
-        , queue
-        );
-    }
-
     size_t fake_gpi_api_t::wait_dma (const queue_desc_t queue)
     {
       fhg_assert (m_startup_done);
@@ -364,43 +263,6 @@ namespace gpi
       size_t cnt (m_dma_request_count[queue]);
       m_dma_request_count[queue] = 0;
       return cnt;
-    }
-
-    void fake_gpi_api_t::send_passive ( const offset_t local_offset
-                                      , const size_t amount
-                                      , const rank_t to_node
-                                      )
-    {
-      throw exception::dma_error
-        ( gpi::error::send_passive_failed()
-        , local_offset
-        , 0
-        , rank()
-        , to_node
-        , amount
-        , 0
-        );
-    }
-
-    void fake_gpi_api_t::recv_passive ( const offset_t local_offset
-                                 , const size_t amount
-                                 , rank_t & from_node
-                                 )
-    {
-      throw exception::dma_error
-        ( gpi::error::recv_passive_failed()
-        , local_offset
-        , 0
-        , from_node
-        , rank ()
-        , amount
-        , 0
-        );
-    }
-
-    size_t fake_gpi_api_t::wait_passive ( void )
-    {
-      return 0;
     }
   }
 }

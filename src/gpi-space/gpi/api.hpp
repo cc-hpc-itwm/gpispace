@@ -50,10 +50,8 @@ namespace gpi
       // wrapped C function calls
       virtual void start (int ac, char *av[], const gpi::timeout_t timeout) = 0;
       virtual void stop () = 0;
-      virtual void kill () = 0;
       virtual void shutdown () = 0;
 
-      virtual gpi::size_t number_of_counters () const = 0;
       virtual gpi::size_t number_of_queues () const = 0;
       virtual gpi::size_t queue_depth () const = 0;
       virtual gpi::version_t version () const = 0;
@@ -64,10 +62,6 @@ namespace gpi
       virtual gpi::size_t open_dma_requests (const queue_desc_t) const = 0;
       virtual bool max_dma_requests_reached (const queue_desc_t) const = 0;
 
-      virtual gpi::size_t open_passive_requests () const = 0;
-      virtual bool max_passive_requests_reached () const = 0;
-
-      virtual const char * hostname (const gpi::rank_t) const = 0;
       virtual gpi::rank_t rank () const = 0;
       virtual gpi::error_vector_t get_error_vector(const queue_desc_t) const = 0;
       virtual void *dma_ptr (void) = 0;
@@ -77,16 +71,8 @@ namespace gpi
 
       virtual void set_memory_size (const gpi::size_t) = 0;
 
-      virtual bool ping (const gpi::rank_t) const = 0;
-      virtual bool ping (const char * host) const = 0;
-
       virtual bool is_master (void) const = 0;
       virtual bool is_slave (void) const = 0;
-
-      virtual void barrier (void) const = 0;
-      virtual bool try_lock (void) const = 0;
-      virtual void lock (void) const = 0;
-      virtual void unlock (void) const = 0;
 
       virtual void read_dma ( const offset_t local_offset
                     , const offset_t remote_offset
@@ -101,28 +87,7 @@ namespace gpi
                      , const queue_desc_t queue
                      ) = 0;
 
-      virtual void send_dma ( const offset_t local_offset
-                    , const size_t amount
-                    , const rank_t to_node
-                    , const queue_desc_t queue
-                    ) = 0;
-      virtual void recv_dma ( const offset_t local_offset
-                    , const size_t size
-                    , const rank_t from_node
-                    , const queue_desc_t queue
-                    ) = 0;
-
       virtual size_t wait_dma (const queue_desc_t queue) = 0;
-
-      virtual void send_passive ( const offset_t local_offset
-                        , const size_t amount
-                        , const rank_t to_node
-                        ) = 0;
-      virtual void recv_passive ( const offset_t local_offset
-                        , const size_t amount
-                        , rank_t & from_node
-                        ) = 0;
-      virtual size_t wait_passive ( void ) = 0;
     };
   }
 }
