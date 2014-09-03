@@ -2,6 +2,8 @@
 
 #include <drts/drts.hpp>
 
+#include <drts/virtual_memory.hpp>
+
 #include <we/expr/parse/parser.hpp>
 #include <we/type/activity.hpp>
 //! \todo eliminate this include (that completes type transition_t::data)

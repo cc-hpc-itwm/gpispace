@@ -3,7 +3,10 @@
 #ifndef DRTS_DRTS_HPP
 #define DRTS_DRTS_HPP
 
-#include <drts/virtual_memory.hpp>
+#include <drts/drts.fwd.hpp>
+
+#include <drts/client.fwd.hpp>
+#include <drts/virtual_memory.fwd.hpp>
 
 #include <we/type/value.hpp>
 

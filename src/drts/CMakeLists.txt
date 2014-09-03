@@ -8,6 +8,7 @@ install (FILES
   drts.fwd.hpp
   drts.hpp
   virtual_memory.hpp
+  virtual_memory.fwd.hpp
   DESTINATION include/drts/
 )
 
