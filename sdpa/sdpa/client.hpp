@@ -10,6 +10,8 @@
 
 #include <fhgcom/peer.hpp>
 
+#include <we/type/value.hpp>
+
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/optional.hpp>
 #include <boost/thread.hpp>
@@ -56,6 +58,8 @@ namespace sdpa
       void deleteJob(const job_id_t &);
       result_t retrieveResults(const job_id_t &);
       sdpa::discovery_info_t discoverJobStates(const we::layer::id_type& discover_id, const job_id_t &job_id);
+      void put_token
+        (job_id_t, std::string place_name, pnet::type::value::value_type);
 
       sdpa::status::code wait_for_terminal_state (job_id_t, job_info_t&);
       sdpa::status::code wait_for_terminal_state_polling (job_id_t, job_info_t&);

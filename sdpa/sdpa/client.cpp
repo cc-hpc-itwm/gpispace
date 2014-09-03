@@ -16,6 +16,7 @@
 #include <sdpa/events/SubscribeEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
+#include <sdpa/events/put_token.hpp>
 
 #include <fhg/util/macros.hpp>
 
@@ -227,6 +228,28 @@ namespace sdpa
     {
       return send_and_wait_for_reply<sdpa::events::DiscoverJobStatesReplyEvent>
         (sdpa::events::DiscoverJobStatesEvent (_name, orchestrator_, job_id, discover_id)).discover_result();
+    }
+
+    void Client::put_token
+      (job_id_t job_id, std::string place_name, pnet::type::value::value_type value)
+    {
+      std::string const put_token_id
+        (boost::uuids::to_string (boost::uuids::random_generator()()));
+
+      if ( send_and_wait_for_reply<sdpa::events::put_token_ack>
+           ( sdpa::events::put_token ( _name
+                                     , orchestrator_
+                                     , job_id
+                                     , put_token_id
+                                     , place_name
+                                     , value
+                                     )
+           )
+         .put_token_id() != put_token_id
+         )
+      {
+        throw std::logic_error ("received put_token_ack for different put_token");
+      }
     }
 
     sdpa::status::code Client::queryJob(const job_id_t &jid)

@@ -376,6 +376,17 @@ namespace gspc
     return api.submitJob (activity.to_string());
   }
 
+  void scoped_runtime_system::put_token ( sdpa::job_id_t job_id
+                                        , std::string place_name
+                                        , pnet::type::value::value_type value
+                                        ) const
+  {
+    sdpa::client::Client api
+      ("orchestrator", _kvs_host, std::to_string (_kvs_port));
+
+    api.put_token (job_id, place_name, value);
+  }
+
   std::multimap<std::string, pnet::type::value::value_type>
     scoped_runtime_system::wait_and_extract (sdpa::job_id_t job_id) const
   {

@@ -84,6 +84,11 @@ namespace gspc
       return wait_and_extract (submit (workflow, values_on_ports));
     }
 
+    void put_token ( sdpa::job_id_t
+                   , std::string place_name
+                   , pnet::type::value::value_type
+                   ) const;
+
     vmem_allocation alloc
       (unsigned long size, std::string const& description) const;
 
