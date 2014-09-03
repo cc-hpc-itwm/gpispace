@@ -323,6 +323,11 @@ int main (int argc, char *argv[])
           done = true;
         });
     });
+  signal_handlers.add (SIGCHLD, [&done] (int, siginfo_t*, void*) {
+      std::async (std::launch::async, [&done] {
+          done = true;
+        });
+    });
 
   std::cout << "running with PID " << getpid() << std::endl;
 
