@@ -22,6 +22,7 @@ fhg_add_runtime_executable (fhgkvsd.cpp
 
 fhg_add_runtime_executable (gaspirun.cpp
   LINK_LIBRARIES fhg-util
+                 gspc
                  ${FhgLog_LIBRARY}
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
