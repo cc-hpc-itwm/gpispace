@@ -62,6 +62,8 @@ namespace gspc
           {"virtual-memory-socket"};
         constexpr char const* const virtual_memory_port
           {"virtual-memory-port"};
+        constexpr char const* const virtual_memory_timeout
+          {"virtual-memory-timeout"};
       }
     }
 
@@ -162,6 +164,11 @@ namespace gspc
         , boost::program_options::value<validators::positive_integral<unsigned short>>()
         ->required()
         , "internal communication port that shall be used by the virtual memory manager"
+        )
+        ( name::virtual_memory_timeout
+        , boost::program_options::value<validators::positive_integral<unsigned long>>()
+        ->required()
+        , "timeout in milliseconds for the virtual memory manager to connect and start up."
         )
         ;
 
