@@ -52,6 +52,47 @@ namespace gspc
     boost::filesystem::path const _gspc_home;
   };
 
+  // fake rif, replace by real rif when it's done
+  class rif_t
+  {
+  public:
+    struct endpoint_t
+    {
+      endpoint_t (const std::string& host, unsigned short port);
+
+      const std::string host;
+      const unsigned short port;
+    };
+
+    explicit rif_t (boost::filesystem::path const& root);
+
+    void exec ( const std::list<endpoint_t>& rifs
+              , const std::string& key
+              , const std::vector<std::string>& command
+              , const std::map<std::string, std::string>& environment
+              );
+    void store ( const std::list<endpoint_t>& rifs
+               , const std::vector<char>& data
+               , const std::string& path
+               );
+    void stop ( const std::list<endpoint_t>& rifs
+              , const std::string& key
+              );
+  private:
+    const boost::filesystem::path _root;
+
+    struct child_t
+    {
+      explicit child_t (const pid_t);
+      ~child_t ();
+    private:
+      const pid_t _pid;
+    };
+
+    // just keep track of local ssh processes
+    std::map<std::string, std::list<std::unique_ptr<child_t>>> _processes;
+  };
+
   class scoped_runtime_system
   {
   public:
