@@ -44,6 +44,7 @@ namespace gspc
       {
         constexpr char const* const log_host {"log-host"};
         constexpr char const* const log_port {"log-port"};
+        constexpr char const* const log_level {"log-level"};
         constexpr char const* const gui_host {"gui-host"};
         constexpr char const* const gui_port {"gui-port"};
 
@@ -76,6 +77,10 @@ namespace gspc
         , boost::program_options::value
           <validators::positive_integral<unsigned short>>()->required()
         , "port on log-host to log to"
+        )
+        ( name::log_level
+        , boost::program_options::value<std::string>()->default_value ("INFO")
+        , "log level to use"
         )
         ( name::gui_host
         , boost::program_options::value<validators::nonempty_string>()
