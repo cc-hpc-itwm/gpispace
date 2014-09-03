@@ -11,7 +11,6 @@ set (hdrs
 set (srcs
   system.cpp
   fake_api.cpp
-  real_api.cpp
   gaspi.cpp
 )
 
