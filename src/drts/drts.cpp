@@ -285,13 +285,10 @@ namespace gspc
 
   rif_t::child_t::child_t (const pid_t pid)
     : _pid (pid)
-  {
-    std::cerr << "new child: " << _pid << std::endl;
-  }
+  {}
 
   rif_t::child_t::~child_t ()
   {
-    std::cerr << "terminating child: " << _pid << std::endl;
     fhg::syscall::kill (_pid, SIGTERM);
     fhg::syscall::waitpid (_pid, nullptr, 0);
   }
@@ -310,7 +307,6 @@ namespace gspc
     auto & processes = _processes [key];
     for (const endpoint_t& rif: rifs)
     {
-      std::cerr << "\tstarting child on: " << rif.host << std::endl;
       processes.push_back
         (fhg::util::make_unique<child_t> (rexec (rif.host, command, environment)));
     }
