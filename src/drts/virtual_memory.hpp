@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef DRTS_VMEM_HPP
-#define DRTS_VMEM_HPP
+#ifndef DRTS_VIRTUAL_MEMORY_HPP
+#define DRTS_VIRTUAL_MEMORY_HPP
 
 #include <memory>
 #include <string>
