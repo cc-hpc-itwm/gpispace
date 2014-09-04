@@ -6,6 +6,7 @@
 
 #include <drts/drts.hpp>
 #include <drts/vmem.hpp>
+#include <drts/rif.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>

@@ -5,6 +5,8 @@
 
 namespace gspc
 {
+  class rif_t;
+
   class vmem_t
   {
   public:
