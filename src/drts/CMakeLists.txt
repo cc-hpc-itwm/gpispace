@@ -4,12 +4,14 @@ add_subdirectory (worker)
 
 install (FILES
   drts.hpp
+  vmem.hpp
   virtual_memory.hpp
   DESTINATION include/drts/
 )
 
 add_library (gspc SHARED
   drts.cpp
+  vmem.cpp
   virtual_memory.cpp
 )
 target_link_libraries (gspc

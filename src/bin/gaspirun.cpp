@@ -5,6 +5,7 @@
 #include <fhg/util/signal_handler_manager.hpp>
 
 #include <drts/drts.hpp>
+#include <drts/vmem.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
