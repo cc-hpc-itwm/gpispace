@@ -34,7 +34,10 @@ namespace sdpa
     {
       lock_type const _ (mtx_);
       submitted_.insert (jobId);
-      reserve();
+      if (!children_allowed_)
+      {
+	reserve();
+      }
     }
 
     void Worker::acknowledge(const job_id_t &job_id)
@@ -122,7 +125,10 @@ namespace sdpa
     void Worker::free()
     {
       lock_type const _ (mtx_);
-      reserved_ = false;
+      if (!children_allowed_)
+      {
+        reserved_ = false;
+      }
     }
 
     std::set<job_id_t> Worker::getJobListAndCleanQueues()
