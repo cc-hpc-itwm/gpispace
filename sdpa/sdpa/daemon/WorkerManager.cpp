@@ -69,6 +69,7 @@ const boost::optional<worker_id_t> WorkerManager::findSubmOrAckWorker(const sdpa
 bool WorkerManager::addWorker ( const worker_id_t& workerId
                               , boost::optional<unsigned int> capacity
                               , const capabilities_set_t& cpbSet
+                              , const bool children_allowed
                               )
 {
   boost::mutex::scoped_lock const _ (mtx_);
@@ -78,7 +79,7 @@ bool WorkerManager::addWorker ( const worker_id_t& workerId
     return false;
   }
 
-  Worker::ptr_t pWorker( new Worker( workerId, capacity, cpbSet, true ) );
+  Worker::ptr_t pWorker( new Worker( workerId, capacity, cpbSet,  children_allowed ) );
   worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
 
   return true;
