@@ -478,6 +478,7 @@ namespace fhg
           else if (_fallback)
           {
             _fallback->throw_with_nested();
+            UNREACHABLE();
           }
           else
           {
