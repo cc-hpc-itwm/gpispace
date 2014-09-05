@@ -33,7 +33,8 @@ namespace sdpa { namespace daemon {
       */
     explicit Worker( 	const worker_id_t& name,
     					const boost::optional<unsigned int>& cap
-                   , const capabilities_set_t&);
+                   , const capabilities_set_t&
+                   , const bool children_allowed);
 
     void submit(const job_id_t&);
 

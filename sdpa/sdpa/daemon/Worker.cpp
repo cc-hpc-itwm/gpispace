@@ -12,10 +12,12 @@ namespace sdpa
     Worker::Worker( const worker_id_t& name
 		  , const boost::optional<unsigned int>& cap
 		  , const capabilities_set_t& capabilities
+		  , const bool children_allowed
 		  )
       : name_(name)
       , capacity_(cap)
       , capabilities_ (capabilities)
+      , children_allowed_ (children_allowed)
       , last_schedule_time_(0)
       ,	reserved_(false)
     {
