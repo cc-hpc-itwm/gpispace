@@ -20,8 +20,15 @@ namespace gspc
                  , const std::string& kvs_host
                  , const unsigned short kvs_port
                  )
-    : _machinefile (machinefile)
-    , _rif (rif)
+    : _rif (rif)
+    , _rif_endpoints ([] (const std::list<std::string>& hosts) -> std::list<gspc::rif_t::endpoint_t> {
+        std::list<gspc::rif_t::endpoint_t> ep;
+        for (std::string const&h : hosts)
+        {
+          ep.emplace_back (gspc::rif_t::endpoint_t (h, 22));
+        }
+        return std::move (ep);
+      } (machinefile.first))
   {
     const std::string& log_host
       (vm[options::name::log_host].as<validators::nonempty_string>());
@@ -38,14 +45,12 @@ namespace gspc
     const unsigned long timeout
       (vm[options::name::virtual_memory_timeout].as<validators::positive_integral<unsigned long>>());
 
-    if (0 == _machinefile.second)
+    if (_rif_endpoints.empty())
     {
       throw std::runtime_error ("at least one node is required in machinefile");
     }
 
-    if (  _machinefile.first.size()
-       != _machinefile.second
-       )
+    if (_rif_endpoints.size() != machinefile.second)
     {
       throw std::runtime_error ("each host has to appear just once in nodefile");
     }
@@ -58,16 +63,7 @@ namespace gspc
       throw std::runtime_error ("socket file already exists: " + socket.string());
     }
 
-    const std::string& master (_machinefile.first.front());
-    const std::list<gspc::rif_t::endpoint_t> rif_endpoints
-      ([] (const std::list<std::string>& hosts) -> std::list<gspc::rif_t::endpoint_t> {
-        std::list<gspc::rif_t::endpoint_t> ep;
-        for (std::string const&h : hosts)
-        {
-          ep.emplace_back (gspc::rif_t::endpoint_t (h, 22));
-        }
-        return std::move (ep);
-      }(_machinefile.first));
+    const std::string& master (_rif_endpoints.front().host);
 
     // create in memory hostlist
     // rif.store (machinefile, hostlist, "<rif-root>/machinefile");
@@ -75,7 +71,7 @@ namespace gspc
     const std::string machinefile_path
       (vm[options::name::nodefile].as<validators::existing_path>().string());
 
-    _rif.exec ( {rif_endpoints.front()}
+    _rif.exec ( {_rif_endpoints.front()}
               , "gaspi-master"
               , { vmem_binary.string()
                 , "--kvs-host", kvs_host, "--kvs-port", std::to_string (kvs_port)
@@ -84,7 +80,7 @@ namespace gspc
                 , "--gpi-mem", std::to_string (memory_size)
                 , "--socket", socket.string()
                 , "--port", std::to_string (port)
-                , "--gpi-api", _machinefile.first.size() > 1 ? "gaspi" : "fake"
+                , "--gpi-api", _rif_endpoints.size() > 1 ? "gaspi" : "fake"
                 , "--gpi-timeout", std::to_string (timeout)
                 }
               , { {"GASPI_MFILE", machinefile_path}
@@ -95,30 +91,27 @@ namespace gspc
                 }
               );
 
-    if (_machinefile.first.size() > 1)
-    {
-      _rif.exec ( std::list<gspc::rif_t::endpoint_t> ( ++rif_endpoints.begin()
-                                                     , rif_endpoints.end()
-                                                     )
-                , "gaspi-worker"
-                , { vmem_binary.string()
-                  , "--kvs-host", kvs_host, "--kvs-port", std::to_string (kvs_port)
-                  , "--log-host", log_host, "--log-port", std::to_string (log_port)
-                  , "--log-level", log_level
-                  , "--gpi-mem", std::to_string (memory_size)
-                  , "--socket", socket.string()
-                  , "--port", std::to_string (port)
-                  , "--gpi-api", _machinefile.first.size() > 1 ? "gaspi" : "fake"
-                  , "--gpi-timeout", std::to_string (timeout)
-                  }
-                , { {"GASPI_MFILE", machinefile_path}
-                  , {"GASPI_MASTER", master}
-                  , {"GASPI_SOCKET", "0"}
-                  , {"GASPI_TYPE", "GASPI_WORKER"}
-                  , {"GASPI_SET_NUMA_SOCKET", "0"}
-                  }
-                );
-    }
+    _rif.exec ( std::list<gspc::rif_t::endpoint_t> ( ++_rif_endpoints.begin()
+                                                   , _rif_endpoints.end()
+                                                   )
+              , "gaspi-worker"
+              , { vmem_binary.string()
+                , "--kvs-host", kvs_host, "--kvs-port", std::to_string (kvs_port)
+                , "--log-host", log_host, "--log-port", std::to_string (log_port)
+                , "--log-level", log_level
+                , "--gpi-mem", std::to_string (memory_size)
+                , "--socket", socket.string()
+                , "--port", std::to_string (port)
+                , "--gpi-api", _rif_endpoints.size() > 1 ? "gaspi" : "fake"
+                , "--gpi-timeout", std::to_string (timeout)
+                }
+              , { {"GASPI_MFILE", machinefile_path}
+                , {"GASPI_MASTER", master}
+                , {"GASPI_SOCKET", "0"}
+                , {"GASPI_TYPE", "GASPI_WORKER"}
+                , {"GASPI_SET_NUMA_SOCKET", "0"}
+                }
+              );
 
     std::uint64_t slept (0);
     while (!boost::filesystem::exists (socket))
@@ -140,12 +133,11 @@ namespace gspc
 
   vmem_t::~vmem_t()
   {
-    // replace with actual list of rifs
-    if (_machinefile.first.size() > 1)
-    {
-      _rif.stop ({}, "gaspi-worker");
-    }
-
-    _rif.stop ({}, "gaspi-master");
+    _rif.stop ( std::list<gspc::rif_t::endpoint_t> ( ++_rif_endpoints.begin()
+                                                   , _rif_endpoints.end()
+                                                   )
+              , "gaspi-worker"
+              );
+    _rif.stop ({_rif_endpoints.front()}, "gaspi-master");
   }
 }

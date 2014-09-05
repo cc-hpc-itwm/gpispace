@@ -2,11 +2,10 @@
 #define DRTS_VMEM_HPP
 
 #include <drts/drts.hpp>
+#include <drts/rif.hpp>
 
 namespace gspc
 {
-  class rif_t;
-
   class vmem_t
   {
   public:
@@ -19,9 +18,8 @@ namespace gspc
            );
     ~vmem_t();
   private:
-    std::pair<std::list<std::string>, unsigned long> const
-    _machinefile;
     gspc::rif_t& _rif;
+    std::list<gspc::rif_t::endpoint_t> _rif_endpoints;
   };
 }
 
