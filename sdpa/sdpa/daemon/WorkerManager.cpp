@@ -66,9 +66,10 @@ const boost::optional<worker_id_t> WorkerManager::findSubmOrAckWorker(const sdpa
   return boost::none;
 }
 
-bool WorkerManager::addWorker(  const worker_id_t& workerId,
-                                boost::optional<unsigned int> capacity,
-                                const capabilities_set_t& cpbSet )
+bool WorkerManager::addWorker ( const worker_id_t& workerId
+                              , boost::optional<unsigned int> capacity
+                              , const capabilities_set_t& cpbSet
+                              )
 {
   boost::mutex::scoped_lock const _ (mtx_);
 

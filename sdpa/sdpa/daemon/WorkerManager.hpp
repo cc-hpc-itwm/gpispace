@@ -36,9 +36,10 @@ namespace sdpa { namespace daemon {
     const boost::optional<worker_id_t> findSubmOrAckWorker(const sdpa::job_id_t& job_id) const;
 
     //! returns whether worker was actually added (i.e. false when already there)
-    bool addWorker( const worker_id_t& workerId,
-                    boost::optional<unsigned int> capacity,
-                    const capabilities_set_t& cpbset = capabilities_set_t() );
+    bool addWorker ( const worker_id_t& workerId
+                   , boost::optional<unsigned int> capacity
+                   , const capabilities_set_t& cpbset = capabilities_set_t()
+                   );
 
     void deleteWorker( const worker_id_t& workerId);
 
