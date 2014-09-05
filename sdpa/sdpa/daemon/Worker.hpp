@@ -59,6 +59,7 @@ namespace sdpa { namespace daemon {
 
     // capabilities
     const capabilities_set_t& capabilities() const;
+    const bool children_allowed() const { return children_allowed_;}
 
     bool addCapabilities(const capabilities_set_t& cpbset);
     void removeCapabilities(const capabilities_set_t& cpbset);
@@ -91,6 +92,7 @@ namespace sdpa { namespace daemon {
     worker_id_t name_; //! name of the worker
     boost::optional<unsigned int> capacity_;
     capabilities_set_t capabilities_;
+    bool children_allowed_;
     double last_schedule_time_;
 
     std::set<job_id_t> submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
