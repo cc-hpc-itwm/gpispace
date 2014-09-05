@@ -869,6 +869,8 @@ void DRTSImpl::start_connect ()
         (new sdpa::events::WorkerRegistrationEvent( m_my_name
                                                   , master_it->first
                                                   , m_backlog_size
+                                                  , sdpa::capabilities_set_t()
+						  , false
                                                   )
         );
 
