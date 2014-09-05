@@ -21,7 +21,11 @@ namespace gspc
 
       const std::string host;
       const unsigned short port;
+
+      bool operator< (const endpoint_t& other) const;
+      bool operator== (const endpoint_t& other) const;
     };
+
 
     explicit rif_t (boost::filesystem::path const& root);
 
@@ -49,7 +53,12 @@ namespace gspc
     };
 
     // just keep track of local ssh processes
-    std::map<std::string, std::list<std::unique_ptr<child_t>>> _processes;
+    std::map
+    < endpoint_t
+    , std::map< std::string
+              , std::list<std::unique_ptr<child_t>>
+              >
+    > _processes;
   };
 }
 

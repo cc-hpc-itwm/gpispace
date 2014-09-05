@@ -3,6 +3,8 @@
 #include <fhg/syscall.hpp>
 #include <fhg/util/make_unique.hpp>
 
+#include <cstdio>
+
 namespace gspc
 {
   namespace
@@ -63,6 +65,15 @@ namespace gspc
     , port (port)
   {}
 
+  bool rif_t::endpoint_t::operator< (const rif_t::endpoint_t& other) const
+  {
+    return host < other.host;
+  }
+  bool rif_t::endpoint_t::operator== (const rif_t::endpoint_t& other) const
+  {
+    return host == other.host;
+  }
+
   rif_t::child_t::child_t (const pid_t pid)
     : _pid (pid)
   {}
@@ -79,24 +90,31 @@ namespace gspc
                    , const std::map<std::string, std::string>& environment
                    )
   {
-    if (_processes.find (key) != _processes.end())
-    {
-      throw std::runtime_error ("key '" + key + "' is already in use");
-    }
-
-    auto & processes = _processes [key];
     for (const endpoint_t& rif: rifs)
     {
-      processes.push_back
+      if (_processes[rif].find (key) != _processes[rif].end())
+      {
+        throw std::runtime_error ("key '" + key + "' is already in use on rif " + rif.host);
+      }
+
+      _processes[rif][key].push_back
         (fhg::util::make_unique<child_t> (rexec (rif.host, command, environment)));
     }
   }
 
-  void rif_t::stop ( const std::list<rif_t::endpoint_t>&
+  void rif_t::stop ( const std::list<rif_t::endpoint_t>& rifs
                    , const std::string& key
                    )
   {
-    _processes.at (key).clear ();
-    _processes.erase (key);
+    for (const endpoint_t& rif: rifs)
+    {
+      _processes[rif].at (key).clear ();
+      _processes[rif].erase (key);
+
+      if (_processes[rif].empty())
+      {
+        _processes.erase (rif);
+      }
+    }
   }
 }
