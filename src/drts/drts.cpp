@@ -566,7 +566,7 @@ namespace gspc
   }
   std::string get_log_host (boost::program_options::variables_map const& vm)
   {
-    return vm[options::name::log_host].as<std::string>();
+    return vm[options::name::log_host].as<validators::nonempty_string>();
   }
   void set_gui_host ( boost::program_options::variables_map& vm
                     , std::string const& host
@@ -576,7 +576,7 @@ namespace gspc
   }
   std::string get_gui_host (boost::program_options::variables_map const& vm)
   {
-    return vm[options::name::gui_host].as<std::string>();
+    return vm[options::name::gui_host].as<validators::nonempty_string>();
   }
   void set_log_port ( boost::program_options::variables_map& vm
                     , unsigned short port
