@@ -3,6 +3,8 @@
 #ifndef FHG_RPC_COMMON_HPP
 #define FHG_RPC_COMMON_HPP
 
+#include <boost/optional.hpp>
+
 #include <algorithm>
 #include <cstdint>
 #include <string>
@@ -91,6 +93,75 @@ namespace fhg
         }
       };
     }
+  }
+  namespace util
+  {
+    template<typename Container>
+      struct scoped_map_insert
+    {
+      scoped_map_insert ( Container& container
+                        , typename Container::key_type key
+                        , typename Container::mapped_type value
+                        )
+        : _container (container)
+        , _key (boost::none)
+      {
+        if (_container.emplace (key, std::move (value)).second)
+        {
+          _key = std::move (key);
+        }
+      }
+      scoped_map_insert (scoped_map_insert<Container>&& other)
+        : _container (std::move (other._container))
+        , _key (boost::none)
+      {
+        std::swap (_key, other._key);
+      }
+      ~scoped_map_insert()
+      {
+        if (_key)
+        {
+          _container.erase (*_key);
+        }
+      }
+
+      scoped_map_insert (scoped_map_insert<Container> const&) = delete;
+      scoped_map_insert<Container>& operator=
+        (scoped_map_insert<Container> const&) = delete;
+      scoped_map_insert<Container>& operator=
+        (scoped_map_insert<Container>&&) = delete;
+
+      Container& _container;
+      boost::optional<typename Container::key_type> _key;
+    };
+
+    namespace
+    {
+      template<typename Container>
+        Container& require_no_entry_for_key
+          (Container& container, typename Container::key_type const& key)
+      {
+        if (container.count (key))
+        {
+          throw std::logic_error ("container already contains key");
+        }
+        return container;
+      }
+    }
+    template<typename Container>
+      struct unique_scoped_map_insert : scoped_map_insert<Container>
+    {
+      unique_scoped_map_insert ( Container& container
+                               , typename Container::key_type key
+                               , typename Container::mapped_type value
+                               )
+        : scoped_map_insert<Container>
+          ( require_no_entry_for_key (container, key)
+          , std::move (key)
+          , std::move (value)
+          )
+      {}
+    };
   }
 }
 

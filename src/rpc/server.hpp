@@ -53,11 +53,10 @@ namespace fhg
         , std::string name
         , std::function<std::string (std::string)> handler
         );
-      ~service_handler();
 
     private:
-      service_dispatcher& _manager;
-      std::string _name;
+      util::unique_scoped_map_insert<decltype (service_dispatcher::_handlers)>
+        _handler_registration;
     };
 
     namespace

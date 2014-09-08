@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE (std_exceptions)
 
   require_lt_0 (-1);
   fhg::util::boost::test::require_exception<std::invalid_argument>
-    (std::bind (require_lt_0, 1), "1 >= 0");
+    ([&] { require_lt_0 (1); }, "1 >= 0");
 }
 
 namespace
@@ -169,12 +169,12 @@ BOOST_AUTO_TEST_CASE (user_defined_exceptions)
   {
     int const s (rand());
     fhg::util::boost::test::require_exception<user_defined_exception>
-      (std::bind (throw_exception, false, s), "dummy = " + std::to_string (s));
+      ([&] { throw_exception (false, s); }, "dummy = " + std::to_string (s));
   }
   {
     int const s (rand());
     fhg::util::boost::test::require_exception<user_defined_std_runtime_error>
-      (std::bind (throw_exception, true, s), "dummy = " + std::to_string (s));
+      ([&] { throw_exception (true, s); }, "dummy = " + std::to_string (s));
   }
 }
 
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE (user_defined_std_exceptions_are_downcast_automatically_ser
   {
     int const s (rand());
     fhg::util::boost::test::require_exception<std::runtime_error>
-      (std::bind (throw_exception, s), "dummy = " + std::to_string (s));
+      ([&] { throw_exception (s); }, "dummy = " + std::to_string (s));
   }
 }
 
@@ -240,7 +240,7 @@ BOOST_AUTO_TEST_CASE (user_defined_std_exceptions_are_downcast_automatically_cli
   {
     int const s (rand());
     fhg::util::boost::test::require_exception<std::runtime_error>
-      (std::bind (throw_exception, s), "dummy = " + std::to_string (s));
+      ([&] { throw_exception (s); }, "dummy = " + std::to_string (s));
   }
 }
 

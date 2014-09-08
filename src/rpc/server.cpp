@@ -65,18 +65,8 @@ namespace fhg
         , std::string name
         , std::function<std::string (std::string)> handler
         )
-      : _manager (manager)
-      , _name (name)
-    {
-      if (_manager._handlers.find (_name) != _manager._handlers.end())
-      {
-        throw std::runtime_error ("already have service with name " + _name);
-      }
-      _manager._handlers.insert (std::make_pair (_name, handler));
-    }
-    service_handler::~service_handler()
-    {
-      _manager._handlers.erase (_name);
-    }
+      : _handler_registration
+        (manager._handlers, std::move (name), std::move (handler))
+    {}
   }
 }
