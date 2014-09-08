@@ -287,15 +287,6 @@ namespace gpi
           }
         }
 
-          if (_topology.is_master ())
-          {
-            _topology.go ();
-          }
-          else
-          {
-            _topology.wait_for_go ();
-          }
-
           start ();
       }
 
