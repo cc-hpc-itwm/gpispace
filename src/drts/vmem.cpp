@@ -30,20 +30,13 @@ namespace gspc
         return std::move (ep);
       } (machinefile.first))
   {
-    const std::string& log_host
-      (vm[options::name::log_host].as<validators::nonempty_string>());
-    const unsigned short log_port
-      (vm[options::name::log_port].as<validators::positive_integral<unsigned short>>());
-    const std::string& log_level
-      (vm[options::name::log_level].as<std::string>());
-    const boost::filesystem::path socket
-      (vm[options::name::virtual_memory_socket].as<validators::nonexisting_path>());
-    const unsigned short port
-      (vm[options::name::virtual_memory_port].as<validators::positive_integral<unsigned short>>());
-    const unsigned long memory_size
-      (vm[options::name::virtual_memory_per_node].as<validators::positive_integral<unsigned long>>());
-    const unsigned long timeout
-      (vm[options::name::virtual_memory_timeout].as<validators::positive_integral<unsigned long>>());
+    const std::string& log_host (get_log_host (vm));
+    const unsigned short log_port (get_log_port (vm));
+    const std::string log_level (get_log_level (vm));
+    const boost::filesystem::path socket (get_not_yet_existing_virtual_memory_socket (vm));
+    const unsigned short port (get_virtual_memory_port (vm));
+    const unsigned long memory_size (get_virtual_memory_per_node (vm));
+    const unsigned long timeout (get_virtual_memory_timeout (vm));
 
     if (_rif_endpoints.empty())
     {
@@ -68,8 +61,7 @@ namespace gspc
     // create in memory hostlist
     // rif.store (machinefile, hostlist, "<rif-root>/machinefile");
 
-    const std::string machinefile_path
-      (vm[options::name::nodefile].as<validators::existing_path>().string());
+    const std::string machinefile_path (get_nodefile (vm).string());
 
     _rif.exec ( {_rif_endpoints.front()}
               , "gaspi-master"
