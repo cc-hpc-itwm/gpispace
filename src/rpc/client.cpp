@@ -4,7 +4,6 @@
 
 #include <network/client.hpp>
 
-#include <boost/asio/ip/tcp.hpp>
 #include <boost/range/adaptor/map.hpp>
 
 #include <mutex>
@@ -22,8 +21,9 @@ namespace fhg
       : _deserialization_functions (std::move (functions))
       , _connection
         ( network::connect_client<boost::asio::ip::tcp>
-          ( host, port
-          , io_service
+          ( io_service
+          , host
+          , port
           , [] (network::buffer_type b) { return b; }
           , [] (network::buffer_type b) { return b; }
           , [this] (network::buffer_type b)

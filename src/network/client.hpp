@@ -17,11 +17,10 @@ namespace fhg
 {
   namespace network
   {
-    template<typename Protocol>
+    template<typename Protocol, typename EndpointIterator>
       std::unique_ptr<connection_type> connect_client
-        ( std::string host
-        , unsigned short port
-        , boost::asio::io_service& io_service
+        ( boost::asio::io_service& io_service
+        , EndpointIterator endpoints
         , filter_type encrypt
         , filter_type decrypt
         , std::function<void (buffer_type)> handler
@@ -30,16 +29,57 @@ namespace fhg
     {
       typename Protocol::socket socket (io_service);
 
-      boost::asio::connect ( socket
-                           , typename Protocol::resolver (io_service).resolve
-                             ({host, std::to_string (port)})
-                           );
+      boost::asio::connect (socket, endpoints);
 
       return util::make_unique<connection_type>
         ( std::move (socket)
         , encrypt
         , decrypt
         , [handler] (connection_type*, buffer_type buffer) { handler (buffer); }
+        , on_disconnect
+        );
+    }
+
+    template<typename Protocol>
+      std::unique_ptr<connection_type> connect_client
+        ( boost::asio::io_service& io_service
+        , std::string host
+        , unsigned short port
+        , filter_type encrypt
+        , filter_type decrypt
+        , std::function<void (buffer_type)> handler
+        , std::function<void (connection_type*)> on_disconnect
+        )
+    {
+      return connect_client<Protocol>
+        ( io_service
+        , typename Protocol::resolver (io_service).resolve
+          ({host, std::to_string (port)})
+        , encrypt
+        , decrypt
+        , handler
+        , on_disconnect
+        );
+    }
+
+    template<typename Protocol>
+      std::unique_ptr<connection_type> connect_client
+        ( boost::asio::io_service& io_service
+        , typename Protocol::endpoint endpoint
+        , filter_type encrypt
+        , filter_type decrypt
+        , std::function<void (buffer_type)> handler
+        , std::function<void (connection_type*)> on_disconnect
+        )
+    {
+      std::list<typename Protocol::endpoint> endpoints {std::move (endpoint)};
+
+      return connect_client<Protocol>
+        ( io_service
+        , endpoints.begin()
+        , encrypt
+        , decrypt
+        , handler
         , on_disconnect
         );
     }

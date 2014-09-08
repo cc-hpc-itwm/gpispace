@@ -99,9 +99,8 @@ BOOST_AUTO_TEST_CASE (connecting_sending_and_disconnecting_triggers_handlers)
 
     std::unique_ptr<fhg::network::connection_type> clientside_connection
       ( fhg::network::connect_client<boost::asio::ip::tcp>
-        ( acceptor.local_endpoint().address().to_string()
-        , acceptor.local_endpoint().port()
-        , io_service_client
+        ( io_service_client
+        , acceptor.local_endpoint()
         , id
         , id
         , [&] (fhg::network::buffer_type buffer)
