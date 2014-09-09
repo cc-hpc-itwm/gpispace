@@ -59,14 +59,5 @@ namespace fhg
                         }
                        );
     }
-
-    service_handler::service_handler
-        ( service_dispatcher& manager
-        , std::string name
-        , std::function<std::string (std::string)> handler
-        )
-      : _handler_registration
-        (manager._handlers, std::move (name), std::move (handler))
-    {}
   }
 }
