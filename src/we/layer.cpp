@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/layer.hpp>
-#include <we/exception.hpp>
 
 #include <fhg/assert.hpp>
 #include <fhg/util/starts_with.hpp>
@@ -305,22 +304,14 @@ namespace we
         //! fire_expression_and_extract_activity_random (endless loop
         //! in expressions)?
 
-        boost::optional<type::activity_t> activity;
-        try
-        {
-          //! \note We wrap all input activites in a net.
-          activity = boost::get<we::type::net_type&>
-            (activity_data._activity.transition().data())
-            . fire_expressions_and_extract_activity_random
-              (_random_extraction_engine);
-        }
-        catch (pnet::exception::type_error const& ex)
-        {
-          _rts_failed (activity_data._id, ex.what ());
-          return;
-        }
+        if ( boost::optional<type::activity_t> activity
 
-        if (activity)
+             //! \note We wrap all input activites in a net.
+           = boost::get<we::type::net_type&>
+             (activity_data._activity.transition().data())
+           . fire_expressions_and_extract_activity_random
+               (_random_extraction_engine)
+           )
         {
           const id_type child_id (_rts_id_generator());
           _running_jobs.started (activity_data._id, child_id);
