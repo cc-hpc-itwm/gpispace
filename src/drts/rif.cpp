@@ -12,6 +12,23 @@ namespace gspc
 {
   namespace
   {
+    struct scoped_FILE
+    {
+      explicit scoped_FILE (FILE *file)
+        : _ (file)
+      {}
+
+      ~scoped_FILE()
+      {
+        if (_)
+        {
+          fhg::syscall::pclose (_);
+        }
+      }
+
+      FILE *_;
+    };
+
     pid_t rexec ( const rif_t::endpoint_t rif
                 , const std::vector<std::string>& cmd
                 , const std::map<std::string, std::string>& environment
@@ -37,20 +54,18 @@ namespace gspc
       command << " | ssh -q -p " << rif.port << " " << rif.host << " /bin/sh -s";
 
       char buf[16];
-      FILE *pid_file (fhg::syscall::popen (command.str().c_str(), "r"));
-      fhg::syscall::fread (buf, sizeof (buf), sizeof (char), pid_file);
+      scoped_FILE pid_file (fhg::syscall::popen (command.str().c_str(), "r"));
+      fhg::syscall::fread (buf, sizeof (buf), sizeof (char), pid_file._);
       errno = 0;
       pid_t pid = std::strtoul (buf, nullptr, 0);
       if (0 == pid && errno != 0)
       {
-        fclose (pid_file);
         throw std::runtime_error
           ( "could not get remote pid from buffer: \""
           + std::string (buf, buf+sizeof(buf))
           + "\": " + strerror (errno)
           );
       }
-      fclose (pid_file);
       return pid;
     }
   }
