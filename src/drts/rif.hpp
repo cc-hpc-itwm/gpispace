@@ -26,7 +26,6 @@ namespace gspc
       bool operator== (const endpoint_t& other) const;
     };
 
-
     explicit rif_t (boost::filesystem::path const& root);
 
     void exec ( const std::list<endpoint_t>& rifs
@@ -46,9 +45,10 @@ namespace gspc
 
     struct child_t
     {
-      explicit child_t (const pid_t);
+      explicit child_t (const endpoint_t&, const pid_t);
       ~child_t ();
     private:
+      const endpoint_t _rif;
       const pid_t _pid;
     };
 

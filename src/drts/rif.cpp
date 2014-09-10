@@ -3,56 +3,55 @@
 #include <fhg/syscall.hpp>
 #include <fhg/util/make_unique.hpp>
 
+#include <sstream>
+
 #include <cstdio>
+#include <cstdlib>
 
 namespace gspc
 {
   namespace
   {
-    pid_t rexec ( const std::string& host
+    pid_t rexec ( const rif_t::endpoint_t rif
                 , const std::vector<std::string>& cmd
                 , const std::map<std::string, std::string>& environment
                 )
     {
-      pid_t child = fork ();
-      if (0 == child)
+      // remote_pid=$(echo 'sleep 5 >/dev/null </dev/null & echo $!; disown -a' | ssh node038)
+      // is eq. to (in case of bash I guess)
+      // f = popen ("echo 'sleep 5 >/dev/null </dev/null & echo $!; disown -a' | ssh -q node038", "r");
+      // fread (remote_pid, sizeof (remote_pid), sizeof (char), f);
+      // fclose (f);
+
+      std::ostringstream command;
+      command << "echo '/usr/bin/env";
+      for (auto kv : environment)
       {
-        std::vector<std::string> command {
-          "ssh", "-q", "-n", "-tt", host, "/usr/bin/env"
-            };
-        for (auto kv : environment)
-        {
-          command.emplace_back (kv.first + "=\"" + kv.second + "\"");
-        }
-        command.insert (command.end(), cmd.begin(), cmd.end());
-
-        std::vector<char> argv_buffer;
-        std::vector<char*> argv;
-
-        {
-          std::vector<std::size_t> argv_offsets;
-
-          for (const std::string& param : command)
-          {
-            const std::size_t pos (argv_buffer.size());
-            argv_buffer.resize (argv_buffer.size() + param.size() + 1);
-            std::copy (param.begin(), param.end(), argv_buffer.data() + pos);
-            argv_buffer[argv_buffer.size() - 1] = '\0';
-            argv_offsets.push_back (pos);
-          }
-          for (std::size_t offset : argv_offsets)
-          {
-            argv.push_back (argv_buffer.data() + offset);
-          }
-          argv.push_back (nullptr);
-        }
-
-        fhg::syscall::execvp (argv[0], argv.data());
+        command << " " << kv.first << "=\"" << kv.second << "\"";
       }
-      else
+      for (auto arg : cmd)
       {
-        return child;
+        command << " " << arg;
       }
+      command << " >/dev/null 2>/dev/null </dev/null & echo $!; disown -a'";
+      command << " | ssh -q -p " << rif.port << " " << rif.host << " /bin/sh -s";
+
+      char buf[16];
+      FILE *pid_file (fhg::syscall::popen (command.str().c_str(), "r"));
+      fhg::syscall::fread (buf, sizeof (buf), sizeof (char), pid_file);
+      errno = 0;
+      pid_t pid = std::strtoul (buf, nullptr, 0);
+      if (0 == pid && errno != 0)
+      {
+        fclose (pid_file);
+        throw std::runtime_error
+          ( "could not get remote pid from buffer: \""
+          + std::string (buf, buf+sizeof(buf))
+          + "\": " + strerror (errno)
+          );
+      }
+      fclose (pid_file);
+      return pid;
     }
   }
 
@@ -74,14 +73,14 @@ namespace gspc
     return host == other.host;
   }
 
-  rif_t::child_t::child_t (const pid_t pid)
-    : _pid (pid)
+  rif_t::child_t::child_t (const rif_t::endpoint_t& rif, const pid_t pid)
+    : _rif (rif)
+    , _pid (pid)
   {}
 
   rif_t::child_t::~child_t ()
   {
-    fhg::syscall::kill (_pid, SIGTERM);
-    fhg::syscall::waitpid (_pid, nullptr, 0);
+    rexec (_rif, {"kill", "-TERM", std::to_string (_pid)}, {});
   }
 
   void rif_t::exec ( const std::list<rif_t::endpoint_t>& rifs
@@ -98,7 +97,7 @@ namespace gspc
       }
 
       _processes[rif][key].push_back
-        (fhg::util::make_unique<child_t> (rexec (rif.host, command, environment)));
+        (fhg::util::make_unique<child_t> (rif, rexec (rif, command, environment)));
     }
   }
 
