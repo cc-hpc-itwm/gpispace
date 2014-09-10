@@ -1,4 +1,5 @@
 #define BOOST_TEST_MODULE TestScheduler
+#include <utils.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
@@ -239,5 +240,49 @@ BOOST_FIXTURE_TEST_CASE
   _scheduler.enqueueJob ("1");
 
   expect_serveJob_call ("1", {"worker"});
+  _scheduler.assignJobsToWorkers();
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (multiple_job_submissions_no_requirements, serveJob_checking_scheduler_and_job_manager)
+{
+  sdpa::worker_id_t const worker_id (utils::random_peer_name());
+
+  _scheduler.worker_manager().addWorker (worker_id, 2, {});
+
+  sdpa::job_id_t const job_id_0 (utils::random_peer_name());
+  add_job (job_id_0, {});
+  _scheduler.enqueueJob (job_id_0);
+  expect_serveJob_call (job_id_0, {worker_id});
+  _scheduler.assignJobsToWorkers();
+
+  sdpa::job_id_t const job_id_1 (utils::random_peer_name());
+  add_job (job_id_1, {});
+  _scheduler.enqueueJob (job_id_1);
+  expect_serveJob_call (job_id_1, {worker_id});
+  _scheduler.assignJobsToWorkers();
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (multiple_worker_job_submissions_with_requirements, serveJob_checking_scheduler_and_job_manager)
+{
+  sdpa::worker_id_t const worker_id (utils::random_peer_name());
+
+  _scheduler.worker_manager().addWorker
+    (worker_id, 1, { sdpa::capability_t("A", worker_id)
+                   , sdpa::capability_t("B", worker_id)
+                   }
+    );
+
+  sdpa::job_id_t const job_id_0 (utils::random_peer_name());
+  add_job (job_id_0, require ("A"));
+  _scheduler.enqueueJob (job_id_0);
+  expect_serveJob_call (job_id_0, {worker_id});
+  _scheduler.assignJobsToWorkers();
+
+  sdpa::job_id_t const job_id_1 (utils::random_peer_name());
+  add_job (job_id_1, require ("B"));
+  _scheduler.enqueueJob (job_id_1);
+  expect_serveJob_call (job_id_1, {worker_id});
   _scheduler.assignJobsToWorkers();
 }
