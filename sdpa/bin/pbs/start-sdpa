@@ -515,15 +515,20 @@ if $gpi_enabled ; then
     info "using GPI mem: ${gpi_mem} bytes per node"
     info "starting GPI using: '$gpi_exe' on '${gpi_socket}'"
 
-    rexec $master /usr/bin/env FHGLOG_to_server="${log_host}:${log_port}" \
-        "${gpi_exe}" \
-        --log-file "$state_dir/log/gpi-space.log" \
-        --daemonize \
-        --pidfile "$state_dir/gpi-space.pid" \
-        --gpi-mem "$gpi_mem" \
+    "${sdpa_home}/bin/gaspirun" \
+        --nodefile "${nodefile}" \
+        --state-directory "${state_dir}" \
+        --gspc-home "${sdpa_home}" \
         --kvs-host "${kvs_host}" --kvs-port "${kvs_port}" \
         --log-host "${log_host}" --log-port "${log_port}" \
-        --socket "${gpi_socket}"
+        --gui-host "${gui_host}" --gui-port "${gui_port}" \
+        --virtual-memory-port 10820 \
+        --virtual-memory-manager "${gpi_exe}" \
+        --virtual-memory-socket "${gpi_socket}" \
+        --virtual-memory-per-node "${gpi_mem}" \
+        --virtual-memory-timeout $((2 * 1000 * 60)) &
+    echo "$!" > "$state_dir/gpi-space.pid"
+    disown -a
 
     ec=$?
     if [ $ec -ne 0 ]
