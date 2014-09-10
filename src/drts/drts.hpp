@@ -111,9 +111,6 @@ namespace gspc
                     , boost::filesystem::path const&
                     );
   boost::filesystem::path get_nodefile (boost::program_options::variables_map const&);
-  void set_virtual_memory_manager ( boost::program_options::variables_map&
-                                  , boost::filesystem::path const&
-                                  );
   void set_virtual_memory_per_node ( boost::program_options::variables_map&
                                    , unsigned long
                                    );

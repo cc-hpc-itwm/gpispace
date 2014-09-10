@@ -52,8 +52,6 @@ namespace gspc
       constexpr char const* const application_search_path
       {"application-search-path"};
 
-      constexpr char const* const virtual_memory_manager
-      {"virtual-memory-manager"};
       constexpr char const* const virtual_memory_per_node
       {"virtual-memory-per-node"};
       constexpr char const* const virtual_memory_socket
@@ -143,10 +141,6 @@ namespace gspc
       boost::program_options::options_description vmem ("Virtual memory");
 
       vmem.add_options()
-        ( name::virtual_memory_manager
-        , boost::program_options::value<validators::executable>()->required()
-        , "memory manager, typically installed in the privileged folder"
-        )
         ( name::virtual_memory_per_node
         , boost::program_options::value
           <validators::positive_integral<unsigned long>>()->required()
@@ -305,15 +299,7 @@ namespace gspc
 
     if (_virtual_memory_per_node)
     {
-      boost::filesystem::path const virtual_memory_manager
-        ( boost::filesystem::canonical
-          ( vm[options::name::virtual_memory_manager]
-          . as<validators::executable>()
-          )
-        );
-
       command_boot
-        << " -x " << virtual_memory_manager
         << " -y " << *_virtual_memory_socket
         << " -m " << *_virtual_memory_per_node
         ;
@@ -507,13 +493,6 @@ namespace gspc
   boost::filesystem::path get_nodefile (boost::program_options::variables_map const& vm)
   {
     return vm[options::name::nodefile].as<validators::existing_path>();
-  }
-  void set_virtual_memory_manager ( boost::program_options::variables_map& vm
-                                  , boost::filesystem::path const& path
-                                  )
-  {
-    set_as<validators::executable>
-      (vm, options::name::virtual_memory_manager, path.string());
   }
   void set_virtual_memory_per_node ( boost::program_options::variables_map& vm
                                    , unsigned long size
