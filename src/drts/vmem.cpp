@@ -25,7 +25,7 @@ namespace gspc
         std::list<gspc::rif_t::endpoint_t> ep;
         for (std::string const&h : hosts)
         {
-          ep.emplace_back (gspc::rif_t::endpoint_t (h, 22));
+          ep.emplace_back (h, 22);
         }
         return std::move (ep);
       } (machinefile.first))
