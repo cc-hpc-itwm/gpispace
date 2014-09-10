@@ -486,7 +486,7 @@ if $gpi_enabled ; then
     info "using GPI mem: ${gpi_mem} bytes per node"
     info "starting GPI on: '${gpi_socket}'"
 
-    "${sdpa_home}/bin/gaspirun" \
+    vmem_pid=$("${sdpa_home}/bin/gaspirun" \
         --nodefile "${nodefile}" \
         --state-directory "${state_dir}" \
         --gspc-home "${sdpa_home}" \
@@ -496,9 +496,8 @@ if $gpi_enabled ; then
         --virtual-memory-port 10820 \
         --virtual-memory-socket "${gpi_socket}" \
         --virtual-memory-per-node "${gpi_mem}" \
-        --virtual-memory-timeout $((2 * 1000 * 60)) &
-    echo "$!" > "$state_dir/gpi-space.pid"
-    disown -a
+        --virtual-memory-timeout $((2 * 1000 * 60)))
+    echo "${vmem_pid}" > "$state_dir/gpi-space.pid"
 
     ec=$?
     if [ $ec -ne 0 ]

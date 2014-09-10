@@ -2,6 +2,7 @@
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <fhg/util/daemonize.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 
 #include <drts/drts.hpp>
@@ -164,6 +165,13 @@ int main (int argc, char *argv[])
           done = true;
         });
     });
+
+  boost::optional<pid_t> child (fhg::util::fork_and_daemonize_child());
+  if (child)
+  {
+    std::cout << *child << std::endl;
+    exit (EXIT_SUCCESS);
+  }
 
   while (! done)
   {
