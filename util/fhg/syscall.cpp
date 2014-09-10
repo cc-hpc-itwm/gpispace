@@ -312,7 +312,16 @@ namespace fhg
 
     size_t fread (void *ptr, size_t size, size_t nmemb, FILE *stream)
     {
-      return ::fread (ptr, size, nmemb, stream);
+      const size_t nread (::fread (ptr, size, nmemb, stream));
+      if (nread < nmemb)
+      {
+        if (negative_one_fails_with_errno<int> (::ferror (stream)))
+        {
+          throw std::runtime_error ("could not read from FILE stream");
+        }
+        negative_one_fails_with_errno<int> (::feof (stream));
+      }
+      return nread;
     }
   }
 }
