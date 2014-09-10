@@ -27,7 +27,7 @@ namespace gspc
         {
           ep.emplace_back (h, 22);
         }
-        return std::move (ep);
+        return ep;
       } (machinefile.first))
   {
     const std::string& log_host (get_log_host (vm));
