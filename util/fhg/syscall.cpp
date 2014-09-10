@@ -305,9 +305,9 @@ namespace fhg
       return nullptr_fails_with_errno<FILE> (::popen (command, type));
     }
 
-    int pclose (FILE *stream)
+    void pclose (FILE *stream)
     {
-      return negative_one_fails_with_errno<int> (::pclose (stream));
+      return negative_one_fails_with_errno<void> (::pclose (stream));
     }
 
     size_t fread (void *ptr, size_t size, size_t nmemb, FILE *stream)
