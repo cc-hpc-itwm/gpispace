@@ -27,13 +27,11 @@ public:
     : _service_dispatcher (fhg::rpc::exception::serialization_functions())
     , _start_service ( _service_dispatcher
                      , "start"
-                     , fhg::rpc::thunk<pid_t (std::string, std::vector<std::string>)>
-                       (std::bind (&rif::start, this, std::placeholders::_1, std::placeholders::_2))
+                     , std::bind (&rif::start, this, std::placeholders::_1, std::placeholders::_2)
                      )
     , _stop_service ( _service_dispatcher
                     , "stop"
-                    , fhg::rpc::thunk<void (std::size_t)>
-                      (std::bind (&rif::stop, this, std::placeholders::_1))
+                    , std::bind (&rif::stop, this, std::placeholders::_1)
                     )
     , _acceptor ( endpoint
                 , io_service
@@ -112,8 +110,9 @@ private:
   }
 
   fhg::rpc::service_dispatcher _service_dispatcher;
-  fhg::rpc::service_handler _start_service;
-  fhg::rpc::service_handler _stop_service;
+  fhg::rpc::service_handler<pid_t (std::string, std::vector<std::string>)>
+    _start_service;
+  fhg::rpc::service_handler<void (std::size_t)> _stop_service;
 
   std::vector<std::unique_ptr<fhg::network::connection_type>> _connections;
 

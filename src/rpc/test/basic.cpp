@@ -27,10 +27,10 @@ BOOST_AUTO_TEST_CASE (int_ping)
 {
   fhg::rpc::service_dispatcher service_dispatcher
     {fhg::rpc::exception::serialization_functions()};
-  fhg::rpc::service_handler start_service
+  fhg::rpc::service_handler<int (int)> start_service
     ( service_dispatcher
     , "ping"
-    , fhg::rpc::thunk<int (int)> ([] (int i) { return i + 1; })
+    , [] (int i) { return i + 1; }
     );
   server_for_dispatcher server (service_dispatcher);
 
@@ -57,10 +57,10 @@ BOOST_AUTO_TEST_CASE (int_ping_sync)
 {
   fhg::rpc::service_dispatcher service_dispatcher
     {fhg::rpc::exception::serialization_functions()};
-  fhg::rpc::service_handler start_service
+  fhg::rpc::service_handler<int (int)> start_service
     ( service_dispatcher
     , "ping"
-    , fhg::rpc::thunk<int (int)> ([] (int i) { return i + 1; })
+    , [] (int i) { return i + 1; }
     );
   server_for_dispatcher server (service_dispatcher);
 
@@ -111,11 +111,10 @@ BOOST_AUTO_TEST_CASE (user_defined_type_echo)
 {
   fhg::rpc::service_dispatcher service_dispatcher
     {fhg::rpc::exception::serialization_functions()};
-  fhg::rpc::service_handler start_service
+  fhg::rpc::service_handler<user_defined_type (user_defined_type)> start_service
     ( service_dispatcher
     , "echo"
-    , fhg::rpc::thunk<user_defined_type (user_defined_type)>
-      ([] (user_defined_type x) { return x; })
+    , [] (user_defined_type x) { return x; }
     );
   server_for_dispatcher server (service_dispatcher);
 

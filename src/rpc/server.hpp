@@ -34,7 +34,7 @@ namespace fhg
         (network::connection_type* connection, network::buffer_type packet) const;
 
     private:
-      friend struct service_handler;
+      template<typename> friend struct service_handler;
 
       std::unordered_map
         < std::string
@@ -44,17 +44,22 @@ namespace fhg
       exception::serialization_functions _from_exception_ptr_functions;
     };
 
+    template<typename> struct thunk;
+
     //! \note helper to register service scoped
-    struct service_handler : boost::noncopyable
+    template<typename> struct service_handler;
+    template<typename R, typename... Args>
+      struct service_handler<R (Args...)> : boost::noncopyable
     {
     public:
-      service_handler
-          ( service_dispatcher& manager
-          , std::string name
-          , std::function<std::string (std::string)> handler
-          )
+      template<typename Func>
+        service_handler
+          (service_dispatcher& manager, std::string name, Func handler)
         : _handler_registration
-          (manager._handlers, std::move (name), std::move (handler))
+          ( manager._handlers
+          , std::move (name)
+          , thunk<R (Args...)> (std::move (handler))
+          )
       {}
 
     private:
@@ -143,7 +148,6 @@ namespace fhg
       }
     }
 
-    template<typename> struct thunk;
     template<typename R, typename... Args>
       struct thunk<R (Args...)>
     {

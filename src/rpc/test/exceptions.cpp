@@ -15,18 +15,16 @@ BOOST_AUTO_TEST_CASE (std_exceptions)
 {
   fhg::rpc::service_dispatcher service_dispatcher
     {fhg::rpc::exception::serialization_functions()};
-  fhg::rpc::service_handler start_service
+  fhg::rpc::service_handler<void (int)> start_service
     ( service_dispatcher
     , "require_lt_0"
-    , fhg::rpc::thunk<void (int)>
-      ([] (int i)
+    , [] (int i)
       {
         if (i >= 0)
         {
           throw std::invalid_argument (std::to_string (i) + " >= 0");
         }
       }
-      )
     );
   server_for_dispatcher server (service_dispatcher);
 
@@ -129,11 +127,10 @@ BOOST_AUTO_TEST_CASE (user_defined_exceptions)
       , { "udsrte", &user_defined_std_runtime_error::from_exception_ptr }
       }
     );
-  fhg::rpc::service_handler start_service
+  fhg::rpc::service_handler<void (bool, int)> start_service
     ( service_dispatcher
     , "throw_exception"
-    , fhg::rpc::thunk<void (bool, int)>
-      ([] (bool std_runtime_error_based, int dummy)
+    , [] (bool std_runtime_error_based, int dummy)
       {
         if (std_runtime_error_based)
         {
@@ -144,7 +141,6 @@ BOOST_AUTO_TEST_CASE (user_defined_exceptions)
           throw user_defined_exception (dummy);
         }
       }
-      )
     );
   server_for_dispatcher server (service_dispatcher);
 
@@ -182,15 +178,13 @@ BOOST_AUTO_TEST_CASE (user_defined_std_exceptions_are_downcast_automatically_ser
 {
   fhg::rpc::service_dispatcher service_dispatcher
     {fhg::rpc::exception::serialization_functions()};
-  fhg::rpc::service_handler start_service
+  fhg::rpc::service_handler<void (int)> start_service
     ( service_dispatcher
     , "throw_exception"
-    , fhg::rpc::thunk<void (int)>
-      ([] (int dummy)
+    , [] (int dummy)
       {
         throw user_defined_std_runtime_error (dummy);
       }
-      )
     );
   server_for_dispatcher server (service_dispatcher);
 
@@ -215,15 +209,13 @@ BOOST_AUTO_TEST_CASE (user_defined_std_exceptions_are_downcast_automatically_cli
 {
   fhg::rpc::service_dispatcher service_dispatcher
     ({{"udsrte", &user_defined_std_runtime_error::from_exception_ptr}});
-  fhg::rpc::service_handler start_service
+  fhg::rpc::service_handler<void (int)> start_service
     ( service_dispatcher
     , "throw_exception"
-    , fhg::rpc::thunk<void (int)>
-      ([] (int dummy)
+    , [] (int dummy)
       {
         throw user_defined_std_runtime_error (dummy);
       }
-      )
     );
   server_for_dispatcher server (service_dispatcher);
 
@@ -248,11 +240,10 @@ BOOST_AUTO_TEST_CASE (nested_exceptions)
 {
   fhg::rpc::service_dispatcher service_dispatcher
     ({{"ude", &user_defined_exception::from_exception_ptr}});
-  fhg::rpc::service_handler start_service
+  fhg::rpc::service_handler<void (bool, int)> start_service
     ( service_dispatcher
     , "throw_exception"
-    , fhg::rpc::thunk<void (bool, int)>
-      ([] (bool std_logic_error, int dummy)
+    , [] (bool std_logic_error, int dummy)
       {
         try
         {
@@ -270,7 +261,6 @@ BOOST_AUTO_TEST_CASE (nested_exceptions)
           std::throw_with_nested (std::runtime_error ("failing succeeded"));
         }
       }
-      )
     );
   server_for_dispatcher server (service_dispatcher);
 
