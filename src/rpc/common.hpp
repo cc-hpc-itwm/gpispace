@@ -5,14 +5,41 @@
 
 #include <boost/optional.hpp>
 
+#include <fhg/util/boost/asio/ip/tcp/endpoint.hpp>
+
 #include <algorithm>
 #include <cstdint>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace fhg
 {
   namespace rpc
   {
+    using endpoint_type = boost::asio::ip::tcp::endpoint;
+    using endpoints_type = std::vector<endpoint_type>;
+
+    template<typename T>
+      using aggregated_results = std::unordered_map<endpoint_type, T>;
+
+    template<typename T>
+      struct aggregated_exception : std::exception
+    {
+      aggregated_results<T> succeeded;
+      aggregated_results<std::exception_ptr> failed;
+
+      aggregated_exception() = default;
+      aggregated_exception (decltype (failed) f)
+        : failed (std::move (f))
+      {}
+
+      virtual const char* what() const noexcept override
+      {
+        return (std::to_string (failed.size()) + " exceptions").c_str();
+      }
+    };
+
     struct packet_header
     {
       uint64_t message_id;

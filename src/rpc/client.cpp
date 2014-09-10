@@ -81,11 +81,5 @@ namespace fhg
       _promises.emplace (message_id, std::promise<network::buffer_type>{});
       return _promises.at (message_id).get_future();
     }
-
-    exception::deserialization_functions const&
-      remote_endpoint::deserialization_functions() const
-    {
-      return _deserialization_functions;
-    }
   }
 }

@@ -39,8 +39,10 @@ namespace fhg
           {
             return std::make_pair
               ( true
-              , exception::serialize
-                (std::current_exception(), _from_exception_ptr_functions)
+              , exception::serialize ( std::current_exception()
+                                     , _from_exception_ptr_functions
+                                     , _aggregated_serialization_functions
+                                     )
               );
           }
         }()

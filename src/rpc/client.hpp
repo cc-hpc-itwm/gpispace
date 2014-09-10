@@ -6,18 +6,22 @@
 #include <rpc/common.hpp>
 #include <rpc/exception_serialization.hpp>
 
+#include <fhg/assert.hpp>
 #include <fhg/util/boost/serialization/tuple.hpp>
+#include <fhg/util/boost/serialization/unordered_map.hpp>
 
 #include <network/connection.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/asio/io_service.hpp>
+#include <boost/serialization/vector.hpp>
 
 #include <cstdint>
 #include <future>
 #include <memory>
 #include <mutex>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -45,10 +49,13 @@ namespace fhg
       std::future<network::buffer_type>
         send_and_receive (network::buffer_type buffer);
 
-      exception::deserialization_functions const& deserialization_functions() const;
-
     private:
+      template<typename> friend struct remote_function;
+      template<typename> friend struct aggregated_remote_function;
+
       exception::deserialization_functions _deserialization_functions;
+      exception::aggregated_deserialization_functions
+        _aggregated_deserialization_functions;
 
       std::unique_ptr<network::connection_type> _connection;
 
@@ -132,7 +139,10 @@ namespace fhg
             {
               std::rethrow_exception
                 ( exception::deserialize
-                  (result->blob(), _endpoint.deserialization_functions())
+                  ( result->blob()
+                  , _endpoint._deserialization_functions
+                  , _endpoint._aggregated_deserialization_functions
+                  )
                 );
             }
             else
@@ -165,6 +175,58 @@ namespace fhg
 
     private:
       remote_function<R (Args...)> _function;
+    };
+
+    template<typename> struct aggregated_remote_function;
+    template<typename R, typename... Args>
+      struct aggregated_remote_function<R (Args...)>
+    {
+    public:
+      aggregated_remote_function
+          (remote_endpoint& endpoint, std::string function)
+        : _aggregated_deserialization_function
+          ( endpoint._aggregated_deserialization_functions
+          , typeid (R).name()
+          , &exception::aggregated_deserialize<R>
+          )
+        , _function (endpoint, function)
+      {}
+
+      //! \note endpoints shall be unique
+      std::future<aggregated_results<R>> operator()
+        (endpoints_type endpoints, Args... args)
+      {
+        fhg_assert ( std::set<endpoint_type>
+                     (endpoints.begin(), endpoints.end()).size()
+                   == endpoints.size()
+                   , "endpoints shall be unique"
+                   );
+        return _function (endpoints, args...);
+      }
+
+    private:
+      util::scoped_map_insert<exception::aggregated_deserialization_functions>
+        _aggregated_deserialization_function;
+      remote_function<aggregated_results<R> (endpoints_type, Args...)> _function;
+    };
+
+    template<typename> struct sync_aggregated_remote_function;
+    template<typename R, typename... Args>
+      struct sync_aggregated_remote_function<R (Args...)>
+    {
+    public:
+      sync_aggregated_remote_function
+          (remote_endpoint& endpoint, std::string function)
+        : _function (endpoint, function)
+      {}
+
+      aggregated_results<R> operator() (endpoints_type endpoints, Args... args)
+      {
+        return _function (endpoints, args...).get();
+      }
+
+    private:
+      aggregated_remote_function<R (Args...)> _function;
     };
   }
 }

@@ -7,8 +7,6 @@
 #include <fhg/util/boost/serialization/tuple.hpp>
 #include <fhg/util/macros.hpp>
 
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
 #include <boost/blank.hpp>
 #include <boost/serialization/optional.hpp>
 #include <boost/serialization/variant.hpp>
@@ -136,10 +134,12 @@ namespace fhg
         };
 
         struct nested_exception_data;
+        struct aggregated_exception_data;
 
         using exception_data = boost::variant
           < builtin_exception_data
           , boost::recursive_wrapper<nested_exception_data>
+          , boost::recursive_wrapper<aggregated_exception_data>
           , user_defined_exception_data
           >;
 
@@ -158,6 +158,34 @@ namespace fhg
           {
             ar & _this;
             ar & _nested;
+          }
+        };
+
+        struct aggregated_exception_data
+        {
+          std::string _typeid_name;
+          std::string _data;
+
+          std::exception_ptr to_exception_ptr
+            ( aggregated_deserialization_functions const&
+            , deserialization_functions const&
+            ) const;
+          static boost::optional<aggregated_exception_data>
+            from_exception_ptr ( std::exception_ptr
+                               , aggregated_serialization_functions const&
+                               , serialization_functions const&
+                               );
+
+          //! \note Serialization
+          aggregated_exception_data() = default;
+
+        private:
+          friend class boost::serialization::access;
+          template<class Archive>
+            void serialize (Archive& ar, const unsigned int)
+          {
+            ar & _typeid_name;
+            ar & _data;
           }
         };
 
@@ -527,9 +555,51 @@ namespace fhg
           return boost::none;
         }
 
+        std::exception_ptr aggregated_exception_data::to_exception_ptr
+          ( aggregated_deserialization_functions const& aggregated_functions
+          , deserialization_functions const& functions
+          ) const
+        {
+          aggregated_deserialization_functions::const_iterator const it
+            (aggregated_functions.find (_typeid_name));
+          if (it != aggregated_functions.end())
+          {
+            return it->second (_data, functions, aggregated_functions);
+          }
+          else
+          {
+            //! \note No deserialization available.
+            std::terminate();
+          }
+        }
+        boost::optional<aggregated_exception_data>
+          aggregated_exception_data::from_exception_ptr
+          ( std::exception_ptr exception
+          , aggregated_serialization_functions const& aggregated_functions
+          , serialization_functions const& functions
+          )
+        {
+          for ( aggregated_serialization_functions::value_type const& fun
+              : aggregated_functions
+              )
+          {
+            boost::optional<std::string> exception_data
+              (fun.second (exception, functions, aggregated_functions));
+
+            if (exception_data)
+            {
+              return aggregated_exception_data
+                {fun.first, std::move (*exception_data)};
+            }
+          }
+
+          return boost::none;
+        }
+
         exception_data serialize_exception_not_checking_for_nested
           ( std::exception_ptr exception
           , serialization_functions from_exception_ptr_functions
+          , aggregated_serialization_functions const& aggregated_functions
           )
         {
           //! \note Always get builtin version as fallback if
@@ -537,6 +607,11 @@ namespace fhg
 
           boost::optional<builtin_exception_data> serialized_builtin
             (builtin_exception_data::from_exception_ptr (exception));
+
+          boost::optional<aggregated_exception_data> serialized_aggregated
+            ( aggregated_exception_data::from_exception_ptr
+              (exception, aggregated_functions, from_exception_ptr_functions)
+            );
 
           boost::optional<user_defined_exception_data> serialized_user_defined
             ( user_defined_exception_data::from_exception_ptr
@@ -546,6 +621,10 @@ namespace fhg
           if (serialized_user_defined)
           {
             return std::move (*serialized_user_defined);
+          }
+          else if (serialized_aggregated)
+          {
+            return std::move (*serialized_aggregated);
           }
           else if (serialized_builtin)
           {
@@ -560,6 +639,7 @@ namespace fhg
         exception_data serialize_exception_impl
           ( std::exception_ptr exception
           , serialization_functions const& from_exception_ptr_functions
+          , aggregated_serialization_functions const& aggregated_functions
           )
         {
           try
@@ -570,9 +650,11 @@ namespace fhg
           {
             return nested_exception_data
               { serialize_exception_not_checking_for_nested
-                (exception, from_exception_ptr_functions)
-              , serialize_exception_impl
-                (nested_exception.nested_ptr(), from_exception_ptr_functions)
+                (exception, from_exception_ptr_functions, aggregated_functions)
+              , serialize_exception_impl ( nested_exception.nested_ptr()
+                                         , from_exception_ptr_functions
+                                         , aggregated_functions
+                                         )
               };
           }
           catch (...)
@@ -581,12 +663,13 @@ namespace fhg
           }
 
           return serialize_exception_not_checking_for_nested
-            (exception, from_exception_ptr_functions);
+            (exception, from_exception_ptr_functions, aggregated_functions);
         }
 
         std::exception_ptr deserialize_exception_impl
           ( exception_data data
           , deserialization_functions const& functions
+          , aggregated_deserialization_functions const& aggregated_functions
           )
         {
           struct data_visitor : public boost::static_visitor<std::exception_ptr>
@@ -602,7 +685,9 @@ namespace fhg
                 try
                 {
                   std::rethrow_exception
-                    (deserialize_exception_impl (data._nested, _functions));
+                    ( deserialize_exception_impl
+                      (data._nested, _functions, _aggregated_functions)
+                    );
                 }
                 catch (...)
                 {
@@ -621,6 +706,14 @@ namespace fhg
                     void operator() (user_defined_exception_data data) const
                     {
                       data.throw_with_nested (_functions);
+                    }
+                    void operator() (aggregated_exception_data) const
+                    {
+                      //! \note We will never std::throw_with_nested():
+                      //! Nesting an exception within [an exception
+                      //! with a set of exceptions] just does not make
+                      //! any sense.
+                      UNREACHABLE();
                     }
 
                     deserialization_functions const& _functions;
@@ -643,34 +736,46 @@ namespace fhg
             {
               return data.to_exception_ptr (_functions);
             }
+            std::exception_ptr operator() (aggregated_exception_data data) const
+            {
+              return data.to_exception_ptr (_aggregated_functions, _functions);
+            }
 
             deserialization_functions const& _functions;
-            data_visitor (deserialization_functions const& funs)
+            aggregated_deserialization_functions const& _aggregated_functions;
+            data_visitor ( deserialization_functions const& funs
+                         , aggregated_deserialization_functions const& aggfuns
+                         )
               : _functions (funs)
+              , _aggregated_functions (aggfuns)
             {}
-          } const visitor {functions};
+          } const visitor {functions, aggregated_functions};
 
           return boost::apply_visitor (visitor, data);
         }
       }
 
-      std::string serialize ( std::exception_ptr exception
-                            , serialization_functions const& functions
-                            )
+      std::string serialize
+        ( std::exception_ptr exception
+        , serialization_functions const& functions
+        , aggregated_serialization_functions const& aggregated_functions
+        )
       {
         std::ostringstream os;
         boost::archive::text_oarchive oa (os);
 
         exception_data const data
-          (serialize_exception_impl (exception, functions));
+          (serialize_exception_impl (exception, functions, aggregated_functions));
         oa & data;
 
         return os.str();
       }
 
-      std::exception_ptr deserialize ( std::string blob
-                                     , deserialization_functions const& functions
-                                     )
+      std::exception_ptr deserialize
+        ( std::string blob
+        , deserialization_functions const& functions
+        , aggregated_deserialization_functions const& aggregated_functions
+        )
       {
         std::istringstream is (blob);
         boost::archive::text_iarchive ia (is);
@@ -678,7 +783,7 @@ namespace fhg
         exception_data data;
         ia & data;
 
-        return deserialize_exception_impl (data, functions);
+        return deserialize_exception_impl (data, functions, aggregated_functions);
       }
     }
   }
