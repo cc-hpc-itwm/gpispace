@@ -40,6 +40,8 @@ namespace gspc
     void stop ( const std::list<endpoint_t>& rifs
               , const std::string& key
               );
+
+    static boost::filesystem::path relative_to_root (boost::filesystem::path const&);
   private:
     const boost::filesystem::path _root;
 
