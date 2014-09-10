@@ -323,6 +323,13 @@ namespace gspc
 
     system (command_boot.str(), "start runtime system");
 
+    // taken from pbs/sdpa and bin/sdpac
+    //! \todo Remove magic: specify filenames instead of relying on
+    //! file? Let an c++-ified sdpa-boot() return them.
+    _kvs_host = fhg::util::read_file (_state_directory / "kvs.host");
+    _kvs_port = boost::lexical_cast<unsigned short>
+      (fhg::util::read_file (_state_directory / "kvs.port"));
+
     if (_virtual_memory_per_node)
     {
       _virtual_memory_api->start();
@@ -341,8 +348,7 @@ namespace gspc
            );
   }
 
-  std::multimap<std::string, pnet::type::value::value_type>
-    scoped_runtime_system::put_and_run
+  sdpa::job_id_t scoped_runtime_system::submit
     ( boost::filesystem::path const& workflow
     , std::multimap< std::string
                    , pnet::type::value::value_type
@@ -364,20 +370,28 @@ namespace gspc
         );
     }
 
-    // taken from pbs/sdpa and bin/sdpac
-    //! \todo Remove magic: specify filenames instead of relying on
-    //! file? Let an c++-ified sdpa-boot() return them.
-    std::string const kvs_host
-      (fhg::util::read_file (_state_directory / "kvs.host"));
-    unsigned short const kvs_port
-      ( boost::lexical_cast<unsigned short>
-        (fhg::util::read_file (_state_directory / "kvs.port"))
-      );
-
     sdpa::client::Client api
-      ("orchestrator", kvs_host, std::to_string (kvs_port));
+      ("orchestrator", _kvs_host, std::to_string (_kvs_port));
 
-    std::string const job_id (api.submitJob (activity.to_string()));
+    return api.submitJob (activity.to_string());
+  }
+
+  void scoped_runtime_system::put_token ( sdpa::job_id_t job_id
+                                        , std::string place_name
+                                        , pnet::type::value::value_type value
+                                        ) const
+  {
+    sdpa::client::Client api
+      ("orchestrator", _kvs_host, std::to_string (_kvs_port));
+
+    api.put_token (job_id, place_name, value);
+  }
+
+  std::multimap<std::string, pnet::type::value::value_type>
+    scoped_runtime_system::wait_and_extract (sdpa::job_id_t job_id) const
+  {
+    sdpa::client::Client api
+      ("orchestrator", _kvs_host, std::to_string (_kvs_port));
 
     std::cerr << "waiting for job " << job_id << std::endl;
 

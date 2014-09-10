@@ -99,6 +99,7 @@ set (CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set (CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../external/boost/lib:\$ORIGIN/../../../lib/")
 
 include_directories (${CMAKE_SOURCE_DIR}/src)
+include_directories ("${CMAKE_SOURCE_DIR}/sdpa")
 
 # replacement for find_package (<one of our subprojects>)
 set (UTIL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/util)

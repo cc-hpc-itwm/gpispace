@@ -8,8 +8,11 @@
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/join.hpp>
 
+#include <boost/format.hpp>
+
 #include <functional>
 #include <iterator>
+#include <stdexcept>
 #include <stack>
 #include <unordered_map>
 
@@ -66,6 +69,7 @@ namespace we
     net_type::net_type()
       : _place_id()
       , _pmap()
+      , _place_id_by_name()
       , _transition_id()
       , _tmap()
       , _adj_pt_consume()
@@ -80,6 +84,7 @@ namespace we
     net_type::net_type (const net_type& other)
       : _place_id (other._place_id)
       , _pmap (other._pmap)
+      , _place_id_by_name (other._place_id_by_name)
       , _transition_id (other._transition_id)
       , _tmap (other._tmap)
       , _adj_pt_consume (other._adj_pt_consume)
@@ -97,6 +102,7 @@ namespace we
     {
       _place_id = other._place_id;
       _pmap = other._pmap;
+      _place_id_by_name = other._place_id_by_name;
       _transition_id = other._transition_id;
       _tmap = other._tmap;
       _adj_pt_consume = other._adj_pt_consume;
@@ -140,6 +146,15 @@ namespace we
       const place_id_type pid (_place_id++);
 
       _pmap.emplace (pid, place);
+
+      if (!_place_id_by_name.emplace (place.name(), pid).second)
+      {
+        //! \todo more specific exception
+        throw std::invalid_argument
+          ((boost::format ("duplicate place with name '%1%'") % place.name()
+           ).str()
+          );
+      }
 
       return pid;
     }
@@ -237,6 +252,26 @@ namespace we
                         )
     {
       do_update (do_put_value (pid, value));
+    }
+
+    void net_type::put_value ( std::string place_name
+                             , pnet::type::value::value_type const& value
+                             )
+    {
+      std::unordered_map<std::string, place_id_type>::const_iterator const
+        pid (_place_id_by_name.find (place_name));
+
+      if (pid == _place_id_by_name.end())
+      {
+        throw std::invalid_argument
+          ( ( boost::format ("put_value (\"%1%\", %2%): not found")
+            % place_name
+            % pnet::type::value::show (value)
+            ).str()
+          );
+      }
+
+      return put_value (pid->second, value);
     }
 
     net_type::to_be_updated_type net_type::do_put_value
