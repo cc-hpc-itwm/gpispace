@@ -27,6 +27,17 @@ namespace fhg
         return rc;
       }
 
+      template<typename T>
+      T *nullptr_fails_with_errno (T *rc)
+      {
+        if (rc == nullptr)
+        {
+          throw boost::system::system_error
+            (boost::system::error_code (errno, boost::system::system_category()));
+        }
+        return rc;
+      }
+
       template<>
         void negative_one_fails_with_errno<void, int> (int rc)
       {
@@ -287,6 +298,21 @@ namespace fhg
     {
       return negative_one_fails_with_errno<int>
         (::connect (sock, address, addr_len));
+    }
+
+    FILE *popen (const char *command, const char *type)
+    {
+      return nullptr_fails_with_errno<FILE> (::popen (command, type));
+    }
+
+    int pclose (FILE *stream)
+    {
+      return negative_one_fails_with_errno<int> (::pclose (stream));
+    }
+
+    size_t fread (void *ptr, size_t size, size_t nmemb, FILE *stream)
+    {
+      return ::fread (ptr, size, nmemb, stream);
     }
   }
 }
