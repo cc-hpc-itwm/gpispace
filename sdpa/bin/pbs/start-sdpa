@@ -21,20 +21,6 @@ usage: $(basename $0) [options]
   -d: do not delete logfiles
   -C: capability specification
   -G: number of segments
-  -x: GPI binary to execute
-
-        This binary has to point to the 'gpi-space' application found
-        in '\$SDPA_HOME/bin/gpi-space', but has to reside in the GPI
-        privileged folder in case you are executing on a cluster. One
-        also has to put dependencies besides the application:
-
-             PRIV_DIR=<gpi-privileged-dir>
-             mkdir -p "\$PRIV_DIR"/gpi-space.app/{bin,lib}
-             cp "\$SDPA_HOME/bin/gpi-space" "\$PRIV_DIR/gpi-space.app/bin"
-             "\$SDPA_HOME/bin/sdpa" bundle -o "\$PRIV_DIR/gpi-space.app/lib" "\$PRIV_DIR/gpi-space.app/bin/gpi-space"
-
-        Please contact your local administrator responsible for GPI in
-        case you don't have permissions for that folder.
   -y: Socket file to communicate with the virtual memory manager
 
   -l: log url (=${log_url})
@@ -240,7 +226,6 @@ network_retries=15
 # guess memory sizes
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
 avl_mem=$(( ($tot_mem * 80) / 100 ))
-gpi_exe=
 gpi_mem=0
 gpi_socket=
 def_shm_mem=0
@@ -311,9 +296,6 @@ while getopts ":hvnf:S:m:s:C:p:MA:dG:x:l:g:H:y:" opt; do
             shiftcount=$((shiftcount + 2))
             ;;
         x)
-            gpi_exe="$OPTARG"
-            assert_not_empty gpi_exe
-            shiftcount=$((shiftcount + 2))
             ;;
         y)
             gpi_socket="${OPTARG}"
@@ -390,17 +372,6 @@ fi
 
 master=${hosts[0]}
 num_hosts=${#hosts[@]}
-
-if $gpi_enabled ; then
-    if [ -z "${gpi_exe}" ]
-    then
-        error 2 "No virtual memory binary was specified (-x), to disable the virtual memory specify -M"
-    fi
-    if [ ! -x "${gpi_exe}" ]
-    then
-        error 2 "GPI binary ($gpi_exe) is not executable!"
-    fi
-fi
 
 if [ $number_of_groups -gt $num_hosts ] ; then
     error 2 "number of groups must not be larger than number of hosts: $number_of_groups > $num_hosts"
@@ -513,7 +484,7 @@ if $gpi_enabled ; then
 
     info "using SHM mem: ${def_shm_mem} bytes per process (by default)"
     info "using GPI mem: ${gpi_mem} bytes per node"
-    info "starting GPI using: '$gpi_exe' on '${gpi_socket}'"
+    info "starting GPI on: '${gpi_socket}'"
 
     "${sdpa_home}/bin/gaspirun" \
         --nodefile "${nodefile}" \
@@ -523,7 +494,6 @@ if $gpi_enabled ; then
         --log-host "${log_host}" --log-port "${log_port}" \
         --gui-host "${gui_host}" --gui-port "${gui_port}" \
         --virtual-memory-port 10820 \
-        --virtual-memory-manager "${gpi_exe}" \
         --virtual-memory-socket "${gpi_socket}" \
         --virtual-memory-per-node "${gpi_mem}" \
         --virtual-memory-timeout $((2 * 1000 * 60)) &
