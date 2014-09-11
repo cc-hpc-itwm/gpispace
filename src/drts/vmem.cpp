@@ -132,7 +132,7 @@ namespace gspc
       {
         throw std::runtime_error
           ( "timeout while waiting for: " + socket.string()
-          + " waited: " + std::to_string (slept) + " seconds"
+          + " waited: " + std::to_string (slept) + " ms"
           );
       }
     }
