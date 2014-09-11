@@ -1424,7 +1424,7 @@ namespace sdpa
       _that->sendEventToOther
         ( events::WorkerRegistrationEvent::Ptr
           ( new events::WorkerRegistrationEvent
-            (_that->name(), _name, capacity, capabilities)
+            (_that->name(), _name, capacity, capabilities, true)
           )
         );
     }

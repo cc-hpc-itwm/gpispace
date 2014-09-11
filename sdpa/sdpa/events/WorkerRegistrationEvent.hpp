@@ -18,9 +18,9 @@ namespace sdpa
       WorkerRegistrationEvent
         ( const address_t& a_from
         , const address_t& a_to
-        , const boost::optional<unsigned int>& capacity = boost::none
-        , const capabilities_set_t& cpbset = capabilities_set_t()
-        , bool children_allowed = true
+        , const boost::optional<unsigned int>& capacity
+        , const capabilities_set_t& cpbset
+        , bool children_allowed
         )
           : MgmtEvent (a_from, a_to)
           , capacity_ (capacity)
