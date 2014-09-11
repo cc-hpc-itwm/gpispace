@@ -4,6 +4,7 @@ DEFAULT_LOG_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 0))"
 DEFAULT_GUI_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 1))"
 log_url="$(hostname -s):${DEFAULT_LOG_PORT}"
 gui_url="$(hostname -s):${DEFAULT_GUI_PORT}"
+vmem_timeout=$((10 * 60 * 1000))
 
 function usage ()
 {
@@ -22,6 +23,7 @@ usage: $(basename $0) [options]
   -C: capability specification
   -G: number of segments
   -y: Socket file to communicate with the virtual memory manager
+  -T: timeout for virtual memory manager to start (=${vmem_timeout})
 
   -l: log url (=${log_url})
   -g: gui url (=${gui_url})
@@ -238,7 +240,7 @@ if [ ${#@} -eq 0 ] ; then
 fi
 
 shiftcount=0
-while getopts ":hvnf:S:m:s:C:p:MA:dG:x:l:g:H:y:" opt; do
+while getopts ":hvnf:S:m:s:C:p:MA:dG:x:l:g:H:y:T:" opt; do
     case $opt in
         h)
             usage
@@ -300,6 +302,10 @@ while getopts ":hvnf:S:m:s:C:p:MA:dG:x:l:g:H:y:" opt; do
         y)
             gpi_socket="${OPTARG}"
             assert_not_empty gpi_socket
+            shiftcount=$((shiftcount + 2))
+            ;;
+        T)
+            vmem_timeout=$(( $OPTARG ))
             shiftcount=$((shiftcount + 2))
             ;;
         l)
@@ -496,7 +502,7 @@ if $gpi_enabled ; then
         --virtual-memory-port 10820 \
         --virtual-memory-socket "${gpi_socket}" \
         --virtual-memory-per-node "${gpi_mem}" \
-        --virtual-memory-timeout $((2 * 1000 * 60)) 2>&1)
+        --virtual-memory-timeout ${vmem_timeout} 2>&1)
     ec=$?
     if [ $ec -ne 0 ]
     then
