@@ -41,7 +41,7 @@ namespace gspc
               , const std::string& key
               );
 
-    static boost::filesystem::path relative_to_root (boost::filesystem::path const&);
+    static boost::filesystem::path make_relative_to_rif_root (boost::filesystem::path const&);
   private:
     const boost::filesystem::path _root;
 

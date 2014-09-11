@@ -127,7 +127,7 @@ namespace gspc
   }
 
   boost::filesystem::path
-  rif_t::relative_to_root (boost::filesystem::path const& p)
+  rif_t::make_relative_to_rif_root (boost::filesystem::path const& p)
   {
     return "<rif-root>" / p;
   }
