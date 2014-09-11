@@ -185,7 +185,7 @@ namespace gspc
 
   void rif_t::store ( const std::list<endpoint_t>& rifs
                     , const std::vector<char>& data
-                    , const std::string& path
+                    , const boost::filesystem::path& path
                     )
   {
     std::list<std::future<void>> background_tasks;
@@ -195,12 +195,12 @@ namespace gspc
         (std::move (std::async (std::launch::async, [this, &rif, &data, &path] {
               std::ostringstream command;
               command << "ssh -q -p " << rif.port << " " << rif.host
-                      << " '/bin/cat > " << replace_rif_root (path, _root) << "'";
+                      << " '/bin/cat > " << replace_rif_root (path.string(), _root) << "'";
               scoped_popen f (command.str().c_str(), "w");
               if (1 != fwrite (data.data(), data.size(), 1, f._))
               {
                 throw std::runtime_error
-                  ("could not write to: " + path + " on " + rif.host);
+                  ("could not write to: " + path.string() + " on " + rif.host);
               }
             })
           ));
