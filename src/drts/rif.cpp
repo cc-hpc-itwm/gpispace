@@ -34,12 +34,6 @@ namespace gspc
                 , const std::map<std::string, std::string>& environment
                 )
     {
-      // remote_pid=$(echo 'sleep 5 >/dev/null </dev/null & echo $!; disown -a' | ssh node038)
-      // is eq. to (in case of bash I guess)
-      // f = popen ("echo 'sleep 5 >/dev/null </dev/null & echo $!; disown -a' | ssh -q node038", "r");
-      // fread (remote_pid, sizeof (remote_pid), sizeof (char), f);
-      // fclose (f);
-
       std::ostringstream command;
       command << "echo '/usr/bin/env";
       for (auto kv : environment)
