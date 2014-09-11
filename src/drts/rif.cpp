@@ -110,7 +110,7 @@ namespace gspc
                    , const std::map<std::string, std::string>& raw_environment
                    )
   {
-    for (const endpoint_t& rif: rifs)
+    for (const endpoint_t& rif : rifs)
     {
       if (_processes[rif].find (key) != _processes[rif].end())
       {
@@ -138,7 +138,7 @@ namespace gspc
                    , const std::string& key
                    )
   {
-    for (const endpoint_t& rif: rifs)
+    for (const endpoint_t& rif : rifs)
     {
       _processes[rif].at (key).clear ();
       _processes[rif].erase (key);
