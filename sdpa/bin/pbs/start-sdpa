@@ -4,7 +4,7 @@ DEFAULT_LOG_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 0))"
 DEFAULT_GUI_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 1))"
 log_url="$(hostname -s):${DEFAULT_LOG_PORT}"
 gui_url="$(hostname -s):${DEFAULT_GUI_PORT}"
-vmem_timeout=$((10 * 60 * 1000))
+vmem_timeout=
 
 function usage ()
 {
@@ -487,10 +487,14 @@ if $gpi_enabled ; then
     if [ ${gpi_mem} -eq 0 ] ; then
         gpi_mem=$(( avl_mem * 50 / 100 ))
     fi
+    if [ -z "${vmem_timeout}" ]
+    then
+        vmem_timeout=$((60*1000 + gpi_mem / 1024 / 4))
+    fi
 
     info "using SHM mem: ${def_shm_mem} bytes per process (by default)"
     info "using GPI mem: ${gpi_mem} bytes per node"
-    info "starting GPI on: '${gpi_socket}'"
+    info "starting GPI on: '${gpi_socket}' with a timeout of $((vmem_timeout / 1000)) seconds"
 
     vmem_pid=$("${sdpa_home}/bin/gaspirun" \
         --nodefile "${nodefile}" \
