@@ -112,7 +112,7 @@ namespace gspc
   {
     for (const endpoint_t& rif : rifs)
     {
-      if (_processes[rif].find (key) != _processes[rif].end())
+      if (_processes[rif].count (key) > 0)
       {
         throw std::runtime_error ("key '" + key + "' is already in use on rif " + rif.host);
       }
