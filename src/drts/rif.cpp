@@ -30,7 +30,7 @@ namespace gspc
       FILE *_;
     };
 
-    static std::string const RIF_ROOT {"<rif-root>"};
+    std::string const RIF_ROOT {"<rif-root>"};
 
     std::string replace_rif_root ( std::string s
                                  , boost::filesystem::path const& root
