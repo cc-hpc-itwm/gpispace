@@ -54,7 +54,6 @@ namespace gspc
       const pid_t _pid;
     };
 
-    // just keep track of local ssh processes
     std::map
     < endpoint_t
     , std::map< std::string
