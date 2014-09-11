@@ -55,6 +55,8 @@
 #include <sdpa/types.hpp>
 #include <sdpa/capability.hpp>
 
+#include <gpi-space/pc/client/api.hpp>
+
 #include <fhg/util/std/pair.hpp>
 #include <fhg/util/thread/set.hpp>
 #include <fhg/util/thread/queue.hpp>
@@ -79,6 +81,7 @@ namespace sdpa {
                    , const std::string url
                    , std::string kvs_host
                    , std::string kvs_port
+                   , boost::optional<boost::filesystem::path> const& vmem_socket
                    , const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t()
                    , const boost::optional<std::string>& guiUrl = boost::none
                    , bool create_wfe = false
@@ -99,6 +102,7 @@ namespace sdpa {
       void canceled(const we::layer::id_type& id);
       void discover (we::layer::id_type discover_id, we::layer::id_type job_id);
       void discovered (we::layer::id_type discover_id, sdpa::discovery_info_t);
+      void token_put (std::string put_token_id);
 
       void addCapability(const capability_t& cpb);
 
@@ -144,6 +148,9 @@ namespace sdpa {
         (const sdpa::events::DiscoverJobStatesReplyEvent*) override;
       virtual void handleDiscoverJobStatesEvent
         (const sdpa::events::DiscoverJobStatesEvent*) override;
+
+      virtual void handle_put_token (const events::put_token*) override;
+      virtual void handle_put_token_ack (const events::put_token_ack*) override;
 
     protected:
       // event communication
@@ -231,6 +238,8 @@ namespace sdpa {
       std::unordered_map<std::pair<job_id_t, job_id_t>, std::string>
         _discover_sources;
 
+      std::unordered_map<std::string, worker_id_t> _put_token_source;
+
     private:
       typedef std::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>
         job_map_t;
@@ -290,6 +299,14 @@ namespace sdpa {
         _event_handler_thread;
       void handle_events();
 
+      struct virtual_memory_api
+      {
+        explicit
+        virtual_memory_api (boost::filesystem::path const& socket);
+      private:
+        gpi::pc::client::api_t _;
+      };
+      std::unique_ptr<virtual_memory_api> _virtual_memory_api;
     protected:
       struct child_proxy
       {
@@ -305,6 +322,12 @@ namespace sdpa {
         void job_finished_ack (job_id_t) const;
 
         void discover_job_states (job_id_t, job_id_t discover_id) const;
+
+        void put_token ( job_id_t
+                       , std::string put_token_id
+                       , std::string place_name
+                       , pnet::type::value::value_type
+                       ) const;
 
       private:
         GenericDaemon* _that;
@@ -337,6 +360,8 @@ namespace sdpa {
           (job_id_t, status::code, std::string error_message) const;
         //! \todo Client only. Move to client_proxy?
         void retrieve_job_results_reply (job_id_t, job_result_t) const;
+
+        void put_token_ack (std::string put_token_id) const;
 
       private:
         GenericDaemon* _that;

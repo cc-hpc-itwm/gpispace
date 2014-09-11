@@ -12,9 +12,10 @@
 #include <we/layer.hpp>
 #include <boost/filesystem/path.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
-#include <fhg/util/read_bool.hpp>
+#include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/daemonize.hpp>
 #include <fhg/util/pidfile_writer.hpp>
+#include <fhg/util/read_bool.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 
@@ -25,15 +26,25 @@
 namespace bfs = boost::filesystem;
 namespace po = boost::program_options;
 
+namespace
+{
+  namespace option_name
+  {
+    constexpr const char* vmem_socket {"vmem-socket"};
+  }
+}
+
 int main (int argc, char **argv)
 {
+  namespace validators = fhg::util::boost::program_options;
+
   std::string agentName;
   std::string agentUrl;
   std::vector<std::string> arrMasterNames;
   std::string arrMasterUrls;
   std::string appGuiUrl;
-  std::string kvsUrl;
   std::string pidfile;
+  boost::optional<bfs::path> vmem_socket;
 
   FHGLOG_SETUP();
 
@@ -45,9 +56,14 @@ int main (int argc, char **argv)
     //("orch_name,m",  po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
     ("master,m", po::value<std::vector<std::string>>(&arrMasterNames)->multitoken(), "Agent's master list")
     ("app_gui_url,a", po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
-    ("kvs_url,k",  po::value<std::string>()->required(), "The kvs daemon's url")
+    ("kvs-host",  po::value<std::string>()->required(), "The kvs daemon's host")
+    ("kvs-port",  po::value<std::string>()->required(), "The kvs daemon's port")
     ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
     ("daemonize", "daemonize after all checks were successful")
+    ( option_name::vmem_socket
+    , boost::program_options::value<validators::nonempty_string>()
+    , "socket file to communicate with the virtual memory manager"
+    )
     ;
 
   po::variables_map vm;
@@ -55,32 +71,19 @@ int main (int argc, char **argv)
 
   fhg::log::Logger::ptr_t logger (fhg::log::Logger::get (agentName));
 
-  if( vm.count("help") )
+  if (vm.count ("help"))
   {
     LLOG (ERROR, logger, "usage: agent [options] ....");
     LLOG (ERROR, logger, desc);
     return 0;
   }
 
-  po::notify(vm);
+  po::notify (vm);
 
-  std::vector< std::string > vec;
-
+  if (vm.count (option_name::vmem_socket))
   {
-    boost::char_separator<char> sep(":");
-    boost::tokenizer<boost::char_separator<char>> tok(vm["kvs_url"].as<std::string>(), sep);
-
-    vec.assign(tok.begin(),tok.end());
-
-    if( vec.size() != 2 )
-    {
-      throw std::runtime_error
-        ("Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
-    }
+    vmem_socket = bfs::path (vm[option_name::vmem_socket].as<validators::nonempty_string>());
   }
-
-  const std::string kvs_host (vec[0]);
-  const std::string kvs_port (vec[1]);
 
   if( arrMasterNames.empty() )
     arrMasterNames.push_back("orchestrator"); // default master name
@@ -120,8 +123,14 @@ int main (int argc, char **argv)
   }
 
   const sdpa::daemon::Agent agent
-    (agentName, agentUrl, kvs_host, kvs_port, listMasterInfo, appGuiUrl);
-
+    ( agentName
+    , agentUrl
+    , vm["kvs-host"].as<std::string>()
+    , vm["kvs-port"].as<std::string>()
+    , vmem_socket
+    , listMasterInfo
+    , appGuiUrl
+    );
 
   fhg::util::thread::event<> stop_requested;
   const std::function<void()> request_stop

@@ -1,7 +1,5 @@
 #!/bin/bash
 
-kvs_port=2439
-
 DEFAULT_LOG_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 0))"
 DEFAULT_GUI_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 1))"
 log_url="$(hostname -s):${DEFAULT_LOG_PORT}"
@@ -37,8 +35,8 @@ usage: $(basename $0) [options]
 
         Please contact your local administrator responsible for GPI in
         case you don't have permissions for that folder.
+  -y: Socket file to communicate with the virtual memory manager
 
-  -k: kvs port (=$kvs_port)
   -l: log url (=${log_url})
   -g: gui url (=${gui_url})
 
@@ -208,7 +206,7 @@ function wait_for_process ()
 
     until [ $retries -eq 0 ]
     do
-        host_port=( $("${sdpa_home}/bin/fhgkvsc" -H "${kvs_host}" -P "${kvs_port}" -g p2p.peer | grep -B 2 "$name" | head -n 2 | awk '{print $3}') )
+        host_port=( $("${sdpa_home}/bin/fhgkvsc" --host "${kvs_host}" --port "${kvs_port}" -g p2p.peer | grep -B 2 "$name" | head -n 2 | awk '{print $3}') )
         if [ ${#host_port[@]} -eq 2 ]
         then
             if wait_for_port_on_host ${retries} "${host_port[0]}" "${host_port[1]}"
@@ -238,6 +236,7 @@ delete_logfiles=true
 app_path=
 number_of_groups=1
 network_retries=15
+time_to_wait_per_vmem_socket_in_seconds=60
 
 # guess memory sizes
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
@@ -255,7 +254,7 @@ if [ ${#@} -eq 0 ] ; then
 fi
 
 shiftcount=0
-while getopts ":hvnf:S:m:s:C:p:MA:dG:k:x:l:g:H:" opt; do
+while getopts ":hvnf:S:m:s:C:p:MA:dG:x:l:g:H:y:" opt; do
     case $opt in
         h)
             usage
@@ -312,14 +311,14 @@ while getopts ":hvnf:S:m:s:C:p:MA:dG:k:x:l:g:H:" opt; do
             number_of_groups=$OPTARG
             shiftcount=$((shiftcount + 2))
             ;;
-        k)
-            kvs_port=$OPTARG
-            assert_not_empty kvs_port
-            shiftcount=$((shiftcount + 2))
-            ;;
         x)
             gpi_exe="$OPTARG"
             assert_not_empty gpi_exe
+            shiftcount=$((shiftcount + 2))
+            ;;
+        y)
+            gpi_socket="${OPTARG}"
+            assert_not_empty gpi_socket
             shiftcount=$((shiftcount + 2))
             ;;
         l)
@@ -460,7 +459,7 @@ else
     opt_verbose_flag=""
 fi
 
-rexec $master ${sdpa} -s "${state_dir}" start kvs ${kvs_port}
+rexec "${master}" ${sdpa} -s "${state_dir}" start kvs
 ec=$?
 if [ $ec -ne 0 ]
 then
@@ -468,10 +467,13 @@ then
     error 3 "could not start kvs"
 fi
 
-if ! wait_for_port_on_host ${network_retries} "${master}" "${kvs_port}"
+kvs_host=$(cat "${state_dir}/kvs.host")
+kvs_port=$(cat "${state_dir}/kvs.port")
+
+if ! wait_for_port_on_host ${network_retries} "${kvs_host}" "${kvs_port}"
 then
     "${sdpa}" -s "${state_dir}" stop
-    error 3 "could not start kvs: failed to appear at ${master}:${kvs_port} after ${network_retries} seconds"
+    error 3 "could not start kvs: failed to appear at ${kvs_host}:${kvs_port} after ${network_retries} seconds"
 fi
 
 rexec $master "${script_start_orchestrator}" \
@@ -479,7 +481,8 @@ rexec $master "${script_start_orchestrator}" \
     -s "$state_dir" \
     -P "$state_dir/orchestrator.pid" \
     -D \
-    -k "${master}:${kvs_port}" \
+    -k "${kvs_host}" \
+    -K "${kvs_port}" \
     -l "${log_host}:${log_port}" \
     -H "${sdpa_home}" \
     -n "orchestrator"
@@ -490,7 +493,7 @@ then
     error 3 "could not start orchestrator"
 fi
 
-wait_for_process ${network_retries} "orchestrator" "${master}" "${kvs_port}"
+wait_for_process ${network_retries} "orchestrator" "${kvs_host}" "${kvs_port}"
 ec=$?
 if [ $ec -ne 0 ]
 then
@@ -519,7 +522,7 @@ if $gpi_enabled ; then
         --daemonize \
         --pidfile "$state_dir/gpi-space.pid" \
         --gpi-mem "$gpi_mem" \
-        --kvs-host "${master}" --kvs-port "$kvs_port" \
+        --kvs-host "${kvs_host}" --kvs-port "${kvs_port}" \
         --log-host "${log_host}" --log-port "${log_port}" \
         --socket "${gpi_socket}"
 
@@ -529,6 +532,29 @@ if $gpi_enabled ; then
         "${sdpa}" -s "${state_dir}" stop
         error 3 "could not start gpi-space"
     fi
+
+    # HACK: GPI does _not_ use that nodefile. We can just hope that
+    # the user specified the same as GPI uses!
+    for host in $(sort -u "${nodefile}")
+    do
+      echo -n "I: Checking for virtual memory socket on '${host}' "
+      ssh "${host}" "for ((i=0; i < $((10 * ${time_to_wait_per_vmem_socket_in_seconds})); ++i)); do \
+                     if [ ! -e ${gpi_socket} ]; then \
+                       echo -n .; \
+                       sleep 0.1; \
+                     else \
+                       exit 0;
+                     fi \
+                   done; \
+                   exit 1"
+      if [ ${?} -ne 0 ]
+      then
+        echo "FAILED"
+        error 3 "could not start virtual memory layer: socket failed to on '${host}' appear after ${time_to_wait_per_vmem_socket_in_seconds} seconds"
+      else
+        echo "OK"
+      fi
+    done
 fi
 
 # for each capability:
@@ -602,7 +628,8 @@ function start_agent
         -n "${name}" \
         -m "${parent}" \
         -s "${state_dir}" \
-        -k "${master}:${kvs_port}" \
+        -k "${kvs_host}" \
+        -K "${kvs_port}" \
         -l "${log_host}:${log_port}" \
         -H "${sdpa_home}" \
         -g "${gui_host}:${gui_port}" &
@@ -671,7 +698,8 @@ function start_workers_for_capability
         argv+=(-c $num_per_node)
         argv+=(-n "$name")
         argv+=(-m "$parent")
-        argv+=(-k "$master:${kvs_port}")
+        argv+=(-k "${kvs_host}")
+        argv+=(-K "${kvs_port}")
         argv+=(-g "${gui_host}:${gui_port}")
         argv+=(-l "${log_host}:${log_port}")
         argv+=($caps_arg)

@@ -292,6 +292,302 @@ namespace process
     };
   }
 
+  namespace
+  {
+    execute_return_type execute ( std::string const& command
+                                , const_buffer const& buf_stdin
+                                , buffer const& buf_stdout
+                                , circular_buffer& buf_stderr
+                                , file_const_buffer_list const& files_input
+                                , file_buffer_list const& files_output
+                                , char *const envp[]
+                                )
+    {
+      execute_return_type ret (files_output.size());
+
+      pipe_fds in;
+      pipe_fds out;
+      pipe_fds err;
+      fhg::syscall::pipe (in.both);
+      fhg::syscall::pipe (out.both);
+      fhg::syscall::pipe (err.both);
+
+      {
+        std::set<std::string> seen_params;
+        for (file_const_buffer const& file : files_input)
+        {
+          if (!seen_params.insert (file.param()).second)
+          {
+            throw std::runtime_error ("redefinition of key: " + file.param());
+          }
+        }
+        for (file_buffer const& file : files_output)
+        {
+          if (!seen_params.insert (file.param()).second)
+          {
+            throw std::runtime_error ("redefinition of key: " + file.param());
+          }
+        }
+      }
+
+      std::unordered_map <std::string, std::string> param_map;
+      boost::thread_group writers;
+      boost::thread_group readers;
+      std::list<std::unique_ptr<tempfifo_t>> tempfifos;
+      std::vector<boost::optional<std::string>> output_file_unopened
+        (files_output.size(), boost::none);
+      std::vector<boost::optional<std::string>> input_file_unopened
+        (files_input.size(), boost::none);
+
+      {
+        std::size_t writer_i (0);
+        for (file_const_buffer const& file_input : files_input)
+        {
+          const std::string filename (make_unique_temporary_filename());
+
+          tempfifos.emplace_back (fhg::util::make_unique<tempfifo_t> (filename));
+
+          writers.add_thread
+            ( new boost::thread
+              ( [filename, file_input, &ret, writer_i, &input_file_unopened]
+              {
+                scoped_SIGPIPE_block const sigpipe_block;
+
+                input_file_unopened[writer_i] = filename;
+
+                scoped_file const file (filename.c_str(), O_WRONLY);
+
+                input_file_unopened[writer_i] = boost::none;
+
+                //! \todo Maybe somehow also consume_everything from fifos.
+                std::size_t dummy_written;
+                thread::writer (file._fd, file_input.to_buffer(), dummy_written);
+              }
+              )
+            );
+
+          param_map.emplace (file_input.param(), filename);
+          ++writer_i;
+        }
+      }
+
+      {
+        std::size_t reader_i (0);
+        for (file_buffer const& file_output : files_output)
+        {
+          const std::string filename (make_unique_temporary_filename());
+
+          tempfifos.emplace_back (fhg::util::make_unique<tempfifo_t> (filename));
+
+          readers.add_thread
+            ( new boost::thread
+              ( [filename, file_output, &ret, reader_i, &output_file_unopened]
+              {
+                output_file_unopened[reader_i] = filename;
+
+                scoped_file const file
+                  (filename.c_str(), O_RDONLY);
+
+                output_file_unopened[reader_i] = boost::none;
+
+                thread::reader ( file._fd
+                               , file_output.to_buffer()
+                               , ret.bytes_read_files_output[reader_i]
+                               );
+              }
+              )
+            );
+
+          param_map.emplace (file_output.param(), filename);
+          ++reader_i;
+        }
+      }
+
+
+      pipe_fds synchronization_fd_parent_child;
+      pipe_fds synchronization_fd_child_parent;
+      fhg::syscall::pipe (synchronization_fd_parent_child.both);
+      fhg::syscall::pipe (synchronization_fd_child_parent.both);
+
+      const pid_t pid (fhg::syscall::fork());
+
+      if (pid == pid_t (0))
+      {
+        // child: should not produce any output on stdout/stderr
+        prepare_child_pipes ( in
+                            , out
+                            , err
+                            , synchronization_fd_parent_child
+                            , synchronization_fd_child_parent
+                            );
+
+        sync::ping (synchronization_fd_child_parent.write);
+
+        // wait for parent setting up threads
+        sync::wait_for_ping (synchronization_fd_parent_child.read);
+
+        fhg::syscall::close (synchronization_fd_parent_child.read);
+        fhg::syscall::close (synchronization_fd_child_parent.write);
+
+
+        std::vector<char> argv_buffer;
+        std::vector<char*> argv;
+
+        {
+          std::vector<std::size_t> argv_offsets;
+
+          for ( std::string raw_param
+              : fhg::util::split<std::string, std::string> (command, ' ')
+              )
+          {
+            const decltype (param_map)::const_iterator repl
+              (param_map.find (raw_param));
+            const std::string param
+              ((repl != param_map.end()) ? std::string (repl->second) : raw_param);
+
+            const std::size_t pos (argv_buffer.size());
+            argv_buffer.resize (argv_buffer.size() + param.size() + 1);
+            std::copy (param.begin(), param.end(), argv_buffer.data() + pos);
+            argv_buffer[argv_buffer.size() - 1] = '\0';
+            argv_offsets.push_back (pos);
+          }
+          for (std::size_t offset : argv_offsets)
+          {
+            argv.push_back (argv_buffer.data() + offset);
+          }
+          argv.push_back (nullptr);
+        }
+
+        try
+        {
+          fhg::syscall::execve (argv[0], argv.data(), envp);
+        }
+        catch (boost::system::system_error const& err)
+        {
+          fhg::syscall::close (STDIN_FILENO);
+          fhg::syscall::close (STDOUT_FILENO);
+          fhg::syscall::close (STDERR_FILENO);
+
+          _exit ( err.code() == boost::system::errc::permission_denied ? 126
+                : err.code() == boost::system::errc::no_such_file_or_directory ? 127
+                : 254
+                );
+        }
+      }
+      else
+      {
+        // parent
+        prepare_parent_pipes ( out
+                             , err
+                             , synchronization_fd_parent_child
+                             , synchronization_fd_child_parent
+                             );
+
+        // wait for child setting up pipes
+        sync::wait_for_ping (synchronization_fd_child_parent.read);
+
+        //! \note threads get ownership of respective file descriptors
+        struct close_on_scope_exit : boost::noncopyable
+        {
+          close_on_scope_exit (int fd)
+            : _fd (fd)
+          {}
+          ~close_on_scope_exit()
+          {
+            fhg::syscall::close (_fd);
+          }
+          int _fd;
+        };
+
+        boost::thread thread_buf_stdin
+          ( [&buf_stdin, &in, &ret]
+          {
+            scoped_SIGPIPE_block const sigpipe_block;
+
+            close_on_scope_exit const _ (in.write);
+            thread::writer (in.write, buf_stdin, ret.bytes_written_stdin);
+          }
+          );
+
+        boost::thread thread_buf_stdout
+          ( [&buf_stdout, &out, &ret]
+          {
+            close_on_scope_exit const _ (out.read);
+            thread::reader (out.read, buf_stdout, ret.bytes_read_stdout);
+          }
+          );
+
+        boost::thread thread_buf_stderr
+          ( [&buf_stderr, &err, &ret]
+          {
+            close_on_scope_exit const _ (err.read);
+            thread::circular_reader (err.read, buf_stderr, ret.bytes_read_stderr);
+          }
+          );
+
+        sync::ping (synchronization_fd_parent_child.write);
+
+        fhg::syscall::close (synchronization_fd_parent_child.write);
+        fhg::syscall::close (synchronization_fd_child_parent.read);
+
+
+        int status (0);
+
+        fhg::syscall::waitpid (pid, &status, 0);
+
+        thread_buf_stdin.interrupt();
+
+        //! \note first consume, then subtract: bytes_written_stdin is
+        //! also written to in the writer thread. the thread will stop
+        //! modifying it as soon as comsume_everything returned. thus, a
+        //! sequence point is required.
+        {
+          const std::size_t consumed (consume_everything (in.read));
+          ret.bytes_written_stdin -= consumed;
+        }
+        fhg::syscall::close (in.read);
+
+        thread_buf_stdin.join();
+        thread_buf_stdout.join();
+        thread_buf_stderr.join();
+
+        for (boost::optional<std::string> const& e : input_file_unopened)
+        {
+          if (e)
+          {
+            scoped_file const file (e->c_str(), O_RDONLY);
+          }
+        }
+        for (boost::optional<std::string> const& e : output_file_unopened)
+        {
+          if (e)
+          {
+            scoped_file const file (e->c_str(), O_WRONLY);
+          }
+        }
+
+        writers.join_all();
+        readers.join_all();
+
+        if (WIFEXITED (status))
+        {
+          ret.exit_code = WEXITSTATUS (status);
+        }
+        else if (WIFSIGNALED (status))
+        {
+          ret.exit_code = 128 + WTERMSIG (status);
+        }
+        else
+        {
+          throw std::runtime_error
+            ("strange child status: " + std::to_string (status));
+        }
+      }
+
+      return ret;
+    }
+  }
+
   execute_return_type execute ( std::string const& command
                               , const_buffer const& buf_stdin
                               , buffer const& buf_stdout
@@ -300,287 +596,55 @@ namespace process
                               , file_buffer_list const& files_output
                               )
   {
-    execute_return_type ret (files_output.size());
+    return execute ( command
+                   , buf_stdin, buf_stdout, buf_stderr
+                   , files_input, files_output
+                   , environ
+                   );
+  }
 
-    pipe_fds in;
-    pipe_fds out;
-    pipe_fds err;
-    fhg::syscall::pipe (in.both);
-    fhg::syscall::pipe (out.both);
-    fhg::syscall::pipe (err.both);
+  execute_return_type execute ( std::string const& command
+                              , const_buffer const& buf_stdin
+                              , buffer const& buf_stdout
+                              , circular_buffer& buf_stderr
+                              , file_const_buffer_list const& files_input
+                              , file_buffer_list const& files_output
+                              , std::map<std::string, std::string> const& environment
+                              )
+  {
+    std::vector<char> envp_buffer
+      ( std::accumulate
+        ( environment.begin()
+        , environment.end()
+        , std::size_t (0)
+        , [] (std::size_t s, std::pair<std::string, std::string> const& entry)
+        {
+          return s + entry.first.size() + 1 + entry.second.size() + 1;
+        }
+        )
+      );
 
+    std::vector<char*> envp;
+    std::size_t pos (0);
+
+    for (std::pair<std::string, std::string> const& entry : environment)
     {
-      std::set<std::string> seen_params;
-      for (file_const_buffer const& file : files_input)
-      {
-        if (!seen_params.insert (file.param()).second)
-        {
-          throw std::runtime_error ("redefinition of key: " + file.param());
-        }
-      }
-      for (file_buffer const& file : files_output)
-      {
-        if (!seen_params.insert (file.param()).second)
-        {
-          throw std::runtime_error ("redefinition of key: " + file.param());
-        }
-      }
+      envp.push_back (envp_buffer.data() + pos);
+      std::copy (entry.first.begin(), entry.first.end(), envp_buffer.data() + pos);
+      pos += entry.first.size();
+      *(envp_buffer.data() + pos) = '=';
+      pos += 1;
+      std::copy (entry.second.begin(), entry.second.end(), envp_buffer.data() + pos);
+      pos += entry.second.size();
+      *(envp_buffer.data() + pos) = '\0';
+      pos += 1;
     }
+    envp.push_back (nullptr);
 
-    std::unordered_map <std::string, std::string> param_map;
-    boost::thread_group writers;
-    boost::thread_group readers;
-    std::list<std::unique_ptr<tempfifo_t>> tempfifos;
-    std::vector<boost::optional<std::string>> output_file_unopened
-      (files_output.size(), boost::none);
-    std::vector<boost::optional<std::string>> input_file_unopened
-      (files_input.size(), boost::none);
-
-    {
-      std::size_t writer_i (0);
-      for (file_const_buffer const& file_input : files_input)
-      {
-        const std::string filename (make_unique_temporary_filename());
-
-        tempfifos.emplace_back (fhg::util::make_unique<tempfifo_t> (filename));
-
-        writers.add_thread
-          ( new boost::thread
-            ( [filename, file_input, &ret, writer_i, &input_file_unopened]
-            {
-              scoped_SIGPIPE_block const sigpipe_block;
-
-              input_file_unopened[writer_i] = filename;
-
-              scoped_file const file (filename.c_str(), O_WRONLY);
-
-              input_file_unopened[writer_i] = boost::none;
-
-              //! \todo Maybe somehow also consume_everything from fifos.
-              std::size_t dummy_written;
-              thread::writer (file._fd, file_input.to_buffer(), dummy_written);
-            }
-            )
-          );
-
-        param_map.emplace (file_input.param(), filename);
-        ++writer_i;
-      }
-    }
-
-    {
-      std::size_t reader_i (0);
-      for (file_buffer const& file_output : files_output)
-      {
-        const std::string filename (make_unique_temporary_filename());
-
-        tempfifos.emplace_back (fhg::util::make_unique<tempfifo_t> (filename));
-
-        readers.add_thread
-          ( new boost::thread
-            ( [filename, file_output, &ret, reader_i, &output_file_unopened]
-            {
-              output_file_unopened[reader_i] = filename;
-
-              scoped_file const file
-                (filename.c_str(), O_RDONLY);
-
-              output_file_unopened[reader_i] = boost::none;
-
-              thread::reader ( file._fd
-                             , file_output.to_buffer()
-                             , ret.bytes_read_files_output[reader_i]
-                             );
-            }
-            )
-          );
-
-        param_map.emplace (file_output.param(), filename);
-        ++reader_i;
-      }
-    }
-
-
-    pipe_fds synchronization_fd_parent_child;
-    pipe_fds synchronization_fd_child_parent;
-    fhg::syscall::pipe (synchronization_fd_parent_child.both);
-    fhg::syscall::pipe (synchronization_fd_child_parent.both);
-
-    const pid_t pid (fhg::syscall::fork());
-
-    if (pid == pid_t (0))
-    {
-      // child: should not produce any output on stdout/stderr
-      prepare_child_pipes ( in
-                          , out
-                          , err
-                          , synchronization_fd_parent_child
-                          , synchronization_fd_child_parent
-                          );
-
-      sync::ping (synchronization_fd_child_parent.write);
-
-      // wait for parent setting up threads
-      sync::wait_for_ping (synchronization_fd_parent_child.read);
-
-      fhg::syscall::close (synchronization_fd_parent_child.read);
-      fhg::syscall::close (synchronization_fd_child_parent.write);
-
-
-      std::vector<char> argv_buffer;
-      std::vector<char*> argv;
-
-      {
-        std::vector<std::size_t> argv_offsets;
-
-        for ( std::string raw_param
-            : fhg::util::split<std::string, std::string> (command, ' ')
-            )
-        {
-          const decltype (param_map)::const_iterator repl
-            (param_map.find (raw_param));
-          const std::string param
-            ((repl != param_map.end()) ? std::string (repl->second) : raw_param);
-
-          std::size_t pos (argv_buffer.size());
-          argv_buffer.resize (argv_buffer.size() + param.size() + 1);
-          std::copy (param.begin(), param.end(), argv_buffer.data() + pos);
-          argv_buffer[argv_buffer.size() - 1] = '\0';
-          argv_offsets.push_back (pos);
-        }
-        for (std::size_t offset : argv_offsets)
-        {
-          argv.push_back (argv_buffer.data() + offset);
-        }
-        argv.push_back (nullptr);
-      }
-
-      try
-      {
-        fhg::syscall::execvp (argv[0], argv.data());
-      }
-      catch (boost::system::system_error const& err)
-      {
-        fhg::syscall::close (STDIN_FILENO);
-        fhg::syscall::close (STDOUT_FILENO);
-        fhg::syscall::close (STDERR_FILENO);
-
-        _exit ( err.code() == boost::system::errc::permission_denied ? 126
-              : err.code() == boost::system::errc::no_such_file_or_directory ? 127
-              : 254
-              );
-      }
-    }
-    else
-    {
-      // parent
-      prepare_parent_pipes ( out
-                           , err
-                           , synchronization_fd_parent_child
-                           , synchronization_fd_child_parent
-                           );
-
-      // wait for child setting up pipes
-      sync::wait_for_ping (synchronization_fd_child_parent.read);
-
-      //! \note threads get ownership of respective file descriptors
-      struct close_on_scope_exit : boost::noncopyable
-      {
-        close_on_scope_exit (int fd)
-          : _fd (fd)
-        {}
-        ~close_on_scope_exit()
-        {
-          fhg::syscall::close (_fd);
-        }
-        int _fd;
-      };
-
-      boost::thread thread_buf_stdin
-        ( [&buf_stdin, &in, &ret]
-        {
-          scoped_SIGPIPE_block const sigpipe_block;
-
-          close_on_scope_exit const _ (in.write);
-          thread::writer (in.write, buf_stdin, ret.bytes_written_stdin);
-        }
-        );
-
-      boost::thread thread_buf_stdout
-        ( [&buf_stdout, &out, &ret]
-        {
-          close_on_scope_exit const _ (out.read);
-          thread::reader (out.read, buf_stdout, ret.bytes_read_stdout);
-        }
-        );
-
-      boost::thread thread_buf_stderr
-        ( [&buf_stderr, &err, &ret]
-        {
-          close_on_scope_exit const _ (err.read);
-          thread::circular_reader (err.read, buf_stderr, ret.bytes_read_stderr);
-        }
-        );
-
-      sync::ping (synchronization_fd_parent_child.write);
-
-      fhg::syscall::close (synchronization_fd_parent_child.write);
-      fhg::syscall::close (synchronization_fd_child_parent.read);
-
-
-      int status (0);
-
-      fhg::syscall::waitpid (pid, &status, 0);
-
-      thread_buf_stdin.interrupt();
-
-      //! \note first consume, then subtract: bytes_written_stdin is
-      //! also written to in the writer thread. the thread will stop
-      //! modifying it as soon as comsume_everything returned. thus, a
-      //! sequence point is required.
-      {
-        const std::size_t consumed (consume_everything (in.read));
-        ret.bytes_written_stdin -= consumed;
-      }
-      fhg::syscall::close (in.read);
-
-      thread_buf_stdin.join();
-      thread_buf_stdout.join();
-      thread_buf_stderr.join();
-
-      for (boost::optional<std::string> const& e : input_file_unopened)
-      {
-        if (e)
-        {
-          scoped_file const file (e->c_str(), O_RDONLY);
-        }
-      }
-      for (boost::optional<std::string> const& e : output_file_unopened)
-      {
-        if (e)
-        {
-          scoped_file const file (e->c_str(), O_WRONLY);
-        }
-      }
-
-      writers.join_all();
-      readers.join_all();
-
-      if (WIFEXITED (status))
-      {
-        ret.exit_code = WEXITSTATUS (status);
-      }
-      else if (WIFSIGNALED (status))
-      {
-        ret.exit_code = 128 + WTERMSIG (status);
-      }
-      else
-      {
-        throw std::runtime_error
-          ("strange child status: " + std::to_string (status));
-      }
-    }
-
-    return ret;
+    return execute ( command
+                   , buf_stdin, buf_stdout, buf_stderr
+                   , files_input, files_output
+                   , envp.data ()
+                   );
   }
 }

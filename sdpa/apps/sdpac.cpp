@@ -16,6 +16,8 @@
 #include <sdpa/job_states.hpp>
 #include <sdpa/client.hpp>
 
+#include <we/type/value/read.hpp>
+
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -157,11 +159,6 @@ namespace
       ( "orchestrator"
       , po::value<std::string>()->default_value ("orchestrator")
       , "name of the orchestrator"
-      )
-      ( "config,C"
-      , po::value<std::string>()->default_value
-      (std::getenv ("HOME") + std::string ("/.sdpa/configs/sdpac.rc"))
-      , "path to the configuration file"
       );
   }
 
@@ -178,30 +175,6 @@ namespace
              .positional(positional_opts_)
              .run()
              , opts_);
-  }
-
-  void NewConfig::parse_config_file()
-  {
-    if (is_set("config"))
-    {
-      const std::string &cfg_file = get("config");
-      if (is_set("verbose"))
-      {
-        std::cerr << "I: using config file: " << cfg_file << std::endl;
-      }
-      std::ifstream stream(cfg_file.c_str());
-      if (! stream)
-      {
-        throw std::runtime_error ("could not read config file: " + cfg_file);
-      }
-      else
-      {
-        po::options_description desc;
-        desc.add(logging_opts_)
-          .add(specific_opts_);
-        po::store(po::parse_config_file(stream, desc), opts_);
-      }
-    }
   }
 
   struct environment_variable_to_option
@@ -271,17 +244,16 @@ namespace
 int main (int argc, char **argv) {
   const std::string name(argv[0]);
 
-  std::string kvs_url (fhg::util::getenv("KVS_URL").get_value_or ("localhost:2439"));
-
   NewConfig cfg;
   cfg.tool_opts().add_options()
     ("output,o", po::value<std::string>(), "path to output file")
     ("wait,w", "wait until job is finished")
     ("polling", po::value<std::string>()->default_value ("true"), "use polling when waiting for job completion")
     ("force,f", "force the operation")
-    ("kvs,k", po::value<std::string>(&kvs_url)->default_value(kvs_url), "The kvs daemon's url")
+    ("kvs-host", po::value<std::string>()->required(), "The kvs daemon's host")
+    ("kvs-port", po::value<std::string>()->required(), "The kvs daemon's port")
     ("revision", "Dump the revision identifier")
-    ("command", po::value<std::string>(),
+    ("command", po::value<std::string>()->required(),
      "The command that shall be performed. Possible values are:\n\n"
      "submit: \tsubmits a job to an orchestrator, arg must point to the job-description\n"
      "cancel: \tcancels a running job, arg must specify the job-id\n"
@@ -290,6 +262,7 @@ int main (int argc, char **argv) {
      "delete: \tdelete a finished job, arg must specify the job-id\n"
      "wait: \twait until the job reaches a final state\n"
      "discover: \tdiscover the states of the known jobs\n"
+     "put_token: \tput token onto place in job\n"
      )
     ;
   cfg.tool_hidden_opts().add_options()
@@ -301,31 +274,33 @@ int main (int argc, char **argv) {
   cfg.parse_command_line(argc, argv);
   cfg.parse_environment();
 
-  cfg.notify();
-
-  try
-  {
-    cfg.parse_config_file();
-  }
-  catch (std::exception const &)
-  {
-    // std::cerr << "W: could not parse config file: "
-    //           << cfg.get("config")
-    //           << std::endl;
-  }
-  cfg.notify();
-
   if (cfg.is_set("help"))
   {
     cfg.printHelp(std::cout);
     return 0;
   }
-
   if (cfg.is_set("help-module"))
   {
     cfg.printModuleHelp(std::cout);
     return 0;
   }
+  if (cfg.is_set("version"))
+  {
+    std::cerr << fhg::project_info ("GPI-Space Client");
+    return 0;
+  }
+  if (cfg.is_set("dumpversion"))
+  {
+    std::cout << fhg::project_version() << std::endl;
+    return 0;
+  }
+  if (cfg.is_set("revision"))
+  {
+    std::cout << fhg::project_revision() << std::endl;
+    return 0;
+  }
+
+  cfg.notify();
 
   if (cfg.is_set("logging.file"))
   {
@@ -372,48 +347,7 @@ int main (int argc, char **argv) {
 
   try
   {
-    if (cfg.is_set("version"))
-    {
-      std::cerr << fhg::project_info ("GPI-Space Client");
-      return 0;
-    }
-    if (cfg.is_set("dumpversion"))
-    {
-      std::cout << fhg::project_version() << std::endl;
-      return 0;
-    }
-    if (cfg.is_set("revision"))
-    {
-      std::cout << fhg::project_revision() << std::endl;
-      return 0;
-    }
-
     fhg::log::Logger::ptr_t logger (fhg::log::Logger::get ("sdpac"));
-
-    std::vector< std::string > vec;
-
-    {
-      boost::char_separator<char> sep(":");
-      boost::tokenizer<boost::char_separator<char>> tok(kvs_url, sep);
-
-      vec.assign(tok.begin(),tok.end());
-
-      if( vec.size() != 2 )
-      {
-        throw std::runtime_error
-          ("Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
-      }
-    }
-
-    const std::string kvs_host (vec[0]);
-    const std::string kvs_port (vec[1]);
-
-    if (! cfg.is_set("command"))
-    {
-        std::cerr << "E: a command is required!" << std::endl;
-        std::cerr << "E: type --help to get a list of available options!" << std::endl;
-        return ERR_USAGE;
-    }
 
     const std::string &command(cfg.get("command"));
 
@@ -430,7 +364,7 @@ int main (int argc, char **argv) {
     sdpa::client::Client api ( cfg.is_set("orchestrator")
                              ? cfg.get<std::string>("orchestrator")
                              : throw std::runtime_error ("no orchestrator specified!")
-                             , kvs_host, kvs_port
+                             , cfg.get ("kvs-host"), cfg.get ("kvs-port")
                              );
 
     if (command == "submit")
@@ -546,6 +480,20 @@ int main (int argc, char **argv) {
       const std::string job_id (args.front());
       sdpa::discovery_info_t discovery_result (api.discoverJobStates(discover_id, job_id));
       std::cout<<"discovery result: "<<discovery_result<<std::endl;
+    }
+    else if (command == "put_token")
+    {
+      if (args.size() == 3)
+      {
+        throw std::invalid_argument
+          ("put_token requires <job_id> <place_name> <value>");
+      }
+
+      sdpa::job_id_t const job_id (args.at (0));
+      std::string const place_name (args.at (1));
+      std::string const value (args.at (2));
+
+      api.put_token (job_id, place_name, pnet::type::value::read (value));
     }
     else
     {

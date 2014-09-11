@@ -3,6 +3,9 @@
 # usage: sdpa {start|stop|status|submit file}
 #
 
+kvs_host=
+kvs_port=
+
 function log ()
 {
     echo "$@" >&2
@@ -234,7 +237,7 @@ function stop_proc ()
         echo -n "    sending SIGTERM to $name ($pid)..." >&2
         for (( i=0; i<3; ++i )); do
             if is_proc_alive "$name" "$pid" ; then
-                echo -n "."
+                echo -n "." >&2
                 kill -TERM "$pid" >/dev/null 2>&1
                 sleep 1
             else
@@ -296,24 +299,25 @@ function start_kvs ()
         log "E: kvs must be started on the master node"
         exit 1
     fi
-    kvs_port="${1}" ; shift
-    if [ -z "$kvs_port" ] ; then
-        log "E: kvs port is missing!"
-        return 1
-    fi
-
-    if ! start_proc "fhgkvsd" "$SDPA_HOME/bin/fhgkvsd" -s "" "-C" "-b" "0" "-p" "${kvs_port}" "--pidfile" "$state_dir/fhgkvsd.pid" "--daemonize"; then
+    if ! start_proc "fhgkvsd" "$SDPA_HOME/bin/fhgkvsd" --bind "0" --port '*' "--pidfile" "$state_dir/fhgkvsd.pid" "--daemonize" > "${state_dir}/kvs.port"; then
         log "E: could not start kvs, giving up!"
         return 1
-    else
-        sleep 1
-        return 0
     fi
+    local kvs_host=$(hostname -f)
+    local kvs_port=$(cat "${state_dir}/log/fhgkvsd.log")
+    echo -n "${kvs_host}" > "${state_dir}/kvs.host"
+    echo -n "${kvs_port}" > "${state_dir}/kvs.port"
+    log "I: kvs started at ${kvs_host}:${kvs_port}"
+    return 0
 }
 
 function stop_kvs ()
 {
     echo "fhgkvsd"
+
+    rm -f "${state_dir}/kvs.host"
+    rm -f "${state_dir}/kvs.port"
+
     if ! stop_proc "fhgkvsd" "fhgkvsd" ; then
         echo "E: could not stop kvs!" >&2
         return 1
@@ -632,7 +636,7 @@ function status ()
                 rc=$(( rc + 1 ))
             fi
         else
-            sdpac status $p
+            sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} status $p
         fi
     done
     return $rc
@@ -654,15 +658,15 @@ function submit ()
     fi
 
     log "I: submitting file: $net"
-    jobid=$( sdpac submit "$net" 2>&1 )
+    jobid=$( sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} submit "$net" 2>&1 )
     if [ $? -ne 0 ] ; then
         log "E: submission failed: $jobid"
         return 4
     else
         log "  + job ($jobid)"
         echo "$jobid" > "$state_dir/current_job"
-        sdpac wait "$jobid"
-        s=$(sdpac status "${jobid}")
+        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} wait "$jobid"
+        s=$(sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} status "${jobid}")
         log "    $jobid -> $s"
         s=$(echo "$s" | tr 'A-Z' 'a-z')
         case "$s" in
@@ -679,8 +683,8 @@ function submit ()
                 log "W: unknown state: $s"
                 ;;
         esac
-        sdpac -o "$output" --force results "$jobid"
-        sdpac delete "${jobid}"
+        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} -o "$output" --force results "$jobid"
+        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} delete "${jobid}"
         if [ $? -eq 0 ] ; then
             echo "  - job ($jobid)"
         fi
@@ -755,6 +759,15 @@ if [ "$1" = "-s" ] ; then
         exit 1
     fi
     export SDPA_STATE_DIR="$state_dir"
+fi
+
+if [ -f "${state_dir}/kvs.host" ]
+then
+  kvs_host=$(cat "${state_dir}/kvs.host")
+fi
+if [ -f "${state_dir}/kvs.port" ]
+then
+  kvs_port=$(cat "${state_dir}/kvs.port")
 fi
 
 if [ "$1" = "init" ] ; then
@@ -835,7 +848,7 @@ case "$1" in
         ;;
     selftest)
         shift
-        "${SDPA_SCRIPT_DIR}/sdpa-selftest" -H "${SDPA_HOME}" "${@}"
+        "${SDPA_SCRIPT_DIR}/sdpa-selftest" -s "${state_dir}" -H "${SDPA_HOME}" "${@}"
         ;;
     '')
         help

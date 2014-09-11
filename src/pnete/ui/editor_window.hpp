@@ -6,12 +6,17 @@
 #include <pnete/ui/dock_widget.fwd.hpp>
 
 #include <pnete/data/handle/function.fwd.hpp>
+#include <pnete/data/manager.fwd.hpp>
 #include <pnete/ui/document_view.fwd.hpp>
+
+#include <fhg/util/dl.hpp>
 
 #include <QMainWindow>
 #include <QObject>
 #include <QStack>
 #include <QThread>
+
+#include <list>
 
 class QCloseEvent;
 class QMenuBar;
@@ -62,7 +67,10 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        explicit editor_window (QWidget *parent = nullptr);
+        editor_window ( data::manager&
+                      , std::list<util::scoped_dlhandle> const& plugins
+                      , QWidget *parent = nullptr
+                      );
 
         void add_transition_library_path (const QString&, bool trusted = false);
 
@@ -99,6 +107,8 @@ namespace fhg
         virtual void closeEvent (QCloseEvent*) override;
 
       private:
+        data::manager& _data_manager;
+
         transition_library_view* _transition_library;
         dock_widget* _transition_library_dock;
         StructureView* _structure_view;
@@ -116,7 +126,8 @@ namespace fhg
 
         QStack<document_view*> _accessed_widgets;
 
-        void setup_menu_and_toolbar();
+        void setup_menu_and_toolbar
+          (std::list<util::scoped_dlhandle> const& plugins);
         void setup_edit_actions (QMenuBar* menu_bar);
         void setup_file_actions (QMenuBar* menu_bar);
         void setup_window_actions (QMenuBar* menu_bar);

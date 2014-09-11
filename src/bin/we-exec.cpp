@@ -115,7 +115,7 @@ try
   {
     kvs_server (std::string const& host)
       : _io_service_pool (1)
-      , _kvs_daemon (boost::none)
+      , _kvs_daemon()
       , _tcp_server
         (_io_service_pool.get_io_service(), _kvs_daemon, host, "0", true)
       , _io_thread (&fhg::com::io_service_pool::run, &_io_service_pool)
@@ -149,6 +149,9 @@ try
     ( agent_name
     , host
     , host, kvs_port
+    , vm.count ("vmem-socket")
+      ? boost::make_optional (boost::filesystem::path (vm["vmem-socket"].as<std::string>()))
+      : boost::none
     , {sdpa::MasterInfo (orchestrator_name)}
     , boost::none
     );

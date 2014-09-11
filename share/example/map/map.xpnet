@@ -15,6 +15,7 @@
   <in name="num_block" type="unsigned long" place="num_block"/>
   <in name="size_block" type="unsigned long" place="size_block"/>
   <in name="user_data" type="bytearray" place="user_data"/>
+  <in name="implementation" type="string" place="implementation"/>
 
   <out name="done" type="control" place="done"/>
 
@@ -35,6 +36,7 @@
     <place name="size_block" type="unsigned long"/>
     <place name="done" type="control"/>
     <place name="user_data" type="bytearray"/>
+    <place name="implementation" type="string"/>
 
     <struct name="slot_generator_state">
       <field name="range" type="global_memory_range"/>
@@ -247,12 +249,13 @@
       <defun>
         <inout name="block_with_slot" type="block_with_slot"/>
         <in name="user_data" type="bytearray"/>
+        <in name="implementation" type="string"/>
         <memory-buffer name="data">
           <size>
             ${block_with_slot.slot.size}
           </size>
         </memory-buffer>
-        <memory-put>
+        <memory-put not-modified-in-module-call="true">
           <global>
             stack_push (List(), ${block_with_slot.slot})
           </global>
@@ -264,24 +267,27 @@
           </local>
         </memory-put>
         <module name="map" function="produce ( user_data
+                                             , implementation
                                              , block_with_slot
                                              , data
                                              )"
         >
           <cinclude href="interface.hpp"/>
-          <ld flag="-lmap-impl"/>
-          <ld flag="-Wl,-rpath='$$ORIGIN'"/>
+          <cinclude href="fhg/util/dl.hpp"/>
           <code><![CDATA[
-            ::map::produce ( user_data
-                           , std::make_pair (data, block_with_slot.slot.size)
-                           , block_with_slot.block
-                           );
+            fhg::util::scoped_dlhandle (implementation)
+              .sym<decltype (map_produce)> ("map_produce")
+                ( user_data
+                , std::make_pair (data, block_with_slot.slot.size)
+                , block_with_slot.block
+                );
           ]]></code>
         </module>
       </defun>
       <connect-in port="block_with_slot" place="empty"/>
       <connect-out port="block_with_slot" place="produced"/>
       <connect-read port="user_data" place="user_data"/>
+      <connect-read port="implementation" place="implementation"/>
     </transition>
 
     <place name="produced" type="block_with_slot"/>
@@ -314,6 +320,7 @@
       <defun>
         <inout name="package" type="work_package"/>
         <in name="user_data" type="bytearray"/>
+        <in name="implementation" type="string"/>
         <memory-buffer name="input" read-only="true">
           <size>
             ${package.slot_input.size}
@@ -335,7 +342,7 @@
             stack_push (List(), ${range})
           </local>
         </memory-get>
-        <memory-put>
+        <memory-put not-modified-in-module-call="true">
           <global>
             stack_push (List(), ${package.slot_output})
           </global>
@@ -347,24 +354,28 @@
           </local>
         </memory-put>
         <module name="map" function="process ( user_data
+                                             , implementation
                                              , package
                                              , input
                                              , output
                                              )"
         >
           <cinclude href="interface.hpp"/>
-          <ld flag="-lmap-impl"/>
+          <cinclude href="fhg/util/dl.hpp"/>
           <code><![CDATA[
-          ::map::process ( user_data
-                         , std::make_pair (input, package.slot_input.size)
-                         , std::make_pair (output, package.slot_output.size)
-                         );
+            fhg::util::scoped_dlhandle (implementation)
+              .sym<decltype (map_process)> ("map_process")
+                ( user_data
+                , std::make_pair (input, package.slot_input.size)
+                , std::make_pair (output, package.slot_output.size)
+                );
           ]]></code>
         </module>
       </defun>
       <connect-in port="package" place="package_produced"/>
       <connect-out port="package" place="package_processed"/>
       <connect-read port="user_data" place="user_data"/>
+      <connect-read port="implementation" place="implementation"/>
     </transition>
 
     <place name="package_processed" type="work_package"/>
@@ -391,6 +402,7 @@
       <defun>
         <inout name="block_with_slot" type="block_with_slot"/>
         <in name="user_data" type="bytearray"/>
+        <in name="implementation" type="string"/>
         <memory-buffer name="data" read-only="true">
           <size>
             ${block_with_slot.slot.size}
@@ -408,23 +420,27 @@
           </local>
         </memory-get>
         <module name="map" function="consume ( user_data
+                                             , implementation
                                              , block_with_slot
                                              , data
                                              )"
         >
           <cinclude href="interface.hpp"/>
-          <ld flag="-lmap-impl"/>
+          <cinclude href="fhg/util/dl.hpp"/>
           <code><![CDATA[
-          ::map::consume ( user_data
-                         , std::make_pair (data, block_with_slot.slot.size)
-                         , block_with_slot.block
-                         );
+            fhg::util::scoped_dlhandle (implementation)
+              .sym<decltype (map_consume)> ("map_consume")
+                ( user_data
+                , std::make_pair (data, block_with_slot.slot.size)
+                , block_with_slot.block
+                );
           ]]></code>
         </module>
       </defun>
       <connect-in port="block_with_slot" place="processed"/>
       <connect-out port="block_with_slot" place="consumed"/>
       <connect-read port="user_data" place="user_data"/>
+      <connect-read port="implementation" place="implementation"/>
     </transition>
 
     <place name="consumed" type="block_with_slot"/>
@@ -574,6 +590,7 @@
         <in name="removed_input_slots" type="control"/>
         <in name="removed_output_slots" type="control"/>
         <in name="user_data" type="bytearray"/>
+        <in name="implementation" type="string"/>
         <out name="done" type="control"/>
         <expression>
           ${done} := []
@@ -582,6 +599,7 @@
       <connect-in port="removed_input_slots" place="removed_input_slots"/>
       <connect-in port="removed_output_slots" place="removed_output_slots"/>
       <connect-in port="user_data" place="user_data"/>
+      <connect-in port="implementation" place="implementation"/>
       <connect-out port="done" place="done"/>
     </transition>
 

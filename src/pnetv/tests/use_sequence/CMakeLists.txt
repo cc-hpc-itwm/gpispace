@@ -1,3 +1,18 @@
 # mirko.rahn@itwm.fraunhofer.de
 
-fhg_add_application_test (pnetv_use_sequence SCRIPT test)
+include_directories (${UTIL_INCLUDE_DIR})
+include_directories (${CMAKE_SOURCE_DIR})
+
+fhg_add_test (test.cpp
+  PROJECT pnetv_use_sequence
+  BOOST_UNIT_TEST
+  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
+       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+  LINK_LIBRARIES gspc
+                 test-utilities
+                 ${UTIL_LIBRARIES}
+                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                 ${Boost_FILESYSTEM_LIBRARY}
+  RESOURCE_LOCK starts_drts_environment
+  REQUIRES_INSTALLATION
+)

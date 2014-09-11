@@ -3,6 +3,7 @@ include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable (interleave interleave.c)
 add_executable (deinterleave deinterleave.c)
+add_executable (env env.cpp)
 
 add_executable (rotate rotate.c)
 set_target_properties (rotate PROPERTIES COMPILE_FLAGS -std=c99)
@@ -37,10 +38,12 @@ fhg_add_test (redefine.cpp
   LINK_LIBRARIES process
 )
 
+find_program (CAT_BINARY "cat" PATH_SUFFIXES "bin")
+
 fhg_add_test (big.cpp
   PROJECT share_process
   BOOST_UNIT_TEST
-  ARGS 1048576
+  ARGS 1048576 "${CAT_BINARY}"
   LINK_LIBRARIES process
 )
 
@@ -55,6 +58,14 @@ fhg_add_test (child_stops_consuming.cpp
   PROJECT share_process
   BOOST_UNIT_TEST
   LINK_LIBRARIES process
+)
+
+fhg_add_test (environment.cpp
+  PROJECT share_process
+  BOOST_UNIT_TEST
+  ARGS ${CMAKE_CURRENT_BINARY_DIR}/env
+  LINK_LIBRARIES process fhg-util
+  DEPENDS env
 )
 
 add_executable (threadsafety_binary threadsafety_binary.cpp)

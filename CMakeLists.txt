@@ -3,7 +3,9 @@ cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
 set (PROJECT_VERSION "14.03")
 set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
-OPTION (ENABLE_LICENSE_CHECK "enable license check" OFF)
+SET (SHARED_DIRECTORY_FOR_TESTS "$ENV{HOME}" CACHE PATH
+  "shared directory for tests"
+)
 
 execute_process (
   COMMAND git rev-parse HEAD
@@ -97,6 +99,7 @@ set (CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set (CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../external/boost/lib:\$ORIGIN/../../../lib/")
 
 include_directories (${CMAKE_SOURCE_DIR}/src)
+include_directories ("${CMAKE_SOURCE_DIR}/sdpa")
 
 # replacement for find_package (<one of our subprojects>)
 set (UTIL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/util)
@@ -129,7 +132,6 @@ add_subdirectory (test)
 
 INCLUDE (InstallRequiredSystemLibraries)
 
-add_subdirectory (playground/ap/licensing)
 add_subdirectory (playground/bl)
 
 include (cmake_parse_arguments)

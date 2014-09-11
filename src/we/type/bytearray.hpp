@@ -3,11 +3,15 @@
 #ifndef _WE_TYPE_BYTEARRAY_HPP
 #define _WE_TYPE_BYTEARRAY_HPP
 
+#include <boost/type_traits/is_pointer.hpp>
+#include <boost/utility/enable_if.hpp>
+
 #include <algorithm>
 #include <vector>
 
 #include <iosfwd>
 #include <sstream>
+#include <string>
 
 namespace we
 {
@@ -20,22 +24,29 @@ namespace we
 
       bytearray();
       bytearray (const char* const, const std::size_t);
+      bytearray (std::string const&);
       std::size_t copy (char* const buf, const std::size_t size) const;
 
       template<typename T>
       explicit bytearray (const T* const x)
-        : _v()
-      {
-        std::copy ((char *)x, (char *)x + sizeof (*x), std::back_inserter(_v));
-      }
+        : _v ( static_cast<const char*> (static_cast<const void*> (x))
+             , static_cast<const char*> (static_cast<const void*> (x)) + sizeof (*x)
+             )
+      {}
+      template<typename T>
+        explicit bytearray
+          ( T const& x
+          , typename boost::enable_if_c<not boost::is_pointer<T>::value>::type* = 0
+          )
+        : _v ( static_cast<const char*> (static_cast<const void*> (&x))
+             , static_cast<const char*> (static_cast<const void*> (&x)) + sizeof (x)
+             )
+      {}
       template<typename T>
       std::size_t copy (T* const x) const
       {
-        const std::size_t s (std::min (_v.size(), sizeof (*x)));
-
-        std::copy (_v.begin(), _v.begin() + s, (char *)x);
-
-        return s;
+        return copy
+          (static_cast<char* const> (static_cast<void* const> (x)), sizeof (*x));
       }
 
       std::string to_string() const;
@@ -48,12 +59,10 @@ namespace we
       template<typename T>
       bytearray& operator= (const T& other)
       {
-        _v.clear();
-
-        std::copy ( (char*)&other
-                  , (char*)&other + sizeof (T)
-                  , std::back_inserter(_v)
-                  );
+        _v = std::vector<char>
+          ( static_cast<const char*> (static_cast<const void*> (&other))
+          , static_cast<const char*> (static_cast<const void*> (&other)) + sizeof (T)
+          );
 
         return *this;
       }

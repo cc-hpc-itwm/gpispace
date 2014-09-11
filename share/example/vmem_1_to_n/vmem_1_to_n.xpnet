@@ -56,7 +56,7 @@
             ${memory.size}
           </size>
         </memory-buffer>
-        <memory-put>
+        <memory-put not-modified-in-module-call="true">
           <global>
             stack_push (List(), ${memory})
           </global>

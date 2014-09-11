@@ -79,9 +79,9 @@ namespace
     we::type::net_type net;
 
     we::place_id_type const place_id_in_0
-      (net.add_place (place::type (port_name, std::string ("string"))));
+      (net.add_place (place::type (port_name + "1", std::string ("string"))));
     we::place_id_type const place_id_in_1
-      (net.add_place (place::type (port_name, std::string ("string"))));
+      (net.add_place (place::type (port_name + "2", std::string ("string"))));
 
     net.put_value (place_id_in_0, fhg::util::random_string_without ("\\\""));
     net.put_value (place_id_in_1, fhg::util::random_string_without ("\\\""));

@@ -310,8 +310,8 @@ DRTSImpl::DRTSImpl (std::function<void()> request_stop, std::map<std::string, st
   , _request_stop (request_stop)
   , _kvs_client
     (new fhg::com::kvs::client::kvsc
-      ( get<std::string> ("plugin.drts.kvs_host", config_variables).get_value_or ("localhost")
-      , get<std::string> ("plugin.drts.kvs_port", config_variables).get_value_or ("2439")
+      ( *get<std::string> ("plugin.drts.kvs_host", config_variables)
+      , *get<std::string> ("plugin.drts.kvs_port", config_variables)
       , true // auto_reconnect
       , boost::posix_time::duration_from_string
         ( get<std::string> ("plugin.drts.kvs_timeout", config_variables)

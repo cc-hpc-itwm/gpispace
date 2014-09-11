@@ -1,39 +1,54 @@
 # mirko.rahn@itwm.fraunhofer.de
 
-set (PUT_PORT "I=10000L")
-set (EXPECTED_OUTPUT "333383335000L")
+include_directories (${UTIL_INCLUDE_DIR})
+include_directories (${CMAKE_SOURCE_DIR})
+
 set (REENTRANT_VERSION not_reentrant)
 
 foreach (SPLIT_VERSION ${SPLIT_JOIN_SPLIT_VERSIONS})
   set (SPLIT_JOIN_MAIN split_join.${SPLIT_VERSION}.${REENTRANT_VERSION})
 
-  fhg_add_application_test (example_${SPLIT_JOIN_MAIN}_we-exec
-    SCRIPT test.we-exec
-    SCRIPT_OUT test.${SPLIT_JOIN_MAIN}.we-exec.sh
-  )
-
-  fhg_add_application_test (example_${SPLIT_JOIN_MAIN}_submit
-    SCRIPT test.submit
-    SCRIPT_OUT test.${SPLIT_JOIN_MAIN}.submit.sh
+  fhg_add_test (test.cpp
+    PROJECT share_example_${SPLIT_JOIN_MAIN}
+    BOOST_UNIT_TEST
+    ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
+         --source-directory "${CMAKE_CURRENT_BINARY_DIR}/../"
+         --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
+         --main "${SPLIT_JOIN_MAIN}"
+         --input 10000
+         --expected-output 333383335000
+    LINK_LIBRARIES gspc
+                   test-utilities
+                   ${UTIL_LIBRARIES}
+                   ${Boost_PROGRAM_OPTIONS_LIBRARIES}
+                   ${Boost_FILESYSTEM_LIBRARIES}
     RESOURCE_LOCK starts_drts_environment
+    REQUIRES_INSTALLATION
   )
 endforeach()
 
-set (PUT_PORT "\"I=10000L I=20000L\"")
-set (EXPECTED_OUTPUT "333383335000L\\n2666866670000L")
 set (REENTRANT_VERSION reentrant.sequential)
 
 foreach (SPLIT_VERSION ${SPLIT_JOIN_SPLIT_VERSIONS})
   set (SPLIT_JOIN_MAIN split_join.${SPLIT_VERSION}.${REENTRANT_VERSION})
 
-  fhg_add_application_test (example_${SPLIT_JOIN_MAIN}_we-exec
-    SCRIPT test.we-exec
-    SCRIPT_OUT test.${SPLIT_JOIN_MAIN}.we-exec.sh
-  )
-
-  fhg_add_application_test (example_${SPLIT_JOIN_MAIN}_submit
-    SCRIPT test.submit
-    SCRIPT_OUT test.${SPLIT_JOIN_MAIN}.submit.sh
+  fhg_add_test (test.cpp
+    PROJECT share_example_${SPLIT_JOIN_MAIN}
+    BOOST_UNIT_TEST
+    ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
+         --source-directory "${CMAKE_CURRENT_BINARY_DIR}/../"
+         --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
+         --main "${SPLIT_JOIN_MAIN}"
+         --input 10000
+         --expected-output 333383335000
+         --input 20000
+         --expected-output 2666866670000
+    LINK_LIBRARIES gspc
+                   test-utilities
+                   ${UTIL_LIBRARIES}
+                   ${Boost_PROGRAM_OPTIONS_LIBRARIES}
+                   ${Boost_FILESYSTEM_LIBRARIES}
     RESOURCE_LOCK starts_drts_environment
+    REQUIRES_INSTALLATION
   )
 endforeach()

@@ -5,7 +5,6 @@ set (srcs
   daemonize.cpp
   signal_handler_manager.cpp
   pidfile_writer.cpp
-  program_info.c
   random_string.cpp
   remove_prefix.cpp
   read_bool.cpp
@@ -28,10 +27,11 @@ set (srcs
   cpp/struct.cpp
 
   xml.cpp
-  hex.cpp
   read_file.cpp
 
   hostname.cpp
+
+  system_with_blocked_SIGCHLD.cpp
 )
 
 add_library (fhg-util ${srcs})

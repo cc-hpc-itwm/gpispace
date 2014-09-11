@@ -2,8 +2,9 @@
 
 sdpa_home=
 verbose=false
+state_dir=
 
-while getopts ":hvH:" opt; do
+while getopts ":hvH:s:" opt; do
     case $opt in
         h)
             usage
@@ -14,6 +15,9 @@ while getopts ":hvH:" opt; do
             ;;
         H)
             sdpa_home="$OPTARG"
+            ;;
+        s)
+            state_dir="${OPTARG}"
             ;;
         \?)
             echo "invalid option: -$OPTARG" >&2
@@ -26,6 +30,12 @@ done
 if [ -z "$sdpa_home" ] ; then
     echo >&2 "sdpa home is empty, please specify -H"
     exit 4
+fi
+
+if [ -z "${state_dir}" ]
+then
+  echo >&2 "state directory is not set, please specify -s"
+  exit 4
 fi
 
 . "${sdpa_home}/etc/sdpa/sdpa.env"
@@ -66,7 +76,7 @@ function cleanup ()
 {
     if $runtime_started
     then
-        sdpa stop
+        sdpa -s "${state_dir}" stop
     fi
     rm -rf "${builddir}"
 }
@@ -106,10 +116,10 @@ log_info "+ booting runtime system on: $(hostname -s)"
 
 echo "$(hostname -s)" > "${builddir}/hostfile"
 
-err=$(sdpa stop 2>&1)
+err=$(sdpa -s "${state_dir}" stop 2>&1)
 
 runtime_started=true
-sdpa boot -M -f "${builddir}/hostfile" -A "${builddir}" work:1 > "${builddir}/boot.log" 2>&1
+sdpa -s "${state_dir}" boot -M -f "${builddir}/hostfile" -A "${builddir}" work:1 > "${builddir}/boot.log" 2>&1
 ec=$?
 if [ $ec -ne 0 ] ; then
     log_error "++ boot failed: $err"
@@ -117,17 +127,21 @@ if [ $ec -ne 0 ] ; then
     exit $ec
 fi
 
+# todo: remove magic: specify filenames instead of relying on files?
+kvs_host=$(cat "${state_dir}/kvs.host")
+kvs_port=$(cat "${state_dir}/kvs.port")
+
 expected_response="sdpa.response.$challenge"
 
 log_info "++ submitting job..."
-job_id=$(sdpac submit "${builddir}/selftest.pnet.put")
+job_id=$(sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} submit "${builddir}/selftest.pnet.put")
 log_info "+++ job-id: $job_id"
 
 walltime=15
 log_info "++++ waiting at most $walltime seconds for job to return..."
 job_state=42
 for ((i=0 ; i < $walltime ; ++i)) ; do
-    job_status=$(sdpac status "$job_id")
+    job_status=$(sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} status "$job_id")
     if echo "$job_status" | grep -q -i -e 'finished' ; then
         log_info "+++ job has finished"
         job_state=0
@@ -150,12 +164,12 @@ if [ "$job_state" -ne 0 ] ; then
 fi
 
 log_info "+++ retrieving results"
-if ! sdpac --force -o "${builddir}/result.pnet" results "$job_id" 2>/dev/null ; then
+if ! sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} --force -o "${builddir}/result.pnet" results "$job_id" 2>/dev/null ; then
     log_error "++++ could not retrieve results"
     exit 6
 fi
 
-if ! sdpac delete "$job_id" ; then
+if ! sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} delete "$job_id" ; then
     log_error "++++ could not delete job"
     exit 7
 fi
@@ -173,7 +187,7 @@ else
     greeting="user $USER"
 fi
 
-sdpa stop >/dev/null 2>&1
+sdpa -s "${state_dir}" stop >/dev/null 2>&1
 runtime_started=false
 
 log_info "+ Congratulations $greeting, your installation is working!"

@@ -8,94 +8,31 @@
 
 #include <fhgcom/kvs/kvsd.hpp>
 #include <fhgcom/peer_info.hpp>
-#include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/tcp_server.hpp>
 
 #include <fhg/util/daemonize.hpp>
+#include <fhg/util/signal_handler_manager.hpp>
+#include <fhg/util/pidfile_writer.hpp>
+#include <fhg/syscall.hpp>
 
-static fhg::com::io_service_pool pool (4);
-static fhg::com::kvs::server::kvsd *g_kvsd (nullptr);
-
-static const int EX_STILL_RUNNING = 4;
-
-void save_state (int)
-{
-  try
-  {
-    g_kvsd->save();
-  }
-  catch (std::exception const & ex)
-  {
-    LOG(WARN, "could not persist state: " << ex.what());
-  }
-}
-void load_state (int)
-{
-  try
-  {
-    g_kvsd->load();
-  }
-  catch (std::exception const & ex)
-  {
-    LOG(WARN, "could not load state: " << ex.what());
-  }
-}
-void clear_state (int)
-{
-  try
-  {
-    g_kvsd->clear("");
-  }
-  catch (std::exception const & ex)
-  {
-    LOG(WARN, "could not clear state: " << ex.what());
-  }
-}
-
-void signal_handler (int s)
-{
-  pool.stop();
-  save_state (s);
-}
 
 int main(int ac, char *av[])
 {
   FHGLOG_SETUP();
 
+  fhg::log::Logger::ptr_t logger (fhg::log::Logger::get ("fhgkvsd"));
+
   namespace po = boost::program_options;
 
-  std::string server_address ("*");
-  std::string server_port ("2439");
   std::string pidfile;
   bool daemonize = false;
-
-  if (getenv("KVS_URL") != nullptr)
-  {
-    try
-    {
-      using namespace fhg::com;
-      peer_info_t pi (getenv("KVS_URL"));
-      server_address = pi.host(server_address);
-      server_port = pi.port(server_port);
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "W: malformed environment variable KVS_URL: " << ex.what() << std::endl;
-    }
-  }
-
-  bool reuse_address (true);
-  std::string store_path ("");
 
   po::options_description desc ("options");
   desc.add_options()
     ("help,h", "print this help")
-    ("bind,b", po::value<std::string>(&server_address)->default_value(server_address), "bind to this address")
-    ("port,p", po::value<std::string>(&server_port)->default_value(server_port), "port or service name to use")
-    ("reuse-address", po::value<bool>(&reuse_address)->default_value(reuse_address), "reuse address")
-    ("store,s", po::value<std::string>(&store_path)->default_value(store_path), "path to persistent store")
-    ("clear,C", "start with an empty store")
-    ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
+    ("bind", po::value<std::string>()->required(), "bind to this address")
+    ("port", po::value<std::string>()->required(), "port or service name to use")
+    ("pidfile", po::value<std::string>(&pidfile)->required(), "write pid to pidfile (required)")
     ("daemonize", "daemonize after all checks were successful")
     ;
 
@@ -103,6 +40,15 @@ int main(int ac, char *av[])
   try
   {
     po::store (po::parse_command_line (ac, av, desc), vm);
+
+    if (vm.count ("help"))
+    {
+      std::cerr << "usage: " << av[0] << std::endl;
+      std::cerr << std::endl;
+      std::cerr << desc << std::endl;
+      return EXIT_SUCCESS;
+    }
+
     po::notify (vm);
   }
   catch (std::exception const & ex)
@@ -112,97 +58,60 @@ int main(int ac, char *av[])
     return EXIT_FAILURE;
   }
 
-  if (vm.count ("help"))
-  {
-    std::cerr << "usage: " << av[0] << std::endl;
-    std::cerr << std::endl;
-    std::cerr << desc << std::endl;
-    return EXIT_SUCCESS;
-  }
-
   if (vm.count ("daemonize"))
     daemonize = true;
 
-  if (server_address == "*")
+  if (pidfile.empty())
   {
-    server_address = "0";
+    std::cerr << "parameter to --pidfile is empty!" << std::endl
+              << "it has to point to a file that one can write to - if the file doesn't exist, it will be created."
+              << std::endl;
+    return EXIT_FAILURE;
   }
-
-  int pidfile_fd = -1;
-
-  if (not pidfile.empty())
-  {
-    pidfile_fd = open(pidfile.c_str(), O_CREAT|O_RDWR, 0640);
-    if (pidfile_fd < 0)
-    {
-      LOG( ERROR, "could not open pidfile for writing: "
-         << strerror(errno)
-         );
-      exit(EXIT_FAILURE);
-    }
-
-    if (lockf(pidfile_fd, F_TLOCK, 0) < 0)
-    {
-      LOG( ERROR, "could not lock pidfile: "
-         << strerror(errno)
-         );
-      exit(EX_STILL_RUNNING);
-    }
-  }
-
-  if (daemonize)
-  {
-    fhg::util::fork_and_daemonize_child_and_abandon_parent();
-  }
-
-  if (pidfile_fd >= 0)
-  {
-    if (lockf(pidfile_fd, F_LOCK, 0) < 0)
-    {
-      LOG( ERROR, "could not lock pidfile: "
-         << strerror(errno)
-         );
-      exit(EX_STILL_RUNNING);
-    }
-
-    char buf[32];
-    if (ftruncate(pidfile_fd, 0) < 0)
-    {
-      LOG (WARN, "could not truncate file: " << strerror (errno));
-    }
-    snprintf(buf, sizeof(buf), "%d\n", getpid());
-    if (write(pidfile_fd, buf, strlen(buf)) != (ssize_t)strlen (buf))
-    {
-      LOG (WARN, "PID could not be written completely: " << strerror (errno));
-    }
-    fsync(pidfile_fd);
-  }
-
-  fhg::com::kvs::server::kvsd kvsd (store_path);
-  g_kvsd = &kvsd;
-
-  if (vm.count ("clear")) kvsd.clear ("");
-
-  signal(SIGINT, signal_handler);
-  signal(SIGTERM, signal_handler);
-  signal(SIGUSR1, save_state);
-  signal(SIGUSR2, clear_state);
-  signal(SIGHUP, load_state);
 
   try
   {
-    fhg::com::tcp_server server ( pool.get_io_service()
+    boost::asio::io_service io_service;
+    fhg::util::signal_handler_manager signal_handler;
+    signal_handler.add_log_backtrace_and_exit_for_critical_errors (logger);
+
+    signal_handler.add (SIGTERM, [&io_service] (int, siginfo_t*, void*) { io_service.stop(); });
+    signal_handler.add (SIGINT, [&io_service] (int, siginfo_t*, void*) { io_service.stop(); });
+
+    fhg::util::pidfile_writer pidfile_writer (pidfile);
+
+    fhg::com::kvs::server::kvsd kvsd;
+
+    fhg::com::tcp_server server ( io_service
                                 , kvsd
-                                , server_address
-                                , server_port
-                                , reuse_address
+                                , vm["bind"].as<std::string>() == "*"
+                                ? "0"
+                                : vm["bind"].as<std::string>()
+                                , vm["port"].as<std::string>()
+                                , true
                                 );
 
-    pool.run ();
+    std::cout << server.port() << std::endl;
+
+    io_service.notify_fork (boost::asio::io_service::fork_prepare);
+    if (daemonize)
+    {
+      fhg::util::fork_and_daemonize_child_and_abandon_parent();
+    }
+
+    pidfile_writer.write();
+
+    io_service.notify_fork (boost::asio::io_service::fork_child);
+    io_service.run();
+
+    if (not pidfile.empty())
+    {
+      fhg::syscall::unlink (pidfile.c_str());
+    }
   }
-  catch (std::exception const & ex)
+  catch (std::exception const& ex)
   {
-    std::cerr << "could not start server: " << ex.what () << std::endl;
+    std::cerr << "could not start server: " << ex.what() << std::endl;
     return EXIT_FAILURE;
   }
 
