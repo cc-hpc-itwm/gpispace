@@ -118,15 +118,15 @@ namespace gspc
       }
 
       // this should be handled by the remote rif
-      std::vector<std::string> command (raw_command);
+      std::vector<std::string> command;
       std::map<std::string, std::string> environment (raw_environment);
-      for (auto& arg : command)
+      for (std::string const& arg : raw_command)
       {
-        arg = replace_rif_root (arg, _root);
+        command.push_back (replace_rif_root (arg, _root));
       }
-      for (auto& kv : environment)
+      for (std::pair<std::string, std::string> const& kv : raw_environment)
       {
-        kv.second = replace_rif_root (kv.second, _root);
+        environment[kv.first] = replace_rif_root (kv.second, _root);
       }
 
       _processes[rif][key].push_back
