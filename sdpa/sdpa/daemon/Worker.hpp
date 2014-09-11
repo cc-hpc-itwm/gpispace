@@ -21,10 +21,11 @@ namespace sdpa
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
 
-      explicit Worker( 	const worker_id_t& name,
-                                          const boost::optional<unsigned int>& cap
-                     , const capabilities_set_t&
-                     , const bool children_allowed);
+      explicit Worker ( const worker_id_t& name
+                      , const boost::optional<unsigned int>& cap
+                      , const capabilities_set_t&
+                      , const bool children_allowed
+                      );
 
       void submit(const job_id_t&);
 
