@@ -28,10 +28,9 @@ namespace gspc
         std::unordered_set<std::string> seen;
         for (std::string const&h : hosts)
         {
-          if (seen.find (h) == seen.end())
+          if (seen.emplace (h).second)
           {
             ep.emplace_back (h, 22);
-            seen.insert (h);
           }
         }
         return ep;
