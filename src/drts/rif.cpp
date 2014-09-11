@@ -106,8 +106,8 @@ namespace gspc
 
   void rif_t::exec ( const std::list<rif_t::endpoint_t>& rifs
                    , const std::string& key
-                   , const std::vector<std::string>& command
-                   , const std::map<std::string, std::string>& environment
+                   , const std::vector<std::string>& raw_command
+                   , const std::map<std::string, std::string>& raw_environment
                    )
   {
     for (const endpoint_t& rif: rifs)
@@ -115,6 +115,18 @@ namespace gspc
       if (_processes[rif].find (key) != _processes[rif].end())
       {
         throw std::runtime_error ("key '" + key + "' is already in use on rif " + rif.host);
+      }
+
+      // this should be handled by the remote rif
+      std::vector<std::string> command (raw_command);
+      std::map<std::string, std::string> environment (raw_environment);
+      for (auto& arg : command)
+      {
+        arg = replace_rif_root (arg, _root);
+      }
+      for (auto& kv : environment)
+      {
+        kv.second = replace_rif_root (kv.second, _root);
       }
 
       _processes[rif][key].push_back
@@ -142,5 +154,24 @@ namespace gspc
   rif_t::make_relative_to_rif_root (boost::filesystem::path const& p)
   {
     return RIF_ROOT / p;
+  }
+
+  void rif_t::store ( const std::list<endpoint_t>& rifs
+                    , const std::vector<char>& data
+                    , const std::string& path
+                    )
+  {
+    std::for_each (rifs.begin(), rifs.end(), [this, data, path] (endpoint_t const& rif) -> void {
+        std::ostringstream command;
+        command << "ssh -q -p " << rif.port << " " << rif.host
+                << " '/bin/cat > " << replace_rif_root (path, _root) << "'";
+        scoped_FILE f (fhg::syscall::popen (command.str().c_str(), "w"));
+        if (1 != fwrite (data.data(), data.size(), 1, f._))
+        {
+          throw std::runtime_error
+            ("could not write to: " + path + " on " + rif.host);
+        }
+      }
+    );
   }
 }
