@@ -139,7 +139,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_a
 BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_scheduler_and_job_manager)
 {
   _scheduler.worker_manager().addWorker ("worker_0", 1, {sdpa::capability_t ("C", "worker_0")});
-  _scheduler.worker_manager().addWorker ("worker_1", 1);
+  _scheduler.worker_manager().addWorker ("worker_1", 1, {});
 
   add_job ("job_0", require ("C"));
   add_job ("job_1", require ("C"));
@@ -229,7 +229,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and
 BOOST_FIXTURE_TEST_CASE
   (not_schedulable_job_does_not_block_others, serveJob_checking_scheduler_and_job_manager)
 {
-  _scheduler.worker_manager().addWorker ("worker", 1);
+  _scheduler.worker_manager().addWorker ("worker", 1, {});
 
   add_job ("2", require (2));
   _scheduler.enqueueJob ("2");
