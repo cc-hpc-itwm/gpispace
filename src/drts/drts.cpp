@@ -348,7 +348,11 @@ namespace gspc
            );
   }
 
-  sdpa::job_id_t scoped_runtime_system::submit
+  static_assert ( std::is_same<job_id_t, sdpa::job_id_t>::value
+                , "drts::job_id_t != sdpa::job_id_t"
+                );
+
+  job_id_t scoped_runtime_system::submit
     ( boost::filesystem::path const& workflow
     , std::multimap< std::string
                    , pnet::type::value::value_type
@@ -376,7 +380,7 @@ namespace gspc
     return api.submitJob (activity.to_string());
   }
 
-  void scoped_runtime_system::put_token ( sdpa::job_id_t job_id
+  void scoped_runtime_system::put_token ( job_id_t job_id
                                         , std::string place_name
                                         , pnet::type::value::value_type value
                                         ) const
@@ -388,7 +392,7 @@ namespace gspc
   }
 
   std::multimap<std::string, pnet::type::value::value_type>
-    scoped_runtime_system::wait_and_extract (sdpa::job_id_t job_id) const
+    scoped_runtime_system::wait_and_extract (job_id_t job_id) const
   {
     sdpa::client::Client api
       ("orchestrator", _kvs_host, std::to_string (_kvs_port));

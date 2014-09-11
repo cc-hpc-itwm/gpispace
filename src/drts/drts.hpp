@@ -5,8 +5,6 @@
 
 #include <drts/virtual_memory.hpp>
 
-#include <sdpa/types.hpp>
-
 #include <we/type/value.hpp>
 
 #include <boost/filesystem.hpp>
@@ -54,6 +52,8 @@ namespace gspc
     boost::filesystem::path const _gspc_home;
   };
 
+  typedef std::string job_id_t;
+
   class scoped_runtime_system
   {
   public:
@@ -64,14 +64,14 @@ namespace gspc
 
     ~scoped_runtime_system();
 
-    sdpa::job_id_t submit
+    job_id_t submit
       ( boost::filesystem::path const& workflow
       , std::multimap< std::string
                      , pnet::type::value::value_type
                      > const& values_on_ports
       ) const;
     std::multimap<std::string, pnet::type::value::value_type>
-      wait_and_extract (sdpa::job_id_t) const;
+      wait_and_extract (job_id_t) const;
 
     std::multimap<std::string, pnet::type::value::value_type>
       put_and_run
@@ -84,7 +84,7 @@ namespace gspc
       return wait_and_extract (submit (workflow, values_on_ports));
     }
 
-    void put_token ( sdpa::job_id_t
+    void put_token ( job_id_t
                    , std::string place_name
                    , pnet::type::value::value_type
                    ) const;

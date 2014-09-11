@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
 
   gspc::scoped_runtime_system const drts (vm, installation, "worker:2");
 
-  sdpa::job_id_t const job_id
+  gspc::job_id_t const job_id
     ( drts.submit ( make.build_directory() / "wait_for_token_put.pnet"
                   , { {"filename_to_wait_for", filename.string()}
                     , {"timeout_in_seconds", 5U}
