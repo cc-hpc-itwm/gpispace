@@ -44,7 +44,7 @@ cleanup()
 {
   set +e
   test -n "${handle_data}" && echo memory-free ${handle_data} | $SDPA_HOME/bin/gpish -s "${VMEM_SOCKET}"
-  test -s "${GPI_SPACE_PID_FILE}" && kill -9 $(cat "${GPI_SPACE_PID_FILE}")
+  test -n "${VMEM_PID}" && kill "${VMEM_PID}"
   rm -rf "${VMEM_SOCKET}"
   rm -rf "${GPI_SPACE_PID_FILE}"
   test -s "${KVSD_PID_FILE}" && kill -9 $(cat "${KVSD_PID_FILE}")
@@ -67,15 +67,26 @@ kvs_port=$("$SDPA_HOME/bin/fhgkvsd"    \
   --daemonize                         || die $EX_ERR_BOOT
 )
 
-FHGLOG_disabled=true                          \
-  "${SDPA_HOME}/bin/gpi-space"                \
-  --gpi-mem ${size_vmem}                      \
-  --kvs-host ${kvs_host}                      \
-  --kvs-port ${kvs_port}                      \
-  --log-file "${DIR_LOG}/gpi-space.log"       \
-  --socket "${VMEM_SOCKET}"                   \
-  --pidfile "${GPI_SPACE_PID_FILE}"           \
-  --daemonize                                               || die $EX_ERR_BOOT
+hostname > "${DIR_STATE}/nodefile"                          || die $EX_ERR_ENV
+
+VMEM_PID=$("${SDPA_HOME}/bin/gaspirun" \
+    --nodefile "${DIR_STATE}/nodefile" \
+    --state-directory "${DIR_STATE}" \
+    --gspc-home "${SDPA_HOME}" \
+    --kvs-host "${kvs_host}" --kvs-port "${kvs_port}" \
+    --log-host "${kvs_host}" --log-port "4000" \
+    --gui-host "${kvs_host}" --gui-port "4001" \
+    --virtual-memory-port 10820 \
+    --virtual-memory-socket "${VMEM_SOCKET}" \
+    --virtual-memory-per-node "${size_vmem}" \
+    --virtual-memory-timeout $((60*1000)) 2>&1)
+ec=$?
+if [ $ec -ne 0 ]
+then
+    echo >&2 "could not start vmem: ${VMEM_PID}"
+    VMEM_PID=
+    die $EX_ERR_BOOT
+fi
 
 echo -n "CHECK: gpi-space"
 
