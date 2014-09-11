@@ -12,13 +12,13 @@ namespace gspc
 {
   namespace
   {
-    struct scoped_FILE
+    struct scoped_popen
     {
-      explicit scoped_FILE (FILE *file)
-        : _ (file)
+      explicit scoped_popen (const char *command, const char *how)
+        : _ (fhg::syscall::popen (command, how))
       {}
 
-      ~scoped_FILE()
+      ~scoped_popen()
       {
         if (_)
         {
@@ -60,7 +60,7 @@ namespace gspc
       command << " | ssh -q -p " << rif.port << " " << rif.host << " /bin/sh -s";
 
       char buf[16];
-      scoped_FILE pid_file (fhg::syscall::popen (command.str().c_str(), "r"));
+      scoped_popen pid_file (command.str().c_str(), "r");
       fhg::syscall::fread (buf, sizeof (buf), sizeof (char), pid_file._);
       errno = 0;
       pid_t pid = std::strtoul (buf, nullptr, 0);
@@ -165,7 +165,7 @@ namespace gspc
         std::ostringstream command;
         command << "ssh -q -p " << rif.port << " " << rif.host
                 << " '/bin/cat > " << replace_rif_root (path, _root) << "'";
-        scoped_FILE f (fhg::syscall::popen (command.str().c_str(), "w"));
+        scoped_popen f (command.str().c_str(), "w");
         if (1 != fwrite (data.data(), data.size(), 1, f._))
         {
           throw std::runtime_error
