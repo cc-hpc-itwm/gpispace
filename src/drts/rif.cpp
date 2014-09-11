@@ -3,6 +3,8 @@
 #include <fhg/syscall.hpp>
 #include <fhg/util/make_unique.hpp>
 
+#include <boost/algorithm/string/replace.hpp>
+
 #include <sstream>
 #include <future>
 
@@ -32,14 +34,11 @@ namespace gspc
 
     std::string const RIF_ROOT {"<rif-root>"};
 
-    std::string replace_rif_root ( std::string s
+    std::string replace_rif_root ( std::string const& s
                                  , boost::filesystem::path const& root
                                  )
     {
-      return s.find (RIF_ROOT) == 0
-        ? s.replace (0, RIF_ROOT.size(), root.string())
-        : s
-        ;
+      return boost::algorithm::replace_all_copy (s, RIF_ROOT, root.string());
     }
 
     pid_t rexec ( const rif_t::endpoint_t rif
