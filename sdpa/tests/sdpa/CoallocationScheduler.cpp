@@ -248,7 +248,7 @@ BOOST_FIXTURE_TEST_CASE
 {
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
 
-  _scheduler.worker_manager().addWorker (worker_id, 2, {});
+  _scheduler.worker_manager().addWorker (worker_id, boost::none, {});
 
   sdpa::job_id_t const job_id_0 (utils::random_peer_name());
   add_job (job_id_0, {});
@@ -269,9 +269,9 @@ BOOST_FIXTURE_TEST_CASE
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
 
   _scheduler.worker_manager().addWorker
-    (worker_id, 1, { sdpa::capability_t("A", worker_id)
-                   , sdpa::capability_t("B", worker_id)
-                   }
+    ( worker_id, boost::none, { sdpa::capability_t("A", worker_id)
+                              , sdpa::capability_t("B", worker_id)
+                              }
     );
 
   sdpa::job_id_t const job_id_0 (utils::random_peer_name());
