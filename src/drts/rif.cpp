@@ -159,8 +159,10 @@ namespace gspc
     {
       background_tasks.push_back
         (std::move (std::async (std::launch::async, [this, &rif, &key] {
-              _processes[rif].at (key).clear ();
-              _processes[rif].erase (key);
+              if (! _processes[rif].erase (key))
+              {
+                throw std::invalid_argument ("no such key: " + key);
+              }
             })
           ));
     }
