@@ -184,7 +184,7 @@ namespace gspc
   }
 
   void rif_t::store ( const std::list<endpoint_t>& rifs
-                    , const std::vector<char>& data
+                    , const std::string& data
                     , const boost::filesystem::path& path
                     )
   {

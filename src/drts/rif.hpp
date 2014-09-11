@@ -35,7 +35,7 @@ namespace gspc
               , const std::map<std::string, std::string>& environment
               );
     void store ( const std::list<endpoint_t>& rifs
-               , const std::vector<char>& data
+               , const std::string& data
                , const boost::filesystem::path& path
                );
     void stop ( const std::list<endpoint_t>& rifs

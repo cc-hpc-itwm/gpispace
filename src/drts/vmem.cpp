@@ -63,13 +63,11 @@ namespace gspc
       (rif_t::make_relative_to_rif_root ("nodefile").string());
 
     {
-      std::vector<char> in_memory_hostlist;
+      std::string in_memory_hostlist;
       for (gspc::rif_t::endpoint_t const& rif: _rif_endpoints)
       {
-        in_memory_hostlist.insert ( in_memory_hostlist.end()
-                                  , rif.host.begin(), rif.host.end()
-                                  );
-        in_memory_hostlist.emplace_back ('\n');
+        in_memory_hostlist += rif.host;
+        in_memory_hostlist += "\n";
       }
       _rif.store ( _rif_endpoints
                  , in_memory_hostlist
