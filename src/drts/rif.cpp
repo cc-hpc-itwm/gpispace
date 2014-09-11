@@ -29,6 +29,18 @@ namespace gspc
       FILE *_;
     };
 
+    static std::string const RIF_ROOT {"<rif-root>"};
+
+    std::string replace_rif_root ( std::string s
+                                 , boost::filesystem::path const& root
+                                 )
+    {
+      return s.find (RIF_ROOT) == 0
+        ? s.replace (0, RIF_ROOT.size(), root.string())
+        : s
+        ;
+    }
+
     pid_t rexec ( const rif_t::endpoint_t rif
                 , const std::vector<std::string>& cmd
                 , const std::map<std::string, std::string>& environment
@@ -129,6 +141,6 @@ namespace gspc
   boost::filesystem::path
   rif_t::make_relative_to_rif_root (boost::filesystem::path const& p)
   {
-    return "<rif-root>" / p;
+    return RIF_ROOT / p;
   }
 }
