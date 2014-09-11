@@ -9,6 +9,8 @@
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/make_unique.hpp>
 
+#include <unordered_set>
+
 namespace gspc
 {
   namespace validators = fhg::util::boost::program_options;
@@ -23,9 +25,14 @@ namespace gspc
     : _rif (rif)
     , _rif_endpoints ([] (const std::list<std::string>& hosts) -> std::list<gspc::rif_t::endpoint_t> {
         std::list<gspc::rif_t::endpoint_t> ep;
+        std::unordered_set<std::string> seen;
         for (std::string const&h : hosts)
         {
-          ep.emplace_back (h, 22);
+          if (seen.find (h) == seen.end())
+          {
+            ep.emplace_back (h, 22);
+            seen.insert (h);
+          }
         }
         return ep;
       } (machinefile.first))
@@ -43,11 +50,6 @@ namespace gspc
       throw std::runtime_error ("at least one node is required in machinefile");
     }
 
-    if (_rif_endpoints.size() != machinefile.second)
-    {
-      throw std::runtime_error ("each host has to appear just once in nodefile");
-    }
-
     const validators::executable vmem_binary
       ((installation.gspc_home() / "bin" / "gpi-space").string());
 
@@ -58,10 +60,23 @@ namespace gspc
 
     const std::string& master (_rif_endpoints.front().host);
 
-    // create in memory hostlist
-    // rif.store (machinefile, hostlist, "<rif-root>/machinefile");
+    const std::string machinefile_path
+      (rif_t::make_relative_to_rif_root ("nodefile").string());
 
-    const std::string machinefile_path (get_nodefile (vm).string());
+    {
+      std::vector<char> in_memory_hostlist;
+      for (gspc::rif_t::endpoint_t const& rif: _rif_endpoints)
+      {
+        in_memory_hostlist.insert ( in_memory_hostlist.end()
+                                  , rif.host.begin(), rif.host.end()
+                                  );
+        in_memory_hostlist.emplace_back ('\n');
+      }
+      _rif.store ( _rif_endpoints
+                 , in_memory_hostlist
+                 , machinefile_path
+                 );
+    }
 
     _rif.exec ( {_rif_endpoints.front()}
               , "gaspi-master"
