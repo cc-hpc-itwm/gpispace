@@ -496,14 +496,14 @@ if $gpi_enabled ; then
         --virtual-memory-port 10820 \
         --virtual-memory-socket "${gpi_socket}" \
         --virtual-memory-per-node "${gpi_mem}" \
-        --virtual-memory-timeout $((2 * 1000 * 60)))
-    echo "${vmem_pid}" > "$state_dir/gpi-space.pid"
-
+        --virtual-memory-timeout $((2 * 1000 * 60)) 2>&1)
     ec=$?
     if [ $ec -ne 0 ]
     then
         "${sdpa}" -s "${state_dir}" stop
-        error 3 "could not start gpi-space"
+        error 3 "could not start gpi-space: ${vmem_pid}"
+    else
+        echo "${vmem_pid}" > "$state_dir/gpi-space.pid"
     fi
 fi
 
