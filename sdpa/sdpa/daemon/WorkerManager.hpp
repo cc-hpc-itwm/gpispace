@@ -39,7 +39,7 @@ namespace sdpa { namespace daemon {
     bool addWorker ( const worker_id_t& workerId
                    , boost::optional<unsigned int> capacity
                    , const capabilities_set_t& cpbset
-                   , const bool children_allowed = true
+                   , const bool children_allowed
                    );
 
     void deleteWorker( const worker_id_t& workerId);
