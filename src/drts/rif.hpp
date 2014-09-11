@@ -8,6 +8,7 @@
 #include <map>
 #include <list>
 #include <vector>
+#include <mutex>
 
 namespace gspc
 {
@@ -53,6 +54,8 @@ namespace gspc
       const endpoint_t _rif;
       const pid_t _pid;
     };
+
+    std::mutex _processes_mutex;
 
     std::map
     < endpoint_t
