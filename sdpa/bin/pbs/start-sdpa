@@ -4,7 +4,6 @@ DEFAULT_LOG_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 0))"
 DEFAULT_GUI_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 1))"
 log_url="$(hostname -s):${DEFAULT_LOG_PORT}"
 gui_url="$(hostname -s):${DEFAULT_GUI_PORT}"
-vmem_timeout=
 
 function usage ()
 {
@@ -23,7 +22,7 @@ usage: $(basename $0) [options]
   -C: capability specification
   -G: number of segments
   -y: Socket file to communicate with the virtual memory manager
-  -T: timeout for virtual memory manager to start (=${vmem_timeout})
+  -T: timeout in milliseconds for virtual memory manager to start
 
   -l: log url (=${log_url})
   -g: gui url (=${gui_url})
@@ -233,6 +232,7 @@ gpi_socket=
 def_shm_mem=0
 def_num_proc=1
 def_gpi_socket="/tmp/S-gpi-space.$(id -u)"
+vmem_timeout=
 
 if [ ${#@} -eq 0 ] ; then
     usage
@@ -345,6 +345,14 @@ fi
 
 if [ -z "$sdpa_home" ] ; then
     error 2 "sdpa home is not set, please specify -H"
+fi
+
+if $gpi_enabled
+then
+    if [ -z "${vmem_timeout}" ]
+    then
+        error 2 "vmem timeout is required (-T)"
+    fi
 fi
 
 if [ $number_of_groups -le 0 ] ; then
@@ -486,10 +494,6 @@ if $gpi_enabled ; then
     # compute memory sizes
     if [ ${gpi_mem} -eq 0 ] ; then
         gpi_mem=$(( avl_mem * 50 / 100 ))
-    fi
-    if [ -z "${vmem_timeout}" ]
-    then
-        vmem_timeout=$((60*1000 + gpi_mem / 1024 / 4))
     fi
 
     info "using SHM mem: ${def_shm_mem} bytes per process (by default)"
