@@ -68,6 +68,7 @@ hostname > "${DIR_STATE}/nodefile"                          || die $EX_ERR_ENV
   -x "${SDPA_HOME}/bin/gpi-space" \
   -A "${DIR_INST}" \
   -m "${size_vmem}" \
+  -T $((120*1000)) \
   work:2,$((2 * size_block))
 
 handle_input=$(echo memory-alloc ${size_input} gpi input p | TERM=linux $SDPA_HOME/bin/gpish -s "${VMEM_SOCKET}" | tail -1)
