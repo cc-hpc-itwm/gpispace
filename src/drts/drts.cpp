@@ -253,6 +253,15 @@ namespace gspc
           )
         : boost::none
         )
+      , _virtual_memory_timeout
+        ( vm.count (options::name::virtual_memory_timeout)
+        ? boost::make_optional
+          ( std::chrono::milliseconds ( vm[options::name::virtual_memory_timeout]
+                                      . as<validators::positive_integral<unsigned long>>()
+                                      )
+          )
+        : boost::none
+        )
       , _nodes_and_number_of_unique_nodes (read_nodes (_nodefile))
       , _virtual_memory_api
         ( _virtual_memory_socket
@@ -302,6 +311,7 @@ namespace gspc
       command_boot
         << " -y " << *_virtual_memory_socket
         << " -m " << *_virtual_memory_per_node
+        << " -T " << _virtual_memory_timeout->count()
         ;
     }
     else

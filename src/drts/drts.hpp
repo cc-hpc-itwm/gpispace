@@ -11,6 +11,7 @@
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
 
+#include <chrono>
 #include <list>
 #include <map>
 #include <memory>
@@ -96,6 +97,7 @@ namespace gspc
     boost::filesystem::path const _nodefile;
     boost::optional<unsigned long> _virtual_memory_per_node;
     boost::optional<boost::filesystem::path> _virtual_memory_socket;
+    boost::optional<std::chrono::milliseconds> _virtual_memory_timeout;
     std::pair<std::list<std::string>, unsigned long> const
       _nodes_and_number_of_unique_nodes;
     std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
