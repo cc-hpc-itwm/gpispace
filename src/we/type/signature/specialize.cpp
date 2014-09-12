@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/type/signature/specialize.hpp>
-#include <we/type/signature/apply.hpp>
 
 namespace pnet
 {
@@ -11,6 +10,57 @@ namespace pnet
     {
       namespace
       {
+        template<typename P>
+        class apply_field_struct : public boost::static_visitor<>
+        {
+        public:
+          apply_field_struct (P p)
+            : _p (p)
+          {}
+
+          void operator() (std::pair<std::string, structure_type>& s) const
+          {
+            _p._field_struct (s);
+          }
+        private:
+          P _p;
+        };
+
+        template<typename P>
+        class apply_field : public boost::static_visitor<>
+        {
+        public:
+          apply_field (P p)
+            : _p (p)
+          {}
+
+          void operator() (std::pair<std::string, std::string>& f) const
+          {
+            _p._field (f);
+          }
+          void operator() (structured_type& s) const
+          {
+            boost::apply_visitor (apply_field_struct<P> (_p), s);
+          }
+        private:
+          P _p;
+        };
+
+        template<typename P>
+        class apply_struct : public boost::static_visitor<>
+        {
+        public:
+          apply_struct (P p)
+            : _p (p)
+          {}
+          void operator() (std::pair<std::string, structure_type>& s) const
+          {
+            _p._struct (s);
+          }
+        private:
+          P _p;
+        };
+
         class mapper
         {
         public:
@@ -23,7 +73,7 @@ namespace pnet
 
             for (field_type& f : s.second)
             {
-              apply (*this, f);
+              boost::apply_visitor (apply_field<mapper> (*this), f);
             }
           }
           void _field (std::pair<std::string, std::string>& f) const
@@ -32,7 +82,7 @@ namespace pnet
           }
           void _field_struct (std::pair<std::string, structure_type>& s) const
           {
-            apply (*this, s);
+            _struct (s);
           }
 
         private:
@@ -53,7 +103,7 @@ namespace pnet
         , const std::unordered_map<std::string, std::string>& m
         )
       {
-        apply (mapper (m), s);
+        boost::apply_visitor (apply_struct<mapper> (mapper (m)), s);
       }
     }
   }

@@ -915,16 +915,18 @@ namespace xml
 
           for (memory_get const& mg : fun.memory_gets())
           {
-            memory_gets.emplace_back (mg.global(), mg.local());
+            memory_gets.emplace_back (mg.global(), mg.local(), boost::none);
           }
           for (memory_put const& mp : fun.memory_puts())
           {
-            memory_puts.emplace_back (mp.global(), mp.local());
+            memory_puts.emplace_back
+              (mp.global(), mp.local(), mp.not_modified_in_module_call());
           }
           for (memory_getput const& mgp : fun.memory_getputs())
           {
-            memory_gets.emplace_back (mgp.global(), mgp.local());
-            memory_puts.emplace_back (mgp.global(), mgp.local());
+            memory_gets.emplace_back (mgp.global(), mgp.local(), boost::none);
+            memory_puts.emplace_back
+              (mgp.global(), mgp.local(), mgp.not_modified_in_module_call());
           }
 
           we_transition_type trans

@@ -27,17 +27,11 @@ int main(int ac, char *av[])
   std::string pidfile;
   bool daemonize = false;
 
-  bool reuse_address (true);
-  std::string store_path;
-
   po::options_description desc ("options");
   desc.add_options()
     ("help,h", "print this help")
     ("bind", po::value<std::string>()->required(), "bind to this address")
     ("port", po::value<std::string>()->required(), "port or service name to use")
-    ("reuse-address", po::value<bool>(&reuse_address)->default_value(reuse_address), "reuse address")
-    ("store,s", po::value<std::string>(&store_path), "path to persistent store")
-    ("clear,C", "start with an empty store")
     ("pidfile", po::value<std::string>(&pidfile)->required(), "write pid to pidfile (required)")
     ("daemonize", "daemonize after all checks were successful")
     ;
@@ -86,22 +80,7 @@ int main(int ac, char *av[])
 
     fhg::util::pidfile_writer pidfile_writer (pidfile);
 
-    fhg::com::kvs::server::kvsd kvsd
-      (boost::optional<std::string> (!store_path.empty(), store_path));
-    if (vm.count ("clear"))
-    {
-      kvsd.clear ("");
-    }
-
-    signal_handler.add ( SIGHUP
-                       , [&kvsd] (int, siginfo_t*, void*) { kvsd.clear (""); }
-                       );
-    signal_handler.add ( SIGUSR1
-                       , [&kvsd] (int, siginfo_t*, void*) { kvsd.save(); }
-                       );
-    signal_handler.add ( SIGUSR2
-                       , [&kvsd] (int, siginfo_t*, void*) { kvsd.load(); }
-                       );
+    fhg::com::kvs::server::kvsd kvsd;
 
     fhg::com::tcp_server server ( io_service
                                 , kvsd
@@ -109,7 +88,7 @@ int main(int ac, char *av[])
                                 ? "0"
                                 : vm["bind"].as<std::string>()
                                 , vm["port"].as<std::string>()
-                                , reuse_address
+                                , true
                                 );
 
     std::cout << server.port() << std::endl;
@@ -124,8 +103,6 @@ int main(int ac, char *av[])
 
     io_service.notify_fork (boost::asio::io_service::fork_child);
     io_service.run();
-
-    kvsd.save();
 
     if (not pidfile.empty())
     {

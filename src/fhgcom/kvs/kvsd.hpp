@@ -13,7 +13,6 @@
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/time_serialize.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/serialization/map.hpp>
@@ -76,107 +75,6 @@ namespace fhg
           operator () (fhg::com::kvs::message::del const & m)
           {
             store_.del (m.key());
-            return fhg::com::kvs::message::error ();
-          }
-
-          fhg::com::kvs::message::type
-          operator () (fhg::com::kvs::message::msg_inc const & m)
-          {
-            try
-            {
-              fhg::com::kvs::message::list list;
-              list.entries()[ m.key() ] = store_.inc(m.key(), m.step());
-              return list;
-            }
-            catch (std::exception const & ex)
-            {
-              return fhg::com::kvs::message::error
-                (fhg::com::kvs::message::error::KVS_EUNKNOWN, ex.what());
-            }
-          }
-
-          fhg::com::kvs::message::type
-          operator () (fhg::com::kvs::message::msg_save const & m)
-          {
-            try
-            {
-              if (m.file().empty())
-                store_.save();
-              else
-                store_.save(m.file());
-              return fhg::com::kvs::message::error ();
-            }
-            catch (std::exception const & ex)
-            {
-              return fhg::com::kvs::message::error
-                (fhg::com::kvs::message::error::KVS_EUNKNOWN, ex.what());
-            }
-          }
-
-          fhg::com::kvs::message::type
-          operator () (fhg::com::kvs::message::clear const & m)
-          {
-            try
-            {
-              store_.clear (m.regexp());
-              return fhg::com::kvs::message::error ();
-            }
-            catch (std::exception const & ex)
-            {
-              return fhg::com::kvs::message::error
-                (fhg::com::kvs::message::error::KVS_EUNKNOWN, ex.what());
-            }
-          }
-
-          fhg::com::kvs::message::type
-          operator () (fhg::com::kvs::message::msg_load const & m)
-          {
-            try
-            {
-              if (m.file().empty())
-                store_.load();
-              else
-                store_.load(m.file());
-              return fhg::com::kvs::message::error ();
-            }
-            catch (std::exception const & ex)
-            {
-              return fhg::com::kvs::message::error
-                (fhg::com::kvs::message::error::KVS_EUNKNOWN, ex.what());
-            }
-          }
-
-          fhg::com::kvs::message::type
-          operator () (fhg::com::kvs::message::req_list const &)
-          {
-            fhg::com::kvs::message::list list;
-            store_.entries (list.entries());
-            return list;
-          }
-
-          fhg::com::kvs::message::type
-          operator () (fhg::com::kvs::message::msg_term const & m)
-          {
-            if (15 == m.code())
-            {
-              if (m.uid () != getuid ())
-              {
-                MLOG ( WARN
-                     , "termination requested by client:"
-                     << " code := " << m.code()
-                     << " reason := " << m.reason ()
-                     << " uid := " << m.uid ()
-                     );
-              }
-
-              kill (getpid(), SIGTERM);
-            }
-            return fhg::com::kvs::message::error ();
-          }
-
-          fhg::com::kvs::message::type
-          operator () (fhg::com::kvs::message::msg_ping const &)
-          {
             return fhg::com::kvs::message::error ();
           }
 
@@ -247,16 +145,6 @@ namespace fhg
           typedef std::unordered_map<key_type, entry_type> store_type;
           typedef boost::unique_lock<boost::recursive_mutex> lock_t;
 
-          explicit
-          kvsd (const boost::optional<std::string> & file)
-            : file_(file)
-          {
-            if (file_ && boost::filesystem::exists (*file_))
-            {
-                load ();
-            }
-          }
-
           virtual ~kvsd() = default;
 
           void put ( fhg::com::kvs::message::put::map_type const & m
@@ -271,17 +159,6 @@ namespace fhg
             {
               store_[ e->first ] = entry_type (e->second, expiry);
             }
-          }
-
-          template <typename Val>
-          void put ( key_type const & k, Val v
-                   , boost::posix_time::ptime expiry = boost::posix_time::min_date_time
-                   )
-          {
-            lock_t lock(mutex_);
-            store_[ k ] = entry_type ( boost::lexical_cast<value_type>(v)
-                                     , expiry
-                                     );
           }
 
           void get( key_type const & k
@@ -309,46 +186,6 @@ namespace fhg
             }
           }
 
-          value_type inc ( key_type const & k
-                         , int step
-                         )
-          {
-            lock_t lock(mutex_);
-
-            int value = 0;
-
-            store_type::iterator it (store_.find(k));
-            if (it != store_.end())
-            {
-              value = boost::lexical_cast<int> (it->second.value ());
-            }
-            else
-            {
-              it = store_.insert ( it
-                                 , store_type::value_type ( k
-                                                          , entry_type ("0")
-                                                          )
-                                 );
-            }
-
-            value += step;
-
-            it->second = entry_type (boost::lexical_cast<std::string> (value));
-
-            return it->second.value ();
-          }
-
-          void clear (std::string const & /*regexp*/)
-          {
-            lock_t lock(mutex_);
-
-            const std::size_t count (store_.size());
-
-            store_.clear ();
-
-            LOG_IF(INFO, count > 0, "cleared " << count << " entries");
-          }
-
           void del (key_type const & k)
           {
             lock_t lock(mutex_);
@@ -371,82 +208,6 @@ namespace fhg
             } while (changed);
           }
 
-          void save () const
-          {
-            save (file_);
-          }
-
-          void save (boost::optional<std::string> const & file) const
-          {
-            if (!file) return;
-
-            std::ofstream ofs (file->c_str());
-            if (ofs)
-            {
-              boost::archive::xml_oarchive ar(ofs);
-
-              lock_t lock(mutex_);
-              std::map<key_type, entry_type> tmp_map_ (store_.begin(), store_.end());
-              ar << boost::serialization::make_nvp("kvsd", tmp_map_);
-            }
-            else
-            {
-              throw std::runtime_error ("could not save to file: " + *file);
-            }
-          }
-
-          void load ()
-          {
-            load (file_);
-          }
-
-          void load (boost::optional<std::string> const & file)
-          {
-            if (!file)
-            {
-              return;
-            }
-
-            std::ifstream ifs (file->c_str());
-            if (ifs)
-            {
-              boost::archive::xml_iarchive ar(ifs);
-              std::map<key_type, entry_type> tmp_map_;
-              ar >> boost::serialization::make_nvp("kvsd", tmp_map_);
-
-              lock_t lock(mutex_);
-              store_.clear ();
-              store_.insert (tmp_map_.begin(), tmp_map_.end());
-
-              LOG(INFO, "loaded " << store_.size() << " entries");
-            }
-            else
-            {
-              throw std::runtime_error ("could not load from file: " + *file);
-            }
-          }
-
-          void entries (std::map<std::string, std::string> & m) const
-          {
-            lock_t lock(mutex_);
-            std::list <std::string> to_delete;
-            for ( store_type::const_iterator e (store_.begin())
-                ; e != store_.end()
-                ; ++e
-                )
-            {
-              if (not e->second.is_expired ())
-                m[e->first] = e->second.value ();
-              else
-                to_delete.push_back (e->first);
-            }
-
-            while (not to_delete.empty ())
-            {
-              const_cast<kvsd*>(this)->del (to_delete.front ());
-              to_delete.pop_front ();
-            }
-          }
         protected:
           virtual void on_data_hook
             (boost::shared_ptr<session> client, const std::string &s) override
@@ -478,7 +239,6 @@ namespace fhg
           }
         private:
           mutable boost::recursive_mutex mutex_;
-          boost::optional<std::string> file_;
           store_type store_;
         };
       }

@@ -149,7 +149,7 @@ function agent_status ()
     local pids=()
 
     for p in ${still_running[@]} ; do
-        name_opt=$(cat /proc/$p/cmdline | tr '\0' '\n' | grep -A1 -e '^-n$' | tail -n 1)
+        name_opt=$(cat /proc/$p/cmdline 2>/dev/null | tr '\0' '\n' | grep -A1 -e '^-n$' | tail -n 1)
         if [ "$name_opt" = "$name" ] ; then
             pids+=( $p )
         fi

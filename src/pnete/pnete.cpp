@@ -83,7 +83,13 @@ int main (int argc, char *argv[])
 
   try
   {
-    fhg::pnete::PetriNetEditor pente (plugin_paths, argc, argv);
+    std::list<fhg::util::scoped_dlhandle> plugins;
+    for (std::string path : plugin_paths)
+    {
+      plugins.emplace_back (path);
+    }
+
+    fhg::pnete::PetriNetEditor pente (plugins, argc, argv);
     pente.startup ();
 
     return pente.exec ();
@@ -109,16 +115,13 @@ namespace fhg
         }
     }
     PetriNetEditor::PetriNetEditor
-        (std::vector<std::string> plugin_paths, int& argc, char *argv[])
+        (std::list<util::scoped_dlhandle> const& plugins, int& argc, char *argv[])
       : QApplication (argc, argv)
       , _splash (QPixmap (":/pente.png"))
+      , _data_manager()
+      , _plugins (plugins)
       , _editor_windows ()
-    {
-      for (std::string path : plugin_paths)
-      {
-        _plugins.emplace_back (path);
-      }
-    }
+    {}
 
     void PetriNetEditor::startup ()
     {
@@ -165,7 +168,7 @@ namespace fhg
 
     ui::editor_window* PetriNetEditor::create_editor_window()
     {
-      _editor_windows << new ui::editor_window (_plugins);
+      _editor_windows << new ui::editor_window (_data_manager, _plugins);
 
       return _editor_windows.back();
     }

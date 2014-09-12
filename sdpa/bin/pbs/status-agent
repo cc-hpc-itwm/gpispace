@@ -41,7 +41,7 @@ function agent_status ()
 
     if [ -n "$name" ] ; then
         for p in $pids ; do
-            agent_name=$(cat /proc/$p/cmdline | tr '\0' '\n' | grep -A1 -e '^-n$' | tail -n 1)
+            agent_name=$(cat /proc/$p/cmdline 2>/dev/null | tr '\0' '\n' | grep -A1 -e '^-n$' | tail -n 1)
             if [ "$agent_name" = "$name" ] ; then
                 echo "$p"
                 return 0

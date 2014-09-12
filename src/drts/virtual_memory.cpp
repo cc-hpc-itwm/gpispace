@@ -3,6 +3,8 @@
 #include <drts/drts.hpp>
 #include <drts/virtual_memory.hpp>
 
+#include <we/type/value/poke.hpp>
+
 #include <fhg/util/make_unique.hpp>
 
 #include <gpi-space/pc/client/api.hpp>
@@ -57,7 +59,8 @@ namespace gspc
                    , std::string const& description
                    )
       : _api (api)
-      , _handle_id (vmem_alloc (_api, size, description))
+      , _size (size)
+      , _handle_id (vmem_alloc (_api, _size, description))
       , _disowned (false)
     {}
     ~implementation()
@@ -69,6 +72,7 @@ namespace gspc
     }
     implementation (implementation&& other)
       : _api (std::move (other._api))
+      , _size (std::move (other._size))
       , _handle_id (std::move (other._handle_id))
       , _disowned (std::move (other._disowned))
     {
@@ -76,6 +80,7 @@ namespace gspc
     }
 
     std::unique_ptr<gpi::pc::client::api_t> const& _api;
+    unsigned long const _size;
     gpi::pc::type::handle_id_t _handle_id;
     bool _disowned;
   };
@@ -102,6 +107,17 @@ namespace gspc
     oss << _->_handle_id;
 
     return oss.str();
+  }
+  pnet::type::value::value_type vmem_allocation::global_memory_range() const
+  {
+    pnet::type::value::value_type name;
+    pnet::type::value::poke ("name", name, handle());
+    pnet::type::value::value_type range;
+    pnet::type::value::poke ("handle", range, name);
+    pnet::type::value::poke ("offset", range, 0UL);
+    pnet::type::value::poke ("size", range, _->_size);
+
+    return range;
   }
   vmem_allocation::vmem_allocation (vmem_allocation&& other)
     : _ (std::move (other._))

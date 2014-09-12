@@ -2071,33 +2071,3 @@ BOOST_AUTO_TEST_CASE (token_set_is_subset)
   require_evaluating_to
     ("set_is_subset (set_insert (Set{}, 1), set_insert (Set{}, 2))", false);
 }
-
-BOOST_AUTO_TEST_CASE (token_len)
-{
-  for (int _ (0); _ < 100; ++_)
-  {
-    std::string const s (fhg::util::random_string_without ("\"\\"));
-
-    require_evaluating_to
-      ((boost::format ("len (\"%1%\")") % s).str(), s.size());
-  }
-}
-
-//! \todo find out where and why substr is used
-//! \todo mark it as deprecated
-//! \todo remove it
-BOOST_AUTO_TEST_CASE (token_substr)
-{
-  for (int _ (0); _ < 10; ++_)
-  {
-    std::string const s (fhg::util::random_string_without ("\"\\"));
-
-    for (long l (0); l < static_cast<long> (s.size()); ++l)
-    {
-      require_evaluating_to
-        ( (boost::format ("substr (\"%1%\", %2%L)") % s % l).str()
-        , s.substr (0, l)
-        );
-    }
-  }
-}

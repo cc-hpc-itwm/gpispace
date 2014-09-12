@@ -5,7 +5,6 @@ set(hdrs
 set (core_srcs
   core/plugin.cpp
   core/kernel.cpp
-  core/license.cpp
 )
 
 add_library(fhg-plugin ${core_srcs})
@@ -23,14 +22,6 @@ install (TARGETS fhg-plugin-shared
 
 target_link_libraries (fhg-plugin ${FhgLog_LIBRARY})
 target_link_libraries (fhg-plugin-shared ${FhgLog_LIBRARY})
-
-if (ENABLE_LICENSE_CHECK)
-  target_link_libraries (fhg-plugin ${NACL_LIBRARY})
-  target_link_libraries (fhg-plugin-shared ${NACL_LIBRARY})
-
-  set_target_properties(fhg-plugin        PROPERTIES COMPILE_DEFINITIONS "FHG_ENABLE_LICENSE_CHECK")
-  set_target_properties(fhg-plugin-shared PROPERTIES COMPILE_DEFINITIONS "FHG_ENABLE_LICENSE_CHECK")
-endif()
 
 target_link_libraries(fhg-plugin ${UTIL_LIBRARIES} ${CMAKE_DL_LIBS})
 target_link_libraries(fhg-plugin-shared ${UTIL_LIBRARIES} ${CMAKE_DL_LIBS})

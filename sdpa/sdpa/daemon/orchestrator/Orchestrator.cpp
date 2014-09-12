@@ -16,7 +16,7 @@ namespace sdpa
                                , const std::string& url
                                , std::string kvs_host, std::string kvs_port
                                )
-      : GenericDaemon (name, url, kvs_host, kvs_port)
+      : GenericDaemon (name, url, kvs_host, kvs_port, boost::none)
     {}
 
     std::list<agent_id_t> Orchestrator::subscribers (job_id_t job_id) const

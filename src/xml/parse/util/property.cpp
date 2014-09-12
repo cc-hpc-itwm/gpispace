@@ -17,19 +17,19 @@ namespace xml
     {
       namespace property
       {
-        namespace property = we::type::property;
-
-        void set ( const state::type& state
-                 , property::type& prop
-                 , const property::path_type& path
-                 , const property::value_type& value
-                 )
+        namespace
         {
-          const boost::optional<pnet::type::value::value_type> old
-            (prop.get (path));
-          prop.set (path, value);
+          void set ( const state::type& state
+                   , we::type::property::type& prop
+                   , const we::type::property::path_type& path
+                   , const we::type::property::value_type& value
+                   )
+          {
+            const boost::optional<pnet::type::value::value_type> old
+              (prop.get (path));
+            prop.set (path, value);
 
-          if (old)
+            if (old)
             {
               state.warn
                 ( warning::property_overwritten ( path
@@ -39,12 +39,13 @@ namespace xml
                                                 )
                 );
             }
+          }
         }
 
         void set_state ( state::type& state
-                       , property::type& prop
-                       , const property::path_type& path
-                       , const property::value_type& value
+                       , we::type::property::type& prop
+                       , const we::type::property::path_type& path
+                       , const we::type::property::value_type& value
                        )
         {
           state.interpret_property (path, value);
@@ -53,8 +54,8 @@ namespace xml
         }
 
         void join ( const state::type& state
-                  , property::type& x
-                  , const property::type& y
+                  , we::type::property::type& x
+                  , const we::type::property::type& y
                   )
         {
           typedef std::pair< std::list<std::string>

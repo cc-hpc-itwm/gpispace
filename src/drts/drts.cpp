@@ -321,23 +321,12 @@ namespace gspc
       }
     }
 
-    command_boot << topology_description;
+    command_boot << " " << topology_description;
 
     system (command_boot.str(), "start runtime system");
 
     if (_virtual_memory_per_node)
     {
-      std::cerr << "waiting for virtual memory manager" << std::flush;
-
-      while (!boost::filesystem::exists (*_virtual_memory_socket))
-      {
-        std::cerr << "." << std::flush;
-
-        std::this_thread::sleep_for (std::chrono::milliseconds (200));
-      }
-
-      std::cerr << " OKAY" << std::endl;
-
       _virtual_memory_api->start();
     }
   }

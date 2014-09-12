@@ -20,9 +20,3 @@ fhg_add_test(counter.cpp
   BOOST_UNIT_TEST
   PROJECT util
 )
-
-fhg_add_test(hex.cpp
-  BOOST_UNIT_TEST
-  PROJECT util
-  LINK_LIBRARIES fhg-util
-)

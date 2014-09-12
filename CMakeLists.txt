@@ -6,7 +6,6 @@ set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE ST
 SET (SHARED_DIRECTORY_FOR_TESTS "$ENV{HOME}" CACHE PATH
   "shared directory for tests"
 )
-OPTION (ENABLE_LICENSE_CHECK "enable license check" OFF)
 
 execute_process (
   COMMAND git rev-parse HEAD
@@ -132,7 +131,6 @@ add_subdirectory (test)
 
 INCLUDE (InstallRequiredSystemLibraries)
 
-add_subdirectory (playground/ap/licensing)
 add_subdirectory (playground/bl)
 
 include (cmake_parse_arguments)

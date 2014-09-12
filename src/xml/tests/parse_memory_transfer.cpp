@@ -45,20 +45,35 @@ BOOST_AUTO_TEST_CASE (memory_get_is_stored_in_function)
       (function.get().memory_gets().begin()->local(), local);
 }
 
-BOOST_AUTO_TEST_CASE (memory_put_is_stored_in_function)
+namespace
 {
-  std::string const global (fhg::util::random_content_string());
-  std::string const local (fhg::util::random_content_string());
+  std::string const attr_not_modified_in_module_call
+    (boost::optional<bool> not_modified_in_module_call)
+  {
+    return not_modified_in_module_call
+      ? ( boost::format (" not-modified-in-module-call=\"%1%\"")
+        % (*not_modified_in_module_call ? "true" : "false")
+        ).str()
+      : ""
+      ;
+  }
 
-  std::string const input
-    ( ( boost::format (R"EOS(
+  void check_memory_put_is_stored_in_function
+    (boost::optional<bool> not_modified_in_module_call)
+  {
+    std::string const global (fhg::util::random_content_string());
+    std::string const local (fhg::util::random_content_string());
+
+    std::string const input
+      ( ( boost::format (R"EOS(
 <defun>
-  <memory-put><global>%1%</global><local>%2%</local></memory-put>
+  <memory-put%3%><global>%1%</global><local>%2%</local></memory-put>
 </defun>)EOS")
-      % global
-      % local
-      ).str()
-    );
+        % global
+        % local
+        % attr_not_modified_in_module_call (not_modified_in_module_call)
+        ).str()
+      );
 
     std::istringstream input_stream (input);
 
@@ -71,22 +86,38 @@ BOOST_AUTO_TEST_CASE (memory_put_is_stored_in_function)
       (function.get().memory_puts().begin()->global(), global);
     BOOST_REQUIRE_EQUAL
       (function.get().memory_puts().begin()->local(), local);
+    BOOST_REQUIRE_EQUAL
+      ( function.get().memory_puts().begin()->not_modified_in_module_call()
+      , not_modified_in_module_call
+      );
+  }
 }
 
-BOOST_AUTO_TEST_CASE (memory_getput_is_stored_in_function)
+BOOST_AUTO_TEST_CASE (memory_put_is_stored_in_function)
 {
-  std::string const global (fhg::util::random_content_string());
-  std::string const local (fhg::util::random_content_string());
+  check_memory_put_is_stored_in_function (boost::none);
+  check_memory_put_is_stored_in_function (true);
+  check_memory_put_is_stored_in_function (false);
+}
 
-  std::string const input
-    ( ( boost::format (R"EOS(
+namespace
+{
+  void check_memory_getput_is_stored_in_function
+    (boost::optional<bool> not_modified_in_module_call)
+  {
+    std::string const global (fhg::util::random_content_string());
+    std::string const local (fhg::util::random_content_string());
+
+    std::string const input
+      ( ( boost::format (R"EOS(
 <defun>
-  <memory-getput><global>%1%</global><local>%2%</local></memory-getput>
+  <memory-getput%3%><global>%1%</global><local>%2%</local></memory-getput>
 </defun>)EOS")
-      % global
-      % local
-      ).str()
-    );
+        % global
+        % local
+        % attr_not_modified_in_module_call (not_modified_in_module_call)
+        ).str()
+      );
 
     std::istringstream input_stream (input);
 
@@ -99,6 +130,18 @@ BOOST_AUTO_TEST_CASE (memory_getput_is_stored_in_function)
       (function.get().memory_getputs().begin()->global(), global);
     BOOST_REQUIRE_EQUAL
       (function.get().memory_getputs().begin()->local(), local);
+    BOOST_REQUIRE_EQUAL
+      ( function.get().memory_getputs().begin()->not_modified_in_module_call()
+      , not_modified_in_module_call
+      );
+  }
+}
+
+BOOST_AUTO_TEST_CASE (memory_getput_is_stored_in_function)
+{
+  check_memory_getput_is_stored_in_function (boost::none);
+  check_memory_getput_is_stored_in_function (true);
+  check_memory_getput_is_stored_in_function (false);
 }
 
 namespace
