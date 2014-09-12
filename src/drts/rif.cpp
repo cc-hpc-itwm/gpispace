@@ -74,6 +74,24 @@ namespace gspc
       }
       return pid;
     }
+
+    void run_asynchronously_and_wait ( const std::list<rif_t::endpoint_t>& rifs
+                                     , std::function<void (rif_t::endpoint_t const&)> fun
+                                     )
+    {
+      std::list<std::future<void>> background_tasks;
+      for (const rif_t::endpoint_t& rif : rifs)
+      {
+        background_tasks.emplace_back
+          (std::async (std::launch::async, [&rif, &fun] {
+              fun (rif);
+            }));
+      }
+      for (std::future<void> & f : background_tasks)
+      {
+        f.wait();
+      }
+    }
   }
 
   rif_t::rif_t (boost::filesystem::path const& root)
