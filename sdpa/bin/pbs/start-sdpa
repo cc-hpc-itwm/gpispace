@@ -518,7 +518,7 @@ if $gpi_enabled ; then
         "${sdpa}" -s "${state_dir}" stop
         error 3 "could not start gpi-space: ${vmem_pid}"
     else
-        echo "${vmem_pid}" > "$state_dir/gpi-space.pid"
+        echo "${vmem_pid}" > "$state_dir/vmem.pid"
     fi
 
     # HACK: GPI does _not_ use that nodefile. We can just hope that

@@ -541,9 +541,9 @@ function start_gui ()
 
 function stop_gpi ()
 {
-    log "gpi"
-    if ! stop_proc "gpi-space" "gpi-space" ; then
-        log "E: could not stop gpi"
+    log "vmem"
+    if ! stop_proc "vmem" "gaspirun" ; then
+        log "E: could not stop vmem"
         return 1
     else
         return 0
@@ -599,7 +599,7 @@ function status_kvs ()
 
 function status_gpi ()
 {
-    is_proc_alive "gpi-space" $(cat "$state_dir/gpi-space.pid" 2>/dev/null)
+    is_proc_alive "gaspirun" $(cat "$state_dir/vmem.pid" 2>/dev/null)
 }
 
 function status ()
