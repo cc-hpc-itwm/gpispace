@@ -20,7 +20,7 @@ fhg_add_runtime_executable (fhgkvsd.cpp
                  ${Boost_THREAD_LIBRARY}
 )
 
-fhg_add_runtime_executable (gaspirun.cpp
+fhg_add_runtime_executable (vmem.cpp
   LINK_LIBRARIES fhg-util
                  gspc
                  ${FhgLog_LIBRARY}

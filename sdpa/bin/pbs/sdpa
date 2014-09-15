@@ -539,10 +539,10 @@ function start_gui ()
     "$SDPA_HOME/bin/sdpa-gui" $gui_port $log_port &
 }
 
-function stop_gpi ()
+function stop_vmem ()
 {
     log "vmem"
-    if ! stop_proc "vmem" "gaspirun" ; then
+    if ! stop_proc "vmem" "vmem" ; then
         log "E: could not stop vmem"
         return 1
     else
@@ -570,7 +570,7 @@ function start ()
 
 function stop ()
 {
-    local parts="drts agg orch gpi kvs"
+    local parts="drts agg orch vmem kvs"
 
     local p
     local rc=0
@@ -597,16 +597,16 @@ function status_kvs ()
     is_proc_alive "fhgkvsd" $(cat "$state_dir/fhgkvsd.pid" 2>/dev/null)
 }
 
-function status_gpi ()
+function status_vmem ()
 {
-    is_proc_alive "gaspirun" $(cat "$state_dir/vmem.pid" 2>/dev/null)
+    is_proc_alive "vmem" $(cat "$state_dir/vmem.pid" 2>/dev/null)
 }
 
 function status ()
 {
     local parts=$1
     if [ -z "$parts" ] ; then
-        parts="kvs orch agg gpi drts"
+        parts="kvs orch agg vmem drts"
     else
         shift
     fi

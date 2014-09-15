@@ -232,7 +232,7 @@ gpi_mem=0
 gpi_socket=
 def_shm_mem=0
 def_num_proc=1
-def_gpi_socket="/tmp/S-gpi-space.$(id -u)"
+def_gpi_socket="/tmp/S-vmem.$(id -u)"
 vmem_timeout=
 
 if [ ${#@} -eq 0 ] ; then
@@ -498,10 +498,10 @@ if $gpi_enabled ; then
     fi
 
     info "using SHM mem: ${def_shm_mem} bytes per process (by default)"
-    info "using GPI mem: ${gpi_mem} bytes per node"
-    info "starting GPI on: '${gpi_socket}' with a timeout of $((vmem_timeout / 1000)) seconds"
+    info "using VMEM mem: ${gpi_mem} bytes per node"
+    info "starting VMEM on: '${gpi_socket}' with a timeout of $((vmem_timeout / 1000)) seconds"
 
-    vmem_pid=$("${sdpa_home}/bin/gaspirun" \
+    vmem_pid=$("${sdpa_home}/bin/vmem" \
         --nodefile "${nodefile}" \
         --state-directory "${state_dir}" \
         --gspc-home "${sdpa_home}" \
@@ -516,7 +516,7 @@ if $gpi_enabled ; then
     if [ $ec -ne 0 ]
     then
         "${sdpa}" -s "${state_dir}" stop
-        error 3 "could not start gpi-space: ${vmem_pid}"
+        error 3 "could not start vmem: ${vmem_pid}"
     else
         echo "${vmem_pid}" > "$state_dir/vmem.pid"
     fi
