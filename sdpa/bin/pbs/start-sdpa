@@ -521,8 +521,6 @@ if $gpi_enabled ; then
         echo "${vmem_pid}" > "$state_dir/vmem.pid"
     fi
 
-    # HACK: GPI does _not_ use that nodefile. We can just hope that
-    # the user specified the same as GPI uses!
     for host in $(sort -u "${nodefile}")
     do
       echo -n "I: Checking for virtual memory socket on '${host}' "
