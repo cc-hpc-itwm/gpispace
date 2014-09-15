@@ -53,6 +53,8 @@ namespace gspc
     boost::filesystem::path const _gspc_home;
   };
 
+  typedef std::string job_id_t;
+
   class scoped_runtime_system
   {
   public:
@@ -63,13 +65,30 @@ namespace gspc
 
     ~scoped_runtime_system();
 
+    job_id_t submit
+      ( boost::filesystem::path const& workflow
+      , std::multimap< std::string
+                     , pnet::type::value::value_type
+                     > const& values_on_ports
+      ) const;
+    std::multimap<std::string, pnet::type::value::value_type>
+      wait_and_extract (job_id_t) const;
+
     std::multimap<std::string, pnet::type::value::value_type>
       put_and_run
       ( boost::filesystem::path const& workflow
       , std::multimap< std::string
                      , pnet::type::value::value_type
                      > const& values_on_ports
-      ) const;
+      ) const
+    {
+      return wait_and_extract (submit (workflow, values_on_ports));
+    }
+
+    void put_token ( job_id_t
+                   , std::string place_name
+                   , pnet::type::value::value_type
+                   ) const;
 
     vmem_allocation alloc
       (unsigned long size, std::string const& description) const;
@@ -101,6 +120,9 @@ namespace gspc
     std::pair<std::list<std::string>, unsigned long> const
       _nodes_and_number_of_unique_nodes;
     std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
+
+    std::string _kvs_host;
+    unsigned short _kvs_port;
   };
 
   void set_gspc_home ( boost::program_options::variables_map&

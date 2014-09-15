@@ -16,6 +16,8 @@
 #include <sdpa/job_states.hpp>
 #include <sdpa/client.hpp>
 
+#include <we/type/value/read.hpp>
+
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -260,6 +262,7 @@ int main (int argc, char **argv) {
      "delete: \tdelete a finished job, arg must specify the job-id\n"
      "wait: \twait until the job reaches a final state\n"
      "discover: \tdiscover the states of the known jobs\n"
+     "put_token: \tput token onto place in job\n"
      )
     ;
   cfg.tool_hidden_opts().add_options()
@@ -477,6 +480,20 @@ int main (int argc, char **argv) {
       const std::string job_id (args.front());
       sdpa::discovery_info_t discovery_result (api.discoverJobStates(discover_id, job_id));
       std::cout<<"discovery result: "<<discovery_result<<std::endl;
+    }
+    else if (command == "put_token")
+    {
+      if (args.size() == 3)
+      {
+        throw std::invalid_argument
+          ("put_token requires <job_id> <place_name> <value>");
+      }
+
+      sdpa::job_id_t const job_id (args.at (0));
+      std::string const place_name (args.at (1));
+      std::string const value (args.at (2));
+
+      api.put_token (job_id, place_name, pnet::type::value::read (value));
     }
     else
     {
