@@ -52,8 +52,6 @@ namespace gspc
     boost::filesystem::path const _gspc_home;
   };
 
-  typedef std::string job_id_t;
-
   class scoped_runtime_system
   {
   public:
@@ -63,31 +61,6 @@ namespace gspc
                           );
 
     ~scoped_runtime_system();
-
-    job_id_t submit
-      ( boost::filesystem::path const& workflow
-      , std::multimap< std::string
-                     , pnet::type::value::value_type
-                     > const& values_on_ports
-      ) const;
-    std::multimap<std::string, pnet::type::value::value_type>
-      wait_and_extract (job_id_t) const;
-
-    std::multimap<std::string, pnet::type::value::value_type>
-      put_and_run
-      ( boost::filesystem::path const& workflow
-      , std::multimap< std::string
-                     , pnet::type::value::value_type
-                     > const& values_on_ports
-      ) const
-    {
-      return wait_and_extract (submit (workflow, values_on_ports));
-    }
-
-    void put_token ( job_id_t
-                   , std::string place_name
-                   , pnet::type::value::value_type
-                   ) const;
 
     vmem_allocation alloc
       (unsigned long size, std::string const& description) const;
@@ -109,6 +82,7 @@ namespace gspc
 
   private:
     friend class vmem_allocation;
+    friend class client;
 
     installation const _installation;
     boost::filesystem::path const _state_directory;

@@ -3,6 +3,7 @@
 #define BOOST_TEST_MODULE we_input_is_copied_to_output_in_module_calls
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
 
 #include <test/make.hpp>
@@ -71,10 +72,11 @@ BOOST_AUTO_TEST_CASE (we_input_is_copied_to_output_in_module_calls)
   gspc::scoped_runtime_system const drts (vm, installation, "work:1");
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    (drts.put_and_run ( make.build_directory()
-                      / "input_is_copied_to_output_in_module_calls.pnet"
-                      , {{"p", p}}
-                      )
+    ( gspc::client (drts)
+    . put_and_run ( make.build_directory()
+                  / "input_is_copied_to_output_in_module_calls.pnet"
+                  , {{"p", p}}
+                  )
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 1);

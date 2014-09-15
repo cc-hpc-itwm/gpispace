@@ -3,6 +3,7 @@
 #define BOOST_TEST_MODULE tutorial_virtual
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
 
 #include <test/make.hpp>
@@ -69,7 +70,7 @@ BOOST_AUTO_TEST_CASE (tutorial_virtual)
   gspc::scoped_runtime_system const drts (vm, installation, "work:4");
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    ( drts.put_and_run
+    ( gspc::client (drts).put_and_run
       (make.build_directory() / "work_and_wait.pnet", {{"n", 5L}})
     );
 

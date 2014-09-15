@@ -3,6 +3,7 @@
 #define BOOST_TEST_MODULE we_transition_cannot_fire_when_input_port_is_not_connected
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
 
 #include <test/make.hpp>
@@ -64,7 +65,7 @@ BOOST_AUTO_TEST_CASE
   gspc::scoped_runtime_system const drts (vm, installation, "work:2");
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    ( drts.put_and_run
+    ( gspc::client (drts).put_and_run
       ( make.build_directory() / "transition_with_unconnected_input_port.pnet"
       , {{"i", 0L}}
       )
