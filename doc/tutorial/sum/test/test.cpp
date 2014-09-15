@@ -3,6 +3,7 @@
 #define BOOST_TEST_MODULE tutorial_sum
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
 
 #include <test/make.hpp>
@@ -47,7 +48,11 @@ namespace
       );
 
     std::multimap<std::string, pnet::type::value::value_type> const result
-      (drts.put_and_run (pnet, {{"p", pair (3, 4)}, {"p", pair (-2, 3)}}));
+      ( gspc::client (drts)
+      . put_and_run ( gspc::workflow (pnet)
+                    , {{"p", pair (3, 4)}, {"p", pair (-2, 3)}}
+                    )
+      );
 
     BOOST_REQUIRE_EQUAL (result.size(), 2);
 

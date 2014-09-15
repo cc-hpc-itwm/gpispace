@@ -3,6 +3,7 @@
 #define BOOST_TEST_MODULE tutorial_n_of_m
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
 
 #include <test/make.hpp>
@@ -78,8 +79,8 @@ namespace
       (vm, installation, "work:" + std::to_string (num_worker));
 
     std::multimap<std::string, pnet::type::value::value_type> const result
-      ( drts.put_and_run
-        ( make.build_directory() / "n_of_m.pnet"
+      ( gspc::client (drts).put_and_run
+        ( gspc::workflow (make.build_directory() / "n_of_m.pnet")
         , { {"n", 12L}
           , {"c", 4L}
           , {"config", config}

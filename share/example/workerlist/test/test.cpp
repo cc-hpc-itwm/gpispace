@@ -3,6 +3,7 @@
 #define BOOST_TEST_MODULE share_example_workerlist
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
 
 #include <test/make.hpp>
@@ -35,9 +36,11 @@ namespace
       (vm, installation, "worker:" + std::to_string (num_worker));
 
     std::multimap<std::string, pnet::type::value::value_type> const result
-      (drts.put_and_run ( make.build_directory() / "workerlist.pnet"
-                        , {{"num_workers", num_worker}}
-                        )
+      ( gspc::client (drts)
+      . put_and_run
+        ( gspc::workflow (make.build_directory() / "workerlist.pnet")
+        , {{"num_workers", num_worker}}
+        )
       );
 
     BOOST_REQUIRE_EQUAL (result.size(), 2);

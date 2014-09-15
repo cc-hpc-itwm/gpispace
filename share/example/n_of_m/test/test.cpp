@@ -3,6 +3,7 @@
 #define BOOST_TEST_MODULE share_example_n_of_m
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
 
 #include <test/make.hpp>
@@ -85,8 +86,8 @@ BOOST_AUTO_TEST_CASE (share_example_n_of_m)
   gspc::scoped_runtime_system const drts (vm, installation, "worker:12");
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    ( drts.put_and_run
-      ( make.build_directory() / "n_of_m.pnet"
+    ( gspc::client (drts).put_and_run
+      ( gspc::workflow (make.build_directory() / "n_of_m.pnet")
       , { {"m", 25L}
         , {"parallel", 2L}
         , {"cmd"
