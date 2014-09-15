@@ -28,8 +28,9 @@ fhg_add_test (test.cpp
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/../../"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-       --virtual-memory-manager "${CMAKE_INSTALL_PREFIX}/bin/gpi-space"
        --virtual-memory-per-node ${size_virtual_memory}
+       --virtual-memory-timeout 60000
+       --virtual-memory-port 10820
        --implementation "${location_log_map-impl}"
        --size-input ${size_input}
        --size-output ${size_output}
