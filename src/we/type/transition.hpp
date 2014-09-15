@@ -146,6 +146,11 @@ namespace we { namespace type {
         return boost::get<T> (e.ast().eval_all (context));
       }
 
+      void set_property (std::string const& key, std::string const& value)
+      {
+        prop_.set (key, value);
+      }
+
     private:
       std::string name_;
       data_type data_;
