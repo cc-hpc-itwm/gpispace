@@ -8,6 +8,8 @@
 #include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
 
+#include <we/type/range.hpp>
+
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
@@ -83,7 +85,7 @@ namespace gpi
         memset (const gpi::pc::type::handle_t h, int value, size_t count);
 
         std::function<double (std::string const&)>
-        transfer_costs (std::list<transfer_t> const&);
+        transfer_costs (std::list<std::pair<we::local::range, we::global::range>> const&);
 
         void * ptr(const gpi::pc::type::handle_t h);
 
