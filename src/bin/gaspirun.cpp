@@ -4,6 +4,7 @@
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/daemonize.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
+#include <fhg/util/thread/event.hpp>
 
 #include <drts/drts.hpp>
 #include <drts/vmem.hpp>
@@ -141,8 +142,6 @@ int main (int argc, char *argv[])
 
   gspc::rif_t rif ("/dev/shm");
 
-  volatile bool done = false;
-
   gspc::vmem_t vmem ( vm
                     , gspc::installation (vm)
                     , rif
@@ -150,21 +149,6 @@ int main (int argc, char *argv[])
                     , vm[option::kvs_host.name].as<validators::nonempty_string>()
                     , vm[option::kvs_port.name].as<validators::positive_integral<unsigned short>>()
                     );
-  signal_handlers.add (SIGINT, [&done] (int, siginfo_t*, void*) {
-      std::async (std::launch::async, [&done] {
-          done = true;
-        });
-    });
-  signal_handlers.add (SIGTERM, [&done] (int, siginfo_t*, void*) {
-      std::async (std::launch::async, [&done] {
-          done = true;
-        });
-    });
-  signal_handlers.add (SIGCHLD, [&done] (int, siginfo_t*, void*) {
-      std::async (std::launch::async, [&done] {
-          done = true;
-        });
-    });
 
   boost::optional<pid_t> child (fhg::util::fork_and_daemonize_child());
   if (child)
@@ -173,10 +157,25 @@ int main (int argc, char *argv[])
     exit (EXIT_SUCCESS);
   }
 
-  while (! done)
-  {
-    usleep (1000);
-  }
+  fhg::util::thread::event<void> done;
+
+  signal_handlers.add (SIGINT, [&done] (int, siginfo_t*, void*) {
+      std::async (std::launch::async, [&done] {
+          done.notify();
+        });
+    });
+  signal_handlers.add (SIGTERM, [&done] (int, siginfo_t*, void*) {
+      std::async (std::launch::async, [&done] {
+          done.notify();
+        });
+    });
+  signal_handlers.add (SIGCHLD, [&done] (int, siginfo_t*, void*) {
+      std::async (std::launch::async, [&done] {
+          done.notify();
+        });
+    });
+
+  done.wait();
 
   return 0;
 }
