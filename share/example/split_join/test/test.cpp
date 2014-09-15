@@ -3,6 +3,7 @@
 #define BOOST_TEST_MODULE share_example_split_join
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
 
 #include <test/make.hpp>
@@ -94,7 +95,9 @@ BOOST_AUTO_TEST_CASE (share_example_split_join)
   }
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    (drts.put_and_run (make.build_directory() / (main + ".pnet"), input));
+    ( gspc::client (drts)
+    . put_and_run (make.build_directory() / (main + ".pnet"), input)
+    );
 
   std::vector<long> const expected_output
     (vm[option_expected_output].as<std::vector<long>>());

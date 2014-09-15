@@ -3,6 +3,7 @@
 #define BOOST_TEST_MODULE share_example_concurrent
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
 
 #include <test/make.hpp>
@@ -60,9 +61,10 @@ BOOST_AUTO_TEST_CASE (share_example_concurrent)
   gspc::scoped_runtime_system const drts (vm, installation, "");
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    (drts.put_and_run ( make.build_directory() / "concurrent.pnet"
-                      , {{"N", 1000L}}
-                      )
+    ( gspc::client (drts)
+    . put_and_run ( make.build_directory() / "concurrent.pnet"
+                  , {{"N", 1000L}}
+                  )
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 10);

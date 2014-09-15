@@ -3,6 +3,7 @@
 #define BOOST_TEST_MODULE share_selftest
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
 
 #include <test/make.hpp>
@@ -71,9 +72,10 @@ BOOST_AUTO_TEST_CASE (share_selftest)
     std::string const challenge (fhg::util::random_string_without ("\"\\"));
 
     std::multimap<std::string, pnet::type::value::value_type> const result
-      (drts.put_and_run ( make.build_directory() / "selftest.pnet"
-                        , {{"challenge", challenge}}
-                        )
+      ( gspc::client (drts)
+      . put_and_run ( make.build_directory() / "selftest.pnet"
+                    , {{"challenge", challenge}}
+                    )
       );
 
     BOOST_REQUIRE_EQUAL (result.size(), 1);

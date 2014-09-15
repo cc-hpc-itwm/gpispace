@@ -3,6 +3,7 @@
 #define BOOST_TEST_MODULE sdpa_test_drts_should_handle_multiple_workflows_being_submitted_during_lifetime
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
 
 #include <test/make.hpp>
@@ -75,9 +76,10 @@ BOOST_AUTO_TEST_CASE (sdpa_test_drts_should_handle_multiple_workflows_being_subm
     for (int i (0); i < 2; ++i)
     {
       std::multimap<std::string, pnet::type::value::value_type> const result
-        (drts.put_and_run ( make.build_directory() / "selftest.pnet"
-                          , {{"challenge", challenge}}
-                          )
+        ( gspc::client (drts)
+        . put_and_run ( make.build_directory() / "selftest.pnet"
+                      , {{"challenge", challenge}}
+                      )
         );
 
       BOOST_REQUIRE_EQUAL (result.size(), 1);

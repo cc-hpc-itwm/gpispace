@@ -3,6 +3,7 @@
 #define BOOST_TEST_MODULE share_example_use_sequence
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
 
 #include <test/make.hpp>
@@ -70,7 +71,7 @@ namespace
 
     gspc::scoped_runtime_system const drts (vm, installation, "work:4");
 
-    return drts.put_and_run
+    return gspc::client (drts).put_and_run
       (make.build_directory() / (main + ".pnet"), {{"n", n}});
   }
 }
