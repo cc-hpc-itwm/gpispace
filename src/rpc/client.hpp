@@ -37,7 +37,7 @@ namespace fhg
       remote_endpoint ( boost::asio::io_service& io_service
                       , std::string host
                       , unsigned short port
-                      , exception::deserialization_functions
+                      , exception::serialization_functions
                       );
 
       template<typename C>
@@ -53,9 +53,9 @@ namespace fhg
       template<typename> friend struct remote_function;
       template<typename> friend struct aggregated_remote_function;
 
-      exception::deserialization_functions _deserialization_functions;
-      exception::aggregated_deserialization_functions
-        _aggregated_deserialization_functions;
+      exception::serialization_functions _serialization_functions;
+      exception::aggregated_serialization_functions
+        _aggregated_serialization_functions;
 
       std::unique_ptr<network::connection_type> _connection;
 
@@ -140,8 +140,8 @@ namespace fhg
               std::rethrow_exception
                 ( exception::deserialize
                   ( result->blob()
-                  , _endpoint._deserialization_functions
-                  , _endpoint._aggregated_deserialization_functions
+                  , _endpoint._serialization_functions
+                  , _endpoint._aggregated_serialization_functions
                   )
                 );
             }
@@ -184,10 +184,12 @@ namespace fhg
     public:
       aggregated_remote_function
           (remote_endpoint& endpoint, std::string function)
-        : _aggregated_deserialization_function
-          ( endpoint._aggregated_deserialization_functions
+        : _aggregated_serialization_functions
+          ( endpoint._aggregated_serialization_functions
           , typeid (R).name()
-          , &exception::aggregated_deserialize<R>
+          , { &exception::aggregated_serialize<R>
+            , &exception::aggregated_deserialize<R>
+            }
           )
         , _function (endpoint, function)
       {}
@@ -205,8 +207,8 @@ namespace fhg
       }
 
     private:
-      util::scoped_map_insert<exception::aggregated_deserialization_functions>
-        _aggregated_deserialization_function;
+      util::scoped_map_insert<exception::aggregated_serialization_functions>
+        _aggregated_serialization_functions;
       remote_function<aggregated_results<R> (endpoints_type, Args...)> _function;
     };
 

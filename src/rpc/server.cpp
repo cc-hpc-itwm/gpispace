@@ -8,7 +8,7 @@ namespace fhg
   {
     service_dispatcher::service_dispatcher
         (exception::serialization_functions functions)
-      : _from_exception_ptr_functions (std::move (functions))
+      : _serialization_functions (std::move (functions))
     {}
 
     void service_dispatcher::dispatch
@@ -40,7 +40,7 @@ namespace fhg
             return std::make_pair
               ( true
               , exception::serialize ( std::current_exception()
-                                     , _from_exception_ptr_functions
+                                     , _serialization_functions
                                      , _aggregated_serialization_functions
                                      )
               );

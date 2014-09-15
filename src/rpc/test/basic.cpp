@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE (int_ping)
     ( io_service_client.service
     , server.acceptor.local_endpoint().address().to_string()
     , server.acceptor.local_endpoint().port()
-    , fhg::rpc::exception::deserialization_functions()
+    , fhg::rpc::exception::serialization_functions()
     );
   fhg::rpc::remote_function<int (int)> ping (endpoint, "ping");
 
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE (int_ping_sync)
     ( io_service_client.service
     , server.acceptor.local_endpoint().address().to_string()
     , server.acceptor.local_endpoint().port()
-    , fhg::rpc::exception::deserialization_functions()
+    , fhg::rpc::exception::serialization_functions()
     );
   fhg::rpc::sync_remote_function<int (int)> ping (endpoint, "ping");
 
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE (user_defined_type_echo)
     ( io_service_client.service
     , server.acceptor.local_endpoint().address().to_string()
     , server.acceptor.local_endpoint().port()
-    , fhg::rpc::exception::deserialization_functions()
+    , fhg::rpc::exception::serialization_functions()
     );
   fhg::rpc::sync_remote_function<user_defined_type (user_defined_type)> echo
     (endpoint, "echo");

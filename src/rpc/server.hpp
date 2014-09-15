@@ -44,7 +44,7 @@ namespace fhg
         , std::function<std::string (std::string)>
         > _handlers;
 
-      exception::serialization_functions _from_exception_ptr_functions;
+      exception::serialization_functions _serialization_functions;
       exception::aggregated_serialization_functions
         _aggregated_serialization_functions;
     };
@@ -93,16 +93,18 @@ namespace fhg
           , std::function<boost::asio::io_service&()> io_service
           )
         : _impl (impl)
-        , _aggregated_serialization_function
+        , _aggregated_serialization_functions
           ( manager._aggregated_serialization_functions
           , typeid (R).name()
-          , &exception::aggregated_serialize<R>
+          , { &exception::aggregated_serialize<R>
+            , &exception::aggregated_deserialize<R>
+            }
           )
         , _handler_registration
           ( manager._handlers
           , name
           , thunk<aggregated_results<R> (endpoints_type, Args...)>
-            ( [this, is_endpoint, split, select, io_service, name]
+            ( [this, is_endpoint, split, select, io_service, name, manager]
                 (endpoints_type endpoints, Args... args)
               {
                 std::list<std::future<aggregated_results<R>>> result_futures;
@@ -141,7 +143,7 @@ namespace fhg
                     ( io_service()
                     , endpoint.address().to_string()
                     , endpoint.port()
-                    , exception::deserialization_functions()
+                    , manager._serialization_functions
                     );
 
                   remote_functions.emplace_back (remote_endpoints.back(), name);
@@ -174,7 +176,7 @@ namespace fhg
     private:
       std::function<R (Args...)> _impl;
       util::scoped_map_insert<exception::aggregated_serialization_functions>
-        _aggregated_serialization_function;
+        _aggregated_serialization_functions;
       util::unique_scoped_map_insert<decltype (service_dispatcher::_handlers)>
         _handler_registration;
     };

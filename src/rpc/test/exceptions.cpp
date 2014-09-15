@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE (std_exceptions)
     ( io_service_client.service
     , server.acceptor.local_endpoint().address().to_string()
     , server.acceptor.local_endpoint().port()
-    , fhg::rpc::exception::deserialization_functions()
+    , fhg::rpc::exception::serialization_functions()
     );
   fhg::rpc::sync_remote_function<void (int)> require_lt_0
     (endpoint, "require_lt_0");
@@ -123,8 +123,18 @@ namespace
 BOOST_AUTO_TEST_CASE (user_defined_exceptions)
 {
   fhg::rpc::service_dispatcher service_dispatcher
-    ( { { "ude", &user_defined_exception::from_exception_ptr }
-      , { "udsrte", &user_defined_std_runtime_error::from_exception_ptr }
+    ( { { "ude"
+        , { &user_defined_exception::from_exception_ptr
+          , &user_defined_exception::to_exception_ptr
+          , &user_defined_exception::throw_with_nested
+          }
+        }
+      , { "udsrte"
+        , { &user_defined_std_runtime_error::from_exception_ptr
+          , &user_defined_std_runtime_error::to_exception_ptr
+          , &user_defined_std_runtime_error::throw_with_nested
+          }
+        }
       }
     );
   fhg::rpc::service_handler<void (bool, int)> start_service
@@ -149,11 +159,13 @@ BOOST_AUTO_TEST_CASE (user_defined_exceptions)
     ( io_service_client.service
     , server.acceptor.local_endpoint().address().to_string()
     , server.acceptor.local_endpoint().port()
-    , { { "ude", { &user_defined_exception::to_exception_ptr
+    , { { "ude", { &user_defined_exception::from_exception_ptr
+                 , &user_defined_exception::to_exception_ptr
                  , &user_defined_exception::throw_with_nested
                  }
         }
-      , { "udsrte", { &user_defined_std_runtime_error::to_exception_ptr
+      , { "udsrte", { &user_defined_std_runtime_error::from_exception_ptr
+                    , &user_defined_std_runtime_error::to_exception_ptr
                     , &user_defined_std_runtime_error::throw_with_nested
                     }
         }
@@ -193,7 +205,7 @@ BOOST_AUTO_TEST_CASE (user_defined_std_exceptions_are_downcast_automatically_ser
     ( io_service_client.service
     , server.acceptor.local_endpoint().address().to_string()
     , server.acceptor.local_endpoint().port()
-    , fhg::rpc::exception::deserialization_functions()
+    , fhg::rpc::exception::serialization_functions()
     );
   fhg::rpc::sync_remote_function<void (int)> throw_exception
     (endpoint, "throw_exception");
@@ -208,7 +220,14 @@ BOOST_AUTO_TEST_CASE (user_defined_std_exceptions_are_downcast_automatically_ser
 BOOST_AUTO_TEST_CASE (user_defined_std_exceptions_are_downcast_automatically_client)
 {
   fhg::rpc::service_dispatcher service_dispatcher
-    ({{"udsrte", &user_defined_std_runtime_error::from_exception_ptr}});
+    ({{ "udsrte"
+      , { &user_defined_std_runtime_error::from_exception_ptr
+        , &user_defined_std_runtime_error::to_exception_ptr
+        , &user_defined_std_runtime_error::throw_with_nested
+        }
+      }
+     }
+    );
   fhg::rpc::service_handler<void (int)> start_service
     ( service_dispatcher
     , "throw_exception"
@@ -224,7 +243,7 @@ BOOST_AUTO_TEST_CASE (user_defined_std_exceptions_are_downcast_automatically_cli
     ( io_service_client.service
     , server.acceptor.local_endpoint().address().to_string()
     , server.acceptor.local_endpoint().port()
-    , fhg::rpc::exception::deserialization_functions()
+    , fhg::rpc::exception::serialization_functions()
     );
   fhg::rpc::sync_remote_function<void (int)> throw_exception
     (endpoint, "throw_exception");
@@ -239,7 +258,14 @@ BOOST_AUTO_TEST_CASE (user_defined_std_exceptions_are_downcast_automatically_cli
 BOOST_AUTO_TEST_CASE (nested_exceptions)
 {
   fhg::rpc::service_dispatcher service_dispatcher
-    ({{"ude", &user_defined_exception::from_exception_ptr}});
+    ({{ "ude"
+      , { &user_defined_exception::from_exception_ptr
+        , &user_defined_exception::to_exception_ptr
+        , &user_defined_exception::throw_with_nested
+        }
+      }
+     }
+    );
   fhg::rpc::service_handler<void (bool, int)> start_service
     ( service_dispatcher
     , "throw_exception"
@@ -269,7 +295,8 @@ BOOST_AUTO_TEST_CASE (nested_exceptions)
     ( io_service_client.service
     , server.acceptor.local_endpoint().address().to_string()
     , server.acceptor.local_endpoint().port()
-    , { { "ude", { &user_defined_exception::to_exception_ptr
+    , { { "ude", { &user_defined_exception::from_exception_ptr
+                 , &user_defined_exception::to_exception_ptr
                  , &user_defined_exception::throw_with_nested
                  }
         }

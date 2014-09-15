@@ -16,9 +16,9 @@ namespace fhg
         ( boost::asio::io_service& io_service
         , std::string host
         , unsigned short port
-        , exception::deserialization_functions functions
+        , exception::serialization_functions functions
         )
-      : _deserialization_functions (std::move (functions))
+      : _serialization_functions (std::move (functions))
       , _connection
         ( network::connect_client<boost::asio::ip::tcp>
           ( io_service

@@ -30,7 +30,7 @@ int main (int argc, char** argv)
   fhg::rpc::remote_endpoint endpoint
     ( io_service
     , argv[1], std::stoi (argv[2])
-    , fhg::rpc::exception::deserialization_functions()
+    , fhg::rpc::exception::serialization_functions()
     );
 
   fhg::rpc::remote_function<pid_t (std::string, std::vector<std::string>)> start

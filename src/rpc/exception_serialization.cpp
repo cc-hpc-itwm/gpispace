@@ -98,9 +98,9 @@ namespace fhg
           user_defined_exception_data() = default;
 
           [[noreturn]] void throw_with_nested
-            (deserialization_functions const&) const;
+            (serialization_functions const&) const;
           std::exception_ptr to_exception_ptr
-            (deserialization_functions const&) const;
+            (serialization_functions const&) const;
 
           static boost::optional<user_defined_exception_data>
             from_exception_ptr ( std::exception_ptr
@@ -167,8 +167,8 @@ namespace fhg
           std::string _data;
 
           std::exception_ptr to_exception_ptr
-            ( aggregated_deserialization_functions const&
-            , deserialization_functions const&
+            ( aggregated_serialization_functions const&
+            , serialization_functions const&
             ) const;
           static boost::optional<aggregated_exception_data>
             from_exception_ptr ( std::exception_ptr
@@ -494,13 +494,13 @@ namespace fhg
         }
 
         [[noreturn]] void user_defined_exception_data::throw_with_nested
-          (deserialization_functions const& functions) const
+          (serialization_functions const& functions) const
         {
-          deserialization_functions::const_iterator const it
+          serialization_functions::const_iterator const it
             (functions.find (_function));
           if (it != functions.end())
           {
-            it->second.second (_blob);
+            it->second.throw_with_nested (_blob);
             UNREACHABLE();
           }
           else if (_fallback)
@@ -515,13 +515,13 @@ namespace fhg
           }
         }
         std::exception_ptr user_defined_exception_data::to_exception_ptr
-          (deserialization_functions const& functions) const
+          (serialization_functions const& functions) const
         {
-          deserialization_functions::const_iterator const it
+          serialization_functions::const_iterator const it
             (functions.find (_function));
           if (it != functions.end())
           {
-            return it->second.first (_blob);
+            return it->second.to_ptr (_blob);
           }
           else if (_fallback)
           {
@@ -541,9 +541,10 @@ namespace fhg
             , boost::optional<builtin_exception_data> fallback
             )
         {
-          for (std::pair<std::string, from_exception_ptr_type> const& fun : funs)
+          for (serialization_functions::value_type const& fun : funs)
           {
-            boost::optional<std::string> exception_data (fun.second (exception));
+            boost::optional<std::string> exception_data
+              (fun.second.from_ptr (exception));
 
             if (exception_data)
             {
@@ -556,15 +557,15 @@ namespace fhg
         }
 
         std::exception_ptr aggregated_exception_data::to_exception_ptr
-          ( aggregated_deserialization_functions const& aggregated_functions
-          , deserialization_functions const& functions
+          ( aggregated_serialization_functions const& aggregated_functions
+          , serialization_functions const& functions
           ) const
         {
-          aggregated_deserialization_functions::const_iterator const it
+          aggregated_serialization_functions::const_iterator const it
             (aggregated_functions.find (_typeid_name));
           if (it != aggregated_functions.end())
           {
-            return it->second (_data, functions, aggregated_functions);
+            return it->second.deserialize (_data, functions, aggregated_functions);
           }
           else
           {
@@ -584,7 +585,7 @@ namespace fhg
               )
           {
             boost::optional<std::string> exception_data
-              (fun.second (exception, functions, aggregated_functions));
+              (fun.second.serialize (exception, functions, aggregated_functions));
 
             if (exception_data)
             {
@@ -668,8 +669,8 @@ namespace fhg
 
         std::exception_ptr deserialize_exception_impl
           ( exception_data data
-          , deserialization_functions const& functions
-          , aggregated_deserialization_functions const& aggregated_functions
+          , serialization_functions const& functions
+          , aggregated_serialization_functions const& aggregated_functions
           )
         {
           struct data_visitor : public boost::static_visitor<std::exception_ptr>
@@ -716,8 +717,8 @@ namespace fhg
                       UNREACHABLE();
                     }
 
-                    deserialization_functions const& _functions;
-                    nested_visitor (deserialization_functions const& funs)
+                    serialization_functions const& _functions;
+                    nested_visitor (serialization_functions const& funs)
                       : _functions (funs)
                     {}
                   } const visitor {_functions};
@@ -741,10 +742,10 @@ namespace fhg
               return data.to_exception_ptr (_aggregated_functions, _functions);
             }
 
-            deserialization_functions const& _functions;
-            aggregated_deserialization_functions const& _aggregated_functions;
-            data_visitor ( deserialization_functions const& funs
-                         , aggregated_deserialization_functions const& aggfuns
+            serialization_functions const& _functions;
+            aggregated_serialization_functions const& _aggregated_functions;
+            data_visitor ( serialization_functions const& funs
+                         , aggregated_serialization_functions const& aggfuns
                          )
               : _functions (funs)
               , _aggregated_functions (aggfuns)
@@ -773,8 +774,8 @@ namespace fhg
 
       std::exception_ptr deserialize
         ( std::string blob
-        , deserialization_functions const& functions
-        , aggregated_deserialization_functions const& aggregated_functions
+        , serialization_functions const& functions
+        , aggregated_serialization_functions const& aggregated_functions
         )
       {
         std::istringstream is (blob);
