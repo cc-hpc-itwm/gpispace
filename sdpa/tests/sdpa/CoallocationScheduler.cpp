@@ -263,6 +263,31 @@ BOOST_FIXTURE_TEST_CASE
   _scheduler.assignJobsToWorkers();
 }
 
+BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
+                        , serveJob_checking_scheduler_and_job_manager
+                        )
+{
+  sdpa::worker_id_t const worker_id (utils::random_peer_name());
+
+  _scheduler.worker_manager().addWorker (worker_id, boost::none, {}, false);
+
+  sdpa::job_id_t const job_id_0 (utils::random_peer_name());
+  add_job (job_id_0, {});
+  _scheduler.enqueueJob (job_id_0);
+  expect_serveJob_call (job_id_0, {worker_id});
+  _scheduler.assignJobsToWorkers();
+
+  sdpa::job_id_t const job_id_1 (utils::random_peer_name());
+  add_job (job_id_1, {});
+  _scheduler.enqueueJob (job_id_1);
+  _scheduler.assignJobsToWorkers();
+
+  _scheduler.worker_manager().findWorker (worker_id)->deleteJob (job_id_0);
+
+  expect_serveJob_call (job_id_1, {worker_id});
+  _scheduler.assignJobsToWorkers();
+}
+
 BOOST_FIXTURE_TEST_CASE
   (multiple_worker_job_submissions_with_requirements, serveJob_checking_scheduler_and_job_manager)
 {
@@ -284,6 +309,37 @@ BOOST_FIXTURE_TEST_CASE
   sdpa::job_id_t const job_id_1 (utils::random_peer_name());
   add_job (job_id_1, require ("B"));
   _scheduler.enqueueJob (job_id_1);
+  expect_serveJob_call (job_id_1, {worker_id});
+  _scheduler.assignJobsToWorkers();
+}
+
+BOOST_FIXTURE_TEST_CASE ( multiple_worker_job_submissions_with_requirements_no_children_allowed
+                        , serveJob_checking_scheduler_and_job_manager
+                        )
+{
+  sdpa::worker_id_t const worker_id (utils::random_peer_name());
+
+  _scheduler.worker_manager().addWorker ( worker_id
+                                        , boost::none
+                                        , { sdpa::capability_t ("A", worker_id)
+                                          , sdpa::capability_t ("B", worker_id)
+                                          }
+                                        , false
+                                        );
+
+  sdpa::job_id_t const job_id_0 (utils::random_peer_name());
+  add_job (job_id_0, require ("A"));
+  _scheduler.enqueueJob (job_id_0);
+  expect_serveJob_call (job_id_0, {worker_id});
+  _scheduler.assignJobsToWorkers();
+
+  sdpa::job_id_t const job_id_1 (utils::random_peer_name());
+  add_job (job_id_1, require ("B"));
+  _scheduler.enqueueJob (job_id_1);
+  _scheduler.assignJobsToWorkers();
+
+  _scheduler.worker_manager().findWorker (worker_id)->deleteJob (job_id_0);
+
   expect_serveJob_call (job_id_1, {worker_id});
   _scheduler.assignJobsToWorkers();
 }
