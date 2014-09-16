@@ -14,9 +14,9 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
+#include <list>
 #include <map>
 #include <set>
-#include <list>
 #include <string>
 #include <utility>
 
