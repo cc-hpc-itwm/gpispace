@@ -18,6 +18,7 @@
 #include <set>
 #include <list>
 #include <string>
+#include <utility>
 
 namespace gpi
 {

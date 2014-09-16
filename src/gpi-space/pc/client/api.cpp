@@ -9,9 +9,6 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
-#include <list>
-#include <utility>
-
 #include <sys/un.h>
 
 namespace
