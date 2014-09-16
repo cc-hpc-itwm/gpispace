@@ -40,7 +40,7 @@ namespace sdpa
 
       // capabilities
       const capabilities_set_t& capabilities() const;
-      const bool children_allowed() const { return children_allowed_;}
+      bool children_allowed() const { return children_allowed_;}
 
       bool addCapabilities(const capabilities_set_t& cpbset);
       void removeCapabilities(const capabilities_set_t& cpbset);
