@@ -23,6 +23,7 @@ namespace fhg
         virtual void advance (std::size_t) = 0;
         virtual bool end() const = 0;
         virtual std::size_t eaten() const = 0;
+        virtual std::string eat (std::size_t) = 0;
 
         virtual std::string error_message (const std::string&) const = 0;
       };
@@ -56,6 +57,12 @@ namespace fhg
         virtual std::size_t eaten() const override
         {
           return _k;
+        }
+        virtual std::string eat (std::size_t n) override
+        {
+          std::string const ret (_pos, _pos + n);
+          advance (n);
+          return ret;
         }
 
         virtual std::string error_message (const std::string&) const override;
@@ -97,6 +104,12 @@ namespace fhg
         {
           return _k;
         }
+        virtual std::string eat (std::size_t n) override
+        {
+          std::string const ret (_pos, _pos + n);
+          advance (n);
+          return ret;
+        }
 
         virtual std::string error_message (const std::string&) const override;
 
@@ -133,6 +146,16 @@ namespace fhg
         virtual std::size_t eaten() const override
         {
           return _k;
+        }
+        virtual std::string eat (std::size_t n) override
+        {
+          std::string ret;
+          while (n --> 0)
+          {
+            ret += operator*();
+            operator++();
+          }
+          return ret;
         }
 
         virtual std::string error_message (const std::string&) const override;

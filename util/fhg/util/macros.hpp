@@ -20,4 +20,8 @@
       ).str() \
      );
 
+//! \todo more than just gcc?
+#define UNREACHABLE()                           \
+  __builtin_unreachable()
+
 #endif
