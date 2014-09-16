@@ -10,7 +10,9 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/functional/hash.hpp>
 
+#if __cplusplus >= 201103L
 #include <functional>
+#endif
 
 namespace we
 {
