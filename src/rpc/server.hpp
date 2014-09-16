@@ -72,6 +72,27 @@ namespace fhg
         _handler_registration;
     };
 
+    namespace
+    {
+      //! \note Workaround for gcc bug not allowing variadic capture in lambda.
+      template<typename R, typename... Args>
+        aggregated_results<R> wrap_or_throw_wrapped
+          ( endpoint_type endpoint
+          , std::function<R (Args...)> impl
+          , Args... args
+          )
+      {
+        try
+        {
+          return {{endpoint, impl (args...)}};
+        }
+        catch (...)
+        {
+          throw aggregated_exception<R> ({{endpoint, std::current_exception()}});
+        }
+      }
+    }
+
     template<typename> struct aggregated_service_handler;
     template<typename R, typename... Args>
       struct aggregated_service_handler<R (Args...)> : boost::noncopyable
@@ -116,20 +137,11 @@ namespace fhg
                   endpoint_type this_endpoint (std::move (*this_endpoint_it));
                   endpoints.erase (this_endpoint_it);
                   result_futures.emplace_back
-                    ( std::async
-                    ( [this, this_endpoint, &args..., name]() -> aggregated_results<R>
-                      {
-                        try
-                        {
-                          return {{this_endpoint, _impl (args...)}};
-                        }
-                        catch (...)
-                        {
-                          throw aggregated_exception<R>
-                            ({{this_endpoint, std::current_exception()}});
-                        }
-                      }
-                      )
+                    ( std::async ( &wrap_or_throw_wrapped<R, Args...>
+                                 , std::move (this_endpoint)
+                                 , _impl
+                                 , args...
+                                 )
                     );
                 }
 
