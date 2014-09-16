@@ -866,10 +866,12 @@ void DRTSImpl::start_connect ()
     if (! master_it->second)
     {
       sdpa::events::WorkerRegistrationEvent::Ptr evt
-        (new sdpa::events::WorkerRegistrationEvent( m_my_name
-                                                  , master_it->first
-                                                  , m_backlog_size
-                                                  )
+        (new sdpa::events::WorkerRegistrationEvent ( m_my_name
+                                                   , master_it->first
+                                                   , m_backlog_size
+                                                   , sdpa::capabilities_set_t()
+                                                   , false
+                                                   )
         );
 
       try
