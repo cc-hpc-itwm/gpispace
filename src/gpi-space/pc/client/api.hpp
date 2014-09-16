@@ -7,6 +7,7 @@
 #include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
+#include <gpi-space/pc/type/memory_location.hpp>
 
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
