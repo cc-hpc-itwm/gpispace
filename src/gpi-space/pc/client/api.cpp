@@ -233,7 +233,7 @@ namespace gpi
       }
 
       std::function<double (std::string const&)>
-      api_t::transfer_costs (std::list<transfer_t> const&)
+      api_t::transfer_costs (std::list<std::pair<we::local::range, we::global::range>> const&)
       {
         //! \todo get actual values from vmem backend
         return [] (std::string const&) -> double
