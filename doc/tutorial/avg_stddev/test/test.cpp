@@ -3,7 +3,6 @@
 #define BOOST_TEST_MODULE doc_tutorial_avg_stddev
 #include <boost/test/unit_test.hpp>
 
-#include <drts/client.hpp>
 #include <drts/drts.hpp>
 
 #include <test/make.hpp>
@@ -126,15 +125,14 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
   gspc::scoped_runtime_system const drts (vm, installation, "worker:4");
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    ( gspc::client (drts)
-    . put_and_run ( make.build_directory() / "avg_stddev.pnet"
-                  , { {"name_file", data_file.string()}
-                    , {"size_file", long (sizeof (long) * num_values)}
-                    , {"size_chunk", size_chunk}
-                    , {"size_buffer", size_buffer}
-                    , {"num_buffer", num_buffer}
-                    }
-                  )
+    (drts.put_and_run ( make.build_directory() / "avg_stddev.pnet"
+                      , { {"name_file", data_file.string()}
+                        , {"size_file", long (sizeof (long) * num_values)}
+                        , {"size_chunk", size_chunk}
+                        , {"size_buffer", size_buffer}
+                        , {"num_buffer", num_buffer}
+                        }
+                      )
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 2);

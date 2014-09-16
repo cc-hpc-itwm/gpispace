@@ -3,7 +3,6 @@
 #define BOOST_TEST_MODULE token_put
 #include <boost/test/unit_test.hpp>
 
-#include <drts/client.hpp>
 #include <drts/drts.hpp>
 
 #include <test/make.hpp>
@@ -73,21 +72,19 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
     );
 
   gspc::scoped_runtime_system const drts (vm, installation, "worker:2");
-  gspc::client client (drts);
 
   gspc::job_id_t const job_id
-    ( client
-    . submit ( make.build_directory() / "wait_for_token_put.pnet"
-             , { {"filename_to_wait_for", filename.string()}
-               , {"timeout_in_seconds", 5U}
-               }
-             )
+    ( drts.submit ( make.build_directory() / "wait_for_token_put.pnet"
+                  , { {"filename_to_wait_for", filename.string()}
+                    , {"timeout_in_seconds", 5U}
+                    }
+                  )
     );
 
-  client.put_token (job_id, "filename_to_touch", filename.string());
+  drts.put_token (job_id, "filename_to_touch", filename.string());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    (client.wait_and_extract (job_id));
+    (drts.wait_and_extract (job_id));
 
   std::string const port_name ("touched_and_waited");
 

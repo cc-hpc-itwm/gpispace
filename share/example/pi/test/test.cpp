@@ -3,7 +3,6 @@
 #define BOOST_TEST_MODULE share_example_pi
 #include <boost/test/unit_test.hpp>
 
-#include <drts/client.hpp>
 #include <drts/drts.hpp>
 
 #include <test/make.hpp>
@@ -72,16 +71,15 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
   gspc::scoped_runtime_system const drts (vm, installation, "worker:12");
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    ( gspc::client (drts)
-    . put_and_run ( make.build_directory() / "pi.pnet"
-                  , { {"num_packet", 500L}
-                    , {"points_per_packet", 1000000L}
-                    , {"credit_generate", 20L}
-                    , {"credit_run", 10L}
-                    , {"credit_get_key", 20L}
-                    , {"seed", 3141L}
-                    }
-                  )
+    (drts.put_and_run ( make.build_directory() / "pi.pnet"
+                      , { {"num_packet", 500L}
+                        , {"points_per_packet", 1000000L}
+                        , {"credit_generate", 20L}
+                        , {"credit_run", 10L}
+                        , {"credit_get_key", 20L}
+                        , {"seed", 3141L}
+                        }
+                      )
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 1);

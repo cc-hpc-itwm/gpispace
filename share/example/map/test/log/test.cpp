@@ -3,7 +3,6 @@
 #define BOOST_TEST_MODULE share_example_map_log
 #include <boost/test/unit_test.hpp>
 
-#include <drts/client.hpp>
 #include <drts/drts.hpp>
 #include <drts/virtual_memory.hpp>
 
@@ -151,7 +150,7 @@ BOOST_AUTO_TEST_CASE (share_example_map_log)
     (drts.alloc (size_output, "map_output"));
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    ( gspc::client (drts).put_and_run
+    ( drts.put_and_run
       ( make.build_directory() / "map.pnet"
       , { {"input", allocation_input.global_memory_range()}
         , {"output", allocation_output.global_memory_range()}
