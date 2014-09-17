@@ -31,21 +31,25 @@ State:
   [x] low latency in one process
   [x] low latency between two processes
   [x] no dependency on data size
+  [?] low latency between two processes on different nodes
 
 - fhgcom-tcp_nodelay: (tried but probably failed to set up correctly [1])
   [?] low latency in one process
   [?] low latency between two processes
   [?] no dependency on data size
+  [?] low latency between two processes on different nodes
 
 - lnl:
   [.] low latency in one process
   [?] low latency between two processes
   [.] no dependecy on data size
+  [?] low latency between two processes on different nodes
 
 - lnl-tcp_nodelay:
   [x] low latency in one process
   [?] low latency between two processes
   [?] no dependecy on data size
+  [?] low latency between two processes on different nodes
 
 
 [1] Diff: Setup tcp_nodelay in fhgcom
