@@ -77,6 +77,10 @@ namespace gspc
     {
       return _nodes_and_number_of_unique_nodes.second;
     }
+    std::unique_ptr<gpi::pc::client::api_t> const& virtual_memory_api() const
+    {
+      return _virtual_memory_api;
+    }
 
     scoped_runtime_system (scoped_runtime_system const&) = delete;
     scoped_runtime_system& operator= (scoped_runtime_system const&) = delete;
