@@ -14,19 +14,15 @@ namespace fhg
       template <typename T>
         class event : boost::noncopyable
       {
-        typedef boost::mutex mutex_type;
-        typedef boost::condition_variable condition_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
-
         T                         m_event;
         bool                      m_signalled {false};
-        mutable mutex_type        m_mutex;
-        mutable condition_type    m_condition;
+        mutable boost::mutex        m_mutex;
+        mutable boost::condition_variable    m_condition;
       public:
 
         T wait()
         {
-          lock_type lock(m_mutex);
+          boost::mutex::scoped_lock lock(m_mutex);
 
           while (! m_signalled)
           {
@@ -39,7 +35,7 @@ namespace fhg
 
         void notify (T u)
         {
-          lock_type lock(m_mutex);
+          boost::mutex::scoped_lock lock(m_mutex);
           m_event = std::move (u);
           m_signalled = true;
           m_condition.notify_one();
