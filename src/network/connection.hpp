@@ -44,7 +44,7 @@ namespace fhg
 
     private:
       void start_read();
-      void start_write();
+      void maybe_start_write();
 
       boost::asio::generic::stream_protocol::socket _socket;
       filter_type _encrypt;
@@ -57,8 +57,9 @@ namespace fhg
       boost::optional<std::vector<char>> _partial_receiving_message;
       boost::optional<std::size_t> _remaining_bytes_for_receiving_message;
 
-      std::mutex _pending_send_mutex;
+      std::mutex _pending_send_and_write_mutex;
       std::list<std::vector<char>> _pending_send;
+      bool _pending_write {false};
 
       boost::asio::io_service::strand _receive_strand;
     };

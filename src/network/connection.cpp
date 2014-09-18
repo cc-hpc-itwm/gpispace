@@ -148,9 +148,7 @@ namespace fhg
             )
         };
 
-      std::lock_guard<std::mutex> const _ (_pending_send_mutex);
-
-      const bool has_pending (!_pending_send.empty());
+      std::lock_guard<std::mutex> const _ (_pending_send_and_write_mutex);
 
       //! \note We trade avoiding concat (header, list…) with possibly
       //! multiple network transfers. It may be better to just concat
@@ -163,19 +161,27 @@ namespace fhg
         _pending_send.emplace_back (std::move (buffer));
       }
 
-      if (!has_pending)
-      {
-        start_write();
-      }
+      maybe_start_write();
     }
 
-    void connection_type::start_write()
+    //! \note Requires _pending_send_and_write_mutex to currently be locked
+    void connection_type::maybe_start_write()
     {
+      if (_pending_write || _pending_send.empty())
+      {
+        return;
+      }
+
+      _pending_write = true;
       boost::asio::async_write
         ( _socket
         , boost::asio::buffer (_pending_send.front())
         , [this] (boost::system::error_code error, std::size_t /*written*/)
         {
+          std::lock_guard<std::mutex> const _ (_pending_send_and_write_mutex);
+
+          _pending_write = false;
+
           //! \note written is only != expected, if error.
           if (error)
           {
@@ -188,14 +194,9 @@ namespace fhg
             throw boost::system::system_error (error);
           }
 
-          std::lock_guard<std::mutex> const _ (_pending_send_mutex);
-
           _pending_send.pop_front();
 
-          if (!_pending_send.empty())
-          {
-            start_write();
-          }
+          maybe_start_write();
         }
         );
     }
