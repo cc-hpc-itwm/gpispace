@@ -49,9 +49,7 @@ namespace fhg
       _socket.async_read_some
         ( boost::asio::buffer (_receive_buffer)
         , _receive_strand.wrap
-        ( [this] ( const boost::system::error_code & error
-                 , std::size_t transferred
-                 )
+        ( [this] (boost::system::error_code error, std::size_t transferred)
         {
           if (error)
           {
