@@ -145,7 +145,10 @@ namespace sdpa
         )
       {
         std::size_t matchingDeg (0);
-
+        if (job_req_set.numWorkers()>1 && pWorker->children_allowed())
+        {
+          return boost::none;
+        }
         for (we::type::requirement_t req : job_req_set.getReqList())
         {
           if (pWorker->hasCapability (req.value()))
