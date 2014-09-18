@@ -69,12 +69,20 @@ namespace fhg
             }
           }
 
-          _receive_buffer.insert ( _receive_buffer.begin()
-                                 , _receive_buffer_previous_rest.begin()
-                                 , _receive_buffer_previous_rest.end()
-                                 );
+          std::vector<char> data;
+          data.reserve (_receive_buffer_previous_rest.size() + transferred);
+          data.insert ( data.begin()
+                      , _receive_buffer_previous_rest.begin()
+                      , _receive_buffer_previous_rest.end()
+                      );
+          data.insert ( data.end()
+                      , _receive_buffer.begin()
+                      , _receive_buffer.begin() + transferred
+                      );
+
           transferred += _receive_buffer_previous_rest.size();
-          _receive_buffer_previous_rest.clear();
+
+          std::vector<char>::const_iterator pos (data.begin());
 
           while (transferred)
           {
@@ -84,26 +92,20 @@ namespace fhg
                 (std::min (*_remaining_bytes_for_receiving_message, transferred));
 
               _partial_receiving_message->insert
-                ( _partial_receiving_message->end()
-                , _receive_buffer.begin(), _receive_buffer.begin() + to_eat
-                );
-              _receive_buffer.erase
-                (_receive_buffer.begin(), _receive_buffer.begin() + to_eat);
+                (_partial_receiving_message->end(), pos, pos + to_eat);
+              pos += to_eat;
 
               *_remaining_bytes_for_receiving_message -= to_eat;
               transferred -= to_eat;
             }
-            else if (_receive_buffer.size() >= sizeof (protocol::packet_header))
+            else if (transferred >= sizeof (protocol::packet_header))
             {
               protocol::packet_header const header
-                ( *static_cast<protocol::packet_header*>
-                  (static_cast<void*> (_receive_buffer.data()))
+                ( *static_cast<protocol::packet_header const*>
+                  (static_cast<void const*> (&*pos))
                 );
 
-              _receive_buffer.erase
-                ( _receive_buffer.begin()
-                , _receive_buffer.begin() + sizeof (protocol::packet_header)
-                );
+              pos += sizeof (protocol::packet_header);
 
               _remaining_bytes_for_receiving_message = header.size;
               _partial_receiving_message = std::vector<char>();
@@ -111,7 +113,8 @@ namespace fhg
             }
             else
             {
-              std::swap (_receive_buffer_previous_rest, _receive_buffer);
+              std::vector<char> (pos, data.cend()).swap
+                (_receive_buffer_previous_rest);
               break;
             }
 
