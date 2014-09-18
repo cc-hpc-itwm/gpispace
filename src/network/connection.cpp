@@ -6,6 +6,7 @@
 #include <fhg/util/parse/position.hpp>
 
 #include <boost/asio/write.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <boost/system/system_error.hpp>
 
 namespace fhg
@@ -39,6 +40,8 @@ namespace fhg
       , _receive_strand (_socket.get_io_service())
     {
       start_read();
+
+      _socket.set_option (boost::asio::ip::tcp::no_delay (true));
     }
 
     void connection_type::start_read()
