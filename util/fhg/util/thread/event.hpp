@@ -1,5 +1,5 @@
-#ifndef FHG_UTIL_EVENT_HPP
-#define FHG_UTIL_EVENT_HPP 1
+#ifndef FHG_UTIL_THREAD_EVENT_HPP
+#define FHG_UTIL_THREAD_EVENT_HPP
 
 #include <boost/thread.hpp>
 
