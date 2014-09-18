@@ -24,10 +24,7 @@ namespace fhg
         {
           boost::mutex::scoped_lock lock (_mutex);
 
-          while (!_signalled)
-          {
-            _condition.wait (lock);
-          }
+          _condition.wait (lock, [this] { return _signalled; });
           _signalled = false;
 
           return std::move (_event);
@@ -56,10 +53,7 @@ namespace fhg
         {
           boost::mutex::scoped_lock lock (_mutex);
 
-          while (!_signalled)
-          {
-            _condition.wait(lock);
-          }
+          _condition.wait (lock, [this] { return _signalled; });
           _signalled = false;
         }
 
