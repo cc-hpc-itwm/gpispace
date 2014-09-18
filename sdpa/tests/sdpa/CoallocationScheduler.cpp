@@ -343,3 +343,71 @@ BOOST_FIXTURE_TEST_CASE ( multiple_worker_job_submissions_with_requirements_no_c
   expect_serveJob_call (job_id_1, {worker_id});
   _scheduler.assignJobsToWorkers();
 }
+
+BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_with_requirements_is_assigned_if_not_all_workers_are_leaves
+                        , serveJob_checking_scheduler_and_job_manager
+                        )
+{
+  sdpa::worker_id_t const agent_id (utils::random_peer_name());
+
+  _scheduler.worker_manager().addWorker ( agent_id
+                                        , boost::none
+                                        , {sdpa::capability_t ("A", utils::random_peer_name())}
+                                        , true
+                                        );
+
+  sdpa::worker_id_t const worker_id (utils::random_peer_name());
+  _scheduler.worker_manager().addWorker ( worker_id
+                                        , boost::none
+                                        , {sdpa::capability_t ("A", worker_id)}
+                                        , false
+                                        );
+
+  sdpa::job_id_t const job_id_0 (utils::random_peer_name());
+  add_job (job_id_0, require ("A", 2));
+  _scheduler.enqueueJob (job_id_0);
+
+  _scheduler.assignJobsToWorkers();
+
+  BOOST_REQUIRE (!_scheduler.worker_manager().findWorker (agent_id)->isReserved ());
+  BOOST_REQUIRE (!_scheduler.worker_manager().findWorker (agent_id)->has_job (job_id_0));
+
+  BOOST_REQUIRE (!_scheduler.worker_manager().findWorker (worker_id)->isReserved ());
+  BOOST_REQUIRE (!_scheduler.worker_manager().findWorker (worker_id)->has_job (job_id_0));
+
+  BOOST_REQUIRE (_scheduler.delete_job(job_id_0));
+}
+
+BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_without_requirements_is_assigned_if_not_all_workers_are_leaves
+                        , serveJob_checking_scheduler_and_job_manager
+                        )
+{
+  sdpa::worker_id_t const agent_id (utils::random_peer_name());
+  _scheduler.worker_manager().addWorker ( agent_id
+                                        , boost::none
+                                        , {}
+                                        , true
+                                        );
+
+  sdpa::worker_id_t const worker_id (utils::random_peer_name());
+  _scheduler.worker_manager().addWorker ( worker_id
+                                        , boost::none
+                                        , {}
+                                        , false
+                                        );
+
+  sdpa::job_id_t const job_id_0 (utils::random_peer_name());
+
+  add_job (job_id_0, require (2));
+  _scheduler.enqueueJob (job_id_0);
+
+  _scheduler.assignJobsToWorkers();
+
+  BOOST_REQUIRE (!_scheduler.worker_manager().findWorker (agent_id)->isReserved ());
+  BOOST_REQUIRE (!_scheduler.worker_manager().findWorker (agent_id)->has_job (job_id_0));
+
+  BOOST_REQUIRE (!_scheduler.worker_manager().findWorker (worker_id)->isReserved ());
+  BOOST_REQUIRE (!_scheduler.worker_manager().findWorker (worker_id)->has_job (job_id_0));
+
+  BOOST_REQUIRE (_scheduler.delete_job(job_id_0));
+}
