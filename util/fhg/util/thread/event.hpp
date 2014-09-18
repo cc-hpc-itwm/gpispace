@@ -19,24 +19,10 @@ namespace fhg
         typedef boost::unique_lock<mutex_type> lock_type;
 
         T                         m_event;
-        bool                      m_signalled;
+        bool                      m_signalled {false};
         mutable mutex_type        m_mutex;
         mutable condition_type    m_condition;
       public:
-        typedef T value_type;
-
-        explicit
-        event ()
-          : m_event ()
-          , m_signalled (false)
-        {}
-
-        template <typename U>
-        explicit
-        event (U const & u)
-          : m_event (u)
-          , m_signalled (false)
-        {}
 
         T wait()
         {
@@ -51,23 +37,7 @@ namespace fhg
           return std::move (m_event);
         }
 
-        template <typename U>
-        bool timed_wait(U & u, boost::system_time const& abs_time)
-        {
-          lock_type lock(m_mutex);
-          while (! m_signalled)
-          {
-            if (! m_condition.timed_wait(lock, abs_time))
-            {
-              return false;
-            }
-          }
-          u = m_event;
-          m_signalled = false;
-          return true;
-        }
-
-        void notify (value_type u)
+        void notify (T u)
         {
           lock_type lock(m_mutex);
           m_event = std::move (u);
@@ -79,15 +49,10 @@ namespace fhg
       template<>
         class event<void> : boost::noncopyable
       {
-        bool _signalled;
+        bool _signalled {false};
         mutable boost::mutex _mutex;
         mutable boost::condition_variable _condition;
       public:
-
-        event()
-          : _signalled (false)
-        {}
-
         void wait()
         {
           boost::mutex::scoped_lock lock (_mutex);
@@ -98,20 +63,6 @@ namespace fhg
           }
 
           _signalled = false;
-        }
-
-        bool timed_wait (boost::system_time const& abs_time)
-        {
-          boost::mutex::scoped_lock lock (_mutex);
-          while (!_signalled)
-          {
-            if (!_condition.timed_wait (lock, abs_time))
-            {
-              return false;
-            }
-          }
-          _signalled = false;
-          return true;
         }
 
         void notify()
