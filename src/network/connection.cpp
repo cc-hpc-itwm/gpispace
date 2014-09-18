@@ -112,7 +112,7 @@ namespace fhg
             else
             {
               std::swap (_receive_buffer_previous_rest, _receive_buffer);
-              return;
+              break;
             }
 
             if ( _remaining_bytes_for_receiving_message
