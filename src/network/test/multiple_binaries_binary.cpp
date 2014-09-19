@@ -97,8 +97,7 @@ namespace
         )
       );
 
-    std::string string (payload_size, 'X');
-    fhg::network::buffer_type const buffer (string.begin(), string.end());
+    fhg::network::buffer_type const buffer (payload_size, 'X');
 
     std::cout << fhg::util::measure_average_time<std::chrono::microseconds>
                   ( [&]
