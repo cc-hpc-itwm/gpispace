@@ -47,9 +47,48 @@ State:
 
 - lnl-tcp_nodelay:
   [x] low latency in one process
-  [?] low latency between two processes
-  [?] no dependecy on data size
-  [?] low latency between two processes on different nodes
+  [y] low latency between two processes:
+        ~65µs for 1 byte pingpong
+        <200µs for 32768 byte pingpong
+  [y] no dependecy on data size
+  [y] low latency between two processes on different nodes:
+        within range of icmp-ping (~120µs) for 1 byte pingpong
+        <1ms (~750µs) for 32768 byte pingpong
+
+  on beehive:
+   node022 <> node022
+    icmp-ping            avg=16µs  min=8µs   max=30µs
+    1 byte pingpong      avg=65µs
+    32768 byte pingpong  avg=139µs
+   node022 <> node012
+    icmp-ping            avg=145µs min=110µs max=161µs
+    1 byte pingpong      avg=119µs
+    32768 byte pingpong  avg=747µs
+   node022 <> node011
+    icmp-ping            avg=151µs min=129µs max=171µs
+    1 byte pingpong      avg=120µs
+    32768 byte pingpong  avg=752µs
+   node022 <> node010
+    icmp-ping            avg=151µs min=135µs max=195µs
+    1 byte pingpong      avg=111µs
+    32768 byte pingpong  avg=742µs
+
+   node012 <> node022
+    icmp-ping            avg=152µs min=120µs max=210µs
+    1 byte pingpong      avg=116µs
+    32768 byte pingpong  avg=742µs
+   node012 <> node012
+    icmp-ping            avg=14µs  min=8µs   max=29µs
+    1 byte pingpong      avg=55µs
+    32768 byte pingpong  avg=136µs
+   node012 <> node011
+    icmp-ping            avg=439µs min=129µs max=3083µs
+    1 byte pingpong      avg=115µs
+    32768 byte pingpong  avg=736µs
+   node012 <> node010
+    icmp-ping            avg=416µs min=142µs max=2751µs
+    1 byte pingpong      avg=116µs
+    32768 byte pingpong  avg=740µs
 
 
 [1] Diff: Setup tcp_nodelay in fhgcom
