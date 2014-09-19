@@ -755,9 +755,11 @@ BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_with_requirements_is_assigned_if_n
 
   _scheduler.assignJobsToWorkers();
 
+  BOOST_REQUIRE (_scheduler.worker_manager().hasWorker (agent_id));
   BOOST_REQUIRE (!_scheduler.worker_manager().findWorker (agent_id)->isReserved());
   BOOST_REQUIRE (!_scheduler.worker_manager().findWorker (agent_id)->has_job (job_id_0));
 
+  BOOST_REQUIRE (_scheduler.worker_manager().hasWorker (worker_id));
   BOOST_REQUIRE (!_scheduler.worker_manager().findWorker (worker_id)->isReserved());
   BOOST_REQUIRE (!_scheduler.worker_manager().findWorker (worker_id)->has_job (job_id_0));
 
@@ -791,9 +793,11 @@ BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_without_requirements_is_assigned_i
 
   _scheduler.assignJobsToWorkers();
 
+  BOOST_REQUIRE (_scheduler.worker_manager().hasWorker (agent_id));
   BOOST_REQUIRE (!_scheduler.worker_manager().findWorker (agent_id)->isReserved());
   BOOST_REQUIRE (!_scheduler.worker_manager().findWorker (agent_id)->has_job (job_id_0));
 
+  BOOST_REQUIRE (_scheduler.worker_manager().hasWorker (worker_id));
   BOOST_REQUIRE (!_scheduler.worker_manager().findWorker (worker_id)->isReserved());
   BOOST_REQUIRE (!_scheduler.worker_manager().findWorker (worker_id)->has_job (job_id_0));
 
