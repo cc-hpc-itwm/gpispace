@@ -3,6 +3,7 @@
 #include <we/layer.hpp>
 
 #include <fhg/assert.hpp>
+#include <fhg/util/read_bool.hpp>
 #include <fhg/util/starts_with.hpp>
 
 #include <boost/range/adaptor/map.hpp>
@@ -314,6 +315,31 @@ namespace we
         );
     }
 
+  namespace
+  {
+    bool output_missing (type::activity_t const& activity)
+    {
+      if ( activity.output().size()
+         < activity.transition().ports_output().size()
+         )
+      {
+        return true;
+      }
+
+      std::unordered_set<port_id_type> port_ids_with_output;
+
+      for ( port_id_type port_id : activity.output()
+          | boost::adaptors::map_values
+          )
+      {
+        port_ids_with_output.emplace (port_id);
+      }
+
+      return port_ids_with_output.size()
+        != activity.transition().ports_output().size();
+    }
+  }
+
     void layer::extract_from_nets()
     {
       while (true)
@@ -341,7 +367,15 @@ namespace we
           was_active = true;
         }
 
-        if (_running_jobs.contains (activity_data._id))
+        if (  _running_jobs.contains (activity_data._id)
+           || ( fhg::util::read_bool
+                ( activity_data._activity.transition().prop()
+                . get ("drts.wait_for_output")
+                . get_value_or ("false")
+                )
+              && output_missing (activity_data._activity)
+              )
+           )
         {
           _nets_to_extract_from.put (activity_data, was_active);
         }

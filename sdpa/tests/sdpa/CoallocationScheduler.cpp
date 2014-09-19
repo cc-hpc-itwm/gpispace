@@ -1,4 +1,5 @@
 #define BOOST_TEST_MODULE TestScheduler
+#include <utils.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
@@ -83,8 +84,8 @@ namespace
 
 BOOST_FIXTURE_TEST_CASE (testLoadBalancing, serveJob_checking_scheduler_and_job_manager)
 {
-  _scheduler.worker_manager().addWorker ("worker_0", 1, {}, fhg::util::random_string());
-  _scheduler.worker_manager().addWorker ("worker_1", 1, {}, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("worker_0", 1, {}, false, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("worker_1", 1, {}, false, fhg::util::random_string());
 
   add_job ("job_0", {});
   add_job ("job_1", {});
@@ -114,7 +115,7 @@ BOOST_FIXTURE_TEST_CASE (testLoadBalancing, serveJob_checking_scheduler_and_job_
 
 BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_and_job_manager)
 {
-  _scheduler.worker_manager().addWorker ("worker_0", 1, {}, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("worker_0", 1, {}, false, fhg::util::random_string());
 
   add_job ("job_0", {});
   add_job ("job_1", {});
@@ -127,8 +128,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_a
 
   _scheduler.assignJobsToWorkers();
 
-
-  _scheduler.worker_manager().addWorker ("worker_1", 1, {}, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("worker_1", 1, {}, false, fhg::util::random_string());
 
   expect_serveJob_call ("job_1", {"worker_1"});
 
@@ -137,8 +137,8 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_a
 
 BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_scheduler_and_job_manager)
 {
-  _scheduler.worker_manager().addWorker ("worker_0", 1, {sdpa::capability_t ("C", "worker_0")}, fhg::util::random_string());
-  _scheduler.worker_manager().addWorker ("worker_1", 1, {}, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("worker_0", 1, {sdpa::capability_t ("C", "worker_0")}, false, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("worker_1", 1, {}, false, fhg::util::random_string());
 
   add_job ("job_0", require ("C"));
   add_job ("job_1", require ("C"));
@@ -161,10 +161,10 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_schedule
 
 BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_manager)
 {
-  _scheduler.worker_manager().addWorker ("A0", 1, {sdpa::capability_t ("A", "A0")}, fhg::util::random_string());
-  _scheduler.worker_manager().addWorker ("B0", 1, {sdpa::capability_t ("B", "B0")}, fhg::util::random_string());
-  _scheduler.worker_manager().addWorker ("A1", 1, {sdpa::capability_t ("A", "A1")}, fhg::util::random_string());
-  _scheduler.worker_manager().addWorker ("B1", 1, {sdpa::capability_t ("B", "B1")}, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("A0", 1, {sdpa::capability_t ("A", "A0")}, false, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("B0", 1, {sdpa::capability_t ("B", "B0")}, false, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("A1", 1, {sdpa::capability_t ("A", "A1")}, false, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("B1", 1, {sdpa::capability_t ("B", "B1")}, false, fhg::util::random_string());
 
   add_job ("2A", require ("A", 2));
   add_job ("2B", require ("B", 2));
@@ -197,8 +197,8 @@ BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_m
 
 BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and_job_manager)
 {
-  _scheduler.worker_manager().addWorker ("worker_0", 1, {}, fhg::util::random_string());
-  _scheduler.worker_manager().addWorker ("worker_1", 1, {}, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("worker_0", 1, {}, false, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("worker_1", 1, {}, false, fhg::util::random_string());
 
   add_job ("job_0", {});
   add_job ("job_1", {});
@@ -217,7 +217,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and
   _scheduler.worker_manager().deleteWorker ("worker_0");
   _scheduler.enqueueJob ("job_0");
 
-  _scheduler.worker_manager().addWorker ("worker_0", 1, {}, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("worker_0", 1, {}, false, fhg::util::random_string());
 
   expect_serveJob_call ("job_0", {"worker_0"});
 
@@ -227,7 +227,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and
 BOOST_FIXTURE_TEST_CASE
   (not_schedulable_job_does_not_block_others, serveJob_checking_scheduler_and_job_manager)
 {
-  _scheduler.worker_manager().addWorker ("worker", 1, {}, fhg::util::random_string());
+  _scheduler.worker_manager().addWorker ("worker", 1, {}, false, fhg::util::random_string());
 
   add_job ("2", require (2));
   _scheduler.enqueueJob ("2");
@@ -238,6 +238,109 @@ BOOST_FIXTURE_TEST_CASE
   _scheduler.enqueueJob ("1");
 
   expect_serveJob_call ("1", {"worker"});
+  _scheduler.assignJobsToWorkers();
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (multiple_job_submissions_no_requirements, serveJob_checking_scheduler_and_job_manager)
+{
+  sdpa::worker_id_t const worker_id (utils::random_peer_name());
+
+  _scheduler.worker_manager().addWorker (worker_id, boost::none, {}, true, fhg::util::random_string());
+
+  sdpa::job_id_t const job_id_0 (utils::random_peer_name());
+  add_job (job_id_0, {});
+  _scheduler.enqueueJob (job_id_0);
+  expect_serveJob_call (job_id_0, {worker_id});
+  _scheduler.assignJobsToWorkers();
+
+  sdpa::job_id_t const job_id_1 (utils::random_peer_name());
+  add_job (job_id_1, {});
+  _scheduler.enqueueJob (job_id_1);
+  expect_serveJob_call (job_id_1, {worker_id});
+  _scheduler.assignJobsToWorkers();
+}
+
+BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
+                        , serveJob_checking_scheduler_and_job_manager
+                        )
+{
+  sdpa::worker_id_t const worker_id (utils::random_peer_name());
+
+  _scheduler.worker_manager().addWorker (worker_id, boost::none, {}, false, fhg::util::random_string());
+
+  sdpa::job_id_t const job_id_0 (utils::random_peer_name());
+  add_job (job_id_0, {});
+  _scheduler.enqueueJob (job_id_0);
+  expect_serveJob_call (job_id_0, {worker_id});
+  _scheduler.assignJobsToWorkers();
+
+  sdpa::job_id_t const job_id_1 (utils::random_peer_name());
+  add_job (job_id_1, {});
+  _scheduler.enqueueJob (job_id_1);
+  _scheduler.assignJobsToWorkers();
+
+  _scheduler.worker_manager().findWorker (worker_id)->deleteJob (job_id_0);
+
+  expect_serveJob_call (job_id_1, {worker_id});
+  _scheduler.assignJobsToWorkers();
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (multiple_worker_job_submissions_with_requirements, serveJob_checking_scheduler_and_job_manager)
+{
+  sdpa::worker_id_t const worker_id (utils::random_peer_name());
+
+  _scheduler.worker_manager().addWorker
+    ( worker_id, boost::none, { sdpa::capability_t("A", worker_id)
+                              , sdpa::capability_t("B", worker_id)
+                              }
+                              , true
+                              , fhg::util::random_string()
+    );
+
+  sdpa::job_id_t const job_id_0 (utils::random_peer_name());
+  add_job (job_id_0, require ("A"));
+  _scheduler.enqueueJob (job_id_0);
+  expect_serveJob_call (job_id_0, {worker_id});
+  _scheduler.assignJobsToWorkers();
+
+  sdpa::job_id_t const job_id_1 (utils::random_peer_name());
+  add_job (job_id_1, require ("B"));
+  _scheduler.enqueueJob (job_id_1);
+  expect_serveJob_call (job_id_1, {worker_id});
+  _scheduler.assignJobsToWorkers();
+}
+
+BOOST_FIXTURE_TEST_CASE ( multiple_worker_job_submissions_with_requirements_no_children_allowed
+                        , serveJob_checking_scheduler_and_job_manager
+                        )
+{
+  sdpa::worker_id_t const worker_id (utils::random_peer_name());
+
+  _scheduler.worker_manager().addWorker ( worker_id
+                                        , boost::none
+                                        , { sdpa::capability_t ("A", worker_id)
+                                          , sdpa::capability_t ("B", worker_id)
+                                          }
+                                        , false
+                                        , fhg::util::random_string()
+                                        );
+
+  sdpa::job_id_t const job_id_0 (utils::random_peer_name());
+  add_job (job_id_0, require ("A"));
+  _scheduler.enqueueJob (job_id_0);
+  expect_serveJob_call (job_id_0, {worker_id});
+  _scheduler.assignJobsToWorkers();
+
+  sdpa::job_id_t const job_id_1 (utils::random_peer_name());
+  add_job (job_id_1, require ("B"));
+  _scheduler.enqueueJob (job_id_1);
+  _scheduler.assignJobsToWorkers();
+
+  _scheduler.worker_manager().findWorker (worker_id)->deleteJob (job_id_0);
+
+  expect_serveJob_call (job_id_1, {worker_id});
   _scheduler.assignJobsToWorkers();
 }
 

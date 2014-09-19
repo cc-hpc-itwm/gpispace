@@ -1,82 +1,34 @@
 <defun name="wait_for_token_put">
-  <in name="filename_to_wait_for" type="string" place="filename_to_wait_for"/>
-  <in name="timeout_in_seconds" type="unsigned int" place="timeout_in_seconds"/>
-  <out name="touched_and_waited" type="bool"
-       place="touched_and_waited"/>
+  <in name="in" type="string" place="in"/>
+  <out name="good" type="string" place="good"/>
+  <out name="bad" type="string" place="bad"/>
   <net>
-    <place name="filename_to_wait_for" type="string"/>
-    <place name="timeout_in_seconds" type="unsigned int"/>
-    <place name="filename_to_touch" type="string"/>
-    <place name="waited" type="bool"/>
-    <place name="touched" type="control"/>
-    <place name="touched_and_waited" type="bool"/>
+    <place name="in" type="string"/>
+    <place name="good" type="string"/>
+    <place name="bad" type="string"/>
 
-    <transition name="touch">
+    <transition name="good">
       <defun>
-        <in name="filename" type="string"/>
-        <out name="done" type="control"/>
-        <module name="wait_for_token_put" function="touch (filename, done)">
-          <cinclude href="fstream"/>
-          <cxx flag="--std=c++11"/>
-          <code><![CDATA[
-            std::ofstream {filename};
-          ]]></code>
-        </module>
+        <inout name="x" type="string"/>
+        <expression/>
       </defun>
-      <connect-in port="filename" place="filename_to_touch"/>
-      <connect-out port="done" place="touched"/>
+      <condition>
+        ${x} :eq: "good"
+      </condition>
+      <connect-in port="x" place="in"/>
+      <connect-out port="x" place="good"/>
     </transition>
 
-    <transition name="wait">
+    <transition name="bad">
       <defun>
-        <in name="filename" type="string"/>
-        <in name="timeout_in_seconds" type="unsigned int"/>
-        <out name="done" type="bool"/>
-        <module name="wait_for_token_put"
-                function="done wait (filename, timeout_in_seconds)">
-          <cinclude href="boost/filesystem.hpp"/>
-          <cinclude href="chrono"/>
-          <cinclude href="fstream"/>
-          <cinclude href="thread"/>
-          <cxx flag="--std=c++11"/>
-          <code><![CDATA[
-            std::chrono::steady_clock::time_point const until
-              ( std::chrono::steady_clock::now()
-              + std::chrono::seconds (timeout_in_seconds)
-              );
-
-            while (std::chrono::steady_clock::now() < until)
-            {
-              if (boost::filesystem::exists (filename))
-              {
-                break;
-              }
-
-              std::this_thread::sleep_for (std::chrono::milliseconds (200));
-            }
-
-            return boost::filesystem::exists (filename);
-          ]]></code>
-        </module>
+        <inout name="x" type="string"/>
+        <expression/>
       </defun>
-      <connect-in port="filename" place="filename_to_wait_for"/>
-      <connect-in port="timeout_in_seconds"
-                  place="timeout_in_seconds"/>
-      <connect-out port="done" place="waited"/>
-    </transition>
-
-    <transition name="done">
-      <defun>
-        <in name="waited" type="bool"/>
-        <in name="touched" type="control"/>
-        <out name="touched_and_waited" type="bool"/>
-        <expression>
-          ${touched_and_waited} := ${waited};
-        </expression>
-      </defun>
-      <connect-in port="waited" place="waited"/>
-      <connect-in port="touched" place="touched"/>
-      <connect-out port="touched_and_waited" place="touched_and_waited"/>
+      <condition>
+        ${x} :ne: "good"
+      </condition>
+      <connect-in port="x" place="in"/>
+      <connect-out port="x" place="bad"/>
     </transition>
   </net>
 </defun>

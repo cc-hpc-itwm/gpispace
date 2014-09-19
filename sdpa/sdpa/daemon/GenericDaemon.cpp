@@ -321,7 +321,7 @@ void GenericDaemon::handleWorkerRegistrationEvent
   }
 
   const bool was_new_worker
-    (scheduler().worker_manager().addWorker (worker_id, event->capacity(), workerCpbSet, event->hostname()));
+    (scheduler().worker_manager().addWorker (worker_id, event->capacity(), workerCpbSet, event->children_allowed(), event->hostname()));
 
   child_proxy (this, worker_id).worker_registration_ack();
 
@@ -1425,7 +1425,7 @@ namespace sdpa
       _that->sendEventToOther
         ( events::WorkerRegistrationEvent::Ptr
           ( new events::WorkerRegistrationEvent
-            (_that->name(), _name, capacity, capabilities, fhg::util::hostname())
+            (_that->name(), _name, capacity, capabilities, true, fhg::util::hostname())
           )
         );
     }

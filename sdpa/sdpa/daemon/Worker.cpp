@@ -12,11 +12,13 @@ namespace sdpa
     Worker::Worker ( const worker_id_t& name
                    , const boost::optional<unsigned int>& cap
                    , const capabilities_set_t& capabilities
+                   , const bool children_allowed
                    , const std::string& hostname
                    )
       : name_ (name)
       , capacity_ (cap)
       , capabilities_ (capabilities)
+      , children_allowed_(children_allowed)
       , hostname_ (hostname)
       , last_schedule_time_ (0)
       , reserved_ (false)
@@ -29,7 +31,7 @@ namespace sdpa
       return hostname_;
     }
 
-    bool Worker::has_job (const job_id_t& job_id)
+    bool Worker::has_job( const job_id_t& job_id )
     {
       lock_type const _ (mtx_);
       return submitted_.count (job_id) || acknowledged_.count (job_id);
@@ -39,7 +41,10 @@ namespace sdpa
     {
       lock_type const _ (mtx_);
       submitted_.insert (jobId);
-      reserve();
+      if (!children_allowed_)
+      {
+        reserve();
+      }
     }
 
     void Worker::acknowledge (const job_id_t &job_id)
@@ -47,12 +52,12 @@ namespace sdpa
       lock_type const _ (mtx_);
       if (submitted_.erase (job_id) == 0)
       {
-        throw std::runtime_error ("acknowledge: job not in submitted queue");
+	throw std::runtime_error ("acknowledge: job not in submitted queue");
       }
       acknowledged_.insert (job_id);
     }
 
-    void Worker::deleteJob (const job_id_t &job_id)
+    void Worker::deleteJob(const job_id_t &job_id)
     {
       lock_type const _ (mtx_);
       submitted_.erase (job_id);
@@ -66,31 +71,31 @@ namespace sdpa
       return capabilities_;
     }
 
-    bool Worker::addCapabilities (const capabilities_set_t& recvCpbSet)
+    bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
     {
       lock_type const _ (mtx_);
 
       bool bModified = false;
       for (Capability const& capability : recvCpbSet)
       {
-        capabilities_set_t::iterator itwcpb (capabilities_.find (capability));
-        if (itwcpb == capabilities_.end())
-        {
-          capabilities_.insert (capability);
-          bModified = true;
-        }
-        else if (itwcpb->depth() > capability.depth())
-        {
-          capabilities_.erase (itwcpb);
-          capabilities_.insert (capability);
-          bModified = true;
-        }
+	capabilities_set_t::iterator itwcpb (capabilities_.find (capability));
+	if (itwcpb == capabilities_.end())
+	{
+	  capabilities_.insert (capability);
+	  bModified = true;
+	}
+	else if (itwcpb->depth() > capability.depth())
+	{
+	  capabilities_.erase (itwcpb);
+	  capabilities_.insert (capability);
+	  bModified = true;
+	}
       }
 
       return bModified;
     }
 
-    void Worker::removeCapabilities (const capabilities_set_t& cpbset)
+    void Worker::removeCapabilities( const capabilities_set_t& cpbset )
     {
       lock_type const _ (mtx_);
       for (Capability const& capability : cpbset)
@@ -99,15 +104,15 @@ namespace sdpa
       }
     }
 
-    bool Worker::hasCapability (const std::string& cpbName)
+    bool Worker::hasCapability(const std::string& cpbName)
     {
       lock_type const _ (mtx_);
 
       return std::find_if ( capabilities_.begin(), capabilities_.end()
                           , [&cpbName] (capability_t const& cap)
-                            {
-                              return cap.name() == cpbName;
-                            }
+                          {
+                            return cap.name() == cpbName;
+                          }
                           ) != capabilities_.end();
     }
 
@@ -127,7 +132,10 @@ namespace sdpa
     void Worker::free()
     {
       lock_type const _ (mtx_);
-      reserved_ = false;
+      if (!children_allowed_)
+      {
+        reserved_ = false;
+      }
     }
 
     std::set<job_id_t> Worker::getJobListAndCleanQueues()
