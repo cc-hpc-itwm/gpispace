@@ -26,8 +26,6 @@ namespace
 
     fhg::util::thread::event<fhg::network::connection_type*> server_got_disconnect;
 
-    fhg::util::thread::event<fhg::network::buffer_type> buffer_received;
-
     boost::asio::io_service io_service;
 
     fhg::network::continous_acceptor<boost::asio::ip::tcp> acceptor
@@ -80,8 +78,6 @@ namespace
 
     fhg::util::thread::event<fhg::network::buffer_type> buffer_received;
 
-    bool client_got_disconnect = false;
-
     boost::asio::io_service::work io_service_work (io_service);
     const boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
       io_service_thread ([&io_service] { io_service.run(); });
@@ -97,10 +93,7 @@ namespace
         {
           buffer_received.notify (buffer);
         }
-        , [&] (fhg::network::connection_type*)
-        {
-          client_got_disconnect = true;
-        }
+        , [&] (fhg::network::connection_type*) {}
         )
       );
 
