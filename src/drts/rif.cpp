@@ -4,6 +4,7 @@
 #include <fhg/util/make_unique.hpp>
 
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/filesystem.hpp>
 
 #include <sstream>
 #include <future>
@@ -96,7 +97,13 @@ namespace gspc
 
   rif_t::rif_t (boost::filesystem::path const& root)
     : _root (root)
-  {}
+  {
+    // FIXME: we explicitly don't remove this directory in the dtor
+    // since we currently cannot ensure that it does not already
+    // exist/is cleaned up correctly, since we don't fully control
+    // remote rifs
+    boost::filesystem::create_directories (root);
+  }
 
   rif_t::endpoint_t::endpoint_t (const std::string& host, unsigned short port)
     : host (host)
