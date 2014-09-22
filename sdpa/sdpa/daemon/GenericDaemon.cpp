@@ -510,9 +510,9 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
   }
 }
 
-void GenericDaemon::submit( const we::layer::id_type& job_id
-                          , const we::type::activity_t& activity
-                          )
+void GenericDaemon::submit ( const we::layer::id_type& job_id
+                           , const we::type::activity_t& activity
+                           )
 try
 {
   const we::type::schedule_data schedule_data
