@@ -592,13 +592,13 @@ int main (int ac, char *av[])
   }
 
   fhg::com::kvs::kvsc_ptr_t kvs_client
-    ( new fhg::com::kvs::client::kvsc
-    ( config.kvs_host
-    , boost::lexical_cast<std::string> (config.kvs_port)
-    , true
-    , boost::posix_time::seconds (1)
-    , config.kvs_retry_count
-    )
+    (new fhg::com::kvs::client::kvsc
+      ( config.kvs_host
+      , boost::lexical_cast<std::string> (config.kvs_port)
+      , true
+      , boost::posix_time::seconds (1)
+      , config.kvs_retry_count
+      )
     );
 
   // initialize gpi api
