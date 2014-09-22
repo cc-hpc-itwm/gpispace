@@ -12,11 +12,14 @@ class job_requirements_t
 {
 public:
   job_requirements_t() = default;
-  job_requirements_t(const requirement_list_t& r_list, const we::type::schedule_data& schedule_data)
-    : m_requirementList(r_list), m_scheduleData(schedule_data)
+  job_requirements_t ( const requirement_list_t& r_list
+                     , const we::type::schedule_data& schedule_data
+                     )
+    : m_requirementList (r_list)
+    , m_scheduleData (schedule_data)
   {}
 
-  void add(const we::type::requirement_t& req) {m_requirementList.push_back(req); }
+  void add (const we::type::requirement_t& req) {m_requirementList.push_back(req); }
 
   unsigned long numWorkers() const { return m_scheduleData.num_worker()?m_scheduleData.num_worker().get():1; }
   const requirement_list_t& getReqList() const { return m_requirementList; }
