@@ -138,7 +138,7 @@ int main (int argc, char *argv[])
 
   fhg::util::signal_handler_manager signal_handlers;
 
-  gspc::rif_t rif ("/dev/shm");
+  gspc::rif_t rif ("/dev/shm/rif-" + std::to_string (getuid()));
 
   gspc::vmem_t vmem ( vm
                     , gspc::installation (vm)
