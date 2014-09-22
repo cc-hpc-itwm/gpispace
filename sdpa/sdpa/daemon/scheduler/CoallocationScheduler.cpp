@@ -133,18 +133,19 @@ namespace sdpa
 
     namespace
     {
-      std::map<std::string, double> getMemoryTransferCosts(const mmap_match_deg_worker_id_t& mmap_matching_workers)
+      std::map<std::string, double> getMemoryTransferCosts ( const mmap_match_deg_worker_id_t& mmap_matching_workers
+                                                           , const std::function<double (std::string const&)> transfer_cost
+                                                           )
       {
-        // Note: this is the default implementation when the transfer costs are uniform.
-        // It will be replaced later by a real implementation which gets the costs
-        // from the associated activity
-
+        // Use the transfer cost function passed as parameter
         std::map<std::string, double> map_host_transfer_cost;
         for (const worker_id_host_info_t& pair_wid_host : mmap_matching_workers | boost::adaptors::map_values )
         {
           if (!map_host_transfer_cost.count(pair_wid_host.worker_host()))
           {
-            map_host_transfer_cost.emplace (pair_wid_host.worker_host(), 1.0);
+            map_host_transfer_cost.emplace ( pair_wid_host.worker_host()
+                                           , transfer_cost (pair_wid_host.worker_host())
+                                           );
           }
         }
 
@@ -167,7 +168,7 @@ namespace sdpa
         if (mmap_matching_workers.size() >= requirements.numWorkers())
         {
           return CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
-            (mmap_matching_workers, requirements.numWorkers(), getMemoryTransferCosts (mmap_matching_workers));
+            (mmap_matching_workers, requirements.numWorkers(), getMemoryTransferCosts (mmap_matching_workers, null_transfer_cost));
         }
 
         return  std::set<worker_id_t>();
