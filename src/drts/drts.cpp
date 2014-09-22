@@ -2,6 +2,8 @@
 
 #include <drts/drts.hpp>
 
+#include <drts/virtual_memory.hpp>
+
 #include <we/expr/parse/parser.hpp>
 #include <we/type/activity.hpp>
 //! \todo eliminate this include (that completes type transition_t::data)
@@ -31,6 +33,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <thread>
+#include <unordered_set>
 
 namespace gspc
 {
@@ -358,94 +361,6 @@ namespace gspc
              ).str()
            , "stop runtime system"
            );
-  }
-
-  static_assert ( std::is_same<job_id_t, sdpa::job_id_t>::value
-                , "drts::job_id_t != sdpa::job_id_t"
-                );
-
-  job_id_t scoped_runtime_system::submit
-    ( boost::filesystem::path const& workflow
-    , std::multimap< std::string
-                   , pnet::type::value::value_type
-                   > const& values_on_ports
-    ) const
-  {
-    // taken from bin/pnetput
-    we::type::activity_t activity (workflow);
-
-    for ( std::pair< std::string
-                   , pnet::type::value::value_type
-                   > const& value_on_port
-        : values_on_ports
-        )
-    {
-      activity.add_input
-        ( activity.transition().input_port_by_name (value_on_port.first)
-        , value_on_port.second
-        );
-    }
-
-    sdpa::client::Client api
-      ("orchestrator", _kvs_host, std::to_string (_kvs_port));
-
-    return api.submitJob (activity.to_string());
-  }
-
-  void scoped_runtime_system::put_token ( job_id_t job_id
-                                        , std::string place_name
-                                        , pnet::type::value::value_type value
-                                        ) const
-  {
-    sdpa::client::Client api
-      ("orchestrator", _kvs_host, std::to_string (_kvs_port));
-
-    api.put_token (job_id, place_name, value);
-  }
-
-  std::multimap<std::string, pnet::type::value::value_type>
-    scoped_runtime_system::wait_and_extract (job_id_t job_id) const
-  {
-    sdpa::client::Client api
-      ("orchestrator", _kvs_host, std::to_string (_kvs_port));
-
-    std::cerr << "waiting for job " << job_id << std::endl;
-
-    sdpa::client::job_info_t job_info;
-
-    sdpa::status::code const status
-      (api.wait_for_terminal_state (job_id, job_info));
-
-    if (sdpa::status::FAILED == status)
-    {
-      //! \todo decorate the exception with the most progressed activity
-      throw std::runtime_error
-        (( boost::format ("Job %1%: failed: error-message := %2%")
-         % job_id
-         % job_info.error_message
-         ).str()
-        );
-    }
-
-    we::type::activity_t const result_activity (api.retrieveResults (job_id));
-
-    api.deleteJob (job_id);
-
-    std::multimap<std::string, pnet::type::value::value_type> result;
-
-    for ( std::pair<pnet::type::value::value_type, we::port_id_type>
-           const& value_on_port
-        : result_activity.output()
-        )
-    {
-      result.emplace
-        ( result_activity.transition().ports_output()
-        . at (value_on_port.second).name()
-        , value_on_port.first
-        );
-    }
-
-    return result;
   }
 
   vmem_allocation scoped_runtime_system::alloc

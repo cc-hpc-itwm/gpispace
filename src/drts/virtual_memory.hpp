@@ -3,6 +3,9 @@
 #ifndef DRTS_VIRTUAL_MEMORY_HPP
 #define DRTS_VIRTUAL_MEMORY_HPP
 
+#include <drts/virtual_memory.fwd.hpp>
+#include <drts/drts.fwd.hpp>
+
 #include <we/type/value.hpp>
 
 #include <memory>

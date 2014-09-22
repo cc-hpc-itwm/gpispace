@@ -3,6 +3,7 @@
 #define BOOST_TEST_MODULE share_example_vmem_1_to_n
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
 #include <drts/virtual_memory.hpp>
 
@@ -93,8 +94,8 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
   gspc::vmem_allocation const allocation_data (drts.alloc (num_bytes, "data"));
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    ( drts.put_and_run
-      ( make.build_directory() / "vmem_1_to_n.pnet"
+    ( gspc::client (drts).put_and_run
+      ( gspc::workflow (make.build_directory() / "vmem_1_to_n.pnet")
       , { {"memory", allocation_data.global_memory_range()}
         , {"outer", 5L}
         , {"inner", 5L}

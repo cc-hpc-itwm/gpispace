@@ -1,0 +1,122 @@
+Resolved: No
+
+Test:
+  share_example_stream_two_module_calls_stream.two_module_calls
+
+State:
+
+- found high latencies up to 45 ms for a single round trip of a slot
+
+- tracked down the problem to the link Wp -> A in the picture
+
+  Producer   - Vmem
+  :            :
+  Orch - Agg + Wp
+         |   + Wp
+         WE  + Wmf
+             | Wmf
+
+- flow of a slot:
+  * every time there are no free slots known to the producer, it fetches
+    the meta data [fetch meta], no slots available -> [handled by producer]
+  * free, fetched by the Producer ->
+  * marked used inside producer, | 0 ms| [write data to VM], put token ->
+  * Orch -> Agg -> WE -> Agg -> Wp -> [get data from VM] ->
+  * [module call] | 6ms! | -> Wp ->
+  * Agg | 35ms!! | -> WE -> Agg -> Wmf [update meta] -> Agg
+
+- analyzed network layer, found high latencies there too
+
+- fhgcom:
+  [x] low latency in one process
+  [x] low latency between two processes
+  [x] no dependency on data size
+  [?] low latency between two processes on different nodes
+
+- fhgcom-tcp_nodelay: (tried but probably failed to set up correctly [1])
+  [?] low latency in one process
+  [?] low latency between two processes
+  [?] no dependency on data size
+  [?] low latency between two processes on different nodes
+
+- lnl:
+  [.] low latency in one process
+  [?] low latency between two processes
+  [.] no dependecy on data size
+  [?] low latency between two processes on different nodes
+
+- lnl-tcp_nodelay:
+  [x] low latency in one process
+  [y] low latency between two processes:
+        ~65µs for 1 byte pingpong
+        <200µs for 32768 byte pingpong
+  [y] no dependecy on data size
+  [y] low latency between two processes on different nodes:
+        within range of icmp-ping (~120µs) for 1 byte pingpong
+        <1ms (~750µs) for 32768 byte pingpong
+
+  on beehive:
+   node022 <> node022
+    icmp-ping            avg=16µs  min=8µs   max=30µs
+    1 byte pingpong      avg=65µs
+    32768 byte pingpong  avg=139µs
+   node022 <> node012
+    icmp-ping            avg=145µs min=110µs max=161µs
+    1 byte pingpong      avg=119µs
+    32768 byte pingpong  avg=747µs
+   node022 <> node011
+    icmp-ping            avg=151µs min=129µs max=171µs
+    1 byte pingpong      avg=120µs
+    32768 byte pingpong  avg=752µs
+   node022 <> node010
+    icmp-ping            avg=151µs min=135µs max=195µs
+    1 byte pingpong      avg=111µs
+    32768 byte pingpong  avg=742µs
+
+   node012 <> node022
+    icmp-ping            avg=152µs min=120µs max=210µs
+    1 byte pingpong      avg=116µs
+    32768 byte pingpong  avg=742µs
+   node012 <> node012
+    icmp-ping            avg=14µs  min=8µs   max=29µs
+    1 byte pingpong      avg=55µs
+    32768 byte pingpong  avg=136µs
+   node012 <> node011
+    icmp-ping            avg=439µs min=129µs max=3083µs
+    1 byte pingpong      avg=115µs
+    32768 byte pingpong  avg=736µs
+   node012 <> node010
+    icmp-ping            avg=416µs min=142µs max=2751µs
+    1 byte pingpong      avg=116µs
+    32768 byte pingpong  avg=740µs
+
+
+[1] Diff: Setup tcp_nodelay in fhgcom
+Modified   src/fhgcom/peer.cpp
+diff --git a/src/fhgcom/peer.cpp b/src/fhgcom/peer.cpp
+index ed90577..f5c0cd4 100644
+--- a/src/fhgcom/peer.cpp
++++ b/src/fhgcom/peer.cpp
+@@ -645,6 +645,9 @@ namespace fhg
+         // timeout
+         listen_->start ();
+
++        listen_->socket().set_option (boost::asio::ip::tcp::no_delay (true));
++
++
+         accept_new ();
+       }
+     }
+        Modified   src/fhgcom/tcp_server.cpp
+diff --git a/src/fhgcom/tcp_server.cpp b/src/fhgcom/tcp_server.cpp
+index e767125..f7f0fb3 100644
+--- a/src/fhgcom/tcp_server.cpp
++++ b/src/fhgcom/tcp_server.cpp
+@@ -99,6 +99,7 @@ void tcp_server::handle_accept ( boost::shared_ptr<session> s$
+   if (!error)
+   {
+     session->start();
++    session->socket().set_option (boost::asio::ip::tcp::no_delay (true));
+     accept();
+   }
+ }

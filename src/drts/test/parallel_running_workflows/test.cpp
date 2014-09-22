@@ -3,6 +3,7 @@
 #define BOOST_TEST_MODULE drts_parallel_running_workflows
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
 
 #include <test/make.hpp>
@@ -88,8 +89,8 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
       (std::string pnet, std::string port, test::make const& make)
     {
       std::multimap<std::string, pnet::type::value::value_type> const result
-        ( drts.put_and_run
-          ( make.build_directory() / pnet
+        ( gspc::client (drts).put_and_run
+          ( gspc::workflow (make.build_directory() / pnet)
           , { {"filename_a", filename_a.string()}
             , {"filename_b", filename_b.string()}
             , {"timeout_in_seconds", 5U}

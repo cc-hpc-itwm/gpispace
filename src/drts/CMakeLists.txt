@@ -3,14 +3,19 @@
 add_subdirectory (worker)
 
 install (FILES
+  client.fwd.hpp
+  client.hpp
+  drts.fwd.hpp
   drts.hpp
   vmem.hpp
   rif.hpp
   virtual_memory.hpp
+  virtual_memory.fwd.hpp
   DESTINATION include/drts/
 )
 
 add_library (gspc SHARED
+  client.cpp
   drts.cpp
   vmem.cpp
   rif.cpp

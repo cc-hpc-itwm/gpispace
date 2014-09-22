@@ -3,7 +3,10 @@
 #ifndef DRTS_DRTS_HPP
 #define DRTS_DRTS_HPP
 
-#include <drts/virtual_memory.hpp>
+#include <drts/drts.fwd.hpp>
+
+#include <drts/client.fwd.hpp>
+#include <drts/virtual_memory.fwd.hpp>
 
 #include <we/type/value.hpp>
 
@@ -53,8 +56,6 @@ namespace gspc
     boost::filesystem::path const _gspc_home;
   };
 
-  typedef std::string job_id_t;
-
   class scoped_runtime_system
   {
   public:
@@ -64,31 +65,6 @@ namespace gspc
                           );
 
     ~scoped_runtime_system();
-
-    job_id_t submit
-      ( boost::filesystem::path const& workflow
-      , std::multimap< std::string
-                     , pnet::type::value::value_type
-                     > const& values_on_ports
-      ) const;
-    std::multimap<std::string, pnet::type::value::value_type>
-      wait_and_extract (job_id_t) const;
-
-    std::multimap<std::string, pnet::type::value::value_type>
-      put_and_run
-      ( boost::filesystem::path const& workflow
-      , std::multimap< std::string
-                     , pnet::type::value::value_type
-                     > const& values_on_ports
-      ) const
-    {
-      return wait_and_extract (submit (workflow, values_on_ports));
-    }
-
-    void put_token ( job_id_t
-                   , std::string place_name
-                   , pnet::type::value::value_type
-                   ) const;
 
     vmem_allocation alloc
       (unsigned long size, std::string const& description) const;
@@ -102,6 +78,10 @@ namespace gspc
     {
       return _nodes_and_number_of_unique_nodes.second;
     }
+    std::unique_ptr<gpi::pc::client::api_t> const& virtual_memory_api() const
+    {
+      return _virtual_memory_api;
+    }
 
     scoped_runtime_system (scoped_runtime_system const&) = delete;
     scoped_runtime_system& operator= (scoped_runtime_system const&) = delete;
@@ -110,6 +90,7 @@ namespace gspc
 
   private:
     friend class vmem_allocation;
+    friend class client;
 
     installation const _installation;
     boost::filesystem::path const _state_directory;
