@@ -195,9 +195,11 @@ namespace gspc
                     )
   {
     run_asynchronously_and_wait (rifs, [this, &data, &path] (rif_t::endpoint_t const& rif) {
+        const std::string real_path (replace_rif_root (path.string(), _root));
         std::ostringstream command;
         command << "ssh -q -p " << rif.port << " " << rif.host
-                << " '/bin/cat > " << replace_rif_root (path.string(), _root) << "'";
+                << " 'mkdir -p $(dirname " << real_path << "); "
+                << " /bin/cat > " << real_path << "'";
         scoped_popen f (command.str().c_str(), "w");
         if (1 != fwrite (data.data(), data.size(), 1, f._))
         {
