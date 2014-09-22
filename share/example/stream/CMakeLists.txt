@@ -20,8 +20,9 @@ fhg_add_test (stream.two_module_calls.cpp
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-       --virtual-memory-manager "${CMAKE_INSTALL_PREFIX}/bin/gpi-space"
        --virtual-memory-per-node ${size_virtual_memory}
+       --virtual-memory-timeout 60000
+       --virtual-memory-port 10820
        --num-slots ${num_slots}
        --size-slot ${size_slot}
   LINK_LIBRARIES gspc
@@ -40,8 +41,9 @@ fhg_add_test (stream.one_module_call.cpp
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-       --virtual-memory-manager "${CMAKE_INSTALL_PREFIX}/bin/gpi-space"
        --virtual-memory-per-node ${size_virtual_memory}
+       --virtual-memory-timeout 60000
+       --virtual-memory-port 10820
        --num-slots ${num_slots}
        --size-slot ${size_slot}
   LINK_LIBRARIES gspc
