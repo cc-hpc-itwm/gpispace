@@ -1,6 +1,6 @@
 # locates the libgaspi library
 # This file defines:
-# * GASPI_FOUND if libreadline was found
+# * GASPI_FOUND if GASPI was found
 # * GASPI_LIBRARY The lib to link to (currently only a static unix lib)
 # * GASPI_STATIC_LIBRARY
 # * GASPI_SHARED_LIBRARY The lib to link to (currently only a static unix lib)
