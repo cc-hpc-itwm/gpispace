@@ -535,7 +535,7 @@ try
          , activity.to_string()
          , false
          , name()
-         , job_requirements_t (activity.transition().requirements(), schedule_data)
+         , job_requirements_t (activity.transition().requirements(), schedule_data, null_transfer_cost)
          );
 
   scheduler().enqueueJob (job_id);
