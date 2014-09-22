@@ -3,7 +3,6 @@
 # * GASPI_FOUND if GASPI was found
 # * GASPI_LIBRARY The lib to link to (currently only a static unix lib)
 # * GASPI_STATIC_LIBRARY
-# * GASPI_SHARED_LIBRARY The lib to link to (currently only a static unix lib)
 # * GASPI_INCLUDE_DIR
 # * GASPI_LD_PATH the path to GASPI_LIBRARY
 
