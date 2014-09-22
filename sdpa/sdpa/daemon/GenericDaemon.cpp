@@ -510,14 +510,6 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
   }
 }
 
-/* Implements Gwes2Sdpa */
-/**
- * Submit an atomic activity to the SDPA.
- * This method is to be called by the GS in order to delegate
- * the execution of activities.
- * The SDPA will use the callback handler SdpaGwes in order
- * to notify the GS about activity status transitions.
- */
 void GenericDaemon::submit( const we::layer::id_type& job_id
                           , const we::type::activity_t& activity
                           )
