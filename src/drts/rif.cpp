@@ -56,7 +56,7 @@ namespace gspc
       {
         command << " " << arg;
       }
-      command << " >/dev/null 2>/dev/null </dev/null & echo $!; disown -a'";
+      command << " >/dev/null 2>/dev/null </dev/null & echo $!; disown $!'";
       command << " | ssh -q -p " << rif.port << " " << rif.host << " /bin/sh -s";
 
       char buf[16];
