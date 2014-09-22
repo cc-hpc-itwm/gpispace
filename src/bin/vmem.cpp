@@ -47,8 +47,6 @@ namespace
     };
 
     static const _ help ("help", "h");
-    static const _ command ("command", "x");
-    static const _ machinefile ("machinefile", "m");
     static const _ kvs_host ("kvs-host");
     static const _ kvs_port ("kvs-port");
     static const _ log_host ("log-host");
