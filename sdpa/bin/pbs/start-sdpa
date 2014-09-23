@@ -243,7 +243,7 @@ if [ ${#@} -eq 0 ] ; then
 fi
 
 shiftcount=0
-while getopts ":hvnf:S:m:s:C:p:MA:dG:x:l:g:H:y:T:P:" opt; do
+while getopts ":hvnf:S:m:s:C:p:MA:dG:l:g:H:y:T:P:" opt; do
     case $opt in
         h)
             usage
@@ -299,8 +299,6 @@ while getopts ":hvnf:S:m:s:C:p:MA:dG:x:l:g:H:y:T:P:" opt; do
         G)
             number_of_groups=$OPTARG
             shiftcount=$((shiftcount + 2))
-            ;;
-        x)
             ;;
         y)
             gpi_socket="${OPTARG}"
