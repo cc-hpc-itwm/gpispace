@@ -49,13 +49,6 @@ namespace
     static const _ help ("help");
     static const _ kvs_host ("kvs-host");
     static const _ kvs_port ("kvs-port");
-    static const _ log_host ("log-host");
-    static const _ log_port ("log-port");
-    static const _ log_level ("log-level");
-    static const _ socket ("socket");
-    static const _ port ("port");
-    static const _ memsize ("memory-size");
-    static const _ timeout ("timeout");
   }
 
   std::pair<std::list<std::string>, unsigned long>
