@@ -16,10 +16,10 @@ namespace gpi
 {
   namespace api
   {
-    gaspi_t::gaspi_t (bool is_master, const unsigned short port)
+    gaspi_t::gaspi_t (bool is_master, const unsigned long long memory_size, const unsigned short port)
       : m_is_master (is_master)
       , m_startup_done (false)
-      , m_mem_size (0)
+      , m_mem_size (memory_size)
       , m_dma (nullptr)
       , m_replacement_gpi_segment (0)
     {

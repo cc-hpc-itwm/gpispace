@@ -17,7 +17,7 @@ namespace gpi
     class fake_gpi_api_t : public gpi_api_t
     {
     public:
-      fake_gpi_api_t (bool is_master);
+      fake_gpi_api_t (bool is_master, const unsigned long long memory_size);
       ~fake_gpi_api_t();
 
       // wrapped C function calls

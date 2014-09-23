@@ -90,7 +90,11 @@ namespace
 {
   enum requested_api_t { API_fake, API_gaspi };
   std::unique_ptr<gpi_api_t> create_gpi_api
-    (requested_api_t requested_api, bool is_master, const boost::optional<unsigned short>& p)
+    ( requested_api_t requested_api
+    , bool is_master
+    , const unsigned long long memory_size
+    , const boost::optional<unsigned short>& p
+    )
   {
     if (requested_api == API_gaspi)
     {
@@ -98,11 +102,11 @@ namespace
       {
         throw std::runtime_error ("port (--port) is missing, required for GASPI");
       }
-      return fhg::util::make_unique <gpi::api::gaspi_t> (is_master, *p);
+      return fhg::util::make_unique <gpi::api::gaspi_t> (is_master, memory_size, *p);
     }
     else if (requested_api == API_fake)
     {
-      return fhg::util::make_unique <gpi::api::fake_gpi_api_t> (is_master);
+      return fhg::util::make_unique <gpi::api::fake_gpi_api_t> (is_master, memory_size);
     }
     else
     {
@@ -603,10 +607,8 @@ int main (int ac, char *av[])
 
   // initialize gpi api
   std::unique_ptr<gpi_api_t> gpi_api_
-    (create_gpi_api (requested_api, is_master, port));
+    (create_gpi_api (requested_api, is_master, gpi_mem, port));
   gpi_api_t& gpi_api (*gpi_api_);
-
-  gpi_api.set_memory_size (gpi_mem);
 
   if (is_master)
   {

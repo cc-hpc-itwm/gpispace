@@ -11,11 +11,11 @@ namespace gpi
 {
   namespace api
   {
-    fake_gpi_api_t::fake_gpi_api_t (bool is_master)
+    fake_gpi_api_t::fake_gpi_api_t (bool is_master, const unsigned long long memory_size)
       : m_is_master (is_master)
       , m_startup_done (false)
       , m_rank (0)
-      , m_mem_size (0)
+      , m_mem_size (memory_size)
       , m_dma (nullptr)
       , m_queue_count (8)
     {

@@ -15,7 +15,7 @@ namespace gpi
     class gaspi_t : public gpi_api_t
     {
     public:
-      gaspi_t (bool is_master, const unsigned short port);
+      gaspi_t (bool is_master, const unsigned long long memory_size, const unsigned short port);
       ~gaspi_t();
 
       // wrapped C function calls
