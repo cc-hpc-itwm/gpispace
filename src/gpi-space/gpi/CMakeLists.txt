@@ -17,4 +17,4 @@ set (srcs
 )
 
 add_library (gpi-space-gpiapi ${srcs})
-target_link_libraries (gpi-space-gpiapi ${GPI_LIBRARIES} ${GASPI_LIBRARY} ${IBVerbs_LIBRARY})
+target_link_libraries (gpi-space-gpiapi ${GASPI_LIBRARY} ${IBVerbs_LIBRARY})
