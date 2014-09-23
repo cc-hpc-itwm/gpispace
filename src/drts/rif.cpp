@@ -9,7 +9,6 @@
 #include <sstream>
 #include <future>
 
-#include <cstdio>
 #include <cstdlib>
 
 namespace gspc
