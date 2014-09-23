@@ -551,7 +551,7 @@ int main (int ac, char *av[])
 
     if (0 != configure_logging (&config, logfile))
     {
-      LOG(WARN, "could not setup logging");
+      LOG (WARN, "could not setup logging");
     }
   }
 
@@ -610,9 +610,9 @@ int main (int ac, char *av[])
 
   if (is_master)
   {
-    LOG(INFO, "GPISpace version: " << fhg::project_version());
-    LOG(INFO, "GPISpace revision: " << fhg::project_revision());
-    LOG(INFO, "GPIApi version: " << gpi_api.version());
+    LOG (INFO, "GPISpace version: " << fhg::project_version());
+    LOG (INFO, "GPISpace revision: " << fhg::project_revision());
+    LOG (INFO, "GPIApi version: " << gpi_api.version());
   }
 
   try
@@ -624,27 +624,27 @@ int main (int ac, char *av[])
   }
   catch (std::exception const & ex)
   {
-    LOG(ERROR, "GPI could not be started: " << ex.what());
+    LOG (ERROR, "GPI could not be started: " << ex.what());
     return EXIT_FAILURE;
   }
-  LOG(INFO, "GPI started: " << gpi_api.rank());
+  LOG (INFO, "GPI started: " << gpi_api.rank());
 
   if (!is_master)
   {
     if (0 != configure_logging (&config, logfile))
     {
-      LOG(WARN, "could not setup logging");
+      LOG (WARN, "could not setup logging");
     }
   }
 
   try
   {
-    LOG( TRACE
-       ,  "rank=" << gpi_api.rank()
-       << " dma=" << gpi_api.dma_ptr()
-       << " #nodes=" << gpi_api.number_of_nodes()
-       << " mem_size=" << gpi_api.memory_size()
-       );
+    LOG ( TRACE
+        ,  "rank=" << gpi_api.rank()
+        << " dma=" << gpi_api.dma_ptr()
+        << " #nodes=" << gpi_api.number_of_nodes()
+        << " mem_size=" << gpi_api.memory_size()
+        );
 
     if (mem_urls.empty ())
       mem_urls.push_back (default_memory_url);
@@ -652,7 +652,7 @@ int main (int ac, char *av[])
     const gpi::pc::container::manager_t container_manager
       (config.socket, mem_urls, gpi_api, kvs_client);
 
-    LOG(INFO, "started GPI interface on rank " << gpi_api.rank() << " at " << config.socket);
+    LOG (INFO, "started GPI interface on rank " << gpi_api.rank() << " at " << config.socket);
 
     fhg::util::thread::event<> stop_requested;
     const std::function<void()> request_stop
@@ -664,12 +664,12 @@ int main (int ac, char *av[])
 
     stop_requested.wait();
 
-    LOG(INFO, "gpi process (rank " << gpi_api.rank() << ") terminated");
+    LOG (INFO, "gpi process (rank " << gpi_api.rank() << ") terminated");
     return EXIT_SUCCESS;
   }
   catch (std::exception const & ex)
   {
-    LOG(ERROR, "gpi process (rank " << gpi_api.rank() << ") failed: " << ex.what());
+    LOG (ERROR, "gpi process (rank " << gpi_api.rank() << ") failed: " << ex.what());
     return EXIT_FAILURE;
   }
 }
