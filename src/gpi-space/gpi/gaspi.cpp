@@ -31,7 +31,7 @@ namespace gpi
 
     gaspi_t::~gaspi_t()
     {
-      stop ();
+      stop();
     }
 
     void gaspi_t::set_memory_size (const gpi::size_t sz)
