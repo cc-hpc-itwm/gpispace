@@ -116,11 +116,6 @@ namespace gpi
       }
     }
 
-    void gaspi_t::shutdown()
-    {
-      stop();
-    }
-
     gpi::size_t gaspi_t::number_of_queues() const
     {
       gaspi_number_t queue_num;

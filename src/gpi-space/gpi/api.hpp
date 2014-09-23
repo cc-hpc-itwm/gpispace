@@ -50,7 +50,6 @@ namespace gpi
       // wrapped C function calls
       virtual void start (int ac, char *av[], const gpi::timeout_t timeout) = 0;
       virtual void stop () = 0;
-      virtual void shutdown () = 0;
 
       virtual gpi::size_t number_of_queues () const = 0;
       virtual gpi::size_t queue_depth () const = 0;

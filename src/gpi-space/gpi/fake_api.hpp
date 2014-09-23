@@ -23,7 +23,6 @@ namespace gpi
       // wrapped C function calls
       virtual void start (int ac, char *av[], const gpi::timeout_t timeout) override;
       virtual void stop () override;
-      virtual void shutdown () override;
 
       virtual gpi::size_t number_of_queues () const override;
       virtual gpi::size_t queue_depth () const override;

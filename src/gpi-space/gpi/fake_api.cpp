@@ -24,7 +24,7 @@ namespace gpi
 
     fake_gpi_api_t::~fake_gpi_api_t ()
     {
-      shutdown ();
+      stop();
     }
 
     // wrapped C function calls
@@ -77,11 +77,6 @@ namespace gpi
         }
         m_startup_done = false;
       }
-    }
-
-    void fake_gpi_api_t::shutdown ()
-    {
-      stop ();
     }
 
     gpi::size_t fake_gpi_api_t::number_of_queues () const
