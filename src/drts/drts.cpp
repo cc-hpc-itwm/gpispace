@@ -315,6 +315,7 @@ namespace gspc
         << " -y " << *_virtual_memory_socket
         << " -m " << *_virtual_memory_per_node
         << " -T " << _virtual_memory_timeout->count()
+        << " -P " << get_virtual_memory_port (vm)
         ;
     }
     else

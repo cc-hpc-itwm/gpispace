@@ -23,6 +23,7 @@ usage: $(basename $0) [options]
   -G: number of segments
   -y: Socket file to communicate with the virtual memory manager
   -T: timeout in seconds for virtual memory manager to start
+  -P: use this port for the virtual memory manager
 
   -l: log url (=${log_url})
   -g: gui url (=${gui_url})
@@ -234,6 +235,7 @@ def_shm_mem=0
 def_num_proc=1
 def_gpi_socket="/tmp/S-vmem.$(id -u)"
 vmem_timeout=
+vmem_port=
 
 if [ ${#@} -eq 0 ] ; then
     usage
@@ -241,7 +243,7 @@ if [ ${#@} -eq 0 ] ; then
 fi
 
 shiftcount=0
-while getopts ":hvnf:S:m:s:C:p:MA:dG:x:l:g:H:y:T:" opt; do
+while getopts ":hvnf:S:m:s:C:p:MA:dG:x:l:g:H:y:T:P:" opt; do
     case $opt in
         h)
             usage
@@ -309,6 +311,10 @@ while getopts ":hvnf:S:m:s:C:p:MA:dG:x:l:g:H:y:T:" opt; do
             vmem_timeout=$(( $OPTARG ))
             shiftcount=$((shiftcount + 2))
             ;;
+        P)
+            vmem_port=$(( $OPTARG ))
+            shiftcount=$((shiftcount + 2))
+            ;;
         l)
             log_url="$OPTARG"
             assert_not_empty log_url
@@ -353,6 +359,10 @@ then
     if [ -z "${vmem_timeout}" ]
     then
         error 2 "vmem timeout is required (-T)"
+    fi
+    if [ -z "${vmem_port}" ]
+    then
+        error 2 "vmem port is required (-P)"
     fi
 fi
 
@@ -508,7 +518,7 @@ if $gpi_enabled ; then
         --kvs-host "${kvs_host}" --kvs-port "${kvs_port}" \
         --log-host "${log_host}" --log-port "${log_port}" \
         --gui-host "${gui_host}" --gui-port "${gui_port}" \
-        --virtual-memory-port 10820 \
+        --virtual-memory-port ${vmem_port} \
         --virtual-memory-socket "${gpi_socket}" \
         --virtual-memory-per-node "${gpi_mem}" \
         --virtual-memory-timeout ${vmem_timeout} 2>&1)
