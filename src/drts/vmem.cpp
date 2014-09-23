@@ -9,6 +9,8 @@
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/make_unique.hpp>
 
+#include <chrono>
+#include <thread>
 #include <unordered_set>
 
 namespace gspc
@@ -42,7 +44,7 @@ namespace gspc
     const boost::filesystem::path socket (get_not_yet_existing_virtual_memory_socket (vm));
     const unsigned short port (get_virtual_memory_port (vm));
     const unsigned long memory_size (get_virtual_memory_per_node (vm));
-    const unsigned long timeout (get_virtual_memory_timeout (vm));
+    const unsigned long startup_timeout_in_seconds (get_virtual_memory_timeout (vm));
 
     if (_rif_endpoints.empty())
     {
@@ -85,7 +87,7 @@ namespace gspc
                 , "--socket", socket.string()
                 , "--port", std::to_string (port)
                 , "--gpi-api", _rif_endpoints.size() > 1 ? "gaspi" : "fake"
-                , "--gpi-timeout", std::to_string (timeout)
+                , "--gpi-timeout", std::to_string (startup_timeout_in_seconds)
                 }
               , { {"GASPI_MFILE", machinefile_path}
                 , {"GASPI_MASTER", master}
@@ -107,7 +109,7 @@ namespace gspc
                 , "--socket", socket.string()
                 , "--port", std::to_string (port)
                 , "--gpi-api", _rif_endpoints.size() > 1 ? "gaspi" : "fake"
-                , "--gpi-timeout", std::to_string (timeout)
+                , "--gpi-timeout", std::to_string (startup_timeout_in_seconds)
                 }
               , { {"GASPI_MFILE", machinefile_path}
                 , {"GASPI_MASTER", master}
@@ -117,21 +119,29 @@ namespace gspc
                 }
               );
 
-    std::uint64_t slept (0);
-    while (!boost::filesystem::exists (socket))
+    std::chrono::steady_clock::time_point const until
+      ( std::chrono::steady_clock::now()
+      + std::chrono::seconds (startup_timeout_in_seconds)
+      );
+
+    while (std::chrono::steady_clock::now() < until)
     {
-      const std::uint64_t sleep_duration (1000);
-
-      usleep (sleep_duration * 1000);
-      slept += sleep_duration;
-
-      if (slept > timeout)
+      if (boost::filesystem::exists (socket))
       {
-        throw std::runtime_error
-          ( "timeout while waiting for: " + socket.string()
-          + " waited: " + std::to_string (slept) + " ms"
-          );
+        break;
       }
+
+      std::this_thread::sleep_for
+        (std::min ( std::chrono::milliseconds (200)
+                  , std::chrono::duration_cast<std::chrono::milliseconds> (until - std::chrono::steady_clock::now())
+                  )
+        );
+    }
+
+    if (!boost::filesystem::exists (socket))
+    {
+      throw std::runtime_error
+        ("timeout while waiting for: " + socket.string());
     }
   }
 

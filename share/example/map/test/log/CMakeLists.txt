@@ -29,7 +29,7 @@ fhg_add_test (test.cpp
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/../../"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --virtual-memory-per-node ${size_virtual_memory}
-       --virtual-memory-timeout 60000
+       --virtual-memory-timeout 60
        --virtual-memory-port 10820
        --implementation "${location_log_map-impl}"
        --size-input ${size_input}

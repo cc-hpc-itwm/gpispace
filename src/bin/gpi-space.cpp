@@ -133,7 +133,7 @@ int main (int ac, char *av[])
   std::string default_memory_url ("gpi://?buffer_size=4194304&buffers=8");
 
   unsigned long long gpi_mem = (1<<26);
-  unsigned int gpi_timeout = 120 * 1000;
+  unsigned int gpi_timeout = 120;
   boost::optional<unsigned short> port (false, 0u);
 
   std::vector<std::string> mem_urls;

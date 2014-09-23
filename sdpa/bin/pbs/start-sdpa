@@ -22,7 +22,7 @@ usage: $(basename $0) [options]
   -C: capability specification
   -G: number of segments
   -y: Socket file to communicate with the virtual memory manager
-  -T: timeout in milliseconds for virtual memory manager to start
+  -T: timeout in seconds for virtual memory manager to start
 
   -l: log url (=${log_url})
   -g: gui url (=${gui_url})
@@ -499,7 +499,7 @@ if $gpi_enabled ; then
 
     info "using SHM mem: ${def_shm_mem} bytes per process (by default)"
     info "using VMEM mem: ${gpi_mem} bytes per node"
-    info "starting VMEM on: '${gpi_socket}' with a timeout of $((vmem_timeout / 1000)) seconds"
+    info "starting VMEM on: '${gpi_socket}' with a timeout of $((vmem_timeout)) seconds"
 
     vmem_pid=$("${sdpa_home}/bin/vmem" \
         --nodefile "${nodefile}" \

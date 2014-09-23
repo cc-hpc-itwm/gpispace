@@ -63,7 +63,7 @@ namespace gpi
            );
       }
 
-      gaspi_return_t rc (gaspi_proc_init (timeout));
+      gaspi_return_t rc (gaspi_proc_init (timeout * 1000));
 
       if (rc == GASPI_ERROR)
       {

@@ -162,7 +162,7 @@ namespace gspc
         ( name::virtual_memory_timeout
         , boost::program_options::value<validators::positive_integral<unsigned long>>()
         ->required()
-        , "timeout in milliseconds for the virtual memory manager to connect and start up."
+        , "timeout in seconds for the virtual memory manager to connect and start up."
         )
         ;
 
@@ -259,9 +259,9 @@ namespace gspc
       , _virtual_memory_timeout
         ( vm.count (options::name::virtual_memory_timeout)
         ? boost::make_optional
-          ( std::chrono::milliseconds ( vm[options::name::virtual_memory_timeout]
-                                      . as<validators::positive_integral<unsigned long>>()
-                                      )
+          ( std::chrono::seconds ( vm[options::name::virtual_memory_timeout]
+                                 . as<validators::positive_integral<unsigned long>>()
+                                 )
           )
         : boost::none
         )
