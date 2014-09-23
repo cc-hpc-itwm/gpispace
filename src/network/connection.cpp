@@ -6,6 +6,7 @@
 #include <fhg/util/parse/position.hpp>
 
 #include <boost/asio/write.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <boost/system/system_error.hpp>
 
 namespace fhg
@@ -39,6 +40,8 @@ namespace fhg
       , _receive_strand (_socket.get_io_service())
     {
       start_read();
+
+      _socket.set_option (boost::asio::ip::tcp::no_delay (true));
     }
 
     void connection_type::start_read()
@@ -69,12 +72,20 @@ namespace fhg
             }
           }
 
-          _receive_buffer.insert ( _receive_buffer.begin()
-                                 , _receive_buffer_previous_rest.begin()
-                                 , _receive_buffer_previous_rest.end()
-                                 );
+          std::vector<char> data;
+          data.reserve (_receive_buffer_previous_rest.size() + transferred);
+          data.insert ( data.begin()
+                      , _receive_buffer_previous_rest.begin()
+                      , _receive_buffer_previous_rest.end()
+                      );
+          data.insert ( data.end()
+                      , _receive_buffer.begin()
+                      , _receive_buffer.begin() + transferred
+                      );
+
           transferred += _receive_buffer_previous_rest.size();
-          _receive_buffer_previous_rest.clear();
+
+          std::vector<char>::const_iterator pos (data.begin());
 
           while (transferred)
           {
@@ -84,26 +95,20 @@ namespace fhg
                 (std::min (*_remaining_bytes_for_receiving_message, transferred));
 
               _partial_receiving_message->insert
-                ( _partial_receiving_message->end()
-                , _receive_buffer.begin(), _receive_buffer.begin() + to_eat
-                );
-              _receive_buffer.erase
-                (_receive_buffer.begin(), _receive_buffer.begin() + to_eat);
+                (_partial_receiving_message->end(), pos, pos + to_eat);
+              pos += to_eat;
 
               *_remaining_bytes_for_receiving_message -= to_eat;
               transferred -= to_eat;
             }
-            else if (_receive_buffer.size() >= sizeof (protocol::packet_header))
+            else if (transferred >= sizeof (protocol::packet_header))
             {
               protocol::packet_header const header
-                ( *static_cast<protocol::packet_header*>
-                  (static_cast<void*> (_receive_buffer.data()))
+                ( *static_cast<protocol::packet_header const*>
+                  (static_cast<void const*> (&*pos))
                 );
 
-              _receive_buffer.erase
-                ( _receive_buffer.begin()
-                , _receive_buffer.begin() + sizeof (protocol::packet_header)
-                );
+              pos += sizeof (protocol::packet_header);
 
               _remaining_bytes_for_receiving_message = header.size;
               _partial_receiving_message = std::vector<char>();
@@ -111,8 +116,9 @@ namespace fhg
             }
             else
             {
-              std::swap (_receive_buffer_previous_rest, _receive_buffer);
-              return;
+              std::vector<char> (pos, data.cend()).swap
+                (_receive_buffer_previous_rest);
+              break;
             }
 
             if ( _remaining_bytes_for_receiving_message
@@ -142,9 +148,7 @@ namespace fhg
             )
         };
 
-      std::lock_guard<std::mutex> const _ (_pending_send_mutex);
-
-      const bool has_pending (!_pending_send.empty());
+      std::lock_guard<std::mutex> const _ (_pending_send_and_write_mutex);
 
       //! \note We trade avoiding concat (header, list…) with possibly
       //! multiple network transfers. It may be better to just concat
@@ -157,19 +161,27 @@ namespace fhg
         _pending_send.emplace_back (std::move (buffer));
       }
 
-      if (!has_pending)
-      {
-        start_write();
-      }
+      maybe_start_write();
     }
 
-    void connection_type::start_write()
+    //! \note Requires _pending_send_and_write_mutex to currently be locked
+    void connection_type::maybe_start_write()
     {
+      if (_pending_write || _pending_send.empty())
+      {
+        return;
+      }
+
+      _pending_write = true;
       boost::asio::async_write
         ( _socket
         , boost::asio::buffer (_pending_send.front())
         , [this] (boost::system::error_code error, std::size_t /*written*/)
         {
+          std::lock_guard<std::mutex> const _ (_pending_send_and_write_mutex);
+
+          _pending_write = false;
+
           //! \note written is only != expected, if error.
           if (error)
           {
@@ -182,14 +194,9 @@ namespace fhg
             throw boost::system::system_error (error);
           }
 
-          std::lock_guard<std::mutex> const _ (_pending_send_mutex);
-
           _pending_send.pop_front();
 
-          if (!_pending_send.empty())
-          {
-            start_write();
-          }
+          maybe_start_write();
         }
         );
     }
