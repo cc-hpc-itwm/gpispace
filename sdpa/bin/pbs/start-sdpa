@@ -233,7 +233,6 @@ gpi_mem=0
 gpi_socket=
 def_shm_mem=0
 def_num_proc=1
-def_gpi_socket="/tmp/S-vmem.$(id -u)"
 vmem_startup_timeout=
 vmem_port=
 
@@ -362,6 +361,10 @@ then
     then
         error 2 "vmem port is required (-P)"
     fi
+    if [ -z "${gpi_socket}" ]
+    then
+        error 2 "vmem socket is required (-y)"
+    fi
 fi
 
 if [ $number_of_groups -le 0 ] ; then
@@ -381,11 +384,6 @@ log_port=${log_url#*:}
 
 gui_host=${gui_url%:*}
 gui_port=${gui_url#*:}
-
-if [ -z "${gpi_socket}" ]
-then
-    gpi_socket="$def_gpi_socket"
-fi
 
 hosts=( $(cat "$nodefile" | uniq) )
 
