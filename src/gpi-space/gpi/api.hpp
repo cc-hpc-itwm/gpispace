@@ -69,8 +69,6 @@ namespace gpi
       template <typename T>
       T* dma_ptr (void) { return (T*)(dma_ptr()); }
 
-      virtual void set_memory_size (const gpi::size_t) = 0;
-
       virtual bool is_master (void) const = 0;
       virtual bool is_slave (void) const = 0;
 

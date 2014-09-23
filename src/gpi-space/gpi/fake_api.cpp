@@ -27,11 +27,6 @@ namespace gpi
       shutdown ();
     }
 
-    void fake_gpi_api_t::set_memory_size (const gpi::size_t sz)
-    {
-      m_mem_size = sz;
-    }
-
     // wrapped C function calls
     void fake_gpi_api_t::start (int, char **, const gpi::timeout_t)
     {

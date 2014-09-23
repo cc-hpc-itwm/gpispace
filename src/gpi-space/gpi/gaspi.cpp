@@ -34,11 +34,6 @@ namespace gpi
       stop();
     }
 
-    void gaspi_t::set_memory_size (const gpi::size_t sz)
-    {
-      m_mem_size = sz;
-    }
-
     // wrapped C function calls
     void gaspi_t::start (int, char *[], const gpi::timeout_t timeout)
     {
