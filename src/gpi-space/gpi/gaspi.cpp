@@ -371,7 +371,7 @@ namespace gpi
       }
     }
 
-    size_t gaspi_t::wait_dma (const queue_desc_t queue)
+    void gaspi_t::wait_dma (const queue_desc_t queue)
     {
       fhg_assert (m_startup_done);
       if (GASPI_ERROR == gaspi_wait (queue, GASPI_BLOCK))
@@ -386,7 +386,6 @@ namespace gpi
           , queue
           );
       }
-      return 0; // not sure what to return here, 0 or something > 0
     }
   }
 }

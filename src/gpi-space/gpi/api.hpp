@@ -85,7 +85,7 @@ namespace gpi
                      , const queue_desc_t queue
                      ) = 0;
 
-      virtual size_t wait_dma (const queue_desc_t queue) = 0;
+      virtual void wait_dma (const queue_desc_t queue) = 0;
     };
   }
 }

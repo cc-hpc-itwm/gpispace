@@ -251,13 +251,11 @@ namespace gpi
       }
     }
 
-    size_t fake_gpi_api_t::wait_dma (const queue_desc_t queue)
+    void fake_gpi_api_t::wait_dma (const queue_desc_t queue)
     {
       fhg_assert (m_startup_done);
 
-      size_t cnt (m_dma_request_count[queue]);
       m_dma_request_count[queue] = 0;
-      return cnt;
     }
   }
 }

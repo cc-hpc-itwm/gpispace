@@ -56,7 +56,7 @@ namespace gpi
                      , const rank_t to_node
                      , const queue_desc_t queue
                      ) override;
-      virtual size_t wait_dma (const queue_desc_t queue) override;
+      virtual void wait_dma (const queue_desc_t queue) override;
     private:
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
