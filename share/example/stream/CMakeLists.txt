@@ -21,7 +21,7 @@ fhg_add_test (stream.two_module_calls.cpp
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --virtual-memory-per-node ${size_virtual_memory}
-       --virtual-memory-timeout 60
+       --virtual-memory-startup-timeout 60
        --virtual-memory-port 10820
        --num-slots ${num_slots}
        --size-slot ${size_slot}
@@ -42,7 +42,7 @@ fhg_add_test (stream.one_module_call.cpp
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --virtual-memory-per-node ${size_virtual_memory}
-       --virtual-memory-timeout 60
+       --virtual-memory-startup-timeout 60
        --virtual-memory-port 10820
        --num-slots ${num_slots}
        --size-slot ${size_slot}

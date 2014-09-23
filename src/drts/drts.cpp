@@ -61,8 +61,8 @@ namespace gspc
       {"virtual-memory-socket"};
       constexpr char const* const virtual_memory_port
       {"virtual-memory-port"};
-      constexpr char const* const virtual_memory_timeout
-      {"virtual-memory-timeout"};
+      constexpr char const* const virtual_memory_startup_timeout
+      {"virtual-memory-startup-timeout"};
     }
 
     boost::program_options::options_description logging()
@@ -159,7 +159,7 @@ namespace gspc
         ->required()
         , "internal communication port that shall be used by the virtual memory manager"
         )
-        ( name::virtual_memory_timeout
+        ( name::virtual_memory_startup_timeout
         , boost::program_options::value<validators::positive_integral<unsigned long>>()
         ->required()
         , "timeout in seconds for the virtual memory manager to connect and start up."
@@ -256,10 +256,10 @@ namespace gspc
           )
         : boost::none
         )
-      , _virtual_memory_timeout
-        ( vm.count (options::name::virtual_memory_timeout)
+      , _virtual_memory_startup_timeout
+        ( vm.count (options::name::virtual_memory_startup_timeout)
         ? boost::make_optional
-          ( std::chrono::seconds ( vm[options::name::virtual_memory_timeout]
+          ( std::chrono::seconds ( vm[options::name::virtual_memory_startup_timeout]
                                  . as<validators::positive_integral<unsigned long>>()
                                  )
           )
@@ -314,7 +314,7 @@ namespace gspc
       command_boot
         << " -y " << *_virtual_memory_socket
         << " -m " << *_virtual_memory_per_node
-        << " -T " << _virtual_memory_timeout->count()
+        << " -T " << _virtual_memory_startup_timeout->count()
         << " -P " << get_virtual_memory_port (vm)
         ;
     }
@@ -445,9 +445,9 @@ namespace gspc
     return vm[options::name::virtual_memory_port].as<validators::positive_integral<unsigned short>>();
   }
   unsigned long
-  get_virtual_memory_timeout (boost::program_options::variables_map const& vm)
+  get_virtual_memory_startup_timeout (boost::program_options::variables_map const& vm)
   {
-    return vm[options::name::virtual_memory_timeout].as<validators::positive_integral<unsigned long>>();
+    return vm[options::name::virtual_memory_startup_timeout].as<validators::positive_integral<unsigned long>>();
   }
 
   void set_virtual_memory_socket ( boost::program_options::variables_map& vm

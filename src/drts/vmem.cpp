@@ -44,7 +44,7 @@ namespace gspc
     const boost::filesystem::path socket (get_not_yet_existing_virtual_memory_socket (vm));
     const unsigned short port (get_virtual_memory_port (vm));
     const unsigned long memory_size (get_virtual_memory_per_node (vm));
-    const unsigned long startup_timeout_in_seconds (get_virtual_memory_timeout (vm));
+    const unsigned long startup_timeout_in_seconds (get_virtual_memory_startup_timeout (vm));
 
     if (_rif_endpoints.empty())
     {
