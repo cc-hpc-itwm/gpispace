@@ -26,29 +26,9 @@ namespace
 {
   namespace option
   {
-    struct _
-    {
-      _ (const std::string& _long, boost::optional<const char*> _short = boost::none)
-        : name (_long)
-        , descriptor
-          ( _short
-          ? (name + "," + *_short)
-          : name
-          )
-      {}
-
-      const std::string name;
-      const std::string descriptor;
-
-      operator const char*() const
-      {
-        return descriptor.c_str();
-      }
-    };
-
-    static const _ help ("help");
-    static const _ kvs_host ("kvs-host");
-    static const _ kvs_port ("kvs-port");
+    constexpr const char* help {"help"};
+    constexpr const char* kvs_host {"kvs-host"};
+    constexpr const char* kvs_port {"kvs-port"};
   }
 
   std::pair<std::list<std::string>, unsigned long>
@@ -119,7 +99,7 @@ int main (int argc, char *argv[])
     );
   boost::program_options::store (parsed, vm);
 
-  if (vm.count (option::help.name))
+  if (vm.count (option::help))
   {
     std::cout << "usage: " << argv[0] << "[options]" << std::endl
               << std::endl
@@ -137,8 +117,8 @@ int main (int argc, char *argv[])
                     , gspc::installation (vm)
                     , rif
                     , read_nodes (vm["nodefile"].as<validators::existing_path>())
-                    , vm[option::kvs_host.name].as<validators::nonempty_string>()
-                    , vm[option::kvs_port.name].as<validators::positive_integral<unsigned short>>()
+                    , vm[option::kvs_host].as<validators::nonempty_string>()
+                    , vm[option::kvs_port].as<validators::positive_integral<unsigned short>>()
                     );
 
   boost::optional<pid_t> child (fhg::util::fork_and_daemonize_child());
