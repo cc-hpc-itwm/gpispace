@@ -61,7 +61,7 @@ namespace gspc
 
     const std::string& master (_rif_endpoints.front().host);
 
-    const std::string machinefile_path
+    const std::string nodefile_path
       (rif_t::make_relative_to_rif_root ("nodefile").string());
 
     {
@@ -73,7 +73,7 @@ namespace gspc
       }
       _rif.store ( _rif_endpoints
                  , in_memory_hostlist
-                 , machinefile_path
+                 , nodefile_path
                  );
     }
 
@@ -89,7 +89,7 @@ namespace gspc
                 , "--gpi-api", _rif_endpoints.size() > 1 ? "gaspi" : "fake"
                 , "--gpi-timeout", std::to_string (startup_timeout_in_seconds)
                 }
-              , { {"GASPI_MFILE", machinefile_path}
+              , { {"GASPI_MFILE", nodefile_path}
                 , {"GASPI_MASTER", master}
                 , {"GASPI_SOCKET", "0"}
                 , {"GASPI_TYPE", "GASPI_MASTER"}
@@ -111,7 +111,7 @@ namespace gspc
                 , "--gpi-api", _rif_endpoints.size() > 1 ? "gaspi" : "fake"
                 , "--gpi-timeout", std::to_string (startup_timeout_in_seconds)
                 }
-              , { {"GASPI_MFILE", machinefile_path}
+              , { {"GASPI_MFILE", nodefile_path}
                 , {"GASPI_MASTER", master}
                 , {"GASPI_SOCKET", "0"}
                 , {"GASPI_TYPE", "GASPI_WORKER"}
