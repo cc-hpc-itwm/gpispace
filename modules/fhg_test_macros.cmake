@@ -164,8 +164,7 @@ macro(FHG_ADD_TEST)
       set_target_properties(${tc_name} PROPERTIES COMPILE_FLAGS ${TEST_COMPILE_FLAGS})
     endif()
     target_link_libraries(${tc_name} ${TEST_LINK_LIBRARIES})
-    get_target_property(TC_LOC ${tc_name} LOCATION)
-    add_test (${tc_name} ${TC_LOC} ${TEST_ARGS})
+    add_test (NAME ${tc_name} COMMAND $<TARGET_FILE:${tc_name}> ${TEST_ARGS})
 
     if (TEST_RESOURCE_LOCK)
       set_tests_properties (${tc_name}

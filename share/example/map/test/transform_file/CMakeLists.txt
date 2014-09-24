@@ -21,10 +21,6 @@ target_link_libraries (transform_file_map-impl
 include_directories (${UTIL_INCLUDE_DIR})
 include_directories (${CMAKE_SOURCE_DIR})
 
-get_target_property (
-  location_transform_file_map-impl transform_file_map-impl LOCATION
-)
-
 math (EXPR size_communication_buffer "8 * 4 << 20")
 
 math (EXPR size_input "20 << 20")
@@ -43,7 +39,7 @@ fhg_add_test (test.cpp
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --virtual-memory-manager "${CMAKE_INSTALL_PREFIX}/bin/gpi-space"
        --virtual-memory-per-node ${size_virtual_memory}
-       --implementation "${location_transform_file_map-impl}"
+       --implementation "$<TARGET_FILE:transform_file_map-impl>"
        --size-input ${size_input}
        --size-output ${size_output}
        --size-block ${size_block}
