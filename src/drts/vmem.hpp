@@ -9,10 +9,10 @@ namespace gspc
   class vmem_t
   {
   public:
-    vmem_t ( boost::program_options::variables_map const& vm
-           , gspc::installation const& installation
-           , gspc::rif_t& rif
-           , std::pair<std::list<std::string>, unsigned long> const&
+    vmem_t ( boost::program_options::variables_map const&
+           , gspc::installation const&
+           , gspc::rif_t&
+           , std::pair<std::list<std::string>, unsigned long> const& machinefile
            , std::string const& kvs_host
            , unsigned short const kvs_port
            );
