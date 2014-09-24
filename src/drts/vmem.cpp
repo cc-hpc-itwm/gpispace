@@ -25,7 +25,8 @@ namespace gspc
                  , const unsigned short kvs_port
                  )
     : _rif (rif)
-    , _rif_endpoints ([] (const std::list<std::string>& hosts) -> std::list<gspc::rif_t::endpoint_t> {
+    , _rif_endpoints ([] (const std::list<std::string>& hosts) -> std::list<gspc::rif_t::endpoint_t>
+      {
         std::list<gspc::rif_t::endpoint_t> ep;
         std::unordered_set<std::string> seen;
         for (std::string const&h : hosts)

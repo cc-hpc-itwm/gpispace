@@ -83,9 +83,13 @@ namespace gspc
       for (const rif_t::endpoint_t& rif : rifs)
       {
         background_tasks.emplace_back
-          (std::async (std::launch::async, [&rif, &fun] {
-              fun (rif);
-            }));
+          (std::async ( std::launch::async
+                      , [&rif, &fun]
+                        {
+                          fun (rif);
+                        }
+                      )
+          );
       }
       for (std::future<void> & f : background_tasks)
       {
@@ -134,45 +138,54 @@ namespace gspc
                    , const std::map<std::string, std::string>& raw_environment
                    )
   {
-    run_asynchronously_and_wait (rifs, [this, &key, &raw_command, &raw_environment] (rif_t::endpoint_t const& rif) {
+    run_asynchronously_and_wait
+      ( rifs
+      , [this, &key, &raw_command, &raw_environment] (rif_t::endpoint_t const& rif)
         {
-          std::lock_guard<std::mutex> const _ (_processes_mutex);
-          if (_processes[rif].count (key) > 0)
           {
-            throw std::runtime_error ("key '" + key + "' is already in use on rif " + rif.host);
+            std::lock_guard<std::mutex> const _ (_processes_mutex);
+            if (_processes[rif].count (key) > 0)
+            {
+              throw std::runtime_error
+                ("key '" + key + "' is already in use on rif " + rif.host);
+            }
           }
-        }
 
-        // this should be handled by the remote rif
-        std::vector<std::string> command;
-        std::map<std::string, std::string> environment (raw_environment);
-        for (std::string const& arg : raw_command)
-        {
-          command.push_back (replace_rif_root (arg, _root));
-        }
-        for (std::pair<std::string, std::string> const& kv : raw_environment)
-        {
-          environment[kv.first] = replace_rif_root (kv.second, _root);
-        }
+          // this should be handled by the remote rif
+          std::vector<std::string> command;
+          std::map<std::string, std::string> environment (raw_environment);
+          for (std::string const& arg : raw_command)
+          {
+            command.push_back (replace_rif_root (arg, _root));
+          }
+          for (std::pair<std::string, std::string> const& kv : raw_environment)
+          {
+            environment[kv.first] = replace_rif_root (kv.second, _root);
+          }
 
-        std::unique_ptr<child_t> child
-          (fhg::util::make_unique<child_t> (rif, rexec (rif, command, environment)));
+          std::unique_ptr<child_t> child
+            (fhg::util::make_unique<child_t> (rif, rexec (rif, command, environment)));
 
-        std::lock_guard<std::mutex> const _ (_processes_mutex);
-        _processes[rif][key].push_back (std::move (child));
-      });
+          std::lock_guard<std::mutex> const _ (_processes_mutex);
+          _processes[rif][key].push_back (std::move (child));
+        }
+      );
   }
 
   void rif_t::stop ( const std::list<rif_t::endpoint_t>& rifs
                    , const std::string& key
                    )
   {
-    run_asynchronously_and_wait (rifs, [this, &key] (rif_t::endpoint_t const& rif) {
-        if (! _processes[rif].erase (key))
+    run_asynchronously_and_wait
+      ( rifs
+      , [this, &key] (rif_t::endpoint_t const& rif)
         {
-          throw std::invalid_argument ("no such key: " + key);
+          if (! _processes[rif].erase (key))
+          {
+            throw std::invalid_argument ("no such key: " + key);
+          }
         }
-      });
+      );
     for (const endpoint_t& rif : rifs)
     {
       if (_processes[rif].empty())
@@ -193,18 +206,22 @@ namespace gspc
                     , const boost::filesystem::path& path
                     )
   {
-    run_asynchronously_and_wait (rifs, [this, &data, &path] (rif_t::endpoint_t const& rif) {
-        const std::string real_path (replace_rif_root (path.string(), _root));
-        std::ostringstream command;
-        command << "ssh -q -p " << rif.port << " " << rif.host
-                << " 'mkdir -p $(dirname " << real_path << "); "
-                << " /bin/cat > " << real_path << "'";
-        scoped_popen f (command.str().c_str(), "w");
-        if (1 != fwrite (data.data(), data.size(), 1, f._))
+    run_asynchronously_and_wait
+      ( rifs
+      , [this, &data, &path] (rif_t::endpoint_t const& rif)
         {
-          throw std::runtime_error
-            ("could not write to: " + path.string() + " on " + rif.host);
+          const std::string real_path (replace_rif_root (path.string(), _root));
+          std::ostringstream command;
+          command << "ssh -q -p " << rif.port << " " << rif.host
+                  << " 'mkdir -p $(dirname " << real_path << "); "
+                  << " /bin/cat > " << real_path << "'";
+          scoped_popen f (command.str().c_str(), "w");
+          if (1 != fwrite (data.data(), data.size(), 1, f._))
+          {
+            throw std::runtime_error
+              ("could not write to: " + path.string() + " on " + rif.host);
+          }
         }
-      });
+      );
   }
 }
