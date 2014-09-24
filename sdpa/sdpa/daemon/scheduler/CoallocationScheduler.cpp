@@ -168,7 +168,10 @@ namespace sdpa
         if (mmap_matching_workers.size() >= requirements.numWorkers())
         {
           return CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
-            (mmap_matching_workers, requirements.numWorkers(), getMemoryTransferCosts (mmap_matching_workers, null_transfer_cost));
+            (mmap_matching_workers, requirements.numWorkers(), getMemoryTransferCosts ( mmap_matching_workers
+                                                                                      , requirements.transfer_cost()
+                                                                                      )
+            );
         }
 
         return  std::set<worker_id_t>();
