@@ -190,6 +190,12 @@ GenericDaemon::cleanup_job_map_on_dtor_helper::~cleanup_job_map_on_dtor_helper()
   }
 }
 
+std::function<double (std::string const&)> GenericDaemon::virtual_memory_api::transfer_cost
+  (std::list<std::pair<we::local::range, we::global::range>> const& list_of_range_pairs)
+{
+  return _.transfer_costs (list_of_range_pairs);
+}
+
 const std::string& GenericDaemon::name() const
 {
   return _name;
