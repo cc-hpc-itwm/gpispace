@@ -8,8 +8,6 @@
 
 #include <GASPI.h>
 
-#include <csignal> // sigwait
-#include <cstring> // strerror
 #include <limits>
 
 namespace gpi
