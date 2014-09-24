@@ -529,11 +529,44 @@ try
     throw std::runtime_error ("invalid number of workers required: 0UL");
   }
 
+  std::function<double (std::string const&)>
+      transfer_cost {null_transfer_cost};
+
+  if (activity.transition().module_call())
+  {
+    expr::eval::context context;
+
+    for ( std::pair< pnet::type::value::value_type
+                   , we::port_id_type
+                   > const& token_on_port
+        : activity.input()
+        )
+    {
+      context.bind_ref
+        ( activity.transition().ports_input().at (token_on_port.second).name()
+        , token_on_port.first
+        );
+    }
+
+    std::list<std::pair<we::local::range, we::global::range>>
+      transfer_map (activity.transition().module_call()->gets (context));
+
+    std::list<std::pair<we::local::range, we::global::range>>
+      puts_before (activity.transition().module_call()->puts_evaluated_before_call (context));
+
+    std::copy ( puts_before.begin()
+              , puts_before.end()
+              , std::back_inserter (transfer_map)
+              );
+
+    transfer_cost = _virtual_memory_api->transfer_cost (transfer_map);
+  }
+
   addJob ( job_id
          , activity.to_string()
          , false
          , name()
-         , job_requirements_t (activity.transition().requirements(), schedule_data, null_transfer_cost)
+         , job_requirements_t (activity.transition().requirements(), schedule_data, transfer_cost)
          );
 
   scheduler().enqueueJob (job_id);
