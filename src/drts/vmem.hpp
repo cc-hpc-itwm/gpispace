@@ -19,7 +19,7 @@ namespace gspc
     ~vmem_t();
   private:
     gspc::rif_t& _rif;
-    std::list<gspc::rif_t::endpoint_t> _rif_endpoints;
+    const std::list<gspc::rif_t::endpoint_t> _rif_endpoints;
   };
 }
 
