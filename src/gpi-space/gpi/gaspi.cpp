@@ -14,6 +14,28 @@ namespace gpi
 {
   namespace api
   {
+    namespace
+    {
+      template <typename Fun, typename... T>
+      void fail_on_non_zero ( const std::string& function_name
+                            , Fun f
+                            , T... arguments
+                            )
+      {
+        const int rc = f (arguments...);
+        if (rc != 0)
+        {
+          throw gpi::exception::gpi_error
+            ( gpi::error::internal_error()
+            , function_name + " failed: gaspi_return_t := " + std::to_string (rc)
+            );
+        }
+      }
+
+#define FAIL_ON_NON_ZERO(F, Args...)             \
+      fail_on_non_zero(#F, F, Args)
+    }
+
     gaspi_t::gaspi_t (bool is_master, const unsigned long long memory_size, const unsigned short port)
       : m_is_master (is_master)
       , m_startup_done (false)
@@ -56,44 +78,20 @@ namespace gpi
            );
       }
 
-      gaspi_return_t rc (gaspi_proc_init (timeout * 1000));
+      constexpr const int GASPI_TO_MILLISECONDS { 1000 };
 
-      if (rc == GASPI_ERROR)
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::startup_failed()
-          , "gaspi_proc_init() failed"
-          );
-      }
-      else if (rc == GASPI_TIMEOUT)
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::startup_failed()
-          , "gaspi_proc_init() timed out"
-          );
-      }
-
-      if (GASPI_ERROR == gaspi_segment_create ( m_replacement_gpi_segment
-                                              , m_mem_size
-                                              , GASPI_GROUP_ALL
-                                              , GASPI_BLOCK
-                                              , GASPI_MEM_UNINITIALIZED
-                                              )
-         )
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::startup_failed()
-          , "gaspi_segment_create() failed"
-          );
-      }
-
-      if (GASPI_ERROR == gaspi_segment_ptr (m_replacement_gpi_segment, &m_dma))
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::startup_failed()
-          , "gaspi_segment_ptr() failed"
-          );
-      }
+      FAIL_ON_NON_ZERO (gaspi_proc_init, timeout * GASPI_TO_MILLISECONDS);
+      FAIL_ON_NON_ZERO ( gaspi_segment_create
+                       , m_replacement_gpi_segment
+                       , m_mem_size
+                       , GASPI_GROUP_ALL
+                       , GASPI_BLOCK
+                       , GASPI_MEM_UNINITIALIZED
+                       );
+      FAIL_ON_NON_ZERO ( gaspi_segment_ptr
+                       , m_replacement_gpi_segment
+                       , &m_dma
+                       );
 
       m_startup_done = true;
     }
@@ -103,13 +101,7 @@ namespace gpi
       lock_type lock (m_mutex);
       if (m_startup_done)
       {
-        if (GASPI_ERROR == gaspi_proc_term (GASPI_BLOCK))
-        {
-          throw gpi::exception::gpi_error
-            ( gpi::error::internal_error()
-            , "gaspi_t::gaspi_proc_term() failed"
-            );
-        }
+        FAIL_ON_NON_ZERO (gaspi_proc_term, GASPI_BLOCK);
         m_startup_done = false;
       }
     }
@@ -117,59 +109,35 @@ namespace gpi
     gpi::size_t gaspi_t::number_of_queues() const
     {
       gaspi_number_t queue_num;
-      if (GASPI_ERROR == gaspi_queue_num (&queue_num))
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::internal_error()
-          , "gaspi_t::number_of_queues() failed"
-          );
-      }
+      FAIL_ON_NON_ZERO (gaspi_queue_num, &queue_num);
       return queue_num;
     }
 
     gpi::size_t gaspi_t::queue_depth() const
     {
       gaspi_number_t queue_size_max;
-      if (GASPI_ERROR == gaspi_queue_size_max (&queue_size_max))
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::internal_error()
-          , "gaspi_t::queue_depth() failed"
-          );
-      }
+      FAIL_ON_NON_ZERO (gaspi_queue_size_max,  &queue_size_max);
       return queue_size_max;
     }
 
     gpi::version_t gaspi_t::version() const
     {
       float vsn;
-      if (GASPI_ERROR == gaspi_version (&vsn))
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::internal_error()
-          , "gaspi_t::version()"
-          );
-      }
+      FAIL_ON_NON_ZERO (gaspi_version, &vsn);
       return vsn;
     }
 
     gpi::port_t gaspi_t::port() const
     {
       gaspi_config_t config;
-      gaspi_config_get (&config);
+      FAIL_ON_NON_ZERO (gaspi_config_get, &config);
       return config.sn_port;
     }
 
     gpi::size_t gaspi_t::number_of_nodes() const
     {
       gaspi_rank_t num_ranks;
-      if (GASPI_ERROR == gaspi_proc_num (&num_ranks))
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::internal_error()
-          , "gaspi_t::number_of_nodes() failed"
-          );
-      }
+      FAIL_ON_NON_ZERO (gaspi_proc_num, &num_ranks);
       return num_ranks;
     }
 
@@ -181,13 +149,7 @@ namespace gpi
     gpi::size_t gaspi_t::max_transfer_size() const
     {
       gaspi_size_t transfer_size_max;
-      if (GASPI_ERROR == gaspi_transfer_size_max (&transfer_size_max))
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::internal_error()
-          , "gaspi_t::max_transfer_size() failed"
-          );
-      }
+      FAIL_ON_NON_ZERO (gaspi_transfer_size_max, &transfer_size_max);
       return transfer_size_max;
     }
 
@@ -196,13 +158,7 @@ namespace gpi
       fhg_assert (m_startup_done);
 
       gaspi_number_t queue_size;
-      if (GASPI_ERROR == gaspi_queue_size (q, &queue_size))
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::internal_error()
-          , "gaspi_t::open_dma_requests() failed"
-          );
-      }
+      FAIL_ON_NON_ZERO (gaspi_queue_size, q, &queue_size);
       return queue_size;
     }
 
@@ -215,13 +171,7 @@ namespace gpi
     {
       fhg_assert (m_startup_done);
       gaspi_rank_t rank;
-      if (GASPI_ERROR == gaspi_proc_rank (&rank))
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::internal_error()
-          , "gaspi_t::rank() failed"
-          );
-      }
+      FAIL_ON_NON_ZERO (gaspi_proc_rank, &rank);
       return rank;
     }
 
@@ -229,13 +179,7 @@ namespace gpi
     {
       fhg_assert (m_startup_done);
       std::vector<unsigned char> gaspi_state_vector (number_of_nodes());
-      if (GASPI_ERROR == gaspi_state_vec_get (gaspi_state_vector.data()))
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::internal_error()
-          , "gaspi_t::get_error_vector() failed"
-          );
-      }
+      FAIL_ON_NON_ZERO (gaspi_state_vec_get, gaspi_state_vector.data());
 
       gpi::error_vector_t v (gaspi_state_vector.size());
       for (std::size_t i (0); i < number_of_nodes(); ++i)
@@ -284,19 +228,23 @@ namespace gpi
           wait_dma (queue);
         }
 
-        if (GASPI_ERROR == gaspi_read ( m_replacement_gpi_segment
-                                      , l_off
-                                      , from_node
-                                      , m_replacement_gpi_segment
-                                      , r_off
-                                      , to_transfer
-                                      , queue
-                                      , GASPI_BLOCK
-                                      )
-           )
+        try
+        {
+          FAIL_ON_NON_ZERO ( gaspi_read
+                           , m_replacement_gpi_segment
+                           , l_off
+                           , from_node
+                           , m_replacement_gpi_segment
+                           , r_off
+                           , to_transfer
+                           , queue
+                           , GASPI_BLOCK
+                           );
+        }
+        catch (gpi::exception::gpi_error const &e)
         {
           throw exception::dma_error
-            ( gpi::error::read_dma_failed()
+            ( gpi::error::read_dma_failed (e.user_message)
             , l_off
             , r_off
             , from_node
@@ -336,19 +284,23 @@ namespace gpi
           wait_dma (queue);
         }
 
-        if (GASPI_ERROR == gaspi_write ( m_replacement_gpi_segment
-                                       , l_off
-                                       , to_node
-                                       , m_replacement_gpi_segment
-                                       , r_off
-                                       , to_transfer
-                                       , queue
-                                       , GASPI_BLOCK
-                                       )
-           )
+        try
+        {
+          FAIL_ON_NON_ZERO ( gaspi_write
+                           , m_replacement_gpi_segment
+                           , l_off
+                           , to_node
+                           , m_replacement_gpi_segment
+                           , r_off
+                           , to_transfer
+                           , queue
+                           , GASPI_BLOCK
+                           );
+        }
+        catch (const gpi::exception::gpi_error& e)
         {
           throw exception::dma_error
-            ( gpi::error::write_dma_failed()
+            ( gpi::error::write_dma_failed (e.user_message)
             , l_off
             , r_off
             , to_node
@@ -367,18 +319,7 @@ namespace gpi
     void gaspi_t::wait_dma (const queue_desc_t queue)
     {
       fhg_assert (m_startup_done);
-      if (GASPI_ERROR == gaspi_wait (queue, GASPI_BLOCK))
-      {
-        throw exception::dma_error
-          ( gpi::error::wait_dma_failed()
-          , 0
-          , 0
-          , rank()
-          , 0
-          , 0
-          , queue
-          );
-      }
+      FAIL_ON_NON_ZERO (gaspi_wait, queue, GASPI_BLOCK);
     }
   }
 }
