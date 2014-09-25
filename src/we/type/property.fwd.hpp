@@ -18,7 +18,7 @@ namespace we
     namespace property
     {
       typedef std::string key_type;
-      typedef std::string value_type;
+      typedef pnet::type::value::value_type value_type;
 
       struct type;
 

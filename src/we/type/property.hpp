@@ -29,11 +29,11 @@ namespace we
       public:
         type();
 
-        pnet::type::value::value_type const& value() const;
+        value_type const& value() const;
         pnet::type::value::structured_type const& list() const;
 
-        void set (const path_type& path, const value_type& val);
-        void set (const std::string& path, const value_type& val);
+        void set (const path_type& path, const value_type&);
+        void set (const std::string& path, const value_type&);
 
         boost::optional<const value_type&> get (const path_type& path) const;
         boost::optional<const value_type&> get (const std::string& path) const;
@@ -42,7 +42,7 @@ namespace we
         void del (const std::string& path);
 
       private:
-        pnet::type::value::value_type _value;
+        value_type _value;
 
         friend class boost::serialization::access;
         template<typename Archive>

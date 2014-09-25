@@ -39,7 +39,7 @@ namespace
   public:
     visitor_remove ( const std::list<std::string>::const_iterator& key
                    , const std::list<std::string>::const_iterator& end
-                   , pnet::type::value::value_type& node
+                   , value_type& node
                    )
       : _key (key)
       , _end (end)
@@ -50,7 +50,7 @@ namespace
     {
       if (_key == _end)
       {
-        _node = pnet::type::value::value_type();
+        _node = value_type();
       }
       else
       {
@@ -71,7 +71,7 @@ namespace
         }
         else
         {
-          pnet::type::value::value_type& v (pos->second);
+          value_type& v (pos->second);
 
           boost::apply_visitor (visitor_remove (next, _end, v), v);
         }
@@ -82,7 +82,7 @@ namespace
     {
       if (_key == _end)
       {
-        _node = pnet::type::value::value_type();
+        _node = value_type();
       }
       else
       {
@@ -94,7 +94,7 @@ namespace
   private:
     const std::list<std::string>::const_iterator& _key;
     const std::list<std::string>::const_iterator& _end;
-    pnet::type::value::value_type& _node;
+    value_type& _node;
   };
 }
 
@@ -108,7 +108,7 @@ namespace we
         : _value (pnet::type::value::structured_type())
       {}
 
-      pnet::type::value::value_type const& type::value() const
+      value_type const& type::value() const
       {
         return _value;
       }
@@ -141,15 +141,7 @@ namespace we
         , const path_type::const_iterator& end
         ) const
       {
-        boost::optional<const pnet::type::value::value_type&> mapped
-          (pnet::type::value::peek (pos, end, _value));
-
-        if (!mapped)
-        {
-          return boost::none;
-        }
-
-        return fhg::util::boost::get_or_none<value_type> (*mapped);
+        return pnet::type::value::peek (pos, end, _value);
       }
 
       boost::optional<const value_type&>

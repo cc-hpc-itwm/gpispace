@@ -922,7 +922,7 @@ namespace xml
                 const boost::optional<const ::we::type::property::value_type&>
                   warning_switch (properties.get (key));
 
-                if (!warning_switch || *warning_switch != "off")
+                if (boost::get<bool> (warning_switch.get_value_or (false)))
                 {
                   state.warn ( warning::inline_many_output_ports
                              ( trans.name()

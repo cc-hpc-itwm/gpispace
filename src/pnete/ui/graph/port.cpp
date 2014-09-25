@@ -291,18 +291,18 @@ namespace fhg
           }
           else
           {
-            const boost::optional<std::string> tunnel_direction
+            const boost::optional<pnet::type::value::value_type> tunnel_direction
               (handle().get().properties().get
                 ("fhg.pnete.tunnel.direction")
               );
 
             if (tunnel_direction)
             {
-              if (*tunnel_direction == "out")
+              if (boost::get<std::string> (*tunnel_direction) == "out")
               {
                 cap::add_outgoing (poly, pos);
               }
-              else if (*tunnel_direction == "in")
+              else if (boost::get<std::string> (*tunnel_direction) == "in")
               {
                 cap::add_incoming (poly, pos);
               }
@@ -463,16 +463,6 @@ namespace fhg
           }
         }
 
-        namespace
-        {
-          qreal read_qreal (const std::string& inp)
-          {
-            util::parse::position_string pos (inp);
-            fhg::util::parse::require::skip_spaces (pos);
-            return util::read_double (pos);
-          }
-        }
-
         void port_item::property_changed
           ( const data::handle::port& changed_handle
           , const ::we::type::property::key_type& key
@@ -513,12 +503,12 @@ namespace fhg
                 if (*pos == "x")
                 {
                   set_just_pos_but_not_in_property
-                    (read_qreal (value), this->pos().y());
+                    (boost::get<double> (value), this->pos().y());
                 }
                 else if (*pos == "y")
                 {
                   set_just_pos_but_not_in_property
-                    (this->pos().x(), read_qreal (value));
+                    (this->pos().x(), boost::get<double> (value));
                 }
               }
             }

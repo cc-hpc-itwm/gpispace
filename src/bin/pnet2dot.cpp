@@ -304,8 +304,8 @@ namespace
         std::ostringstream virt;
 
         if ( opts.show_virtual
-           && fhg::util::read_bool
-              (place.property().get ("virtual").get_value_or ("false"))
+           && boost::get<bool>
+                (place.property().get ("virtual").get_value_or (false))
            )
         {
             virt << endl << props ("virtual");

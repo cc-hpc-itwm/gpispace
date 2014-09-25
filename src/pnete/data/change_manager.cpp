@@ -224,20 +224,6 @@ namespace fhg
         change_manager, document
 
 
-        template<typename T>
-          ::we::type::property::value_type to_property_type (const T& t)
-        {
-          return
-            boost::lexical_cast< ::we::type::property::value_type> (t);
-        }
-
-        template<typename T>
-          T from_property_type (const ::we::type::property::value_type& v)
-        {
-          return
-            boost::lexical_cast<T> (v);
-        }
-
         template<typename HANDLE_TYPE>
           void set_property ( ACTION_ARG_LIST_NO_DOCUMENT
                             , const HANDLE_TYPE& handle
@@ -432,7 +418,7 @@ namespace fhg
                                 , !_outer
                                 ? "fhg.pnete.position.x"
                                 : "fhg.pnete.outer_position.x"
-                                , to_property_type (position.x())
+                                , position.x()
                                 )
                               )
               , _set_y_action ( new action::meta_set_property<handle_type>
@@ -441,7 +427,7 @@ namespace fhg
                                 , !_outer
                                 ? "fhg.pnete.position.y"
                                 : "fhg.pnete.outer_position.y"
-                                , to_property_type (position.y())
+                                , position.y()
                                 )
                               )
           { }
@@ -1255,7 +1241,7 @@ namespace fhg
           );
 
         place.get_ref().properties().set
-          ("fhg.pnete.is_implicit_place", "true");
+          ("fhg.pnete.is_implicit_place", true);
 
         push (new action::add_place (ACTION_CTOR_ARGS (net), net.id(), place));
 
@@ -1509,12 +1495,12 @@ namespace fhg
         action::set_property ( ACTION_CTOR_ARGS (transition)
                              , transition
                              , "fhg.pnete.position.x"
-                             , action::to_property_type (position.x())
+                             , position.x()
                              );
         action::set_property ( ACTION_CTOR_ARGS (transition)
                              , transition
                              , "fhg.pnete.position.y"
-                             , action::to_property_type (position.y())
+                             , position.y()
                              );
       }
 
@@ -1719,7 +1705,7 @@ namespace fhg
 
       void change_manager_t::make_explicit (const data::handle::place& place)
       {
-        set_property (place, "fhg.pnete.is_implicit_place", "false");
+        set_property (place, "fhg.pnete.is_implicit_place", false);
       }
 
       void change_manager_t::make_virtual (const data::handle::place& p)
@@ -1818,12 +1804,12 @@ namespace fhg
         action::set_property ( ACTION_CTOR_ARGS (place)
                              , place
                              , "fhg.pnete.position.x"
-                             , action::to_property_type (position.x())
+                             , position.x()
                              );
         action::set_property ( ACTION_CTOR_ARGS (place)
                              ,  place
                              , "fhg.pnete.position.y"
-                             , action::to_property_type (position.y())
+                             , position.y()
                              );
       }
 
@@ -2093,12 +2079,12 @@ namespace fhg
         action::set_property ( ACTION_CTOR_ARGS (port)
                              , port
                              , "fhg.pnete.position.x"
-                             , action::to_property_type (position.x())
+                             , position.x()
                              );
         action::set_property ( ACTION_CTOR_ARGS (port)
                              , port
                              , "fhg.pnete.position.y"
-                             , action::to_property_type (position.y())
+                             , position.y()
                              );
       }
 

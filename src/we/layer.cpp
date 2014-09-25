@@ -368,11 +368,10 @@ namespace we
         }
 
         if (  _running_jobs.contains (activity_data._id)
-           || ( fhg::util::read_bool
-                ( activity_data._activity.transition().prop()
-                . get ("drts.wait_for_output")
-                . get_value_or ("false")
-                )
+           || ( boost::get<bool> ( activity_data._activity.transition().prop()
+                                 . get ("drts.wait_for_output")
+                                 . get_value_or (false)
+                                 )
               && output_missing (activity_data._activity)
               )
            )
