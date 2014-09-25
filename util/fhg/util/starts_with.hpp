@@ -51,13 +51,13 @@ namespace fhg
     inline bool
     starts_with (const std::string & p, const std::string & x)
     {
-      return generic_starts_with (p.begin(), p.end(), x.begin(), x.end());
+      return !!generic_starts_with (p.begin(), p.end(), x.begin(), x.end());
     }
 
     inline bool
     ends_with (const std::string & s, const std::string & x)
     {
-      return generic_starts_with (s.rbegin(), s.rend(), x.rbegin(), x.rend());
+      return !!generic_starts_with (s.rbegin(), s.rend(), x.rbegin(), x.rend());
     }
   }
 }

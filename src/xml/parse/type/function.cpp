@@ -227,7 +227,7 @@ namespace xml
 
       bool function_type::has_parent() const
       {
-        return _parent;
+        return !!_parent;
       }
 
       void function_type::unparent()
@@ -481,12 +481,12 @@ namespace xml
 
       bool function_type::is_known_port_in (const std::string & name) const
       {
-        return get_port_in (name);
+        return !!get_port_in (name);
       }
 
       bool function_type::is_known_port_out (const std::string & name) const
       {
-        return get_port_out (name);
+        return !!get_port_out (name);
       }
 
       bool function_type::is_known_port (const std::string & name) const

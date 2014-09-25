@@ -124,7 +124,7 @@ namespace fhg
 
         bool port::is_connected() const
         {
-          return get().place;
+          return !!get().place;
         }
         place port::connected_place() const
         {
