@@ -77,7 +77,7 @@ namespace fhg
         }
         void base_item::no_undo_no_raster_setPos (qreal x, qreal y)
         {
-          no_undo_setPos (QPointF (x, y));
+          no_undo_no_raster_setPos (QPointF (x, y));
         }
 
         void base_item::set_just_pos_but_not_in_property (qreal x, qreal y)
