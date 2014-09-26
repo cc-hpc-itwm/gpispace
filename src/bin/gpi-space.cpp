@@ -622,7 +622,7 @@ int main (int ac, char *av[])
     fhg::util::signal_handler_manager signal_handler;
     signal_handler.add (SIGALRM, std::bind (&startup_failed));
 
-    gpi_api.start (ac, av, gpi_timeout);
+    gpi_api.start (ac, av, std::chrono::seconds (gpi_timeout));
   }
   catch (std::exception const & ex)
   {

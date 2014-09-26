@@ -8,6 +8,8 @@
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <chrono>
+
 namespace gpi
 {
   namespace api
@@ -48,7 +50,7 @@ namespace gpi
       virtual ~gpi_api_t() = default;
 
       // wrapped C function calls
-      virtual void start (int ac, char *av[], const gpi::timeout_t timeout) = 0;
+      virtual void start (int ac, char *av[], const std::chrono::seconds& timeout) = 0;
       virtual void stop () = 0;
 
       virtual gpi::size_t number_of_queues () const = 0;

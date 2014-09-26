@@ -28,7 +28,7 @@ namespace gpi
     }
 
     // wrapped C function calls
-    void fake_gpi_api_t::start (int, char **, const gpi::timeout_t)
+    void fake_gpi_api_t::start (int, char *[], const std::chrono::seconds&)
     {
       fhg_assert (! m_startup_done);
       if (m_dma)

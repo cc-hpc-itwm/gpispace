@@ -55,7 +55,7 @@ namespace gpi
     }
 
     // wrapped C function calls
-    void gaspi_t::start (int, char *[], const gpi::timeout_t timeout)
+    void gaspi_t::start (int, char *[], const std::chrono::seconds& timeout)
     {
       fhg_assert (! m_startup_done);
 
@@ -78,9 +78,9 @@ namespace gpi
            );
       }
 
-      constexpr const int GASPI_TO_MILLISECONDS { 1000 };
-
-      FAIL_ON_NON_ZERO (gaspi_proc_init, timeout * GASPI_TO_MILLISECONDS);
+      FAIL_ON_NON_ZERO ( gaspi_proc_init
+                       , (std::chrono::duration_cast<std::chrono::milliseconds> (timeout)).count()
+                       );
       FAIL_ON_NON_ZERO ( gaspi_segment_create
                        , m_replacement_gpi_segment
                        , m_mem_size
