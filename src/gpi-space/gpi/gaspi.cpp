@@ -321,5 +321,7 @@ namespace gpi
       fhg_assert (m_startup_done);
       FAIL_ON_NON_ZERO (gaspi_wait, queue, GASPI_BLOCK);
     }
+
+#undef FAIL_ON_NON_ZERO
   }
 }
