@@ -53,6 +53,5 @@ namespace fhg
     int connect (int sock, const struct sockaddr *address, socklen_t addr_len);
     FILE *popen (const char *command, const char *type);
     void pclose (FILE *stream);
-    size_t fread (void *ptr, size_t size, size_t nmemb, FILE *stream);
   }
 }
