@@ -20,9 +20,6 @@ namespace gpi
     {
       m_dma_request_count.assign (m_queue_count, 0);
 
-      if (m_dma)
-        free (m_dma);
-
       if (sys::get_total_memory_size() < m_mem_size)
       {
         LOG( ERROR
