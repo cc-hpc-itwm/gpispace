@@ -114,12 +114,6 @@ namespace
         ("internal error: unhandled enum value for 'requested_api': " + std::to_string (requested_api));
     }
   }
-
-  void startup_failed()
-  {
-    LOG (ERROR, "startup failed");
-    exit (1);
-  }
 }
 
 int main (int ac, char *av[])
@@ -619,9 +613,6 @@ int main (int ac, char *av[])
 
   try
   {
-    fhg::util::signal_handler_manager signal_handler;
-    signal_handler.add (SIGALRM, std::bind (&startup_failed));
-
     gpi_api.start (ac, av, std::chrono::seconds (gpi_timeout));
   }
   catch (std::exception const & ex)
