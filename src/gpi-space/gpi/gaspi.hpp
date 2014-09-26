@@ -19,7 +19,7 @@ namespace gpi
       ~gaspi_t();
 
       // wrapped C function calls
-      virtual void start (int ac, char *av[], const std::chrono::seconds& timeout) override;
+      virtual void start (const std::chrono::seconds& timeout) override;
       virtual void stop () override;
 
       virtual gpi::size_t number_of_queues () const override;

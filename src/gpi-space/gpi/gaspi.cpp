@@ -55,7 +55,7 @@ namespace gpi
     }
 
     // wrapped C function calls
-    void gaspi_t::start (int, char *[], const std::chrono::seconds& timeout)
+    void gaspi_t::start (const std::chrono::seconds& timeout)
     {
       fhg_assert (! m_startup_done);
 

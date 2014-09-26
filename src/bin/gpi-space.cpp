@@ -536,7 +536,7 @@ int main (int ac, char *av[])
 
   try
   {
-    gpi_api.start (ac, av, std::chrono::seconds (gpi_timeout));
+    gpi_api.start (std::chrono::seconds (gpi_timeout));
   }
   catch (std::exception const & ex)
   {
