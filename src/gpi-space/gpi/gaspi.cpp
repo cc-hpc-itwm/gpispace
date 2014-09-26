@@ -89,11 +89,6 @@ namespace gpi
 
     gaspi_t::~gaspi_t()
     {
-      stop();
-    }
-
-    void gaspi_t::stop()
-    {
       lock_type lock (m_mutex);
       if (m_startup_done)
       {

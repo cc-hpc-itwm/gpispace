@@ -59,12 +59,6 @@ namespace gpi
 
     fake_gpi_api_t::~fake_gpi_api_t ()
     {
-      stop();
-    }
-
-    // wrapped C function calls
-    void fake_gpi_api_t::stop ()
-    {
       lock_type lock (m_mutex);
       if (m_startup_done)
       {
@@ -76,6 +70,7 @@ namespace gpi
       }
     }
 
+    // wrapped C function calls
     gpi::size_t fake_gpi_api_t::number_of_queues () const
     {
       return m_queue_count;

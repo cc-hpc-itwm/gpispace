@@ -50,8 +50,6 @@ namespace gpi
       virtual ~gpi_api_t() = default;
 
       // wrapped C function calls
-      virtual void stop () = 0;
-
       virtual gpi::size_t number_of_queues () const = 0;
       virtual gpi::size_t queue_depth () const = 0;
       virtual gpi::version_t version () const = 0;

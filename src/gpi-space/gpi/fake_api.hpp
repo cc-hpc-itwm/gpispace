@@ -21,8 +21,6 @@ namespace gpi
       ~fake_gpi_api_t();
 
       // wrapped C function calls
-      virtual void stop () override;
-
       virtual gpi::size_t number_of_queues () const override;
       virtual gpi::size_t queue_depth () const override;
       virtual gpi::version_t version () const override;
