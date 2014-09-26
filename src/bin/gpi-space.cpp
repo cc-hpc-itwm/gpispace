@@ -18,7 +18,6 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
-#include <fhg/util/daemonize.hpp>
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
@@ -119,7 +118,6 @@ namespace
 int main (int ac, char *av[])
 {
   int i = 0;
-  bool daemonize = false;
   bool is_master = true;
   char pidfile[MAX_PATH_LEN];
   snprintf (pidfile, sizeof(pidfile), "%s", "");
@@ -158,9 +156,6 @@ int main (int ac, char *av[])
       fprintf(stderr, "\n");
       fprintf(stderr, "    --pidfile PATH (%s)\n", pidfile);
       fprintf(stderr, "      write master's PID to this file\n");
-      fprintf(stderr, "\n");
-      fprintf(stderr, "    --daemonize\n");
-      fprintf(stderr, "      fork to background when all checks were ok\n");
       fprintf(stderr, "\n");
       fprintf(stderr, "    --socket PATH (%s)\n", socket_path);
       fprintf(stderr, "      create socket at this location\n");
@@ -221,11 +216,6 @@ int main (int ac, char *av[])
         fprintf(stderr, "%s: missing argument to --pidfile\n", program_name);
         exit(EX_USAGE);
       }
-    }
-    else if (strcmp(av[i], "--daemonize") == 0)
-    {
-      ++i;
-      daemonize = true;
     }
     else if (strcmp(av[i], "--socket") == 0)
     {
@@ -567,24 +557,12 @@ int main (int ac, char *av[])
       {
         fhg::util::pidfile_writer const pidfile_writer (pidfile);
 
-        if (daemonize)
-        {
-          fhg::util::fork_and_daemonize_child_and_abandon_parent();
-        }
-
         pidfile_writer.write();
       }
       catch (const std::exception& ex)
       {
         LOG (ERROR, ex.what());
         exit (EXIT_FAILURE);
-      }
-    }
-    else
-    {
-      if (daemonize)
-      {
-        fhg::util::fork_and_daemonize_child_and_abandon_parent();
       }
     }
   }
