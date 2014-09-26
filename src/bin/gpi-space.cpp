@@ -534,13 +534,6 @@ int main (int ac, char *av[])
     (create_gpi_api (requested_api, is_master, gpi_mem, *port));
   gpi_api_t& gpi_api (*gpi_api_);
 
-  if (is_master)
-  {
-    LOG (INFO, "GPISpace version: " << fhg::project_version());
-    LOG (INFO, "GPISpace revision: " << fhg::project_revision());
-    LOG (INFO, "GPIApi version: " << gpi_api.version());
-  }
-
   try
   {
     gpi_api.start (ac, av, std::chrono::seconds (gpi_timeout));
@@ -551,6 +544,13 @@ int main (int ac, char *av[])
     return EXIT_FAILURE;
   }
   LOG (INFO, "GPI started: " << gpi_api.rank());
+
+  if (is_master)
+  {
+    LOG (INFO, "GPISpace version: " << fhg::project_version());
+    LOG (INFO, "GPISpace revision: " << fhg::project_revision());
+    LOG (INFO, "GPIApi version: " << gpi_api.version());
+  }
 
   try
   {
