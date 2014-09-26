@@ -354,7 +354,7 @@ namespace fhg
           xs ("property", props.list(), from::property);
         }
 
-        WSIG(tv, property::open, ::we::type::property::key_type, key)
+        WSIG(tv, property::open, ::we::type::property::path_type::value_type, key)
         {
           push (append (key));
         }

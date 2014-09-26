@@ -37,7 +37,7 @@ namespace gspc
 
   void workflow::set_wait_for_output()
   {
-    _->_activity.transition().set_property ("drts.wait_for_output", true);
+    _->_activity.transition().set_property ({"drts", "wait_for_output"}, true);
   }
 
   static_assert ( std::is_same<job_id_t, sdpa::job_id_t>::value

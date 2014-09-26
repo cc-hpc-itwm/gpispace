@@ -23,7 +23,7 @@ namespace fhg
           : _document (document)
         { }
 
-        void base::set_property ( const ::we::type::property::key_type&
+        void base::set_property ( const ::we::type::property::path_type&
                                 , const ::we::type::property::value_type&
                                 ) const
         {

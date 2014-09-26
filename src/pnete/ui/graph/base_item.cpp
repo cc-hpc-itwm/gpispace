@@ -191,12 +191,10 @@ namespace fhg
         }
 
         void base_item::handle_property_change
-          ( const ::we::type::property::key_type& key
+          ( const ::we::type::property::path_type& path
           , const ::we::type::property::value_type& value
           )
         {
-          const ::we::type::property::path_type path
-            (pnet::type::value::path::split (key));
           ::we::type::property::path_type::const_iterator pos (path.begin());
           ::we::type::property::path_type::const_iterator const end (path.end());
 

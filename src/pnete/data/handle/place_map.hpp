@@ -32,7 +32,7 @@ namespace fhg
 
           void remove() const;
 
-          virtual void set_property ( const ::we::type::property::key_type&
+          virtual void set_property ( const ::we::type::property::path_type&
                                     , const ::we::type::property::value_type&
                                     ) const override;
 

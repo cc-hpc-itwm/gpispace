@@ -305,7 +305,7 @@ namespace
 
         if ( opts.show_virtual
            && boost::get<bool>
-                (place.property().get ("virtual").get_value_or (false))
+                (place.property().get ({"virtual"}).get_value_or (false))
            )
         {
             virt << endl << props ("virtual");
@@ -377,7 +377,7 @@ namespace
                  : ""
                  );
 
-            if (place_to_port.info.get ("pnetc.tunnel"))
+            if (place_to_port.info.get ({"pnetc", "tunnel"}))
             {
               s << association();
             }

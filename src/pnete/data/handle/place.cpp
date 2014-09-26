@@ -47,11 +47,11 @@ namespace fhg
         }
 
         void place::set_property
-          ( const ::we::type::property::key_type& key
+          ( const ::we::type::property::path_type& path
           , const ::we::type::property::value_type& val
           ) const
         {
-          change_manager().set_property (*this, key, val);
+          change_manager().set_property (*this, path, val);
         }
 
         void place::move ( const QPointF& position
@@ -70,7 +70,7 @@ namespace fhg
         {
           return boost::get<bool>
             ( get().properties().get
-              ("fhg.pnete.is_implicit_place").get_value_or (false)
+              ({"fhg", "pnete", "is_implicit_place"}).get_value_or (false)
             );
         }
 

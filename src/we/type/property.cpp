@@ -2,7 +2,6 @@
 
 #include <we/type/property.hpp>
 
-#include <we/type/value/path/split.hpp>
 #include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
 #include <we/type/value/dump.hpp>
@@ -49,11 +48,6 @@ namespace we
         return set (path.begin(), path.end(), val);
       }
 
-      void type::set (const std::string& path, const value_type& val)
-      {
-        return set (pnet::type::value::path::split (path), val);
-      }
-
       boost::optional<const value_type&> type::get
         ( const path_type::const_iterator& pos
         , const path_type::const_iterator& end
@@ -66,12 +60,6 @@ namespace we
         type::get (const path_type& path) const
       {
         return get (path.begin(), path.end());
-      }
-
-      boost::optional<const value_type&>
-        type::get (const std::string& path) const
-      {
-        return get (pnet::type::value::path::split (path));
       }
 
       namespace dump

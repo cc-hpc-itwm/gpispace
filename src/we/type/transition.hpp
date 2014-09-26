@@ -116,14 +116,8 @@ namespace we { namespace type {
           , const std::string& key
           ) const
       {
-        we::type::property::path_type path;
-        path.push_back ("fhg");
-        path.push_back ("drts");
-        path.push_back ("schedule");
-        path.push_back (key);
-
         boost::optional<const property::value_type&> expr
-          (prop().get (path));
+          (prop().get ({"fhg", "drts", "schedule", key}));
 
         if (!expr)
         {
@@ -146,11 +140,11 @@ namespace we { namespace type {
         return boost::get<T> (e.ast().eval_all (context));
       }
 
-      void set_property ( property::key_type const& key
+      void set_property ( property::path_type const& path
                         , property::value_type const& value
                         )
       {
-        prop_.set (key, value);
+        prop_.set (path, value);
       }
 
     private:

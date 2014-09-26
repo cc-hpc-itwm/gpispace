@@ -47,7 +47,7 @@ namespace fhg
             ( this
             , "property_changed"
             , "data::handle::port, "
-              "we::type::property::key_type, we::type::property::value_type"
+              "we::type::property::path_type, we::type::property::value_type"
             );
 
           handle.connect_to_change_mgr
@@ -293,7 +293,7 @@ namespace fhg
           {
             const boost::optional<pnet::type::value::value_type> tunnel_direction
               (handle().get().properties().get
-                ("fhg.pnete.tunnel.direction")
+                ({"fhg", "pnete", "tunnel", "direction"})
               );
 
             if (tunnel_direction)
@@ -465,22 +465,12 @@ namespace fhg
 
         void port_item::property_changed
           ( const data::handle::port& changed_handle
-          , const ::we::type::property::key_type& key
+          , const ::we::type::property::path_type& path
           , const ::we::type::property::value_type& value
           )
         {
           if (changed_handle == handle())
           {
-            const std::string required_position_variable
-              ( parentItem() == nullptr
-              ? "fhg.pnete.position"
-              : "fhg.pnete.outer_position"
-              );
-
-            const ::we::type::property::path_type path
-              (pnet::type::value::path::split (key));
-
-
             ::we::type::property::path_type::const_iterator pos (path.begin());
             ::we::type::property::path_type::const_iterator const end (path.end());
 
@@ -514,7 +504,7 @@ namespace fhg
             }
             else
             {
-              handle_property_change (key, value);
+              handle_property_change (path, value);
             }
           }
         }

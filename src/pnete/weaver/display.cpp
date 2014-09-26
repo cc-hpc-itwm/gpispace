@@ -41,7 +41,7 @@ namespace fhg
           bool is_hard_hidden (const ID& id)
         {
           return boost::get<bool> ( id.get().properties().get
-                                    ("fhg.pnete.is_hard_hidden")
+                                      ({"fhg", "pnete", "is_hard_hidden"})
                                   . get_value_or (false)
                                   );
         }
@@ -52,23 +52,22 @@ namespace fhg
                                            , const bool outer = false
                                            )
         {
-          const std::string var_name ( !outer
-                                     ? "fhg.pnete.position"
-                                     : "fhg.pnete.outer_position"
-                                     );
+          const std::string var_name (!outer ? "position" : "outer_position");
 
-          if (!id.get().properties().get (var_name + ".x"))
+          if (!id.get().properties().get ({"fhg", "pnete", var_name, "x"}))
           {
-            id.get_ref().properties().set (var_name + ".x", 0.0);
+            id.get_ref().properties().set ({"fhg", "pnete", var_name, "x"}, 0.0);
           }
-          if (!id.get().properties().get (var_name + ".y"))
+          if (!id.get().properties().get ({"fhg", "pnete", var_name, "y"}))
           {
-            id.get_ref().properties().set (var_name + ".y", 0.0);
+            id.get_ref().properties().set ({"fhg", "pnete", var_name, "y"}, 0.0);
           }
 
           item->set_just_pos_but_not_in_property
-            ( boost::get<double> (*id.get().properties().get (var_name + ".x"))
-            , boost::get<double> (*id.get().properties().get (var_name + ".y"))
+            ( boost::get<double>
+              (*id.get().properties().get ({"fhg", "pnete", var_name, "x"}))
+            , boost::get<double>
+              (*id.get().properties().get ({"fhg", "pnete", var_name, "y"}))
             );
         }
 

@@ -675,7 +675,7 @@ namespace xml
 
             if (place.is_virtual())
             {
-              prop.set ("virtual", true);
+              prop.set ({"virtual"}, true);
             }
 
             const we::place_id_type pid
