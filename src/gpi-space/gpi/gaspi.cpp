@@ -38,7 +38,6 @@ namespace gpi
 
     gaspi_t::gaspi_t (bool is_master, const unsigned long long memory_size, const unsigned short port, const std::chrono::seconds& timeout)
       : m_is_master (is_master)
-      , m_startup_done (false)
       , m_mem_size (memory_size)
       , m_dma (nullptr)
       , m_replacement_gpi_segment (0)
@@ -47,8 +46,6 @@ namespace gpi
       FAIL_ON_NON_ZERO (gaspi_config_get, &config);
       config.sn_port = port;
       FAIL_ON_NON_ZERO (gaspi_config_set, config);
-
-      fhg_assert (! m_startup_done);
 
       if (sys::get_total_memory_size() < m_mem_size)
       {
@@ -83,18 +80,12 @@ namespace gpi
                        , m_replacement_gpi_segment
                        , &m_dma
                        );
-
-      m_startup_done = true;
     }
 
     gaspi_t::~gaspi_t()
     {
       lock_type lock (m_mutex);
-      if (m_startup_done)
-      {
-        FAIL_ON_NON_ZERO (gaspi_proc_term, GASPI_BLOCK);
-        m_startup_done = false;
-      }
+      FAIL_ON_NON_ZERO (gaspi_proc_term, GASPI_BLOCK);
     }
 
     gpi::size_t gaspi_t::number_of_queues() const
@@ -146,8 +137,6 @@ namespace gpi
 
     gpi::size_t gaspi_t::open_dma_requests (const queue_desc_t q) const
     {
-      fhg_assert (m_startup_done);
-
       gaspi_number_t queue_size;
       FAIL_ON_NON_ZERO (gaspi_queue_size, q, &queue_size);
       return queue_size;
@@ -160,7 +149,6 @@ namespace gpi
 
     gpi::rank_t gaspi_t::rank() const
     {
-      fhg_assert (m_startup_done);
       gaspi_rank_t rank;
       FAIL_ON_NON_ZERO (gaspi_proc_rank, &rank);
       return rank;
@@ -168,7 +156,6 @@ namespace gpi
 
     gpi::error_vector_t gaspi_t::get_error_vector (const gpi::queue_desc_t) const
     {
-      fhg_assert (m_startup_done);
       std::vector<unsigned char> gaspi_state_vector (number_of_nodes());
       FAIL_ON_NON_ZERO (gaspi_state_vec_get, gaspi_state_vector.data());
 
@@ -182,7 +169,6 @@ namespace gpi
 
     void * gaspi_t::dma_ptr (void)
     {
-      fhg_assert (m_startup_done);
       return m_dma;
     }
 
@@ -202,8 +188,6 @@ namespace gpi
                            , const queue_desc_t queue
                            )
     {
-      fhg_assert (m_startup_done);
-
       size_t remaining (amount);
       const size_t chunk_size (max_transfer_size());
 
@@ -258,8 +242,6 @@ namespace gpi
                             , const queue_desc_t queue
                             )
     {
-      fhg_assert (m_startup_done);
-
       size_t remaining (amount);
       const size_t chunk_size (max_transfer_size());
 
@@ -309,7 +291,6 @@ namespace gpi
 
     void gaspi_t::wait_dma (const queue_desc_t queue)
     {
-      fhg_assert (m_startup_done);
       FAIL_ON_NON_ZERO (gaspi_wait, queue, GASPI_BLOCK);
     }
 

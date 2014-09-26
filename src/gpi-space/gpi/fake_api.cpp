@@ -13,7 +13,6 @@ namespace gpi
   {
     fake_gpi_api_t::fake_gpi_api_t (bool is_master, const unsigned long long memory_size, const std::chrono::seconds&)
       : m_is_master (is_master)
-      , m_startup_done (false)
       , m_rank (0)
       , m_mem_size (memory_size)
       , m_dma (nullptr)
@@ -21,7 +20,6 @@ namespace gpi
     {
       m_dma_request_count.assign (m_queue_count, 0);
 
-      fhg_assert (! m_startup_done);
       if (m_dma)
         free (m_dma);
 
@@ -53,20 +51,14 @@ namespace gpi
           );
       }
       memset (m_dma, 0, m_mem_size);
-
-      m_startup_done = true;
     }
 
     fake_gpi_api_t::~fake_gpi_api_t ()
     {
       lock_type lock (m_mutex);
-      if (m_startup_done)
+      if (m_dma)
       {
-        if (m_dma)
-        {
-          free (m_dma); m_dma = nullptr;
-        }
-        m_startup_done = false;
+        free (m_dma); m_dma = nullptr;
       }
     }
 
@@ -129,7 +121,6 @@ namespace gpi
 
     void * fake_gpi_api_t::dma_ptr (void)
     {
-      fhg_assert (m_startup_done);
       return m_dma;
     }
 
@@ -150,8 +141,6 @@ namespace gpi
                                   )
     {
       lock_type lock (m_mutex);
-
-      fhg_assert (m_startup_done);
 
       if (from_node != 0)
       {
@@ -198,8 +187,6 @@ namespace gpi
     {
       lock_type lock (m_mutex);
 
-      fhg_assert (m_startup_done);
-
       if (to_node != 0)
       {
         throw exception::dma_error
@@ -240,8 +227,6 @@ namespace gpi
 
     void fake_gpi_api_t::wait_dma (const queue_desc_t queue)
     {
-      fhg_assert (m_startup_done);
-
       m_dma_request_count[queue] = 0;
     }
   }

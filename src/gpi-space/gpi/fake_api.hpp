@@ -60,7 +60,6 @@ namespace gpi
 
       mutable mutex_type m_mutex;
       bool m_is_master;
-      bool  m_startup_done;
       rank_t m_rank;
       size_t m_mem_size;
       void *m_dma;
