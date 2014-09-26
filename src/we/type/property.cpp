@@ -35,31 +35,15 @@ namespace we
         return boost::get<pnet::type::value::structured_type const&> (_value);
       }
 
-      void type::set ( const path_type::const_iterator& pos
-                     , const path_type::const_iterator& end
-                     , const value_type& val
-                     )
-      {
-        pnet::type::value::poke (pos, end, _value, val);
-      }
-
       void type::set (const path_type& path, const value_type& val)
       {
-        return set (path.begin(), path.end(), val);
-      }
-
-      boost::optional<const value_type&> type::get
-        ( const path_type::const_iterator& pos
-        , const path_type::const_iterator& end
-        ) const
-      {
-        return pnet::type::value::peek (pos, end, _value);
+        pnet::type::value::poke (path.begin(), path.end(), _value, val);
       }
 
       boost::optional<const value_type&>
         type::get (const path_type& path) const
       {
-        return get (path.begin(), path.end());
+        return pnet::type::value::peek (path.begin(), path.end(), _value);
       }
 
       namespace dump

@@ -55,16 +55,6 @@ namespace we
           _value = pnet::type::value::read (val);
         }
         BOOST_SERIALIZATION_SPLIT_MEMBER()
-
-        void set ( const path_type::const_iterator& pos
-                 , const path_type::const_iterator& end
-                 , const value_type& val
-                 );
-
-        boost::optional<const value_type&> get
-          ( const path_type::const_iterator& pos
-          , const path_type::const_iterator& end
-          ) const;
       };
 
       namespace dump
