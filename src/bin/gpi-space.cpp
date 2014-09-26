@@ -510,7 +510,7 @@ int main (int ac, char *av[])
 
   if (0 != configure_logging (&config, logfile))
   {
-    LOG (WARN, "could not setup logging");
+    fprintf (stderr, "could not setup logging");
   }
 
   snprintf ( config.socket
