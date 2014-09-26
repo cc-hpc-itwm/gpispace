@@ -53,10 +53,7 @@ namespace gpi
     fake_gpi_api_t::~fake_gpi_api_t ()
     {
       lock_type lock (m_mutex);
-      if (m_dma)
-      {
-        free (m_dma); m_dma = nullptr;
-      }
+      free (m_dma); m_dma = nullptr;
     }
 
     // wrapped C function calls
