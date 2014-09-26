@@ -123,7 +123,7 @@ int main (int ac, char *av[])
 
   unsigned long long gpi_mem = (1<<26);
   unsigned int gpi_timeout = 120;
-  boost::optional<unsigned short> port (false, 0u);
+  boost::optional<unsigned short> port;
 
   std::vector<std::string> mem_urls;
 
