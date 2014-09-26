@@ -17,9 +17,8 @@ namespace gpi
       , m_mem_size (memory_size)
       , m_dma (nullptr)
       , m_queue_count (8)
+      , m_dma_request_count (8)
     {
-      m_dma_request_count.assign (m_queue_count, 0);
-
       if (sys::get_total_memory_size() < m_mem_size)
       {
         LOG( ERROR
@@ -52,7 +51,6 @@ namespace gpi
 
     fake_gpi_api_t::~fake_gpi_api_t ()
     {
-      lock_type lock (m_mutex);
       free (m_dma); m_dma = nullptr;
     }
 
@@ -89,7 +87,6 @@ namespace gpi
 
     gpi::size_t fake_gpi_api_t::open_dma_requests (const queue_desc_t q) const
     {
-      lock_type lock (m_mutex);
       return m_dma_request_count[q];
     }
 
@@ -134,8 +131,6 @@ namespace gpi
                                   , const queue_desc_t queue
                                   )
     {
-      lock_type lock (m_mutex);
-
       if (from_node != 0)
       {
         throw exception::dma_error
@@ -150,7 +145,7 @@ namespace gpi
       }
       else
       {
-        if (m_dma_request_count[queue]+1 > queue_depth())
+        if (m_dma_request_count[queue] >= queue_depth())
         {
           throw exception::dma_error
             ( gpi::error::read_dma_failed()
@@ -162,10 +157,10 @@ namespace gpi
             , queue
             );
         }
-        else
-        {
-          ++m_dma_request_count[queue];
-        }
+        ++m_dma_request_count[queue];
+
+        lock_type lock (m_mutex);
+
         memcpy ( (char*)m_dma + local_offset
                , (char*)m_dma + remote_offset
                , amount
@@ -179,8 +174,6 @@ namespace gpi
                                    , const queue_desc_t queue
                                    )
     {
-      lock_type lock (m_mutex);
-
       if (to_node != 0)
       {
         throw exception::dma_error
@@ -195,7 +188,7 @@ namespace gpi
       }
       else
       {
-        if (m_dma_request_count[queue]+1 > queue_depth())
+        if (m_dma_request_count[queue] >= queue_depth())
         {
           throw exception::dma_error
             ( gpi::error::write_dma_failed()
@@ -207,10 +200,9 @@ namespace gpi
             , queue
           );
         }
-        else
-        {
-          ++m_dma_request_count[queue];
-        }
+        ++m_dma_request_count[queue];
+
+        lock_type lock (m_mutex);
 
         memcpy ( (char*)m_dma + remote_offset
                , (char*)m_dma + local_offset

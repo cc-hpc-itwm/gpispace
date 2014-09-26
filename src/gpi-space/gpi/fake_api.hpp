@@ -10,6 +10,8 @@
 #include <boost/thread/locks.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 
+#include <atomic>
+
 namespace gpi
 {
   namespace api
@@ -66,7 +68,7 @@ namespace gpi
 
       // fake stuff
       size_t m_queue_count;
-      std::vector<size_t> m_dma_request_count;
+      std::vector<std::atomic<size_t>> m_dma_request_count;
     };
   }
 }
