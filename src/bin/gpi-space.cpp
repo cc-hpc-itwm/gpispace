@@ -91,16 +91,12 @@ namespace
     ( requested_api_t requested_api
     , bool is_master
     , const unsigned long long memory_size
-    , const boost::optional<unsigned short>& p
+    , const unsigned short p
     )
   {
     if (requested_api == API_gaspi)
     {
-      if (!p)
-      {
-        throw std::runtime_error ("port (--port) is missing, required for GASPI");
-      }
-      return fhg::util::make_unique <gpi::api::gaspi_t> (is_master, memory_size, *p);
+      return fhg::util::make_unique <gpi::api::gaspi_t> (is_master, memory_size, p);
     }
     else if (requested_api == API_fake)
     {
@@ -489,6 +485,12 @@ int main (int ac, char *av[])
     is_master = false;
   }
 
+  if (boost::none == port)
+  {
+    fprintf (stderr, "parameter 'port' not given (--port <port>)\n");
+    exit (EX_USAGE);
+  }
+
   if (0 == strlen (socket_path))
   {
     fprintf (stderr, "parameter 'socket' not given (--socket <path-to-socket>)\n");
@@ -529,7 +531,7 @@ int main (int ac, char *av[])
 
   // initialize gpi api
   std::unique_ptr<gpi_api_t> gpi_api_
-    (create_gpi_api (requested_api, is_master, gpi_mem, port));
+    (create_gpi_api (requested_api, is_master, gpi_mem, *port));
   gpi_api_t& gpi_api (*gpi_api_);
 
   if (is_master)
