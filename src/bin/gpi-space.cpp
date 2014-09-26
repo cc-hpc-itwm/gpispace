@@ -21,7 +21,6 @@
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
-#include <fhg/util/pidfile_writer.hpp>
 #include <fhg/revision.hpp>
 
 #include <gpi-space/gpi/api.hpp>
@@ -119,8 +118,6 @@ int main (int ac, char *av[])
 {
   int i = 0;
   bool is_master = true;
-  char pidfile[MAX_PATH_LEN];
-  snprintf (pidfile, sizeof(pidfile), "%s", "");
   requested_api_t requested_api = API_gaspi;
   char socket_path[MAX_PATH_LEN];
   memset (socket_path, 0, sizeof(socket_path));
@@ -153,9 +150,6 @@ int main (int ac, char *av[])
       fprintf(stderr, "      print this help information\n");
       fprintf(stderr, "    --version|-V\n");
       fprintf(stderr, "      print version information\n");
-      fprintf(stderr, "\n");
-      fprintf(stderr, "    --pidfile PATH (%s)\n", pidfile);
-      fprintf(stderr, "      write master's PID to this file\n");
       fprintf(stderr, "\n");
       fprintf(stderr, "    --socket PATH (%s)\n", socket_path);
       fprintf(stderr, "      create socket at this location\n");
@@ -195,27 +189,6 @@ int main (int ac, char *av[])
     {
       printf("%s\n", fhg::project_version());
       exit(EXIT_SUCCESS);
-    }
-    else if (strcmp(av[i], "--pidfile") == 0)
-    {
-      ++i;
-      if (i < ac)
-      {
-        if ((strlen(av[i] + 1) > sizeof(pidfile)))
-        {
-          fprintf(stderr, "%s: path to pidfile is too large!\n", program_name);
-          fprintf(stderr, "    at most %lu characters are supported\n", sizeof(pidfile));
-          exit(EX_INVAL);
-        }
-
-        strncpy(pidfile, av[i], sizeof(pidfile));
-        ++i;
-      }
-      else
-      {
-        fprintf(stderr, "%s: missing argument to --pidfile\n", program_name);
-        exit(EX_USAGE);
-      }
     }
     else if (strcmp(av[i], "--socket") == 0)
     {
@@ -516,31 +489,26 @@ int main (int ac, char *av[])
     is_master = false;
   }
 
-  if (is_master)
+  if (0 == strlen (socket_path))
   {
-    // check parameters (only works on the master node since we don't
-    // have control over how the workers are started)
-    if (0 == strlen (socket_path))
-    {
-      fprintf (stderr, "parameter 'socket' not given (--socket <path-to-socket>)\n");
-      exit (EX_USAGE);
-    }
+    fprintf (stderr, "parameter 'socket' not given (--socket <path-to-socket>)\n");
+    exit (EX_USAGE);
+  }
 
-    if (0 == strlen (config.kvs_host))
-    {
-      fprintf (stderr, "parameter 'kvs-host' not given (--kvs-host <host-of-kvs-daemon>\n");
-      exit (EX_USAGE);
-    }
-    if (0 == config.kvs_port)
-    {
-      fprintf (stderr, "parameter 'kvs-port' not given (--kvs-port <port-of-kvs-daemon>\n");
-      exit (EX_USAGE);
-    }
+  if (0 == strlen (config.kvs_host))
+  {
+    fprintf (stderr, "parameter 'kvs-host' not given (--kvs-host <host-of-kvs-daemon>\n");
+    exit (EX_USAGE);
+  }
+  if (0 == config.kvs_port)
+  {
+    fprintf (stderr, "parameter 'kvs-port' not given (--kvs-port <port-of-kvs-daemon>\n");
+    exit (EX_USAGE);
+  }
 
-    if (0 != configure_logging (&config, logfile))
-    {
-      LOG (WARN, "could not setup logging");
-    }
+  if (0 != configure_logging (&config, logfile))
+  {
+    LOG (WARN, "could not setup logging");
   }
 
   snprintf ( config.socket
@@ -548,24 +516,6 @@ int main (int ac, char *av[])
            , "%s"
            , socket_path
            );
-
-  if (is_master)
-  {
-    if (0 != strlen (pidfile))
-    {
-      try
-      {
-        fhg::util::pidfile_writer const pidfile_writer (pidfile);
-
-        pidfile_writer.write();
-      }
-      catch (const std::exception& ex)
-      {
-        LOG (ERROR, ex.what());
-        exit (EXIT_FAILURE);
-      }
-    }
-  }
 
   fhg::com::kvs::kvsc_ptr_t kvs_client
     (new fhg::com::kvs::client::kvsc
@@ -599,14 +549,6 @@ int main (int ac, char *av[])
     return EXIT_FAILURE;
   }
   LOG (INFO, "GPI started: " << gpi_api.rank());
-
-  if (!is_master)
-  {
-    if (0 != configure_logging (&config, logfile))
-    {
-      LOG (WARN, "could not setup logging");
-    }
-  }
 
   try
   {
