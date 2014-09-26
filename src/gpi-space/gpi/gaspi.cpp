@@ -44,9 +44,9 @@ namespace gpi
       , m_replacement_gpi_segment (0)
     {
       gaspi_config_t config;
-      gaspi_config_get (&config);
+      FAIL_ON_NON_ZERO (gaspi_config_get, &config);
       config.sn_port = port;
-      gaspi_config_set (config);
+      FAIL_ON_NON_ZERO (gaspi_config_set, config);
     }
 
     gaspi_t::~gaspi_t()
