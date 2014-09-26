@@ -59,18 +59,32 @@ namespace gspc
       command << " >/dev/null 2>/dev/null </dev/null & echo $!; disown $!'";
       command << " | ssh -q -p " << rif.port << " " << rif.host << " /bin/sh -s";
 
-      char buf[16];
-      scoped_popen pid_file (command.str().c_str(), "r");
-      fhg::syscall::fread (buf, sizeof (buf), sizeof (char), pid_file._);
+      std::string buf;
+      const scoped_popen pid_file (command.str().c_str(), "r");
+      while (!feof (pid_file._))
+      {
+        char c;
+        if (1 != ::fread (&c, sizeof (char), 1, pid_file._))
+        {
+          const int ec (::ferror (pid_file._));
+          if (ec != 0)
+          {
+            throw std::runtime_error
+              ("could not fread() remote pid: " + std::to_string (ec));
+          }
+        }
+        else
+        {
+          buf += c;
+        }
+      }
+
       errno = 0;
-      pid_t pid = std::strtoul (buf, nullptr, 0);
+      pid_t pid = std::strtoul (buf.c_str(), nullptr, 0);
       if (0 == pid && errno != 0)
       {
         throw std::runtime_error
-          ( "could not get remote pid from buffer: \""
-          + std::string (buf, buf+sizeof(buf))
-          + "\": " + strerror (errno)
-          );
+          ("could not get remote pid from buffer: \"" + buf + "\"" + strerror (errno));
       }
       return pid;
     }
