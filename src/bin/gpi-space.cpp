@@ -92,15 +92,16 @@ namespace
     , bool is_master
     , const unsigned long long memory_size
     , const unsigned short p
+    , const std::chrono::seconds& timeout
     )
   {
     if (requested_api == API_gaspi)
     {
-      return fhg::util::make_unique <gpi::api::gaspi_t> (is_master, memory_size, p);
+      return fhg::util::make_unique <gpi::api::gaspi_t> (is_master, memory_size, p, timeout);
     }
     else if (requested_api == API_fake)
     {
-      return fhg::util::make_unique <gpi::api::fake_gpi_api_t> (is_master, memory_size);
+      return fhg::util::make_unique <gpi::api::fake_gpi_api_t> (is_master, memory_size, timeout);
     }
     else
     {
@@ -111,6 +112,7 @@ namespace
 }
 
 int main (int ac, char *av[])
+try
 {
   int i = 0;
   bool is_master = true;
@@ -531,18 +533,15 @@ int main (int ac, char *av[])
 
   // initialize gpi api
   std::unique_ptr<gpi_api_t> gpi_api_
-    (create_gpi_api (requested_api, is_master, gpi_mem, *port));
+    (create_gpi_api ( requested_api
+                    , is_master
+                    , gpi_mem
+                    , *port
+                    , std::chrono::seconds (gpi_timeout)
+                    )
+    );
   gpi_api_t& gpi_api (*gpi_api_);
 
-  try
-  {
-    gpi_api.start (std::chrono::seconds (gpi_timeout));
-  }
-  catch (std::exception const & ex)
-  {
-    LOG (ERROR, "GPI could not be started: " << ex.what());
-    return EXIT_FAILURE;
-  }
   LOG (INFO, "GPI started: " << gpi_api.rank());
 
   if (is_master)
@@ -587,6 +586,11 @@ int main (int ac, char *av[])
     LOG (ERROR, "gpi process (rank " << gpi_api.rank() << ") failed: " << ex.what());
     return EXIT_FAILURE;
   }
+}
+catch (std::exception const & ex)
+{
+  LOG (ERROR, "GPI could not be started: " << ex.what());
+  return EXIT_FAILURE;
 }
 
 static int configure_logging (const config_t *cfg, const char* logfile)

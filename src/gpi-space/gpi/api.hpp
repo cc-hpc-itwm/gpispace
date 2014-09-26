@@ -50,7 +50,6 @@ namespace gpi
       virtual ~gpi_api_t() = default;
 
       // wrapped C function calls
-      virtual void start (const std::chrono::seconds& timeout) = 0;
       virtual void stop () = 0;
 
       virtual gpi::size_t number_of_queues () const = 0;

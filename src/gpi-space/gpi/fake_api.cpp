@@ -11,7 +11,7 @@ namespace gpi
 {
   namespace api
   {
-    fake_gpi_api_t::fake_gpi_api_t (bool is_master, const unsigned long long memory_size)
+    fake_gpi_api_t::fake_gpi_api_t (bool is_master, const unsigned long long memory_size, const std::chrono::seconds&)
       : m_is_master (is_master)
       , m_startup_done (false)
       , m_rank (0)
@@ -20,16 +20,7 @@ namespace gpi
       , m_queue_count (8)
     {
       m_dma_request_count.assign (m_queue_count, 0);
-    }
 
-    fake_gpi_api_t::~fake_gpi_api_t ()
-    {
-      stop();
-    }
-
-    // wrapped C function calls
-    void fake_gpi_api_t::start (const std::chrono::seconds&)
-    {
       fhg_assert (! m_startup_done);
       if (m_dma)
         free (m_dma);
@@ -66,6 +57,12 @@ namespace gpi
       m_startup_done = true;
     }
 
+    fake_gpi_api_t::~fake_gpi_api_t ()
+    {
+      stop();
+    }
+
+    // wrapped C function calls
     void fake_gpi_api_t::stop ()
     {
       lock_type lock (m_mutex);

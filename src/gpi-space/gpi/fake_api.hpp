@@ -17,11 +17,10 @@ namespace gpi
     class fake_gpi_api_t : public gpi_api_t
     {
     public:
-      fake_gpi_api_t (bool is_master, const unsigned long long memory_size);
+      fake_gpi_api_t (bool is_master, const unsigned long long memory_size, const std::chrono::seconds& timeout);
       ~fake_gpi_api_t();
 
       // wrapped C function calls
-      virtual void start (const std::chrono::seconds& timeout) override;
       virtual void stop () override;
 
       virtual gpi::size_t number_of_queues () const override;

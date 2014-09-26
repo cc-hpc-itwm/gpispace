@@ -36,7 +36,7 @@ namespace gpi
       fail_on_non_zero(#F, F, Args)
     }
 
-    gaspi_t::gaspi_t (bool is_master, const unsigned long long memory_size, const unsigned short port)
+    gaspi_t::gaspi_t (bool is_master, const unsigned long long memory_size, const unsigned short port, const std::chrono::seconds& timeout)
       : m_is_master (is_master)
       , m_startup_done (false)
       , m_mem_size (memory_size)
@@ -47,16 +47,7 @@ namespace gpi
       FAIL_ON_NON_ZERO (gaspi_config_get, &config);
       config.sn_port = port;
       FAIL_ON_NON_ZERO (gaspi_config_set, config);
-    }
 
-    gaspi_t::~gaspi_t()
-    {
-      stop();
-    }
-
-    // wrapped C function calls
-    void gaspi_t::start (const std::chrono::seconds& timeout)
-    {
       fhg_assert (! m_startup_done);
 
       if (sys::get_total_memory_size() < m_mem_size)
@@ -94,6 +85,11 @@ namespace gpi
                        );
 
       m_startup_done = true;
+    }
+
+    gaspi_t::~gaspi_t()
+    {
+      stop();
     }
 
     void gaspi_t::stop()

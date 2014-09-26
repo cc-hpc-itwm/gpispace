@@ -15,11 +15,10 @@ namespace gpi
     class gaspi_t : public gpi_api_t
     {
     public:
-      gaspi_t (bool is_master, const unsigned long long memory_size, const unsigned short port);
+      gaspi_t (bool is_master, const unsigned long long memory_size, const unsigned short port, const std::chrono::seconds& timeout);
       ~gaspi_t();
 
       // wrapped C function calls
-      virtual void start (const std::chrono::seconds& timeout) override;
       virtual void stop () override;
 
       virtual gpi::size_t number_of_queues () const override;
