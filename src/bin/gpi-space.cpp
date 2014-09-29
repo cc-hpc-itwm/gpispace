@@ -35,8 +35,6 @@
 #include <memory>
 
 static const char * program_name = "gpi-space";
-static const int CONFIG_MAGIC = 0xdeadbeef;
-
 #define MAX_PATH_LEN 4096
 #define MAX_HOST_LEN 1024
 
@@ -79,8 +77,6 @@ typedef gpi::api::gpi_api_t gpi_api_t;
 // exit codes
 static const int EX_USAGE = 2;
 static const int EX_INVAL = 3;
-
-static const int GPI_MAGIC_MISMATCH = 23;
 
 static int configure_logging (const config_t *cfg, const char* logfile);
 
