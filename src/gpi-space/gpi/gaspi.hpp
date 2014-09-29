@@ -5,8 +5,6 @@
 
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/thread/locks.hpp>
-#include <boost/thread/recursive_mutex.hpp>
 
 namespace gpi
 {
@@ -51,10 +49,6 @@ namespace gpi
                      ) override;
       virtual void wait_dma (const queue_desc_t queue) override;
     private:
-      typedef boost::recursive_mutex mutex_type;
-      typedef boost::unique_lock<mutex_type> lock_type;
-
-      mutable mutex_type m_mutex;
       size_t m_mem_size;
       void *m_dma;
       size_t m_replacement_gpi_segment;

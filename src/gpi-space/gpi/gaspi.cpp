@@ -83,7 +83,6 @@ namespace gpi
 
     gaspi_t::~gaspi_t()
     {
-      lock_type lock (m_mutex);
       FAIL_ON_NON_ZERO (gaspi_proc_term, GASPI_BLOCK);
     }
 
