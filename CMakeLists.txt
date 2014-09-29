@@ -3,9 +3,15 @@ cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
 set (PROJECT_VERSION "14.03")
 set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
-SET (SHARED_DIRECTORY_FOR_TESTS "$ENV{HOME}" CACHE PATH
+set (required_string_option_sentinel_value "required_string_option_sentinel_value-NOT_SET")
+
+SET (SHARED_DIRECTORY_FOR_TESTS ${required_string_option_sentinel_value} CACHE PATH
   "shared directory for tests"
 )
+
+if (SHARED_DIRECTORY_FOR_TESTS STREQUAL ${required_string_option_sentinel_value})
+  message (FATAL_ERROR "required variable SHARED_DIRECTORY_FOR_TESTS not set")
+endif()
 
 execute_process (
   COMMAND git rev-parse HEAD
