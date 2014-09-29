@@ -5,7 +5,7 @@ set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE ST
 
 set (required_string_option_sentinel_value "required_string_option_sentinel_value-NOT_SET")
 
-SET (SHARED_DIRECTORY_FOR_TESTS ${required_string_option_sentinel_value}  CACHE PATH
+SET (SHARED_DIRECTORY_FOR_TESTS ${required_string_option_sentinel_value} CACHE PATH
   "shared directory for tests"
 )
 
