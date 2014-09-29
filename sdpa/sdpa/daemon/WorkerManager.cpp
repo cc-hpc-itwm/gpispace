@@ -162,45 +162,6 @@ namespace sdpa
       }
     }
 
-    boost::optional<sdpa::worker_id_t> WorkerManager::getBestMatchingWorker
-      ( const job_requirements_t& listJobReq
-      , const sdpa::worker_id_list_t& workerList
-      ) const
-    {
-      boost::mutex::scoped_lock const _ (mtx_);
-
-      boost::optional<double> last_schedule_time = boost::make_optional<double> (false, 0.0);
-      boost::optional<worker_id_t> bestMatchingWorkerId;
-      boost::optional<std::size_t> maxMatchingDeg;
-
-      for (sdpa::worker_id_t workerId : workerList)
-      {
-        const worker_map_t::const_iterator it (worker_map_.find (workerId));
-        if (it == worker_map_.end())
-          continue;
-
-        Worker::ptr_t pWorker (it->second);
-
-        const boost::optional<std::size_t> matchingDeg
-          (matchRequirements (pWorker, listJobReq));
-
-        if ( matchingDeg < maxMatchingDeg
-          || ( matchingDeg == maxMatchingDeg
-            && pWorker->lastScheduleTime() >= last_schedule_time
-             )
-           )
-        {
-          continue;
-        }
-
-        maxMatchingDeg = matchingDeg;
-        bestMatchingWorkerId = workerId;
-        last_schedule_time = pWorker->lastScheduleTime();
-      }
-
-      return bestMatchingWorkerId;
-    }
-
     mmap_match_deg_worker_id_t WorkerManager::getListMatchingWorkers
       ( const job_requirements_t& job_reqs
       , const std::set<worker_id_t>& worker_set
