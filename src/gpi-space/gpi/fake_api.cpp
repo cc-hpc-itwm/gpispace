@@ -10,9 +10,8 @@ namespace gpi
 {
   namespace api
   {
-    fake_gpi_api_t::fake_gpi_api_t (bool is_master, const unsigned long long memory_size, const std::chrono::seconds&)
-      : m_is_master (is_master)
-      , m_rank (0)
+    fake_gpi_api_t::fake_gpi_api_t (const unsigned long long memory_size, const std::chrono::seconds&)
+      : m_rank (0)
       , m_mem_size (memory_size)
       , m_dma (nullptr)
       , m_queue_count (8)
@@ -112,15 +111,6 @@ namespace gpi
     void * fake_gpi_api_t::dma_ptr (void)
     {
       return m_dma;
-    }
-
-    bool fake_gpi_api_t::is_master (void) const
-    {
-      return m_is_master;
-    }
-    bool fake_gpi_api_t::is_slave (void) const
-    {
-      return !is_master();
     }
 
     void fake_gpi_api_t::read_dma ( const offset_t local_offset

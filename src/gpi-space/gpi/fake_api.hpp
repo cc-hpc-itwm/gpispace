@@ -17,7 +17,7 @@ namespace gpi
     class fake_gpi_api_t : public gpi_api_t
     {
     public:
-      fake_gpi_api_t (bool is_master, const unsigned long long memory_size, const std::chrono::seconds& timeout);
+      fake_gpi_api_t (const unsigned long long memory_size, const std::chrono::seconds& timeout);
       ~fake_gpi_api_t();
 
       // wrapped C function calls
@@ -38,9 +38,6 @@ namespace gpi
       template <typename T>
       T* dma_ptr (void) { return (T*)(dma_ptr()); }
 
-      virtual bool is_master (void) const override;
-      virtual bool is_slave (void) const override;
-
       virtual void read_dma ( const offset_t local_offset
                     , const offset_t remote_offset
                     , const size_t amount
@@ -55,7 +52,6 @@ namespace gpi
                      ) override;
       virtual void wait_dma (const queue_desc_t queue) override;
     private:
-      bool m_is_master;
       rank_t m_rank;
       size_t m_mem_size;
       void *m_dma;

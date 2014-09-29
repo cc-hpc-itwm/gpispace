@@ -36,9 +36,8 @@ namespace gpi
       fail_on_non_zero(#F, F, Args)
     }
 
-    gaspi_t::gaspi_t (bool is_master, const unsigned long long memory_size, const unsigned short port, const std::chrono::seconds& timeout)
-      : m_is_master (is_master)
-      , m_mem_size (memory_size)
+    gaspi_t::gaspi_t (const unsigned long long memory_size, const unsigned short port, const std::chrono::seconds& timeout)
+      : m_mem_size (memory_size)
       , m_dma (nullptr)
       , m_replacement_gpi_segment (0)
     {
@@ -170,15 +169,6 @@ namespace gpi
     void * gaspi_t::dma_ptr (void)
     {
       return m_dma;
-    }
-
-    bool gaspi_t::is_master (void) const
-    {
-      return m_is_master;
-    }
-    bool gaspi_t::is_slave (void) const
-    {
-      return !is_master();
     }
 
     void gaspi_t::read_dma ( const offset_t local_offset

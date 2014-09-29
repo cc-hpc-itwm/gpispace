@@ -89,7 +89,6 @@ namespace
   enum requested_api_t { API_fake, API_gaspi };
   std::unique_ptr<gpi_api_t> create_gpi_api
     ( requested_api_t requested_api
-    , bool is_master
     , const unsigned long long memory_size
     , const unsigned short p
     , const std::chrono::seconds& timeout
@@ -97,11 +96,11 @@ namespace
   {
     if (requested_api == API_gaspi)
     {
-      return fhg::util::make_unique <gpi::api::gaspi_t> (is_master, memory_size, p, timeout);
+      return fhg::util::make_unique <gpi::api::gaspi_t> (memory_size, p, timeout);
     }
     else if (requested_api == API_fake)
     {
-      return fhg::util::make_unique <gpi::api::fake_gpi_api_t> (is_master, memory_size, timeout);
+      return fhg::util::make_unique <gpi::api::fake_gpi_api_t> (memory_size, timeout);
     }
     else
     {
@@ -115,7 +114,6 @@ int main (int ac, char *av[])
 try
 {
   int i = 0;
-  bool is_master = true;
   requested_api_t requested_api = API_gaspi;
   char socket_path[MAX_PATH_LEN];
   memset (socket_path, 0, sizeof(socket_path));
@@ -465,11 +463,6 @@ try
     }
   }
 
-  if (getenv ("GASPI_TYPE") && strcmp (getenv ("GASPI_TYPE"), "GASPI_WORKER") == 0)
-  {
-    is_master = false;
-  }
-
   if (boost::none == port)
   {
     fprintf (stderr, "parameter 'port' not given (--port <port>)\n");
@@ -517,7 +510,6 @@ try
   // initialize gpi api
   std::unique_ptr<gpi_api_t> gpi_api_
     (create_gpi_api ( requested_api
-                    , is_master
                     , gpi_mem
                     , *port
                     , std::chrono::seconds (gpi_timeout)
@@ -527,7 +519,7 @@ try
 
   LOG (INFO, "GPI started: " << gpi_api.rank());
 
-  if (is_master)
+  if (0 == gpi_api.rank())
   {
     LOG (INFO, "GPISpace version: " << fhg::project_version());
     LOG (INFO, "GPISpace revision: " << fhg::project_revision());

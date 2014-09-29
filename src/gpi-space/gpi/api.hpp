@@ -67,9 +67,6 @@ namespace gpi
       template <typename T>
       T* dma_ptr (void) { return (T*)(dma_ptr()); }
 
-      virtual bool is_master (void) const = 0;
-      virtual bool is_slave (void) const = 0;
-
       virtual void read_dma ( const offset_t local_offset
                     , const offset_t remote_offset
                     , const size_t amount

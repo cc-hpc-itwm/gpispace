@@ -15,7 +15,7 @@ namespace gpi
     class gaspi_t : public gpi_api_t
     {
     public:
-      gaspi_t (bool is_master, const unsigned long long memory_size, const unsigned short port, const std::chrono::seconds& timeout);
+      gaspi_t (const unsigned long long memory_size, const unsigned short port, const std::chrono::seconds& timeout);
       ~gaspi_t();
 
       // wrapped C function calls
@@ -37,9 +37,6 @@ namespace gpi
       template <typename T>
       T* dma_ptr (void) { return (T*)(dma_ptr()); }
 
-      virtual bool is_master (void) const override;
-      virtual bool is_slave (void) const override;
-
       virtual void read_dma ( const offset_t local_offset
                     , const offset_t remote_offset
                     , const size_t amount
@@ -58,7 +55,6 @@ namespace gpi
       typedef boost::unique_lock<mutex_type> lock_type;
 
       mutable mutex_type m_mutex;
-      bool m_is_master;
       size_t m_mem_size;
       void *m_dma;
       size_t m_replacement_gpi_segment;
