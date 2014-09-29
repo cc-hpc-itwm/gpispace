@@ -4,6 +4,11 @@
 
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 #include <fhg/util/random_string.hpp>
+
+#include <boost/generator_iterator.hpp>
+#include <boost/random.hpp>
+
+#include <iostream>
 #include <functional>
 
 struct serveJob_checking_scheduler_and_job_manager
@@ -602,4 +607,123 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_equal_co
                                           {return total + map_worker_cost.at (wid);}
                                         )
                       );
+}
+
+struct serve_job_and_check_for_minimal_cost_assignement
+{
+  const unsigned int n_min_workers = 10;
+  const unsigned int n_max_workers = 20;
+  boost::mt19937 rng;
+
+  const unsigned int generate_number_of_workers ( const unsigned int n_min
+                                                , const unsigned int n_max
+                                                )
+  {
+    boost::uniform_int<> dist (n_min, n_max);
+    boost::variate_generator<boost::mt19937, boost::uniform_int<>>
+       gen_int (rng, dist);
+    return gen_int();
+  }
+
+  std::vector<std::string> generate_worker_names (const unsigned int n)
+  {
+    std::vector<std::string> worker_ids (n);
+    std::generate ( worker_ids.begin()
+                  , worker_ids.end()
+                  , utils::random_peer_name
+                  );
+    return worker_ids;
+  }
+
+  std::map<sdpa::worker_id_t, double>
+    generate_costs (std::vector<std::string> worker_ids)
+  {
+    boost::normal_distribution<double> normal_dist(0,1);
+    boost::variate_generator<boost::mt19937, boost::normal_distribution<double>>
+      gen_cost (rng, normal_dist);
+
+    std::map<sdpa::worker_id_t, double> map_costs;
+    for (const sdpa::worker_id_t worker : worker_ids)
+    {
+      map_costs.insert (std::make_pair (worker, gen_cost()));
+    }
+
+    return map_costs;
+  }
+
+  void serve_and_check_assignment ( const std::function<double (std::string const&)> cost
+                                  , const std::vector<std::string>& worker_ids
+                                  , const sdpa::worker_id_list_t& assigned_worker_ids
+                                  , const sdpa::job_id_t&
+                                  )
+  {
+    sdpa::worker_id_t assigned_worker_with_max_cost
+      (*std::max_element ( assigned_worker_ids.begin()
+                         , assigned_worker_ids.end()
+                         , [cost](const sdpa::worker_id_t& wid_l, const sdpa::worker_id_t& wid_r)
+                           { return cost (wid_l) < cost (wid_r); }
+                         )
+      );
+
+    for (const sdpa::worker_id_t& wid : worker_ids)
+    {
+      if (std::find (assigned_worker_ids.begin(), assigned_worker_ids.end(), wid) == assigned_worker_ids.end())
+      {
+         // any not assigned worker has n associated a cost that is either greater or equal
+         // to the maximum cost of the assigned workers
+         BOOST_REQUIRE_GE (cost (wid), cost (assigned_worker_with_max_cost));
+      }
+    }
+  }
+};
+
+BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
+                        , serve_job_and_check_for_minimal_cost_assignement
+                        )
+{
+  const unsigned int n_workers (generate_number_of_workers (n_min_workers, n_max_workers));
+  const unsigned int n_req_workers (10);
+
+  const std::vector<std::string>
+    worker_ids (generate_worker_names (n_workers));
+
+  const std::map<sdpa::worker_id_t, double>
+    map_transfer_costs (generate_costs (worker_ids));
+
+  const std::function<double (std::string const&)>
+    test_transfer_cost ( [&map_transfer_costs](const std::string& worker) -> double
+                         {
+                           return map_transfer_costs.at (worker);
+                         }
+                       );
+
+  sdpa::daemon::CoallocationScheduler
+    _scheduler ( std::bind ( &serve_job_and_check_for_minimal_cost_assignement::serve_and_check_assignment
+                           , this
+                           , test_transfer_cost
+                           , worker_ids
+                           , std::placeholders::_1
+                           , std::placeholders::_2
+                           )
+                , [n_req_workers, &test_transfer_cost] (const sdpa::job_id_t&)
+                  {
+                    return job_requirements_t ( {}
+                                              , we::type::schedule_data (n_req_workers)
+                                              , test_transfer_cost
+                                              );
+                  }
+                );
+
+  for (const sdpa::worker_id_t worker_id : worker_ids)
+  {
+    _scheduler.worker_manager().addWorker (worker_id, 1, {}, false, worker_id);
+  }
+
+  const sdpa::job_id_t job_id (fhg::util::random_string());
+  _scheduler.enqueueJob (job_id);
+
+  _scheduler.assignJobsToWorkers();
+
+  // require the job to be scheduled
+  BOOST_REQUIRE_EQUAL (_scheduler.delete_job (job_id), 0);
 }
