@@ -7,6 +7,8 @@
 #include <we/type/port.hpp>
 #include <we/type/transition.hpp>
 
+#include <fhg/util/boost/optional.hpp>
+
 #include <boost/format.hpp>
 
 #include <fstream>

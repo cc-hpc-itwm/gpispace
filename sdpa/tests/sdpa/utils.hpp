@@ -13,6 +13,7 @@
 #include <fhgcom/kvs/kvsd.hpp>
 #include <fhgcom/tcp_server.hpp>
 
+#include <fhg/util/boost/test/printer/optional.hpp>
 #include <fhg/util/random_string.hpp>
 
 #include <fhglog/LogMacros.hpp>

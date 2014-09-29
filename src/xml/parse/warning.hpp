@@ -12,6 +12,7 @@
 #include <we/type/property.hpp>
 #include <we/type/value/show.hpp>
 
+#include <fhg/util/boost/optional.hpp>
 #include <fhg/util/join.hpp>
 
 #include <boost/format.hpp>
