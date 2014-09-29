@@ -1,7 +1,6 @@
 #include <gpi-space/gpi/fake_api.hpp>
 
 #include <fhglog/LogMacros.hpp>
-#include <fhg/assert.hpp>
 
 #include <gpi-space/exception.hpp>
 
