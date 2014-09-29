@@ -158,8 +158,6 @@ namespace gpi
         }
         ++m_dma_request_count[queue];
 
-        lock_type lock (m_mutex);
-
         memcpy ( (char*)m_dma + local_offset
                , (char*)m_dma + remote_offset
                , amount
@@ -200,8 +198,6 @@ namespace gpi
           );
         }
         ++m_dma_request_count[queue];
-
-        lock_type lock (m_mutex);
 
         memcpy ( (char*)m_dma + remote_offset
                , (char*)m_dma + local_offset
