@@ -190,24 +190,11 @@ namespace fhg
             ("base_item::handle() called: sub-class didn't define handle()");
         }
 
-
-        namespace
-        {
-          qreal read_qreal (const std::string& inp)
-          {
-            util::parse::position_string pos (inp);
-            util::parse::require::skip_spaces (pos);
-            return util::read_double (pos);
-          }
-        }
-
         void base_item::handle_property_change
-          ( const ::we::type::property::key_type& key
+          ( const ::we::type::property::path_type& path
           , const ::we::type::property::value_type& value
           )
         {
-          const ::we::type::property::path_type path
-            (pnet::type::value::path::split (key));
           ::we::type::property::path_type::const_iterator pos (path.begin());
           ::we::type::property::path_type::const_iterator const end (path.end());
 
@@ -228,12 +215,12 @@ namespace fhg
                   if (*pos == "x")
                   {
                     set_just_pos_but_not_in_property
-                      (read_qreal (value), this->pos().y());
+                      (boost::get<double> (value), this->pos().y());
                   }
                   else if (*pos == "y")
                   {
                     set_just_pos_but_not_in_property
-                      (this->pos().x(), read_qreal (value));
+                      (this->pos().x(), boost::get<double> (value));
                   }
                 }
               }

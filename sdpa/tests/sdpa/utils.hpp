@@ -106,7 +106,7 @@ namespace utils
   we::type::activity_t net_with_one_child_requiring_workers (unsigned long count)
   {
     we::type::property::type props;
-    props.set ( "fhg.drts.schedule.num_worker"
+    props.set ( {"fhg", "drts", "schedule", "num_worker"}
               , boost::lexical_cast<std::string> (count) + "UL"
               );
     we::type::transition_t transition

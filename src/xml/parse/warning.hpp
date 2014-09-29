@@ -10,6 +10,7 @@
 #include <xml/parse/type/struct.hpp>
 
 #include <we/type/property.hpp>
+#include <we/type/value/show.hpp>
 
 #include <fhg/util/join.hpp>
 
@@ -333,7 +334,7 @@ namespace xml
           std::ostringstream s;
 
           s << "unknown property " << fhg::util::join (key, ".")
-            << " value " << val
+            << " value " << pnet::type::value::show (val)
             << " in " << path
             ;
 

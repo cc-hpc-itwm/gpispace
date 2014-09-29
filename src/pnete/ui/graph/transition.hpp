@@ -55,7 +55,7 @@ namespace fhg
 
           void property_changed
             ( const data::handle::transition&
-            , const we::type::property::key_type&
+            , const we::type::property::path_type&
             , const we::type::property::value_type&
             );
 

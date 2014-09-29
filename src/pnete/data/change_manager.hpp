@@ -66,11 +66,11 @@ namespace fhg
         void connection_is_read (const data::handle::connect&, const bool&);
 
         void set_property ( const data::handle::connect&
-                          , const ::we::type::property::key_type&
+                          , const ::we::type::property::path_type&
                           , const ::we::type::property::value_type&
                           );
         void no_undo_set_property ( const data::handle::connect&
-                                  , const ::we::type::property::key_type&
+                                  , const ::we::type::property::path_type&
                                   , const ::we::type::property::value_type&
                                   );
 
@@ -78,11 +78,11 @@ namespace fhg
         void remove_place_map (const data::handle::place_map&);
 
         void set_property ( const data::handle::place_map&
-                          , const ::we::type::property::key_type&
+                          , const ::we::type::property::path_type&
                           , const ::we::type::property::value_type&
                           );
         void no_undo_set_property ( const data::handle::place_map&
-                                  , const ::we::type::property::key_type&
+                                  , const ::we::type::property::path_type&
                                   , const ::we::type::property::value_type&
                                   );
 
@@ -97,11 +97,11 @@ namespace fhg
         void delete_transition (const data::handle::transition&);
 
         void set_property ( const data::handle::transition&
-                          , const ::we::type::property::key_type&
+                          , const ::we::type::property::path_type&
                           , const ::we::type::property::value_type&
                           );
         void no_undo_set_property ( const data::handle::transition&
-                                  , const ::we::type::property::key_type&
+                                  , const ::we::type::property::path_type&
                                   , const ::we::type::property::value_type&
                                   );
         void move_item
@@ -124,11 +124,11 @@ namespace fhg
         void make_real (const data::handle::place&);
 
         void set_property ( const data::handle::place&
-                          , const ::we::type::property::key_type&
+                          , const ::we::type::property::path_type&
                           , const ::we::type::property::value_type&
                           );
         void no_undo_set_property ( const data::handle::place&
-                                  , const ::we::type::property::key_type&
+                                  , const ::we::type::property::path_type&
                                   , const ::we::type::property::value_type&
                                   );
         void move_item
@@ -143,11 +143,11 @@ namespace fhg
         void delete_port (const data::handle::port&);
 
         void set_property ( const data::handle::port&
-                          , const ::we::type::property::key_type&
+                          , const ::we::type::property::path_type&
                           , const ::we::type::property::value_type&
                           );
         void no_undo_set_property ( const data::handle::port&
-                                  , const ::we::type::property::key_type&
+                                  , const ::we::type::property::path_type&
                                   , const ::we::type::property::value_type&
                                   );
 
@@ -166,11 +166,11 @@ namespace fhg
         // - function ------------------------------------------------
         void set_function_name (const data::handle::function&, const QString&);
         void set_property ( const data::handle::function&
-                          , const ::we::type::property::key_type&
+                          , const ::we::type::property::path_type&
                           , const ::we::type::property::value_type&
                           );
         void no_undo_set_property ( const data::handle::function&
-                                  , const ::we::type::property::key_type&
+                                  , const ::we::type::property::path_type&
                                   , const ::we::type::property::value_type&
                                   );
 
@@ -201,7 +201,7 @@ namespace fhg
         // - net -----------------------------------------------------
         // -- connection ---------------------------------------------
         void property_changed ( const data::handle::connect&
-                              , const we::type::property::key_type&
+                              , const we::type::property::path_type&
                               , const we::type::property::value_type&
                               );
         void connection_added ( const data::handle::connect&
@@ -213,7 +213,7 @@ namespace fhg
 
         // -- place_map ---------------------------------------------
         void property_changed ( const data::handle::place_map&
-                              , const we::type::property::key_type&
+                              , const we::type::property::path_type&
                               , const we::type::property::value_type&
                               );
         void place_map_added (const data::handle::place_map&);
@@ -223,7 +223,7 @@ namespace fhg
         void transition_added (const data::handle::transition&);
         void transition_deleted (const data::handle::transition&);
         void property_changed ( const data::handle::transition&
-                              , const we::type::property::key_type&
+                              , const we::type::property::path_type&
                               , const we::type::property::value_type&
                               );
         void name_set (const data::handle::transition&, const QString&);
@@ -233,7 +233,7 @@ namespace fhg
         void place_deleted (const data::handle::place&);
         void place_is_virtual_changed (const data::handle::place&, bool);
         void property_changed ( const data::handle::place&
-                              , const we::type::property::key_type&
+                              , const we::type::property::path_type&
                               , const we::type::property::value_type&
                               );
         void name_set (const data::handle::place&, const QString&);
@@ -244,7 +244,7 @@ namespace fhg
         void port_deleted (const data::handle::port&);
 
         void property_changed ( const data::handle::port&
-                              , const we::type::property::key_type&
+                              , const we::type::property::path_type&
                               , const we::type::property::value_type&
                               );
 
@@ -259,7 +259,7 @@ namespace fhg
                                    );
 
         void property_changed ( const data::handle::function&
-                              , const we::type::property::key_type&
+                              , const we::type::property::path_type&
                               , const we::type::property::value_type&
                               );
 

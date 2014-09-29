@@ -86,7 +86,7 @@ namespace fhg
           virtual QRectF boundingRect() const override;
 
           virtual void handle_property_change
-            ( const ::we::type::property::key_type& key
+            ( const ::we::type::property::path_type& path
             , const ::we::type::property::value_type& value
             );
 

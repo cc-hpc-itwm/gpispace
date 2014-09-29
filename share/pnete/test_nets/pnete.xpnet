@@ -4,10 +4,10 @@
       <properties name="pnete">
         <properties name="position">
           <property key="y">
-            20
+            20.0
           </property>
           <property key="x">
-            50
+            50.0
           </property>
         </properties>
       </properties>
@@ -18,10 +18,10 @@
       <properties name="pnete">
         <properties name="position">
           <property key="y">
-            130
+            130.0
           </property>
           <property key="x">
-            50
+            50.0
           </property>
         </properties>
       </properties>
@@ -32,10 +32,10 @@
       <properties name="pnete">
         <properties name="position">
           <property key="y">
-            130
+            130.0
           </property>
           <property key="x">
-            1100
+            1100.0
           </property>
         </properties>
       </properties>
@@ -46,10 +46,10 @@
       <properties name="pnete">
         <properties name="position">
           <property key="y">
-            20
+            20.0
           </property>
           <property key="x">
-            370
+            370.0
           </property>
         </properties>
       </properties>
@@ -61,10 +61,10 @@
         <properties name="pnete">
           <properties name="position">
             <property key="y">
-              20
+              20.0
             </property>
             <property key="x">
-              180
+              180.0
             </property>
           </properties>
         </properties>
@@ -75,10 +75,10 @@
         <properties name="pnete">
           <properties name="position">
             <property key="y">
-              130
+              130.0
             </property>
             <property key="x">
-              180
+              180.0
             </property>
           </properties>
         </properties>
@@ -89,10 +89,10 @@
         <properties name="pnete">
           <properties name="position">
             <property key="y">
-              130
+              130.0
             </property>
             <property key="x">
-              560
+              560.0
             </property>
           </properties>
         </properties>
@@ -103,10 +103,10 @@
         <properties name="pnete">
           <properties name="position">
             <property key="y">
-              130
+              130.0
             </property>
             <property key="x">
-              960
+              960.0
             </property>
           </properties>
         </properties>
@@ -117,10 +117,10 @@
         <properties name="pnete">
           <properties name="position">
             <property key="y">
-              130
+              130.0
             </property>
             <property key="x">
-              370
+              370.0
             </property>
           </properties>
         </properties>
@@ -131,14 +131,14 @@
             <properties name="pnete">
               <properties name="position">
                 <property key="y">
-                  -0
+                  -0.0
                 </property>
                 <property key="x">
-                  -80
+                  -80.0
                 </property>
               </properties>
               <property key="orientation">
-                WEST
+                "WEST"
               </property>
             </properties>
           </properties>
@@ -148,14 +148,14 @@
             <properties name="pnete">
               <properties name="position">
                 <property key="y">
-                  -0
+                  -0.0
                 </property>
                 <property key="x">
-                  90
+                  90.0
                 </property>
               </properties>
               <property key="orientation">
-                EAST
+                "EAST"
               </property>
             </properties>
           </properties>
@@ -172,10 +172,10 @@
         <properties name="pnete">
           <properties name="position">
             <property key="y">
-              130
+              130.0
             </property>
             <property key="x">
-              740
+              740.0
             </property>
           </properties>
         </properties>
@@ -186,14 +186,14 @@
             <properties name="pnete">
               <properties name="position">
                 <property key="y">
-                  -0
+                  -0.0
                 </property>
                 <property key="x">
-                  -80
+                  -80.0
                 </property>
               </properties>
               <property key="orientation">
-                WEST
+                "WEST"
               </property>
             </properties>
           </properties>
@@ -203,14 +203,14 @@
             <properties name="pnete">
               <properties name="position">
                 <property key="y">
-                  -0
+                  -0.0
                 </property>
                 <property key="x">
-                  90
+                  90.0
                 </property>
               </properties>
               <property key="orientation">
-                EAST
+                "EAST"
               </property>
             </properties>
           </properties>

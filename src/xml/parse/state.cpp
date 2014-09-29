@@ -298,7 +298,8 @@ namespace xml
 
           if (pos != end && *pos == "search_path")
           {
-            const boost::filesystem::path absolute (value);
+            std::string const value_str (boost::get<std::string> (value));
+            const boost::filesystem::path absolute (value_str);
 
             if (absolute.is_absolute())
             {
@@ -309,13 +310,13 @@ namespace xml
               else
               {
                 throw error::file_not_found
-                  ("interpret_property (pnetc.search_path)", value);
+                  ("interpret_property (pnetc.search_path)", value_str);
               }
             }
             else
             {
               const boost::filesystem::path from_actual_file
-                (file_in_progress().parent_path() / value);
+                (file_in_progress().parent_path() / value_str);
 
               if (boost::filesystem::exists (from_actual_file))
               {
@@ -324,7 +325,7 @@ namespace xml
               else
               {
                 throw error::file_not_found
-                  ("interpret_property (pnetc.search_path)", value);
+                  ("interpret_property (pnetc.search_path)", value_str);
               }
             }
           }

@@ -31,7 +31,7 @@ namespace
   we::type::activity_t net_with_two_childs_requiring_n_workers (unsigned long n)
   {
     we::type::property::type props;
-    props.set ("fhg.drts.schedule.num_worker", std::to_string (n) + "UL");
+    props.set ({"fhg", "drts", "schedule", "num_worker"}, std::to_string (n) + "UL");
     we::type::transition_t transition_0
       ( fhg::util::random_string()
       , we::type::module_call_t ( fhg::util::random_string()
