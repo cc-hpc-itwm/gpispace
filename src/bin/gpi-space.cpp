@@ -458,23 +458,6 @@ try
       ++i;
       break;
     }
-    else if (strcmp(av[i], "-t") == 0)
-    {
-      ++i;
-      if (i < ac)
-      {
-        if (strcmp(av[i], "GPI_WORKER") == 0)
-        {
-          is_master = false;
-          ++i;
-        }
-        else
-        {
-          fprintf(stderr, "%s: invalid GPI worker type: %s\n", program_name, av[i]);
-          exit(EX_INVAL);
-        }
-      }
-    }
     else
     {
       fprintf(stderr, "%s: unknown option: %s\n", program_name, av[i]);
