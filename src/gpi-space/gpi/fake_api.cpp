@@ -15,8 +15,13 @@ namespace gpi
       , m_mem_size (memory_size)
       , m_dma (nullptr)
       , m_queue_count (8)
-      , m_dma_request_count (8)
+      , m_dma_request_count()
     {
+      for (std::size_t i (0); i < 8; ++i)
+      {
+        m_dma_request_count.emplace_back();
+      }
+
       if (sys::get_total_memory_size() < m_mem_size)
       {
         LOG( ERROR
