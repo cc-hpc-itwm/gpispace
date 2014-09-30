@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <cstdio>
 
 namespace fhg
 {
@@ -50,5 +51,7 @@ namespace fhg
     pid_t waitpid (pid_t pid, int* status, int options);
     ssize_t write (int fd, const void* buf, size_t count);
     int connect (int sock, const struct sockaddr *address, socklen_t addr_len);
+    FILE *popen (const char *command, const char *type);
+    void pclose (FILE *stream);
   }
 }

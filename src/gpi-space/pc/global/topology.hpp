@@ -81,9 +81,6 @@ namespace gpi
 
         virtual bool is_master () const override;
 
-        virtual int go () override;
-        virtual int wait_for_go () override;
-
         // initiate a global alloc
         virtual int alloc ( const gpi::pc::type::segment_id_t segment
                   , const gpi::pc::type::handle_t
@@ -179,13 +176,8 @@ namespace gpi
         mutable mutex_type m_request_mutex;
         mutable mutex_type m_result_mutex;
         mutable condition_type m_request_finished;
-        mutable mutex_type m_go_event_mutex;
-        mutable condition_type m_go_received_event;
 
         bool m_shutting_down;
-        bool m_go_received;
-        size_t m_waiting_for_go;
-        bool m_established;
         gpi::rank_t m_rank;
         fhg::com::kvs::kvsc_ptr_t _kvs_client;
         peer_ptr   m_peer;

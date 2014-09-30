@@ -1,24 +1,20 @@
-#ifndef GPI_SPACE_FAKE_GPI_API_HPP
-#define GPI_SPACE_FAKE_GPI_API_HPP 1
-
-#include <vector>
+#ifndef GPI_SPACE_GASPI_API_HPP
+#define GPI_SPACE_GASPI_API_HPP 1
 
 #include <gpi-space/gpi/api.hpp>
 
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <atomic>
-
 namespace gpi
 {
   namespace api
   {
-    class fake_gpi_api_t : public gpi_api_t
+    class gaspi_t : public gpi_api_t
     {
     public:
-      fake_gpi_api_t (const unsigned long long memory_size, const std::chrono::seconds& timeout);
-      ~fake_gpi_api_t();
+      gaspi_t (const unsigned long long memory_size, const unsigned short port, const std::chrono::seconds& timeout);
+      ~gaspi_t();
 
       // wrapped C function calls
       virtual gpi::size_t number_of_queues () const override;
@@ -27,6 +23,7 @@ namespace gpi
       virtual gpi::port_t port () const override;
       virtual gpi::size_t number_of_nodes () const override;
       virtual gpi::size_t memory_size () const override;
+      virtual gpi::size_t max_transfer_size () const;
 
       virtual gpi::size_t open_dma_requests (const queue_desc_t) const override;
       virtual bool max_dma_requests_reached (const queue_desc_t) const override;
@@ -52,13 +49,9 @@ namespace gpi
                      ) override;
       virtual void wait_dma (const queue_desc_t queue) override;
     private:
-      rank_t m_rank;
       size_t m_mem_size;
       void *m_dma;
-
-      // fake stuff
-      size_t m_queue_count;
-      std::vector<std::atomic<size_t>> m_dma_request_count;
+      size_t m_replacement_gpi_segment;
     };
   }
 }

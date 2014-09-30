@@ -26,11 +26,6 @@ if (NOT IBverbs_LIBRARY)
   message (FATAL_ERROR "IBverbs missing")
 endif()
 
-set (GPI_HOME ${CMAKE_CURRENT_SOURCE_DIR}/gpi-space/ext)
-set (GPI_INCLUDE_DIR ${GPI_HOME}/include)
-set (GPI_LIBRARIES ${GPI_LIBRARIES} ${GPI_HOME}/lib64/libGPI.a)
-set (GPI_LIBRARIES ${GPI_LIBRARIES} ${IBverbs_LIBRARY})
-
 add_subdirectory (gpi-space)
 
   find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
