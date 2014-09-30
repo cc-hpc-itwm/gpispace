@@ -1,8 +1,6 @@
 #ifndef GPI_SPACE_FAKE_GPI_API_HPP
 #define GPI_SPACE_FAKE_GPI_API_HPP 1
 
-#include <vector>
-
 #include <gpi-space/gpi/api.hpp>
 
 #include <boost/utility.hpp>
@@ -52,13 +50,14 @@ namespace gpi
                      ) override;
       virtual void wait_dma (const queue_desc_t queue) override;
     private:
+      static constexpr const std::size_t NUMBER_OF_SIMULATED_QUEUES {8};
+
       rank_t m_rank;
       size_t m_mem_size;
       void *m_dma;
 
       // fake stuff
-      size_t m_queue_count;
-      std::vector<std::atomic<size_t>> m_dma_request_count;
+      std::atomic<size_t> m_dma_request_count[NUMBER_OF_SIMULATED_QUEUES];
     };
   }
 }
