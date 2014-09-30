@@ -14,8 +14,6 @@ namespace gpi
       : m_rank (0)
       , m_mem_size (memory_size)
       , m_dma (nullptr)
-      , m_queue_count (8)
-      , m_dma_request_count (8)
     {
       if (sys::get_total_memory_size() < m_mem_size)
       {
@@ -55,7 +53,7 @@ namespace gpi
     // wrapped C function calls
     gpi::size_t fake_gpi_api_t::number_of_queues () const
     {
-      return m_queue_count;
+      return NUMBER_OF_SIMULATED_QUEUES;
     }
 
     gpi::size_t fake_gpi_api_t::queue_depth () const
