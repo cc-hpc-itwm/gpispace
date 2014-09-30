@@ -13,7 +13,10 @@ const std::function<double (std::string const&)>
 class job_requirements_t
 {
 public:
-  job_requirements_t() = default;
+  job_requirements_t() = delete;
+  job_requirements_t (std::function<double (std::string const&)> transfer_cost)
+    : _transfer_cost (transfer_cost)
+  {}
   job_requirements_t ( const requirement_list_t& r_list
                      , const we::type::schedule_data& schedule_data
                      , std::function<double (std::string const&)> transfer_cost
@@ -32,7 +35,7 @@ public:
 private:
   requirement_list_t _requirementList;
   we::type::schedule_data _scheduleData;
-  std::function<double (std::string const&)> _transfer_cost = null_transfer_cost;
+  std::function<double (std::string const&)> _transfer_cost;
 };
 
 #endif
