@@ -614,9 +614,6 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_equal_co
 
 struct serve_job_and_check_for_minimal_cost_assignement
 {
-  const unsigned int n_min_workers = 10;
-  const unsigned int n_max_workers = 20;
-
   const unsigned int generate_number_of_workers ( const unsigned int n_min
                                                 , const unsigned int n_max
                                                 )
@@ -682,6 +679,8 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
                         , serve_job_and_check_for_minimal_cost_assignement
                         )
 {
+  const unsigned int n_min_workers = 10;
+  const unsigned int n_max_workers = 20;
   const unsigned int n_workers (generate_number_of_workers (n_min_workers, n_max_workers));
   const unsigned int n_req_workers (10);
 
