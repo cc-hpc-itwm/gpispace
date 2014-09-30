@@ -5,11 +5,9 @@
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 #include <fhg/util/random_string.hpp>
 
-#include <boost/generator_iterator.hpp>
-#include <boost/random.hpp>
-
 #include <iostream>
 #include <functional>
+#include <random>
 
 struct serveJob_checking_scheduler_and_job_manager
 {
@@ -618,16 +616,14 @@ struct serve_job_and_check_for_minimal_cost_assignement
 {
   const unsigned int n_min_workers = 10;
   const unsigned int n_max_workers = 20;
-  boost::mt19937 rng;
 
   const unsigned int generate_number_of_workers ( const unsigned int n_min
                                                 , const unsigned int n_max
                                                 )
   {
-    boost::uniform_int<> dist (n_min, n_max);
-    boost::variate_generator<boost::mt19937, boost::uniform_int<>>
-       gen_int (rng, dist);
-    return gen_int();
+    std::random_device rd;
+    std::mt19937 gen (rd());
+    return std::uniform_int_distribution<> (n_min, n_max) (gen);
   }
 
   std::vector<std::string> generate_worker_names (const unsigned int n)
@@ -643,14 +639,14 @@ struct serve_job_and_check_for_minimal_cost_assignement
   std::map<sdpa::worker_id_t, double>
     generate_costs (std::vector<std::string> worker_ids)
   {
-    boost::normal_distribution<double> normal_dist(0,1);
-    boost::variate_generator<boost::mt19937, boost::normal_distribution<double>>
-      gen_cost (rng, normal_dist);
+    std::random_device rd;
+    std::mt19937 gen (rd());
+    std::normal_distribution<> dist(0,1);
 
     std::map<sdpa::worker_id_t, double> map_costs;
     for (const sdpa::worker_id_t worker : worker_ids)
     {
-      map_costs.insert (std::make_pair (worker, gen_cost()));
+      map_costs.insert (std::make_pair (worker, dist (gen)));
     }
 
     return map_costs;
