@@ -267,8 +267,6 @@ BOOST_AUTO_TEST_CASE (peek)
   {
     BOOST_CHECK_NE (peek ("set", m2), boost::none);
     BOOST_CHECK_EQUAL (peek ("set", m2).get(), set);
-    // BOOST_REQUIRE_EQUAL (peek ("set", m2).get(), set);
-    // | Does not compile. Why?
   }
   {
     BOOST_CHECK_NE (peek ("m1.l1", m2), boost::none);
