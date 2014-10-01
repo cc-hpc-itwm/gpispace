@@ -93,15 +93,13 @@ int main(int ac, char *av[])
 
     std::cout << server.port() << std::endl;
 
-    io_service.notify_fork (boost::asio::io_service::fork_prepare);
     if (daemonize)
     {
-      fhg::util::fork_and_daemonize_child_and_abandon_parent();
+      fhg::util::fork_and_daemonize_child_and_abandon_parent ({&io_service});
     }
 
     pidfile_writer.write();
 
-    io_service.notify_fork (boost::asio::io_service::fork_child);
     io_service.run();
 
     if (not pidfile.empty())
