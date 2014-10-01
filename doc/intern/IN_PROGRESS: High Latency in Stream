@@ -31,25 +31,25 @@ State:
   [x] low latency in one process
   [x] low latency between two processes
         stream test with two module calls (same host):
-            process: delta: avg 7.61µs  min 6.99µs  max 11.07µs
-          mark_free: delta: avg 13.99µs min 13.15µs max 19.07µs
+            process: delta: avg 7.61ms  min 6.99ms  max 11.07ms
+          mark_free: delta: avg 13.99ms min 13.15ms max 19.07ms
   [x] no dependency on data size
   [x] low latency between two processes on different nodes
         stream test with two module calls (2 beehive nodes, agent on node094, worker on node090):
-            process: delta: avg 11.02µs min 10.96µs max 13.69µs
-          mark_free: delta: avg 18.47µs min 17.27µs max 31.59µs
+            process: delta: avg 11.02ms min 10.96ms max 13.69ms
+          mark_free: delta: avg 18.47ms min 17.27ms max 31.59ms
 
 - fhgcom-tcp_nodelay:
   [x] low latency in one process
   [x] low latency between two processes
         stream test with two module calls (same host):
-            process: delta: avg 7.88µs min 7.32µs max 11.9µs
-          mark_free: delta: avg 14.7µs min 13.6µs max 20.7µs
+            process: delta: avg 7.88ms min 7.32ms max 11.9ms
+          mark_free: delta: avg 14.7ms min 13.6ms max 20.7ms
   [x] no dependency on data size
   [x] low latency between two processes on different nodes
         stream test with two module calls (2 beehive nodes, agent on node094, worker on node090):
-            process: delta: avg 10.75µs min 10.23µs max 13.35µs
-          mark_free: delta: avg 18.07µs min 16.83µs max 22.53µs
+            process: delta: avg 10.75ms min 10.23ms max 13.35ms
+          mark_free: delta: avg 18.07ms min 16.83ms max 22.53ms
 
 - lnl:
   [.] low latency in one process
