@@ -61,7 +61,13 @@ namespace fhg
                 , std::string const & data
                 );
 
-      void async_recv (message_t *m, handler_t h);
+      void async_recv
+        ( message_t *m
+        , std::function<void ( boost::system::error_code
+                             , boost::optional<std::string> source_name
+                             )
+                       >
+        );
       void recv (message_t *m);
 
       std::string resolve_addr (p2p::address_t const &);
@@ -91,7 +97,10 @@ namespace fhg
         {}
 
         message_t  *message;
-        handler_t  handler;
+        std::function<void ( boost::system::error_code
+                           , boost::optional<std::string> source_name
+                           )
+                     > handler;
       };
 
       struct connection_data_t

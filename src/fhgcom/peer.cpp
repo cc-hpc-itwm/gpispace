@@ -173,7 +173,7 @@ namespace fhg
         to_recv_t to_recv = m_to_recv.front();
         m_to_recv.pop_front();
         using namespace boost::system;
-        to_recv.handler (errc::make_error_code(errc::operation_canceled));
+        to_recv.handler (errc::make_error_code(errc::operation_canceled), boost::none);
       }
 
       backlog_.clear ();
@@ -362,7 +362,13 @@ namespace fhg
       }
     }
 
-    void peer_t::async_recv (message_t *m, peer_t::handler_t completion_handler)
+    void peer_t::async_recv
+      ( message_t *m
+      , std::function<void ( boost::system::error_code
+                           , boost::optional<std::string> source_name
+                           )
+                     > completion_handler
+      )
     {
       fhg_assert (m);
       fhg_assert (completion_handler);
@@ -373,7 +379,9 @@ namespace fhg
         if (stopping_)
         {
           using namespace boost::system;
-          completion_handler (errc::make_error_code (errc::network_down));
+          completion_handler ( errc::make_error_code (errc::network_down)
+                             , boost::none
+                             );
           return;
         }
 
@@ -396,7 +404,9 @@ namespace fhg
       }
 
       using namespace boost::system;
-      completion_handler(errc::make_error_code (errc::success));
+      completion_handler ( errc::make_error_code (errc::success)
+                         , resolve_addr (m->header.src)
+                         );
     }
 
     std::string peer_t::resolve_addr (p2p::address_t const &addr)
@@ -731,7 +741,9 @@ namespace fhg
           using namespace boost::system;
 
           lock.unlock ();
-          to_recv.handler(errc::make_error_code (errc::success));
+          to_recv.handler ( errc::make_error_code (errc::success)
+                          , resolve_addr (to_recv.message->header.src)
+                          );
           lock.lock ();
         }
       }
@@ -777,7 +789,7 @@ namespace fhg
           to_recv.message->header.dst = c->local_address();
 
           lock.unlock ();
-          to_recv.handler (ec);
+          to_recv.handler (ec, resolve_addr (to_recv.message->header.src));
           lock.lock ();
         }
 
