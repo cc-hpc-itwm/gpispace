@@ -95,6 +95,12 @@ namespace sdpa
           (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
         m_incoming_events.put (evt);
       }
+      else if ( ec == boost::system::errc::operation_canceled
+              || ec == boost::system::errc::network_down
+              )
+      {
+        _stopping = true;
+      }
       else
       {
         const fhg::com::p2p::address_t & addr = m_message.header.src;
