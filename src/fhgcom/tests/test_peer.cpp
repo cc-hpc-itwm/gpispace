@@ -129,7 +129,7 @@ BOOST_FIXTURE_TEST_CASE (peer_run_two, KVSSetup)
     message_t m;
     peer_2.recv (&m);
 
-  BOOST_CHECK_EQUAL (peer_2.resolve_addr (m.header.src), "peer-1");
+  BOOST_CHECK_EQUAL (m.header.src, p2p::address_t ("peer-1"));
   BOOST_CHECK_EQUAL
     (std::string (m.data.begin(), m.data.end()), "hello world!");
 
