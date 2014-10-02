@@ -137,7 +137,9 @@ private:
   void start_connect ();
 
   void start_receiver();
-  void handle_recv (boost::system::error_code const & ec);
+  void handle_recv ( boost::system::error_code const & ec
+                   , boost::optional<std::string> source_name
+                   );
 
   void send_event (sdpa::events::SDPAEvent *e);
   void send_event (sdpa::events::SDPAEvent::Ptr const & evt);
