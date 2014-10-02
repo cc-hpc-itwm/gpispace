@@ -156,7 +156,7 @@ namespace fhg
       connection_t::ptr_t listen_;
 
       std::list<to_recv_t> m_to_recv;
-      std::list<const message_t *> m_pending;
+      std::list<std::pair<const message_t *, std::string /*remote_name*/>> m_pending;
 
       handler_t m_kvs_error_handler;
     };

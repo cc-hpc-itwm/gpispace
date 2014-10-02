@@ -164,7 +164,7 @@ namespace fhg
       // remove pending
       while (! m_pending.empty())
       {
-        delete m_pending.front();
+        delete m_pending.front().first;
         m_pending.pop_front();
       }
 
@@ -271,7 +271,7 @@ namespace fhg
             )
           );
         cd.connection->local_address (my_addr_);
-        cd.connection->remote_address (addr);
+        cd.connection->remote_address (addr, cd.name);
 
         namespace bai = boost::asio::ip;
 
@@ -373,6 +373,8 @@ namespace fhg
       fhg_assert (m);
       fhg_assert (completion_handler);
 
+      std::string name;
+
       {
         lock_type lock(mutex_);
 
@@ -396,17 +398,16 @@ namespace fhg
         }
         else
         {
-          const message_t *p = m_pending.front();
+          std::pair<const message_t *, std::string> p = m_pending.front();
           m_pending.pop_front();
-          *m = *p;
-          delete p;
+          *m = *p.first;
+          delete p.first;
+          name = p.second;
         }
       }
 
       using namespace boost::system;
-      completion_handler ( errc::make_error_code (errc::success)
-                         , resolve_addr (m->header.src)
-                         );
+      completion_handler (errc::make_error_code (errc::success), name);
     }
 
     std::string peer_t::resolve_addr (p2p::address_t const &addr)
@@ -670,7 +671,6 @@ namespace fhg
           )
         );
       listen_->local_address(my_addr_);
-      listen_->remote_address(p2p::address_t());
       acceptor_.async_accept( listen_->socket()
                             , std::bind( &peer_t::handle_accept
                                        , this
@@ -699,12 +699,12 @@ namespace fhg
         {
           backlog_.erase (c);
 
-          c->remote_address (m->header.src);
           c->local_address (m->header.dst);
 
           const std::string remote_name
             (m->buf(), m->header.length);
           reverse_lookup_cache_[m->header.src] = remote_name;
+          c->remote_address (m->header.src, remote_name);
 
           connection_data_t & cd = connections_[m->header.src];
           cd.name = remote_name;
@@ -717,7 +717,8 @@ namespace fhg
       delete m;
     }
 
-    void peer_t::handle_user_data   (connection_t::ptr_t, const message_t *m)
+    void peer_t::handle_user_data
+      (connection_t::ptr_t connection, const message_t *m)
     {
       fhg_assert (m);
 
@@ -728,7 +729,7 @@ namespace fhg
           // TODO: maybe add a flag to the message indicating whether it should be delivered
           // at all costs or not
           // if (m->header.flags & IMPORTANT)
-          m_pending.push_back (m);
+          m_pending.emplace_back (m, connection->remote_name());
           return;
         }
         else
@@ -742,7 +743,7 @@ namespace fhg
 
           lock.unlock ();
           to_recv.handler ( errc::make_error_code (errc::success)
-                          , resolve_addr (to_recv.message->header.src)
+                          , connection->remote_name()
                           );
           lock.lock ();
         }
@@ -789,7 +790,7 @@ namespace fhg
           to_recv.message->header.dst = c->local_address();
 
           lock.unlock ();
-          to_recv.handler (ec, resolve_addr (to_recv.message->header.src));
+          to_recv.handler (ec, c->remote_name());
           lock.lock ();
         }
 
