@@ -148,6 +148,7 @@ namespace gpi
         typedef std::list<rank_result_t> result_list_t;
 
         void message_received ( boost::system::error_code const &
+                              , boost::optional<std::string> source_name
                               , memory::manager_t&
                               );
         void message_sent ( child_t & child
