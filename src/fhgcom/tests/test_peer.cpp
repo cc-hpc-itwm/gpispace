@@ -162,36 +162,6 @@ BOOST_FIXTURE_TEST_CASE (resolve_peer_names, KVSSetup)
   thrd_2.join ();
 }
 
-BOOST_FIXTURE_TEST_CASE (resolve_peer_addresses, KVSSetup)
-{
-  using namespace fhg::com;
-
-  peer_t peer_1
-    ("peer-1", host_t("localhost"), port_t("0"), _kvs, &fail_on_kvs_error);
-  boost::thread thrd_1 (&peer_t::run, &peer_1);
-
-  peer_t peer_2
-    ("peer-2", host_t("localhost"), port_t("0"), _kvs, &fail_on_kvs_error);
-  boost::thread thrd_2 (&peer_t::run, &peer_2);
-
-  peer_1.start();
-  peer_2.start();
-
-  BOOST_CHECK_EQUAL ( peer_1.resolve_addr (peer_1.address())
-                    , peer_2.resolve_addr (peer_1.address())
-                    );
-
-  BOOST_CHECK_EQUAL ( peer_1.resolve_addr (peer_2.address())
-                    , peer_2.resolve_addr (peer_2.address())
-                    );
-
-  peer_1.stop();
-  peer_2.stop();
-
-  thrd_1.join ();
-  thrd_2.join ();
-}
-
 BOOST_FIXTURE_TEST_CASE (peer_loopback, KVSSetup)
 {
   using namespace fhg::com;
