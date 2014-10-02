@@ -70,8 +70,6 @@ namespace fhg
         );
       void recv (message_t *m);
 
-      std::string resolve_addr (p2p::address_t const &);
-
     protected:
       void handle_hello_message (connection_t::ptr_t, const message_t *m);
       void handle_user_data   (connection_t::ptr_t, const message_t *m);
@@ -145,9 +143,6 @@ namespace fhg
       boost::asio::deadline_timer m_renew_kvs_entries_timer;
 
       boost::shared_ptr<boost::thread> m_peer_thread;
-
-      typedef std::unordered_map<p2p::address_t, std::string> reverse_lookup_cache_t;
-      reverse_lookup_cache_t reverse_lookup_cache_;
 
       std::unordered_map<p2p::address_t, connection_data_t> connections_;
 

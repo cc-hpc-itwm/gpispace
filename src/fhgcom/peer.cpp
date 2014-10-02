@@ -245,7 +245,6 @@ namespace fhg
         host_t h (peer_info.at(prefix + ".location.host"));
         port_t p (peer_info.at(prefix + ".location.port"));
         std::string n (peer_info.at(prefix + ".name"));
-        reverse_lookup_cache_[addr] = n;
 
         // store message in out queue
         //    connect_handler -> sends messages from out queue
@@ -408,43 +407,6 @@ namespace fhg
 
       using namespace boost::system;
       completion_handler (errc::make_error_code (errc::success), name);
-    }
-
-    std::string peer_t::resolve_addr (p2p::address_t const &addr)
-    {
-      lock_type lock (mutex_);
-
-      reverse_lookup_cache_t::const_iterator it (reverse_lookup_cache_.find (addr));
-      if (it == reverse_lookup_cache_.end())
-      {
-        // lookup location information
-        try
-        {
-          const std::string key
-            ("p2p.peer." + p2p::to_string (addr)+".name");
-
-          kvs::values_type v (_kvs_client->get (key));
-          if (v.size() == 1)
-          {
-            std::string name = v.begin()->second;
-            reverse_lookup_cache_[addr] = name;
-            return name;
-          }
-          else
-          {
-            throw std::runtime_error("kvs::get: returned 0 or more than 1 element");
-          }
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(WARN, "could not resolve address (" << p2p::to_string (addr) << ") to name: " << ex.what());
-          throw std::runtime_error (std::string("could not resolve address: ") + ex.what());
-        }
-      }
-      else
-      {
-        return it->second;
-      }
     }
 
     void peer_t::connection_established (const p2p::address_t a, boost::system::error_code const &ec)
@@ -700,10 +662,7 @@ namespace fhg
           backlog_.erase (c);
 
           c->local_address (m->header.dst);
-
-          const std::string remote_name
-            (m->buf(), m->header.length);
-          reverse_lookup_cache_[m->header.src] = remote_name;
+          std::string const remote_name (m->buf(), m->header.length);
           c->remote_address (m->header.src, remote_name);
 
           connection_data_t & cd = connections_[m->header.src];
