@@ -409,11 +409,6 @@ if [ ! -x "${script_start_drts}" ] ; then
     error 2 "utility script '${script_start_drts}' is not executable"
 fi
 
-script_start_agent="${sdpa_home}/libexec/sdpa/scripts/start-agent"
-if [ ! -x "${script_start_agent}" ] ; then
-    error 2 "utility script '${script_start_agent}' is not executable"
-fi
-
 check_port=$(which nc 2>/dev/null)
 if [ $? -ne 0 ]
 then
@@ -610,17 +605,19 @@ function start_agent
 
     info "starting agent: ${name} on host ${host} with parent ${parent}"
 
-    rexec ${host} "${script_start_agent}" \
-        $opt_verbose_flag \
-        -D \
-        -n "${name}" \
+    rexec ${host} /usr/bin/env \
+        FHGLOG_to_server="${log_host}:${log_port}" \
+        FHGLOG_level=$($verbose && echo "TRACE" || echo "INFO") \
+        FHGLOG_to_file="${state_dir}/log/$name.log" \
+        "${sdpa_home}/bin/agent" \
+        --pidfile "$state_dir/orchestrator.pid" \
+        --daemonize \
+        --kvs-host="${kvs_host}" \
+        --kvs-port="${kvs_port}" \
+        -u '0' \
+        -a "${gui_host}:${gui_port}" \
         -m "${parent}" \
-        -s "${state_dir}" \
-        -k "${kvs_host}" \
-        -K "${kvs_port}" \
-        -l "${log_host}:${log_port}" \
-        -H "${sdpa_home}" \
-        -g "${gui_host}:${gui_port}" &
+        -n "${name}" &
     pids+=( $! )
 }
 

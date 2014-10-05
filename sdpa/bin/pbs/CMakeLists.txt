@@ -4,7 +4,6 @@ set (prgs
 
 set (scripts
   bundle.sh
-  start-agent
   start-drts
   start-sdpa
   stop-drts
