@@ -21,20 +21,17 @@ namespace fhg
 
       RemoteAppender::RemoteAppender (const std::string& location)
         : logserver_ (*udp::resolver (io_service_)
-                     . resolve
-                       ( udp::resolver::query
-                         ( udp::v4()
-                         , fhg::util::split_string (location, ':').first.c_str()
-                         , "0"
+                       .resolve
+                         (udp::resolver::query
+                           ( udp::v4()
+                           , fhg::util::split_string (location, ':').first
+                           , fhg::util::split_string (location, ':').second
+                           , udp::resolver::query::canonical_name
+                           )
                          )
-                       )
                      )
         , socket_ (new udp::socket (io_service_, udp::v4()))
-      {
-        logserver_.port ( boost::lexical_cast<unsigned long>
-                          (fhg::util::split_string (location, ':').second)
-                        );
-      }
+      {}
 
       RemoteAppender::~RemoteAppender()
       {
