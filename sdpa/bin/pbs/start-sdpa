@@ -421,8 +421,14 @@ fi
 
 info "using nodefile: $nodefile"
 
-rexec $master /usr/bin/env "${sdpa}" -s "${state_dir}" init "$nodefile" </dev/null || {
-    error 2 "could not initialize SDPA!"
+mkdir -p "${state_dir}" || {
+    error 2 "could not 'mkdir -p \"${state_dir}\"'"
+}
+mkdir -p "${state_dir}/log" || {
+    error 2 "could not 'mkdir -p \"${state_dir}/log\"'"
+}
+cp "${nodefile}" "${state_dir}/nodefile" || {
+    error 2 "could not 'cp ${nodefile} ${state_dir}/nodefile'"
 }
 
 if $delete_logfiles ; then
