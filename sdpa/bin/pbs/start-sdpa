@@ -624,7 +624,7 @@ function start_agent
         FHGLOG_level=$($verbose && echo "TRACE" || echo "INFO") \
         FHGLOG_to_file="${state_dir}/log/$name.log" \
         "${sdpa_home}/bin/agent" \
-        --pidfile "$state_dir/orchestrator.pid" \
+        --pidfile "$state_dir/${name}.pid" \
         --daemonize \
         --kvs-host="${kvs_host}" \
         --kvs-port="${kvs_port}" \
