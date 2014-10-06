@@ -146,8 +146,6 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
 BOOST_AUTO_TEST_CASE (find_non_submitted_job)
 {
   sdpa::daemon::WorkerManager worker_manager;
-  sdpa::worker_id_t worker_name (fhg::util::random_string());
-  worker_manager.addWorker (worker_name, 1, {}, random_bool(), fhg::util::random_string());
 
   const sdpa::job_id_t job_not_submitted (fhg::util::random_string());
   boost::optional<sdpa::worker_id_t>  worker_id (worker_manager.findSubmOrAckWorker (job_not_submitted));
