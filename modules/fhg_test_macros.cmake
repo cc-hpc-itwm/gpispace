@@ -89,7 +89,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libdo_load.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libdo_write.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libprocess.so"
-  "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/scripts/bundle.sh"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/scripts/sdpa-selftest"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/scripts/start-agent"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/scripts/start-drts"
