@@ -88,6 +88,11 @@ namespace
   {
     return job_requirements_t (transfer_cost);
   }
+
+  job_requirements_t no_requirements()
+  {
+    return {{}, we::type::schedule_data(), null_transfer_cost};
+  }
 }
 
 BOOST_FIXTURE_TEST_CASE (testLoadBalancing, serveJob_checking_scheduler_and_job_manager)
@@ -95,9 +100,9 @@ BOOST_FIXTURE_TEST_CASE (testLoadBalancing, serveJob_checking_scheduler_and_job_
   _scheduler.worker_manager().addWorker ("worker_0", 1, {}, false, fhg::util::random_string());
   _scheduler.worker_manager().addWorker ("worker_1", 1, {}, false, fhg::util::random_string());
 
-  add_job ("job_0", require (null_transfer_cost));
-  add_job ("job_1", require (null_transfer_cost));
-  add_job ("job_2", require (null_transfer_cost));
+  add_job ("job_0", no_requirements());
+  add_job ("job_1", no_requirements());
+  add_job ("job_2", no_requirements());
 
   _scheduler.enqueueJob ("job_0");
   _scheduler.enqueueJob ("job_1");
@@ -125,8 +130,8 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_a
 {
   _scheduler.worker_manager().addWorker ("worker_0", 1, {}, false, fhg::util::random_string());
 
-  add_job ("job_0", require (null_transfer_cost));
-  add_job ("job_1", require (null_transfer_cost));
+  add_job ("job_0", no_requirements());
+  add_job ("job_1", no_requirements());
 
   _scheduler.enqueueJob ("job_0");
   _scheduler.enqueueJob ("job_1");
@@ -208,8 +213,8 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and
   _scheduler.worker_manager().addWorker ("worker_0", 1, {}, false, fhg::util::random_string());
   _scheduler.worker_manager().addWorker ("worker_1", 1, {}, false, fhg::util::random_string());
 
-  add_job ("job_0", require (null_transfer_cost));
-  add_job ("job_1", require (null_transfer_cost));
+  add_job ("job_0", no_requirements());
+  add_job ("job_1", no_requirements());
 
   _scheduler.enqueueJob ("job_0");
   _scheduler.enqueueJob ("job_1");
@@ -257,13 +262,13 @@ BOOST_FIXTURE_TEST_CASE
   _scheduler.worker_manager().addWorker (worker_id, boost::none, {}, true, fhg::util::random_string());
 
   sdpa::job_id_t const job_id_0 (utils::random_peer_name());
-  add_job (job_id_0, require (null_transfer_cost));
+  add_job (job_id_0, no_requirements());
   _scheduler.enqueueJob (job_id_0);
   expect_serveJob_call (job_id_0, {worker_id});
   _scheduler.assignJobsToWorkers();
 
   sdpa::job_id_t const job_id_1 (utils::random_peer_name());
-  add_job (job_id_1, require (null_transfer_cost));
+  add_job (job_id_1, no_requirements());
   _scheduler.enqueueJob (job_id_1);
   expect_serveJob_call (job_id_1, {worker_id});
   _scheduler.assignJobsToWorkers();
@@ -278,13 +283,13 @@ BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
   _scheduler.worker_manager().addWorker (worker_id, boost::none, {}, false, fhg::util::random_string());
 
   sdpa::job_id_t const job_id_0 (utils::random_peer_name());
-  add_job (job_id_0, require (null_transfer_cost));
+  add_job (job_id_0, no_requirements());
   _scheduler.enqueueJob (job_id_0);
   expect_serveJob_call (job_id_0, {worker_id});
   _scheduler.assignJobsToWorkers();
 
   sdpa::job_id_t const job_id_1 (utils::random_peer_name());
-  add_job (job_id_1, require (null_transfer_cost));
+  add_job (job_id_1, no_requirements());
   _scheduler.enqueueJob (job_id_1);
   _scheduler.assignJobsToWorkers();
 
