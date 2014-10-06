@@ -22,7 +22,7 @@ namespace fhg
       RemoteAppender::RemoteAppender (const std::string& location)
         : logserver_ (*udp::resolver (io_service_)
                        .resolve
-                         (udp::resolver::query
+                         ( udp::resolver::query
                            ( udp::v4()
                            , fhg::util::split_string (location, ':').first
                            , fhg::util::split_string (location, ':').second
