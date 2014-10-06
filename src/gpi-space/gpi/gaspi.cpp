@@ -6,6 +6,8 @@
 #include <gpi-space/exception.hpp>
 #include <gpi-space/gpi/system.hpp>
 
+#include <fhg/util/hostname.hpp>
+
 #include <GASPI.h>
 
 #include <limits>
@@ -57,6 +59,15 @@ namespace gpi
           , "not enough memory"
           );
       }
+      else if (m_mem_size < 2 * (HOST_NAME_MAX + 1))
+      {
+        throw gpi::exception::gpi_error
+          ( gpi::error::startup_failed()
+          , "not enough memory to store two hostnames: required are "
+          + std::to_string (2 * (HOST_NAME_MAX + 1))
+          + " bytes"
+          );
+      }
       else if (sys::get_avail_memory_size() < m_mem_size)
       {
         LOG( WARN
@@ -79,6 +90,41 @@ namespace gpi
                        , m_replacement_gpi_segment
                        , &m_dma
                        );
+
+      const std::string my_hostname (fhg::util::hostname());
+      memcpy (m_dma, my_hostname.c_str(), my_hostname.size() + 1);
+
+      FAIL_ON_NON_ZERO (gaspi_barrier, GASPI_GROUP_ALL, GASPI_BLOCK);
+
+      m_rank_to_hostname.resize (number_of_nodes());
+
+      for ( gaspi_rank_t r (0)
+          ; r < number_of_nodes()
+          ; ++r
+          )
+      {
+        memset ( static_cast<char*> (m_dma) + HOST_NAME_MAX + 1
+               , 0
+               , HOST_NAME_MAX + 1
+               );
+
+        FAIL_ON_NON_ZERO ( gaspi_read
+                         , m_replacement_gpi_segment
+                         , HOST_NAME_MAX + 1
+                         , r
+                         , m_replacement_gpi_segment // hopefully the same???
+                         , 0
+                         , HOST_NAME_MAX + 1
+                         , 0
+                         , GASPI_BLOCK
+                         );
+        FAIL_ON_NON_ZERO (gaspi_wait, 0, GASPI_BLOCK);
+
+        m_rank_to_hostname[r] =
+          std::string (static_cast<const char *>(m_dma) + HOST_NAME_MAX + 1);
+      }
+
+      memset (m_dma, 0, 2 * (HOST_NAME_MAX + 1));
     }
 
     gaspi_t::~gaspi_t()

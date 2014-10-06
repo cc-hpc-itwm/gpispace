@@ -6,6 +6,9 @@
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <string>
+#include <vector>
+
 namespace gpi
 {
   namespace api
@@ -52,6 +55,7 @@ namespace gpi
       size_t m_mem_size;
       void *m_dma;
       size_t m_replacement_gpi_segment;
+      std::vector<std::string> m_rank_to_hostname;
     };
   }
 }
