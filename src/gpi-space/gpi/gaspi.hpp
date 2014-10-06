@@ -32,6 +32,7 @@ namespace gpi
       virtual bool max_dma_requests_reached (const queue_desc_t) const override;
 
       virtual gpi::rank_t rank () const override;
+      virtual std::string const& hostname_of_rank (const gpi::rank_t) const override;
       virtual gpi::error_vector_t get_error_vector(const queue_desc_t) const override;
       virtual void *dma_ptr (void) override;
 

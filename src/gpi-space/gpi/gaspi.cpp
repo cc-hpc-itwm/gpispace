@@ -198,6 +198,11 @@ namespace gpi
       return rank;
     }
 
+    std::string const& gaspi_t::hostname_of_rank (const gpi::rank_t r) const
+    {
+      return m_rank_to_hostname[r];
+    }
+
     gpi::error_vector_t gaspi_t::get_error_vector (const gpi::queue_desc_t) const
     {
       std::vector<unsigned char> gaspi_state_vector (number_of_nodes());

@@ -6,6 +6,8 @@
 
 #include <gpi-space/gpi/system.hpp>
 
+#include <fhg/util/hostname.hpp>
+
 namespace gpi
 {
   namespace api
@@ -14,6 +16,7 @@ namespace gpi
       : m_rank (0)
       , m_mem_size (memory_size)
       , m_dma (nullptr)
+      , m_hostname (fhg::util::hostname())
     {
       if (sys::get_total_memory_size() < m_mem_size)
       {
@@ -94,6 +97,11 @@ namespace gpi
     gpi::rank_t fake_gpi_api_t::rank () const
     {
       return m_rank;
+    }
+
+    std::string const& fake_gpi_api_t::hostname_of_rank (const gpi::rank_t) const
+    {
+      return m_hostname;
     }
 
     gpi::error_vector_t fake_gpi_api_t::get_error_vector (const gpi::queue_desc_t) const
