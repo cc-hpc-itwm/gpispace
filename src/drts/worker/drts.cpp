@@ -938,11 +938,14 @@ void DRTSImpl::start_receiver()
   m_peer->async_recv(&m_message, std::bind( &DRTSImpl::handle_recv
                                           , this
                                           , std::placeholders::_1
+                                          , std::placeholders::_2
                                           )
                     );
 }
 
-void DRTSImpl::handle_recv (boost::system::error_code const & ec)
+void DRTSImpl::handle_recv ( boost::system::error_code const & ec
+                           , boost::optional<std::string> source_name
+                           )
 {
   static sdpa::events::Codec codec;
 
@@ -967,12 +970,9 @@ void DRTSImpl::handle_recv (boost::system::error_code const & ec)
   }
   else if (! m_shutting_down)
   {
-    const fhg::com::p2p::address_t & addr = m_message.header.src;
-    if (addr != m_peer->address())
+    if (m_message.header.src != m_peer->address())
     {
-      const std::string other_name(m_peer->resolve_addr (addr));
-
-      map_of_masters_t::iterator master(m_masters.find(other_name));
+      map_of_masters_t::iterator master(m_masters.find(source_name.get()));
       if (master != m_masters.end() && master->second)
       {
         master->second = false;

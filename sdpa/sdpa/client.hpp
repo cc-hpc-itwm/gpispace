@@ -77,7 +77,7 @@ namespace sdpa
       template<typename Expected, typename Sent>
         Expected send_and_wait_for_reply (Sent event);
 
-      void handle_recv (boost::system::error_code const & ec);
+      void handle_recv (boost::system::error_code const & ec, boost::optional<std::string> source_name);
 
       fhg::com::kvs::kvsc_ptr_t _kvs_client;
       fhg::com::peer_t m_peer;

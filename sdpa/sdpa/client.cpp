@@ -61,8 +61,13 @@ namespace sdpa
       , _stopping (false)
     {
       m_peer.start ();
-      m_peer.async_recv
-        (&m_message, std::bind(&Client::handle_recv, this, std::placeholders::_1));
+      m_peer.async_recv ( &m_message
+                        , std::bind ( &Client::handle_recv
+                                    , this
+                                    , std::placeholders::_1
+                                    , std::placeholders::_2
+                                    )
+                        );
     }
 
     Client::~Client()
@@ -85,7 +90,9 @@ namespace sdpa
       return msg;
     }
 
-    void Client::handle_recv (boost::system::error_code const & ec)
+    void Client::handle_recv ( boost::system::error_code const & ec
+                             , boost::optional<std::string> source_name
+                             )
     {
       static sdpa::events::Codec codec;
 
@@ -95,13 +102,18 @@ namespace sdpa
           (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
         m_incoming_events.put (evt);
       }
+      else if ( ec == boost::system::errc::operation_canceled
+              || ec == boost::system::errc::network_down
+              )
+      {
+        _stopping = true;
+      }
       else
       {
-        const fhg::com::p2p::address_t & addr = m_message.header.src;
-        if (addr != m_peer.address())
+        if (m_message.header.src != m_peer.address())
         {
           sdpa::events::ErrorEvent::Ptr
-            error(new sdpa::events::ErrorEvent ( m_peer.resolve_addr (addr)
+            error(new sdpa::events::ErrorEvent ( source_name.get()
                                                , m_peer.name()
                                                , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                                                , "receiving response failed: " + boost::lexical_cast<std::string>(ec)
@@ -113,8 +125,13 @@ namespace sdpa
 
       if (!_stopping)
       {
-        m_peer.async_recv
-          (&m_message, std::bind(&Client::handle_recv, this, std::placeholders::_1));
+        m_peer.async_recv ( &m_message
+                          , std::bind ( &Client::handle_recv
+                                      , this
+                                      , std::placeholders::_1
+                                      , std::placeholders::_2
+                                      )
+                          );
       }
     }
 

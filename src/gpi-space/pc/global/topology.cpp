@@ -166,6 +166,7 @@ namespace gpi
                            , std::bind( &topology_t::message_received
                                       , this
                                       , std::placeholders::_1
+                                      , std::placeholders::_2
                                       , std::ref (memory_manager)
                                       )
                            );
@@ -469,14 +470,14 @@ namespace gpi
        */
 
       void topology_t::message_received
-        (boost::system::error_code const &ec, memory::manager_t& memory_manager)
+        ( boost::system::error_code const &ec
+        , boost::optional<std::string> source_name
+        , memory::manager_t& memory_manager
+        )
       {
         if (! ec)
         {
-          const fhg::com::p2p::address_t & addr = m_incoming_msg.header.src;
-          const std::string name(m_peer->resolve_addr (addr));
-
-          handle_message( detail::name_to_rank(name)
+          handle_message( detail::name_to_rank(source_name.get())
                         , std::string( m_incoming_msg.buf()
                                      , m_incoming_msg.header.length
                                      )
@@ -487,23 +488,22 @@ namespace gpi
                              , std::bind( &topology_t::message_received
                                         , this
                                         , std::placeholders::_1
+                                        , std::placeholders::_2
                                         , std::ref (memory_manager)
                                         )
                              );
         }
         else if (! m_shutting_down)
         {
-          const fhg::com::p2p::address_t & addr = m_incoming_msg.header.src;
-          if (addr != m_peer->address())
+          if (m_incoming_msg.header.src != m_peer->address())
           {
-            const std::string name(m_peer->resolve_addr (addr));
-
-            handle_error (detail::name_to_rank(name));
+            handle_error (detail::name_to_rank(source_name.get()));
 
             m_peer->async_recv ( &m_incoming_msg
                                , std::bind( &topology_t::message_received
                                           , this
                                           , std::placeholders::_1
+                                          , std::placeholders::_2
                                           , std::ref (memory_manager)
                                           )
                                );
