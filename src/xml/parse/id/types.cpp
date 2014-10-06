@@ -111,11 +111,11 @@ namespace xml
                                                                         \
         const type::XML_TYPE& NAME::get() const                         \
         {                                                               \
-          return *_mapper->get (*this);                                 \
+          return _mapper->get (*this).get();                            \
         }                                                               \
         type::XML_TYPE& NAME::get_ref() const                           \
         {                                                               \
-          return *_mapper->get_ref (*this);                             \
+          return _mapper->get_ref (*this).get();                        \
         }                                                               \
                                                                         \
         const id::NAME& NAME::id() const                                \

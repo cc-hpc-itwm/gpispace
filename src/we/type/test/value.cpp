@@ -266,13 +266,13 @@ BOOST_AUTO_TEST_CASE (peek)
 
   {
     BOOST_CHECK_NE (peek ("set", m2), boost::none);
-    BOOST_CHECK_EQUAL (*peek ("set", m2), set);
-    // BOOST_REQUIRE_EQUAL (*peek ("set", m2), set);
+    BOOST_CHECK_EQUAL (peek ("set", m2).get(), set);
+    // BOOST_REQUIRE_EQUAL (peek ("set", m2).get(), set);
     // | Does not compile. Why?
   }
   {
     BOOST_CHECK_NE (peek ("m1.l1", m2), boost::none);
-    BOOST_CHECK_EQUAL (*peek ("m1.l1", m2), l1);
+    BOOST_CHECK_EQUAL (peek ("m1.l1", m2).get(), l1);
   }
 }
 
@@ -291,7 +291,7 @@ BOOST_AUTO_TEST_CASE (peek_ref)
 
   {
     const std::list<value_type>& g
-      (boost::get<const std::list<value_type>&> (*peek ("l", m)));
+      (boost::get<const std::list<value_type>&> (peek ("l", m).get()));
 
     BOOST_CHECK (g.empty());
   }
@@ -300,7 +300,7 @@ BOOST_AUTO_TEST_CASE (peek_ref)
 
   {
     std::list<value_type>& r
-      (boost::get<std::list<value_type>&> (*peek ("l", m)));
+      (boost::get<std::list<value_type>&> (peek ("l", m).get()));
 
     BOOST_CHECK (r.empty());
 
@@ -309,7 +309,7 @@ BOOST_AUTO_TEST_CASE (peek_ref)
 
   {
     const std::list<value_type>& g
-      (boost::get<const std::list<value_type>&> (*peek ("l", m)));
+      (boost::get<const std::list<value_type>&> (peek ("l", m).get()));
 
     BOOST_CHECK_EQUAL (g.size(), 1U);
     BOOST_CHECK_EQUAL (*g.begin(), value_type (19));
@@ -331,20 +331,20 @@ BOOST_AUTO_TEST_CASE (poke)
     poke ("s", v, s);
 
     BOOST_CHECK_NE (peek ("s", v), boost::none);
-    BOOST_CHECK_EQUAL (*peek ("s", v), s);
+    BOOST_CHECK_EQUAL (peek ("s", v).get(), s);
   }
   {
     poke ("i", v, i);
     BOOST_CHECK_NE (peek ("i", v), boost::none);
-    BOOST_CHECK_EQUAL (*peek ("i", v), i);
+    BOOST_CHECK_EQUAL (peek ("i", v).get(), i);
 
     poke ("i.i", v, i);
     BOOST_CHECK_NE (peek ("i.i", v), boost::none);
-    BOOST_CHECK_EQUAL (*peek ("i.i", v), i);
+    BOOST_CHECK_EQUAL (peek ("i.i", v).get(), i);
 
     BOOST_CHECK_NE (peek ("i", v), boost::none);
-    BOOST_CHECK_NE (peek ("i", *peek ("i", v)), boost::none);
-    BOOST_CHECK_EQUAL (*peek ("i", *peek ("i", v)), i);
+    BOOST_CHECK_NE (peek ("i", peek ("i", v).get()), boost::none);
+    BOOST_CHECK_EQUAL (peek ("i", peek ("i", v).get()).get(), i);
   }
 }
 
