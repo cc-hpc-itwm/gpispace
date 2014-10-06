@@ -25,6 +25,7 @@
 #include <fhg/util/indenter.hpp>
 
 #include <fhg/util/boost/test/printer/list.hpp>
+#include <fhg/util/boost/test/printer/optional.hpp>
 #include <fhg/util/boost/test/printer/set.hpp>
 #include <fhg/util/boost/test/printer/map.hpp>
 #include <fhg/util/boost/test/require_exception.hpp>

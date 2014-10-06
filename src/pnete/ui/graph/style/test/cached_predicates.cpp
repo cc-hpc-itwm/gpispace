@@ -2,6 +2,8 @@
 
 #include <pnete/ui/graph/style/store.hpp>
 
+#include <fhg/util/boost/test/printer/optional.hpp>
+
 #include <boost/test/unit_test.hpp>
 
 #include <functional>
