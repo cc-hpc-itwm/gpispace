@@ -3,7 +3,6 @@ set (prgs
 )
 
 set (scripts
-  bundle.sh
   start-orch
   start-agent
   start-drts
