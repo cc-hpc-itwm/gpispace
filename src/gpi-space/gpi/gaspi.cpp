@@ -43,6 +43,8 @@ namespace gpi
       , m_dma (nullptr)
       , m_replacement_gpi_segment (0)
     {
+      constexpr const std::size_t HOST_NAME_MAX_WITH_NUL {HOST_NAME_MAX + 1};
+
       gaspi_config_t config;
       FAIL_ON_NON_ZERO (gaspi_config_get, &config);
       config.sn_port = port;
@@ -59,12 +61,12 @@ namespace gpi
           , "not enough memory"
           );
       }
-      else if (m_mem_size < 2 * (HOST_NAME_MAX + 1))
+      else if (m_mem_size < 2 * (HOST_NAME_MAX_WITH_NUL))
       {
         throw gpi::exception::gpi_error
           ( gpi::error::startup_failed()
           , "not enough memory to store two hostnames: required are "
-          + std::to_string (2 * (HOST_NAME_MAX + 1))
+          + std::to_string (2 * (HOST_NAME_MAX_WITH_NUL))
           + " bytes"
           );
       }
@@ -103,28 +105,28 @@ namespace gpi
           ; ++r
           )
       {
-        memset ( static_cast<char*> (m_dma) + HOST_NAME_MAX + 1
+        memset ( static_cast<char*> (m_dma) + HOST_NAME_MAX_WITH_NUL
                , 0
-               , HOST_NAME_MAX + 1
+               , HOST_NAME_MAX_WITH_NUL
                );
 
         FAIL_ON_NON_ZERO ( gaspi_read
                          , m_replacement_gpi_segment
-                         , HOST_NAME_MAX + 1
+                         , HOST_NAME_MAX_WITH_NUL
                          , r
                          , m_replacement_gpi_segment
                          , 0
-                         , HOST_NAME_MAX + 1
+                         , HOST_NAME_MAX_WITH_NUL
                          , 0
                          , GASPI_BLOCK
                          );
         FAIL_ON_NON_ZERO (gaspi_wait, 0, GASPI_BLOCK);
 
         m_rank_to_hostname[r] =
-          std::string (static_cast<const char *>(m_dma) + HOST_NAME_MAX + 1);
+          std::string (static_cast<const char *>(m_dma) + HOST_NAME_MAX_WITH_NUL);
       }
 
-      memset (m_dma, 0, 2 * (HOST_NAME_MAX + 1));
+      memset (m_dma, 0, 2 * (HOST_NAME_MAX_WITH_NUL));
     }
 
     gaspi_t::~gaspi_t()
