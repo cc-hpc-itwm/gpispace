@@ -14,9 +14,7 @@ class job_requirements_t
 {
 public:
   job_requirements_t() = delete;
-  job_requirements_t (std::function<double (std::string const&)> transfer_cost)
-    : _transfer_cost (transfer_cost)
-  {}
+
   job_requirements_t ( const requirement_list_t& r_list
                      , const we::type::schedule_data& schedule_data
                      , std::function<double (std::string const&)> transfer_cost

@@ -262,7 +262,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
                     , e.description()
                     , hasWorkflowEngine()
                     , e.from()
-                    , job_requirements_t (null_transfer_cost)
+                    , {{}, we::type::schedule_data(), null_transfer_cost}
                     )
              );
 

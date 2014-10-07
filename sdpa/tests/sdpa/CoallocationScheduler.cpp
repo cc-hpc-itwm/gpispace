@@ -88,7 +88,7 @@ namespace
 
   job_requirements_t require(const std::function<double (std::string const&)> transfer_cost)
   {
-    return job_requirements_t (transfer_cost);
+    return {{}, we::type::schedule_data(), transfer_cost};
   }
 
   job_requirements_t no_requirements()
