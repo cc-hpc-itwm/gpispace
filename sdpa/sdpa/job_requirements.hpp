@@ -25,7 +25,7 @@ public:
   {}
 
   unsigned long numWorkers() const {return _scheduleData.num_worker().get_value_or(1);}
-  const requirement_list_t& getReqList() const { return _requirementList; }
+  const requirement_list_t& getReqList() const {return _requirementList;}
   const std::function<double (std::string const&)> transfer_cost() const {return _transfer_cost;}
 private:
   requirement_list_t _requirementList;
