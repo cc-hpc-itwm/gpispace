@@ -157,11 +157,6 @@ namespace gpi
           char saved_fill = os.fill (' ');
           std::size_t saved_width = os.width (0);
 
-          if (gpi::flag::is_set (d.flags, F_ATTACHED))
-          {
-            os << "+";
-          }
-          else
           {
             os << " ";
           }

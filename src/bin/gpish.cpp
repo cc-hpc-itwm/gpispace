@@ -1328,11 +1328,9 @@ int cmd_segment_list (shell_t::argv_t const & av, shell_t & sh)
         mode = 0;
       else if (av[1] == "shared")
         mode = 2;
-      else if (av[1] == "attached")
-        mode = 3;
       else
       {
-        std::cerr << "usage: list [all(*) | shared | attached]" << std::endl;
+        std::cerr << "usage: list [all(*) | shared]" << std::endl;
         return 1;
       }
     }
@@ -1352,12 +1350,6 @@ int cmd_segment_list (shell_t::argv_t const & av, shell_t & sh)
         break;
       case 2:
         std::cout << desc << std::endl;
-        break;
-      case 3:
-        if (gpi::flag::is_set (desc.flags, gpi::pc::F_ATTACHED))
-        {
-          std::cout << desc << std::endl;
-        }
         break;
       }
     }
