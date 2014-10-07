@@ -511,6 +511,50 @@ namespace gpi
         return 0;
       }
 
+      namespace
+      {
+        std::pair<std::size_t, std::size_t>
+        intersect_intervals ( std::pair<std::size_t, std::size_t> const& a
+                            , std::pair<std::size_t, std::size_t> const& b
+                            )
+        {
+          const std::pair<std::size_t, std::size_t>&  left ((a.first <= b.first) ? a : b);
+          const std::pair<std::size_t, std::size_t>& right ((a.first <= b.first) ? b : a);
+
+          if (right.first < left.second)
+          {
+            return std::pair<std::size_t, std::size_t>
+            { right.first
+                , std::min (right.second, left.second)
+                };
+          }
+          else
+          {
+            return std::pair<std::size_t, std::size_t> {0,0};
+          }
+        }
+      }
+
+      double gpi_area_t::get_transfer_costs ( const gpi::pc::type::memory_region_t& transfer
+                                            , const gpi::rank_t rank
+                                            ) const
+      {
+        const gpi::pc::type::handle::descriptor_t allocation
+          (descriptor (transfer.location.handle));
+
+        std::pair<std::size_t, std::size_t> const local_part
+          (intersect_intervals ( { transfer.location.offset
+                                 , transfer.location.offset + transfer.size
+                                 }
+                               , {     rank * allocation.local_size
+                                 , (rank+1) * allocation.local_size
+                                 }
+                               )
+          );
+
+        return transfer.size - (local_part.second - local_part.first);
+      }
+
       area_ptr_t gpi_area_t::create
         ( std::string const &url_s
         , gpi::pc::global::itopology_t & topology
