@@ -73,6 +73,9 @@ namespace gpi
         std::function<double (std::string const&)>
         transfer_costs (std::list<std::pair<we::local::range, we::global::range>> const&);
 
+        std::map<std::string, double>
+        transfer_costs (std::list<gpi::pc::type::memory_region_t> const&);
+
         void * ptr(const gpi::pc::type::handle_t h);
 
         gpi::pc::type::size_t
