@@ -546,8 +546,8 @@ namespace gpi
           (intersect_intervals ( { transfer.location.offset
                                  , transfer.location.offset + transfer.size
                                  }
-                               , {     rank * allocation.local_size
-                                 , (rank+1) * allocation.local_size
+                               , { (rank + 0) * allocation.local_size
+                                 , (rank + 1) * allocation.local_size
                                  }
                                )
           );
