@@ -8,6 +8,7 @@
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 #include <sys/un.h>
 
@@ -244,19 +245,18 @@ namespace gpi
       std::function<double (std::string const&)>
       api_t::transfer_costs (std::list<std::pair<we::local::range, we::global::range>> const& transfers)
       {
-        std::list<gpi::pc::type::memory_region_t> transfer_list;
-        for (std::pair<we::local::range, we::global::range> const& transfer_pair : transfers)
+        std::list<gpi::pc::type::memory_region_t> regions;
+        for (we::global::range const& range : transfers | boost::adaptors::map_values)
         {
-          we::global::range const& transfer (transfer_pair.second);
-          transfer_list.emplace_back
-            ( gpi::pc::type::memory_location_t ( we_global_range_handle_name_to_handle (transfer.handle())
-                                               , transfer.offset()
+          regions.emplace_back
+            ( gpi::pc::type::memory_location_t ( we_global_range_handle_name_to_handle (range.handle())
+                                               , range.offset()
                                                )
-            , transfer.size()
+            , range.size()
             );
         }
 
-        const std::map<std::string, double> costs (transfer_costs (transfer_list));
+        const std::map<std::string, double> costs (transfer_costs (regions));
         return [costs] (std::string const& host) -> double
         {
           return costs.at (host);
