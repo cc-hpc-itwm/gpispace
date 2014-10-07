@@ -112,7 +112,7 @@ namespace gpi
                          , m_replacement_gpi_segment
                          , HOST_NAME_MAX + 1
                          , r
-                         , m_replacement_gpi_segment // hopefully the same???
+                         , m_replacement_gpi_segment
                          , 0
                          , HOST_NAME_MAX + 1
                          , 0
