@@ -125,8 +125,6 @@ namespace gpi
         m_rank_to_hostname[r] =
           std::string (static_cast<const char *>(m_dma) + HOST_NAME_MAX_WITH_NUL);
       }
-
-      memset (m_dma, 0, 2 * (HOST_NAME_MAX_WITH_NUL));
     }
 
     gaspi_t::~gaspi_t()
