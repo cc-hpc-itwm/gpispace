@@ -93,8 +93,7 @@ namespace gpi
                        , &m_dma
                        );
 
-      const std::string my_hostname (fhg::util::hostname());
-      memcpy (m_dma, my_hostname.c_str(), my_hostname.size() + 1);
+      memcpy (m_dma, fhg::util::hostname().c_str(), fhg::util::hostname().size() + 1);
 
       FAIL_ON_NON_ZERO (gaspi_barrier, GASPI_GROUP_ALL, GASPI_BLOCK);
 
