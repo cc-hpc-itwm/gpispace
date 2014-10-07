@@ -43,8 +43,6 @@ namespace gpi
       , m_dma (nullptr)
       , m_replacement_gpi_segment (0)
     {
-      constexpr const std::size_t HOST_NAME_MAX_WITH_NUL {HOST_NAME_MAX + 1};
-
       gaspi_config_t config;
       FAIL_ON_NON_ZERO (gaspi_config_get, &config);
       config.sn_port = port;
@@ -59,15 +57,6 @@ namespace gpi
         throw gpi::exception::gpi_error
           ( gpi::error::startup_failed()
           , "not enough memory"
-          );
-      }
-      else if (m_mem_size < 2 * (HOST_NAME_MAX_WITH_NUL))
-      {
-        throw gpi::exception::gpi_error
-          ( gpi::error::startup_failed()
-          , "not enough memory to store two hostnames: required are "
-          + std::to_string (2 * (HOST_NAME_MAX_WITH_NUL))
-          + " bytes"
           );
       }
       else if (sys::get_avail_memory_size() < m_mem_size)
@@ -93,7 +82,24 @@ namespace gpi
                        , &m_dma
                        );
 
-      memcpy (m_dma, fhg::util::hostname().c_str(), fhg::util::hostname().size() + 1);
+      constexpr const std::size_t HOST_NAME_MAX_WITH_NUL {HOST_NAME_MAX + 1};
+
+      const gaspi_segment_id_t exchange_hostname_segment { 1 };
+
+      FAIL_ON_NON_ZERO ( gaspi_segment_create
+                       , exchange_hostname_segment
+                       , 2 * HOST_NAME_MAX_WITH_NUL
+                       , GASPI_GROUP_ALL
+                       , GASPI_BLOCK
+                       , GASPI_MEM_UNINITIALIZED
+                       );
+      void *exchange_hostname_data;
+      FAIL_ON_NON_ZERO ( gaspi_segment_ptr
+                       , exchange_hostname_segment
+                       , &exchange_hostname_data
+                       );
+
+      memcpy (exchange_hostname_data, fhg::util::hostname().c_str(), fhg::util::hostname().size() + 1);
 
       FAIL_ON_NON_ZERO (gaspi_barrier, GASPI_GROUP_ALL, GASPI_BLOCK);
 
@@ -104,16 +110,16 @@ namespace gpi
           ; ++r
           )
       {
-        memset ( static_cast<char*> (m_dma) + HOST_NAME_MAX_WITH_NUL
+        memset ( static_cast<char*> (exchange_hostname_data) + HOST_NAME_MAX_WITH_NUL
                , 0
                , HOST_NAME_MAX_WITH_NUL
                );
 
         FAIL_ON_NON_ZERO ( gaspi_read
-                         , m_replacement_gpi_segment
+                         , exchange_hostname_segment
                          , HOST_NAME_MAX_WITH_NUL
                          , r
-                         , m_replacement_gpi_segment
+                         , exchange_hostname_segment
                          , 0
                          , HOST_NAME_MAX_WITH_NUL
                          , 0
@@ -122,8 +128,11 @@ namespace gpi
         FAIL_ON_NON_ZERO (gaspi_wait, 0, GASPI_BLOCK);
 
         m_rank_to_hostname[r] =
-          std::string (static_cast<const char *>(m_dma) + HOST_NAME_MAX_WITH_NUL);
+          static_cast<const char*> (exchange_hostname_data) + HOST_NAME_MAX_WITH_NUL;
       }
+
+      FAIL_ON_NON_ZERO (gaspi_barrier, GASPI_GROUP_ALL, GASPI_BLOCK);
+      FAIL_ON_NON_ZERO (gaspi_segment_delete, exchange_hostname_segment);
     }
 
     gaspi_t::~gaspi_t()
