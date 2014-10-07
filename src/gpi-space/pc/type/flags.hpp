@@ -17,7 +17,6 @@ namespace gpi
       , F_SPECIAL      = 0x020 // special segment (used internally to identify local/global segments)
       , F_ATTACHED     = 0x040 // special flag indicating if the process container is attached
       , F_NOMMAP       = 0x080 // do not mmap, rather use seek/read/write if possible
-      , F_OWNER        = 0x100 // are we the owner?
       };
   }
 }
