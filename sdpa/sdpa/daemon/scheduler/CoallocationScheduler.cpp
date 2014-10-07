@@ -87,6 +87,9 @@ namespace sdpa
       using base_priority_queue_t::top;
       using base_priority_queue_t::size;
 
+      container_type::const_iterator begin() {return c.begin();}
+      container_type::const_iterator end() {return c.end();}
+
       private:
         size_t capacity_;
       };
@@ -114,8 +117,8 @@ namespace sdpa
         bpq.push (std::make_tuple (cost, it->first, worker_info.worker_id()));
       }
 
-      std::transform ( &(bpq.top())
-                     , &(bpq.top()) + bpq.size()
+      std::transform ( bpq.begin()
+                     , bpq.end()
                      , std::inserter (assigned_workers, assigned_workers.begin())
                      , [] (const cost_deg_wid_t& cost_deg_wid) -> worker_id_t
                        {
