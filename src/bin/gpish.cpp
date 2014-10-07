@@ -553,6 +553,7 @@ static int cmd_memory (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_memory_alloc (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_memory_free (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_memory_copy (shell_t::argv_t const & av, shell_t & sh);
+static int cmd_memory_transfer_costs (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_memory_wait (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_memory_list (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_memory_add (shell_t::argv_t const & av, shell_t & sh);
@@ -755,12 +756,14 @@ void initialize_shell (int, char *av[])
   sh.add_command("memory-list", &cmd_memory_list, "list allocations");
   sh.add_command("memory-add", &cmd_memory_add, "add memory segment");
   sh.add_command("memory-del", &cmd_memory_del, "delete memory segment");
+  sh.add_command("memory-costs", &cmd_memory_transfer_costs, "get transfer costs");
 
   // TODO alias definitions
   sh.add_command("alloc", &cmd_memory_alloc, "allocate memory");
   sh.add_command("free", &cmd_memory_free, "free memory");
   sh.add_command("memcpy", &cmd_memory_copy, "copy memory");
   sh.add_command("wait", &cmd_memory_wait, "wait for copy completion");
+  sh.add_command("costs", &cmd_memory_transfer_costs, "get transfer costs");
 
   sh.add_command("list", &cmd_list, "list segments and allocations");
   sh.add_command("ls", &cmd_list, "list segments and allocations");
@@ -1483,6 +1486,7 @@ int cmd_memory (shell_t::argv_t const & av, shell_t & sh)
     std::cout << "    list" << std::endl;
     std::cout << "    add" << std::endl;
     std::cout << "    del" << std::endl;
+    std::cout << "  costs" << std::endl;
     return 0;
   }
   else
@@ -1636,6 +1640,35 @@ int cmd_memory_copy (shell_t::argv_t const & av, shell_t & sh)
   }
 
   return (int)(sh.state().capi.memcpy (dst, src, amt, queue));
+}
+
+int cmd_memory_transfer_costs (const shell_t::argv_t& av, shell_t& sh)
+{
+  if (av.size() < 3)
+  {
+    std::cerr << "usage: costs handle[+offset] bytes..." << std::endl;
+    std::cerr << "      handle : a handle for an allocation " << std::endl;
+    std::cerr << "       bytes : how many bytes to transfer" << std::endl;
+    return 1;
+  }
+
+  std::list<gpi::pc::type::memory_region_t> transfers;
+  for (std::size_t i = 1 ; i < av.size(); i += 2)
+  {
+    transfers.emplace_back
+      ( boost::lexical_cast<gpi::pc::type::memory_location_t> (av[i])
+      , boost::lexical_cast<gpi::pc::type::size_t> (av[i + 1])
+      );
+  }
+  std::map<std::string, double> const costs
+    (sh.state().capi.transfer_costs (transfers));
+
+  for (std::pair<std::string, double> const& cost : costs)
+  {
+    std::cout << cost.first << " := " << cost.second << std::endl;
+  }
+
+  return 0;
 }
 
 int cmd_memory_wait (shell_t::argv_t const & av, shell_t & sh)
