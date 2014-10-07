@@ -101,58 +101,12 @@ function rexec ()
     fi
 }
 
-function initialize ()
-{
-    local node_file=
-    local hostfile="${1}"; shift
-
-    if [ -z "$hostfile" ] ; then
-        log "E: hostfile not set"
-        log "usage: init: [-h] [-F hostfile] [-s state-dir]"
-        return 1
-    fi
-
-    if [ ! -r "$hostfile" ] ; then
-        log "E: cannot read hostfile: $hostfile"
-        return 1
-    fi
-
-    if ! grep -q -e "^$(hostname -f)$" "${hostfile}" ; then
-        if ! grep -q -e "^$(hostname -s)$" "${hostfile}" ; then
-            log "E: could not find current host '$(hostname)' in hostfile: $hostfile"
-            return 1
-        fi
-    fi
-
-    if [ ! -d "$state_dir" ] ; then
-        local msg=$( mkdir -p "$state_dir" 2>&1 )
-        if [ $? -ne 0 ] ; then
-            echo "E: failed to create state-dir: $state_dir: $msg" >&2
-            return 1
-        fi
-    fi
-
-    mkdir -p "$state_dir/log" || {
-        echo >&2 "E: could not create log directory!"
-        return 1
-    }
-
-    node_file="${state_dir}/nodefile"
-
-    if ! cp "$hostfile" "$node_file" ; then
-        log "E: could not copy nodefile from '$hostfile' to '$node_file'"
-        return 1
-    fi
-}
-
 function help ()
 {
     cat >&2 <<EOF
 usage: `basename $0` command [parameters...]
 
    available commands:
-        init        - initialize environment file
-                      execute this in a a fresh allocation
      selftest       - perform a self-test
 
   start [component] - start all components or "component"
@@ -294,10 +248,6 @@ function status_agent ()
 
 function start_kvs ()
 {
-    if ! on_master_node ; then
-        log "E: kvs must be started on the master node"
-        exit 1
-    fi
     if ! start_proc "fhgkvsd" "$SDPA_HOME/bin/fhgkvsd" --bind "0" --port '*' "--pidfile" "$state_dir/fhgkvsd.pid" "--daemonize" > "${state_dir}/kvs.port"; then
         log "E: could not start kvs, giving up!"
         return 1
@@ -690,23 +640,6 @@ function submit ()
     fi
 }
 
-function on_valid_host ()
-{
-    local host="$(hostname -s)"
-    if test -r "$state_dir/nodefile" ; then
-        if grep -q -e "^$host" "$state_dir/nodefile" ; then
-            return 0
-        else
-            #log "W: your hostname ($host) does not match any in $state_dir/nodefile"
-            return 1
-        fi
-    else
-        log "E: no nodefile present"
-        return 2
-    fi
-    return 1
-}
-
 function get_master_node()
 {
     if test -r "$state_dir/nodefile" ; then
@@ -714,22 +647,6 @@ function get_master_node()
     else
         return 1
     fi
-}
-
-function on_master_node ()
-{
-    if test -r "$state_dir/nodefile" ; then
-        local master=$( head -n 1 "$state_dir/nodefile" )
-        if [ "$master" = "$(hostname -s)" ] ; then
-            return 0
-        fi
-        if [ "$master" = "$(hostname -f)" ] ; then
-            return 0
-        fi
-    else
-        log "E: no nodefile present"
-    fi
-    return 1
 }
 
 ##########################################################
@@ -769,16 +686,6 @@ then
   kvs_port=$(cat "${state_dir}/kvs.port")
 fi
 
-if [ "$1" = "init" ] ; then
-    shift
-    if ! initialize $@; then
-        log "E: could not initialize!"
-        exit 1
-    else
-        exit 0
-    fi
-fi
-
 if [ "$1" = "gui" ] ; then
     shift
     start_gui $@
@@ -791,42 +698,20 @@ function sigterm()
 }
 trap sigterm TERM
 
-function require_state ()
-{
-    if ! on_valid_host ; then
-#    log "W: you are executing 'sdpa' on an invalid host!"
-#    log "W: this might not be what you want"
-#    log "I: please run 'sdpa init' on the master node first!"
-        :
-    fi
-}
-
 case "$1" in
     start)
-        require_state
         shift
         start $@
         ;;
     stop)
-        require_state
-        if ! on_master_node ; then
-            log "E: not on master node"
-            exit 1
-        fi
         shift
         stop $@
         ;;
     status)
-        require_state
-        if ! on_master_node ; then
-            log "E: not on master node"
-            exit 1
-        fi
         shift
         status $@
         ;;
     submit)
-        require_state
         shift
         submit $@
         ;;

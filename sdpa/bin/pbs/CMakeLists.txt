@@ -3,8 +3,6 @@ set (prgs
 )
 
 set (scripts
-  start-orch
-  start-agent
   start-drts
   start-sdpa
   stop-drts
