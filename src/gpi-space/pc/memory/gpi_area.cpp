@@ -524,13 +524,13 @@ namespace gpi
           if (right.first < left.second)
           {
             return std::pair<std::size_t, std::size_t>
-            { right.first
-                , std::min (right.second, left.second)
-                };
+              { right.first
+              , std::min (right.second, left.second)
+              };
           }
           else
           {
-            return std::pair<std::size_t, std::size_t> {0,0};
+            return std::pair<std::size_t, std::size_t> {0, 0};
           }
         }
       }
