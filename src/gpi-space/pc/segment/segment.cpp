@@ -10,7 +10,6 @@
 #include <string.h>
 
 #include <fhglog/LogMacros.hpp>
-#include <fhg/assert.hpp>
 #include <fhg/syscall.hpp>
 
 #include <gpi-space/pc/type/flags.hpp>
@@ -44,17 +43,8 @@ namespace gpi
         m_descriptor.id = id;
       }
 
-      bool segment_t::is_special () const
-      {
-        return gpi::flag::is_set( m_descriptor.flags
-                                , gpi::pc::F_SPECIAL
-                                );
-      }
-
       void segment_t::create (const mode_t mode)
       {
-        fhg_assert (! is_special ());
-
         int fd (-1);
 
         try
@@ -105,8 +95,6 @@ namespace gpi
 
       void segment_t::open ()
       {
-        fhg_assert (! is_special ());
-
         int fd (-1);
 
         try
@@ -141,9 +129,6 @@ namespace gpi
 
       void segment_t::close ()
       {
-        if (is_special())
-          return;
-
         if (m_ptr)
         {
           fhg::syscall::munmap (m_ptr, size());
@@ -153,7 +138,6 @@ namespace gpi
 
       void segment_t::unlink ()
       {
-        fhg_assert (! is_special ());
         fhg::syscall::shm_unlink(name().c_str());
       }
 
