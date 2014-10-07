@@ -3,6 +3,8 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
+#include <fhg/util/boost/test/printer/set.hpp>
+#include <fhg/util/boost/test.hpp>
 #include <fhg/util/random_string.hpp>
 
 #include <iostream>
@@ -410,7 +412,7 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_different_matching_degs_diff
     );
 
 
-  BOOST_REQUIRE (set_assigned_workers == set_expected_assignment);
+  BOOST_REQUIRE_EQUAL (set_assigned_workers, set_expected_assignment);
 }
 
 BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_different_matching_degs_equal_costs)
