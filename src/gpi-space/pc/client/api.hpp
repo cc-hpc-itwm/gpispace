@@ -27,22 +27,6 @@ namespace gpi
   {
     namespace client
     {
-      struct transfer_t
-      {
-        transfer_t ( gpi::pc::type::memory_location_t const& src
-                   , gpi::pc::type::memory_location_t const& dst
-                   , std::size_t amount
-                   )
-          : src (src)
-          , dst (dst)
-          , amount (amount)
-        {}
-
-        const gpi::pc::type::memory_location_t src;
-        const gpi::pc::type::memory_location_t dst;
-        const std::size_t amount;
-      };
-
       class api_t : public boost::noncopyable
       {
       public:
