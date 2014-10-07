@@ -428,7 +428,7 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_different_matching_degs_equa
 
   // find an allocation minimizing the transfer costs for 5 workers
   const size_t n_req_workers (5);
-  const int min_total_cost (5);
+  const double min_total_cost (5.0);
 
   // assume that we have 20 workers, i.e. 4 workers per host
   // first 4 on "node_0", the next 4 on the "node_1" and so on
@@ -476,8 +476,8 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_different_matching_degs_equa
   BOOST_REQUIRE_EQUAL ( min_total_cost
                       , std::accumulate ( set_assigned_workers.begin()
                                         , set_assigned_workers.end()
-                                        , 0
-                                        , [&map_worker_cost] (const int total, const sdpa::worker_id_t wid)
+                                        , 0.0
+                                        , [&map_worker_cost] (const double total, const sdpa::worker_id_t wid)
                                           {return total + map_worker_cost.at (wid);}
                                         )
                       );
@@ -496,7 +496,7 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_differen
 
   // find an allocation minimizing the transfer costs for 5 workers
   const size_t n_req_workers (5);
-  const int min_total_cost (6);
+  const double min_total_cost (6.0);
 
   // assume that we have 20 workers, i.e. 4 workers per host
   // first 4 on "node_0", the next 4 on the "node_1" and so on
@@ -544,8 +544,8 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_differen
   BOOST_REQUIRE_EQUAL ( min_total_cost
                       , std::accumulate ( set_assigned_workers.begin()
                                         , set_assigned_workers.end()
-                                        , 0
-                                        , [&map_worker_cost] (const int total, const sdpa::worker_id_t wid)
+                                        , 0.0
+                                        , [&map_worker_cost] (const double total, const sdpa::worker_id_t wid)
                                           {return total + map_worker_cost.at (wid);}
                                         )
                       );
@@ -565,7 +565,7 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_equal_co
 
   // find an allocation minimizing the transfer costs for 5 workers
   const size_t n_req_workers (5);
-  const int min_total_cost (5);
+  const double min_total_cost (5.0);
 
   // assume that we have 20 workers, i.e. 4 workers per host
   // first 4 on "node_0", the next 4 on the "node_1" and so on
@@ -612,8 +612,8 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_equal_co
   BOOST_REQUIRE_EQUAL ( min_total_cost
                       , std::accumulate ( set_assigned_workers.begin()
                                         , set_assigned_workers.end()
-                                        , 0
-                                        , [&map_worker_cost] (const int total, const sdpa::worker_id_t wid)
+                                        , 0.0
+                                        , [&map_worker_cost] (const double total, const sdpa::worker_id_t wid)
                                           {return total + map_worker_cost.at (wid);}
                                         )
                       );
