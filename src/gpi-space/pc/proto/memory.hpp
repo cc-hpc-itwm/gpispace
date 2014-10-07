@@ -1,6 +1,8 @@
 #ifndef GPI_SPACE_PC_PROTO_MEMORY_HPP
 #define GPI_SPACE_PC_PROTO_MEMORY_HPP 1
 
+#include <list>
+#include <map>
 #include <ostream>
 
 #include <boost/variant.hpp>
@@ -11,6 +13,8 @@
 
 // serialization
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/map.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/variant.hpp>
 
@@ -175,6 +179,30 @@ namespace gpi
           }
         };
 
+        struct get_transfer_costs_t
+        {
+          std::list<gpi::pc::type::memory_region_t> transfers;
+        private:
+          friend class boost::serialization::access;
+          template<typename Archive>
+          void serialize (Archive & ar, const unsigned int /*version*/)
+          {
+            ar & BOOST_SERIALIZATION_NVP (transfers);
+          }
+        };
+
+        struct transfer_costs_t
+        {
+          std::map<std::string, double> costs;
+        private:
+          friend class boost::serialization::access;
+          template<typename Archive>
+          void serialize (Archive & ar, const unsigned int /*version*/)
+          {
+            ar & BOOST_SERIALIZATION_NVP (costs);
+          }
+        };
+
         typedef boost::variant<
           memory::alloc_t
           , memory::alloc_reply_t
@@ -187,6 +215,8 @@ namespace gpi
           , memory::wait_reply_t
           , memory::info_t
           , memory::info_reply_t
+          , memory::get_transfer_costs_t
+          , memory::transfer_costs_t
           > message_t;
       }
     }
