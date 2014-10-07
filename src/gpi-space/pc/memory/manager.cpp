@@ -398,7 +398,7 @@ namespace gpi
       {
         std::map<std::string, double> costs;
 
-        for (gpi::pc::type::memory_region_t const &transfer : transfers)
+        for (gpi::pc::type::memory_region_t const& transfer : transfers)
         {
           const area_ptr area (get_area_by_handle (transfer.location.handle));
 
