@@ -37,7 +37,7 @@ namespace sdpa {
     {}
 
     const worker_id_t& worker_id() const {return worker_id_;}
-    const worker_id_t& worker_host() const {return worker_host_;}
+    const std::string& worker_host() const {return worker_host_;}
 
   private:
     worker_id_t worker_id_;
