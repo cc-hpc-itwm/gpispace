@@ -44,20 +44,15 @@ namespace sdpa
     {
       typedef std::tuple<double, int, worker_id_t> cost_deg_wid_t;
 
-      bool operator< (cost_deg_wid_t const& lhs, cost_deg_wid_t const& rhs)
-      {
-        return (  std::get<0>(lhs) < std::get<0>(rhs)
-               || (  std::get<0>(lhs) == std::get<0>(rhs)
-                  && std::get<1>(lhs) > std::get<1>(rhs)
-                  )
-               );
-      };
-
       struct min_cost_max_deg_comp
       {
         bool operator() (const cost_deg_wid_t& lhs, const cost_deg_wid_t& rhs) const
         {
-          return (lhs<rhs);
+          return (  std::get<0>(lhs) < std::get<0>(rhs)
+                 || (  std::get<0>(lhs) == std::get<0>(rhs)
+                    && std::get<1>(lhs) > std::get<1>(rhs)
+                    )
+                 );
         }
       };
 
@@ -81,7 +76,7 @@ namespace sdpa
           return;
         }
 
-        if (next_tuple < top())
+        if (comp (next_tuple, top()))
         {
           pop();
           base_priority_queue_t::push (next_tuple);
