@@ -238,7 +238,7 @@ namespace gpi
         gpi::pc::type::handle_id_t
         we_global_range_handle_name_to_handle (we::global::handle const& handle)
         {
-          return boost::lexical_cast<gpi::pc::type::handle_id_t> (handle.name());
+          return std::stoul (handle.name(), nullptr, 16);
         }
       }
 
