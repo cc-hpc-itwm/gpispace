@@ -359,6 +359,20 @@ BOOST_FIXTURE_TEST_CASE ( multiple_worker_job_submissions_with_requirements_no_c
   _scheduler.assignJobsToWorkers();
 }
 
+namespace
+{
+  double max_value (const std::map<std::string, double>& map_cost)
+  {
+    return std::max_element ( map_cost.begin()
+                            , map_cost.end()
+                            , [] ( const std::pair<std::string, double>& lhs
+                                 , const std::pair<std::string, double>& rhs
+                                 )
+                                 {return lhs.second < rhs.second;}
+                            )->second;
+  }
+}
+
 BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_different_matching_degs_different_costs)
 {
   // assume we have 5 nodes and the transfer cost for each is its rank
@@ -406,9 +420,15 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_different_matching_degs_diff
     , "worker_08"
     };
 
+  const double max_cost (max_value (map_host_transfer_cost));
+
+  const std::function<double (std::string const&)>
+    transfer_cost = [&map_host_transfer_cost, &max_cost](const std::string& host_id)
+      {return map_host_transfer_cost.count (host_id) ? map_host_transfer_cost.at (host_id) : max_cost + 1;};
+
   const std::set<sdpa::worker_id_t> set_assigned_workers
     (sdpa::daemon::CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
-       (mmap_match_deg_worker, n_req_workers, map_host_transfer_cost)
+      (mmap_match_deg_worker, n_req_workers, transfer_cost)
     );
 
 
@@ -455,9 +475,15 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_different_matching_degs_equa
     , { 1, {"worker_01", "node_1"}}
     };
 
+  const double max_cost (max_value (map_host_transfer_cost));
+
+  const std::function<double (std::string const&)>
+    transfer_cost = [&map_host_transfer_cost, &max_cost](const std::string& host_id)
+      {return map_host_transfer_cost.count (host_id) ? map_host_transfer_cost.at (host_id) : max_cost + 1;};
+
   const std::set<sdpa::worker_id_t> set_assigned_workers
     (sdpa::daemon::CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
-      (mmap_match_deg_worker, n_req_workers, map_host_transfer_cost)
+      (mmap_match_deg_worker, n_req_workers, transfer_cost)
     );
 
   BOOST_REQUIRE_EQUAL (set_assigned_workers.size(), n_req_workers);
@@ -523,9 +549,15 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_differen
     , {1, {"worker_01", "node_1"}}
     };
 
+  const double max_cost (max_value (map_host_transfer_cost));
+
+  const std::function<double (std::string const&)>
+    transfer_cost = [&map_host_transfer_cost, &max_cost](const std::string& host_id)
+      {return map_host_transfer_cost.count (host_id) ? map_host_transfer_cost.at (host_id) : max_cost + 1;};
+
   const std::set<sdpa::worker_id_t> set_assigned_workers
     (sdpa::daemon::CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
-      (mmap_match_deg_worker, n_req_workers, map_host_transfer_cost)
+      (mmap_match_deg_worker, n_req_workers, transfer_cost)
     );
 
   BOOST_REQUIRE_EQUAL (set_assigned_workers.size(), n_req_workers);
@@ -550,7 +582,6 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_differen
                                         )
                       );
 }
-
 
 BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_equal_costs)
 {
@@ -592,10 +623,17 @@ BOOST_AUTO_TEST_CASE (scheduling_with_data_locality_equal_matching_degs_equal_co
     , {1, {"worker_01", "node_1"}}
     };
 
+  const double max_cost (max_value (map_host_transfer_cost));
+
+  const std::function<double (std::string const&)>
+    transfer_cost = [&map_host_transfer_cost, &max_cost](const std::string& host_id)
+      {return map_host_transfer_cost.count (host_id) ? map_host_transfer_cost.at (host_id) : max_cost + 1;};
+
   const std::set<sdpa::worker_id_t> set_assigned_workers
     (sdpa::daemon::CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
-      (mmap_match_deg_worker, n_req_workers, map_host_transfer_cost)
+      (mmap_match_deg_worker, n_req_workers, transfer_cost)
     );
+
   BOOST_REQUIRE_EQUAL (set_assigned_workers.size(), n_req_workers);
 
   std::map<sdpa::worker_id_t, double> map_worker_cost;
