@@ -230,23 +230,6 @@ namespace we
       return _place_to_port;
     }
 
-    namespace
-    {
-      typedef boost::any_range
-        < const we::transition_id_type
-        , boost::single_pass_traversal_tag
-        , const we::transition_id_type&
-        , std::ptrdiff_t
-        > transition_id_range_type;
-
-      typedef boost::any_range
-        < const we::place_id_type
-        , boost::single_pass_traversal_tag
-        , const we::place_id_type&
-        , std::ptrdiff_t
-        > place_id_range_type;
-    }
-
     void net_type::put_value ( place_id_type pid
                         , const pnet::type::value::value_type& value
                         )
@@ -293,16 +276,13 @@ namespace we
 
     void net_type::do_update (to_be_updated_type const& to_be_updated)
     {
-      transition_id_range_type consume
-        ( _adj_pt_consume.left.equal_range (std::get<0> (to_be_updated))
-        | boost::adaptors::map_values
-        );
-      transition_id_range_type read
-        ( _adj_pt_read.left.equal_range (std::get<0> (to_be_updated))
-        | boost::adaptors::map_values
-        );
-
-      for (transition_id_type tid : boost::join (consume, read))
+      for ( transition_id_type tid
+          : boost::join
+              ( _adj_pt_consume.left.equal_range (std::get<0> (to_be_updated))
+              , _adj_pt_read.left.equal_range (std::get<0> (to_be_updated))
+              )
+          | boost::adaptors::map_values
+          )
       {
         update_enabled_put_token (tid, to_be_updated);
       }
@@ -334,12 +314,13 @@ namespace we
     {
       cross_type cross;
 
-      place_id_range_type consume
-        (_adj_pt_consume.right.equal_range (tid) | boost::adaptors::map_values);
-      place_id_range_type read
-        (_adj_pt_read.right.equal_range (tid) | boost::adaptors::map_values);
-
-      for (place_id_type place_id : boost::join (consume, read))
+      for ( place_id_type place_id
+          : boost::join
+              ( _adj_pt_consume.right.equal_range (tid)
+              , _adj_pt_read.right.equal_range (tid)
+              )
+          | boost::adaptors::map_values
+          )
       {
         std::list<pnet::type::value::value_type>&
           tokens (_token_by_place_id[place_id]);
@@ -382,12 +363,13 @@ namespace we
 
       cross_type cross;
 
-      place_id_range_type consume
-        (_adj_pt_consume.right.equal_range (tid) | boost::adaptors::map_values);
-      place_id_range_type read
-        (_adj_pt_read.right.equal_range (tid) | boost::adaptors::map_values);
-
-      for (place_id_type place_id : boost::join (consume, read))
+      for ( place_id_type place_id
+          : boost::join
+              ( _adj_pt_consume.right.equal_range (tid)
+              , _adj_pt_read.right.equal_range (tid)
+              )
+          | boost::adaptors::map_values
+          )
       {
         if (place_id == std::get<0> (to_be_updated))
         {
@@ -490,16 +472,13 @@ namespace we
           : tokens_to_be_deleted
           )
       {
-        transition_id_range_type consume
-          ( _adj_pt_consume.left.equal_range (token_to_be_deleted.first)
-          | boost::adaptors::map_values
-          );
-        transition_id_range_type read
-          ( _adj_pt_read.left.equal_range (token_to_be_deleted.first)
-          | boost::adaptors::map_values
-          );
-
-        for (transition_id_type t : boost::join (consume, read))
+        for ( transition_id_type t
+            : boost::join
+                ( _adj_pt_consume.left.equal_range (token_to_be_deleted.first)
+                , _adj_pt_read.left.equal_range (token_to_be_deleted.first)
+                )
+            | boost::adaptors::map_values
+            )
         {
           update_enabled (t);
         }
