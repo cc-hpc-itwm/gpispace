@@ -628,6 +628,7 @@ function start_agent
         --daemonize \
         --kvs-host="${kvs_host}" \
         --kvs-port="${kvs_port}" \
+        $(if $gpi_enabled ; then echo --vmem-socket="${gpi_socket}" ; fi) \
         -u '0' \
         -a "${gui_host}:${gui_port}" \
         -m "${parent}" \
