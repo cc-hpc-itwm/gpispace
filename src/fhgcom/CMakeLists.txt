@@ -9,7 +9,6 @@ set (srcs
 
   tcp_server.cpp
   tcp_client.cpp
-  io_service_pool.cpp
 
   header.cpp
 )

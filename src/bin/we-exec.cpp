@@ -6,7 +6,6 @@
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/split.hpp>
 
-#include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/kvs/kvsd.hpp>
 #include <fhgcom/tcp_server.hpp>
 
@@ -16,6 +15,7 @@
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 
+#include <boost/asio/io_service.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/program_options.hpp>
@@ -115,16 +115,16 @@ try
   struct kvs_server : boost::noncopyable
   {
     kvs_server (std::string const& host)
-      : _io_service_pool (1)
+      : _io_service()
+      , _io_service_work (_io_service)
       , _kvs_daemon()
-      , _tcp_server
-        (_io_service_pool.get_io_service(), _kvs_daemon, host, "0", true)
-      , _io_thread (&fhg::com::io_service_pool::run, &_io_service_pool)
+      , _tcp_server (_io_service, _kvs_daemon, host, "0", true)
+      , _io_service_thread ([this] { _io_service.run(); })
     {}
     ~kvs_server()
     {
       _tcp_server.stop();
-      _io_service_pool.stop();
+      _io_service.stop();
     }
 
     std::string port() const
@@ -133,10 +133,11 @@ try
     }
 
   private:
-    fhg::com::io_service_pool _io_service_pool;
+    boost::asio::io_service _io_service;
+    boost::asio::io_service::work _io_service_work;
     fhg::com::kvs::server::kvsd _kvs_daemon;
     fhg::com::tcp_server _tcp_server;
-    boost::scoped_thread<boost::join_if_joinable> _io_thread;
+    boost::scoped_thread<boost::join_if_joinable> _io_service_thread;
   } const kvs_server (host);
 
   std::string const kvs_port (kvs_server.port());

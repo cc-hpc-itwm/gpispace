@@ -9,7 +9,6 @@
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
-#include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/kvs/kvsd.hpp>
 #include <fhgcom/tcp_server.hpp>
 
@@ -20,6 +19,7 @@
 #include <plugin/core/kernel.hpp>
 #include <plugin/plugin.hpp>
 
+#include <boost/asio/io_service.hpp>
 #include <boost/ref.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/test/unit_test.hpp>
@@ -165,15 +165,16 @@ namespace utils
   struct kvs_server : boost::noncopyable
   {
     kvs_server()
-      : _io_service_pool (1)
+      : _io_service()
+      , _io_service_work (_io_service)
       , _kvs_daemon()
-      , _tcp_server (_io_service_pool.get_io_service(), _kvs_daemon, "localhost", "0", true)
-      , _io_thread (&fhg::com::io_service_pool::run, &_io_service_pool)
+      , _tcp_server (_io_service, _kvs_daemon, "localhost", "0", true)
+      , _io_service_thread ([this] { _io_service.run(); })
     {}
     ~kvs_server()
     {
       _tcp_server.stop();
-      _io_service_pool.stop();
+      _io_service.stop();
     }
 
     std::string kvs_host() const
@@ -186,10 +187,11 @@ namespace utils
     }
 
   private:
-    fhg::com::io_service_pool _io_service_pool;
+    boost::asio::io_service _io_service;
+    boost::asio::io_service::work _io_service_work;
     fhg::com::kvs::server::kvsd _kvs_daemon;
     fhg::com::tcp_server _tcp_server;
-    boost::scoped_thread<boost::join_if_joinable> _io_thread;
+    boost::scoped_thread<boost::join_if_joinable> _io_service_thread;
   };
 
   struct orchestrator : boost::noncopyable
