@@ -560,10 +560,7 @@ try
     std::list<std::pair<we::local::range, we::global::range>>
       puts_before (activity.transition().module_call()->puts_evaluated_before_call (context));
 
-    std::copy ( puts_before.begin()
-              , puts_before.end()
-              , std::back_inserter (vm_transfers)
-              );
+    vm_transfers.splice (vm_transfers.end(), puts_before);
 
     if (!vm_transfers.empty())
     {
