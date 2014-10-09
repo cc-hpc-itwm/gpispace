@@ -15,7 +15,7 @@ namespace fhg
   {
     tcp_client::tcp_client (boost::asio::io_service& io_service)
       : io_service_ (io_service)
-      ,  socket_(io_service_)
+      , socket_ (io_service_)
       , deadline_(io_service_)
       , auto_reconnect_ (false)
       , max_connection_attempts_(0)
