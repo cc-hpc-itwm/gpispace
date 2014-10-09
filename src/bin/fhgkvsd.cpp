@@ -18,7 +18,8 @@
 
 int main(int ac, char *av[])
 {
-  FHGLOG_SETUP();
+  boost::asio::io_service remote_log_io_service;
+  FHGLOG_SETUP (remote_log_io_service);
 
   fhg::log::Logger::ptr_t logger (fhg::log::Logger::get ("fhgkvsd"));
 

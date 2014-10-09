@@ -18,7 +18,8 @@ namespace
 
 int main (int argc, char *argv[])
 {
-  FHGLOG_SETUP();
+  boost::asio::io_service remote_log_io_service;
+  FHGLOG_SETUP (remote_log_io_service);
 
   boost::program_options::options_description desc ("fhgkvsc options");
 

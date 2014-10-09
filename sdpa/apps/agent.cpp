@@ -46,7 +46,8 @@ int main (int argc, char **argv)
   std::string pidfile;
   boost::optional<bfs::path> vmem_socket;
 
-  FHGLOG_SETUP();
+  boost::asio::io_service remote_log_io_service;
+  FHGLOG_SETUP (remote_log_io_service);
 
   po::options_description desc("Allowed options");
   desc.add_options()
@@ -122,6 +123,7 @@ int main (int argc, char **argv)
     }
   }
 
+  boost::asio::io_service gui_io_service;
   const sdpa::daemon::Agent agent
     ( agentName
     , agentUrl
@@ -129,7 +131,7 @@ int main (int argc, char **argv)
     , vm["kvs-port"].as<std::string>()
     , vmem_socket
     , listMasterInfo
-    , appGuiUrl
+    , std::pair<std::string, boost::asio::io_service&> (appGuiUrl, gui_io_service)
     );
 
   fhg::util::thread::event<> stop_requested;

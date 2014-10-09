@@ -28,7 +28,8 @@ int main (int argc, char **argv)
     std::string orchUrl;
     std::string pidfile;
 
-    FHGLOG_SETUP();
+  boost::asio::io_service remote_log_io_service;
+  FHGLOG_SETUP (remote_log_io_service);
 
     po::options_description desc("Allowed options");
     desc.add_options()

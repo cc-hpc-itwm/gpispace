@@ -26,7 +26,8 @@
 int main (int argc, char **argv)
 try
 {
-  FHGLOG_SETUP();
+  boost::asio::io_service remote_log_io_service;
+  FHGLOG_SETUP (remote_log_io_service);
   fhg::log::Logger::ptr_t logger (fhg::log::Logger::get());
 
   boost::program_options::options_description desc ("options");
@@ -241,9 +242,22 @@ try
             kernel.load_plugin_by_name ("gpi_compat");
           }
 
-          DRTSImpl const plugin (request_stop, config_variables);
-
-          waiter.wait();
+          if (config_variables.count ("plugin.drts.gui_url"))
+          {
+            boost::asio::io_service gui_io_service;
+            DRTSImpl const plugin
+              ( request_stop
+              , std::pair<std::string, boost::asio::io_service&>
+                (config_variables.at ("plugin.drts.gui_url"), gui_io_service)
+              , config_variables
+              );
+            waiter.wait();
+          }
+          else
+          {
+            DRTSImpl const plugin (request_stop, boost::none, config_variables);
+            waiter.wait();
+          }
         }
         )
       );

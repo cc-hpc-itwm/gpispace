@@ -78,7 +78,8 @@ typedef gpi::api::gpi_api_t gpi_api_t;
 static const int EX_USAGE = 2;
 static const int EX_INVAL = 3;
 
-static int configure_logging (const config_t *cfg, const char* logfile);
+static int configure_logging
+  (const config_t *cfg, const char* logfile, boost::asio::io_service&);
 
 namespace
 {
@@ -482,7 +483,8 @@ try
     exit (EX_USAGE);
   }
 
-  if (0 != configure_logging (&config, logfile))
+  boost::asio::io_service remote_log_io_service;
+  if (0 != configure_logging (&config, logfile, remote_log_io_service))
   {
     fprintf (stderr, "could not setup logging");
   }
@@ -564,7 +566,10 @@ catch (std::exception const & ex)
   return EXIT_FAILURE;
 }
 
-static int configure_logging (const config_t *cfg, const char* logfile)
+static int configure_logging ( const config_t *cfg
+                             , const char* logfile
+                             , boost::asio::io_service& remote_log_io_service
+                             )
 {
   char server_url[MAX_HOST_LEN + 32];
 
@@ -607,7 +612,7 @@ static int configure_logging (const config_t *cfg, const char* logfile)
     setenv ("FHGLOG_to_file", logfile, true);
   }
 
-  FHGLOG_SETUP();
+  FHGLOG_SETUP (remote_log_io_service);
 
   return 0;
 }

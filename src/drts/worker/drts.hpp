@@ -67,7 +67,7 @@ public:
   WFEImpl ( fhg::log::Logger::ptr_t
           , boost::optional<std::size_t> target_socket
           , std::string search_path
-          , boost::optional<std::string> gui_url
+          , boost::optional<std::pair<std::string, boost::asio::io_service&>> gui_info
           , std::string worker_name
           );
   ~WFEImpl();
@@ -109,7 +109,11 @@ class DRTSImpl : public sdpa::events::EventHandler
                   > map_of_jobs_t;
   typedef std::map<std::string, sdpa::Capability> map_of_capabilities_t;
 public:
-  DRTSImpl (std::function<void()> request_stop, std::map<std::string, std::string> config_variables);
+  DRTSImpl
+    ( std::function<void()> request_stop
+    , boost::optional<std::pair<std::string, boost::asio::io_service&>> gui_info
+    , std::map<std::string, std::string> config_variables
+    );
   ~DRTSImpl();
 
   virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent *e) override;

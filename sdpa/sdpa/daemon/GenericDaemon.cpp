@@ -89,7 +89,7 @@ GenericDaemon::GenericDaemon( const std::string name
                             , std::string kvs_port
                             , boost::optional<boost::filesystem::path> const& vmem_socket
                             , const master_info_list_t arrMasterInfo
-                            , const boost::optional<std::string>& guiUrl
+                            , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
                             , bool create_wfe
                             )
   : _logger (fhg::log::Logger::get (name))
@@ -114,9 +114,9 @@ GenericDaemon::GenericDaemon( const std::string name
   , mtx_master_()
   , mtx_cpb_()
   , m_capabilities()
-  , m_guiService ( guiUrl && !guiUrl->empty()
+  , m_guiService ( gui_info && !gui_info->first.empty()
                  ? boost::optional<NotificationService>
-                   (NotificationService (*guiUrl))
+                   (NotificationService (gui_info->first, gui_info->second))
                  : boost::none
                  )
   , _max_consecutive_registration_attempts (360)

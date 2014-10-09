@@ -83,7 +83,7 @@ namespace sdpa {
                    , std::string kvs_port
                    , boost::optional<boost::filesystem::path> const& vmem_socket
                    , const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t()
-                   , const boost::optional<std::string>& guiUrl = boost::none
+                   , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info = boost::none
                    , bool create_wfe = false
                    );
       virtual ~GenericDaemon() = default;

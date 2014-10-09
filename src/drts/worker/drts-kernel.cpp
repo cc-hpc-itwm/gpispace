@@ -18,7 +18,8 @@
 
 int main(int ac, char **av)
 {
-  FHGLOG_SETUP();
+  boost::asio::io_service remote_log_io_service;
+  FHGLOG_SETUP (remote_log_io_service);
   fhg::log::Logger::ptr_t logger (fhg::log::Logger::get());
 
   namespace po = boost::program_options;
@@ -125,9 +126,22 @@ int main(int ac, char **av)
   signal_handlers.add (SIGTERM, std::bind (request_stop));
   signal_handlers.add (SIGINT, std::bind (request_stop));
 
-  DRTSImpl const plugin (request_stop, config_variables);
-
-  waiter.wait();
+  if (config_variables.count ("plugin.drts.gui_url"))
+  {
+    boost::asio::io_service gui_io_service;
+    DRTSImpl const plugin
+      ( request_stop
+      , std::pair<std::string, boost::asio::io_service&>
+        (config_variables.at ("plugin.drts.gui_url"), gui_io_service)
+      , config_variables
+      );
+    waiter.wait();
+  }
+  else
+  {
+    DRTSImpl const plugin (request_stop, boost::none, config_variables);
+    waiter.wait();
+  }
 
   return 0;
 }

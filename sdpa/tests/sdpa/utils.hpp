@@ -34,10 +34,11 @@
 
 struct setup_logging
 {
+  boost::asio::io_service io_service;
   setup_logging()
   {
     setenv ("FHGLOG_level", "TRACE", true);
-    FHGLOG_SETUP();
+    FHGLOG_SETUP (io_service);
   }
 };
 
