@@ -144,12 +144,15 @@ try
   std::string const orchestrator_name ("orchestrator");
   std::string const agent_name ("agent");
 
+  boost::asio::io_service orchestrator_kvs_client_io_service;
   sdpa::daemon::Orchestrator const orchestrator
-    (orchestrator_name, host, host, kvs_port);
+    (orchestrator_name, host, orchestrator_kvs_client_io_service, host, kvs_port);
 
+  boost::asio::io_service agent_kvs_client_io_service;
   sdpa::daemon::Agent const agent
     ( agent_name
     , host
+    , agent_kvs_client_io_service
     , host, kvs_port
     , vm.count ("vmem-socket")
       ? boost::make_optional (boost::filesystem::path (vm["vmem-socket"].as<std::string>()))
@@ -243,11 +246,13 @@ try
             kernel.load_plugin_by_name ("gpi_compat");
           }
 
+          boost::asio::io_service kvs_client_io_service;
           if (config_variables.count ("plugin.drts.gui_url"))
           {
             boost::asio::io_service gui_io_service;
             DRTSImpl const plugin
               ( request_stop
+              , kvs_client_io_service
               , std::pair<std::string, boost::asio::io_service&>
                 (config_variables.at ("plugin.drts.gui_url"), gui_io_service)
               , config_variables
@@ -256,7 +261,11 @@ try
           }
           else
           {
-            DRTSImpl const plugin (request_stop, boost::none, config_variables);
+            DRTSImpl const plugin ( request_stop
+                                  , kvs_client_io_service
+                                  , boost::none
+                                  , config_variables
+                                  );
             waiter.wait();
           }
         }
@@ -270,7 +279,9 @@ try
     : we::type::activity_t (boost::filesystem::path (path_to_act))
     );
 
-  sdpa::client::Client client (orchestrator_name, host, kvs_port);
+  boost::asio::io_service client_kvs_client_io_service;
+  sdpa::client::Client client
+    (orchestrator_name, client_kvs_client_io_service, host, kvs_port);
 
   sdpa::job_id_t const job_id (client.submitJob (activity.to_string()));
 

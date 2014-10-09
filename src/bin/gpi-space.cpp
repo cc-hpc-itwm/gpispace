@@ -495,9 +495,11 @@ try
            , socket_path
            );
 
+  boost::asio::io_service kvs_client_io_service;
   fhg::com::kvs::kvsc_ptr_t kvs_client
     (new fhg::com::kvs::client::kvsc
-      ( config.kvs_host
+      ( kvs_client_io_service
+      , config.kvs_host
       , boost::lexical_cast<std::string> (config.kvs_port)
       , true
       , boost::posix_time::seconds (1)

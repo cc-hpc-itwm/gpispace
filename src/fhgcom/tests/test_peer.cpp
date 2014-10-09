@@ -22,7 +22,8 @@ struct KVSSetup
     , m_serv (_io_service, m_kvsd, "localhost", "0", true)
     , _io_service_thread ([this] { _io_service.run(); })
     , _kvs ( new fhg::com::kvs::client::kvsc
-             ( "localhost"
+             ( _kvs_client_io_service
+             , "localhost"
              , boost::lexical_cast<std::string> (m_serv.port())
              , true // auto_reconnect
              , boost::posix_time::seconds (10)
@@ -43,6 +44,7 @@ struct KVSSetup
   fhg::com::kvs::server::kvsd m_kvsd;
   fhg::com::tcp_server m_serv;
   boost::thread _io_service_thread;
+  boost::asio::io_service _kvs_client_io_service;
   fhg::com::kvs::kvsc_ptr_t _kvs;
 };
 

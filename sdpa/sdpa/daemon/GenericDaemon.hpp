@@ -79,6 +79,7 @@ namespace sdpa {
 
       GenericDaemon( const std::string name
                    , const std::string url
+                   , boost::asio::io_service& kvs_client_io_service
                    , std::string kvs_host
                    , std::string kvs_port
                    , boost::optional<boost::filesystem::path> const& vmem_socket

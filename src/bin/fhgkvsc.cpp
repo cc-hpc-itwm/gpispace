@@ -55,7 +55,9 @@ int main (int argc, char *argv[])
 
   try
   {
-    fhg::com::kvs::client::kvsc client ( vm["host"].as<std::string>()
+    boost::asio::io_service io_service;
+    fhg::com::kvs::client::kvsc client ( io_service
+                                       , vm["host"].as<std::string>()
                                        , vm["port"].as<std::string>()
                                        , true
                                        , boost::posix_time::seconds (120)

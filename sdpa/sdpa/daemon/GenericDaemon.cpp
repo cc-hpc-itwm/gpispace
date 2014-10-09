@@ -85,6 +85,7 @@ namespace
 
 GenericDaemon::GenericDaemon( const std::string name
                             , const std::string url
+                            , boost::asio::io_service& kvs_client_io_service
                             , std::string kvs_host
                             , std::string kvs_port
                             , boost::optional<boost::filesystem::path> const& vmem_socket
@@ -123,10 +124,14 @@ GenericDaemon::GenericDaemon( const std::string name
   , _max_consecutive_network_faults (360)
   , _registration_timeout (boost::posix_time::seconds (1))
   , _event_queue()
-  , _kvs_client
-    ( new fhg::com::kvs::client::kvsc
-      (kvs_host, kvs_port, true, boost::posix_time::seconds(120), 1)
-    )
+  , _kvs_client ( new fhg::com::kvs::client::kvsc
+                  ( kvs_client_io_service
+                  , kvs_host, kvs_port
+                  , true
+                  , boost::posix_time::seconds(120)
+                  , 1
+                  )
+                )
   , _network_strategy ( [this] (events::SDPAEvent::Ptr const& e)
                       {
                         _event_queue.put (e);

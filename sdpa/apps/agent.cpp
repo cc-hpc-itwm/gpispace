@@ -124,9 +124,11 @@ int main (int argc, char **argv)
   }
 
   boost::asio::io_service gui_io_service;
+  boost::asio::io_service kvs_client_io_service;
   const sdpa::daemon::Agent agent
     ( agentName
     , agentUrl
+    , kvs_client_io_service
     , vm["kvs-host"].as<std::string>()
     , vm["kvs-port"].as<std::string>()
     , vmem_socket
