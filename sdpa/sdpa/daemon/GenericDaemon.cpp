@@ -555,19 +555,19 @@ try
     }
 
     std::list<std::pair<we::local::range, we::global::range>>
-      transfer_map (activity.transition().module_call()->gets (context));
+      vm_transfers (activity.transition().module_call()->gets (context));
 
     std::list<std::pair<we::local::range, we::global::range>>
       puts_before (activity.transition().module_call()->puts_evaluated_before_call (context));
 
     std::copy ( puts_before.begin()
               , puts_before.end()
-              , std::back_inserter (transfer_map)
+              , std::back_inserter (vm_transfers)
               );
 
-    if (!transfer_map.empty())
+    if (!vm_transfers.empty())
     {
-      transfer_cost = _virtual_memory_api->transfer_cost (transfer_map);
+      transfer_cost = _virtual_memory_api->transfer_cost (vm_transfers);
     }
   }
 
