@@ -418,16 +418,6 @@ if [ ! -x "${script_start_drts}" ] ; then
     error 2 "utility script '${script_start_drts}' is not executable"
 fi
 
-script_start_agent="${sdpa_home}/libexec/sdpa/scripts/start-agent"
-if [ ! -x "${script_start_agent}" ] ; then
-    error 2 "utility script '${script_start_agent}' is not executable"
-fi
-
-script_start_orchestrator="${sdpa_home}/libexec/sdpa/scripts/start-orch"
-if [ ! -x "${script_start_orchestrator}" ] ; then
-    error 2 "utility script '${script_start_orchestrator}' is not executable"
-fi
-
 check_port=$(which nc 2>/dev/null)
 if [ $? -ne 0 ]
 then
@@ -440,8 +430,14 @@ fi
 
 info "using nodefile: $nodefile"
 
-rexec $master /usr/bin/env "${sdpa}" -s "${state_dir}" init "$nodefile" </dev/null || {
-    error 2 "could not initialize SDPA!"
+mkdir -p "${state_dir}" || {
+    error 2 "could not 'mkdir -p \"${state_dir}\"'"
+}
+mkdir -p "${state_dir}/log" || {
+    error 2 "could not 'mkdir -p \"${state_dir}/log\"'"
+}
+cp "${nodefile}" "${state_dir}/nodefile" || {
+    error 2 "could not 'cp ${nodefile} ${state_dir}/nodefile'"
 }
 
 if $delete_logfiles ; then
@@ -476,15 +472,16 @@ then
     error 3 "could not start kvs: failed to appear at ${kvs_host}:${kvs_port} after ${network_retries} seconds"
 fi
 
-rexec $master "${script_start_orchestrator}" \
-    $opt_verbose_flag \
-    -s "$state_dir" \
-    -P "$state_dir/orchestrator.pid" \
-    -D \
-    -k "${kvs_host}" \
-    -K "${kvs_port}" \
-    -l "${log_host}:${log_port}" \
-    -H "${sdpa_home}" \
+rexec $master /usr/bin/env \
+    FHGLOG_to_server="${log_host}:${log_port}" \
+    FHGLOG_level=$($verbose && echo "TRACE" || echo "INFO") \
+    FHGLOG_to_file="${state_dir}/log/orchestrator.log" \
+    "${sdpa_home}/bin/orchestrator" \
+    --pidfile "$state_dir/orchestrator.pid" \
+    --daemonize \
+    --kvs-host="${kvs_host}" \
+    --kvs-port="${kvs_port}" \
+    -u '0' \
     -n "orchestrator"
 ec=$?
 if [ $ec -ne 0 ]
@@ -622,17 +619,20 @@ function start_agent
 
     info "starting agent: ${name} on host ${host} with parent ${parent}"
 
-    rexec ${host} "${script_start_agent}" \
-        $opt_verbose_flag \
-        -D \
-        -n "${name}" \
+    rexec ${host} /usr/bin/env \
+        FHGLOG_to_server="${log_host}:${log_port}" \
+        FHGLOG_level=$($verbose && echo "TRACE" || echo "INFO") \
+        FHGLOG_to_file="${state_dir}/log/$name.log" \
+        "${sdpa_home}/bin/agent" \
+        --pidfile "$state_dir/${name}.pid" \
+        --daemonize \
+        --kvs-host="${kvs_host}" \
+        --kvs-port="${kvs_port}" \
+        $(if $gpi_enabled ; then echo --vmem-socket="${gpi_socket}" ; fi) \
+        -u '0' \
+        -a "${gui_host}:${gui_port}" \
         -m "${parent}" \
-        -s "${state_dir}" \
-        -k "${kvs_host}" \
-        -K "${kvs_port}" \
-        -l "${log_host}:${log_port}" \
-        -H "${sdpa_home}" \
-        -g "${gui_host}:${gui_port}" &
+        -n "${name}" &
     pids+=( $! )
 }
 

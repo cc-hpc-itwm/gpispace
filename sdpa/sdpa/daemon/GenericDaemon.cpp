@@ -565,7 +565,10 @@ try
               , std::back_inserter (transfer_map)
               );
 
-    transfer_cost = _virtual_memory_api->transfer_cost (transfer_map);
+    if (!transfer_map.empty())
+    {
+      transfer_cost = _virtual_memory_api->transfer_cost (transfer_map);
+    }
   }
 
   addJob ( job_id
