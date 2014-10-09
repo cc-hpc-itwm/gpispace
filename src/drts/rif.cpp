@@ -57,7 +57,7 @@ namespace gspc
         command << " " << arg;
       }
       command << " >/dev/null 2>/dev/null </dev/null & echo $!; disown $!'";
-      command << " | ssh -q -p " << rif.port << " " << rif.host << " /bin/sh -s";
+      command << " | ssh -q -p " << rif.port << " " << rif.host << " /bin/bash -s";
 
       std::string buf;
       const scoped_popen pid_file (command.str().c_str(), "r");
