@@ -165,7 +165,7 @@ namespace sdpa
       }
     }
 
-    mmap_match_deg_worker_id_t WorkerManager::getListMatchingWorkers
+    mmap_match_deg_worker_id_t WorkerManager::getMatchingDegreesAndWorkers
       ( const job_requirements_t& job_reqs
       , const std::set<worker_id_t>& worker_set
       ) const

@@ -39,7 +39,7 @@ namespace sdpa
       sdpa::job_id_list_t getJobListAndCleanQueues (const  Worker::ptr_t& pWorker);
       std::set<worker_id_t> getSetOfWorkersNotReserved();
 
-      mmap_match_deg_worker_id_t getListMatchingWorkers (const job_requirements_t&, const std::set<worker_id_t>&) const;
+      mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers (const job_requirements_t&, const std::set<worker_id_t>&) const;
 
   private:
       worker_map_t  worker_map_;

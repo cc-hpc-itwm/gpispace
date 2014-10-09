@@ -174,7 +174,7 @@ namespace sdpa
             ( setAvailWorkers
             , _job_requirements (jobId)
             , std::bind
-              ( &WorkerManager::getListMatchingWorkers
+              ( &WorkerManager::getMatchingDegreesAndWorkers
               , &worker_manager()
               , std::placeholders::_1
               , std::placeholders::_2
