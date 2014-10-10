@@ -98,7 +98,7 @@ namespace sdpa
       worker_map_.erase (w);
     }
 
-    std::set<worker_id_t> WorkerManager::getSetOfWorkersNotReserved()
+    std::set<worker_id_t> WorkerManager::getAllNonReservedWorkers()
     {
       boost::mutex::scoped_lock const _ (mtx_);
       std::set<worker_id_t> set_workers;

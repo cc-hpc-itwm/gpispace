@@ -158,7 +158,7 @@ namespace sdpa
     void CoallocationScheduler::assignJobsToWorkers()
     {
       std::set<worker_id_t> setAvailWorkers
-        (worker_manager().getSetOfWorkersNotReserved());
+        (worker_manager().getAllNonReservedWorkers());
 
       std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
 
