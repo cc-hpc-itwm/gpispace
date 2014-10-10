@@ -97,7 +97,8 @@ int main (int argc, char **argv)
 
     if (vm.count ("daemonize"))
     {
-      fhg::util::fork_and_daemonize_child_and_abandon_parent();
+      fhg::util::fork_and_daemonize_child_and_abandon_parent
+        ({&remote_log_io_service});
     }
 
     pidfile_writer.write();
@@ -106,7 +107,8 @@ int main (int argc, char **argv)
   {
     if (vm.count ("daemonize"))
     {
-      fhg::util::fork_and_daemonize_child_and_abandon_parent();
+      fhg::util::fork_and_daemonize_child_and_abandon_parent
+        ({&remote_log_io_service});
     }
   }
 
