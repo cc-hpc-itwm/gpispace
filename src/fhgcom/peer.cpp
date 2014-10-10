@@ -33,7 +33,7 @@ namespace fhg
       , started_()
       , _kvs_client (kvs_client)
       , io_service_()
-      , io_service_work_(new boost::asio::io_service::work(io_service_))
+      , io_service_work_(io_service_)
       , acceptor_(io_service_)
       , m_renew_kvs_entries_timer (io_service_)
       , connections_()
