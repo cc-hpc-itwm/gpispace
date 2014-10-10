@@ -380,9 +380,10 @@ struct fixture_minimal_cost_assignment
   {
     const double max_cost (max_value (map_host_transfer_cost));
 
-    const std::function<double (std::string const&)>
-      transfer_cost = [&map_host_transfer_cost, &max_cost](const std::string& host_id)
-        {return map_host_transfer_cost.count (host_id) ? map_host_transfer_cost.at (host_id) : max_cost + 1;};
+    const std::function<double (std::string const&)> transfer_cost
+      {[&map_host_transfer_cost, &max_cost](const std::string& host_id)
+       {return map_host_transfer_cost.count (host_id) ? map_host_transfer_cost.at (host_id) : max_cost + 1;}
+      };
 
     const std::set<sdpa::worker_id_t> set_assigned_workers
       (sdpa::daemon::CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
