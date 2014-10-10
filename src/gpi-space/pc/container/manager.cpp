@@ -247,7 +247,8 @@ namespace gpi
         }
       }
 
-      manager_t::manager_t ( std::string const & p
+      manager_t::manager_t ( boost::asio::io_service& topology_peer_io_service
+                           , std::string const & p
                            , std::vector<std::string> const& default_memory_urls
                            , api::gpi_api_t& gpi_api
                            , fhg::com::kvs::kvsc_ptr_t kvs_client
@@ -258,7 +259,8 @@ namespace gpi
         , m_process_counter (0)
         , _gpi_api (gpi_api)
         , _memory_manager (gpi_api)
-        , _topology ( global::topology_t::any_addr()
+        , _topology ( topology_peer_io_service
+                    , global::topology_t::any_addr()
                     , global::topology_t::any_port() // topology_t::port_t("10821")
                     , _memory_manager
                     , kvs_client

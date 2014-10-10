@@ -18,7 +18,8 @@ namespace fhg
 {
   namespace com
   {
-    peer_t::peer_t ( std::string const & name
+    peer_t::peer_t ( boost::asio::io_service& io_service
+                   , std::string const & name
                    , host_t const & host
                    , port_t const & port
                    , kvs::kvsc_ptr_t kvs_client
@@ -32,7 +33,7 @@ namespace fhg
       , my_addr_(p2p::address_t(name))
       , started_()
       , _kvs_client (kvs_client)
-      , io_service_()
+      , io_service_ (io_service)
       , io_service_work_(io_service_)
       , acceptor_(io_service_)
       , m_renew_kvs_entries_timer (io_service_)

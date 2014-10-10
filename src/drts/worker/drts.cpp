@@ -306,6 +306,7 @@ void WFEImpl::cancel (std::string const &job_id)
 
 DRTSImpl::DRTSImpl
     ( std::function<void()> request_stop
+    , boost::asio::io_service& peer_io_service
     , boost::asio::io_service& kvs_client_io_service
     , boost::optional<std::pair<std::string, boost::asio::io_service&>> gui_info
     , std::map<std::string, std::string> config_variables
@@ -370,7 +371,8 @@ DRTSImpl::DRTSImpl
   // initialize peer
   m_peer.reset
     ( new fhg::com::peer_t
-      ( m_my_name
+      ( peer_io_service
+      , m_my_name
       , host
       , port
       , _kvs_client

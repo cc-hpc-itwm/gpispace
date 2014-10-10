@@ -14,6 +14,7 @@ namespace sdpa
     public:
       Agent ( const std::string& name
             , const std::string& url
+            , boost::asio::io_service& peer_io_service
             , boost::asio::io_service& kvs_client_io_service
             , std::string kvs_host
             , std::string kvs_port

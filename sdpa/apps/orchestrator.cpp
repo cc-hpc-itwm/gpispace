@@ -75,10 +75,12 @@ int main (int argc, char **argv)
       }
     }
 
+  boost::asio::io_service peer_io_service;
   boost::asio::io_service kvs_client_io_service;
   const sdpa::daemon::Orchestrator orchestrator
     ( orchName
     , orchUrl
+    , peer_io_service
     , kvs_client_io_service
     , vm["kvs-host"].as<std::string>()
     , vm["kvs-port"].as<std::string>()

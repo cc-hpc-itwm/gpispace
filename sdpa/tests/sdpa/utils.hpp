@@ -200,11 +200,13 @@ namespace utils
       : _kvs_host (kvs.kvs_host())
       , _kvs_port (kvs.kvs_port())
       , _ ( random_peer_name(), "127.0.0.1"
+          , _peer_io_service
           , _kvs_client_io_service
           , _kvs_host, _kvs_port
           )
     {}
 
+    boost::asio::io_service _peer_io_service;
     boost::asio::io_service _kvs_client_io_service;
     std::string _kvs_host;
     std::string _kvs_port;
@@ -235,6 +237,7 @@ namespace utils
       , _kvs_host (master_0.kvs_host())
       , _kvs_port (master_0.kvs_port())
       , _ ( random_peer_name(), "127.0.0.1"
+          , _peer_io_service
           , _kvs_client_io_service
           , _kvs_host, _kvs_port
           , boost::none
@@ -248,6 +251,7 @@ namespace utils
       , _kvs_host (master.kvs_host())
       , _kvs_port (master.kvs_port())
       , _ ( random_peer_name(), "127.0.0.1"
+          , _peer_io_service
           , _kvs_client_io_service
           , _kvs_host, _kvs_port
           , boost::none
@@ -260,6 +264,7 @@ namespace utils
       , _kvs_host (master.kvs_host())
       , _kvs_port (master.kvs_port())
       , _ ( random_peer_name(), "127.0.0.1"
+          , _peer_io_service
           , _kvs_client_io_service
           , _kvs_host, _kvs_port
           , boost::none
@@ -267,6 +272,7 @@ namespace utils
           , boost::none
           )
     {}
+    boost::asio::io_service _peer_io_service;
     boost::asio::io_service _kvs_client_io_service;
     std::string _kvs_host;
     std::string _kvs_port;
@@ -301,6 +307,7 @@ namespace utils
       , _event_queue()
       , _network
         ( [this] (sdpa::events::SDPAEvent::Ptr e) { _event_queue.put (e); }
+        , _peer_io_service
         , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
         , _kvs_client
         )
@@ -398,6 +405,7 @@ namespace utils
     fhg::com::kvs::kvsc_ptr_t _kvs_client;
 
     fhg::thread::queue<sdpa::events::SDPAEvent::Ptr> _event_queue;
+    boost::asio::io_service _peer_io_service;
 
   protected:
     sdpa::com::NetworkStrategy _network;
@@ -567,7 +575,11 @@ namespace utils
   struct client : boost::noncopyable
   {
     client (orchestrator const& orch)
-      : _ (orch.name(), _kvs_client_io_service, orch.kvs_host(), orch.kvs_port())
+      : _ ( orch.name()
+          , _peer_io_service
+          , _kvs_client_io_service
+          , orch.kvs_host(), orch.kvs_port()
+          )
     {}
 
     sdpa::job_id_t submit_job (std::string workflow)
@@ -632,6 +644,7 @@ namespace utils
       return _.cancelJob (id);
     }
 
+    boost::asio::io_service _peer_io_service;
     boost::asio::io_service _kvs_client_io_service;
     sdpa::client::Client _;
 

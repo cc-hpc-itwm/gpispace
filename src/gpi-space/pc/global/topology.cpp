@@ -123,7 +123,8 @@ namespace gpi
         return h;
       }
 
-      topology_t::topology_t ( const fhg::com::host_t & host
+      topology_t::topology_t ( boost::asio::io_service& peer_io_service
+                             , const fhg::com::host_t & host
                              , const fhg::com::port_t & port
                              , memory::manager_t& memory_manager
                              , fhg::com::kvs::kvsc_ptr_t kvs_client
@@ -136,7 +137,8 @@ namespace gpi
       {
         lock_type lock(m_mutex);
         m_peer.reset
-          (new fhg::com::peer_t( detail::rank_to_name (m_rank)
+          (new fhg::com::peer_t( peer_io_service
+                               , detail::rank_to_name (m_rank)
                                , host
                                , port
                                , _kvs_client

@@ -66,7 +66,8 @@ namespace gpi
         static port_t const & any_port ();
         static host_t const & any_addr ();
 
-        topology_t ( const fhg::com::host_t & host
+        topology_t ( boost::asio::io_service& peer_io_service
+                   , const fhg::com::host_t & host
                    , const fhg::com::port_t & port
                    , memory::manager_t& memory_manager
                    , fhg::com::kvs::kvsc_ptr_t kvs_client

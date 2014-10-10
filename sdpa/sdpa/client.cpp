@@ -39,6 +39,7 @@ namespace sdpa
     }
 
     Client::Client ( std::string orchestrator
+                   , boost::asio::io_service& peer_io_service
                    , boost::asio::io_service& kvs_client_io_service
                    , std::string kvs_host, std::string kvs_port
                    )
@@ -53,7 +54,8 @@ namespace sdpa
                                           , 1
                                           )
         )
-      , m_peer ( _name
+      , m_peer ( peer_io_service
+               , _name
                , fhg::com::host_t ("*")
                , fhg::com::port_t ("0")
                , _kvs_client

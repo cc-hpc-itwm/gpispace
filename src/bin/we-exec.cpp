@@ -144,14 +144,23 @@ try
   std::string const orchestrator_name ("orchestrator");
   std::string const agent_name ("agent");
 
+  boost::asio::io_service orchestrator_peer_io_service;
   boost::asio::io_service orchestrator_kvs_client_io_service;
   sdpa::daemon::Orchestrator const orchestrator
-    (orchestrator_name, host, orchestrator_kvs_client_io_service, host, kvs_port);
+    ( orchestrator_name
+    , host
+    , orchestrator_peer_io_service
+    , orchestrator_kvs_client_io_service
+    , host
+    , kvs_port
+    );
 
+  boost::asio::io_service agent_peer_io_service;
   boost::asio::io_service agent_kvs_client_io_service;
   sdpa::daemon::Agent const agent
     ( agent_name
     , host
+    , agent_peer_io_service
     , agent_kvs_client_io_service
     , host, kvs_port
     , vm.count ("vmem-socket")
@@ -246,12 +255,14 @@ try
             kernel.load_plugin_by_name ("gpi_compat");
           }
 
+          boost::asio::io_service peer_io_service;
           boost::asio::io_service kvs_client_io_service;
           if (config_variables.count ("plugin.drts.gui_url"))
           {
             boost::asio::io_service gui_io_service;
             DRTSImpl const plugin
               ( request_stop
+              , peer_io_service
               , kvs_client_io_service
               , std::pair<std::string, boost::asio::io_service&>
                 (config_variables.at ("plugin.drts.gui_url"), gui_io_service)
@@ -262,6 +273,7 @@ try
           else
           {
             DRTSImpl const plugin ( request_stop
+                                  , peer_io_service
                                   , kvs_client_io_service
                                   , boost::none
                                   , config_variables
@@ -279,9 +291,14 @@ try
     : we::type::activity_t (boost::filesystem::path (path_to_act))
     );
 
+  boost::asio::io_service client_peer_io_service;
   boost::asio::io_service client_kvs_client_io_service;
-  sdpa::client::Client client
-    (orchestrator_name, client_kvs_client_io_service, host, kvs_port);
+  sdpa::client::Client client ( orchestrator_name
+                              , client_peer_io_service
+                              , client_kvs_client_io_service
+                              , host
+                              , kvs_port
+                              );
 
   sdpa::job_id_t const job_id (client.submitJob (activity.to_string()));
 

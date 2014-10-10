@@ -85,6 +85,7 @@ namespace
 
 GenericDaemon::GenericDaemon( const std::string name
                             , const std::string url
+                            , boost::asio::io_service& peer_io_service
                             , boost::asio::io_service& kvs_client_io_service
                             , std::string kvs_host
                             , std::string kvs_port
@@ -136,6 +137,7 @@ GenericDaemon::GenericDaemon( const std::string name
                       {
                         _event_queue.put (e);
                       }
+                      , peer_io_service
                       , name /*name for peer*/
                       , host_from_url (url)
                       , port_from_url (url)

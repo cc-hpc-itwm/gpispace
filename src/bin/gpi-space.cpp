@@ -538,8 +538,9 @@ try
     if (mem_urls.empty ())
       mem_urls.push_back (default_memory_url);
 
+    boost::asio::io_service topology_peer_io_service;
     const gpi::pc::container::manager_t container_manager
-      (config.socket, mem_urls, gpi_api, kvs_client);
+      (topology_peer_io_service, config.socket, mem_urls, gpi_api, kvs_client);
 
     LOG (INFO, "started GPI interface on rank " << gpi_api.rank() << " at " << config.socket);
 

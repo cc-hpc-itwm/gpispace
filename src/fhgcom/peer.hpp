@@ -30,7 +30,8 @@ namespace fhg
     public:
       typedef std::function <void (boost::system::error_code const &)> handler_t;
 
-      peer_t ( std::string const & name
+      peer_t ( boost::asio::io_service&
+             , std::string const & name
              , host_t const & host
              , port_t const & port
              , kvs::kvsc_ptr_t kvs_client
@@ -130,7 +131,7 @@ namespace fhg
 
       kvs::kvsc_ptr_t _kvs_client;
 
-      boost::asio::io_service io_service_;
+      boost::asio::io_service& io_service_;
       boost::asio::io_service::work io_service_work_;
       boost::asio::ip::tcp::acceptor acceptor_;
       boost::asio::deadline_timer m_renew_kvs_entries_timer;

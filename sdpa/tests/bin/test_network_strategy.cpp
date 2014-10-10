@@ -95,9 +95,11 @@ BOOST_FIXTURE_TEST_CASE (perform_test, KVSSetup)
 {
   wait_for_n_events_strategy counter (1);
 
+  boost::asio::io_service peer_io_service;
   sdpa::com::NetworkStrategy net
     ( std::bind
       (&wait_for_n_events_strategy::perform, &counter, std::placeholders::_1)
+    , peer_io_service
     , "peer-1"
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")

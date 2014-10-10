@@ -111,6 +111,7 @@ class DRTSImpl : public sdpa::events::EventHandler
 public:
   DRTSImpl
     ( std::function<void()> request_stop
+    , boost::asio::io_service& peer_io_service
     , boost::asio::io_service& kvs_client_io_service
     , boost::optional<std::pair<std::string, boost::asio::io_service&>> gui_info
     , std::map<std::string, std::string> config_variables

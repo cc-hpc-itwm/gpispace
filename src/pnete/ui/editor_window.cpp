@@ -989,9 +989,13 @@ namespace fhg
 
         //! \todo Use real kvs host+port
         //! \todo Configurable name of orchestrator, non-static
+        static boost::asio::io_service peer_io_service;
         static boost::asio::io_service kvs_client_io_service;
-        static sdpa::client::Client client
-          ("orchestrator", kvs_client_io_service, "localhost", "2439");
+        static sdpa::client::Client client ( "orchestrator"
+                                           , peer_io_service
+                                           , kvs_client_io_service
+                                           , "localhost", "2439"
+                                           );
 
         const std::string job_id
           (client.submitJob (activity_and_fun.first.to_string()));

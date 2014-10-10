@@ -21,6 +21,7 @@ namespace
         )
       , _network
         ( [this] (sdpa::events::SDPAEvent::Ptr e) { _event_received.notify (e); }
+        , _peer_io_service
         , name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
         , _kvs_client
         )
@@ -41,6 +42,7 @@ namespace
     fhg::util::thread::event<sdpa::events::SDPAEvent::Ptr> _event_received;
     boost::asio::io_service _kvs_client_io_service;
     fhg::com::kvs::kvsc_ptr_t _kvs_client;
+    boost::asio::io_service _peer_io_service;
     sdpa::com::NetworkStrategy _network;
   };
 }
@@ -109,10 +111,12 @@ BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
 
   const utils::kvs_server kvs_server;
 
+  boost::asio::io_service peer_io_service;
   boost::asio::io_service kvs_client_io_service;
   const sdpa::daemon::Orchestrator orchestrator
     ( orchestrator_name
     , "localhost"
+    , peer_io_service
     , kvs_client_io_service
     , kvs_server.kvs_host(), kvs_server.kvs_port()
     );
