@@ -101,6 +101,9 @@ namespace sdpa
       , const std::function<double (std::string const&)> transfer_cost
       )
     {
+      if (mmap_matching_workers.size() < n_req_workers)
+        return {};
+
       std::set<worker_id_t> assigned_workers;
 
       bounded_priority_queue_t bpq (n_req_workers);
@@ -130,31 +133,6 @@ namespace sdpa
       return assigned_workers;
     }
 
-    namespace
-    {
-      std::set<worker_id_t> find_assignment_for_job
-        ( const std::set<worker_id_t>& available_workers
-        , const job_requirements_t& requirements
-        , std::function<mmap_match_deg_worker_id_t
-                          ( const job_requirements_t&
-                          , const std::set<worker_id_t>&
-                          )
-                       > match_requirements
-        )
-      {
-        mmap_match_deg_worker_id_t
-          mmap_matching_workers (match_requirements (requirements, available_workers));
-
-        if (mmap_matching_workers.size() >= requirements.numWorkers())
-        {
-          return CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
-            (mmap_matching_workers, requirements.numWorkers(), requirements.transfer_cost());
-        }
-
-        return  std::set<worker_id_t>();
-      }
-    }
-
     void CoallocationScheduler::assignJobsToWorkers()
     {
       std::set<worker_id_t> setAvailWorkers
@@ -169,16 +147,12 @@ namespace sdpa
         sdpa::job_id_t jobId (jobs_to_schedule.front());
         jobs_to_schedule.pop_front();
 
+        const job_requirements_t& requirements ( _job_requirements (jobId));
         const std::set<worker_id_t> matching_workers
-          ( find_assignment_for_job
-            ( setAvailWorkers
-            , _job_requirements (jobId)
-            , std::bind
-              ( &WorkerManager::getMatchingDegreesAndWorkers
-              , &worker_manager()
-              , std::placeholders::_1
-              , std::placeholders::_2
-              )
+          ( find_job_assignment_minimizing_memory_transfer_cost
+            ( worker_manager().getMatchingDegreesAndWorkers (requirements, setAvailWorkers)
+            , requirements.numWorkers()
+            , requirements.transfer_cost()
             )
           );
 
