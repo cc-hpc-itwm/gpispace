@@ -147,7 +147,7 @@ namespace sdpa
         sdpa::job_id_t jobId (jobs_to_schedule.front());
         jobs_to_schedule.pop_front();
 
-        const job_requirements_t& requirements ( _job_requirements (jobId));
+        const job_requirements_t& requirements (_job_requirements (jobId));
         const std::set<worker_id_t> matching_workers
           ( find_job_assignment_minimizing_memory_transfer_cost
             ( worker_manager().getMatchingDegreesAndWorkers (requirements, setAvailWorkers)
