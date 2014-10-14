@@ -21,11 +21,13 @@ namespace sdpa
         , const boost::optional<unsigned int>& capacity
         , const capabilities_set_t& cpbset
         , bool children_allowed
+        , const std::string& hostname
         )
           : MgmtEvent (a_from, a_to)
           , capacity_ (capacity)
           , cpbset_ (cpbset)
           , children_allowed_(children_allowed)
+          , hostname_(hostname)
       {}
 
       const boost::optional<unsigned int>& capacity() const
@@ -35,6 +37,11 @@ namespace sdpa
       const capabilities_set_t& capabilities() const
       {
         return cpbset_;
+      }
+
+      const std::string& hostname() const
+      {
+        return hostname_;
       }
 
       const bool& children_allowed() const
@@ -51,6 +58,7 @@ namespace sdpa
       boost::optional<unsigned int> capacity_;
       capabilities_set_t cpbset_;
       bool children_allowed_;
+      std::string hostname_;
     };
 
     SAVE_CONSTRUCT_DATA_DEF (WorkerRegistrationEvent, e)
@@ -59,6 +67,7 @@ namespace sdpa
       SAVE_TO_ARCHIVE (e->capacity());
       SAVE_TO_ARCHIVE (e->capabilities());
       SAVE_TO_ARCHIVE (e->children_allowed());
+      SAVE_TO_ARCHIVE (e->hostname());
     }
 
     LOAD_CONSTRUCT_DATA_DEF (WorkerRegistrationEvent, e)
@@ -67,8 +76,9 @@ namespace sdpa
       LOAD_FROM_ARCHIVE (boost::optional<unsigned int>, capacity);
       LOAD_FROM_ARCHIVE (capabilities_set_t, cpbset);
       LOAD_FROM_ARCHIVE (bool, children_allowed);
+      LOAD_FROM_ARCHIVE (std::string, hostname);
 
-      ::new (e) WorkerRegistrationEvent (from, to, capacity, cpbset, children_allowed);
+      ::new (e) WorkerRegistrationEvent (from, to, capacity, cpbset, children_allowed, hostname);
     }
   }
 }

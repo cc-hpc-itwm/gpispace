@@ -35,6 +35,7 @@
 #include <sdpa/id_generator.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
+#include <fhg/util/hostname.hpp>
 #include <fhg/util/macros.hpp>
 #include <fhg/util/make_unique.hpp>
 
@@ -189,6 +190,43 @@ GenericDaemon::cleanup_job_map_on_dtor_helper::~cleanup_job_map_on_dtor_helper()
   }
 }
 
+//! \todo Move to gpi::pc::client::api_t
+std::function<double (std::string const&)>
+  GenericDaemon::virtual_memory_api::transfer_costs (const we::type::activity_t& activity)
+{
+  if (!activity.transition().module_call())
+    return null_transfer_cost;
+
+  expr::eval::context context;
+
+  for ( std::pair< pnet::type::value::value_type
+                , we::port_id_type
+                > const& token_on_port
+      : activity.input()
+      )
+  {
+   context.bind_ref
+     ( activity.transition().ports_input().at (token_on_port.second).name()
+     , token_on_port.first
+     );
+  }
+
+  std::list<std::pair<we::local::range, we::global::range>>
+    vm_transfers (activity.transition().module_call()->gets (context));
+
+  std::list<std::pair<we::local::range, we::global::range>>
+    puts_before (activity.transition().module_call()->puts_evaluated_before_call (context));
+
+  vm_transfers.splice (vm_transfers.end(), puts_before);
+
+  if (vm_transfers.empty())
+  {
+    return null_transfer_cost;
+  }
+
+  return _.transfer_costs (vm_transfers);
+}
+
 const std::string& GenericDaemon::name() const
 {
   return _name;
@@ -251,7 +289,13 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
   // One should parse the workflow in order to be able to create a valid job
-  Job* pJob (addJob(job_id, e.description(), hasWorkflowEngine(), e.from(), job_requirements_t()));
+  Job* pJob (addJob ( job_id
+                    , e.description()
+                    , hasWorkflowEngine()
+                    , e.from()
+                    , {{}, we::type::schedule_data(), null_transfer_cost}
+                    )
+             );
 
   //! \todo Don't ack before we know that we can: may fail 20 lines
   //! below. add Nack event of some sorts to not need
@@ -320,7 +364,7 @@ void GenericDaemon::handleWorkerRegistrationEvent
   }
 
   const bool was_new_worker
-    (scheduler().worker_manager().addWorker (worker_id, event->capacity(), workerCpbSet, event->children_allowed()));
+    (scheduler().worker_manager().addWorker (worker_id, event->capacity(), workerCpbSet, event->children_allowed(), event->hostname()));
 
   child_proxy (this, worker_id).worker_registration_ack();
 
@@ -509,17 +553,9 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
   }
 }
 
-/* Implements Gwes2Sdpa */
-/**
- * Submit an atomic activity to the SDPA.
- * This method is to be called by the GS in order to delegate
- * the execution of activities.
- * The SDPA will use the callback handler SdpaGwes in order
- * to notify the GS about activity status transitions.
- */
-void GenericDaemon::submit( const we::layer::id_type& job_id
-                          , const we::type::activity_t& activity
-                          )
+void GenericDaemon::submit ( const we::layer::id_type& job_id
+                           , const we::type::activity_t& activity
+                           )
 try
 {
   const we::type::schedule_data schedule_data
@@ -534,7 +570,10 @@ try
          , activity.to_string()
          , false
          , name()
-         , job_requirements_t (activity.transition().requirements(), schedule_data)
+         , job_requirements_t ( activity.transition().requirements()
+                              , schedule_data
+                              , _virtual_memory_api->transfer_costs (activity)
+                              )
          );
 
   scheduler().enqueueJob (job_id);
@@ -1424,7 +1463,7 @@ namespace sdpa
       _that->sendEventToOther
         ( events::WorkerRegistrationEvent::Ptr
           ( new events::WorkerRegistrationEvent
-            (_that->name(), _name, capacity, capabilities, true)
+            (_that->name(), _name, capacity, capabilities, true, fhg::util::hostname())
           )
         );
     }

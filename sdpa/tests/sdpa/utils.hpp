@@ -315,7 +315,13 @@ namespace utils
       _network.perform
         ( sdpa::events::SDPAEvent::Ptr
           ( new sdpa::events::WorkerRegistrationEvent
-            (_name, *_master_name, 1, capabilities, accept_workers)
+            ( _name
+            , *_master_name
+            , 1
+            , capabilities
+            , accept_workers
+            , fhg::util::random_string()
+            )
           )
         );
     }

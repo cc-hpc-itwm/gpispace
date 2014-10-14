@@ -218,12 +218,13 @@ BOOST_AUTO_TEST_CASE (WorkerRegistration)
   caps.insert (sdpa::Capability ("foo", fhg::util::random_string()));
   caps.insert (sdpa::Capability ("bar", fhg::util::random_string()));
 
-  WorkerRegistrationEvent e ("foo", "bar", 10, caps, true);
+  WorkerRegistrationEvent e ("foo", "bar", 10, caps, true, fhg::util::random_string());
   WorkerRegistrationEvent* r (encode_decode_mgmt_event (e));
 
   BOOST_REQUIRE_EQUAL (r->capacity(), e.capacity());
   BOOST_REQUIRE_EQUAL (r->capabilities(), e.capabilities());
   BOOST_REQUIRE_EQUAL (r->children_allowed(), e.children_allowed());
+  BOOST_REQUIRE_EQUAL (r->hostname(), e.hostname());
 }
 
 BOOST_AUTO_TEST_CASE (DiscoverJobStates)

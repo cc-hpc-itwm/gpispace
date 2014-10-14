@@ -4,6 +4,7 @@
 #include <plugin/plugin.hpp>
 #include <fhg/util/getenv.hpp>
 #include <fhg/util/split.hpp>
+#include <fhg/util/hostname.hpp>
 
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/events.hpp>
@@ -871,6 +872,7 @@ void DRTSImpl::start_connect ()
                                                    , m_backlog_size
                                                    , sdpa::capabilities_set_t()
                                                    , false
+                                                   , fhg::util::hostname()
                                                    )
         );
 

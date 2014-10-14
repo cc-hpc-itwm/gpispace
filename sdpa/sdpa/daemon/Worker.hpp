@@ -9,6 +9,7 @@
 #include <sdpa/daemon/exceptions.hpp>
 
 #include <boost/optional.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace sdpa
 {
@@ -25,6 +26,7 @@ namespace sdpa
                       , const boost::optional<unsigned int>& cap
                       , const capabilities_set_t&
                       , const bool children_allowed
+                      , const std::string& hostname
                       );
 
       void submit(const job_id_t&);
@@ -35,7 +37,7 @@ namespace sdpa
       double lastScheduleTime() {lock_type lock(mtx_); return last_schedule_time_; }
 
       const worker_id_t &name() const { lock_type lock(mtx_); return name_; }
-
+      const std::string hostname() const;
       boost::optional<unsigned int> capacity() const { lock_type lock(mtx_); return capacity_; }
 
       // capabilities
@@ -64,6 +66,7 @@ namespace sdpa
       boost::optional<unsigned int> capacity_;
       capabilities_set_t capabilities_;
       bool children_allowed_;
+      std::string hostname_;
       double last_schedule_time_;
 
       std::set<job_id_t> submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)

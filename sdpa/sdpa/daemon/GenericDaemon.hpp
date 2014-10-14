@@ -303,6 +303,8 @@ namespace sdpa {
       {
         explicit
         virtual_memory_api (boost::filesystem::path const& socket);
+        std::function<double (std::string const&)>
+          transfer_costs (const we::type::activity_t& activity);
       private:
         gpi::pc::client::api_t _;
       };

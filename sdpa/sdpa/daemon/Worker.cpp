@@ -13,15 +13,22 @@ namespace sdpa
                    , const boost::optional<unsigned int>& cap
                    , const capabilities_set_t& capabilities
                    , const bool children_allowed
+                   , const std::string& hostname
                    )
-      : name_(name)
-      , capacity_(cap)
+      : name_ (name)
+      , capacity_ (cap)
       , capabilities_ (capabilities)
       , children_allowed_ (children_allowed)
-      , last_schedule_time_(0)
-      , reserved_(false)
+      , hostname_ (hostname)
+      , last_schedule_time_ (0)
+      , reserved_ (false)
     {
 
+    }
+
+    const std::string Worker::hostname() const
+    {
+      return hostname_;
     }
 
     bool Worker::has_job( const job_id_t& job_id )
@@ -30,17 +37,17 @@ namespace sdpa
       return submitted_.count (job_id) || acknowledged_.count (job_id);
     }
 
-    void Worker::submit(const job_id_t& jobId)
+    void Worker::submit (const job_id_t& jobId)
     {
       lock_type const _ (mtx_);
       submitted_.insert (jobId);
       if (!children_allowed_)
       {
-	reserve();
+        reserve();
       }
     }
 
-    void Worker::acknowledge(const job_id_t &job_id)
+    void Worker::acknowledge (const job_id_t &job_id)
     {
       lock_type const _ (mtx_);
       if (submitted_.erase (job_id) == 0)
