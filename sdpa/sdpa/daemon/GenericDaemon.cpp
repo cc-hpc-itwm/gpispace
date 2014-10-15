@@ -129,7 +129,7 @@ GenericDaemon::GenericDaemon( const std::string name
                   ( kvs_client_io_service
                   , kvs_host, kvs_port
                   , true
-                  , boost::posix_time::seconds(120)
+                  , boost::posix_time::seconds (120)
                   , 1
                   )
                 )
