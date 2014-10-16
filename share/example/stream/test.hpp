@@ -3,10 +3,9 @@
 #ifndef SHARE_EXAMPLE_STREAM_TEST_HPP
 #define SHARE_EXAMPLE_STREAM_TEST_HPP
 
-#include <share/example/stream/producer.hpp>
-
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/stream.hpp>
 #include <drts/virtual_memory.hpp>
 
 #include <test/make.hpp>
@@ -110,9 +109,9 @@ namespace share_example_stream_test
       , "net lib install"
       );
 
-    unsigned long const num_slots
+    gspc::stream::number_of_slots const num_slots
       (vm[option_num_slots].as<validators::positive_integral<unsigned long>>());
-    unsigned long const size_slot
+    gspc::stream::size_of_slot const size_slot
       (vm[option_size_slot].as<validators::positive_integral<unsigned long>>());
 
     unsigned long const size (num_slots * size_slot);
@@ -123,7 +122,10 @@ namespace share_example_stream_test
     gspc::vmem_allocation const allocation_buffer
       (drts.alloc (size, workflow_name + "_buffer"));
     gspc::vmem_allocation const allocation_meta
-      (drts.alloc (num_slots, workflow_name + "_meta"));
+      (drts.alloc ( num_slots * gspc::stream::size_of_meta_data_slot()
+                  , workflow_name + "_meta"
+                  )
+      );
     gspc::client client (drts);
 
     gspc::workflow workflow
@@ -131,18 +133,21 @@ namespace share_example_stream_test
 
     workflow.set_wait_for_output();
 
-    sdpa::job_id_t const job_id
+    gspc::job_id_t const job_id
       (client.submit (workflow, {{"log_file", log_file.string()}}));
 
-    stream::producer producer ( drts.virtual_memory_api()
-                              , allocation_buffer
-                              , allocation_meta
-                              , num_slots
-                              , size_slot
-                              , &client
-                              , job_id
-                              , "work_package"
-                              );
+    gspc::stream stream
+      (drts.create_stream ( "stream_test"
+                          , allocation_buffer
+                          , allocation_meta
+                          , size_slot
+                          , num_slots
+                          , [&client, &job_id] (pnet::type::value::value_type const& value) -> void
+                            {
+                              client.put_token (job_id, "work_package", value);
+                            }
+                          )
+      );
 
     std::chrono::high_resolution_clock clock;
 
@@ -159,7 +164,7 @@ namespace share_example_stream_test
 
       expected_output << data << std::endl;
 
-      producer.produce (data);
+      stream.write (data);
 
       std::this_thread::sleep_for (sleep_after_produce);
     }
