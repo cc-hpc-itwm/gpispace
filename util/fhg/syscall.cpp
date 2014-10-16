@@ -258,6 +258,18 @@ namespace fhg
       return negative_one_fails_with_errno<void> (::stat (path, buf));
     }
 
+    long sysconf (int name)
+    {
+      errno = 0;
+      long const ret  (::sysconf (name));
+      if (ret == -1 && errno == EINVAL)
+      {
+        throw boost::system::system_error
+          (boost::system::error_code (EINVAL, boost::system::system_category()));
+      }
+      return ret;
+    }
+
     void unlink (const char* pathname)
     {
       return negative_one_fails_with_errno<void> (::unlink (pathname));
