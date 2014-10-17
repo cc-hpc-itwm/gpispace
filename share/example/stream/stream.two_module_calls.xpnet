@@ -1,4 +1,6 @@
 <defun name="stream_two_module_calls">
+  <include-structs href="stream/work_package.xpnet"/>
+
   <struct name="global_memory_handle_type">
     <field name="name" type="string"/>
   </struct>
@@ -7,12 +9,6 @@
     <field name="handle" type="global_memory_handle_type"/>
     <field name="offset" type="unsigned long"/>
     <field name="size" type="unsigned long"/>
-  </struct>
-
-  <struct name="work_package">
-    <field name="meta" type="global_memory_range"/>
-    <field name="data" type="global_memory_range"/>
-    <field name="flag" type="char"/>
   </struct>
 
   <struct name="work_package_with_timestamp">
@@ -70,6 +66,7 @@
                                   )">
           <cinclude href="process.hpp"/>
           <cxx flag="--std=c++11"/>
+          <ld flag="-lgspc"/>
           <code><![CDATA[
           std::chrono::high_resolution_clock::rep const produced
             ( share_example_stream::process
@@ -89,42 +86,39 @@
 
     <place name="work_package_processed" type="work_package_with_timestamp"/>
 
-    <transition name="mark_free">
+    <transition name="collect_round_trip_time">
+      <require key="mark_free" mandatory="true"/>
       <defun>
-        <require key="mark_free" mandatory="true"/>
-        <in name="work_package_processed" type="work_package_with_timestamp"/>
-        <memory-buffer name="ptr_flag">
-          <size>
-            ${work_package_processed.work_package.meta.size}
-          </size>
-        </memory-buffer>
-        <memory-put not-modified-in-module-call="true">
-          <global>
-            stack_push (List(), ${work_package_processed.work_package.meta})
-          </global>
-          <local>
-            ${range.buffer} := "ptr_flag";
-            ${range.offset} := 0UL;
-            ${range.size} := ${work_package_processed.work_package.meta.size};
-            stack_push (List(), ${range})
-          </local>
-        </memory-put>
+        <in name="work_package_with_timestamp" type="work_package_with_timestamp"/>
+        <out name="work_package" type="work_package"/>
         <module name="stream"
-                function="free (work_package_processed, ptr_flag)">
-          <cinclude href="mark_free.hpp"/>
+                function="collect_round_trip_time ( work_package_with_timestamp
+                                                  , work_package
+                                                  )">
+          <cinclude href="statistic.hpp"/>
           <cxx flag="--std=c++11"/>
+          <ld flag="-lgspc"/>
           <code><![CDATA[
-          share_example_stream::mark_free
-            ( work_package_processed.work_package.flag
-            , {ptr_flag, work_package_processed.work_package.meta.size}
-            , work_package_processed.produced
-            );
+            static fhg::util::statistic delta ("mark_free: delta");
+            delta.tick (delta.now() - work_package_with_timestamp.produced);
+
+            work_package = work_package_with_timestamp.work_package;
           ]]></code>
         </module>
       </defun>
-      <connect-in port="work_package_processed"
+      <connect-in port="work_package_with_timestamp"
                   place="work_package_processed"/>
+      <connect-out port="work_package"
+                   place="work_package_to_mark_free"/>
     </transition>
 
+    <place name="work_package_to_mark_free" type="work_package"/>
+
+    <transition name="mark_free">
+      <require key="mark_free" mandatory="true"/>
+      <include-function href="stream/mark_free.xpnet"/>
+      <connect-in port="work_package"
+                  place="work_package_to_mark_free"/>
+    </transition>
   </net>
 </defun>
