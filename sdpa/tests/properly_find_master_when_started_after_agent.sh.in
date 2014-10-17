@@ -5,11 +5,12 @@ set -euo pipefail
 export PATH="@CMAKE_INSTALL_PREFIX@/bin":$PATH
 
 DIR_TEST="@CMAKE_CURRENT_BINARY_DIR@"
+mkdir -p "${DIR_TEST}/fifos"
 
 DUMMY_NET="$(mktemp -p "${DIR_TEST}" empty_dummy_network.pnet.XXXXX)"
 
 KVS_PID_FILE="$(mktemp -p "${DIR_TEST}" kvs.pid.XXXXX)"
-ORCHESTRATOR_PID_FILE="$(mktemp -p "${DIR_TEST}" orch.pid.XXXXX)"
+ORCHESTRATOR_PID=
 AGENT_PID_FILE="$(mktemp -p "${DIR_TEST}" agent.pid.XXXXX)"
 
 # TODO: needs some policy or fixes to work without
@@ -21,10 +22,10 @@ cleanup()
 {
   set +e
   [[ -s "${AGENT_PID_FILE}" ]] && kill $(cat "${AGENT_PID_FILE}")
-  [[ -s "${ORCHESTRATOR_PID_FILE}" ]] && kill $(cat "${ORCHESTRATOR_PID_FILE}")
+  [[ -n "${ORCHESTRATOR_PID}" ]] && kill ${ORCHESTRATOR_PID}
   [[ -s "${KVS_PID_FILE}" ]] && kill $(cat "${KVS_PID_FILE}")
   rm -f "${DUMMY_NET}"
-  rm -f "${KVS_PID_FILE}" "${ORCHESTRATOR_PID_FILE}" "${AGENT_PID_FILE}"
+  rm -f "${KVS_PID_FILE}" "${AGENT_PID_FILE}"
 }
 
 trap 'cleanup' EXIT
@@ -44,9 +45,15 @@ agent --kvs-host "${KVS_HOST}" --kvs-port ${KVS_PORT}          \
 
 sleep ${TIMEOUT_UNTIL_A_REGISTRATION_SHOULD_BE_LOST}
 
-orchestrator --kvs-host "${KVS_HOST}" --kvs-port ${KVS_PORT}   \
-             --name "orchestrator"                             \
-             --pidfile "${ORCHESTRATOR_PID_FILE}" --daemonize
+ORCHESTRATOR_PID=$(start-and-fork \
+  --fifo-directory "${DIR_TEST}/fifos" \
+  --end-sentinel-value OKAY \
+  --startup-messages-fifo-option --startup-messages-fifo \
+  --command "$(which orchestrator)" \
+  --arguments --kvs-host "${KVS_HOST}" \
+  --arguments --kvs-port ${KVS_PORT}   \
+  --arguments --name "orchestrator" \
+  --environment LD_LIBRARY_PATH="${LD_LIBRARY_PATH}")
 
 sleep ${TIMEOUT_UNTIL_A_STARTED_ORCHESTRATOR_SHOULD_LISTEN}
 

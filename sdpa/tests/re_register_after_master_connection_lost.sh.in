@@ -5,13 +5,14 @@ set -euo pipefail
 export PATH="@CMAKE_INSTALL_PREFIX@/bin":$PATH
 
 DIR_TEST="@CMAKE_CURRENT_BINARY_DIR@"
+mkdir -p "${DIR_TEST}/fifos"
 
 DUMMY_NET="$(mktemp -p "${DIR_TEST}" empty_dummy_network.pnet.XXXXX)"
 
 KVS_PID_FILE="$(mktemp -p "${DIR_TEST}" kvs.pid.XXXXX)"
-ORCHESTRATOR_1_PID_FILE="$(mktemp -p "${DIR_TEST}" orch1.pid.XXXXX)"
+ORCHESTRATOR_1_PID=
 AGENT_PID_FILE="$(mktemp -p "${DIR_TEST}" agent.pid.XXXXX)"
-ORCHESTRATOR_2_PID_FILE="$(mktemp -p "${DIR_TEST}" orch2.pid.XXXXX)"
+ORCHESTRATOR_2_PID=
 
 # TODO: needs some policy or fixes to work without
 TIMEOUT_UNTIL_A_REGISTRATION_SHOULD_BE_LOST=2
@@ -21,12 +22,12 @@ TIMEOUT_UNTIL_A_STARTED_ORCHESTRATOR_SHOULD_LISTEN=1
 cleanup()
 {
   set +e
-  [[ -s "${ORCHESTRATOR_2_PID_FILE}" ]] && kill $(cat "${ORCHESTRATOR_2_PID_FILE}")
+  [[ -n "${ORCHESTRATOR_2_PID}" ]] && kill ${ORCHESTRATOR_2_PID}
   [[ -s "${AGENT_PID_FILE}" ]] && kill $(cat "${AGENT_PID_FILE}")
-  [[ -s "${ORCHESTRATOR_1_PID_FILE}" ]] && kill $(cat "${ORCHESTRATOR_1_PID_FILE}")
+  [[ -n "${ORCHESTRATOR_1_PID}" ]] && kill ${ORCHESTRATOR_1_PID}
   [[ -s "${KVS_PID_FILE}" ]] && kill $(cat "${KVS_PID_FILE}")
   rm -f "${DUMMY_NET}"
-  rm -f "${KVS_PID_FILE}" "${ORCHESTRATOR_1_PID_FILE}" "${AGENT_PID_FILE}" "${ORCHESTRATOR_2_PID_FILE}"
+  rm -f "${KVS_PID_FILE}" "${AGENT_PID_FILE}"
 }
 
 trap 'cleanup' EXIT
@@ -40,22 +41,34 @@ KVS_PORT=$(fhgkvsd --bind "${KVS_HOST}"                        \
                    --daemonize
 )
 
-orchestrator --kvs-host "${KVS_HOST}" --kvs-port ${KVS_PORT}    \
-             --name "orchestrator"                              \
-             --pidfile "${ORCHESTRATOR_1_PID_FILE}" --daemonize
+ORCHESTRATOR_1_PID=$(start-and-fork \
+  --fifo-directory "${DIR_TEST}/fifos" \
+  --end-sentinel-value OKAY \
+  --startup-messages-fifo-option --startup-messages-fifo \
+  --command "$(which orchestrator)" \
+  --arguments --kvs-host "${KVS_HOST}" \
+  --arguments --kvs-port ${KVS_PORT}   \
+  --arguments --name "orchestrator" \
+  --environment LD_LIBRARY_PATH="${LD_LIBRARY_PATH}")
 
 agent --kvs-host "${KVS_HOST}" --kvs-port ${KVS_PORT}          \
       --master "orchestrator" --name "agent"                   \
       --pidfile "${AGENT_PID_FILE}" --daemonize
 
-kill $(cat "${ORCHESTRATOR_1_PID_FILE}")
-rm "${ORCHESTRATOR_1_PID_FILE}"
+kill ${ORCHESTRATOR_1_PID}
+ORCHESTRATOR_1_PID=
 
 sleep ${TIMEOUT_UNTIL_A_REGISTRATION_SHOULD_BE_LOST}
 
-orchestrator --kvs-host "${KVS_HOST}" --kvs-port ${KVS_PORT}    \
-             --name "orchestrator"                              \
-             --pidfile "${ORCHESTRATOR_2_PID_FILE}" --daemonize
+ORCHESTRATOR_2_PID=$(start-and-fork \
+  --fifo-directory "${DIR_TEST}/fifos" \
+  --end-sentinel-value OKAY \
+  --startup-messages-fifo-option --startup-messages-fifo \
+  --command "$(which orchestrator)" \
+  --arguments --kvs-host "${KVS_HOST}" \
+  --arguments --kvs-port ${KVS_PORT}   \
+  --arguments --name "orchestrator" \
+  --environment LD_LIBRARY_PATH="${LD_LIBRARY_PATH}")
 
 sleep ${TIMEOUT_UNTIL_A_STARTED_ORCHESTRATOR_SHOULD_LISTEN}
 

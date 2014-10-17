@@ -6,12 +6,12 @@
 
 #include <fhglog/LogMacros.hpp>
 
+#include <fhg/util/boost/program_options/validators/existing_path.hpp>
+
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <boost/filesystem/path.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
-#include <fhg/util/daemonize.hpp>
-#include <fhg/util/pidfile_writer.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 
@@ -23,10 +23,10 @@ namespace bfs = boost::filesystem;
 namespace po = boost::program_options;
 
 int main (int argc, char **argv)
+try
 {
     std::string orchName;
     std::string orchUrl;
-    std::string pidfile;
 
   boost::asio::io_service remote_log_io_service;
   FHGLOG_SETUP (remote_log_io_service);
@@ -38,9 +38,10 @@ int main (int argc, char **argv)
        ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
        ("kvs-host",  po::value<std::string>()->required(), "The kvs daemon's host")
        ("kvs-port",  po::value<std::string>()->required(), "The kvs daemon's port")
-       ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
-       ("daemonize", "daemonize after all checks were successful")
-       ;
+       ( "startup-messages-fifo"
+       , po::value<fhg::util::boost::program_options::existing_path>()->required()
+       , "fifo to use for communication during startup (ports used, ...)"
+       );
 
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
@@ -55,27 +56,6 @@ int main (int argc, char **argv)
     }
 
     po::notify(vm);
-
-    if (not pidfile.empty())
-    {
-      fhg::util::pidfile_writer const pidfile_writer (pidfile);
-
-      if (vm.count ("daemonize"))
-      {
-        fhg::util::fork_and_daemonize_child_and_abandon_parent
-          ({&remote_log_io_service});
-      }
-
-      pidfile_writer.write();
-    }
-    else
-    {
-      if (vm.count ("daemonize"))
-      {
-        fhg::util::fork_and_daemonize_child_and_abandon_parent
-          ({&remote_log_io_service});
-      }
-    }
 
   boost::asio::io_service peer_io_service;
   boost::asio::io_service kvs_client_io_service;
@@ -99,6 +79,18 @@ int main (int argc, char **argv)
   signal_handlers.add (SIGTERM, std::bind (request_stop));
   signal_handlers.add (SIGINT, std::bind (request_stop));
 
+  {
+    std::ofstream startup_messages_fifo
+      ( vm["startup-messages-fifo"]
+      . as<fhg::util::boost::program_options::existing_path>().string()
+      );
+    startup_messages_fifo << "OKAY\n";
+  }
 
   stop_requested.wait();
+}
+catch (std::exception const& ex)
+{
+  std::cerr << "EXCEPTION: " << ex.what() << std::endl;
+  return 1;
 }

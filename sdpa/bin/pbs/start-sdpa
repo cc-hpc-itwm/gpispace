@@ -87,14 +87,15 @@ assert_not_empty()
     fi
 }
 
+rexec_ssh_opts="-q -x -T -n -C -4 -o CheckHostIP=no -o StrictHostKeyChecking=no"
+
 # helper function to execute something remotely
 function rexec ()
 {
     local node="$1"; shift
     local err
     local rc
-    local ssh_opts="-q -x -T -n -C -4 -o CheckHostIP=no -o StrictHostKeyChecking=no"
-    local cmd="ssh $ssh_opts $node /usr/bin/env LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\" $@"
+    local cmd="ssh ${rexec_ssh_opts} $node /usr/bin/env LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\" $@"
     err=$($cmd </dev/null 2>&1)
     rc=$?
     if [ $rc -ne 0 ] ; then
@@ -106,6 +107,34 @@ function rexec ()
         fi
         return 0
     fi
+}
+
+function rexec_with_startup_messages()
+{
+  local node="${1}"; shift
+  local target_var="${1}"; shift
+  mkdir -p "${state_dir}/fifos"
+  # todo: use local filesystem on remote host, not shared
+  mkdir -p "${state_dir}/fifos"
+  local command="ssh ${rexec_ssh_opts} ${node} \
+    /usr/bin/env LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\" \
+      ${sdpa_home}/bin/start-and-fork \
+       --fifo-directory \"${state_dir}/fifos\" \
+       --end-sentinel-value OKAY \
+       --startup-messages-fifo-option --startup-messages-fifo \
+       \
+       ${@}"
+  echo rexec_with_startup_messages: ${command}
+
+  local startup_messages_raw=$(${command})
+  local ec=${?}
+
+  local old_IFS=${IFS}
+  IFS=$'\n'
+  eval "${target_var}=(${startup_messages_raw})"
+  IFS=${old_IFS}
+
+  return ${ec}
 }
 
 parse_capability()
@@ -463,23 +492,25 @@ then
     error 3 "could not start kvs: failed to appear at ${kvs_host}:${kvs_port} after ${network_retries} seconds"
 fi
 
-rexec $master /usr/bin/env \
-    FHGLOG_to_server="${log_host}:${log_port}" \
-    FHGLOG_level=$($verbose && echo "TRACE" || echo "INFO") \
-    FHGLOG_to_file="${state_dir}/log/orchestrator.log" \
-    "${sdpa_home}/bin/orchestrator" \
-    --pidfile "$state_dir/orchestrator.pid" \
-    --daemonize \
-    --kvs-host="${kvs_host}" \
-    --kvs-port="${kvs_port}" \
-    -u '0' \
-    -n "orchestrator"
-ec=$?
-if [ $ec -ne 0 ]
-then
+rexec_with_startup_messages ${master} orchestrator_startup_messages \
+  --command "${sdpa_home}/bin/orchestrator" \
+  --arguments --kvs-host "${kvs_host}" \
+  --arguments --kvs-port "${kvs_port}" \
+  --arguments -u '0' \
+  --arguments -n "orchestrator" \
+  --environment LD_LIBRARY_PATH="${LD_LIBRARY_PATH}" \
+  --environment FHGLOG_to_server="${log_host}:${log_port}" \
+  --environment FHGLOG_level=$($verbose && echo TRACE || echo INFO) \
+  --environment FHGLOG_to_file="${state_dir}/log/orchestrator.log"
+if [ ${?} -ne 0 ] ; then
     "${sdpa}" -s "${state_dir}" stop
     error 3 "could not start orchestrator"
 fi
+if [ ${#orchestrator_startup_messages[@]} != 1 ]; then
+  "${sdpa}" -s "${state_dir}" stop
+  error 3 "could not start orchestrator: expected 1 lines of startup messages"
+fi
+echo ${orchestrator_startup_messages[0]} > "${state_dir}/orchestrator.pid"
 
 wait_for_process ${network_retries} "orchestrator" "${kvs_host}" "${kvs_port}"
 ec=$?
