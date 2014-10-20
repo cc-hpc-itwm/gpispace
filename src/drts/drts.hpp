@@ -109,6 +109,7 @@ namespace gspc
   void set_application_search_path ( boost::program_options::variables_map&
                                    , boost::filesystem::path const&
                                    );
+  //! \todo make private, used in gspc-tests only
   void set_virtual_memory_socket ( boost::program_options::variables_map&
                                  , boost::filesystem::path const&
                                  );
