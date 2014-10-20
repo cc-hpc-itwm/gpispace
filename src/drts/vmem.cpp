@@ -17,35 +17,41 @@ namespace gspc
 {
   namespace validators = fhg::util::boost::program_options;
 
-  vmem_t::vmem_t ( boost::program_options::variables_map const& vm
-                 , gspc::installation const& installation
-                 , gspc::rif_t& rif
-                 , std::pair<std::list<std::string>, unsigned long> const& machinefile
-                 , const std::string& kvs_host
-                 , const unsigned short kvs_port
-                 )
+  vmem_t::vmem_t
+    ( boost::program_options::variables_map const& vm
+    , gspc::installation const& installation
+    , gspc::rif_t& rif
+    , std::pair<std::list<std::string>, unsigned long> const& machinefile
+    , const std::string& kvs_host
+    , const unsigned short kvs_port
+    )
     : _rif (rif)
-    , _rif_endpoints ([] (const std::list<std::string>& hosts) -> std::list<gspc::rif_t::endpoint_t>
-      {
-        std::list<gspc::rif_t::endpoint_t> ep;
-        std::unordered_set<std::string> seen;
-        for (std::string const&h : hosts)
+    , _rif_endpoints
+      ( [] (const std::list<std::string>& hosts)
+        -> std::list<gspc::rif_t::endpoint_t>
         {
-          if (seen.emplace (h).second)
+          std::list<gspc::rif_t::endpoint_t> ep;
+          std::unordered_set<std::string> seen;
+          for (std::string const& h : hosts)
           {
-            ep.emplace_back (h, 22);
+            if (seen.emplace (h).second)
+            {
+              ep.emplace_back (h, 22);
+            }
           }
-        }
-        return ep;
-      } (machinefile.first))
+          return ep;
+        } (machinefile.first)
+      )
   {
     const std::string& log_host (get_log_host (vm));
     const unsigned short log_port (get_log_port (vm));
     const std::string log_level (get_log_level (vm));
-    const boost::filesystem::path socket (get_not_yet_existing_virtual_memory_socket (vm));
+    const boost::filesystem::path socket
+      (get_not_yet_existing_virtual_memory_socket (vm));
     const unsigned short port (get_virtual_memory_port (vm));
     const unsigned long memory_size (get_virtual_memory_per_node (vm));
-    const unsigned long startup_timeout_in_seconds (get_virtual_memory_startup_timeout (vm));
+    const unsigned long startup_timeout_in_seconds
+      (get_virtual_memory_startup_timeout (vm));
 
     if (_rif_endpoints.empty())
     {
@@ -57,7 +63,8 @@ namespace gspc
 
     if (boost::filesystem::exists (socket))
     {
-      throw std::runtime_error ("socket file already exists: " + socket.string());
+      throw std::runtime_error
+        ("socket file already exists: " + socket.string());
     }
 
     const std::string& master (_rif_endpoints.front().host);
@@ -78,47 +85,49 @@ namespace gspc
                  );
     }
 
-    _rif.exec ( {_rif_endpoints.front()}
-              , "gaspi-master"
-              , { vmem_binary.string()
-                , "--kvs-host", kvs_host, "--kvs-port", std::to_string (kvs_port)
-                , "--log-host", log_host, "--log-port", std::to_string (log_port)
-                , "--log-level", log_level
-                , "--gpi-mem", std::to_string (memory_size)
-                , "--socket", socket.string()
-                , "--port", std::to_string (port)
-                , "--gpi-api", _rif_endpoints.size() > 1 ? "gaspi" : "fake"
-                , "--gpi-timeout", std::to_string (startup_timeout_in_seconds)
-                }
-              , { {"GASPI_MFILE", nodefile_path}
-                , {"GASPI_MASTER", master}
-                , {"GASPI_SOCKET", "0"}
-                , {"GASPI_TYPE", "GASPI_MASTER"}
-                , {"GASPI_SET_NUMA_SOCKET", "0"}
-                }
-              );
+    _rif.exec
+      ( {_rif_endpoints.front()}
+      , "gaspi-master"
+      , { vmem_binary.string()
+        , "--kvs-host", kvs_host, "--kvs-port", std::to_string (kvs_port)
+        , "--log-host", log_host, "--log-port", std::to_string (log_port)
+        , "--log-level", log_level
+        , "--gpi-mem", std::to_string (memory_size)
+        , "--socket", socket.string()
+        , "--port", std::to_string (port)
+        , "--gpi-api", _rif_endpoints.size() > 1 ? "gaspi" : "fake"
+        , "--gpi-timeout", std::to_string (startup_timeout_in_seconds)
+        }
+      , { {"GASPI_MFILE", nodefile_path}
+        , {"GASPI_MASTER", master}
+        , {"GASPI_SOCKET", "0"}
+        , {"GASPI_TYPE", "GASPI_MASTER"}
+        , {"GASPI_SET_NUMA_SOCKET", "0"}
+        }
+      );
 
-    _rif.exec ( std::list<gspc::rif_t::endpoint_t> ( ++_rif_endpoints.begin()
-                                                   , _rif_endpoints.end()
-                                                   )
-              , "gaspi-worker"
-              , { vmem_binary.string()
-                , "--kvs-host", kvs_host, "--kvs-port", std::to_string (kvs_port)
-                , "--log-host", log_host, "--log-port", std::to_string (log_port)
-                , "--log-level", log_level
-                , "--gpi-mem", std::to_string (memory_size)
-                , "--socket", socket.string()
-                , "--port", std::to_string (port)
-                , "--gpi-api", _rif_endpoints.size() > 1 ? "gaspi" : "fake"
-                , "--gpi-timeout", std::to_string (startup_timeout_in_seconds)
-                }
-              , { {"GASPI_MFILE", nodefile_path}
-                , {"GASPI_MASTER", master}
-                , {"GASPI_SOCKET", "0"}
-                , {"GASPI_TYPE", "GASPI_WORKER"}
-                , {"GASPI_SET_NUMA_SOCKET", "0"}
-                }
-              );
+    _rif.exec
+      ( std::list<gspc::rif_t::endpoint_t> ( ++_rif_endpoints.begin()
+                                           , _rif_endpoints.end()
+                                           )
+      , "gaspi-worker"
+      , { vmem_binary.string()
+        , "--kvs-host", kvs_host, "--kvs-port", std::to_string (kvs_port)
+        , "--log-host", log_host, "--log-port", std::to_string (log_port)
+        , "--log-level", log_level
+        , "--gpi-mem", std::to_string (memory_size)
+        , "--socket", socket.string()
+        , "--port", std::to_string (port)
+        , "--gpi-api", _rif_endpoints.size() > 1 ? "gaspi" : "fake"
+        , "--gpi-timeout", std::to_string (startup_timeout_in_seconds)
+        }
+      , { {"GASPI_MFILE", nodefile_path}
+        , {"GASPI_MASTER", master}
+        , {"GASPI_SOCKET", "0"}
+        , {"GASPI_TYPE", "GASPI_WORKER"}
+        , {"GASPI_SET_NUMA_SOCKET", "0"}
+        }
+      );
 
     std::chrono::steady_clock::time_point const until
       ( std::chrono::steady_clock::now()
@@ -134,7 +143,8 @@ namespace gspc
 
       std::this_thread::sleep_for
         (std::min ( std::chrono::milliseconds (200)
-                  , std::chrono::duration_cast<std::chrono::milliseconds> (until - std::chrono::steady_clock::now())
+                  , std::chrono::duration_cast<std::chrono::milliseconds>
+                    (until - std::chrono::steady_clock::now())
                   )
         );
     }
