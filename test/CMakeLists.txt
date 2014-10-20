@@ -7,6 +7,7 @@ add_library (test-utilities SHARED
   scoped_state_directory.cpp
   shared_directory.cpp
   source_directory.cpp
+  virtual_memory_socket_name_for_localhost.cpp
 )
 target_link_libraries (test-utilities
   fhg-util
