@@ -76,7 +76,7 @@ namespace gspc
                  );
     }
 
-    const std::string& log_host (get_log_host (vm));
+    const std::string log_host (get_log_host (vm));
     const unsigned short log_port (get_log_port (vm));
     const std::string log_level (get_log_level (vm));
     const unsigned short port (get_virtual_memory_port (vm));
