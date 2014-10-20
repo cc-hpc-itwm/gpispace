@@ -16,16 +16,16 @@ namespace gspc
       constexpr char const* const gspc_home {"gspc-home"};
       constexpr char const* const nodefile {"nodefile"};
       constexpr char const* const application_search_path
-      {"application-search-path"};
+        {"application-search-path"};
 
       constexpr char const* const virtual_memory_per_node
-      {"virtual-memory-per-node"};
+        {"virtual-memory-per-node"};
       constexpr char const* const virtual_memory_socket
-      {"virtual-memory-socket"};
+        {"virtual-memory-socket"};
       constexpr char const* const virtual_memory_port
-      {"virtual-memory-port"};
+        {"virtual-memory-port"};
       constexpr char const* const virtual_memory_startup_timeout
-      {"virtual-memory-startup-timeout"};
+        {"virtual-memory-startup-timeout"};
     }
   }
 }

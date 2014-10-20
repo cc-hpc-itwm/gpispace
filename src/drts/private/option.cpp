@@ -2,7 +2,7 @@
 
 #include <drts/drts.hpp>
 
-#include <drts/option.hpp>
+#include <drts/private/option.hpp>
 
 #include <fhg/util/boost/program_options/validators/executable.hpp>
 #include <fhg/util/boost/program_options/validators/existing_directory.hpp>

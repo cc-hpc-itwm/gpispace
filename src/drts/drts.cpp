@@ -1,7 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <drts/drts.hpp>
-#include <drts/option.hpp>
+#include <drts/private/option.hpp>
 
 #include <drts/virtual_memory.hpp>
 
