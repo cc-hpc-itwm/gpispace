@@ -50,8 +50,7 @@ namespace gspc
     const fhg::util::boost::program_options::executable vmem_binary
       ((installation.gspc_home() / "bin" / "gpi-space").string());
 
-    const boost::filesystem::path socket
-      (get_not_yet_existing_virtual_memory_socket (vm));
+    const boost::filesystem::path socket (get_virtual_memory_socket (vm));
 
     if (boost::filesystem::exists (socket))
     {
