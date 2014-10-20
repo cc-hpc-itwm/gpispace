@@ -1,10 +1,8 @@
 // mirko.rahn@itwm.fraunhofer.de
 
+#include <drts/private/option.hpp>
 #include <drts/drts.hpp>
 
-#include <drts/private/option.hpp>
-
-#include <fhg/util/boost/program_options/validators/executable.hpp>
 #include <fhg/util/boost/program_options/validators/existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/validators/is_directory_if_exists.hpp>
