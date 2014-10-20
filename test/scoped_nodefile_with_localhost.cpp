@@ -3,6 +3,7 @@
 #include <test/scoped_nodefile_with_localhost.hpp>
 
 #include <drts/drts.hpp>
+#include <drts/private/option.hpp>
 
 #include <fhg/util/hostname.hpp>
 

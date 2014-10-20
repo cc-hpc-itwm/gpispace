@@ -1,3 +1,4 @@
+#include <drts/private/option.hpp>
 #include <drts/private/vmem.hpp>
 #include <drts/private/rif.hpp>
 
