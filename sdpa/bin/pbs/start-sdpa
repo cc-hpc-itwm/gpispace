@@ -124,7 +124,6 @@ function rexec_with_startup_messages()
        --startup-messages-fifo-option --startup-messages-fifo \
        \
        ${@}"
-  echo rexec_with_startup_messages: ${command}
 
   local startup_messages_raw=$(${command})
   local ec=${?}
