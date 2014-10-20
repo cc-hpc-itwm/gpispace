@@ -423,10 +423,6 @@ namespace gspc
     set_as<validators::existing_path>
       (vm, options::name::nodefile, path.string());
   }
-  boost::filesystem::path get_nodefile (boost::program_options::variables_map const& vm)
-  {
-    return vm[options::name::nodefile].as<validators::existing_path>();
-  }
   void set_virtual_memory_per_node ( boost::program_options::variables_map& vm
                                    , unsigned long size
                                   )
