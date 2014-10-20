@@ -34,52 +34,27 @@ namespace gspc
 
 #define SET(_name, _type) \
   void set_ ## _name (boost::program_options::variables_map&, _type const&)
+#define GET(_name, _type) \
+  _type get_ ## _name (boost::program_options::variables_map const&)
+#define ACCESS(_name, _type) SET (_name, _type); GET (_name, _type)
 
-  SET (log_host, std::string);
-  SET (log_port, unsigned short);
-  SET (log_level, std::string);
-  SET (gui_host, std::string);
-  SET (gui_port, unsigned short);
+  ACCESS (log_host, std::string);
+  ACCESS (log_port, unsigned short);
+  ACCESS (log_level, std::string);
+  ACCESS (gui_host, std::string);
+  ACCESS (gui_port, unsigned short);
 
-  SET (state_directory, boost::filesystem::path);
-  SET (gspc_home, boost::filesystem::path);
-  SET (nodefile, boost::filesystem::path);
+  ACCESS (state_directory, boost::filesystem::path);
+  ACCESS (gspc_home, boost::filesystem::path);
+  ACCESS (nodefile, boost::filesystem::path);
+  GET (application_search_path, boost::filesystem::path);
 
-  SET (virtual_memory_per_node, unsigned long);
-  SET (virtual_memory_socket, boost::filesystem::path);
-  SET (virtual_memory_port, unsigned short);
-  SET (virtual_memory_startup_timeout, unsigned long);
+  ACCESS (virtual_memory_per_node, unsigned long);
+  GET (virtual_memory_socket, boost::filesystem::path);
+  ACCESS (virtual_memory_port, unsigned short);
+  ACCESS (virtual_memory_startup_timeout, unsigned long);
 
+#undef ACCESS
+#undef GET
 #undef SET
-
-  std::string get_log_host (boost::program_options::variables_map const&);
-  unsigned short get_log_port (boost::program_options::variables_map const&);
-  std::string get_log_level (boost::program_options::variables_map const&);
-  std::string get_gui_host (boost::program_options::variables_map const&);
-  unsigned short get_gui_port (boost::program_options::variables_map const&);
-
-  boost::filesystem::path get_state_directory
-    (boost::program_options::variables_map const&);
-
-  boost::filesystem::path get_gspc_home
-    (boost::program_options::variables_map const&);
-
-  boost::filesystem::path get_nodefile
-    (boost::program_options::variables_map const&);
-
-  boost::filesystem::path get_application_search_path
-    (boost::program_options::variables_map const&);
-
-
-  unsigned long get_virtual_memory_per_node
-    (boost::program_options::variables_map const&);
-
-  boost::filesystem::path get_virtual_memory_socket
-    (boost::program_options::variables_map const&);
-
-  unsigned short get_virtual_memory_port
-    (boost::program_options::variables_map const&);
-
-  unsigned long get_virtual_memory_startup_timeout
-    (boost::program_options::variables_map const&);
 }
