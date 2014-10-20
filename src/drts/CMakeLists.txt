@@ -17,6 +17,7 @@ install (FILES
 add_library (gspc SHARED
   client.cpp
   drts.cpp
+  option.cpp
   vmem.cpp
   rif.cpp
   virtual_memory.cpp
