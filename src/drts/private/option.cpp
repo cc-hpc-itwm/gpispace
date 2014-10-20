@@ -175,100 +175,60 @@ namespace gspc
       (vm, options::name::_name, std::to_string (value));               \
   }
 
-  SET_STRING (log_host, validators::nonempty_string);
-  SET_INTEGRAL (log_port, unsigned short);
-  SET_STRING (log_level, std::string);
-  SET_STRING (gui_host, validators::nonempty_string);
-  SET_INTEGRAL (gui_port, unsigned short);
+#define GET(_name, _type)                                               \
+  _type get_ ## _name (boost::program_options::variables_map const& vm)
+#define GET_PATH(_name, _as)                    \
+  GET (_name, boost::filesystem::path)          \
+  {                                             \
+    return vm[options::name::_name].as<_as>();  \
+  }
+#define GET_STRING(_name, _as)                  \
+  GET (_name, std::string)                      \
+  {                                             \
+    return vm[options::name::_name].as<_as>();  \
+}
+#define GET_INTEGRAL(_name, _type)                      \
+  GET (_name, _type)                                    \
+  {                                                     \
+    return vm[options::name::_name]                     \
+      .as<validators::positive_integral<_type>>();      \
+  }
 
-  SET_PATH (state_directory, validators::is_directory_if_exists);
-  SET_PATH (gspc_home, validators::existing_directory);
-  SET_PATH (nodefile, validators::existing_path);
-  SET_PATH (application_search_path, validators::existing_directory);
+#define ACCESS_PATH(_name, _as)                 \
+  SET_PATH (_name, _as); GET_PATH (_name, _as)
+#define ACCESS_STRING(_name, _as)                       \
+  SET_STRING (_name, _as); GET_STRING (_name, _as)
+#define ACCESS_INTEGRAL(_name, _type)                           \
+  SET_INTEGRAL (_name, _type); GET_INTEGRAL (_name, _type)
 
-  SET_INTEGRAL (virtual_memory_per_node, unsigned long);
-  SET_PATH (virtual_memory_socket, validators::nonexisting_path);
-  SET_INTEGRAL (virtual_memory_port, unsigned short);
-  SET_INTEGRAL (virtual_memory_startup_timeout, unsigned long);
+
+  ACCESS_STRING (log_host, validators::nonempty_string);
+  ACCESS_INTEGRAL (log_port, unsigned short);
+  ACCESS_STRING (log_level, std::string);
+  ACCESS_STRING (gui_host, validators::nonempty_string);
+  ACCESS_INTEGRAL (gui_port, unsigned short);
+
+  ACCESS_PATH (state_directory, validators::is_directory_if_exists);
+  ACCESS_PATH (gspc_home, validators::existing_directory);
+  ACCESS_PATH (nodefile, validators::existing_path);
+  ACCESS_PATH (application_search_path, validators::existing_directory);
+
+  ACCESS_INTEGRAL (virtual_memory_per_node, unsigned long);
+  ACCESS_PATH (virtual_memory_socket, validators::nonexisting_path);
+  ACCESS_INTEGRAL (virtual_memory_port, unsigned short);
+  ACCESS_INTEGRAL (virtual_memory_startup_timeout, unsigned long);
+
+#undef ACCESS_INTEGRAL
+#undef ACCESS_STRING
+#undef ACCESS_PATH
+
+#undef GET_INTEGRAL
+#undef GET_STRING
+#undef GET_PATH
+#undef GET
 
 #undef SET_INTEGRAL
 #undef SET_STRING
 #undef SET_PATH
 #undef SET
-
-  std::string get_log_host (boost::program_options::variables_map const& vm)
-  {
-    return vm[options::name::log_host].as<validators::nonempty_string>();
-  }
-  unsigned short get_log_port (boost::program_options::variables_map const& vm)
-  {
-    return vm[options::name::log_port]
-      .as<validators::positive_integral<unsigned short>>();
-  }
-  std::string get_log_level (boost::program_options::variables_map const& vm)
-  {
-    return vm[options::name::log_level].as<std::string>();
-  }
-  std::string get_gui_host (boost::program_options::variables_map const& vm)
-  {
-    return vm[options::name::gui_host].as<validators::nonempty_string>();
-  }
-  unsigned short get_gui_port (boost::program_options::variables_map const& vm)
-  {
-    return vm[options::name::gui_port]
-      .as<validators::positive_integral<unsigned short>>();
-  }
-
-  boost::filesystem::path get_state_directory
-    (boost::program_options::variables_map const& vm)
-  {
-    return vm[options::name::state_directory]
-      .as<validators::is_directory_if_exists>();
-  }
-
-  boost::filesystem::path get_gspc_home
-    (boost::program_options::variables_map const& vm)
-  {
-    return vm[options::name::gspc_home]
-      .as<validators::existing_directory>();
-  }
-
-  boost::filesystem::path get_nodefile
-    (boost::program_options::variables_map const& vm)
-  {
-    return vm[options::name::nodefile]
-      .as<validators::existing_path>();
-  }
-
-  boost::filesystem::path get_application_search_path
-    (boost::program_options::variables_map const& vm)
-  {
-    return vm[options::name::application_search_path]
-      .as<validators::existing_directory>();
-  }
-
-  unsigned long get_virtual_memory_per_node
-    (boost::program_options::variables_map const& vm)
-  {
-    return vm[options::name::virtual_memory_per_node]
-      .as<validators::positive_integral<unsigned long>>();
-  }
-  boost::filesystem::path get_virtual_memory_socket
-    (boost::program_options::variables_map const& vm)
-  {
-    return vm[options::name::virtual_memory_socket]
-      .as<validators::nonexisting_path>();
-  }
-  unsigned short get_virtual_memory_port
-    (boost::program_options::variables_map const& vm)
-  {
-    return vm[options::name::virtual_memory_port]
-      .as<validators::positive_integral<unsigned short>>();
-  }
-  unsigned long get_virtual_memory_startup_timeout
-    (boost::program_options::variables_map const& vm)
-  {
-    return vm[options::name::virtual_memory_startup_timeout]
-      .as<validators::positive_integral<unsigned long>>();
-  }
 }
