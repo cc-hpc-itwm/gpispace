@@ -90,10 +90,7 @@ namespace gspc
 
   installation::installation
     (boost::program_options::variables_map const& vm)
-    : _gspc_home
-      ( boost::filesystem::canonical
-        (vm[options::name::gspc_home].as<validators::existing_directory>())
-      )
+      : _gspc_home (boost::filesystem::canonical (get_gspc_home (vm)))
   {}
 
   scoped_runtime_system::scoped_runtime_system
@@ -102,14 +99,8 @@ namespace gspc
     , std::string const& topology_description
     )
       : _installation (installation)
-      , _state_directory
-        ( vm[options::name::state_directory]
-        . as<validators::is_directory_if_exists>()
-        )
-      , _nodefile
-        ( boost::filesystem::canonical
-          (vm[options::name::nodefile].as<validators::existing_path>())
-        )
+      , _state_directory (get_state_directory (vm))
+      , _nodefile (boost::filesystem::canonical (get_nodefile (vm)))
       , _virtual_memory_per_node
         ( vm.count (options::name::virtual_memory_per_node)
         ? boost::make_optional
@@ -153,29 +144,21 @@ namespace gspc
 
     if (vm.count (options::name::log_host))
     {
-      command_boot << " -l " <<
-        (vm[options::name::log_host].as<validators::nonempty_string>());
+      command_boot << " -l " << get_log_host (vm);
 
       if (vm.count (options::name::log_port))
       {
-        command_boot << ":" <<
-          ( vm[options::name::log_port]
-          . as<validators::positive_integral<unsigned short>>()
-          );
+        command_boot << ":" << get_log_port (vm);
       }
     }
 
     if (vm.count (options::name::gui_host))
     {
-      command_boot << " -g " <<
-        (vm[options::name::gui_host].as<validators::nonempty_string>());
+      command_boot << " -g " << get_gui_host (vm);
 
       if (vm.count (options::name::gui_port))
       {
-        command_boot << ":" <<
-          ( vm[options::name::gui_port]
-          . as<validators::positive_integral<unsigned short>>()
-          );
+        command_boot << ":" << get_gui_port (vm);
       }
     }
 
@@ -196,9 +179,7 @@ namespace gspc
     if (vm.count (options::name::application_search_path))
     {
       for ( boost::filesystem::path const& path
-          : { vm[options::name::application_search_path]
-            . as<validators::existing_directory>()
-            }
+          : {get_application_search_path (vm)}
           )
       {
         command_boot << " -A " << boost::filesystem::canonical (path);
