@@ -50,7 +50,7 @@ namespace gspc
     const fhg::util::boost::program_options::executable vmem_binary
       ((installation.gspc_home() / "bin" / "gpi-space").string());
 
-    const boost::filesystem::path socket (get_virtual_memory_socket (vm));
+    const boost::filesystem::path socket (get_virtual_memory_socket (vm).get());
 
     if (boost::filesystem::exists (socket))
     {
@@ -76,13 +76,13 @@ namespace gspc
                  );
     }
 
-    const std::string log_host (get_log_host (vm));
-    const unsigned short log_port (get_log_port (vm));
-    const std::string log_level (get_log_level (vm));
-    const unsigned short port (get_virtual_memory_port (vm));
-    const unsigned long memory_size (get_virtual_memory_per_node (vm));
+    const std::string log_host (get_log_host (vm).get());
+    const unsigned short log_port (get_log_port (vm).get());
+    const std::string log_level (get_log_level (vm).get());
+    const unsigned short port (get_virtual_memory_port (vm).get());
+    const unsigned long memory_size (get_virtual_memory_per_node (vm).get());
     const unsigned long startup_timeout_in_seconds
-      (get_virtual_memory_startup_timeout (vm));
+      (get_virtual_memory_startup_timeout (vm).get());
 
     _rif.exec
       ( {_rif_endpoints.front()}

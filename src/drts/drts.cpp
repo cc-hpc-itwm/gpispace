@@ -90,7 +90,7 @@ namespace gspc
 
   installation::installation
     (boost::program_options::variables_map const& vm)
-      : _gspc_home (boost::filesystem::canonical (get_gspc_home (vm)))
+      : _gspc_home (boost::filesystem::canonical (get_gspc_home (vm).get()))
   {}
 
   scoped_runtime_system::scoped_runtime_system
@@ -99,33 +99,12 @@ namespace gspc
     , std::string const& topology_description
     )
       : _installation (installation)
-      , _state_directory (get_state_directory (vm))
-      , _nodefile (boost::filesystem::canonical (get_nodefile (vm)))
-      , _virtual_memory_per_node
-        ( vm.count (options::name::virtual_memory_per_node)
-        ? boost::make_optional
-          ( vm[options::name::virtual_memory_per_node]
-          . as<validators::positive_integral<unsigned long>>()
-          )
-        : boost::none
-        )
-      , _virtual_memory_socket
-        ( vm.count (options::name::virtual_memory_socket)
-        ? boost::make_optional
-          ( vm[options::name::virtual_memory_socket]
-          . as<validators::nonexisting_path>()
-          )
-        : boost::none
-        )
+      , _state_directory (get_state_directory (vm).get())
+      , _nodefile (boost::filesystem::canonical (get_nodefile (vm).get()))
+      , _virtual_memory_per_node (get_virtual_memory_per_node (vm))
+      , _virtual_memory_socket (get_virtual_memory_socket (vm))
       , _virtual_memory_startup_timeout
-        ( vm.count (options::name::virtual_memory_startup_timeout)
-        ? boost::make_optional
-          ( std::chrono::seconds ( vm[options::name::virtual_memory_startup_timeout]
-                                 . as<validators::positive_integral<unsigned long>>()
-                                 )
-          )
-        : boost::none
-        )
+        (get_virtual_memory_startup_timeout (vm).get())
       , _nodes_and_number_of_unique_nodes (read_nodes (_nodefile))
       , _virtual_memory_api
         ( _virtual_memory_socket
@@ -142,23 +121,23 @@ namespace gspc
       << " boot"
       << " -f " << _nodefile;
 
-    if (vm.count (options::name::log_host))
+    if (get_log_host (vm))
     {
-      command_boot << " -l " << get_log_host (vm);
+      command_boot << " -l " << get_log_host (vm).get();
 
-      if (vm.count (options::name::log_port))
+      if (get_log_port (vm))
       {
-        command_boot << ":" << get_log_port (vm);
+        command_boot << ":" << get_log_port (vm).get();
       }
     }
 
-    if (vm.count (options::name::gui_host))
+    if (get_gui_host (vm))
     {
-      command_boot << " -g " << get_gui_host (vm);
+      command_boot << " -g " << get_gui_host (vm).get();
 
-      if (vm.count (options::name::gui_port))
+      if (get_gui_port (vm))
       {
-        command_boot << ":" << get_gui_port (vm);
+        command_boot << ":" << get_gui_port (vm).get();
       }
     }
 
@@ -168,7 +147,7 @@ namespace gspc
         << " -y " << *_virtual_memory_socket
         << " -m " << *_virtual_memory_per_node
         << " -T " << _virtual_memory_startup_timeout->count()
-        << " -P " << get_virtual_memory_port (vm)
+        << " -P " << get_virtual_memory_port (vm).get()
         ;
     }
     else
@@ -176,10 +155,10 @@ namespace gspc
       command_boot << " -M";
     }
 
-    if (vm.count (options::name::application_search_path))
+    if (get_application_search_path (vm))
     {
       for ( boost::filesystem::path const& path
-          : {get_application_search_path (vm)}
+          : {get_application_search_path (vm).get()}
           )
       {
         command_boot << " -A " << boost::filesystem::canonical (path);

@@ -176,23 +176,24 @@ namespace gspc
   }
 
 #define GET(_name, _type)                                               \
-  _type get_ ## _name (boost::program_options::variables_map const& vm)
-#define GET_PATH(_name, _as)                    \
-  GET (_name, boost::filesystem::path)          \
-  {                                             \
-    return vm[options::name::_name].as<_as>();  \
+  boost::optional<_type> get_ ## _name                                  \
+    (boost::program_options::variables_map const& vm)
+
+#define GET_MAYBE(_name, _type, _as)                                    \
+  GET(_name, _type)                                                     \
+  {                                                                     \
+    if (vm.count (options::name::_name))                                \
+    {                                                                   \
+      return static_cast<_type> (vm[options::name::_name].as<_as>());   \
+    }                                                                   \
+                                                                        \
+    return boost::none;                                                 \
   }
-#define GET_STRING(_name, _as)                  \
-  GET (_name, std::string)                      \
-  {                                             \
-    return vm[options::name::_name].as<_as>();  \
-}
-#define GET_INTEGRAL(_name, _type)                      \
-  GET (_name, _type)                                    \
-  {                                                     \
-    return vm[options::name::_name]                     \
-      .as<validators::positive_integral<_type>>();      \
-  }
+
+#define GET_PATH(_name, _as) GET_MAYBE (_name, boost::filesystem::path, _as)
+#define GET_STRING(_name, _as) GET_MAYBE (_name, std::string, _as)
+#define GET_INTEGRAL(_name, _type) \
+  GET_MAYBE (_name, _type, validators::positive_integral<_type>)
 
 #define ACCESS_PATH(_name, _as)                 \
   SET_PATH (_name, _as); GET_PATH (_name, _as)
@@ -225,6 +226,9 @@ namespace gspc
 #undef GET_INTEGRAL
 #undef GET_STRING
 #undef GET_PATH
+
+#undef GET_MAYBE
+
 #undef GET
 
 #undef SET_INTEGRAL

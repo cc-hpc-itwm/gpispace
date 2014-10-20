@@ -1,6 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <boost/filesystem.hpp>
+#include <boost/optional.hpp>
 #include <boost/program_options.hpp>
 
 namespace gspc
@@ -34,8 +35,9 @@ namespace gspc
 
 #define SET(_name, _type) \
   void set_ ## _name (boost::program_options::variables_map&, _type const&)
-#define GET(_name, _type) \
-  _type get_ ## _name (boost::program_options::variables_map const&)
+#define GET(_name, _type)                               \
+  boost::optional<_type> get_ ## _name                  \
+    (boost::program_options::variables_map const&)
 #define ACCESS(_name, _type) SET (_name, _type); GET (_name, _type)
 
   ACCESS (log_host, std::string);
