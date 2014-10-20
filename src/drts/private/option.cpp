@@ -12,6 +12,33 @@
 
 namespace gspc
 {
+  namespace
+  {
+    namespace name
+    {
+      constexpr char const* const log_host {"log-host"};
+      constexpr char const* const log_port {"log-port"};
+      constexpr char const* const log_level {"log-level"};
+      constexpr char const* const gui_host {"gui-host"};
+      constexpr char const* const gui_port {"gui-port"};
+
+      constexpr char const* const state_directory {"state-directory"};
+      constexpr char const* const gspc_home {"gspc-home"};
+      constexpr char const* const nodefile {"nodefile"};
+      constexpr char const* const application_search_path
+        {"application-search-path"};
+
+      constexpr char const* const virtual_memory_per_node
+        {"virtual-memory-per-node"};
+      constexpr char const* const virtual_memory_socket
+        {"virtual-memory-socket"};
+      constexpr char const* const virtual_memory_port
+        {"virtual-memory-port"};
+      constexpr char const* const virtual_memory_startup_timeout
+        {"virtual-memory-startup-timeout"};
+    }
+  }
+
   namespace validators = fhg::util::boost::program_options;
 
   namespace options
@@ -161,18 +188,18 @@ namespace gspc
 #define SET_PATH(_name, _as)                                            \
   SET (_name, boost::filesystem::path)                                  \
   {                                                                     \
-    set_as<_as> (vm, options::name::_name, value.string());             \
+    set_as<_as> (vm, name::_name, value.string());                      \
   }
 #define SET_STRING(_name, _as)                                          \
   SET (_name, std::string)                                              \
   {                                                                     \
-    set_as<_as> (vm, options::name::_name, value);                      \
+    set_as<_as> (vm, name::_name, value);                               \
   }
 #define SET_INTEGRAL(_name, _type)                                      \
   SET (_name, _type)                                                    \
   {                                                                     \
     set_as<validators::positive_integral<_type>>                        \
-      (vm, options::name::_name, std::to_string (value));               \
+      (vm, name::_name, std::to_string (value));                        \
   }
 
 #define GET(_name, _type)                                               \
@@ -182,9 +209,9 @@ namespace gspc
 #define GET_MAYBE(_name, _type, _as)                                    \
   GET(_name, _type)                                                     \
   {                                                                     \
-    if (vm.count (options::name::_name))                                \
+    if (vm.count (name::_name))                                         \
     {                                                                   \
-      return static_cast<_type> (vm[options::name::_name].as<_as>());   \
+      return static_cast<_type> (vm[name::_name].as<_as>());            \
     }                                                                   \
                                                                         \
     return boost::none;                                                 \
