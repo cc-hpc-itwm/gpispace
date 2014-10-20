@@ -14,13 +14,6 @@
 
 #include <sdpa/client.hpp>
 
-#include <fhg/util/boost/program_options/validators/executable.hpp>
-#include <fhg/util/boost/program_options/validators/existing_directory.hpp>
-#include <fhg/util/boost/program_options/validators/existing_path.hpp>
-#include <fhg/util/boost/program_options/validators/is_directory_if_exists.hpp>
-#include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
-#include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
-#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/read_file.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
@@ -38,8 +31,6 @@
 
 namespace gspc
 {
-  namespace validators = fhg::util::boost::program_options;
-
   namespace
   {
     std::pair<std::list<std::string>, unsigned long>
