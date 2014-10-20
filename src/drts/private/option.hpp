@@ -25,7 +25,7 @@ namespace gspc
   GET (application_search_path, boost::filesystem::path);
 
   ACCESS (virtual_memory_per_node, unsigned long);
-  GET (virtual_memory_socket, boost::filesystem::path);
+  ACCESS (virtual_memory_socket, boost::filesystem::path);
   ACCESS (virtual_memory_port, unsigned short);
   ACCESS (virtual_memory_startup_timeout, unsigned long);
 
