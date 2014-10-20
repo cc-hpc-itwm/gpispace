@@ -32,45 +32,25 @@ namespace gspc
     }
   }
 
-  void set_log_host ( boost::program_options::variables_map&
-                    , std::string const&
-                    );
-  void set_log_port ( boost::program_options::variables_map&
-                    , unsigned short
-                    );
-  void set_log_level ( boost::program_options::variables_map&
-                     , std::string const&
-                     );
-  void set_gui_host ( boost::program_options::variables_map&
-                    , std::string const&
-                    );
-  void set_gui_port ( boost::program_options::variables_map&
-                    , unsigned short
-                    );
+#define SET(_name, _type) \
+  void set_ ## _name (boost::program_options::variables_map&, _type const&)
 
-  void set_state_directory ( boost::program_options::variables_map&
-                           , boost::filesystem::path const&
-                           );
-  void set_gspc_home ( boost::program_options::variables_map&
-                     , boost::filesystem::path const&
-                     );
-  void set_nodefile ( boost::program_options::variables_map&
-                    , boost::filesystem::path const&
-                    );
+  SET (log_host, std::string);
+  SET (log_port, unsigned short);
+  SET (log_level, std::string);
+  SET (gui_host, std::string);
+  SET (gui_port, unsigned short);
 
-  void set_virtual_memory_per_node ( boost::program_options::variables_map&
-                                   , unsigned long
-                                   );
-  void set_virtual_memory_socket ( boost::program_options::variables_map&
-                                 , boost::filesystem::path const&
-                                 );
-  void set_virtual_memory_port ( boost::program_options::variables_map&
-                               , unsigned short
-                               );
-  void set_virtual_memory_startup_timeout
-    ( boost::program_options::variables_map&
-    , unsigned long
-    );
+  SET (state_directory, boost::filesystem::path);
+  SET (gspc_home, boost::filesystem::path);
+  SET (nodefile, boost::filesystem::path);
+
+  SET (virtual_memory_per_node, unsigned long);
+  SET (virtual_memory_socket, boost::filesystem::path);
+  SET (virtual_memory_port, unsigned short);
+  SET (virtual_memory_startup_timeout, unsigned long);
+
+#undef SET
 
   std::string get_log_host (boost::program_options::variables_map const&);
   unsigned short get_log_port (boost::program_options::variables_map const&);
