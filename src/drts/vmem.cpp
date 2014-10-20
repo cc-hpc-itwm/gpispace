@@ -41,16 +41,6 @@ namespace gspc
         } (machinefile.first)
       )
   {
-    const std::string& log_host (get_log_host (vm));
-    const unsigned short log_port (get_log_port (vm));
-    const std::string log_level (get_log_level (vm));
-    const boost::filesystem::path socket
-      (get_not_yet_existing_virtual_memory_socket (vm));
-    const unsigned short port (get_virtual_memory_port (vm));
-    const unsigned long memory_size (get_virtual_memory_per_node (vm));
-    const unsigned long startup_timeout_in_seconds
-      (get_virtual_memory_startup_timeout (vm));
-
     if (_rif_endpoints.empty())
     {
       throw std::runtime_error ("at least one node is required in machinefile");
@@ -58,6 +48,9 @@ namespace gspc
 
     const fhg::util::boost::program_options::executable vmem_binary
       ((installation.gspc_home() / "bin" / "gpi-space").string());
+
+    const boost::filesystem::path socket
+      (get_not_yet_existing_virtual_memory_socket (vm));
 
     if (boost::filesystem::exists (socket))
     {
@@ -82,6 +75,14 @@ namespace gspc
                  , nodefile_path
                  );
     }
+
+    const std::string& log_host (get_log_host (vm));
+    const unsigned short log_port (get_log_port (vm));
+    const std::string log_level (get_log_level (vm));
+    const unsigned short port (get_virtual_memory_port (vm));
+    const unsigned long memory_size (get_virtual_memory_per_node (vm));
+    const unsigned long startup_timeout_in_seconds
+      (get_virtual_memory_startup_timeout (vm));
 
     _rif.exec
       ( {_rif_endpoints.front()}
