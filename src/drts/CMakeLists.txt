@@ -7,8 +7,8 @@ install (FILES
   client.hpp
   drts.fwd.hpp
   drts.hpp
-  virtual_memory.hpp
   virtual_memory.fwd.hpp
+  virtual_memory.hpp
   DESTINATION include/drts/
 )
 
@@ -16,8 +16,8 @@ add_library (gspc SHARED
   client.cpp
   drts.cpp
   private/option.cpp
-  private/vmem.cpp
   private/rif.cpp
+  private/vmem.cpp
   virtual_memory.cpp
 )
 target_link_libraries (gspc
