@@ -1,5 +1,5 @@
-#include <drts/vmem.hpp>
-#include <drts/rif.hpp>
+#include <drts/private/vmem.hpp>
+#include <drts/private/rif.hpp>
 
 #include <fhg/util/boost/program_options/validators/executable.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>

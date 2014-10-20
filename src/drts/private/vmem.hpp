@@ -2,7 +2,7 @@
 #define DRTS_VMEM_HPP
 
 #include <drts/drts.hpp>
-#include <drts/rif.hpp>
+#include <drts/private/rif.hpp>
 
 namespace gspc
 {
