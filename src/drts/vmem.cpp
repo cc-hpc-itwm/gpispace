@@ -15,8 +15,6 @@
 
 namespace gspc
 {
-  namespace validators = fhg::util::boost::program_options;
-
   vmem_t::vmem_t
     ( boost::program_options::variables_map const& vm
     , gspc::installation const& installation
@@ -58,7 +56,7 @@ namespace gspc
       throw std::runtime_error ("at least one node is required in machinefile");
     }
 
-    const validators::executable vmem_binary
+    const fhg::util::boost::program_options::executable vmem_binary
       ((installation.gspc_home() / "bin" / "gpi-space").string());
 
     if (boost::filesystem::exists (socket))
