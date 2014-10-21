@@ -195,7 +195,7 @@ namespace gspc
   {                                                                     \
     set_as<_as> (vm, name::_name, value);                               \
   }
-#define SET_INTEGRAL(_name, _type)                                      \
+#define SET_POSITIVE_INTEGRAL(_name, _type)                             \
   SET (_name, _type)                                                    \
   {                                                                     \
     set_as<validators::positive_integral<_type>>                        \
@@ -219,38 +219,38 @@ namespace gspc
 
 #define GET_PATH(_name, _as) GET_MAYBE (_name, boost::filesystem::path, _as)
 #define GET_STRING(_name, _as) GET_MAYBE (_name, std::string, _as)
-#define GET_INTEGRAL(_name, _type) \
+#define GET_POSITIVE_INTEGRAL(_name, _type)                             \
   GET_MAYBE (_name, _type, validators::positive_integral<_type>)
 
 #define ACCESS_PATH(_name, _as)                 \
   SET_PATH (_name, _as); GET_PATH (_name, _as)
 #define ACCESS_STRING(_name, _as)                       \
   SET_STRING (_name, _as); GET_STRING (_name, _as)
-#define ACCESS_INTEGRAL(_name, _type)                           \
-  SET_INTEGRAL (_name, _type); GET_INTEGRAL (_name, _type)
+#define ACCESS_POSITIVE_INTEGRAL(_name, _type)                  \
+  SET_POSITIVE_INTEGRAL (_name, _type); GET_POSITIVE_INTEGRAL (_name, _type)
 
 
   ACCESS_STRING (log_host, validators::nonempty_string);
-  ACCESS_INTEGRAL (log_port, unsigned short);
+  ACCESS_POSITIVE_INTEGRAL (log_port, unsigned short);
   ACCESS_STRING (log_level, std::string);
   ACCESS_STRING (gui_host, validators::nonempty_string);
-  ACCESS_INTEGRAL (gui_port, unsigned short);
+  ACCESS_POSITIVE_INTEGRAL (gui_port, unsigned short);
 
   ACCESS_PATH (state_directory, validators::is_directory_if_exists);
   ACCESS_PATH (gspc_home, validators::existing_directory);
   ACCESS_PATH (nodefile, validators::existing_path);
   ACCESS_PATH (application_search_path, validators::existing_directory);
 
-  ACCESS_INTEGRAL (virtual_memory_per_node, unsigned long);
+  ACCESS_POSITIVE_INTEGRAL (virtual_memory_per_node, unsigned long);
   ACCESS_PATH (virtual_memory_socket, validators::nonexisting_path);
-  ACCESS_INTEGRAL (virtual_memory_port, unsigned short);
-  ACCESS_INTEGRAL (virtual_memory_startup_timeout, unsigned long);
+  ACCESS_POSITIVE_INTEGRAL (virtual_memory_port, unsigned short);
+  ACCESS_POSITIVE_INTEGRAL (virtual_memory_startup_timeout, unsigned long);
 
-#undef ACCESS_INTEGRAL
+#undef ACCESS_POSITIVE_INTEGRAL
 #undef ACCESS_STRING
 #undef ACCESS_PATH
 
-#undef GET_INTEGRAL
+#undef GET_POSITIVE_INTEGRAL
 #undef GET_STRING
 #undef GET_PATH
 
@@ -258,7 +258,7 @@ namespace gspc
 
 #undef GET
 
-#undef SET_INTEGRAL
+#undef SET_POSITIVE_INTEGRAL
 #undef SET_STRING
 #undef SET_PATH
 #undef SET
