@@ -95,7 +95,11 @@ namespace gspc
       , _virtual_memory_per_node (get_virtual_memory_per_node (vm))
       , _virtual_memory_socket (get_virtual_memory_socket (vm))
       , _virtual_memory_startup_timeout
-        (get_virtual_memory_startup_timeout (vm).get())
+        ( get_virtual_memory_startup_timeout (vm)
+        ? boost::make_optional
+          (std::chrono::seconds (get_virtual_memory_startup_timeout (vm).get()))
+        : boost::none
+        )
       , _nodes_and_number_of_unique_nodes (read_nodes (_nodefile))
       , _virtual_memory_api
         ( _virtual_memory_socket
