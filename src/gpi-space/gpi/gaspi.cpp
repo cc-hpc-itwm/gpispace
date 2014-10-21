@@ -99,7 +99,10 @@ namespace gpi
                        , &exchange_hostname_data
                        );
 
-      memcpy (exchange_hostname_data, fhg::util::hostname().c_str(), fhg::util::hostname().size() + 1);
+      const std::string hostname (fhg::util::hostname());
+      memcpy ( exchange_hostname_data
+             , hostname.c_str(), hostname.size() + 1
+             );
 
       FAIL_ON_NON_ZERO (gaspi_barrier, GASPI_GROUP_ALL, GASPI_BLOCK);
 
