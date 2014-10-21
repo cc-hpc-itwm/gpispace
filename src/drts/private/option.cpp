@@ -206,12 +206,9 @@ namespace gspc
       (vm, name::_name, std::to_string (value));                        \
   }
 
-#define GET(_name, _type)                                               \
-  boost::optional<_type> get_ ## _name                                  \
-    (boost::program_options::variables_map const& vm)
-
 #define GET_MAYBE(_name, _type, _as)                                    \
-  GET(_name, _type)                                                     \
+  boost::optional<_type> get_ ## _name                                  \
+    (boost::program_options::variables_map const& vm)                   \
   {                                                                     \
     if (vm.count (name::_name))                                         \
     {                                                                   \
@@ -259,8 +256,6 @@ namespace gspc
 #undef GET_PATH
 
 #undef GET_MAYBE
-
-#undef GET
 
 #undef SET_POSITIVE_INTEGRAL
 #undef SET_STRING
