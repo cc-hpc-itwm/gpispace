@@ -10,6 +10,10 @@
 #include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 
+#include <boost/format.hpp>
+
+#include <exception>
+
 namespace gspc
 {
   namespace
