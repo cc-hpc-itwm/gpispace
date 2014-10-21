@@ -361,9 +361,13 @@ int main (int argc, char **argv) {
     LLOG (INFO, logger, fhg::project_summary() << " (" << fhg::project_version() << ")");
     LLOG (INFO, logger, "***************************************************");
 
+    boost::asio::io_service peer_io_service;
+    boost::asio::io_service kvs_client_io_service;
     sdpa::client::Client api ( cfg.is_set("orchestrator")
                              ? cfg.get<std::string>("orchestrator")
                              : throw std::runtime_error ("no orchestrator specified!")
+                             , peer_io_service
+                             , kvs_client_io_service
                              , cfg.get ("kvs-host"), cfg.get ("kvs-port")
                              );
 

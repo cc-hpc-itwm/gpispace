@@ -14,7 +14,7 @@ namespace fhg
     public:
       typedef boost::unique_lock<boost::recursive_mutex> lock_t;
 
-      tcp_client ();
+      tcp_client (boost::asio::io_service&);
 
       virtual ~tcp_client ();
 
@@ -49,7 +49,7 @@ namespace fhg
 
       enum { header_length = 8 };
 
-      boost::asio::io_service io_service_;
+      boost::asio::io_service& io_service_;
       boost::asio::ip::tcp::socket socket_;
       boost::asio::deadline_timer deadline_;
 

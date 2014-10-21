@@ -64,7 +64,8 @@ int main (int argc, char **argv) try
     } while (true);
   }
 
-  fhg::log::remote::RemoteAppender r (url);
+  boost::asio::io_service io_service;
+  fhg::log::remote::RemoteAppender r (url, io_service);
   r.append (fhg::log::LogEvent ( fhg::log::from_int (level)
                                , file
                                , function

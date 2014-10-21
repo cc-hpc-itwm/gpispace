@@ -20,6 +20,7 @@ namespace sdpa
     }
 
     NetworkStrategy::NetworkStrategy ( std::function<void (sdpa::events::SDPAEvent::Ptr)> event_handler
+                                     , boost::asio::io_service& peer_io_service
                                      , std::string const & peer_name
                                      , fhg::com::host_t const & host
                                      , fhg::com::port_t const & port
@@ -28,7 +29,8 @@ namespace sdpa
       : _logger (fhg::log::Logger::get ("NetworkStrategy " + peer_name))
       , _event_handler (event_handler)
       , m_peer ( new fhg::com::peer_t
-                 ( peer_name
+                 ( peer_io_service
+                 , peer_name
                  , fhg::com::host_t (host)
                  , fhg::com::port_t (port)
                  , kvs_client

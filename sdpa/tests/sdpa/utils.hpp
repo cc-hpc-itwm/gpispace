@@ -9,7 +9,6 @@
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
-#include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/kvs/kvsd.hpp>
 #include <fhgcom/tcp_server.hpp>
 
@@ -21,6 +20,7 @@
 #include <plugin/core/kernel.hpp>
 #include <plugin/plugin.hpp>
 
+#include <boost/asio/io_service.hpp>
 #include <boost/ref.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/test/unit_test.hpp>
@@ -35,10 +35,11 @@
 
 struct setup_logging
 {
+  boost::asio::io_service io_service;
   setup_logging()
   {
     setenv ("FHGLOG_level", "TRACE", true);
-    FHGLOG_SETUP();
+    FHGLOG_SETUP (io_service);
   }
 };
 
@@ -165,15 +166,16 @@ namespace utils
   struct kvs_server : boost::noncopyable
   {
     kvs_server()
-      : _io_service_pool (1)
+      : _io_service()
+      , _io_service_work (_io_service)
       , _kvs_daemon()
-      , _tcp_server (_io_service_pool.get_io_service(), _kvs_daemon, "localhost", "0", true)
-      , _io_thread (&fhg::com::io_service_pool::run, &_io_service_pool)
+      , _tcp_server (_io_service, _kvs_daemon, "localhost", "0", true)
+      , _io_service_thread ([this] { _io_service.run(); })
     {}
     ~kvs_server()
     {
       _tcp_server.stop();
-      _io_service_pool.stop();
+      _io_service.stop();
     }
 
     std::string kvs_host() const
@@ -186,10 +188,11 @@ namespace utils
     }
 
   private:
-    fhg::com::io_service_pool _io_service_pool;
+    boost::asio::io_service _io_service;
+    boost::asio::io_service::work _io_service_work;
     fhg::com::kvs::server::kvsd _kvs_daemon;
     fhg::com::tcp_server _tcp_server;
-    boost::scoped_thread<boost::join_if_joinable> _io_thread;
+    boost::scoped_thread<boost::join_if_joinable> _io_service_thread;
   };
 
   struct orchestrator : boost::noncopyable
@@ -197,9 +200,15 @@ namespace utils
     orchestrator (const kvs_server& kvs)
       : _kvs_host (kvs.kvs_host())
       , _kvs_port (kvs.kvs_port())
-      , _ (random_peer_name(), "127.0.0.1", _kvs_host, _kvs_port)
+      , _ ( random_peer_name(), "127.0.0.1"
+          , _peer_io_service
+          , _kvs_client_io_service
+          , _kvs_host, _kvs_port
+          )
     {}
 
+    boost::asio::io_service _peer_io_service;
+    boost::asio::io_service _kvs_client_io_service;
     std::string _kvs_host;
     std::string _kvs_port;
     sdpa::daemon::Orchestrator _;
@@ -229,6 +238,8 @@ namespace utils
       , _kvs_host (master_0.kvs_host())
       , _kvs_port (master_0.kvs_port())
       , _ ( random_peer_name(), "127.0.0.1"
+          , _peer_io_service
+          , _kvs_client_io_service
           , _kvs_host, _kvs_port
           , boost::none
           , assemble_master_info_list (master_0, master_1)
@@ -241,6 +252,8 @@ namespace utils
       , _kvs_host (master.kvs_host())
       , _kvs_port (master.kvs_port())
       , _ ( random_peer_name(), "127.0.0.1"
+          , _peer_io_service
+          , _kvs_client_io_service
           , _kvs_host, _kvs_port
           , boost::none
           , {sdpa::MasterInfo (master.name())}
@@ -252,12 +265,16 @@ namespace utils
       , _kvs_host (master.kvs_host())
       , _kvs_port (master.kvs_port())
       , _ ( random_peer_name(), "127.0.0.1"
+          , _peer_io_service
+          , _kvs_client_io_service
           , _kvs_host, _kvs_port
           , boost::none
           , {sdpa::MasterInfo (master.name())}
           , boost::none
           )
     {}
+    boost::asio::io_service _peer_io_service;
+    boost::asio::io_service _kvs_client_io_service;
     std::string _kvs_host;
     std::string _kvs_port;
     sdpa::daemon::Agent _;
@@ -281,12 +298,17 @@ namespace utils
       , _master_name (master_name)
       , _accept_workers (accept_workers)
       , _kvs_client
-        ( new fhg::com::kvs::client::kvsc
-          (_kvs_host, _kvs_port, true, boost::posix_time::seconds (120), 1)
+        ( new fhg::com::kvs::client::kvsc ( _kvs_client_io_service
+                                          , _kvs_host, _kvs_port
+                                          , true
+                                          , boost::posix_time::seconds (120)
+                                          , 1
+                                          )
         )
       , _event_queue()
       , _network
         ( [this] (sdpa::events::SDPAEvent::Ptr e) { _event_queue.put (e); }
+        , _peer_io_service
         , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
         , _kvs_client
         )
@@ -379,6 +401,7 @@ namespace utils
 
   protected:
     std::string _name;
+    boost::asio::io_service _kvs_client_io_service;
     std::string _kvs_host;
     std::string _kvs_port;
     boost::optional<std::string> _master_name;
@@ -389,6 +412,7 @@ namespace utils
     fhg::com::kvs::kvsc_ptr_t _kvs_client;
 
     fhg::thread::queue<sdpa::events::SDPAEvent::Ptr> _event_queue;
+    boost::asio::io_service _peer_io_service;
 
   protected:
     sdpa::com::NetworkStrategy _network;
@@ -558,7 +582,11 @@ namespace utils
   struct client : boost::noncopyable
   {
     client (orchestrator const& orch)
-      : _ (orch.name(), orch.kvs_host(), orch.kvs_port())
+      : _ ( orch.name()
+          , _peer_io_service
+          , _kvs_client_io_service
+          , orch.kvs_host(), orch.kvs_port()
+          )
     {}
 
     sdpa::job_id_t submit_job (std::string workflow)
@@ -623,6 +651,8 @@ namespace utils
       return _.cancelJob (id);
     }
 
+    boost::asio::io_service _peer_io_service;
+    boost::asio::io_service _kvs_client_io_service;
     sdpa::client::Client _;
 
 

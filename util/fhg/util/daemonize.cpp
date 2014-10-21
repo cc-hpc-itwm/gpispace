@@ -4,6 +4,8 @@
 
 #include <fhg/syscall.hpp>
 
+#include <boost/asio/io_service.hpp>
+
 #include <stdexcept>
 
 #include <errno.h>
@@ -60,9 +62,27 @@ namespace fhg
 
     void fork_and_daemonize_child_and_abandon_parent()
     {
+      fork_and_daemonize_child_and_abandon_parent ({});
+    }
+
+    void fork_and_daemonize_child_and_abandon_parent
+      (std::initializer_list<boost::asio::io_service*> io_services)
+    {
+      for (boost::asio::io_service* io_service : io_services)
+      {
+        io_service->notify_fork (boost::asio::io_service::fork_prepare);
+      }
       if (fork_and_daemonize_child())
       {
+        for (boost::asio::io_service* io_service : io_services)
+        {
+          io_service->notify_fork (boost::asio::io_service::fork_parent);
+        }
         exit (EXIT_SUCCESS);
+      }
+      for (boost::asio::io_service* io_service : io_services)
+      {
+        io_service->notify_fork (boost::asio::io_service::fork_child);
       }
     }
   }

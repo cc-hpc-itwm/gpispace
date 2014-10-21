@@ -11,20 +11,23 @@
 
 #include <fhgcom/kvs/kvsd.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
-#include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/tcp_server.hpp>
+
+#include <boost/asio/io_service.hpp>
 
 #include <functional>
 
 struct KVSSetup
 {
   KVSSetup ()
-    : m_pool (1)
+    : _io_service()
+    , _io_service_work (_io_service)
     , m_kvsd()
-    , m_serv (m_pool.get_io_service(), m_kvsd, "localhost", "0", true)
-    , m_thrd (&fhg::com::io_service_pool::run, &m_pool)
+    , m_serv (_io_service, m_kvsd, "localhost", "0", true)
+    , _io_service_thread ([this] { _io_service.run(); })
     , _kvs ( new fhg::com::kvs::client::kvsc
-             ( "localhost"
+             ( _kvs_client_io_service
+             , "localhost"
              , boost::lexical_cast<std::string> (m_serv.port())
              , true // auto_reconnect
              , boost::posix_time::seconds (3)
@@ -36,14 +39,16 @@ struct KVSSetup
   ~KVSSetup ()
   {
     m_serv.stop ();
-    m_pool.stop ();
-    m_thrd.join ();
+    _io_service.stop();
+    _io_service_thread.join();
   }
 
-  fhg::com::io_service_pool m_pool;
+  boost::asio::io_service _io_service;
+  boost::asio::io_service::work _io_service_work;
   fhg::com::kvs::server::kvsd m_kvsd;
   fhg::com::tcp_server m_serv;
-  boost::thread m_thrd;
+  boost::thread _io_service_thread;
+  boost::asio::io_service _kvs_client_io_service;
   fhg::com::kvs::kvsc_ptr_t _kvs;
 };
 
@@ -90,9 +95,11 @@ BOOST_FIXTURE_TEST_CASE (perform_test, KVSSetup)
 {
   wait_for_n_events_strategy counter (1);
 
+  boost::asio::io_service peer_io_service;
   sdpa::com::NetworkStrategy net
     ( std::bind
       (&wait_for_n_events_strategy::perform, &counter, std::placeholders::_1)
+    , peer_io_service
     , "peer-1"
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")

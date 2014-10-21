@@ -79,11 +79,13 @@ namespace sdpa {
 
       GenericDaemon( const std::string name
                    , const std::string url
+                   , boost::asio::io_service& peer_io_service
+                   , boost::asio::io_service& kvs_client_io_service
                    , std::string kvs_host
                    , std::string kvs_port
                    , boost::optional<boost::filesystem::path> const& vmem_socket
                    , const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t()
-                   , const boost::optional<std::string>& guiUrl = boost::none
+                   , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info = boost::none
                    , bool create_wfe = false
                    );
       virtual ~GenericDaemon() = default;

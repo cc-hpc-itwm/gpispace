@@ -18,7 +18,8 @@
 
 int main(int ac, char *av[])
 {
-  FHGLOG_SETUP();
+  boost::asio::io_service remote_log_io_service;
+  FHGLOG_SETUP (remote_log_io_service);
 
   fhg::log::Logger::ptr_t logger (fhg::log::Logger::get ("fhgkvsd"));
 
@@ -93,15 +94,14 @@ int main(int ac, char *av[])
 
     std::cout << server.port() << std::endl;
 
-    io_service.notify_fork (boost::asio::io_service::fork_prepare);
     if (daemonize)
     {
-      fhg::util::fork_and_daemonize_child_and_abandon_parent();
+      fhg::util::fork_and_daemonize_child_and_abandon_parent
+        ({&remote_log_io_service, &io_service});
     }
 
     pidfile_writer.write();
 
-    io_service.notify_fork (boost::asio::io_service::fork_child);
     io_service.run();
 
     if (not pidfile.empty())

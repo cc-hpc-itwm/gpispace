@@ -78,7 +78,8 @@ typedef gpi::api::gpi_api_t gpi_api_t;
 static const int EX_USAGE = 2;
 static const int EX_INVAL = 3;
 
-static int configure_logging (const config_t *cfg, const char* logfile);
+static int configure_logging
+  (const config_t *cfg, const char* logfile, boost::asio::io_service&);
 
 namespace
 {
@@ -482,7 +483,8 @@ try
     exit (EX_USAGE);
   }
 
-  if (0 != configure_logging (&config, logfile))
+  boost::asio::io_service remote_log_io_service;
+  if (0 != configure_logging (&config, logfile, remote_log_io_service))
   {
     fprintf (stderr, "could not setup logging");
   }
@@ -493,9 +495,11 @@ try
            , socket_path
            );
 
+  boost::asio::io_service kvs_client_io_service;
   fhg::com::kvs::kvsc_ptr_t kvs_client
     (new fhg::com::kvs::client::kvsc
-      ( config.kvs_host
+      ( kvs_client_io_service
+      , config.kvs_host
       , boost::lexical_cast<std::string> (config.kvs_port)
       , true
       , boost::posix_time::seconds (1)
@@ -534,8 +538,9 @@ try
     if (mem_urls.empty ())
       mem_urls.push_back (default_memory_url);
 
+    boost::asio::io_service topology_peer_io_service;
     const gpi::pc::container::manager_t container_manager
-      (config.socket, mem_urls, gpi_api, kvs_client);
+      (topology_peer_io_service, config.socket, mem_urls, gpi_api, kvs_client);
 
     LOG (INFO, "started GPI interface on rank " << gpi_api.rank() << " at " << config.socket);
 
@@ -564,7 +569,10 @@ catch (std::exception const & ex)
   return EXIT_FAILURE;
 }
 
-static int configure_logging (const config_t *cfg, const char* logfile)
+static int configure_logging ( const config_t *cfg
+                             , const char* logfile
+                             , boost::asio::io_service& remote_log_io_service
+                             )
 {
   char server_url[MAX_HOST_LEN + 32];
 
@@ -607,7 +615,7 @@ static int configure_logging (const config_t *cfg, const char* logfile)
     setenv ("FHGLOG_to_file", logfile, true);
   }
 
-  FHGLOG_SETUP();
+  FHGLOG_SETUP (remote_log_io_service);
 
   return 0;
 }

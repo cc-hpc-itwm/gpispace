@@ -45,7 +45,7 @@ namespace fhg
         void parse_environment();
         void parse_key_value (const std::string& key, const std::string& val);
 
-        void configure() const;
+        void configure (boost::asio::io_service&) const;
 
         fhg::log::Level level_;
         std::string to_console_;
@@ -121,7 +121,8 @@ namespace fhg
         }
       }
 
-      void DefaultConfiguration::configure() const
+      void DefaultConfiguration::configure
+        (boost::asio::io_service& remote_log_io_service) const
       {
         if (to_console_.size())
         {
@@ -155,15 +156,18 @@ namespace fhg
         if (to_server_.size())
         {
           // TODO: split to_remote_ into host and port
-          Logger::get()->addAppender
-            (Appender::ptr_t (new remote::RemoteAppender (to_server_)));
+          Logger::get()->addAppender ( Appender::ptr_t
+                                       ( new remote::RemoteAppender
+                                         (to_server_, remote_log_io_service)
+                                       )
+                                     );
         }
 
         Logger::get()->setLevel (level_);
       }
     }
 
-    void configure()
+    void configure (boost::asio::io_service& remote_log_io_service)
     {
       DefaultConfiguration conf;
 
@@ -179,7 +183,7 @@ namespace fhg
         conf.to_console_ = "stderr";
       }
 
-      conf.configure();
+      conf.configure (remote_log_io_service);
     }
   }
 }

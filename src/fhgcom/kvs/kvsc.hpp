@@ -25,12 +25,14 @@ namespace fhg
         public:
           typedef std::string key_type;
 
-          kvsc ( std::string const & server_address
+          kvsc ( boost::asio::io_service& io_service
+               , std::string const & server_address
                , std::string const & server_port
                , const bool auto_reconnect = true
                , const boost::posix_time::time_duration timeout = boost::posix_time::seconds (120)
                , const std::size_t max_connection_attempts = 3
                )
+            : kvs_ (io_service)
           {
             kvs_.start ( server_address, server_port
                        , auto_reconnect

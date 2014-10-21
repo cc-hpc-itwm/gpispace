@@ -46,7 +46,8 @@ int main (int argc, char **argv)
   std::string pidfile;
   boost::optional<bfs::path> vmem_socket;
 
-  FHGLOG_SETUP();
+  boost::asio::io_service remote_log_io_service;
+  FHGLOG_SETUP (remote_log_io_service);
 
   po::options_description desc("Allowed options");
   desc.add_options()
@@ -96,7 +97,8 @@ int main (int argc, char **argv)
 
     if (vm.count ("daemonize"))
     {
-      fhg::util::fork_and_daemonize_child_and_abandon_parent();
+      fhg::util::fork_and_daemonize_child_and_abandon_parent
+        ({&remote_log_io_service});
     }
 
     pidfile_writer.write();
@@ -105,7 +107,8 @@ int main (int argc, char **argv)
   {
     if (vm.count ("daemonize"))
     {
-      fhg::util::fork_and_daemonize_child_and_abandon_parent();
+      fhg::util::fork_and_daemonize_child_and_abandon_parent
+        ({&remote_log_io_service});
     }
   }
 
@@ -122,14 +125,19 @@ int main (int argc, char **argv)
     }
   }
 
+  boost::asio::io_service gui_io_service;
+  boost::asio::io_service peer_io_service;
+  boost::asio::io_service kvs_client_io_service;
   const sdpa::daemon::Agent agent
     ( agentName
     , agentUrl
+    , peer_io_service
+    , kvs_client_io_service
     , vm["kvs-host"].as<std::string>()
     , vm["kvs-port"].as<std::string>()
     , vmem_socket
     , listMasterInfo
-    , appGuiUrl
+    , std::pair<std::string, boost::asio::io_service&> (appGuiUrl, gui_io_service)
     );
 
   fhg::util::thread::event<> stop_requested;

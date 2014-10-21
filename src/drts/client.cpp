@@ -47,10 +47,15 @@ namespace gspc
   struct client::implementation
   {
     implementation (scoped_runtime_system const& drts)
-      : _client
-        ("orchestrator", drts._kvs_host, std::to_string (drts._kvs_port))
+      : _client ( "orchestrator"
+                , _peer_io_service
+                , _kvs_client_io_service
+                , drts._kvs_host, std::to_string (drts._kvs_port)
+                )
     {}
 
+    boost::asio::io_service _peer_io_service;
+    boost::asio::io_service _kvs_client_io_service;
     sdpa::client::Client _client;
   };
 

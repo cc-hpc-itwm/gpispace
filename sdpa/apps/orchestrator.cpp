@@ -28,7 +28,8 @@ int main (int argc, char **argv)
     std::string orchUrl;
     std::string pidfile;
 
-    FHGLOG_SETUP();
+  boost::asio::io_service remote_log_io_service;
+  FHGLOG_SETUP (remote_log_io_service);
 
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -61,7 +62,8 @@ int main (int argc, char **argv)
 
       if (vm.count ("daemonize"))
       {
-        fhg::util::fork_and_daemonize_child_and_abandon_parent();
+        fhg::util::fork_and_daemonize_child_and_abandon_parent
+          ({&remote_log_io_service});
       }
 
       pidfile_writer.write();
@@ -70,13 +72,18 @@ int main (int argc, char **argv)
     {
       if (vm.count ("daemonize"))
       {
-        fhg::util::fork_and_daemonize_child_and_abandon_parent();
+        fhg::util::fork_and_daemonize_child_and_abandon_parent
+          ({&remote_log_io_service});
       }
     }
 
+  boost::asio::io_service peer_io_service;
+  boost::asio::io_service kvs_client_io_service;
   const sdpa::daemon::Orchestrator orchestrator
     ( orchName
     , orchUrl
+    , peer_io_service
+    , kvs_client_io_service
     , vm["kvs-host"].as<std::string>()
     , vm["kvs-port"].as<std::string>()
     );

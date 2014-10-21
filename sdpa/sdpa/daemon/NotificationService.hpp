@@ -15,9 +15,11 @@ namespace sdpa
     class NotificationService
     {
     public:
-      NotificationService (const std::string& destination_location)
+      NotificationService ( const std::string& destination_location
+                          , boost::asio::io_service& appender_io_service
+                          )
         : destination_ (new fhg::log::remote::RemoteAppender
-                        (destination_location)
+                         (destination_location, appender_io_service)
                        )
       {}
 
