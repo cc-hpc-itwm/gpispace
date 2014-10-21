@@ -223,12 +223,41 @@ namespace gspc
 #define GET_POSITIVE_INTEGRAL(_name, _type)                             \
   GET_MAYBE (_name, _type, validators::positive_integral<_type>)
 
+#define REQUIRE(_name, _type, _as)                                      \
+  _type require_ ## _name                                               \
+    (boost::program_options::variables_map const& vm)                   \
+  {                                                                     \
+    if (vm.count (name::_name))                                         \
+    {                                                                   \
+      return vm[name::_name].as<_as>();                                 \
+    }                                                                   \
+                                                                        \
+    throw std::logic_error                                              \
+      (( boost::format ("the option '--%1%' is required but missing")   \
+       % name::_name                                                    \
+       ).str()                                                          \
+      );                                                                \
+  }
+
+#define REQUIRE_PATH(_name, _as)                \
+  REQUIRE (_name, boost::filesystem::path, _as)
+#define REQUIRE_STRING(_name, _as)              \
+  REQUIRE (_name, std::string, _as)
+#define REQUIRE_POSITIVE_INTEGRAL(_name, _type)                 \
+  REQUIRE (_name, _type, validators::positive_integral<_type>)
+
 #define ACCESS_PATH(_name, _as)                 \
-  SET_PATH (_name, _as); GET_PATH (_name, _as)
-#define ACCESS_STRING(_name, _as)                       \
-  SET_STRING (_name, _as); GET_STRING (_name, _as)
-#define ACCESS_POSITIVE_INTEGRAL(_name, _type)                  \
-  SET_POSITIVE_INTEGRAL (_name, _type); GET_POSITIVE_INTEGRAL (_name, _type)
+  SET_PATH (_name, _as);                        \
+  GET_PATH (_name, _as);                        \
+  REQUIRE_PATH (_name, _as)
+#define ACCESS_STRING(_name, _as)               \
+  SET_STRING (_name, _as);                      \
+  GET_STRING (_name, _as);                      \
+  REQUIRE_STRING (_name, _as)
+#define ACCESS_POSITIVE_INTEGRAL(_name, _type)  \
+  SET_POSITIVE_INTEGRAL (_name, _type);         \
+  GET_POSITIVE_INTEGRAL (_name, _type);         \
+  REQUIRE_POSITIVE_INTEGRAL (_name, _type)
 
 
   ACCESS_STRING (log_host, validators::nonempty_string);
@@ -250,6 +279,12 @@ namespace gspc
 #undef ACCESS_POSITIVE_INTEGRAL
 #undef ACCESS_STRING
 #undef ACCESS_PATH
+
+#undef REQUIRE_POSITIVE_INTEGRAL
+#undef REQUIRE_STRING
+#undef REQUIRE_PATH
+
+#undef REQUIRE
 
 #undef GET_POSITIVE_INTEGRAL
 #undef GET_STRING
