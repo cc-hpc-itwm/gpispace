@@ -84,7 +84,7 @@ namespace gpi
 
       constexpr const std::size_t HOST_NAME_MAX_WITH_NUL {HOST_NAME_MAX + 1};
 
-      const gaspi_segment_id_t exchange_hostname_segment { 1 };
+      const gaspi_segment_id_t exchange_hostname_segment {1};
 
       FAIL_ON_NON_ZERO ( gaspi_segment_create
                        , exchange_hostname_segment
