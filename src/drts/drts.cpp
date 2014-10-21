@@ -81,7 +81,7 @@ namespace gspc
 
   installation::installation
     (boost::program_options::variables_map const& vm)
-      : _gspc_home (boost::filesystem::canonical (get_gspc_home (vm).get()))
+      : _gspc_home (boost::filesystem::canonical (require_gspc_home (vm)))
   {}
 
   scoped_runtime_system::scoped_runtime_system
@@ -90,8 +90,8 @@ namespace gspc
     , std::string const& topology_description
     )
       : _installation (installation)
-      , _state_directory (get_state_directory (vm).get())
-      , _nodefile (boost::filesystem::canonical (get_nodefile (vm).get()))
+      , _state_directory (require_state_directory (vm))
+      , _nodefile (boost::filesystem::canonical (require_nodefile (vm)))
       , _virtual_memory_per_node (get_virtual_memory_per_node (vm))
       , _virtual_memory_socket (get_virtual_memory_socket (vm))
       , _virtual_memory_startup_timeout
@@ -142,7 +142,7 @@ namespace gspc
         << " -y " << *_virtual_memory_socket
         << " -m " << *_virtual_memory_per_node
         << " -T " << _virtual_memory_startup_timeout->count()
-        << " -P " << get_virtual_memory_port (vm).get()
+        << " -P " << require_virtual_memory_port (vm)
         ;
     }
     else
