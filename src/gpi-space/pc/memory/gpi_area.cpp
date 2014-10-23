@@ -529,7 +529,7 @@ namespace gpi
                          )
           ));
 
-        return transfer.size - local_part.size();
+        return 2.0 * transfer.size - local_part.size();
       }
 
       area_ptr_t gpi_area_t::create
