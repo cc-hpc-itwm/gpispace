@@ -113,7 +113,6 @@ function rexec_with_startup_messages()
 {
   local node="${1}"; shift
   local target_var="${1}"; shift
-  mkdir -p "${state_dir}/fifos"
   # todo: use local filesystem on remote host, not shared
   mkdir -p "${state_dir}/fifos"
   local command="ssh ${rexec_ssh_opts} ${node} \
