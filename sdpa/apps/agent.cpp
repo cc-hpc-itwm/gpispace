@@ -41,7 +41,6 @@ int main (int argc, char **argv)
   std::string agentName;
   std::string agentUrl;
   std::vector<std::string> arrMasterNames;
-  std::string arrMasterUrls;
   std::string appGuiUrl;
   std::string pidfile;
   boost::optional<bfs::path> vmem_socket;
@@ -54,7 +53,6 @@ int main (int argc, char **argv)
     ("help,h", "Display this message")
     ("name,n", po::value<std::string>(&agentName)->default_value("agent"), "Agent's logical name")
     ("url,u",  po::value<std::string>(&agentUrl)->default_value("localhost"), "Agent's url")
-    //("orch_name,m",  po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
     ("master,m", po::value<std::vector<std::string>>(&arrMasterNames)->multitoken(), "Agent's master list")
     ("app_gui_url,a", po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
     ("kvs-host",  po::value<std::string>()->required(), "The kvs daemon's host")
