@@ -181,6 +181,11 @@ namespace gpi
 
         struct get_transfer_costs_t
         {
+          get_transfer_costs_t () {}
+          get_transfer_costs_t (std::list<gpi::pc::type::memory_region_t> const& transfers)
+            : transfers (transfers)
+          {}
+
           std::list<gpi::pc::type::memory_region_t> transfers;
         private:
           friend class boost::serialization::access;
@@ -193,6 +198,11 @@ namespace gpi
 
         struct transfer_costs_t
         {
+          transfer_costs_t () {}
+          transfer_costs_t (std::map<std::string, double> const& costs)
+            : costs (costs)
+          {}
+
           std::map<std::string, double> costs;
         private:
           friend class boost::serialization::access;
