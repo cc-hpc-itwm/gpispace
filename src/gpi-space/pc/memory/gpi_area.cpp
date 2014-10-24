@@ -529,7 +529,9 @@ namespace gpi
                          )
           ));
 
-        return 2.0 * transfer.size - local_part.size();
+        constexpr const double remote_transfer_cost_weight {1.0};
+
+        return transfer.size + remote_transfer_cost_weight * (transfer.size - local_part.size());
       }
 
       area_ptr_t gpi_area_t::create
