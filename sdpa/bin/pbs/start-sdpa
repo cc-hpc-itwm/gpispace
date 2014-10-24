@@ -535,25 +535,46 @@ if $gpi_enabled ; then
     info "using VMEM mem: ${gpi_mem} bytes per node"
     info "starting VMEM on: '${gpi_socket}' with a timeout of $((vmem_startup_timeout)) seconds"
 
-    vmem_pid=$("${sdpa_home}/bin/vmem" \
-        --nodefile "${nodefile}" \
-        --state-directory "${state_dir}" \
-        --gspc-home "${sdpa_home}" \
-        --kvs-host "${kvs_host}" --kvs-port "${kvs_port}" \
-        --log-host "${log_host}" --log-port "${log_port}" \
-        --gui-host "${gui_host}" --gui-port "${gui_port}" \
-        --virtual-memory-port ${vmem_port} \
-        --virtual-memory-socket "${gpi_socket}" \
-        --virtual-memory-per-node "${gpi_mem}" \
-        --virtual-memory-startup-timeout ${vmem_startup_timeout} 2>&1)
-    ec=$?
-    if [ $ec -ne 0 ]
+    mkdir -p "${state_dir}/fifos"
+    startup_messages_raw=$(${SDPA_HOME}/bin/start-and-fork \
+      --fifo-directory "${state_dir}/fifos" \
+      --end-sentinel-value OKAY \
+      --startup-messages-fifo-option --startup-messages-fifo \
+      \
+      --command "${sdpa_home}/bin/vmem" \
+      --arguments --nodefile "${nodefile}" \
+      --arguments --state-directory "${state_dir}" \
+      --arguments --gspc-home "${sdpa_home}" \
+      --arguments --kvs-host "${kvs_host}" \
+      --arguments --kvs-port "${kvs_port}" \
+      --arguments --log-host "${log_host}" \
+      --arguments --log-port "${log_port}" \
+      --arguments --gui-host "${gui_host}" \
+      --arguments --gui-port "${gui_port}" \
+      --arguments --virtual-memory-port ${vmem_port} \
+      --arguments --virtual-memory-socket "${gpi_socket}" \
+      --arguments --virtual-memory-per-node "${gpi_mem}" \
+      --arguments --virtual-memory-startup-timeout ${vmem_startup_timeout} \
+    )
+    ec=${?}
+
+    old_IFS=${IFS}
+    IFS=$'\n'
+    startup_messages=(${startup_messages_raw})
+    IFS=${old_IFS}
+
+    if [ ${ec} -ne 0 ]
     then
         "${sdpa}" -s "${state_dir}" stop
-        error 3 "could not start vmem: ${vmem_pid}"
-    else
-        echo "${vmem_pid}" > "$state_dir/vmem.pid"
+        error 3 "could not start vmem"
     fi
+
+    if [ ${#startup_messages[@]} != 1 ]; then
+      error 3 "could not start vmem: expected 1 lines of startup messages"
+    fi
+
+    vmem_pid=${startup_messages[0]}
+    echo "${vmem_pid}" > "$state_dir/vmem.pid"
 
     for host in $(sort -u "${nodefile}")
     do

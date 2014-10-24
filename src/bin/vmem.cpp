@@ -2,7 +2,6 @@
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
-#include <fhg/util/daemonize.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 
@@ -80,6 +79,11 @@ int main (int argc, char *argv[])
     , boost::program_options::value<validators::positive_integral<unsigned short>>()->required()
     , "kvs port to use"
     )
+    ( "startup-messages-fifo"
+    , boost::program_options::value
+        <fhg::util::boost::program_options::existing_path>()->required()
+    , "fifo to use for communication during startup (ports used, ...)"
+    )
     ;
 
   visible_options
@@ -121,13 +125,6 @@ int main (int argc, char *argv[])
                     , vm[option::kvs_port].as<validators::positive_integral<unsigned short>>()
                     );
 
-  boost::optional<pid_t> child (fhg::util::fork_and_daemonize_child());
-  if (child)
-  {
-    std::cout << *child << std::endl;
-    exit (EXIT_SUCCESS);
-  }
-
   fhg::util::thread::event<void> done;
 
   signal_handlers.add (SIGINT, [&done] (int, siginfo_t*, void*) {
@@ -145,6 +142,14 @@ int main (int argc, char *argv[])
           done.notify();
         });
     });
+
+  {
+    std::ofstream startup_messages_fifo
+      ( vm["startup-messages-fifo"]
+      . as<fhg::util::boost::program_options::existing_path>().string()
+      );
+    startup_messages_fifo << "OKAY\n";
+  }
 
   done.wait();
 
