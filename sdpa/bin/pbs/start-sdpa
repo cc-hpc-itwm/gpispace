@@ -505,11 +505,13 @@ if [ ${?} -ne 0 ] ; then
     "${sdpa}" -s "${state_dir}" stop
     error 3 "could not start orchestrator"
 fi
-if [ ${#orchestrator_startup_messages[@]} != 1 ]; then
+if [ ${#orchestrator_startup_messages[@]} != 3 ]; then
   "${sdpa}" -s "${state_dir}" stop
-  error 3 "could not start orchestrator: expected 1 lines of startup messages"
+  error 3 "could not start orchestrator: expected 3 lines of startup messages"
 fi
 echo ${orchestrator_startup_messages[0]} > "${state_dir}/orchestrator.pid"
+echo ${orchestrator_startup_messages[1]} > "${state_dir}/orchestrator.host"
+echo ${orchestrator_startup_messages[2]} > "${state_dir}/orchestrator.port"
 
 wait_for_process ${network_retries} "orchestrator" "${kvs_host}" "${kvs_port}"
 ec=$?

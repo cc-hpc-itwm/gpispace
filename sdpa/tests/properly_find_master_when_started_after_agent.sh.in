@@ -45,7 +45,7 @@ agent --kvs-host "${KVS_HOST}" --kvs-port ${KVS_PORT}          \
 
 sleep ${TIMEOUT_UNTIL_A_REGISTRATION_SHOULD_BE_LOST}
 
-ORCHESTRATOR_PID=$(start-and-fork \
+orchestrator_startup_messages_raw=$(start-and-fork \
   --fifo-directory "${DIR_TEST}/fifos" \
   --end-sentinel-value OKAY \
   --startup-messages-fifo-option --startup-messages-fifo \
@@ -54,6 +54,13 @@ ORCHESTRATOR_PID=$(start-and-fork \
   --arguments --kvs-port ${KVS_PORT}   \
   --arguments --name "orchestrator" \
   --environment LD_LIBRARY_PATH="${LD_LIBRARY_PATH}")
+
+old_IFS=${IFS}
+IFS=$'\n'
+orchestrator_startup_messages=(${orchestrator_startup_messages_raw})
+IFS=${old_IFS}
+
+ORCHESTRATOR_PID=${orchestrator_startup_messages[0]}
 
 sleep ${TIMEOUT_UNTIL_A_STARTED_ORCHESTRATOR_SHOULD_LISTEN}
 

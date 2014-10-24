@@ -59,6 +59,7 @@ try
 
   boost::asio::io_service peer_io_service;
   boost::asio::io_service kvs_client_io_service;
+  boost::asio::io_service rpc_io_service;
   const sdpa::daemon::Orchestrator orchestrator
     ( orchName
     , orchUrl
@@ -66,6 +67,7 @@ try
     , kvs_client_io_service
     , vm["kvs-host"].as<std::string>()
     , vm["kvs-port"].as<std::string>()
+    , rpc_io_service
     );
 
   fhg::util::thread::event<> stop_requested;
@@ -84,6 +86,8 @@ try
       ( vm["startup-messages-fifo"]
       . as<fhg::util::boost::program_options::existing_path>().string()
       );
+    startup_messages_fifo << orchestrator.rpc_local_endpoint().address().to_string() << "\n";
+    startup_messages_fifo << orchestrator.rpc_local_endpoint().port() << "\n";
     startup_messages_fifo << "OKAY\n";
   }
 

@@ -41,7 +41,7 @@ KVS_PORT=$(fhgkvsd --bind "${KVS_HOST}"                        \
                    --daemonize
 )
 
-ORCHESTRATOR_1_PID=$(start-and-fork \
+orchestrator_1_startup_messages_raw=$(start-and-fork \
   --fifo-directory "${DIR_TEST}/fifos" \
   --end-sentinel-value OKAY \
   --startup-messages-fifo-option --startup-messages-fifo \
@@ -50,6 +50,13 @@ ORCHESTRATOR_1_PID=$(start-and-fork \
   --arguments --kvs-port ${KVS_PORT}   \
   --arguments --name "orchestrator" \
   --environment LD_LIBRARY_PATH="${LD_LIBRARY_PATH}")
+
+old_IFS=${IFS}
+IFS=$'\n'
+orchestrator_1_startup_messages=(${orchestrator_1_startup_messages_raw})
+IFS=${old_IFS}
+
+ORCHESTRATOR_1_PID=${orchestrator_1_startup_messages[0]}
 
 agent --kvs-host "${KVS_HOST}" --kvs-port ${KVS_PORT}          \
       --master "orchestrator" --name "agent"                   \
@@ -60,7 +67,7 @@ ORCHESTRATOR_1_PID=
 
 sleep ${TIMEOUT_UNTIL_A_REGISTRATION_SHOULD_BE_LOST}
 
-ORCHESTRATOR_2_PID=$(start-and-fork \
+orchestrator_2_startup_messages_raw=$(start-and-fork \
   --fifo-directory "${DIR_TEST}/fifos" \
   --end-sentinel-value OKAY \
   --startup-messages-fifo-option --startup-messages-fifo \
@@ -69,6 +76,13 @@ ORCHESTRATOR_2_PID=$(start-and-fork \
   --arguments --kvs-port ${KVS_PORT}   \
   --arguments --name "orchestrator" \
   --environment LD_LIBRARY_PATH="${LD_LIBRARY_PATH}")
+
+old_IFS=${IFS}
+IFS=$'\n'
+orchestrator_2_startup_messages=(${orchestrator_2_startup_messages_raw})
+IFS=${old_IFS}
+
+ORCHESTRATOR_2_PID=${orchestrator_2_startup_messages[0]}
 
 sleep ${TIMEOUT_UNTIL_A_STARTED_ORCHESTRATOR_SHOULD_LISTEN}
 

@@ -17,6 +17,7 @@ namespace sdpa
                                , boost::asio::io_service& peer_io_service
                                , boost::asio::io_service& kvs_client_io_service
                                , std::string kvs_host, std::string kvs_port
+                               , boost::asio::io_service& rpc_io_service
                                )
       : GenericDaemon ( name
                       , url
@@ -25,7 +26,43 @@ namespace sdpa
                       , kvs_host, kvs_port
                       , boost::none
                       )
+      , _rpc_connections()
+      , _rpc_dispatcher (fhg::rpc::exception::serialization_functions())
+      , _rpc_acceptor
+          ( boost::asio::ip::tcp::endpoint()
+          , rpc_io_service
+          , [] (fhg::network::buffer_type b) { return b; }
+          , [] (fhg::network::buffer_type b) { return b; }
+          , [this] ( fhg::network::connection_type* connection
+                   , fhg::network::buffer_type buffer
+                   )
+          {
+              _rpc_dispatcher.dispatch (connection, buffer);
+            }
+          , [this] (fhg::network::connection_type* connection)
+            {
+              _rpc_connections.erase
+                ( std::find_if
+                    ( _rpc_connections.begin()
+                    , _rpc_connections.end()
+                    , [&connection] (std::unique_ptr<fhg::network::connection_type> const& other)
+                      {
+                        return other.get() == connection;
+                      }
+                    )
+                );
+            }
+          , [this] (std::unique_ptr<fhg::network::connection_type> connection)
+            {
+              _rpc_connections.emplace_back (std::move (connection));
+            }
+          )
     {}
+
+    boost::asio::ip::tcp::endpoint Orchestrator::rpc_local_endpoint() const
+    {
+      return _rpc_acceptor.local_endpoint();
+    }
 
     std::list<agent_id_t> Orchestrator::subscribers (job_id_t job_id) const
     {

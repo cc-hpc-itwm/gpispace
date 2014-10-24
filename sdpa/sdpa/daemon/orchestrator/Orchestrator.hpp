@@ -20,6 +20,12 @@
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 
+#include <network/server.hpp>
+
+#include <rpc/server.hpp>
+
+#include <boost/asio/ip/tcp.hpp>
+
 namespace sdpa {
   namespace daemon {
     class Orchestrator : public GenericDaemon
@@ -30,6 +36,7 @@ namespace sdpa {
                    , boost::asio::io_service& peer_io_service
                    , boost::asio::io_service& kvs_client_io_service
                    , std::string kvs_host, std::string kvs_port
+                   , boost::asio::io_service& rpc_io_service
                    );
 
       virtual void handleJobFinishedEvent( const sdpa::events::JobFinishedEvent* ) override;
@@ -39,8 +46,14 @@ namespace sdpa {
       virtual void handleCancelJobAckEvent( const sdpa::events::CancelJobAckEvent* pEvt ) override;
       virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* ) override;
 
+      boost::asio::ip::tcp::endpoint rpc_local_endpoint() const;
+
     private:
       std::list<agent_id_t> subscribers (job_id_t job_id) const;
+
+      std::vector<std::unique_ptr<fhg::network::connection_type>> _rpc_connections;
+      fhg::rpc::service_dispatcher _rpc_dispatcher;
+      fhg::network::continous_acceptor<boost::asio::ip::tcp> _rpc_acceptor;
     };
   }
 }

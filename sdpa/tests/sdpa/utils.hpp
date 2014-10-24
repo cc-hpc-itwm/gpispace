@@ -204,6 +204,7 @@ namespace utils
           , _peer_io_service
           , _kvs_client_io_service
           , _kvs_host, _kvs_port
+          , _rpc_io_service
           )
     {}
 
@@ -211,6 +212,7 @@ namespace utils
     boost::asio::io_service _kvs_client_io_service;
     std::string _kvs_host;
     std::string _kvs_port;
+    boost::asio::io_service _rpc_io_service;
     sdpa::daemon::Orchestrator _;
     std::string name() const { return _.name(); }
     std::string kvs_host() const { return _kvs_host; }

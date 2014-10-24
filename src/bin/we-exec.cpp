@@ -146,6 +146,7 @@ try
 
   boost::asio::io_service orchestrator_peer_io_service;
   boost::asio::io_service orchestrator_kvs_client_io_service;
+  boost::asio::io_service orchestrator_rpc_io_service;
   sdpa::daemon::Orchestrator const orchestrator
     ( orchestrator_name
     , host
@@ -153,6 +154,7 @@ try
     , orchestrator_kvs_client_io_service
     , host
     , kvs_port
+    , orchestrator_rpc_io_service
     );
 
   boost::asio::io_service agent_peer_io_service;

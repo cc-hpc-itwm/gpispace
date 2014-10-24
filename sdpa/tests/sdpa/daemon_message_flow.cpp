@@ -113,12 +113,14 @@ BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
 
   boost::asio::io_service peer_io_service;
   boost::asio::io_service kvs_client_io_service;
+  boost::asio::io_service rpc_io_service;
   const sdpa::daemon::Orchestrator orchestrator
     ( orchestrator_name
     , "localhost"
     , peer_io_service
     , kvs_client_io_service
     , kvs_server.kvs_host(), kvs_server.kvs_port()
+    , rpc_io_service
     );
 
   network_strategy child (child_name, kvs_server);
