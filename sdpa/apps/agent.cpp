@@ -12,9 +12,8 @@
 #include <we/layer.hpp>
 #include <boost/filesystem/path.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
+#include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
-#include <fhg/util/daemonize.hpp>
-#include <fhg/util/pidfile_writer.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
@@ -42,7 +41,6 @@ int main (int argc, char **argv)
   std::string agentUrl;
   std::vector<std::string> arrMasterNames;
   std::string appGuiUrl;
-  std::string pidfile;
   boost::optional<bfs::path> vmem_socket;
 
   boost::asio::io_service remote_log_io_service;
@@ -57,11 +55,13 @@ int main (int argc, char **argv)
     ("app_gui_url,a", po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
     ("kvs-host",  po::value<std::string>()->required(), "The kvs daemon's host")
     ("kvs-port",  po::value<std::string>()->required(), "The kvs daemon's port")
-    ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
-    ("daemonize", "daemonize after all checks were successful")
     ( option_name::vmem_socket
     , boost::program_options::value<validators::nonempty_string>()
     , "socket file to communicate with the virtual memory manager"
+    )
+    ( "startup-messages-fifo"
+    , po::value<fhg::util::boost::program_options::existing_path>()->required()
+    , "fifo to use for communication during startup (ports used, ...)"
     )
     ;
 
@@ -86,27 +86,6 @@ int main (int argc, char **argv)
 
   if( arrMasterNames.empty() )
     arrMasterNames.push_back("orchestrator"); // default master name
-
-  if (not pidfile.empty())
-  {
-    fhg::util::pidfile_writer const pidfile_writer (pidfile);
-
-    if (vm.count ("daemonize"))
-    {
-      fhg::util::fork_and_daemonize_child_and_abandon_parent
-        ({&remote_log_io_service});
-    }
-
-    pidfile_writer.write();
-  }
-  else
-  {
-    if (vm.count ("daemonize"))
-    {
-      fhg::util::fork_and_daemonize_child_and_abandon_parent
-        ({&remote_log_io_service});
-    }
-  }
 
   boost::asio::io_service gui_io_service;
   boost::asio::io_service peer_io_service;
@@ -134,6 +113,13 @@ int main (int argc, char **argv)
   signal_handlers.add (SIGTERM, std::bind (request_stop));
   signal_handlers.add (SIGINT, std::bind (request_stop));
 
+  {
+    std::ofstream startup_messages_fifo
+      ( vm["startup-messages-fifo"]
+      . as<fhg::util::boost::program_options::existing_path>().string()
+      );
+    startup_messages_fifo << "OKAY\n";
+  }
 
   stop_requested.wait();
 }

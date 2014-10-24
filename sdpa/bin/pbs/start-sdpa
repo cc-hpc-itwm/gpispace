@@ -642,20 +642,30 @@ function start_agent
 
     info "starting agent: ${name} on host ${host} with parent ${parent}"
 
-    rexec ${host} /usr/bin/env \
-        FHGLOG_to_server="${log_host}:${log_port}" \
-        FHGLOG_level=$($verbose && echo "TRACE" || echo "INFO") \
-        FHGLOG_to_file="${state_dir}/log/$name.log" \
-        "${sdpa_home}/bin/agent" \
-        --pidfile "$state_dir/${name}.pid" \
-        --daemonize \
-        --kvs-host="${kvs_host}" \
-        --kvs-port="${kvs_port}" \
-        $(if $gpi_enabled ; then echo --vmem-socket="${gpi_socket}" ; fi) \
-        -u '0' \
-        -a "${gui_host}:${gui_port}" \
-        -m "${parent}" \
-        -n "${name}"
+    local agent_startup_messages=()
+
+    rexec_with_startup_messages ${host} agent_startup_messages \
+      --command "${sdpa_home}/bin/agent" \
+      --arguments --kvs-host "${kvs_host}" \
+      --arguments --kvs-port "${kvs_port}" \
+      --arguments -u '0' \
+      --arguments -n "${name}" \
+      --arguments -m "${parent}" \
+      --arguments -a "${gui_host}:${gui_port}" \
+      $(if $gpi_enabled; then echo --arguments --vmem-socket "${gpi_socket}" ; fi) \
+      --environment LD_LIBRARY_PATH="${LD_LIBRARY_PATH}" \
+      --environment FHGLOG_to_server="${log_host}:${log_port}" \
+      --environment FHGLOG_level=$($verbose && echo TRACE || echo INFO) \
+      --environment FHGLOG_to_file="${state_dir}/log/$name.log"
+    if [ ${?} -ne 0 ] ; then
+      "${sdpa}" -s "${state_dir}" stop
+      error 3 "could not start agent ${name}"
+    fi
+    if [ ${#agent_startup_messages[@]} != 1 ]; then
+      "${sdpa}" -s "${state_dir}" stop
+      error 1 "could not start agent ${name}: expected 1 lines of startup messages"
+    fi
+    echo ${agent_startup_messages[0]} > "${state_dir}/${name}.pid"
 }
 
 function start_agents

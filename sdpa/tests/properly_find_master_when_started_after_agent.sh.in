@@ -11,7 +11,7 @@ DUMMY_NET="$(mktemp -p "${DIR_TEST}" empty_dummy_network.pnet.XXXXX)"
 
 KVS_PID=
 ORCHESTRATOR_PID=
-AGENT_PID_FILE="$(mktemp -p "${DIR_TEST}" agent.pid.XXXXX)"
+AGENT_PID=
 
 # TODO: needs some policy or fixes to work without
 TIMEOUT_UNTIL_A_REGISTRATION_SHOULD_BE_LOST=2
@@ -21,11 +21,10 @@ TIMEOUT_UNTIL_A_STARTED_ORCHESTRATOR_SHOULD_LISTEN=1
 cleanup()
 {
   set +e
-  [[ -s "${AGENT_PID_FILE}" ]] && kill $(cat "${AGENT_PID_FILE}")
+  [[ -n "${AGENT_PID}" ]] && kill ${AGENT_PID}
   [[ -n "${ORCHESTRATOR_PID}" ]] && kill ${ORCHESTRATOR_PID}
   [[ -n "${KVS_PID}" ]] && kill ${KVS_PID}
   rm -f "${DUMMY_NET}"
-  rm -f "${AGENT_PID_FILE}"
 }
 
 trap 'cleanup' EXIT
@@ -51,9 +50,23 @@ IFS=${old_IFS}
 KVS_PID=${kvs_startup_messages[0]}
 KVS_PORT=${kvs_startup_messages[1]}
 
-agent --kvs-host "${KVS_HOST}" --kvs-port ${KVS_PORT}          \
-      --master "orchestrator" --name "agent"                   \
-      --pidfile "${AGENT_PID_FILE}" --daemonize
+agent_startup_messages_raw=$(start-and-fork \
+  --fifo-directory "${DIR_TEST}/fifos" \
+  --end-sentinel-value OKAY \
+  --startup-messages-fifo-option --startup-messages-fifo \
+  --command "$(which agent)" \
+  --arguments --kvs-host "${KVS_HOST}" \
+  --arguments --kvs-port ${KVS_PORT}   \
+  --arguments --name "agent" \
+  --arguments --master "orchestrator" \
+  --environment LD_LIBRARY_PATH="${LD_LIBRARY_PATH}")
+
+old_IFS=${IFS}
+IFS=$'\n'
+agent_startup_messages=(${agent_startup_messages_raw})
+IFS=${old_IFS}
+
+AGENT_PID=${agent_startup_messages[0]}
 
 sleep ${TIMEOUT_UNTIL_A_REGISTRATION_SHOULD_BE_LOST}
 
