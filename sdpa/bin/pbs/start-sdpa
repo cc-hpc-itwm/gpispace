@@ -655,13 +655,13 @@ function start_agent
         -u '0' \
         -a "${gui_host}:${gui_port}" \
         -m "${parent}" \
-        -n "${name}" &
-    pids+=( $! )
+        -n "${name}"
 }
 
 function start_agents
 {
-    start_agent ${master} "agent-${master}-0" "orchestrator"
+    start_agent ${master} "agent-${master}-0" "orchestrator" &
+    pids+=( $! )
 
     if [ ! ${#segment_master[@]} -eq 1 ] ; then
       local i=
@@ -670,7 +670,8 @@ function start_agents
         host=${hosts[${host_idx}]}
         name="agent-${host}-1"
 
-        start_agent "${host}" "${name}" "agent-${master}-0"
+        start_agent "${host}" "${name}" "agent-${master}-0" &
+        pids+=( $! )
         wait_if_necessary
         ec=$?
         if [ $ec -ne 0 ]
