@@ -266,10 +266,13 @@ namespace gpi
       std::map<std::string, double>
       api_t::transfer_costs (std::list<gpi::pc::type::memory_region_t> const& transfers)
       {
-        proto::memory::get_transfer_costs_t rqst;
-        rqst.transfers = transfers;
-
-        proto::message_t const reply (communicate (proto::memory::message_t (rqst)));
+        proto::message_t const reply
+          (communicate
+            ( proto::memory::message_t
+              ( proto::memory::get_transfer_costs_t (transfers)
+              )
+            )
+          );
 
         try
         {
