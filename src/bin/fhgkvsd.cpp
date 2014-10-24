@@ -10,9 +10,8 @@
 #include <fhgcom/peer_info.hpp>
 #include <fhgcom/tcp_server.hpp>
 
-#include <fhg/util/daemonize.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
-#include <fhg/util/pidfile_writer.hpp>
+#include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/syscall.hpp>
 
 
@@ -25,16 +24,15 @@ int main(int ac, char *av[])
 
   namespace po = boost::program_options;
 
-  std::string pidfile;
-  bool daemonize = false;
-
   po::options_description desc ("options");
   desc.add_options()
     ("help,h", "print this help")
     ("bind", po::value<std::string>()->required(), "bind to this address")
     ("port", po::value<std::string>()->required(), "port or service name to use")
-    ("pidfile", po::value<std::string>(&pidfile)->required(), "write pid to pidfile (required)")
-    ("daemonize", "daemonize after all checks were successful")
+    ( "startup-messages-fifo"
+    , po::value<fhg::util::boost::program_options::existing_path>()->required()
+    , "fifo to use for communication during startup (ports used, ...)"
+    )
     ;
 
   po::variables_map vm;
@@ -59,17 +57,6 @@ int main(int ac, char *av[])
     return EXIT_FAILURE;
   }
 
-  if (vm.count ("daemonize"))
-    daemonize = true;
-
-  if (pidfile.empty())
-  {
-    std::cerr << "parameter to --pidfile is empty!" << std::endl
-              << "it has to point to a file that one can write to - if the file doesn't exist, it will be created."
-              << std::endl;
-    return EXIT_FAILURE;
-  }
-
   try
   {
     boost::asio::io_service io_service;
@@ -78,8 +65,6 @@ int main(int ac, char *av[])
 
     signal_handler.add (SIGTERM, [&io_service] (int, siginfo_t*, void*) { io_service.stop(); });
     signal_handler.add (SIGINT, [&io_service] (int, siginfo_t*, void*) { io_service.stop(); });
-
-    fhg::util::pidfile_writer pidfile_writer (pidfile);
 
     fhg::com::kvs::server::kvsd kvsd;
 
@@ -92,22 +77,16 @@ int main(int ac, char *av[])
                                 , true
                                 );
 
-    std::cout << server.port() << std::endl;
-
-    if (daemonize)
     {
-      fhg::util::fork_and_daemonize_child_and_abandon_parent
-        ({&remote_log_io_service, &io_service});
+      std::ofstream startup_messages_fifo
+        ( vm["startup-messages-fifo"]
+        . as<fhg::util::boost::program_options::existing_path>().string()
+        );
+      startup_messages_fifo << server.port() << "\n";
+      startup_messages_fifo << "OKAY\n";
     }
-
-    pidfile_writer.write();
 
     io_service.run();
-
-    if (not pidfile.empty())
-    {
-      fhg::syscall::unlink (pidfile.c_str());
-    }
   }
   catch (std::exception const& ex)
   {

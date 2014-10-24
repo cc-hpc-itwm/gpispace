@@ -9,7 +9,7 @@ mkdir -p "${DIR_TEST}/fifos"
 
 DUMMY_NET="$(mktemp -p "${DIR_TEST}" empty_dummy_network.pnet.XXXXX)"
 
-KVS_PID_FILE="$(mktemp -p "${DIR_TEST}" kvs.pid.XXXXX)"
+KVS_PID=
 ORCHESTRATOR_PID=
 AGENT_PID_FILE="$(mktemp -p "${DIR_TEST}" agent.pid.XXXXX)"
 
@@ -23,9 +23,9 @@ cleanup()
   set +e
   [[ -s "${AGENT_PID_FILE}" ]] && kill $(cat "${AGENT_PID_FILE}")
   [[ -n "${ORCHESTRATOR_PID}" ]] && kill ${ORCHESTRATOR_PID}
-  [[ -s "${KVS_PID_FILE}" ]] && kill $(cat "${KVS_PID_FILE}")
+  [[ -n "${KVS_PID}" ]] && kill ${KVS_PID}
   rm -f "${DUMMY_NET}"
-  rm -f "${KVS_PID_FILE}" "${AGENT_PID_FILE}"
+  rm -f "${AGENT_PID_FILE}"
 }
 
 trap 'cleanup' EXIT
@@ -33,11 +33,23 @@ trap 'cleanup' EXIT
 echo "<defun/>" | pnetc > "${DUMMY_NET}"
 
 KVS_HOST="$(hostname)"
-KVS_PORT=$(fhgkvsd --bind "${KVS_HOST}"                        \
-                   --port '*'                                  \
-                   --pidfile "${KVS_PID_FILE}"                 \
-                   --daemonize
-)
+
+kvs_startup_messages_raw=$(start-and-fork \
+  --fifo-directory "${DIR_TEST}/fifos" \
+  --end-sentinel-value OKAY \
+  --startup-messages-fifo-option --startup-messages-fifo \
+  \
+  --command "$(which fhgkvsd)" \
+  --arguments --bind "${KVS_HOST}" \
+  --arguments --port '*')
+
+old_IFS=${IFS}
+IFS=$'\n'
+kvs_startup_messages=(${kvs_startup_messages_raw})
+IFS=${old_IFS}
+
+KVS_PID=${kvs_startup_messages[0]}
+KVS_PORT=${kvs_startup_messages[1]}
 
 agent --kvs-host "${KVS_HOST}" --kvs-port ${KVS_PORT}          \
       --master "orchestrator" --name "agent"                   \

@@ -220,7 +220,6 @@ function start_kvs ()
 {
     # check for old one
     local pid_file="$state_dir/fhgkvsd.pid"
-    local log_file="$state_dir/log/fhgkvsd.log"
     local pid=$( cat "$pid_file" 2>/dev/null )
     if is_proc_alive "fhgkvsd" "$pid" ; then
         echo "- fhgkvsd: old process running with pid ${pid}" >&2
@@ -228,29 +227,46 @@ function start_kvs ()
         return 1
     fi
 
-    :> "$pid_file"
-    local binary="$SDPA_HOME/bin/fhgkvsd"
-    debug $binary --bind "0" --port '*' "--pidfile" "${pid_file}" "--daemonize"
-    $binary --bind "0" --port '*' "--pidfile" "${pid_file}" "--daemonize" </dev/null >"$log_file" 2>&1
-    for (( i = 0 ; i < 6 ; ++i )) ; do
-        sleep 0.5
-        pid=$( cat "$pid_file" 2>/dev/null )
-        if [ -n "$pid" ] ; then
-            if is_proc_alive "fhgkvsd" "$pid" ; then
-                echo "+ fhgkvsd ($pid)" >&2
-                local kvs_host=$(hostname -f)
-                local kvs_port=$(cat "${state_dir}/log/fhgkvsd.log")
-                echo -n "${kvs_host}" > "${state_dir}/kvs.host"
-                echo -n "${kvs_port}" > "${state_dir}/kvs.port"
-                log "I: kvs started at ${kvs_host}:${kvs_port}"
-                return 0
-            fi
-        fi
-    done
-    echo "- fhgkvsd (dead), check '$log_file' for more - here are the last 3 lines:"
-    tail -n 3 "$log_file" >&2
-    log "E: could not start kvs, giving up!"
-    return 1
+    # todo: use local filessystem, not shared
+    mkdir -p "${state_dir}/fifos"
+    local startup_messages_raw=$(${SDPA_HOME}/bin/start-and-fork \
+      --fifo-directory "${state_dir}/fifos" \
+      --end-sentinel-value OKAY \
+      --startup-messages-fifo-option --startup-messages-fifo \
+      \
+      --command "${SDPA_HOME}/bin/fhgkvsd" \
+      --arguments --bind "0" \
+      --arguments --port '*' \
+    )
+    local ec=${?}
+
+    local old_IFS=${IFS}
+    IFS=$'\n'
+    local startup_messages=(${startup_messages_raw})
+    IFS=${old_IFS}
+
+    if [ ${ec} -ne 0 ]
+    then
+      echo "- fhgkvsd (dead)"
+      log "E: could not start kvs, giving up!"
+      return 1
+    fi
+
+    if [ ${#startup_messages[@]} != 2 ]; then
+      echo "E: could not start fhgkvsd: expected 2 lines of startup messages"
+      return 1
+    fi
+
+    local pid=${startup_messages[0]}
+    echo ${pid} > "${pid_file}"
+
+    echo "+ fhgkvsd ($pid)" >&2
+    local kvs_host=$(hostname -f)
+    local kvs_port=${startup_messages[1]}
+    echo -n "${kvs_host}" > "${state_dir}/kvs.host"
+    echo -n "${kvs_port}" > "${state_dir}/kvs.port"
+    log "I: kvs started at ${kvs_host}:${kvs_port}"
+    return 0
 }
 
 function stop_kvs ()
