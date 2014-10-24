@@ -89,8 +89,6 @@ int main (int argc, char **argv)
   if( arrMasterNames.empty() )
     arrMasterNames.push_back("orchestrator"); // default master name
 
-  sdpa::master_info_list_t listMasterInfo;
-
   if (not pidfile.empty())
   {
     fhg::util::pidfile_writer const pidfile_writer (pidfile);
@@ -112,19 +110,6 @@ int main (int argc, char **argv)
     }
   }
 
-  {
-    std::stringstream startup_message;
-    startup_message << "Starting agent '" << agentName
-                    << "' at '" << agentUrl
-                    << "', having masters: ";
-
-    for (const std::string& master : arrMasterNames)
-    {
-      startup_message << master << ", ";
-      listMasterInfo.push_back (sdpa::MasterInfo (master));
-    }
-  }
-
   boost::asio::io_service gui_io_service;
   boost::asio::io_service peer_io_service;
   boost::asio::io_service kvs_client_io_service;
@@ -136,7 +121,7 @@ int main (int argc, char **argv)
     , vm["kvs-host"].as<std::string>()
     , vm["kvs-port"].as<std::string>()
     , vmem_socket
-    , listMasterInfo
+    , {arrMasterNames.begin(), arrMasterNames.end()}
     , std::pair<std::string, boost::asio::io_service&> (appGuiUrl, gui_io_service)
     );
 
