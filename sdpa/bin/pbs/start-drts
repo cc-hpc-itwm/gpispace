@@ -27,7 +27,6 @@ logdir=
 shm_size=
 numa_socket=
 DEFAULT_PLUGIN_DRTS_MAX_RECONNECT="128"
-DEFAULT_KERNEL_LOAD_LAZY="true"
 DEFAULT_PLUGIN_GPI_STARTMODE="wait"
 sdpa_home=
 
@@ -297,12 +296,6 @@ done
 
 cfg="$cfg -n $name"
 cfg="$cfg -L $sdpa_home/libexec/fhg/plugins"
-lazy=${DEFAULT_KERNEL_LOAD_LAZY}
-if [ x"$lazy" = x"true" ] ; then
-    cfg="$cfg -s kernel.load.lazy=1"
-else
-    cfg="$cfg -s kernel.load.lazy=0"
-fi
 
 if [ x"$gpi_enabled" = x"true" ] ; then
     cfg="$cfg --gpi_enabled"
