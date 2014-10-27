@@ -746,7 +746,6 @@ function start_workers_for_capability
         local name="${capability/[+#.]/_}"
 
         argv=($opt_verbose_flag)
-        argv+=(-D)
         argv+=(-c $num_per_node)
         argv+=(-n "$name")
         argv+=(-m "$parent")
