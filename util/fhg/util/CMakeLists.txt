@@ -2,7 +2,6 @@ set (srcs
   ../syscall.cpp
 
   backtracing_exception.cpp
-  daemonize.cpp
   signal_handler_manager.cpp
   pidfile_writer.cpp
   random_string.cpp
