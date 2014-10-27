@@ -473,16 +473,39 @@ else
     opt_verbose_flag=""
 fi
 
-rexec "${master}" ${sdpa} -s "${state_dir}" start kvs
-ec=$?
-if [ $ec -ne 0 ]
+kvs_pid_file="${state_dir}/fhgkvsd.pid"
+if [ -s "${kvs_pid_file}" ]
 then
+  kvs_pid=$(cat ${kvs_pid_file})
+  if ! ssh "${master}" "/usr/bin/env bash -c \"\
+           if ps --pid ${kvs_pid} -o comm= | grep -q fhgkvsd; then \
+             kill -0 ${kvs_pid} 2>/dev/null; \
+           fi; \
+           \""
+  then
+    "${sdpa}" -s "${state_dir}" stop
+    error 3 "could not start kvs: old process running with pid ${pid}"
+  fi
+fi
+
+rexec_with_startup_messages ${master} kvs_startup_messages \
+  --command "${sdpa_home}/bin/fhgkvsd" \
+  --arguments --bind "0" \
+  --arguments --port 0
+if [ ${?} -ne 0 ] ; then
     "${sdpa}" -s "${state_dir}" stop
     error 3 "could not start kvs"
 fi
-
-kvs_host=$(cat "${state_dir}/kvs.host")
-kvs_port=$(cat "${state_dir}/kvs.port")
+if [ ${#kvs_startup_messages[@]} != 2 ]; then
+  "${sdpa}" -s "${state_dir}" stop
+  error 3 "could not start kvs: expected 2 lines of startup messages"
+fi
+echo ${kvs_startup_messages[0]} > "${kvs_pid_file}"
+kvs_host=$(ssh ${master} hostname -f)
+kvs_port=${kvs_startup_messages[1]}
+echo -n "${kvs_host}" > "${state_dir}/kvs.host"
+echo -n "${kvs_port}" > "${state_dir}/kvs.port"
+log "I: kvs started at ${kvs_host}:${kvs_port}"
 
 if ! wait_for_port_on_host ${network_retries} "${kvs_host}" "${kvs_port}"
 then

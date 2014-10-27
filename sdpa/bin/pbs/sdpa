@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# usage: sdpa {start|stop|status|submit file}
+# usage: sdpa {stop|status|submit file}
 #
 
 kvs_host=
@@ -109,7 +109,6 @@ usage: `basename $0` command [parameters...]
    available commands:
      selftest       - perform a self-test
 
-  start [component] - start all components or "component"
    stop [component] - stop all components or "component"
  status [component] - get the current status of component
                 gui - start the GUI
@@ -214,59 +213,6 @@ function status_agent ()
     local cmd="rexec $node $SDPA_SCRIPT_DIR/status-agent -n $name-$node"
     debug $cmd
     $cmd </dev/null >/dev/null 2>&1
-}
-
-function start_kvs ()
-{
-    # check for old one
-    local pid_file="$state_dir/fhgkvsd.pid"
-    local pid=$( cat "$pid_file" 2>/dev/null )
-    if is_proc_alive "fhgkvsd" "$pid" ; then
-        echo "- fhgkvsd: old process running with pid ${pid}" >&2
-        log "E: could not start kvs, giving up!"
-        return 1
-    fi
-
-    # todo: use local filessystem, not shared
-    mkdir -p "${state_dir}/fifos"
-    local startup_messages_raw=$(${SDPA_HOME}/bin/start-and-fork \
-      --fifo-directory "${state_dir}/fifos" \
-      --end-sentinel-value OKAY \
-      --startup-messages-fifo-option --startup-messages-fifo \
-      \
-      --command "${SDPA_HOME}/bin/fhgkvsd" \
-      --arguments --bind "0" \
-      --arguments --port '*' \
-    )
-    local ec=${?}
-
-    local old_IFS=${IFS}
-    IFS=$'\n'
-    local startup_messages=(${startup_messages_raw})
-    IFS=${old_IFS}
-
-    if [ ${ec} -ne 0 ]
-    then
-      echo "- fhgkvsd (dead)"
-      log "E: could not start kvs, giving up!"
-      return 1
-    fi
-
-    if [ ${#startup_messages[@]} != 2 ]; then
-      echo "E: could not start fhgkvsd: expected 2 lines of startup messages"
-      return 1
-    fi
-
-    local pid=${startup_messages[0]}
-    echo ${pid} > "${pid_file}"
-
-    echo "+ fhgkvsd ($pid)" >&2
-    local kvs_host=$(hostname -f)
-    local kvs_port=${startup_messages[1]}
-    echo -n "${kvs_host}" > "${state_dir}/kvs.host"
-    echo -n "${kvs_port}" > "${state_dir}/kvs.port"
-    log "I: kvs started at ${kvs_host}:${kvs_port}"
-    return 0
 }
 
 function stop_kvs ()
@@ -509,24 +455,6 @@ function stop_vmem ()
     fi
 }
 
-function start ()
-{
-    local part=$1; shift
-    if [ -z "$part" ] ; then
-        echo >&2 "start: requires a component to start: kvs"
-        return 1
-    fi
-
-    start_${part} $@
-    rc=$?
-
-    if [ $rc -ne 0 ] ; then
-        log "Start of $part failed!"
-    fi
-
-    return $rc
-}
-
 function stop ()
 {
     local parts="drts agg orch vmem kvs"
@@ -708,10 +636,6 @@ function sigterm()
 trap sigterm TERM
 
 case "$1" in
-    start)
-        shift
-        start $@
-        ;;
     stop)
         shift
         stop $@
