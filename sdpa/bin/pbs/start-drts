@@ -294,11 +294,12 @@ done
 
 # config values (kernel)
 
-cfg="$cfg -n $name"
-cfg="$cfg -L $sdpa_home/libexec/fhg/plugins"
+arguments=
+arguments="${arguments} --arguments -n $name"
+arguments="${arguments} --arguments -L $sdpa_home/libexec/fhg/plugins"
 
 if [ x"$gpi_enabled" = x"true" ] ; then
-    cfg="$cfg --gpi_enabled"
+    arguments="${arguments} --arguments --gpi_enabled"
 
     fake_gpi_capability="GPI"
 
@@ -314,37 +315,54 @@ if [ x"$gpi_enabled" = x"true" ] ; then
         exit 1
     fi
 
-    cfg="$cfg -s plugin.gpi.socket=${gpi_socket}"
-    cfg="$cfg -s plugin.gpi.startmode=${DEFAULT_PLUGIN_GPI_STARTMODE}"
+    arguments="${arguments} --arguments -s plugin.gpi.socket=${gpi_socket}"
+    arguments="${arguments} --arguments -s plugin.gpi.startmode=${DEFAULT_PLUGIN_GPI_STARTMODE}"
 
     # config values (gpi_compat plugin)
-    cfg="$cfg -s plugin.gpi_compat.shm_size=$shm_size"
+    arguments="${arguments} --arguments -s plugin.gpi_compat.shm_size=$shm_size"
 fi
 
 # config values (drts plugin)
-cfg="$cfg -s plugin.drts.kvs_host=$kvs_host"
-cfg="$cfg -s plugin.drts.kvs_port=$kvs_port"
-cfg="$cfg -s plugin.drts.master=$master"
-cfg="$cfg -s plugin.drts.backlog=$backlog"
-cfg="$cfg -s plugin.drts.max_reconnect_attempts=${DEFAULT_PLUGIN_DRTS_MAX_RECONNECT}"
-cfg="$cfg -s plugin.drts.capabilities=${capabilities}"
-cfg="$cfg -s plugin.drts.gui_url=$gui"
-cfg="$cfg -s plugin.drts.library_path=${lib_path}"
+arguments="${arguments} --arguments -s plugin.drts.kvs_host=$kvs_host"
+arguments="${arguments} --arguments -s plugin.drts.kvs_port=$kvs_port"
+arguments="${arguments} --arguments -s plugin.drts.master=$master"
+arguments="${arguments} --arguments -s plugin.drts.backlog=$backlog"
+arguments="${arguments} --arguments -s plugin.drts.max_reconnect_attempts=${DEFAULT_PLUGIN_DRTS_MAX_RECONNECT}"
+arguments="${arguments} --arguments -s plugin.drts.capabilities=${capabilities}"
+arguments="${arguments} --arguments -s plugin.drts.gui_url=$gui"
+arguments="${arguments} --arguments -s plugin.drts.library_path=${lib_path}"
 if [ -n "$numa_socket" ]
 then
-    cfg="$cfg -s plugin.drts.socket=$numa_socket"
+    arguments="${arguments} --arguments -s plugin.drts.socket=$numa_socket"
 fi
 
-cmd="${bin} $cfg"
+echo >&2 "I: starting worker: ${name} on host $(hostname) with parent ${master}"
 
-if $verbose
+mkdir -p "${state_dir}/fifos"
+startup_messages_raw=$(${sdpa_home}/bin/start-and-fork \
+  --fifo-directory "${state_dir}/fifos" \
+  --end-sentinel-value OKAY \
+  --startup-messages-fifo-option --startup-messages-fifo \
+  \
+  --command "${bin}" \
+  ${arguments} \
+  --environment LD_LIBRARY_PATH="${sdpa_home}/lib:${sdpa_home}/libexec/sdpa:${LD_LIBRARY_PATH}" \
+  --environment FHGLOG_level=$(${verbose} && echo TRACE || echo INFO) \
+  --environment FHGLOG_to_file="${logprefix}.log"
+)
+ec=${?}
+
+old_IFS=${IFS}
+IFS=$'\n'
+startup_messages=(${startup_messages_raw})
+IFS=${old_IFS}
+
+if [ ${ec} -ne 0 ]
 then
-    export FHGLOG_level=TRACE
-else
-    export FHGLOG_level=INFO
+  exit ${ec}
 fi
 
-export LD_LIBRARY_PATH="${sdpa_home}/lib:${sdpa_home}/libexec/sdpa:$LD_LIBRARY_PATH"
-export FHGLOG_to_file="${logprefix}.log"
-echo >&2 "Running $cmd on node $(hostname)"
-$cmd --daemonize
+if [ ${#startup_messages[@]} != 1 ]; then
+  echo >2 "could not start ${name}: expected 1 lines of startup messages"
+  exit 1
+fi

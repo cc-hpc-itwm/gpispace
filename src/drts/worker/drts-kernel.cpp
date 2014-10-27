@@ -3,8 +3,7 @@
 #include <drts/worker/drts.hpp>
 
 #include <plugin/core/kernel.hpp>
-#include <fhg/util/daemonize.hpp>
-#include <fhg/util/pidfile_writer.hpp>
+#include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/split.hpp>
 
@@ -12,6 +11,7 @@
 
 #include <boost/program_options.hpp>
 
+#include <fstream>
 #include <functional>
 #include <string>
 #include <vector>
@@ -27,7 +27,6 @@ int main(int ac, char **av)
   po::options_description desc("options");
 
   std::vector<std::string> config_vars;
-  std::string pidfile;
   std::string kernel_name;
   fhg::core::kernel_t::search_path_t search_path;
 
@@ -35,11 +34,13 @@ int main(int ac, char **av)
     ("help,h", "this message")
     ("name,n", po::value<std::string>(&kernel_name), "give the kernel a name")
     ("set,s", po::value<std::vector<std::string>>(&config_vars), "set a parameter to a value key=value")
-    ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
-    ("daemonize", "daemonize after all checks were successful")
     ("gpi_enabled", "load gpi api")
     ( "add-search-path,L", po::value<fhg::core::kernel_t::search_path_t>(&search_path)
     , "add a path to the search path for plugins"
+    )
+    ( "startup-messages-fifo"
+    , po::value<fhg::util::boost::program_options::existing_path>()->required()
+    , "fifo to use for communication during startup (ports used, ...)"
     )
     ;
 
@@ -88,29 +89,6 @@ int main(int ac, char **av)
   }
   config_variables["kernel_name"] = kernel_name;
 
-  const bool daemonize (vm.count ("daemonize"));
-
-  if (not pidfile.empty())
-  {
-    fhg::util::pidfile_writer const pidfile_writer (pidfile);
-
-    if (daemonize)
-    {
-      fhg::util::fork_and_daemonize_child_and_abandon_parent
-        ({&remote_log_io_service});
-    }
-
-    pidfile_writer.write();
-  }
-  else
-  {
-    if (daemonize)
-    {
-      fhg::util::fork_and_daemonize_child_and_abandon_parent
-        ({&remote_log_io_service});
-    }
-  }
-
   fhg::core::wait_until_stopped waiter;
   const std::function<void()> request_stop (waiter.make_request_stop());
 
@@ -141,6 +119,15 @@ int main(int ac, char **av)
         (config_variables.at ("plugin.drts.gui_url"), gui_io_service)
       , config_variables
       );
+
+    {
+      std::ofstream startup_messages_fifo
+        ( vm["startup-messages-fifo"]
+        . as<fhg::util::boost::program_options::existing_path>().string()
+        );
+      startup_messages_fifo << "OKAY\n";
+    }
+
     waiter.wait();
   }
   else
@@ -151,6 +138,15 @@ int main(int ac, char **av)
                           , boost::none
                           , config_variables
                           );
+
+    {
+      std::ofstream startup_messages_fifo
+        ( vm["startup-messages-fifo"]
+        . as<fhg::util::boost::program_options::existing_path>().string()
+        );
+      startup_messages_fifo << "OKAY\n";
+    }
+
     waiter.wait();
   }
 
