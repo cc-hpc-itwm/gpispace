@@ -11,7 +11,6 @@
 #include <plugin/core/plugin.hpp>
 #include <plugin/core/kernel.hpp>
 
-#include <fhg/util/daemonize.hpp>
 #include <fhg/util/split.hpp>
 
 #include <thread>
