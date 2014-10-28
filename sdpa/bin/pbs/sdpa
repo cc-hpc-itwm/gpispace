@@ -154,9 +154,11 @@ function stop_proc ()
     local name="$1" ; shift
     local binary="$1" ; shift
 
-    local pid_file="$state_dir/$name.pid"
-    local pid=$( cat "$pid_file" 2>/dev/null )
-    if [ -n "$pid" ] ; then
+    local pid_file="${state_dir}/${name}.pid"
+    if [ -s ${pid_file} ]
+    then
+      local pid=$(cat "${pid_file}")
+      if [ -n "${pid}" ] ; then
         echo -n "    sending SIGTERM to $name ($pid)" >&2
         for (( i=0; i<3; ++i )); do
             if is_proc_alive "$binary" "$pid" ; then
@@ -168,14 +170,17 @@ function stop_proc ()
                 break
             fi
         done
-    fi
+      fi
 
-    if is_proc_alive "$binary" "$pid" ; then
+      if is_proc_alive "$binary" "$pid" ; then
         kill -KILL "$pid" >/dev/null 2>&1
         echo "killed" >&2
-    else
+      else
         pkill "$binary" >/dev/null 2>&1
         return 0
+      fi
+    else
+      echo >2 " not started"
     fi
 }
 
