@@ -239,6 +239,11 @@ const std::string& GenericDaemon::name() const
   return _name;
 }
 
+    boost::asio::ip::tcp::endpoint GenericDaemon::peer_local_endpoint() const
+    {
+      return _network_strategy.local_endpoint();
+    }
+
 void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId)
 {
   //take a job from the workers' queue and serve it

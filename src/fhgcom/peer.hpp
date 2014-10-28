@@ -44,6 +44,10 @@ namespace fhg
       std::string const & host () const { return host_; }
       std::string const & port () const { return port_; }
       p2p::address_t const & address () const { return my_addr_; }
+      boost::asio::ip::tcp::endpoint local_endpoint() const
+      {
+        return acceptor_.local_endpoint();
+      }
 
       void start ();
       void stop ();

@@ -30,6 +30,11 @@ namespace sdpa
 
       void perform (boost::shared_ptr<events::SDPAEvent> const & to_send);
 
+      boost::asio::ip::tcp::endpoint local_endpoint() const
+      {
+        return m_peer->local_endpoint();
+      }
+
     private:
       void handle_send (boost::shared_ptr<events::SDPAEvent> const & e, boost::system::error_code const & ec);
       void handle_recv ( boost::system::error_code const & ec
