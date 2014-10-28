@@ -50,7 +50,7 @@ EOF
 on_ctrlC()
 {
         echo >&2 "Canceled..."
-        "${sdpa}" -s "${state_dir}" stop
+        rexec "${master}" "${sdpa}" -s "${state_dir}" stop
         exit 0
 }
 
@@ -483,7 +483,7 @@ then
            fi; \
            \""
   then
-    "${sdpa}" -s "${state_dir}" stop
+    rexec "${master}" "${sdpa}" -s "${state_dir}" stop
     error 3 "could not start kvs: old process running with pid ${pid}"
   fi
 fi
@@ -493,11 +493,11 @@ rexec_with_startup_messages ${master} kvs_startup_messages \
   --arguments --bind "0" \
   --arguments --port 0
 if [ ${?} -ne 0 ] ; then
-    "${sdpa}" -s "${state_dir}" stop
+    rexec "${master}" "${sdpa}" -s "${state_dir}" stop
     error 3 "could not start kvs"
 fi
 if [ ${#kvs_startup_messages[@]} != 2 ]; then
-  "${sdpa}" -s "${state_dir}" stop
+  rexec "${master}" "${sdpa}" -s "${state_dir}" stop
   error 3 "could not start kvs: expected 2 lines of startup messages"
 fi
 echo ${kvs_startup_messages[0]} > "${kvs_pid_file}"
@@ -509,7 +509,7 @@ log "I: kvs started at ${kvs_host}:${kvs_port}"
 
 if ! wait_for_port_on_host ${network_retries} "${kvs_host}" "${kvs_port}"
 then
-    "${sdpa}" -s "${state_dir}" stop
+    rexec "${master}" "${sdpa}" -s "${state_dir}" stop
     error 3 "could not start kvs: failed to appear at ${kvs_host}:${kvs_port} after ${network_retries} seconds"
 fi
 
@@ -524,11 +524,11 @@ rexec_with_startup_messages ${master} orchestrator_startup_messages \
   --environment FHGLOG_level=$($verbose && echo TRACE || echo INFO) \
   --environment FHGLOG_to_file="${state_dir}/log/orchestrator.log"
 if [ ${?} -ne 0 ] ; then
-    "${sdpa}" -s "${state_dir}" stop
+    rexec "${master}" "${sdpa}" -s "${state_dir}" stop
     error 3 "could not start orchestrator"
 fi
 if [ ${#orchestrator_startup_messages[@]} != 3 ]; then
-  "${sdpa}" -s "${state_dir}" stop
+  rexec "${master}" "${sdpa}" -s "${state_dir}" stop
   error 3 "could not start orchestrator: expected 3 lines of startup messages"
 fi
 echo ${orchestrator_startup_messages[0]} > "${state_dir}/orchestrator.pid"
@@ -539,7 +539,7 @@ wait_for_process ${network_retries} "orchestrator" "${kvs_host}" "${kvs_port}"
 ec=$?
 if [ $ec -ne 0 ]
 then
-    "${sdpa}" -s "${state_dir}" stop
+    rexec "${master}" "${sdpa}" -s "${state_dir}" stop
     if [ $ec -eq 1 ]
     then
         error 3 "could not start orchestrator, failed to appear after ${network_retries} seconds"
@@ -588,7 +588,7 @@ if $gpi_enabled ; then
 
     if [ ${ec} -ne 0 ]
     then
-        "${sdpa}" -s "${state_dir}" stop
+        rexec "${master}" "${sdpa}" -s "${state_dir}" stop
         error 3 "could not start vmem"
     fi
 
@@ -704,11 +704,11 @@ function start_agent
       --environment FHGLOG_level=$($verbose && echo TRACE || echo INFO) \
       --environment FHGLOG_to_file="${state_dir}/log/$name.log"
     if [ ${?} -ne 0 ] ; then
-      "${sdpa}" -s "${state_dir}" stop
+      rexec "${master}" "${sdpa}" -s "${state_dir}" stop
       error 3 "could not start agent ${name}"
     fi
     if [ ${#agent_startup_messages[@]} != 1 ]; then
-      "${sdpa}" -s "${state_dir}" stop
+      rexec "${master}" "${sdpa}" -s "${state_dir}" stop
       error 1 "could not start agent ${name}: expected 1 lines of startup messages"
     fi
     echo ${agent_startup_messages[0]} > "${state_dir}/${name}.pid"
@@ -732,7 +732,7 @@ function start_agents
         ec=$?
         if [ $ec -ne 0 ]
         then
-            "${sdpa}" -s "${state_dir}" stop
+            rexec "${master}" "${sdpa}" -s "${state_dir}" stop
             error 3 "at least one agent could not be started!"
         fi
       done
@@ -801,7 +801,7 @@ function start_workers_for_capability
         ec=$?
         if [ $ec -ne 0 ]
         then
-            "${sdpa}" -s "${state_dir}" stop
+            rexec "${master}" "${sdpa}" -s "${state_dir}" stop
             error 3 "at least one worker could not be started!"
         fi
 
@@ -836,7 +836,7 @@ wait_on_pids
 ec=$?
 if [ $ec -ne 0 ]
 then
-    "${sdpa}" -s "${state_dir}" stop
+    rexec "${master}" "${sdpa}" -s "${state_dir}" stop
     error 3 "at least one agent could not be started!"
 fi
 
@@ -845,6 +845,6 @@ wait_on_pids
 ec=$?
 if [ $ec -ne 0 ]
 then
-    "${sdpa}" -s "${state_dir}" stop
+    rexec "${master}" "${sdpa}" -s "${state_dir}" stop
     error 3 "at least one worker could not be started!"
 fi
