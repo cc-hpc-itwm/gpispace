@@ -7,22 +7,18 @@ usage: $(basename "$0") [options]
 
     -h: print this help
     -i ident (=$identiy): identity
-    -d: dry run
     -n: name prefix
     -p: pattern
-    -v: be verbose
     -T timeout (=$timeout): seconds to wait before SIGKILL
 EOF
 }
 
 identity=
-dry_run=false
 name_prefix=''
 pattern=
-verbose=false
 timeout=3
 
-while getopts ":hi:dn:p:vS:T:" opt; do
+while getopts ":hi:n:p:S:T:" opt; do
     case $opt in
         h)
             usage
@@ -31,17 +27,11 @@ while getopts ":hi:dn:p:vS:T:" opt; do
         i)
             identity=$OPTARG
             ;;
-        d)
-            dry_run=true
-            ;;
         n)
             name_prefix="$OPTARG"
             ;;
         p)
             pattern="$OPTARG"
-            ;;
-        v)
-            verbose=true
             ;;
         T)
             timeout=$OPTARG
@@ -53,11 +43,6 @@ while getopts ":hi:dn:p:vS:T:" opt; do
             ;;
     esac
 done
-
-function debug()
-{
-    $verbose && echo >&2 $@
-}
 
 function term_drts ()
 {
@@ -83,16 +68,6 @@ function term_drts ()
     if $alive
     then
         signal_drts KILL $pid "$name"
-        debug "killed"
-    fi
-}
-
-function run_maybe()
-{
-    if $dry_run ; then
-        echo "would run: $@"
-    else
-        "$@" >/dev/null 2>&1
     fi
 }
 
@@ -102,7 +77,7 @@ function signal_drts ()
     local pid="$1" ; shift
     local name="$1" ; shift
 
-    run_maybe kill -$sig "$pid"
+    kill -$sig "$pid" >/dev/null 2>&1
 }
 
 if [ -z "$pattern" ] ; then
@@ -119,8 +94,6 @@ if [ -z "$pattern" ] ; then
     fi
 fi
 
-debug "pattern = '$pattern'"
-
 still_running=$(ps -C agent -o uid=,pid= | grep -e "^\s\+$(id -u)" | awk '{print $2}')
 for p in $still_running ; do
     name=$(cat /proc/$p/cmdline 2>/dev/null | tr '\0' '\n' | grep -A1 -e '^-n$' | tail -n 1)
@@ -128,10 +101,7 @@ for p in $still_running ; do
         continue
     fi
 
-    debug "found running drts: $name"
-
     if echo "$name" | grep -q "^${pattern}$" ; then
-        debug "drts matches pattern '^${pattern}\$'"
         term_drts "$p" "$name"
     fi
 done
