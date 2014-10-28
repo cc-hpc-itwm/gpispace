@@ -623,12 +623,6 @@ then
   kvs_port=$(cat "${state_dir}/kvs.port")
 fi
 
-if [ "$1" = "gui" ] ; then
-    shift
-    start_gui $@
-    exit $?
-fi
-
 function sigterm()
 {
     trap sigterm TERM
