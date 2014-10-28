@@ -235,6 +235,10 @@ function stop_kvs ()
 function stop_orch ()
 {
     echo "orchestrator"
+
+    rm -f "${state_dir}/orchestrator.host"
+    rm -f "${state_dir}/orchestrator.port"
+
     if ! stop_proc "orchestrator" "orchestrator" ; then
         echo "E: could not stop orchestrator" >&2
         return 1
