@@ -176,6 +176,8 @@ function stop_proc ()
         kill -KILL "$pid" >/dev/null 2>&1
         echo "killed" >&2
       fi
+
+      rm "${pid_file}"
     else
       echo >2 " not started"
     fi
