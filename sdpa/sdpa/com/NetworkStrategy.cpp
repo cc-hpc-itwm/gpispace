@@ -67,20 +67,11 @@ namespace sdpa
     {
       static sdpa::events::Codec codec;
 
-      // convert event to fhg::com::message_t
-
-      fhg::com::message_t msg;
-      msg.header.dst = fhg::com::p2p::address_t (sdpa_event->to());
-      msg.header.src = m_peer->address();
-
-      const std::string encoded_evt (codec.encode(sdpa_event.get()));
-      msg.data.assign (encoded_evt.begin(), encoded_evt.end());
-      msg.header.length = msg.data.size();
-
       try
       {
         m_peer->async_send
-          ( &msg
+          ( sdpa_event->to()
+          , codec.encode (sdpa_event.get())
           , std::bind
             (&NetworkStrategy::handle_send, this, sdpa_event, std::placeholders::_1)
           );

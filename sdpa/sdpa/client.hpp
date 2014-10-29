@@ -74,8 +74,6 @@ namespace sdpa
       // config variables
       std::string orchestrator_;
 
-      fhg::com::message_t message_for_event (const sdpa::events::SDPAEvent*);
-
       template<typename Expected, typename Sent>
         Expected send_and_wait_for_reply (Sent event);
 

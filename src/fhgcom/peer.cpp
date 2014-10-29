@@ -204,12 +204,14 @@ namespace fhg
       }
     }
 
-    void peer_t::async_send ( const message_t *m
+    void peer_t::async_send ( const std::string & to
+                            , const std::string & data
                             , peer_t::handler_t completion_handler
                             )
     {
-      fhg_assert (m);
       fhg_assert (completion_handler);
+
+      p2p::address_t const addr {p2p::address_t (to)};
 
       lock_type lock(mutex_);
 
@@ -221,7 +223,6 @@ namespace fhg
       }
 
       // TODO: io_service_.post (...);
-      const p2p::address_t addr (m->header.dst);
 
       if (connections_.find(addr) == connections_.end())
       {
@@ -257,9 +258,9 @@ namespace fhg
         cd.name = n;
 
         to_send_t to_send;
-        to_send.message = *m;
-        to_send.message.header.length = to_send.message.data.size();
         to_send.message.header.src = my_addr_;
+        to_send.message.header.dst = addr;
+        to_send.message.assign (data.begin(), data.end());
         to_send.handler = completion_handler;
         cd.o_queue.push_back (to_send);
 
@@ -303,46 +304,15 @@ namespace fhg
       {
         connection_data_t & cd = connections_.at (addr);
         to_send_t to_send;
-        to_send.message = *m;
-        to_send.message.header.length = to_send.message.data.size();
         to_send.message.header.src = my_addr_;
+        to_send.message.header.dst = addr;
+        to_send.message.assign (data.begin(), data.end());
         to_send.handler = completion_handler;
         cd.o_queue.push_back (to_send);
 
         if (cd.o_queue.size () == 1)
           start_sender (addr);
       }
-    }
-
-    void peer_t::send (const message_t *m)
-    {
-      fhg_assert (m);
-
-      typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
-      async_op_t send_finished;
-
-      async_send
-        ( m
-        , std::bind (&async_op_t::notify, &send_finished, std::placeholders::_1)
-        );
-
-      const boost::system::error_code ec (send_finished.wait());
-      if (ec)
-      {
-        throw boost::system::system_error (ec);
-      }
-    }
-
-    void peer_t::async_send ( const std::string & to
-                            , const std::string & data
-                            , peer_t::handler_t completion_handler
-                            )
-    {
-      message_t m;
-      m.assign (data.begin(), data.end());
-      m.header.length = data.size();
-      m.header.dst = p2p::address_t (to);
-      async_send (&m, completion_handler);
     }
 
     void peer_t::recv (message_t *m)

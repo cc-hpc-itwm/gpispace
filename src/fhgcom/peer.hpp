@@ -53,11 +53,6 @@ namespace fhg
       void stop ();
       void run ();
 
-      void async_send ( const message_t * m
-                      , handler_t h
-                      );
-      void send (const message_t *);
-
       void async_send ( std::string const & to
                       , std::string const & data
                       , handler_t h

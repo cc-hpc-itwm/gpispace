@@ -80,20 +80,6 @@ namespace sdpa
       m_peer.stop();
     }
 
-    fhg::com::message_t Client::message_for_event
-      (const sdpa::events::SDPAEvent* event)
-    {
-      static sdpa::events::Codec codec;
-
-      const std::string encoded_evt (codec.encode (event));
-      fhg::com::message_t msg (encoded_evt.begin(), encoded_evt.end());
-      msg.header.dst = fhg::com::p2p::address_t (event->to());
-      msg.header.src = m_peer.address();
-      msg.header.length = msg.data.size();
-
-      return msg;
-    }
-
     void Client::handle_recv ( boost::system::error_code const & ec
                              , boost::optional<std::string> source_name
                              )
@@ -166,9 +152,8 @@ namespace sdpa
     {
       m_incoming_events.INDICATES_A_RACE_clear();
 
-      fhg::com::message_t msg (message_for_event (&event));
-
-      m_peer.send (&msg);
+      static sdpa::events::Codec codec;
+      m_peer.send (event.to(), codec.encode (&event));
 
       const sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
       if (Expected* e = dynamic_cast<Expected*> (reply.get()))

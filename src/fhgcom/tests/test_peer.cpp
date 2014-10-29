@@ -261,15 +261,11 @@ BOOST_FIXTURE_TEST_CASE (send_large_data, KVSSetup)
 
   peer_1.start();
 
-    message_t m;
-    m.header.dst = fhg::com::p2p::address_t ("peer-1");
-    m.data.resize( (2<<25) );
-    m.header.length = m.data.size();
-    peer_1.send(&m);
+    peer_1.send("peer-1", std::string (2<<25, 'X'));
     message_t r;
     peer_1.recv(&r);
 
-    BOOST_CHECK_EQUAL(m.data.size(), r.data.size());
+    BOOST_CHECK_EQUAL(2<<25, r.data.size());
 
   peer_1.stop();
   thrd_1.join ();
