@@ -51,8 +51,9 @@ namespace
       _jobs.erase (name);
 
       _network.perform
-        ( sdpa::events::SDPAEvent::Ptr
-          (new sdpa::events::CancelJobAckEvent (_name, job._owner, job._id))
+        ( job._owner
+        , sdpa::events::SDPAEvent::Ptr
+          (new sdpa::events::CancelJobAckEvent (_name, job._id))
         );
     }
 

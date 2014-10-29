@@ -12,10 +12,8 @@ namespace sdpa
     public:
       typedef boost::shared_ptr<WorkerRegistrationAckEvent> Ptr;
 
-      WorkerRegistrationAckEvent ( const address_t& a_from
-                                 , const address_t& a_to
-                                 )
-        : MgmtEvent (a_from, a_to)
+      WorkerRegistrationAckEvent (const address_t& a_from)
+        : MgmtEvent (a_from)
       {}
 
       virtual void handleBy (EventHandler* handler) override

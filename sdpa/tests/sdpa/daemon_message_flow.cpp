@@ -27,9 +27,9 @@ namespace
         )
     {}
 
-    void send (sdpa::events::SDPAEvent* event)
+    void send (std::string const& destination, sdpa::events::SDPAEvent* event)
     {
-      _network.perform (sdpa::events::SDPAEvent::Ptr (event));
+      _network.perform (destination, sdpa::events::SDPAEvent::Ptr (event));
     }
 
     template<typename T> boost::shared_ptr<T> wait_for_event()
@@ -125,8 +125,9 @@ BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
 
   network_strategy child (child_name, kvs_server);
 
-  child.send ( new sdpa::events::JobFinishedAckEvent
-               (child_name, orchestrator_name, fhg::util::random_string())
+  child.send ( orchestrator_name
+             , new sdpa::events::JobFinishedAckEvent
+               (child_name, fhg::util::random_string())
              );
 
   sdpa::events::ErrorEvent::Ptr event

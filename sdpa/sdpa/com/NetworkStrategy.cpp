@@ -63,24 +63,29 @@ namespace sdpa
       m_thread.join();
     }
 
-    void NetworkStrategy::perform (boost::shared_ptr<events::SDPAEvent> const & sdpa_event)
+    void NetworkStrategy::perform
+      ( std::string const& destination
+      , boost::shared_ptr<events::SDPAEvent> const& sdpa_event
+      )
     {
       static sdpa::events::Codec codec;
 
       try
       {
         m_peer->async_send
-          ( sdpa_event->to()
+          ( destination
           , codec.encode (sdpa_event.get())
-          , std::bind
-            (&NetworkStrategy::handle_send, this, sdpa_event, std::placeholders::_1)
+          , std::bind ( &NetworkStrategy::handle_send
+                      , this
+                      , destination
+                      , std::placeholders::_1
+                      )
           );
       }
       catch (std::exception const & ex)
       {
         sdpa::events::ErrorEvent::Ptr ptrErrEvt
-          (new sdpa::events::ErrorEvent( sdpa_event->to()
-                                       , sdpa_event->from()
+          (new sdpa::events::ErrorEvent( destination
                                        , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
                                        , ex.what())
           );
@@ -88,15 +93,14 @@ namespace sdpa
       }
     }
 
-    void NetworkStrategy::handle_send ( boost::shared_ptr<events::SDPAEvent> const &sdpa_event
+    void NetworkStrategy::handle_send ( std::string const& destination_name
                                       , boost::system::error_code const & ec
                                       )
     {
       if (ec)
       {
         sdpa::events::ErrorEvent::Ptr ptrErrEvt
-          (new sdpa::events::ErrorEvent( sdpa_event->to()
-                                       , sdpa_event->from()
+          (new sdpa::events::ErrorEvent( destination_name
                                        , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
                                        , ec.message())
           );
@@ -132,7 +136,6 @@ namespace sdpa
         {
           sdpa::events::ErrorEvent::Ptr
             error(new sdpa::events::ErrorEvent ( source_name.get_value_or ("unknown source")
-                                                , m_peer->name()
                                                 , (ec == boost::asio::error::eof) // Connection closed cleanly by peer
                                                 ? sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
                                                 : sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE

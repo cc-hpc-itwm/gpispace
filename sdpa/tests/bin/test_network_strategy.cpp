@@ -106,8 +106,8 @@ BOOST_FIXTURE_TEST_CASE (perform_test, KVSSetup)
     , _kvs
     );
 
-  net.perform (boost::shared_ptr<sdpa::events::SDPAEvent>(new sdpa::events::ErrorEvent( "peer-1"
-                                                              , "peer-1"
+  net.perform ( "peer-1"
+              , boost::shared_ptr<sdpa::events::SDPAEvent>(new sdpa::events::ErrorEvent( "peer-1"
                                                               , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                                                               , "success"
                                                               )

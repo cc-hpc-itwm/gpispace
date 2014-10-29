@@ -14,11 +14,10 @@ namespace sdpa
       typedef boost::shared_ptr<DiscoverJobStatesReplyEvent> Ptr;
 
       DiscoverJobStatesReplyEvent ( const address_t& a_from
-                                  , const address_t& a_to
                                   , const sdpa::job_id_t& discover_id
                                   , const sdpa::discovery_info_t& discover_result
                                   )
-        : MgmtEvent (a_from, a_to)
+        : MgmtEvent (a_from)
         , discover_id_ (discover_id)
         , discover_result_ (discover_result)
       {}
@@ -51,10 +50,10 @@ namespace sdpa
 
      LOAD_CONSTRUCT_DATA_DEF (DiscoverJobStatesReplyEvent, e)
      {
-       LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
+       LOAD_MGMTEVENT_CONSTRUCT_DATA (from);
        LOAD_FROM_ARCHIVE (sdpa::job_id_t, disc_id);
        LOAD_FROM_ARCHIVE (sdpa::discovery_info_t, disc_res);
-       ::new (e) DiscoverJobStatesReplyEvent (from, to, disc_id, disc_res);
+       ::new (e) DiscoverJobStatesReplyEvent (from, disc_id, disc_res);
      }
   }
 }

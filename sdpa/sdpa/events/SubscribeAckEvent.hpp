@@ -13,10 +13,9 @@ namespace sdpa
       typedef boost::shared_ptr<SubscribeAckEvent> Ptr;
 
       SubscribeAckEvent ( const address_t& a_from
-                        , const address_t& a_to
                         , const job_id_t& job_id
                         )
-        : MgmtEvent (a_from, a_to)
+        : MgmtEvent (a_from)
         , _job_id (job_id)
       { }
 
@@ -42,10 +41,10 @@ namespace sdpa
 
     LOAD_CONSTRUCT_DATA_DEF (SubscribeAckEvent, e)
     {
-      LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
+      LOAD_MGMTEVENT_CONSTRUCT_DATA (from);
       LOAD_FROM_ARCHIVE (sdpa::job_id_t, job_id);
 
-      ::new (e) SubscribeAckEvent (from, to, job_id);
+      ::new (e) SubscribeAckEvent (from, job_id);
     }
   }
 }

@@ -104,7 +104,6 @@ namespace sdpa
         {
           sdpa::events::ErrorEvent::Ptr
             error(new sdpa::events::ErrorEvent ( source_name.get()
-                                               , m_peer.name()
                                                , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                                                , "receiving response failed: " + boost::lexical_cast<std::string>(ec)
                                                )
@@ -148,12 +147,12 @@ namespace sdpa
     }
 
     template<typename Expected, typename Sent>
-      Expected Client::send_and_wait_for_reply (Sent event)
+      Expected Client::send_and_wait_for_reply (std::string const& dest, Sent event)
     {
       m_incoming_events.INDICATES_A_RACE_clear();
 
       static sdpa::events::Codec codec;
-      m_peer.send (event.to(), codec.encode (&event));
+      m_peer.send (dest, codec.encode (&event));
 
       const sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
       if (Expected* e = dynamic_cast<Expected*> (reply.get()))
@@ -168,7 +167,7 @@ namespace sdpa
       (job_id_t id, job_info_t& job_info)
     {
       send_and_wait_for_reply<sdpa::events::SubscribeAckEvent>
-        (sdpa::events::SubscribeEvent (_name, orchestrator_, id));
+        (orchestrator_, sdpa::events::SubscribeEvent (_name, id));
      sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
 
       if ( sdpa::events::JobFinishedEvent* evt
@@ -221,19 +220,19 @@ namespace sdpa
     sdpa::job_id_t Client::submitJob(const job_desc_t &desc)
     {
       return send_and_wait_for_reply<sdpa::events::SubmitJobAckEvent>
-        (sdpa::events::SubmitJobEvent (_name, orchestrator_, boost::none, desc)).job_id();
+        (orchestrator_, sdpa::events::SubmitJobEvent (_name, boost::none, desc)).job_id();
     }
 
     void Client::cancelJob(const job_id_t &jid)
     {
       send_and_wait_for_reply<sdpa::events::CancelJobAckEvent>
-        (sdpa::events::CancelJobEvent (_name, orchestrator_, jid));
+        (orchestrator_, sdpa::events::CancelJobEvent (_name, jid));
     }
 
     sdpa::discovery_info_t Client::discoverJobStates(const we::layer::id_type& discover_id, const job_id_t &job_id)
     {
       return send_and_wait_for_reply<sdpa::events::DiscoverJobStatesReplyEvent>
-        (sdpa::events::DiscoverJobStatesEvent (_name, orchestrator_, job_id, discover_id)).discover_result();
+        (orchestrator_, sdpa::events::DiscoverJobStatesEvent (_name, job_id, discover_id)).discover_result();
     }
 
     void Client::put_token
@@ -243,8 +242,8 @@ namespace sdpa
         (boost::uuids::to_string (boost::uuids::random_generator()()));
 
       if ( send_and_wait_for_reply<sdpa::events::put_token_ack>
-           ( sdpa::events::put_token ( _name
-                                     , orchestrator_
+           ( orchestrator_
+           , sdpa::events::put_token ( _name
                                      , job_id
                                      , put_token_id
                                      , place_name
@@ -268,7 +267,7 @@ namespace sdpa
     {
       const sdpa::events::JobStatusReplyEvent reply
         ( send_and_wait_for_reply<sdpa::events::JobStatusReplyEvent>
-        (sdpa::events::QueryJobStatusEvent (_name, orchestrator_, jid))
+          (orchestrator_, sdpa::events::QueryJobStatusEvent (_name, jid))
         );
 
       info.error_message = reply.error_message();
@@ -279,13 +278,13 @@ namespace sdpa
     void Client::deleteJob(const job_id_t &jid)
     {
       send_and_wait_for_reply<sdpa::events::DeleteJobAckEvent>
-        (sdpa::events::DeleteJobEvent (_name, orchestrator_, jid));
+        (orchestrator_, sdpa::events::DeleteJobEvent (_name, jid));
     }
 
     sdpa::client::result_t Client::retrieveResults(const job_id_t &jid)
     {
       return send_and_wait_for_reply<sdpa::events::JobResultsReplyEvent>
-        (sdpa::events::RetrieveJobResultsEvent (_name, orchestrator_, jid)).result();
+        (orchestrator_, sdpa::events::RetrieveJobResultsEvent (_name, jid)).result();
     }
   }
 }

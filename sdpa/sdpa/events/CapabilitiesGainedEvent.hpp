@@ -15,18 +15,16 @@ namespace sdpa
 
       CapabilitiesGainedEvent
         ( const address_t& from
-        , const address_t& to
         , const sdpa::capabilities_set_t& cpbs = capabilities_set_t()
         )
-          : MgmtEvent (from, to)
+          : MgmtEvent (from)
           , capabilities_ (cpbs)
       {}
 
       CapabilitiesGainedEvent ( const address_t& from
-                              , const address_t& to
                               , const sdpa::capability_t& cap
                               )
-        : MgmtEvent (from, to)
+        : MgmtEvent (from)
         , capabilities_ ()
       {
         capabilities_.insert (cap);
@@ -54,10 +52,10 @@ namespace sdpa
 
     LOAD_CONSTRUCT_DATA_DEF (CapabilitiesGainedEvent, e)
     {
-      LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
+      LOAD_MGMTEVENT_CONSTRUCT_DATA (from);
       LOAD_FROM_ARCHIVE (sdpa::capabilities_set_t, capabilities);
 
-      ::new (e) CapabilitiesGainedEvent (from, to, capabilities);
+      ::new (e) CapabilitiesGainedEvent (from, capabilities);
     }
   }
 }

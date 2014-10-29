@@ -291,8 +291,9 @@ namespace
       _cancels.erase (job_id);
 
       _network.perform
-        ( sdpa::events::SDPAEvent::Ptr
-          (new sdpa::events::CancelJobAckEvent (_name, master, job_id))
+        ( master
+        , sdpa::events::SDPAEvent::Ptr
+          (new sdpa::events::CancelJobAckEvent (_name, job_id))
         );
     }
 

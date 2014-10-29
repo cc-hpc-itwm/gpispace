@@ -10,8 +10,8 @@ namespace sdpa
     class MgmtEvent : public sdpa::events::SDPAEvent
     {
     public:
-      MgmtEvent (const address_t &a_from, const address_t &a_to)
-        : SDPAEvent (a_from, a_to)
+      MgmtEvent (const address_t &a_from)
+        : SDPAEvent (a_from)
       {}
     };
   }

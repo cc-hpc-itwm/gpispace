@@ -102,9 +102,10 @@ namespace sdpa
       for (agent_id_t subscriber : subscribers (pEvt->job_id()))
       {
         sendEventToOther
-          ( events::JobFinishedEvent::Ptr
+          ( subscriber
+          , events::JobFinishedEvent::Ptr
             ( new events::JobFinishedEvent
-              (pEvt->from(), subscriber, pEvt->job_id(), pEvt->result())
+              (pEvt->from(), pEvt->job_id(), pEvt->result())
             )
           );
       }
@@ -136,9 +137,10 @@ namespace sdpa
       for (agent_id_t subscriber : subscribers (pEvt->job_id()))
       {
         sendEventToOther
-          ( events::JobFailedEvent::Ptr
+          ( subscriber
+          , events::JobFailedEvent::Ptr
             ( new events::JobFailedEvent
-              (pEvt->from(), subscriber, pEvt->job_id(), pEvt->error_message())
+              (pEvt->from(), pEvt->job_id(), pEvt->error_message())
             )
           );
       }
@@ -201,10 +203,9 @@ namespace sdpa
         for (agent_id_t subscriber : subscribers (pEvt->job_id()))
         {
           sendEventToOther
-            ( events::CancelJobAckEvent::Ptr
-              ( new events::CancelJobAckEvent
-                (pEvt->from(), subscriber, pEvt->job_id())
-              )
+            ( subscriber
+            , events::CancelJobAckEvent::Ptr
+              (new events::CancelJobAckEvent (pEvt->from(), pEvt->job_id()))
             );
         }
       }
@@ -225,10 +226,9 @@ namespace sdpa
       for (agent_id_t subscriber : subscribers (pEvt->job_id()))
       {
         sendEventToOther
-          ( events::CancelJobAckEvent::Ptr
-            ( new events::CancelJobAckEvent
-              (pEvt->from(), subscriber, pEvt->job_id())
-            )
+          ( subscriber
+          , events::CancelJobAckEvent::Ptr
+            (new events::CancelJobAckEvent (pEvt->from(), pEvt->job_id()))
           );
       }
     }

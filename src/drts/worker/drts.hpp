@@ -147,8 +147,8 @@ private:
                    , boost::optional<std::string> source_name
                    );
 
-  void send_event (sdpa::events::SDPAEvent *e);
-  void send_event (sdpa::events::SDPAEvent::Ptr const & evt);
+  void send_event (std::string const& destination, sdpa::events::SDPAEvent *e);
+  void send_event (std::string const& destination, sdpa::events::SDPAEvent::Ptr const & evt);
 
   void dispatch_event (sdpa::events::SDPAEvent::Ptr const &evt);
 

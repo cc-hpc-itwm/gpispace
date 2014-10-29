@@ -14,10 +14,9 @@ namespace sdpa
       typedef boost::shared_ptr<SubscribeEvent> Ptr;
 
       SubscribeEvent ( const address_t& a_from
-                     , const address_t& a_to
                      , const job_id_t& job_id
                      )
-        : MgmtEvent (a_from, a_to)
+        : MgmtEvent (a_from)
         , _job_id (job_id)
       {}
 
@@ -47,10 +46,10 @@ namespace sdpa
 
     LOAD_CONSTRUCT_DATA_DEF (SubscribeEvent, e)
     {
-      LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
+      LOAD_MGMTEVENT_CONSTRUCT_DATA (from);
       LOAD_FROM_ARCHIVE (sdpa::job_id_t, job_id);
 
-      ::new (e) SubscribeEvent (from, to, job_id);
+      ::new (e) SubscribeEvent (from, job_id);
     }
   }
 }

@@ -31,10 +31,9 @@ namespace
       (const sdpa::events::CancelJobEvent* pEvt) override
     {
       _network.perform
-        ( sdpa::events::SDPAEvent::Ptr
-          ( new sdpa::events::CancelJobAckEvent
-            (_name, pEvt->from(), pEvt->job_id())
-          )
+        ( pEvt->from()
+        , sdpa::events::SDPAEvent::Ptr
+          (new sdpa::events::CancelJobAckEvent (_name, pEvt->job_id()))
         );
 
       boost::mutex::scoped_lock const _ (_mtx_cancel);

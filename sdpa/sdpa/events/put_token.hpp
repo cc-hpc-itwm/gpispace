@@ -21,13 +21,12 @@ namespace sdpa
     {
     public:
       put_token ( address_t from
-                , address_t to
                 , job_id_t job_id
                 , std::string put_token_id
                 , std::string place_name
                 , pnet::type::value::value_type value
                 )
-        : JobEvent (from, to, job_id)
+        : JobEvent (from, job_id)
         , _put_token_id (put_token_id)
         , _place_name (place_name)
         , _value (value)
@@ -69,13 +68,12 @@ namespace sdpa
 
     LOAD_CONSTRUCT_DATA_DEF (put_token, e)
     {
-      LOAD_JOBEVENT_CONSTRUCT_DATA (from, to, job_id);
+      LOAD_JOBEVENT_CONSTRUCT_DATA (from, job_id);
       LOAD_FROM_ARCHIVE (std::string, put_token_id);
       LOAD_FROM_ARCHIVE (std::string, place_name);
       LOAD_FROM_ARCHIVE (std::string, value);
 
       ::new (e) put_token ( from
-                          , to
                           , job_id
                           , put_token_id
                           , place_name
@@ -86,8 +84,8 @@ namespace sdpa
     class put_token_ack : public MgmtEvent
     {
     public:
-      put_token_ack (address_t from, address_t to, std::string put_token_id)
-        : MgmtEvent (from, to)
+      put_token_ack (address_t from, std::string put_token_id)
+        : MgmtEvent (from)
         , _put_token_id (put_token_id)
       {}
 
@@ -113,10 +111,10 @@ namespace sdpa
 
     LOAD_CONSTRUCT_DATA_DEF (put_token_ack, e)
     {
-      LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
+      LOAD_MGMTEVENT_CONSTRUCT_DATA (from);
       LOAD_FROM_ARCHIVE (std::string, put_token_id);
 
-      ::new (e) put_token_ack (from, to, put_token_id);
+      ::new (e) put_token_ack (from, put_token_id);
     }
   }
 }

@@ -17,13 +17,12 @@ namespace sdpa
 
       WorkerRegistrationEvent
         ( const address_t& a_from
-        , const address_t& a_to
         , const boost::optional<unsigned int>& capacity
         , const capabilities_set_t& cpbset
         , bool children_allowed
         , const std::string& hostname
         )
-          : MgmtEvent (a_from, a_to)
+          : MgmtEvent (a_from)
           , capacity_ (capacity)
           , cpbset_ (cpbset)
           , children_allowed_(children_allowed)
@@ -72,13 +71,13 @@ namespace sdpa
 
     LOAD_CONSTRUCT_DATA_DEF (WorkerRegistrationEvent, e)
     {
-      LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
+      LOAD_MGMTEVENT_CONSTRUCT_DATA (from);
       LOAD_FROM_ARCHIVE (boost::optional<unsigned int>, capacity);
       LOAD_FROM_ARCHIVE (capabilities_set_t, cpbset);
       LOAD_FROM_ARCHIVE (bool, children_allowed);
       LOAD_FROM_ARCHIVE (std::string, hostname);
 
-      ::new (e) WorkerRegistrationEvent (from, to, capacity, cpbset, children_allowed, hostname);
+      ::new (e) WorkerRegistrationEvent (from, capacity, cpbset, children_allowed, hostname);
     }
   }
 }

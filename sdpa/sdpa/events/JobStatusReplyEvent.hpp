@@ -15,12 +15,11 @@ namespace sdpa
       typedef boost::shared_ptr<JobStatusReplyEvent> Ptr;
 
       JobStatusReplyEvent ( const address_t& a_from
-                          , const address_t& a_to
                           , const sdpa::job_id_t& a_job_id
                           , const sdpa::status::code& a_status
                           , std::string const& error_message
                           )
-        : sdpa::events::JobEvent (a_from, a_to, a_job_id)
+        : sdpa::events::JobEvent (a_from, a_job_id)
         , status_ (a_status)
         , m_error_message (error_message)
       { }
@@ -53,11 +52,11 @@ namespace sdpa
 
     LOAD_CONSTRUCT_DATA_DEF (JobStatusReplyEvent, e)
     {
-      LOAD_JOBEVENT_CONSTRUCT_DATA (from, to, job_id);
+      LOAD_JOBEVENT_CONSTRUCT_DATA (from, job_id);
       LOAD_FROM_ARCHIVE (sdpa::status::code, status);
       LOAD_FROM_ARCHIVE (std::string, error_message);
 
-      ::new (e) JobStatusReplyEvent (from, to, job_id, status, error_message);
+      ::new (e) JobStatusReplyEvent (from, job_id, status, error_message);
     }
   }
 }

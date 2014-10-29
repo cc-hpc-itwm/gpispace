@@ -337,10 +337,10 @@ namespace utils
                              )
     {
       _network.perform
-        ( sdpa::events::SDPAEvent::Ptr
+        ( *_master_name
+        , sdpa::events::SDPAEvent::Ptr
           ( new sdpa::events::WorkerRegistrationEvent
             ( _name
-            , *_master_name
             , 1
             , capabilities
             , accept_workers
@@ -369,8 +369,9 @@ namespace utils
       BOOST_REQUIRE (_accepted_workers.insert (e->from()).second);
 
       _network.perform
-        ( sdpa::events::SDPAEvent::Ptr
-          (new sdpa::events::WorkerRegistrationAckEvent (_name, e->from()))
+        ( e->from()
+        , sdpa::events::SDPAEvent::Ptr
+          (new sdpa::events::WorkerRegistrationAckEvent (_name))
         );
     }
 
@@ -480,8 +481,9 @@ namespace utils
       _jobs.emplace (name, job_t (*e->job_id(), e->from()));
 
       _network.perform
-        ( sdpa::events::SDPAEvent::Ptr
-          (new sdpa::events::SubmitJobAckEvent (_name, e->from(), *e->job_id()))
+        ( e->from()
+        , sdpa::events::SDPAEvent::Ptr
+          (new sdpa::events::SubmitJobAckEvent (_name, *e->job_id()))
         );
 
       _announce_job (name);
@@ -498,9 +500,10 @@ namespace utils
       _jobs.erase (name);
 
       _network.perform
-        ( sdpa::events::SDPAEvent::Ptr
+        ( job._owner
+        , sdpa::events::SDPAEvent::Ptr
           ( new sdpa::events::JobFinishedEvent
-            (_name, job._owner, job._id, we::type::activity_t().to_string())
+            (_name, job._id, we::type::activity_t().to_string())
           )
         );
     }
@@ -532,14 +535,16 @@ namespace utils
     virtual void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* e) override
     {
       _network.perform
-        ( sdpa::events::SDPAEvent::Ptr
-          (new sdpa::events::SubmitJobAckEvent (_name, e->from(), *e->job_id()))
+        ( e->from()
+        , sdpa::events::SDPAEvent::Ptr
+          (new sdpa::events::SubmitJobAckEvent (_name, *e->job_id()))
         );
 
       _network.perform
-        ( sdpa::events::SDPAEvent::Ptr
+        ( e->from()
+        , sdpa::events::SDPAEvent::Ptr
           ( new sdpa::events::JobFinishedEvent
-            (_name, e->from(), *e->job_id(), we::type::activity_t().to_string())
+            (_name, *e->job_id(), we::type::activity_t().to_string())
           )
         );
     }

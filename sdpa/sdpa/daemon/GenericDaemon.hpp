@@ -157,7 +157,8 @@ namespace sdpa {
 
     protected:
       // event communication
-      void sendEventToOther(const sdpa::events::SDPAEvent::Ptr& e);
+      void sendEventToOther
+        (std::string const& destination, const sdpa::events::SDPAEvent::Ptr& e);
     private:
       void delay (std::function<void()>);
 

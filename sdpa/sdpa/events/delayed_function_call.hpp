@@ -15,7 +15,7 @@ namespace sdpa
     {
     public:
       delayed_function_call (std::function<void()> function)
-        : SDPAEvent ("<<internal>>", "<<internal>>")
+        : SDPAEvent ("<<internal>>")
         , _function (function)
       {}
 

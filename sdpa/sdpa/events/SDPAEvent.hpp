@@ -25,22 +25,16 @@ namespace sdpa
       {
         return from_;
       }
-      const address_t& to() const
-      {
-        return to_;
-      }
 
       virtual void handleBy (EventHandler*) = 0;
 
     protected:
-      SDPAEvent (const address_t & a_from, const address_t &a_to)
+      SDPAEvent (const address_t & a_from)
         : from_ (a_from)
-        , to_ (a_to)
       {}
 
     private:
       address_t from_;
-      address_t to_;
 
       friend class boost::serialization::access;
       template <class Archive>

@@ -28,7 +28,9 @@ namespace sdpa
                       );
       ~NetworkStrategy();
 
-      void perform (boost::shared_ptr<events::SDPAEvent> const & to_send);
+      void perform ( std::string const& destination
+                   , boost::shared_ptr<events::SDPAEvent> const & to_send
+                   );
 
       boost::asio::ip::tcp::endpoint local_endpoint() const
       {
@@ -36,7 +38,9 @@ namespace sdpa
       }
 
     private:
-      void handle_send (boost::shared_ptr<events::SDPAEvent> const & e, boost::system::error_code const & ec);
+      void handle_send ( std::string const& destination_name
+                       , boost::system::error_code const & ec
+                       );
       void handle_recv ( boost::system::error_code const & ec
                        , boost::optional<std::string> source_name
                        );

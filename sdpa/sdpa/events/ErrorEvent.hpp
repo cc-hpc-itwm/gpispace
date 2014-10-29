@@ -27,13 +27,12 @@ namespace sdpa
 
       ErrorEvent
         ( const address_t &a_from
-        , const address_t &a_to
         , const error_code_t &a_error_code
         , const std::string& a_reason
         //! \todo This should not be in _every_ ErrorEvent!
         , const boost::optional<sdpa::job_id_t>& jobId = boost::none
         )
-          : MgmtEvent (a_from, a_to)
+          : MgmtEvent (a_from)
           , error_code_ (a_error_code)
           , reason_ (a_reason)
           , job_id_ (jobId)
@@ -73,12 +72,12 @@ namespace sdpa
 
     LOAD_CONSTRUCT_DATA_DEF (ErrorEvent, e)
     {
-      LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
+      LOAD_MGMTEVENT_CONSTRUCT_DATA (from);
       LOAD_FROM_ARCHIVE (ErrorEvent::error_code_t, error_code);
       LOAD_FROM_ARCHIVE (std::string, reason);
       LOAD_FROM_ARCHIVE (boost::optional<sdpa::job_id_t>, job_id);
 
-      ::new (e) ErrorEvent (from, to, error_code, reason, job_id);
+      ::new (e) ErrorEvent (from, error_code, reason, job_id);
     }
   }
 }

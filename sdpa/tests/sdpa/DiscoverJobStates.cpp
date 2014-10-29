@@ -89,10 +89,10 @@ namespace
       (const sdpa::events::DiscoverJobStatesEvent* e) override
     {
       _network.perform
-        ( sdpa::events::SDPAEvent::Ptr
+        ( e->from()
+        , sdpa::events::SDPAEvent::Ptr
           ( new sdpa::events::DiscoverJobStatesReplyEvent
             ( _name
-            , e->from()
             , e->discover_id()
             , sdpa::discovery_info_t
               (e->job_id(), reply, sdpa::discovery_info_set_t())
