@@ -19,7 +19,7 @@ namespace sdpa
     class NetworkStrategy
     {
     public:
-      NetworkStrategy ( std::function<void (sdpa::events::SDPAEvent::Ptr)> event_handler
+      NetworkStrategy ( std::function<void (std::string const&, sdpa::events::SDPAEvent::Ptr)> event_handler
                       , boost::asio::io_service& peer_io_service
                       , std::string const & peer_name
                       , fhg::com::host_t const & host
@@ -49,7 +49,7 @@ namespace sdpa
 
       fhg::log::Logger::ptr_t _logger;
 
-      std::function<void (sdpa::events::SDPAEvent::Ptr)> _event_handler;
+      std::function<void (std::string const&, sdpa::events::SDPAEvent::Ptr)> _event_handler;
 
       const std::string m_port;
 

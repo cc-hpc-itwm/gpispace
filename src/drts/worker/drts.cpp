@@ -442,9 +442,9 @@ DRTSImpl::~DRTSImpl()
   // event handler callbacks
   //    implemented events
 void DRTSImpl::handleWorkerRegistrationAckEvent
-  (const sdpa::events::WorkerRegistrationAckEvent *e)
+  (std::string const& source, const sdpa::events::WorkerRegistrationAckEvent*)
 {
-  map_of_masters_t::iterator master_it (m_masters.find(e->from()));
+  map_of_masters_t::iterator master_it (m_masters.find(source));
   if (master_it != m_masters.end())
   {
     if (!master_it->second)
@@ -462,10 +462,11 @@ void DRTSImpl::handleWorkerRegistrationAckEvent
   }
 }
 
-void DRTSImpl::handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *e)
+void DRTSImpl::handleSubmitJobEvent
+  (std::string const& source, const sdpa::events::SubmitJobEvent *e)
 {
   // check master
-  map_of_masters_t::const_iterator master (m_masters.find(e->from()));
+  map_of_masters_t::const_iterator master (m_masters.find(source));
 
   if (master == m_masters.end())
   {
@@ -478,7 +479,7 @@ void DRTSImpl::handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *e)
 
   boost::shared_ptr<drts::Job> job (new drts::Job( drts::Job::ID(*e->job_id())
                                                  , drts::Job::Description(e->description())
-                                                 , drts::Job::Owner(e->from())
+                                                 , drts::Job::Owner(source)
                                                  )
                                    );
 
@@ -492,10 +493,9 @@ void DRTSImpl::handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *e)
       LLOG ( WARN, _logger
           , "cannot accept new job (" << job->id() << "), backlog is full."
           );
-      send_event ( e->from()
+      send_event ( source
                  , new sdpa::events::ErrorEvent
-                   ( m_my_name
-                   , sdpa::events::ErrorEvent::SDPA_EJOBREJECTED
+                   ( sdpa::events::ErrorEvent::SDPA_EJOBREJECTED
                    , "I am busy right now, please try again later!"
                    , *e->job_id()
                    ));
@@ -503,9 +503,7 @@ void DRTSImpl::handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *e)
     }
     else
     {
-      send_event ( job->owner()
-                 , new sdpa::events::SubmitJobAckEvent (m_my_name, job->id())
-                 );
+      send_event (job->owner(), new sdpa::events::SubmitJobAckEvent (job->id()));
       m_jobs.emplace (job->id(), job);
 
       m_pending_jobs.put(job);
@@ -516,7 +514,8 @@ void DRTSImpl::handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *e)
   m_job_arrived.notify_all();
 }
 
-void DRTSImpl::handleCancelJobEvent(const sdpa::events::CancelJobEvent *e)
+void DRTSImpl::handleCancelJobEvent
+  (std::string const& source, const sdpa::events::CancelJobEvent *e)
 {
   // locate the job
   boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
@@ -526,19 +525,17 @@ void DRTSImpl::handleCancelJobEvent(const sdpa::events::CancelJobEvent *e)
 
   if (job_it == m_jobs.end())
   {
-    send_event( e->from()
+    send_event( source
               , new sdpa::events::ErrorEvent
-                ( m_my_name
-                , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+                ( sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                 , "could not find job " + std::string(e->job_id())
                 ));
   }
-  else if (job_it->second->owner() != e->from())
+  else if (job_it->second->owner() != source)
   {
-    send_event ( e->from()
+    send_event ( source
                , new sdpa::events::ErrorEvent
-                 ( m_my_name
-                 , sdpa::events::ErrorEvent::SDPA_EPERM
+                 ( sdpa::events::ErrorEvent::SDPA_EPERM
                  , "you are not the owner of job " + std::string(e->job_id())
                  ));
     return;
@@ -554,7 +551,7 @@ void DRTSImpl::handleCancelJobEvent(const sdpa::events::CancelJobEvent *e)
       LLOG (TRACE, _logger, "canceling pending job: " << e->job_id());
       send_event
         ( job_it->second->owner()
-        , new sdpa::events::CancelJobAckEvent (m_my_name, job_it->second->id())
+        , new sdpa::events::CancelJobAckEvent (job_it->second->id())
         );
     }
     else if (job_it->second->state() == drts::Job::RUNNING)
@@ -580,7 +577,8 @@ void DRTSImpl::handleCancelJobEvent(const sdpa::events::CancelJobEvent *e)
   }
 }
 
-void DRTSImpl::handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *e)
+void DRTSImpl::handleJobFailedAckEvent
+  (std::string const& source, const sdpa::events::JobFailedAckEvent *e)
 {
   // locate the job
   boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
@@ -590,23 +588,21 @@ void DRTSImpl::handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *e)
     LLOG ( ERROR, _logger
         , "could not acknowledge failed job: " << e->job_id() << ": not found"
         );
-    send_event (e->from()
+    send_event (source
                , new sdpa::events::ErrorEvent
-                 ( m_my_name
-                 , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+                 ( sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                  , "could not find job " + std::string(e->job_id())
                  ));
     return;
   }
-  else if (job_it->second->owner() != e->from())
+  else if (job_it->second->owner() != source)
   {
     LLOG ( ERROR, _logger
         , "could not acknowledge failed job: " << e->job_id() << ": not owner"
         );
-    send_event (e->from()
+    send_event (source
                , new sdpa::events::ErrorEvent
-                 ( m_my_name
-                 , sdpa::events::ErrorEvent::SDPA_EPERM
+                 ( sdpa::events::ErrorEvent::SDPA_EPERM
                  , "you are not the owner of job " + std::string(e->job_id())
                  ));
     return;
@@ -615,7 +611,8 @@ void DRTSImpl::handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *e)
   m_jobs.erase (job_it);
 }
 
-void DRTSImpl::handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent *e)
+void DRTSImpl::handleJobFinishedAckEvent
+  (std::string const& source, const sdpa::events::JobFinishedAckEvent *e)
 {
   // locate the job
   boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
@@ -626,24 +623,22 @@ void DRTSImpl::handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent
         , "could not acknowledge finished job: " << e->job_id()
         << ": not found"
         );
-    send_event (e->from()
+    send_event (source
                , new sdpa::events::ErrorEvent
-                 ( m_my_name
-                 , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+                 ( sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                  , "could not find job " + std::string(e->job_id())
                  ));
     return;
   }
-  else if (job_it->second->owner() != e->from())
+  else if (job_it->second->owner() != source)
   {
     LLOG ( ERROR, _logger
         , "could not acknowledge finished job: " << e->job_id()
         << ": not owner"
         );
-    send_event (e->from()
+    send_event (source
                , new sdpa::events::ErrorEvent
-                 ( m_my_name
-                 , sdpa::events::ErrorEvent::SDPA_EPERM
+                 ( sdpa::events::ErrorEvent::SDPA_EPERM
                  , "you are not the owner of job " + std::string(e->job_id())
                  ));
     return;
@@ -653,15 +648,14 @@ void DRTSImpl::handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent
 }
 
 void DRTSImpl::handleDiscoverJobStatesEvent
-  (const sdpa::events::DiscoverJobStatesEvent* event)
+  (std::string const& source, const sdpa::events::DiscoverJobStatesEvent* event)
 {
   boost::mutex::scoped_lock const _ (m_job_map_mutex);
 
   const map_of_jobs_t::iterator job_it (m_jobs.find (event->job_id()));
-  send_event ( event->from()
+  send_event ( source
              , new sdpa::events::DiscoverJobStatesReplyEvent
-               ( m_my_name
-               , event->discover_id()
+               ( event->discover_id()
                , sdpa::discovery_info_t
                  ( event->job_id()
                  , job_it == m_jobs.end() ? boost::optional<sdpa::status::code>()
@@ -682,7 +676,9 @@ void DRTSImpl::event_thread ()
 {
   for (;;)
   {
-    m_event_queue.get()->handleBy (this);
+    std::pair<std::string, sdpa::events::SDPAEvent::Ptr> event
+      (m_event_queue.get());
+    event.second->handleBy (event.first, this);
   }
 }
 
@@ -776,9 +772,7 @@ void DRTSImpl::notify_capabilities_to_master (std::string const &master)
 
   if (! caps.empty())
   {
-    send_event( master
-              , new sdpa::events::CapabilitiesGainedEvent (m_my_name, caps)
-              );
+    send_event (master, new sdpa::events::CapabilitiesGainedEvent (caps));
   }
 }
 
@@ -814,26 +808,21 @@ void DRTSImpl::send_job_result_to_master (boost::shared_ptr<drts::Job> const & j
   {
   case drts::Job::FINISHED:
     send_event ( job->owner()
-               , new sdpa::events::JobFinishedEvent ( m_my_name
-                                                   , job->id()
-                                                   , job->result()
-                                                   )
+               , new sdpa::events::JobFinishedEvent (job->id(), job->result())
                );
     break;
   case drts::Job::FAILED:
     {
       send_event
         ( job->owner()
-        , new sdpa::events::JobFailedEvent (m_my_name, job->id(), job->message())
+        , new sdpa::events::JobFailedEvent (job->id(), job->message())
         );
     }
     break;
   case drts::Job::CANCELED:
     {
       send_event
-        ( job->owner()
-        , new sdpa::events::CancelJobAckEvent (m_my_name, job->id())
-        );
+        (job->owner(), new sdpa::events::CancelJobAckEvent (job->id()));
     }
     break;
   default:
@@ -865,8 +854,7 @@ void DRTSImpl::start_connect ()
     if (! master_it->second)
     {
       sdpa::events::WorkerRegistrationEvent::Ptr evt
-        (new sdpa::events::WorkerRegistrationEvent ( m_my_name
-                                                   , m_backlog_size
+        (new sdpa::events::WorkerRegistrationEvent ( m_backlog_size
                                                    , sdpa::capabilities_set_t()
                                                    , false
                                                    , fhg::util::hostname()
@@ -954,7 +942,8 @@ void DRTSImpl::handle_recv ( boost::system::error_code const & ec
     try
     {
       dispatch_event
-        (sdpa::events::SDPAEvent::Ptr
+        ( source_name.get()
+        , sdpa::events::SDPAEvent::Ptr
           (codec.decode (std::string ( m_message.data.begin()
                                      , m_message.data.end()
                                      )
@@ -1003,11 +992,12 @@ void DRTSImpl::send_event ( std::string const& destination
   m_peer->send (destination, codec.encode(evt.get()));
 }
 
-void DRTSImpl::dispatch_event (sdpa::events::SDPAEvent::Ptr const &evt)
+void DRTSImpl::dispatch_event
+  (std::string const& source, sdpa::events::SDPAEvent::Ptr const &evt)
 {
   if (evt)
   {
-    m_event_queue.put(evt);
+    m_event_queue.put (source, evt);
   }
   else
   {

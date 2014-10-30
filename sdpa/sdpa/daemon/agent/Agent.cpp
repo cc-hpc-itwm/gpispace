@@ -34,9 +34,10 @@ namespace sdpa
                       )
     {}
 
-    void Agent::handleJobFinishedEvent (const events::JobFinishedEvent* pEvt)
+    void Agent::handleJobFinishedEvent
+      (std::string const& source, const events::JobFinishedEvent* pEvt)
     {
-      child_proxy (this, pEvt->from()).job_finished_ack (pEvt->job_id());
+      child_proxy (this, source).job_finished_ack (pEvt->job_id());
 
       Job* pJob (findJob (pEvt->job_id()));
       if (!hasWorkflowEngine())
@@ -47,7 +48,7 @@ namespace sdpa
       }
       else
       {
-        scheduler().workerFinished (pEvt->from(), pEvt->job_id());
+        scheduler().workerFinished (source, pEvt->job_id());
 
         const bool bAllPartResCollected
           (scheduler().allPartialResultsCollected (pEvt->job_id()));
@@ -92,9 +93,10 @@ namespace sdpa
       }
     }
 
-    void Agent::handleJobFailedEvent (const events::JobFailedEvent* pEvt)
+    void Agent::handleJobFailedEvent
+      (std::string const& source, const events::JobFailedEvent* pEvt)
     {
-      child_proxy (this, pEvt->from()).job_failed_ack (pEvt->job_id());
+      child_proxy (this, source).job_failed_ack (pEvt->job_id());
 
       Job* pJob (findJob (pEvt->job_id()));
       if (!hasWorkflowEngine())
@@ -105,7 +107,7 @@ namespace sdpa
       }
       else
       {
-        scheduler().workerFailed (pEvt->from(), pEvt->job_id());
+        scheduler().workerFailed (source, pEvt->job_id());
         bool bAllPartResCollected (scheduler().allPartialResultsCollected (pEvt->job_id()));
 
         if (bAllPartResCollected)
@@ -139,7 +141,8 @@ namespace sdpa
       }
     }
 
-    void Agent::handleCancelJobEvent (const events::CancelJobEvent* pEvt)
+    void Agent::handleCancelJobEvent
+      (std::string const& source, const events::CancelJobEvent* pEvt)
     {
       Job* pJob (findJob (pEvt->job_id()));
       if (!pJob)
@@ -173,7 +176,8 @@ namespace sdpa
       }
     }
 
-    void Agent::handleCancelJobAckEvent (const events::CancelJobAckEvent* pEvt)
+    void Agent::handleCancelJobAckEvent
+      (std::string const& source, const events::CancelJobAckEvent* pEvt)
     {
       Job* pJob (findJob(pEvt->job_id()));
 
@@ -189,7 +193,7 @@ namespace sdpa
       }
       else
       {
-        scheduler().workerCanceled (pEvt->from(), pEvt->job_id());
+        scheduler().workerCanceled (source, pEvt->job_id());
         const bool bTaskGroupComputed
           (scheduler().allPartialResultsCollected (pEvt->job_id()));
 

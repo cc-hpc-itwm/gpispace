@@ -20,7 +20,10 @@ namespace
           )
         )
       , _network
-        ( [this] (sdpa::events::SDPAEvent::Ptr e) { _event_received.notify (e); }
+        ( [this] (std::string const&, sdpa::events::SDPAEvent::Ptr e)
+          {
+            _event_received.notify (e);
+          }
         , _peer_io_service
         , name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
         , _kvs_client
@@ -126,8 +129,7 @@ BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
   network_strategy child (child_name, kvs_server);
 
   child.send ( orchestrator_name
-             , new sdpa::events::JobFinishedAckEvent
-               (child_name, fhg::util::random_string())
+             , new sdpa::events::JobFinishedAckEvent (fhg::util::random_string())
              );
 
   sdpa::events::ErrorEvent::Ptr event

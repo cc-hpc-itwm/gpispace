@@ -309,7 +309,10 @@ namespace utils
         )
       , _event_queue()
       , _network
-        ( [this] (sdpa::events::SDPAEvent::Ptr e) { _event_queue.put (e); }
+        ( [this] (std::string const& source, sdpa::events::SDPAEvent::Ptr e)
+          {
+            _event_queue.put (source, e);
+          }
         , _peer_io_service
         , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
         , _kvs_client
@@ -340,8 +343,7 @@ namespace utils
         ( *_master_name
         , sdpa::events::SDPAEvent::Ptr
           ( new sdpa::events::WorkerRegistrationEvent
-            ( _name
-            , 1
+            ( 1
             , capabilities
             , accept_workers
             , fhg::util::random_string()
@@ -356,32 +358,37 @@ namespace utils
     }
 
     virtual void handleWorkerRegistrationAckEvent
-      (const sdpa::events::WorkerRegistrationAckEvent* e) override
+      ( std::string const& source
+      , const sdpa::events::WorkerRegistrationAckEvent*
+      ) override
     {
       BOOST_REQUIRE (_master_name);
-      BOOST_REQUIRE_EQUAL (e->from(), _master_name);
+      BOOST_REQUIRE_EQUAL (source, _master_name);
     }
 
     virtual void handleWorkerRegistrationEvent
-      (const sdpa::events::WorkerRegistrationEvent* e) override
+      ( std::string const& source
+      , const sdpa::events::WorkerRegistrationEvent*
+      ) override
     {
       BOOST_REQUIRE (_accept_workers);
-      BOOST_REQUIRE (_accepted_workers.insert (e->from()).second);
+      BOOST_REQUIRE (_accepted_workers.insert (source).second);
 
       _network.perform
-        ( e->from()
+        ( source
         , sdpa::events::SDPAEvent::Ptr
-          (new sdpa::events::WorkerRegistrationAckEvent (_name))
+          (new sdpa::events::WorkerRegistrationAckEvent())
         );
     }
 
-    virtual void handleErrorEvent (const sdpa::events::ErrorEvent* e) override
+    virtual void handleErrorEvent
+      (std::string const& source, const sdpa::events::ErrorEvent* e) override
     {
       if (e->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN)
       {
         BOOST_REQUIRE (_accept_workers);
         boost::mutex::scoped_lock const _ (_mutex_workers_shutdown);
-        BOOST_REQUIRE (_accepted_workers.erase (e->from()));
+        BOOST_REQUIRE (_accepted_workers.erase (source));
         if(_accepted_workers.empty())
           _cond_workers_shutdown.notify_all();
       }
@@ -414,7 +421,8 @@ namespace utils
   private:
     fhg::com::kvs::kvsc_ptr_t _kvs_client;
 
-    fhg::thread::queue<sdpa::events::SDPAEvent::Ptr> _event_queue;
+    fhg::thread::queue<std::pair<std::string, sdpa::events::SDPAEvent::Ptr>>
+      _event_queue;
     boost::asio::io_service _peer_io_service;
 
   protected:
@@ -427,7 +435,9 @@ namespace utils
     {
       for (;;)
       {
-        _event_queue.get()->handleBy (this);
+        std::pair<std::string, sdpa::events::SDPAEvent::Ptr> event
+          (_event_queue.get());
+        event.second->handleBy (event.first, this);
       }
     }
   private:
@@ -473,23 +483,24 @@ namespace utils
       , _announce_job (announce_job)
     {}
 
-    virtual void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* e) override
+    virtual void handleSubmitJobEvent
+      (std::string const& source, const sdpa::events::SubmitJobEvent* e) override
     {
       const std::string name
         (we::type::activity_t (e->description()).transition().name());
 
-      _jobs.emplace (name, job_t (*e->job_id(), e->from()));
+      _jobs.emplace (name, job_t (*e->job_id(), source));
 
       _network.perform
-        ( e->from()
+        ( source
         , sdpa::events::SDPAEvent::Ptr
-          (new sdpa::events::SubmitJobAckEvent (_name, *e->job_id()))
+          (new sdpa::events::SubmitJobAckEvent (*e->job_id()))
         );
 
       _announce_job (name);
     }
     virtual void handleJobFinishedAckEvent
-      (const sdpa::events::JobFinishedAckEvent*) override
+      (std::string const&, const sdpa::events::JobFinishedAckEvent*) override
     {
       // can be ignored as we clean up in finish() already
     }
@@ -503,7 +514,7 @@ namespace utils
         ( job._owner
         , sdpa::events::SDPAEvent::Ptr
           ( new sdpa::events::JobFinishedEvent
-            (_name, job._id, we::type::activity_t().to_string())
+            (job._id, we::type::activity_t().to_string())
           )
         );
     }
@@ -532,24 +543,25 @@ namespace utils
       : basic_drts_worker (name, master)
     {}
 
-    virtual void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* e) override
+    virtual void handleSubmitJobEvent
+      (std::string const& source, const sdpa::events::SubmitJobEvent* e) override
     {
       _network.perform
-        ( e->from()
+        ( source
         , sdpa::events::SDPAEvent::Ptr
-          (new sdpa::events::SubmitJobAckEvent (_name, *e->job_id()))
+          (new sdpa::events::SubmitJobAckEvent (*e->job_id()))
         );
 
       _network.perform
-        ( e->from()
+        ( source
         , sdpa::events::SDPAEvent::Ptr
           ( new sdpa::events::JobFinishedEvent
-            (_name, *e->job_id(), we::type::activity_t().to_string())
+            (*e->job_id(), we::type::activity_t().to_string())
           )
         );
     }
     virtual void handleJobFinishedAckEvent
-      (const sdpa::events::JobFinishedAckEvent*) override
+      (std::string const&, const sdpa::events::JobFinishedAckEvent*) override
     {
       // can be ignored as we don't have any state
     }
@@ -568,7 +580,7 @@ namespace utils
     {}
 
     void handleJobFinishedAckEvent
-      (const sdpa::events::JobFinishedAckEvent* e) override
+      (std::string const&, const sdpa::events::JobFinishedAckEvent* e) override
     {
       _finished_ack.notify (e->job_id());
     }

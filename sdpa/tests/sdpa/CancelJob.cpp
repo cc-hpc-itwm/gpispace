@@ -28,7 +28,8 @@ namespace
       , _announce_cancel (announce_cancel)
     {}
 
-    void handleCancelJobEvent (const sdpa::events::CancelJobEvent* e) override
+    void handleCancelJobEvent
+      (std::string const& source, const sdpa::events::CancelJobEvent* e) override
     {
       const std::map<std::string, job_t>::const_iterator it
         ( std::find_if
@@ -40,7 +41,7 @@ namespace
           )
         );
       BOOST_REQUIRE (it != _jobs.end());
-      BOOST_REQUIRE_EQUAL (e->from(), it->second._owner);
+      BOOST_REQUIRE_EQUAL (source, it->second._owner);
 
       _announce_cancel (it->first);
     }
@@ -53,7 +54,7 @@ namespace
       _network.perform
         ( job._owner
         , sdpa::events::SDPAEvent::Ptr
-          (new sdpa::events::CancelJobAckEvent (_name, job._id))
+            (new sdpa::events::CancelJobAckEvent (job._id))
         );
     }
 

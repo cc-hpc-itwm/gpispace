@@ -61,7 +61,8 @@ namespace
       , _expected (expected)
     {}
 
-    void perform (const boost::shared_ptr<sdpa::events::SDPAEvent>&)
+    void perform
+      (std::string const&, const boost::shared_ptr<sdpa::events::SDPAEvent>&)
     {
       boost::mutex::scoped_lock _ (_counter_mutex);
       ++_counter;
@@ -97,8 +98,11 @@ BOOST_FIXTURE_TEST_CASE (perform_test, KVSSetup)
 
   boost::asio::io_service peer_io_service;
   sdpa::com::NetworkStrategy net
-    ( std::bind
-      (&wait_for_n_events_strategy::perform, &counter, std::placeholders::_1)
+    ( std::bind ( &wait_for_n_events_strategy::perform
+                , &counter
+                , std::placeholders::_1
+                , std::placeholders::_2
+                )
     , peer_io_service
     , "peer-1"
     , fhg::com::host_t ("localhost")
@@ -107,8 +111,7 @@ BOOST_FIXTURE_TEST_CASE (perform_test, KVSSetup)
     );
 
   net.perform ( "peer-1"
-              , boost::shared_ptr<sdpa::events::SDPAEvent>(new sdpa::events::ErrorEvent( "peer-1"
-                                                              , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+              , boost::shared_ptr<sdpa::events::SDPAEvent>(new sdpa::events::ErrorEvent(sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                                                               , "success"
                                                               )
                                  )

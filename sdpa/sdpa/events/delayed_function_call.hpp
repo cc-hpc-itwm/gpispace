@@ -15,11 +15,11 @@ namespace sdpa
     {
     public:
       delayed_function_call (std::function<void()> function)
-        : SDPAEvent ("<<internal>>")
+        : SDPAEvent()
         , _function (function)
       {}
 
-      virtual void handleBy (EventHandler*) override
+      virtual void handleBy (std::string const&, EventHandler*) override
       {
         _function();
       }

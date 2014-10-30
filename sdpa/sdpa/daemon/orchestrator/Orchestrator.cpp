@@ -84,11 +84,11 @@ namespace sdpa
     }
 
     void Orchestrator::handleJobFinishedEvent
-      (const events::JobFinishedEvent* pEvt)
+      (std::string const& source, const events::JobFinishedEvent* pEvt)
     {
       LLOG (TRACE, _logger, "The job " << pEvt->job_id() << " has finished!");
 
-      child_proxy (this, pEvt->from()).job_finished_ack (pEvt->job_id());
+      child_proxy (this, source).job_finished_ack (pEvt->job_id());
 
       Job* pJob (findJob (pEvt->job_id()));
       if (!pJob)
@@ -104,16 +104,14 @@ namespace sdpa
         sendEventToOther
           ( subscriber
           , events::JobFinishedEvent::Ptr
-            ( new events::JobFinishedEvent
-              (pEvt->from(), pEvt->job_id(), pEvt->result())
-            )
+            (new events::JobFinishedEvent (pEvt->job_id(), pEvt->result()))
           );
       }
 
       try
       {
         scheduler().releaseReservation (pEvt->job_id());
-        scheduler().worker_manager().findWorker (pEvt->from())->deleteJob (pEvt->job_id());
+        scheduler().worker_manager().findWorker (source)->deleteJob (pEvt->job_id());
         request_scheduling();
       }
       catch (WorkerNotFoundException const&)
@@ -121,9 +119,10 @@ namespace sdpa
       }
     }
 
-    void Orchestrator::handleJobFailedEvent (const events::JobFailedEvent* pEvt)
+    void Orchestrator::handleJobFailedEvent
+      (std::string const& source, const events::JobFailedEvent* pEvt)
     {
-      child_proxy (this, pEvt->from()).job_failed_ack (pEvt->job_id());
+      child_proxy (this, source).job_failed_ack (pEvt->job_id());
 
       Job* pJob (findJob (pEvt->job_id()));
       if (!pJob)
@@ -139,16 +138,14 @@ namespace sdpa
         sendEventToOther
           ( subscriber
           , events::JobFailedEvent::Ptr
-            ( new events::JobFailedEvent
-              (pEvt->from(), pEvt->job_id(), pEvt->error_message())
-            )
+            (new events::JobFailedEvent (pEvt->job_id(), pEvt->error_message()))
           );
       }
 
       try
       {
         scheduler().releaseReservation (pEvt->job_id());
-        scheduler().worker_manager().findWorker (pEvt->from())->deleteJob (pJob->id());
+        scheduler().worker_manager().findWorker (source)->deleteJob (pJob->id());
         request_scheduling();
       }
       catch (const WorkerNotFoundException&)
@@ -156,7 +153,8 @@ namespace sdpa
       }
     }
 
-    void Orchestrator::handleCancelJobEvent (const events::CancelJobEvent* pEvt)
+    void Orchestrator::handleCancelJobEvent
+      (std::string const& source, const events::CancelJobEvent* pEvt)
     {
       Job* pJob (findJob (pEvt->job_id()));
       if (!pJob)
@@ -180,9 +178,9 @@ namespace sdpa
 
       // send immediately an acknowledgment to the component that
       // requested the cancellation
-      if (!isSubscriber (pEvt->from()))
+      if (!isSubscriber (source))
       {
-        parent_proxy (this, pEvt->from()).cancel_job_ack (pEvt->job_id());
+        parent_proxy (this, source).cancel_job_ack (pEvt->job_id());
       }
 
       pJob->CancelJob();
@@ -205,14 +203,14 @@ namespace sdpa
           sendEventToOther
             ( subscriber
             , events::CancelJobAckEvent::Ptr
-              (new events::CancelJobAckEvent (pEvt->from(), pEvt->job_id()))
+              (new events::CancelJobAckEvent (pEvt->job_id()))
             );
         }
       }
     }
 
     void Orchestrator::handleCancelJobAckEvent
-      (const events::CancelJobAckEvent* pEvt)
+      (std::string const& source, const events::CancelJobAckEvent* pEvt)
     {
       Job* pJob (findJob (pEvt->job_id()));
       if (!pJob)
@@ -228,12 +226,13 @@ namespace sdpa
         sendEventToOther
           ( subscriber
           , events::CancelJobAckEvent::Ptr
-            (new events::CancelJobAckEvent (pEvt->from(), pEvt->job_id()))
+            (new events::CancelJobAckEvent (pEvt->job_id()))
           );
       }
     }
 
-    void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
+    void Orchestrator::handleDeleteJobEvent
+      (std::string const& source, const events::DeleteJobEvent* evt)
     {
       Job* pJob (findJob (evt->job_id()));
       if (!pJob)
@@ -250,7 +249,7 @@ namespace sdpa
       }
 
       deleteJob (evt->job_id());
-      parent_proxy (this, evt->from()).delete_job_ack (evt->job_id());
+      parent_proxy (this, source).delete_job_ack (evt->job_id());
     }
   }
 }

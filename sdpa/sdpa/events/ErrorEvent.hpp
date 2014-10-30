@@ -26,13 +26,12 @@ namespace sdpa
         };
 
       ErrorEvent
-        ( const address_t &a_from
-        , const error_code_t &a_error_code
+        ( const error_code_t &a_error_code
         , const std::string& a_reason
         //! \todo This should not be in _every_ ErrorEvent!
         , const boost::optional<sdpa::job_id_t>& jobId = boost::none
         )
-          : MgmtEvent (a_from)
+          : MgmtEvent()
           , error_code_ (a_error_code)
           , reason_ (a_reason)
           , job_id_ (jobId)
@@ -51,9 +50,10 @@ namespace sdpa
         return job_id_;
       }
 
-      virtual void handleBy (EventHandler* handler) override
+      virtual void handleBy
+        (std::string const& source, EventHandler* handler) override
       {
-        handler->handleErrorEvent (this);
+        handler->handleErrorEvent (source, this);
       }
 
     private:
@@ -72,12 +72,12 @@ namespace sdpa
 
     LOAD_CONSTRUCT_DATA_DEF (ErrorEvent, e)
     {
-      LOAD_MGMTEVENT_CONSTRUCT_DATA (from);
+      LOAD_MGMTEVENT_CONSTRUCT_DATA();
       LOAD_FROM_ARCHIVE (ErrorEvent::error_code_t, error_code);
       LOAD_FROM_ARCHIVE (std::string, reason);
       LOAD_FROM_ARCHIVE (boost::optional<sdpa::job_id_t>, job_id);
 
-      ::new (e) ErrorEvent (from, error_code, reason, job_id);
+      ::new (e) ErrorEvent (error_code, reason, job_id);
     }
   }
 }

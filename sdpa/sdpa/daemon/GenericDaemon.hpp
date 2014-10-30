@@ -115,7 +115,7 @@ namespace sdpa {
 
       // masters and subscribers
       void unsubscribe(const sdpa::agent_id_t&);
-      virtual void handleSubscribeEvent (const sdpa::events::SubscribeEvent*) override;
+      virtual void handleSubscribeEvent (std::string const& source, const sdpa::events::SubscribeEvent*) override;
       bool isSubscriber(const sdpa::agent_id_t&);
       bool subscribedFor(const sdpa::agent_id_t&, const sdpa::job_id_t&);
 
@@ -128,32 +128,32 @@ namespace sdpa {
 
       // event handlers
     public:
-      virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* ) = 0;
-      virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*) = 0;
-      virtual void handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent*) override;
-      virtual void handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent*) override;
-      virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* )=0;
-      virtual void handleErrorEvent(const sdpa::events::ErrorEvent* ) override;
-      virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent* ) override;
-      virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent* ) = 0;
-      virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* ) override;
-      virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* ) = 0;
-      //virtual void handleJobResultsReplyEvent (const sdpa::events::JobResultsReplyEvent *) ?!
-      virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* ) override;
-      virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* ) override;
-      //virtual void handleSubscribeAckEvent (const sdpa::events::SubscribeAckEvent*) ?!
-      virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*) override;
-      virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* ) override;
-      virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* ) override;
-      virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* ) override;
+      virtual void handleCancelJobAckEvent(std::string const& source, const sdpa::events::CancelJobAckEvent* ) = 0;
+      virtual void handleCancelJobEvent(std::string const& source, const sdpa::events::CancelJobEvent*) = 0;
+      virtual void handleCapabilitiesGainedEvent(std::string const& source, const sdpa::events::CapabilitiesGainedEvent*) override;
+      virtual void handleCapabilitiesLostEvent(std::string const& source, const sdpa::events::CapabilitiesLostEvent*) override;
+      virtual void handleDeleteJobEvent(std::string const& source, const sdpa::events::DeleteJobEvent* )=0;
+      virtual void handleErrorEvent(std::string const& source, const sdpa::events::ErrorEvent* ) override;
+      virtual void handleJobFailedAckEvent(std::string const& source, const sdpa::events::JobFailedAckEvent* ) override;
+      virtual void handleJobFailedEvent(std::string const& source, const sdpa::events::JobFailedEvent* ) = 0;
+      virtual void handleJobFinishedAckEvent(std::string const& source, const sdpa::events::JobFinishedAckEvent* ) override;
+      virtual void handleJobFinishedEvent(std::string const& source, const sdpa::events::JobFinishedEvent* ) = 0;
+      //virtual void handleJobResultsReplyEvent (std::string const& source, const sdpa::events::JobResultsReplyEvent *) ?!
+      virtual void handleSubmitJobAckEvent(std::string const& source, const sdpa::events::SubmitJobAckEvent* ) override;
+      virtual void handleSubmitJobEvent(std::string const& source, const sdpa::events::SubmitJobEvent* ) override;
+      //virtual void handleSubscribeAckEvent (std::string const& source, const sdpa::events::SubscribeAckEvent*) ?!
+      virtual void handleWorkerRegistrationAckEvent(std::string const& source, const sdpa::events::WorkerRegistrationAckEvent*) override;
+      virtual void handleWorkerRegistrationEvent(std::string const& source, const sdpa::events::WorkerRegistrationEvent* ) override;
+      virtual void handleQueryJobStatusEvent(std::string const& source, const sdpa::events::QueryJobStatusEvent* ) override;
+      virtual void handleRetrieveJobResultsEvent(std::string const& source, const sdpa::events::RetrieveJobResultsEvent* ) override;
 
       virtual void handleDiscoverJobStatesReplyEvent
-        (const sdpa::events::DiscoverJobStatesReplyEvent*) override;
+        (std::string const& source, const sdpa::events::DiscoverJobStatesReplyEvent*) override;
       virtual void handleDiscoverJobStatesEvent
-        (const sdpa::events::DiscoverJobStatesEvent*) override;
+        (std::string const& source, const sdpa::events::DiscoverJobStatesEvent*) override;
 
-      virtual void handle_put_token (const events::put_token*) override;
-      virtual void handle_put_token_ack (const events::put_token_ack*) override;
+      virtual void handle_put_token (std::string const& source, const events::put_token*) override;
+      virtual void handle_put_token_ack (std::string const& source, const events::put_token_ack*) override;
 
     protected:
       // event communication
@@ -286,7 +286,10 @@ namespace sdpa {
 
       void do_registration_after_sleep (const MasterInfo);
 
-      fhg::thread::queue<boost::shared_ptr<events::SDPAEvent>> _event_queue;
+      fhg::thread::queue< std::pair< std::string
+                                   , boost::shared_ptr<events::SDPAEvent>
+                                   >
+                        > _event_queue;
 
       fhg::com::kvs::kvsc_ptr_t _kvs_client;
       sdpa::com::NetworkStrategy _network_strategy;

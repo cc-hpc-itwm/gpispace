@@ -39,12 +39,17 @@ namespace sdpa {
                    , boost::asio::io_service& rpc_io_service
                    );
 
-      virtual void handleJobFinishedEvent( const sdpa::events::JobFinishedEvent* ) override;
-      virtual void handleJobFailedEvent( const sdpa::events::JobFailedEvent* ) override;
+      virtual void handleJobFinishedEvent
+        (std::string const& source, const sdpa::events::JobFinishedEvent* ) override;
+      virtual void handleJobFailedEvent
+        (std::string const& source, const sdpa::events::JobFailedEvent* ) override;
 
-      virtual void handleCancelJobEvent( const sdpa::events::CancelJobEvent* pEvt ) override;
-      virtual void handleCancelJobAckEvent( const sdpa::events::CancelJobAckEvent* pEvt ) override;
-      virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* ) override;
+      virtual void handleCancelJobEvent
+        (std::string const& source, const sdpa::events::CancelJobEvent* pEvt ) override;
+      virtual void handleCancelJobAckEvent
+        (std::string const& source, const sdpa::events::CancelJobAckEvent* pEvt ) override;
+      virtual void handleDeleteJobEvent
+        (std::string const& source, const sdpa::events::DeleteJobEvent* ) override;
 
       boost::asio::ip::tcp::endpoint rpc_local_endpoint() const;
 

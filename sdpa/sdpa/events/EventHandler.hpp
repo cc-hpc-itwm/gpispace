@@ -38,53 +38,53 @@ namespace sdpa
     public:
       virtual ~EventHandler() = default;
 
-      virtual void handleCancelJobAckEvent (const CancelJobAckEvent*)
+      virtual void handleCancelJobAckEvent (std::string const&, const CancelJobAckEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: CancelJobAck"); }
-      virtual void handleCancelJobEvent (const CancelJobEvent*)
+      virtual void handleCancelJobEvent (std::string const&, const CancelJobEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: CancelJob"); }
-      virtual void handleDeleteJobEvent (const DeleteJobEvent*)
+      virtual void handleDeleteJobEvent (std::string const&, const DeleteJobEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: DeleteJob"); }
-      virtual void handleErrorEvent (const ErrorEvent*)
+      virtual void handleErrorEvent (std::string const&, const ErrorEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: ErrorEvent"); }
-      virtual void handleJobFailedAckEvent (const JobFailedAckEvent*)
+      virtual void handleJobFailedAckEvent (std::string const&, const JobFailedAckEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: JobFailedAck"); }
-      virtual void handleJobFailedEvent (const JobFailedEvent*)
+      virtual void handleJobFailedEvent (std::string const&, const JobFailedEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: JobFailed"); }
-      virtual void handleJobFinishedAckEvent (const JobFinishedAckEvent*)
+      virtual void handleJobFinishedAckEvent (std::string const&, const JobFinishedAckEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: JobFinishedAck"); }
-      virtual void handleJobFinishedEvent (const JobFinishedEvent*)
+      virtual void handleJobFinishedEvent (std::string const&, const JobFinishedEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: JobFinished"); }
-      virtual void handleJobResultsReplyEvent (const JobResultsReplyEvent*)
+      virtual void handleJobResultsReplyEvent (std::string const&, const JobResultsReplyEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: JobResultsReply"); }
-      virtual void handleJobStatusReplyEvent (const JobStatusReplyEvent*)
+      virtual void handleJobStatusReplyEvent (std::string const&, const JobStatusReplyEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: JobStatusReply"); }
-      virtual void handleQueryJobStatusEvent (const QueryJobStatusEvent*)
+      virtual void handleQueryJobStatusEvent (std::string const&, const QueryJobStatusEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: QueryJobStatus"); }
-      virtual void handleRetrieveJobResultsEvent (const RetrieveJobResultsEvent*)
+      virtual void handleRetrieveJobResultsEvent (std::string const&, const RetrieveJobResultsEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: RetrieveJobResults"); }
-      virtual void handleSubmitJobAckEvent (const SubmitJobAckEvent*)
+      virtual void handleSubmitJobAckEvent (std::string const&, const SubmitJobAckEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: SubmitJobAck"); }
-      virtual void handleSubmitJobEvent (const SubmitJobEvent*)
+      virtual void handleSubmitJobEvent (std::string const&, const SubmitJobEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: SubmitJob"); }
-      virtual void handleWorkerRegistrationAckEvent (const WorkerRegistrationAckEvent*)
+      virtual void handleWorkerRegistrationAckEvent (std::string const&, const WorkerRegistrationAckEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: WorkerRegistrationAck"); }
-      virtual void handleWorkerRegistrationEvent (const WorkerRegistrationEvent*)
+      virtual void handleWorkerRegistrationEvent (std::string const&, const WorkerRegistrationEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: WorkerRegistration"); }
-      virtual void handleCapabilitiesGainedEvent (const CapabilitiesGainedEvent*)
+      virtual void handleCapabilitiesGainedEvent (std::string const&, const CapabilitiesGainedEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: CapabilitiesGained"); }
-      virtual void handleCapabilitiesLostEvent (const CapabilitiesLostEvent*)
+      virtual void handleCapabilitiesLostEvent (std::string const&, const CapabilitiesLostEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: CapabilitiesLost"); }
-      virtual void handleSubscribeEvent (const SubscribeEvent*)
+      virtual void handleSubscribeEvent (std::string const&, const SubscribeEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: Subscribe"); }
-      virtual void handleSubscribeAckEvent (const SubscribeAckEvent*)
+      virtual void handleSubscribeAckEvent (std::string const&, const SubscribeAckEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: SubscribeAck"); }
-      virtual void handleDiscoverJobStatesEvent (const DiscoverJobStatesEvent*)
+      virtual void handleDiscoverJobStatesEvent (std::string const&, const DiscoverJobStatesEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: DiscoverJobStates"); }
-      virtual void handleDiscoverJobStatesReplyEvent (const DiscoverJobStatesReplyEvent*)
+      virtual void handleDiscoverJobStatesReplyEvent (std::string const&, const DiscoverJobStatesReplyEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: DiscoverJobStatesReply"); }
-      virtual void handle_put_token (const put_token*)
+      virtual void handle_put_token (std::string const&, const put_token*)
       { throw std::runtime_error ("UNHANDLED EVENT: put_token"); }
-      virtual void handle_put_token_ack (const put_token_ack*)
+      virtual void handle_put_token_ack (std::string const&, const put_token_ack*)
       { throw std::runtime_error ("UNHANDLED EVENT: put_token_ack"); }
     };
   }

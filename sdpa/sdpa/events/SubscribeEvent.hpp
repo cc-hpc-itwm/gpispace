@@ -13,25 +13,20 @@ namespace sdpa
     public:
       typedef boost::shared_ptr<SubscribeEvent> Ptr;
 
-      SubscribeEvent ( const address_t& a_from
-                     , const job_id_t& job_id
-                     )
-        : MgmtEvent (a_from)
+      SubscribeEvent (const job_id_t& job_id)
+        : MgmtEvent()
         , _job_id (job_id)
       {}
 
-      const sdpa::agent_id_t& subscriber() const
-      {
-        return from();
-      }
       const sdpa::job_id_t& job_id() const
       {
         return _job_id;
       }
 
-      virtual void handleBy (EventHandler* handler) override
+      virtual void handleBy
+        (std::string const& source, EventHandler* handler) override
       {
-    	handler->handleSubscribeEvent (this);
+        handler->handleSubscribeEvent (source, this);
       }
 
     private:
@@ -46,10 +41,10 @@ namespace sdpa
 
     LOAD_CONSTRUCT_DATA_DEF (SubscribeEvent, e)
     {
-      LOAD_MGMTEVENT_CONSTRUCT_DATA (from);
+      LOAD_MGMTEVENT_CONSTRUCT_DATA();
       LOAD_FROM_ARCHIVE (sdpa::job_id_t, job_id);
 
-      ::new (e) SubscribeEvent (from, job_id);
+      ::new (e) SubscribeEvent (job_id);
     }
   }
 }

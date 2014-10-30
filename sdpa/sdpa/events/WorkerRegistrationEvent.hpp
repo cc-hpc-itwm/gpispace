@@ -16,13 +16,12 @@ namespace sdpa
       typedef boost::shared_ptr<WorkerRegistrationEvent> Ptr;
 
       WorkerRegistrationEvent
-        ( const address_t& a_from
-        , const boost::optional<unsigned int>& capacity
+        ( const boost::optional<unsigned int>& capacity
         , const capabilities_set_t& cpbset
         , bool children_allowed
         , const std::string& hostname
         )
-          : MgmtEvent (a_from)
+          : MgmtEvent()
           , capacity_ (capacity)
           , cpbset_ (cpbset)
           , children_allowed_(children_allowed)
@@ -48,9 +47,10 @@ namespace sdpa
 	return children_allowed_;
       }
 
-      virtual void handleBy (EventHandler* handler) override
+      virtual void handleBy
+        (std::string const& source, EventHandler* handler) override
       {
-        handler->handleWorkerRegistrationEvent (this);
+        handler->handleWorkerRegistrationEvent (source, this);
       }
 
     private:
@@ -71,13 +71,13 @@ namespace sdpa
 
     LOAD_CONSTRUCT_DATA_DEF (WorkerRegistrationEvent, e)
     {
-      LOAD_MGMTEVENT_CONSTRUCT_DATA (from);
+      LOAD_MGMTEVENT_CONSTRUCT_DATA();
       LOAD_FROM_ARCHIVE (boost::optional<unsigned int>, capacity);
       LOAD_FROM_ARCHIVE (capabilities_set_t, cpbset);
       LOAD_FROM_ARCHIVE (bool, children_allowed);
       LOAD_FROM_ARCHIVE (std::string, hostname);
 
-      ::new (e) WorkerRegistrationEvent (from, capacity, cpbset, children_allowed, hostname);
+      ::new (e) WorkerRegistrationEvent (capacity, cpbset, children_allowed, hostname);
     }
   }
 }

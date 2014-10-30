@@ -12,13 +12,12 @@ namespace sdpa
     public:
       typedef boost::shared_ptr<WorkerRegistrationAckEvent> Ptr;
 
-      WorkerRegistrationAckEvent (const address_t& a_from)
-        : MgmtEvent (a_from)
-      {}
+      using MgmtEvent::MgmtEvent;
 
-      virtual void handleBy (EventHandler* handler) override
+      virtual void handleBy
+        (std::string const& source, EventHandler* handler) override
       {
-        handler->handleWorkerRegistrationAckEvent (this);
+        handler->handleWorkerRegistrationAckEvent (source, this);
       }
     };
 

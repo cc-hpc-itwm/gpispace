@@ -14,17 +14,13 @@ namespace sdpa
       typedef boost::shared_ptr<CapabilitiesLostEvent> Ptr;
 
       CapabilitiesLostEvent
-        ( const address_t& from
-        , const sdpa::capabilities_set_t& cpbs = capabilities_set_t()
-        )
-          : MgmtEvent (from)
+        (const sdpa::capabilities_set_t& cpbs = capabilities_set_t())
+          : MgmtEvent()
           , capabilities_ (cpbs)
       {}
 
-      CapabilitiesLostEvent ( const address_t& from
-                            , const sdpa::capability_t &cap
-                            )
-        : MgmtEvent(from)
+      CapabilitiesLostEvent (const sdpa::capability_t &cap)
+        : MgmtEvent()
         , capabilities_()
       {
         capabilities_.insert (cap);
@@ -35,9 +31,10 @@ namespace sdpa
         return capabilities_;
       }
 
-      virtual void handleBy (EventHandler* handler) override
+      virtual void handleBy
+        (std::string const& source, EventHandler* handler) override
       {
-        handler->handleCapabilitiesLostEvent (this);
+        handler->handleCapabilitiesLostEvent (source, this);
       }
 
     private:
@@ -52,10 +49,10 @@ namespace sdpa
 
     LOAD_CONSTRUCT_DATA_DEF (CapabilitiesLostEvent, e)
     {
-      LOAD_MGMTEVENT_CONSTRUCT_DATA (from);
+      LOAD_MGMTEVENT_CONSTRUCT_DATA();
       LOAD_FROM_ARCHIVE (sdpa::capabilities_set_t, capabilities);
 
-      ::new (e) CapabilitiesLostEvent (from, capabilities);
+      ::new (e) CapabilitiesLostEvent (capabilities);
     }
   }
 }

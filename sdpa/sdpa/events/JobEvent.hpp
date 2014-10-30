@@ -13,10 +13,8 @@ namespace sdpa
     class JobEvent : public sdpa::events::SDPAEvent
     {
     public:
-      JobEvent ( const address_t& a_from
-               , const sdpa::job_id_t& a_job_id
-               )
-        : SDPAEvent (a_from)
+      JobEvent (const sdpa::job_id_t& a_job_id)
+        : SDPAEvent()
         , job_id_ (a_job_id)
       {}
 

@@ -28,12 +28,12 @@ namespace
     }
 
     void handleCancelJobEvent
-      (const sdpa::events::CancelJobEvent* pEvt) override
+      (std::string const& source, const sdpa::events::CancelJobEvent* pEvt) override
     {
       _network.perform
-        ( pEvt->from()
+        ( source
         , sdpa::events::SDPAEvent::Ptr
-          (new sdpa::events::CancelJobAckEvent (_name, pEvt->job_id()))
+          (new sdpa::events::CancelJobAckEvent (pEvt->job_id()))
         );
 
       boost::mutex::scoped_lock const _ (_mtx_cancel);

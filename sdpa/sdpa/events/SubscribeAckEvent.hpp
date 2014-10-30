@@ -12,10 +12,8 @@ namespace sdpa
     public:
       typedef boost::shared_ptr<SubscribeAckEvent> Ptr;
 
-      SubscribeAckEvent ( const address_t& a_from
-                        , const job_id_t& job_id
-                        )
-        : MgmtEvent (a_from)
+      SubscribeAckEvent (const job_id_t& job_id)
+        : MgmtEvent()
         , _job_id (job_id)
       { }
 
@@ -24,9 +22,10 @@ namespace sdpa
         return _job_id;
       }
 
-      virtual void handleBy (EventHandler* handler) override
+      virtual void handleBy
+        (std::string const& source, EventHandler* handler) override
       {
-        handler->handleSubscribeAckEvent (this);
+        handler->handleSubscribeAckEvent (source, this);
       }
 
     private:
@@ -41,10 +40,10 @@ namespace sdpa
 
     LOAD_CONSTRUCT_DATA_DEF (SubscribeAckEvent, e)
     {
-      LOAD_MGMTEVENT_CONSTRUCT_DATA (from);
+      LOAD_MGMTEVENT_CONSTRUCT_DATA();
       LOAD_FROM_ARCHIVE (sdpa::job_id_t, job_id);
 
-      ::new (e) SubscribeAckEvent (from, job_id);
+      ::new (e) SubscribeAckEvent (job_id);
     }
   }
 }

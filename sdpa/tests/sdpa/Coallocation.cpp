@@ -275,11 +275,11 @@ namespace
     }
 
     void handleCancelJobEvent
-      (const sdpa::events::CancelJobEvent* pEvt) override
+      (std::string const& source, const sdpa::events::CancelJobEvent* pEvt) override
     {
       boost::mutex::scoped_lock const _ (_cancels_mutex);
 
-      _cancels.emplace (pEvt->job_id(), pEvt->from());
+      _cancels.emplace (pEvt->job_id(), source);
       _announce_cancel (pEvt->job_id());
     }
 
@@ -293,7 +293,7 @@ namespace
       _network.perform
         ( master
         , sdpa::events::SDPAEvent::Ptr
-          (new sdpa::events::CancelJobAckEvent (_name, job_id))
+          (new sdpa::events::CancelJobAckEvent (job_id))
         );
     }
 

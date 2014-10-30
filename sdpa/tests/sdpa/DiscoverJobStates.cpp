@@ -86,14 +86,15 @@ namespace
     {}
 
     virtual void handleDiscoverJobStatesEvent
-      (const sdpa::events::DiscoverJobStatesEvent* e) override
+      ( std::string const& source
+      , const sdpa::events::DiscoverJobStatesEvent* e
+      ) override
     {
       _network.perform
-        ( e->from()
+        ( source
         , sdpa::events::SDPAEvent::Ptr
           ( new sdpa::events::DiscoverJobStatesReplyEvent
-            ( _name
-            , e->discover_id()
+            ( e->discover_id()
             , sdpa::discovery_info_t
               (e->job_id(), reply, sdpa::discovery_info_set_t())
             )

@@ -118,13 +118,18 @@ public:
     );
   ~DRTSImpl();
 
-  virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent *e) override;
-  virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *e) override;
-  virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent *e) override;
-  virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *e) override;
-  virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent *e) override;
+  virtual void handleWorkerRegistrationAckEvent
+    (std::string const& source, const sdpa::events::WorkerRegistrationAckEvent *e) override;
+  virtual void handleSubmitJobEvent
+    (std::string const& source, const sdpa::events::SubmitJobEvent *e) override;
+  virtual void handleCancelJobEvent
+    (std::string const& source, const sdpa::events::CancelJobEvent *e) override;
+  virtual void handleJobFailedAckEvent
+    (std::string const& source, const sdpa::events::JobFailedAckEvent *e) override;
+  virtual void handleJobFinishedAckEvent
+    (std::string const& source, const sdpa::events::JobFinishedAckEvent *e) override;
   virtual void handleDiscoverJobStatesEvent
-    (const sdpa::events::DiscoverJobStatesEvent*) override;
+    (std::string const& source, const sdpa::events::DiscoverJobStatesEvent*) override;
 
 private:
   // threads
@@ -150,7 +155,8 @@ private:
   void send_event (std::string const& destination, sdpa::events::SDPAEvent *e);
   void send_event (std::string const& destination, sdpa::events::SDPAEvent::Ptr const & evt);
 
-  void dispatch_event (sdpa::events::SDPAEvent::Ptr const &evt);
+  void dispatch_event
+    (std::string const& source, sdpa::events::SDPAEvent::Ptr const &evt);
 
   fhg::log::Logger::ptr_t _logger;
 
@@ -173,7 +179,8 @@ private:
   std::size_t m_max_reconnect_attempts;
   std::size_t m_reconnect_counter;
 
-  fhg::thread::queue<sdpa::events::SDPAEvent::Ptr>  m_event_queue;
+  fhg::thread::queue<std::pair<std::string, sdpa::events::SDPAEvent::Ptr>>
+    m_event_queue;
   boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
     m_event_thread;
   boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
