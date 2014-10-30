@@ -125,4 +125,6 @@ BOOST_AUTO_TEST_CASE (share_example_ping_pong)
             << "rtt min/avg/max/sdev " << min << "/" << avg << "/" << max << "/" << sdev << " ms"
             << std::endl
     ;
+
+  BOOST_REQUIRE_LT (avg, 1.0);
 }
