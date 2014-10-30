@@ -214,7 +214,7 @@ BOOST_FIXTURE_TEST_CASE (peer_loopback, KVSSetup)
 
     for (std::size_t i (0); i < 10000; ++i)
     {
-      peer_1.send(peer_1.name (), "hello world!");
+      peer_1.send("peer-1", "hello world!");
     }
 
   peer_1.stop();
@@ -298,7 +298,7 @@ BOOST_FIXTURE_TEST_CASE (peers_with_fixed_ports, KVSSetup)
   peer_1.start();
   peer_2.start();
 
-    peer_1.send(peer_2.name (), "hello world!");
+    peer_1.send("peer-2", "hello world!");
 
   peer_1.stop();
   thrd_1.join ();
@@ -334,7 +334,7 @@ BOOST_FIXTURE_TEST_CASE (peers_with_fixed_ports_reuse, KVSSetup)
   peer_1.start();
   peer_2.start();
 
-    peer_1.send(peer_2.name (), "hello world!");
+    peer_1.send("peer-2", "hello world!");
 
   peer_1.stop();
   thrd_1.join ();
@@ -393,7 +393,7 @@ BOOST_FIXTURE_TEST_CASE (two_peers_one_restarts_repeatedly, KVSSetup)
     try
     {
       peer_2.start();
-      peer_2.send (peer_1.name (), "hello world!");
+      peer_2.send ("peer-1", "hello world!");
     }
     catch (boost::system::system_error const &se)
     {

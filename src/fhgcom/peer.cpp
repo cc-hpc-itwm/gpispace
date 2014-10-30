@@ -50,7 +50,7 @@ namespace fhg
       }
       catch (std::exception const & ex)
       {
-        LOG(ERROR, "exception during destructor of peer " << name() << ": " << ex.what());
+        LOG(ERROR, "exception during destructor of peer " << name_ << ": " << ex.what());
       }
     }
 

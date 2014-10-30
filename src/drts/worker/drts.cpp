@@ -972,7 +972,7 @@ void DRTSImpl::handle_recv ( boost::system::error_code const & ec
     }
     else
     {
-      LLOG (TRACE, _logger, m_peer->name() << " is shutting down");
+      LLOG (TRACE, _logger, m_my_name << " is shutting down");
     }
   }
 }
