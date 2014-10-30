@@ -126,5 +126,7 @@ BOOST_AUTO_TEST_CASE (share_example_ping_pong)
             << std::endl
     ;
 
+#ifdef NDEBUG
   BOOST_REQUIRE_LT (avg, 1.0);
+#endif
 }
