@@ -133,10 +133,12 @@ namespace gpi
           {}
 
           gpi::rank_t rank;
-          std::string name;
+          fhg::com::p2p::address_t address;
           time_t      last_signal;
           std::size_t error_counter;
         };
+
+        gpi::rank_t find_rank (fhg::com::p2p::address_t) const;
 
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
@@ -147,7 +149,7 @@ namespace gpi
         typedef std::list<rank_result_t> result_list_t;
 
         void message_received ( boost::system::error_code const &
-                              , boost::optional<std::string> source_name
+                              , boost::optional<std::string>
                               , memory::manager_t&
                               );
         void message_sent ( child_t & child
@@ -155,12 +157,11 @@ namespace gpi
                           , boost::system::error_code const &
                           );
 
-        void handle_message ( const gpi::rank_t rank
+        void handle_message ( fhg::com::p2p::address_t const&
                             , const std::string &
                             , memory::manager_t&
                             );
-        void handle_error ( const gpi::rank_t rank
-                          );
+        void handle_error (fhg::com::p2p::address_t const&);
 
         /**
          * Cast a single message to a given rank.
@@ -168,6 +169,7 @@ namespace gpi
          * @param to the rank to cast the message to
          */
         void cast (child_t const &, const std::string &data);
+        void cast (fhg::com::p2p::address_t const&, std::string const& data);
 
         result_list_t request (const std::string &data);
 

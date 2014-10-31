@@ -42,19 +42,6 @@ namespace gpi
           return "gpi-" + boost::lexical_cast<std::string>(rnk);
         }
 
-        static gpi::rank_t name_to_rank(const std::string &name)
-        {
-          unsigned int rnk (-1);
-          if (sscanf(name.c_str(), "gpi-%u", &rnk) < 1)
-          {
-            throw std::invalid_argument("invalid name: " + name);
-          }
-          else
-          {
-            return rnk;
-          }
-        }
-
         struct command_t
         {
           typedef std::vector<std::string> string_vec;
@@ -207,7 +194,7 @@ namespace gpi
       void topology_t::add_child(const gpi::rank_t rank)
       {
         child_t new_child(rank);
-        new_child.name = detail::rank_to_name (rank);
+        new_child.address = detail::rank_to_name (rank);
 
         lock_type lock(m_mutex);
         fhg_assert (m_peer);
@@ -413,7 +400,7 @@ namespace gpi
         {
           if (++child.error_counter > 10)
           {
-            MLOG (ERROR, "exceeded error counter for " << child.name);
+            MLOG (ERROR, "exceeded error counter for rank " << child.rank);
             m_peer->stop ();
           }
           else
@@ -432,11 +419,25 @@ namespace gpi
                            , const std::string & data
                            )
       {
-        m_peer->async_send ( child.name
+        m_peer->async_send ( child.address
                            , data
                            , std::bind ( &topology_t::message_sent
                                        , this
                                        , child
+                                       , data
+                                       , std::placeholders::_1
+                                       )
+                           );
+      }
+
+      void topology_t::cast
+        (fhg::com::p2p::address_t const& address, std::string const& data)
+      {
+        m_peer->async_send ( address
+                           , data
+                           , std::bind ( &topology_t::message_sent
+                                       , this
+                                       , m_children.at (find_rank (address))
                                        , data
                                        , std::placeholders::_1
                                        )
@@ -458,13 +459,13 @@ namespace gpi
 
       void topology_t::message_received
         ( boost::system::error_code const &ec
-        , boost::optional<std::string> source_name
+        , boost::optional<std::string>
         , memory::manager_t& memory_manager
         )
       {
         if (! ec)
         {
-          handle_message( detail::name_to_rank(source_name.get())
+          handle_message( m_incoming_msg.header.src
                         , std::string( m_incoming_msg.buf()
                                      , m_incoming_msg.header.length
                                      )
@@ -484,7 +485,7 @@ namespace gpi
         {
           if (m_incoming_msg.header.src != m_peer->address())
           {
-            handle_error (detail::name_to_rank(source_name.get()));
+            handle_error (m_incoming_msg.header.src);
 
             m_peer->async_recv ( &m_incoming_msg
                                , std::bind( &topology_t::message_received
@@ -502,7 +503,7 @@ namespace gpi
         }
       }
 
-      void topology_t::handle_message ( const gpi::rank_t rank
+      void topology_t::handle_message ( fhg::com::p2p::address_t const& source
                                       , std::string const &msg
                                       , memory::manager_t& memory_manager
                                       )
@@ -543,11 +544,11 @@ namespace gpi
                                                       , name
                                                       )
                 );
-              cast (rank, detail::command_t("+RES") << res);
+              cast (source, detail::command_t("+RES") << res);
             }
             catch (std::exception const &ex)
             {
-              cast (rank, detail::command_t("+RES") << 2 << ex.what ());
+              cast (source, detail::command_t("+RES") << 2 << ex.what ());
             }
           }
           else if (av[0] == "FREE")
@@ -556,7 +557,7 @@ namespace gpi
             try
             {
               memory_manager.remote_free(hdl);
-              cast (rank, detail::command_t("+OK"));
+              cast (source, detail::command_t("+OK"));
             }
             catch (std::exception const & ex)
             {
@@ -564,7 +565,7 @@ namespace gpi
                       , not m_shutting_down
                       , "could not free handle: " << ex.what()
                       );
-              cast (rank, detail::command_t("+ERR") << 1 << ex.what ());
+              cast (source, detail::command_t("+ERR") << 1 << ex.what ());
             }
           }
           else if (av [0] == "ADDMEM")
@@ -579,7 +580,7 @@ namespace gpi
             try
             {
               memory_manager.remote_add_memory (seg_id, url_s, *this);
-              cast (rank, detail::command_t("+RES") << 0);
+              cast (source, detail::command_t("+RES") << 0);
             }
             catch (std::exception const & ex)
             {
@@ -587,7 +588,7 @@ namespace gpi
                   , "add_memory(" << seg_id << ", '" << url_s << "')"
                   << " failed: " << ex.what()
                   );
-              cast (rank, detail::command_t("+RES") << 1 << ex.what ());
+              cast (source, detail::command_t("+RES") << 1 << ex.what ());
             }
           }
           else if (av [0] == "DELMEM")
@@ -597,7 +598,7 @@ namespace gpi
             try
             {
               memory_manager.remote_del_memory (seg_id, *this);
-              cast (rank, detail::command_t("+RES") << 0);
+              cast (source, detail::command_t("+RES") << 0);
             }
             catch (std::exception const & ex)
             {
@@ -605,7 +606,7 @@ namespace gpi
                   , "del_memory(" << seg_id <<  ")"
                   << " failed: " << ex.what()
                   );
-              cast (rank, detail::command_t("+RES") << 1 << ex.what ());
+              cast (source, detail::command_t("+RES") << 1 << ex.what ());
             }
           }
           else if (av[0] == "+RES")
@@ -615,7 +616,7 @@ namespace gpi
                                              , av.end ()
                                              );
             m_current_results.push_back
-              (rank_result_t( rank
+              (rank_result_t( find_rank (source)
                             , boost::lexical_cast<int>(av[1])
                             , boost::algorithm::join (msg_vec, " ")
                             )
@@ -632,7 +633,7 @@ namespace gpi
                                              );
             MLOG_IF ( WARN
                     , not m_shutting_down
-                    , "error on node " << rank
+                    , "error on node " << find_rank (source)
                     << ": " << av [1]
                     << ": " << boost::algorithm::join (msg_vec, " ")
                     );
@@ -650,9 +651,9 @@ namespace gpi
           }
       }
 
-      void topology_t::handle_error ( const gpi::rank_t rank
-                                    )
+      void topology_t::handle_error (fhg::com::p2p::address_t const& source)
       {
+        gpi::rank_t rank (find_rank (source));
           m_shutting_down = true;
 
           del_child (rank);
@@ -669,6 +670,22 @@ namespace gpi
 
           kill(getpid(), SIGTERM);
         }
+
+      gpi::rank_t topology_t::find_rank (fhg::com::p2p::address_t address) const
+      {
+        decltype (m_children)::const_iterator child
+          ( std::find_if
+              ( m_children.cbegin(), m_children.cend()
+              , [&address] (decltype (m_children)::value_type const& elem)
+                {
+                  return elem.second.address == address;
+                }
+              )
+          );
+        return child != m_children.end()
+          ? child->first
+          : throw std::runtime_error ("find_rank (unknown address)");
+      }
     }
   }
 }
