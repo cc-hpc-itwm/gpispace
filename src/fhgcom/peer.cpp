@@ -190,10 +190,16 @@ namespace fhg
                       , const std::string & data
                       )
     {
+      send ({p2p::address_t (to)}, data);
+    }
+    void peer_t::send ( p2p::address_t const& addr
+                      , const std::string & data
+                      )
+    {
       typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
       async_op_t send_finished;
       async_send
-        ( to, data
+        ( addr, data
         , std::bind (&async_op_t::notify, &send_finished, std::placeholders::_1)
         );
 
@@ -209,9 +215,14 @@ namespace fhg
                             , peer_t::handler_t completion_handler
                             )
     {
+      async_send ({p2p::address_t (to)}, data, completion_handler);
+    }
+    void peer_t::async_send ( p2p::address_t const& addr
+                            , const std::string & data
+                            , peer_t::handler_t completion_handler
+                            )
+    {
       fhg_assert (completion_handler);
-
-      p2p::address_t const addr {p2p::address_t (to)};
 
       lock_type lock(mutex_);
 
