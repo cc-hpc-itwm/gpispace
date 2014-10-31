@@ -50,6 +50,8 @@ namespace fhg
       void stop ();
       void run ();
 
+      p2p::address_t connect_to_via_kvs (std::string name);
+
       void async_send ( std::string const & to
                       , std::string const & data
                       , handler_t h

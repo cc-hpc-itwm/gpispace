@@ -186,6 +186,53 @@ namespace fhg
       stopped_ = true;
     }
 
+    p2p::address_t peer_t::connect_to_via_kvs (std::string name)
+    {
+      p2p::address_t addr {p2p::address_t (name)};
+      if (connections_.find (addr) != connections_.end())
+      {
+        throw std::logic_error ("already connected to " + name);
+      }
+
+      // lookup location information
+      std::string const prefix ("p2p.peer." + p2p::to_string (addr));
+      kvs::values_type const peer_info (_kvs_client->get (prefix));
+
+      host_t const peer_host (peer_info.at (prefix + ".location.host"));
+      port_t const peer_port (peer_info.at (prefix + ".location.port"));
+      std::string const peer_name (peer_info.at (prefix + ".name"));
+      if (peer_name != name)
+      {
+        throw std::logic_error
+          ("KVS info inconsistent: " + peer_name + " <> " + name);
+      }
+
+      connection_data_t& cd (connections_[addr]);
+      cd.name = name;
+      cd.connection = boost::make_shared<connection_t>
+        ( io_service_
+        , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
+        , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
+        , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
+        );
+      cd.connection->local_address (my_addr_);
+      cd.connection->remote_address (addr, name);
+
+      boost::asio::ip::tcp::resolver resolver (io_service_);
+      boost::asio::ip::tcp::resolver::query query (peer_host, peer_port);
+
+      boost::system::error_code ec;
+      boost::asio::connect
+        ( cd.connection->socket()
+        , boost::asio::ip::tcp::resolver (io_service_).resolve (query)
+        , ec
+        );
+
+      connection_established (addr, ec);
+
+      return addr;
+    }
+
     void peer_t::send ( const std::string & to
                       , const std::string & data
                       )

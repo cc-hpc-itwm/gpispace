@@ -194,7 +194,8 @@ namespace gpi
       void topology_t::add_child(const gpi::rank_t rank)
       {
         child_t new_child(rank);
-        new_child.address = detail::rank_to_name (rank);
+        new_child.address =
+          m_peer->connect_to_via_kvs (detail::rank_to_name (rank));
 
         lock_type lock(m_mutex);
         fhg_assert (m_peer);
