@@ -404,14 +404,6 @@ namespace gpi
         }
       }
 
-      void topology_t::cast( const gpi::rank_t rnk
-                           , const char * data
-                           , const std::size_t len
-                           )
-      {
-        cast(rnk, std::string(data, len));
-      }
-
       void topology_t::message_sent ( child_t & child
                                     , std::string const & data
                                     , boost::system::error_code const & ec
@@ -457,13 +449,6 @@ namespace gpi
         {
           cast(n.second, data);
         }
-      }
-
-      void topology_t::broadcast ( const char *data
-                                 , const std::size_t len
-                                 )
-      {
-        return broadcast(std::string(data, len));
       }
 
       /*

@@ -99,10 +99,8 @@ namespace gpi
         virtual int del_memory (const gpi::pc::type::segment_id_t seg_id) override;
       private:
         void cast (const gpi::rank_t rnk, const std::string & data);
-        void cast (const gpi::rank_t rnk, const char *data, const std::size_t len);
 
         void broadcast(const std::string & data);
-        void broadcast(const char *data, const std::size_t len);
 
         rank_result_t
         all_reduce ( std::string const & req
