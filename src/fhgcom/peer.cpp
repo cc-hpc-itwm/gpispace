@@ -91,7 +91,7 @@ namespace fhg
 
         acceptor_.open(endpoint.protocol());
         acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
-        acceptor_.set_option(boost::asio::ip::tcp::no_delay (true));
+        acceptor_.set_option (boost::asio::ip::tcp::no_delay (true));
         acceptor_.bind(endpoint);
         acceptor_.listen();
 
