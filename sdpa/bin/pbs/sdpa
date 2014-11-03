@@ -85,7 +85,7 @@ function rexec ()
     local node="$1"; shift
     local err
     local rc
-    local ssh_opts="-q -x -T -n -C -4 -c arcfour,blowfish-cbc -o CheckHostIP=no -o StrictHostKeyChecking=no"
+    local ssh_opts="-q -x -T -n -C -4 -o CheckHostIP=no -o StrictHostKeyChecking=no"
     local cmd="ssh $ssh_opts $node $@"
     debug $cmd
     err=$($cmd 2>&1)
