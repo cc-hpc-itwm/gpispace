@@ -44,7 +44,6 @@ namespace sdpa
                    , std::string kvs_host, std::string kvs_port
                    )
       : _name ("gspcc-" + boost::uuids::to_string (boost::uuids::random_generator()()))
-      , orchestrator_ (orchestrator)
       , _kvs_client
         ( new fhg::com::kvs::client::kvsc ( kvs_client_io_service
                                           , kvs_host
@@ -63,6 +62,7 @@ namespace sdpa
                )
       , _peer_thread (&fhg::com::peer_t::run, &m_peer)
       , _stopping (false)
+      , _drts_entrypoint_address (m_peer.connect_to_via_kvs (orchestrator))
     {
       m_peer.start ();
       m_peer.async_recv ( &m_message
@@ -151,7 +151,7 @@ namespace sdpa
       m_incoming_events.INDICATES_A_RACE_clear();
 
       static sdpa::events::Codec codec;
-      m_peer.send (orchestrator_, codec.encode (&event));
+      m_peer.send (_drts_entrypoint_address, codec.encode (&event));
 
       const sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
       if (Expected* e = dynamic_cast<Expected*> (reply.get()))

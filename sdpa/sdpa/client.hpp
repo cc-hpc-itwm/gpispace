@@ -71,9 +71,6 @@ namespace sdpa
 
       fhg::thread::queue<sdpa::events::SDPAEvent::Ptr> m_incoming_events;
 
-      // config variables
-      std::string orchestrator_;
-
       template<typename Expected, typename Sent>
         Expected send_and_wait_for_reply (Sent event);
 
@@ -84,6 +81,7 @@ namespace sdpa
       fhg::com::message_t m_message;
       boost::strict_scoped_thread<> _peer_thread;
       bool _stopping;
+      fhg::com::p2p::address_t _drts_entrypoint_address;
     };
   }
 }
