@@ -75,7 +75,7 @@ namespace sdpa
       std::string orchestrator_;
 
       template<typename Expected, typename Sent>
-        Expected send_and_wait_for_reply (std::string const& destination, Sent event);
+        Expected send_and_wait_for_reply (Sent event);
 
       void handle_recv (boost::system::error_code const & ec, boost::optional<std::string> source_name);
 
