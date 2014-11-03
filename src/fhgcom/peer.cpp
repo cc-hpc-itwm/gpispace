@@ -233,12 +233,6 @@ namespace fhg
       return addr;
     }
 
-    void peer_t::send ( const std::string & to
-                      , const std::string & data
-                      )
-    {
-      send ({p2p::address_t (to)}, data);
-    }
     void peer_t::send ( p2p::address_t const& addr
                       , const std::string & data
                       )

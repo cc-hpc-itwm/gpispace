@@ -60,9 +60,6 @@ namespace fhg
                       , std::string const & data
                       , handler_t h
                       );
-      void send ( std::string const & to
-                , std::string const & data
-                );
       void send ( p2p::address_t const& addr
                 , std::string const & data
                 );
