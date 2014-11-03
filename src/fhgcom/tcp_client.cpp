@@ -93,7 +93,7 @@ namespace fhg
       tcp::resolver::query query ( tcp::v4()
                                  , host_
                                  , port_
-                                 , tcp::resolver::query::canonical_name
+                                 , tcp::resolver::query::flags()
                                  );
       tcp::resolver::iterator iter = tcp::resolver(io_service_).resolve(query);
 

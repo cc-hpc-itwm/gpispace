@@ -26,7 +26,7 @@ namespace fhg
                            ( udp::v4()
                            , fhg::util::split_string (location, ':').first
                            , fhg::util::split_string (location, ':').second
-                           , udp::resolver::query::canonical_name
+                           , udp::resolver::query::flags()
                            )
                          )
                      )
