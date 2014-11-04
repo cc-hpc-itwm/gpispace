@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE (share_example_ping_pong)
   unsigned long const count
     (boost::get<unsigned long> (*pnet::type::value::peek ("count", statistics)));
 
-  BOOST_REQUIRE_GT (count, 0u);
+  BOOST_REQUIRE_EQUAL (count, n);
 
   double const min
     (boost::get<double> (*pnet::type::value::peek ("min", statistics)));
