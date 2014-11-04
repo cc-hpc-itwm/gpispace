@@ -233,7 +233,7 @@ namespace gspc
     }                                                                   \
                                                                         \
     throw std::logic_error                                              \
-      (( boost::format ("the option '--%1%' is required but missing")   \
+      (( boost::format ("missing key '%1%' in variables map")           \
        % name::_name                                                    \
        ).str()                                                          \
       );                                                                \
