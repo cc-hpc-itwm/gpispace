@@ -158,7 +158,7 @@ namespace fhg
           const sdpa::daemon::NotificationEvent event (log_event.message());
 
           const long time
-            ( log_event.tstamp() * 1000
+            ( log_event.tstamp() * 1000.0
             - _base_time.toMSecsSinceEpoch()
             );
 
