@@ -29,6 +29,10 @@ namespace we
     {
       fhg_assert (size <= r.size());
     }
+    interval (std::size_t const offset, std::size_t const size)
+      : _offset (offset)
+      , _size (size)
+    {}
     void shrink (unsigned long delta)
     {
       fhg_assert (delta <= _size);
@@ -45,6 +49,27 @@ namespace we
       return _size;
     }
 
+    interval intersect (interval const& other) const
+    {
+      const interval& left (this->_offset <= other._offset ? *this : other);
+      const interval& right (this->_offset <= other._offset ? other : *this);
+
+      if (right._offset < (left._offset + left._size))
+      {
+        if ((right._offset + right._size) < (left._offset + left._size))
+        {
+          return interval (right._offset, right._size);
+        }
+        else
+        {
+          return interval (right._offset, (left._offset + left._size - right._offset));
+        }
+      }
+      else
+      {
+        return interval (0, 0);
+      }
+    }
   private:
     unsigned long _offset;
     unsigned long _size;

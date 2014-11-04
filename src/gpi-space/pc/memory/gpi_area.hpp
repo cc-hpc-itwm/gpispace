@@ -89,6 +89,9 @@ namespace gpi
                                              , const gpi::pc::type::flags_t flags
                                              ) const override;
 
+        double get_transfer_costs ( const gpi::pc::type::memory_region_t&
+                                  , const gpi::rank_t
+                                  ) const override;
 
         void * m_ptr;
         gpi::pc::type::size_t m_total_memsize;

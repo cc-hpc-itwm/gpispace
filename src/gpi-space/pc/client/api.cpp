@@ -8,6 +8,7 @@
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 #include <sys/un.h>
 
@@ -232,14 +233,63 @@ namespace gpi
         throw std::runtime_error("memset: not yet implemented");
       }
 
-      std::function<double (std::string const&)>
-      api_t::transfer_costs (std::list<std::pair<we::local::range, we::global::range>> const&)
+      namespace
       {
-        //! \todo get actual values from vmem backend
-        return [] (std::string const&) -> double
+        gpi::pc::type::handle_id_t
+        we_global_range_handle_name_to_handle (we::global::handle const& handle)
         {
-          return 0.0;
+          return std::stoul (handle.name(), nullptr, 16);
+        }
+      }
+
+      std::function<double (std::string const&)>
+      api_t::transfer_costs (std::list<std::pair<we::local::range, we::global::range>> const& transfers)
+      {
+        std::list<gpi::pc::type::memory_region_t> regions;
+        for (we::global::range const& range : transfers | boost::adaptors::map_values)
+        {
+          regions.emplace_back
+            ( gpi::pc::type::memory_location_t ( we_global_range_handle_name_to_handle (range.handle())
+                                               , range.offset()
+                                               )
+            , range.size()
+            );
+        }
+
+        const std::map<std::string, double> costs (transfer_costs (regions));
+        return [costs] (std::string const& host) -> double
+        {
+          return costs.at (host);
         };
+      }
+
+      std::map<std::string, double>
+      api_t::transfer_costs (std::list<gpi::pc::type::memory_region_t> const& transfers)
+      {
+        proto::message_t const reply
+          (communicate
+            ( proto::memory::message_t
+              ( proto::memory::get_transfer_costs_t (transfers)
+              )
+            )
+          );
+
+        try
+        {
+          proto::memory::transfer_costs_t const costs_message
+            (boost::get<proto::memory::transfer_costs_t> (boost::get<proto::memory::message_t> (reply)));
+          return costs_message.costs;
+        }
+        catch (boost::bad_get const & ex)
+        {
+          proto::error::error_t const error (boost::get<proto::error::error_t> (reply));
+          throw std::runtime_error (error.detail);
+        }
+        catch (std::exception const & ex)
+        {
+          stop ();
+          throw;
+        }
       }
 
       gpi::pc::type::handle::descriptor_t

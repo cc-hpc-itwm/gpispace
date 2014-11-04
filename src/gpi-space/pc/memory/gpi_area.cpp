@@ -11,6 +11,8 @@
 #include <gpi-space/pc/url.hpp>
 #include <fhg/util/read_bool.hpp>
 
+#include <we/type/range.hpp>
+
 #include <boost/lexical_cast.hpp>
 #include <boost/make_shared.hpp>
 
@@ -509,6 +511,27 @@ namespace gpi
                       )
           ));
         return 0;
+      }
+
+      double gpi_area_t::get_transfer_costs ( const gpi::pc::type::memory_region_t& transfer
+                                            , const gpi::rank_t rank
+                                            ) const
+      {
+        const gpi::pc::type::handle::descriptor_t allocation
+          (descriptor (transfer.location.handle));
+
+        we::interval const local_part
+          ( we::interval ( transfer.location.offset
+                         , transfer.size
+                         ).intersect
+          ( we::interval ( rank * allocation.local_size
+                         , allocation.local_size
+                         )
+          ));
+
+        constexpr const double remote_transfer_cost_weight {1.0};
+
+        return transfer.size + remote_transfer_cost_weight * (transfer.size - local_part.size());
       }
 
       area_ptr_t gpi_area_t::create

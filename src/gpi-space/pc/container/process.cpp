@@ -141,6 +141,13 @@ namespace gpi
             return gpi::pc::proto::memory::message_t (rpl);
           }
 
+          gpi::pc::proto::message_t
+            operator() (const gpi::pc::proto::memory::get_transfer_costs_t& request) const
+          {
+            return gpi::pc::proto::memory::message_t
+              (gpi::pc::proto::memory::transfer_costs_t (_memory_manager.get_transfer_costs (request.transfers)));
+          }
+
           /**********************************************/
           /***     S E G M E N T   R E L A T E D      ***/
           /**********************************************/

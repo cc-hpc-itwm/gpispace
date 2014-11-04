@@ -6,6 +6,8 @@
 #include <gpi-space/exception.hpp>
 #include <gpi-space/gpi/system.hpp>
 
+#include <fhg/util/hostname.hpp>
+
 #include <GASPI.h>
 
 #include <limits>
@@ -79,6 +81,61 @@ namespace gpi
                        , m_replacement_gpi_segment
                        , &m_dma
                        );
+
+      constexpr const std::size_t HOST_NAME_MAX_WITH_NUL {HOST_NAME_MAX + 1};
+
+      const gaspi_segment_id_t exchange_hostname_segment {1};
+
+      FAIL_ON_NON_ZERO ( gaspi_segment_create
+                       , exchange_hostname_segment
+                       , 2 * HOST_NAME_MAX_WITH_NUL
+                       , GASPI_GROUP_ALL
+                       , GASPI_BLOCK
+                       , GASPI_MEM_UNINITIALIZED
+                       );
+      void *exchange_hostname_data;
+      FAIL_ON_NON_ZERO ( gaspi_segment_ptr
+                       , exchange_hostname_segment
+                       , &exchange_hostname_data
+                       );
+
+      const std::string hostname (fhg::util::hostname());
+      memcpy ( exchange_hostname_data
+             , hostname.c_str(), hostname.size() + 1
+             );
+
+      FAIL_ON_NON_ZERO (gaspi_barrier, GASPI_GROUP_ALL, GASPI_BLOCK);
+
+      m_rank_to_hostname.resize (number_of_nodes());
+
+      for ( gaspi_rank_t r (0)
+          ; r < number_of_nodes()
+          ; ++r
+          )
+      {
+        memset ( static_cast<char*> (exchange_hostname_data) + HOST_NAME_MAX_WITH_NUL
+               , 0
+               , HOST_NAME_MAX_WITH_NUL
+               );
+
+        FAIL_ON_NON_ZERO ( gaspi_read
+                         , exchange_hostname_segment
+                         , HOST_NAME_MAX_WITH_NUL
+                         , r
+                         , exchange_hostname_segment
+                         , 0
+                         , HOST_NAME_MAX_WITH_NUL
+                         , 0
+                         , GASPI_BLOCK
+                         );
+        FAIL_ON_NON_ZERO (gaspi_wait, 0, GASPI_BLOCK);
+
+        m_rank_to_hostname[r] =
+          static_cast<const char*> (exchange_hostname_data) + HOST_NAME_MAX_WITH_NUL;
+      }
+
+      FAIL_ON_NON_ZERO (gaspi_barrier, GASPI_GROUP_ALL, GASPI_BLOCK);
+      FAIL_ON_NON_ZERO (gaspi_segment_delete, exchange_hostname_segment);
     }
 
     gaspi_t::~gaspi_t()
@@ -150,6 +207,11 @@ namespace gpi
       gaspi_rank_t rank;
       FAIL_ON_NON_ZERO (gaspi_proc_rank, &rank);
       return rank;
+    }
+
+    std::string const& gaspi_t::hostname_of_rank (const gpi::rank_t r) const
+    {
+      return m_rank_to_hostname[r];
     }
 
     gpi::error_vector_t gaspi_t::get_error_vector (const gpi::queue_desc_t) const
