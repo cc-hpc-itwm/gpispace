@@ -277,7 +277,7 @@ namespace fhg
         namespace bai = boost::asio::ip;
 
         bai::tcp::resolver resolver(io_service_);
-        bai::tcp::resolver::query query(h, p);
+        bai::tcp::resolver::query query (h, p, bai::tcp::resolver::query::flags());
         bai::tcp::resolver::iterator iter =
           bai::tcp::resolver(io_service_).resolve(query);
 

@@ -54,7 +54,7 @@ namespace fhg
       return connect_client<Protocol>
         ( io_service
         , typename Protocol::resolver (io_service).resolve
-          ({host, std::to_string (port)})
+          ({host, std::to_string (port), typename Protocol::resolver::query::flags()})
         , encrypt
         , decrypt
         , handler

@@ -20,7 +20,12 @@ tcp_server::tcp_server ( boost::asio::io_service& io_service
   acceptor_.close ();
 
   boost::asio::ip::tcp::resolver resolver (_io_service);
-  boost::asio::ip::tcp::resolver::query query(host, service);
+  boost::asio::ip::tcp::resolver::query query
+    ( boost::asio::ip::tcp::v4()
+    , host
+    , service
+    , boost::asio::ip::tcp::resolver::query::flags()
+    );
   boost::asio::ip::tcp::resolver::iterator
     endpoint_iterator(resolver.resolve (query));
 

@@ -91,7 +91,11 @@ namespace fhg
     void tcp_client::connect ()
     {
       // Resolve the host name and service to a list of endpoints.
-      tcp::resolver::query query(host_, port_);
+      tcp::resolver::query query ( tcp::v4()
+                                 , host_
+                                 , port_
+                                 , tcp::resolver::query::flags()
+                                 );
       tcp::resolver::iterator iter = tcp::resolver(io_service_).resolve(query);
 
       // Set a deadline for the asynchronous operation. The host name may resolve

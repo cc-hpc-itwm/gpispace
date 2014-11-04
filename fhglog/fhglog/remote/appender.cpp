@@ -27,17 +27,14 @@ namespace fhg
                      . resolve
                        ( udp::resolver::query
                          ( udp::v4()
-                         , fhg::util::split_string (location, ':').first.c_str()
-                         , "0"
+                         , fhg::util::split_string (location, ':').first
+                         , fhg::util::split_string (location, ':').second
+                         , udp::resolver::query::flags()
                          )
                        )
                      )
         , socket_ (new udp::socket (io_service_, udp::v4()))
-      {
-        logserver_.port ( boost::lexical_cast<unsigned long>
-                          (fhg::util::split_string (location, ':').second)
-                        );
-      }
+      {}
 
       RemoteAppender::~RemoteAppender()
       {
