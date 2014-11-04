@@ -1,4 +1,4 @@
-#include <drts/rif.hpp>
+#include <drts/private/rif.hpp>
 
 #include <fhg/syscall.hpp>
 #include <fhg/util/make_unique.hpp>
