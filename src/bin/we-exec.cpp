@@ -168,7 +168,7 @@ try
     , vm.count ("vmem-socket")
       ? boost::make_optional (boost::filesystem::path (vm["vmem-socket"].as<std::string>()))
       : boost::none
-    , {sdpa::MasterInfo (orchestrator_name)}
+    , {orchestrator_name}
     , boost::none
     );
 

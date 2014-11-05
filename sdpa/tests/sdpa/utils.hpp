@@ -219,19 +219,6 @@ namespace utils
     std::string kvs_port() const { return _kvs_port; }
   };
 
-  namespace
-  {
-    template<typename T, typename U>
-    sdpa::master_info_list_t assemble_master_info_list
-      (const T& master_0, const U& master_1)
-    {
-      sdpa::master_info_list_t result;
-      result.push_back (sdpa::MasterInfo (master_0.name()));
-      result.push_back (sdpa::MasterInfo (master_1.name()));
-      return result;
-    }
-  }
-
   struct agent : boost::noncopyable
   {
     template <typename T, typename U>
@@ -244,7 +231,7 @@ namespace utils
           , _kvs_client_io_service
           , _kvs_host, _kvs_port
           , boost::none
-          , assemble_master_info_list (master_0, master_1)
+          , {master_0.name(), master_1.name()}
           , boost::none
           )
     {}
@@ -258,7 +245,7 @@ namespace utils
           , _kvs_client_io_service
           , _kvs_host, _kvs_port
           , boost::none
-          , {sdpa::MasterInfo (master.name())}
+          , {master.name()}
           , boost::none
           )
     {}
@@ -271,7 +258,7 @@ namespace utils
           , _kvs_client_io_service
           , _kvs_host, _kvs_port
           , boost::none
-          , {sdpa::MasterInfo (master.name())}
+          , {master.name()}
           , boost::none
           )
     {}
