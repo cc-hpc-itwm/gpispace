@@ -396,21 +396,17 @@ DRTSImpl::DRTSImpl
 
   for (std::string const & master : master_list)
   {
-    if (m_masters.find (master) == m_masters.end ())
+    if (master.empty())
     {
-      if (master.empty())
-      {
-        throw std::runtime_error ("empty master specified!");
-      }
-
-      if (master == m_my_name)
-      {
-        throw std::runtime_error ("cannot be my own master!");
-      }
-
-      m_masters.emplace (master, false);
+      throw std::runtime_error ("empty master specified!");
     }
-    else
+
+    if (master == m_my_name)
+    {
+      throw std::runtime_error ("cannot be my own master!");
+    }
+
+    if (!m_masters.emplace (master, boost::none).second)
     {
       LLOG ( WARN, _logger
           , "master already specified, ignoring new one: " << master
