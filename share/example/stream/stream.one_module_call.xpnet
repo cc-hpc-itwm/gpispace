@@ -1,16 +1,6 @@
 <defun name="stream_one_module_call">
   <include-structs href="stream/work_package.xpnet"/>
 
-  <struct name="global_memory_handle_type">
-    <field name="name" type="string"/>
-  </struct>
-
-  <struct name="global_memory_range">
-    <field name="handle" type="global_memory_handle_type"/>
-    <field name="offset" type="unsigned long"/>
-    <field name="size" type="unsigned long"/>
-  </struct>
-
   <struct name="work_package_with_timestamp">
     <field name="work_package" type="work_package"/>
     <field name="produced" type="long"/>
