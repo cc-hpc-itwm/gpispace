@@ -1,4 +1,6 @@
 <structs>
+  <include-structs href="memory/global/range.xpnet"/>
+
   <struct name="work_package">
     <field name="meta" type="global_memory_range"/>
     <field name="data" type="global_memory_range"/>
