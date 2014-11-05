@@ -26,20 +26,47 @@ namespace gspc
   {
     class scoped_allocation
     {
+      class scoped_segment
+      {
+      public:
+        scoped_segment
+          ( std::unique_ptr<gpi::pc::client::api_t> const& virtual_memory
+          , std::string const& description
+          , unsigned long size
+          )
+            : _virtual_memory (virtual_memory)
+            , _segment (_virtual_memory->register_segment
+                         ( "stream_producer_" + description
+                         , size
+                         , gpi::pc::F_EXCLUSIVE | gpi::pc::F_FORCE_UNLINK
+                         )
+                       )
+        {}
+
+        ~scoped_segment()
+        {
+          _virtual_memory->unregister_segment (_segment);
+        }
+
+        operator gpi::pc::type::handle_id_t const& () const
+        {
+          return _segment;
+        }
+
+      private:
+        std::unique_ptr<gpi::pc::client::api_t> const& _virtual_memory;
+        gpi::pc::type::handle_id_t const _segment;
+      };
+
     public:
       scoped_allocation ( std::unique_ptr<gpi::pc::client::api_t> const& virtual_memory
                         , std::string const& description
                         , unsigned long size
                         )
         : _virtual_memory (virtual_memory)
-        , _segment (_virtual_memory->register_segment
-                     ( "stream_producer_" + description
-                     , size
-                     , gpi::pc::F_EXCLUSIVE | gpi::pc::F_FORCE_UNLINK
-                     )
-                   )
+        , _scoped_segment (scoped_segment (_virtual_memory, description, size))
         , _handle (_virtual_memory->alloc
-                    ( _segment
+                    ( _scoped_segment
                     , size
                     , "stream_producer_" + description
                     , gpi::pc::F_EXCLUSIVE
@@ -50,7 +77,6 @@ namespace gspc
       ~scoped_allocation()
       {
         _virtual_memory->free (_handle);
-        _virtual_memory->unregister_segment (_segment);
       }
 
       operator gpi::pc::type::handle_t const& () const
@@ -60,7 +86,7 @@ namespace gspc
 
     private:
       std::unique_ptr<gpi::pc::client::api_t> const& _virtual_memory;
-      gpi::pc::type::handle_t const _segment;
+      scoped_segment const _scoped_segment;
       gpi::pc::type::handle_t const _handle;
     };
 
