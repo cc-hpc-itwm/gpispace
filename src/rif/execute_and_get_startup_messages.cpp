@@ -2,6 +2,7 @@
 
 #include <rif/execute_and_get_startup_messages.hpp>
 
+#include <fhg/assert.hpp>
 #include <fhg/syscall.hpp>
 #include <fhg/util/temporary_file.hpp>
 
@@ -42,11 +43,13 @@ namespace fhg
 
       size_t append (std::vector<char>& buffer, std::string const& str, size_t pos)
       {
+        fhg_assert (buffer.size() >= str.size() + pos);
         std::copy (str.begin(), str.end(), buffer.begin() + pos);
         return pos + str.size();
       }
       size_t append (std::vector<char>& buffer, char c, size_t pos)
       {
+        fhg_assert (buffer.size() >= sizeof (char) + pos);
         *(buffer.begin() + pos) = c;
         return pos + 1;
       }
