@@ -59,10 +59,11 @@ namespace gspc
       };
 
     public:
-      scoped_allocation ( std::unique_ptr<gpi::pc::client::api_t> const& virtual_memory
-                        , std::string const& description
-                        , unsigned long size
-                        )
+      scoped_allocation
+        ( std::unique_ptr<gpi::pc::client::api_t> const& virtual_memory
+        , std::string const& description
+        , unsigned long size
+        )
         : _virtual_memory (virtual_memory)
         , _scoped_segment (scoped_segment (_virtual_memory, description, size))
         , _handle (_virtual_memory->alloc
@@ -96,7 +97,8 @@ namespace gspc
                    , gspc::vmem_allocation const& meta
                    , stream::size_of_slot const& size_of_slot
                    , stream::number_of_slots const& number_of_slots
-                   , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
+                   , std::function<void (pnet::type::value::value_type const&)>
+                       on_slot_filled
                    )
       : _virtual_memory (drts.virtual_memory_api())
       , _on_slot_filled (on_slot_filled)
@@ -104,9 +106,18 @@ namespace gspc
       , _meta (meta)
       , _size_of_slot (size_of_slot)
       , _number_of_slots (number_of_slots)
-      , _flags (_virtual_memory, "flags_" + name, _number_of_slots * size_of_meta_data_slot())
-      , _update (_virtual_memory, "update_" + name, _number_of_slots * size_of_meta_data_slot())
-      , _data (_virtual_memory, "data_" + name, _size_of_slot * size_of_meta_data_slot())
+      , _flags ( _virtual_memory
+               , "flags_" + name
+               , _number_of_slots * size_of_meta_data_slot()
+               )
+      , _update ( _virtual_memory
+                , "update_" + name
+                , _number_of_slots * size_of_meta_data_slot()
+                )
+      , _data ( _virtual_memory
+              , "data_" + name
+              , _size_of_slot * size_of_meta_data_slot()
+              )
       , _free_slots()
     {
       _virtual_memory->wait
@@ -227,17 +238,17 @@ namespace gspc
                  , gspc::vmem_allocation const& meta
                  , stream::size_of_slot const& size_of_slot
                  , stream::number_of_slots const& number_of_slots
-                 , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
+                 , std::function<void (pnet::type::value::value_type const&)>
+                     on_slot_filled
                  )
-    : _ (fhg::util::make_unique<implementation>
-          ( drts
-          , name
-          , buffer
-          , meta
-          , size_of_slot
-          , number_of_slots
-          , on_slot_filled
-          )
+    : _ (fhg::util::make_unique<implementation> ( drts
+                                                , name
+                                                , buffer
+                                                , meta
+                                                , size_of_slot
+                                                , number_of_slots
+                                                , on_slot_filled
+                                                )
         )
   {}
 

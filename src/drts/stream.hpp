@@ -54,7 +54,8 @@ namespace gspc
            , gspc::vmem_allocation const& meta
            , size_of_slot const&
            , number_of_slots const&
-           , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
+           , std::function<void (pnet::type::value::value_type const&)>
+               on_slot_filled
            );
   public:
     ~stream();
