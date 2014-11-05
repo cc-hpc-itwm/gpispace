@@ -361,7 +361,7 @@ DRTSImpl::DRTSImpl
   // parse virtual capabilities
   for (std::string const & cap : capability_list)
   {
-    m_virtual_capabilities.emplace (cap, sdpa::Capability (cap, m_my_name));
+    m_virtual_capabilities.emplace (cap, m_my_name);
   }
 
   m_event_thread.reset
@@ -756,23 +756,16 @@ void DRTSImpl::job_execution_thread ()
   }
 }
 
-void DRTSImpl::notify_capabilities_to_master (std::string const &master)
+void DRTSImpl::notify_capabilities_to_master (std::string const& master)
 {
-  sdpa::capabilities_set_t caps;
   boost::mutex::scoped_lock capabilities_lock(m_capabilities_mutex);
 
-  typedef map_of_capabilities_t::const_iterator const_cap_it_t;
-  for ( const_cap_it_t cap_it(m_virtual_capabilities.begin())
-      ; cap_it != m_virtual_capabilities.end()
-      ; ++cap_it
-      )
+  if (!m_virtual_capabilities.empty())
   {
-    caps.insert (cap_it->second);
-  }
-
-  if (! caps.empty())
-  {
-    send_event (master, new sdpa::events::CapabilitiesGainedEvent (caps));
+    send_event ( master
+               , new sdpa::events::CapabilitiesGainedEvent
+                   (m_virtual_capabilities)
+               );
   }
 }
 

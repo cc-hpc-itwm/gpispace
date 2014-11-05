@@ -107,7 +107,6 @@ class DRTSImpl : public sdpa::events::EventHandler
   typedef std::map< std::string
                   , boost::shared_ptr<drts::Job>
                   > map_of_jobs_t;
-  typedef std::map<std::string, sdpa::Capability> map_of_capabilities_t;
 public:
   DRTSImpl
     ( std::function<void()> request_stop
@@ -194,7 +193,7 @@ private:
   boost::condition_variable     m_job_arrived;
 
   mutable boost::mutex m_capabilities_mutex;
-  map_of_capabilities_t m_virtual_capabilities;
+  std::set<sdpa::Capability> m_virtual_capabilities;
 
   // jobs + their states
   size_t m_backlog_size;
