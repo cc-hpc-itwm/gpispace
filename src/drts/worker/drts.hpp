@@ -102,7 +102,8 @@ private:
 
 class DRTSImpl : public sdpa::events::EventHandler
 {
-  typedef std::map<std::string, bool> map_of_masters_t;
+  typedef std::map<std::string, boost::optional<fhg::com::p2p::address_t>>
+    map_of_masters_t;
 
   typedef std::map< std::string
                   , boost::shared_ptr<drts::Job>
@@ -135,9 +136,7 @@ private:
   void event_thread ();
   void job_execution_thread ();
 
-  void notify_capabilities_to_master (std::string const &master);
-
-  void resend_outstanding_events (std::string const &master);
+  void resend_outstanding_events (map_of_masters_t::const_iterator const&);
 
   void send_job_result_to_master (boost::shared_ptr<drts::Job> const & job);
 
@@ -151,8 +150,8 @@ private:
                    , boost::optional<std::string> source_name
                    );
 
-  void send_event (std::string const& destination, sdpa::events::SDPAEvent *e);
-  void send_event (std::string const& destination, sdpa::events::SDPAEvent::Ptr const & evt);
+  void send_event (fhg::com::p2p::address_t const& destination, sdpa::events::SDPAEvent *e);
+  void send_event (fhg::com::p2p::address_t const& destination, sdpa::events::SDPAEvent::Ptr const & evt);
 
   void dispatch_event
     (std::string const& source, sdpa::events::SDPAEvent::Ptr const &evt);

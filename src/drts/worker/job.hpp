@@ -1,6 +1,8 @@
 #ifndef DRTS_PLUGIN_JOB_HPP
 #define DRTS_PLUGIN_JOB_HPP 1
 
+#include <fhgcom/header.hpp>
+
 #include <list>
 #include <string>
 #include <boost/thread.hpp>
@@ -46,19 +48,12 @@ namespace drts
       const std::string value;
     };
 
-    struct Owner
-    {
-      explicit Owner(std::string const &s)
-        : value(s)
-      {}
-
-      const std::string value;
-    };
+    using owner_type = std::map<std::string, boost::optional<fhg::com::p2p::address_t>>::const_iterator;
 
     explicit
     Job( Job::ID const &jobid
        , Job::Description const &description
-       , Job::Owner const &owner
+       , owner_type const&
        );
 
     inline state_t state () const { lock_type lck(m_mutex); return m_state; }
@@ -72,7 +67,7 @@ namespace drts
 
     std::string const & id() const { return m_id; }
     std::string const & description() const { return m_input_description; }
-    std::string const & owner() const { return m_owner; }
+    owner_type const& owner() const { return m_owner; }
 
     std::string const & result() const {
       lock_type lck(m_mutex); return m_result;
@@ -128,7 +123,7 @@ namespace drts
 
     std::string m_id;
     std::string m_input_description;
-    std::string m_owner;
+    owner_type m_owner;
     state_t     m_state;
     std::string m_result;
     std::string m_message;
