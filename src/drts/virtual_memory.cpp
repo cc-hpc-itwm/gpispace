@@ -108,6 +108,10 @@ namespace gspc
 
     return oss.str();
   }
+  std::size_t vmem_allocation::size() const
+  {
+    return _->_size;
+  }
   pnet::type::value::value_type vmem_allocation::global_memory_range
     ( std::size_t const offset
     , std::size_t const size
