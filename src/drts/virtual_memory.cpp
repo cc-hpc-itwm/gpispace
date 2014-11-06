@@ -108,16 +108,30 @@ namespace gspc
 
     return oss.str();
   }
-  pnet::type::value::value_type vmem_allocation::global_memory_range() const
+  pnet::type::value::value_type vmem_allocation::global_memory_range
+    ( std::size_t const offset
+    , std::size_t const size
+    ) const
   {
-    pnet::type::value::value_type name;
-    pnet::type::value::poke ("name", name, handle());
+    if ((offset+size) > _->_size)
+    {
+      throw std::logic_error
+        ((boost::format ("slice [%1%, %2%] is outside of allocation")
+         % offset % size
+         ).str()
+        );
+    }
+
     pnet::type::value::value_type range;
-    pnet::type::value::poke ("handle", range, name);
-    pnet::type::value::poke ("offset", range, 0UL);
-    pnet::type::value::poke ("size", range, _->_size);
+    pnet::type::value::poke (std::list<std::string> {"handle", "name"}, range, handle());
+    pnet::type::value::poke (std::list<std::string> {"offset"}, range, offset);
+    pnet::type::value::poke (std::list<std::string> {"size"}, range, size);
 
     return range;
+  }
+  pnet::type::value::value_type vmem_allocation::global_memory_range() const
+  {
+    return global_memory_range (0UL, _->_size);
   }
   vmem_allocation::vmem_allocation (vmem_allocation&& other)
     : _ (std::move (other._))
