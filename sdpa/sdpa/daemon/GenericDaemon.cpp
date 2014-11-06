@@ -97,7 +97,7 @@ GenericDaemon::GenericDaemon( const std::string name
                             )
   : _logger (fhg::log::Logger::get (name))
   , _name (name)
-  , m_arrMasterInfo ({masters.begin(), masters.end()})
+  , _master_info ({masters.begin(), masters.end()})
   , m_listSubscribers()
   , _discover_sources()
   , _job_map_mutex()
@@ -180,7 +180,7 @@ GenericDaemon::GenericDaemon( const std::string name
 
   {
     lock_type lock (mtx_master_);
-    for (MasterInfo& masterInfo : m_arrMasterInfo)
+    for (MasterInfo& masterInfo : _master_info)
     {
       requestRegistration (masterInfo);
     }
@@ -278,15 +278,15 @@ void GenericDaemon::handleSubmitJobEvent
     lock_type lock(mtx_master_);
     // check if the incoming event was produced by a master to which the current agent has already registered
     master_info_list_t::iterator itMaster = find_if
-      ( m_arrMasterInfo.begin()
-      , m_arrMasterInfo.end()
+      ( _master_info.begin()
+      , _master_info.end()
       , [&source] (MasterInfo const& info)
         {
           return info.name() == source;
         }
       );
 
-    if( itMaster != m_arrMasterInfo.end() && !itMaster->is_registered() )
+    if( itMaster != _master_info.end() && !itMaster->is_registered() )
     {
       throw std::runtime_error
         ("job submission from master not yet registered or unknown");
@@ -392,7 +392,7 @@ void GenericDaemon::handleWorkerRegistrationEvent
   {
     lock_type lock (mtx_master_);
     // send to the masters my new set of capabilities
-    for (MasterInfo const& master : m_arrMasterInfo)
+    for (MasterInfo const& master : _master_info)
     {
       if (master.is_registered())
       {
@@ -441,7 +441,7 @@ void GenericDaemon::handleErrorEvent
 
       master_info_list_t::iterator const disconnected_master_it
         ( std::find_if
-            ( m_arrMasterInfo.begin(), m_arrMasterInfo.end()
+            ( _master_info.begin(), _master_info.end()
             , [&source] (MasterInfo const& info)
               {
                 return info.name() == source;
@@ -449,7 +449,7 @@ void GenericDaemon::handleErrorEvent
             )
         );
 
-      if (disconnected_master_it != m_arrMasterInfo.end())
+      if (disconnected_master_it != _master_info.end())
       {
         disconnected_master_it->set_registered (false);
         disconnected_master_it->incConsecRegAttempts();
@@ -462,7 +462,7 @@ void GenericDaemon::handleErrorEvent
         }
         else
         {
-          m_arrMasterInfo.erase (disconnected_master_it);
+          _master_info.erase (disconnected_master_it);
         }
       }
 
@@ -482,7 +482,7 @@ void GenericDaemon::handleErrorEvent
 
         // notify capability losses...
         lock_type lock(mtx_master_);
-        for (MasterInfo& masterInfo : m_arrMasterInfo)
+        for (MasterInfo& masterInfo : _master_info)
         {
           parent_proxy (this, masterInfo.name()).capabilities_lost
             (ptrWorker->capabilities());
@@ -525,7 +525,7 @@ void GenericDaemon::handleErrorEvent
 
         master_info_list_t::iterator const disconnected_master_it
           ( std::find_if
-              ( m_arrMasterInfo.begin(), m_arrMasterInfo.end()
+              ( _master_info.begin(), _master_info.end()
               , [&source] (MasterInfo const& info)
                 {
                   return info.name() == source;
@@ -533,7 +533,7 @@ void GenericDaemon::handleErrorEvent
               )
           );
 
-        if (disconnected_master_it != m_arrMasterInfo.end())
+        if (disconnected_master_it != _master_info.end())
         {
           disconnected_master_it->set_registered (false);
           disconnected_master_it->incConsecNetFailCnt();
@@ -546,7 +546,7 @@ void GenericDaemon::handleErrorEvent
           }
           else
           {
-            m_arrMasterInfo.erase (disconnected_master_it);
+            _master_info.erase (disconnected_master_it);
           }
         }
       }
@@ -758,7 +758,7 @@ void GenericDaemon::handleWorkerRegistrationAckEvent
   lock_type lock(mtx_master_);
 
   master_info_list_t::iterator const master_it
-    ( std::find_if ( m_arrMasterInfo.begin(), m_arrMasterInfo.end()
+    ( std::find_if ( _master_info.begin(), _master_info.end()
                    , [&source] (MasterInfo const& info)
                      {
                        return info.name() == source;
@@ -767,7 +767,7 @@ void GenericDaemon::handleWorkerRegistrationAckEvent
     );
 
   //! \todo How to handle Acks for registrations we never sent?
-  if (master_it != m_arrMasterInfo.end())
+  if (master_it != _master_info.end())
   {
     master_it->set_registered (true);
     master_it->resetConsecRegAttempts();
@@ -863,7 +863,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent
         if( !newWorkerCpbSet.empty() )
         {
           lock_type lock(mtx_master_);
-          for( master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++ )
+          for( master_info_list_t::iterator it = _master_info.begin(); it != _master_info.end(); it++ )
             if (it->is_registered())
             {
               parent_proxy (this, it->name()).capabilities_gained
@@ -888,7 +888,7 @@ void GenericDaemon::handleCapabilitiesLostEvent
     if (scheduler().worker_manager().findWorker (worker_id)->removeCapabilities(pCpbLostEvt->capabilities()))
     {
       lock_type lock(mtx_master_);
-      for( master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
+      for( master_info_list_t::iterator it = _master_info.begin(); it != _master_info.end(); it++)
         if (it->is_registered())
         {
           parent_proxy (this, it->name()).capabilities_lost

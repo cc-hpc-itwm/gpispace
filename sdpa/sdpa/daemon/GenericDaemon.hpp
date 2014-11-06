@@ -96,7 +96,7 @@ namespace sdpa {
       const std::string& name() const;
       boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
 
-      bool isTop() { return m_arrMasterInfo.empty(); }
+      bool isTop() { return _master_info.empty(); }
 
       // WE interface
       OVERWRITTEN_IN_TEST void submit( const we::layer::id_type & id, const we::type::activity_t&);
@@ -265,7 +265,7 @@ namespace sdpa {
       };
 
       using master_info_list_t = std::vector<MasterInfo>;
-      master_info_list_t m_arrMasterInfo;
+      master_info_list_t _master_info;
       typedef std::map<agent_id_t, job_id_list_t> subscriber_map_t;
       subscriber_map_t m_listSubscribers;
 
