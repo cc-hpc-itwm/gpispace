@@ -1,0 +1,9 @@
+<structs>
+  <struct name="Statistic">
+    <field name="min" type="double"/>
+    <field name="max" type="double"/>
+    <field name="sum" type="double"/>
+    <field name="sqsum" type="double"/>
+    <field name="count" type="unsigned long"/>
+  </struct>
+</structs>
