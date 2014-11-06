@@ -116,7 +116,7 @@ namespace gspc
                 )
       , _data ( _virtual_memory
               , "data_" + name
-              , _size_of_slot * size_of_meta_data_slot()
+              , _size_of_slot
               )
       , _free_slots()
     {
