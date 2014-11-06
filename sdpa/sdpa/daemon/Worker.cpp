@@ -95,13 +95,15 @@ namespace sdpa
       return bModified;
     }
 
-    void Worker::removeCapabilities( const capabilities_set_t& cpbset )
+    bool Worker::removeCapabilities( const capabilities_set_t& cpbset )
     {
+      capabilities_set_t::size_type removed (0);
       lock_type const _ (mtx_);
       for (Capability const& capability : cpbset)
       {
-        capabilities_.erase (capability);
+        removed += capabilities_.erase (capability);
       }
+      return removed != 0;
     }
 
     bool Worker::hasCapability(const std::string& cpbName)
