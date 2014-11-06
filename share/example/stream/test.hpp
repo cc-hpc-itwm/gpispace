@@ -19,9 +19,9 @@
 #include <we/type/value/peek.hpp>
 
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <fhg/util/boost/test/printer/set.hpp>
 #include <fhg/util/macros.hpp>
 #include <fhg/util/read_file.hpp>
-#include <fhg/util/temporary_file.hpp>
 #include <fhg/util/temporary_path.hpp>
 
 #include <boost/filesystem.hpp>
@@ -31,6 +31,7 @@
 
 #include <chrono>
 #include <functional>
+#include <set>
 #include <string>
 #include <thread>
 
@@ -97,11 +98,6 @@ namespace share_example_stream_test
 
     vm.notify();
 
-    fhg::util::temporary_file const temporary_file
-      (shared_directory / boost::filesystem::unique_path());
-
-    boost::filesystem::path const log_file (temporary_file);
-
     gspc::installation const installation (vm);
 
     test::make const make
@@ -133,8 +129,7 @@ namespace share_example_stream_test
 
     workflow.set_wait_for_output();
 
-    gspc::job_id_t const job_id
-      (client.submit (workflow, {{"log_file", log_file.string()}}));
+    gspc::job_id_t const job_id (client.submit (workflow, {}));
 
     gspc::stream stream
       (drts.create_stream ( "stream_test"
@@ -149,7 +144,7 @@ namespace share_example_stream_test
 
     std::chrono::high_resolution_clock clock;
 
-    std::ostringstream expected_output;
+    std::set<std::string> expected_output;
 
     unsigned long rounds (20 * num_slots);
 
@@ -162,7 +157,7 @@ namespace share_example_stream_test
 
       std::string const data ((boost::format ("%1% %2%") % id % now).str());
 
-      expected_output << data << std::endl;
+      expected_output.emplace (data);
 
       stream.write (data);
 
@@ -176,6 +171,7 @@ namespace share_example_stream_test
 
     BOOST_REQUIRE_EQUAL (result.count ("done"), 1);
     BOOST_REQUIRE_EQUAL (result.count ("statistic"), rounds);
+    BOOST_REQUIRE_EQUAL (result.count ("packages"), rounds);
 
 #ifdef NDEBUG
     for ( pnet::type::value::value_type const& statistic
@@ -198,8 +194,16 @@ namespace share_example_stream_test
     }
 #endif
 
-    BOOST_REQUIRE_EQUAL
-      (expected_output.str(), fhg::util::read_file (log_file));
+    std::set<std::string> output;
+
+    for ( pnet::type::value::value_type const& package
+        : result.equal_range ("packages") | boost::adaptors::map_values
+        )
+    {
+      output.emplace (boost::get<std::string> (package));
+    }
+
+    BOOST_REQUIRE_EQUAL (expected_output, output);
   }
 }
 
