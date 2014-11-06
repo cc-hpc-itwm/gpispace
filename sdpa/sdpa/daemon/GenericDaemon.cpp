@@ -863,12 +863,14 @@ void GenericDaemon::handleCapabilitiesGainedEvent
         if( !newWorkerCpbSet.empty() )
         {
           lock_type lock(mtx_master_);
-          for( master_info_list_t::iterator it = _master_info.begin(); it != _master_info.end(); it++ )
-            if (it->is_registered())
+          for (MasterInfo const& info : _master_info)
+          {
+            if (info.is_registered())
             {
-              parent_proxy (this, it->name()).capabilities_gained
+              parent_proxy (this, info.name()).capabilities_gained
                 (newWorkerCpbSet);
             }
+          }
         }
       }
     }
@@ -888,12 +890,14 @@ void GenericDaemon::handleCapabilitiesLostEvent
     if (scheduler().worker_manager().findWorker (worker_id)->removeCapabilities(pCpbLostEvt->capabilities()))
     {
       lock_type lock(mtx_master_);
-      for( master_info_list_t::iterator it = _master_info.begin(); it != _master_info.end(); it++)
-        if (it->is_registered())
+      for (MasterInfo const& info : _master_info)
+      {
+        if (info.is_registered())
         {
-          parent_proxy (this, it->name()).capabilities_lost
+          parent_proxy (this, info.name()).capabilities_lost
             (pCpbLostEvt->capabilities());
         }
+      }
     }
   }
   catch( const WorkerNotFoundException& ex)
