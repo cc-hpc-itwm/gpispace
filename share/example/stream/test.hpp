@@ -42,7 +42,6 @@ namespace share_example_stream_test
     ( std::string const& workflow_name
     , std::function<std::string (unsigned long size_slot)> const& topology
     , std::chrono::duration<R, P> const& sleep_after_produce
-    , double IFDEF_NDEBUG (allowed_maximum_round_trip_time)
     , double IFDEF_NDEBUG (allowed_average_round_trip_time)
     )
   {
@@ -174,23 +173,32 @@ namespace share_example_stream_test
     BOOST_REQUIRE_EQUAL (result.count ("packages"), rounds);
 
 #ifdef NDEBUG
-    for ( pnet::type::value::value_type const& statistic
-        : result.equal_range ("statistic") | boost::adaptors::map_values
-        )
     {
-      BOOST_REQUIRE (!!pnet::type::value::peek ("max", statistic));
-      BOOST_REQUIRE_LE
-        ( boost::get<double> (*pnet::type::value::peek ("max", statistic))
-        , allowed_maximum_round_trip_time
-        );
-      BOOST_REQUIRE (!!pnet::type::value::peek ("sum", statistic));
-      BOOST_REQUIRE (!!pnet::type::value::peek ("count", statistic));
-      BOOST_REQUIRE_LE
-        ( boost::get<double> (*pnet::type::value::peek ("sum", statistic))
-        , boost::get<unsigned long>
+      bool got_average (false);
+
+      for ( pnet::type::value::value_type const& statistic
+          : result.equal_range ("statistic") | boost::adaptors::map_values
+          )
+      {
+        BOOST_REQUIRE (!!pnet::type::value::peek ("sum", statistic));
+        BOOST_REQUIRE (!!pnet::type::value::peek ("count", statistic));
+        unsigned long const count
+          ( boost::get<unsigned long>
             (*pnet::type::value::peek ("count", statistic))
-        * allowed_average_round_trip_time
-        );
+          );
+
+        if (count + 1 == rounds)
+        {
+          BOOST_REQUIRE_LE
+            ( boost::get<double> (*pnet::type::value::peek ("sum", statistic))
+            , count * allowed_average_round_trip_time
+            );
+
+          got_average = true;
+        }
+      }
+
+      BOOST_REQUIRE (got_average);
     }
 #endif
 
