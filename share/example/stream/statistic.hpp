@@ -61,6 +61,27 @@ namespace fhg
             );
       }
 
+      double min() const
+      {
+        return _min;
+      }
+      double max() const
+      {
+        return _max;
+      }
+      double sum() const
+      {
+        return _sum;
+      }
+      double sqsum() const
+      {
+        return _sqsum;
+      }
+      unsigned long count() const
+      {
+        return _count;
+      }
+
     private:
       std::string const _description;
       double _min;
