@@ -756,14 +756,23 @@ void GenericDaemon::handleWorkerRegistrationAckEvent
 {
   std::string masterName = source;
   lock_type lock(mtx_master_);
-  for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
-    if( it->name() == masterName )
-    {
-      it->set_registered(true);
-      it->resetConsecRegAttempts();
-      it->resetConsecNetFailCnt();
-      break;
-    }
+
+  master_info_list_t::iterator const master_it
+    ( std::find_if ( m_arrMasterInfo.begin(), m_arrMasterInfo.end()
+                   , [&source] (MasterInfo const& info)
+                     {
+                       return info.name() == source;
+                     }
+                   )
+    );
+
+  //! \todo How to handle Acks for registrations we never sent?
+  if (master_it != m_arrMasterInfo.end())
+  {
+    master_it->set_registered (true);
+    master_it->resetConsecRegAttempts();
+    master_it->resetConsecNetFailCnt();
+  }
 
   {
     boost::mutex::scoped_lock const _ (_job_map_mutex);
