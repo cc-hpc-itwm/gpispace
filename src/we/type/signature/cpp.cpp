@@ -473,22 +473,20 @@ namespace pnet
           os << fhg::util::cpp::ns::open (indent, "type");
           os << fhg::util::cpp::ns::open (indent, "value");
 
-          for (std::list<std::string>& tname : tnames)
+          for (std::list<std::string> const& tname : tnames)
           {
             os << indent
                << "template<>"
                << fhg::util::deeper (indent)
                << "inline value_type to_value<"
-               << fhg::util::join (tname, "::")
+               << fhg::util::join (tname.begin(), tname.end(), "::")
                << "> (const "
-               << fhg::util::join (tname, "::")
-               << "& x)";
-
-            tname.pop_back();
-
-            os << fhg::util::cpp::block::open (indent)
+               << fhg::util::join (tname.begin(), tname.end(), "::")
+               << "& x)"
+               << fhg::util::cpp::block::open (indent)
                << indent << "return "
-               << fhg::util::join (tname, "::") << "::to_value (x);"
+               << fhg::util::join (tname.begin(), std::prev (tname.end()), "::")
+               << "::to_value (x);"
                << fhg::util::cpp::block::close (indent);
           }
 
