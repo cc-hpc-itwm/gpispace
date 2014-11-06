@@ -124,7 +124,7 @@ namespace gspc
         ( _virtual_memory->memcpy
           ( {_flags, 0}
           , {boost::lexical_cast<gpi::pc::type::handle_t> (_meta.handle()), 0}
-          , _number_of_slots
+          , _number_of_slots * size_of_meta_data_slot()
           , gpi::pc::type::queue_id_t()
           )
         );
@@ -171,7 +171,7 @@ namespace gspc
           ( _virtual_memory->memcpy
             ( {_update, 0}
             , {boost::lexical_cast<gpi::pc::type::handle_t> (_meta.handle()), 0}
-            , _number_of_slots
+            , _number_of_slots * size_of_meta_data_slot()
             , gpi::pc::type::queue_id_t()
             )
           );
