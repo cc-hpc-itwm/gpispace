@@ -241,12 +241,22 @@ namespace sdpa {
       public:
         MasterInfo()
           : registered_(false)
+          , _address (boost::none)
           , nConsecNetFailCnt_(0)
           , nConsecRegAttempts_(0)
         {}
 
         bool is_registered() const { return registered_; }
         void set_registered(bool b) { registered_ = b; }
+
+        boost::optional<fhg::com::p2p::address_t> const& address() const
+        {
+          return _address;
+        }
+        void address (boost::optional<fhg::com::p2p::address_t> const& address)
+        {
+          _address = address;
+        }
 
         unsigned int getConsecNetFailCnt() { return nConsecNetFailCnt_;}
         void incConsecNetFailCnt() { nConsecNetFailCnt_++;}
@@ -258,6 +268,7 @@ namespace sdpa {
 
       private:
         bool registered_;
+        boost::optional<fhg::com::p2p::address_t> _address;
         unsigned int nConsecNetFailCnt_;
         unsigned int nConsecRegAttempts_;
       };

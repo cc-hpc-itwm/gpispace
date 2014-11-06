@@ -299,7 +299,7 @@ void GenericDaemon::handleSubmitJobEvent
       , _master_info.end()
       , [&source] (master_info_t::value_type const& info)
         {
-          return info.first == source;
+          return info.second.address() == fhg::com::p2p::address_t (source);
         }
       );
 
@@ -461,7 +461,7 @@ void GenericDaemon::handleErrorEvent
             ( _master_info.begin(), _master_info.end()
             , [&source] (master_info_t::value_type const& info)
               {
-                return info.first == source;
+                return info.second.address() == fhg::com::p2p::address_t (source);
               }
             )
         );
@@ -469,6 +469,7 @@ void GenericDaemon::handleErrorEvent
       if (disconnected_master_it != _master_info.end())
       {
         disconnected_master_it->second.set_registered (false);
+        disconnected_master_it->second.address (boost::none);
         disconnected_master_it->second.incConsecRegAttempts();
 
         if ( disconnected_master_it->second.getConsecRegAttempts()
@@ -545,7 +546,7 @@ void GenericDaemon::handleErrorEvent
               ( _master_info.begin(), _master_info.end()
               , [&source] (master_info_t::value_type const& info)
                 {
-                  return info.first == source;
+                  return info.second.address() == fhg::com::p2p::address_t (source);
                 }
               )
           );
@@ -553,6 +554,7 @@ void GenericDaemon::handleErrorEvent
         if (disconnected_master_it != _master_info.end())
         {
           disconnected_master_it->second.set_registered (false);
+          disconnected_master_it->second.address (boost::none);
           disconnected_master_it->second.incConsecNetFailCnt();
 
           if ( disconnected_master_it->second.getConsecNetFailCnt()
@@ -974,6 +976,8 @@ void GenericDaemon::do_registration_after_sleep (master_info_t::iterator const& 
 
 void GenericDaemon::requestRegistration (master_info_t::iterator const& it)
 {
+  it->second.address (_network_strategy.connect_to_via_kvs (it->first));
+
   lock_type lock(mtx_cpb_);
   capabilities_set_t cpbSet (m_capabilities);
 
