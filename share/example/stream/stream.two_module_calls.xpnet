@@ -19,6 +19,7 @@
     <transition name="done">
       <defun>
         <inout name="trigger" type="control"/>
+        <expression/>
       </defun>
       <connect-in port="trigger" place="stop"/>
       <connect-out port="trigger" place="done"/>
