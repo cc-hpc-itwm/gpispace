@@ -132,8 +132,6 @@ namespace gspc
     gspc::vmem_allocation const& _meta;
     unsigned long const _size_of_slot;
     unsigned long const _number_of_slots;
-    gspc::job_id_t const _job_id;
-    std::string const _place_name;
 
     scoped_allocation const _flags;
     scoped_allocation const _update;
