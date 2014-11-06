@@ -84,6 +84,20 @@ namespace
       _.start();
     }
 
+    namespace
+    {
+      template<typename V, typename C> std::map<typename C::value_type, V>
+        make_map_with_keys_and_default_value (C const& keys)
+      {
+        std::map<typename C::value_type, V> ret;
+        for (typename C::value_type const& key : keys)
+        {
+          ret.emplace (key, V());
+        }
+        return ret;
+      }
+    }
+
 GenericDaemon::GenericDaemon( const std::string name
                             , const std::string url
                             , boost::asio::io_service& peer_io_service
@@ -97,7 +111,7 @@ GenericDaemon::GenericDaemon( const std::string name
                             )
   : _logger (fhg::log::Logger::get (name))
   , _name (name)
-  , _master_info ({masters.begin(), masters.end()})
+  , _master_info (make_map_with_keys_and_default_value<MasterInfo> (masters))
   , m_listSubscribers()
   , _discover_sources()
   , _job_map_mutex()
@@ -180,9 +194,12 @@ GenericDaemon::GenericDaemon( const std::string name
 
   {
     lock_type lock (mtx_master_);
-    for (MasterInfo& masterInfo : _master_info)
+    for ( master_info_t::iterator it (_master_info.begin())
+        ; it != _master_info.end()
+        ; ++it
+        )
     {
-      requestRegistration (masterInfo);
+      requestRegistration (it);
     }
   }
 }
@@ -280,13 +297,13 @@ void GenericDaemon::handleSubmitJobEvent
     master_info_t::iterator itMaster = find_if
       ( _master_info.begin()
       , _master_info.end()
-      , [&source] (MasterInfo const& info)
+      , [&source] (master_info_t::value_type const& info)
         {
-          return info.name() == source;
+          return info.first == source;
         }
       );
 
-    if( itMaster != _master_info.end() && !itMaster->is_registered() )
+    if( itMaster != _master_info.end() && !itMaster->second.is_registered() )
     {
       throw std::runtime_error
         ("job submission from master not yet registered or unknown");
@@ -392,11 +409,11 @@ void GenericDaemon::handleWorkerRegistrationEvent
   {
     lock_type lock (mtx_master_);
     // send to the masters my new set of capabilities
-    for (MasterInfo const& master : _master_info)
+    for (master_info_t::value_type const& info : _master_info)
     {
-      if (master.is_registered())
+      if (info.second.is_registered())
       {
-        parent_proxy (this, master.name()).capabilities_gained (workerCpbSet);
+        parent_proxy (this, info.first).capabilities_gained (workerCpbSet);
       }
     }
   }
@@ -442,23 +459,23 @@ void GenericDaemon::handleErrorEvent
       master_info_t::iterator const disconnected_master_it
         ( std::find_if
             ( _master_info.begin(), _master_info.end()
-            , [&source] (MasterInfo const& info)
+            , [&source] (master_info_t::value_type const& info)
               {
-                return info.name() == source;
+                return info.first == source;
               }
             )
         );
 
       if (disconnected_master_it != _master_info.end())
       {
-        disconnected_master_it->set_registered (false);
-        disconnected_master_it->incConsecRegAttempts();
+        disconnected_master_it->second.set_registered (false);
+        disconnected_master_it->second.incConsecRegAttempts();
 
-        if ( disconnected_master_it->getConsecRegAttempts()
+        if ( disconnected_master_it->second.getConsecRegAttempts()
            < _max_consecutive_registration_attempts
            )
         {
-          request_registration_soon (*disconnected_master_it);
+          request_registration_soon (disconnected_master_it);
         }
         else
         {
@@ -482,9 +499,9 @@ void GenericDaemon::handleErrorEvent
 
         // notify capability losses...
         lock_type lock(mtx_master_);
-        for (MasterInfo& masterInfo : _master_info)
+        for (master_info_t::value_type const& info : _master_info)
         {
-          parent_proxy (this, masterInfo.name()).capabilities_lost
+          parent_proxy (this, info.first).capabilities_lost
             (ptrWorker->capabilities());
         }
 
@@ -526,23 +543,23 @@ void GenericDaemon::handleErrorEvent
         master_info_t::iterator const disconnected_master_it
           ( std::find_if
               ( _master_info.begin(), _master_info.end()
-              , [&source] (MasterInfo const& info)
+              , [&source] (master_info_t::value_type const& info)
                 {
-                  return info.name() == source;
+                  return info.first == source;
                 }
               )
           );
 
         if (disconnected_master_it != _master_info.end())
         {
-          disconnected_master_it->set_registered (false);
-          disconnected_master_it->incConsecNetFailCnt();
+          disconnected_master_it->second.set_registered (false);
+          disconnected_master_it->second.incConsecNetFailCnt();
 
-          if ( disconnected_master_it->getConsecNetFailCnt()
+          if ( disconnected_master_it->second.getConsecNetFailCnt()
              < _max_consecutive_network_faults
              )
           {
-            request_registration_soon (*disconnected_master_it);
+            request_registration_soon (disconnected_master_it);
           }
           else
           {
@@ -759,9 +776,9 @@ void GenericDaemon::handleWorkerRegistrationAckEvent
 
   master_info_t::iterator const master_it
     ( std::find_if ( _master_info.begin(), _master_info.end()
-                   , [&source] (MasterInfo const& info)
+                   , [&source] (master_info_t::value_type const& info)
                      {
-                       return info.name() == source;
+                       return info.first == source;
                      }
                    )
     );
@@ -769,9 +786,9 @@ void GenericDaemon::handleWorkerRegistrationAckEvent
   //! \todo How to handle Acks for registrations we never sent?
   if (master_it != _master_info.end())
   {
-    master_it->set_registered (true);
-    master_it->resetConsecRegAttempts();
-    master_it->resetConsecNetFailCnt();
+    master_it->second.set_registered (true);
+    master_it->second.resetConsecRegAttempts();
+    master_it->second.resetConsecNetFailCnt();
   }
 
   {
@@ -863,11 +880,11 @@ void GenericDaemon::handleCapabilitiesGainedEvent
         if( !newWorkerCpbSet.empty() )
         {
           lock_type lock(mtx_master_);
-          for (MasterInfo const& info : _master_info)
+          for (master_info_t::value_type const& info : _master_info)
           {
-            if (info.is_registered())
+            if (info.second.is_registered())
             {
-              parent_proxy (this, info.name()).capabilities_gained
+              parent_proxy (this, info.first).capabilities_gained
                 (newWorkerCpbSet);
             }
           }
@@ -890,11 +907,11 @@ void GenericDaemon::handleCapabilitiesLostEvent
     if (scheduler().worker_manager().findWorker (worker_id)->removeCapabilities(pCpbLostEvt->capabilities()))
     {
       lock_type lock(mtx_master_);
-      for (MasterInfo const& info : _master_info)
+      for (master_info_t::value_type const& info : _master_info)
       {
-        if (info.is_registered())
+        if (info.second.is_registered())
         {
-          parent_proxy (this, info.name()).capabilities_lost
+          parent_proxy (this, info.first).capabilities_lost
             (pCpbLostEvt->capabilities());
         }
       }
@@ -943,32 +960,26 @@ void GenericDaemon::delay (std::function<void()> fun)
     );
 }
 
-void GenericDaemon::request_registration_soon (const MasterInfo& info)
+void GenericDaemon::request_registration_soon (master_info_t::iterator const& it)
 {
   _registration_threads.start
-    (std::bind (&GenericDaemon::do_registration_after_sleep, this, info));
+    (std::bind (&GenericDaemon::do_registration_after_sleep, this, it));
 }
 
-void GenericDaemon::do_registration_after_sleep (const MasterInfo info)
+void GenericDaemon::do_registration_after_sleep (master_info_t::iterator const& it)
 {
   boost::this_thread::sleep (_registration_timeout);
-  requestRegistration (info);
+  requestRegistration (it);
 }
 
-void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
+void GenericDaemon::requestRegistration (master_info_t::iterator const& it)
 {
-  if( !masterInfo.is_registered() )
-  {
-    lock_type lock(mtx_cpb_);
-    capabilities_set_t cpbSet (m_capabilities);
+  lock_type lock(mtx_cpb_);
+  capabilities_set_t cpbSet (m_capabilities);
 
-    scheduler().worker_manager().getCapabilities (cpbSet);
+  scheduler().worker_manager().getCapabilities (cpbSet);
 
-    //std::cout<<cpbSet;
-
-    parent_proxy (this, masterInfo.name()).worker_registration
-      (boost::none, cpbSet);
-  }
+  parent_proxy (this, it->first).worker_registration (boost::none, cpbSet);
 }
 
 void GenericDaemon::addCapability(const capability_t& cpb)

@@ -75,6 +75,7 @@ namespace sdpa {
     {
     protected:
       class MasterInfo;
+      using master_info_t = std::map<std::string, MasterInfo>;
 
     public:
       typedef boost::recursive_mutex mutex_type;
@@ -165,8 +166,8 @@ namespace sdpa {
 
     public:
       // registration
-      void requestRegistration(const MasterInfo& masterInfo);
-      void request_registration_soon (const MasterInfo& info);
+      void requestRegistration (master_info_t::iterator const&);
+      void request_registration_soon (master_info_t::iterator const&);
 
       // workflow engine
     public:
@@ -238,14 +239,12 @@ namespace sdpa {
       class MasterInfo
       {
       public:
-        MasterInfo(const std::string& name  = "", bool registered = false )
-          : name_(name)
-          , registered_(registered)
+        MasterInfo()
+          : registered_(false)
           , nConsecNetFailCnt_(0)
           , nConsecRegAttempts_(0)
         {}
 
-        std::string name() const { return name_; }
         bool is_registered() const { return registered_; }
         void set_registered(bool b) { registered_ = b; }
 
@@ -258,13 +257,11 @@ namespace sdpa {
         void resetConsecRegAttempts() { nConsecRegAttempts_=0; }
 
       private:
-        std::string name_;
         bool registered_;
         unsigned int nConsecNetFailCnt_;
         unsigned int nConsecRegAttempts_;
       };
 
-      using master_info_t = std::vector<MasterInfo>;
       master_info_t _master_info;
       typedef std::map<agent_id_t, job_id_list_t> subscriber_map_t;
       subscriber_map_t m_listSubscribers;
@@ -315,7 +312,7 @@ namespace sdpa {
       unsigned int _max_consecutive_network_faults;
       boost::posix_time::time_duration _registration_timeout;
 
-      void do_registration_after_sleep (const MasterInfo);
+      void do_registration_after_sleep (master_info_t::iterator const&);
 
       fhg::thread::queue< std::pair< std::string
                                    , boost::shared_ptr<events::SDPAEvent>
