@@ -119,15 +119,13 @@ namespace share_example_stream_test
     gspc::stream::size_of_slot const size_slot
       (vm[option_size_slot].as<validators::positive_integral<unsigned long>>());
 
-    unsigned long const size (num_slots * size_slot);
+    unsigned long const size (num_slots * (size_slot + 1));
 
     gspc::scoped_runtime_system const drts
       (vm, installation, topology (size_slot));
 
     gspc::vmem_allocation const allocation_buffer
       (drts.alloc (size, workflow_name + "_buffer"));
-    gspc::vmem_allocation const allocation_meta
-      (drts.alloc (num_slots, workflow_name + "_meta"));
     gspc::client client (drts);
 
     gspc::workflow workflow
@@ -141,9 +139,7 @@ namespace share_example_stream_test
     gspc::stream stream
       (drts.create_stream ( "stream_test"
                           , allocation_buffer
-                          , allocation_meta
                           , size_slot
-                          , num_slots
                           , [&client, &job_id] (pnet::type::value::value_type const& value) -> void
                             {
                               client.put_token (job_id, "work_package", value);

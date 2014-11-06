@@ -51,9 +51,7 @@ namespace gspc
     stream ( scoped_runtime_system const&
            , std::string const& name
            , gspc::vmem_allocation const& buffer
-           , gspc::vmem_allocation const& meta
            , size_of_slot const&
-           , number_of_slots const&
            , std::function<void (pnet::type::value::value_type const&)>
                on_slot_filled
            );

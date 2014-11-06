@@ -87,9 +87,7 @@ namespace gspc
 
     stream create_stream ( std::string const& name
                          , gspc::vmem_allocation const& buffer
-                         , gspc::vmem_allocation const& meta
                          , gspc::stream::size_of_slot const&
-                         , gspc::stream::number_of_slots const&
                          , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
                          ) const;
 

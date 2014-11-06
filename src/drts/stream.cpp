@@ -91,21 +91,35 @@ namespace gspc
       gpi::pc::type::handle_t const _handle;
     };
 
+    std::size_t get_number_of_slots_or_throw ( std::size_t const available
+                                             , std::size_t const size_of_slot
+                                             )
+    {
+      std::size_t const number_of_slots (available / (size_of_slot + 1));
+      if (0 == number_of_slots)
+      {
+        throw std::logic_error
+          ( "allocated memory is too small to hold slots and meta data. at least "
+          + std::to_string (size_of_slot + 1) + " is required"
+          );
+      }
+      return number_of_slots;
+    }
+
     implementation ( scoped_runtime_system const& drts
                    , std::string const& name
                    , gspc::vmem_allocation const& buffer
-                   , gspc::vmem_allocation const& meta
                    , stream::size_of_slot const& size_of_slot
-                   , stream::number_of_slots const& number_of_slots
                    , std::function<void (pnet::type::value::value_type const&)>
                        on_slot_filled
                    )
       : _virtual_memory (drts.virtual_memory_api())
       , _on_slot_filled (on_slot_filled)
       , _buffer (buffer)
-      , _meta (meta)
       , _size_of_slot (size_of_slot)
-      , _number_of_slots (number_of_slots)
+      , _number_of_slots
+          (get_number_of_slots_or_throw (buffer.size(), _size_of_slot))
+      , _offset_to_meta_data (_number_of_slots * _size_of_slot)
       , _flags (_virtual_memory, "flags_" + name, _number_of_slots)
       , _update (_virtual_memory, "update_" + name, _number_of_slots)
       , _data (_virtual_memory, "data_" + name, _size_of_slot)
@@ -114,7 +128,9 @@ namespace gspc
       _virtual_memory->wait
         ( _virtual_memory->memcpy
           ( {_flags, 0}
-          , {boost::lexical_cast<gpi::pc::type::handle_t> (_meta.handle()), 0}
+          , { boost::lexical_cast<gpi::pc::type::handle_t> (_buffer.handle())
+            , _offset_to_meta_data
+            }
           , _number_of_slots
           , gpi::pc::type::queue_id_t()
           )
@@ -129,9 +145,9 @@ namespace gspc
     std::unique_ptr<gpi::pc::client::api_t> const& _virtual_memory;
     std::function<void (pnet::type::value::value_type const&)> _on_slot_filled;
     gspc::vmem_allocation const& _buffer;
-    gspc::vmem_allocation const& _meta;
     unsigned long const _size_of_slot;
     unsigned long const _number_of_slots;
+    unsigned long const _offset_to_meta_data;
 
     scoped_allocation const _flags;
     scoped_allocation const _update;
@@ -159,7 +175,9 @@ namespace gspc
         _virtual_memory->wait
           ( _virtual_memory->memcpy
             ( {_update, 0}
-            , {boost::lexical_cast<gpi::pc::type::handle_t> (_meta.handle()), 0}
+            , { boost::lexical_cast<gpi::pc::type::handle_t> (_buffer.handle())
+              , _offset_to_meta_data
+              }
             , _number_of_slots
             , gpi::pc::type::queue_id_t()
             )
@@ -205,7 +223,10 @@ namespace gspc
       pnet::type::value::value_type value;
       pnet::type::value::poke ( "meta"
                               , value
-                              , _meta.global_memory_range (slot, 1UL)
+                              , _buffer.global_memory_range
+                                ( _offset_to_meta_data + slot
+                                , 1UL
+                                )
                               );
       pnet::type::value::poke ( "data"
                               , value
@@ -222,18 +243,14 @@ namespace gspc
   stream::stream ( scoped_runtime_system const& drts
                  , std::string const& name
                  , gspc::vmem_allocation const& buffer
-                 , gspc::vmem_allocation const& meta
                  , stream::size_of_slot const& size_of_slot
-                 , stream::number_of_slots const& number_of_slots
                  , std::function<void (pnet::type::value::value_type const&)>
                      on_slot_filled
                  )
     : _ (fhg::util::make_unique<implementation> ( drts
                                                 , name
                                                 , buffer
-                                                , meta
                                                 , size_of_slot
-                                                , number_of_slots
                                                 , on_slot_filled
                                                 )
         )
