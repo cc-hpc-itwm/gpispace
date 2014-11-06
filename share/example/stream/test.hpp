@@ -196,18 +196,12 @@ namespace share_example_stream_test
         );
       BOOST_REQUIRE (!!pnet::type::value::peek ("sum", statistic));
       BOOST_REQUIRE (!!pnet::type::value::peek ("count", statistic));
-      unsigned long const count
-        ( boost::get<unsigned long>
-          (*pnet::type::value::peek ("count", statistic))
+      BOOST_REQUIRE_LE
+        ( boost::get<double> (*pnet::type::value::peek ("sum", statistic))
+        , boost::get<unsigned long>
+            (*pnet::type::value::peek ("count", statistic))
+        * allowed_average_round_trip_time
         );
-
-      if (count > 0)
-      {
-        BOOST_REQUIRE_LE
-          ( boost::get<double> (*pnet::type::value::peek ("sum", statistic))
-          , count * allowed_average_round_trip_time
-          );
-      }
     }
 #endif
 
