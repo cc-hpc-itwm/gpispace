@@ -23,7 +23,6 @@ namespace fhg
         , _sum (0.0)
         , _sqsum (0.0)
         , _count (0)
-        , _enabled (false)
       {}
 
       std::chrono::high_resolution_clock::rep now() const
@@ -35,12 +34,6 @@ namespace fhg
 
       void tick (std::chrono::high_resolution_clock::rep _delta)
       {
-        if (!_enabled)
-        {
-          _enabled = true;
-          return;
-        }
-
         const double delta (static_cast<double> (_delta) / 1000.0);
         _min = (delta < _min) ? delta : _min;
         _max = (delta > _max) ? delta : _max;
@@ -89,7 +82,6 @@ namespace fhg
       double _sum;
       double _sqsum;
       unsigned long _count;
-      bool _enabled;
     };
   }
 }
