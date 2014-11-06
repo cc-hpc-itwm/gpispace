@@ -120,8 +120,8 @@ namespace gspc
     if ((offset + size) > _->_size)
     {
       throw std::logic_error
-        ((boost::format ("slice [%1%, %2%] is outside of allocation")
-         % offset % size
+        ((boost::format ("slice [%1%, %2%) is outside of allocation")
+         % offset % (offset + size)
          ).str()
         );
     }
