@@ -2,6 +2,7 @@
 #define PNET_SRC_WE_TYPE_VALUE_UNWRAP_HPP
 
 #include <we/type/value.hpp>
+#include <we/type/value/from_value.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/preprocessor/punctuation/comma.hpp>
@@ -19,7 +20,7 @@ namespace pnet
 
         BOOST_FOREACH (value_type const &v, lv)
         {
-          lt.push_back (boost::get<T>(v));
+          lt.push_back (from_value<T> (v));
         }
 
         return lt;
@@ -32,7 +33,7 @@ namespace pnet
 
         BOOST_FOREACH (value_type const &v, sv)
         {
-          st.insert (boost::get<T>(v));
+          st.insert (from_value<T> (v));
         }
 
         return st;
@@ -49,8 +50,8 @@ namespace pnet
           , mvv
           )
         {
-          mkv.insert (std::make_pair ( boost::get<K>(kv.first)
-                                     , boost::get<V>(kv.second)
+          mkv.insert (std::make_pair ( from_value<K> (kv.first)
+                                     , from_value<V> (kv.second)
                                      )
                      );
         }
