@@ -205,18 +205,16 @@ namespace gspc
         );
 
       pnet::type::value::value_type value;
-      {
-        pnet::type::value::value_type range (_meta.global_memory_range());
-        pnet::type::value::poke ("offset", range, slot);
-        pnet::type::value::poke ("size", range, 1UL);
-        pnet::type::value::poke ("meta", value, range);
-      }
-      {
-        pnet::type::value::value_type range (_buffer.global_memory_range());
-        pnet::type::value::poke ("offset", range, slot * _size_of_slot);
-        pnet::type::value::poke ("size", range, data.size());
-        pnet::type::value::poke ("data", value, range);
-      }
+      pnet::type::value::poke ( "meta"
+                              , value
+                              , _meta.global_memory_range (slot, 1UL)
+                              );
+      pnet::type::value::poke ( "data"
+                              , value
+                              , _buffer.global_memory_range ( slot * _size_of_slot
+                                                            , data.size()
+                                                            )
+                              );
       pnet::type::value::poke ("flag", value, flag[slot]);
 
       _on_slot_filled (value);
