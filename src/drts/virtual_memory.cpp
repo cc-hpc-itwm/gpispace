@@ -117,7 +117,7 @@ namespace gspc
     , std::size_t const size
     ) const
   {
-    if ((offset+size) > _->_size)
+    if ((offset + size) > _->_size)
     {
       throw std::logic_error
         ((boost::format ("slice [%1%, %2%] is outside of allocation")
