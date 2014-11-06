@@ -264,8 +264,8 @@ namespace sdpa {
         unsigned int nConsecRegAttempts_;
       };
 
-      using master_info_list_t = std::vector<MasterInfo>;
-      master_info_list_t _master_info;
+      using master_info_t = std::vector<MasterInfo>;
+      master_info_t _master_info;
       typedef std::map<agent_id_t, job_id_list_t> subscriber_map_t;
       subscriber_map_t m_listSubscribers;
 

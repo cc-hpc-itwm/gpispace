@@ -277,7 +277,7 @@ void GenericDaemon::handleSubmitJobEvent
   {
     lock_type lock(mtx_master_);
     // check if the incoming event was produced by a master to which the current agent has already registered
-    master_info_list_t::iterator itMaster = find_if
+    master_info_t::iterator itMaster = find_if
       ( _master_info.begin()
       , _master_info.end()
       , [&source] (MasterInfo const& info)
@@ -439,7 +439,7 @@ void GenericDaemon::handleErrorEvent
       // mark the agen as not-registered
       lock_type const _ (mtx_master_);
 
-      master_info_list_t::iterator const disconnected_master_it
+      master_info_t::iterator const disconnected_master_it
         ( std::find_if
             ( _master_info.begin(), _master_info.end()
             , [&source] (MasterInfo const& info)
@@ -523,7 +523,7 @@ void GenericDaemon::handleErrorEvent
       {
         lock_type const _ (mtx_master_);
 
-        master_info_list_t::iterator const disconnected_master_it
+        master_info_t::iterator const disconnected_master_it
           ( std::find_if
               ( _master_info.begin(), _master_info.end()
               , [&source] (MasterInfo const& info)
@@ -757,7 +757,7 @@ void GenericDaemon::handleWorkerRegistrationAckEvent
   std::string masterName = source;
   lock_type lock(mtx_master_);
 
-  master_info_list_t::iterator const master_it
+  master_info_t::iterator const master_it
     ( std::find_if ( _master_info.begin(), _master_info.end()
                    , [&source] (MasterInfo const& info)
                      {
