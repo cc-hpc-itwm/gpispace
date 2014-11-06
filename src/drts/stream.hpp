@@ -65,7 +65,6 @@ namespace gspc
     static void mark_free ( const char old_flag_value
                           , std::pair<void*, unsigned long> ptr_to_flag
                           );
-    static std::size_t size_of_meta_data_slot();
 
     stream (stream const&) = delete;
     stream& operator= (stream const&) = delete;

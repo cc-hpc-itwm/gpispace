@@ -127,10 +127,7 @@ namespace share_example_stream_test
     gspc::vmem_allocation const allocation_buffer
       (drts.alloc (size, workflow_name + "_buffer"));
     gspc::vmem_allocation const allocation_meta
-      (drts.alloc ( num_slots * gspc::stream::size_of_meta_data_slot()
-                  , workflow_name + "_meta"
-                  )
-      );
+      (drts.alloc (num_slots, workflow_name + "_meta"));
     gspc::client client (drts);
 
     gspc::workflow workflow

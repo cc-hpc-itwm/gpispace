@@ -106,25 +106,16 @@ namespace gspc
       , _meta (meta)
       , _size_of_slot (size_of_slot)
       , _number_of_slots (number_of_slots)
-      , _flags ( _virtual_memory
-               , "flags_" + name
-               , _number_of_slots * size_of_meta_data_slot()
-               )
-      , _update ( _virtual_memory
-                , "update_" + name
-                , _number_of_slots * size_of_meta_data_slot()
-                )
-      , _data ( _virtual_memory
-              , "data_" + name
-              , _size_of_slot
-              )
+      , _flags (_virtual_memory, "flags_" + name, _number_of_slots)
+      , _update (_virtual_memory, "update_" + name, _number_of_slots)
+      , _data (_virtual_memory, "data_" + name, _size_of_slot)
       , _free_slots()
     {
       _virtual_memory->wait
         ( _virtual_memory->memcpy
           ( {_flags, 0}
           , {boost::lexical_cast<gpi::pc::type::handle_t> (_meta.handle()), 0}
-          , _number_of_slots * size_of_meta_data_slot()
+          , _number_of_slots
           , gpi::pc::type::queue_id_t()
           )
         );
@@ -171,7 +162,7 @@ namespace gspc
           ( _virtual_memory->memcpy
             ( {_update, 0}
             , {boost::lexical_cast<gpi::pc::type::handle_t> (_meta.handle()), 0}
-            , _number_of_slots * size_of_meta_data_slot()
+            , _number_of_slots
             , gpi::pc::type::queue_id_t()
             )
           );
@@ -269,10 +260,5 @@ namespace gspc
                          )
   {
     *static_cast<char*> (ptr_to_flag.first) = 1 - old_flag_value;
-  }
-
-  std::size_t stream::size_of_meta_data_slot()
-  {
-    return sizeof (char);
   }
 }
