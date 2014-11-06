@@ -1,13 +1,5 @@
 <defun name="vmem_1_to_n">
-  <struct name="global_memory_handle_type">
-    <field name="name" type="string"/>
-  </struct>
-
-  <struct name="global_memory_range">
-    <field name="handle" type="global_memory_handle_type"/>
-    <field name="offset" type="unsigned long"/>
-    <field name="size" type="unsigned long"/>
-  </struct>
+  <include-structs href="memory/global/range.xpnet"/>
 
   <in name="outer" type="long" place="N"/>
   <in name="inner" type="long" place="M"/>
