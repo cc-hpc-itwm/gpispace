@@ -6,19 +6,24 @@
     <field name="produced" type="long"/>
   </struct>
 
+  <include-structs href="statistics.xpnet"/>
+
   <in name="log_file" type="string" place="log_file"/>
 
   <out name="done" type="control" place="done"/>
+  <out name="statistic" type="Statistic" place="statistic"/>
 
   <net>
     <place name="log_file" type="string"/>
     <place name="done" type="control"/>
+    <place name="statistic" type="Statistic"/>
 
     <place name="stop" type="control"/>
 
     <transition name="done">
       <defun>
         <inout name="trigger" type="control"/>
+        <expression/>
       </defun>
       <connect-in port="trigger" place="stop"/>
       <connect-out port="trigger" place="done"/>
@@ -31,6 +36,7 @@
         <require key="process_and_mark_free" mandatory="true"/>
         <in name="log_file" type="string"/>
         <in name="work_package" type="work_package"/>
+        <out name="statistic" type="Statistic"/>
         <memory-buffer name="ptr_data" read-only="true">
           <size>
             ${work_package.data.size}
@@ -69,6 +75,7 @@
                                   , work_package
                                   , ptr_data
                                   , ptr_flag
+                                  , statistic
                                   )">
           <cinclude href="drts/stream.hpp"/>
           <cinclude href="process.hpp"/>
@@ -87,11 +94,18 @@
             (work_package.flag, {ptr_flag, work_package.meta.size});
 
           delta.tick (delta.now() - produced);
+
+          statistic.min = delta.min();
+          statistic.max = delta.max();
+          statistic.sum = delta.sum();
+          statistic.sqsum = delta.sqsum();
+          statistic.count = delta.count();
           ]]></code>
         </module>
       </defun>
       <connect-read port="log_file" place="log_file"/>
       <connect-in port="work_package" place="work_package"/>
+      <connect-out port="statistic" place="statistic"/>
     </transition>
   </net>
 </defun>

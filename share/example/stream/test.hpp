@@ -16,8 +16,10 @@
 #include <test/virtual_memory_socket_name_for_localhost.hpp>
 
 #include <we/type/value.hpp>
+#include <we/type/value/peek.hpp>
 
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <fhg/util/macros.hpp>
 #include <fhg/util/read_file.hpp>
 #include <fhg/util/temporary_file.hpp>
 #include <fhg/util/temporary_path.hpp>
@@ -25,6 +27,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/test/unit_test.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 #include <chrono>
 #include <functional>
@@ -38,6 +41,8 @@ namespace share_example_stream_test
     ( std::string const& workflow_name
     , std::function<std::string (unsigned long size_slot)> const& topology
     , std::chrono::duration<R, P> const& sleep_after_produce
+    , double IFDEF_NDEBUG (allowed_maximum_round_trip_time)
+    , double IFDEF_NDEBUG (allowed_average_round_trip_time)
     )
   {
     namespace validators = fhg::util::boost::program_options;
@@ -153,7 +158,9 @@ namespace share_example_stream_test
 
     std::ostringstream expected_output;
 
-    for (unsigned long id (0); id < 20 * num_slots; ++id)
+    unsigned long rounds (20 * num_slots);
+
+    for (unsigned long id (0); id < rounds; ++id)
     {
       std::chrono::high_resolution_clock::rep const now
         ( std::chrono::duration_cast<std::chrono::microseconds>
@@ -175,6 +182,28 @@ namespace share_example_stream_test
       (client.wait_and_extract (job_id));
 
     BOOST_REQUIRE_EQUAL (result.count ("done"), 1);
+    BOOST_REQUIRE_EQUAL (result.count ("statistic"), rounds);
+
+#ifdef NDEBUG
+    for ( pnet::type::value::value_type const& statistic
+        : result.equal_range ("statistic") | boost::adaptors::map_values
+        )
+    {
+      BOOST_REQUIRE (!!pnet::type::value::peek ("max", statistic));
+      BOOST_REQUIRE_LE
+        ( boost::get<double> (*pnet::type::value::peek ("max", statistic))
+        , allowed_maximum_round_trip_time
+        );
+      BOOST_REQUIRE (!!pnet::type::value::peek ("sum", statistic));
+      BOOST_REQUIRE (!!pnet::type::value::peek ("count", statistic));
+      BOOST_REQUIRE_LE
+        ( boost::get<double> (*pnet::type::value::peek ("sum", statistic))
+        , boost::get<unsigned long>
+            (*pnet::type::value::peek ("count", statistic))
+        * allowed_average_round_trip_time
+        );
+    }
+#endif
 
     BOOST_REQUIRE_EQUAL
       (expected_output.str(), fhg::util::read_file (log_file));

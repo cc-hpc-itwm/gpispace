@@ -19,5 +19,7 @@ BOOST_AUTO_TEST_CASE (share_example_stream_two_module_calls)
       return topology_description.str();
     }
     , std::chrono::milliseconds (100)
+    , 20.0
+    , 14.0
     );
 }
