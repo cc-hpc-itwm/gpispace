@@ -5,7 +5,6 @@
 
 #include <drts/drts.fwd.hpp>
 
-#include <drts/client.fwd.hpp>
 #include <drts/information_to_reattach.fwd.hpp>
 #include <drts/virtual_memory.fwd.hpp>
 
@@ -91,7 +90,6 @@ namespace gspc
 
   private:
     friend class vmem_allocation;
-    friend class client;
     friend class information_to_reattach;
 
     installation const _installation;
