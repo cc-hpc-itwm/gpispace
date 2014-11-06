@@ -73,6 +73,9 @@ namespace sdpa {
     class GenericDaemon : public sdpa::events::EventHandler,
                           boost::noncopyable
     {
+    protected:
+      class MasterInfo;
+
     public:
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
@@ -84,7 +87,7 @@ namespace sdpa {
                    , std::string kvs_host
                    , std::string kvs_port
                    , boost::optional<boost::filesystem::path> const& vmem_socket
-                   , const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t()
+                   , std::vector<std::string> const& masters
                    , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info = boost::none
                    , bool create_wfe = false
                    );
@@ -232,7 +235,37 @@ namespace sdpa {
 
       std::string _name;
 
-      sdpa::master_info_list_t m_arrMasterInfo;
+      class MasterInfo
+      {
+      public:
+        MasterInfo(const std::string& name  = "", bool registered = false )
+          : name_(name)
+          , registered_(registered)
+          , nConsecNetFailCnt_(0)
+          , nConsecRegAttempts_(0)
+        {}
+
+        std::string name() const { return name_; }
+        bool is_registered() const { return registered_; }
+        void set_registered(bool b) { registered_ = b; }
+
+        unsigned int getConsecNetFailCnt() { return nConsecNetFailCnt_;}
+        void incConsecNetFailCnt() { nConsecNetFailCnt_++;}
+        void resetConsecNetFailCnt() { nConsecNetFailCnt_=0; }
+
+        unsigned int getConsecRegAttempts() { return nConsecRegAttempts_;}
+        void incConsecRegAttempts() { nConsecRegAttempts_++;}
+        void resetConsecRegAttempts() { nConsecRegAttempts_=0; }
+
+      private:
+        std::string name_;
+        bool registered_;
+        unsigned int nConsecNetFailCnt_;
+        unsigned int nConsecRegAttempts_;
+      };
+
+      using master_info_list_t = std::vector<MasterInfo>;
+      master_info_list_t m_arrMasterInfo;
       typedef std::map<agent_id_t, job_id_list_t> subscriber_map_t;
       subscriber_map_t m_listSubscribers;
 

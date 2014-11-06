@@ -18,7 +18,7 @@ namespace sdpa
                  , std::string kvs_host
                  , std::string kvs_port
                  , boost::optional<boost::filesystem::path> const& virtual_memory_socket
-                 , const sdpa::master_info_list_t arrMasterNames
+                 , std::vector<std::string> const& masters
                  , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
                  )
       : GenericDaemon ( name
@@ -28,7 +28,7 @@ namespace sdpa
                       , kvs_host
                       , kvs_port
                       , virtual_memory_socket
-                      , arrMasterNames
+                      , masters
                       , gui_info
                       , true
                       )

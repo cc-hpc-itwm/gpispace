@@ -46,36 +46,6 @@ namespace sdpa {
 
   typedef std::multimap<int, worker_id_host_info_t, std::greater<int>> mmap_match_deg_worker_id_t;
 
-  class MasterInfo
-  {
-  public:
-    MasterInfo(const std::string& name  = "", bool registered = false )
-    : name_(name)
-    , registered_(registered)
-    , nConsecNetFailCnt_(0)
-    , nConsecRegAttempts_(0)
-    {}
-
-    std::string name() const { return name_; }
-    bool is_registered() const { return registered_; }
-    void set_registered(bool b) { registered_ = b; }
-
-    unsigned int getConsecNetFailCnt() { return nConsecNetFailCnt_;}
-    void incConsecNetFailCnt() { nConsecNetFailCnt_++;}
-    void resetConsecNetFailCnt() { nConsecNetFailCnt_=0; }
-
-    unsigned int getConsecRegAttempts() { return nConsecRegAttempts_;}
-    void incConsecRegAttempts() { nConsecRegAttempts_++;}
-    void resetConsecRegAttempts() { nConsecRegAttempts_=0; }
-
-  private:
-    std::string name_;
-    bool registered_;
-    unsigned int nConsecNetFailCnt_;
-    unsigned int nConsecRegAttempts_;
-  };
-
-  typedef std::vector<MasterInfo> master_info_list_t;
   struct discovery_info_t;
 
   typedef std::set<discovery_info_t> discovery_info_set_t;

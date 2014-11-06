@@ -25,6 +25,7 @@ namespace sdpa
                       , kvs_client_io_service
                       , kvs_host, kvs_port
                       , boost::none
+                      , {}
                       )
       , _rpc_connections()
       , _rpc_dispatcher (fhg::rpc::exception::serialization_functions())

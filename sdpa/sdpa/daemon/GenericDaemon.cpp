@@ -91,13 +91,13 @@ GenericDaemon::GenericDaemon( const std::string name
                             , std::string kvs_host
                             , std::string kvs_port
                             , boost::optional<boost::filesystem::path> const& vmem_socket
-                            , const master_info_list_t arrMasterInfo
+                            , std::vector<std::string> const& masters
                             , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
                             , bool create_wfe
                             )
   : _logger (fhg::log::Logger::get (name))
   , _name (name)
-  , m_arrMasterInfo(arrMasterInfo)
+  , m_arrMasterInfo ({masters.begin(), masters.end()})
   , m_listSubscribers()
   , _discover_sources()
   , _job_map_mutex()
@@ -180,7 +180,7 @@ GenericDaemon::GenericDaemon( const std::string name
 
   {
     lock_type lock (mtx_master_);
-    for (sdpa::MasterInfo& masterInfo : m_arrMasterInfo)
+    for (MasterInfo& masterInfo : m_arrMasterInfo)
     {
       requestRegistration (masterInfo);
     }
@@ -280,7 +280,7 @@ void GenericDaemon::handleSubmitJobEvent
     master_info_list_t::iterator itMaster = find_if
       ( m_arrMasterInfo.begin()
       , m_arrMasterInfo.end()
-      , [&source] (sdpa::MasterInfo const& info)
+      , [&source] (MasterInfo const& info)
         {
           return info.name() == source;
         }
@@ -439,7 +439,7 @@ void GenericDaemon::handleErrorEvent
       // mark the agen as not-registered
       lock_type const _ (mtx_master_);
 
-      sdpa::master_info_list_t::iterator const disconnected_master_it
+      master_info_list_t::iterator const disconnected_master_it
         ( std::find_if
             ( m_arrMasterInfo.begin(), m_arrMasterInfo.end()
             , [&source] (MasterInfo const& info)
@@ -482,7 +482,7 @@ void GenericDaemon::handleErrorEvent
 
         // notify capability losses...
         lock_type lock(mtx_master_);
-        for (sdpa::MasterInfo& masterInfo : m_arrMasterInfo)
+        for (MasterInfo& masterInfo : m_arrMasterInfo)
         {
           parent_proxy (this, masterInfo.name()).capabilities_lost
             (ptrWorker->capabilities());
@@ -523,7 +523,7 @@ void GenericDaemon::handleErrorEvent
       {
         lock_type const _ (mtx_master_);
 
-        sdpa::master_info_list_t::iterator const disconnected_master_it
+        master_info_list_t::iterator const disconnected_master_it
           ( std::find_if
               ( m_arrMasterInfo.begin(), m_arrMasterInfo.end()
               , [&source] (MasterInfo const& info)
@@ -863,7 +863,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent
         if( !newWorkerCpbSet.empty() )
         {
           lock_type lock(mtx_master_);
-          for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++ )
+          for( master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++ )
             if (it->is_registered())
             {
               parent_proxy (this, it->name()).capabilities_gained
@@ -888,7 +888,7 @@ void GenericDaemon::handleCapabilitiesLostEvent
     if (scheduler().worker_manager().findWorker (worker_id)->removeCapabilities(pCpbLostEvt->capabilities()))
     {
       lock_type lock(mtx_master_);
-      for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
+      for( master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
         if (it->is_registered())
         {
           parent_proxy (this, it->name()).capabilities_lost
