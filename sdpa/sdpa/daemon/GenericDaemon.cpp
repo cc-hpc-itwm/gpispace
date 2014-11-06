@@ -437,29 +437,35 @@ void GenericDaemon::handleErrorEvent
     case events::ErrorEvent::SDPA_EWORKERNOTREG:
     {
       // mark the agen as not-registered
+      lock_type const _ (mtx_master_);
 
-      worker_id_list_t listDeadMasters;
+      sdpa::master_info_list_t::iterator const disconnected_master_it
+        ( std::find_if
+            ( m_arrMasterInfo.begin(), m_arrMasterInfo.end()
+            , [&source] (MasterInfo const& info)
+              {
+                return info.name() == source;
+              }
+            )
+        );
+
+      if (disconnected_master_it != m_arrMasterInfo.end())
       {
-        lock_type lock(mtx_master_);
-        for (sdpa::MasterInfo & masterInfo : m_arrMasterInfo)
-        {
-          if( source == masterInfo.name() )
-          {
-            // we should not put the event handler thread to sleep, but delegate the event sending to some timer thing
-            masterInfo.set_registered(false);
-            masterInfo.incConsecRegAttempts();
+        disconnected_master_it->set_registered (false);
+        disconnected_master_it->incConsecRegAttempts();
 
-            if(masterInfo.getConsecRegAttempts()< _max_consecutive_registration_attempts)
-            {
-              request_registration_soon (masterInfo);
-            }
-            else
-              listDeadMasters.push_back( masterInfo.name() );
-          }
+        if ( disconnected_master_it->getConsecRegAttempts()
+           < _max_consecutive_registration_attempts
+           )
+        {
+          request_registration_soon (*disconnected_master_it);
+        }
+        else
+        {
+          m_arrMasterInfo.erase (disconnected_master_it);
         }
       }
 
-      removeMasters(listDeadMasters);
       break;
     }
     case events::ErrorEvent::SDPA_ENODE_SHUTDOWN:
@@ -515,28 +521,34 @@ void GenericDaemon::handleErrorEvent
       }
       catch (WorkerNotFoundException const& /*ignored*/)
       {
-        worker_id_list_t listDeadMasters;
-        {
-          lock_type lock(mtx_master_);
-          // check if the message comes from a master
-          for (sdpa::MasterInfo & masterInfo : m_arrMasterInfo)
-          {
-            if( source == masterInfo.name() )
-            {
-              masterInfo.set_registered(false);
-              masterInfo.incConsecNetFailCnt();
+        lock_type const _ (mtx_master_);
 
-              if( masterInfo.getConsecNetFailCnt() < _max_consecutive_network_faults)
-              {
-                request_registration_soon (masterInfo);
-              }
-              else
-                listDeadMasters.push_back( masterInfo.name() );
-            }
+        sdpa::master_info_list_t::iterator const disconnected_master_it
+          ( std::find_if
+              ( m_arrMasterInfo.begin(), m_arrMasterInfo.end()
+              , [&source] (MasterInfo const& info)
+                {
+                  return info.name() == source;
+                }
+              )
+          );
+
+        if (disconnected_master_it != m_arrMasterInfo.end())
+        {
+          disconnected_master_it->set_registered (false);
+          disconnected_master_it->incConsecNetFailCnt();
+
+          if ( disconnected_master_it->getConsecNetFailCnt()
+             < _max_consecutive_network_faults
+             )
+          {
+            request_registration_soon (*disconnected_master_it);
+          }
+          else
+          {
+            m_arrMasterInfo.erase (disconnected_master_it);
           }
         }
-
-        removeMasters(listDeadMasters);
       }
       break;
     }
@@ -943,21 +955,6 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 
     parent_proxy (this, masterInfo.name()).worker_registration
       (boost::none, cpbSet);
-  }
-}
-
-void GenericDaemon::removeMasters(const agent_id_list_t& listMasters)
-{
-  lock_type lock(mtx_master_);
-  for (const sdpa::agent_id_t& id : listMasters)
-  {
-    master_info_list_t::iterator it = find_if
-      ( m_arrMasterInfo.begin()
-      , m_arrMasterInfo.end()
-      , [&id] (sdpa::MasterInfo const& info) { return info.name() == id; }
-      );
-    if( it != m_arrMasterInfo.end() )
-      m_arrMasterInfo.erase(it);
   }
 }
 

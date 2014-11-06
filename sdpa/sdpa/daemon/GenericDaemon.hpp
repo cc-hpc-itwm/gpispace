@@ -93,8 +93,6 @@ namespace sdpa {
       const std::string& name() const;
       boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
 
-      void removeMasters(const agent_id_list_t& );
-
       bool isTop() { return m_arrMasterInfo.empty(); }
 
       // WE interface
