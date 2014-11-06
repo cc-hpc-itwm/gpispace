@@ -1,12 +1,15 @@
 <defun name="stream_two_module_calls">
   <include-structs href="stream/work_package.xpnet"/>
 
-  <struct name="work_package_with_timestamp">
+  <struct name="work_package_with_timestamp_and_id">
     <field name="work_package" type="work_package"/>
+    <field name="id" type="unsigned long"/>
     <field name="produced" type="long"/>
   </struct>
 
   <include-structs href="statistics.xpnet"/>
+
+  <in name="rounds" type="unsigned long" place="rounds"/>
 
   <out name="done" type="control" place="done"/>
   <out name="statistic" type="Statistic" place="statistic"/>
@@ -16,16 +19,36 @@
     <place name="done" type="control"/>
     <place name="statistic" type="Statistic"/>
     <place name="packages" type="string"/>
+    <place name="rounds" type="unsigned long"/>
 
     <place name="stop" type="control"/>
 
     <transition name="done">
       <defun>
+        <in name="rounds" type="unsigned long"/>
+        <in name="statistic" type="Statistic"/>
         <inout name="trigger" type="control"/>
         <expression/>
+        <condition>
+          ${statistic.count} + 1UL :ge: ${rounds}
+        </condition>
       </defun>
       <connect-in port="trigger" place="stop"/>
       <connect-out port="trigger" place="done"/>
+      <connect-in port="rounds" place="rounds"/>
+      <connect-read port="statistic" place="statistic"/>
+    </transition>
+    <transition name="not_done">
+      <defun>
+        <in name="rounds" type="unsigned long"/>
+        <in name="statistic" type="Statistic"/>
+        <expression/>
+        <condition>
+          ${statistic.count} + 1UL :lt: ${rounds}
+        </condition>
+      </defun>
+      <connect-read port="rounds" place="rounds"/>
+      <connect-in port="statistic" place="statistic"/>
     </transition>
 
     <place name="work_package" type="work_package"/>
@@ -34,7 +57,8 @@
       <defun>
         <require key="process" mandatory="true"/>
         <in name="work_package" type="work_package"/>
-        <out name="work_package_processed" type="work_package_with_timestamp"/>
+        <out name="work_package_processed"
+             type="work_package_with_timestamp_and_id"/>
         <out name="package" type="string"/>
         <memory-buffer name="ptr_data" read-only="true">
           <size>
@@ -69,6 +93,7 @@
             );
 
           work_package_processed.work_package = work_package;
+          work_package_processed.id = content_of_package.first;
           work_package_processed.produced = content_of_package.second;
 
           package = std::to_string (content_of_package.first)
@@ -83,37 +108,41 @@
       <connect-out port="package" place="packages"/>
     </transition>
 
-    <place name="work_package_processed" type="work_package_with_timestamp"/>
+    <place name="work_package_processed"
+           type="work_package_with_timestamp_and_id"/>
 
     <transition name="collect_round_trip_time">
       <require key="mark_free" mandatory="true"/>
       <defun>
-        <in name="work_package_with_timestamp" type="work_package_with_timestamp"/>
+        <in name="work_package_with_timestamp_and_id"
+            type="work_package_with_timestamp_and_id"/>
         <out name="work_package" type="work_package"/>
         <out name="statistic" type="Statistic"/>
         <module name="stream"
-                function="collect_round_trip_time ( work_package_with_timestamp
-                                                  , work_package
-                                                  , statistic
-                                                  )">
+                function="collect_round_trip_time
+                            ( work_package_with_timestamp_and_id
+                            , work_package
+                            , statistic
+                            )">
           <cinclude href="statistic.hpp"/>
           <cxx flag="--std=c++11"/>
           <ld flag="-lgspc"/>
           <code><![CDATA[
             static fhg::util::statistic delta ("mark_free: delta");
-            delta.tick (delta.now() - work_package_with_timestamp.produced);
+            delta.tick
+              (delta.now() - work_package_with_timestamp_and_id.produced);
 
-            work_package = work_package_with_timestamp.work_package;
+            work_package = work_package_with_timestamp_and_id.work_package;
 
             statistic.min = delta.min();
             statistic.max = delta.max();
             statistic.sum = delta.sum();
             statistic.sqsum = delta.sqsum();
-            statistic.count = delta.count();
+            statistic.count = work_package_with_timestamp_and_id.id;
           ]]></code>
         </module>
       </defun>
-      <connect-in port="work_package_with_timestamp"
+      <connect-in port="work_package_with_timestamp_and_id"
                   place="work_package_processed"/>
       <connect-out port="work_package"
                    place="work_package_to_mark_free"/>

@@ -128,7 +128,10 @@ namespace share_example_stream_test
 
     workflow.set_wait_for_output();
 
-    gspc::job_id_t const job_id (client.submit (workflow, {}));
+    unsigned long const rounds (20 * num_slots);
+
+    gspc::job_id_t const job_id
+      (client.submit (workflow, {{"rounds", rounds}}));
 
     gspc::stream stream
       (drts.create_stream ( "stream_test"
@@ -144,8 +147,6 @@ namespace share_example_stream_test
     std::chrono::high_resolution_clock clock;
 
     std::set<std::string> expected_output;
-
-    unsigned long rounds (20 * num_slots);
 
     for (unsigned long id (0); id < rounds; ++id)
     {
@@ -169,36 +170,26 @@ namespace share_example_stream_test
       (client.wait_and_extract (job_id));
 
     BOOST_REQUIRE_EQUAL (result.count ("done"), 1);
-    BOOST_REQUIRE_EQUAL (result.count ("statistic"), rounds);
+    BOOST_REQUIRE_EQUAL (result.count ("statistic"), 1);
     BOOST_REQUIRE_EQUAL (result.count ("packages"), rounds);
 
 #ifdef NDEBUG
     {
-      bool got_average (false);
+      pnet::type::value::value_type const& statistic
+        (result.find ("statistic")->second);
 
-      for ( pnet::type::value::value_type const& statistic
-          : result.equal_range ("statistic") | boost::adaptors::map_values
-          )
-      {
-        BOOST_REQUIRE (!!pnet::type::value::peek ("sum", statistic));
-        BOOST_REQUIRE (!!pnet::type::value::peek ("count", statistic));
-        unsigned long const count
-          ( boost::get<unsigned long>
-            (*pnet::type::value::peek ("count", statistic))
-          );
+      BOOST_REQUIRE (!!pnet::type::value::peek ("count", statistic));
+      BOOST_REQUIRE_EQUAL
+        ( boost::get<unsigned long>
+          (*pnet::type::value::peek ("count", statistic)) + 1UL
+        , rounds
+        );
 
-        if (count + 1 == rounds)
-        {
-          BOOST_REQUIRE_LE
-            ( boost::get<double> (*pnet::type::value::peek ("sum", statistic))
-            , count * allowed_average_round_trip_time
-            );
-
-          got_average = true;
-        }
-      }
-
-      BOOST_REQUIRE (got_average);
+      BOOST_REQUIRE (!!pnet::type::value::peek ("sum", statistic));
+      BOOST_REQUIRE_LE
+        ( boost::get<double> (*pnet::type::value::peek ("sum", statistic))
+        , rounds * allowed_average_round_trip_time
+        );
     }
 #endif
 

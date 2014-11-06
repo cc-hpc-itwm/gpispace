@@ -8,6 +8,8 @@
 
   <include-structs href="statistics.xpnet"/>
 
+  <in name="rounds" type="unsigned long" place="rounds"/>
+
   <out name="done" type="control" place="done"/>
   <out name="statistic" type="Statistic" place="statistic"/>
   <out name="packages" type="string" place="packages"/>
@@ -16,16 +18,36 @@
     <place name="done" type="control"/>
     <place name="statistic" type="Statistic"/>
     <place name="packages" type="string"/>
+    <place name="rounds" type="unsigned long"/>
 
     <place name="stop" type="control"/>
 
     <transition name="done">
       <defun>
+        <in name="rounds" type="unsigned long"/>
+        <in name="statistic" type="Statistic"/>
         <inout name="trigger" type="control"/>
         <expression/>
+        <condition>
+          ${statistic.count} + 1UL :ge: ${rounds}
+        </condition>
       </defun>
       <connect-in port="trigger" place="stop"/>
       <connect-out port="trigger" place="done"/>
+      <connect-in port="rounds" place="rounds"/>
+      <connect-read port="statistic" place="statistic"/>
+    </transition>
+    <transition name="not_done">
+      <defun>
+        <in name="rounds" type="unsigned long"/>
+        <in name="statistic" type="Statistic"/>
+        <expression/>
+        <condition>
+          ${statistic.count} + 1UL :lt: ${rounds}
+        </condition>
+      </defun>
+      <connect-read port="rounds" place="rounds"/>
+      <connect-in port="statistic" place="statistic"/>
     </transition>
 
     <place name="work_package" type="work_package"/>
@@ -99,7 +121,7 @@
           statistic.max = delta.max();
           statistic.sum = delta.sum();
           statistic.sqsum = delta.sqsum();
-          statistic.count = delta.count();
+          statistic.count = content_of_package.first;
 
           package = std::to_string (content_of_package.first)
                   + " "
