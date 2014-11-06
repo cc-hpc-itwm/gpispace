@@ -383,7 +383,7 @@ void GenericDaemon::handleWorkerRegistrationEvent
     // send to the masters my new set of capabilities
     for (MasterInfo const& master : m_arrMasterInfo)
     {
-      if (master.is_registered() && master.name() != worker_id)
+      if (master.is_registered())
       {
         parent_proxy (this, master.name()).capabilities_gained (workerCpbSet);
       }
@@ -839,7 +839,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const events::CapabilitiesGain
         {
           lock_type lock(mtx_master_);
           for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++ )
-            if( it->is_registered() && it->name() != worker_id  )
+            if (it->is_registered())
             {
               parent_proxy (this, it->name()).capabilities_gained
                 (newWorkerCpbSet);
@@ -859,15 +859,16 @@ void GenericDaemon::handleCapabilitiesLostEvent(const events::CapabilitiesLostEv
 
   sdpa::worker_id_t worker_id = pCpbLostEvt->from();
   try {
-    scheduler().worker_manager().findWorker (worker_id)->removeCapabilities(pCpbLostEvt->capabilities());
-
-    lock_type lock(mtx_master_);
-    for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
-      if (it->is_registered() && it->name() != worker_id )
-      {
-        parent_proxy (this, it->name()).capabilities_lost
-          (pCpbLostEvt->capabilities());
-      }
+    if (scheduler().worker_manager().findWorker (worker_id)->removeCapabilities(pCpbLostEvt->capabilities()))
+    {
+      lock_type lock(mtx_master_);
+      for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
+        if (it->is_registered())
+        {
+          parent_proxy (this, it->name()).capabilities_lost
+            (pCpbLostEvt->capabilities());
+        }
+    }
   }
   catch( const WorkerNotFoundException& ex)
   {

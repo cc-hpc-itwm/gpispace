@@ -45,7 +45,7 @@ namespace sdpa
       bool children_allowed() const { return children_allowed_;}
 
       bool addCapabilities(const capabilities_set_t& cpbset);
-      void removeCapabilities(const capabilities_set_t& cpbset);
+      bool removeCapabilities(const capabilities_set_t& cpbset);
       bool hasCapability(const std::string& cpbName);
 
       bool has_job( const job_id_t& job_id );
