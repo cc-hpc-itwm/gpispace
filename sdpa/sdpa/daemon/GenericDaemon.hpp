@@ -198,44 +198,11 @@ namespace sdpa {
                   , bool is_master_job
                   , const worker_id_t& owner
                   , const job_requirements_t& job_req_list
-                  )
-      {
-        boost::mutex::scoped_lock const _ (_job_map_mutex);
-
-        Job* pJob = new Job( job_id, desc, is_master_job, owner, job_req_list);
-
-        if (!job_map_.emplace (job_id, pJob).second)
-        {
-          delete pJob;
-          throw std::runtime_error ("job with same id already exists");
-        }
-
-        return pJob;
-      }
+                  );
 
     public:
-      Job* findJob(const sdpa::job_id_t& job_id ) const
-      {
-        boost::mutex::scoped_lock const _ (_job_map_mutex);
-
-        const job_map_t::const_iterator it (job_map_.find( job_id ));
-        return it != job_map_.end() ? it->second : nullptr;
-      }
-      void deleteJob(const sdpa::job_id_t& job_id)
-      {
-        boost::mutex::scoped_lock const _ (_job_map_mutex);
-
-        const job_map_t::const_iterator it (job_map_.find( job_id ));
-        if (it != job_map_.end())
-        {
-          delete it->second;
-          job_map_.erase (it);
-        }
-        else
-        {
-          throw std::runtime_error ("deleteJob: job not found");
-        }
-      }
+      Job* findJob(const sdpa::job_id_t& job_id ) const;
+      void deleteJob(const sdpa::job_id_t& job_id);
 
     private:
       void delayed_cancel (const we::layer::id_type&);
