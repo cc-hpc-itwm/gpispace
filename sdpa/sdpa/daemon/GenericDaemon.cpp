@@ -760,13 +760,15 @@ void GenericDaemon::handleWorkerRegistrationAckEvent
                    )
     );
 
-  //! \todo How to handle Acks for registrations we never sent?
-  if (master_it != _master_info.end())
+  if (master_it == _master_info.end())
   {
-    master_it->second.set_registered (true);
-    master_it->second.resetConsecRegAttempts();
-    master_it->second.resetConsecNetFailCnt();
+    throw std::runtime_error
+      ("workerRegistrationAckEvent from source not in list of masters");
   }
+
+  master_it->second.set_registered (true);
+  master_it->second.resetConsecRegAttempts();
+  master_it->second.resetConsecNetFailCnt();
 
   {
     boost::mutex::scoped_lock const _ (_job_map_mutex);
