@@ -1062,6 +1062,24 @@ bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
   lock_type lock(mtx_subscriber_);
   return _subscriptions.find (agentId) != _subscriptions.end();
 }
+    std::list<agent_id_t> GenericDaemon::subscribers (job_id_t job_id) const
+    {
+      std::list<agent_id_t> ret;
+
+      for (subscriber_map_t::value_type const& subscription : _subscriptions)
+      {
+        for (job_id_t id : subscription.second)
+        {
+          if (id == job_id)
+          {
+            ret.push_back (subscription.first);
+            break;
+          }
+        }
+      }
+
+      return ret;
+    }
 
 /**
  * Event SubmitJobAckEvent

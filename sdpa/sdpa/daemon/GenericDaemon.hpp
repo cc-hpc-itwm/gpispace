@@ -119,6 +119,7 @@ namespace sdpa {
       void unsubscribe(const sdpa::agent_id_t&);
       virtual void handleSubscribeEvent (std::string const& source, const sdpa::events::SubscribeEvent*) override;
       bool isSubscriber(const sdpa::agent_id_t&);
+      std::list<agent_id_t> subscribers (job_id_t) const;
       bool subscribedFor(const sdpa::agent_id_t&, const sdpa::job_id_t&);
 
       // agent info and properties

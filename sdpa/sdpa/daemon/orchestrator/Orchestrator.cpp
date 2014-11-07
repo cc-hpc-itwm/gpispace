@@ -65,25 +65,6 @@ namespace sdpa
       return _rpc_acceptor.local_endpoint();
     }
 
-    std::list<agent_id_t> Orchestrator::subscribers (job_id_t job_id) const
-    {
-      std::list<agent_id_t> ret;
-
-      for (const subscriber_map_t::value_type& subscription : _subscriptions)
-      {
-        for (job_id_t id : subscription.second)
-        {
-          if (id == job_id)
-          {
-            ret.push_back (subscription.first);
-            break;
-          }
-        }
-      }
-
-      return ret;
-    }
-
     void Orchestrator::handleJobFinishedEvent
       (std::string const& source, const events::JobFinishedEvent* pEvt)
     {

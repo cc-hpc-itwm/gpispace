@@ -54,8 +54,6 @@ namespace sdpa {
       boost::asio::ip::tcp::endpoint rpc_local_endpoint() const;
 
     private:
-      std::list<agent_id_t> subscribers (job_id_t job_id) const;
-
       std::vector<std::unique_ptr<fhg::network::connection_type>> _rpc_connections;
       fhg::rpc::service_dispatcher _rpc_dispatcher;
       fhg::network::continous_acceptor<boost::asio::ip::tcp> _rpc_acceptor;
