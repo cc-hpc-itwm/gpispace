@@ -158,7 +158,11 @@ namespace xml
 
             if (old != set.end())
               {
-                throw error::struct_redefined (old->second, *pos);
+                if (!(old->second.signature() == pos->signature()))
+                {
+                  throw error::struct_redefined (old->second, *pos);
+                }
+                //! \todo else warn
               }
 
             set.emplace (pos->name(), *pos);
