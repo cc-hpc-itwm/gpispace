@@ -142,7 +142,7 @@ namespace sdpa
     }
 
     void Agent::handleCancelJobEvent
-      (std::string const& source, const events::CancelJobEvent* pEvt)
+      (std::string const&, const events::CancelJobEvent* pEvt)
     {
       Job* pJob (findJob (pEvt->job_id()));
       if (!pJob)
