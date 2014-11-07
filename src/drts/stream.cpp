@@ -99,8 +99,8 @@ namespace gspc
       if (0 == number_of_slots)
       {
         throw std::logic_error
-          ( "allocated memory is too small to hold slots and meta data. at least "
-          + std::to_string (size_of_slot + 1) + " is required"
+          ( "allocated memory is too small to hold slots and meta data. At least "
+          + std::to_string (size_of_slot + 1) + " bytes are required."
           );
       }
       return number_of_slots;
