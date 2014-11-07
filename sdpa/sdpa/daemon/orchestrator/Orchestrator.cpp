@@ -81,14 +81,8 @@ namespace sdpa
 
       pJob->JobFinished (pEvt->result());
 
-      for (agent_id_t subscriber : subscribers (pEvt->job_id()))
-      {
-        sendEventToOther
-          ( subscriber
-          , events::JobFinishedEvent::Ptr
-            (new events::JobFinishedEvent (pEvt->job_id(), pEvt->result()))
-          );
-      }
+      notify_subscribers<events::JobFinishedEvent>
+        (pEvt->job_id(), pEvt->job_id(), pEvt->result());
 
       try
       {
@@ -115,14 +109,8 @@ namespace sdpa
 
       pJob->JobFailed (pEvt->error_message());
 
-      for (agent_id_t subscriber : subscribers (pEvt->job_id()))
-      {
-        sendEventToOther
-          ( subscriber
-          , events::JobFailedEvent::Ptr
-            (new events::JobFailedEvent (pEvt->job_id(), pEvt->error_message()))
-          );
-      }
+      notify_subscribers<events::JobFailedEvent>
+        (pEvt->job_id(), pEvt->job_id(), pEvt->error_message());
 
       try
       {
@@ -180,14 +168,8 @@ namespace sdpa
         pJob->CancelJobAck();
         _scheduler.delete_job (pEvt->job_id());
 
-        for (agent_id_t subscriber : subscribers (pEvt->job_id()))
-        {
-          sendEventToOther
-            ( subscriber
-            , events::CancelJobAckEvent::Ptr
-              (new events::CancelJobAckEvent (pEvt->job_id()))
-            );
-        }
+        notify_subscribers<events::CancelJobAckEvent>
+          (pEvt->job_id(), pEvt->job_id());
       }
     }
 
@@ -203,14 +185,8 @@ namespace sdpa
 
       pJob->CancelJobAck();
 
-      for (agent_id_t subscriber : subscribers (pEvt->job_id()))
-      {
-        sendEventToOther
-          ( subscriber
-          , events::CancelJobAckEvent::Ptr
-            (new events::CancelJobAckEvent (pEvt->job_id()))
-          );
-      }
+      notify_subscribers<events::CancelJobAckEvent>
+        (pEvt->job_id(), pEvt->job_id());
     }
 
     void Orchestrator::handleDeleteJobEvent

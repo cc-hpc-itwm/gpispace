@@ -690,16 +690,7 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
     m_guiService->notify (evt);
   }
 
-  for (const subscriber_map_t::value_type& pair_subscr_joblist : _subscriptions )
-  {
-    if(subscribedFor(pair_subscr_joblist.first, id))
-    {
-      events::SDPAEvent::Ptr ptrEvt
-        (new events::JobFinishedEvent (id, result.to_string()));
-
-      sendEventToOther(pair_subscr_joblist.first, ptrEvt);
-    }
-  }
+  notify_subscribers<events::JobFinishedEvent> (id, id, result.to_string());
 }
 
 void GenericDaemon::failed( const we::layer::id_type& id
@@ -733,15 +724,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
     m_guiService->notify (evt);
   }
 
-  for (const subscriber_map_t::value_type& pair_subscr_joblist : _subscriptions )
-  {
-    if(subscribedFor(pair_subscr_joblist.first, id))
-    {
-        events::JobFailedEvent::Ptr ptrEvt
-          (new events::JobFailedEvent (id, reason));
-      sendEventToOther(pair_subscr_joblist.first, ptrEvt);
-    }
-  }
+  notify_subscribers<events::JobFailedEvent> (id, id, reason);
 }
 
 void GenericDaemon::canceled (const we::layer::id_type& job_id)

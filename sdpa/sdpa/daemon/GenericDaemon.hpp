@@ -63,6 +63,8 @@
 
 #include <fhglog/LogMacros.hpp>
 
+#include <boost/make_shared.hpp>
+
 #include <memory>
 #include <random>
 
@@ -120,6 +122,14 @@ namespace sdpa {
       virtual void handleSubscribeEvent (std::string const& source, const sdpa::events::SubscribeEvent*) override;
       bool isSubscriber(const sdpa::agent_id_t&);
       std::list<agent_id_t> subscribers (job_id_t) const;
+      template<typename Event, typename... Args>
+        void notify_subscribers (job_id_t job_id, Args... args)
+      {
+        for (agent_id_t const& subscriber : subscribers (job_id))
+        {
+          sendEventToOther (subscriber, boost::make_shared<Event> (args...));
+        }
+      }
       bool subscribedFor(const sdpa::agent_id_t&, const sdpa::job_id_t&);
 
       // agent info and properties
