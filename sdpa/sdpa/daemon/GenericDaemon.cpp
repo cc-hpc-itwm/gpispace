@@ -112,7 +112,7 @@ GenericDaemon::GenericDaemon( const std::string name
   : _logger (fhg::log::Logger::get (name))
   , _name (name)
   , _master_info (make_map_with_keys_and_default_value<MasterInfo> (masters))
-  , m_listSubscribers()
+  , _subscriptions()
   , _discover_sources()
   , _job_map_mutex()
   , job_map_()
@@ -690,7 +690,7 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
     m_guiService->notify (evt);
   }
 
-  for (const subscriber_map_t::value_type& pair_subscr_joblist : m_listSubscribers )
+  for (const subscriber_map_t::value_type& pair_subscr_joblist : _subscriptions )
   {
     if(subscribedFor(pair_subscr_joblist.first, id))
     {
@@ -733,7 +733,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
     m_guiService->notify (evt);
   }
 
-  for (const subscriber_map_t::value_type& pair_subscr_joblist : m_listSubscribers )
+  for (const subscriber_map_t::value_type& pair_subscr_joblist : _subscriptions )
   {
     if(subscribedFor(pair_subscr_joblist.first, id))
     {
@@ -984,14 +984,14 @@ void GenericDaemon::addCapability(const capability_t& cpb)
 void GenericDaemon::unsubscribe(const sdpa::agent_id_t& id)
 {
   lock_type lock(mtx_subscriber_);
-  m_listSubscribers.erase(id);
+  _subscriptions.erase(id);
 }
 
 bool GenericDaemon::subscribedFor(const sdpa::agent_id_t& agId, const sdpa::job_id_t& jobId)
 {
   return std::find
-    (m_listSubscribers[agId].begin(), m_listSubscribers[agId].end(), jobId)
-    != m_listSubscribers[agId].end();
+    (_subscriptions[agId].begin(), _subscriptions[agId].end(), jobId)
+    != _subscriptions[agId].end();
 }
 
 void GenericDaemon::handleSubscribeEvent
@@ -1012,7 +1012,7 @@ void GenericDaemon::handleSubscribeEvent
   // allow to subscribe multiple times with different lists of job ids
   if (!subscribedFor (source, jobId))
   {
-    m_listSubscribers[source].push_back (jobId);
+    _subscriptions[source].push_back (jobId);
   }
 
   sdpa::events::SubscribeAckEvent::Ptr ptrSubscAckEvt
@@ -1060,7 +1060,7 @@ void GenericDaemon::handleSubscribeEvent
 bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
 {
   lock_type lock(mtx_subscriber_);
-  return m_listSubscribers.find (agentId) != m_listSubscribers.end();
+  return _subscriptions.find (agentId) != _subscriptions.end();
 }
 
 /**

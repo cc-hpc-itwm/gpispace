@@ -275,7 +275,7 @@ namespace sdpa {
 
       master_info_t _master_info;
       typedef std::map<agent_id_t, job_id_list_t> subscriber_map_t;
-      subscriber_map_t m_listSubscribers;
+      subscriber_map_t _subscriptions;
 
     private:
       std::unordered_map<std::pair<job_id_t, job_id_t>, std::string>

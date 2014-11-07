@@ -69,7 +69,7 @@ namespace sdpa
     {
       std::list<agent_id_t> ret;
 
-      for (const subscriber_map_t::value_type& subscription : m_listSubscribers)
+      for (const subscriber_map_t::value_type& subscription : _subscriptions)
       {
         for (job_id_t id : subscription.second)
         {
