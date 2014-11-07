@@ -19,9 +19,9 @@
 #include <we/type/value/peek.hpp>
 
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <fhg/util/boost/test/printer/set.hpp>
 #include <fhg/util/macros.hpp>
 #include <fhg/util/read_file.hpp>
-#include <fhg/util/temporary_file.hpp>
 #include <fhg/util/temporary_path.hpp>
 
 #include <boost/filesystem.hpp>
@@ -31,6 +31,7 @@
 
 #include <chrono>
 #include <functional>
+#include <set>
 #include <string>
 #include <thread>
 
@@ -41,7 +42,6 @@ namespace share_example_stream_test
     ( std::string const& workflow_name
     , std::function<std::string (unsigned long size_slot)> const& topology
     , std::chrono::duration<R, P> const& sleep_after_produce
-    , double IFDEF_NDEBUG (allowed_maximum_round_trip_time)
     , double IFDEF_NDEBUG (allowed_average_round_trip_time)
     )
   {
@@ -97,11 +97,6 @@ namespace share_example_stream_test
 
     vm.notify();
 
-    fhg::util::temporary_file const temporary_file
-      (shared_directory / boost::filesystem::unique_path());
-
-    boost::filesystem::path const log_file (temporary_file);
-
     gspc::installation const installation (vm);
 
     test::make const make
@@ -133,8 +128,10 @@ namespace share_example_stream_test
 
     workflow.set_wait_for_output();
 
+    unsigned long const rounds (20 * num_slots);
+
     gspc::job_id_t const job_id
-      (client.submit (workflow, {{"log_file", log_file.string()}}));
+      (client.submit (workflow, {{"rounds", rounds}}));
 
     gspc::stream stream
       (drts.create_stream ( "stream_test"
@@ -149,9 +146,7 @@ namespace share_example_stream_test
 
     std::chrono::high_resolution_clock clock;
 
-    std::ostringstream expected_output;
-
-    unsigned long rounds (20 * num_slots);
+    std::set<std::string> expected_output;
 
     for (unsigned long id (0); id < rounds; ++id)
     {
@@ -162,7 +157,7 @@ namespace share_example_stream_test
 
       std::string const data ((boost::format ("%1% %2%") % id % now).str());
 
-      expected_output << data << std::endl;
+      expected_output.emplace (data);
 
       stream.write (data);
 
@@ -175,31 +170,39 @@ namespace share_example_stream_test
       (client.wait_and_extract (job_id));
 
     BOOST_REQUIRE_EQUAL (result.count ("done"), 1);
-    BOOST_REQUIRE_EQUAL (result.count ("statistic"), rounds);
+    BOOST_REQUIRE_EQUAL (result.count ("statistic"), 1);
+    BOOST_REQUIRE_EQUAL (result.count ("packages"), rounds);
 
 #ifdef NDEBUG
-    for ( pnet::type::value::value_type const& statistic
-        : result.equal_range ("statistic") | boost::adaptors::map_values
-        )
     {
-      BOOST_REQUIRE (!!pnet::type::value::peek ("max", statistic));
-      BOOST_REQUIRE_LE
-        ( boost::get<double> (*pnet::type::value::peek ("max", statistic))
-        , allowed_maximum_round_trip_time
-        );
-      BOOST_REQUIRE (!!pnet::type::value::peek ("sum", statistic));
+      pnet::type::value::value_type const& statistic
+        (result.find ("statistic")->second);
+
       BOOST_REQUIRE (!!pnet::type::value::peek ("count", statistic));
+      BOOST_REQUIRE_EQUAL
+        ( boost::get<unsigned long>
+          (*pnet::type::value::peek ("count", statistic)) + 1UL
+        , rounds
+        );
+
+      BOOST_REQUIRE (!!pnet::type::value::peek ("sum", statistic));
       BOOST_REQUIRE_LE
         ( boost::get<double> (*pnet::type::value::peek ("sum", statistic))
-        , boost::get<unsigned long>
-            (*pnet::type::value::peek ("count", statistic))
-        * allowed_average_round_trip_time
+        , rounds * allowed_average_round_trip_time
         );
     }
 #endif
 
-    BOOST_REQUIRE_EQUAL
-      (expected_output.str(), fhg::util::read_file (log_file));
+    std::set<std::string> output;
+
+    for ( pnet::type::value::value_type const& package
+        : result.equal_range ("packages") | boost::adaptors::map_values
+        )
+    {
+      output.emplace (boost::get<std::string> (package));
+    }
+
+    BOOST_REQUIRE_EQUAL (expected_output, output);
   }
 }
 

@@ -8,25 +8,46 @@
 
   <include-structs href="statistics.xpnet"/>
 
-  <in name="log_file" type="string" place="log_file"/>
+  <in name="rounds" type="unsigned long" place="rounds"/>
 
   <out name="done" type="control" place="done"/>
   <out name="statistic" type="Statistic" place="statistic"/>
+  <out name="packages" type="string" place="packages"/>
 
   <net>
-    <place name="log_file" type="string"/>
     <place name="done" type="control"/>
     <place name="statistic" type="Statistic"/>
+    <place name="packages" type="string"/>
+    <place name="rounds" type="unsigned long"/>
 
     <place name="stop" type="control"/>
 
     <transition name="done">
       <defun>
+        <in name="rounds" type="unsigned long"/>
+        <in name="statistic" type="Statistic"/>
         <inout name="trigger" type="control"/>
         <expression/>
+        <condition>
+          ${statistic.count} + 1UL :ge: ${rounds}
+        </condition>
       </defun>
       <connect-in port="trigger" place="stop"/>
       <connect-out port="trigger" place="done"/>
+      <connect-in port="rounds" place="rounds"/>
+      <connect-read port="statistic" place="statistic"/>
+    </transition>
+    <transition name="not_done">
+      <defun>
+        <in name="rounds" type="unsigned long"/>
+        <in name="statistic" type="Statistic"/>
+        <expression/>
+        <condition>
+          ${statistic.count} + 1UL :lt: ${rounds}
+        </condition>
+      </defun>
+      <connect-read port="rounds" place="rounds"/>
+      <connect-in port="statistic" place="statistic"/>
     </transition>
 
     <place name="work_package" type="work_package"/>
@@ -34,9 +55,9 @@
     <transition name="process_and_mark_free">
       <defun>
         <require key="process_and_mark_free" mandatory="true"/>
-        <in name="log_file" type="string"/>
         <in name="work_package" type="work_package"/>
         <out name="statistic" type="Statistic"/>
+        <out name="package" type="string"/>
         <memory-buffer name="ptr_data" read-only="true">
           <size>
             ${work_package.data.size}
@@ -71,11 +92,11 @@
           </local>
         </memory-put>
         <module name="stream"
-                function="process ( log_file
-                                  , work_package
+                function="process ( work_package
                                   , ptr_data
                                   , ptr_flag
                                   , statistic
+                                  , package
                                   )">
           <cinclude href="drts/stream.hpp"/>
           <cinclude href="process.hpp"/>
@@ -85,27 +106,32 @@
           <code><![CDATA[
           static fhg::util::statistic delta ("mark_free: delta");
 
-          std::chrono::high_resolution_clock::rep const produced
-            ( share_example_stream::process
-              (log_file, {ptr_data, work_package.data.size})
+          std::pair< unsigned long
+                   , std::chrono::high_resolution_clock::rep
+                   > const content_of_package
+            ( share_example_stream::process ({ptr_data, work_package.data.size})
             );
 
           gspc::stream::mark_free
             (work_package.flag, {ptr_flag, work_package.meta.size});
 
-          delta.tick (delta.now() - produced);
+          delta.tick (delta.now() - content_of_package.second);
 
           statistic.min = delta.min();
           statistic.max = delta.max();
           statistic.sum = delta.sum();
           statistic.sqsum = delta.sqsum();
-          statistic.count = delta.count();
+          statistic.count = content_of_package.first;
+
+          package = std::to_string (content_of_package.first)
+                  + " "
+                  + std::to_string (content_of_package.second);
           ]]></code>
         </module>
       </defun>
-      <connect-read port="log_file" place="log_file"/>
       <connect-in port="work_package" place="work_package"/>
       <connect-out port="statistic" place="statistic"/>
+      <connect-out port="package" place="packages"/>
     </transition>
   </net>
 </defun>
