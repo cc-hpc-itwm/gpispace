@@ -74,6 +74,7 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/read.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/show.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/to_value.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/we/type/value/from_value.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/unwrap.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/wrap.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/util/wfhd.h"
