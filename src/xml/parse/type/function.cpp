@@ -1095,7 +1095,7 @@ namespace xml
           ( function_specialize
             ( map
             , get
-            , st::join (known_structs, st::make (structs), state)
+            , st::join (known_structs, st::make (structs, state), state)
             , state
             , *this
             )
