@@ -145,7 +145,9 @@ namespace xml
 
     namespace structure_type_util
     {
-      set_type make (const type::structs_type & structs)
+      set_type make ( const type::structs_type & structs
+                    , xml::parse::state::type const& state
+                    )
       {
         set_type set;
 
@@ -158,7 +160,14 @@ namespace xml
 
             if (old != set.end())
               {
-                throw error::struct_redefined (old->second, *pos);
+                if (old->second.signature() == pos->signature())
+                {
+                  state.warn (warning::struct_redefined (old->second, *pos));
+                }
+                else
+                {
+                  throw error::struct_redefined (old->second, *pos);
+                }
               }
 
             set.emplace (pos->name(), *pos);

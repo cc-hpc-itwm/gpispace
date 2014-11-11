@@ -112,6 +112,7 @@ namespace xml
         , _Wvirtual_place_not_tunneled (true)
         , _Wduplicate_template_parameter (true)
         , _Wsynthesize_anonymous_function (true)
+        , _Wstruct_redefined (true)
 
         , _dump_xml_file ("")
         , _dump_dependencies ("")
@@ -163,6 +164,7 @@ namespace xml
         , _OWvirtual_place_not_tunneled ("Wvirtual-place-not-tunneled")
         , _OWduplicate_template_parameter ("Wduplicate-template-parameter")
         , _OWsynthesize_anonymous_function ("Wsynthesize-anonymous-function")
+        , _OWstruct_redefined ("Wstruct-redefined")
 
         , _Odump_xml_file ("dump-xml-file,d")
         , _Odump_dependencies ("dump-dependencies,M")
@@ -480,6 +482,7 @@ namespace xml
       ACCESS (Wvirtual_place_not_tunneled)
       ACCESS (Wduplicate_template_parameter)
       ACCESS (Wsynthesize_anonymous_function)
+      ACCESS (Wstruct_redefined)
 
       ACCESS (no_inline)
       ACCESS (synthesize_virtual_places)
@@ -529,6 +532,7 @@ namespace xml
       WARN (duplicate_template_parameter)
       WARN_(struct_shadowed,shadow_struct)
       WARN (synthesize_anonymous_function)
+      WARN (struct_redefined)
 
 #undef WARN
 #undef WARN_
@@ -676,6 +680,10 @@ namespace xml
           ( _OWsynthesize_anonymous_function.c_str()
           , BOOLVAL (Wsynthesize_anonymous_function)
           , "warn when a anonymous top level function is synthesized"
+          )
+          ( _OWstruct_redefined.c_str()
+          , BOOLVAL (Wstruct_redefined)
+          , "warn when a struct is visible via two paths"
           )
           ;
 
