@@ -438,6 +438,19 @@ BOOST_AUTO_TEST_CASE (token_cmp)
   check_equality ("y(4)", "y()", false);
   check_equality ("y()", "y(4)", false);
   check_equality ("y(4)", "y(4)", true);
+
+  check_equality ("Struct[]", "Struct[]", true);
+  check_equality ("Struct[a:=0]", "Struct[a:=0]", true);
+  check_equality ("Struct[a:=0]", "Struct[a:=1]", false);
+
+  require_ctor_exception<pnet::exception::eval>
+    ( "Struct [a:=0] == Struct [b:=0]"
+    , "type error: eval  ==  (Struct [a := 0], Struct [b := 0])"
+    );
+  require_ctor_exception<pnet::exception::eval>
+    ( "Struct [a:=0] == Struct [a:=0L]"
+    , "type error: eval  ==  (0, 0L)"
+    );
 }
 
 namespace
