@@ -371,6 +371,17 @@ namespace
   }
 }
 
+namespace
+{
+  template<typename T>
+    void require_ctor_exception
+    (std::string const& input, std::string const& message)
+  {
+    fhg::util::boost::test::require_exception<T>
+      ([&input]() { (void)expr::parse::parser (input); }, message);
+  }
+}
+
 BOOST_AUTO_TEST_CASE (token_cmp)
 {
 #define CHECK(_lhs, _rhs, _lt, _le, _gt, _ge, _eq)                      \
@@ -774,14 +785,6 @@ BOOST_AUTO_TEST_CASE (token_max)
 
 namespace
 {
-  template<typename T>
-    void require_ctor_exception
-    (std::string const& input, std::string const& message)
-  {
-    fhg::util::boost::test::require_exception<T>
-      ([&input]() { (void)expr::parse::parser (input); }, message);
-  }
-
   template<typename T>
     T minus (T const& l, T const& r)
   {
