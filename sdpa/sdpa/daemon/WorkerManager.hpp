@@ -34,9 +34,9 @@ namespace sdpa
 
       void deleteWorker (const worker_id_t& workerId);
 
-      void getCapabilities (sdpa::capabilities_set_t& cpbset);
+      void getCapabilities (sdpa::capabilities_set_t& cpbset) const;
 
-      std::set<worker_id_t> getAllNonReservedWorkers();
+      std::set<worker_id_t> getAllNonReservedWorkers() const;
 
       mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers (const job_requirements_t&, const std::set<worker_id_t>&) const;
 
