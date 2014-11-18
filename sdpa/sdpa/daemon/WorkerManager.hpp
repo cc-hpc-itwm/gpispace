@@ -36,7 +36,6 @@ namespace sdpa
 
       void getCapabilities (sdpa::capabilities_set_t& cpbset);
 
-      sdpa::job_id_list_t getJobListAndCleanQueues (const  Worker::ptr_t& pWorker);
       std::set<worker_id_t> getAllNonReservedWorkers();
 
       mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers (const job_requirements_t&, const std::set<worker_id_t>&) const;
