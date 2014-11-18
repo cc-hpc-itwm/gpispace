@@ -25,12 +25,12 @@ namespace sdpa
       const boost::optional<worker_id_t> findSubmOrAckWorker (const sdpa::job_id_t& job_id) const;
 
       //! returns whether worker was actually added (i.e. false when already there)
-    bool addWorker ( const worker_id_t& workerId
-                   , boost::optional<unsigned int> capacity
-                   , const capabilities_set_t& cpbset
-                   , const bool children_allowed
-                   , const std::string& hostname
-                   );
+      bool addWorker ( const worker_id_t& workerId
+                     , boost::optional<unsigned int> capacity
+                     , const capabilities_set_t& cpbset
+                     , const bool children_allowed
+                     , const std::string& hostname
+                     );
 
       void deleteWorker (const worker_id_t& workerId);
 
