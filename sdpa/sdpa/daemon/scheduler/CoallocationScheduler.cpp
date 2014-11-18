@@ -135,14 +135,11 @@ namespace sdpa
 
     void CoallocationScheduler::assignJobsToWorkers()
     {
-      std::set<worker_id_t> setAvailWorkers
-        (worker_manager().getAllNonReservedWorkers());
-
       std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
 
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
 
-      while (!setAvailWorkers.empty() && !jobs_to_schedule.empty())
+      while (!jobs_to_schedule.empty())
       {
         sdpa::job_id_t jobId (jobs_to_schedule.front());
         jobs_to_schedule.pop_front();
@@ -150,7 +147,7 @@ namespace sdpa
         const job_requirements_t& requirements (_job_requirements (jobId));
         const std::set<worker_id_t> matching_workers
           ( find_job_assignment_minimizing_memory_transfer_cost
-            ( worker_manager().getMatchingDegreesAndWorkers (requirements, setAvailWorkers)
+            ( worker_manager().getMatchingDegreesAndWorkers (requirements)
             , requirements.numWorkers()
             , requirements.transfer_cost()
             )
@@ -158,18 +155,6 @@ namespace sdpa
 
         if (!matching_workers.empty())
         {
-          std::set<worker_id_t> set_free_workers_left;
-          std::set_difference ( setAvailWorkers.begin()
-                              , setAvailWorkers.end()
-                              , matching_workers.begin()
-                              , matching_workers.end()
-                              , std::inserter ( set_free_workers_left
-                                              , set_free_workers_left.begin()
-                                              )
-                              );
-
-          setAvailWorkers.swap (set_free_workers_left);
-
           boost::mutex::scoped_lock const _ (mtx_alloc_table_);
 
           allocation_table_t::iterator it (allocation_table_.find (jobId));

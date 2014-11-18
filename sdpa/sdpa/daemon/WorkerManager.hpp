@@ -38,7 +38,7 @@ namespace sdpa
 
       std::set<worker_id_t> getAllNonReservedWorkers() const;
 
-      mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers (const job_requirements_t&, const std::set<worker_id_t>&) const;
+      mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers (const job_requirements_t&) const;
 
   private:
       worker_map_t  worker_map_;
