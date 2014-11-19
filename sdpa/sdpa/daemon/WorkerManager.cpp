@@ -26,6 +26,8 @@
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/count_if.hpp>
+#include <boost/range/algorithm/copy.hpp>
+#include <boost/range/algorithm_ext/push_back.hpp>
 
 #include <unordered_map>
 
@@ -102,13 +104,16 @@ namespace sdpa
     {
       boost::mutex::scoped_lock const _ (mtx_);
       std::set<worker_id_t> set_workers;
-
-      for (Worker::ptr_t const& worker : worker_map_ | boost::adaptors::map_values)
+      for ( Worker::ptr_t ptr_worker
+          : worker_map_
+          | boost::adaptors::map_values
+          | boost::adaptors::filtered
+             ([](const Worker::ptr_t& ptr_worker)
+               {return !ptr_worker->isReserved();}
+             )
+          )
       {
-        if (!worker->isReserved())
-        {
-          set_workers.insert (worker->name());
-        }
+        set_workers.insert (ptr_worker->name());
       }
 
       return set_workers;
