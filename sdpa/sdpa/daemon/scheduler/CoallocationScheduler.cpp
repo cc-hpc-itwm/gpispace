@@ -116,7 +116,8 @@ namespace sdpa
         const worker_id_host_info_t& worker_info = it->second;
 
         bpq.push (std::make_tuple ( transfer_cost (worker_info.worker_host())
-                                  , it->first, worker_info.worker_id()
+                                  , it->first
+                                  , worker_info.worker_id()
                                   )
                  );
       }
