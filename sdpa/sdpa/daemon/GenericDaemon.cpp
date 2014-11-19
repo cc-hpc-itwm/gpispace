@@ -300,7 +300,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
                     , e.description()
                     , hasWorkflowEngine()
                     , e.from()
-                    , {{}, we::type::schedule_data(), null_transfer_cost}
+                    , {{}, we::type::schedule_data(), null_transfer_cost, 1.0} //!Note: an estimation of the computational cost of a master job?
                     )
              );
 
@@ -580,6 +580,7 @@ try
          , job_requirements_t ( activity.transition().requirements()
                               , schedule_data
                               , _virtual_memory_api->transfer_costs (activity)
+                              , 0.0 //!Note: to be updated with an adequate computational cost estimation
                               )
          );
 

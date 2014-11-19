@@ -7,6 +7,8 @@
 
 namespace
 {
+  const double computational_cost = 1.0;
+
   std::vector<std::string> generate_worker_names (const int n)
   {
     std::vector<std::string> worker_ids (n);
@@ -56,6 +58,7 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
                                      }
                                     , we::type::schedule_data()
                                     , null_transfer_cost
+                                    , computational_cost
                                     }
                                    );
 
