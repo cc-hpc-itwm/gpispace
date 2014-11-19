@@ -103,7 +103,7 @@ namespace sdpa
     std::set<worker_id_t> WorkerManager::getAllNonReservedWorkers() const
     {
       boost::mutex::scoped_lock const _ (mtx_);
-      std::set<worker_id_t> set_workers;
+      std::set<worker_id_t> free_workers;
       for ( Worker::ptr_t ptr_worker
           : worker_map_
           | boost::adaptors::map_values
@@ -113,10 +113,10 @@ namespace sdpa
              )
           )
       {
-        set_workers.insert (ptr_worker->name());
+        free_workers.insert (ptr_worker->name());
       }
 
-      return set_workers;
+      return free_workers;
     }
 
     void WorkerManager::getCapabilities (sdpa::capabilities_set_t& agentCpbSet) const
