@@ -568,6 +568,7 @@ try
   const we::type::schedule_data schedule_data
     (activity.transition().get_schedule_data<unsigned long> (activity.input(), "num_worker"));
 
+  const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
   if (schedule_data.num_worker() && schedule_data.num_worker().get() == 0UL)
   {
     throw std::runtime_error ("invalid number of workers required: 0UL");
@@ -580,7 +581,7 @@ try
          , job_requirements_t ( activity.transition().requirements()
                               , schedule_data
                               , _virtual_memory_api->transfer_costs (activity)
-                              , 0.0 //!Note: to be updated with an adequate computational cost estimation
+                              , computational_cost
                               )
          );
 
