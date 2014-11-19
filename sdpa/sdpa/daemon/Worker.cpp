@@ -34,12 +34,24 @@ namespace sdpa
     bool Worker::has_job( const job_id_t& job_id )
     {
       lock_type const _ (mtx_);
-      return submitted_.count (job_id) || acknowledged_.count (job_id);
+      return pending_.count (job_id)
+        || submitted_.count (job_id)
+        || acknowledged_.count (job_id);
+    }
+
+    void Worker::assign (const job_id_t& jobId)
+    {
+      lock_type const _ (mtx_);
+      pending_.insert (jobId);
     }
 
     void Worker::submit (const job_id_t& jobId)
     {
       lock_type const _ (mtx_);
+      if (!pending_.erase (jobId))
+      {
+        throw std::runtime_error ("subnmit: no pending job with the id " + jobId + " was found!");
+      }
       submitted_.insert (jobId);
       if (!children_allowed_)
       {
@@ -60,6 +72,7 @@ namespace sdpa
     void Worker::deleteJob(const job_id_t &job_id)
     {
       lock_type const _ (mtx_);
+      pending_.erase (job_id);
       submitted_.erase (job_id);
       acknowledged_.erase (job_id);
       free();
@@ -145,8 +158,10 @@ namespace sdpa
       lock_type const _ (mtx_);
       std::set<job_id_t> listAssignedJobs;
 
+      listAssignedJobs.insert (pending_.begin(), pending_.end());
       listAssignedJobs.insert (submitted_.begin(), submitted_.end());
       listAssignedJobs.insert (acknowledged_.begin(), acknowledged_.end());
+      pending_.clear();
       submitted_.clear();
       acknowledged_.clear();
 

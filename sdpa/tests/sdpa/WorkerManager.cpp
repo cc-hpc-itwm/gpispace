@@ -131,9 +131,14 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
 
   const sdpa::daemon::Worker::ptr_t ptrWorker (worker_manager.findWorker (worker_ids[0]));
   const sdpa::job_id_t job_id (fhg::util::random_string());
-  ptrWorker->submit (job_id);
 
+  ptrWorker->assign (job_id);
   boost::optional<sdpa::worker_id_t> worker_id (worker_manager.findSubmOrAckWorker (job_id));
+  BOOST_REQUIRE (worker_id);
+  BOOST_REQUIRE_EQUAL (*worker_id, worker_ids[0]);
+
+  ptrWorker->submit (job_id);
+  worker_id = worker_manager.findSubmOrAckWorker (job_id);
   BOOST_REQUIRE (worker_id);
   BOOST_REQUIRE_EQUAL (*worker_id, worker_ids[0]);
 

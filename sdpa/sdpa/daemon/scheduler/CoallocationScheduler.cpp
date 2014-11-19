@@ -167,12 +167,18 @@ namespace sdpa
           {
             for (worker_id_t const& worker : matching_workers)
             {
-              worker_manager().findWorker (worker)->submit (jobId);
+              worker_manager().findWorker (worker)->assign (jobId);
             }
-            _serve_job (worker_id_list_t (matching_workers.begin(), matching_workers.end()), jobId);
 
             Reservation* pReservation (new Reservation (matching_workers));
             allocation_table_.emplace (jobId, pReservation);
+
+            _serve_job (worker_id_list_t (matching_workers.begin(), matching_workers.end()), jobId);
+
+            for (worker_id_t const& worker : matching_workers)
+            {
+              worker_manager().findWorker (worker)->submit (jobId);
+            }
           }
           catch (std::runtime_error const&)
           {
