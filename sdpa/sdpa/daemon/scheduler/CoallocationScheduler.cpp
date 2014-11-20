@@ -148,6 +148,22 @@ namespace sdpa
                                                        );
     }
 
+    double CoallocationScheduler::compute_reservation_cost
+      ( const job_id_t& job_id
+      , const std::set<worker_id_t>& workers
+      , const std::function<std::string (const sdpa::worker_id_t& wid)> host
+      ) const
+    {
+      const job_requirements_t& requirements (_job_requirements (job_id));
+
+      return std::accumulate ( workers.begin()
+                             , workers.end()
+                             , 0.0
+                             , [&requirements,host] (const double total, const sdpa::worker_id_t wid)
+                               {return total + requirements.transfer_cost() (host (wid));}
+                             );
+    }
+
     void CoallocationScheduler::assignJobsToWorkers()
     {
       std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
