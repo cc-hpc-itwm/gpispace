@@ -202,7 +202,15 @@ namespace sdpa
               worker_manager().findWorker (worker)->assign (jobId);
             }
 
-            Reservation* pReservation (new Reservation (matching_workers));
+            Reservation* pReservation
+              (new Reservation ( matching_workers
+                               , compute_reservation_cost ( jobId
+                                                          , matching_workers
+                                                          , std::bind (&WorkerManager::host, &_worker_manager, std::placeholders::_1)
+                                                          )
+                               )
+              );
+
             allocation_table_.emplace (jobId, pReservation);
 
             _serve_job (worker_id_list_t (matching_workers.begin(), matching_workers.end()), jobId);

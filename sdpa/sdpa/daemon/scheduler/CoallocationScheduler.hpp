@@ -93,8 +93,9 @@ namespace sdpa
       public:
         typedef enum {FINISHED, FAILED, CANCELED} result_type;
 
-        Reservation (std::set<worker_id_t> workers)
+        Reservation (std::set<worker_id_t> workers, double cost)
           : m_list_workers (workers.begin(), workers.end())
+        , _cost (cost)
         {}
 
         void storeWorkerResult
@@ -148,9 +149,11 @@ namespace sdpa
           return list_not_terminated_workers;
         }
 
+        double cost() const {return _cost;}
       private:
         sdpa::worker_id_list_t m_list_workers;
         std::map<sdpa::worker_id_t, result_type> m_map_worker_result;
+        double _cost;
       };
 
       mutable boost::mutex mtx_alloc_table_;
