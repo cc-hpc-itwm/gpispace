@@ -42,7 +42,7 @@ namespace sdpa
 
       mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers (const job_requirements_t&) const;
 
-  private:
+    private:
       worker_map_t  worker_map_;
 
       mutable boost::mutex mtx_;
