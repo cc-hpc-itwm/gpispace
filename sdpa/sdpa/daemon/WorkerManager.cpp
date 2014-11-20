@@ -35,6 +35,11 @@ namespace sdpa
 {
   namespace daemon
   {
+    std::string WorkerManager::host (const sdpa::worker_id_t& worker) const
+    {
+      return worker_map_.at(worker)->hostname();
+    }
+
     Worker::ptr_t WorkerManager::findWorker (const worker_id_t& worker_id)
     {
       boost::mutex::scoped_lock const _ (mtx_);
