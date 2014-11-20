@@ -95,6 +95,46 @@ namespace sdpa
       };
     }
 
+    std::set<worker_id_t> CoallocationScheduler::find_job_assignment_minimizing_total_cost
+       ( const mmap_match_deg_worker_id_t& mmap_matching_workers
+       , const size_t n_req_workers
+       , const std::function<double (std::string const&)> transfer_cost
+       , const double computational_cost
+       )
+     {
+       if (mmap_matching_workers.size() < n_req_workers)
+         return {};
+
+       std::set<worker_id_t> assigned_workers;
+
+       bounded_priority_queue_t bpq (n_req_workers);
+
+       for ( mmap_match_deg_worker_id_t::const_iterator it = mmap_matching_workers.begin()
+           ; it != mmap_matching_workers.end()
+           ; ++it
+           )
+       {
+         const worker_id_host_info_t& worker_info = it->second;
+
+         bpq.push (std::make_tuple ( transfer_cost (worker_info.worker_host()) + computational_cost
+                                   , it->first
+                                   , worker_info.worker_id()
+                                   )
+                  );
+       }
+
+       std::transform ( bpq.begin()
+                      , bpq.end()
+                      , std::inserter (assigned_workers, assigned_workers.begin())
+                      , [] (const cost_deg_wid_t& cost_deg_wid) -> worker_id_t
+                        {
+                          return  std::get<2> (cost_deg_wid);
+                        }
+                      );
+
+       return assigned_workers;
+     }
+
     std::set<worker_id_t> CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
       ( const mmap_match_deg_worker_id_t& mmap_matching_workers
       , const size_t n_req_workers

@@ -54,6 +54,13 @@ namespace sdpa
         , const std::function<double (std::string const&)> transfer_cost
         );
 
+      static std::set<worker_id_t> find_job_assignment_minimizing_total_cost
+        ( const mmap_match_deg_worker_id_t& mmap_matching_workers
+        , const size_t n_req_workers
+        , const std::function<double (std::string const&)> transfer_cost
+        , const double computational_cost
+        );
+
     private:
       std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)>
         _serve_job;
