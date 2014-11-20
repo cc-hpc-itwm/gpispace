@@ -161,12 +161,12 @@ namespace sdpa
 
         const job_requirements_t& requirements (_job_requirements (jobId));
         const std::set<worker_id_t> matching_workers
-          ( find_job_assignment_minimizing_total_cost
-            ( worker_manager().getMatchingDegreesAndWorkers (requirements)
-            , requirements.numWorkers()
-            , requirements.transfer_cost()
-            , requirements.computational_cost()
-            )
+          (find_job_assignment_minimizing_total_cost
+             ( worker_manager().getMatchingDegreesAndWorkers (requirements)
+             , requirements.numWorkers()
+             , requirements.transfer_cost()
+             , requirements.computational_cost()
+             )
           );
 
         if (!matching_workers.empty())
