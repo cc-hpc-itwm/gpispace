@@ -141,37 +141,11 @@ namespace sdpa
       , const std::function<double (std::string const&)> transfer_cost
       )
     {
-      if (mmap_matching_workers.size() < n_req_workers)
-        return {};
-
-      std::set<worker_id_t> assigned_workers;
-
-      bounded_priority_queue_t bpq (n_req_workers);
-
-      for ( mmap_match_deg_worker_id_t::const_iterator it = mmap_matching_workers.begin()
-          ; it != mmap_matching_workers.end()
-          ; ++it
-          )
-      {
-        const worker_id_host_info_t& worker_info = it->second;
-
-        bpq.push (std::make_tuple ( transfer_cost (worker_info.worker_host())
-                                  , it->first
-                                  , worker_info.worker_id()
-                                  )
-                 );
-      }
-
-      std::transform ( bpq.begin()
-                     , bpq.end()
-                     , std::inserter (assigned_workers, assigned_workers.begin())
-                     , [] (const cost_deg_wid_t& cost_deg_wid) -> worker_id_t
-                       {
-                         return  std::get<2> (cost_deg_wid);
-                       }
-                     );
-
-      return assigned_workers;
+      return find_job_assignment_minimizing_total_cost ( mmap_matching_workers
+                                                       , n_req_workers
+                                                       , transfer_cost
+                                                       , 0.0
+                                                       );
     }
 
     void CoallocationScheduler::assignJobsToWorkers()
