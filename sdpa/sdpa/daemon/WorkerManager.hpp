@@ -42,6 +42,8 @@ namespace sdpa
 
       mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers (const job_requirements_t&) const;
 
+      double cost_assigned_jobs (const worker_id_t, std::function<double (job_id_t job_id)>);
+
     private:
       worker_map_t  worker_map_;
 

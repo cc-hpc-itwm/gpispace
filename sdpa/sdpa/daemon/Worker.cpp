@@ -4,6 +4,7 @@
 #include <fhg/util/now.hpp>
 #include <iostream>
 #include <algorithm>
+#include <numeric>
 
 namespace sdpa
 {
@@ -166,6 +167,37 @@ namespace sdpa
       acknowledged_.clear();
 
       return listAssignedJobs;
+    }
+
+    double Worker::cost_assigned_jobs
+      (std::function<double (job_id_t job_id)> cost_reservation)
+    {
+      lock_type const _ (mtx_);
+      return ( std::accumulate ( pending_.begin()
+                               , pending_.end()
+                               , 0.0
+                               , [&cost_reservation] (double total_cost, job_id_t job_id)
+                                 {
+                                   return total_cost + cost_reservation (job_id);
+                                 }
+                               )
+             + std::accumulate ( submitted_.begin()
+                               , submitted_.end()
+                               , 0.0
+                               , [&cost_reservation] (double total_cost, job_id_t job_id)
+                                 {
+                                   return total_cost + cost_reservation (job_id);
+                                 }
+                               )
+             + std::accumulate ( acknowledged_.begin()
+                               , acknowledged_.end()
+                               , 0.0
+                               , [&cost_reservation] (double total_cost, job_id_t job_id)
+                                 {
+                                   return total_cost + cost_reservation (job_id);
+                                 }
+                               )
+             );
     }
   }
 }

@@ -214,5 +214,15 @@ namespace sdpa
 
       return mmap_match_deg_worker_id;
     }
+
+    double WorkerManager::cost_assigned_jobs
+      ( const worker_id_t worker_id
+      , std::function<double (job_id_t job_id)> cost_reservation
+      )
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      return worker_map_.at (worker_id)->cost_assigned_jobs (cost_reservation);
+    }
+
   }
 }

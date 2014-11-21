@@ -55,6 +55,10 @@ namespace sdpa
 
       // methods related to reservation
       bool isReserved();
+
+      // cost
+      double cost_assigned_jobs (std::function<double (job_id_t job_id)>);
+
     private:
       void reserve();
       void free();
