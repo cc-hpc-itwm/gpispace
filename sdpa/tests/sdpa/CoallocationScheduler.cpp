@@ -382,8 +382,13 @@ struct fixture_minimal_cost_assignment
        {return map_host_transfer_cost.count (host_id) ? map_host_transfer_cost.at (host_id) : max_cost + 1;}
       };
 
+    sdpa::daemon::CoallocationScheduler scheduler
+      ( [](const sdpa::worker_id_list_t&, const sdpa::job_id_t&) {}
+      , [](const sdpa::job_id_t&) {return no_requirements();}
+      );
+
     const std::set<sdpa::worker_id_t> set_assigned_workers
-      (sdpa::daemon::CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
+      (scheduler.find_job_assignment_minimizing_memory_transfer_cost
         (mmap_match_deg_worker, n_req_workers, transfer_cost)
       );
 
