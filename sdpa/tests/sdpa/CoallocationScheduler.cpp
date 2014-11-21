@@ -358,6 +358,34 @@ BOOST_FIXTURE_TEST_CASE ( multiple_worker_job_submissions_with_requirements_no_c
 
 struct fixture_minimal_cost_assignment
 {
+  fixture_minimal_cost_assignment()
+  : _scheduler
+      ( [](const sdpa::worker_id_list_t&, const sdpa::job_id_t&) {}
+      , [](const sdpa::job_id_t&) {return no_requirements();}
+      )
+  {
+    _scheduler.worker_manager().addWorker ("worker_01", 1, {}, false, "node1");
+    _scheduler.worker_manager().addWorker ("worker_02", 1, {}, false, "node1");
+    _scheduler.worker_manager().addWorker ("worker_03", 1, {}, false, "node1");
+    _scheduler.worker_manager().addWorker ("worker_04", 1, {}, false, "node1");
+    _scheduler.worker_manager().addWorker ("worker_05", 1, {}, false, "node2");
+    _scheduler.worker_manager().addWorker ("worker_06", 1, {}, false, "node2");
+    _scheduler.worker_manager().addWorker ("worker_07", 1, {}, false, "node2");
+    _scheduler.worker_manager().addWorker ("worker_08", 1, {}, false, "node2");
+    _scheduler.worker_manager().addWorker ("worker_09", 1, {}, false, "node3");
+    _scheduler.worker_manager().addWorker ("worker_10", 1, {}, false, "node3");
+    _scheduler.worker_manager().addWorker ("worker_11", 1, {}, false, "node3");
+    _scheduler.worker_manager().addWorker ("worker_12", 1, {}, false, "node3");
+    _scheduler.worker_manager().addWorker ("worker_13", 1, {}, false, "node4");
+    _scheduler.worker_manager().addWorker ("worker_14", 1, {}, false, "node4");
+    _scheduler.worker_manager().addWorker ("worker_15", 1, {}, false, "node4");
+    _scheduler.worker_manager().addWorker ("worker_16", 1, {}, false, "node4");
+    _scheduler.worker_manager().addWorker ("worker_17", 1, {}, false, "node5");
+    _scheduler.worker_manager().addWorker ("worker_18", 1, {}, false, "node5");
+    _scheduler.worker_manager().addWorker ("worker_19", 1, {}, false, "node5");
+    _scheduler.worker_manager().addWorker ("worker_20", 1, {}, false, "node5");
+  }
+
   double max_value (const std::map<std::string, double>& map_cost)
   {
     return std::max_element ( map_cost.begin()
@@ -382,14 +410,9 @@ struct fixture_minimal_cost_assignment
        {return map_host_transfer_cost.count (host_id) ? map_host_transfer_cost.at (host_id) : max_cost + 1;}
       };
 
-    sdpa::daemon::CoallocationScheduler scheduler
-      ( [](const sdpa::worker_id_list_t&, const sdpa::job_id_t&) {}
-      , [](const sdpa::job_id_t&) {return no_requirements();}
-      );
-
     const std::set<sdpa::worker_id_t> set_assigned_workers
-      (scheduler.find_job_assignment_minimizing_memory_transfer_cost
-        (mmap_match_deg_worker, n_req_workers, transfer_cost)
+      (_scheduler.find_job_assignment_minimizing_total_cost
+        (mmap_match_deg_worker, n_req_workers, transfer_cost, 1.0)
       );
 
     BOOST_REQUIRE_EQUAL (set_assigned_workers.size(), n_req_workers);
@@ -414,6 +437,8 @@ struct fixture_minimal_cost_assignment
                                           )
                         );
   }
+
+  sdpa::daemon::CoallocationScheduler _scheduler;
 };
 
 BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_different_matching_degs_different_costs
