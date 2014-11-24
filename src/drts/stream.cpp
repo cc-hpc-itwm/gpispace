@@ -18,6 +18,7 @@
 
 #include <boost/format.hpp>
 
+#include <atomic>
 #include <unordered_set>
 
 namespace gspc
@@ -124,6 +125,7 @@ namespace gspc
       , _update (_virtual_memory, "update_" + name, _number_of_slots)
       , _data (_virtual_memory, "data_" + name, _size_of_slot)
       , _free_slots()
+      , _sequence_number (0)
     {
       _virtual_memory->wait
         ( _virtual_memory->memcpy
@@ -154,6 +156,7 @@ namespace gspc
     scoped_allocation const _data;
 
     std::unordered_set<unsigned long> _free_slots;
+    std::atomic<std::size_t> _sequence_number;
 
     void write (std::string const& data)
     {
@@ -235,6 +238,7 @@ namespace gspc
                                                             )
                               );
       pnet::type::value::poke ("flag", value, flag[slot]);
+      pnet::type::value::poke ("id", value, _sequence_number++);
 
       _on_slot_filled (value);
     }

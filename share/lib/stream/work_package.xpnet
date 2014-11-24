@@ -5,5 +5,6 @@
     <field name="meta" type="global_memory_range"/>
     <field name="data" type="global_memory_range"/>
     <field name="flag" type="char"/>
+    <field name="id" type="unsigned long"/>
   </struct>
 </structs>
