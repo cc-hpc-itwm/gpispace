@@ -993,7 +993,26 @@ void GenericDaemon::do_registration_after_sleep (master_info_t::iterator const& 
 
 void GenericDaemon::requestRegistration (master_info_t::iterator const& it)
 {
-  it->second.address (_network_strategy.connect_to_via_kvs (it->first));
+  try
+  {
+    it->second.address (_network_strategy.connect_to_via_kvs (it->first));
+  }
+  catch (std::exception const& ex)
+  {
+    it->second.incConsecRegAttempts();
+
+    if ( it->second.getConsecRegAttempts()
+       < _max_consecutive_registration_attempts
+       )
+    {
+      request_registration_soon (it);
+    }
+    else
+    {
+      LOG (ERROR, "registration to " << it->first << " failed: " << ex.what());
+      throw;
+    }
+  }
 
   lock_type lock(mtx_cpb_);
   capabilities_set_t cpbSet (m_capabilities);
