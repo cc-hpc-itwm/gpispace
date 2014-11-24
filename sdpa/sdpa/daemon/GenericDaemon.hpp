@@ -363,6 +363,7 @@ namespace sdpa {
       struct parent_proxy
       {
         parent_proxy (GenericDaemon*, worker_id_t);
+        parent_proxy (GenericDaemon*, opaque_job_master_t const&);
 
         void worker_registration
           (boost::optional<unsigned int> capacity, capabilities_set_t) const;

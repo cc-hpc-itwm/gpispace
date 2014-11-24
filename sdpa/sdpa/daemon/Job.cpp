@@ -7,13 +7,13 @@ namespace sdpa
     Job::Job ( const job_id_t id
              , const job_desc_t desc
              , bool is_master_job
-             , const worker_id_t& owner
+             , opaque_job_master_t owner
              , job_requirements_t requirements
              )
       : desc_ (desc)
       , id_ (id)
       , _is_master_job (is_master_job)
-      , m_owner (owner)
+      , m_owner (std::move (owner))
       , _requirements (requirements)
       , m_error_message()
       , result_()
@@ -33,7 +33,7 @@ namespace sdpa
     {
       return _is_master_job;
     }
-    worker_id_t Job::owner() const
+    opaque_job_master_t const& Job::owner() const
     {
       return m_owner;
     }

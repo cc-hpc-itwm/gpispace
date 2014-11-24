@@ -26,6 +26,29 @@ namespace sdpa {
 
   typedef std::list<std::pair<sdpa::worker_id_t, int>> list_match_workers_t;
 
+  namespace daemon
+  {
+    class GenericDaemon;
+  }
+
+  //! \note Defined in GenericDaemon.cpp
+  struct opaque_job_master_t
+  {
+    opaque_job_master_t() = delete;
+    opaque_job_master_t (opaque_job_master_t const&) = delete;
+    opaque_job_master_t& operator= (opaque_job_master_t const&) = delete;
+    opaque_job_master_t (opaque_job_master_t&&);
+    opaque_job_master_t& operator= (opaque_job_master_t&&) = delete;
+    ~opaque_job_master_t();
+
+  private:
+    opaque_job_master_t (const void*);
+    struct implementation;
+    friend class sdpa::daemon::GenericDaemon;
+    implementation* _;
+    implementation* operator->() const { return _; }
+  };
+
   class worker_id_host_info_t
   {
   public:

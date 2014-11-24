@@ -48,7 +48,29 @@
 #include <thread>
 #include <chrono>
 
-namespace sdpa {
+namespace sdpa
+{
+  struct opaque_job_master_t::implementation
+  {
+    implementation (std::string const& name)
+      : _name (name)
+    {}
+    std::string const _name;
+  };
+  opaque_job_master_t::opaque_job_master_t (opaque_job_master_t&& rhs)
+    : _ (rhs._)
+  {
+    rhs._ = nullptr;
+  }
+  opaque_job_master_t::~opaque_job_master_t()
+  {
+    delete _;
+    _ = nullptr;
+  }
+  opaque_job_master_t::opaque_job_master_t (const void* data)
+    : _ (new implementation (*static_cast<const std::string*> (data)))
+  {}
+
   namespace daemon {
 namespace
 {
@@ -295,7 +317,7 @@ std::string GenericDaemon::gen_id()
     {
       boost::mutex::scoped_lock const _ (_job_map_mutex);
 
-      Job* pJob = new Job( job_id, desc, is_master_job, owner, job_req_list);
+      Job* pJob = new Job( job_id, desc, is_master_job, opaque_job_master_t (static_cast<const void*> (&owner)), job_req_list);
 
       if (!job_map_.emplace (job_id, pJob).second)
       {
@@ -715,7 +737,7 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
 
   pJob->JobFinished (result.to_string());
 
-  if(!isSubscriber(pJob->owner()))
+  if(!isSubscriber(pJob->owner()->_name))
   {
     parent_proxy (this, pJob->owner()).job_finished (id, result.to_string());
   }
@@ -748,7 +770,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
 
   pJob->JobFailed (reason);
 
-  if(!isSubscriber(pJob->owner()))
+  if(!isSubscriber(pJob->owner()->_name))
   {
     parent_proxy (this, pJob->owner()).job_failed (id, reason);
   }
@@ -821,7 +843,7 @@ void GenericDaemon::handleWorkerRegistrationAckEvent
         | boost::adaptors::map_values
         | boost::adaptors::filtered (boost::mem_fn (&Job::isMasterJob))
         | boost::adaptors::filtered
-            ([&source] (Job* job) { return job->owner() == source; })
+            ([&source] (Job* job) { return job->owner()->_name == source; })
         )
     {
       const sdpa::status::code status (job->getStatus());
@@ -1537,6 +1559,11 @@ namespace sdpa
         (GenericDaemon* that, worker_id_t name)
       : _that (that)
       , _name (name)
+    {}
+    GenericDaemon::parent_proxy::parent_proxy
+        (GenericDaemon* that, opaque_job_master_t const& job_master)
+      : _that (that)
+      , _name (job_master->_name)
     {}
 
     void GenericDaemon::parent_proxy::worker_registration
