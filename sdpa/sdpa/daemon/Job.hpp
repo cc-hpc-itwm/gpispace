@@ -102,14 +102,12 @@ namespace sdpa
     public:
       Job ( const job_id_t id
           , const job_desc_t desc
-          , bool is_master_job
           , opaque_job_master_t owner
           , job_requirements_t
           );
 
       const job_desc_t& description() const;
       const job_id_t& id() const;
-      bool isMasterJob() const;
       opaque_job_master_t const& owner() const;
       job_requirements_t requirements() const;
 
@@ -129,7 +127,6 @@ namespace sdpa
       mutable boost::mutex mtx_;
       job_desc_t desc_;
       job_id_t id_;
-      bool _is_master_job;
       opaque_job_master_t m_owner;
       job_requirements_t _requirements;
 

@@ -310,14 +310,13 @@ std::string GenericDaemon::gen_id()
 
     Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
                                , const job_desc_t desc
-                               , bool is_master_job
                                , const worker_id_t& owner
                                , const job_requirements_t& job_req_list
                                )
     {
       boost::mutex::scoped_lock const _ (_job_map_mutex);
 
-      Job* pJob = new Job( job_id, desc, is_master_job, opaque_job_master_t (static_cast<const void*> (&owner)), job_req_list);
+      Job* pJob = new Job( job_id, desc, opaque_job_master_t (static_cast<const void*> (&owner)), job_req_list);
 
       if (!job_map_.emplace (job_id, pJob).second)
       {
@@ -391,7 +390,6 @@ void GenericDaemon::handleSubmitJobEvent
   // One should parse the workflow in order to be able to create a valid job
   Job* pJob (addJob ( job_id
                     , e.description()
-                    , hasWorkflowEngine()
                     , source
                     , {{}, we::type::schedule_data(), null_transfer_cost}
                     )
@@ -676,7 +674,6 @@ try
 
   addJob ( job_id
          , activity.to_string()
-         , false
          , name()
          , job_requirements_t ( activity.transition().requirements()
                               , schedule_data
@@ -841,7 +838,6 @@ void GenericDaemon::handleWorkerRegistrationAckEvent
     for ( Job* job
         : job_map_
         | boost::adaptors::map_values
-        | boost::adaptors::filtered (boost::mem_fn (&Job::isMasterJob))
         | boost::adaptors::filtered
             ([&source] (Job* job) { return job->owner()->_name == source; })
         )
