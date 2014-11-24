@@ -514,7 +514,7 @@ if $gpi_enabled ; then
         --virtual-memory-port ${vmem_port} \
         --virtual-memory-socket "${gpi_socket}" \
         --virtual-memory-per-node "${gpi_mem}" \
-        --virtual-memory-startup-timeout ${vmem_startup_timeout} 2>&1)
+        --virtual-memory-startup-timeout ${vmem_startup_timeout} 2>"${state_dir}/vmem.err")
     ec=$?
     if [ $ec -ne 0 ]
     then
