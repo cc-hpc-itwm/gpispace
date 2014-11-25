@@ -52,10 +52,13 @@ namespace sdpa
 {
   struct opaque_job_master_t::implementation
   {
-    implementation (boost::optional<std::string const&> name)
-      : _name (name)
+    using actual_implementation =
+      boost::optional<daemon::GenericDaemon::master_info_t::iterator>;
+
+    implementation (actual_implementation actual)
+      : _actual (std::move (actual))
     {}
-    boost::optional<std::string> const _name;
+    actual_implementation const _actual;
   };
   opaque_job_master_t::opaque_job_master_t (opaque_job_master_t&& rhs)
     : _ (rhs._)
@@ -69,7 +72,7 @@ namespace sdpa
   }
   opaque_job_master_t::opaque_job_master_t (const void* data)
     : _ ( new implementation
-          (*static_cast<const boost::optional<std::string const&>*> (data))
+          (*static_cast<const implementation::actual_implementation*> (data))
         )
   {}
 
@@ -306,7 +309,7 @@ std::string GenericDaemon::gen_id()
 
     Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
                                , const job_desc_t desc
-                               , boost::optional<const worker_id_t&> owner
+                               , boost::optional<master_info_t::iterator> owner
                                , const job_requirements_t& job_req_list
                                )
     {
@@ -383,7 +386,7 @@ void GenericDaemon::handleSubmitJobEvent
   // One should parse the workflow in order to be able to create a valid job
   Job* pJob (addJob ( job_id
                     , e.description()
-                    , source
+                    , itMaster
                     , {{}, we::type::schedule_data(), null_transfer_cost}
                     )
              );
@@ -701,7 +704,7 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
 
   pJob->JobFinished (result.to_string());
 
-  if(!isSubscriber(pJob->owner()->_name.get()))
+  if(!isSubscriber(pJob->owner()->_actual.get()->first))
   {
     parent_proxy (this, pJob->owner()).job_finished (id, result.to_string());
   }
@@ -734,7 +737,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
 
   pJob->JobFailed (reason);
 
-  if(!isSubscriber(pJob->owner()->_name.get()))
+  if(!isSubscriber(pJob->owner()->_actual.get()->first))
   {
     parent_proxy (this, pJob->owner()).job_failed (id, reason);
   }
@@ -802,7 +805,12 @@ void GenericDaemon::handleWorkerRegistrationAckEvent
         : job_map_
         | boost::adaptors::map_values
         | boost::adaptors::filtered
-            ([&source] (Job* job) { return job->owner()->_name == source; })
+            ( [&source] (Job* job)
+              {
+                return job->owner()->_actual
+                  && job->owner()->_actual.get()->first == source;
+              }
+            )
         )
     {
       const sdpa::status::code status (job->getStatus());
@@ -1508,7 +1516,7 @@ namespace sdpa
     GenericDaemon::parent_proxy::parent_proxy
         (GenericDaemon* that, opaque_job_master_t const& job_master)
       : _that (that)
-      , _name (job_master->_name.get())
+      , _name (job_master->_actual.get()->first)
     {}
 
     void GenericDaemon::parent_proxy::worker_registration

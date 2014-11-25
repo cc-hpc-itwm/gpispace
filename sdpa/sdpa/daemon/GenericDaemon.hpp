@@ -195,7 +195,7 @@ namespace sdpa {
     private:
       Job* addJob ( const sdpa::job_id_t& job_id
                   , const job_desc_t desc
-                  , boost::optional<const worker_id_t&> owner
+                  , boost::optional<master_info_t::iterator> owner
                   , const job_requirements_t& job_req_list
                   );
 
@@ -237,6 +237,8 @@ namespace sdpa {
         bool registered_;
         boost::optional<fhg::com::p2p::address_t> _address;
       };
+
+      friend struct sdpa::opaque_job_master_t::implementation;
 
       master_info_t _master_info;
       typedef std::map<agent_id_t, job_id_list_t> subscriber_map_t;
