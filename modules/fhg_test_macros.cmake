@@ -34,6 +34,8 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/drts/drts.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/stream.fwd.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/stream.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/drts/information_to_reattach.fwd.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/drts/information_to_reattach.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/virtual_memory.fwd.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/virtual_memory.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/worker/context.hpp"

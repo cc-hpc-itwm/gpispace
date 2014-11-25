@@ -9,6 +9,8 @@ install (FILES
   drts.hpp
   stream.fwd.hpp
   stream.hpp
+  information_to_reattach.fwd.hpp
+  information_to_reattach.hpp
   virtual_memory.fwd.hpp
   virtual_memory.hpp
   DESTINATION include/drts/
@@ -17,6 +19,7 @@ install (FILES
 add_library (gspc SHARED
   client.cpp
   drts.cpp
+  information_to_reattach.cpp
   private/option.cpp
   private/rif.cpp
   private/vmem.cpp
