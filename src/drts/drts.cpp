@@ -3,6 +3,7 @@
 #include <drts/drts.hpp>
 #include <drts/private/option.hpp>
 
+#include <drts/stream.hpp>
 #include <drts/virtual_memory.hpp>
 
 #include <we/expr/parse/parser.hpp>
@@ -193,5 +194,14 @@ namespace gspc
     (unsigned long size, std::string const& description) const
   {
     return vmem_allocation (this, size, description);
+  }
+
+  stream scoped_runtime_system::create_stream ( std::string const& name
+                                              , gspc::vmem_allocation const& buffer
+                                              , stream::size_of_slot const& size_of_slot
+                                              , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
+                                              ) const
+  {
+    return stream (*this, name, buffer, size_of_slot, on_slot_filled);
   }
 }
