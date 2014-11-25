@@ -23,15 +23,15 @@ namespace gspc
   namespace
   {
     template <typename T>
-    T get_or_throw (std::list<std::string> const& path, pnet::type::value::value_type const& value)
+    T const& get_or_throw (std::list<std::string> const& path, pnet::type::value::value_type const& value)
     {
-      boost::optional<pnet::type::value::value_type> const v
+      boost::optional<pnet::type::value::value_type const&> const v
         (pnet::type::value::peek (path, value));
       if (v)
       {
         try
         {
-          return boost::get<T> (*v);
+          return boost::get<T const&> (*v);
         }
         catch (boost::bad_get const& ex)
         {
