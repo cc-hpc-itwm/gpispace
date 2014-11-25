@@ -195,7 +195,7 @@ namespace sdpa {
     private:
       Job* addJob ( const sdpa::job_id_t& job_id
                   , const job_desc_t desc
-                  , const worker_id_t& owner
+                  , boost::optional<const worker_id_t&> owner
                   , const job_requirements_t& job_req_list
                   );
 

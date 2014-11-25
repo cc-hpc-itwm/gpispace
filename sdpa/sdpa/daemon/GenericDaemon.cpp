@@ -52,10 +52,10 @@ namespace sdpa
 {
   struct opaque_job_master_t::implementation
   {
-    implementation (std::string const& name)
+    implementation (boost::optional<std::string const&> name)
       : _name (name)
     {}
-    std::string const _name;
+    boost::optional<std::string> const _name;
   };
   opaque_job_master_t::opaque_job_master_t (opaque_job_master_t&& rhs)
     : _ (rhs._)
@@ -68,7 +68,9 @@ namespace sdpa
     _ = nullptr;
   }
   opaque_job_master_t::opaque_job_master_t (const void* data)
-    : _ (new implementation (*static_cast<const std::string*> (data)))
+    : _ ( new implementation
+          (*static_cast<const boost::optional<std::string const&>*> (data))
+        )
   {}
 
   namespace daemon {
@@ -310,7 +312,7 @@ std::string GenericDaemon::gen_id()
 
     Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
                                , const job_desc_t desc
-                               , const worker_id_t& owner
+                               , boost::optional<const worker_id_t&> owner
                                , const job_requirements_t& job_req_list
                                )
     {
@@ -674,7 +676,7 @@ try
 
   addJob ( job_id
          , activity.to_string()
-         , name()
+         , boost::none
          , job_requirements_t ( activity.transition().requirements()
                               , schedule_data
                               , _virtual_memory_api->transfer_costs (activity)
@@ -734,7 +736,7 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
 
   pJob->JobFinished (result.to_string());
 
-  if(!isSubscriber(pJob->owner()->_name))
+  if(!isSubscriber(pJob->owner()->_name.get()))
   {
     parent_proxy (this, pJob->owner()).job_finished (id, result.to_string());
   }
@@ -767,7 +769,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
 
   pJob->JobFailed (reason);
 
-  if(!isSubscriber(pJob->owner()->_name))
+  if(!isSubscriber(pJob->owner()->_name.get()))
   {
     parent_proxy (this, pJob->owner()).job_failed (id, reason);
   }
@@ -1559,7 +1561,7 @@ namespace sdpa
     GenericDaemon::parent_proxy::parent_proxy
         (GenericDaemon* that, opaque_job_master_t const& job_master)
       : _that (that)
-      , _name (job_master->_name)
+      , _name (job_master->_name.get())
     {}
 
     void GenericDaemon::parent_proxy::worker_registration
