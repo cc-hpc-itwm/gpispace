@@ -219,8 +219,6 @@ namespace sdpa {
         MasterInfo()
           : registered_(false)
           , _address (boost::none)
-          , nConsecNetFailCnt_(0)
-          , nConsecRegAttempts_(0)
         {}
 
         bool is_registered() const { return registered_; }
@@ -235,19 +233,9 @@ namespace sdpa {
           _address = address;
         }
 
-        unsigned int getConsecNetFailCnt() { return nConsecNetFailCnt_;}
-        void incConsecNetFailCnt() { nConsecNetFailCnt_++;}
-        void resetConsecNetFailCnt() { nConsecNetFailCnt_=0; }
-
-        unsigned int getConsecRegAttempts() { return nConsecRegAttempts_;}
-        void incConsecRegAttempts() { nConsecRegAttempts_++;}
-        void resetConsecRegAttempts() { nConsecRegAttempts_=0; }
-
       private:
         bool registered_;
         boost::optional<fhg::com::p2p::address_t> _address;
-        unsigned int nConsecNetFailCnt_;
-        unsigned int nConsecRegAttempts_;
       };
 
       master_info_t _master_info;
@@ -296,8 +284,6 @@ namespace sdpa {
       boost::optional<NotificationService> m_guiService;
 
     private:
-      unsigned int _max_consecutive_registration_attempts;
-      unsigned int _max_consecutive_network_faults;
       boost::posix_time::time_duration _registration_timeout;
 
       void do_registration_after_sleep (master_info_t::iterator const&);

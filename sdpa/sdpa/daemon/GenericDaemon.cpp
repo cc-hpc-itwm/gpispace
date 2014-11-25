@@ -160,8 +160,6 @@ GenericDaemon::GenericDaemon( const std::string name
                    (NotificationService (gui_info->first, gui_info->second))
                  : boost::none
                  )
-  , _max_consecutive_registration_attempts (360)
-  , _max_consecutive_network_faults (360)
   , _registration_timeout (boost::posix_time::seconds (1))
   , _event_queue()
   , _kvs_client ( new fhg::com::kvs::client::kvsc
@@ -532,18 +530,8 @@ void GenericDaemon::handleErrorEvent
       {
         disconnected_master_it->second.set_registered (false);
         disconnected_master_it->second.address (boost::none);
-        disconnected_master_it->second.incConsecRegAttempts();
 
-        if ( disconnected_master_it->second.getConsecRegAttempts()
-           < _max_consecutive_registration_attempts
-           )
-        {
-          request_registration_soon (disconnected_master_it);
-        }
-        else
-        {
-          _master_info.erase (disconnected_master_it);
-        }
+        request_registration_soon (disconnected_master_it);
       }
 
       break;
@@ -615,18 +603,8 @@ void GenericDaemon::handleErrorEvent
         {
           disconnected_master_it->second.set_registered (false);
           disconnected_master_it->second.address (boost::none);
-          disconnected_master_it->second.incConsecNetFailCnt();
 
-          if ( disconnected_master_it->second.getConsecNetFailCnt()
-             < _max_consecutive_network_faults
-             )
-          {
-            request_registration_soon (disconnected_master_it);
-          }
-          else
-          {
-            _master_info.erase (disconnected_master_it);
-          }
+          request_registration_soon (disconnected_master_it);
         }
       }
       break;
@@ -831,8 +809,6 @@ void GenericDaemon::handleWorkerRegistrationAckEvent
   }
 
   master_it->second.set_registered (true);
-  master_it->second.resetConsecRegAttempts();
-  master_it->second.resetConsecNetFailCnt();
 
   {
     boost::mutex::scoped_lock const _ (_job_map_mutex);
@@ -1019,19 +995,7 @@ void GenericDaemon::requestRegistration (master_info_t::iterator const& it)
   }
   catch (std::exception const& ex)
   {
-    it->second.incConsecRegAttempts();
-
-    if ( it->second.getConsecRegAttempts()
-       < _max_consecutive_registration_attempts
-       )
-    {
-      request_registration_soon (it);
-    }
-    else
-    {
-      LOG (ERROR, "registration to " << it->first << " failed: " << ex.what());
-      throw;
-    }
+    request_registration_soon (it);
   }
 
   lock_type lock(mtx_cpb_);
