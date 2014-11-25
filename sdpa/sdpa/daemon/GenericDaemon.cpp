@@ -411,9 +411,8 @@ void GenericDaemon::handleSubmitJobEvent
 
       if (m_guiService)
       {
-        std::list<std::string> workers; workers.push_back (name());
         const sdpa::daemon::NotificationEvent evt
-          ( workers
+          ( {name()}
           , job_id
           , NotificationEvent::STATE_STARTED
           , act
@@ -711,9 +710,8 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
 
   if (m_guiService)
   {
-    std::list<std::string> workers; workers.push_back (name());
     const sdpa::daemon::NotificationEvent evt
-      ( workers
+      ( {name()}
       , pJob->id()
       , NotificationEvent::STATE_FINISHED
       , result
@@ -744,10 +742,9 @@ void GenericDaemon::failed( const we::layer::id_type& id
 
   if (m_guiService)
   {
-    std::list<std::string> workers; workers.push_back (name());
     const we::type::activity_t act (pJob->description());
     const sdpa::daemon::NotificationEvent evt
-      ( workers
+      ( {name()}
       , pJob->id()
       , NotificationEvent::STATE_FINISHED
       , act
