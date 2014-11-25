@@ -152,7 +152,6 @@ GenericDaemon::GenericDaemon( const std::string name
   , _random_extraction_engine
     (boost::make_optional (create_wfe, std::mt19937 (std::random_device()())))
   , mtx_subscriber_()
-  , mtx_master_()
   , mtx_cpb_()
   , m_capabilities()
   , m_guiService ( gui_info && !gui_info->first.empty()
@@ -214,8 +213,6 @@ GenericDaemon::GenericDaemon( const std::string name
   //             kvs::put ("sdpa.daemon.<name>.pid", getpid())
   //                - remove them in destructor
 
-  {
-    lock_type lock (mtx_master_);
     for ( master_info_t::iterator it (_master_info.begin())
         ; it != _master_info.end()
         ; ++it
@@ -223,7 +220,6 @@ GenericDaemon::GenericDaemon( const std::string name
     {
       requestRegistration (it);
     }
-  }
 }
 
 GenericDaemon::cleanup_job_map_on_dtor_helper::cleanup_job_map_on_dtor_helper
@@ -355,8 +351,6 @@ void GenericDaemon::handleSubmitJobEvent
 {
   const events::SubmitJobEvent& e (*evt);
 
-  {
-    lock_type lock(mtx_master_);
     // check if the incoming event was produced by a master to which the current agent has already registered
     master_info_t::iterator itMaster = find_if
       ( _master_info.begin()
@@ -372,7 +366,6 @@ void GenericDaemon::handleSubmitJobEvent
       throw std::runtime_error
         ("job submission from master not yet registered or unknown");
     }
-  }
 
   // First, check if the job 'job_id' wasn't already submitted!
   if(e.job_id() && findJob(*e.job_id()))
@@ -468,7 +461,6 @@ void GenericDaemon::handleWorkerRegistrationEvent
 
   if (was_new_worker && !workerCpbSet.empty())
   {
-    lock_type lock (mtx_master_);
     // send to the masters my new set of capabilities
     for (master_info_t::value_type const& info : _master_info)
     {
@@ -514,8 +506,6 @@ void GenericDaemon::handleErrorEvent
     case events::ErrorEvent::SDPA_EWORKERNOTREG:
     {
       // mark the agen as not-registered
-      lock_type const _ (mtx_master_);
-
       master_info_t::iterator const disconnected_master_it
         ( std::find_if
             ( _master_info.begin(), _master_info.end()
@@ -547,7 +537,6 @@ void GenericDaemon::handleErrorEvent
         Worker::ptr_t ptrWorker = scheduler().worker_manager().findWorker(source);
 
         // notify capability losses...
-        lock_type lock(mtx_master_);
         for (master_info_t::value_type const& info : _master_info)
         {
           parent_proxy (this, info.first).capabilities_lost
@@ -587,8 +576,6 @@ void GenericDaemon::handleErrorEvent
       }
       catch (WorkerNotFoundException const& /*ignored*/)
       {
-        lock_type const _ (mtx_master_);
-
         master_info_t::iterator const disconnected_master_it
           ( std::find_if
               ( _master_info.begin(), _master_info.end()
@@ -791,8 +778,6 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
 void GenericDaemon::handleWorkerRegistrationAckEvent
   (std::string const& source, const sdpa::events::WorkerRegistrationAckEvent*)
 {
-  lock_type lock(mtx_master_);
-
   master_info_t::iterator const master_it
     ( std::find_if ( _master_info.begin(), _master_info.end()
                    , [&source] (master_info_t::value_type const& info)
@@ -895,7 +880,6 @@ void GenericDaemon::handleCapabilitiesGainedEvent
 
         if( !newWorkerCpbSet.empty() )
         {
-          lock_type lock(mtx_master_);
           for (master_info_t::value_type const& info : _master_info)
           {
             if (info.second.is_registered())
@@ -921,7 +905,6 @@ void GenericDaemon::handleCapabilitiesLostEvent
   try {
     if (scheduler().worker_manager().findWorker (source)->removeCapabilities(pCpbLostEvt->capabilities()))
     {
-      lock_type lock(mtx_master_);
       for (master_info_t::value_type const& info : _master_info)
       {
         if (info.second.is_registered())

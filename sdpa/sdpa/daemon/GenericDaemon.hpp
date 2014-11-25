@@ -273,9 +273,6 @@ namespace sdpa {
     private:
 
       mutex_type mtx_subscriber_;
-    protected:
-      mutex_type mtx_master_;
-    private:
       mutex_type mtx_cpb_;
 
       sdpa::capabilities_set_t m_capabilities;
