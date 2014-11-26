@@ -223,6 +223,10 @@ namespace sdpa {
       friend struct sdpa::opaque_job_master_t::implementation;
 
       master_info_t _master_info;
+
+      boost::optional<master_info_t::iterator> master_by_address
+        (fhg::com::p2p::address_t const&);
+
       typedef std::unordered_map<fhg::com::p2p::address_t, job_id_list_t> subscriber_map_t;
       subscriber_map_t _subscriptions;
 
@@ -329,6 +333,7 @@ namespace sdpa {
       struct parent_proxy
       {
         parent_proxy (GenericDaemon*, worker_id_t);
+        parent_proxy (GenericDaemon*, master_info_t::iterator const&);
         parent_proxy (GenericDaemon*, opaque_job_master_t const&);
 
         void worker_registration

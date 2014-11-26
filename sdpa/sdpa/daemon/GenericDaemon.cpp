@@ -35,6 +35,7 @@
 #include <sdpa/id_generator.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
+#include <fhg/util/boost/optional.hpp>
 #include <fhg/util/hostname.hpp>
 #include <fhg/util/macros.hpp>
 #include <fhg/util/make_unique.hpp>
@@ -355,14 +356,8 @@ void GenericDaemon::handleSubmitJobEvent
 {
   const events::SubmitJobEvent& e (*evt);
 
-    master_info_t::iterator itMaster = find_if
-      ( _master_info.begin()
-      , _master_info.end()
-      , [&source] (master_info_t::value_type const& info)
-        {
-          return info.second == fhg::com::p2p::address_t (source);
-        }
-      );
+  boost::optional<master_info_t::iterator> const itMaster
+    (master_by_address (source));
 
   // First, check if the job 'job_id' wasn't already submitted!
   if(e.job_id() && findJob(*e.job_id()))
@@ -498,21 +493,14 @@ void GenericDaemon::handleErrorEvent
     }
     case events::ErrorEvent::SDPA_EWORKERNOTREG:
     {
-      master_info_t::iterator const disconnected_master_it
-        ( std::find_if
-            ( _master_info.begin(), _master_info.end()
-            , [&source] (master_info_t::value_type const& info)
-              {
-                return info.second == fhg::com::p2p::address_t (source);
-              }
-            )
-        );
+      boost::optional<master_info_t::iterator> const disconnected_master_it
+        (master_by_address (source));
 
-      if (disconnected_master_it != _master_info.end())
+      if (disconnected_master_it)
       {
-        disconnected_master_it->second = boost::none;
+        disconnected_master_it.get()->second = boost::none;
 
-        request_registration_soon (disconnected_master_it);
+        request_registration_soon (disconnected_master_it.get());
       }
 
       break;
@@ -567,21 +555,14 @@ void GenericDaemon::handleErrorEvent
       }
       catch (WorkerNotFoundException const& /*ignored*/)
       {
-        master_info_t::iterator const disconnected_master_it
-          ( std::find_if
-              ( _master_info.begin(), _master_info.end()
-              , [&source] (master_info_t::value_type const& info)
-                {
-                  return info.second == fhg::com::p2p::address_t (source);
-                }
-              )
-          );
+        boost::optional<master_info_t::iterator> const disconnected_master_it
+          (master_by_address (source));
 
-        if (disconnected_master_it != _master_info.end())
+        if (disconnected_master_it)
         {
-          disconnected_master_it->second = boost::none;
+          disconnected_master_it.get()->second = boost::none;
 
-          request_registration_soon (disconnected_master_it);
+          request_registration_soon (disconnected_master_it.get());
         }
       }
       break;
@@ -763,23 +744,30 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
   }
 }
 
+    boost::optional<GenericDaemon::master_info_t::iterator>
+      GenericDaemon::master_by_address (fhg::com::p2p::address_t const& address)
+    {
+      master_info_t::iterator it
+        ( std::find_if ( _master_info.begin()
+                       , _master_info.end()
+                       , [&address] (master_info_t::value_type const& info)
+                         {
+                           return info.second == address;
+                         }
+                       )
+        );
+      return boost::make_optional (it != _master_info.end(), it);
+    }
+
 void GenericDaemon::handleWorkerRegistrationAckEvent
   (std::string const& source, const sdpa::events::WorkerRegistrationAckEvent*)
 {
   master_info_t::iterator const master_it
-    ( std::find_if ( _master_info.begin(), _master_info.end()
-                   , [&source] (master_info_t::value_type const& info)
-                     {
-                       return info.first == source;
-                     }
-                   )
+    ( fhg::util::boost::get_or_throw<std::runtime_error>
+       ( master_by_address (source)
+       , "workerRegistrationAckEvent from source not in list of masters"
+       )
     );
-
-  if (master_it == _master_info.end())
-  {
-    throw std::runtime_error
-      ("workerRegistrationAckEvent from source not in list of masters");
-  }
 
   {
     boost::mutex::scoped_lock const _ (_job_map_mutex);
@@ -788,10 +776,9 @@ void GenericDaemon::handleWorkerRegistrationAckEvent
         : job_map_
         | boost::adaptors::map_values
         | boost::adaptors::filtered
-            ( [&source] (Job* job)
+            ( [&master_it] (Job* job)
               {
-                return job->owner()->_actual
-                  && job->owner()->_actual.get()->first == source;
+                return job->owner()->_actual == master_it;
               }
             )
         )
@@ -801,26 +788,26 @@ void GenericDaemon::handleWorkerRegistrationAckEvent
       {
       case sdpa::status::FINISHED:
         {
-          parent_proxy (this, source).job_finished (job->id(), job->result());
+          parent_proxy (this, master_it).job_finished (job->id(), job->result());
         }
         continue;
 
       case sdpa::status::FAILED:
         {
-          parent_proxy (this, source).job_failed
+          parent_proxy (this, master_it).job_failed
             (job->id(), job->error_message());
         }
         continue;
 
       case sdpa::status::CANCELED:
         {
-          parent_proxy (this, source).cancel_job_ack (job->id());
+          parent_proxy (this, master_it).cancel_job_ack (job->id());
         }
         continue;
 
       case sdpa::status::PENDING:
         {
-          parent_proxy (this, source).submit_job_ack (job->id());
+          parent_proxy (this, master_it).submit_job_ack (job->id());
         }
         continue;
 
@@ -1500,9 +1487,12 @@ namespace sdpa
       , _name (name)
     {}
     GenericDaemon::parent_proxy::parent_proxy
+        (GenericDaemon* that, master_info_t::iterator const& master)
+      : parent_proxy (that, master->first)
+    {}
+    GenericDaemon::parent_proxy::parent_proxy
         (GenericDaemon* that, opaque_job_master_t const& job_master)
-      : _that (that)
-      , _name (job_master->_actual.get()->first)
+      : parent_proxy (that, job_master->_actual.get())
     {}
 
     void GenericDaemon::parent_proxy::worker_registration
