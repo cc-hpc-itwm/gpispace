@@ -367,7 +367,7 @@ void GenericDaemon::handleSubmitJobEvent
     if( itMaster != _master_info.end() && !itMaster->second.is_registered() )
     {
       throw std::runtime_error
-        ("job submission from master not yet registered or unknown");
+        ("job submission from master not yet registered");
     }
 
   // First, check if the job 'job_id' wasn't already submitted!
