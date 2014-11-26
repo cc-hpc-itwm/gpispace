@@ -1009,13 +1009,13 @@ void GenericDaemon::addCapability(const capability_t& cpb)
   m_capabilities.insert(cpb);
 }
 
-void GenericDaemon::unsubscribe(const sdpa::agent_id_t& id)
+void GenericDaemon::unsubscribe(const fhg::com::p2p::address_t& id)
 {
   lock_type lock(mtx_subscriber_);
   _subscriptions.erase(id);
 }
 
-bool GenericDaemon::subscribedFor(const sdpa::agent_id_t& agId, const sdpa::job_id_t& jobId)
+bool GenericDaemon::subscribedFor(const fhg::com::p2p::address_t& agId, const sdpa::job_id_t& jobId)
 {
   return std::find
     (_subscriptions[agId].begin(), _subscriptions[agId].end(), jobId)
@@ -1085,14 +1085,14 @@ void GenericDaemon::handleSubscribeEvent
   INVALID_ENUM_VALUE (sdpa::status::code, status);
 }
 
-bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
+bool GenericDaemon::isSubscriber(const fhg::com::p2p::address_t& agentId)
 {
   lock_type lock(mtx_subscriber_);
   return _subscriptions.find (agentId) != _subscriptions.end();
 }
-    std::list<agent_id_t> GenericDaemon::subscribers (job_id_t job_id) const
+    std::list<fhg::com::p2p::address_t> GenericDaemon::subscribers (job_id_t job_id) const
     {
-      std::list<agent_id_t> ret;
+      std::list<fhg::com::p2p::address_t> ret;
 
       for (subscriber_map_t::value_type const& subscription : _subscriptions)
       {

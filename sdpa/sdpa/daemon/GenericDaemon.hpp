@@ -118,19 +118,22 @@ namespace sdpa {
       CoallocationScheduler& scheduler() {return _scheduler;}
 
       // masters and subscribers
-      void unsubscribe(const sdpa::agent_id_t&);
+      void unsubscribe(const fhg::com::p2p::address_t&);
       virtual void handleSubscribeEvent (std::string const& source, const sdpa::events::SubscribeEvent*) override;
-      bool isSubscriber(const sdpa::agent_id_t&);
-      std::list<agent_id_t> subscribers (job_id_t) const;
+      bool isSubscriber(const fhg::com::p2p::address_t&);
+      std::list<fhg::com::p2p::address_t> subscribers (job_id_t) const;
       template<typename Event, typename... Args>
         void notify_subscribers (job_id_t job_id, Args... args)
       {
-        for (agent_id_t const& subscriber : subscribers (job_id))
+        for (fhg::com::p2p::address_t const& subscriber : subscribers (job_id))
         {
-          sendEventToOther (subscriber, boost::make_shared<Event> (args...));
+          sendEventToOther ( subscriber
+                           , "subscriber-" + fhg::com::p2p::to_string (subscriber)
+                           , boost::make_shared<Event> (args...)
+                           );
         }
       }
-      bool subscribedFor(const sdpa::agent_id_t&, const sdpa::job_id_t&);
+      bool subscribedFor(const fhg::com::p2p::address_t&, const sdpa::job_id_t&);
 
       // agent info and properties
 
@@ -245,7 +248,7 @@ namespace sdpa {
       friend struct sdpa::opaque_job_master_t::implementation;
 
       master_info_t _master_info;
-      typedef std::map<agent_id_t, job_id_list_t> subscriber_map_t;
+      typedef std::unordered_map<fhg::com::p2p::address_t, job_id_list_t> subscriber_map_t;
       subscriber_map_t _subscriptions;
 
     private:
