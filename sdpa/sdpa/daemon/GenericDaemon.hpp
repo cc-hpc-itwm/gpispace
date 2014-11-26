@@ -224,12 +224,8 @@ namespace sdpa {
       {
       public:
         MasterInfo()
-          : registered_(false)
-          , _address (boost::none)
+          : _address (boost::none)
         {}
-
-        bool is_registered() const { return registered_; }
-        void set_registered(bool b) { registered_ = b; }
 
         boost::optional<fhg::com::p2p::address_t> const& address() const
         {
@@ -241,7 +237,6 @@ namespace sdpa {
         }
 
       private:
-        bool registered_;
         boost::optional<fhg::com::p2p::address_t> _address;
       };
 

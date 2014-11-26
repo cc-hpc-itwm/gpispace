@@ -354,7 +354,6 @@ void GenericDaemon::handleSubmitJobEvent
 {
   const events::SubmitJobEvent& e (*evt);
 
-    // check if the incoming event was produced by a master to which the current agent has already registered
     master_info_t::iterator itMaster = find_if
       ( _master_info.begin()
       , _master_info.end()
@@ -363,12 +362,6 @@ void GenericDaemon::handleSubmitJobEvent
           return info.second.address() == fhg::com::p2p::address_t (source);
         }
       );
-
-    if( itMaster != _master_info.end() && !itMaster->second.is_registered() )
-    {
-      throw std::runtime_error
-        ("job submission from master not yet registered");
-    }
 
   // First, check if the job 'job_id' wasn't already submitted!
   if(e.job_id() && findJob(*e.job_id()))
@@ -466,10 +459,7 @@ void GenericDaemon::handleWorkerRegistrationEvent
     // send to the masters my new set of capabilities
     for (master_info_t::value_type const& info : _master_info)
     {
-      if (info.second.is_registered())
-      {
-        parent_proxy (this, info.first).capabilities_gained (workerCpbSet);
-      }
+      parent_proxy (this, info.first).capabilities_gained (workerCpbSet);
     }
   }
 }
@@ -507,7 +497,6 @@ void GenericDaemon::handleErrorEvent
     }
     case events::ErrorEvent::SDPA_EWORKERNOTREG:
     {
-      // mark the agen as not-registered
       master_info_t::iterator const disconnected_master_it
         ( std::find_if
             ( _master_info.begin(), _master_info.end()
@@ -520,7 +509,6 @@ void GenericDaemon::handleErrorEvent
 
       if (disconnected_master_it != _master_info.end())
       {
-        disconnected_master_it->second.set_registered (false);
         disconnected_master_it->second.address (boost::none);
 
         request_registration_soon (disconnected_master_it);
@@ -590,7 +578,6 @@ void GenericDaemon::handleErrorEvent
 
         if (disconnected_master_it != _master_info.end())
         {
-          disconnected_master_it->second.set_registered (false);
           disconnected_master_it->second.address (boost::none);
 
           request_registration_soon (disconnected_master_it);
@@ -793,8 +780,6 @@ void GenericDaemon::handleWorkerRegistrationAckEvent
       ("workerRegistrationAckEvent from source not in list of masters");
   }
 
-  master_it->second.set_registered (true);
-
   {
     boost::mutex::scoped_lock const _ (_job_map_mutex);
 
@@ -887,11 +872,8 @@ void GenericDaemon::handleCapabilitiesGainedEvent
         {
           for (master_info_t::value_type const& info : _master_info)
           {
-            if (info.second.is_registered())
-            {
-              parent_proxy (this, info.first).capabilities_gained
-                (newWorkerCpbSet);
-            }
+            parent_proxy (this, info.first).capabilities_gained
+              (newWorkerCpbSet);
           }
         }
       }
@@ -912,11 +894,8 @@ void GenericDaemon::handleCapabilitiesLostEvent
     {
       for (master_info_t::value_type const& info : _master_info)
       {
-        if (info.second.is_registered())
-        {
-          parent_proxy (this, info.first).capabilities_lost
-            (pCpbLostEvt->capabilities());
-        }
+        parent_proxy (this, info.first).capabilities_lost
+          (pCpbLostEvt->capabilities());
       }
     }
   }
