@@ -172,6 +172,10 @@ namespace sdpa {
       // event communication
       void sendEventToOther
         (std::string const& destination, const sdpa::events::SDPAEvent::Ptr& e);
+      void sendEventToOther ( fhg::com::p2p::address_t const&
+                            , std::string const& callback_identifier
+                            , sdpa::events::SDPAEvent::Ptr const&
+                            );
     private:
       void delay (std::function<void()>);
 

@@ -948,12 +948,21 @@ void GenericDaemon::handle_events()
   }
 }
 
-void GenericDaemon::sendEventToOther( std::string const& destination
-                                    , const events::SDPAEvent::Ptr& pEvt
-                                    )
-{
-  _network_strategy.perform (destination, pEvt);
-}
+    void GenericDaemon::sendEventToOther( std::string const& destination
+                                        , events::SDPAEvent::Ptr const& event
+                                        )
+    {
+      sendEventToOther
+        (fhg::com::p2p::address_t (destination), destination, event);
+    }
+
+    void GenericDaemon::sendEventToOther ( fhg::com::p2p::address_t const& address
+                                         , std::string const& callback_identifier
+                                         , sdpa::events::SDPAEvent::Ptr const& event
+                                         )
+    {
+      _network_strategy.perform (address, callback_identifier, event);
+    }
 
 void GenericDaemon::delay (std::function<void()> fun)
 {
