@@ -6,6 +6,7 @@
 #include <sdpa/events/ErrorEvent.hpp>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/make_shared.hpp>
 
 #include <functional>
 
@@ -74,41 +75,41 @@ namespace sdpa
       , boost::shared_ptr<events::SDPAEvent> const& sdpa_event
       )
     {
-      static sdpa::events::Codec codec;
+      perform (fhg::com::p2p::address_t (destination), destination, sdpa_event);
+    }
+
+    void NetworkStrategy::perform
+      ( fhg::com::p2p::address_t const& address
+      , std::string const& callback_identifier
+      , boost::shared_ptr<events::SDPAEvent> const& sdpa_event
+      )
+    {
+      static events::Codec codec;
 
       try
       {
         m_peer->async_send
-          ( destination
+          ( address
           , codec.encode (sdpa_event.get())
-          , std::bind ( &NetworkStrategy::handle_send
-                      , this
-                      , destination
-                      , std::placeholders::_1
-                      )
+          , [callback_identifier, this] (boost::system::error_code const& ec)
+            {
+              if (ec)
+              {
+                _event_handler
+                  ( callback_identifier
+                  , boost::make_shared<events::ErrorEvent>
+                      (events::ErrorEvent::SDPA_ENETWORKFAILURE, ec.message())
+                  );
+              }
+            }
           );
       }
-      catch (std::exception const & ex)
+      catch (std::exception const& ex)
       {
-        sdpa::events::ErrorEvent::Ptr ptrErrEvt
-          (new sdpa::events::ErrorEvent( sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-                                       , ex.what())
-          );
-        _event_handler (destination, ptrErrEvt);
-      }
-    }
-
-    void NetworkStrategy::handle_send ( std::string const& destination_name
-                                      , boost::system::error_code const & ec
-                                      )
-    {
-      if (ec)
-      {
-        sdpa::events::ErrorEvent::Ptr ptrErrEvt
-          (new sdpa::events::ErrorEvent( sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-                                       , ec.message())
-          );
-        _event_handler (destination_name, ptrErrEvt);
+        _event_handler ( callback_identifier
+                       , boost::make_shared<events::ErrorEvent>
+                           (events::ErrorEvent::SDPA_ENETWORKFAILURE, ex.what())
+                       );
       }
     }
 

@@ -33,6 +33,10 @@ namespace sdpa
       void perform ( std::string const& destination
                    , boost::shared_ptr<events::SDPAEvent> const & to_send
                    );
+      void perform ( fhg::com::p2p::address_t const&
+                   , std::string const& callback_identifier
+                   , boost::shared_ptr<events::SDPAEvent> const&
+                   );
 
       boost::asio::ip::tcp::endpoint local_endpoint() const
       {
@@ -40,9 +44,6 @@ namespace sdpa
       }
 
     private:
-      void handle_send ( std::string const& destination_name
-                       , boost::system::error_code const & ec
-                       );
       void handle_recv ( boost::system::error_code const & ec
                        , boost::optional<std::string> source_name
                        );
