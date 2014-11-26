@@ -76,8 +76,8 @@ namespace sdpa {
                           boost::noncopyable
     {
     protected:
-      class MasterInfo;
-      using master_info_t = std::map<std::string, MasterInfo>;
+      using master_info_t =
+        std::map<std::string, boost::optional<fhg::com::p2p::address_t>>;
 
     public:
       typedef boost::recursive_mutex mutex_type;
@@ -219,26 +219,6 @@ namespace sdpa {
       fhg::log::Logger::ptr_t _logger;
 
       std::string _name;
-
-      class MasterInfo
-      {
-      public:
-        MasterInfo()
-          : _address (boost::none)
-        {}
-
-        boost::optional<fhg::com::p2p::address_t> const& address() const
-        {
-          return _address;
-        }
-        void address (boost::optional<fhg::com::p2p::address_t> const& address)
-        {
-          _address = address;
-        }
-
-      private:
-        boost::optional<fhg::com::p2p::address_t> _address;
-      };
 
       friend struct sdpa::opaque_job_master_t::implementation;
 

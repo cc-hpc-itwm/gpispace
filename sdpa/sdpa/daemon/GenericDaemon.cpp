@@ -138,7 +138,8 @@ GenericDaemon::GenericDaemon( const std::string name
                             )
   : _logger (fhg::log::Logger::get (name))
   , _name (name)
-  , _master_info (make_map_with_keys_and_default_value<MasterInfo> (masters))
+  , _master_info
+      (make_map_with_keys_and_default_value<master_info_t::mapped_type> (masters))
   , _subscriptions()
   , _discover_sources()
   , _job_map_mutex()
@@ -359,7 +360,7 @@ void GenericDaemon::handleSubmitJobEvent
       , _master_info.end()
       , [&source] (master_info_t::value_type const& info)
         {
-          return info.second.address() == fhg::com::p2p::address_t (source);
+          return info.second == fhg::com::p2p::address_t (source);
         }
       );
 
@@ -502,14 +503,14 @@ void GenericDaemon::handleErrorEvent
             ( _master_info.begin(), _master_info.end()
             , [&source] (master_info_t::value_type const& info)
               {
-                return info.second.address() == fhg::com::p2p::address_t (source);
+                return info.second == fhg::com::p2p::address_t (source);
               }
             )
         );
 
       if (disconnected_master_it != _master_info.end())
       {
-        disconnected_master_it->second.address (boost::none);
+        disconnected_master_it->second = boost::none;
 
         request_registration_soon (disconnected_master_it);
       }
@@ -571,14 +572,14 @@ void GenericDaemon::handleErrorEvent
               ( _master_info.begin(), _master_info.end()
               , [&source] (master_info_t::value_type const& info)
                 {
-                  return info.second.address() == fhg::com::p2p::address_t (source);
+                  return info.second == fhg::com::p2p::address_t (source);
                 }
               )
           );
 
         if (disconnected_master_it != _master_info.end())
         {
-          disconnected_master_it->second.address (boost::none);
+          disconnected_master_it->second = boost::none;
 
           request_registration_soon (disconnected_master_it);
         }
@@ -967,7 +968,7 @@ void GenericDaemon::requestRegistration (master_info_t::iterator const& it)
 {
   try
   {
-    it->second.address (_network_strategy.connect_to_via_kvs (it->first));
+    it->second = _network_strategy.connect_to_via_kvs (it->first);
   }
   catch (std::exception const& ex)
   {
