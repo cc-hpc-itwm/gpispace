@@ -20,7 +20,7 @@ namespace sdpa
       kill (getpid (), SIGTERM);
     }
 
-    NetworkStrategy::NetworkStrategy ( std::function<void (std::string const&, sdpa::events::SDPAEvent::Ptr)> event_handler
+    NetworkStrategy::NetworkStrategy ( std::function<void (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr)> event_handler
                                      , boost::asio::io_service& peer_io_service
                                      , std::string const & peer_name
                                      , fhg::com::host_t const & host
@@ -71,16 +71,7 @@ namespace sdpa
     }
 
     void NetworkStrategy::perform
-      ( std::string const& destination
-      , boost::shared_ptr<events::SDPAEvent> const& sdpa_event
-      )
-    {
-      perform (fhg::com::p2p::address_t (destination), destination, sdpa_event);
-    }
-
-    void NetworkStrategy::perform
       ( fhg::com::p2p::address_t const& address
-      , std::string const& callback_identifier
       , boost::shared_ptr<events::SDPAEvent> const& sdpa_event
       )
     {
@@ -91,12 +82,12 @@ namespace sdpa
         m_peer->async_send
           ( address
           , codec.encode (sdpa_event.get())
-          , [callback_identifier, this] (boost::system::error_code const& ec)
+          , [address, this] (boost::system::error_code const& ec)
             {
               if (ec)
               {
                 _event_handler
-                  ( callback_identifier
+                  ( address
                   , boost::make_shared<events::ErrorEvent>
                       (events::ErrorEvent::SDPA_ENETWORKFAILURE, ec.message())
                   );
@@ -106,7 +97,7 @@ namespace sdpa
       }
       catch (std::exception const& ex)
       {
-        _event_handler ( callback_identifier
+        _event_handler ( address
                        , boost::make_shared<events::ErrorEvent>
                            (events::ErrorEvent::SDPA_ENETWORKFAILURE, ex.what())
                        );
@@ -114,7 +105,7 @@ namespace sdpa
     }
 
     void NetworkStrategy::handle_recv ( boost::system::error_code const & ec
-                                      , boost::optional<std::string> source_name
+                                      , boost::optional<fhg::com::p2p::address_t> source
                                       )
     {
       static sdpa::events::Codec codec;
@@ -124,7 +115,7 @@ namespace sdpa
         // convert m_message to event
         sdpa::events::SDPAEvent::Ptr evt
           (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
-        _event_handler (source_name.get(), evt);
+        _event_handler (source.get(), evt);
 
         m_peer->async_recv
           ( &m_message
@@ -146,7 +137,8 @@ namespace sdpa
                                                 , ec.message()
                                                 )
                 );
-          _event_handler (source_name.get_value_or ("unknown source"), error);
+          _event_handler
+            (source.get_value_or (fhg::com::p2p::address_t ("unknown")), error);
 
           m_peer->async_recv
            ( &m_message

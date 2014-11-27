@@ -45,7 +45,7 @@ namespace sdpa
       }
 
       virtual void handleBy
-        (std::string const& source, EventHandler* handler) override
+        (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
         handler->handle_put_token (source, this);
       }
@@ -94,7 +94,7 @@ namespace sdpa
       }
 
       virtual void handleBy
-        (std::string const& source, EventHandler* handler) override
+        (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
         handler->handle_put_token_ack (source, this);
       }

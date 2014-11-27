@@ -66,7 +66,7 @@ namespace sdpa
     }
 
     void Orchestrator::handleJobFinishedEvent
-      (std::string const& source, const events::JobFinishedEvent* pEvt)
+      (fhg::com::p2p::address_t const& source, const events::JobFinishedEvent* pEvt)
     {
       LLOG (TRACE, _logger, "The job " << pEvt->job_id() << " has finished!");
 
@@ -97,7 +97,7 @@ namespace sdpa
     }
 
     void Orchestrator::handleJobFailedEvent
-      (std::string const& source, const events::JobFailedEvent* pEvt)
+      (fhg::com::p2p::address_t const& source, const events::JobFailedEvent* pEvt)
     {
       child_proxy (this, source).job_failed_ack (pEvt->job_id());
 
@@ -126,7 +126,7 @@ namespace sdpa
     }
 
     void Orchestrator::handleCancelJobEvent
-      (std::string const& source, const events::CancelJobEvent* pEvt)
+      (fhg::com::p2p::address_t const& source, const events::CancelJobEvent* pEvt)
     {
       Job* pJob (findJob (pEvt->job_id()));
       if (!pJob)
@@ -161,7 +161,8 @@ namespace sdpa
         scheduler().worker_manager().findSubmOrAckWorker(pEvt->job_id());
       if (worker_id)
       {
-        child_proxy (this, *worker_id).cancel_job (pEvt->job_id());
+        child_proxy (this, address_by_worker (*worker_id).get()->second)
+          .cancel_job (pEvt->job_id());
       }
       else
       {
@@ -176,7 +177,7 @@ namespace sdpa
     }
 
     void Orchestrator::handleCancelJobAckEvent
-      (std::string const& source, const events::CancelJobAckEvent* pEvt)
+      (fhg::com::p2p::address_t const&, const events::CancelJobAckEvent* pEvt)
     {
       Job* pJob (findJob (pEvt->job_id()));
       if (!pJob)
@@ -192,7 +193,7 @@ namespace sdpa
     }
 
     void Orchestrator::handleDeleteJobEvent
-      (std::string const& source, const events::DeleteJobEvent* evt)
+      (fhg::com::p2p::address_t const& source, const events::DeleteJobEvent* evt)
     {
       Job* pJob (findJob (evt->job_id()));
       if (!pJob)

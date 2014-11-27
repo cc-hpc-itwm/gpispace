@@ -29,7 +29,7 @@ namespace
     {}
 
     void handleCancelJobEvent
-      (std::string const& source, const sdpa::events::CancelJobEvent* e) override
+      (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent* e) override
     {
       const std::map<std::string, job_t>::const_iterator it
         ( std::find_if

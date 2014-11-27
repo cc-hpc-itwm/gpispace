@@ -67,7 +67,7 @@ namespace fhg
       void async_recv
         ( message_t *m
         , std::function<void ( boost::system::error_code
-                             , boost::optional<std::string> source_name
+                             , boost::optional<fhg::com::p2p::address_t> source
                              )
                        >
         );
@@ -99,7 +99,7 @@ namespace fhg
 
         message_t  *message;
         std::function<void ( boost::system::error_code
-                           , boost::optional<std::string> source_name
+                           , boost::optional<fhg::com::p2p::address_t>
                            )
                      > handler;
       };

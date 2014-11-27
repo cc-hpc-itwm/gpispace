@@ -21,7 +21,7 @@ namespace
     {}
 
     virtual void handleCapabilitiesGainedEvent
-      (std::string const&, const sdpa::events::CapabilitiesGainedEvent* event) override
+      (fhg::com::p2p::address_t const&, const sdpa::events::CapabilitiesGainedEvent* event) override
     {
       boost::mutex::scoped_lock const _ (_mutex);
       for (const sdpa::capability_t& cpb : event->capabilities())
@@ -32,7 +32,7 @@ namespace
     }
 
     virtual void handleCapabilitiesLostEvent
-      (std::string const&, const sdpa::events::CapabilitiesLostEvent* event) override
+      (fhg::com::p2p::address_t const&, const sdpa::events::CapabilitiesLostEvent* event) override
     {
       boost::mutex::scoped_lock const _ (_mutex);
       for (const sdpa::capability_t& cpb : event->capabilities())

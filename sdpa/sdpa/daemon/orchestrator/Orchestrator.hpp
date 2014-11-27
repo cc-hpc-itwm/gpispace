@@ -40,16 +40,16 @@ namespace sdpa {
                    );
 
       virtual void handleJobFinishedEvent
-        (std::string const& source, const sdpa::events::JobFinishedEvent* ) override;
+        (fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedEvent* ) override;
       virtual void handleJobFailedEvent
-        (std::string const& source, const sdpa::events::JobFailedEvent* ) override;
+        (fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedEvent* ) override;
 
       virtual void handleCancelJobEvent
-        (std::string const& source, const sdpa::events::CancelJobEvent* pEvt ) override;
+        (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent* pEvt ) override;
       virtual void handleCancelJobAckEvent
-        (std::string const& source, const sdpa::events::CancelJobAckEvent* pEvt ) override;
+        (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobAckEvent* pEvt ) override;
       virtual void handleDeleteJobEvent
-        (std::string const& source, const sdpa::events::DeleteJobEvent* ) override;
+        (fhg::com::p2p::address_t const& source, const sdpa::events::DeleteJobEvent* ) override;
 
       boost::asio::ip::tcp::endpoint rpc_local_endpoint() const;
 

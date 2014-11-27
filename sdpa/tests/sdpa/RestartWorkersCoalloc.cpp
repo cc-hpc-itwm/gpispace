@@ -28,7 +28,7 @@ namespace
     }
 
     void handleCancelJobEvent
-      (std::string const& source, const sdpa::events::CancelJobEvent* pEvt) override
+      (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent* pEvt) override
     {
       _network.perform
         ( source

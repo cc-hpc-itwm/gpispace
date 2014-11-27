@@ -19,7 +19,7 @@ namespace sdpa
     class NetworkStrategy
     {
     public:
-      NetworkStrategy ( std::function<void (std::string const&, sdpa::events::SDPAEvent::Ptr)> event_handler
+      NetworkStrategy ( std::function<void (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr)> event_handler
                       , boost::asio::io_service& peer_io_service
                       , std::string const & peer_name
                       , fhg::com::host_t const & host
@@ -30,11 +30,7 @@ namespace sdpa
 
       fhg::com::p2p::address_t connect_to_via_kvs (std::string const&);
 
-      void perform ( std::string const& destination
-                   , boost::shared_ptr<events::SDPAEvent> const & to_send
-                   );
       void perform ( fhg::com::p2p::address_t const&
-                   , std::string const& callback_identifier
                    , boost::shared_ptr<events::SDPAEvent> const&
                    );
 
@@ -45,14 +41,14 @@ namespace sdpa
 
     private:
       void handle_recv ( boost::system::error_code const & ec
-                       , boost::optional<std::string> source_name
+                       , boost::optional<fhg::com::p2p::address_t> source_name
                        );
 
       void kvs_error_handler (boost::system::error_code const &);
 
       fhg::log::Logger::ptr_t _logger;
 
-      std::function<void (std::string const&, sdpa::events::SDPAEvent::Ptr)> _event_handler;
+      std::function<void (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr)> _event_handler;
 
       const std::string m_port;
 

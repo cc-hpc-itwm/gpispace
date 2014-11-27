@@ -3,10 +3,10 @@
 
 #include <sdpa/events/EventHandler.hpp>
 
+#include <fhgcom/header.hpp>
+
 #include <boost/serialization/access.hpp>
 #include <boost/shared_ptr.hpp>
-
-#include <string>
 
 namespace sdpa
 {
@@ -19,7 +19,8 @@ namespace sdpa
 
       virtual ~SDPAEvent() = default;
 
-      virtual void handleBy (std::string const& source, EventHandler*) = 0;
+      virtual void handleBy
+        (fhg::com::p2p::address_t const& source, EventHandler*) = 0;
 
     protected:
       SDPAEvent() = default;

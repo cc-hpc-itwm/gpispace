@@ -25,16 +25,16 @@ namespace sdpa
 
     protected:
       virtual void handleJobFinishedEvent
-        (std::string const& source, const sdpa::events::JobFinishedEvent*) override;
+        (fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedEvent*) override;
       virtual void handleJobFailedEvent
-        (std::string const& source, const sdpa::events::JobFailedEvent*) override;
+        (fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedEvent*) override;
 
       virtual void handleCancelJobEvent
-        (std::string const& source, const sdpa::events::CancelJobEvent*) override;
+        (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent*) override;
       virtual void handleCancelJobAckEvent
-        (std::string const& source, const sdpa::events::CancelJobAckEvent*) override;
+        (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobAckEvent*) override;
       virtual void handleDeleteJobEvent
-        (std::string const&, const sdpa::events::DeleteJobEvent*) override
+        (fhg::com::p2p::address_t const&, const sdpa::events::DeleteJobEvent*) override
       {
         throw std::runtime_error("The agent should not call handleDeleteJobEvent!");
       }

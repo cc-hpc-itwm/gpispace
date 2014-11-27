@@ -43,6 +43,11 @@ struct setup_logging
   }
 };
 
+FHG_BOOST_TEST_LOG_VALUE_PRINTER (fhg::com::p2p::address_t, os, address)
+{
+  os << fhg::com::p2p::to_string (address);
+}
+
 namespace utils
 {
   std::string require_and_read_file (std::string filename)
@@ -295,15 +300,16 @@ namespace utils
                                           )
         )
       , _event_queue()
-      , _network
-        ( [this] (std::string const& source, sdpa::events::SDPAEvent::Ptr e)
-          {
-            _event_queue.put (source, e);
-          }
-        , _peer_io_service
-        , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
-        , _kvs_client
-        )
+      , _network ( [this] ( fhg::com::p2p::address_t const& source
+                          , sdpa::events::SDPAEvent::Ptr e
+                          )
+                   {
+                     _event_queue.put (source, e);
+                   }
+                 , _peer_io_service
+                 , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
+                 , _kvs_client
+                 )
       , _event_thread (&basic_drts_component::event_thread, this)
     {}
 
@@ -346,16 +352,16 @@ namespace utils
     }
 
     virtual void handleWorkerRegistrationAckEvent
-      ( std::string const& source
+      ( fhg::com::p2p::address_t const& source
       , const sdpa::events::WorkerRegistrationAckEvent*
       ) override
     {
       BOOST_REQUIRE (_master_name);
-      BOOST_REQUIRE_EQUAL (source, _master_name);
+      BOOST_REQUIRE_EQUAL (source, fhg::com::p2p::address_t (_master_name.get()));
     }
 
     virtual void handleWorkerRegistrationEvent
-      ( std::string const& source
+      ( fhg::com::p2p::address_t const& source
       , const sdpa::events::WorkerRegistrationEvent*
       ) override
     {
@@ -370,7 +376,7 @@ namespace utils
     }
 
     virtual void handleErrorEvent
-      (std::string const& source, const sdpa::events::ErrorEvent* e) override
+      (fhg::com::p2p::address_t const& source, const sdpa::events::ErrorEvent* e) override
     {
       if (e->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN)
       {
@@ -404,12 +410,12 @@ namespace utils
     std::string _kvs_port;
     boost::optional<std::string> _master_name;
     bool _accept_workers;
-    std::set<std::string> _accepted_workers;
+    std::unordered_set<fhg::com::p2p::address_t> _accepted_workers;
 
   private:
     fhg::com::kvs::kvsc_ptr_t _kvs_client;
 
-    fhg::thread::queue<std::pair<std::string, sdpa::events::SDPAEvent::Ptr>>
+    fhg::thread::queue<std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr>>
       _event_queue;
     boost::asio::io_service _peer_io_service;
 
@@ -423,7 +429,7 @@ namespace utils
     {
       for (;;)
       {
-        std::pair<std::string, sdpa::events::SDPAEvent::Ptr> event
+        std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr> event
           (_event_queue.get());
         event.second->handleBy (event.first, this);
       }
@@ -472,7 +478,7 @@ namespace utils
     {}
 
     virtual void handleSubmitJobEvent
-      (std::string const& source, const sdpa::events::SubmitJobEvent* e) override
+      (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent* e) override
     {
       const std::string name
         (we::type::activity_t (e->description()).transition().name());
@@ -488,7 +494,7 @@ namespace utils
       _announce_job (name);
     }
     virtual void handleJobFinishedAckEvent
-      (std::string const&, const sdpa::events::JobFinishedAckEvent*) override
+      (fhg::com::p2p::address_t const&, const sdpa::events::JobFinishedAckEvent*) override
     {
       // can be ignored as we clean up in finish() already
     }
@@ -511,8 +517,11 @@ namespace utils
     struct job_t
     {
       sdpa::job_id_t _id;
-      std::string _owner;
-      job_t (sdpa::job_id_t id, std::string owner) : _id (id), _owner (owner) {}
+      fhg::com::p2p::address_t _owner;
+      job_t (sdpa::job_id_t id, fhg::com::p2p::address_t owner)
+        : _id (id)
+        , _owner (owner)
+      {}
     };
     std::map<std::string, job_t> _jobs;
 
@@ -532,7 +541,7 @@ namespace utils
     {}
 
     virtual void handleSubmitJobEvent
-      (std::string const& source, const sdpa::events::SubmitJobEvent* e) override
+      (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent* e) override
     {
       _network.perform
         ( source
@@ -549,7 +558,7 @@ namespace utils
         );
     }
     virtual void handleJobFinishedAckEvent
-      (std::string const&, const sdpa::events::JobFinishedAckEvent*) override
+      (fhg::com::p2p::address_t const&, const sdpa::events::JobFinishedAckEvent*) override
     {
       // can be ignored as we don't have any state
     }
@@ -567,8 +576,8 @@ namespace utils
         (announce_job, master_agent)
     {}
 
-    void handleJobFinishedAckEvent
-      (std::string const&, const sdpa::events::JobFinishedAckEvent* e) override
+    virtual void handleJobFinishedAckEvent
+      (fhg::com::p2p::address_t const&, const sdpa::events::JobFinishedAckEvent* e) override
     {
       _finished_ack.notify (e->job_id());
     }

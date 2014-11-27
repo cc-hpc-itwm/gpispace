@@ -81,7 +81,7 @@ namespace sdpa
     }
 
     void Client::handle_recv ( boost::system::error_code const & ec
-                             , boost::optional<std::string>
+                             , boost::optional<fhg::com::p2p::address_t>
                              )
     {
       static sdpa::events::Codec codec;

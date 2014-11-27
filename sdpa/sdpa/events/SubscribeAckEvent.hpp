@@ -23,7 +23,7 @@ namespace sdpa
       }
 
       virtual void handleBy
-        (std::string const& source, EventHandler* handler) override
+        (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
         handler->handleSubscribeAckEvent (source, this);
       }

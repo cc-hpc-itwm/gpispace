@@ -61,8 +61,9 @@ namespace
       , _expected (expected)
     {}
 
-    void perform
-      (std::string const&, const boost::shared_ptr<sdpa::events::SDPAEvent>&)
+    void perform ( fhg::com::p2p::address_t const&
+                 , const boost::shared_ptr<sdpa::events::SDPAEvent>&
+                 )
     {
       boost::mutex::scoped_lock _ (_counter_mutex);
       ++_counter;
@@ -110,7 +111,7 @@ BOOST_FIXTURE_TEST_CASE (perform_test, KVSSetup)
     , _kvs
     );
 
-  net.perform ( "peer-1"
+  net.perform ( net.connect_to_via_kvs ("peer-1")
               , boost::shared_ptr<sdpa::events::SDPAEvent>(new sdpa::events::ErrorEvent(sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                                                               , "success"
                                                               )

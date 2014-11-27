@@ -120,7 +120,7 @@ namespace sdpa {
 
       // masters and subscribers
       void unsubscribe(const fhg::com::p2p::address_t&);
-      virtual void handleSubscribeEvent (std::string const& source, const sdpa::events::SubscribeEvent*) override;
+      virtual void handleSubscribeEvent (fhg::com::p2p::address_t const& source, const sdpa::events::SubscribeEvent*) override;
       bool isSubscriber(const fhg::com::p2p::address_t&);
       std::list<fhg::com::p2p::address_t> subscribers (job_id_t) const;
       template<typename Event, typename... Args>
@@ -128,10 +128,7 @@ namespace sdpa {
       {
         for (fhg::com::p2p::address_t const& subscriber : subscribers (job_id))
         {
-          sendEventToOther ( subscriber
-                           , "subscriber-" + fhg::com::p2p::to_string (subscriber)
-                           , boost::make_shared<Event> (args...)
-                           );
+          sendEventToOther (subscriber, boost::make_shared<Event> (args...));
         }
       }
       bool subscribedFor(const fhg::com::p2p::address_t&, const sdpa::job_id_t&);
@@ -145,37 +142,36 @@ namespace sdpa {
 
       // event handlers
     public:
-      virtual void handleCancelJobAckEvent(std::string const& source, const sdpa::events::CancelJobAckEvent* ) = 0;
-      virtual void handleCancelJobEvent(std::string const& source, const sdpa::events::CancelJobEvent*) = 0;
-      virtual void handleCapabilitiesGainedEvent(std::string const& source, const sdpa::events::CapabilitiesGainedEvent*) override;
-      virtual void handleCapabilitiesLostEvent(std::string const& source, const sdpa::events::CapabilitiesLostEvent*) override;
-      virtual void handleDeleteJobEvent(std::string const& source, const sdpa::events::DeleteJobEvent* )=0;
-      virtual void handleErrorEvent(std::string const& source, const sdpa::events::ErrorEvent* ) override;
-      virtual void handleJobFailedAckEvent(std::string const& source, const sdpa::events::JobFailedAckEvent* ) override;
-      virtual void handleJobFailedEvent(std::string const& source, const sdpa::events::JobFailedEvent* ) = 0;
-      virtual void handleJobFinishedAckEvent(std::string const& source, const sdpa::events::JobFinishedAckEvent* ) override;
-      virtual void handleJobFinishedEvent(std::string const& source, const sdpa::events::JobFinishedEvent* ) = 0;
-      //virtual void handleJobResultsReplyEvent (std::string const& source, const sdpa::events::JobResultsReplyEvent *) ?!
-      virtual void handleSubmitJobAckEvent(std::string const& source, const sdpa::events::SubmitJobAckEvent* ) override;
-      virtual void handleSubmitJobEvent(std::string const& source, const sdpa::events::SubmitJobEvent* ) override;
-      //virtual void handleSubscribeAckEvent (std::string const& source, const sdpa::events::SubscribeAckEvent*) ?!
-      virtual void handleWorkerRegistrationAckEvent(std::string const& source, const sdpa::events::WorkerRegistrationAckEvent*) override;
-      virtual void handleWorkerRegistrationEvent(std::string const& source, const sdpa::events::WorkerRegistrationEvent* ) override;
-      virtual void handleQueryJobStatusEvent(std::string const& source, const sdpa::events::QueryJobStatusEvent* ) override;
-      virtual void handleRetrieveJobResultsEvent(std::string const& source, const sdpa::events::RetrieveJobResultsEvent* ) override;
+      virtual void handleCancelJobAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobAckEvent* ) = 0;
+      virtual void handleCancelJobEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent*) = 0;
+      virtual void handleCapabilitiesGainedEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesGainedEvent*) override;
+      virtual void handleCapabilitiesLostEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesLostEvent*) override;
+      virtual void handleDeleteJobEvent(fhg::com::p2p::address_t const& source, const sdpa::events::DeleteJobEvent* )=0;
+      virtual void handleErrorEvent(fhg::com::p2p::address_t const& source, const sdpa::events::ErrorEvent* ) override;
+      virtual void handleJobFailedAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedAckEvent* ) override;
+      virtual void handleJobFailedEvent(fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedEvent* ) = 0;
+      virtual void handleJobFinishedAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedAckEvent* ) override;
+      virtual void handleJobFinishedEvent(fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedEvent* ) = 0;
+      //virtual void handleJobResultsReplyEvent (fhg::com::p2p::address_t const& source, const sdpa::events::JobResultsReplyEvent *) ?!
+      virtual void handleSubmitJobAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobAckEvent* ) override;
+      virtual void handleSubmitJobEvent(fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent* ) override;
+      //virtual void handleSubscribeAckEvent (fhg::com::p2p::address_t const& source, const sdpa::events::SubscribeAckEvent*) ?!
+      virtual void handleWorkerRegistrationAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::WorkerRegistrationAckEvent*) override;
+      virtual void handleWorkerRegistrationEvent(fhg::com::p2p::address_t const& source, const sdpa::events::WorkerRegistrationEvent* ) override;
+      virtual void handleQueryJobStatusEvent(fhg::com::p2p::address_t const& source, const sdpa::events::QueryJobStatusEvent* ) override;
+      virtual void handleRetrieveJobResultsEvent(fhg::com::p2p::address_t const& source, const sdpa::events::RetrieveJobResultsEvent* ) override;
 
       virtual void handleDiscoverJobStatesReplyEvent
-        (std::string const& source, const sdpa::events::DiscoverJobStatesReplyEvent*) override;
+        (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesReplyEvent*) override;
       virtual void handleDiscoverJobStatesEvent
-        (std::string const& source, const sdpa::events::DiscoverJobStatesEvent*) override;
+        (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent*) override;
 
-      virtual void handle_put_token (std::string const& source, const events::put_token*) override;
-      virtual void handle_put_token_ack (std::string const& source, const events::put_token_ack*) override;
+      virtual void handle_put_token (fhg::com::p2p::address_t const& source, const events::put_token*) override;
+      virtual void handle_put_token_ack (fhg::com::p2p::address_t const& source, const events::put_token_ack*) override;
 
     protected:
       // event communication
       void sendEventToOther ( fhg::com::p2p::address_t const&
-                            , std::string const& callback_identifier
                             , sdpa::events::SDPAEvent::Ptr const&
                             );
     private:
@@ -225,6 +221,8 @@ namespace sdpa {
 
       boost::optional<decltype (_worker_connections.right)::iterator>
         worker_by_address (fhg::com::p2p::address_t const&);
+      boost::optional<decltype (_worker_connections.left)::iterator>
+        address_by_worker (std::string const&);
 
       friend struct sdpa::opaque_job_master_t::implementation;
 
@@ -237,10 +235,10 @@ namespace sdpa {
       subscriber_map_t _subscriptions;
 
     private:
-      std::unordered_map<std::pair<job_id_t, job_id_t>, std::string>
+      std::unordered_map<std::pair<job_id_t, job_id_t>, fhg::com::p2p::address_t>
         _discover_sources;
 
-      std::unordered_map<std::string, worker_id_t> _put_token_source;
+      std::unordered_map<std::string, fhg::com::p2p::address_t> _put_token_source;
 
     private:
       typedef std::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>
@@ -279,7 +277,7 @@ namespace sdpa {
 
       void do_registration_after_sleep (master_info_t::iterator const&);
 
-      fhg::thread::queue< std::pair< std::string
+      fhg::thread::queue< std::pair< fhg::com::p2p::address_t
                                    , boost::shared_ptr<events::SDPAEvent>
                                    >
                         > _event_queue;
@@ -312,7 +310,7 @@ namespace sdpa {
     protected:
       struct child_proxy
       {
-        child_proxy (GenericDaemon*, worker_id_t);
+        child_proxy (GenericDaemon*, fhg::com::p2p::address_t const&);
 
         void worker_registration_ack() const;
 
@@ -339,7 +337,7 @@ namespace sdpa {
 
       struct parent_proxy
       {
-        parent_proxy (GenericDaemon*, worker_id_t);
+        parent_proxy (GenericDaemon*, fhg::com::p2p::address_t const&);
         parent_proxy (GenericDaemon*, master_info_t::iterator const&);
         parent_proxy (GenericDaemon*, opaque_job_master_t const&);
 

@@ -35,7 +35,7 @@ namespace sdpa
     {}
 
     void Agent::handleJobFinishedEvent
-      (std::string const& source, const events::JobFinishedEvent* pEvt)
+      (fhg::com::p2p::address_t const& source, const events::JobFinishedEvent* pEvt)
     {
       child_proxy (this, source).job_finished_ack (pEvt->job_id());
 
@@ -95,7 +95,7 @@ namespace sdpa
     }
 
     void Agent::handleJobFailedEvent
-      (std::string const& source, const events::JobFailedEvent* pEvt)
+      (fhg::com::p2p::address_t const& source, const events::JobFailedEvent* pEvt)
     {
       child_proxy (this, source).job_failed_ack (pEvt->job_id());
 
@@ -144,7 +144,7 @@ namespace sdpa
     }
 
     void Agent::handleCancelJobEvent
-      (std::string const&, const events::CancelJobEvent* pEvt)
+      (fhg::com::p2p::address_t const&, const events::CancelJobEvent* pEvt)
     {
       Job* pJob (findJob (pEvt->job_id()));
       if (!pJob)
@@ -179,7 +179,7 @@ namespace sdpa
     }
 
     void Agent::handleCancelJobAckEvent
-      (std::string const& source, const events::CancelJobAckEvent* pEvt)
+      (fhg::com::p2p::address_t const& source, const events::CancelJobAckEvent* pEvt)
     {
       Job* pJob (findJob(pEvt->job_id()));
 

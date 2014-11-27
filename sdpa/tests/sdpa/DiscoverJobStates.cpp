@@ -86,7 +86,7 @@ namespace
     {}
 
     virtual void handleDiscoverJobStatesEvent
-      ( std::string const& source
+      ( fhg::com::p2p::address_t const& source
       , const sdpa::events::DiscoverJobStatesEvent* e
       ) override
     {

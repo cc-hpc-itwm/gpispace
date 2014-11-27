@@ -119,17 +119,17 @@ public:
   ~DRTSImpl();
 
   virtual void handleWorkerRegistrationAckEvent
-    (std::string const& source, const sdpa::events::WorkerRegistrationAckEvent *e) override;
+    (fhg::com::p2p::address_t const& source, const sdpa::events::WorkerRegistrationAckEvent *e) override;
   virtual void handleSubmitJobEvent
-    (std::string const& source, const sdpa::events::SubmitJobEvent *e) override;
+    (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent *e) override;
   virtual void handleCancelJobEvent
-    (std::string const& source, const sdpa::events::CancelJobEvent *e) override;
+    (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent *e) override;
   virtual void handleJobFailedAckEvent
-    (std::string const& source, const sdpa::events::JobFailedAckEvent *e) override;
+    (fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedAckEvent *e) override;
   virtual void handleJobFinishedAckEvent
-    (std::string const& source, const sdpa::events::JobFinishedAckEvent *e) override;
+    (fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedAckEvent *e) override;
   virtual void handleDiscoverJobStatesEvent
-    (std::string const& source, const sdpa::events::DiscoverJobStatesEvent*) override;
+    (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent*) override;
 
 private:
   // threads
@@ -147,14 +147,14 @@ private:
 
   void start_receiver();
   void handle_recv ( boost::system::error_code const & ec
-                   , boost::optional<std::string> source_name
+                   , boost::optional<fhg::com::p2p::address_t> source_name
                    );
 
   void send_event (fhg::com::p2p::address_t const& destination, sdpa::events::SDPAEvent *e);
   void send_event (fhg::com::p2p::address_t const& destination, sdpa::events::SDPAEvent::Ptr const & evt);
 
   void dispatch_event
-    (std::string const& source, sdpa::events::SDPAEvent::Ptr const &evt);
+    (fhg::com::p2p::address_t const& source, sdpa::events::SDPAEvent::Ptr const &evt);
 
   fhg::log::Logger::ptr_t _logger;
 
@@ -177,7 +177,7 @@ private:
   std::size_t m_max_reconnect_attempts;
   std::size_t m_reconnect_counter;
 
-  fhg::thread::queue<std::pair<std::string, sdpa::events::SDPAEvent::Ptr>>
+  fhg::thread::queue<std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr>>
     m_event_queue;
   boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
     m_event_thread;

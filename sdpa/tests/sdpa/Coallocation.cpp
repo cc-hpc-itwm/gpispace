@@ -275,7 +275,7 @@ namespace
     }
 
     void handleCancelJobEvent
-      (std::string const& source, const sdpa::events::CancelJobEvent* pEvt) override
+      (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent* pEvt) override
     {
       boost::mutex::scoped_lock const _ (_cancels_mutex);
 
@@ -287,7 +287,7 @@ namespace
     {
       boost::mutex::scoped_lock const _ (_cancels_mutex);
 
-      const std::string master (_cancels.at (job_id));
+      const fhg::com::p2p::address_t master (_cancels.at (job_id));
       _cancels.erase (job_id);
 
       _network.perform
@@ -300,7 +300,7 @@ namespace
   private:
     std::function<void (std::string)> _announce_cancel;
     mutable boost::mutex _cancels_mutex;
-    std::map<std::string, std::string> _cancels;
+    std::map<std::string, fhg::com::p2p::address_t> _cancels;
   };
 }
 

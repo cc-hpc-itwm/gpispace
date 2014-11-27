@@ -388,15 +388,13 @@ namespace fhg
     void peer_t::async_recv
       ( message_t *m
       , std::function<void ( boost::system::error_code
-                           , boost::optional<std::string> source_name
+                           , boost::optional<fhg::com::p2p::address_t>
                            )
                      > completion_handler
       )
     {
       fhg_assert (m);
       fhg_assert (completion_handler);
-
-      std::string name;
 
       {
         lock_type lock(mutex_);
@@ -425,12 +423,11 @@ namespace fhg
           m_pending.pop_front();
           *m = *p.first;
           delete p.first;
-          name = p.second;
         }
       }
 
       using namespace boost::system;
-      completion_handler (errc::make_error_code (errc::success), name);
+      completion_handler (errc::make_error_code (errc::success), m->header.src);
     }
 
     void peer_t::connection_established (const p2p::address_t a, boost::system::error_code const &ec)
@@ -727,7 +724,7 @@ namespace fhg
 
           lock.unlock ();
           to_recv.handler ( errc::make_error_code (errc::success)
-                          , connection->remote_name()
+                          , connection->remote_address()
                           );
           lock.lock ();
         }
@@ -774,7 +771,7 @@ namespace fhg
           to_recv.message->header.dst = c->local_address();
 
           lock.unlock ();
-          to_recv.handler (ec, c->remote_name());
+          to_recv.handler (ec, c->remote_address());
           lock.lock ();
         }
 

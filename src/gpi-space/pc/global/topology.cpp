@@ -460,7 +460,7 @@ namespace gpi
 
       void topology_t::message_received
         ( boost::system::error_code const &ec
-        , boost::optional<std::string>
+        , boost::optional<fhg::com::p2p::address_t>
         , memory::manager_t& memory_manager
         )
       {

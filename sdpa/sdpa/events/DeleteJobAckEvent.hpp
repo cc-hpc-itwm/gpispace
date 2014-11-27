@@ -14,7 +14,8 @@ namespace sdpa
 
       using JobEvent::JobEvent;
 
-      virtual void handleBy (std::string const&, EventHandler*) override
+      virtual void handleBy
+        (fhg::com::p2p::address_t const&, EventHandler*) override
       {
         throw std::runtime_error
           ( "This method should never be called as only the client should handle"

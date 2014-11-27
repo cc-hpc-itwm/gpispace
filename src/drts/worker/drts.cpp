@@ -441,25 +441,24 @@ DRTSImpl::~DRTSImpl()
   // event handler callbacks
   //    implemented events
 void DRTSImpl::handleWorkerRegistrationAckEvent
-  (std::string const& source, const sdpa::events::WorkerRegistrationAckEvent*)
+  (fhg::com::p2p::address_t const& source, const sdpa::events::WorkerRegistrationAckEvent*)
 {
-  fhg::com::p2p::address_t const source_address (source);
   map_of_masters_t::const_iterator master_it
     ( std::find_if ( m_masters.cbegin(), m_masters.cend()
-                   , [&] (map_of_masters_t::value_type const& master)
+                   , [&source] (map_of_masters_t::value_type const& master)
                      {
-                       return master.second == source_address;
+                       return master.second == source;
                      }
                    )
     );
-  if (master_it != m_masters.end())
+  if (master_it != m_masters.cend())
   {
     {
       boost::mutex::scoped_lock const _ (m_capabilities_mutex);
 
       if (!m_virtual_capabilities.empty())
       {
-        send_event ( source_address
+        send_event ( source
                    , new sdpa::events::CapabilitiesGainedEvent
                        (m_virtual_capabilities)
                    );
@@ -476,12 +475,19 @@ void DRTSImpl::handleWorkerRegistrationAckEvent
 }
 
 void DRTSImpl::handleSubmitJobEvent
-  (std::string const& source, const sdpa::events::SubmitJobEvent *e)
+  (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent *e)
 {
   // check master
-  map_of_masters_t::const_iterator master (m_masters.find(source));
+  map_of_masters_t::const_iterator master
+    ( std::find_if ( m_masters.cbegin(), m_masters.cend()
+                   , [&source] (map_of_masters_t::value_type const& master)
+                     {
+                       return master.second == source;
+                     }
+                   )
+    );
 
-  if (master == m_masters.end())
+  if (master == m_masters.cend())
   {
     throw std::runtime_error ("got SubmitJob from unknown source");
   }
@@ -528,7 +534,7 @@ void DRTSImpl::handleSubmitJobEvent
 }
 
 void DRTSImpl::handleCancelJobEvent
-  (std::string const& source, const sdpa::events::CancelJobEvent *e)
+  (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent *e)
 {
   // locate the job
   boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
@@ -591,7 +597,7 @@ void DRTSImpl::handleCancelJobEvent
 }
 
 void DRTSImpl::handleJobFailedAckEvent
-  (std::string const& source, const sdpa::events::JobFailedAckEvent *e)
+  (fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedAckEvent *e)
 {
   // locate the job
   boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
@@ -625,7 +631,7 @@ void DRTSImpl::handleJobFailedAckEvent
 }
 
 void DRTSImpl::handleJobFinishedAckEvent
-  (std::string const& source, const sdpa::events::JobFinishedAckEvent *e)
+  (fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedAckEvent *e)
 {
   // locate the job
   boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
@@ -661,7 +667,7 @@ void DRTSImpl::handleJobFinishedAckEvent
 }
 
 void DRTSImpl::handleDiscoverJobStatesEvent
-  (std::string const& source, const sdpa::events::DiscoverJobStatesEvent* event)
+  (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent* event)
 {
   boost::mutex::scoped_lock const _ (m_job_map_mutex);
 
@@ -689,7 +695,7 @@ void DRTSImpl::event_thread ()
 {
   for (;;)
   {
-    std::pair<std::string, sdpa::events::SDPAEvent::Ptr> event
+    std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr> event
       (m_event_queue.get());
     event.second->handleBy (event.first, this);
   }
@@ -923,7 +929,7 @@ void DRTSImpl::start_receiver()
 }
 
 void DRTSImpl::handle_recv ( boost::system::error_code const & ec
-                           , boost::optional<std::string> source_name
+                           , boost::optional<fhg::com::p2p::address_t> source
                            )
 {
   static sdpa::events::Codec codec;
@@ -934,7 +940,7 @@ void DRTSImpl::handle_recv ( boost::system::error_code const & ec
     try
     {
       dispatch_event
-        ( source_name.get()
+        ( source.get()
         , sdpa::events::SDPAEvent::Ptr
           (codec.decode (std::string ( m_message.data.begin()
                                      , m_message.data.end()
@@ -950,10 +956,17 @@ void DRTSImpl::handle_recv ( boost::system::error_code const & ec
   }
   else if (! m_shutting_down)
   {
-    if (m_message.header.src != m_peer->address())
+    if (m_message.header.src != m_peer->address() && !!source)
     {
-      map_of_masters_t::iterator master(m_masters.find(source_name.get()));
-      if (master != m_masters.end() && master->second)
+      map_of_masters_t::iterator master
+        ( std::find_if ( m_masters.begin(), m_masters.end()
+                       , [&source] (map_of_masters_t::value_type const& master)
+                         {
+                           return master.second == source;
+                         }
+                       )
+        );
+      if (master != m_masters.end())
       {
         master->second = boost::none;
 
@@ -985,7 +998,7 @@ void DRTSImpl::send_event ( fhg::com::p2p::address_t const& destination
 }
 
 void DRTSImpl::dispatch_event
-  (std::string const& source, sdpa::events::SDPAEvent::Ptr const &evt)
+  (fhg::com::p2p::address_t const& source, sdpa::events::SDPAEvent::Ptr const &evt)
 {
   if (evt)
   {
