@@ -117,6 +117,9 @@ namespace gspc
   void set_application_search_path ( boost::program_options::variables_map&
                                    , boost::filesystem::path const&
                                    );
+  void set_gspc_home ( boost::program_options::variables_map&
+                     , boost::filesystem::path const&
+                     );
 }
 
 #endif
