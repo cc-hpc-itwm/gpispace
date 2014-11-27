@@ -330,7 +330,8 @@ namespace utils
         ( *_master_name
         , sdpa::events::SDPAEvent::Ptr
           ( new sdpa::events::WorkerRegistrationEvent
-            ( 1
+            ( _name
+            , 1
             , capabilities
             , accept_workers
             , fhg::util::random_string()

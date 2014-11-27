@@ -27,6 +27,7 @@ namespace fhg
       bool operator!=(address_t const& lhs, address_t const& rhs);
 
       std::string to_string (address_t const & a);
+      std::size_t hash_value (address_t const& address);
 
         static const int HELLO_PACKET = 0x8;
 

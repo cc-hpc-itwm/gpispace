@@ -443,10 +443,12 @@ void GenericDaemon::handleWorkerRegistrationEvent
     }
   }
 
-  const bool was_new_worker
-    (scheduler().worker_manager().addWorker (source, event->capacity(), workerCpbSet, event->children_allowed(), event->hostname()));
+  _worker_connections.left.insert ({event->name(), source});
 
-  child_proxy (this, source).worker_registration_ack();
+  const bool was_new_worker
+    (scheduler().worker_manager().addWorker (event->name(), event->capacity(), workerCpbSet, event->children_allowed(), event->hostname()));
+
+  child_proxy (this, event->name()).worker_registration_ack();
 
   request_scheduling();
 
@@ -465,6 +467,11 @@ void GenericDaemon::handleErrorEvent
 {
   const sdpa::events::ErrorEvent& error (*evt);
 
+  boost::optional<master_info_t::iterator> const as_master
+    (master_by_address (source));
+  boost::optional<decltype (_worker_connections.right)::iterator> const as_worker
+    (worker_by_address (source));
+
   // if it'a communication error, inspect all jobs and
   // send results if they are in a terminal state
 
@@ -477,7 +484,8 @@ void GenericDaemon::handleErrorEvent
       sdpa::job_id_t jobId(*error.job_id());
 
       //! \todo ignore if worker no longer exists?
-      scheduler().worker_manager().findWorker (source)->deleteJob (jobId);
+      scheduler().worker_manager().findWorker
+        (as_worker.get()->second)->deleteJob (jobId);
 
       Job* pJob (findJob (jobId));
       if (!pJob)
@@ -493,14 +501,11 @@ void GenericDaemon::handleErrorEvent
     }
     case events::ErrorEvent::SDPA_EWORKERNOTREG:
     {
-      boost::optional<master_info_t::iterator> const disconnected_master_it
-        (master_by_address (source));
-
-      if (disconnected_master_it)
+      if (as_master)
       {
-        disconnected_master_it.get()->second = boost::none;
+        as_master.get()->second = boost::none;
 
-        request_registration_soon (disconnected_master_it.get());
+        request_registration_soon (as_master.get());
       }
 
       break;
@@ -513,7 +518,14 @@ void GenericDaemon::handleErrorEvent
 
       try
       {
-        Worker::ptr_t ptrWorker = scheduler().worker_manager().findWorker(source);
+        //! \todo express try-catch as if (!!as_worker)
+        if (!as_worker)
+        {
+          throw WorkerNotFoundException();
+        }
+
+        Worker::ptr_t ptrWorker
+          (scheduler().worker_manager().findWorker (as_worker.get()->second));
 
         // notify capability losses...
         for (master_info_t::value_type const& info : _master_info)
@@ -523,16 +535,14 @@ void GenericDaemon::handleErrorEvent
         }
 
         const std::set<job_id_t> jobs_to_reschedule
-          ( scheduler().worker_manager().findWorker (source)
-          ->getJobListAndCleanQueues()
-          );
+          (ptrWorker->getJobListAndCleanQueues());
 
         for (sdpa::job_id_t jobId : jobs_to_reschedule)
         {
           Job* pJob = findJob (jobId);
           if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
           {
-            scheduler().workerCanceled (source, jobId);
+            scheduler().workerCanceled (as_worker.get()->second, jobId);
             pJob->Reschedule();
 
             if (!scheduler().cancelNotTerminatedWorkerJobs
@@ -550,19 +560,17 @@ void GenericDaemon::handleErrorEvent
           }
         }
 
-        scheduler().worker_manager().deleteWorker (source);
+        scheduler().worker_manager().deleteWorker (as_worker.get()->second);
+        _worker_connections.right.erase (as_worker.get());
         request_scheduling();
       }
       catch (WorkerNotFoundException const& /*ignored*/)
       {
-        boost::optional<master_info_t::iterator> const disconnected_master_it
-          (master_by_address (source));
-
-        if (disconnected_master_it)
+        if (as_master)
         {
-          disconnected_master_it.get()->second = boost::none;
+          as_master.get()->second = boost::none;
 
-          request_registration_soon (disconnected_master_it.get());
+          request_registration_soon (as_master.get());
         }
       }
       break;
@@ -579,7 +587,8 @@ void GenericDaemon::handleErrorEvent
       {
         try {
             ptrJob->Dispatch();
-            scheduler().worker_manager().findWorker (source)->acknowledge (*error.job_id());
+            scheduler().worker_manager().findWorker
+              (as_worker.get()->second)->acknowledge (*error.job_id());
         }
         catch(WorkerNotFoundException const &)
         {
@@ -744,6 +753,14 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
   }
 }
 
+    auto GenericDaemon::worker_by_address (fhg::com::p2p::address_t const& address)
+      -> boost::optional<decltype (_worker_connections.right)::iterator>
+    {
+      decltype (_worker_connections.right)::iterator it
+        (_worker_connections.right.find (address));
+      return boost::make_optional (it != _worker_connections.right.end(), it);
+    }
+
     boost::optional<GenericDaemon::master_info_t::iterator>
       GenericDaemon::master_by_address (fhg::com::p2p::address_t const& address)
     {
@@ -831,6 +848,11 @@ void GenericDaemon::handleCapabilitiesGainedEvent
      return;
    }
 
+  decltype (_worker_connections.right)::iterator const worker
+    ( fhg::util::boost::get_or_throw<std::runtime_error>
+        (worker_by_address (source), "capabilities_gained for unknown worker")
+    );
+
   try
   {
     sdpa::capabilities_set_t workerCpbSet;
@@ -846,7 +868,8 @@ void GenericDaemon::handleCapabilitiesGainedEvent
       }
     }
 
-    bool bModified = scheduler().worker_manager().findWorker (source)->addCapabilities (workerCpbSet);
+    bool bModified = scheduler().worker_manager().findWorker
+      (worker->second)->addCapabilities (workerCpbSet);
 
     if(bModified)
     {
@@ -854,7 +877,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent
       if( !isTop() )
       {
         const sdpa::capabilities_set_t newWorkerCpbSet
-          (scheduler().worker_manager().findWorker (source)->capabilities());
+          (scheduler().worker_manager().findWorker (worker->second)->capabilities());
 
         if( !newWorkerCpbSet.empty() )
         {
@@ -877,8 +900,13 @@ void GenericDaemon::handleCapabilitiesLostEvent
 {
   // tell the scheduler to remove the capabilities of the worker source
 
+  decltype (_worker_connections.right)::iterator const worker
+    ( fhg::util::boost::get_or_throw<std::runtime_error>
+        (worker_by_address (source), "capabilities_lost for unknown worker")
+    );
+
   try {
-    if (scheduler().worker_manager().findWorker (source)->removeCapabilities(pCpbLostEvt->capabilities()))
+    if (scheduler().worker_manager().findWorker (worker->second)->removeCapabilities(pCpbLostEvt->capabilities()))
     {
       for (master_info_t::value_type const& info : _master_info)
       {
@@ -1098,16 +1126,21 @@ void GenericDaemon::handleSubmitJobAckEvent
       if(ptrJob->getStatus() == sdpa:: status::CANCELING)
         return;
 
+      decltype (_worker_connections.right)::iterator const worker
+        ( fhg::util::boost::get_or_throw<std::runtime_error>
+          (worker_by_address (source), "submit_job_ack for unknown worker")
+        );
+
       try
       {
         ptrJob->Dispatch();
-        scheduler().worker_manager().findWorker (source)->acknowledge (pEvent->job_id());
+        scheduler().worker_manager().findWorker (worker->second)->acknowledge (pEvent->job_id());
       }
       catch(WorkerNotFoundException const &ex1)
       {
         // the worker should register first, before posting a job request
         events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(events::ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
-        sendEventToOther(source, pErrorEvt);
+        sendEventToOther(worker->second, pErrorEvt);
       }
   }
   else
@@ -1504,7 +1537,7 @@ namespace sdpa
         ( _name
         , events::WorkerRegistrationEvent::Ptr
           ( new events::WorkerRegistrationEvent
-            (capacity, capabilities, true, fhg::util::hostname())
+              (_that->name(), capacity, capabilities, true, fhg::util::hostname())
           )
         );
     }
