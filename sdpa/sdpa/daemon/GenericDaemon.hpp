@@ -174,8 +174,6 @@ namespace sdpa {
 
     protected:
       // event communication
-      void sendEventToOther
-        (std::string const& destination, const sdpa::events::SDPAEvent::Ptr& e);
       void sendEventToOther ( fhg::com::p2p::address_t const&
                             , std::string const& callback_identifier
                             , sdpa::events::SDPAEvent::Ptr const&
@@ -335,7 +333,8 @@ namespace sdpa {
 
       private:
         GenericDaemon* _that;
-        worker_id_t _name;
+        fhg::com::p2p::address_t _address;
+        std::string _callback_identifier;
       };
 
       struct parent_proxy
@@ -371,7 +370,8 @@ namespace sdpa {
 
       private:
         GenericDaemon* _that;
-        worker_id_t _name;
+        fhg::com::p2p::address_t _address;
+        std::string _callback_identifier;
       };
     };
   }
