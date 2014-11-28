@@ -333,7 +333,7 @@ namespace utils
                              )
     {
       _network.perform
-        ( *_master_name
+        ( _network.connect_to_via_kvs (*_master_name)
         , sdpa::events::SDPAEvent::Ptr
           ( new sdpa::events::WorkerRegistrationEvent
             ( _name
