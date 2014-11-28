@@ -13,7 +13,6 @@
 
 #include <we/test/layer.common.hpp>
 
-#include <fhg/util/now.hpp>
 #include <fhg/util/random_string.hpp>
 
 #include <boost/lexical_cast.hpp>
