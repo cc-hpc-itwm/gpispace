@@ -1,3 +1,4 @@
+#include <fhgcom/header.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
 #include <fhglog/LogMacros.hpp>
@@ -32,9 +33,9 @@ int main (int argc, char *argv[])
     , boost::program_options::value<std::string>()->required()
     , "port or service name to use"
     )
-    ( "get,g"
-    , boost::program_options::value<std::vector<std::string>>()->required()
-    , "get values from the key-value store"
+    ( "name"
+    , boost::program_options::value<std::string>()->required()
+    , "get host and port for name"
     );
 
   boost::program_options::variables_map vm;
@@ -64,21 +65,15 @@ int main (int argc, char *argv[])
                                        , 1
                                        );
 
-    std::size_t count (0);
+    fhg::com::p2p::address_t const address (vm["name"].as<std::string>());
 
-    for (std::string const& k : vm["get"].as<std::vector<std::string>>())
-    {
-      for ( std::pair<std::string, std::string> const& key_value
-          : client.get (k)
-          )
-      {
-        std::cout << key_value.first << " = " << key_value.second << std::endl;
+    std::string const prefix ("p2p.peer." + fhg::com::p2p::to_string (address));
+    fhg::com::kvs::values_type const peer_info (client.get (prefix));
 
-        ++count;
-      }
-    }
+    std::cout << peer_info.at (prefix + ".location.host") << "\n";
+    std::cout << peer_info.at (prefix + ".location.port") << "\n";
 
-    return (count > 0) ? EX_OK : EX_ERR;
+    return EX_OK;
   }
   catch (std::exception const& ex)
   {

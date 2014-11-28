@@ -221,7 +221,7 @@ function wait_for_process ()
 
     until [ $retries -eq 0 ]
     do
-        host_port=( $("${sdpa_home}/bin/fhgkvsc" --host "${kvs_host}" --port "${kvs_port}" -g p2p.peer | grep -B 2 "$name" | head -n 2 | awk '{print $3}') )
+        host_port=( $("${sdpa_home}/bin/fhgkvsc" --host "${kvs_host}" --port "${kvs_port}" --name "${name}") )
         if [ ${#host_port[@]} -eq 2 ]
         then
             if wait_for_port_on_host ${retries} "${host_port[0]}" "${host_port[1]}"
