@@ -108,12 +108,10 @@ namespace fhg
       {
         connection_data_t ()
           : send_in_progress (false)
-          , name ("")
         {}
 
         bool send_in_progress;
         connection_t::ptr_t connection;
-        std::string name;
         std::deque<to_send_t> o_queue;
       };
 
@@ -132,7 +130,6 @@ namespace fhg
 
       bool stopped_;
       bool stopping_;
-      std::string name_;
       std::string host_;
       std::string port_;
       p2p::address_t my_addr_;
@@ -154,7 +151,7 @@ namespace fhg
       connection_t::ptr_t listen_;
 
       std::list<to_recv_t> m_to_recv;
-      std::list<std::pair<const message_t *, std::string /*remote_name*/>> m_pending;
+      std::list<const message_t *> m_pending;
 
       handler_t m_kvs_error_handler;
     };
