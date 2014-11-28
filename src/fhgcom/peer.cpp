@@ -230,6 +230,43 @@ namespace fhg
       return addr;
     }
 
+    p2p::address_t peer_t::connect_to (host_t const& host, port_t const& port)
+    {
+      std::string const fake_name (std::string (host) + ":" + std::string (port));
+      p2p::address_t const addr (fake_name);
+
+      if (connections_.find (addr) != connections_.end())
+      {
+        throw std::logic_error ("already connected to " + fake_name);
+      }
+
+      connection_data_t& cd (connections_[addr]);
+      cd.connection = boost::make_shared<connection_t>
+        ( io_service_
+        , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
+        , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
+        , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
+        );
+      cd.connection->local_address (my_addr_);
+      cd.connection->remote_address (addr);
+
+      boost::system::error_code ec;
+      boost::asio::connect
+        ( cd.connection->socket()
+        , boost::asio::ip::tcp::resolver (io_service_).resolve ({host, port})
+        , ec
+        );
+
+      connection_established (addr, ec);
+
+      if (ec)
+      {
+        throw boost::system::system_error (ec);
+      }
+
+      return addr;
+    }
+
     void peer_t::send ( p2p::address_t const& addr
                       , const std::string & data
                       )

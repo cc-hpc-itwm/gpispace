@@ -120,6 +120,18 @@ BOOST_FIXTURE_TEST_CASE (peer_run_single, KVSSetup)
   thrd_1.join ();
 }
 
+namespace
+{
+  fhg::com::host_t host (boost::asio::ip::tcp::endpoint const& ep)
+  {
+    return fhg::com::host_t (ep.address().to_string());
+  }
+  fhg::com::port_t port (boost::asio::ip::tcp::endpoint const& ep)
+  {
+    return fhg::com::port_t (std::to_string (ep.port()));
+  }
+}
+
 BOOST_FIXTURE_TEST_CASE (peer_run_two, KVSSetup)
 {
   using namespace fhg::com;
@@ -147,7 +159,11 @@ BOOST_FIXTURE_TEST_CASE (peer_run_two, KVSSetup)
   peer_1.start();
   peer_2.start();
 
-  peer_1.send (peer_1.connect_to_via_kvs ("peer-2"), "hello world!");
+  peer_1.send ( peer_1.connect_to ( host (peer_2.local_endpoint())
+                                  , port (peer_2.local_endpoint())
+                                  )
+              , "hello world!"
+              );
     message_t m;
     peer_2.recv (&m);
 
@@ -212,7 +228,10 @@ BOOST_FIXTURE_TEST_CASE (peer_loopback, KVSSetup)
 
   peer_1.start();
 
-  p2p::address_t const addr (peer_1.connect_to_via_kvs ("peer-1"));
+  p2p::address_t const addr ( peer_1.connect_to ( host (peer_1.local_endpoint())
+                                                , port (peer_1.local_endpoint())
+                                                )
+                            );
 
     for (std::size_t i (0); i < 10000; ++i)
     {
@@ -239,7 +258,8 @@ BOOST_FIXTURE_TEST_CASE (send_to_nonexisting_peer, KVSSetup)
 
   peer_1.start();
 
-  BOOST_CHECK_THROW ( peer_1.connect_to_via_kvs ("unknown peer")
+  BOOST_CHECK_THROW ( peer_1.connect_to
+                        (host_t ("unknown host"), port_t ("unknown service"))
                     , std::exception
                     );
 
@@ -263,7 +283,11 @@ BOOST_FIXTURE_TEST_CASE (send_large_data, KVSSetup)
 
   peer_1.start();
 
-  peer_1.send(peer_1.connect_to_via_kvs ("peer-1"), std::string (2<<25, 'X'));
+  peer_1.send( peer_1.connect_to ( host (peer_1.local_endpoint())
+                                 , port (peer_1.local_endpoint())
+                                 )
+             , std::string (2<<25, 'X')
+             );
     message_t r;
     peer_1.recv(&r);
 
@@ -300,7 +324,11 @@ BOOST_FIXTURE_TEST_CASE (peers_with_fixed_ports, KVSSetup)
   peer_1.start();
   peer_2.start();
 
-  peer_1.send(peer_1.connect_to_via_kvs ("peer-2"), "hello world!");
+  peer_1.send( peer_1.connect_to ( host (peer_2.local_endpoint())
+                                 , port (peer_2.local_endpoint())
+                                 )
+             , "hello world!"
+             );
 
   peer_1.stop();
   thrd_1.join ();
@@ -336,7 +364,11 @@ BOOST_FIXTURE_TEST_CASE (peers_with_fixed_ports_reuse, KVSSetup)
   peer_1.start();
   peer_2.start();
 
-  peer_1.send(peer_1.connect_to_via_kvs ("peer-2"), "hello world!");
+  peer_1.send ( peer_1.connect_to ( host (peer_2.local_endpoint())
+                                  , port (peer_2.local_endpoint())
+                                  )
+              , "hello world!"
+              );
 
   peer_1.stop();
   thrd_1.join ();
@@ -363,13 +395,21 @@ BOOST_FIXTURE_TEST_CASE (two_peers_one_restarts_repeatedly, KVSSetup)
 
   bool stop_request (false);
 
-  boost::thread sender ( [&peer_1, &stop_request]
+  //! \note Race: Possibly taken. Needs to be known before peer
+  //! starts, though, to allow reconnecting.
+  boost::asio::ip::tcp::endpoint peer_2_endpoint
+    (boost::asio::ip::address::from_string ("127.0.0.1"), 15123);
+
+  boost::thread sender ( [&peer_1, &stop_request, &peer_2_endpoint]
                        {
                          while (not stop_request)
                          {
                            try
                            {
-                             peer_1.send ( peer_1.connect_to_via_kvs ("peer-2")
+                             peer_1.send ( peer_1.connect_to
+                                             ( host (peer_2_endpoint)
+                                             , port (peer_2_endpoint)
+                                             )
                                          , "hello world\n"
                                          );
                            }
@@ -387,8 +427,8 @@ BOOST_FIXTURE_TEST_CASE (two_peers_one_restarts_repeatedly, KVSSetup)
     boost::asio::io_service peer_2_io_service;
     peer_t peer_2 ( peer_2_io_service
                   , "peer-2"
-                  , host_t("localhost")
-                  , port_t("0")
+                  , host_t (peer_2_endpoint.address().to_string())
+                  , port_t (std::to_string (peer_2_endpoint.port()))
                   , _kvs
                   , &fail_on_kvs_error
                   );
@@ -397,7 +437,11 @@ BOOST_FIXTURE_TEST_CASE (two_peers_one_restarts_repeatedly, KVSSetup)
     try
     {
       peer_2.start();
-      peer_2.send (peer_2.connect_to_via_kvs ("peer-1"), "hello world!");
+      peer_2.send ( peer_2.connect_to ( host (peer_1.local_endpoint())
+                                      , port (peer_1.local_endpoint())
+                                      )
+                  , "hello world!"
+                  );
     }
     catch (boost::system::system_error const &se)
     {
