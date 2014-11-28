@@ -7,8 +7,6 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhglog/format.hpp>
 
-#include <fhg/util/now.hpp>
-
 BOOST_AUTO_TEST_CASE (percentage_escapes_percentage)
 {
   BOOST_REQUIRE_EQUAL (fhg::log::format ("%%", fhg::log::LogEvent()), "%");
