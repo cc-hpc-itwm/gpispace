@@ -52,10 +52,6 @@ namespace fhg
 
       p2p::address_t connect_to_via_kvs (std::string name);
 
-      void async_send ( std::string const & to
-                      , std::string const & data
-                      , handler_t h
-                      );
       void async_send ( p2p::address_t const& addr
                       , std::string const & data
                       , handler_t h

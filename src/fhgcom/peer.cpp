@@ -243,13 +243,6 @@ namespace fhg
       }
     }
 
-    void peer_t::async_send ( const std::string & to
-                            , const std::string & data
-                            , peer_t::handler_t completion_handler
-                            )
-    {
-      async_send ({p2p::address_t (to)}, data, completion_handler);
-    }
     void peer_t::async_send ( p2p::address_t const& addr
                             , const std::string & data
                             , peer_t::handler_t completion_handler
