@@ -184,7 +184,7 @@ macro(FHG_ADD_TEST)
     endif()
 
     if (TEST_REQUIRES_INSTALLATION)
-      set_tests_properties (${TEST_NAME}
+      set_tests_properties (${tc_name}
         PROPERTIES REQUIRED_FILES "${FILES_REQUIRED_IN_INSTALLATION}"
                    LABELS "requires_installation"
       )
