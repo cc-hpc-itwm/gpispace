@@ -2,29 +2,9 @@
 #include <boost/test/unit_test.hpp>
 
 #include <fhglog/LogMacros.hpp>
+#include "dump_event.common.hpp"
 
 #include <fhg/util/now.hpp>
-
-namespace
-{
-  fhg::log::LogEvent gen_event()
-  {
-    std::vector<std::string> tags;
-    tags.push_back ("foo");
-    tags.push_back ("bar");
-
-    fhg::log::LogEvent evt ( fhg::log::TRACE
-                           , __FILE__
-                           , "main", __LINE__, "hello world!"
-                           , tags
-                           );
-
-    evt.trace ("trace1\"trace1");
-    evt.trace ("t2't2\"\"\"");
-
-    return evt;
-  }
-}
 
 BOOST_AUTO_TEST_CASE (encode_decode)
 {
