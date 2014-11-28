@@ -268,82 +268,6 @@ namespace fhg
 
       // TODO: io_service_.post (...);
 
-      if (connections_.find(addr) == connections_.end())
-      {
-        // lookup location information
-        std::string prefix ("p2p.peer");
-        prefix += "." + p2p::to_string (addr);
-        kvs::values_type peer_info (_kvs_client->get (prefix));
-
-        if (peer_info.empty())
-        {
-          try
-          {
-            using namespace boost::system;
-            completion_handler(errc::make_error_code (errc::no_such_process));
-          }
-          catch (std::exception const & ex)
-          {
-            LOG (ERROR, "completion handler failed (ignored): " << ex.what());
-          }
-          return;
-        }
-
-        host_t h (peer_info.at(prefix + ".location.host"));
-        port_t p (peer_info.at(prefix + ".location.port"));
-
-        // store message in out queue
-        //    connect_handler -> sends messages from out queue
-        //    error_handler -> clears messages from out queue
-        // async_connect (...);
-        connection_data_t & cd = connections_[addr];
-        cd.send_in_progress = false;
-
-        to_send_t to_send;
-        to_send.message.header.src = my_addr_;
-        to_send.message.header.dst = addr;
-        to_send.message.assign (data.begin(), data.end());
-        to_send.handler = completion_handler;
-        cd.o_queue.push_back (to_send);
-
-        cd.connection = connection_t::ptr_t
-          ( new connection_t
-            ( io_service_
-            , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
-            , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
-            , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
-            )
-          );
-        cd.connection->local_address (my_addr_);
-        cd.connection->remote_address (addr);
-
-        namespace bai = boost::asio::ip;
-
-        bai::tcp::resolver resolver(io_service_);
-        bai::tcp::resolver::query query (h, p, bai::tcp::resolver::query::flags());
-        bai::tcp::resolver::iterator iter =
-          bai::tcp::resolver(io_service_).resolve(query);
-
-        boost::system::error_code ec;
-
-        for (; iter != bai::tcp::resolver::iterator(); ++iter)
-        {
-          cd.connection->socket().close();
-
-          ec = boost::asio::error::would_block;
-
-          cd.connection->socket().connect( iter->endpoint(), ec);
-
-          if (!ec && cd.connection->socket().is_open())
-          {
-            break;
-          }
-        }
-
-        connection_established (addr, ec);
-      }
-      else
-      {
         connection_data_t & cd = connections_.at (addr);
         to_send_t to_send;
         to_send.message.header.src = my_addr_;
@@ -354,7 +278,6 @@ namespace fhg
 
         if (cd.o_queue.size () == 1)
           start_sender (addr);
-      }
     }
 
     void peer_t::recv (message_t *m)
