@@ -222,6 +222,11 @@ namespace fhg
 
       connection_established (addr, ec);
 
+      if (ec)
+      {
+        throw boost::system::system_error (ec);
+      }
+
       return addr;
     }
 
