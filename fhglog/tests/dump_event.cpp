@@ -2,7 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <fhglog/LogMacros.hpp>
-#include "dump_event.common.hpp"
+#include <tests/dump_event.common.hpp>
 
 BOOST_AUTO_TEST_CASE (encode_decode)
 {

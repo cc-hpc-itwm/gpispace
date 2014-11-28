@@ -2,7 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <fhglog/LogMacros.hpp>
-#include "dump_event.common.hpp"
+#include <tests/dump_event.common.hpp>
 
 #include <fhg/util/now.hpp>
 
