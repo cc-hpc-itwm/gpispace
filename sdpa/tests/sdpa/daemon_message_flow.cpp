@@ -30,9 +30,10 @@ namespace
         )
     {}
 
-    fhg::com::p2p::address_t connect_to_via_kvs (std::string const& name)
+    fhg::com::p2p::address_t connect_to
+      (fhg::com::host_t const& host, fhg::com::port_t const& port)
     {
-      return _network.connect_to_via_kvs (name);
+      return _network.connect_to (host, port);
     }
 
     void send (fhg::com::p2p::address_t const& destination, sdpa::events::SDPAEvent* event)
@@ -133,7 +134,12 @@ BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
 
   network_strategy child (child_name, kvs_server);
 
-  child.send ( child.connect_to_via_kvs (orchestrator_name)
+  child.send ( child.connect_to
+                 ( fhg::com::host_t
+                     (orchestrator.peer_local_endpoint().address().to_string())
+                 , fhg::com::port_t
+                     (std::to_string (orchestrator.peer_local_endpoint().port()))
+                 )
              , new sdpa::events::JobFinishedAckEvent (fhg::util::random_string())
              );
 

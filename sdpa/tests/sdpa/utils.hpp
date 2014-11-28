@@ -275,6 +275,14 @@ namespace utils
     std::string name() const { return _.name(); }
     std::string kvs_host() const { return _kvs_host; }
     std::string kvs_port() const { return _kvs_port; }
+    fhg::com::host_t host() const
+    {
+      return fhg::com::host_t (_.peer_local_endpoint().address().to_string());
+    }
+    fhg::com::port_t port() const
+    {
+      return fhg::com::port_t (std::to_string (_.peer_local_endpoint().port()));
+    }
   };
 
   class basic_drts_component : sdpa::events::EventHandler
@@ -282,14 +290,13 @@ namespace utils
   private:
     basic_drts_component
         ( std::string name
-        , boost::optional<std::string> master_name
         , std::string kvs_host, std::string kvs_port
         , bool accept_workers
         )
       : _name (name)
       , _kvs_host (kvs_host)
       , _kvs_port (kvs_port)
-      , _master_name (master_name)
+      , _master (boost::none)
       , _accept_workers (accept_workers)
       , _kvs_client
         ( new fhg::com::kvs::client::kvsc ( _kvs_client_io_service
@@ -316,7 +323,7 @@ namespace utils
   public:
     basic_drts_component
         (std::string name, kvs_server const& kvs, bool accept_workers)
-      : basic_drts_component ( name, boost::none
+      : basic_drts_component ( name
                              , kvs.kvs_host(), kvs.kvs_port()
                              , accept_workers
                              )
@@ -327,13 +334,15 @@ namespace utils
                          , sdpa::capabilities_set_t capabilities
                          , bool accept_workers
                          )
-      : basic_drts_component ( name, master.name()
+      : basic_drts_component ( name
                              , master.kvs_host(), master.kvs_port()
                              , accept_workers
                              )
     {
+      _master = _network.connect_to (master.host(), master.port());
+
       _network.perform
-        ( _network.connect_to_via_kvs (*_master_name)
+        ( _master.get()
         , sdpa::events::SDPAEvent::Ptr
           ( new sdpa::events::WorkerRegistrationEvent
             ( _name
@@ -356,8 +365,8 @@ namespace utils
       , const sdpa::events::WorkerRegistrationAckEvent*
       ) override
     {
-      BOOST_REQUIRE (_master_name);
-      BOOST_REQUIRE_EQUAL (source, fhg::com::p2p::address_t (_master_name.get()));
+      BOOST_REQUIRE (_master);
+      BOOST_REQUIRE_EQUAL (source, _master.get());
     }
 
     virtual void handleWorkerRegistrationEvent
@@ -408,7 +417,7 @@ namespace utils
     boost::asio::io_service _kvs_client_io_service;
     std::string _kvs_host;
     std::string _kvs_port;
-    boost::optional<std::string> _master_name;
+    boost::optional<fhg::com::p2p::address_t> _master;
     bool _accept_workers;
     std::unordered_set<fhg::com::p2p::address_t> _accepted_workers;
 

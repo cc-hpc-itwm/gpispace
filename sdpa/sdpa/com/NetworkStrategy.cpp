@@ -69,6 +69,11 @@ namespace sdpa
     {
       return m_peer->connect_to_via_kvs (name);
     }
+    fhg::com::p2p::address_t NetworkStrategy::connect_to
+      (fhg::com::host_t const& host, fhg::com::port_t const& port)
+    {
+      return m_peer->connect_to (host, port);
+    }
 
     void NetworkStrategy::perform
       ( fhg::com::p2p::address_t const& address
