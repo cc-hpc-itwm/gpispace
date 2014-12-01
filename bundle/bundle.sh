@@ -2,7 +2,6 @@
 
 exclusion=""
 dst=
-copied=""
 
 function is_filtered ()
 {
@@ -14,18 +13,6 @@ function is_filtered ()
         then
             return 0
         fi
-    fi
-
-    return 1
-}
-
-function is_copied_already()
-{
-    local name="${1}"; shift;
-
-    if [ -n "${copied}" ]
-    then
-        if echo "$name" | grep -q "${copied}"; then return 0; fi
     fi
 
     return 1
@@ -64,15 +51,7 @@ function bundle_dependencies ()
         pth=$(readlink -f "${pth}")
         tgt=$(readlink -f "$dst/$dep")
 
-        if ! is_copied_already "$pth"
-        then
         if [[ ! "$pth" = "$tgt" ]] ; then
-            if [ -z "${copied}" ]
-            then
-                copied="^$pth$"
-            else
-                copied="$copied\|^$pth$"
-            fi
             if test "$pth" -nt "$tgt" ; then
                 echo "-- Installing: Bundle: $tgt"
                 cp "$pth" "$tgt" || exit 1
@@ -80,7 +59,6 @@ function bundle_dependencies ()
             else
                 echo "-- Up-to-date: Bundle: $tgt"
             fi
-        fi
         fi
     done
     IFS="$OLDIFS"
