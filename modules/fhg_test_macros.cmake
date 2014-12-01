@@ -147,7 +147,7 @@ set (FILES_REQUIRED_IN_INSTALLATION
 macro(FHG_ADD_TEST)
   PARSE_ARGUMENTS(TEST
     "LINK_LIBRARIES;DEPENDS;PROJECT;ARGS;DESCRIPTION;COMPILE_FLAGS;RESOURCE_LOCK"
-    "VERBOSE;BOOST_UNIT_TEST;REQUIRES_INSTALLATION"
+    "VERBOSE;BOOST_UNIT_TEST;REQUIRES_INSTALLATION;PERFORMANCE_TEST"
     ${ARGN}
     )
   CAR(TEST_SOURCE ${TEST_DEFAULT_ARGS})
@@ -177,6 +177,11 @@ macro(FHG_ADD_TEST)
     target_link_libraries(${tc_name} ${TEST_LINK_LIBRARIES})
     add_test (NAME ${tc_name} COMMAND $<TARGET_FILE:${tc_name}> ${TEST_ARGS})
 
+    get_test_property (${tc_name} LABELS tc_labels)
+    if (NOT tc_labels)
+      set (tc_labels)
+    endif()
+
     if (TEST_RESOURCE_LOCK)
       set_tests_properties (${tc_name}
         PROPERTIES RESOURCE_LOCK ${TEST_RESOURCE_LOCK}
@@ -186,9 +191,17 @@ macro(FHG_ADD_TEST)
     if (TEST_REQUIRES_INSTALLATION)
       set_tests_properties (${tc_name}
         PROPERTIES REQUIRED_FILES "${FILES_REQUIRED_IN_INSTALLATION}"
-                   LABELS "requires_installation"
       )
+      list(APPEND tc_labels "requires_installation")
     endif()
+
+    if (TEST_PERFORMANCE_TEST)
+      list(APPEND tc_labels "performance_test")
+    endif()
+
+    set_tests_properties (${tc_name}
+      PROPERTIES LABELS "${tc_labels}"
+    )
 
     foreach (d ${TEST_DEPENDS})
       add_dependencies(${tc_name} ${d})
