@@ -11,5 +11,5 @@ fhg_add_test (multiple_binaries.cpp
   LINK_LIBRARIES net process fhg-util
   INCLUDE_DIRECTORIES PRIVATE ${CMAKE_SOURCE_DIR}
   DEPENDS multiple_binaries_binary
-
+  ARGS $<TARGET_FILE:multiple_binaries_binary>
 )
