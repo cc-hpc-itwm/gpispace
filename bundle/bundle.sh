@@ -33,9 +33,6 @@ function is_filtered ()
 function bundle_dependencies ()
 {
     local file="$1" ; shift
-    local dst="$1"; shift
-    local lvl="${1:-0}"; shift
-    local indent=$(( lvl * 4 ))
     OLDIFS="$IFS"
     export IFS="
 "
@@ -67,7 +64,7 @@ function bundle_dependencies ()
             if test "$pth" -nt "$tgt" ; then
                 echo "-- Installing: Bundle: $tgt"
                 cp "$pth" "$tgt" || exit 1
-                bundle_dependencies "$pth" "$dst" $(( lvl + 1 ))
+                bundle_dependencies "$pth"
             else
                 echo "-- Up-to-date: Bundle: $tgt"
             fi
@@ -101,5 +98,5 @@ shift $shiftcount
 mkdir -p "$dst" || exit 1
 
 for bin ;  do
-   bundle_dependencies "$bin" "$dst"
+   bundle_dependencies "$bin"
 done
