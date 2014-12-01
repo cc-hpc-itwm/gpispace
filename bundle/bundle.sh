@@ -1,13 +1,12 @@
 #!/bin/bash
 
-prefix=/usr/local
 exclusion=""
 inclusion=""
 verbose=false
 dry=false
 force=false
 keep_going=false
-dst=lib # folder within prefix where libs shall be copied to
+dst=
 library_path="$LD_LIBRARY_PATH"
 copied=""
 
@@ -21,13 +20,11 @@ usage: $(basename $0) [options]
   -n : dry run
   -k : keep going in case of errors
   -f : force (overwrite existing files)
-  -p : installation prefix (=$prefix)
   -x : exclude pattern (can occur multiple times)
   -w : include pattern (can occur multiple times)
   -L : library path (can occur multiple times)
 
-  -o  : output destination  folder  for  dependencies, if  not  absolute,  interpreted
-        as a relative to <prefix> (=$dst)
+  -o  : output destination  folder  for  dependencies
 EOF
 }
 
@@ -166,10 +163,6 @@ while getopts ":hvnkfp:x:w:o:dL:" opt ; do
             force=true
             shiftcount=$(( shiftcount + 1 ))
             ;;
-        p)
-            prefix=$OPTARG
-            shiftcount=$(( shiftcount + 2 ))
-            ;;
         x)
             if [ -z "${exclusion}" ]
             then
@@ -208,16 +201,12 @@ while getopts ":hvnkfp:x:w:o:dL:" opt ; do
     esac
 done
 
-shift $shiftcount
+if [ -z "$dst" ]; then
+  echo "missing destination (-o)" >&2
+  exit 1
+fi
 
-case "$dst" in
-    /*)
-        :
-        ;;
-    *)
-        dst="$prefix/$dst"
-        ;;
-esac
+shift $shiftcount
 
 dry_run mkdir -p "$dst"
 
