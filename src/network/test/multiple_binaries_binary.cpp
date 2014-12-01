@@ -49,13 +49,13 @@ namespace
       }
       );
 
-    std::cout << acceptor.local_endpoint().port() << "\n";
+    std::cout << acceptor.local_endpoint().port() << std::endl;
 
     boost::optional<pid_t> child_pid (fhg::util::fork_and_daemonize_child());
 
     if (child_pid)
     {
-      std::cout << child_pid.get() << "\n";
+      std::cout << child_pid.get() << std::endl;
     }
     else
     {
