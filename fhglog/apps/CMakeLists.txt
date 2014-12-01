@@ -1,12 +1,11 @@
-add_executable (fhglogd server.cpp)
-add_executable (fhglogc client.cpp)
-add_executable (fhglog-dump dump.cpp)
+# bernd.loerwald@itwm.fraunhofer.de
 
-target_link_libraries (fhglogd fhglog ${Boost_PROGRAM_OPTIONS_LIBRARY})
-target_link_libraries (fhglogc fhglog ${Boost_PROGRAM_OPTIONS_LIBRARY})
-target_link_libraries (fhglog-dump fhglog ${Boost_PROGRAM_OPTIONS_LIBRARY})
-
-install (TARGETS fhglogd fhglogc fhglog-dump
-  RUNTIME
-  DESTINATION bin
+fhg_add_runtime_executable (server.cpp NAME fhglogd
+  LINK_LIBRARIES fhglog ${Boost_PROGRAM_OPTIONS_LIBRARY}
+)
+fhg_add_runtime_executable (client.cpp NAME fhglogc
+  LINK_LIBRARIES fhglog ${Boost_PROGRAM_OPTIONS_LIBRARY}
+)
+fhg_add_runtime_executable (dump.cpp NAME fhglog-dump
+  LINK_LIBRARIES fhglog ${Boost_PROGRAM_OPTIONS_LIBRARY}
 )

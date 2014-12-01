@@ -131,27 +131,24 @@ qt4_wrap_cpp (plugin_wrapped_cpps ${plugin_tomoc})
   qt4_add_resources (editor_ui_resource_cpps ${editor_ui_resources})
   qt4_wrap_cpp (monitor_ui_wrapped_cpps ${monitor_ui_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
 
-  add_executable (pnete
-    pnete.cpp setting.cpp ${base_sources} ${base_wrapped_cpps}
+  fhg_add_runtime_executable (pnete.cpp
+    setting.cpp ${base_sources} ${base_wrapped_cpps}
     ${base_ui_sources} ${base_ui_wrapped_cpps} ${editor_ui_sources}
     ${editor_ui_wrapped_cpps} ${editor_ui_wrapped_uis} ${editor_ui_resource_cpps}
     ${monitor_ui_sources} ${monitor_ui_wrapped_cpps}
-    ${plugin_wrapped_cpps})
-
-  target_link_libraries ( pnete
-                          "${LIB_PREFIX}graphviz-wrapper"
-                          "fhg_util_qt"
-                          pnet
-                          fhg-util
-                          sdpa
-                          ${FhgLog_LIBRARY}
-                          ${UTIL_LIBRARIES}
-                          ${Boost_FILESYSTEM_LIBRARY}
-                          ${Boost_PROGRAM_OPTIONS_LIBRARY}
-                          ${Boost_THREAD_LIBRARY}
-                          ${QT_LIBRARIES})
-
-  install (TARGETS pnete RUNTIME DESTINATION bin)
+    ${plugin_wrapped_cpps}
+    LINK_LIBRARIES "${LIB_PREFIX}graphviz-wrapper"
+                   "fhg_util_qt"
+                   pnet
+                   fhg-util
+                   sdpa
+                   ${FhgLog_LIBRARY}
+                   ${UTIL_LIBRARIES}
+                   ${Boost_FILESYSTEM_LIBRARY}
+                   ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                   ${Boost_THREAD_LIBRARY}
+                   ${QT_LIBRARIES}
+  )
 
 qt4_wrap_cpp (hello_world-plugion_wrapped "plugin/demo/hello_world.hpp")
 
@@ -170,30 +167,24 @@ install (FILES "plugin/plugin_api.hpp" "plugin/plugin_base.hpp"
   qt4_wrap_cpp (monitor_ui_wrapped_cpps ${monitor_ui_tomoc}
     OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
 
-  add_executable ( sdpa-gui
-    monitor.cpp ${monitor_ui_sources} ${monitor_ui_wrapped_cpps})
-
-  add_executable (gspcmonc
-    gspcmonc.cpp ${monitor_ui_sources} ${monitor_ui_wrapped_cpps})
-
-  target_link_libraries ( sdpa-gui
-                          pnet
-                          "fhg_util_qt"
-                          fhg-revision
-                          ${FhgLog_LIBRARY}
-                          ${Boost_THREAD_LIBRARY}
-                          ${QT_LIBRARIES})
-
-  install (TARGETS sdpa-gui RUNTIME DESTINATION bin)
-
-  target_link_libraries ( gspcmonc
-                          pnet
-                          "fhg_util_qt"
-                          fhg-util
-                          ${FhgLog_LIBRARY}
-                          ${Boost_THREAD_LIBRARY}
-                          ${QT_LIBRARIES})
-
-  install (TARGETS gspcmonc RUNTIME DESTINATION bin)
+  fhg_add_runtime_executable (monitor.cpp
+    ${monitor_ui_sources} ${monitor_ui_wrapped_cpps}
+    NAME sdpa-gui
+    LINK_LIBRARIES pnet
+                   "fhg_util_qt"
+                   fhg-revision
+                   ${FhgLog_LIBRARY}
+                   ${Boost_THREAD_LIBRARY}
+                   ${QT_LIBRARIES}
+  )
+  fhg_add_runtime_executable (gspcmonc.cpp
+    ${monitor_ui_sources} ${monitor_ui_wrapped_cpps}
+    LINK_LIBRARIES pnet
+                   "fhg_util_qt"
+                   fhg-util
+                   ${FhgLog_LIBRARY}
+                   ${Boost_THREAD_LIBRARY}
+                   ${QT_LIBRARIES}
+  )
 
   add_subdirectory (test)
