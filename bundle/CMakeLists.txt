@@ -32,6 +32,9 @@ bundle_apps(
   sdpa-gui
   gspcmonc
   pnete
+
+  gpi-plugin
+  gpi_compat-plugin
 )
 
 install (DIRECTORY "${BOOST_ROOT}/"
@@ -50,8 +53,6 @@ install (PROGRAMS ${GRAPHVIZ_PLUGIN_CORE} ${GRAPHVIZ_PLUGIN_DOT}
 )
 
 install(CODE "
-  file(GLOB_RECURSE PLUGINS
-         \"\${CMAKE_INSTALL_PREFIX}/libexec/fhg/plugins/*.so\")
   execute_process(COMMAND ${CMAKE_SOURCE_DIR}/bundle/bundle.sh
                           -p \"\${CMAKE_INSTALL_PREFIX}\"
                           -d
@@ -75,7 +76,7 @@ install(CODE "
                           -x libgthread.*
                           -x libreadline.*
                           -x libboost*.*
-                           ${APPS} \${PLUGINS}
+                           ${APPS}
                   RESULT_VARIABLE __res
                   ERROR_VARIABLE __err
   )
