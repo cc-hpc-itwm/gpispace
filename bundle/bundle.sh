@@ -1,42 +1,8 @@
 #!/bin/bash
 
 exclusion=""
-inclusion=""
-verbose=false
-dry=false
-force=false
-keep_going=false
 dst=
-library_path="$LD_LIBRARY_PATH"
 copied=""
-
-function usage ()
-{
-    cat <<EOF
-usage: $(basename $0) [options]
-
-  -h : print this help
-  -v : be verbose
-  -n : dry run
-  -k : keep going in case of errors
-  -f : force (overwrite existing files)
-  -x : exclude pattern (can occur multiple times)
-  -w : include pattern (can occur multiple times)
-  -L : library path (can occur multiple times)
-
-  -o  : output destination  folder  for  dependencies
-EOF
-}
-
-function debug ()
-{
-    $verbose && echo >&2 $@
-}
-
-function dry_run ()
-{
-    $dry && echo $@ || $@ || $keep_going || exit 1
-}
 
 function is_filtered ()
 {
@@ -46,16 +12,6 @@ function is_filtered ()
     then
         if echo "$name" | grep -q "${exclusion}"
         then
-            return 0
-        fi
-    fi
-
-    if [ -n "${inclusion}" ]
-    then
-        if echo "$name" | grep -q "${inclusion}"
-        then
-            return 1
-        else
             return 0
         fi
     fi
@@ -92,33 +48,24 @@ function bundle_dependencies ()
         pth=$(echo -n "$dep_and_path" | cut -d: -f 2)
 
         if is_filtered "$dep" ; then
-            debug $(printf "%${indent}s" "") "$file >- $pth  (filtered)"
-
             if test -e "$dst/$dep"
             then
-                debug $(printf "%${indent}s" "") "rm $dst/$dep"
-                dry_run rm -f "$dst/$dep"
+                rm -f "$dst/$dep" || exit 1
             fi
             continue
-        else
-            debug $(printf "%${indent}s" "") "$file <- $pth"
         fi
 
         if [ "$pth" = "not" ] ; then
             echo >&2 "cannot resolve dependency: '$dep' of file '$file'"
             echo >&2 "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
-            if ! $keep_going ; then
-                exit 2
-            fi
+            exit 2
         fi
 
         pth=$(readlink -f "${pth}")
         tgt=$(readlink -f "$dst/$dep")
 
-        if is_copied_already "$pth"
+        if ! is_copied_already "$pth"
         then
-            debug $(printf "%$((indent + 2))s" "") "already copied: ${pth}"
-        else
         if [[ ! "$pth" = "$tgt" ]] ; then
             if [ -z "${copied}" ]
             then
@@ -126,10 +73,9 @@ function bundle_dependencies ()
             else
                 copied="$copied\|^$pth$"
             fi
-            if test "$pth" -nt "$tgt" || $force ; then
+            if test "$pth" -nt "$tgt" ; then
                 echo "-- Installing: Bundle: $tgt"
-                debug $(printf "%$((indent + 2))s" "") cp "$pth" "$tgt"
-                dry_run cp "$pth" "$tgt"
+                cp "$pth" "$tgt" || exit 1
                 bundle_dependencies "$pth" "$dst" $(( lvl + 1 ))
             else
                 echo "-- Up-to-date: Bundle: $tgt"
@@ -143,26 +89,6 @@ function bundle_dependencies ()
 shiftcount=0
 while getopts ":hvnkfp:x:w:o:dL:" opt ; do
     case $opt in
-        h)
-            usage
-            exit 0
-            ;;
-        v)
-            verbose=true
-            shiftcount=$(( shiftcount + 1 ))
-            ;;
-        n)
-            dry=true
-            shiftcount=$(( shiftcount + 1 ))
-            ;;
-        k)
-            keep_going=true
-            shiftcount=$(( shiftcount + 1 ))
-            ;;
-        f)
-            force=true
-            shiftcount=$(( shiftcount + 1 ))
-            ;;
         x)
             if [ -z "${exclusion}" ]
             then
@@ -172,25 +98,8 @@ while getopts ":hvnkfp:x:w:o:dL:" opt ; do
             fi
             shiftcount=$(( shiftcount + 2 ))
             ;;
-        w)
-            if [ -z "${inclusion}" ]
-            then
-                inclusion="$OPTARG"
-            else
-                inclusion="$inclusion\|$OPTARG"
-            fi
-            shiftcount=$(( shiftcount + 2 ))
-            ;;
         o)
             dst=$OPTARG
-            shiftcount=$(( shiftcount + 2 ))
-            ;;
-        L)
-            if [ -z "${library_path}" ] ; then
-                library_path="$OPTARG"
-            else
-                library_path="${library_path}:$OPTARG"
-            fi
             shiftcount=$(( shiftcount + 2 ))
             ;;
         \?)
@@ -208,11 +117,8 @@ fi
 
 shift $shiftcount
 
-dry_run mkdir -p "$dst"
-
-export LD_LIBRARY_PATH="${library_path}"
+mkdir -p "$dst" || exit 1
 
 for bin ;  do
-   debug "# bundling dependencies for '$bin'"
    bundle_dependencies "$bin" "$dst"
 done
