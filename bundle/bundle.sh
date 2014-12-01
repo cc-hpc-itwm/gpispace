@@ -1,21 +1,33 @@
 #!/bin/bash
 
-exclusion=""
 dst=
+
+function join { local IFS="$1"; shift; echo "$*"; }
+exclusion=$(join '|' \
+  libibverbs.* \
+  libxcb.* \
+  libSM.* \
+  libc.so.* \
+  libz.so.* \
+  libm.so.* \
+  librt.* \
+  libfont.* \
+  libfreetype.* \
+  libaudio.* \
+  libICE.* \
+  libglib.* \
+  libgobject.* \
+  libdl.* \
+  libX.*so \
+  libpthread.* \
+  libgthread.* \
+  libreadline.* \
+  libboost*.*
+)
 
 function is_filtered ()
 {
-    local name=$(basename "$1")
-
-    if [ -n "${exclusion}" ]
-    then
-        if echo "$name" | grep -q "${exclusion}"
-        then
-            return 0
-        fi
-    fi
-
-    return 1
+  basename "$1" | grep -qE "${exclusion}"
 }
 
 function bundle_dependencies ()
@@ -67,15 +79,6 @@ function bundle_dependencies ()
 shiftcount=0
 while getopts ":hvnkfp:x:w:o:dL:" opt ; do
     case $opt in
-        x)
-            if [ -z "${exclusion}" ]
-            then
-                exclusion="$OPTARG"
-            else
-                exclusion="$exclusion\|$OPTARG"
-            fi
-            shiftcount=$(( shiftcount + 2 ))
-            ;;
         o)
             dst=$OPTARG
             shiftcount=$(( shiftcount + 2 ))

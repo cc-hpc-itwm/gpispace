@@ -35,25 +35,6 @@ macro(FHG_ADD_PLUGIN)
     add_custom_command (OUTPUT "${CMAKE_BINARY_DIR}/bundle-${PLUGIN_NAME}-plugin"
       COMMAND "${CMAKE_SOURCE_DIR}/bundle/bundle.sh"
       ARGS -o "${CMAKE_BINARY_DIR}/bundle-${PLUGIN_NAME}-plugin"
-           -x libibverbs.*
-           -x libxcb.*
-           -x libSM.*
-           -x libc.so.*
-           -x libz.so.*
-           -x libm.so.*
-           -x librt.*
-           -x libfont.*
-           -x libfreetype.*
-           -x libaudio.*
-           -x libICE.*
-           -x libglib.*
-           -x libgobject.*
-           -x libdl.*
-           -x libX.*so
-           -x libpthread.*
-           -x libgthread.*
-           -x libreadline.*
-           -x libboost*.*
            $<TARGET_FILE:${PLUGIN_NAME}-plugin>
       DEPENDS ${PLUGIN_NAME}-plugin
     )

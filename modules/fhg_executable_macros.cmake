@@ -24,25 +24,6 @@ macro (FHG_ADD_RUNTIME_EXECUTABLE)
   add_custom_command (OUTPUT "${CMAKE_BINARY_DIR}/bundle-${exe_name}"
     COMMAND "${CMAKE_SOURCE_DIR}/bundle/bundle.sh"
     ARGS -o "${CMAKE_BINARY_DIR}/bundle-${exe_name}"
-         -x libibverbs.*
-         -x libxcb.*
-         -x libSM.*
-         -x libc.so.*
-         -x libz.so.*
-         -x libm.so.*
-         -x librt.*
-         -x libfont.*
-         -x libfreetype.*
-         -x libaudio.*
-         -x libICE.*
-         -x libglib.*
-         -x libgobject.*
-         -x libdl.*
-         -x libX.*so
-         -x libpthread.*
-         -x libgthread.*
-         -x libreadline.*
-         -x libboost*.*
          $<TARGET_FILE:${exe_name}>
     DEPENDS ${exe_name}
   )
