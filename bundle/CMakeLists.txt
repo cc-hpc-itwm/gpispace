@@ -19,6 +19,7 @@ bundle_apps(
   fhglogc
   fhglogd
   gpi-space
+  vmem
   gpish
   orchestrator
   pnet2dot
