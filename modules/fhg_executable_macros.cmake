@@ -25,7 +25,7 @@ macro (FHG_ADD_RUNTIME_EXECUTABLE)
     COMMAND "${CMAKE_SOURCE_DIR}/bundle/bundle.sh"
     ARGS -o "${CMAKE_BINARY_DIR}/bundle-${exe_name}"
          $<TARGET_FILE:${exe_name}>
-    DEPENDS ${exe_name}
+    DEPENDS ${exe_name} "${CMAKE_SOURCE_DIR}/bundle/bundle.sh"
   )
   add_custom_target (${exe_name}-bundled-libraries ALL
     DEPENDS "${CMAKE_BINARY_DIR}/bundle-${exe_name}"

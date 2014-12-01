@@ -36,7 +36,7 @@ macro(FHG_ADD_PLUGIN)
       COMMAND "${CMAKE_SOURCE_DIR}/bundle/bundle.sh"
       ARGS -o "${CMAKE_BINARY_DIR}/bundle-${PLUGIN_NAME}-plugin"
            $<TARGET_FILE:${PLUGIN_NAME}-plugin>
-      DEPENDS ${PLUGIN_NAME}-plugin
+      DEPENDS ${PLUGIN_NAME}-plugin "${CMAKE_SOURCE_DIR}/bundle/bundle.sh"
     )
     add_custom_target (${PLUGIN_NAME}-plugin-bundled-libraries ALL
       DEPENDS "${CMAKE_BINARY_DIR}/bundle-${PLUGIN_NAME}-plugin"
