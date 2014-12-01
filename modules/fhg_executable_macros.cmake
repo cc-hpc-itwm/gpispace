@@ -23,7 +23,7 @@ macro (FHG_ADD_RUNTIME_EXECUTABLE)
 
   add_custom_command (OUTPUT "${CMAKE_BINARY_DIR}/bundle-${exe_name}"
     COMMAND "${CMAKE_SOURCE_DIR}/bundle/bundle.sh"
-    ARGS -o "${CMAKE_BINARY_DIR}/bundle-${exe_name}"
+    ARGS "${CMAKE_BINARY_DIR}/bundle-${exe_name}"
          $<TARGET_FILE:${exe_name}>
     DEPENDS ${exe_name} "${CMAKE_SOURCE_DIR}/bundle/bundle.sh"
   )

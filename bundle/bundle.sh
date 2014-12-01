@@ -1,6 +1,6 @@
 #!/bin/bash
 
-dst=
+dst="${1:?}"
 
 function join { local IFS="$1"; shift; echo "$*"; }
 exclusion=$(join '|' \
@@ -73,30 +73,6 @@ function bundle_dependencies ()
     IFS="$OLDIFS"
 }
 
-shiftcount=0
-while getopts ":hvnkfp:x:w:o:dL:" opt ; do
-    case $opt in
-        o)
-            dst=$OPTARG
-            shiftcount=$(( shiftcount + 2 ))
-            ;;
-        \?)
-            echo "invalid option: -$OPTARG" >&2
-            echo "try: $(basename $0) -h" >&2
-            exit 1
-            ;;
-    esac
-done
-
-if [ -z "$dst" ]; then
-  echo "missing destination (-o)" >&2
-  exit 1
-fi
-
-shift $shiftcount
-
 mkdir -p "$dst" || exit 1
 
-for bin ;  do
-   bundle_dependencies "$bin"
-done
+bundle_dependencies "${2:?}"
