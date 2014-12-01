@@ -21,38 +21,38 @@ macro (FHG_ADD_RUNTIME_EXECUTABLE)
 
   install (TARGETS ${exe_name} RUNTIME DESTINATION bin)
 
-  get_target_property (exe_target_location ${exe_name} LOCATION)
+  add_custom_command (OUTPUT "${CMAKE_BINARY_DIR}/bundle-${exe_name}"
+    COMMAND "${CMAKE_SOURCE_DIR}/bundle/bundle.sh"
+    ARGS -o "${CMAKE_BINARY_DIR}/bundle-${exe_name}"
+         -d
+         -x libibverbs.*
+         -x libxcb.*
+         -x libSM.*
+         -x libc.so.*
+         -x libz.so.*
+         -x libm.so.*
+         -x librt.*
+         -x libfont.*
+         -x libfreetype.*
+         -x libaudio.*
+         -x libICE.*
+         -x libglib.*
+         -x libgobject.*
+         -x libdl.*
+         -x libX.*so
+         -x libpthread.*
+         -x libgthread.*
+         -x libreadline.*
+         -x libboost*.*
+         $<TARGET_FILE:${exe_name}>
+    DEPENDS ${exe_name}
+  )
+  add_custom_target (${exe_name}-bundled-libraries ALL
+    DEPENDS "${CMAKE_BINARY_DIR}/bundle-${exe_name}"
+  )
 
-  install(CODE "
-    execute_process(COMMAND ${CMAKE_SOURCE_DIR}/bundle/bundle.sh
-                            -p \"\${CMAKE_INSTALL_PREFIX}\"
-                            -d
-                            -L \"\${CMAKE_INSTALL_PREFIX}/lib\"
-                            -x libibverbs.*
-                            -x libxcb.*
-                            -x libSM.*
-                            -x libc.so.*
-                            -x libz.so.*
-                            -x libm.so.*
-                            -x librt.*
-                            -x libfont.*
-                            -x libfreetype.*
-                            -x libaudio.*
-                            -x libICE.*
-                            -x libglib.*
-                            -x libgobject.*
-                            -x libdl.*
-                            -x libX.*so
-                            -x libpthread.*
-                            -x libgthread.*
-                            -x libreadline.*
-                            -x libboost*.*
-                             ${exe_target_location}
-                    RESULT_VARIABLE __res
-                    ERROR_VARIABLE __err
-    )
-    if (NOT \${__res} EQUAL 0)
-       message(FATAL_ERROR \"Could not bundle dependencies: \${__err}\")
-    endif()
-    " )
+  install (DIRECTORY "${CMAKE_BINARY_DIR}/bundle-${exe_name}/"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
+    USE_SOURCE_PERMISSIONS
+  )
 endmacro()

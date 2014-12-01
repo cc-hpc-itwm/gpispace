@@ -31,39 +31,40 @@ macro(FHG_ADD_PLUGIN)
     if (PLUGIN_HEADERS)
       install(FILES ${PLUGIN_HEADERS} DESTINATION ${HEADER_DESTINATION_DIR})
     endif()
-    get_target_property (plugin_target_location ${PLUGIN_NAME}-plugin LOCATION)
 
-    install(CODE "
-      execute_process(COMMAND ${CMAKE_SOURCE_DIR}/bundle/bundle.sh
-                              -p \"\${CMAKE_INSTALL_PREFIX}\"
-                              -d
-                              -L \"\${CMAKE_INSTALL_PREFIX}/lib\"
-                              -x libibverbs.*
-                              -x libxcb.*
-                              -x libSM.*
-                              -x libc.so.*
-                              -x libz.so.*
-                              -x libm.so.*
-                              -x librt.*
-                              -x libfont.*
-                              -x libfreetype.*
-                              -x libaudio.*
-                              -x libICE.*
-                              -x libglib.*
-                              -x libgobject.*
-                              -x libdl.*
-                              -x libX.*so
-                              -x libpthread.*
-                              -x libgthread.*
-                              -x libreadline.*
-                              -x libboost*.*
-                               ${plugin_target_location}
-                      RESULT_VARIABLE __res
-                      ERROR_VARIABLE __err
-      )
-      if (NOT \${__res} EQUAL 0)
-         message(FATAL_ERROR \"Could not bundle dependencies: \${__err}\")
-      endif()
-      " )
+    add_custom_command (OUTPUT "${CMAKE_BINARY_DIR}/bundle-${PLUGIN_NAME}-plugin"
+      COMMAND "${CMAKE_SOURCE_DIR}/bundle/bundle.sh"
+      ARGS -o "${CMAKE_BINARY_DIR}/bundle-${PLUGIN_NAME}-plugin"
+           -d
+           -x libibverbs.*
+           -x libxcb.*
+           -x libSM.*
+           -x libc.so.*
+           -x libz.so.*
+           -x libm.so.*
+           -x librt.*
+           -x libfont.*
+           -x libfreetype.*
+           -x libaudio.*
+           -x libICE.*
+           -x libglib.*
+           -x libgobject.*
+           -x libdl.*
+           -x libX.*so
+           -x libpthread.*
+           -x libgthread.*
+           -x libreadline.*
+           -x libboost*.*
+           $<TARGET_FILE:${PLUGIN_NAME}-plugin>
+      DEPENDS ${PLUGIN_NAME}-plugin
+    )
+    add_custom_target (${PLUGIN_NAME}-plugin-bundled-libraries ALL
+      DEPENDS "${CMAKE_BINARY_DIR}/bundle-${PLUGIN_NAME}-plugin"
+    )
+
+    install (DIRECTORY "${CMAKE_BINARY_DIR}/bundle-${PLUGIN_NAME}-plugin/"
+      DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
+      USE_SOURCE_PERMISSIONS
+  )
   endif()
 endmacro()
