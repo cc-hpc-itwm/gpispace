@@ -8,7 +8,6 @@ dry=false
 force=false
 keep_going=false
 dst=lib # folder within prefix where libs shall be copied to
-delete=false
 library_path="$LD_LIBRARY_PATH"
 copied=""
 
@@ -22,7 +21,6 @@ usage: $(basename $0) [options]
   -n : dry run
   -k : keep going in case of errors
   -f : force (overwrite existing files)
-  -d : delete filtered files from target
   -p : installation prefix (=$prefix)
   -x : exclude pattern (can occur multiple times)
   -w : include pattern (can occur multiple times)
@@ -99,7 +97,7 @@ function bundle_dependencies ()
         if is_filtered "$dep" ; then
             debug $(printf "%${indent}s" "") "$file >- $pth  (filtered)"
 
-            if $delete && test -e "$dst/$dep"
+            if test -e "$dst/$dep"
             then
                 debug $(printf "%${indent}s" "") "rm $dst/$dep"
                 dry_run rm -f "$dst/$dep"
@@ -193,10 +191,6 @@ while getopts ":hvnkfp:x:w:o:dL:" opt ; do
         o)
             dst=$OPTARG
             shiftcount=$(( shiftcount + 2 ))
-            ;;
-        d)
-            delete=true
-            shiftcount=$(( shiftcount + 1 ))
             ;;
         L)
             if [ -z "${library_path}" ] ; then

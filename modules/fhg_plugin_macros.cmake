@@ -35,7 +35,6 @@ macro(FHG_ADD_PLUGIN)
     add_custom_command (OUTPUT "${CMAKE_BINARY_DIR}/bundle-${PLUGIN_NAME}-plugin"
       COMMAND "${CMAKE_SOURCE_DIR}/bundle/bundle.sh"
       ARGS -o "${CMAKE_BINARY_DIR}/bundle-${PLUGIN_NAME}-plugin"
-           -d
            -x libibverbs.*
            -x libxcb.*
            -x libSM.*

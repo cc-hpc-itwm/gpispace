@@ -24,7 +24,6 @@ macro (FHG_ADD_RUNTIME_EXECUTABLE)
   add_custom_command (OUTPUT "${CMAKE_BINARY_DIR}/bundle-${exe_name}"
     COMMAND "${CMAKE_SOURCE_DIR}/bundle/bundle.sh"
     ARGS -o "${CMAKE_BINARY_DIR}/bundle-${exe_name}"
-         -d
          -x libibverbs.*
          -x libxcb.*
          -x libSM.*
