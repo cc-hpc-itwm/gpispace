@@ -121,6 +121,7 @@ namespace
 // client: ./$0 host port payload_size
 
 int main (int argc, char** argv)
+try
 {
   if (argc == 4)
   {
@@ -134,4 +135,9 @@ int main (int argc, char** argv)
     run_server();
   }
   return 0;
+}
+catch (std::runtime_error const& ex)
+{
+  std::cerr << ex.what() << std::endl;
+  return 1;
 }
