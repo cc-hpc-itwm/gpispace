@@ -5,6 +5,7 @@
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/private/option.hpp>
 
 #include <test/make.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -22,7 +23,10 @@
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
 
+#include <fstream>
 #include <map>
+#include <set>
+#include <string>
 
 namespace
 {
@@ -30,6 +34,7 @@ namespace
                 , boost::program_options::variables_map const& vm
                 , gspc::installation const& installation
                 , test::make const& make
+                , std::set<std::string> const& hostnames
                 )
   {
     gspc::scoped_runtime_system const drts
@@ -51,30 +56,49 @@ namespace
     BOOST_REQUIRE_EQUAL (result.count (port_workers), 1);
     BOOST_REQUIRE_EQUAL (result.count (port_hostnames), 1);
 
-    std::list<pnet::type::value::value_type> worker_names;
-    std::map
-      <pnet::type::value::value_type, pnet::type::value::value_type> host_names;
+    //! \todo needs to be a function on the drts topology
+    //! or the topology has to answer 'is_worker_valid (worker))'
+    std::set<std::string> const worker_names
+      ([&hostnames, &num_worker] () -> std::set<std::string>
+        {
+          std::set<std::string> workers;
+          for (std::string const& hostname : hostnames)
+          {
+            for (unsigned long i (0); i < num_worker; ++i)
+            {
+              workers.emplace ( ( boost::format ("worker-%1%-%2%")
+                                % hostname
+                                % (i + 1)
+                                ).str()
+                              );
+            }
+          }
+          return workers;
+        } ()
+      );
 
-    for (unsigned long i (0); i < num_worker; ++i)
+    for ( std::pair< pnet::type::value::value_type
+                   , pnet::type::value::value_type
+                   > const& worker_with_host
+        : boost::get<std::map< pnet::type::value::value_type
+                             , pnet::type::value::value_type
+                             >
+                    > (result.find (port_hostnames)->second)
+        )
     {
-      std::string const worker_name ( ( boost::format ("worker-%1%-%2%")
-                                      % fhg::util::hostname()
-                                      % (i + 1)
-                                      ).str()
-                                    );
-
-      worker_names.emplace_back (worker_name);
-      host_names.emplace (worker_name, fhg::util::hostname());
+      BOOST_REQUIRE (hostnames.find (boost::get<std::string> (worker_with_host.second)) != hostnames.end());
+      BOOST_REQUIRE (worker_names.find (boost::get<std::string> (worker_with_host.first)) != worker_names.end());
     }
 
-    BOOST_CHECK_EQUAL
-      ( result.find (port_workers)->second
-      , pnet::type::value::value_type (worker_names)
-      );
-    BOOST_CHECK_EQUAL
-      ( result.find (port_hostnames)->second
-      , pnet::type::value::value_type (host_names)
-      );
+    std::set<pnet::type::value::value_type> seen_workers;
+    for ( pnet::type::value::value_type const& worker
+        : boost::get<std::list<pnet::type::value::value_type>
+                    > (result.find (port_workers)->second)
+        )
+    {
+      BOOST_REQUIRE (worker_names.find (boost::get<std::string> (worker)) != worker_names.end());
+      BOOST_REQUIRE (seen_workers.emplace (worker).second);
+    }
   }
 }
 
@@ -112,6 +136,21 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
 
   vm.notify();
 
+  std::set<std::string> const hostnames
+    ([&vm] () -> std::set<std::string>
+      {
+        std::set<std::string> hosts;
+        std::ifstream ifs (gspc::require_nodefile (vm).string());
+        while (ifs)
+        {
+          std::string host;
+          std::getline (ifs, host);
+          hosts.emplace (host);
+        }
+        return hosts;
+      } ()
+    );
+
   gspc::installation const installation (vm);
 
   test::make const make
@@ -124,7 +163,7 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
     , "net lib install"
     );
 
-  run_test (1, vm, installation, make);
-  run_test (2, vm, installation, make);
-  run_test (5, vm, installation, make);
+  run_test (1, vm, installation, make, hostnames);
+  run_test (2, vm, installation, make, hostnames);
+  run_test (5, vm, installation, make, hostnames);
 }
