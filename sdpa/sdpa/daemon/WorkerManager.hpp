@@ -49,6 +49,8 @@ namespace sdpa
         , const job_requirements_t& job_req_set
         ) const;
 
+    bool can_start_job (std::set<worker_id_t> workers) const;
+
     private:
       worker_map_t  worker_map_;
 

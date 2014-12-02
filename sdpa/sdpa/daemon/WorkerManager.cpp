@@ -224,5 +224,14 @@ namespace sdpa
       return worker_map_.at (worker_id)->cost_assigned_jobs (cost_reservation);
     }
 
+    bool WorkerManager::can_start_job (std::set<worker_id_t> workers) const
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      return std::all_of ( std::begin(workers)
+                         , std::end(workers)
+                         , [this] (const worker_id_t& worker_id)
+                           {return !worker_map_.at (worker_id)->isReserved();}
+                         );
+    }
   }
 }
