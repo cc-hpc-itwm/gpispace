@@ -101,7 +101,7 @@ namespace
     fhg::network::buffer_type const buffer (payload_size, 'X');
 
     std::cout << fhg::util::measure_average_time<std::chrono::microseconds>
-                    ( [&clientside_connection, &buffer_received, buffer]
+                    ( [&clientside_connection, &buffer_received, &buffer]
                       {
                         clientside_connection->send (buffer);
                         buffer_received.wait();
