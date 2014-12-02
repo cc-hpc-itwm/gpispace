@@ -19,7 +19,7 @@ namespace fhg
       const std::chrono::high_resolution_clock::time_point start
         (std::chrono::high_resolution_clock::now());
 
-      for (std::size_t i = 0; i < count; ++i)
+      for (std::size_t i (0); i < count; ++i)
       {
         fun();
       }
