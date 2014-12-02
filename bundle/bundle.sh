@@ -1,91 +1,38 @@
 #!/bin/bash
 
-prefix=/usr/local
-exclusion=""
-inclusion=""
-verbose=false
-dry=false
-force=false
-keep_going=false
-dst=lib # folder within prefix where libs shall be copied to
-delete=false
-library_path="$LD_LIBRARY_PATH"
-copied=""
+dst="${1:?}"
 
-function usage ()
-{
-    cat <<EOF
-usage: $(basename $0) [options]
-
-  -h : print this help
-  -v : be verbose
-  -n : dry run
-  -k : keep going in case of errors
-  -f : force (overwrite existing files)
-  -d : delete filtered files from target
-  -p : installation prefix (=$prefix)
-  -x : exclude pattern (can occur multiple times)
-  -w : include pattern (can occur multiple times)
-  -L : library path (can occur multiple times)
-
-  -o  : output destination  folder  for  dependencies, if  not  absolute,  interpreted
-        as a relative to <prefix> (=$dst)
-EOF
-}
-
-function debug ()
-{
-    $verbose && echo >&2 $@
-}
-
-function dry_run ()
-{
-    $dry && echo $@ || $@ || $keep_going || exit 1
-}
+function join { local IFS="$1"; shift; echo "$*"; }
+exclusion=$(join '|' \
+  libibverbs.* \
+  libxcb.* \
+  libSM.* \
+  libc.so.* \
+  libz.so.* \
+  libm.so.* \
+  librt.* \
+  libfont.* \
+  libfreetype.* \
+  libaudio.* \
+  libICE.* \
+  libglib.* \
+  libgobject.* \
+  libdl.* \
+  libX.*so \
+  libpthread.* \
+  libgthread.* \
+  libreadline.* \
+  libboost*.*
+)
 
 function is_filtered ()
 {
-    local name=$(basename "$1")
-
-    if [ -n "${exclusion}" ]
-    then
-        if echo "$name" | grep -q "${exclusion}"
-        then
-            return 0
-        fi
-    fi
-
-    if [ -n "${inclusion}" ]
-    then
-        if echo "$name" | grep -q "${inclusion}"
-        then
-            return 1
-        else
-            return 0
-        fi
-    fi
-
-    return 1
-}
-
-function is_copied_already()
-{
-    local name="${1}"; shift;
-
-    if [ -n "${copied}" ]
-    then
-        if echo "$name" | grep -q "${copied}"; then return 0; fi
-    fi
-
-    return 1
+  basename "$1" | grep -qE "${exclusion}"
 }
 
 function bundle_dependencies ()
 {
     local file="$1" ; shift
-    local dst="$1"; shift
-    local lvl="${1:-0}"; shift
-    local indent=$(( lvl * 4 ))
     OLDIFS="$IFS"
     export IFS="
 "
@@ -97,139 +44,35 @@ function bundle_dependencies ()
         pth=$(echo -n "$dep_and_path" | cut -d: -f 2)
 
         if is_filtered "$dep" ; then
-            debug $(printf "%${indent}s" "") "$file >- $pth  (filtered)"
-
-            if $delete && test -e "$dst/$dep"
+            if test -e "$dst/$dep"
             then
-                debug $(printf "%${indent}s" "") "rm $dst/$dep"
-                dry_run rm -f "$dst/$dep"
+                rm -f "$dst/$dep" || exit 1
             fi
             continue
-        else
-            debug $(printf "%${indent}s" "") "$file <- $pth"
         fi
 
         if [ "$pth" = "not" ] ; then
             echo >&2 "cannot resolve dependency: '$dep' of file '$file'"
             echo >&2 "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
-            if ! $keep_going ; then
-                exit 2
-            fi
+            exit 2
         fi
 
         pth=$(readlink -f "${pth}")
         tgt=$(readlink -f "$dst/$dep")
 
-        if is_copied_already "$pth"
-        then
-            debug $(printf "%$((indent + 2))s" "") "already copied: ${pth}"
-        else
         if [[ ! "$pth" = "$tgt" ]] ; then
-            if [ -z "${copied}" ]
-            then
-                copied="^$pth$"
-            else
-                copied="$copied\|^$pth$"
-            fi
-            if test "$pth" -nt "$tgt" || $force ; then
+            if test "$pth" -nt "$tgt" ; then
                 echo "-- Installing: Bundle: $tgt"
-                debug $(printf "%$((indent + 2))s" "") cp "$pth" "$tgt"
-                dry_run cp "$pth" "$tgt"
-                bundle_dependencies "$pth" "$dst" $(( lvl + 1 ))
+                cp "$pth" "$tgt" || exit 1
+                bundle_dependencies "$pth"
             else
                 echo "-- Up-to-date: Bundle: $tgt"
             fi
-        fi
         fi
     done
     IFS="$OLDIFS"
 }
 
-shiftcount=0
-while getopts ":hvnkfp:x:w:o:dL:" opt ; do
-    case $opt in
-        h)
-            usage
-            exit 0
-            ;;
-        v)
-            verbose=true
-            shiftcount=$(( shiftcount + 1 ))
-            ;;
-        n)
-            dry=true
-            shiftcount=$(( shiftcount + 1 ))
-            ;;
-        k)
-            keep_going=true
-            shiftcount=$(( shiftcount + 1 ))
-            ;;
-        f)
-            force=true
-            shiftcount=$(( shiftcount + 1 ))
-            ;;
-        p)
-            prefix=$OPTARG
-            shiftcount=$(( shiftcount + 2 ))
-            ;;
-        x)
-            if [ -z "${exclusion}" ]
-            then
-                exclusion="$OPTARG"
-            else
-                exclusion="$exclusion\|$OPTARG"
-            fi
-            shiftcount=$(( shiftcount + 2 ))
-            ;;
-        w)
-            if [ -z "${inclusion}" ]
-            then
-                inclusion="$OPTARG"
-            else
-                inclusion="$inclusion\|$OPTARG"
-            fi
-            shiftcount=$(( shiftcount + 2 ))
-            ;;
-        o)
-            dst=$OPTARG
-            shiftcount=$(( shiftcount + 2 ))
-            ;;
-        d)
-            delete=true
-            shiftcount=$(( shiftcount + 1 ))
-            ;;
-        L)
-            if [ -z "${library_path}" ] ; then
-                library_path="$OPTARG"
-            else
-                library_path="${library_path}:$OPTARG"
-            fi
-            shiftcount=$(( shiftcount + 2 ))
-            ;;
-        \?)
-            echo "invalid option: -$OPTARG" >&2
-            echo "try: $(basename $0) -h" >&2
-            exit 1
-            ;;
-    esac
-done
+mkdir -p "$dst" || exit 1
 
-shift $shiftcount
-
-case "$dst" in
-    /*)
-        :
-        ;;
-    *)
-        dst="$prefix/$dst"
-        ;;
-esac
-
-dry_run mkdir -p "$dst"
-
-export LD_LIBRARY_PATH="${library_path}"
-
-for bin ;  do
-   debug "# bundling dependencies for '$bin'"
-   bundle_dependencies "$bin" "$dst"
-done
+bundle_dependencies "${2:?}"
