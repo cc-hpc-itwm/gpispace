@@ -33,17 +33,18 @@ namespace
       , io_service
       , id
       , id
-      , [&] ( fhg::network::connection_type* connection
-            , fhg::network::buffer_type buffer
-            )
+      , [] ( fhg::network::connection_type* connection
+           , fhg::network::buffer_type buffer
+           )
       {
         connection->send (buffer);
       }
-      , [&] (fhg::network::connection_type* connection)
+      , [&server_got_disconnect] (fhg::network::connection_type* connection)
       {
         server_got_disconnect.notify (connection);
       }
-      , [&] (std::unique_ptr<fhg::network::connection_type> connection)
+      , [&serverside_connected]
+          (std::unique_ptr<fhg::network::connection_type> connection)
       {
         serverside_connected.notify (std::move (connection));
       }
@@ -89,18 +90,18 @@ namespace
         , port
         , id
         , id
-        , [&] (fhg::network::buffer_type buffer)
+        , [&buffer_received] (fhg::network::buffer_type buffer)
         {
           buffer_received.notify (buffer);
         }
-        , [&] (fhg::network::connection_type*) {}
+        , [] (fhg::network::connection_type*) {}
         )
       );
 
     fhg::network::buffer_type const buffer (payload_size, 'X');
 
     std::cout << fhg::util::measure_average_time<std::chrono::microseconds>
-                  ( [&]
+                    ( [&clientside_connection, &buffer_received, buffer]
                     {
                       clientside_connection->send (buffer);
                       buffer_received.wait();
