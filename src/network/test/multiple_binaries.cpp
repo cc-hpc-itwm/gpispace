@@ -69,7 +69,7 @@ namespace
       {
         try
         {
-          fhg::syscall::kill (_pid, SIGTERM);
+          fhg::syscall::kill (_pid, SIGKILL);
         }
         catch (boost::system::system_error const& err)
         {
