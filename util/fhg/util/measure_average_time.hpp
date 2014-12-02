@@ -24,12 +24,8 @@ namespace fhg
         fun();
       }
 
-      const Duration time_span
-        ( std::chrono::duration_cast<Duration>
-          (std::chrono::high_resolution_clock::now() - start)
-        );
-
-      return time_span / count;
+      return std::chrono::duration_cast<Duration>
+        (std::chrono::high_resolution_clock::now() - start) / count;
     }
   }
 }
