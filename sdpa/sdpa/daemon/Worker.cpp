@@ -199,5 +199,10 @@ namespace sdpa
                                )
              );
     }
+
+    bool Worker::remove_job_if_pending (const job_id_t& job_id)
+    {
+      return pending_.erase (job_id);
+    }
   }
 }

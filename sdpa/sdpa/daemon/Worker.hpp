@@ -59,6 +59,7 @@ namespace sdpa
       // cost
       double cost_assigned_jobs (std::function<double (job_id_t job_id)>);
 
+      bool remove_job_if_pending (const job_id_t& job_id);
     private:
       void reserve();
       void free();
