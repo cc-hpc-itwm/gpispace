@@ -99,6 +99,14 @@ namespace sdpa {
 
       const std::string& name() const;
       boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
+      fhg::com::host_t peer_host() const
+      {
+        return fhg::com::host_t (peer_local_endpoint().address().to_string());
+      }
+      fhg::com::port_t peer_port() const
+      {
+        return fhg::com::port_t (std::to_string (peer_local_endpoint().port()));
+      }
 
       bool isTop() { return _master_info.empty(); }
 

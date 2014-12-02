@@ -532,8 +532,10 @@ if [ ${#orchestrator_startup_messages[@]} != 5 ]; then
   error 3 "could not start orchestrator: expected 5 lines of startup messages"
 fi
 echo ${orchestrator_startup_messages[0]} > "${state_dir}/orchestrator.pid"
-echo ${orchestrator_startup_messages[3]} > "${state_dir}/orchestrator.host"
-echo ${orchestrator_startup_messages[4]} > "${state_dir}/orchestrator.port"
+echo -n ${orchestrator_startup_messages[1]} > "${state_dir}/orchestrator.host"
+echo -n ${orchestrator_startup_messages[2]} > "${state_dir}/orchestrator.port"
+echo ${orchestrator_startup_messages[3]} > "${state_dir}/orchestrator.rpc.host"
+echo ${orchestrator_startup_messages[4]} > "${state_dir}/orchestrator.rpc.port"
 
 wait_for_process ${network_retries} "orchestrator" "${kvs_host}" "${kvs_port}"
 ec=$?

@@ -37,8 +37,12 @@ fi
 # todo: remove magic: specify filenames instead of relying on files?
 kvs_host=$(cat "${SDPA_STATE_DIR}/kvs.host")
 kvs_port=$(cat "${SDPA_STATE_DIR}/kvs.port")
+orchestrator_host=$(cat "${SDPA_STATE_DIR}/orchestrator.host")
+orchestrator_port=$(cat "${SDPA_STATE_DIR}/orchestrator.port")
 
-SDPACFLAGS="--kvs-host ${kvs_host} --kvs-port ${kvs_port}"
+SDPACFLAGS="--kvs-host ${kvs_host} --kvs-port ${kvs_port} \
+            --orchestrator-host ${orchestrator_host} \
+            --orchestrator-port ${orchestrator_port}"
 
 # try to avoid cyclic execution of $self
 mydir=$(readlink -f $(cd $(dirname $(which $0)) && pwd))

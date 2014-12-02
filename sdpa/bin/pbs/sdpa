@@ -5,6 +5,8 @@
 
 kvs_host=
 kvs_port=
+orchestrator_host=
+orchestrator_port=
 
 function log ()
 {
@@ -238,6 +240,8 @@ function stop_orch ()
 
     rm -f "${state_dir}/orchestrator.host"
     rm -f "${state_dir}/orchestrator.port"
+    rm -f "${state_dir}/orchestrator.rpc.host"
+    rm -f "${state_dir}/orchestrator.rpc.port"
 
     if ! stop_proc "orchestrator" "orchestrator" ; then
         echo "E: could not stop orchestrator" >&2
@@ -530,7 +534,7 @@ function status ()
                 rc=$(( rc + 1 ))
             fi
         else
-            sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} status $p
+            sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} status $p
         fi
     done
     return $rc
@@ -552,14 +556,14 @@ function submit ()
     fi
 
     log "I: submitting file: $net"
-    jobid=$( sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} submit "$net" 2>&1 )
+    jobid=$( sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} submit "$net" 2>&1 )
     if [ $? -ne 0 ] ; then
         log "E: submission failed: $jobid"
         return 4
     else
         log "  + job ($jobid)"
         echo "$jobid" > "$state_dir/current_job"
-        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} wait "$jobid"
+        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} wait "$jobid"
         s=$(sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} status "${jobid}")
         log "    $jobid -> $s"
         s=$(echo "$s" | tr 'A-Z' 'a-z')
@@ -577,8 +581,8 @@ function submit ()
                 log "W: unknown state: $s"
                 ;;
         esac
-        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} -o "$output" --force results "$jobid"
-        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} delete "${jobid}"
+        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} -o "$output" --force results "$jobid"
+        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} delete "${jobid}"
         if [ $? -eq 0 ] ; then
             echo "  - job ($jobid)"
         fi
@@ -629,6 +633,14 @@ fi
 if [ -f "${state_dir}/kvs.port" ]
 then
   kvs_port=$(cat "${state_dir}/kvs.port")
+fi
+if [ -f "${state_dir}/orchestrator.host" ]
+then
+  orchestrator_host=$(cat "${state_dir}/orchestrator.host")
+fi
+if [ -f "${state_dir}/orchestrator.port" ]
+then
+  orchestrator_port=$(cat "${state_dir}/orchestrator.port")
 fi
 
 function sigterm()

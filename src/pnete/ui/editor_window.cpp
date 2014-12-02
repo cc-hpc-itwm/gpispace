@@ -988,10 +988,11 @@ namespace fhg
         // loader.append_search_path (temporary_path / "pnetc" / "op");
 
         //! \todo Use real kvs host+port
-        //! \todo Configurable name of orchestrator, non-static
+        //! \todo Configurable host + port of orchestrator, non-static
         static boost::asio::io_service peer_io_service;
         static boost::asio::io_service kvs_client_io_service;
-        static sdpa::client::Client client ( "orchestrator"
+        static sdpa::client::Client client ( fhg::com::host_t ("DUMMY")
+                                           , fhg::com::port_t ("DUMMY")
                                            , peer_io_service
                                            , kvs_client_io_service
                                            , "localhost", "2439"

@@ -46,7 +46,8 @@ namespace sdpa
     class Client : boost::noncopyable
     {
     public:
-      Client ( std::string orchestrator
+      Client ( fhg::com::host_t const& orchestrator_host
+             , fhg::com::port_t const& orchestrator_port
              , boost::asio::io_service& peer_io_service
              , boost::asio::io_service& kvs_client_io_service
              , std::string kvs_host, std::string kvs_port

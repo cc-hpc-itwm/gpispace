@@ -222,6 +222,8 @@ namespace utils
     std::string name() const { return _.name(); }
     std::string kvs_host() const { return _kvs_host; }
     std::string kvs_port() const { return _kvs_port; }
+    fhg::com::host_t host() const { return _.peer_host(); }
+    fhg::com::port_t port() const { return _.peer_port(); }
   };
 
   struct agent : boost::noncopyable
@@ -275,14 +277,8 @@ namespace utils
     std::string name() const { return _.name(); }
     std::string kvs_host() const { return _kvs_host; }
     std::string kvs_port() const { return _kvs_port; }
-    fhg::com::host_t host() const
-    {
-      return fhg::com::host_t (_.peer_local_endpoint().address().to_string());
-    }
-    fhg::com::port_t port() const
-    {
-      return fhg::com::port_t (std::to_string (_.peer_local_endpoint().port()));
-    }
+    fhg::com::host_t host() const { return _.peer_host(); }
+    fhg::com::port_t port() const { return _.peer_port(); }
   };
 
   class basic_drts_component : sdpa::events::EventHandler
@@ -607,7 +603,7 @@ namespace utils
   struct client : boost::noncopyable
   {
     client (orchestrator const& orch)
-      : _ ( orch.name()
+      : _ ( orch.host(), orch.port()
           , _peer_io_service
           , _kvs_client_io_service
           , orch.kvs_host(), orch.kvs_port()

@@ -104,6 +104,9 @@ namespace gspc
 
     std::string _kvs_host;
     unsigned short _kvs_port;
+
+    std::string _orchestrator_host;
+    unsigned short _orchestrator_port;
   };
 
   void set_application_search_path ( boost::program_options::variables_map&

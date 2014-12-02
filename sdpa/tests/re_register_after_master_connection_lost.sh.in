@@ -100,6 +100,7 @@ orchestrator_2_startup_messages_raw=$(start-and-fork \
   --arguments --kvs-host "${KVS_HOST}" \
   --arguments --kvs-port ${KVS_PORT}   \
   --arguments --name "orchestrator" \
+  --arguments --url "localhost:${orchestrator_1_startup_messages[2]}" \
   --environment LD_LIBRARY_PATH="${LD_LIBRARY_PATH}")
 
 old_IFS=${IFS}
@@ -112,11 +113,17 @@ ORCHESTRATOR_2_PID=${orchestrator_2_startup_messages[0]}
 sleep ${TIMEOUT_UNTIL_A_STARTED_ORCHESTRATOR_SHOULD_LISTEN}
 
 JOB_ID=$(sdpac --kvs-host "${KVS_HOST}" --kvs-port ${KVS_PORT}  \
+               --orchestrator-host ${orchestrator_2_startup_messages[1]} \
+               --orchestrator-port ${orchestrator_2_startup_messages[2]} \
                submit "${DUMMY_NET}")
 timeout ${TIMEOUT_UNTIL_A_REREGISTRATION_SHOULD_BE_DONE}        \
   sdpac --kvs-host "${KVS_HOST}" --kvs-port ${KVS_PORT}         \
+        --orchestrator-host ${orchestrator_2_startup_messages[1]} \
+        --orchestrator-port ${orchestrator_2_startup_messages[2]} \
         wait "${JOB_ID}"
-JOB_STATUS=$(sdpac --kvs-host "${KVS_HOST}" --kvs-port ${KVS_PORT} \
+JOB_STATUS=$(sdpac --kvs-host "${KVS_HOST}" --kvs-port ${KVS_PORT}           \
+                   --orchestrator-host ${orchestrator_2_startup_messages[1]} \
+                   --orchestrator-port ${orchestrator_2_startup_messages[2]} \
                    status "${JOB_ID}")
 
 [[ "x${JOB_STATUS}" = "xSDPA::Finished" ]]

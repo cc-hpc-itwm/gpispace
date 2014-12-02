@@ -38,7 +38,8 @@ namespace sdpa
       }
     }
 
-    Client::Client ( std::string orchestrator
+    Client::Client ( fhg::com::host_t const& orchestrator_host
+                   , fhg::com::port_t const& orchestrator_port
                    , boost::asio::io_service& peer_io_service
                    , boost::asio::io_service& kvs_client_io_service
                    , std::string kvs_host, std::string kvs_port
@@ -62,7 +63,8 @@ namespace sdpa
                )
       , _peer_thread (&fhg::com::peer_t::run, &m_peer)
       , _stopping (false)
-      , _drts_entrypoint_address (m_peer.connect_to_via_kvs (orchestrator))
+      , _drts_entrypoint_address
+          (m_peer.connect_to (orchestrator_host, orchestrator_port))
     {
       m_peer.start ();
       m_peer.async_recv ( &m_message

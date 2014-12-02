@@ -156,9 +156,13 @@ namespace
       ("logging.tostderr", "output to stderr")
       ;
     specific_opts_.add_options()
-      ( "orchestrator"
-      , po::value<std::string>()->default_value ("orchestrator")
-      , "name of the orchestrator"
+      ( "orchestrator-host"
+      , po::value<std::string>()->required()
+      , "host of the orchestrator"
+      )
+      ( "orchestrator-port"
+      , po::value<unsigned short>()->required()
+      , "port of the orchestrator"
       );
   }
 
@@ -363,13 +367,14 @@ int main (int argc, char **argv) {
 
     boost::asio::io_service peer_io_service;
     boost::asio::io_service kvs_client_io_service;
-    sdpa::client::Client api ( cfg.is_set("orchestrator")
-                             ? cfg.get<std::string>("orchestrator")
-                             : throw std::runtime_error ("no orchestrator specified!")
-                             , peer_io_service
-                             , kvs_client_io_service
-                             , cfg.get ("kvs-host"), cfg.get ("kvs-port")
-                             );
+    sdpa::client::Client api
+      ( fhg::com::host_t (cfg.get<std::string>("orchestrator-host"))
+      , fhg::com::port_t
+          (std::to_string (cfg.get<unsigned short>("orchestrator-port")))
+      , peer_io_service
+      , kvs_client_io_service
+      , cfg.get ("kvs-host"), cfg.get ("kvs-port")
+      );
 
     if (command == "submit")
     {

@@ -47,7 +47,8 @@ namespace gspc
   struct client::implementation
   {
     implementation (scoped_runtime_system const& drts)
-      : _client ( "orchestrator"
+      : _client ( fhg::com::host_t (drts._orchestrator_host)
+                , fhg::com::port_t (std::to_string (drts._orchestrator_port))
                 , _peer_io_service
                 , _kvs_client_io_service
                 , drts._kvs_host, std::to_string (drts._kvs_port)

@@ -295,7 +295,8 @@ try
 
   boost::asio::io_service client_peer_io_service;
   boost::asio::io_service client_kvs_client_io_service;
-  sdpa::client::Client client ( orchestrator_name
+  sdpa::client::Client client ( orchestrator.peer_host()
+                              , orchestrator.peer_port()
                               , client_peer_io_service
                               , client_kvs_client_io_service
                               , host

@@ -171,6 +171,11 @@ namespace gspc
     _kvs_port = boost::lexical_cast<unsigned short>
       (fhg::util::read_file (_state_directory / "kvs.port"));
 
+    _orchestrator_host = fhg::util::read_file
+      (_state_directory / "orchestrator.host");
+    _orchestrator_port = boost::lexical_cast<unsigned short>
+      (fhg::util::read_file (_state_directory / "orchestrator.port"));
+
     if (_virtual_memory_per_node)
     {
       _virtual_memory_api->start();
