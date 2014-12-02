@@ -36,18 +36,18 @@ namespace
       , [] ( fhg::network::connection_type* connection
            , fhg::network::buffer_type buffer
            )
-      {
-        connection->send (buffer);
-      }
+        {
+          connection->send (buffer);
+        }
       , [&server_got_disconnect] (fhg::network::connection_type* connection)
-      {
-        server_got_disconnect.notify (connection);
-      }
+        {
+          server_got_disconnect.notify (connection);
+        }
       , [&serverside_connected]
           (std::unique_ptr<fhg::network::connection_type> connection)
-      {
-        serverside_connected.notify (std::move (connection));
-      }
+        {
+          serverside_connected.notify (std::move (connection));
+        }
       );
 
     std::cout << acceptor.local_endpoint().port() << std::endl;
@@ -91,9 +91,9 @@ namespace
         , id
         , id
         , [&buffer_received] (fhg::network::buffer_type buffer)
-        {
-          buffer_received.notify (buffer);
-        }
+          {
+            buffer_received.notify (buffer);
+          }
         , [] (fhg::network::connection_type*) {}
         )
       );
@@ -102,10 +102,10 @@ namespace
 
     std::cout << fhg::util::measure_average_time<std::chrono::microseconds>
                     ( [&clientside_connection, &buffer_received, buffer]
-                    {
-                      clientside_connection->send (buffer);
-                      buffer_received.wait();
-                    }
+                      {
+                        clientside_connection->send (buffer);
+                        buffer_received.wait();
+                      }
                   , 500
                   ).count()
              << "µs\n";
