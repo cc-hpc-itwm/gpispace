@@ -147,32 +147,29 @@ namespace sdpa
       }
     }
 
-    namespace
+    boost::optional<std::size_t> WorkerManager::matchRequirements
+      ( const Worker::ptr_t& pWorker
+      , const job_requirements_t& job_req_set
+      ) const
     {
-      boost::optional<std::size_t> matchRequirements
-        ( const Worker::ptr_t& pWorker
-        , const job_requirements_t& job_req_set
-        )
+      std::size_t matchingDeg (0);
+      if (job_req_set.numWorkers()>1 && pWorker->children_allowed())
       {
-        std::size_t matchingDeg (0);
-        if (job_req_set.numWorkers()>1 && pWorker->children_allowed())
+        return boost::none;
+      }
+      for (we::type::requirement_t req : job_req_set.getReqList())
+      {
+        if (pWorker->hasCapability (req.value()))
+        {
+          ++matchingDeg;
+        }
+        else if (req.is_mandatory())
         {
           return boost::none;
         }
-        for (we::type::requirement_t req : job_req_set.getReqList())
-        {
-          if (pWorker->hasCapability (req.value()))
-          {
-            ++matchingDeg;
-          }
-          else if (req.is_mandatory())
-          {
-            return boost::none;
-          }
-        }
-
-        return matchingDeg;
       }
+
+      return matchingDeg;
     }
 
     mmap_match_deg_worker_id_t WorkerManager::getMatchingDegreesAndWorkers

@@ -44,6 +44,11 @@ namespace sdpa
 
       double cost_assigned_jobs (const worker_id_t, std::function<double (job_id_t job_id)>);
 
+      boost::optional<std::size_t> matchRequirements
+        ( const Worker::ptr_t& pWorker
+        , const job_requirements_t& job_req_set
+        ) const;
+
     private:
       worker_map_t  worker_map_;
 
