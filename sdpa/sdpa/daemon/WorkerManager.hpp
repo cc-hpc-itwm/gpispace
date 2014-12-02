@@ -51,6 +51,8 @@ namespace sdpa
 
     bool can_start_job (std::set<worker_id_t> workers) const;
 
+    std::set<job_id_t> remove_all_matching_pending_jobs (const job_id_list_t&);
+
     private:
       worker_map_t  worker_map_;
 

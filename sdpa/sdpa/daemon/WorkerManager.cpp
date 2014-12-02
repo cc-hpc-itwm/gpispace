@@ -233,5 +233,24 @@ namespace sdpa
                            {return !worker_map_.at (worker_id)->isReserved();}
                          );
     }
+
+    std::set<job_id_t>  WorkerManager::remove_all_matching_pending_jobs
+      (const job_id_list_t& matching_jobs)
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      std::set<job_id_t> pending_jobs;
+      for (Worker::ptr_t ptr_worker : worker_map_ | boost::adaptors::map_values )
+      {
+        for (const job_id_t& job_id : matching_jobs)
+        {
+          if (ptr_worker->remove_job_if_pending (job_id))
+          {
+            pending_jobs.insert (job_id);
+          }
+        }
+      }
+
+      return pending_jobs;
+    }
   }
 }
