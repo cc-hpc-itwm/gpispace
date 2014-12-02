@@ -4,7 +4,6 @@ include_directories (${UTIL_INCLUDE_DIR})
 add_library (test-utilities SHARED
   make.cpp
   scoped_nodefile_from_environment.cpp
-  scoped_nodefile_with_localhost.cpp
   scoped_state_directory.cpp
   shared_directory.cpp
   source_directory.cpp
