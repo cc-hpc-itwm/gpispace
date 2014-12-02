@@ -13,6 +13,8 @@ if (SHARED_DIRECTORY_FOR_TESTS STREQUAL ${required_string_option_sentinel_value}
   message (FATAL_ERROR "required variable SHARED_DIRECTORY_FOR_TESTS not set")
 endif()
 
+configure_file ("${CMAKE_SOURCE_DIR}/CTestCustom.cmake" "${CMAKE_BINARY_DIR}/CTestCustom.cmake" COPYONLY)
+
 execute_process (
   COMMAND git rev-parse HEAD
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
