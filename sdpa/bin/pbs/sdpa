@@ -131,25 +131,26 @@ function terminate_processes_on_host()
     fi
 }
 
-function stop_agent ()
+function terminate_all_processes_of_a_kind()
 {
+    local kind="${1}"; shift
     processes_dir="${state_dir}/processes"
     local background_jobs=()
     local host_to_terminate_on=
     local pids_to_terminate=()
-    for pidfile in $(find "${state_dir}/processes" -name "agent-*.pid" | sort)
+    for pidfile in $(find "${state_dir}/processes" -name "${kind}*.pid" | sort)
     do
         local host=$(dirname "${pidfile}" | xargs -n 1 basename)
         if [ -n "${host_to_terminate_on}" -a "${host_to_terminate_on}" != "${host}" ]
         then
-            terminate_processes_on_host "agent" ${host_to_terminate_on} ${pids_to_terminate[@]} &
+            terminate_processes_on_host "${kind}" ${host_to_terminate_on} ${pids_to_terminate[@]} &
             background_jobs+=($!)
-            if [ ${#background_jobs} -gt 16 ]
+            if [ ${#background_jobs[@]} -gt 16 ]
             then
                 wait ${background_jobs[@]}
                 background_jobs=()
             fi
-            rm -f "${processes_dir}/${host_to_terminate_on}"/agent-*.pid
+            rm -f "${processes_dir}/${host_to_terminate_on}"/${kind}*.pid
             pids_to_terminate=()
         fi
         host_to_terminate_on="${host}"
@@ -157,9 +158,9 @@ function stop_agent ()
     done
     if [ ${#pids_to_terminate[@]} -gt 0 ]
     then
-        terminate_processes_on_host "agent" ${host_to_terminate_on} ${pids_to_terminate[@]} &
+        terminate_processes_on_host "${kind}" ${host_to_terminate_on} ${pids_to_terminate[@]} &
         background_jobs+=($!)
-        rm -f "${processes_dir}/${host_to_terminate_on}"/agent-*.pid
+        rm -f "${processes_dir}/${host_to_terminate_on}"/${kind}*.pid
         pids_to_terminate=()
     fi
     if [ ${#background_jobs} -gt 0 ]
@@ -167,6 +168,11 @@ function stop_agent ()
         wait ${background_jobs[@]}
         background_jobs=()
     fi
+}
+
+function stop_agent ()
+{
+    terminate_all_processes_of_a_kind "agent"
 }
 
 function stop_kvs ()
@@ -174,62 +180,17 @@ function stop_kvs ()
     rm -f "${state_dir}/kvs.host"
     rm -f "${state_dir}/kvs.port"
 
-    local processes_dir="${state_dir}/processes"
-    for pidfile in $(find "${state_dir}/processes" -name "fhgkvsd.pid")
-    do
-        local host=$(dirname "${pidfile}" | xargs -n 1 basename)
-        terminate_processes_on_host "kvs" ${host} $(cat "${pidfile}")
-        rm -f "${pidfile}"
-    done
+    terminate_all_processes_of_a_kind "fhgkvsd"
 }
 
 function stop_orchestrator ()
 {
-    local processes_dir="${state_dir}/processes"
-    for pidfile in $(find "${state_dir}/processes" -name "orchestrator.pid")
-    do
-        local host=$(dirname "${pidfile}" | xargs -n 1 basename)
-        terminate_processes_on_host "orchestrator" ${host} $(cat "${pidfile}")
-        rm -f "${pidfile}"
-    done
+    terminate_all_processes_of_a_kind "orchestrator"
 }
 
 function stop_drts ()
 {
-    processes_dir="${state_dir}/processes"
-    local background_jobs=()
-    local host_to_terminate_on=
-    local pids_to_terminate=()
-    for pidfile in $(find "${state_dir}/processes" -name "drts-kernel-*.pid" | sort)
-    do
-        local host=$(dirname "${pidfile}" | xargs -n 1 basename)
-        if [ -n "${host_to_terminate_on}" -a "${host_to_terminate_on}" != "${host}" ]
-        then
-            terminate_processes_on_host "kernel" ${host_to_terminate_on} ${pids_to_terminate[@]} &
-            background_jobs+=($!)
-            if [ ${#background_jobs} -gt 16 ]
-            then
-                wait ${background_jobs[@]}
-                background_jobs=()
-            fi
-            rm -f "${processes_dir}/${host_to_terminate_on}"/drts-kernel-*.pid
-            pids_to_terminate=()
-        fi
-        host_to_terminate_on="${host}"
-        pids_to_terminate+=( $(cat "$pidfile") )
-    done
-    if [ ${#pids_to_terminate[@]} -gt 0 ]
-    then
-        terminate_processes_on_host "kernel" ${host_to_terminate_on} ${pids_to_terminate[@]} &
-        background_jobs+=($!)
-        rm -f "${processes_dir}/${host_to_terminate_on}"/drts-kernel-*.pid
-        pids_to_terminate=()
-    fi
-    if [ ${#background_jobs} -gt 0 ]
-    then
-        wait ${background_jobs[@]}
-        background_jobs=()
-    fi
+    terminate_all_processes_of_a_kind "drts-kernel"
 }
 
 function start_gui ()
@@ -251,13 +212,7 @@ function start_gui ()
 
 function stop_vmem ()
 {
-    local processes_dir="${state_dir}/processes"
-    for pidfile in $(find "${state_dir}/processes" -name "vmem.pid")
-    do
-        local host=$(dirname "${pidfile}" | xargs -n 1 basename)
-        terminate_processes_on_host "vmem" ${host} $(cat "${pidfile}")
-        rm -f "${pidfile}"
-    done
+    terminate_all_processes_of_a_kind "vmem"
 }
 
 function stop ()
