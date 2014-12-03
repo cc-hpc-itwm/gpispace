@@ -117,15 +117,17 @@ namespace sdpa
          const worker_id_host_info_t& worker_info = it->second;
 
          boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+         double cost_preassigned_jobs = worker_manager().cost_assigned_jobs
+                                          ( worker_info.worker_id()
+                                          , [this](const job_id_t& job_id) -> double
+                                            {
+                                              return allocation_table_.at (job_id)->cost();
+                                            }
+                                          );
+
          double total_cost = transfer_cost (worker_info.worker_host())
-                           + computational_cost;
-                           + worker_manager().cost_assigned_jobs
-                              ( worker_info.worker_id()
-                              , [this](job_id_t job_id) -> double
-                                {
-                                  return allocation_table_.at (job_id)->cost();
-                                }
-                              );
+                           + computational_cost
+                           + cost_preassigned_jobs;
 
          bpq.push (std::make_tuple ( total_cost
                                    , it->first
