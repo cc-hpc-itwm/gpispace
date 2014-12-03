@@ -193,7 +193,7 @@ namespace sdpa
           allocation_table_t::iterator it (allocation_table_.find (jobId));
           if (it != allocation_table_.end())
           {
-            throw std::runtime_error ("already have reservation for job");
+            throw std::runtime_error ("already have reservation for job " + jobId);
           }
 
           try
