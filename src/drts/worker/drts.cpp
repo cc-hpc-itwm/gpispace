@@ -231,7 +231,7 @@ int WFEImpl::execute ( std::string const &job_id
     task.state = wfe_task_t::FAILED;
     error_message = std::string ("Invalid job description: ") + ex.what();
 
-    return drts::Job::FAILED;
+    return DRTSImpl::Job::FAILED;
   }
 
   {
@@ -290,9 +290,9 @@ int WFEImpl::execute ( std::string const &job_id
 
   emit_task (task);
 
-  return task.state == wfe_task_t::FINISHED ? drts::Job::FINISHED
-    : task.state == wfe_task_t::CANCELED ? drts::Job::CANCELED
-    : task.state == wfe_task_t::FAILED ? drts::Job::FAILED
+  return task.state == wfe_task_t::FINISHED ? DRTSImpl::Job::FINISHED
+    : task.state == wfe_task_t::CANCELED ? DRTSImpl::Job::CANCELED
+    : task.state == wfe_task_t::FAILED ? DRTSImpl::Job::FAILED
     : throw std::runtime_error ("bad task state");
 }
 
@@ -497,8 +497,8 @@ void DRTSImpl::handleSubmitJobEvent
     throw std::runtime_error ("got SubmitJob from not yet connected master");
   }
 
-  boost::shared_ptr<drts::Job> job (new drts::Job( drts::Job::ID(*e->job_id())
-                                                 , drts::Job::Description(e->description())
+  boost::shared_ptr<DRTSImpl::Job> job (new DRTSImpl::Job( DRTSImpl::Job::ID(*e->job_id())
+                                                 , DRTSImpl::Job::Description(e->description())
                                                  , master
                                                  )
                                    );
@@ -562,9 +562,9 @@ void DRTSImpl::handleCancelJobEvent
   }
   else
   {
-    if (  drts::Job::PENDING
-       == job_it->second->cmp_and_swp_state( drts::Job::PENDING
-                                           , drts::Job::CANCELED
+    if (  DRTSImpl::Job::PENDING
+       == job_it->second->cmp_and_swp_state( DRTSImpl::Job::PENDING
+                                           , DRTSImpl::Job::CANCELED
                                            )
        )
     {
@@ -574,16 +574,16 @@ void DRTSImpl::handleCancelJobEvent
         , new sdpa::events::CancelJobAckEvent (job_it->second->id())
         );
     }
-    else if (job_it->second->state() == drts::Job::RUNNING)
+    else if (job_it->second->state() == DRTSImpl::Job::RUNNING)
     {
       LLOG (TRACE, _logger, "trying to cancel running job " << e->job_id());
       m_wfe.cancel (e->job_id());
     }
-    else if (job_it->second->state() == drts::Job::FAILED)
+    else if (job_it->second->state() == DRTSImpl::Job::FAILED)
     {
       LLOG (TRACE, _logger, "canceling already failed job: " << e->job_id());
     }
-    else if (job_it->second->state() == drts::Job::CANCELED)
+    else if (job_it->second->state() == DRTSImpl::Job::CANCELED)
     {
       LLOG (TRACE, _logger, "canceling already canceled job: " << e->job_id());
     }
@@ -679,11 +679,11 @@ void DRTSImpl::handleDiscoverJobStatesEvent
                , sdpa::discovery_info_t
                  ( event->job_id()
                  , job_it == m_jobs.end() ? boost::optional<sdpa::status::code>()
-                 : job_it->second->state() == drts::Job::PENDING ? sdpa::status::PENDING
-                 : job_it->second->state() == drts::Job::RUNNING ? sdpa::status::RUNNING
-                 : job_it->second->state() == drts::Job::FINISHED ? sdpa::status::FINISHED
-                 : job_it->second->state() == drts::Job::FAILED ? sdpa::status::FAILED
-                 : job_it->second->state() == drts::Job::CANCELED ? sdpa::status::CANCELED
+                 : job_it->second->state() == DRTSImpl::Job::PENDING ? sdpa::status::PENDING
+                 : job_it->second->state() == DRTSImpl::Job::RUNNING ? sdpa::status::RUNNING
+                 : job_it->second->state() == DRTSImpl::Job::FINISHED ? sdpa::status::FINISHED
+                 : job_it->second->state() == DRTSImpl::Job::FAILED ? sdpa::status::FAILED
+                 : job_it->second->state() == DRTSImpl::Job::CANCELED ? sdpa::status::CANCELED
                  : throw std::runtime_error ("invalid job state")
                  , sdpa::discovery_info_set_t()
                  )
@@ -706,10 +706,10 @@ void DRTSImpl::job_execution_thread ()
 {
   for (;;)
   {
-    boost::shared_ptr<drts::Job> job = m_pending_jobs.get();
+    boost::shared_ptr<DRTSImpl::Job> job = m_pending_jobs.get();
 
-    if (drts::Job::PENDING == job->cmp_and_swp_state( drts::Job::PENDING
-                                                    , drts::Job::RUNNING
+    if (DRTSImpl::Job::PENDING == job->cmp_and_swp_state( DRTSImpl::Job::PENDING
+                                                    , DRTSImpl::Job::RUNNING
                                                     )
        )
     {
@@ -739,9 +739,9 @@ void DRTSImpl::job_execution_thread ()
             << " total-time := " << (completed - started)
             );
 
-        job->set_state (drts::Job::state_t (ec));
+        job->set_state (DRTSImpl::Job::state_t (ec));
 
-        if (ec == drts::Job::FAILED)
+        if (ec == DRTSImpl::Job::FAILED)
         {
           job->set_message (error_message);
         }
@@ -751,7 +751,7 @@ void DRTSImpl::job_execution_thread ()
         LLOG ( ERROR, _logger
             , "unexpected exception during job execution: " << ex.what()
             );
-        job->set_state (drts::Job::FAILED);
+        job->set_state (DRTSImpl::Job::FAILED);
 
         job->set_result (job->description());
         job->set_message (ex.what());
@@ -783,13 +783,13 @@ void DRTSImpl::resend_outstanding_events
 
   boost::mutex::scoped_lock const _ (m_job_map_mutex);
 
-  for ( boost::shared_ptr<drts::Job> const& job
+  for ( boost::shared_ptr<DRTSImpl::Job> const& job
       : m_jobs
       | boost::adaptors::map_values
       | boost::adaptors::filtered
-          ( [&master] (boost::shared_ptr<drts::Job> const& j)
+          ( [&master] (boost::shared_ptr<DRTSImpl::Job> const& j)
             {
-              return j->owner() == master && j->state() >= drts::Job::FINISHED;
+              return j->owner() == master && j->state() >= DRTSImpl::Job::FINISHED;
             }
           )
       )
@@ -799,16 +799,16 @@ void DRTSImpl::resend_outstanding_events
   }
 }
 
-void DRTSImpl::send_job_result_to_master (boost::shared_ptr<drts::Job> const & job)
+void DRTSImpl::send_job_result_to_master (boost::shared_ptr<DRTSImpl::Job> const & job)
 {
   switch (job->state())
   {
-  case drts::Job::FINISHED:
+  case DRTSImpl::Job::FINISHED:
     send_event ( *job->owner()->second
                , new sdpa::events::JobFinishedEvent (job->id(), job->result())
                );
     break;
-  case drts::Job::FAILED:
+  case DRTSImpl::Job::FAILED:
     {
       send_event
         ( *job->owner()->second
@@ -816,7 +816,7 @@ void DRTSImpl::send_job_result_to_master (boost::shared_ptr<drts::Job> const & j
         );
     }
     break;
-  case drts::Job::CANCELED:
+  case DRTSImpl::Job::CANCELED:
     {
       send_event
         (*job->owner()->second, new sdpa::events::CancelJobAckEvent (job->id()));
@@ -1011,30 +1011,27 @@ void DRTSImpl::dispatch_event
   }
 }
 
-namespace drts
-{
-  Job::Job( Job::ID const &jobid
-          , Job::Description const &description
-          , owner_type const& owner
-          )
-    : m_id (jobid.value)
-    , m_input_description (description.value)
-    , m_owner (owner)
-    , m_state (Job::PENDING)
-    , m_result ()
-    , m_message ("")
-  {}
+DRTSImpl::Job::Job( Job::ID const &jobid
+                  , Job::Description const &description
+                  , owner_type const& owner
+                  )
+  : m_id (jobid.value)
+  , m_input_description (description.value)
+  , m_owner (owner)
+  , m_state (Job::PENDING)
+  , m_result ()
+  , m_message ("")
+{}
 
-  Job::state_t Job::cmp_and_swp_state( Job::state_t expected
-                                     , Job::state_t newstate
-                                     )
+DRTSImpl::Job::state_t DRTSImpl::Job::cmp_and_swp_state( Job::state_t expected
+                                                       , Job::state_t newstate
+                                                       )
+{
+  lock_type lock (m_mutex);
+  state_t old_state = m_state;
+  if (old_state == expected)
   {
-    lock_type lock (m_mutex);
-    state_t old_state = m_state;
-    if (old_state == expected)
-    {
-      m_state = newstate;
-    }
-    return old_state;
+    m_state = newstate;
   }
+  return old_state;
 }
