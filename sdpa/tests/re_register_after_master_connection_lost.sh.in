@@ -77,7 +77,7 @@ agent_startup_messages_raw=$(start-and-fork \
   --arguments --kvs-host "${KVS_HOST}" \
   --arguments --kvs-port ${KVS_PORT}   \
   --arguments --name "agent" \
-  --arguments --master "orchestrator" \
+  --arguments --master "orchestrator%${orchestrator_1_startup_messages[1]}%${orchestrator_1_startup_messages[2]}" \
   --environment LD_LIBRARY_PATH="${LD_LIBRARY_PATH}")
 
 old_IFS=${IFS}

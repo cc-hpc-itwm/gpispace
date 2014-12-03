@@ -112,15 +112,29 @@ namespace
       _.start();
     }
 
+    GenericDaemon::master_network_info::master_network_info
+        (std::string const& host, std::string const& port)
+      : host (host)
+      , port (port)
+      , address (boost::none)
+    {}
+
     namespace
     {
-      template<typename V, typename C> std::map<typename C::value_type, V>
-        make_map_with_keys_and_default_value (C const& keys)
+      //! \note templated for convenience of not needing public access
+      //! to master info stuff
+      template<typename InfoMap> InfoMap make_master_info_map
+        (std::vector<name_host_port_tuple> const& masters)
       {
-        std::map<typename C::value_type, V> ret;
-        for (typename C::value_type const& key : keys)
+        InfoMap ret;
+        for (name_host_port_tuple const& name_host_port : masters)
         {
-          ret.emplace (key, V());
+          ret.emplace ( std::get<0> (name_host_port)
+                      , typename InfoMap::mapped_type
+                          ( std::get<1> (name_host_port)
+                          , std::get<2> (name_host_port)
+                          )
+                      );
         }
         return ret;
       }
@@ -133,14 +147,13 @@ GenericDaemon::GenericDaemon( const std::string name
                             , std::string kvs_host
                             , std::string kvs_port
                             , boost::optional<boost::filesystem::path> const& vmem_socket
-                            , std::vector<std::string> const& masters
+                            , std::vector<name_host_port_tuple> const& masters
                             , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
                             , bool create_wfe
                             )
   : _logger (fhg::log::Logger::get (name))
   , _name (name)
-  , _master_info
-      (make_map_with_keys_and_default_value<master_info_t::mapped_type> (masters))
+  , _master_info (make_master_info_map<master_info_t> (masters))
   , _subscriptions()
   , _discover_sources()
   , _job_map_mutex()
@@ -457,9 +470,10 @@ void GenericDaemon::handleWorkerRegistrationEvent
     // send to the masters my new set of capabilities
     for (master_info_t::value_type const& info : _master_info)
     {
-      if (info.second)
+      if (info.second.address)
       {
-        parent_proxy (this, *info.second).capabilities_gained (workerCpbSet);
+        parent_proxy (this, *info.second.address)
+          .capabilities_gained (workerCpbSet);
       }
     }
   }
@@ -506,7 +520,7 @@ void GenericDaemon::handleErrorEvent
     {
       if (as_master)
       {
-        as_master.get()->second = boost::none;
+        as_master.get()->second.address = boost::none;
 
         request_registration_soon (as_master.get());
       }
@@ -533,9 +547,9 @@ void GenericDaemon::handleErrorEvent
         // notify capability losses...
         for (master_info_t::value_type const& info : _master_info)
         {
-          if (info.second)
+          if (info.second.address)
           {
-            parent_proxy (this, *info.second).capabilities_lost
+            parent_proxy (this, *info.second.address).capabilities_lost
               (ptrWorker->capabilities());
           }
         }
@@ -575,7 +589,7 @@ void GenericDaemon::handleErrorEvent
       {
         if (as_master)
         {
-          as_master.get()->second = boost::none;
+          as_master.get()->second.address = boost::none;
 
           request_registration_soon (as_master.get());
         }
@@ -689,7 +703,7 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
 
   pJob->JobFinished (result.to_string());
 
-  if(!isSubscriber(pJob->owner()->_actual.get()->second.get()))
+  if(!isSubscriber(pJob->owner()->_actual.get()->second.address.get()))
   {
     parent_proxy (this, pJob->owner()).job_finished (id, result.to_string());
   }
@@ -721,7 +735,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
 
   pJob->JobFailed (reason);
 
-  if(!isSubscriber(pJob->owner()->_actual.get()->second.get()))
+  if(!isSubscriber(pJob->owner()->_actual.get()->second.address.get()))
   {
     parent_proxy (this, pJob->owner()).job_failed (id, reason);
   }
@@ -785,7 +799,7 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
                        , _master_info.end()
                        , [&address] (master_info_t::value_type const& info)
                          {
-                           return info.second == address;
+                           return info.second.address == address;
                          }
                        )
         );
@@ -899,9 +913,9 @@ void GenericDaemon::handleCapabilitiesGainedEvent
         {
           for (master_info_t::value_type const& info : _master_info)
           {
-            if (info.second)
+            if (info.second.address)
             {
-              parent_proxy (this, *info.second).capabilities_gained
+              parent_proxy (this, *info.second.address).capabilities_gained
                 (newWorkerCpbSet);
             }
           }
@@ -929,9 +943,9 @@ void GenericDaemon::handleCapabilitiesLostEvent
     {
       for (master_info_t::value_type const& info : _master_info)
       {
-        if (info.second)
+        if (info.second.address)
         {
-          parent_proxy (this, *info.second).capabilities_lost
+          parent_proxy (this, *info.second.address).capabilities_lost
             (pCpbLostEvt->capabilities());
         }
       }
@@ -996,7 +1010,8 @@ void GenericDaemon::requestRegistration (master_info_t::iterator const& it)
 {
   try
   {
-    it->second = _network_strategy.connect_to_via_kvs (it->first);
+    it->second.address
+      = _network_strategy.connect_to (it->second.host, it->second.port);
   }
   catch (std::exception const& ex)
   {
@@ -1535,7 +1550,7 @@ namespace sdpa
     {}
     GenericDaemon::parent_proxy::parent_proxy
         (GenericDaemon* that, master_info_t::iterator const& master)
-      : parent_proxy (that, master->second.get())
+      : parent_proxy (that, master->second.address.get())
     {}
     GenericDaemon::parent_proxy::parent_proxy
         (GenericDaemon* that, opaque_job_master_t const& job_master)

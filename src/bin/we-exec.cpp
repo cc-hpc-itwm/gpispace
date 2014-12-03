@@ -168,7 +168,7 @@ try
     , vm.count ("vmem-socket")
       ? boost::make_optional (boost::filesystem::path (vm["vmem-socket"].as<std::string>()))
       : boost::none
-    , {orchestrator_name}
+    , {std::make_tuple (orchestrator_name, orchestrator.peer_host(), orchestrator.peer_port())}
     , boost::none
     );
 

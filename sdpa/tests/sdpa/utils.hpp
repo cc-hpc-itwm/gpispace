@@ -226,6 +226,16 @@ namespace utils
     fhg::com::port_t port() const { return _.peer_port(); }
   };
 
+  namespace
+  {
+    template<typename Master>
+      std::tuple<std::string, fhg::com::host_t, fhg::com::port_t>
+        make_master_info_tuple (Master const& master)
+    {
+      return std::make_tuple (master.name(), master.host(), master.port());
+    }
+  }
+
   struct agent : boost::noncopyable
   {
     template <typename T, typename U>
@@ -238,7 +248,7 @@ namespace utils
           , _kvs_client_io_service
           , _kvs_host, _kvs_port
           , boost::none
-          , {master_0.name(), master_1.name()}
+          , {make_master_info_tuple (master_0), make_master_info_tuple (master_1)}
           , boost::none
           )
     {}
@@ -252,7 +262,7 @@ namespace utils
           , _kvs_client_io_service
           , _kvs_host, _kvs_port
           , boost::none
-          , {master.name()}
+          , {make_master_info_tuple (master)}
           , boost::none
           )
     {}
@@ -265,7 +275,7 @@ namespace utils
           , _kvs_client_io_service
           , _kvs_host, _kvs_port
           , boost::none
-          , {master.name()}
+          , {make_master_info_tuple (master)}
           , boost::none
           )
     {}
@@ -407,6 +417,14 @@ namespace utils
     std::string name() const { return _name; }
     std::string kvs_host() const { return _kvs_host; }
     std::string kvs_port() const { return _kvs_port; }
+    fhg::com::host_t host() const
+    {
+      return fhg::com::host_t (_network.local_endpoint().address().to_string());
+    }
+    fhg::com::port_t port() const
+    {
+      return fhg::com::port_t (std::to_string (_network.local_endpoint().port()));
+    }
 
   protected:
     std::string _name;

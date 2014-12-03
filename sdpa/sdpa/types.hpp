@@ -1,6 +1,8 @@
 #ifndef SDPA_TYPES_HPP
 #define SDPA_TYPES_HPP 1
 
+#include <fhgcom/peer_info.hpp>
+
 #include <string>
 #include <vector>
 #include <list>
@@ -24,6 +26,9 @@ namespace sdpa {
 	typedef std::pair<worker_id_t, job_id_t> worker_job_pair_t;
 
   typedef std::list<std::pair<sdpa::worker_id_t, int>> list_match_workers_t;
+
+  using name_host_port_tuple
+    = std::tuple<std::string, fhg::com::host_t, fhg::com::port_t>;
 
   namespace daemon
   {

@@ -77,8 +77,14 @@ namespace sdpa {
                           boost::noncopyable
     {
     protected:
-      using master_info_t =
-        std::map<std::string, boost::optional<fhg::com::p2p::address_t>>;
+      struct master_network_info
+      {
+        master_network_info (std::string const& host, std::string const& port);
+        fhg::com::host_t host;
+        fhg::com::port_t port;
+        boost::optional<fhg::com::p2p::address_t> address;
+      };
+      using master_info_t = std::map<std::string, master_network_info>;
 
     public:
       typedef boost::recursive_mutex mutex_type;
@@ -91,7 +97,7 @@ namespace sdpa {
                    , std::string kvs_host
                    , std::string kvs_port
                    , boost::optional<boost::filesystem::path> const& vmem_socket
-                   , std::vector<std::string> const& masters
+                   , std::vector<name_host_port_tuple> const& masters
                    , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info = boost::none
                    , bool create_wfe = false
                    );
