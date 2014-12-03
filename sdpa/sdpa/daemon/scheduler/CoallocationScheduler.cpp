@@ -163,6 +163,7 @@ namespace sdpa
       ( const job_id_t& job_id
       , const std::set<worker_id_t>& workers
       , const std::function<std::string (const sdpa::worker_id_t& wid)> host
+      , const double computational_cost
       ) const
     {
       const job_requirements_t& requirements (_job_requirements (job_id));
@@ -172,7 +173,7 @@ namespace sdpa
                              , 0.0
                              , [&requirements,host] (const double total, const sdpa::worker_id_t wid)
                                {return total + requirements.transfer_cost() (host (wid));}
-                             );
+                             ) + computational_cost;
     }
 
     void CoallocationScheduler::assignJobsToWorkers()
@@ -218,6 +219,7 @@ namespace sdpa
                                , compute_reservation_cost ( jobId
                                                           , matching_workers
                                                           , std::bind (&WorkerManager::host, &_worker_manager, std::placeholders::_1)
+                                                          , requirements.computational_cost()
                                                           )
                                )
               );
