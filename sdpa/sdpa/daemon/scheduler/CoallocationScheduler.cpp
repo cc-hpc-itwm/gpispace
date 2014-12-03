@@ -215,11 +215,13 @@ namespace sdpa
 
             allocation_table_.emplace (jobId, pReservation);
 
-            _serve_job (worker_id_list_t (matching_workers.begin(), matching_workers.end()), jobId);
-
-            for (worker_id_t const& worker : matching_workers)
+            if (worker_manager().can_start_job (matching_workers))
             {
-              worker_manager().findWorker (worker)->submit (jobId);
+              for (worker_id_t const& worker : matching_workers)
+              {
+                worker_manager().findWorker (worker)->submit (jobId);
+              }
+              _serve_job (worker_id_list_t (matching_workers.begin(), matching_workers.end()), jobId);
             }
           }
           catch (std::runtime_error const&)
