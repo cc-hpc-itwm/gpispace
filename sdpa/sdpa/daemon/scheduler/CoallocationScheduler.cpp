@@ -167,6 +167,8 @@ namespace sdpa
 
     void CoallocationScheduler::assignJobsToWorkers()
     {
+      start_pending_jobs();
+
       std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
 
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
