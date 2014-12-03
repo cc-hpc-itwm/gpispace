@@ -305,6 +305,28 @@ namespace sdpa
       return !list_not_terminated_workers.empty();
     }
 
+    void CoallocationScheduler::start_pending_jobs()
+    {
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      std::list<job_id_t> pending_jobs (_list_pending_jobs.get_and_clear());
+      for (const job_id_t& job_id: pending_jobs)
+      {
+        worker_id_list_t workers (allocation_table_.at (job_id)->getWorkerList());
+        if (worker_manager().can_start_job ({workers.begin(), workers.end()}))
+        {
+          for (worker_id_t const& worker : workers)
+          {
+            worker_manager().findWorker (worker)->submit (job_id);
+          }
+          _serve_job (worker_id_list_t (workers.begin(), workers.end()), job_id);
+        }
+        else
+        {
+          _list_pending_jobs.push (job_id);
+        }
+      }
+    }
+
     void CoallocationScheduler::releaseReservation (const sdpa::job_id_t& job_id)
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
