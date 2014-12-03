@@ -155,6 +155,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_a
   _scheduler.assignJobsToWorkers();
 
   _scheduler.worker_manager().addWorker ("worker_1", 1, {}, false, fhg::util::random_string());
+  _scheduler.reschedule_pending_jobs_matching_worker ("worker_1");
 
   expect_serveJob_call ("job_1", {"worker_1"});
 
@@ -179,6 +180,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_schedule
 
 
   _scheduler.worker_manager().findWorker ("worker_1")->addCapabilities ({sdpa::capability_t ("C", "worker_1")});
+  _scheduler.reschedule_pending_jobs_matching_worker ("worker_1");
 
   expect_serveJob_call ("job_1", {"worker_1"});
 
@@ -241,6 +243,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and
   _scheduler.enqueueJob ("job_0");
 
   _scheduler.worker_manager().addWorker ("worker_0", 1, {}, false, fhg::util::random_string());
+  _scheduler.reschedule_pending_jobs_matching_worker ("worker_0");
 
   expect_serveJob_call ("job_0",  1, {{"worker_0"}, {"worker_1"}});
 

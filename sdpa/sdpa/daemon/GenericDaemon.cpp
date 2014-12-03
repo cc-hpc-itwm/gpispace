@@ -375,17 +375,22 @@ void GenericDaemon::handleWorkerRegistrationEvent
 
   child_proxy (this, worker_id).worker_registration_ack();
 
-  request_scheduling();
-
-  if (was_new_worker && !workerCpbSet.empty())
+  if (was_new_worker)
   {
-    lock_type lock (mtx_master_);
-    // send to the masters my new set of capabilities
-    for (MasterInfo const& master : m_arrMasterInfo)
+    scheduler().reschedule_pending_jobs_matching_worker (worker_id);
+
+    request_scheduling();
+
+    if (!workerCpbSet.empty())
     {
-      if (master.is_registered())
+      lock_type lock (mtx_master_);
+      // send to the masters my new set of capabilities
+      for (MasterInfo const& master : m_arrMasterInfo)
       {
-        parent_proxy (this, master.name()).capabilities_gained (workerCpbSet);
+        if (master.is_registered())
+        {
+          parent_proxy (this, master.name()).capabilities_gained (workerCpbSet);
+        }
       }
     }
   }
@@ -469,6 +474,8 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
           parent_proxy (this, masterInfo.name()).capabilities_lost
             (ptrWorker->capabilities());
         }
+
+        scheduler().reschedule_pending_jobs_matching_worker (worker_id);
 
         const std::set<job_id_t> jobs_to_reschedule
           ( scheduler().worker_manager().findWorker (worker_id)
@@ -831,6 +838,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const events::CapabilitiesGain
 
     if(bModified)
     {
+      scheduler().reschedule_pending_jobs_matching_worker (worker_id);
       request_scheduling();
       if( !isTop() )
       {
