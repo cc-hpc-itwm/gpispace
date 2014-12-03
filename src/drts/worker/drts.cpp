@@ -308,6 +308,12 @@ void WFEImpl::cancel (std::string const &job_id)
   }
 }
 
+DRTSImpl::master_network_info::master_network_info
+    (std::string const& host, std::string const& port)
+  : host (host)
+  , port (port)
+  , address (boost::none)
+{}
 
 DRTSImpl::DRTSImpl
     ( std::function<void()> request_stop
@@ -397,17 +403,26 @@ DRTSImpl::DRTSImpl
 
   for (std::string const & master : master_list)
   {
-    if (master.empty())
+    boost::tokenizer<boost::char_separator<char>> const tok
+      (master, boost::char_separator<char> ("%"));
+
+    std::vector<std::string> const parts (tok.begin(), tok.end());
+
+    if (parts.size() != 3)
     {
-      throw std::runtime_error ("empty master specified!");
+      throw std::runtime_error
+        ("invalid master information: has to be of format 'name%host%port'");
     }
 
-    if (master == m_my_name)
+    if (parts[0] == m_my_name)
     {
       throw std::runtime_error ("cannot be my own master!");
     }
 
-    if (!m_masters.emplace (master, boost::none).second)
+    if ( !m_masters.emplace ( parts[0]
+                            , master_network_info (parts[1], parts[2])
+                            ).second
+       )
     {
       LLOG ( WARN, _logger
           , "master already specified, ignoring new one: " << master
@@ -448,7 +463,7 @@ void DRTSImpl::handleWorkerRegistrationAckEvent
     ( std::find_if ( m_masters.cbegin(), m_masters.cend()
                    , [&source] (map_of_masters_t::value_type const& master)
                      {
-                       return master.second == source;
+                       return master.second.address == source;
                      }
                    )
     );
@@ -483,7 +498,7 @@ void DRTSImpl::handleSubmitJobEvent
     ( std::find_if ( m_masters.cbegin(), m_masters.cend()
                    , [&source] (map_of_masters_t::value_type const& master)
                      {
-                       return master.second == source;
+                       return master.second.address == source;
                      }
                    )
     );
@@ -492,7 +507,7 @@ void DRTSImpl::handleSubmitJobEvent
   {
     throw std::runtime_error ("got SubmitJob from unknown source");
   }
-  else if (! master->second)
+  else if (! master->second.address)
   {
     throw std::runtime_error ("got SubmitJob from not yet connected master");
   }
@@ -523,7 +538,9 @@ void DRTSImpl::handleSubmitJobEvent
     }
     else
     {
-      send_event (*master->second, new sdpa::events::SubmitJobAckEvent (job->id()));
+      send_event ( *master->second.address
+                 , new sdpa::events::SubmitJobAckEvent (job->id())
+                 );
       m_jobs.emplace (job->id(), job);
 
       m_pending_jobs.put(job);
@@ -551,7 +568,7 @@ void DRTSImpl::handleCancelJobEvent
                 , "could not find job " + std::string(e->job_id())
                 ));
   }
-  else if (*job_it->second->owner()->second != source)
+  else if (*job_it->second->owner()->second.address != source)
   {
     send_event ( source
                , new sdpa::events::ErrorEvent
@@ -570,7 +587,7 @@ void DRTSImpl::handleCancelJobEvent
     {
       LLOG (TRACE, _logger, "canceling pending job: " << e->job_id());
       send_event
-        ( *job_it->second->owner()->second
+        ( *job_it->second->owner()->second.address
         , new sdpa::events::CancelJobAckEvent (job_it->second->id())
         );
     }
@@ -615,7 +632,7 @@ void DRTSImpl::handleJobFailedAckEvent
                  ));
     return;
   }
-  else if (*job_it->second->owner()->second != source)
+  else if (*job_it->second->owner()->second.address != source)
   {
     LLOG ( ERROR, _logger
         , "could not acknowledge failed job: " << e->job_id() << ": not owner"
@@ -650,7 +667,7 @@ void DRTSImpl::handleJobFinishedAckEvent
                  ));
     return;
   }
-  else if (*job_it->second->owner()->second != source)
+  else if (*job_it->second->owner()->second.address != source)
   {
     LLOG ( ERROR, _logger
         , "could not acknowledge finished job: " << e->job_id()
@@ -804,14 +821,14 @@ void DRTSImpl::send_job_result_to_master (boost::shared_ptr<DRTSImpl::Job> const
   switch (job->state())
   {
   case DRTSImpl::Job::FINISHED:
-    send_event ( *job->owner()->second
+    send_event ( *job->owner()->second.address
                , new sdpa::events::JobFinishedEvent (job->id(), job->result())
                );
     break;
   case DRTSImpl::Job::FAILED:
     {
       send_event
-        ( *job->owner()->second
+        ( *job->owner()->second.address
         , new sdpa::events::JobFailedEvent (job->id(), job->message())
         );
     }
@@ -819,7 +836,9 @@ void DRTSImpl::send_job_result_to_master (boost::shared_ptr<DRTSImpl::Job> const
   case DRTSImpl::Job::CANCELED:
     {
       send_event
-        (*job->owner()->second, new sdpa::events::CancelJobAckEvent (job->id()));
+        ( *job->owner()->second.address
+        , new sdpa::events::CancelJobAckEvent (job->id())
+        );
     }
     break;
   default:
@@ -848,7 +867,7 @@ void DRTSImpl::start_connect ()
       ; ++master_it
       )
   {
-    if (! master_it->second)
+    if (! master_it->second.address)
     {
       sdpa::events::WorkerRegistrationEvent::Ptr evt
         (new sdpa::events::WorkerRegistrationEvent ( m_my_name
@@ -861,8 +880,9 @@ void DRTSImpl::start_connect ()
 
       try
       {
-        master_it->second = m_peer->connect_to_via_kvs (master_it->first);
-        send_event(*master_it->second, evt);
+        master_it->second.address = m_peer->connect_to
+          (master_it->second.host, master_it->second.port);
+        send_event(*master_it->second.address, evt);
       }
       catch (boost::system::system_error const& ex)
       {
@@ -963,13 +983,13 @@ void DRTSImpl::handle_recv ( boost::system::error_code const & ec
         ( std::find_if ( m_masters.begin(), m_masters.end()
                        , [&source] (map_of_masters_t::value_type const& master)
                          {
-                           return master.second == source;
+                           return master.second.address == source;
                          }
                        )
         );
       if (master != m_masters.end())
       {
-        master->second = boost::none;
+        master->second.address = boost::none;
 
         request_registration_soon();
       }

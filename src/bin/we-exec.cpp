@@ -191,7 +191,11 @@ try
 
   config_variables.emplace ("plugin.drts.kvs_host", host);
   config_variables.emplace ("plugin.drts.kvs_port", kvs_port);
-  config_variables.emplace ("plugin.drts.master", agent_name);
+  config_variables.emplace ( "plugin.drts.master"
+                           , agent_name
+                           + "%" + std::string (agent.peer_host())
+                           + "%" + std::string (agent.peer_port())
+                           );
   config_variables.emplace
     ("plugin.drts.library_path", fhg::util::join (mod_path, ":"));
 

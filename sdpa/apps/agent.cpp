@@ -133,6 +133,8 @@ int main (int argc, char **argv)
       ( vm["startup-messages-fifo"]
       . as<fhg::util::boost::program_options::existing_path>().string()
       );
+    startup_messages_fifo << agent.peer_local_endpoint().address().to_string() << "\n";
+    startup_messages_fifo << agent.peer_local_endpoint().port() << "\n";
     startup_messages_fifo << "OKAY\n";
   }
 

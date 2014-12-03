@@ -709,11 +709,13 @@ function start_agent
       rexec "${master}" "${sdpa}" -s "${state_dir}" stop
       error 3 "could not start agent ${name}"
     fi
-    if [ ${#agent_startup_messages[@]} != 1 ]; then
+    if [ ${#agent_startup_messages[@]} != 3 ]; then
       rexec "${master}" "${sdpa}" -s "${state_dir}" stop
-      error 1 "could not start agent ${name}: expected 1 lines of startup messages"
+      error 1 "could not start agent ${name}: expected 3 lines of startup messages"
     fi
     echo ${agent_startup_messages[0]} > "${state_dir}/${name}.pid"
+    echo -n ${agent_startup_messages[1]} > "${state_dir}/${name}.host"
+    echo -n ${agent_startup_messages[2]} > "${state_dir}/${name}.port"
 }
 
 function start_agents
@@ -764,7 +766,8 @@ function start_workers_for_capability
     num_nodes=0
     caps_arg=$(echo "$capability" | tr '+' '\n' | xargs -n1 echo '-C')
 
-    parent=${segment_master[$segment]}
+    parent_name=${segment_master[$segment]}
+    parent="${parent_name}%$(cat "${state_dir}/${parent_name}.host")%$(cat "${state_dir}/${parent_name}.port")"
     group_start=${segment_host_index[$segment]}
     group_size=${segment_size[$segment]}
     group_end=$((group_start + group_size))

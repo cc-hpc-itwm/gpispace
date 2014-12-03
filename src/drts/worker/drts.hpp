@@ -101,8 +101,14 @@ private:
 
 class DRTSImpl : public sdpa::events::EventHandler
 {
-  typedef std::map<std::string, boost::optional<fhg::com::p2p::address_t>>
-    map_of_masters_t;
+  struct master_network_info
+  {
+    master_network_info (std::string const& host, std::string const& port);
+    fhg::com::host_t host;
+    fhg::com::port_t port;
+    boost::optional<fhg::com::p2p::address_t> address;
+  };
+  typedef std::map<std::string, master_network_info> map_of_masters_t;
 
 public:
   class Job
@@ -138,7 +144,7 @@ public:
       const std::string value;
     };
 
-    using owner_type = std::map<std::string, boost::optional<fhg::com::p2p::address_t>>::const_iterator;
+    using owner_type = map_of_masters_t::const_iterator;
 
     explicit
     Job( Job::ID const &jobid
