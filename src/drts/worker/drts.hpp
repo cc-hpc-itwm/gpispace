@@ -291,27 +291,6 @@ namespace drts
       return *this;
     }
   private:
-    friend class boost::serialization::access;
-    template <typename Archive>
-    void serialize (Archive & ar, const unsigned int version)
-    {
-      ar & BOOST_SERIALIZATION_NVP(m_id);
-      ar & BOOST_SERIALIZATION_NVP(m_input_description);
-      ar & BOOST_SERIALIZATION_NVP(m_owner);
-      ar & BOOST_SERIALIZATION_NVP(m_state);
-      ar & BOOST_SERIALIZATION_NVP(m_result);
-
-      if (version > 1)
-      {
-        ar & BOOST_SERIALIZATION_NVP(m_message);
-      }
-
-      if (version > 2)
-      {
-        ar & BOOST_SERIALIZATION_NVP(m_worker_list);
-      }
-    }
-
     inline void    state (state_t s) { lock_type lck(m_mutex); m_state = s; }
     mutable mutex_type m_mutex;
 
@@ -324,5 +303,3 @@ namespace drts
     std::list<std::string> m_worker_list;
   };
 }
-
-BOOST_CLASS_VERSION(drts::Job, 3);
