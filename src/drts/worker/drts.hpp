@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
 #include <drts/worker/context.hpp>
-#include <drts/worker/job.hpp>
 
 #include <fhgcom/message.hpp>
 #include <fhgcom/peer.hpp>
@@ -99,6 +98,11 @@ private:
 
   boost::optional<sdpa::daemon::NotificationService> _notification_service;
 };
+
+namespace drts
+{
+  class Job;
+}
 
 class DRTSImpl : public sdpa::events::EventHandler
 {
@@ -202,3 +206,123 @@ private:
 
   fhg::thread::set _registration_threads;
 };
+
+namespace drts
+{
+  class Job
+  {
+    typedef boost::mutex mutex_type;
+    typedef boost::condition_variable condition_type;
+    typedef boost::unique_lock<mutex_type> lock_type;
+  public:
+    enum state_t
+      {
+        PENDING = 0
+      , RUNNING
+      , FINISHED
+      , FAILED
+      , CANCELED
+      };
+
+    struct ID
+    {
+      explicit ID(std::string const &s)
+        : value(s)
+      {}
+
+      const std::string value;
+    };
+
+    struct Description
+    {
+      explicit Description(std::string const &s)
+        : value(s)
+      {}
+
+      const std::string value;
+    };
+
+    using owner_type = std::map<std::string, boost::optional<fhg::com::p2p::address_t>>::const_iterator;
+
+    explicit
+    Job( Job::ID const &jobid
+       , Job::Description const &description
+       , owner_type const&
+       );
+
+    inline state_t state () const { lock_type lck(m_mutex); return m_state; }
+    state_t cmp_and_swp_state( state_t expected
+                             , state_t newstate
+                             );
+    inline Job& set_state (state_t s) {
+      lock_type    lck(m_mutex); m_state = s;
+      return *this;
+    }
+
+    std::string const & id() const { return m_id; }
+    std::string const & description() const { return m_input_description; }
+    owner_type const& owner() const { return m_owner; }
+
+    std::string const & result() const {
+      lock_type lck(m_mutex); return m_result;
+    }
+    Job & set_result(std::string const &r) {
+      lock_type lck(m_mutex); m_result = r;
+      return *this;
+    }
+
+    std::string const & message() const {
+      lock_type lck(m_mutex); return m_message;
+    }
+
+    Job& set_message (std::string const &s) {
+      lock_type lck(m_mutex); m_message = s;
+      return *this;
+    }
+
+    std::list<std::string> const &worker_list () const
+    {
+      return m_worker_list;
+    }
+
+    Job & worker_list (std::list<std::string> const &workers)
+    {
+      m_worker_list = workers;
+      return *this;
+    }
+  private:
+    friend class boost::serialization::access;
+    template <typename Archive>
+    void serialize (Archive & ar, const unsigned int version)
+    {
+      ar & BOOST_SERIALIZATION_NVP(m_id);
+      ar & BOOST_SERIALIZATION_NVP(m_input_description);
+      ar & BOOST_SERIALIZATION_NVP(m_owner);
+      ar & BOOST_SERIALIZATION_NVP(m_state);
+      ar & BOOST_SERIALIZATION_NVP(m_result);
+
+      if (version > 1)
+      {
+        ar & BOOST_SERIALIZATION_NVP(m_message);
+      }
+
+      if (version > 2)
+      {
+        ar & BOOST_SERIALIZATION_NVP(m_worker_list);
+      }
+    }
+
+    inline void    state (state_t s) { lock_type lck(m_mutex); m_state = s; }
+    mutable mutex_type m_mutex;
+
+    std::string m_id;
+    std::string m_input_description;
+    owner_type m_owner;
+    state_t     m_state;
+    std::string m_result;
+    std::string m_message;
+    std::list<std::string> m_worker_list;
+  };
+}
+
+BOOST_CLASS_VERSION(drts::Job, 3);

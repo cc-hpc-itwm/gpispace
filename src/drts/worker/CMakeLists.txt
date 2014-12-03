@@ -3,7 +3,7 @@
 find_package (HWLOC REQUIRED QUIET)
 include_directories (SYSTEM ${HWLOC_INCLUDE_DIR})
 
-add_library (fake-drts-kernel-plugin drts.cpp job.cpp)
+add_library (fake-drts-kernel-plugin drts.cpp)
 target_link_libraries (fake-drts-kernel-plugin
   we-dev
   ${UTIL_LIBRARIES}
