@@ -5,10 +5,6 @@ set (prgs
 set (scripts
   start-drts
   start-sdpa
-  stop-drts
-  stop-agent
-  status-agent
-  status-drts
   sdpa-selftest
 )
 
