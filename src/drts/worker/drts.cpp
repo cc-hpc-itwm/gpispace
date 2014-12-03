@@ -512,7 +512,7 @@ void DRTSImpl::handleSubmitJobEvent
       LLOG ( WARN, _logger
           , "cannot accept new job (" << job->id() << "), backlog is full."
           );
-      send_event ( fhg::com::p2p::address_t (source)
+      send_event ( source
                  , new sdpa::events::ErrorEvent
                    ( sdpa::events::ErrorEvent::SDPA_EJOBREJECTED
                    , "I am busy right now, please try again later!"
@@ -544,15 +544,15 @@ void DRTSImpl::handleCancelJobEvent
 
   if (job_it == m_jobs.end())
   {
-    send_event( fhg::com::p2p::address_t (source)
+    send_event( source
               , new sdpa::events::ErrorEvent
                 ( sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                 , "could not find job " + std::string(e->job_id())
                 ));
   }
-  else if (*job_it->second->owner()->second != fhg::com::p2p::address_t (source))
+  else if (*job_it->second->owner()->second != source)
   {
-    send_event ( fhg::com::p2p::address_t (source)
+    send_event ( source
                , new sdpa::events::ErrorEvent
                  ( sdpa::events::ErrorEvent::SDPA_EPERM
                  , "you are not the owner of job " + std::string(e->job_id())
@@ -607,19 +607,19 @@ void DRTSImpl::handleJobFailedAckEvent
     LLOG ( ERROR, _logger
         , "could not acknowledge failed job: " << e->job_id() << ": not found"
         );
-    send_event ( fhg::com::p2p::address_t (source)
+    send_event ( source
                , new sdpa::events::ErrorEvent
                  ( sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                  , "could not find job " + std::string(e->job_id())
                  ));
     return;
   }
-  else if (*job_it->second->owner()->second != fhg::com::p2p::address_t (source))
+  else if (*job_it->second->owner()->second != source)
   {
     LLOG ( ERROR, _logger
         , "could not acknowledge failed job: " << e->job_id() << ": not owner"
         );
-    send_event ( fhg::com::p2p::address_t (source)
+    send_event ( source
                , new sdpa::events::ErrorEvent
                  ( sdpa::events::ErrorEvent::SDPA_EPERM
                  , "you are not the owner of job " + std::string(e->job_id())
@@ -642,20 +642,20 @@ void DRTSImpl::handleJobFinishedAckEvent
         , "could not acknowledge finished job: " << e->job_id()
         << ": not found"
         );
-    send_event ( fhg::com::p2p::address_t (source)
+    send_event ( source
                , new sdpa::events::ErrorEvent
                  ( sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                  , "could not find job " + std::string(e->job_id())
                  ));
     return;
   }
-  else if (*job_it->second->owner()->second != fhg::com::p2p::address_t (source))
+  else if (*job_it->second->owner()->second != source)
   {
     LLOG ( ERROR, _logger
         , "could not acknowledge finished job: " << e->job_id()
         << ": not owner"
         );
-    send_event ( fhg::com::p2p::address_t (source)
+    send_event ( source
                , new sdpa::events::ErrorEvent
                  ( sdpa::events::ErrorEvent::SDPA_EPERM
                  , "you are not the owner of job " + std::string(e->job_id())
@@ -672,7 +672,7 @@ void DRTSImpl::handleDiscoverJobStatesEvent
   boost::mutex::scoped_lock const _ (m_job_map_mutex);
 
   const map_of_jobs_t::iterator job_it (m_jobs.find (event->job_id()));
-  send_event ( fhg::com::p2p::address_t (source)
+  send_event ( source
              , new sdpa::events::DiscoverJobStatesReplyEvent
                ( event->discover_id()
                , sdpa::discovery_info_t
