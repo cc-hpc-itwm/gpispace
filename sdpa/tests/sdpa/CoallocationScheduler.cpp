@@ -113,8 +113,6 @@ BOOST_FIXTURE_TEST_CASE (testLoadBalancing, serveJob_checking_scheduler_and_job_
   _scheduler.assignJobsToWorkers();
 
 
-  _scheduler.worker_manager().findWorker ("worker_0")->deleteJob ("job_0");
-  _scheduler.worker_manager().findWorker ("worker_1")->deleteJob ("job_1");
 
   _scheduler.releaseReservation ("job_0");
   _scheduler.releaseReservation ("job_1");
@@ -197,8 +195,6 @@ BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_m
 
   _scheduler.assignJobsToWorkers();
 
-  _scheduler.worker_manager().findWorker ("A0")->deleteJob ("2A");
-  _scheduler.worker_manager().findWorker ("A1")->deleteJob ("2A");
 
   _scheduler.releaseReservation ("2A");
 
@@ -224,7 +220,6 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and
   _scheduler.assignJobsToWorkers();
 
 
-  _scheduler.worker_manager().findWorker ("worker_0")->deleteJob ("job_0");
   _scheduler.releaseReservation ("job_0");
   _scheduler.worker_manager().deleteWorker ("worker_0");
   _scheduler.enqueueJob ("job_0");
