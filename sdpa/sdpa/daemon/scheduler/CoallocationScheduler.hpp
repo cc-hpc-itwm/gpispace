@@ -68,6 +68,7 @@ namespace sdpa
         , const double computational_cost
         ) const;
 
+      void reschedule_pending_jobs_matching_worker (const worker_id_t&);
     private:
       std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)>
         _serve_job;

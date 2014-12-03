@@ -260,6 +260,32 @@ namespace sdpa
       }
     }
 
+    void CoallocationScheduler::reschedule_pending_jobs_matching_worker
+      (const worker_id_t& worker)
+    {
+      job_id_list_t matching_jobs;
+      const Worker::ptr_t ptr_worker (worker_manager().findWorker (worker));
+
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      for (const job_id_t& job_id : allocation_table_ | boost::adaptors::map_keys)
+      {
+        const job_requirements_t& requirements (_job_requirements (job_id));
+        if (worker_manager().matchRequirements (ptr_worker, requirements))
+        {
+          matching_jobs.push_back (job_id);
+        }
+      }
+
+      std::set<job_id_t> removed_matching_pending_jobs
+        (worker_manager().remove_all_matching_pending_jobs (matching_jobs));
+
+      for (const job_id_t& job_id : removed_matching_pending_jobs)
+      {
+        allocation_table_.erase (job_id);
+        _jobs_to_schedule.push (job_id);
+      }
+    }
+
     bool CoallocationScheduler::cancelNotTerminatedWorkerJobs ( std::function<void (worker_id_t const&)> func
                                                               , const sdpa::job_id_t& job_id)
     {
