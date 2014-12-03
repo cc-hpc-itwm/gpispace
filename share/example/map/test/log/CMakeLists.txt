@@ -41,6 +41,6 @@ fhg_add_test (test.cpp
                  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARIES}
   DEPENDS log_map-impl
-  RESOURCE_LOCK starts_drts_environment
+  RESOURCE_LOCK requires_virtual_memory
   REQUIRES_INSTALLATION
 )

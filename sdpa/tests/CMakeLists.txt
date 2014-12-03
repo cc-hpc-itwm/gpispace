@@ -12,7 +12,6 @@ add_test (NAME re_register_after_master_connection_lost
 set_tests_properties (re_register_after_master_connection_lost
   PROPERTIES REQUIRED_FILES "${FILES_REQUIRED_IN_INSTALLATION}"
              LABELS "requires_installation"
-             RESOURCE_LOCK starts_drts_environment
 )
 
 configure_file (
@@ -26,7 +25,6 @@ add_test (NAME properly_find_master_when_started_after_agent
 set_tests_properties (properly_find_master_when_started_after_agent
   PROPERTIES REQUIRED_FILES "${FILES_REQUIRED_IN_INSTALLATION}"
              LABELS "requires_installation"
-             RESOURCE_LOCK starts_drts_environment
 )
 
 include_directories (${UTIL_INCLUDE_DIR})
@@ -43,7 +41,6 @@ fhg_add_test (drts_should_handle_multiple_workflows_being_submitted_during_lifet
                  ${UTIL_LIBRARIES}
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
                  ${Boost_FILESYSTEM_LIBRARY}
-  RESOURCE_LOCK starts_drts_environment
   REQUIRES_INSTALLATION
 )
 
