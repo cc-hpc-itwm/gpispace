@@ -146,19 +146,6 @@ namespace sdpa
        return assigned_workers;
      }
 
-    std::set<worker_id_t> CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
-      ( const mmap_match_deg_worker_id_t& mmap_matching_workers
-      , const size_t n_req_workers
-      , const std::function<double (std::string const&)> transfer_cost
-      )
-    {
-      return find_job_assignment_minimizing_total_cost ( mmap_matching_workers
-                                                       , n_req_workers
-                                                       , transfer_cost
-                                                       , 0.0
-                                                       );
-    }
-
     double CoallocationScheduler::compute_reservation_cost
       ( const job_id_t& job_id
       , const std::set<worker_id_t>& workers
