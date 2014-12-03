@@ -270,6 +270,11 @@ then
 fi
 logprefix="${logdir}/${name}"
 
+mkdir -p "${state_dir}/processes/$(hostname -s)" || {
+    echo >&2 "could not 'mkdir -p \"${state_dir}/processes/$(hostname -s)\"'!"
+    exit 1
+}
+
 exec 1> >(tee "${logprefix}.out")
 exec 2> >(tee "${logprefix}.err" >&2)
 
@@ -301,6 +306,7 @@ done
 # config values (kernel)
 
 cfg="$cfg -n $name"
+cfg="$cfg --pidfile=${state_dir}/processes/$(hostname -s)/drts-kernel-${name}.pid"
 cfg="$cfg -L $sdpa_home/libexec/fhg/plugins"
 lazy=${DEFAULT_KERNEL_LOAD_LAZY}
 if [ x"$lazy" = x"true" ] ; then
