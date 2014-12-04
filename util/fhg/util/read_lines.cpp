@@ -22,10 +22,8 @@ namespace fhg
             ).str()
           );
       }
-      while (ifs)
+      for (std::string line; std::getline (ifs, line); )
       {
-        std::string line;
-        std::getline (ifs, line);
         lines.emplace_back (line);
       }
       return lines;
