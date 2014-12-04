@@ -28,7 +28,7 @@ namespace fhg
         std::getline (ifs, line);
         lines.emplace_back (line);
       }
-      return std::move (lines);
+      return lines;
     }
   }
 }
