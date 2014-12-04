@@ -17,13 +17,13 @@
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <fhg/util/hostname.hpp>
+#include <fhg/util/read_lines.hpp>
 #include <fhg/util/temporary_path.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
 
-#include <fstream>
 #include <map>
 #include <set>
 #include <string>
@@ -141,15 +141,9 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
   std::set<std::string> const hostnames
     ([&vm] () -> std::set<std::string>
       {
-        std::set<std::string> hosts;
-        std::ifstream ifs (gspc::require_nodefile (vm).string());
-        while (ifs)
-        {
-          std::string host;
-          std::getline (ifs, host);
-          hosts.emplace (host);
-        }
-        return hosts;
+        std::vector<std::string> const hosts
+          (fhg::util::read_lines (gspc::require_nodefile (vm)));
+        return std::set<std::string> (hosts.begin(), hosts.end());
       } ()
     );
 
