@@ -76,10 +76,7 @@ BOOST_AUTO_TEST_CASE (read_lines_check_throw_on_no_such_file_or_directory)
   BOOST_REQUIRE (!boost::filesystem::exists (_));
 
   fhg::util::boost::test::require_exception<std::runtime_error>
-    ( [&_] ()
-      {
-        fhg::util::read_lines (_);
-      }
+    ( std::bind (fhg::util::read_lines, _)
     , boost::format ("could not open file '%1%' for reading: %2%")
       % _.string()
       % "No such file or directory"
