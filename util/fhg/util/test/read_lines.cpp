@@ -5,7 +5,6 @@
 
 #include <fhg/util/read_lines.hpp>
 
-#include <fhg/util/join.hpp>
 #include <fhg/util/temporary_file.hpp>
 #include <fhg/util/temporary_path.hpp>
 #include <fhg/util/boost/test/printer/vector.hpp>
