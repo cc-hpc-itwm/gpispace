@@ -5,6 +5,7 @@
 
 #include <fhg/util/read_lines.hpp>
 
+#include <fhg/syscall.hpp>
 #include <fhg/util/temporary_file.hpp>
 #include <fhg/util/temporary_path.hpp>
 #include <fhg/util/boost/test/printer/vector.hpp>
@@ -85,8 +86,32 @@ BOOST_AUTO_TEST_CASE (read_lines_check_throw_on_no_such_file_or_directory)
 
 BOOST_AUTO_TEST_CASE (read_lines_check_throw_on_permission_denied)
 {
+  boost::program_options::options_description options_description;
+  options_description.add (test::options::shared_directory());
+
+  boost::program_options::variables_map vm;
+  boost::program_options::store
+    ( boost::program_options::command_line_parser
+    ( boost::unit_test::framework::master_test_suite().argc
+    , boost::unit_test::framework::master_test_suite().argv
+    )
+    . options (options_description).run()
+    , vm
+    );
+  vm.notify();
+
   boost::filesystem::path const _
-    (boost::filesystem::unique_path ("/root/non-existing-path-%%%%-%%%%-%%%%-%%%%"));
+    ( test::shared_directory (vm)
+    / boost::filesystem::unique_path ("non-readable-%%%%-%%%%-%%%%-%%%%")
+    );
+
+  fhg::util::temporary_file tmpfile (_);
+  {
+    std::ofstream ofs (_.string());
+    fhg::syscall::chmod (_.string().c_str(), 0);
+  }
+  BOOST_REQUIRE (boost::filesystem::exists (_));
+
   fhg::util::boost::test::require_exception<std::runtime_error>
     ( std::bind (fhg::util::read_lines, _)
     , boost::format ("could not open file '%1%' for reading: %2%")
