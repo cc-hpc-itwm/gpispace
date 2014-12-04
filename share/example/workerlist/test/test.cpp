@@ -86,8 +86,8 @@ namespace
                     > (result.find (port_hostnames)->second)
         )
     {
-      BOOST_REQUIRE (hostnames.find (boost::get<std::string> (worker_with_host.second)) != hostnames.end());
-      BOOST_REQUIRE (worker_names.find (boost::get<std::string> (worker_with_host.first)) != worker_names.end());
+      BOOST_REQUIRE_GT (hostnames.count (boost::get<std::string> (worker_with_host.second)), 0ul);
+      BOOST_REQUIRE_GT (worker_names.count (boost::get<std::string> (worker_with_host.first)), 0ul);
     }
 
     {
@@ -97,7 +97,7 @@ namespace
               (result.find (port_workers)->second)
           )
       {
-        BOOST_REQUIRE (worker_names.find (boost::get<std::string> (worker)) != worker_names.end());
+        BOOST_REQUIRE_GT (worker_names.count (boost::get<std::string> (worker)), 0ul);
         BOOST_REQUIRE (seen_workers.emplace (worker).second);
       }
     }
