@@ -12,11 +12,15 @@ namespace gpi
 {
   namespace api
   {
-    fake_gpi_api_t::fake_gpi_api_t (const unsigned long long memory_size, const std::chrono::seconds&)
+    fake_gpi_api_t::fake_gpi_api_t ( const unsigned long long memory_size
+                                   , const std::chrono::seconds&
+                                   , unsigned short communication_port
+                                   )
       : m_rank (0)
       , m_mem_size (memory_size)
       , m_dma (nullptr)
       , m_hostname (fhg::util::hostname())
+      , _communication_port (communication_port)
     {
       if (sys::get_total_memory_size() < m_mem_size)
       {
@@ -102,6 +106,11 @@ namespace gpi
     std::string const& fake_gpi_api_t::hostname_of_rank (const gpi::rank_t) const
     {
       return m_hostname;
+    }
+
+    unsigned short fake_gpi_api_t::communication_port_of_rank (gpi::rank_t) const
+    {
+      return _communication_port;
     }
 
     gpi::error_vector_t fake_gpi_api_t::get_error_vector (const gpi::queue_desc_t) const

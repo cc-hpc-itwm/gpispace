@@ -26,22 +26,6 @@ namespace gpi
     {
       namespace detail
       {
-        static void kvs_error_handler (boost::system::error_code const &)
-        {
-          MLOG (ERROR, "could not contact KVS, terminating");
-          kill (getpid (), SIGTERM);
-        }
-
-        static std::string rank_to_name (const gpi::rank_t rnk)
-        {
-          if (rnk == (gpi::rank_t)-1)
-          {
-            throw std::invalid_argument("invalid rank: -1");
-          }
-
-          return "gpi-" + boost::lexical_cast<std::string>(rnk);
-        }
-
         struct command_t
         {
           typedef std::vector<std::string> string_vec;
@@ -96,59 +80,16 @@ namespace gpi
         }
       }
 
-      fhg::com::port_t const &
-      topology_t::any_port ()
-      {
-        static fhg::com::port_t p("0");
-        return p;
-      }
-
-      fhg::com::host_t const &
-      topology_t::any_addr ()
-      {
-        static fhg::com::host_t h ("*");
-        return h;
-      }
-
-      topology_t::topology_t ( boost::asio::io_service& peer_io_service
-                             , const fhg::com::host_t & host
-                             , const fhg::com::port_t & port
-                             , memory::manager_t& memory_manager
-                             , fhg::com::kvs::kvsc_ptr_t kvs_client
+      topology_t::topology_t ( memory::manager_t& memory_manager
                              , api::gpi_api_t& gpi_api
+                             , boost::shared_ptr<fhg::com::peer_t> const& peer
                              )
         : m_shutting_down (false)
         , m_rank (gpi_api.rank())
-        , _kvs_client (kvs_client)
+        , m_peer (peer)
         , _gpi_api (gpi_api)
       {
         lock_type lock(m_mutex);
-        m_peer.reset
-          (new fhg::com::peer_t( peer_io_service
-                               , detail::rank_to_name (m_rank)
-                               , host
-                               , port
-                               , _kvs_client
-                               , detail::kvs_error_handler
-                               )
-          );
-
-        m_peer_thread.reset
-          (new boost::thread(&fhg::com::peer_t::run, m_peer));
-
-        try
-        {
-          m_peer->start ();
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "could not start peer: " << ex.what());
-          m_peer_thread->interrupt();
-          m_peer_thread->join();
-          m_peer.reset();
-          m_peer_thread.reset();
-          throw;
-        }
 
         // start the message handler
         m_peer->async_recv ( &m_incoming_msg
@@ -173,17 +114,6 @@ namespace gpi
           lock_type lock(m_mutex);
           m_shutting_down = true;
         }
-
-        if (m_peer)
-        {
-          m_peer->stop();
-        }
-        if (m_peer_thread->joinable())
-        {
-          m_peer_thread->join();
-        }
-        m_peer.reset();
-        m_peer_thread.reset();
       }
 
       bool topology_t::is_master () const
@@ -194,8 +124,13 @@ namespace gpi
       void topology_t::add_child(const gpi::rank_t rank)
       {
         child_t new_child(rank);
+
         new_child.address =
-          m_peer->connect_to_via_kvs (detail::rank_to_name (rank));
+          m_peer->connect_to
+            ( fhg::com::host_t (_gpi_api.hostname_of_rank (rank))
+            , fhg::com::port_t
+                (std::to_string (_gpi_api.communication_port_of_rank (rank)))
+            );
 
         lock_type lock(m_mutex);
         fhg_assert (m_peer);
@@ -658,16 +593,6 @@ namespace gpi
           m_shutting_down = true;
 
           del_child (rank);
-
-          // delete my kvs entry and the one from the child in case it couldn't
-          gpi::rank_t rnks [] = { m_rank , rank };
-          for (size_t i = 0 ; i < 2 ; ++i)
-          {
-            std::string peer_name = fhg::com::p2p::to_string
-              (fhg::com::p2p::address_t (detail::rank_to_name (rnks[i])));
-            std::string kvs_key = "p2p.peer." + peer_name;
-            _kvs_client->del (kvs_key);
-          }
 
           kill(getpid(), SIGTERM);
         }

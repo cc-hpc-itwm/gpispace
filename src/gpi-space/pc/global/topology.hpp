@@ -63,15 +63,9 @@ namespace gpi
                                             )
                              > fold_t;
 
-        static port_t const & any_port ();
-        static host_t const & any_addr ();
-
-        topology_t ( boost::asio::io_service& peer_io_service
-                   , const fhg::com::host_t & host
-                   , const fhg::com::port_t & port
-                   , memory::manager_t& memory_manager
-                   , fhg::com::kvs::kvsc_ptr_t kvs_client
+        topology_t ( memory::manager_t& memory_manager
                    , api::gpi_api_t&
+                   , boost::shared_ptr<fhg::com::peer_t> const&
                    );
         ~topology_t ();
 
@@ -143,7 +137,6 @@ namespace gpi
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
         typedef boost::condition_variable_any condition_type;
-        typedef boost::shared_ptr<boost::thread> thread_ptr;
         typedef boost::shared_ptr<fhg::com::peer_t> peer_ptr;
         typedef std::map<gpi::rank_t, child_t> child_map_t;
         typedef std::list<rank_result_t> result_list_t;
@@ -181,9 +174,7 @@ namespace gpi
 
         bool m_shutting_down;
         gpi::rank_t m_rank;
-        fhg::com::kvs::kvsc_ptr_t _kvs_client;
         peer_ptr   m_peer;
-        thread_ptr m_peer_thread;
         child_map_t m_children;
         fhg::com::message_t m_incoming_msg;
 

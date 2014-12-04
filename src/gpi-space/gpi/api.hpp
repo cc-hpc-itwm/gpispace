@@ -62,6 +62,7 @@ namespace gpi
 
       virtual gpi::rank_t rank () const = 0;
       virtual std::string const& hostname_of_rank (const gpi::rank_t) const = 0;
+      virtual unsigned short communication_port_of_rank (gpi::rank_t) const = 0;
       virtual gpi::error_vector_t get_error_vector(const queue_desc_t) const = 0;
       virtual void *dma_ptr (void) = 0;
 

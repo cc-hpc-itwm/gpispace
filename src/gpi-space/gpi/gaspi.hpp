@@ -16,7 +16,11 @@ namespace gpi
     class gaspi_t : public gpi_api_t
     {
     public:
-      gaspi_t (const unsigned long long memory_size, const unsigned short port, const std::chrono::seconds& timeout);
+      gaspi_t ( const unsigned long long memory_size
+              , const unsigned short port
+              , const std::chrono::seconds& timeout
+              , unsigned short communication_port
+              );
       ~gaspi_t();
 
       // wrapped C function calls
@@ -33,6 +37,7 @@ namespace gpi
 
       virtual gpi::rank_t rank () const override;
       virtual std::string const& hostname_of_rank (const gpi::rank_t) const override;
+      virtual unsigned short communication_port_of_rank (gpi::rank_t) const override;
       virtual gpi::error_vector_t get_error_vector(const queue_desc_t) const override;
       virtual void *dma_ptr (void) override;
 
@@ -57,6 +62,7 @@ namespace gpi
       void *m_dma;
       size_t m_replacement_gpi_segment;
       std::vector<std::string> m_rank_to_hostname;
+      std::vector<unsigned short> _communication_port_by_rank;
     };
   }
 }

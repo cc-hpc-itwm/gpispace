@@ -30,6 +30,7 @@
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/container/manager.hpp>
 
+#include <boost/make_shared.hpp>
 #include <boost/optional.hpp>
 
 #include <memory>
@@ -89,21 +90,30 @@ namespace
     , const unsigned long long memory_size
     , const unsigned short p
     , const std::chrono::seconds& timeout
+    , unsigned short communication_port
     )
   {
     if (requested_api == API_gaspi)
     {
-      return fhg::util::make_unique <gpi::api::gaspi_t> (memory_size, p, timeout);
+      return fhg::util::make_unique <gpi::api::gaspi_t>
+        (memory_size, p, timeout, communication_port);
     }
     else if (requested_api == API_fake)
     {
-      return fhg::util::make_unique <gpi::api::fake_gpi_api_t> (memory_size, timeout);
+      return fhg::util::make_unique <gpi::api::fake_gpi_api_t>
+        (memory_size, timeout, communication_port);
     }
     else
     {
       throw std::runtime_error
         ("internal error: unhandled enum value for 'requested_api': " + std::to_string (requested_api));
     }
+  }
+
+  void kvs_error_handler (boost::system::error_code const &)
+  {
+    MLOG (ERROR, "could not contact KVS, terminating");
+    kill (getpid (), SIGTERM);
   }
 }
 
@@ -507,12 +517,43 @@ try
       )
     );
 
+  boost::asio::io_service topology_peer_io_service;
+  boost::shared_ptr<fhg::com::peer_t> topology_peer
+    ( boost::make_shared<fhg::com::peer_t> ( topology_peer_io_service
+                                           , "<name>" // will disappear with kvs
+                                           , fhg::com::host_t ("*")
+                                           , fhg::com::port_t ("0")
+                                           , kvs_client
+                                           , kvs_error_handler
+                                           )
+    );
+
+
+  boost::shared_ptr<boost::thread> topology_peer_thread
+    (boost::make_shared<boost::thread> (&fhg::com::peer_t::run, topology_peer));
+
+  try
+  {
+    topology_peer->start ();
+  }
+  catch (std::exception const& ex)
+  {
+    LOG(ERROR, "could not start peer: " << ex.what());
+    topology_peer_thread->interrupt();
+    topology_peer_thread->join();
+    topology_peer.reset();
+    topology_peer_thread.reset();
+    throw;
+  }
+
+
   // initialize gpi api
   std::unique_ptr<gpi_api_t> gpi_api_
     (create_gpi_api ( requested_api
                     , gpi_mem
                     , *port
                     , std::chrono::seconds (gpi_timeout)
+                    , topology_peer->local_endpoint().port()
                     )
     );
   gpi_api_t& gpi_api (*gpi_api_);
@@ -538,9 +579,8 @@ try
     if (mem_urls.empty ())
       mem_urls.push_back (default_memory_url);
 
-    boost::asio::io_service topology_peer_io_service;
     const gpi::pc::container::manager_t container_manager
-      (topology_peer_io_service, config.socket, mem_urls, gpi_api, kvs_client);
+      (config.socket, mem_urls, gpi_api, topology_peer);
 
     LOG (INFO, "started GPI interface on rank " << gpi_api.rank() << " at " << config.socket);
 
@@ -553,6 +593,14 @@ try
     signal_handler.add (SIGINT, std::bind (request_stop));
 
     stop_requested.wait();
+
+    topology_peer->stop();
+    if (topology_peer_thread->joinable())
+    {
+      topology_peer_thread->join();
+    }
+    topology_peer.reset();
+    topology_peer_thread.reset();
 
     LOG (INFO, "gpi process (rank " << gpi_api.rank() << ") terminated");
     return EXIT_SUCCESS;
