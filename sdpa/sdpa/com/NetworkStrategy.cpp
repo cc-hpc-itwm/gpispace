@@ -64,11 +64,6 @@ namespace sdpa
       m_thread.join();
     }
 
-    fhg::com::p2p::address_t
-      NetworkStrategy::connect_to_via_kvs (std::string const& name)
-    {
-      return m_peer->connect_to_via_kvs (name);
-    }
     fhg::com::p2p::address_t NetworkStrategy::connect_to
       (fhg::com::host_t const& host, fhg::com::port_t const& port)
     {

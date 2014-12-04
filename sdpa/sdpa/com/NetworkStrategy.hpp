@@ -28,7 +28,6 @@ namespace sdpa
                       );
       ~NetworkStrategy();
 
-      fhg::com::p2p::address_t connect_to_via_kvs (std::string const&);
       fhg::com::p2p::address_t connect_to
         (fhg::com::host_t const&, fhg::com::port_t const&);
 
