@@ -90,14 +90,16 @@ namespace
       BOOST_REQUIRE (worker_names.find (boost::get<std::string> (worker_with_host.first)) != worker_names.end());
     }
 
-    std::set<pnet::type::value::value_type> seen_workers;
-    for ( pnet::type::value::value_type const& worker
-        : boost::get<std::list<pnet::type::value::value_type>
-                    > (result.find (port_workers)->second)
-        )
     {
-      BOOST_REQUIRE (worker_names.find (boost::get<std::string> (worker)) != worker_names.end());
-      BOOST_REQUIRE (seen_workers.emplace (worker).second);
+      std::set<pnet::type::value::value_type> seen_workers;
+      for ( pnet::type::value::value_type const& worker
+          : boost::get<std::list<pnet::type::value::value_type>>
+              (result.find (port_workers)->second)
+          )
+      {
+        BOOST_REQUIRE (worker_names.find (boost::get<std::string> (worker)) != worker_names.end());
+        BOOST_REQUIRE (seen_workers.emplace (worker).second);
+      }
     }
   }
 }
