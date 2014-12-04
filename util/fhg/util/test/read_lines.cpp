@@ -73,6 +73,8 @@ BOOST_AUTO_TEST_CASE (read_lines_check_throw_on_no_such_file_or_directory)
 {
   boost::filesystem::path const _
     (boost::filesystem::unique_path ("non-existing-path-%%%%-%%%%-%%%%-%%%%"));
+  BOOST_REQUIRE (!boost::filesystem::exists (_));
+
   fhg::util::boost::test::require_exception<std::runtime_error>
     ( [&_] ()
       {
