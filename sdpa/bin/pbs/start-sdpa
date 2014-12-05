@@ -422,6 +422,12 @@ mkdir -p "${state_dir}/log" || {
     error 2 "could not 'mkdir -p \"${state_dir}/log\"'"
 }
 processes_dir="${state_dir}/processes"
+if [ $(find "${processes_dir}" -noleaf -name "*.pid" | wc -l) -ne 0 ]
+then
+    warn "there are still pid files in \"${processes_dir}\", please make sure that the previous drts is stopped."
+    info "to stop the old one: run \"${sdpa_home}/bin/sdpa -s \"${state_dir}\" stop\""
+    error 2 "state directory is not clean"
+fi
 mkdir -p "${processes_dir}" || {
     error 2 "could not 'mkdir -p \"${processes_dir}\"'"
 }
