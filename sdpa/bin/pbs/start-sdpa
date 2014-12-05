@@ -537,7 +537,8 @@ echo -n ${orchestrator_startup_messages[2]} > "${state_dir}/orchestrator.port"
 echo ${orchestrator_startup_messages[3]} > "${state_dir}/orchestrator.rpc.host"
 echo ${orchestrator_startup_messages[4]} > "${state_dir}/orchestrator.rpc.port"
 
-wait_for_process ${network_retries} "orchestrator" "${kvs_host}" "${kvs_port}"
+wait_for_port_on_host ${network_retries} \
+  "${orchestrator_startup_messages[1]}" "${orchestrator_startup_messages[2]}"
 ec=$?
 if [ $ec -ne 0 ]
 then
