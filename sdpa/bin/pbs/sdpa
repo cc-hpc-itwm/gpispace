@@ -109,7 +109,10 @@ usage: `basename $0` command [parameters...]
    available commands:
         selftest - perform a self-test
             boot - boot the runtime system
-           stop  - stop all components
+            stop - stop components
+                     optional arguments: component [host...]
+                     terminates the component on the given hosts or all
+                     components: drts agent orchestrator vmem kvs
              gui - start the GUI
 
    submit <file> - submit a job
@@ -134,9 +137,14 @@ function terminate_processes_on_host()
 function terminate_all_processes_of_a_kind()
 {
     local kind="${1}"; shift
+    local hosts=(${@})
+    if [ ${#hosts[@]} -eq 0 ]
+    then
+        hosts=($(find "${state_dir}/processes" -maxdepth 1 -mindepth 1 | xargs -r -n 1 basename))
+    fi
     processes_dir="${state_dir}/processes"
     local background_jobs=()
-    for host in $(find "${state_dir}/processes" -maxdepth 1 -mindepth 1 | xargs -r -n 1 basename)
+    for host in ${hosts[@]}
     do
         local pids=($(find "${state_dir}/processes/${host}" -name "${kind}*.pid" | xargs -r cat))
         terminate_processes_on_host "${kind}" "${host}" ${pids[@]} &
@@ -159,7 +167,7 @@ function terminate_all_processes_of_a_kind()
 
 function stop_agent ()
 {
-    terminate_all_processes_of_a_kind "agent"
+    terminate_all_processes_of_a_kind "agent" "$@"
 }
 
 function stop_kvs ()
@@ -167,17 +175,17 @@ function stop_kvs ()
     rm -f "${state_dir}/kvs.host"
     rm -f "${state_dir}/kvs.port"
 
-    terminate_all_processes_of_a_kind "fhgkvsd"
+    terminate_all_processes_of_a_kind "fhgkvsd" "$@"
 }
 
 function stop_orchestrator ()
 {
-    terminate_all_processes_of_a_kind "orchestrator"
+    terminate_all_processes_of_a_kind "orchestrator" "$@"
 }
 
 function stop_drts ()
 {
-    terminate_all_processes_of_a_kind "drts-kernel"
+    terminate_all_processes_of_a_kind "drts-kernel" "$@"
 }
 
 function start_gui ()
@@ -199,16 +207,22 @@ function start_gui ()
 
 function stop_vmem ()
 {
-    terminate_all_processes_of_a_kind "vmem"
+    terminate_all_processes_of_a_kind "vmem" "$@"
 }
 
 function stop ()
 {
-    local parts="drts agent orchestrator vmem kvs"
+    local parts=()
+    if [ -n "${1}" ]
+    then
+        parts=("$1"); shift
+    else
+        parts=(drts agent orchestrator vmem kvs)
+    fi
 
     local p
     local rc=0
-    for p in $parts ; do
+    for p in ${parts[@]} ; do
         if ! stop_$p $@ ; then
             rc=$(( rc + 1 ))
         fi
