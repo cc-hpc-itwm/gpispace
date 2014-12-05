@@ -14,31 +14,18 @@ namespace sdpa
 {
   namespace com
   {
-    void NetworkStrategy::kvs_error_handler (boost::system::error_code const &)
-    {
-      LLOG (ERROR, _logger, "could not contact KVS, terminating");
-      kill (getpid (), SIGTERM);
-    }
-
     NetworkStrategy::NetworkStrategy ( std::function<void (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr)> event_handler
                                      , boost::asio::io_service& peer_io_service
                                      , std::string const & peer_name
                                      , fhg::com::host_t const & host
                                      , fhg::com::port_t const & port
-                                     , fhg::com::kvs::kvsc_ptr_t kvs_client
                                      )
       : _logger (fhg::log::Logger::get ("NetworkStrategy " + peer_name))
       , _event_handler (event_handler)
       , m_peer ( new fhg::com::peer_t
                  ( peer_io_service
-                 , peer_name
                  , fhg::com::host_t (host)
                  , fhg::com::port_t (port)
-                 , kvs_client
-                 , std::bind ( &NetworkStrategy::kvs_error_handler
-                             , this
-                             , std::placeholders::_1
-                             )
                  )
                )
       , m_message()

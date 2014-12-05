@@ -318,27 +318,12 @@ DRTSImpl::master_network_info::master_network_info
 DRTSImpl::DRTSImpl
     ( std::function<void()> request_stop
     , boost::asio::io_service& peer_io_service
-    , boost::asio::io_service& kvs_client_io_service
     , boost::optional<std::pair<std::string, boost::asio::io_service&>> gui_info
     , std::map<std::string, std::string> config_variables
     )
   : _logger
     (fhg::log::Logger::get (*get<std::string> ("kernel_name", config_variables)))
   , _request_stop (request_stop)
-  , _kvs_client
-    (new fhg::com::kvs::client::kvsc
-      ( kvs_client_io_service
-      , *get<std::string> ("plugin.drts.kvs_host", config_variables)
-      , *get<std::string> ("plugin.drts.kvs_port", config_variables)
-      , true // auto_reconnect
-      , boost::posix_time::duration_from_string
-        ( get<std::string> ("plugin.drts.kvs_timeout", config_variables)
-        .get_value_or
-          (boost::posix_time::to_simple_string (boost::posix_time::seconds (120)))
-        )
-      , 1 // max_connection_attempts
-      )
-    )
   , m_shutting_down (false)
   , m_my_name (*get<std::string> ("kernel_name", config_variables))
   , m_wfe ( _logger
@@ -381,18 +366,7 @@ DRTSImpl::DRTSImpl
 
   // initialize peer
   m_peer.reset
-    ( new fhg::com::peer_t
-      ( peer_io_service
-      , m_my_name
-      , host
-      , port
-      , _kvs_client
-      , [](boost::system::error_code const&)
-      {
-        MLOG (ERROR, "could not contact KVS...");
-      }
-      )
-    );
+    (new fhg::com::peer_t (peer_io_service, host, port));
   m_peer_thread.reset
     ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
       (&fhg::com::peer_t::run, m_peer)

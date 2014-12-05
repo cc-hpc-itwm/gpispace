@@ -13,8 +13,6 @@ endmacro()
 bundle_apps(
   agent
   drts-kernel
-  fhgkvsc
-  fhgkvsd
   fhglog-dump
   fhglogc
   fhglogd

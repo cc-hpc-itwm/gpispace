@@ -30,36 +30,13 @@ namespace sdpa
 {
   namespace client
   {
-    namespace
-    {
-      void kvs_error_handler (boost::system::error_code const &)
-      {
-        throw std::runtime_error ("could not contact KVS, terminating");
-      }
-    }
-
     Client::Client ( fhg::com::host_t const& orchestrator_host
                    , fhg::com::port_t const& orchestrator_port
                    , boost::asio::io_service& peer_io_service
-                   , boost::asio::io_service& kvs_client_io_service
-                   , std::string kvs_host, std::string kvs_port
                    )
-      : _name ("gspcc-" + boost::uuids::to_string (boost::uuids::random_generator()()))
-      , _kvs_client
-        ( new fhg::com::kvs::client::kvsc ( kvs_client_io_service
-                                          , kvs_host
-                                          , kvs_port
-                                          , true
-                                          , boost::posix_time::seconds(120)
-                                          , 1
-                                          )
-        )
-      , m_peer ( peer_io_service
-               , _name
+      : m_peer ( peer_io_service
                , fhg::com::host_t ("*")
                , fhg::com::port_t ("0")
-               , _kvs_client
-               , &kvs_error_handler
                )
       , _peer_thread (&fhg::com::peer_t::run, &m_peer)
       , _stopping (false)

@@ -4,8 +4,6 @@ include(car_cdr_macros)
 set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/bin/agent"
   "${CMAKE_INSTALL_PREFIX}/bin/drts-kernel"
-  "${CMAKE_INSTALL_PREFIX}/bin/fhgkvsc"
-  "${CMAKE_INSTALL_PREFIX}/bin/fhgkvsd"
   "${CMAKE_INSTALL_PREFIX}/bin/fhglog-dump"
   "${CMAKE_INSTALL_PREFIX}/bin/fhglogc"
   "${CMAKE_INSTALL_PREFIX}/bin/fhglogd"

@@ -2,24 +2,6 @@
 
 include (fhg_executable_macros)
 
-fhg_add_runtime_executable (fhgkvsc.cpp
-  LINK_LIBRARIES fhgcom
-                 ${FhgLog_LIBRARY}
-                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
-                 ${Boost_SERIALIZATION_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
-)
-
-fhg_add_runtime_executable (fhgkvsd.cpp
-  LINK_LIBRARIES fhgcom
-                 ${FhgLog_LIBRARY}
-                 ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
-                 ${Boost_SERIALIZATION_LIBRARY}
-                 ${Boost_DATE_TIME_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
-)
-
 fhg_add_runtime_executable (vmem.cpp
   LINK_LIBRARIES fhg-util
                  gspc

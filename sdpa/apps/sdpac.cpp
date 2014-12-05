@@ -24,8 +24,6 @@
 #include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 
-#include <fhgcom/kvs/kvsc.hpp>
-
 #include <fhg/revision.hpp>
 #include <fhg/util/read_bool.hpp>
 
@@ -254,8 +252,6 @@ int main (int argc, char **argv) {
     ("wait,w", "wait until job is finished")
     ("polling", po::value<std::string>()->default_value ("true"), "use polling when waiting for job completion")
     ("force,f", "force the operation")
-    ("kvs-host", po::value<std::string>()->required(), "The kvs daemon's host")
-    ("kvs-port", po::value<std::string>()->required(), "The kvs daemon's port")
     ("revision", "Dump the revision identifier")
     ("command", po::value<std::string>()->required(),
      "The command that shall be performed. Possible values are:\n\n"
@@ -366,14 +362,11 @@ int main (int argc, char **argv) {
     LLOG (INFO, logger, "***************************************************");
 
     boost::asio::io_service peer_io_service;
-    boost::asio::io_service kvs_client_io_service;
     sdpa::client::Client api
       ( fhg::com::host_t (cfg.get<std::string>("orchestrator-host"))
       , fhg::com::port_t
           (std::to_string (cfg.get<unsigned short>("orchestrator-port")))
       , peer_io_service
-      , kvs_client_io_service
-      , cfg.get ("kvs-host"), cfg.get ("kvs-port")
       );
 
     if (command == "submit")

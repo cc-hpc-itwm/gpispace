@@ -14,9 +14,6 @@ namespace sdpa
     Agent::Agent ( const std::string& name
                  , const std::string& url
                  , boost::asio::io_service& peer_io_service
-                 , boost::asio::io_service& kvs_client_io_service
-                 , std::string kvs_host
-                 , std::string kvs_port
                  , boost::optional<boost::filesystem::path> const& virtual_memory_socket
                  , std::vector<name_host_port_tuple> const& masters
                  , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
@@ -24,9 +21,6 @@ namespace sdpa
       : GenericDaemon ( name
                       , url
                       , peer_io_service
-                      , kvs_client_io_service
-                      , kvs_host
-                      , kvs_port
                       , virtual_memory_socket
                       , masters
                       , gui_info

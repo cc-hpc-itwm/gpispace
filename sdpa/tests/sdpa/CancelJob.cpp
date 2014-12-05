@@ -65,8 +65,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE (cancel_no_agent)
 {
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
 
   utils::client client (orchestrator);
 
@@ -80,8 +79,7 @@ BOOST_AUTO_TEST_CASE (cancel_no_agent)
 
 BOOST_AUTO_TEST_CASE (cancel_with_agent)
 {
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
   const utils::agent agent (orchestrator);
 
   fhg::util::thread::event<> job_submitted;
@@ -108,8 +106,7 @@ BOOST_AUTO_TEST_CASE (cancel_with_agent)
 
 BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
 {
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
 
   utils::client client (orchestrator);
 
@@ -125,8 +122,7 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
 
 BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
 {
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
   const utils::agent agent (orchestrator);
 
   fhg::util::thread::event<> job_submitted;

@@ -16,8 +16,6 @@ namespace gspc
     , gspc::installation const& installation
     , gspc::rif_t& rif
     , std::pair<std::list<std::string>, unsigned long> const& machinefile
-    , const std::string& kvs_host
-    , const unsigned short kvs_port
     )
     : _rif (rif)
     , _rif_endpoints
@@ -83,7 +81,6 @@ namespace gspc
       ( {_rif_endpoints.front()}
       , "gaspi-master"
       , { vmem_binary.string()
-        , "--kvs-host", kvs_host, "--kvs-port", std::to_string (kvs_port)
         , "--log-host", log_host, "--log-port", std::to_string (log_port)
         , "--log-level", log_level
         , "--gpi-mem", std::to_string (memory_size)
@@ -106,7 +103,6 @@ namespace gspc
                                            )
       , "gaspi-worker"
       , { vmem_binary.string()
-        , "--kvs-host", kvs_host, "--kvs-port", std::to_string (kvs_port)
         , "--log-host", log_host, "--log-port", std::to_string (log_port)
         , "--log-level", log_level
         , "--gpi-mem", std::to_string (memory_size)

@@ -3,6 +3,7 @@
 #include <fhglog/LogMacros.hpp>
 
 #include <fhg/assert.hpp>
+#include <fhg/util/hostname.hpp>
 #include <fhg/util/thread/event.hpp>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -19,25 +20,17 @@ namespace fhg
   namespace com
   {
     peer_t::peer_t ( boost::asio::io_service& io_service
-                   , std::string const & name
                    , host_t const & host
                    , port_t const & port
-                   , kvs::kvsc_ptr_t kvs_client
-                   , handler_t handler
                    )
       : stopped_(true)
       , stopping_ (false)
       , host_(host)
       , port_(port)
-      , my_addr_(p2p::address_t(name))
-      , started_()
-      , _kvs_client (kvs_client)
       , io_service_ (io_service)
       , io_service_work_(io_service_)
       , acceptor_(io_service_)
-      , m_renew_kvs_entries_timer (io_service_)
       , connections_()
-      , m_kvs_error_handler (handler)
     {
     }
 
@@ -87,18 +80,10 @@ namespace fhg
         acceptor_.bind(endpoint);
         acceptor_.listen();
 
+        my_addr_ = p2p::address_t
+          (fhg::util::hostname() + ":" + std::to_string (local_endpoint().port()));
+
         accept_new ();
-
-        io_service_.post (std::bind (&peer_t::update_my_location, this));
-      }
-
-      // todo introduce timeout to event::wait()
-      const boost::system::error_code ec (started_.wait());
-
-      if (ec)
-      {
-        stop();
-        throw boost::system::system_error (ec);
       }
 
       {
@@ -119,18 +104,6 @@ namespace fhg
       if (listen_)
       {
         listen_->socket ().close ();
-      }
-
-      {
-        try
-        {
-          std::string prefix ("p2p.peer");
-          prefix += "." + p2p::to_string (my_addr_);
-          _kvs_client->del (prefix);
-        }
-        catch (std::exception const & ex)
-        {
-        }
       }
 
       // TODO: call pending handlers and delete pending messages
@@ -178,51 +151,6 @@ namespace fhg
       stopped_ = true;
     }
 
-    p2p::address_t peer_t::connect_to_via_kvs (std::string name)
-    {
-      p2p::address_t addr {p2p::address_t (name)};
-      if (connections_.find (addr) != connections_.end())
-      {
-        throw std::logic_error ("already connected to " + name);
-      }
-
-      // lookup location information
-      std::string const prefix ("p2p.peer." + p2p::to_string (addr));
-      kvs::values_type const peer_info (_kvs_client->get (prefix));
-
-      host_t const peer_host (peer_info.at (prefix + ".location.host"));
-      port_t const peer_port (peer_info.at (prefix + ".location.port"));
-
-      connection_data_t& cd (connections_[addr]);
-      cd.connection = boost::make_shared<connection_t>
-        ( io_service_
-        , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
-        , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
-        , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
-        );
-      cd.connection->local_address (my_addr_);
-      cd.connection->remote_address (addr);
-
-      boost::asio::ip::tcp::resolver resolver (io_service_);
-      boost::asio::ip::tcp::resolver::query query (peer_host, peer_port);
-
-      boost::system::error_code ec;
-      boost::asio::connect
-        ( cd.connection->socket()
-        , boost::asio::ip::tcp::resolver (io_service_).resolve (query)
-        , ec
-        );
-
-      connection_established (addr, ec);
-
-      if (ec)
-      {
-        throw boost::system::system_error (ec);
-      }
-
-      return addr;
-    }
-
     p2p::address_t peer_t::connect_to (host_t const& host, port_t const& port)
     {
       std::string const fake_name (std::string (host) + ":" + std::string (port));
@@ -240,7 +168,7 @@ namespace fhg
         , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
         , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
         );
-      cd.connection->local_address (my_addr_);
+      cd.connection->local_address (my_addr_.get());
       cd.connection->remote_address (addr);
 
       boost::system::error_code ec;
@@ -298,7 +226,7 @@ namespace fhg
 
         connection_data_t & cd = connections_.at (addr);
         to_send_t to_send;
-        to_send.message.header.src = my_addr_;
+        to_send.message.header.src = my_addr_.get();
         to_send.message.header.dst = addr;
         to_send.message.assign (data.begin(), data.end());
         to_send.handler = completion_handler;
@@ -380,7 +308,7 @@ namespace fhg
         connection_data_t & cd = connections_.find (a)->second;
 
         LOG( TRACE
-             , p2p::to_string (my_addr_)
+             , p2p::to_string (my_addr_.get())
              << " connected to "
              << p2p::to_string (a)
              << " @ " << cd.connection->socket().remote_endpoint();
@@ -395,7 +323,7 @@ namespace fhg
         // send hello message
         to_send_t to_send;
         to_send.handler = [](boost::system::error_code const&) {};
-        to_send.message.header.src = my_addr_;
+        to_send.message.header.src = my_addr_.get();
         to_send.message.header.dst = a;
         to_send.message.header.type_of_msg = p2p::HELLO_PACKET;
         to_send.message.resize (0);
@@ -500,70 +428,6 @@ namespace fhg
       }
     }
 
-    void peer_t::renew_kvs_entries ()
-    {
-      boost::asio::ip::tcp::endpoint endpoint = acceptor_.local_endpoint();
-
-      std::string prefix ("p2p.peer");
-      prefix += "." + p2p::to_string (my_addr_);
-
-      kvs::values_type values;
-      values[prefix + "." + "location" + "." + "host"] =
-        boost::lexical_cast<std::string>(endpoint.address());
-      values[prefix + "." + "location" + "." + "port"] =
-        boost::lexical_cast<std::string>(endpoint.port());
-      values[prefix + "." + "pid"] =
-        boost::lexical_cast<std::string>(getpid ());
-
-      if (  (endpoint.address() == boost::asio::ip::address_v4::any())
-         || (endpoint.address() == boost::asio::ip::address_v6::any())
-         )
-      {
-        values[prefix + "." + "location" + "." + "host"]
-          = boost::asio::ip::host_name();
-      }
-
-      try
-      {
-        _kvs_client->timed_put (values, 2 * 60 * 1000u);
-      }
-      catch (std::exception const &ex)
-      {
-        using namespace boost::system;
-
-        m_kvs_error_handler (errc::make_error_code (errc::connection_refused));
-      }
-
-      m_renew_kvs_entries_timer.expires_from_now
-        (boost::posix_time::seconds (60 + rand() % 30));
-
-      m_renew_kvs_entries_timer.async_wait
-        (std::bind (&peer_t::renew_kvs_entries, this));
-    }
-
-    void peer_t::update_my_location ()
-    {
-      try
-      {
-        renew_kvs_entries ();
-
-        started_.notify (boost::system::error_code());
-      }
-      catch (boost::system::system_error const &bse)
-      {
-        LOG(ERROR, "could not update my location: " << bse.what());
-        started_.notify (bse.code());
-      }
-      catch (std::exception const &ex)
-      {
-        LOG(ERROR, "could not update my location: " << ex.what());
-        started_.notify
-          (boost::system::errc::make_error_code
-          (boost::system::errc::state_not_recoverable)
-          );
-      }
-    }
-
     void peer_t::handle_accept (const boost::system::error_code & ec)
     {
       lock_type lock (mutex_);
@@ -593,7 +457,7 @@ namespace fhg
           , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
           )
         );
-      listen_->local_address(my_addr_);
+      listen_->local_address(my_addr_.get());
       acceptor_.async_accept( listen_->socket()
                             , std::bind( &peer_t::handle_accept
                                        , this
@@ -608,7 +472,7 @@ namespace fhg
 
         if (backlog_.find (c) == backlog_.end())
         {
-          LOG(ERROR, "protocol error between " << p2p::to_string (my_addr_) << " and " << p2p::to_string (m->header.src) << " closing connection");
+          LOG(ERROR, "protocol error between " << p2p::to_string (my_addr_.get()) << " and " << p2p::to_string (m->header.src) << " closing connection");
           try
           {
             c->stop();

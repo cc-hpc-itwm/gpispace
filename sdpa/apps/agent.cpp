@@ -11,7 +11,6 @@
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <we/layer.hpp>
 #include <boost/filesystem/path.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/read_bool.hpp>
@@ -53,8 +52,6 @@ int main (int argc, char **argv)
     ("url,u",  po::value<std::string>(&agentUrl)->default_value("localhost"), "Agent's url")
     ("master,m", po::value<std::vector<std::string>>(&arrMasterNames)->multitoken(), "Agent's master list, of format 'name%host%port'")
     ("app_gui_url,a", po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
-    ("kvs-host",  po::value<std::string>()->required(), "The kvs daemon's host")
-    ("kvs-port",  po::value<std::string>()->required(), "The kvs daemon's port")
     ( option_name::vmem_socket
     , boost::program_options::value<validators::nonempty_string>()
     , "socket file to communicate with the virtual memory manager"
@@ -104,14 +101,10 @@ int main (int argc, char **argv)
 
   boost::asio::io_service gui_io_service;
   boost::asio::io_service peer_io_service;
-  boost::asio::io_service kvs_client_io_service;
   const sdpa::daemon::Agent agent
     ( agentName
     , agentUrl
     , peer_io_service
-    , kvs_client_io_service
-    , vm["kvs-host"].as<std::string>()
-    , vm["kvs-port"].as<std::string>()
     , vmem_socket
     , masters
     , std::pair<std::string, boost::asio::io_service&> (appGuiUrl, gui_io_service)

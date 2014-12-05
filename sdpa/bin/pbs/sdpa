@@ -3,8 +3,6 @@
 # usage: sdpa {stop|status|submit file}
 #
 
-kvs_host=
-kvs_port=
 orchestrator_host=
 orchestrator_port=
 
@@ -219,19 +217,6 @@ function status_agent ()
     local cmd="rexec $node $SDPA_SCRIPT_DIR/status-agent -n $name-$node"
     debug $cmd
     $cmd </dev/null >/dev/null 2>&1
-}
-
-function stop_kvs ()
-{
-    echo "fhgkvsd"
-
-    rm -f "${state_dir}/kvs.host"
-    rm -f "${state_dir}/kvs.port"
-
-    if ! stop_proc "fhgkvsd" "fhgkvsd" ; then
-        echo "E: could not stop kvs!" >&2
-        return 1
-    fi
 }
 
 function stop_orch ()
@@ -469,7 +454,7 @@ function stop_vmem ()
 
 function stop ()
 {
-    local parts="drts agg orch vmem kvs"
+    local parts="drts agg orch vmem"
 
     local p
     local rc=0
@@ -491,11 +476,6 @@ function status_agg ()
     status_agent "agent-$(get_master_node)-0"
 }
 
-function status_kvs ()
-{
-    is_proc_alive "fhgkvsd" $(cat "$state_dir/fhgkvsd.pid" 2>/dev/null)
-}
-
 function status_vmem ()
 {
     is_proc_alive "vmem" $(cat "$state_dir/vmem.pid" 2>/dev/null)
@@ -505,7 +485,7 @@ function status ()
 {
     local parts=$1
     if [ -z "$parts" ] ; then
-        parts="kvs orch agg vmem drts"
+        parts="orch agg vmem drts"
     else
         shift
     fi
@@ -534,7 +514,7 @@ function status ()
                 rc=$(( rc + 1 ))
             fi
         else
-            sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} status $p
+            sdpac --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} status $p
         fi
     done
     return $rc
@@ -556,15 +536,15 @@ function submit ()
     fi
 
     log "I: submitting file: $net"
-    jobid=$( sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} submit "$net" 2>&1 )
+    jobid=$( sdpac --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} submit "$net" 2>&1 )
     if [ $? -ne 0 ] ; then
         log "E: submission failed: $jobid"
         return 4
     else
         log "  + job ($jobid)"
         echo "$jobid" > "$state_dir/current_job"
-        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} wait "$jobid"
-        s=$(sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} status "${jobid}")
+        sdpac --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} wait "$jobid"
+        s=$(sdpac status "${jobid}")
         log "    $jobid -> $s"
         s=$(echo "$s" | tr 'A-Z' 'a-z')
         case "$s" in
@@ -581,8 +561,8 @@ function submit ()
                 log "W: unknown state: $s"
                 ;;
         esac
-        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} -o "$output" --force results "$jobid"
-        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} delete "${jobid}"
+        sdpac --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} -o "$output" --force results "$jobid"
+        sdpac --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} delete "${jobid}"
         if [ $? -eq 0 ] ; then
             echo "  - job ($jobid)"
         fi
@@ -626,14 +606,6 @@ if [ "$1" = "-s" ] ; then
     export SDPA_STATE_DIR="$state_dir"
 fi
 
-if [ -f "${state_dir}/kvs.host" ]
-then
-  kvs_host=$(cat "${state_dir}/kvs.host")
-fi
-if [ -f "${state_dir}/kvs.port" ]
-then
-  kvs_port=$(cat "${state_dir}/kvs.port")
-fi
 if [ -f "${state_dir}/orchestrator.host" ]
 then
   orchestrator_host=$(cat "${state_dir}/orchestrator.host")

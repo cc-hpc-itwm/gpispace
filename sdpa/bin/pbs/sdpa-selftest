@@ -128,12 +128,9 @@ if [ $ec -ne 0 ] ; then
 fi
 
 # todo: remove magic: specify filenames instead of relying on files?
-kvs_host=$(cat "${state_dir}/kvs.host")
-kvs_port=$(cat "${state_dir}/kvs.port")
 orchestrator_host=$(cat "${state_dir}/orchestrator.host")
 orchestrator_port=$(cat "${state_dir}/orchestrator.port")
-SDPACFLAGS=(--kvs-host "${kvs_host}" --kvs-port ${kvs_port} \
-            --orchestrator-host "${orchestrator_host}" \
+SDPACFLAGS=(--orchestrator-host "${orchestrator_host}" \
             --orchestrator-port ${orchestrator_port})
 
 expected_response="sdpa.response.$challenge"

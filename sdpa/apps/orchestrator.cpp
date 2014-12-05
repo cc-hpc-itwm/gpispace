@@ -11,7 +11,6 @@
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <boost/filesystem/path.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 
@@ -36,8 +35,6 @@ try
        ("help,h", "Display this message")
        ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
        ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
-       ("kvs-host",  po::value<std::string>()->required(), "The kvs daemon's host")
-       ("kvs-port",  po::value<std::string>()->required(), "The kvs daemon's port")
        ( "startup-messages-fifo"
        , po::value<fhg::util::boost::program_options::existing_path>()->required()
        , "fifo to use for communication during startup (ports used, ...)"
@@ -58,15 +55,11 @@ try
     po::notify(vm);
 
   boost::asio::io_service peer_io_service;
-  boost::asio::io_service kvs_client_io_service;
   boost::asio::io_service rpc_io_service;
   const sdpa::daemon::Orchestrator orchestrator
     ( orchName
     , orchUrl
     , peer_io_service
-    , kvs_client_io_service
-    , vm["kvs-host"].as<std::string>()
-    , vm["kvs-port"].as<std::string>()
     , rpc_io_service
     );
 

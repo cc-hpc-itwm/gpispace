@@ -210,35 +210,6 @@ function wait_for_port_on_host ()
     return 1
 }
 
-function wait_for_process ()
-{
-    local retries="${1}"; shift
-    local name="${1}"; shift
-    local kvs_host="${1}"; shift
-    local kvs_port="${1}"; shift
-
-    local host_port=()
-
-    until [ $retries -eq 0 ]
-    do
-        host_port=( $("${sdpa_home}/bin/fhgkvsc" --host "${kvs_host}" --port "${kvs_port}" --name "${name}") )
-        if [ ${#host_port[@]} -eq 2 ]
-        then
-            if wait_for_port_on_host ${retries} "${host_port[0]}" "${host_port[1]}"
-            then
-                return 0
-            else
-                return 2
-            fi
-        else
-            sleep 1
-            retries=$((retries - 1))
-        fi
-    done
-
-    return 1
-}
-
 # Execute function on_ctrlC() receiving SIGINT signal
 #
 trap 'on_ctrlC' SIGINT
@@ -473,50 +444,8 @@ else
     opt_verbose_flag=""
 fi
 
-kvs_pid_file="${state_dir}/fhgkvsd.pid"
-if [ -s "${kvs_pid_file}" ]
-then
-  kvs_pid=$(cat ${kvs_pid_file})
-  if ! ssh "${master}" "/usr/bin/env bash -c \"\
-           if ps --pid ${kvs_pid} -o comm= | grep -q fhgkvsd; then \
-             kill -0 ${kvs_pid} 2>/dev/null; \
-           fi; \
-           \""
-  then
-    rexec "${master}" "${sdpa}" -s "${state_dir}" stop
-    error 3 "could not start kvs: old process running with pid ${pid}"
-  fi
-fi
-
-rexec_with_startup_messages ${master} kvs_startup_messages \
-  --command "${sdpa_home}/bin/fhgkvsd" \
-  --arguments --bind "0" \
-  --arguments --port 0
-if [ ${?} -ne 0 ] ; then
-    rexec "${master}" "${sdpa}" -s "${state_dir}" stop
-    error 3 "could not start kvs"
-fi
-if [ ${#kvs_startup_messages[@]} != 2 ]; then
-  rexec "${master}" "${sdpa}" -s "${state_dir}" stop
-  error 3 "could not start kvs: expected 2 lines of startup messages"
-fi
-echo ${kvs_startup_messages[0]} > "${kvs_pid_file}"
-kvs_host=$(ssh ${master} hostname -f)
-kvs_port=${kvs_startup_messages[1]}
-echo -n "${kvs_host}" > "${state_dir}/kvs.host"
-echo -n "${kvs_port}" > "${state_dir}/kvs.port"
-log "I: kvs started at ${kvs_host}:${kvs_port}"
-
-if ! wait_for_port_on_host ${network_retries} "${kvs_host}" "${kvs_port}"
-then
-    rexec "${master}" "${sdpa}" -s "${state_dir}" stop
-    error 3 "could not start kvs: failed to appear at ${kvs_host}:${kvs_port} after ${network_retries} seconds"
-fi
-
 rexec_with_startup_messages ${master} orchestrator_startup_messages \
   --command "${sdpa_home}/bin/orchestrator" \
-  --arguments --kvs-host "${kvs_host}" \
-  --arguments --kvs-port "${kvs_port}" \
   --arguments -u '0' \
   --arguments -n "orchestrator" \
   --environment LD_LIBRARY_PATH="${LD_LIBRARY_PATH}" \
@@ -571,8 +500,6 @@ if $gpi_enabled ; then
       --arguments --nodefile "${nodefile}" \
       --arguments --state-directory "${state_dir}" \
       --arguments --gspc-home "${sdpa_home}" \
-      --arguments --kvs-host "${kvs_host}" \
-      --arguments --kvs-port "${kvs_port}" \
       --arguments --log-host "${log_host}" \
       --arguments --log-port "${log_port}" \
       --arguments --gui-host "${gui_host}" \
@@ -695,8 +622,6 @@ function start_agent
 
     rexec_with_startup_messages ${host} agent_startup_messages \
       --command "${sdpa_home}/bin/agent" \
-      --arguments --kvs-host "${kvs_host}" \
-      --arguments --kvs-port "${kvs_port}" \
       --arguments -u '0' \
       --arguments -n "${name}" \
       --arguments -m "${parent}" \
@@ -783,8 +708,6 @@ function start_workers_for_capability
         argv+=(-c $num_per_node)
         argv+=(-n "$name")
         argv+=(-m "$parent")
-        argv+=(-k "${kvs_host}")
-        argv+=(-K "${kvs_port}")
         argv+=(-g "${gui_host}:${gui_port}")
         argv+=(-l "${log_host}:${log_port}")
         argv+=($caps_arg)

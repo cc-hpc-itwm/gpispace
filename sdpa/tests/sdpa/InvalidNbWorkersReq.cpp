@@ -8,8 +8,7 @@ BOOST_GLOBAL_FIXTURE (setup_logging)
 
 BOOST_AUTO_TEST_CASE (testInvalidNumberOfWorkersRequired)
 {
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
   const utils::agent agent (orchestrator);
 
   BOOST_REQUIRE_EQUAL

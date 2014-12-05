@@ -213,7 +213,6 @@ public:
   DRTSImpl
     ( std::function<void()> request_stop
     , boost::asio::io_service& peer_io_service
-    , boost::asio::io_service& kvs_client_io_service
     , boost::optional<std::pair<std::string, boost::asio::io_service&>> gui_info
     , std::map<std::string, std::string> config_variables
     );
@@ -260,8 +259,6 @@ private:
   fhg::log::Logger::ptr_t _logger;
 
   std::function<void()> _request_stop;
-
-  fhg::com::kvs::kvsc_ptr_t _kvs_client;
 
   bool m_shutting_down;
 

@@ -9,9 +9,6 @@
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
-#include <fhgcom/kvs/kvsd.hpp>
-#include <fhgcom/tcp_server.hpp>
-
 #include <fhg/util/boost/test/printer/optional.hpp>
 #include <fhg/util/random_string.hpp>
 
@@ -168,60 +165,19 @@ namespace utils
       );
   }
 
-  struct kvs_server : boost::noncopyable
-  {
-    kvs_server()
-      : _io_service()
-      , _io_service_work (_io_service)
-      , _kvs_daemon()
-      , _tcp_server (_io_service, _kvs_daemon, "localhost", "0", true)
-      , _io_service_thread ([this] { _io_service.run(); })
-    {}
-    ~kvs_server()
-    {
-      _tcp_server.stop();
-      _io_service.stop();
-    }
-
-    std::string kvs_host() const
-    {
-      return "localhost";
-    }
-    std::string kvs_port() const
-    {
-      return boost::lexical_cast<std::string> (_tcp_server.port());
-    }
-
-  private:
-    boost::asio::io_service _io_service;
-    boost::asio::io_service::work _io_service_work;
-    fhg::com::kvs::server::kvsd _kvs_daemon;
-    fhg::com::tcp_server _tcp_server;
-    boost::scoped_thread<boost::join_if_joinable> _io_service_thread;
-  };
-
   struct orchestrator : boost::noncopyable
   {
-    orchestrator (const kvs_server& kvs)
-      : _kvs_host (kvs.kvs_host())
-      , _kvs_port (kvs.kvs_port())
-      , _ ( random_peer_name(), "127.0.0.1"
+    orchestrator()
+      : _ ( random_peer_name(), "127.0.0.1"
           , _peer_io_service
-          , _kvs_client_io_service
-          , _kvs_host, _kvs_port
           , _rpc_io_service
           )
     {}
 
     boost::asio::io_service _peer_io_service;
-    boost::asio::io_service _kvs_client_io_service;
-    std::string _kvs_host;
-    std::string _kvs_port;
     boost::asio::io_service _rpc_io_service;
     sdpa::daemon::Orchestrator _;
     std::string name() const { return _.name(); }
-    std::string kvs_host() const { return _kvs_host; }
-    std::string kvs_port() const { return _kvs_port; }
     fhg::com::host_t host() const { return _.peer_host(); }
     fhg::com::port_t port() const { return _.peer_port(); }
   };
@@ -241,12 +197,8 @@ namespace utils
     template <typename T, typename U>
     agent (const T& master_0, const U& master_1)
       : boost::noncopyable ()
-      , _kvs_host (master_0.kvs_host())
-      , _kvs_port (master_0.kvs_port())
       , _ ( random_peer_name(), "127.0.0.1"
           , _peer_io_service
-          , _kvs_client_io_service
-          , _kvs_host, _kvs_port
           , boost::none
           , {make_master_info_tuple (master_0), make_master_info_tuple (master_1)}
           , boost::none
@@ -255,12 +207,8 @@ namespace utils
     template <typename T>
     agent (const T& master)
       : boost::noncopyable ()
-      , _kvs_host (master.kvs_host())
-      , _kvs_port (master.kvs_port())
       , _ ( random_peer_name(), "127.0.0.1"
           , _peer_io_service
-          , _kvs_client_io_service
-          , _kvs_host, _kvs_port
           , boost::none
           , {make_master_info_tuple (master)}
           , boost::none
@@ -268,50 +216,27 @@ namespace utils
     {}
     agent (const agent& master)
       : boost::noncopyable ()
-      , _kvs_host (master.kvs_host())
-      , _kvs_port (master.kvs_port())
       , _ ( random_peer_name(), "127.0.0.1"
           , _peer_io_service
-          , _kvs_client_io_service
-          , _kvs_host, _kvs_port
           , boost::none
           , {make_master_info_tuple (master)}
           , boost::none
           )
     {}
     boost::asio::io_service _peer_io_service;
-    boost::asio::io_service _kvs_client_io_service;
-    std::string _kvs_host;
-    std::string _kvs_port;
     sdpa::daemon::Agent _;
     std::string name() const { return _.name(); }
-    std::string kvs_host() const { return _kvs_host; }
-    std::string kvs_port() const { return _kvs_port; }
     fhg::com::host_t host() const { return _.peer_host(); }
     fhg::com::port_t port() const { return _.peer_port(); }
   };
 
   class basic_drts_component : sdpa::events::EventHandler
   {
-  private:
-    basic_drts_component
-        ( std::string name
-        , std::string kvs_host, std::string kvs_port
-        , bool accept_workers
-        )
+  public:
+    basic_drts_component (std::string name, bool accept_workers)
       : _name (name)
-      , _kvs_host (kvs_host)
-      , _kvs_port (kvs_port)
       , _master (boost::none)
       , _accept_workers (accept_workers)
-      , _kvs_client
-        ( new fhg::com::kvs::client::kvsc ( _kvs_client_io_service
-                                          , _kvs_host, _kvs_port
-                                          , true
-                                          , boost::posix_time::seconds (120)
-                                          , 1
-                                          )
-        )
       , _event_queue()
       , _network ( [this] ( fhg::com::p2p::address_t const& source
                           , sdpa::events::SDPAEvent::Ptr e
@@ -321,18 +246,8 @@ namespace utils
                    }
                  , _peer_io_service
                  , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
-                 , _kvs_client
                  )
       , _event_thread (&basic_drts_component::event_thread, this)
-    {}
-
-  public:
-    basic_drts_component
-        (std::string name, kvs_server const& kvs, bool accept_workers)
-      : basic_drts_component ( name
-                             , kvs.kvs_host(), kvs.kvs_port()
-                             , accept_workers
-                             )
     {}
 
     basic_drts_component ( std::string name
@@ -340,10 +255,7 @@ namespace utils
                          , sdpa::capabilities_set_t capabilities
                          , bool accept_workers
                          )
-      : basic_drts_component ( name
-                             , master.kvs_host(), master.kvs_port()
-                             , accept_workers
-                             )
+      : basic_drts_component (name, accept_workers)
     {
       _master = _network.connect_to (master.host(), master.port());
 
@@ -415,8 +327,6 @@ namespace utils
     }
 
     std::string name() const { return _name; }
-    std::string kvs_host() const { return _kvs_host; }
-    std::string kvs_port() const { return _kvs_port; }
     fhg::com::host_t host() const
     {
       return fhg::com::host_t (_network.local_endpoint().address().to_string());
@@ -428,16 +338,11 @@ namespace utils
 
   protected:
     std::string _name;
-    boost::asio::io_service _kvs_client_io_service;
-    std::string _kvs_host;
-    std::string _kvs_port;
     boost::optional<fhg::com::p2p::address_t> _master;
     bool _accept_workers;
     std::unordered_set<fhg::com::p2p::address_t> _accepted_workers;
 
   private:
-    fhg::com::kvs::kvsc_ptr_t _kvs_client;
-
     fhg::thread::queue<std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr>>
       _event_queue;
     boost::asio::io_service _peer_io_service;
@@ -621,11 +526,7 @@ namespace utils
   struct client : boost::noncopyable
   {
     client (orchestrator const& orch)
-      : _ ( orch.host(), orch.port()
-          , _peer_io_service
-          , _kvs_client_io_service
-          , orch.kvs_host(), orch.kvs_port()
-          )
+      : _ (orch.host(), orch.port(), _peer_io_service)
     {}
 
     sdpa::job_id_t submit_job (std::string workflow)
@@ -691,7 +592,6 @@ namespace utils
     }
 
     boost::asio::io_service _peer_io_service;
-    boost::asio::io_service _kvs_client_io_service;
     sdpa::client::Client _;
 
 

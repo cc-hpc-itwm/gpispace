@@ -23,25 +23,12 @@ then
   echo "SDPA must be started! (SDPA_STATE_DIR is empty)" >&2
   exit 1
 fi
-if [ ! -f "${SDPA_STATE_DIR}/kvs.host" ]
-then
-  echo "SDPA must be started! (kvs host not found)" >&2
-  exit 1
-fi
-if [ ! -f "${SDPA_STATE_DIR}/kvs.port" ]
-then
-  echo "SDPA must be started! (kvs port not found)" >&2
-  exit 1
-fi
 
 # todo: remove magic: specify filenames instead of relying on files?
-kvs_host=$(cat "${SDPA_STATE_DIR}/kvs.host")
-kvs_port=$(cat "${SDPA_STATE_DIR}/kvs.port")
 orchestrator_host=$(cat "${SDPA_STATE_DIR}/orchestrator.host")
 orchestrator_port=$(cat "${SDPA_STATE_DIR}/orchestrator.port")
 
-SDPACFLAGS="--kvs-host ${kvs_host} --kvs-port ${kvs_port} \
-            --orchestrator-host ${orchestrator_host} \
+SDPACFLAGS="--orchestrator-host ${orchestrator_host} \
             --orchestrator-port ${orchestrator_port}"
 
 # try to avoid cyclic execution of $self

@@ -16,7 +16,6 @@
 #include <boost/lexical_cast.hpp>
 
 #include <fhglog/LogMacros.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
 
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
@@ -44,15 +43,11 @@ struct config_t
   config_t()
     : magic (0)
     // socket
-    // kvs_host
-    , kvs_port (0)
-    , kvs_retry_count (2)
     // log_host
     , log_port (2438)
     , log_level ('I')
   {
     memset (socket, 0, sizeof(socket));
-    memset (kvs_host, 0, sizeof (kvs_host));
 
     if (gethostname (log_host, MAX_HOST_LEN) != 0)
     {
@@ -65,9 +60,6 @@ struct config_t
 
   int  magic;
   char socket[MAX_PATH_LEN];
-  char kvs_host[MAX_HOST_LEN];
-  unsigned short kvs_port;
-  unsigned int kvs_retry_count;
   char log_host[MAX_HOST_LEN];
   unsigned short log_port;
   char log_level;
@@ -108,12 +100,6 @@ namespace
       throw std::runtime_error
         ("internal error: unhandled enum value for 'requested_api': " + std::to_string (requested_api));
     }
-  }
-
-  void kvs_error_handler (boost::system::error_code const &)
-  {
-    MLOG (ERROR, "could not contact KVS, terminating");
-    kill (getpid (), SIGTERM);
   }
 }
 
@@ -163,11 +149,6 @@ try
       fprintf(stderr, "      examples are:\n");
       fprintf(stderr, "         gpi://?buffers=8&buffer_size=4194304 GPI memory\n");
       fprintf(stderr, "         sfs://<path>?create=true&size=1073741824\n");
-      fprintf(stderr, "\n");
-      fprintf(stderr, "KVS options\n");
-      fprintf(stderr, "    --kvs-host HOST (%s)\n", config.kvs_host);
-      fprintf(stderr, "    --kvs-port PORT (%hu)\n", config.kvs_port);
-      fprintf(stderr, "    --kvs-retry-count SIZE (%u)\n", config.kvs_retry_count);
       fprintf(stderr, "\n");
       fprintf(stderr, "LOG options\n");
       fprintf(stderr, "    --log-host HOST (%s)\n", config.log_host);
@@ -241,62 +222,6 @@ try
       else
       {
         fprintf(stderr, "%s: missing argument to --mem-url\n", program_name);
-        exit(EX_USAGE);
-      }
-    }
-    else if (strcmp(av[i], "--kvs-host") == 0)
-    {
-      ++i;
-      if (i < ac)
-      {
-        if ((strlen(av[i] + 1) > sizeof(config.kvs_host)))
-        {
-          fprintf(stderr, "%s: hostname is too large!\n", program_name);
-          fprintf(stderr, "    at most %lu characters are supported\n", sizeof(config.kvs_host));
-          exit(EX_INVAL);
-        }
-        strncpy(config.kvs_host, av[i], sizeof(config.kvs_host));
-        ++i;
-      }
-      else
-      {
-        fprintf(stderr, "%s: missing argument to --kvs-host\n", program_name);
-        exit(EX_USAGE);
-      }
-    }
-    else if (strcmp(av[i], "--kvs-port") == 0)
-    {
-      ++i;
-      if (i < ac)
-      {
-        if (sscanf(av[i], "%hu", &config.kvs_port) == 0)
-        {
-          fprintf(stderr, "%s: kvs-port invalid: %s\n", program_name, av[i]);
-          exit(EX_INVAL);
-        }
-        ++i;
-      }
-      else
-      {
-        fprintf(stderr, "%s: missing argument to --kvs-port\n", program_name);
-        exit(EX_USAGE);
-      }
-    }
-    else if (strcmp(av[i], "--kvs-retry-count") == 0)
-    {
-      ++i;
-      if (i < ac)
-      {
-        if (sscanf(av[i], "%u", &config.kvs_retry_count) == 0)
-        {
-          fprintf(stderr, "%s: kvs-retry-count invalid: %s\n", program_name, av[i]);
-          exit(EX_INVAL);
-        }
-        ++i;
-      }
-      else
-      {
-        fprintf(stderr, "%s: missing argument to --kvs-retry-count\n", program_name);
         exit(EX_USAGE);
       }
     }
@@ -482,17 +407,6 @@ try
     exit (EX_USAGE);
   }
 
-  if (0 == strlen (config.kvs_host))
-  {
-    fprintf (stderr, "parameter 'kvs-host' not given (--kvs-host <host-of-kvs-daemon>\n");
-    exit (EX_USAGE);
-  }
-  if (0 == config.kvs_port)
-  {
-    fprintf (stderr, "parameter 'kvs-port' not given (--kvs-port <port-of-kvs-daemon>\n");
-    exit (EX_USAGE);
-  }
-
   boost::asio::io_service remote_log_io_service;
   if (0 != configure_logging (&config, logfile, remote_log_io_service))
   {
@@ -505,27 +419,10 @@ try
            , socket_path
            );
 
-  boost::asio::io_service kvs_client_io_service;
-  fhg::com::kvs::kvsc_ptr_t kvs_client
-    (new fhg::com::kvs::client::kvsc
-      ( kvs_client_io_service
-      , config.kvs_host
-      , boost::lexical_cast<std::string> (config.kvs_port)
-      , true
-      , boost::posix_time::seconds (1)
-      , config.kvs_retry_count
-      )
-    );
-
   boost::asio::io_service topology_peer_io_service;
   boost::shared_ptr<fhg::com::peer_t> topology_peer
-    ( boost::make_shared<fhg::com::peer_t> ( topology_peer_io_service
-                                           , "<name>" // will disappear with kvs
-                                           , fhg::com::host_t ("*")
-                                           , fhg::com::port_t ("0")
-                                           , kvs_client
-                                           , kvs_error_handler
-                                           )
+    ( boost::make_shared<fhg::com::peer_t>
+        (topology_peer_io_service, fhg::com::host_t ("*"), fhg::com::port_t ("0"))
     );
 
 

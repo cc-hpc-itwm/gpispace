@@ -24,7 +24,6 @@ namespace sdpa
                       , std::string const & peer_name
                       , fhg::com::host_t const & host
                       , fhg::com::port_t const & port
-                      , fhg::com::kvs::kvsc_ptr_t kvs_client
                       );
       ~NetworkStrategy();
 
@@ -44,8 +43,6 @@ namespace sdpa
       void handle_recv ( boost::system::error_code const & ec
                        , boost::optional<fhg::com::p2p::address_t> source_name
                        );
-
-      void kvs_error_handler (boost::system::error_code const &);
 
       fhg::log::Logger::ptr_t _logger;
 

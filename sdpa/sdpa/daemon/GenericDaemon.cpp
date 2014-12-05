@@ -143,9 +143,6 @@ namespace
 GenericDaemon::GenericDaemon( const std::string name
                             , const std::string url
                             , boost::asio::io_service& peer_io_service
-                            , boost::asio::io_service& kvs_client_io_service
-                            , std::string kvs_host
-                            , std::string kvs_port
                             , boost::optional<boost::filesystem::path> const& vmem_socket
                             , std::vector<name_host_port_tuple> const& masters
                             , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
@@ -179,14 +176,6 @@ GenericDaemon::GenericDaemon( const std::string name
                  )
   , _registration_timeout (boost::posix_time::seconds (1))
   , _event_queue()
-  , _kvs_client ( new fhg::com::kvs::client::kvsc
-                  ( kvs_client_io_service
-                  , kvs_host, kvs_port
-                  , true
-                  , boost::posix_time::seconds (120)
-                  , 1
-                  )
-                )
   , _network_strategy ( [this] ( fhg::com::p2p::address_t const& source
                                , events::SDPAEvent::Ptr const& e
                                )
@@ -197,7 +186,6 @@ GenericDaemon::GenericDaemon( const std::string name
                       , name /*name for peer*/
                       , host_from_url (url)
                       , port_from_url (url)
-                      , _kvs_client
                       )
   , ptr_workflow_engine_ ( create_wfe
                          ? new we::layer
@@ -223,14 +211,6 @@ GenericDaemon::GenericDaemon( const std::string name
     : nullptr
     )
 {
-  // ask kvs if there is already an entry for (name.id = m_strAgentUID)
-  //     e.g. kvs::get ("sdpa.daemon.<name>")
-  //          if exists: throw
-  //          else:
-  //             (fhg::com::)kvs::put ("sdpa.daemon.<name>.id", m_strAgentUID)
-  //             kvs::put ("sdpa.daemon.<name>.pid", getpid())
-  //                - remove them in destructor
-
     for ( master_info_t::iterator it (_master_info.begin())
         ; it != _master_info.end()
         ; ++it

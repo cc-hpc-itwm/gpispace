@@ -1,67 +1,14 @@
 #define BOOST_TEST_MODULE PeerTest
 #include <boost/test/unit_test.hpp>
 
-#include <fhgcom/kvs/kvsc.hpp>
-#include <fhgcom/kvs/kvsd.hpp>
 #include <fhgcom/peer.hpp>
 #include <fhgcom/peer_info.hpp>
-#include <fhgcom/tcp_server.hpp>
 #include <fhgcom/tests/address_printer.hpp>
 
 #include <fhg/util/random_string.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/thread.hpp>
-
-struct KVSSetup
-{
-  KVSSetup ()
-    : _io_service()
-    , _io_service_work (_io_service)
-    , m_kvsd()
-    , m_serv (_io_service, m_kvsd, "localhost", "0", true)
-    , _io_service_thread ([this] { _io_service.run(); })
-    , _kvs ( new fhg::com::kvs::client::kvsc
-             ( _kvs_client_io_service
-             , "localhost"
-             , boost::lexical_cast<std::string> (m_serv.port())
-             , true // auto_reconnect
-             , boost::posix_time::seconds (10)
-             , 3
-             )
-           )
-  {}
-
-  ~KVSSetup ()
-  {
-    m_serv.stop ();
-    _io_service.stop();
-    _io_service_thread.join();
-  }
-
-  boost::asio::io_service _io_service;
-  boost::asio::io_service::work _io_service_work;
-  fhg::com::kvs::server::kvsd m_kvsd;
-  fhg::com::tcp_server m_serv;
-  boost::thread _io_service_thread;
-  boost::asio::io_service _kvs_client_io_service;
-  fhg::com::kvs::kvsc_ptr_t _kvs;
-};
-
-BOOST_FIXTURE_TEST_CASE (check_setup, KVSSetup)
-{
-  // make sure that the kvs is reachable...
-  std::string const key (fhg::util::random_string());
-  std::string const value (fhg::util::random_string());
-
-  _kvs->put (key, value);
-
-  const fhg::com::kvs::values_type v (_kvs->get (key));
-  BOOST_REQUIRE_EQUAL (v.size(), 1);
-  BOOST_REQUIRE_EQUAL (v.begin()->first, key);
-  BOOST_REQUIRE_EQUAL (v.begin()->second, value);
-  _kvs->del (key);
-}
 
 BOOST_AUTO_TEST_CASE (parse_peer_info_full)
 {
@@ -93,24 +40,13 @@ BOOST_AUTO_TEST_CASE (parse_peer_info_wi_name)
   fhg::com::peer_info_t ("peer@localhost:1234");
 }
 
-namespace
-{
-  void fail_on_kvs_error (boost::system::error_code const&)
-  {
-    BOOST_ERROR ("could not contact KVS...");
-  }
-}
-
-BOOST_FIXTURE_TEST_CASE (peer_run_single, KVSSetup)
+BOOST_AUTO_TEST_CASE (peer_run_single)
 {
   using namespace fhg::com;
   boost::asio::io_service peer_1_io_service;
   peer_t peer_1 ( peer_1_io_service
-                , "peer-1"
                 , host_t("localhost")
                 , port_t("1235")
-                , _kvs
-                , &fail_on_kvs_error
                 );
   boost::thread thrd_1 (&peer_t::run, &peer_1);
 
@@ -132,27 +68,21 @@ namespace
   }
 }
 
-BOOST_FIXTURE_TEST_CASE (peer_run_two, KVSSetup)
+BOOST_AUTO_TEST_CASE (peer_run_two)
 {
   using namespace fhg::com;
 
   boost::asio::io_service peer_1_io_service;
   peer_t peer_1 ( peer_1_io_service
-                , "peer-1"
                 , host_t("localhost")
                 , port_t("0")
-                , _kvs
-                , &fail_on_kvs_error
                 );
   boost::thread thrd_1 (&peer_t::run, &peer_1);
 
   boost::asio::io_service peer_2_io_service;
   peer_t peer_2 ( peer_2_io_service
-                , "peer-2"
                 , host_t("localhost")
                 , port_t("0")
-                , _kvs
-                , &fail_on_kvs_error
                 );
   boost::thread thrd_2 (&peer_t::run, &peer_2);
 
@@ -167,7 +97,7 @@ BOOST_FIXTURE_TEST_CASE (peer_run_two, KVSSetup)
     message_t m;
     peer_2.recv (&m);
 
-  BOOST_CHECK_EQUAL (m.header.src, p2p::address_t ("peer-1"));
+  BOOST_CHECK_EQUAL (m.header.src, peer_1.address());
   BOOST_CHECK_EQUAL
     (std::string (m.data.begin(), m.data.end()), "hello world!");
 
@@ -178,27 +108,21 @@ BOOST_FIXTURE_TEST_CASE (peer_run_two, KVSSetup)
   thrd_2.join ();
 }
 
-BOOST_FIXTURE_TEST_CASE (resolve_peer_names, KVSSetup)
+BOOST_AUTO_TEST_CASE (resolve_peer_names)
 {
   using namespace fhg::com;
 
   boost::asio::io_service peer_1_io_service;
   peer_t peer_1 ( peer_1_io_service
-                , "peer-1"
                 , host_t("localhost")
                 , port_t("0")
-                , _kvs
-                , &fail_on_kvs_error
                 );
   boost::thread thrd_1 (&peer_t::run, &peer_1);
 
   boost::asio::io_service peer_2_io_service;
   peer_t peer_2 ( peer_1_io_service
-                , "peer-2"
                 , host_t("localhost")
                 , port_t("0")
-                , _kvs
-                , &fail_on_kvs_error
                 );
   boost::thread thrd_2 (&peer_t::run, &peer_2);
 
@@ -212,17 +136,14 @@ BOOST_FIXTURE_TEST_CASE (resolve_peer_names, KVSSetup)
   thrd_2.join ();
 }
 
-BOOST_FIXTURE_TEST_CASE (peer_loopback, KVSSetup)
+BOOST_AUTO_TEST_CASE (peer_loopback)
 {
   using namespace fhg::com;
 
   boost::asio::io_service peer_1_io_service;
   peer_t peer_1 ( peer_1_io_service
-                , "peer-1"
                 , host_t("localhost")
                 , port_t("0")
-                , _kvs
-                , &fail_on_kvs_error
                 );
   boost::thread thrd_1 (&peer_t::run, &peer_1);
 
@@ -242,17 +163,14 @@ BOOST_FIXTURE_TEST_CASE (peer_loopback, KVSSetup)
   thrd_1.join ();
 }
 
-BOOST_FIXTURE_TEST_CASE (send_to_nonexisting_peer, KVSSetup)
+BOOST_AUTO_TEST_CASE (send_to_nonexisting_peer)
 {
   using namespace fhg::com;
 
   boost::asio::io_service peer_1_io_service;
   peer_t peer_1 ( peer_1_io_service
-                , "peer-1"
                 , host_t("localhost")
                 , port_t("0")
-                , _kvs
-                , &fail_on_kvs_error
                 );
   boost::thread thrd_1 (&peer_t::run, &peer_1);
 
@@ -267,17 +185,14 @@ BOOST_FIXTURE_TEST_CASE (send_to_nonexisting_peer, KVSSetup)
   thrd_1.join ();
 }
 
-BOOST_FIXTURE_TEST_CASE (send_large_data, KVSSetup)
+BOOST_AUTO_TEST_CASE (send_large_data)
 {
   using namespace fhg::com;
 
   boost::asio::io_service peer_1_io_service;
   peer_t peer_1 ( peer_1_io_service
-                , "peer-1"
                 , host_t("localhost")
                 , port_t("0")
-                , _kvs
-                , &fail_on_kvs_error
                 );
   boost::thread thrd_1 (&peer_t::run, &peer_1);
 
@@ -297,27 +212,21 @@ BOOST_FIXTURE_TEST_CASE (send_large_data, KVSSetup)
   thrd_1.join ();
 }
 
-BOOST_FIXTURE_TEST_CASE (peers_with_fixed_ports, KVSSetup)
+BOOST_AUTO_TEST_CASE (peers_with_fixed_ports)
 {
   using namespace fhg::com;
 
   boost::asio::io_service peer_1_io_service;
   peer_t peer_1 ( peer_1_io_service
-                , "peer-1"
                 , host_t("localhost")
                 , port_t("0")
-                , _kvs
-                , &fail_on_kvs_error
                 );
   boost::thread thrd_1 (&peer_t::run, &peer_1);
 
   boost::asio::io_service peer_2_io_service;
   peer_t peer_2 ( peer_1_io_service
-                , "peer-2"
                 , host_t("localhost")
                 , port_t("0")
-                , _kvs
-                , &fail_on_kvs_error
                 );
   boost::thread thrd_2 (&peer_t::run, &peer_2);
 
@@ -337,27 +246,21 @@ BOOST_FIXTURE_TEST_CASE (peers_with_fixed_ports, KVSSetup)
   thrd_2.join ();
 }
 
-BOOST_FIXTURE_TEST_CASE (peers_with_fixed_ports_reuse, KVSSetup)
+BOOST_AUTO_TEST_CASE (peers_with_fixed_ports_reuse)
 {
   using namespace fhg::com;
 
   boost::asio::io_service peer_1_io_service;
   peer_t peer_1 ( peer_1_io_service
-                , "peer-1"
                 , host_t("localhost")
                 , port_t("0")
-                , _kvs
-                , &fail_on_kvs_error
                 );
   boost::thread thrd_1 (&peer_t::run, &peer_1);
 
   boost::asio::io_service peer_2_io_service;
   peer_t peer_2 ( peer_1_io_service
-                , "peer-2"
                 , host_t("localhost")
                 , port_t("0")
-                , _kvs
-                , &fail_on_kvs_error
                 );
   boost::thread thrd_2 (&peer_t::run, &peer_2);
 
@@ -377,17 +280,14 @@ BOOST_FIXTURE_TEST_CASE (peers_with_fixed_ports_reuse, KVSSetup)
   thrd_2.join ();
 }
 
-BOOST_FIXTURE_TEST_CASE (two_peers_one_restarts_repeatedly, KVSSetup)
+BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
 {
   using namespace fhg::com;
 
   boost::asio::io_service peer_1_io_service;
   peer_t peer_1 ( peer_1_io_service
-                , "peer-1"
                 , host_t("localhost")
                 , port_t("0")
-                , _kvs
-                , &fail_on_kvs_error
                 );
   boost::thread thrd_1 (&peer_t::run, &peer_1);
 
@@ -426,11 +326,8 @@ BOOST_FIXTURE_TEST_CASE (two_peers_one_restarts_repeatedly, KVSSetup)
   {
     boost::asio::io_service peer_2_io_service;
     peer_t peer_2 ( peer_2_io_service
-                  , "peer-2"
                   , host_t (peer_2_endpoint.address().to_string())
                   , port_t (std::to_string (peer_2_endpoint.port()))
-                  , _kvs
-                  , &fail_on_kvs_error
                   );
     boost::thread thrd_2 (&peer_t::run, &peer_2);
 

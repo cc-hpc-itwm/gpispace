@@ -102,7 +102,6 @@ usage: start-sdpa [options]
   -C: capability specification
   -G: number of segments
   -x: GPI binary to execute
-  -k: kvs port (=2439)
   -l: log url (=voyager:38559)
   -g: gui url (=voyager:38560)
 
@@ -155,7 +154,6 @@ I: using nodefile: /home/rahn/gpispace/doc/user/nodefile
 starting base sdpa components on brank...
 I: sending log events to: brank:38559
 I: sending execution events to: brank:38560
-+ fhgkvsd (3327)
 Running orchestrator on brank
 I: starting agent: agent-brank-0 on host brank with parent orchestrator
 Running agent-brank-0 on brank with master orchestrator
@@ -206,8 +204,6 @@ agent (all nodes)
 orchestrator
     sending SIGTERM to orchestrator (3381)....ok
 gpi
-fhgkvsd
-    sending SIGTERM to fhgkvsd (3327)....ok
 ----
 
 TODO: The number for orchestrator makes no sense to the user.
@@ -216,9 +212,6 @@ TODO: The number for orchestrator makes no sense to the user.
 .
 
 === Advanced: fhglog*
-.
-
-=== Advanced: kvs
 .
 
 === Advanced: fhgcfg

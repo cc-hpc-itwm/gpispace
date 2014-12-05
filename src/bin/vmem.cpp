@@ -26,8 +26,6 @@ namespace
   namespace option
   {
     constexpr const char* help {"help"};
-    constexpr const char* kvs_host {"kvs-host"};
-    constexpr const char* kvs_port {"kvs-port"};
   }
 
   std::pair<std::list<std::string>, unsigned long>
@@ -71,14 +69,6 @@ int main (int argc, char *argv[])
 
   generic_options.add_options()
     (option::help, "print usage information")
-    ( option::kvs_host
-    , boost::program_options::value<validators::nonempty_string>()->required()
-    , "kvs host to use"
-    )
-    ( option::kvs_port
-    , boost::program_options::value<validators::positive_integral<unsigned short>>()->required()
-    , "kvs port to use"
-    )
     ( "startup-messages-fifo"
     , boost::program_options::value
         <fhg::util::boost::program_options::existing_path>()->required()
@@ -121,8 +111,6 @@ int main (int argc, char *argv[])
                     , gspc::installation (vm)
                     , rif
                     , read_nodes (vm["nodefile"].as<validators::existing_path>())
-                    , vm[option::kvs_host].as<validators::nonempty_string>()
-                    , vm[option::kvs_port].as<validators::positive_integral<unsigned short>>()
                     );
 
   fhg::util::thread::event<void> done;

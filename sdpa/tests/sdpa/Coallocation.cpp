@@ -12,8 +12,7 @@ BOOST_GLOBAL_FIXTURE (setup_logging)
 
 BOOST_AUTO_TEST_CASE (testCoallocationWorkflow)
 {
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
   const utils::agent agent (orchestrator);
 
   const utils::fake_drts_worker_directly_finishing_jobs worker_0 (agent);
@@ -122,8 +121,7 @@ BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_part_of_coallocat
   //! \note issue #374
 
   // 0. setup environment orch -> agent.
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
   const utils::agent agent (orchestrator);
 
   // 1. start worker 1
@@ -201,8 +199,7 @@ BOOST_AUTO_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are_av
 {
   //! \note related to issue #374
 
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
   const utils::agent agent (orchestrator);
 
   fhg::util::thread::event<std::string> job_submitted_1;
@@ -308,8 +305,7 @@ BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_worke
 {
   //! \note related to issue #374
 
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
   const utils::agent agent (orchestrator);
 
   utils::client client (orchestrator);

@@ -11,8 +11,6 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
-#include <fhgcom/kvs/kvsc.hpp>
-
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
 
