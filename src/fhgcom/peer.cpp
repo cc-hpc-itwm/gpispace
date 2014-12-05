@@ -43,14 +43,7 @@ namespace fhg
 
     peer_t::~peer_t()
     {
-      try
-      {
-        stop();
-      }
-      catch (std::exception const & ex)
-      {
-        LOG(ERROR, "exception during destructor of peer " << p2p::to_string (my_addr_) << ": " << ex.what());
-      }
+      stop();
     }
 
     void peer_t::run ()
