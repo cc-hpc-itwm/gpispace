@@ -223,6 +223,10 @@ namespace sdpa
               }
               _serve_job (worker_id_list_t (matching_workers.begin(), matching_workers.end()), jobId);
             }
+            else
+            {
+              _list_pending_jobs.push (jobId);
+            }
           }
           catch (std::runtime_error const&)
           {
@@ -273,6 +277,7 @@ namespace sdpa
       for (const job_id_t& job_id : removed_matching_pending_jobs)
       {
         allocation_table_.erase (job_id);
+        _list_pending_jobs.erase (job_id);
         _jobs_to_schedule.push (job_id);
       }
     }
@@ -321,6 +326,7 @@ namespace sdpa
         }
 
         delete ptr_reservation;
+        _list_pending_jobs.erase (it->first);
         allocation_table_.erase (it);
       }
     }

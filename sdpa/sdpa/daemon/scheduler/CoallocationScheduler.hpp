@@ -156,6 +156,7 @@ namespace sdpa
       typedef std::unordered_map<sdpa::job_id_t, Reservation*>
         allocation_table_t;
       allocation_table_t allocation_table_;
+      locked_job_id_list _list_pending_jobs;
     };
   }
 }
