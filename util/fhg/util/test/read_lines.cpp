@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE (read_lines_check_throw_on_permission_denied)
     / boost::filesystem::unique_path ("non-readable-%%%%-%%%%-%%%%-%%%%")
     );
 
-  fhg::util::temporary_file tmpfile (_);
+  fhg::util::temporary_file const tmpfile (_);
   {
     std::ofstream ofs (_.string());
     fhg::syscall::chmod (_.string().c_str(), 0);
