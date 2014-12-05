@@ -212,10 +212,6 @@ function wait_for_process ()
     return 1
 }
 
-# Execute function on_ctrlC() receiving SIGINT signal
-#
-trap 'on_ctrlC' SIGINT
-
 nodefile=
 verbose=false
 state_dir="$HOME/.sdpa/state"
@@ -441,6 +437,10 @@ cp "${nodefile}" "${state_dir}/nodefile" || {
 if $delete_logfiles ; then
     find "${state_dir}/log" -type f -delete
 fi
+
+# Execute function on_ctrlC() receiving SIGINT signal
+#
+trap 'on_ctrlC' SIGINT
 
 log "starting base sdpa components on $master..."
 info "sending log events to: ${log_url}"
