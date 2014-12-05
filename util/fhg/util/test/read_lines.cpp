@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE (read_lines)
 
   fhg::util::temporary_path const temporary_directory
     ( test::shared_directory (vm)
-    / boost::filesystem::unique_path ("read_file_%%%%-%%%%-%%%%-%%%%")
+    / boost::filesystem::unique_path ("read_lines_%%%%-%%%%-%%%%-%%%%")
     );
 
   verify (temporary_directory, "", {});
