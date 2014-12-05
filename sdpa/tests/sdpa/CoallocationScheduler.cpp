@@ -306,9 +306,9 @@ BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
   _scheduler.enqueueJob (job_id_1);
   _scheduler.assignJobsToWorkers();
 
-  _scheduler.worker_manager().findWorker (worker_id)->deleteJob (job_id_0);
-
   expect_serveJob_call (job_id_1, {worker_id});
+
+  _scheduler.releaseReservation (job_id_0);
   _scheduler.assignJobsToWorkers();
 }
 
@@ -364,9 +364,9 @@ BOOST_FIXTURE_TEST_CASE ( multiple_worker_job_submissions_with_requirements_no_c
   _scheduler.enqueueJob (job_id_1);
   _scheduler.assignJobsToWorkers();
 
-  _scheduler.worker_manager().findWorker (worker_id)->deleteJob (job_id_0);
-
   expect_serveJob_call (job_id_1, {worker_id});
+
+  _scheduler.releaseReservation (job_id_0);
   _scheduler.assignJobsToWorkers();
 }
 
