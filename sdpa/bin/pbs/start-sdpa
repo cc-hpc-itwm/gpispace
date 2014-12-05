@@ -415,8 +415,6 @@ then
     fi
 fi
 
-info "using nodefile: $nodefile"
-
 mkdir -p "${state_dir}" || {
     error 2 "could not 'mkdir -p \"${state_dir}\"'"
 }
@@ -442,6 +440,7 @@ fi
 #
 trap 'on_ctrlC' SIGINT
 
+info "using nodefile: $nodefile"
 log "starting base sdpa components on $master..."
 info "sending log events to: ${log_url}"
 info "sending execution events to: ${gui_url}"
