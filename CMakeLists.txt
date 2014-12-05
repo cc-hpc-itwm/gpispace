@@ -35,6 +35,7 @@ set (CMAKE_MODULE_PATH
   "$ENV{CMAKE_MODULE_PATH}"
 )
 
+include (fhg_executable_macros)
 include (fhg_test_macros)
 
 include (CompilerFlags)

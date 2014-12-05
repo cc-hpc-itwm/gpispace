@@ -70,7 +70,7 @@ namespace xml
       typedef std::unordered_map<std::string, type::structure_type> set_type;
       typedef std::unordered_map<std::string, std::string> forbidden_type;
 
-      set_type make (const type::structs_type & structs);
+      set_type make (const type::structs_type & structs, state::type const&);
 
       set_type join ( const set_type & above
                     , const set_type & below

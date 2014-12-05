@@ -3,8 +3,6 @@
 #ifndef SHARE_EXAMPLE_STREAM_STATISTIC_HPP
 #define SHARE_EXAMPLE_STREAM_STATISTIC_HPP
 
-#include <fhglog/LogMacros.hpp>
-
 #include <chrono>
 #include <limits>
 #include <string>
@@ -42,16 +40,27 @@ namespace fhg
         _count += 1;
 
         double const avg (_sum / _count);
+      }
 
-        LOG (INFO, _description << " " << delta
-            << " min " << _min
-            << " max " << _max
-            << " sum " << _sum
-            << " sqsum " << _sqsum
-            << " count " << _count
-            << " avg " << avg
-            << " stddev " << std::sqrt (_sqsum / _count - avg * avg)
-            );
+      double min() const
+      {
+        return _min;
+      }
+      double max() const
+      {
+        return _max;
+      }
+      double sum() const
+      {
+        return _sum;
+      }
+      double sqsum() const
+      {
+        return _sqsum;
+      }
+      unsigned long count() const
+      {
+        return _count;
       }
 
     private:

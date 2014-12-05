@@ -31,5 +31,20 @@ macro(FHG_ADD_PLUGIN)
     if (PLUGIN_HEADERS)
       install(FILES ${PLUGIN_HEADERS} DESTINATION ${HEADER_DESTINATION_DIR})
     endif()
+
+    add_custom_command (OUTPUT "${CMAKE_BINARY_DIR}/bundle-${PLUGIN_NAME}-plugin"
+      COMMAND "${CMAKE_SOURCE_DIR}/bundle/bundle.sh"
+      ARGS "${CMAKE_BINARY_DIR}/bundle-${PLUGIN_NAME}-plugin"
+           $<TARGET_FILE:${PLUGIN_NAME}-plugin>
+      DEPENDS ${PLUGIN_NAME}-plugin "${CMAKE_SOURCE_DIR}/bundle/bundle.sh"
+    )
+    add_custom_target (${PLUGIN_NAME}-plugin-bundled-libraries ALL
+      DEPENDS "${CMAKE_BINARY_DIR}/bundle-${PLUGIN_NAME}-plugin"
+    )
+
+    install (DIRECTORY "${CMAKE_BINARY_DIR}/bundle-${PLUGIN_NAME}-plugin/"
+      DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
+      USE_SOURCE_PERMISSIONS
+  )
   endif()
 endmacro()

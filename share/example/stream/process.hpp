@@ -5,17 +5,13 @@
 
 #include <statistic.hpp>
 
-#include <fstream>
-#include <iomanip>
 #include <sstream>
 #include <string>
 
 namespace share_example_stream
 {
-  std::chrono::high_resolution_clock::rep
-    process ( std::string const& log_file
-            , std::pair<void const*, unsigned long> ptr_data
-            )
+  std::pair<unsigned long, std::chrono::high_resolution_clock::rep>
+    process (std::pair<void const*, unsigned long> ptr_data)
   {
     static fhg::util::statistic delta ("process: delta");
     static fhg::util::statistic duration ("process: duration");
@@ -34,13 +30,9 @@ namespace share_example_stream
 
     delta.tick (start - produced);
 
-    std::ofstream log (log_file.c_str(), std::ios_base::app);
-
-    log << id << " " << produced << std::endl;
-
     duration.tick (duration.now() - start);
 
-    return produced;
+    return {id, produced};
   }
 }
 

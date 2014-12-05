@@ -26,7 +26,15 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/bin/we-exec"
   "${CMAKE_INSTALL_PREFIX}/etc/sdpa/sdpa.env"
   "${CMAKE_INSTALL_PREFIX}/external/boost/include/boost/version.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/drts/client.fwd.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/drts/client.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/drts/drts.fwd.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/drts.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/drts/stream.fwd.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/drts/stream.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/drts/information_to_reattach.fwd.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/drts/information_to_reattach.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/drts/virtual_memory.fwd.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/virtual_memory.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/worker/context.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/worker/context_fwd.hpp"
@@ -68,6 +76,7 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/read.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/show.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/to_value.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/we/type/value/from_value.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/unwrap.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/wrap.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/util/wfhd.h"
@@ -111,9 +120,13 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/grid/size.xpnet"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/grid/type.xpnet"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/make_pair.xml"
+  "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/memory/global/handle.xpnet"
+  "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/memory/global/range.xpnet"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/point/type.xpnet"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/replicate.xpnet"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/sequence.xml"
+  "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/stream/mark_free.xpnet"
+  "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/stream/work_package.xpnet"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/sequence/interval.xpnet"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/sequence/ntom.xpnet"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/sequence_bounded.xml"
@@ -132,7 +145,7 @@ set (FILES_REQUIRED_IN_INSTALLATION
 macro(FHG_ADD_TEST)
   PARSE_ARGUMENTS(TEST
     "LINK_LIBRARIES;DEPENDS;PROJECT;ARGS;DESCRIPTION;COMPILE_FLAGS;RESOURCE_LOCK"
-    "VERBOSE;BOOST_UNIT_TEST;REQUIRES_INSTALLATION"
+    "VERBOSE;BOOST_UNIT_TEST;REQUIRES_INSTALLATION;PERFORMANCE_TEST"
     ${ARGN}
     )
   CAR(TEST_SOURCE ${TEST_DEFAULT_ARGS})
@@ -162,6 +175,11 @@ macro(FHG_ADD_TEST)
     target_link_libraries(${tc_name} ${TEST_LINK_LIBRARIES})
     add_test (NAME ${tc_name} COMMAND $<TARGET_FILE:${tc_name}> ${TEST_ARGS})
 
+    get_test_property (${tc_name} LABELS tc_labels)
+    if (NOT tc_labels)
+      set (tc_labels)
+    endif()
+
     if (TEST_RESOURCE_LOCK)
       set_tests_properties (${tc_name}
         PROPERTIES RESOURCE_LOCK ${TEST_RESOURCE_LOCK}
@@ -169,11 +187,19 @@ macro(FHG_ADD_TEST)
     endif()
 
     if (TEST_REQUIRES_INSTALLATION)
-      set_tests_properties (${TEST_NAME}
+      set_tests_properties (${tc_name}
         PROPERTIES REQUIRED_FILES "${FILES_REQUIRED_IN_INSTALLATION}"
-                   LABELS "requires_installation"
       )
+      list(APPEND tc_labels "requires_installation")
     endif()
+
+    if (TEST_PERFORMANCE_TEST)
+      list(APPEND tc_labels "performance_test")
+    endif()
+
+    set_tests_properties (${tc_name}
+      PROPERTIES LABELS "${tc_labels}"
+    )
 
     foreach (d ${TEST_DEPENDS})
       add_dependencies(${tc_name} ${d})

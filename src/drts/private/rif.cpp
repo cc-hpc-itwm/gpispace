@@ -57,7 +57,7 @@ namespace gspc
         command << " " << arg;
       }
       command << " >/dev/null 2>/dev/null </dev/null & echo $!; disown $!'";
-      command << " | ssh -q -p " << rif.port << " " << rif.host << " /usr/bin/env bash -s";
+      command << " | ssh -q " << rif.host << " /usr/bin/env bash -s";
 
       std::string buf;
       const scoped_popen pid_file (command.str().c_str(), "r");
@@ -226,7 +226,7 @@ namespace gspc
         {
           const std::string real_path (replace_rif_root (path.string(), _root));
           std::ostringstream command;
-          command << "ssh -q -p " << rif.port << " " << rif.host
+          command << "ssh -q " << rif.host
                   << " 'mkdir -p $(dirname " << real_path << "); "
                   << " /bin/cat > " << real_path << "'";
           scoped_popen f (command.str().c_str(), "w");

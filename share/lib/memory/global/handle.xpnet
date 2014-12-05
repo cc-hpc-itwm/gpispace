@@ -1,0 +1,5 @@
+<structs>
+  <struct name="global_memory_handle_type">
+    <field name="name" type="string"/>
+  </struct>
+</structs>

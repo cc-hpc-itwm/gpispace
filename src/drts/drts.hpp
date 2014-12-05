@@ -5,8 +5,9 @@
 
 #include <drts/drts.fwd.hpp>
 
-#include <drts/client.fwd.hpp>
+#include <drts/information_to_reattach.fwd.hpp>
 #include <drts/virtual_memory.fwd.hpp>
+#include <drts/stream.hpp>
 
 #include <we/type/value.hpp>
 
@@ -15,6 +16,7 @@
 #include <boost/program_options.hpp>
 
 #include <chrono>
+#include <functional>
 #include <list>
 #include <map>
 #include <memory>
@@ -83,6 +85,12 @@ namespace gspc
       return _virtual_memory_api;
     }
 
+    stream create_stream ( std::string const& name
+                         , gspc::vmem_allocation const& buffer
+                         , gspc::stream::size_of_slot const&
+                         , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
+                         ) const;
+
     scoped_runtime_system (scoped_runtime_system const&) = delete;
     scoped_runtime_system& operator= (scoped_runtime_system const&) = delete;
     scoped_runtime_system (scoped_runtime_system&&) = delete;
@@ -90,7 +98,7 @@ namespace gspc
 
   private:
     friend class vmem_allocation;
-    friend class client;
+    friend class information_to_reattach;
 
     installation const _installation;
     boost::filesystem::path const _state_directory;
@@ -109,6 +117,9 @@ namespace gspc
   void set_application_search_path ( boost::program_options::variables_map&
                                    , boost::filesystem::path const&
                                    );
+  void set_gspc_home ( boost::program_options::variables_map&
+                     , boost::filesystem::path const&
+                     );
 }
 
 #endif
