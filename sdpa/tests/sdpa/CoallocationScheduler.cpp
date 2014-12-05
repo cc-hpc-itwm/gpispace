@@ -130,11 +130,11 @@ BOOST_FIXTURE_TEST_CASE (testLoadBalancing, serveJob_checking_scheduler_and_job_
 
 
 
+  expect_serveJob_call ("job_2", 1, {{"worker_0"},{"worker_1"}});
   _scheduler.releaseReservation ("job_0");
   _scheduler.releaseReservation ("job_1");
 
 
-  expect_serveJob_call ("job_2", 1, {{"worker_0"},{"worker_1"}});
 
   _scheduler.assignJobsToWorkers();
 }
@@ -211,12 +211,12 @@ BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_m
 
   _scheduler.enqueueJob ("1A");
 
+  expect_serveJob_call ("1A", 1, {{"A0"}, {"A1"}});
   _scheduler.assignJobsToWorkers();
 
 
   _scheduler.releaseReservation ("2A");
 
-  expect_serveJob_call ("1A", 1, {{"A0"}, {"A1"}});
 
   _scheduler.assignJobsToWorkers();
 }
