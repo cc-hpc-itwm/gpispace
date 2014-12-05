@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE (read_lines_check_throw_on_permission_denied)
 
   fhg::util::temporary_file const tmpfile (_);
   {
-    std::ofstream ofs (_.string());
+    std::ofstream (_.string());
     fhg::syscall::chmod (_.string().c_str(), 0);
   }
   BOOST_REQUIRE (boost::filesystem::exists (_));
