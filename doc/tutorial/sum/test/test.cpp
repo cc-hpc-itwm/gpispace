@@ -7,7 +7,7 @@
 #include <drts/drts.hpp>
 
 #include <test/make.hpp>
-#include <test/scoped_nodefile_with_localhost.hpp>
+#include <test/scoped_nodefile_from_environment.hpp>
 #include <test/scoped_state_directory.hpp>
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_expr)
     (test::shared_directory (vm) / "tutorial_sum_expr");
 
   test::scoped_state_directory const state_directory (shared_directory, vm);
-  test::scoped_nodefile_with_localhost const nodefile_with_localhost
+  test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
 
   vm.notify();
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
     (test::shared_directory (vm) / "tutorial_sum_mod");
 
   test::scoped_state_directory const state_directory (shared_directory, vm);
-  test::scoped_nodefile_with_localhost const nodefile_with_localhost
+  test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
 
   fhg::util::temporary_path const _installation_dir

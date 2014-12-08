@@ -28,6 +28,7 @@ set (srcs
 
   xml.cpp
   read_file.cpp
+  read_lines.cpp
 
   hostname.cpp
 

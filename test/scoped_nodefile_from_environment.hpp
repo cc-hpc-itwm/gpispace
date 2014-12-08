@@ -1,7 +1,7 @@
-// mirko.rahn@itwm.fraunhofer.de
+// alexander.petry@itwm.fraunhofer.de
 
-#ifndef TEST_SCOPED_NODEFILE_WITH_LOCALHOST_HPP
-#define TEST_SCOPED_NODEFILE_WITH_LOCALHOST_HPP
+#ifndef TEST_SCOPED_NODEFILE_FROM_ENVIRONMENT_HPP
+#define TEST_SCOPED_NODEFILE_FROM_ENVIRONMENT_HPP
 
 #include <fhg/util/temporary_file.hpp>
 
@@ -10,10 +10,10 @@
 
 namespace test
 {
-  class scoped_nodefile_with_localhost
+  class scoped_nodefile_from_environment
   {
   public:
-    scoped_nodefile_with_localhost
+    scoped_nodefile_from_environment
       ( boost::filesystem::path const& shared_directory
       , boost::program_options::variables_map&
       );
