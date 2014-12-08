@@ -28,7 +28,7 @@ fhg_add_test (stream.two_module_calls.cpp
                  ${UTIL_LIBRARIES}
                  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARIES}
-  RESOURCE_LOCK starts_drts_environment
+  RESOURCE_LOCK requires_virtual_memory
   REQUIRES_INSTALLATION
 )
 
@@ -48,6 +48,6 @@ fhg_add_test (stream.one_module_call.cpp
                  ${UTIL_LIBRARIES}
                  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARIES}
-  RESOURCE_LOCK starts_drts_environment
+  RESOURCE_LOCK requires_virtual_memory
   REQUIRES_INSTALLATION
 )

@@ -212,10 +212,6 @@ function wait_for_process ()
     return 1
 }
 
-# Execute function on_ctrlC() receiving SIGINT signal
-#
-trap 'on_ctrlC' SIGINT
-
 nodefile=
 verbose=false
 state_dir="$HOME/.sdpa/state"
@@ -419,13 +415,24 @@ then
     fi
 fi
 
-info "using nodefile: $nodefile"
-
 mkdir -p "${state_dir}" || {
     error 2 "could not 'mkdir -p \"${state_dir}\"'"
 }
 mkdir -p "${state_dir}/log" || {
     error 2 "could not 'mkdir -p \"${state_dir}/log\"'"
+}
+processes_dir="${state_dir}/processes"
+mkdir -p "${processes_dir}" || {
+    error 2 "could not 'mkdir -p \"${processes_dir}\"'"
+}
+if [ $(find "${processes_dir}" -noleaf -name "*.pid" | wc -l) -ne 0 ]
+then
+    warn "there are still pid files in \"${processes_dir}\", please make sure that the previous drts is stopped."
+    info "to stop the old one: run \"${sdpa_home}/bin/sdpa -s \"${state_dir}\" stop\""
+    error 2 "state directory is not clean"
+fi
+mkdir -p "${processes_dir}/${master}" || {
+    error 2 "could not 'mkdir -p \"${processes_dir}/${master}\"'"
 }
 cp "${nodefile}" "${state_dir}/nodefile" || {
     error 2 "could not 'cp ${nodefile} ${state_dir}/nodefile'"
@@ -435,6 +442,11 @@ if $delete_logfiles ; then
     find "${state_dir}/log" -type f -delete
 fi
 
+# Execute function on_ctrlC() receiving SIGINT signal
+#
+trap 'on_ctrlC' SIGINT
+
+info "using nodefile: $nodefile"
 log "starting base sdpa components on $master..."
 info "sending log events to: ${log_url}"
 info "sending execution events to: ${gui_url}"
@@ -446,13 +458,22 @@ else
     opt_verbose_flag=""
 fi
 
-rexec "${master}" ${sdpa} -s "${state_dir}" start kvs
+kvs_port=$(rexec "${master}" /usr/bin/env \
+      FHGLOG_to_server="${log_host}:${log_port}" \
+      FHGLOG_level=$($verbose && echo "TRACE" || echo "INFO") \
+      FHGLOG_to_file="${state_dir}/log/fhgkvsd.log" \
+      "${sdpa_home}/bin/fhgkvsd" \
+      --bind "0" --port "0" \
+      --pidfile "${processes_dir}/${master}/fhgkvsd.pid" \
+      --daemonize)
 ec=$?
 if [ $ec -ne 0 ]
 then
     "${sdpa}" -s "${state_dir}" stop
     error 3 "could not start kvs"
 fi
+echo -n "${master}" > "${state_dir}/kvs.host"
+echo -n "${kvs_port}" > "${state_dir}/kvs.port"
 
 kvs_host=$(cat "${state_dir}/kvs.host")
 kvs_port=$(cat "${state_dir}/kvs.port")
@@ -468,7 +489,7 @@ rexec $master /usr/bin/env \
     FHGLOG_level=$($verbose && echo "TRACE" || echo "INFO") \
     FHGLOG_to_file="${state_dir}/log/orchestrator.log" \
     "${sdpa_home}/bin/orchestrator" \
-    --pidfile "$state_dir/orchestrator.pid" \
+    --pidfile "${processes_dir}/${master}/orchestrator.pid" \
     --daemonize \
     --kvs-host="${kvs_host}" \
     --kvs-port="${kvs_port}" \
@@ -504,7 +525,7 @@ if $gpi_enabled ; then
     info "using VMEM mem: ${gpi_mem} bytes per node"
     info "starting VMEM on: '${gpi_socket}' with a timeout of $((vmem_startup_timeout)) seconds"
 
-    vmem_pid=$("${sdpa_home}/bin/vmem" \
+    vmem_pid=$(rexec $master "${sdpa_home}/bin/vmem" \
         --nodefile "${nodefile}" \
         --state-directory "${state_dir}" \
         --gspc-home "${sdpa_home}" \
@@ -521,7 +542,7 @@ if $gpi_enabled ; then
         "${sdpa}" -s "${state_dir}" stop
         error 3 "could not start vmem: ${vmem_pid}"
     else
-        echo "${vmem_pid}" > "$state_dir/vmem.pid"
+        echo "${vmem_pid}" > "${processes_dir}/${master}/vmem.pid"
     fi
 
     for host in $(sort -u "${nodefile}")
@@ -611,12 +632,16 @@ function start_agent
 
     info "starting agent: ${name} on host ${host} with parent ${parent}"
 
+    mkdir -p "${processes_dir}/${host}" || {
+        error 3 "could not mkdir -p \"${processes_dir}/${host}\"!"
+    }
+
     rexec ${host} /usr/bin/env \
         FHGLOG_to_server="${log_host}:${log_port}" \
         FHGLOG_level=$($verbose && echo "TRACE" || echo "INFO") \
         FHGLOG_to_file="${state_dir}/log/$name.log" \
         "${sdpa_home}/bin/agent" \
-        --pidfile "$state_dir/${name}.pid" \
+        --pidfile "${processes_dir}/${host}/${name}.pid" \
         --daemonize \
         --kvs-host="${kvs_host}" \
         --kvs-port="${kvs_port}" \

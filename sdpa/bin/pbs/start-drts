@@ -270,6 +270,11 @@ then
 fi
 logprefix="${logdir}/${name}"
 
+mkdir -p "${state_dir}/processes/$(hostname -s)" || {
+    echo >&2 "could not 'mkdir -p \"${state_dir}/processes/$(hostname -s)\"'!"
+    exit 1
+}
+
 exec 1> >(tee "${logprefix}.out")
 exec 2> >(tee "${logprefix}.err" >&2)
 
@@ -279,28 +284,10 @@ if [ ! -x "$bin" ] ; then
   exit 1
 fi
 
-# check if still running
-still_running=$(ps -C drts-kernel -o uid=,pid= | grep -e "^\s\+$(id -u)" | awk '{print $2}')
-for p in $still_running ; do
-    name_opt=$(cat /proc/$p/cmdline 2>/dev/null | tr '\0' '\n' | grep -A1 -e '^-n$' | tail -n 1)
-
-    if [ "$name_opt" = "${name}" ] ; then
-        if [ "$force" = "true" ] ; then
-            echo >&2 "W: $name is still running, terminating it"
-            kill -TERM "$p"
-            sleep 3
-            kill -KILL "$p" &>/dev/null
-        else
-            echo >&2 "E: $name still running, not starting again"
-            exit 2
-        fi
-    fi
-    unset name_opt
-done
-
 # config values (kernel)
 
 cfg="$cfg -n $name"
+cfg="$cfg --pidfile=${state_dir}/processes/$(hostname -s)/drts-kernel-${name}.pid"
 cfg="$cfg -L $sdpa_home/libexec/fhg/plugins"
 lazy=${DEFAULT_KERNEL_LOAD_LAZY}
 if [ x"$lazy" = x"true" ] ; then

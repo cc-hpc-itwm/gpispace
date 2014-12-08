@@ -65,7 +65,9 @@ BOOST_AUTO_TEST_CASE (share_example_split_join)
     );
 
   fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "share_example_split_join");
+    ( test::shared_directory (vm)
+    / boost::filesystem::unique_path ("share_example_split_join-%%%%-%%%%-%%%%-%%%%")
+    );
 
   test::scoped_state_directory const state_directory (shared_directory, vm);
   test::scoped_nodefile_with_localhost const nodefile_with_localhost
