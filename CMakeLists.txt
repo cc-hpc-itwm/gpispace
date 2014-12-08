@@ -66,6 +66,7 @@ endif()
 find_package (Boost 1.55 REQUIRED QUIET COMPONENTS
   date_time
   filesystem
+  iostreams
   program_options
   random
   regex

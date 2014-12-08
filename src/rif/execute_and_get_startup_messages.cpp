@@ -6,6 +6,8 @@
 #include <fhg/syscall.hpp>
 #include <fhg/util/temporary_file.hpp>
 
+#include <boost/iostreams/device/file_descriptor.hpp>
+#include <boost/iostreams/stream.hpp>
 #include <boost/optional.hpp>
 #include <boost/system/system_error.hpp>
 
@@ -57,15 +59,17 @@ namespace fhg
       std::vector<char*> prepare_argv
         ( std::vector<char>& argv_buffer
         , boost::filesystem::path const& command
-        , std::string const& startup_messages_fifo_option
-        , boost::filesystem::path const& fifo_path
+        , std::string const& startup_messages_pipe_option
+        , int pipe_fd
         , std::vector<std::string> const& arguments
         )
       {
+        std::string pipe_fd_string (std::to_string (pipe_fd));
+
         argv_buffer.resize
           ( command.string().size() + 1
-          + startup_messages_fifo_option.size() + 1
-          + fifo_path.string().size() + 1
+          + startup_messages_pipe_option.size() + 1
+          + pipe_fd_string.size() + 1
           + std::accumulate
               ( arguments.begin()
               , arguments.end()
@@ -87,11 +91,11 @@ namespace fhg
         argv_pos = append (argv_buffer, '\0', argv_pos);
 
         argv.push_back (argv_buffer.data() + argv_pos);
-        argv_pos = append (argv_buffer, startup_messages_fifo_option, argv_pos);
+        argv_pos = append (argv_buffer, startup_messages_pipe_option, argv_pos);
         argv_pos = append (argv_buffer, '\0', argv_pos);
 
         argv.push_back (argv_buffer.data() + argv_pos);
-        argv_pos = append (argv_buffer, fifo_path.string(), argv_pos);
+        argv_pos = append (argv_buffer, pipe_fd_string, argv_pos);
         argv_pos = append (argv_buffer, '\0', argv_pos);
 
         for (std::string const& argument : arguments)
@@ -152,25 +156,22 @@ namespace fhg
     }
 
     std::pair<pid_t, std::vector<std::string>> execute_and_get_startup_messages
-      ( boost::filesystem::path const& fifo_directory
-      , std::string const& startup_messages_fifo_option
+      ( std::string const& startup_messages_pipe_option
       , std::string const& end_sentinel_value
       , boost::filesystem::path const& command
       , std::vector<std::string> const& arguments
       , std::unordered_map<std::string, std::string> const& environment
       )
     {
-      boost::filesystem::path const fifo_path
-        (fifo_directory / boost::filesystem::unique_path());
-
       boost::optional<std::pair<bool, int>> child_status;
-      //! \todo boost 1.56: optional<future>
-      std::future<void> fifo_out_opened;
+
+      int pipe_fds[2];
+      fhg::syscall::pipe (pipe_fds);
 
       struct sigaction old_sigact;
 
       GLOBAL_signal_handler =
-        [&child_status, &fifo_path, &fifo_out_opened] (siginfo_t* sig_info)
+        [&child_status, &pipe_fds] (siginfo_t* sig_info)
         {
           if (  sig_info->si_code != CLD_EXITED
              && sig_info->si_code != CLD_KILLED
@@ -181,16 +182,7 @@ namespace fhg
           }
 
           child_status = std::make_pair
-          (sig_info->si_code == CLD_EXITED, sig_info->si_status);
-          //! \note The signal is handled in same thread as fifo is
-          //!       opened for reading, thus a second thread needs to
-          //!       open for writing to wake up this thread.
-          fifo_out_opened = std::async ( std::launch::async
-                                       , [&fifo_path]
-                                         {
-                                           std::ofstream (fifo_path.string());
-                                         }
-                                       );
+            (sig_info->si_code == CLD_EXITED, sig_info->si_status);
         };
       {
         struct sigaction sigact;
@@ -200,93 +192,85 @@ namespace fhg
         fhg::syscall::sigaction (SIGCHLD, &sigact, &old_sigact);
       }
 
-      fhg::syscall::mkfifo (fifo_path.string().c_str(), S_IRUSR | S_IWUSR);
-      fhg::util::temporary_file const fifo_deleter (fifo_path);
-
       pid_t const pid (fhg::syscall::fork());
 
       if (pid)
       {
-        std::ifstream fifo_in (fifo_path.string());
+        fhg::syscall::close (pipe_fds[1]);
 
-        //! \note either already hit or hitting can be ignored: if it
-        //!       fails before sending all startup messages, the
-        //!       sentinel check will fail and detect the bad
-        //!       behavior. if it exits after sending all messages,
-        //!       everything is fine.
+        boost::iostreams::stream<boost::iostreams::file_descriptor_source>
+          pipe_read (pipe_fds[0], boost::iostreams::close_handle);
+
+        std::vector<std::string> messages;
+        std::string line;
+        while (std::getline (pipe_read, line) && line != end_sentinel_value)
+        {
+          messages.emplace_back (std::move (line));
+        }
+
         {
           fhg::syscall::sigaction (SIGCHLD, &old_sigact, nullptr);
           std::unique_lock<std::mutex> const _ (GLOBAL_signal_handler_mutex);
           GLOBAL_signal_handler = nullptr;
         }
 
-        if (fifo_out_opened.valid())
+        if (line != end_sentinel_value || child_status)
         {
-          fifo_out_opened.get();
-          if (child_status->first)
+          if (!child_status)
           {
-            switch (child_status->second)
-            {
-            case 241:
-              throw std::system_error
-                (std::make_error_code (std::errc::argument_list_too_long));
-            case 242:
-              throw std::system_error
-                (std::make_error_code (std::errc::filename_too_long));
-            case 243:
-              throw std::system_error
-                (std::make_error_code (std::errc::invalid_argument));
-            case 244:
-              throw std::system_error
-                (std::make_error_code (std::errc::no_such_file_or_directory));
-            case 245:
-              throw std::system_error
-                (std::make_error_code (std::errc::not_a_directory));
-            case 246:
-              throw std::system_error
-                (std::make_error_code (std::errc::permission_denied));
-            case 247:
-              throw std::system_error
-                (std::make_error_code (std::errc::too_many_symbolic_link_levels));
-
-            case 240:
-              throw std::runtime_error
-                ("execve failed: unknown error");
-
-            default:
-              throw std::runtime_error
-                ("child exited: " + std::to_string (child_status->second));
-            }
+            throw std::runtime_error ("pipe closed before end-sentinel-value read");
           }
-          else
+
+          if (!child_status->first)
           {
             throw std::runtime_error
               ("child signalled: " + std::to_string (child_status->second));
           }
-        }
 
-        std::vector<std::string> messages;
-        std::string line;
-        while (std::getline (fifo_in, line) && line != end_sentinel_value)
-        {
-          messages.emplace_back (std::move (line));
-        }
-
-        if (line != end_sentinel_value)
-        {
-          throw std::runtime_error ("fifo closed before end-sentinel-value read");
+          switch (child_status->second)
+          {
+          case 241:
+            throw std::system_error
+              (std::make_error_code (std::errc::argument_list_too_long));
+          case 242:
+            throw std::system_error
+              (std::make_error_code (std::errc::filename_too_long));
+          case 243:
+            throw std::system_error
+              (std::make_error_code (std::errc::invalid_argument));
+          case 244:
+            throw std::system_error
+              (std::make_error_code (std::errc::no_such_file_or_directory));
+          case 245:
+            throw std::system_error
+              (std::make_error_code (std::errc::not_a_directory));
+          case 246:
+            throw std::system_error
+              (std::make_error_code (std::errc::permission_denied));
+          case 247:
+            throw std::system_error
+              (std::make_error_code (std::errc::too_many_symbolic_link_levels));
+         case 240:
+            throw std::runtime_error
+              ("execve failed: unknown error");
+         default:
+            throw std::runtime_error
+              ("child exited: " + std::to_string (child_status->second));
+          }
         }
 
         return {pid, std::move (messages)};
       }
       else
       {
+        fhg::syscall::close (pipe_fds[0]);
+
         std::vector<char> argv_buffer;
         std::vector<char*> const argv
           ( prepare_argv ( argv_buffer
                          , command
-                         , startup_messages_fifo_option
-                         , fifo_path
+                         , startup_messages_pipe_option
+                         , pipe_fds[1]
                          , arguments
                          )
           );
@@ -297,6 +281,10 @@ namespace fhg
         long const maximum_open_files (fhg::syscall::sysconf (_SC_OPEN_MAX));
         for (int fd (0); fd < maximum_open_files; ++fd)
         {
+          if (fd == pipe_fds[1])
+          {
+            continue;
+          }
           close_if_open (fd);
         }
 

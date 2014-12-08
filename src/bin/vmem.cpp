@@ -10,6 +10,8 @@
 #include <drts/private/rif.hpp>
 
 #include <boost/filesystem.hpp>
+#include <boost/iostreams/device/file_descriptor.hpp>
+#include <boost/iostreams/stream.hpp>
 #include <boost/program_options.hpp>
 
 #include <fstream>
@@ -69,10 +71,9 @@ int main (int argc, char *argv[])
 
   generic_options.add_options()
     (option::help, "print usage information")
-    ( "startup-messages-fifo"
-    , boost::program_options::value
-        <fhg::util::boost::program_options::existing_path>()->required()
-    , "fifo to use for communication during startup (ports used, ...)"
+    ( "startup-messages-pipe"
+    , boost::program_options::value<int>()->required()
+    , "pipe filedescriptor to use for communication during startup (ports used, ...)"
     )
     ;
 
@@ -132,11 +133,11 @@ int main (int argc, char *argv[])
     });
 
   {
-    std::ofstream startup_messages_fifo
-      ( vm["startup-messages-fifo"]
-      . as<fhg::util::boost::program_options::existing_path>().string()
-      );
-    startup_messages_fifo << "OKAY\n";
+    boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
+      startup_messages_pipe ( vm["startup-messages-pipe"].as<int>()
+                            , boost::iostreams::close_handle
+                            );
+    startup_messages_pipe << "OKAY\n";
   }
 
   done.wait();

@@ -3,6 +3,7 @@ target_link_libraries (orchestrator
   sdpa
   ${FhgLog_LIBRARY}
   pnet
+  ${Boost_IOSTREAMS_LIBRARY}
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}
 )
@@ -16,6 +17,7 @@ target_link_libraries (agent
   sdpa
   ${FhgLog_LIBRARY}
   pnet
+  ${Boost_IOSTREAMS_LIBRARY}
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}
 )

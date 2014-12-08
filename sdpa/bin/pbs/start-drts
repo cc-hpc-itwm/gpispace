@@ -313,11 +313,9 @@ fi
 
 echo >&2 "I: starting worker: ${name} on host $(hostname) with parent ${master}"
 
-mkdir -p "${state_dir}/fifos"
 startup_messages_raw=$(${sdpa_home}/bin/start-and-fork \
-  --fifo-directory "${state_dir}/fifos" \
   --end-sentinel-value OKAY \
-  --startup-messages-fifo-option --startup-messages-fifo \
+  --startup-messages-pipe-option --startup-messages-pipe \
   \
   --command "${bin}" \
   ${arguments} \

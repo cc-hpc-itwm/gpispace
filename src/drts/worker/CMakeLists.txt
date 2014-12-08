@@ -23,6 +23,7 @@ target_link_libraries (drts-kernel
   fake-drts-kernel-plugin
   ${UTIL_LIBRARIES}
   ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_IOSTREAMS_LIBRARY}
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${Boost_THREAD_LIBRARY})
 

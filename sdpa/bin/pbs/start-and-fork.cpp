@@ -21,8 +21,7 @@ namespace
 {
   namespace option
   {
-    constexpr const char* const fifo_directory {"fifo-directory"};
-    constexpr const char* const startup_messages_fifo_option {"startup-messages-fifo-option"};
+    constexpr const char* const startup_messages_pipe_option {"startup-messages-pipe-option"};
     constexpr const char* const end_sentinel_value {"end-sentinel-value"};
     constexpr const char* const command {"command"};
     constexpr const char* const arguments {"arguments"};
@@ -73,18 +72,13 @@ try
 {
   boost::program_options::options_description options_description;
   options_description.add_options()
-    ( option::fifo_directory
-    , boost::program_options::value
-        <fhg::util::boost::program_options::existing_path>()->required()
-    , "directory to create the startup-messages fifo in"
-    )
-    ( option::startup_messages_fifo_option
+    ( option::startup_messages_pipe_option
     , boost::program_options::value<std::string>()->required()
-    , "command line option to pass fifo path to child"
+    , "command line option to pass pipe file descriptor to child"
     )
     ( option::end_sentinel_value
     , boost::program_options::value<std::string>()->required()
-    , "sentinel value last written to fifo before successfully closing fifo"
+    , "sentinel value last written to pipe before successfully closing pipe"
     )
     ( option::command
     , boost::program_options::value
@@ -113,9 +107,7 @@ try
 
   std::pair<pid_t, std::vector<std::string>> pid_and_messages
     ( fhg::rif::execute_and_get_startup_messages
-        ( vm[option::fifo_directory]
-          .as<fhg::util::boost::program_options::existing_path>()
-        , vm[option::startup_messages_fifo_option].as<std::string>()
+        ( vm[option::startup_messages_pipe_option].as<std::string>()
         , vm[option::end_sentinel_value].as<std::string>()
         , boost::filesystem::canonical
             ( vm[option::command]

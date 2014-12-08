@@ -9,6 +9,8 @@
 
 #include <fhglog/LogMacros.hpp>
 
+#include <boost/iostreams/device/file_descriptor.hpp>
+#include <boost/iostreams/stream.hpp>
 #include <boost/program_options.hpp>
 
 #include <fstream>
@@ -38,9 +40,9 @@ int main(int ac, char **av)
     ( "add-search-path,L", po::value<fhg::core::kernel_t::search_path_t>(&search_path)
     , "add a path to the search path for plugins"
     )
-    ( "startup-messages-fifo"
-    , po::value<fhg::util::boost::program_options::existing_path>()->required()
-    , "fifo to use for communication during startup (ports used, ...)"
+    ( "startup-messages-pipe"
+    , po::value<int>()->required()
+    , "pipe filedescriptor to use for communication during startup (ports used, ...)"
     )
     ;
 
@@ -119,11 +121,11 @@ int main(int ac, char **av)
       );
 
     {
-      std::ofstream startup_messages_fifo
-        ( vm["startup-messages-fifo"]
-        . as<fhg::util::boost::program_options::existing_path>().string()
-        );
-      startup_messages_fifo << "OKAY\n";
+      boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
+        startup_messages_pipe ( vm["startup-messages-pipe"].as<int>()
+                              , boost::iostreams::close_handle
+                              );
+      startup_messages_pipe << "OKAY\n";
     }
 
     waiter.wait();
@@ -137,11 +139,11 @@ int main(int ac, char **av)
                           );
 
     {
-      std::ofstream startup_messages_fifo
-        ( vm["startup-messages-fifo"]
-        . as<fhg::util::boost::program_options::existing_path>().string()
-        );
-      startup_messages_fifo << "OKAY\n";
+      boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
+        startup_messages_pipe ( vm["startup-messages-pipe"].as<int>()
+                              , boost::iostreams::close_handle
+                              );
+      startup_messages_pipe << "OKAY\n";
     }
 
     waiter.wait();

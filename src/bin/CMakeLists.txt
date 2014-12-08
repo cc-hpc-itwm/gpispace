@@ -7,6 +7,7 @@ fhg_add_runtime_executable (vmem.cpp
                  gspc
                  ${FhgLog_LIBRARY}
                  ${Boost_FILESYSTEM_LIBRARY}
+                 ${Boost_IOSTREAMS_LIBRARY}
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
 )

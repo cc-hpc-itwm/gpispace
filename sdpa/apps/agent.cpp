@@ -6,6 +6,8 @@
 
 #include <fhglog/LogMacros.hpp>
 
+#include <boost/iostreams/device/file_descriptor.hpp>
+#include <boost/iostreams/stream.hpp>
 #include <boost/program_options.hpp>
 
 #include <sdpa/daemon/agent/Agent.hpp>
@@ -56,9 +58,9 @@ int main (int argc, char **argv)
     , boost::program_options::value<validators::nonempty_string>()
     , "socket file to communicate with the virtual memory manager"
     )
-    ( "startup-messages-fifo"
-    , po::value<fhg::util::boost::program_options::existing_path>()->required()
-    , "fifo to use for communication during startup (ports used, ...)"
+    ( "startup-messages-pipe"
+    , po::value<int>()->required()
+    , "pipe filedescriptor to use for communication during startup (ports used, ...)"
     )
     ;
 
@@ -122,13 +124,13 @@ int main (int argc, char **argv)
   signal_handlers.add (SIGINT, std::bind (request_stop));
 
   {
-    std::ofstream startup_messages_fifo
-      ( vm["startup-messages-fifo"]
-      . as<fhg::util::boost::program_options::existing_path>().string()
-      );
-    startup_messages_fifo << agent.peer_local_endpoint().address().to_string() << "\n";
-    startup_messages_fifo << agent.peer_local_endpoint().port() << "\n";
-    startup_messages_fifo << "OKAY\n";
+    boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
+      startup_messages_pipe ( vm["startup-messages-pipe"].as<int>()
+                            , boost::iostreams::close_handle
+                            );
+    startup_messages_pipe << agent.peer_local_endpoint().address().to_string() << "\n";
+    startup_messages_pipe << agent.peer_local_endpoint().port() << "\n";
+    startup_messages_pipe << "OKAY\n";
   }
 
   stop_requested.wait();
