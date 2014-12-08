@@ -52,7 +52,7 @@ usage: $(basename "$0") [options]
 EOF
 }
 
-while getopts ":hvfg:l:m:i:b:S:k:K:c:C:L:s:n:M:N:H:" opt; do
+while getopts ":hvfg:l:m:i:b:S:c:C:L:s:n:M:N:H:" opt; do
     case $opt in
         h)
             usage
