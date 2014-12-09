@@ -5,6 +5,7 @@
 
 #include <drts/client.fwd.hpp>
 #include <drts/drts.fwd.hpp>
+#include <drts/information_to_reattach.fwd.hpp>
 
 #include <we/type/value.hpp>
 
@@ -34,6 +35,7 @@ namespace gspc
   {
   public:
     client (scoped_runtime_system const&);
+    explicit client (information_to_reattach const&);
     ~client();
 
     job_id_t submit

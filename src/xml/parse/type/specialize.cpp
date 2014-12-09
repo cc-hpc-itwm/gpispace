@@ -86,8 +86,8 @@ namespace xml
 
         const st::set_type known_structs
           ( st::join ( global
-                     , st::join ( st::make (parent_structs)
-                                , st::make (child_structs)
+                     , st::join ( st::make (parent_structs, state)
+                                , st::make (child_structs, state)
                                 , st::forbidden_type()
                                 , state
                                 )

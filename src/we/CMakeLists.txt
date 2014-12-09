@@ -57,6 +57,7 @@ install (FILES
   type/value/read.hpp
   type/value/show.hpp
   type/value/to_value.hpp
+  type/value/from_value.hpp
   type/value/wrap.hpp
   type/value/unwrap.hpp
   DESTINATION include/we/type/value

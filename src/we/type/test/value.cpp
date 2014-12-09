@@ -375,6 +375,42 @@ BOOST_AUTO_TEST_CASE (signature_name_of)
 #undef CHECK
 }
 
+namespace
+{
+  struct user_defined_type {};
+
+  bool operator== (user_defined_type const&, user_defined_type const&)
+  {
+    return true;
+  }
+}
+
+FHG_BOOST_TEST_LOG_VALUE_PRINTER (user_defined_type, os, /**/)
+{
+  os << "user_defined_type()";
+}
+
+namespace pnet
+{
+  namespace type
+  {
+    namespace value
+    {
+      template<>
+        inline value_type to_value<user_defined_type> (user_defined_type const&)
+      {
+        return value_type();
+      }
+      template<>
+        inline user_defined_type from_value<user_defined_type>
+          (value_type const&)
+      {
+        return user_defined_type();
+      }
+    }
+  }
+}
+
 BOOST_AUTO_TEST_CASE (unwrap)
 {
   namespace value = pnet::type::value;
@@ -397,6 +433,18 @@ BOOST_AUTO_TEST_CASE (unwrap)
     lt.push_back (1L);
 
     BOOST_CHECK_EQUAL (lt, value::unwrap<long> (lv));
+  }
+
+  {
+    std::list<value::value_type> lv;
+    lv.push_back (pnet::type::value::to_value (user_defined_type()));
+    lv.push_back (pnet::type::value::to_value (user_defined_type()));
+
+    std::list<user_defined_type> lt;
+    lt.push_back (user_defined_type());
+    lt.push_back (user_defined_type());
+
+    BOOST_CHECK_EQUAL (lt, value::unwrap<user_defined_type> (lv));
   }
 }
 

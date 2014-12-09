@@ -23,5 +23,7 @@ install (FILES ${xmls}
 
 add_subdirectory (cache)
 add_subdirectory (grid)
+add_subdirectory (memory)
 add_subdirectory (point)
 add_subdirectory (sequence)
+add_subdirectory (stream)

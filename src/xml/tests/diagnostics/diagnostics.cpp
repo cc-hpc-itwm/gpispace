@@ -7,6 +7,8 @@
 
 #include <parser_fixture.hpp>
 
+#include <fhg/util/boost/test/require_exception.hpp>
+#include <fhg/util/random_string.hpp>
 #include <fhg/util/temporary_path.hpp>
 
 namespace
@@ -52,6 +54,40 @@ namespace
       }
     }
   };
+}
+
+BOOST_AUTO_TEST_CASE (warning_struct_redefined)
+{
+  std::string const name_struct (fhg::util::random_identifier());
+
+  std::string const input
+    ( ( boost::format (R"EOS(
+<defun name="%1%">
+  <struct name="%2%"><field name="%3%" type="%4%"/></struct>
+  <struct name="%2%"><field name="%3%" type="%4%"/></struct>
+</defun>)EOS")
+      % fhg::util::random_identifier()
+      % name_struct
+      % fhg::util::random_identifier()
+      % fhg::util::random_identifier()
+      ).str()
+    );
+
+  fhg::util::boost::test::require_exception
+    <xml::parse::warning::struct_redefined>
+    ( [&input]()
+      { xml::parse::state::type state;
+        state.Wstruct_redefined() = true;
+        state.Werror() = true;
+        std::istringstream input_stream (input);
+        xml::parse::post_processing_passes
+          (xml::parse::just_parse (state, input_stream), &state);
+      }
+    , boost::format ("WARNING: struct %1% at %2% redefined at %3%")
+    % name_struct
+    % "[<stdin>:3:3]"
+    % "[<stdin>:4:3]"
+    );
 }
 
 BOOST_FIXTURE_TEST_CASE (warning_duplicate_external_function, fixture)

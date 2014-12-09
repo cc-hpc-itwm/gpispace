@@ -1,7 +1,5 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-include (fhg_executable_macros)
-
 fhg_add_runtime_executable (vmem.cpp
   LINK_LIBRARIES fhg-util
                  gspc
