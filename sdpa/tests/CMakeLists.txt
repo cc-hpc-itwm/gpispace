@@ -14,19 +14,6 @@ set_tests_properties (re_register_after_master_connection_lost
              LABELS "requires_installation"
 )
 
-configure_file (
-  properly_find_master_when_started_after_agent.sh.in
-  properly_find_master_when_started_after_agent.sh
-  @ONLY
-)
-add_test (NAME properly_find_master_when_started_after_agent
-  COMMAND bash properly_find_master_when_started_after_agent.sh
-)
-set_tests_properties (properly_find_master_when_started_after_agent
-  PROPERTIES REQUIRED_FILES "${FILES_REQUIRED_IN_INSTALLATION}"
-             LABELS "requires_installation"
-)
-
 include_directories (${UTIL_INCLUDE_DIR})
 include_directories (${CMAKE_SOURCE_DIR})
 

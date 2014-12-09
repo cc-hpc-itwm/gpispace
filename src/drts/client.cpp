@@ -49,17 +49,14 @@ namespace gspc
 
   struct client::implementation
   {
-    implementation (gspc::host_and_port_type const& kvs_endpoint)
-      : _client ( "orchestrator"
+    implementation (gspc::host_and_port_type const& orchestrator_endpoint)
+      : _client ( fhg::com::host_t (orchestrator_endpoint.host)
+                , fhg::com::port_t (std::to_string (orchestrator_endpoint.port))
                 , _peer_io_service
-                , _kvs_client_io_service
-                , kvs_endpoint.host
-                , std::to_string (kvs_endpoint.port)
                 )
     {}
 
     boost::asio::io_service _peer_io_service;
-    boost::asio::io_service _kvs_client_io_service;
     sdpa::client::Client _client;
   };
 

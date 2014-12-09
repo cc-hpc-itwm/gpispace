@@ -3,7 +3,7 @@
 find_package (HWLOC REQUIRED QUIET)
 include_directories (SYSTEM ${HWLOC_INCLUDE_DIR})
 
-add_library (fake-drts-kernel-plugin drts.cpp job.cpp)
+add_library (fake-drts-kernel-plugin drts.cpp)
 target_link_libraries (fake-drts-kernel-plugin
   we-dev
   ${UTIL_LIBRARIES}
@@ -22,6 +22,7 @@ fhg_add_runtime_executable (drts-kernel.cpp
                  fake-drts-kernel-plugin
                  ${UTIL_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARY}
+                 ${Boost_IOSTREAMS_LIBRARY}
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
                  ${Boost_THREAD_LIBRARY}
 )

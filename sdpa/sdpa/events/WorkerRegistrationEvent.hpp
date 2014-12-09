@@ -16,20 +16,24 @@ namespace sdpa
       typedef boost::shared_ptr<WorkerRegistrationEvent> Ptr;
 
       WorkerRegistrationEvent
-        ( const address_t& a_from
-        , const address_t& a_to
+        ( std::string const& name
         , const boost::optional<unsigned int>& capacity
         , const capabilities_set_t& cpbset
         , bool children_allowed
         , const std::string& hostname
         )
-          : MgmtEvent (a_from, a_to)
+          : MgmtEvent()
+          , _name (name)
           , capacity_ (capacity)
           , cpbset_ (cpbset)
           , children_allowed_(children_allowed)
           , hostname_(hostname)
       {}
 
+      std::string const& name() const
+      {
+        return _name;
+      }
       const boost::optional<unsigned int>& capacity() const
       {
         return capacity_;
@@ -49,12 +53,14 @@ namespace sdpa
 	return children_allowed_;
       }
 
-      virtual void handleBy (EventHandler* handler) override
+      virtual void handleBy
+        (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
-        handler->handleWorkerRegistrationEvent (this);
+        handler->handleWorkerRegistrationEvent (source, this);
       }
 
     private:
+      std::string _name;
       boost::optional<unsigned int> capacity_;
       capabilities_set_t cpbset_;
       bool children_allowed_;
@@ -64,6 +70,7 @@ namespace sdpa
     SAVE_CONSTRUCT_DATA_DEF (WorkerRegistrationEvent, e)
     {
       SAVE_MGMTEVENT_CONSTRUCT_DATA (e);
+      SAVE_TO_ARCHIVE (e->name());
       SAVE_TO_ARCHIVE (e->capacity());
       SAVE_TO_ARCHIVE (e->capabilities());
       SAVE_TO_ARCHIVE (e->children_allowed());
@@ -72,13 +79,14 @@ namespace sdpa
 
     LOAD_CONSTRUCT_DATA_DEF (WorkerRegistrationEvent, e)
     {
-      LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
+      LOAD_MGMTEVENT_CONSTRUCT_DATA();
+      LOAD_FROM_ARCHIVE (std::string, name);
       LOAD_FROM_ARCHIVE (boost::optional<unsigned int>, capacity);
       LOAD_FROM_ARCHIVE (capabilities_set_t, cpbset);
       LOAD_FROM_ARCHIVE (bool, children_allowed);
       LOAD_FROM_ARCHIVE (std::string, hostname);
 
-      ::new (e) WorkerRegistrationEvent (from, to, capacity, cpbset, children_allowed, hostname);
+      ::new (e) WorkerRegistrationEvent (name, capacity, cpbset, children_allowed, hostname);
     }
   }
 }

@@ -27,11 +27,10 @@ namespace gpi
       class manager_t : boost::noncopyable
       {
       public:
-        manager_t ( boost::asio::io_service& topology_peer_io_service
-                  , std::string const & p
+        manager_t ( std::string const & p
                     , std::vector<std::string> const& default_memory_urls
                   , api::gpi_api_t& gpi_api
-                  , fhg::com::kvs::kvsc_ptr_t kvs_client
+                  , boost::shared_ptr<fhg::com::peer_t> const& topology_peer
                     );
 
         ~manager_t ();

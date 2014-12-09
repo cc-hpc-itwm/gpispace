@@ -9,48 +9,9 @@
 
 #include <boost/thread.hpp>
 
-#include <fhgcom/kvs/kvsd.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
-#include <fhgcom/tcp_server.hpp>
-
 #include <boost/asio/io_service.hpp>
 
 #include <functional>
-
-struct KVSSetup
-{
-  KVSSetup ()
-    : _io_service()
-    , _io_service_work (_io_service)
-    , m_kvsd()
-    , m_serv (_io_service, m_kvsd, "localhost", "0", true)
-    , _io_service_thread ([this] { _io_service.run(); })
-    , _kvs ( new fhg::com::kvs::client::kvsc
-             ( _kvs_client_io_service
-             , "localhost"
-             , boost::lexical_cast<std::string> (m_serv.port())
-             , true // auto_reconnect
-             , boost::posix_time::seconds (3)
-             , 3
-             )
-           )
-  {}
-
-  ~KVSSetup ()
-  {
-    m_serv.stop ();
-    _io_service.stop();
-    _io_service_thread.join();
-  }
-
-  boost::asio::io_service _io_service;
-  boost::asio::io_service::work _io_service_work;
-  fhg::com::kvs::server::kvsd m_kvsd;
-  fhg::com::tcp_server m_serv;
-  boost::thread _io_service_thread;
-  boost::asio::io_service _kvs_client_io_service;
-  fhg::com::kvs::kvsc_ptr_t _kvs;
-};
 
 namespace
 {
@@ -61,7 +22,9 @@ namespace
       , _expected (expected)
     {}
 
-    void perform (const boost::shared_ptr<sdpa::events::SDPAEvent>&)
+    void perform ( fhg::com::p2p::address_t const&
+                 , const boost::shared_ptr<sdpa::events::SDPAEvent>&
+                 )
     {
       boost::mutex::scoped_lock _ (_counter_mutex);
       ++_counter;
@@ -91,24 +54,28 @@ namespace
   };
 }
 
-BOOST_FIXTURE_TEST_CASE (perform_test, KVSSetup)
+BOOST_AUTO_TEST_CASE (perform_test)
 {
   wait_for_n_events_strategy counter (1);
 
   boost::asio::io_service peer_io_service;
   sdpa::com::NetworkStrategy net
-    ( std::bind
-      (&wait_for_n_events_strategy::perform, &counter, std::placeholders::_1)
+    ( std::bind ( &wait_for_n_events_strategy::perform
+                , &counter
+                , std::placeholders::_1
+                , std::placeholders::_2
+                )
     , peer_io_service
     , "peer-1"
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
-    , _kvs
     );
 
-  net.perform (boost::shared_ptr<sdpa::events::SDPAEvent>(new sdpa::events::ErrorEvent( "peer-1"
-                                                              , "peer-1"
-                                                              , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+  net.perform ( net.connect_to
+                  ( fhg::com::host_t (net.local_endpoint().address().to_string())
+                  , fhg::com::port_t (std::to_string (net.local_endpoint().port()))
+                  )
+              , boost::shared_ptr<sdpa::events::SDPAEvent>(new sdpa::events::ErrorEvent(sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                                                               , "success"
                                                               )
                                  )

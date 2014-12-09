@@ -11,15 +11,12 @@ gui=
 force=false
 debug=false
 verbose=false
-daemonize=false
 backlog=1
 identity=0
 name_prefix="drts"
 master=
 gpi_socket=
 lib_path=
-kvs_host=
-kvs_port=
 log_url=
 count=
 capabilities=""
@@ -28,7 +25,6 @@ logdir=
 shm_size=
 numa_socket=
 DEFAULT_PLUGIN_DRTS_MAX_RECONNECT="128"
-DEFAULT_KERNEL_LOAD_LAZY="true"
 DEFAULT_PLUGIN_GPI_STARTMODE="wait"
 sdpa_home=
 
@@ -47,11 +43,8 @@ usage: $(basename "$0") [options]
     -b N (=$backlog): set the backlog
     -S path (=$gpi_socket): gpi socket path
     -L path: library path
-    -k kvs-host (=$kvs_host): host of the key-value-store
-    -K kvs-port (=$kvs_port): port of the key-value-store
     -c count: start this many processes (0==#cores)
     -C capability: start with this capability (can be specified more than once
-    -D daemonize
     -s state-dir
     -M shared memory size, if not specified or empty, GPI is disabled
     -N numa socket
@@ -59,7 +52,7 @@ usage: $(basename "$0") [options]
 EOF
 }
 
-while getopts ":hvfg:l:m:i:b:S:k:K:Dc:C:L:s:n:M:N:H:" opt; do
+while getopts ":hvfg:l:m:i:b:S:c:C:L:s:n:M:N:H:" opt; do
     case $opt in
         h)
             usage
@@ -102,15 +95,6 @@ while getopts ":hvfg:l:m:i:b:S:k:K:Dc:C:L:s:n:M:N:H:" opt; do
             ;;
         S)
             gpi_socket=$OPTARG
-            ;;
-        k)
-            kvs_host=$OPTARG
-            ;;
-        K)
-            kvs_port=$OPTARG
-            ;;
-        D)
-            daemonize=true
             ;;
         c)
             count="$OPTARG"
@@ -170,17 +154,6 @@ then
     exit 4
 fi
 
-if [ -z "$kvs_host" ]
-then
-    echo >&2 "kvs host is required, please specify -k"
-    exit 4
-fi
-if [ -z "$kvs_port" ]
-then
-    echo >&2 "kvs port is required, please specify -K"
-    exit 4
-fi
-
 if [ -z "$master" ] ; then
     echo >&2 "E: no master specified!"
     exit 1
@@ -201,8 +174,6 @@ if [ x"$identity" = x"0" ] ; then
         opts=
         opts="$opts -H $sdpa_home"
         opts="$opts -m $master"
-        opts="$opts -k ${kvs_host}"
-        opts="$opts -K ${kvs_port}"
         opts="$opts -b $backlog"
         if [ -n "$gpi_socket" ] ; then
             opts="$opts -S $gpi_socket"
@@ -241,7 +212,7 @@ if [ x"$identity" = x"0" ] ; then
 
         ec=0
         for i in $(seq 1 $count) ; do
-            $0 -i $i $opts -D &
+            $0 -i $i $opts &
         done
         for i in $(jobs -p) ; do
             wait $i
@@ -286,18 +257,12 @@ fi
 
 # config values (kernel)
 
-cfg="$cfg -n $name"
-cfg="$cfg --pidfile=${state_dir}/processes/$(hostname -s)/drts-kernel-${name}.pid"
-cfg="$cfg -L $sdpa_home/libexec/fhg/plugins"
-lazy=${DEFAULT_KERNEL_LOAD_LAZY}
-if [ x"$lazy" = x"true" ] ; then
-    cfg="$cfg -s kernel.load.lazy=1"
-else
-    cfg="$cfg -s kernel.load.lazy=0"
-fi
+arguments=
+arguments="${arguments} --arguments -n $name"
+arguments="${arguments} --arguments -L $sdpa_home/libexec/fhg/plugins"
 
 if [ x"$gpi_enabled" = x"true" ] ; then
-    cfg="$cfg --gpi_enabled"
+    arguments="${arguments} --arguments --gpi_enabled"
 
     fake_gpi_capability="GPI"
 
@@ -313,41 +278,52 @@ if [ x"$gpi_enabled" = x"true" ] ; then
         exit 1
     fi
 
-    cfg="$cfg -s plugin.gpi.socket=${gpi_socket}"
-    cfg="$cfg -s plugin.gpi.startmode=${DEFAULT_PLUGIN_GPI_STARTMODE}"
+    arguments="${arguments} --arguments -s plugin.gpi.socket=${gpi_socket}"
+    arguments="${arguments} --arguments -s plugin.gpi.startmode=${DEFAULT_PLUGIN_GPI_STARTMODE}"
 
     # config values (gpi_compat plugin)
-    cfg="$cfg -s plugin.gpi_compat.shm_size=$shm_size"
+    arguments="${arguments} --arguments -s plugin.gpi_compat.shm_size=$shm_size"
 fi
 
 # config values (drts plugin)
-cfg="$cfg -s plugin.drts.kvs_host=$kvs_host"
-cfg="$cfg -s plugin.drts.kvs_port=$kvs_port"
-cfg="$cfg -s plugin.drts.master=$master"
-cfg="$cfg -s plugin.drts.backlog=$backlog"
-cfg="$cfg -s plugin.drts.max_reconnect_attempts=${DEFAULT_PLUGIN_DRTS_MAX_RECONNECT}"
-cfg="$cfg -s plugin.drts.capabilities=${capabilities}"
-cfg="$cfg -s plugin.drts.gui_url=$gui"
-cfg="$cfg -s plugin.drts.library_path=${lib_path}"
+arguments="${arguments} --arguments -s plugin.drts.master=$master"
+arguments="${arguments} --arguments -s plugin.drts.backlog=$backlog"
+arguments="${arguments} --arguments -s plugin.drts.max_reconnect_attempts=${DEFAULT_PLUGIN_DRTS_MAX_RECONNECT}"
+arguments="${arguments} --arguments -s plugin.drts.capabilities=${capabilities}"
+arguments="${arguments} --arguments -s plugin.drts.gui_url=$gui"
+arguments="${arguments} --arguments -s plugin.drts.library_path=${lib_path}"
 if [ -n "$numa_socket" ]
 then
-    cfg="$cfg -s plugin.drts.socket=$numa_socket"
+    arguments="${arguments} --arguments -s plugin.drts.socket=$numa_socket"
 fi
 
-cmd="${bin} $cfg"
+echo >&2 "I: starting worker: ${name} on host $(hostname) with parent ${master}"
 
-if $verbose
+startup_messages_raw=$(${sdpa_home}/bin/start-and-fork \
+  --end-sentinel-value OKAY \
+  --startup-messages-pipe-option --startup-messages-pipe \
+  \
+  --command "${bin}" \
+  ${arguments} \
+  --environment LD_LIBRARY_PATH="${sdpa_home}/lib:${sdpa_home}/libexec/sdpa:${LD_LIBRARY_PATH}" \
+  --environment FHGLOG_level=$(${verbose} && echo TRACE || echo INFO) \
+  --environment FHGLOG_to_file="${logprefix}.log"
+)
+ec=${?}
+
+old_IFS=${IFS}
+IFS=$'\n'
+startup_messages=(${startup_messages_raw})
+IFS=${old_IFS}
+
+if [ ${ec} -ne 0 ]
 then
-    export FHGLOG_level=TRACE
-else
-    export FHGLOG_level=INFO
+  exit ${ec}
 fi
 
-export LD_LIBRARY_PATH="${sdpa_home}/lib:${sdpa_home}/libexec/sdpa:$LD_LIBRARY_PATH"
-export FHGLOG_to_file="${logprefix}.log"
-echo >&2 "Running $cmd on node $(hostname)"
-if [ x"$daemonize" = x"true" ] ; then
-    $cmd --daemonize
-else
-    exec $cmd
+if [ ${#startup_messages[@]} != 1 ]; then
+  echo >2 "could not start ${name}: expected 1 lines of startup messages"
+  exit 1
 fi
+
+echo -n "${startup_messages[0]}" > "${state_dir}/processes/$(hostname -s)/drts-kernel-${name}.pid"

@@ -110,8 +110,8 @@ namespace gspc
       _nodes_and_number_of_unique_nodes;
     std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
 
-    std::string _kvs_host;
-    unsigned short _kvs_port;
+    std::string _orchestrator_host;
+    unsigned short _orchestrator_port;
   };
 
   void set_application_search_path ( boost::program_options::variables_map&

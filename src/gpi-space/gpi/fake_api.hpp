@@ -15,7 +15,10 @@ namespace gpi
     class fake_gpi_api_t : public gpi_api_t
     {
     public:
-      fake_gpi_api_t (const unsigned long long memory_size, const std::chrono::seconds& timeout);
+      fake_gpi_api_t ( const unsigned long long memory_size
+                     , const std::chrono::seconds& timeout
+                     , unsigned short communication_port
+                     );
       ~fake_gpi_api_t();
 
       // wrapped C function calls
@@ -31,6 +34,7 @@ namespace gpi
 
       virtual gpi::rank_t rank () const override;
       virtual std::string const& hostname_of_rank (const gpi::rank_t) const override;
+      virtual unsigned short communication_port_of_rank (gpi::rank_t) const override;
       virtual gpi::error_vector_t get_error_vector(const queue_desc_t) const override;
       virtual void *dma_ptr (void) override;
 
@@ -57,6 +61,7 @@ namespace gpi
       size_t m_mem_size;
       void *m_dma;
       std::string m_hostname;
+      unsigned short _communication_port;
 
       // fake stuff
       std::atomic<size_t> m_dma_request_count[NUMBER_OF_SIMULATED_QUEUES];

@@ -11,7 +11,6 @@
 #include <plugin/core/plugin.hpp>
 #include <plugin/core/kernel.hpp>
 
-#include <fhg/util/daemonize.hpp>
 #include <fhg/util/split.hpp>
 
 #include <thread>
@@ -114,8 +113,6 @@ namespace fhg
     void kernel_t::load_plugin_from_file (std::string const &file)
     try
     {
-      bool load_lazy (get <bool> ("kernel.load.lazy", m_config).get_value_or (true));
-
       std::string full_path_to_file = fs::absolute (fs::path (file)).string ();
 
       if (not fs::is_regular_file (full_path_to_file))
@@ -125,7 +122,7 @@ namespace fhg
 
 
       // dlopen file
-      void *handle (dlopen(full_path_to_file.c_str(), RTLD_GLOBAL | (load_lazy?RTLD_LAZY:RTLD_NOW)));
+      void *handle (dlopen(full_path_to_file.c_str(), RTLD_GLOBAL | RTLD_LAZY));
       if (!handle)
       {
         std::string msg ("dlopen () failed: ");

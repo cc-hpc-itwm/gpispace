@@ -5,6 +5,7 @@ fhg_add_runtime_executable (orchestrator.cpp
                  ${FhgLog_LIBRARY}
                  pnet
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                 ${Boost_IOSTREAMS_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
 )
 
@@ -13,6 +14,7 @@ fhg_add_runtime_executable (agent.cpp
                  ${FhgLog_LIBRARY}
                  pnet
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                 ${Boost_IOSTREAMS_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
 )
 

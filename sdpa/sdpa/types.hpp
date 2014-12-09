@@ -1,6 +1,8 @@
 #ifndef SDPA_TYPES_HPP
 #define SDPA_TYPES_HPP 1
 
+#include <fhgcom/peer_info.hpp>
+
 #include <string>
 #include <vector>
 #include <list>
@@ -18,13 +20,38 @@ namespace sdpa {
 	typedef std::string job_desc_t;
 	typedef std::string location_t;
 	typedef std::string worker_id_t;
-	typedef worker_id_t agent_id_t;
 	typedef std::string job_result_t;
 	typedef std::list<sdpa::worker_id_t> worker_id_list_t;
 	typedef worker_id_list_t agent_id_list_t;
 	typedef std::pair<worker_id_t, job_id_t> worker_job_pair_t;
 
   typedef std::list<std::pair<sdpa::worker_id_t, int>> list_match_workers_t;
+
+  using name_host_port_tuple
+    = std::tuple<std::string, fhg::com::host_t, fhg::com::port_t>;
+
+  namespace daemon
+  {
+    class GenericDaemon;
+  }
+
+  //! \note Defined in GenericDaemon.cpp
+  struct opaque_job_master_t
+  {
+    opaque_job_master_t() = delete;
+    opaque_job_master_t (opaque_job_master_t const&) = delete;
+    opaque_job_master_t& operator= (opaque_job_master_t const&) = delete;
+    opaque_job_master_t (opaque_job_master_t&&);
+    opaque_job_master_t& operator= (opaque_job_master_t&&) = delete;
+    ~opaque_job_master_t();
+
+  private:
+    opaque_job_master_t (const void*);
+    struct implementation;
+    friend class sdpa::daemon::GenericDaemon;
+    implementation* _;
+    implementation* operator->() const { return _; }
+  };
 
   class worker_id_host_info_t
   {
@@ -46,36 +73,6 @@ namespace sdpa {
 
   typedef std::multimap<int, worker_id_host_info_t, std::greater<int>> mmap_match_deg_worker_id_t;
 
-  class MasterInfo
-  {
-  public:
-    MasterInfo(const std::string& name  = "", bool registered = false )
-    : name_(name)
-    , registered_(registered)
-    , nConsecNetFailCnt_(0)
-    , nConsecRegAttempts_(0)
-    {}
-
-    std::string name() const { return name_; }
-    bool is_registered() const { return registered_; }
-    void set_registered(bool b) { registered_ = b; }
-
-    unsigned int getConsecNetFailCnt() { return nConsecNetFailCnt_;}
-    void incConsecNetFailCnt() { nConsecNetFailCnt_++;}
-    void resetConsecNetFailCnt() { nConsecNetFailCnt_=0; }
-
-    unsigned int getConsecRegAttempts() { return nConsecRegAttempts_;}
-    void incConsecRegAttempts() { nConsecRegAttempts_++;}
-    void resetConsecRegAttempts() { nConsecRegAttempts_=0; }
-
-  private:
-    std::string name_;
-    bool registered_;
-    unsigned int nConsecNetFailCnt_;
-    unsigned int nConsecRegAttempts_;
-  };
-
-  typedef std::vector<MasterInfo> master_info_list_t;
   struct discovery_info_t;
 
   typedef std::set<discovery_info_t> discovery_info_set_t;

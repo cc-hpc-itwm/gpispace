@@ -16,7 +16,6 @@
 #include <boost/lexical_cast.hpp>
 
 #include <fhglog/LogMacros.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
 
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
@@ -30,6 +29,7 @@
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/container/manager.hpp>
 
+#include <boost/make_shared.hpp>
 #include <boost/optional.hpp>
 
 #include <memory>
@@ -43,15 +43,11 @@ struct config_t
   config_t()
     : magic (0)
     // socket
-    // kvs_host
-    , kvs_port (0)
-    , kvs_retry_count (2)
     // log_host
     , log_port (2438)
     , log_level ('I')
   {
     memset (socket, 0, sizeof(socket));
-    memset (kvs_host, 0, sizeof (kvs_host));
 
     if (gethostname (log_host, MAX_HOST_LEN) != 0)
     {
@@ -64,9 +60,6 @@ struct config_t
 
   int  magic;
   char socket[MAX_PATH_LEN];
-  char kvs_host[MAX_HOST_LEN];
-  unsigned short kvs_port;
-  unsigned int kvs_retry_count;
   char log_host[MAX_HOST_LEN];
   unsigned short log_port;
   char log_level;
@@ -89,15 +82,18 @@ namespace
     , const unsigned long long memory_size
     , const unsigned short p
     , const std::chrono::seconds& timeout
+    , unsigned short communication_port
     )
   {
     if (requested_api == API_gaspi)
     {
-      return fhg::util::make_unique <gpi::api::gaspi_t> (memory_size, p, timeout);
+      return fhg::util::make_unique <gpi::api::gaspi_t>
+        (memory_size, p, timeout, communication_port);
     }
     else if (requested_api == API_fake)
     {
-      return fhg::util::make_unique <gpi::api::fake_gpi_api_t> (memory_size, timeout);
+      return fhg::util::make_unique <gpi::api::fake_gpi_api_t>
+        (memory_size, timeout, communication_port);
     }
     else
     {
@@ -153,11 +149,6 @@ try
       fprintf(stderr, "      examples are:\n");
       fprintf(stderr, "         gpi://?buffers=8&buffer_size=4194304 GPI memory\n");
       fprintf(stderr, "         sfs://<path>?create=true&size=1073741824\n");
-      fprintf(stderr, "\n");
-      fprintf(stderr, "KVS options\n");
-      fprintf(stderr, "    --kvs-host HOST (%s)\n", config.kvs_host);
-      fprintf(stderr, "    --kvs-port PORT (%hu)\n", config.kvs_port);
-      fprintf(stderr, "    --kvs-retry-count SIZE (%u)\n", config.kvs_retry_count);
       fprintf(stderr, "\n");
       fprintf(stderr, "LOG options\n");
       fprintf(stderr, "    --log-host HOST (%s)\n", config.log_host);
@@ -231,62 +222,6 @@ try
       else
       {
         fprintf(stderr, "%s: missing argument to --mem-url\n", program_name);
-        exit(EX_USAGE);
-      }
-    }
-    else if (strcmp(av[i], "--kvs-host") == 0)
-    {
-      ++i;
-      if (i < ac)
-      {
-        if ((strlen(av[i] + 1) > sizeof(config.kvs_host)))
-        {
-          fprintf(stderr, "%s: hostname is too large!\n", program_name);
-          fprintf(stderr, "    at most %lu characters are supported\n", sizeof(config.kvs_host));
-          exit(EX_INVAL);
-        }
-        strncpy(config.kvs_host, av[i], sizeof(config.kvs_host));
-        ++i;
-      }
-      else
-      {
-        fprintf(stderr, "%s: missing argument to --kvs-host\n", program_name);
-        exit(EX_USAGE);
-      }
-    }
-    else if (strcmp(av[i], "--kvs-port") == 0)
-    {
-      ++i;
-      if (i < ac)
-      {
-        if (sscanf(av[i], "%hu", &config.kvs_port) == 0)
-        {
-          fprintf(stderr, "%s: kvs-port invalid: %s\n", program_name, av[i]);
-          exit(EX_INVAL);
-        }
-        ++i;
-      }
-      else
-      {
-        fprintf(stderr, "%s: missing argument to --kvs-port\n", program_name);
-        exit(EX_USAGE);
-      }
-    }
-    else if (strcmp(av[i], "--kvs-retry-count") == 0)
-    {
-      ++i;
-      if (i < ac)
-      {
-        if (sscanf(av[i], "%u", &config.kvs_retry_count) == 0)
-        {
-          fprintf(stderr, "%s: kvs-retry-count invalid: %s\n", program_name, av[i]);
-          exit(EX_INVAL);
-        }
-        ++i;
-      }
-      else
-      {
-        fprintf(stderr, "%s: missing argument to --kvs-retry-count\n", program_name);
         exit(EX_USAGE);
       }
     }
@@ -472,17 +407,6 @@ try
     exit (EX_USAGE);
   }
 
-  if (0 == strlen (config.kvs_host))
-  {
-    fprintf (stderr, "parameter 'kvs-host' not given (--kvs-host <host-of-kvs-daemon>\n");
-    exit (EX_USAGE);
-  }
-  if (0 == config.kvs_port)
-  {
-    fprintf (stderr, "parameter 'kvs-port' not given (--kvs-port <port-of-kvs-daemon>\n");
-    exit (EX_USAGE);
-  }
-
   boost::asio::io_service remote_log_io_service;
   if (0 != configure_logging (&config, logfile, remote_log_io_service))
   {
@@ -495,17 +419,30 @@ try
            , socket_path
            );
 
-  boost::asio::io_service kvs_client_io_service;
-  fhg::com::kvs::kvsc_ptr_t kvs_client
-    (new fhg::com::kvs::client::kvsc
-      ( kvs_client_io_service
-      , config.kvs_host
-      , boost::lexical_cast<std::string> (config.kvs_port)
-      , true
-      , boost::posix_time::seconds (1)
-      , config.kvs_retry_count
-      )
+  boost::asio::io_service topology_peer_io_service;
+  boost::shared_ptr<fhg::com::peer_t> topology_peer
+    ( boost::make_shared<fhg::com::peer_t>
+        (topology_peer_io_service, fhg::com::host_t ("*"), fhg::com::port_t ("0"))
     );
+
+
+  boost::shared_ptr<boost::thread> topology_peer_thread
+    (boost::make_shared<boost::thread> (&fhg::com::peer_t::run, topology_peer));
+
+  try
+  {
+    topology_peer->start ();
+  }
+  catch (std::exception const& ex)
+  {
+    LOG(ERROR, "could not start peer: " << ex.what());
+    topology_peer_thread->interrupt();
+    topology_peer_thread->join();
+    topology_peer.reset();
+    topology_peer_thread.reset();
+    throw;
+  }
+
 
   // initialize gpi api
   std::unique_ptr<gpi_api_t> gpi_api_
@@ -513,6 +450,7 @@ try
                     , gpi_mem
                     , *port
                     , std::chrono::seconds (gpi_timeout)
+                    , topology_peer->local_endpoint().port()
                     )
     );
   gpi_api_t& gpi_api (*gpi_api_);
@@ -538,9 +476,8 @@ try
     if (mem_urls.empty ())
       mem_urls.push_back (default_memory_url);
 
-    boost::asio::io_service topology_peer_io_service;
     const gpi::pc::container::manager_t container_manager
-      (topology_peer_io_service, config.socket, mem_urls, gpi_api, kvs_client);
+      (config.socket, mem_urls, gpi_api, topology_peer);
 
     LOG (INFO, "started GPI interface on rank " << gpi_api.rank() << " at " << config.socket);
 
@@ -553,6 +490,14 @@ try
     signal_handler.add (SIGINT, std::bind (request_stop));
 
     stop_requested.wait();
+
+    topology_peer->stop();
+    if (topology_peer_thread->joinable())
+    {
+      topology_peer_thread->join();
+    }
+    topology_peer.reset();
+    topology_peer_thread.reset();
 
     LOG (INFO, "gpi process (rank " << gpi_api.rank() << ") terminated");
     return EXIT_SUCCESS;

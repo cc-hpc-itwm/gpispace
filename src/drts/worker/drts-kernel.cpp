@@ -3,15 +3,17 @@
 #include <drts/worker/drts.hpp>
 
 #include <plugin/core/kernel.hpp>
-#include <fhg/util/daemonize.hpp>
-#include <fhg/util/pidfile_writer.hpp>
+#include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/split.hpp>
 
 #include <fhglog/LogMacros.hpp>
 
+#include <boost/iostreams/device/file_descriptor.hpp>
+#include <boost/iostreams/stream.hpp>
 #include <boost/program_options.hpp>
 
+#include <fstream>
 #include <functional>
 #include <string>
 #include <vector>
@@ -27,7 +29,6 @@ int main(int ac, char **av)
   po::options_description desc("options");
 
   std::vector<std::string> config_vars;
-  std::string pidfile;
   std::string kernel_name;
   fhg::core::kernel_t::search_path_t search_path;
 
@@ -35,11 +36,13 @@ int main(int ac, char **av)
     ("help,h", "this message")
     ("name,n", po::value<std::string>(&kernel_name), "give the kernel a name")
     ("set,s", po::value<std::vector<std::string>>(&config_vars), "set a parameter to a value key=value")
-    ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
-    ("daemonize", "daemonize after all checks were successful")
     ("gpi_enabled", "load gpi api")
     ( "add-search-path,L", po::value<fhg::core::kernel_t::search_path_t>(&search_path)
     , "add a path to the search path for plugins"
+    )
+    ( "startup-messages-pipe"
+    , po::value<int>()->required()
+    , "pipe filedescriptor to use for communication during startup (ports used, ...)"
     )
     ;
 
@@ -88,29 +91,6 @@ int main(int ac, char **av)
   }
   config_variables["kernel_name"] = kernel_name;
 
-  const bool daemonize (vm.count ("daemonize"));
-
-  if (not pidfile.empty())
-  {
-    fhg::util::pidfile_writer const pidfile_writer (pidfile);
-
-    if (daemonize)
-    {
-      fhg::util::fork_and_daemonize_child_and_abandon_parent
-        ({&remote_log_io_service});
-    }
-
-    pidfile_writer.write();
-  }
-  else
-  {
-    if (daemonize)
-    {
-      fhg::util::fork_and_daemonize_child_and_abandon_parent
-        ({&remote_log_io_service});
-    }
-  }
-
   fhg::core::wait_until_stopped waiter;
   const std::function<void()> request_stop (waiter.make_request_stop());
 
@@ -129,28 +109,43 @@ int main(int ac, char **av)
   signal_handlers.add (SIGINT, std::bind (request_stop));
 
   boost::asio::io_service peer_io_service;
-  boost::asio::io_service kvs_client_io_service;
   if (config_variables.count ("plugin.drts.gui_url"))
   {
     boost::asio::io_service gui_io_service;
     DRTSImpl const plugin
       ( request_stop
       , peer_io_service
-      , kvs_client_io_service
       , std::pair<std::string, boost::asio::io_service&>
         (config_variables.at ("plugin.drts.gui_url"), gui_io_service)
       , config_variables
       );
+
+    {
+      boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
+        startup_messages_pipe ( vm["startup-messages-pipe"].as<int>()
+                              , boost::iostreams::close_handle
+                              );
+      startup_messages_pipe << "OKAY\n";
+    }
+
     waiter.wait();
   }
   else
   {
     DRTSImpl const plugin ( request_stop
                           , peer_io_service
-                          , kvs_client_io_service
                           , boost::none
                           , config_variables
                           );
+
+    {
+      boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
+        startup_messages_pipe ( vm["startup-messages-pipe"].as<int>()
+                              , boost::iostreams::close_handle
+                              );
+      startup_messages_pipe << "OKAY\n";
+    }
+
     waiter.wait();
   }
 

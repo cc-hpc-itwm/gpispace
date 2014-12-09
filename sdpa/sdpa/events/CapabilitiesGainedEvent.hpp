@@ -14,19 +14,13 @@ namespace sdpa
       typedef boost::shared_ptr<CapabilitiesGainedEvent> Ptr;
 
       CapabilitiesGainedEvent
-        ( const address_t& from
-        , const address_t& to
-        , const sdpa::capabilities_set_t& cpbs = capabilities_set_t()
-        )
-          : MgmtEvent (from, to)
+        (const sdpa::capabilities_set_t& cpbs = capabilities_set_t())
+          : MgmtEvent()
           , capabilities_ (cpbs)
       {}
 
-      CapabilitiesGainedEvent ( const address_t& from
-                              , const address_t& to
-                              , const sdpa::capability_t& cap
-                              )
-        : MgmtEvent (from, to)
+      CapabilitiesGainedEvent (const sdpa::capability_t& cap)
+        : MgmtEvent()
         , capabilities_ ()
       {
         capabilities_.insert (cap);
@@ -37,9 +31,10 @@ namespace sdpa
         return capabilities_;
       }
 
-      virtual void handleBy (EventHandler* handler) override
+      virtual void handleBy
+        (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
-        handler->handleCapabilitiesGainedEvent (this);
+        handler->handleCapabilitiesGainedEvent (source, this);
       }
 
     private:
@@ -54,10 +49,10 @@ namespace sdpa
 
     LOAD_CONSTRUCT_DATA_DEF (CapabilitiesGainedEvent, e)
     {
-      LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
+      LOAD_MGMTEVENT_CONSTRUCT_DATA();
       LOAD_FROM_ARCHIVE (sdpa::capabilities_set_t, capabilities);
 
-      ::new (e) CapabilitiesGainedEvent (from, to, capabilities);
+      ::new (e) CapabilitiesGainedEvent (capabilities);
     }
   }
 }

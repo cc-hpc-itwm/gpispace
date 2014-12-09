@@ -30,39 +30,18 @@ namespace sdpa
 {
   namespace client
   {
-    namespace
-    {
-      void kvs_error_handler (boost::system::error_code const &)
-      {
-        throw std::runtime_error ("could not contact KVS, terminating");
-      }
-    }
-
-    Client::Client ( std::string orchestrator
+    Client::Client ( fhg::com::host_t const& orchestrator_host
+                   , fhg::com::port_t const& orchestrator_port
                    , boost::asio::io_service& peer_io_service
-                   , boost::asio::io_service& kvs_client_io_service
-                   , std::string kvs_host, std::string kvs_port
                    )
-      : _name ("gspcc-" + boost::uuids::to_string (boost::uuids::random_generator()()))
-      , orchestrator_ (orchestrator)
-      , _kvs_client
-        ( new fhg::com::kvs::client::kvsc ( kvs_client_io_service
-                                          , kvs_host
-                                          , kvs_port
-                                          , true
-                                          , boost::posix_time::seconds(120)
-                                          , 1
-                                          )
-        )
-      , m_peer ( peer_io_service
-               , _name
+      : m_peer ( peer_io_service
                , fhg::com::host_t ("*")
                , fhg::com::port_t ("0")
-               , _kvs_client
-               , &kvs_error_handler
                )
       , _peer_thread (&fhg::com::peer_t::run, &m_peer)
       , _stopping (false)
+      , _drts_entrypoint_address
+          (m_peer.connect_to (orchestrator_host, orchestrator_port))
     {
       m_peer.start ();
       m_peer.async_recv ( &m_message
@@ -80,22 +59,8 @@ namespace sdpa
       m_peer.stop();
     }
 
-    fhg::com::message_t Client::message_for_event
-      (const sdpa::events::SDPAEvent* event)
-    {
-      static sdpa::events::Codec codec;
-
-      const std::string encoded_evt (codec.encode (event));
-      fhg::com::message_t msg (encoded_evt.begin(), encoded_evt.end());
-      msg.header.dst = fhg::com::p2p::address_t (event->to());
-      msg.header.src = m_peer.address();
-      msg.header.length = msg.data.size();
-
-      return msg;
-    }
-
     void Client::handle_recv ( boost::system::error_code const & ec
-                             , boost::optional<std::string> source_name
+                             , boost::optional<fhg::com::p2p::address_t>
                              )
     {
       static sdpa::events::Codec codec;
@@ -117,9 +82,7 @@ namespace sdpa
         if (m_message.header.src != m_peer.address())
         {
           sdpa::events::ErrorEvent::Ptr
-            error(new sdpa::events::ErrorEvent ( source_name.get()
-                                               , m_peer.name()
-                                               , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+            error(new sdpa::events::ErrorEvent ( sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                                                , "receiving response failed: " + boost::lexical_cast<std::string>(ec)
                                                )
                  );
@@ -166,9 +129,8 @@ namespace sdpa
     {
       m_incoming_events.INDICATES_A_RACE_clear();
 
-      fhg::com::message_t msg (message_for_event (&event));
-
-      m_peer.send (&msg);
+      static sdpa::events::Codec codec;
+      m_peer.send (_drts_entrypoint_address, codec.encode (&event));
 
       const sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
       if (Expected* e = dynamic_cast<Expected*> (reply.get()))
@@ -183,7 +145,7 @@ namespace sdpa
       (job_id_t id, job_info_t& job_info)
     {
       send_and_wait_for_reply<sdpa::events::SubscribeAckEvent>
-        (sdpa::events::SubscribeEvent (_name, orchestrator_, id));
+        (sdpa::events::SubscribeEvent (id));
      sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
 
       if ( sdpa::events::JobFinishedEvent* evt
@@ -236,19 +198,19 @@ namespace sdpa
     sdpa::job_id_t Client::submitJob(const job_desc_t &desc)
     {
       return send_and_wait_for_reply<sdpa::events::SubmitJobAckEvent>
-        (sdpa::events::SubmitJobEvent (_name, orchestrator_, boost::none, desc)).job_id();
+        (sdpa::events::SubmitJobEvent (boost::none, desc)).job_id();
     }
 
     void Client::cancelJob(const job_id_t &jid)
     {
       send_and_wait_for_reply<sdpa::events::CancelJobAckEvent>
-        (sdpa::events::CancelJobEvent (_name, orchestrator_, jid));
+        (sdpa::events::CancelJobEvent (jid));
     }
 
     sdpa::discovery_info_t Client::discoverJobStates(const we::layer::id_type& discover_id, const job_id_t &job_id)
     {
       return send_and_wait_for_reply<sdpa::events::DiscoverJobStatesReplyEvent>
-        (sdpa::events::DiscoverJobStatesEvent (_name, orchestrator_, job_id, discover_id)).discover_result();
+        (sdpa::events::DiscoverJobStatesEvent (job_id, discover_id)).discover_result();
     }
 
     void Client::put_token
@@ -258,9 +220,7 @@ namespace sdpa
         (boost::uuids::to_string (boost::uuids::random_generator()()));
 
       if ( send_and_wait_for_reply<sdpa::events::put_token_ack>
-           ( sdpa::events::put_token ( _name
-                                     , orchestrator_
-                                     , job_id
+           ( sdpa::events::put_token ( job_id
                                      , put_token_id
                                      , place_name
                                      , value
@@ -283,7 +243,7 @@ namespace sdpa
     {
       const sdpa::events::JobStatusReplyEvent reply
         ( send_and_wait_for_reply<sdpa::events::JobStatusReplyEvent>
-        (sdpa::events::QueryJobStatusEvent (_name, orchestrator_, jid))
+          (sdpa::events::QueryJobStatusEvent (jid))
         );
 
       info.error_message = reply.error_message();
@@ -294,13 +254,13 @@ namespace sdpa
     void Client::deleteJob(const job_id_t &jid)
     {
       send_and_wait_for_reply<sdpa::events::DeleteJobAckEvent>
-        (sdpa::events::DeleteJobEvent (_name, orchestrator_, jid));
+        (sdpa::events::DeleteJobEvent (jid));
     }
 
     sdpa::client::result_t Client::retrieveResults(const job_id_t &jid)
     {
       return send_and_wait_for_reply<sdpa::events::JobResultsReplyEvent>
-        (sdpa::events::RetrieveJobResultsEvent (_name, orchestrator_, jid)).result();
+        (sdpa::events::RetrieveJobResultsEvent (jid)).result();
     }
   }
 }

@@ -32,9 +32,6 @@ namespace
 
     BOOST_REQUIRE (r);
 
-    BOOST_REQUIRE_EQUAL (r->from(), e.from());
-    BOOST_REQUIRE_EQUAL (r->to(), e.to());
-
     return r;
   }
 
@@ -56,13 +53,13 @@ namespace
 
 BOOST_AUTO_TEST_CASE (CancelJobAck)
 {
-  CancelJobAckEvent e ("foo", "bar", "job-id-1");
+  CancelJobAckEvent e ("job-id-1");
   encode_decode_job_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (CancelJob)
 {
-  CancelJobEvent e ("foo", "bar", "job-id-1");
+  CancelJobEvent e ("job-id-1");
   encode_decode_job_event (e);
 }
 
@@ -72,7 +69,7 @@ BOOST_AUTO_TEST_CASE (CapabilitiesGained)
   set.insert (sdpa::Capability ("foo", fhg::util::random_string()));
   set.insert (sdpa::Capability ("bar", fhg::util::random_string()));
 
-  CapabilitiesGainedEvent e ("from", "to", set);
+  CapabilitiesGainedEvent e (set);
   CapabilitiesGainedEvent* r (encode_decode_mgmt_event (e));
 
   BOOST_REQUIRE_EQUAL (r->capabilities(), e.capabilities());
@@ -84,7 +81,7 @@ BOOST_AUTO_TEST_CASE (CapabilitiesLost)
   set.insert (sdpa::Capability ("foo", fhg::util::random_string()));
   set.insert (sdpa::Capability ("bar", fhg::util::random_string()));
 
-  CapabilitiesLostEvent e ("from", "to", set);
+  CapabilitiesLostEvent e (set);
   CapabilitiesLostEvent* r (encode_decode_mgmt_event (e));
 
   BOOST_REQUIRE_EQUAL (r->capabilities(), e.capabilities());
@@ -92,19 +89,19 @@ BOOST_AUTO_TEST_CASE (CapabilitiesLost)
 
 BOOST_AUTO_TEST_CASE (DeleteJobAck)
 {
-  DeleteJobAckEvent e ("foo", "bar", "job-id-1");
+  DeleteJobAckEvent e ("job-id-1");
   encode_decode_job_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (DeleteJob)
 {
-  DeleteJobEvent e ("foo", "bar", "job-id-1");
+  DeleteJobEvent e ("job-id-1");
   encode_decode_job_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (Error)
 {
-  ErrorEvent e ("from", "to", ErrorEvent::SDPA_EUNKNOWN, "testing", sdpa::job_id_t ("job-id"));
+  ErrorEvent e (ErrorEvent::SDPA_EUNKNOWN, "testing", sdpa::job_id_t ("job-id"));
   ErrorEvent* r (encode_decode_mgmt_event (e));
 
   BOOST_REQUIRE_EQUAL (r->reason(), e.reason());
@@ -114,13 +111,13 @@ BOOST_AUTO_TEST_CASE (Error)
 
 BOOST_AUTO_TEST_CASE (JobFailedAck)
 {
-  JobFailedAckEvent e ("foo", "bar", "job-id-1");
+  JobFailedAckEvent e ("job-id-1");
   encode_decode_job_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (JobFailed)
 {
-  JobFailedEvent e ("foo", "bar", "job-id-1", "testing");
+  JobFailedEvent e ("job-id-1", "testing");
   JobFailedEvent* r (encode_decode_job_event (e));
 
   BOOST_REQUIRE_EQUAL (r->error_message(), e.error_message());
@@ -128,13 +125,13 @@ BOOST_AUTO_TEST_CASE (JobFailed)
 
 BOOST_AUTO_TEST_CASE (JobFinishedAck)
 {
-  JobFinishedAckEvent e ("foo", "bar", "job-id-1");
+  JobFinishedAckEvent e ("job-id-1");
   encode_decode_job_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (JobFinished)
 {
-  JobFinishedEvent e ("foo", "bar", "job-id-1", "result");
+  JobFinishedEvent e ("job-id-1", "result");
   JobFinishedEvent* r (encode_decode_job_event (e));
 
   BOOST_REQUIRE_EQUAL (r->result(), e.result());
@@ -142,7 +139,7 @@ BOOST_AUTO_TEST_CASE (JobFinished)
 
 BOOST_AUTO_TEST_CASE (JobResultsReply)
 {
-  JobResultsReplyEvent e ("foo", "bar", "job-id-1", "result");
+  JobResultsReplyEvent e ("job-id-1", "result");
   JobResultsReplyEvent* r (encode_decode_job_event (e));
 
   BOOST_REQUIRE_EQUAL (r->result(), e.result());
@@ -150,7 +147,7 @@ BOOST_AUTO_TEST_CASE (JobResultsReply)
 
 BOOST_AUTO_TEST_CASE (JobStatusReply)
 {
-  JobStatusReplyEvent e ("foo", "bar", "job-id-1", sdpa::status::RUNNING, "testing");
+  JobStatusReplyEvent e ("job-id-1", sdpa::status::RUNNING, "testing");
   JobStatusReplyEvent* r (encode_decode_job_event (e));
 
   BOOST_REQUIRE_EQUAL (r->status(), e.status());
@@ -159,19 +156,19 @@ BOOST_AUTO_TEST_CASE (JobStatusReply)
 
 BOOST_AUTO_TEST_CASE (QueryJobStatus)
 {
-  QueryJobStatusEvent e ("foo", "bar", "job-id-1");
+  QueryJobStatusEvent e ("job-id-1");
   encode_decode_job_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (RetrieveJobResults)
 {
-  RetrieveJobResultsEvent e ("foo", "bar", "job-id-1");
+  RetrieveJobResultsEvent e ("job-id-1");
   encode_decode_job_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (SubmitJobAck)
 {
-  SubmitJobAckEvent e ("foo", "bar", "job-id-1");
+  SubmitJobAckEvent e ("job-id-1");
   encode_decode_job_event (e);
 }
 
@@ -181,7 +178,7 @@ BOOST_AUTO_TEST_CASE (SubmitJob)
   workers.push_back ("foo");
   workers.push_back ("bar");
 
-  SubmitJobEvent e ("foo", "bar", sdpa::job_id_t("job-id-1"), "pnet", workers);
+  SubmitJobEvent e (sdpa::job_id_t("job-id-1"), "pnet", workers);
   SubmitJobEvent* r (encode_decode_sdpa_event (e));
 
   BOOST_REQUIRE_EQUAL (r->job_id(), e.job_id());
@@ -191,7 +188,7 @@ BOOST_AUTO_TEST_CASE (SubmitJob)
 
 BOOST_AUTO_TEST_CASE (SubscribeAck)
 {
-  SubscribeAckEvent e ("foo", "bar", fhg::util::random_string());
+  SubscribeAckEvent e (fhg::util::random_string());
   SubscribeAckEvent* r (encode_decode_mgmt_event (e));
 
   BOOST_REQUIRE_EQUAL (r->job_id(), e.job_id());
@@ -199,16 +196,15 @@ BOOST_AUTO_TEST_CASE (SubscribeAck)
 
 BOOST_AUTO_TEST_CASE (Subscribe)
 {
-  SubscribeEvent e ("foo", "bar", fhg::util::random_string());
+  SubscribeEvent e (fhg::util::random_string());
   SubscribeEvent* r (encode_decode_mgmt_event (e));
 
   BOOST_REQUIRE_EQUAL (r->job_id(), e.job_id());
-  BOOST_REQUIRE_EQUAL (r->subscriber(), e.subscriber());
 }
 
 BOOST_AUTO_TEST_CASE (WorkerRegistrationAck)
 {
-  WorkerRegistrationAckEvent e ("foo", "bar");
+  WorkerRegistrationAckEvent e;
   encode_decode_mgmt_event (e);
 }
 
@@ -218,9 +214,11 @@ BOOST_AUTO_TEST_CASE (WorkerRegistration)
   caps.insert (sdpa::Capability ("foo", fhg::util::random_string()));
   caps.insert (sdpa::Capability ("bar", fhg::util::random_string()));
 
-  WorkerRegistrationEvent e ("foo", "bar", 10, caps, true, fhg::util::random_string());
+  WorkerRegistrationEvent e
+    (fhg::util::random_string(), 10, caps, true, fhg::util::random_string());
   WorkerRegistrationEvent* r (encode_decode_mgmt_event (e));
 
+  BOOST_REQUIRE_EQUAL (r->name(), e.name());
   BOOST_REQUIRE_EQUAL (r->capacity(), e.capacity());
   BOOST_REQUIRE_EQUAL (r->capabilities(), e.capabilities());
   BOOST_REQUIRE_EQUAL (r->children_allowed(), e.children_allowed());
@@ -229,7 +227,7 @@ BOOST_AUTO_TEST_CASE (WorkerRegistration)
 
 BOOST_AUTO_TEST_CASE (DiscoverJobStates)
 {
-  DiscoverJobStatesEvent e("foo", "bar", "job_0", "disc_0");
+  DiscoverJobStatesEvent e("job_0", "disc_0");
   DiscoverJobStatesEvent* r (encode_decode_job_event (e));
 
   BOOST_REQUIRE_EQUAL (r->discover_id(), e.discover_id());
@@ -248,7 +246,7 @@ BOOST_AUTO_TEST_CASE (DiscoverJobStatesReply)
 
   sdpa::discovery_info_t disc_res("job_0", boost::none, disc_info_set);
 
-  DiscoverJobStatesReplyEvent e("foo", "bar", "disc_0", disc_res);
+  DiscoverJobStatesReplyEvent e("disc_0", disc_res);
   DiscoverJobStatesReplyEvent* r (encode_decode_mgmt_event (e));
 
   BOOST_REQUIRE_EQUAL (r->discover_id(), e.discover_id());

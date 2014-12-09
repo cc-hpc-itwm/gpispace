@@ -6,12 +6,13 @@
 
 #include <fhglog/LogMacros.hpp>
 
+#include <fhg/util/boost/program_options/validators/existing_path.hpp>
+
+#include <boost/iostreams/device/file_descriptor.hpp>
+#include <boost/iostreams/stream.hpp>
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <boost/filesystem/path.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
-#include <fhg/util/daemonize.hpp>
-#include <fhg/util/pidfile_writer.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 
@@ -23,10 +24,10 @@ namespace bfs = boost::filesystem;
 namespace po = boost::program_options;
 
 int main (int argc, char **argv)
+try
 {
     std::string orchName;
     std::string orchUrl;
-    std::string pidfile;
 
   boost::asio::io_service remote_log_io_service;
   FHGLOG_SETUP (remote_log_io_service);
@@ -36,11 +37,10 @@ int main (int argc, char **argv)
        ("help,h", "Display this message")
        ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
        ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
-       ("kvs-host",  po::value<std::string>()->required(), "The kvs daemon's host")
-       ("kvs-port",  po::value<std::string>()->required(), "The kvs daemon's port")
-       ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
-       ("daemonize", "daemonize after all checks were successful")
-       ;
+       ( "startup-messages-pipe"
+       , po::value<int>()->required()
+       , "pipe filedescriptor to use for communication during startup (ports used, ...)"
+       );
 
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
@@ -56,36 +56,13 @@ int main (int argc, char **argv)
 
     po::notify(vm);
 
-    if (not pidfile.empty())
-    {
-      fhg::util::pidfile_writer const pidfile_writer (pidfile);
-
-      if (vm.count ("daemonize"))
-      {
-        fhg::util::fork_and_daemonize_child_and_abandon_parent
-          ({&remote_log_io_service});
-      }
-
-      pidfile_writer.write();
-    }
-    else
-    {
-      if (vm.count ("daemonize"))
-      {
-        fhg::util::fork_and_daemonize_child_and_abandon_parent
-          ({&remote_log_io_service});
-      }
-    }
-
   boost::asio::io_service peer_io_service;
-  boost::asio::io_service kvs_client_io_service;
+  boost::asio::io_service rpc_io_service;
   const sdpa::daemon::Orchestrator orchestrator
     ( orchName
     , orchUrl
     , peer_io_service
-    , kvs_client_io_service
-    , vm["kvs-host"].as<std::string>()
-    , vm["kvs-port"].as<std::string>()
+    , rpc_io_service
     );
 
   fhg::util::thread::event<> stop_requested;
@@ -99,6 +76,22 @@ int main (int argc, char **argv)
   signal_handlers.add (SIGTERM, std::bind (request_stop));
   signal_handlers.add (SIGINT, std::bind (request_stop));
 
+  {
+    boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
+      startup_messages_pipe ( vm["startup-messages-pipe"].as<int>()
+                            , boost::iostreams::close_handle
+                            );
+    startup_messages_pipe << orchestrator.peer_local_endpoint().address().to_string() << "\n";
+    startup_messages_pipe << orchestrator.peer_local_endpoint().port() << "\n";
+    startup_messages_pipe << orchestrator.rpc_local_endpoint().address().to_string() << "\n";
+    startup_messages_pipe << orchestrator.rpc_local_endpoint().port() << "\n";
+    startup_messages_pipe << "OKAY\n";
+  }
 
   stop_requested.wait();
+}
+catch (std::exception const& ex)
+{
+  std::cerr << "EXCEPTION: " << ex.what() << std::endl;
+  return 1;
 }

@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
 #include <drts/worker/context.hpp>
-#include <drts/worker/job.hpp>
 
 #include <fhgcom/message.hpp>
 #include <fhgcom/peer.hpp>
@@ -102,40 +101,144 @@ private:
 
 class DRTSImpl : public sdpa::events::EventHandler
 {
-  typedef std::map<std::string, bool> map_of_masters_t;
+  struct master_network_info
+  {
+    master_network_info (std::string const& host, std::string const& port);
+    fhg::com::host_t host;
+    fhg::com::port_t port;
+    boost::optional<fhg::com::p2p::address_t> address;
+  };
+  typedef std::map<std::string, master_network_info> map_of_masters_t;
 
+public:
+  class Job
+  {
+    typedef boost::mutex mutex_type;
+    typedef boost::condition_variable condition_type;
+    typedef boost::unique_lock<mutex_type> lock_type;
+  public:
+    enum state_t
+      {
+        PENDING = 0
+      , RUNNING
+      , FINISHED
+      , FAILED
+      , CANCELED
+      };
+
+    struct ID
+    {
+      explicit ID(std::string const &s)
+        : value(s)
+      {}
+
+      const std::string value;
+    };
+
+    struct Description
+    {
+      explicit Description(std::string const &s)
+        : value(s)
+      {}
+
+      const std::string value;
+    };
+
+    using owner_type = map_of_masters_t::const_iterator;
+
+    explicit
+    Job( Job::ID const &jobid
+       , Job::Description const &description
+       , owner_type const&
+       );
+
+    inline state_t state () const { lock_type lck(m_mutex); return m_state; }
+    state_t cmp_and_swp_state( state_t expected
+                             , state_t newstate
+                             );
+    inline Job& set_state (state_t s) {
+      lock_type    lck(m_mutex); m_state = s;
+      return *this;
+    }
+
+    std::string const & id() const { return m_id; }
+    std::string const & description() const { return m_input_description; }
+    owner_type const& owner() const { return m_owner; }
+
+    std::string const & result() const {
+      lock_type lck(m_mutex); return m_result;
+    }
+    Job & set_result(std::string const &r) {
+      lock_type lck(m_mutex); m_result = r;
+      return *this;
+    }
+
+    std::string const & message() const {
+      lock_type lck(m_mutex); return m_message;
+    }
+
+    Job& set_message (std::string const &s) {
+      lock_type lck(m_mutex); m_message = s;
+      return *this;
+    }
+
+    std::list<std::string> const &worker_list () const
+    {
+      return m_worker_list;
+    }
+
+    Job & worker_list (std::list<std::string> const &workers)
+    {
+      m_worker_list = workers;
+      return *this;
+    }
+  private:
+    inline void    state (state_t s) { lock_type lck(m_mutex); m_state = s; }
+    mutable mutex_type m_mutex;
+
+    std::string m_id;
+    std::string m_input_description;
+    owner_type m_owner;
+    state_t     m_state;
+    std::string m_result;
+    std::string m_message;
+    std::list<std::string> m_worker_list;
+  };
+
+private:
   typedef std::map< std::string
-                  , boost::shared_ptr<drts::Job>
+                  , boost::shared_ptr<DRTSImpl::Job>
                   > map_of_jobs_t;
-  typedef std::map<std::string, sdpa::Capability> map_of_capabilities_t;
 public:
   DRTSImpl
     ( std::function<void()> request_stop
     , boost::asio::io_service& peer_io_service
-    , boost::asio::io_service& kvs_client_io_service
     , boost::optional<std::pair<std::string, boost::asio::io_service&>> gui_info
     , std::map<std::string, std::string> config_variables
     );
   ~DRTSImpl();
 
-  virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent *e) override;
-  virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *e) override;
-  virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent *e) override;
-  virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *e) override;
-  virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent *e) override;
+  virtual void handleWorkerRegistrationAckEvent
+    (fhg::com::p2p::address_t const& source, const sdpa::events::WorkerRegistrationAckEvent *e) override;
+  virtual void handleSubmitJobEvent
+    (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent *e) override;
+  virtual void handleCancelJobEvent
+    (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent *e) override;
+  virtual void handleJobFailedAckEvent
+    (fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedAckEvent *e) override;
+  virtual void handleJobFinishedAckEvent
+    (fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedAckEvent *e) override;
   virtual void handleDiscoverJobStatesEvent
-    (const sdpa::events::DiscoverJobStatesEvent*) override;
+    (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent*) override;
 
 private:
   // threads
   void event_thread ();
   void job_execution_thread ();
 
-  void notify_capabilities_to_master (std::string const &master);
+  void resend_outstanding_events (map_of_masters_t::const_iterator const&);
 
-  void resend_outstanding_events (std::string const &master);
-
-  void send_job_result_to_master (boost::shared_ptr<drts::Job> const & job);
+  void send_job_result_to_master (boost::shared_ptr<DRTSImpl::Job> const & job);
 
   void request_registration_soon();
   void request_registration_after_sleep();
@@ -144,19 +247,18 @@ private:
 
   void start_receiver();
   void handle_recv ( boost::system::error_code const & ec
-                   , boost::optional<std::string> source_name
+                   , boost::optional<fhg::com::p2p::address_t> source_name
                    );
 
-  void send_event (sdpa::events::SDPAEvent *e);
-  void send_event (sdpa::events::SDPAEvent::Ptr const & evt);
+  void send_event (fhg::com::p2p::address_t const& destination, sdpa::events::SDPAEvent *e);
+  void send_event (fhg::com::p2p::address_t const& destination, sdpa::events::SDPAEvent::Ptr const & evt);
 
-  void dispatch_event (sdpa::events::SDPAEvent::Ptr const &evt);
+  void dispatch_event
+    (fhg::com::p2p::address_t const& source, sdpa::events::SDPAEvent::Ptr const &evt);
 
   fhg::log::Logger::ptr_t _logger;
 
   std::function<void()> _request_stop;
-
-  fhg::com::kvs::kvsc_ptr_t _kvs_client;
 
   bool m_shutting_down;
 
@@ -173,7 +275,8 @@ private:
   std::size_t m_max_reconnect_attempts;
   std::size_t m_reconnect_counter;
 
-  fhg::thread::queue<sdpa::events::SDPAEvent::Ptr>  m_event_queue;
+  fhg::thread::queue<std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr>>
+    m_event_queue;
   boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
     m_event_thread;
   boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
@@ -187,13 +290,13 @@ private:
   boost::condition_variable     m_job_arrived;
 
   mutable boost::mutex m_capabilities_mutex;
-  map_of_capabilities_t m_virtual_capabilities;
+  std::set<sdpa::Capability> m_virtual_capabilities;
 
   // jobs + their states
   size_t m_backlog_size;
   map_of_jobs_t m_jobs;
 
-  fhg::thread::queue<boost::shared_ptr<drts::Job>> m_pending_jobs;
+  fhg::thread::queue<boost::shared_ptr<DRTSImpl::Job>> m_pending_jobs;
 
   fhg::thread::set _registration_threads;
 };

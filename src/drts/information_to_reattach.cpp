@@ -51,31 +51,31 @@ namespace gspc
       }
     }
 
-    gspc::host_and_port_type get_kvs_endpoint
+    gspc::host_and_port_type get_orchestrator_endpoint
       (pnet::type::value::value_type const& value)
     {
-      return { get_or_throw<std::string> ({"kvs", "host"}, value)
-             , static_cast<unsigned short> (get_or_throw<unsigned int> ({"kvs", "port"}, value))
+      return { get_or_throw<std::string> ({"orchestrator", "host"}, value)
+             , static_cast<unsigned short> (get_or_throw<unsigned int> ({"orchestrator", "port"}, value))
              };
     }
   }
 
   information_to_reattach::implementation::implementation (std::string const& serialized_value)
-    : _endpoint (get_kvs_endpoint (pnet::type::value::read (serialized_value)))
+    : _endpoint (get_orchestrator_endpoint (pnet::type::value::read (serialized_value)))
   {}
 
-  information_to_reattach::implementation::implementation (host_and_port_type const& kvs)
-    : _endpoint (kvs)
+  information_to_reattach::implementation::implementation (host_and_port_type const& orchestrator)
+    : _endpoint (orchestrator)
   {}
 
   std::string information_to_reattach::implementation::to_string () const
   {
     pnet::type::value::value_type serialized;
-    pnet::type::value::poke ( std::list<std::string> {"kvs", "host"}
+    pnet::type::value::poke ( std::list<std::string> {"orchestrator", "host"}
                             , serialized
                             , _endpoint.host
                             );
-    pnet::type::value::poke ( std::list<std::string> {"kvs", "port"}
+    pnet::type::value::poke ( std::list<std::string> {"orchestrator", "port"}
                             , serialized
                             , static_cast<unsigned int> (_endpoint.port)
                             );
@@ -91,7 +91,7 @@ namespace gspc
   information_to_reattach::information_to_reattach (scoped_runtime_system const& drts)
     : _ (fhg::util::make_unique<implementation>
           (gspc::host_and_port_type
-            {drts._kvs_host, drts._kvs_port}
+            {drts._orchestrator_host, drts._orchestrator_port}
           )
         )
   {}

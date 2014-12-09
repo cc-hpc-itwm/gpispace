@@ -163,3 +163,5 @@ add_subdirectory (bin)
 
 add_subdirectory (network)
 add_subdirectory (rpc)
+
+add_subdirectory (rif)

@@ -20,14 +20,12 @@ namespace sdpa
     class put_token : public JobEvent
     {
     public:
-      put_token ( address_t from
-                , address_t to
-                , job_id_t job_id
+      put_token ( job_id_t job_id
                 , std::string put_token_id
                 , std::string place_name
                 , pnet::type::value::value_type value
                 )
-        : JobEvent (from, to, job_id)
+        : JobEvent (job_id)
         , _put_token_id (put_token_id)
         , _place_name (place_name)
         , _value (value)
@@ -46,9 +44,10 @@ namespace sdpa
         return _value;
       }
 
-      virtual void handleBy (EventHandler* handler) override
+      virtual void handleBy
+        (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
-        handler->handle_put_token (this);
+        handler->handle_put_token (source, this);
       }
 
     private:
@@ -69,14 +68,12 @@ namespace sdpa
 
     LOAD_CONSTRUCT_DATA_DEF (put_token, e)
     {
-      LOAD_JOBEVENT_CONSTRUCT_DATA (from, to, job_id);
+      LOAD_JOBEVENT_CONSTRUCT_DATA (job_id);
       LOAD_FROM_ARCHIVE (std::string, put_token_id);
       LOAD_FROM_ARCHIVE (std::string, place_name);
       LOAD_FROM_ARCHIVE (std::string, value);
 
-      ::new (e) put_token ( from
-                          , to
-                          , job_id
+      ::new (e) put_token ( job_id
                           , put_token_id
                           , place_name
                           , pnet::type::value::read (value)
@@ -86,8 +83,8 @@ namespace sdpa
     class put_token_ack : public MgmtEvent
     {
     public:
-      put_token_ack (address_t from, address_t to, std::string put_token_id)
-        : MgmtEvent (from, to)
+      put_token_ack (std::string put_token_id)
+        : MgmtEvent()
         , _put_token_id (put_token_id)
       {}
 
@@ -96,9 +93,10 @@ namespace sdpa
         return _put_token_id;
       }
 
-      virtual void handleBy (EventHandler* handler) override
+      virtual void handleBy
+        (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
-        handler->handle_put_token_ack (this);
+        handler->handle_put_token_ack (source, this);
       }
 
     private:
@@ -113,10 +111,10 @@ namespace sdpa
 
     LOAD_CONSTRUCT_DATA_DEF (put_token_ack, e)
     {
-      LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
+      LOAD_MGMTEVENT_CONSTRUCT_DATA();
       LOAD_FROM_ARCHIVE (std::string, put_token_id);
 
-      ::new (e) put_token_ack (from, to, put_token_id);
+      ::new (e) put_token_ack (put_token_id);
     }
   }
 }

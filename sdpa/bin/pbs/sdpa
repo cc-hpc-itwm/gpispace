@@ -3,8 +3,8 @@
 # usage: sdpa {boot|stop|submit file}
 #
 
-kvs_host=
-kvs_port=
+orchestrator_host=
+orchestrator_port=
 
 function log ()
 {
@@ -112,7 +112,7 @@ usage: `basename $0` command [parameters...]
             stop - stop components
                      optional arguments: component [host...]
                      terminates the component on the given hosts or all
-                     components: drts agent orchestrator vmem kvs
+                     components: drts agent orchestrator vmem
              gui - start the GUI
 
    submit <file> - submit a job
@@ -170,16 +170,13 @@ function stop_agent ()
     terminate_all_processes_of_a_kind "agent" "$@"
 }
 
-function stop_kvs ()
-{
-    rm -f "${state_dir}/kvs.host"
-    rm -f "${state_dir}/kvs.port"
-
-    terminate_all_processes_of_a_kind "fhgkvsd" "$@"
-}
-
 function stop_orchestrator ()
 {
+    rm -f "${state_dir}/orchestrator.host"
+    rm -f "${state_dir}/orchestrator.port"
+    rm -f "${state_dir}/orchestrator.rpc.host"
+    rm -f "${state_dir}/orchestrator.rpc.port"
+
     terminate_all_processes_of_a_kind "orchestrator" "$@"
 }
 
@@ -217,7 +214,7 @@ function stop ()
     then
         parts=("$1"); shift
     else
-        parts=(drts agent orchestrator vmem kvs)
+        parts=(drts agent orchestrator vmem)
     fi
 
     local p
@@ -246,15 +243,15 @@ function submit ()
     fi
 
     log "I: submitting file: $net"
-    jobid=$( sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} submit "$net" 2>&1 )
+    jobid=$( sdpac --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} submit "$net" 2>&1 )
     if [ $? -ne 0 ] ; then
         log "E: submission failed: $jobid"
         return 4
     else
         log "  + job ($jobid)"
         echo "$jobid" > "$state_dir/current_job"
-        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} wait "$jobid"
-        s=$(sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} status "${jobid}")
+        sdpac --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} wait "$jobid"
+        s=$(sdpac --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} status "${jobid}")
         log "    $jobid -> $s"
         s=$(echo "$s" | tr 'A-Z' 'a-z')
         case "$s" in
@@ -271,8 +268,8 @@ function submit ()
                 log "W: unknown state: $s"
                 ;;
         esac
-        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} -o "$output" --force results "$jobid"
-        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} delete "${jobid}"
+        sdpac --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} -o "$output" --force results "$jobid"
+        sdpac --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} delete "${jobid}"
         if [ $? -eq 0 ] ; then
             echo "  - job ($jobid)"
         fi
@@ -307,19 +304,13 @@ if [ "$1" = "-s" ] ; then
     export SDPA_STATE_DIR="$state_dir"
 fi
 
-if [ -f "${state_dir}/kvs.host" ]
+if [ -f "${state_dir}/orchestrator.host" ]
 then
-  kvs_host=$(cat "${state_dir}/kvs.host")
+  orchestrator_host=$(cat "${state_dir}/orchestrator.host")
 fi
-if [ -f "${state_dir}/kvs.port" ]
+if [ -f "${state_dir}/orchestrator.port" ]
 then
-  kvs_port=$(cat "${state_dir}/kvs.port")
-fi
-
-if [ "$1" = "gui" ] ; then
-    shift
-    start_gui $@
-    exit $?
+  orchestrator_port=$(cat "${state_dir}/orchestrator.port")
 fi
 
 function sigterm()
@@ -329,10 +320,6 @@ function sigterm()
 trap sigterm TERM
 
 case "$1" in
-    start)
-        shift
-        start $@
-        ;;
     stop)
         shift
         stop $@

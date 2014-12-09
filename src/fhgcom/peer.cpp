@@ -3,6 +3,7 @@
 #include <fhglog/LogMacros.hpp>
 
 #include <fhg/assert.hpp>
+#include <fhg/util/hostname.hpp>
 #include <fhg/util/thread/event.hpp>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -19,39 +20,23 @@ namespace fhg
   namespace com
   {
     peer_t::peer_t ( boost::asio::io_service& io_service
-                   , std::string const & name
                    , host_t const & host
                    , port_t const & port
-                   , kvs::kvsc_ptr_t kvs_client
-                   , handler_t handler
                    )
       : stopped_(true)
       , stopping_ (false)
-      , name_(name)
       , host_(host)
       , port_(port)
-      , my_addr_(p2p::address_t(name))
-      , started_()
-      , _kvs_client (kvs_client)
       , io_service_ (io_service)
       , io_service_work_(io_service_)
       , acceptor_(io_service_)
-      , m_renew_kvs_entries_timer (io_service_)
       , connections_()
-      , m_kvs_error_handler (handler)
     {
     }
 
     peer_t::~peer_t()
     {
-      try
-      {
-        stop();
-      }
-      catch (std::exception const & ex)
-      {
-        LOG(ERROR, "exception during destructor of peer " << name() << ": " << ex.what());
-      }
+      stop();
     }
 
     void peer_t::run ()
@@ -95,18 +80,10 @@ namespace fhg
         acceptor_.bind(endpoint);
         acceptor_.listen();
 
+        my_addr_ = p2p::address_t
+          (fhg::util::hostname() + ":" + std::to_string (local_endpoint().port()));
+
         accept_new ();
-
-        io_service_.post (std::bind (&peer_t::update_my_location, this));
-      }
-
-      // todo introduce timeout to event::wait()
-      const boost::system::error_code ec (started_.wait());
-
-      if (ec)
-      {
-        stop();
-        throw boost::system::system_error (ec);
       }
 
       {
@@ -127,18 +104,6 @@ namespace fhg
       if (listen_)
       {
         listen_->socket ().close ();
-      }
-
-      {
-        try
-        {
-          std::string prefix ("p2p.peer");
-          prefix += "." + p2p::to_string (my_addr_);
-          _kvs_client->del (prefix);
-        }
-        catch (std::exception const & ex)
-        {
-        }
       }
 
       // TODO: call pending handlers and delete pending messages
@@ -166,7 +131,7 @@ namespace fhg
       // remove pending
       while (! m_pending.empty())
       {
-        delete m_pending.front().first;
+        delete m_pending.front();
         m_pending.pop_front();
       }
 
@@ -186,14 +151,51 @@ namespace fhg
       stopped_ = true;
     }
 
-    void peer_t::send ( const std::string & to
+    p2p::address_t peer_t::connect_to (host_t const& host, port_t const& port)
+    {
+      std::string const fake_name (std::string (host) + ":" + std::string (port));
+      p2p::address_t const addr (fake_name);
+
+      if (connections_.find (addr) != connections_.end())
+      {
+        throw std::logic_error ("already connected to " + fake_name);
+      }
+
+      connection_data_t& cd (connections_[addr]);
+      cd.connection = boost::make_shared<connection_t>
+        ( io_service_
+        , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
+        , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
+        , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
+        );
+      cd.connection->local_address (my_addr_.get());
+      cd.connection->remote_address (addr);
+
+      boost::system::error_code ec;
+      boost::asio::connect
+        ( cd.connection->socket()
+        , boost::asio::ip::tcp::resolver (io_service_).resolve ({host, port})
+        , ec
+        );
+
+      connection_established (addr, ec);
+
+      if (ec)
+      {
+        throw boost::system::system_error (ec);
+      }
+
+      return addr;
+    }
+
+    void peer_t::send ( p2p::address_t const& addr
                       , const std::string & data
                       )
     {
       typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
       async_op_t send_finished;
       async_send
-        ( to, data
+        ( addr, data
         , std::bind (&async_op_t::notify, &send_finished, std::placeholders::_1)
         );
 
@@ -204,11 +206,11 @@ namespace fhg
       }
     }
 
-    void peer_t::async_send ( const message_t *m
+    void peer_t::async_send ( p2p::address_t const& addr
+                            , const std::string & data
                             , peer_t::handler_t completion_handler
                             )
     {
-      fhg_assert (m);
       fhg_assert (completion_handler);
 
       lock_type lock(mutex_);
@@ -221,128 +223,17 @@ namespace fhg
       }
 
       // TODO: io_service_.post (...);
-      const p2p::address_t addr (m->header.dst);
 
-      if (connections_.find(addr) == connections_.end())
-      {
-        // lookup location information
-        std::string prefix ("p2p.peer");
-        prefix += "." + p2p::to_string (addr);
-        kvs::values_type peer_info (_kvs_client->get (prefix));
-
-        if (peer_info.empty())
-        {
-          try
-          {
-            using namespace boost::system;
-            completion_handler(errc::make_error_code (errc::no_such_process));
-          }
-          catch (std::exception const & ex)
-          {
-            LOG (ERROR, "completion handler failed (ignored): " << ex.what());
-          }
-          return;
-        }
-
-        host_t h (peer_info.at(prefix + ".location.host"));
-        port_t p (peer_info.at(prefix + ".location.port"));
-        std::string n (peer_info.at(prefix + ".name"));
-
-        // store message in out queue
-        //    connect_handler -> sends messages from out queue
-        //    error_handler -> clears messages from out queue
-        // async_connect (...);
-        connection_data_t & cd = connections_[addr];
-        cd.send_in_progress = false;
-        cd.name = n;
-
-        to_send_t to_send;
-        to_send.message = *m;
-        to_send.message.header.length = to_send.message.data.size();
-        to_send.message.header.src = my_addr_;
-        to_send.handler = completion_handler;
-        cd.o_queue.push_back (to_send);
-
-        cd.connection = connection_t::ptr_t
-          ( new connection_t
-            ( io_service_
-            , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
-            , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
-            , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
-            )
-          );
-        cd.connection->local_address (my_addr_);
-        cd.connection->remote_address (addr, cd.name);
-
-        namespace bai = boost::asio::ip;
-
-        bai::tcp::resolver resolver(io_service_);
-        bai::tcp::resolver::query query (h, p, bai::tcp::resolver::query::flags());
-        bai::tcp::resolver::iterator iter =
-          bai::tcp::resolver(io_service_).resolve(query);
-
-        boost::system::error_code ec;
-
-        for (; iter != bai::tcp::resolver::iterator(); ++iter)
-        {
-          cd.connection->socket().close();
-
-          ec = boost::asio::error::would_block;
-
-          cd.connection->socket().connect( iter->endpoint(), ec);
-
-          if (!ec && cd.connection->socket().is_open())
-          {
-            break;
-          }
-        }
-
-        connection_established (addr, ec);
-      }
-      else
-      {
         connection_data_t & cd = connections_.at (addr);
         to_send_t to_send;
-        to_send.message = *m;
-        to_send.message.header.length = to_send.message.data.size();
-        to_send.message.header.src = my_addr_;
+        to_send.message.header.src = my_addr_.get();
+        to_send.message.header.dst = addr;
+        to_send.message.assign (data.begin(), data.end());
         to_send.handler = completion_handler;
         cd.o_queue.push_back (to_send);
 
         if (cd.o_queue.size () == 1)
           start_sender (addr);
-      }
-    }
-
-    void peer_t::send (const message_t *m)
-    {
-      fhg_assert (m);
-
-      typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
-      async_op_t send_finished;
-
-      async_send
-        ( m
-        , std::bind (&async_op_t::notify, &send_finished, std::placeholders::_1)
-        );
-
-      const boost::system::error_code ec (send_finished.wait());
-      if (ec)
-      {
-        throw boost::system::system_error (ec);
-      }
-    }
-
-    void peer_t::async_send ( const std::string & to
-                            , const std::string & data
-                            , peer_t::handler_t completion_handler
-                            )
-    {
-      message_t m;
-      m.assign (data.begin(), data.end());
-      m.header.length = data.size();
-      m.header.dst = p2p::address_t (to);
-      async_send (&m, completion_handler);
     }
 
     void peer_t::recv (message_t *m)
@@ -366,15 +257,13 @@ namespace fhg
     void peer_t::async_recv
       ( message_t *m
       , std::function<void ( boost::system::error_code
-                           , boost::optional<std::string> source_name
+                           , boost::optional<fhg::com::p2p::address_t>
                            )
                      > completion_handler
       )
     {
       fhg_assert (m);
       fhg_assert (completion_handler);
-
-      std::string name;
 
       {
         lock_type lock(mutex_);
@@ -399,16 +288,15 @@ namespace fhg
         }
         else
         {
-          std::pair<const message_t *, std::string> p = m_pending.front();
+          const message_t * p = m_pending.front();
           m_pending.pop_front();
-          *m = *p.first;
-          delete p.first;
-          name = p.second;
+          *m = *p;
+          delete p;
         }
       }
 
       using namespace boost::system;
-      completion_handler (errc::make_error_code (errc::success), name);
+      completion_handler (errc::make_error_code (errc::success), m->header.src);
     }
 
     void peer_t::connection_established (const p2p::address_t a, boost::system::error_code const &ec)
@@ -420,9 +308,9 @@ namespace fhg
         connection_data_t & cd = connections_.find (a)->second;
 
         LOG( TRACE
-             , p2p::to_string (my_addr_) << " (" << name_ << ")"
+             , p2p::to_string (my_addr_.get())
              << " connected to "
-             << p2p::to_string (a) << " (" << cd.name << ")"
+             << p2p::to_string (a)
              << " @ " << cd.connection->socket().remote_endpoint();
              );
 
@@ -435,11 +323,10 @@ namespace fhg
         // send hello message
         to_send_t to_send;
         to_send.handler = [](boost::system::error_code const&) {};
-        to_send.message.header.src = my_addr_;
+        to_send.message.header.src = my_addr_.get();
         to_send.message.header.dst = a;
         to_send.message.header.type_of_msg = p2p::HELLO_PACKET;
-        to_send.message.header.length = name_.size();
-        to_send.message.assign (name_.begin(), name_.end());
+        to_send.message.resize (0);
 
         cd.connection->start ();
         cd.o_queue.push_front (to_send);
@@ -541,71 +428,6 @@ namespace fhg
       }
     }
 
-    void peer_t::renew_kvs_entries ()
-    {
-      boost::asio::ip::tcp::endpoint endpoint = acceptor_.local_endpoint();
-
-      std::string prefix ("p2p.peer");
-      prefix += "." + p2p::to_string (p2p::address_t(name_));
-
-      kvs::values_type values;
-      values[prefix + "." + "location" + "." + "host"] =
-        boost::lexical_cast<std::string>(endpoint.address());
-      values[prefix + "." + "location" + "." + "port"] =
-        boost::lexical_cast<std::string>(endpoint.port());
-      values[prefix + "." + "name"] = name_;
-      values[prefix + "." + "pid"] =
-        boost::lexical_cast<std::string>(getpid ());
-
-      if (  (endpoint.address() == boost::asio::ip::address_v4::any())
-         || (endpoint.address() == boost::asio::ip::address_v6::any())
-         )
-      {
-        values[prefix + "." + "location" + "." + "host"]
-          = boost::asio::ip::host_name();
-      }
-
-      try
-      {
-        _kvs_client->timed_put (values, 2 * 60 * 1000u);
-      }
-      catch (std::exception const &ex)
-      {
-        using namespace boost::system;
-
-        m_kvs_error_handler (errc::make_error_code (errc::connection_refused));
-      }
-
-      m_renew_kvs_entries_timer.expires_from_now
-        (boost::posix_time::seconds (60 + rand() % 30));
-
-      m_renew_kvs_entries_timer.async_wait
-        (std::bind (&peer_t::renew_kvs_entries, this));
-    }
-
-    void peer_t::update_my_location ()
-    {
-      try
-      {
-        renew_kvs_entries ();
-
-        started_.notify (boost::system::error_code());
-      }
-      catch (boost::system::system_error const &bse)
-      {
-        LOG(ERROR, "could not update my location: " << bse.what());
-        started_.notify (bse.code());
-      }
-      catch (std::exception const &ex)
-      {
-        LOG(ERROR, "could not update my location: " << ex.what());
-        started_.notify
-          (boost::system::errc::make_error_code
-          (boost::system::errc::state_not_recoverable)
-          );
-      }
-    }
-
     void peer_t::handle_accept (const boost::system::error_code & ec)
     {
       lock_type lock (mutex_);
@@ -635,7 +457,7 @@ namespace fhg
           , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
           )
         );
-      listen_->local_address(my_addr_);
+      listen_->local_address(my_addr_.get());
       acceptor_.async_accept( listen_->socket()
                             , std::bind( &peer_t::handle_accept
                                        , this
@@ -650,7 +472,7 @@ namespace fhg
 
         if (backlog_.find (c) == backlog_.end())
         {
-          LOG(ERROR, "protocol error between " << p2p::to_string (my_addr_) << " and " << p2p::to_string (m->header.src) << " closing connection");
+          LOG(ERROR, "protocol error between " << p2p::to_string (my_addr_.get()) << " and " << p2p::to_string (m->header.src) << " closing connection");
           try
           {
             c->stop();
@@ -665,11 +487,9 @@ namespace fhg
           backlog_.erase (c);
 
           c->local_address (m->header.dst);
-          std::string const remote_name (m->buf(), m->header.length);
-          c->remote_address (m->header.src, remote_name);
+          c->remote_address (m->header.src);
 
           connection_data_t & cd = connections_[m->header.src];
-          cd.name = remote_name;
           if (!cd.connection)
           {
             cd.connection = c;
@@ -691,7 +511,7 @@ namespace fhg
           // TODO: maybe add a flag to the message indicating whether it should be delivered
           // at all costs or not
           // if (m->header.flags & IMPORTANT)
-          m_pending.emplace_back (m, connection->remote_name());
+          m_pending.emplace_back (m);
           return;
         }
         else
@@ -705,7 +525,7 @@ namespace fhg
 
           lock.unlock ();
           to_recv.handler ( errc::make_error_code (errc::success)
-                          , connection->remote_name()
+                          , connection->remote_address()
                           );
           lock.lock ();
         }
@@ -752,7 +572,7 @@ namespace fhg
           to_recv.message->header.dst = c->local_address();
 
           lock.unlock ();
-          to_recv.handler (ec, c->remote_name());
+          to_recv.handler (ec, c->remote_address());
           lock.lock ();
         }
 

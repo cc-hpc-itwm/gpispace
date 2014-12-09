@@ -12,16 +12,12 @@ namespace sdpa
     public:
       typedef boost::shared_ptr<DeleteJobEvent> Ptr;
 
-      DeleteJobEvent ( const address_t& from
-                     , const address_t& to
-                     , const sdpa::job_id_t& job_id
-                     )
-        : sdpa::events::JobEvent (from, to, job_id)
-      {}
+      using JobEvent::JobEvent;
 
-      virtual void handleBy (EventHandler* handler) override
+      virtual void handleBy
+        (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
-        handler->handleDeleteJobEvent (this);
+        handler->handleDeleteJobEvent (source, this);
       }
     };
 
