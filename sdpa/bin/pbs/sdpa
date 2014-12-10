@@ -146,7 +146,7 @@ function terminate_all_processes_of_a_kind()
     local background_jobs=()
     for host in ${hosts[@]}
     do
-        local pids=($(find "${state_dir}/processes/${host}" -name "${kind}*.pid" | xargs -r cat))
+        local pids=($(find "${state_dir}/processes/${host}" -name "${kind}*.pid" | xargs -r sed -e '$s/$/\n/'))
         terminate_processes_on_host "${kind}" "${host}" ${pids[@]} &
         # this shouldn't be neccesary when pidfile_writer deletes pid files
         find "${state_dir}/processes/${host}" -name "${kind}*.pid" -delete
