@@ -124,7 +124,7 @@ namespace gpi
         child_t new_child(rank);
 
         new_child.address =
-          m_peer->connect_to
+          m_peer->connect_to_or_use_existing_connection
             ( fhg::com::host_t (_gpi_api.hostname_of_rank (rank))
             , fhg::com::port_t
                 (std::to_string (_gpi_api.communication_port_of_rank (rank)))
