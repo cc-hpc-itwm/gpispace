@@ -5,6 +5,7 @@
 #include <fhgcom/peer_info.hpp>
 #include <fhgcom/tests/address_printer.hpp>
 
+#include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/random_string.hpp>
 
 #include <boost/asio/io_service.hpp>
@@ -60,7 +61,8 @@ namespace
 {
   fhg::com::host_t host (boost::asio::ip::tcp::endpoint const& ep)
   {
-    return fhg::com::host_t (ep.address().to_string());
+    return fhg::com::host_t
+      (fhg::util::connectable_to_address_string (ep.address()));
   }
   fhg::com::port_t port (boost::asio::ip::tcp::endpoint const& ep)
   {

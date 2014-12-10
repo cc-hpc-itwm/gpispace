@@ -6,6 +6,7 @@
 
 #include <fhglog/LogMacros.hpp>
 
+#include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 
 #include <boost/iostreams/device/file_descriptor.hpp>
@@ -81,9 +82,13 @@ try
       startup_messages_pipe ( vm["startup-messages-pipe"].as<int>()
                             , boost::iostreams::close_handle
                             );
-    startup_messages_pipe << orchestrator.peer_local_endpoint().address().to_string() << "\n";
+    startup_messages_pipe << fhg::util::connectable_to_address_string
+                               (orchestrator.peer_local_endpoint().address())
+                          << "\n";
     startup_messages_pipe << orchestrator.peer_local_endpoint().port() << "\n";
-    startup_messages_pipe << orchestrator.rpc_local_endpoint().address().to_string() << "\n";
+    startup_messages_pipe << fhg::util::connectable_to_address_string
+                               (orchestrator.rpc_local_endpoint().address())
+                          << "\n";
     startup_messages_pipe << orchestrator.rpc_local_endpoint().port() << "\n";
     startup_messages_pipe << "OKAY\n";
   }

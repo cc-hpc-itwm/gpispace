@@ -5,6 +5,7 @@
 
 #include <rpc/client.hpp>
 
+#include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/boost/test/printer/tuple.hpp>
 #include <fhg/util/boost/test/require_exception.hpp>
 
@@ -100,7 +101,8 @@ BOOST_AUTO_TEST_CASE (aggregated_int_ping)
   io_service_with_work_thread_and_stop_on_scope_exit io_service_client;
   fhg::rpc::remote_endpoint endpoint
     ( io_service_client.service
-    , entry.server.acceptor.local_endpoint().address().to_string()
+    , fhg::util::connectable_to_address_string
+        (entry.server.acceptor.local_endpoint().address())
     , entry.server.acceptor.local_endpoint().port()
     , fhg::rpc::exception::serialization_functions()
     );
@@ -179,7 +181,8 @@ BOOST_AUTO_TEST_CASE (aggregated_user_defined_type_echo)
   io_service_with_work_thread_and_stop_on_scope_exit io_service_client;
   fhg::rpc::remote_endpoint endpoint
     ( io_service_client.service
-    , entry.server.acceptor.local_endpoint().address().to_string()
+    , fhg::util::connectable_to_address_string
+        (entry.server.acceptor.local_endpoint().address())
     , entry.server.acceptor.local_endpoint().port()
     , fhg::rpc::exception::serialization_functions()
     );
@@ -228,7 +231,8 @@ BOOST_AUTO_TEST_CASE (first_endpoint_not_in_target_endpoints)
   io_service_with_work_thread_and_stop_on_scope_exit io_service_client;
   fhg::rpc::remote_endpoint endpoint
     ( io_service_client.service
-    , entry.server.acceptor.local_endpoint().address().to_string()
+    , fhg::util::connectable_to_address_string
+        (entry.server.acceptor.local_endpoint().address())
     , entry.server.acceptor.local_endpoint().port()
     , fhg::rpc::exception::serialization_functions()
     );
@@ -276,7 +280,8 @@ BOOST_AUTO_TEST_CASE (split_can_do_unary_tree_as_well)
   io_service_with_work_thread_and_stop_on_scope_exit io_service_client;
   fhg::rpc::remote_endpoint endpoint
     ( io_service_client.service
-    , entry.server.acceptor.local_endpoint().address().to_string()
+    , fhg::util::connectable_to_address_string
+        (entry.server.acceptor.local_endpoint().address())
     , entry.server.acceptor.local_endpoint().port()
     , fhg::rpc::exception::serialization_functions()
     );
@@ -414,7 +419,8 @@ BOOST_AUTO_TEST_CASE (exceptions_are_aggregated_together_with_results)
   io_service_with_work_thread_and_stop_on_scope_exit io_service_client;
   fhg::rpc::remote_endpoint endpoint
     ( io_service_client.service
-    , entry.server.acceptor.local_endpoint().address().to_string()
+    , fhg::util::connectable_to_address_string
+        (entry.server.acceptor.local_endpoint().address())
     , entry.server.acceptor.local_endpoint().port()
     , { { "ude", { &user_defined_exception::from_exception_ptr
                  , &user_defined_exception::to_exception_ptr

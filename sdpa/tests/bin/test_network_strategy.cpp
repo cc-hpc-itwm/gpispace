@@ -7,6 +7,8 @@
 #include <sdpa/com/NetworkStrategy.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
+#include <fhg/util/boost/asio/ip/address.hpp>
+
 #include <boost/thread.hpp>
 
 #include <boost/asio/io_service.hpp>
@@ -72,7 +74,9 @@ BOOST_AUTO_TEST_CASE (perform_test)
     );
 
   net.perform ( net.connect_to
-                  ( fhg::com::host_t (net.local_endpoint().address().to_string())
+                  ( fhg::com::host_t ( fhg::util::connectable_to_address_string
+                                         (net.local_endpoint().address())
+                                     )
                   , fhg::com::port_t (std::to_string (net.local_endpoint().port()))
                   )
               , boost::shared_ptr<sdpa::events::SDPAEvent>(new sdpa::events::ErrorEvent(sdpa::events::ErrorEvent::SDPA_EUNKNOWN
