@@ -325,10 +325,8 @@ BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
   for (std::size_t i (0); i < 100; ++i)
   {
     boost::asio::io_service peer_2_io_service;
-    peer_t peer_2 ( peer_2_io_service
-                  , host_t (peer_2_endpoint.address().to_string())
-                  , port_t (std::to_string (peer_2_endpoint.port()))
-                  );
+    peer_t peer_2
+      (peer_2_io_service, host (peer_2_endpoint), port (peer_2_endpoint));
     boost::thread thrd_2 (&peer_t::run, &peer_2);
 
     try
