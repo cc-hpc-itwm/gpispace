@@ -153,6 +153,8 @@ namespace fhg
 
     p2p::address_t peer_t::connect_to (host_t const& host, port_t const& port)
     {
+      boost::unique_lock<boost::recursive_mutex> const _ (mutex_);
+
       std::string const fake_name (std::string (host) + ":" + std::string (port));
       p2p::address_t const addr (fake_name);
 
