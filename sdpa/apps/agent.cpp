@@ -6,6 +6,8 @@
 
 #include <fhglog/LogMacros.hpp>
 
+#include <fhg/util/boost/asio/ip/address.hpp>
+
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/program_options.hpp>
@@ -128,7 +130,9 @@ int main (int argc, char **argv)
       startup_messages_pipe ( vm["startup-messages-pipe"].as<int>()
                             , boost::iostreams::close_handle
                             );
-    startup_messages_pipe << agent.peer_local_endpoint().address().to_string() << "\n";
+    startup_messages_pipe << fhg::util::connectable_to_address_string
+                               (agent.peer_local_endpoint().address())
+                          << "\n";
     startup_messages_pipe << agent.peer_local_endpoint().port() << "\n";
     startup_messages_pipe << "OKAY\n";
   }

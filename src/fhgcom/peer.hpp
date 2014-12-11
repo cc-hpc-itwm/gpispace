@@ -44,6 +44,8 @@ namespace fhg
       void run ();
 
       p2p::address_t connect_to (host_t const&, port_t const&);
+      p2p::address_t connect_to_or_use_existing_connection
+        (host_t const&, port_t const&);
 
       void async_send ( p2p::address_t const& addr
                       , std::string const & data
