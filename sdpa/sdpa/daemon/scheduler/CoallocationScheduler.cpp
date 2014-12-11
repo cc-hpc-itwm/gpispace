@@ -307,7 +307,7 @@ namespace sdpa
           {
             worker_manager().findWorker (worker)->submit (job_id);
           }
-          _serve_job (worker_id_list_t (workers.begin(), workers.end()), job_id);
+          _serve_job ({workers.begin(), workers.end()}, job_id);
         }
         else
         {
