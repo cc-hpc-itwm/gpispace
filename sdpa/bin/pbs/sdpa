@@ -24,7 +24,6 @@ then
 fi
 
 export SDPA_HOME=$(dirname $(dirname $(which "$0")))
-SDPA_SCRIPT_DIR="${SDPA_HOME}/libexec/sdpa/scripts"
 
 state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
 debug_enabled=false
@@ -316,11 +315,11 @@ case "$1" in
         ;;
     boot)
         shift
-        "${SDPA_SCRIPT_DIR}/start-sdpa" -S "$state_dir" -H "${SDPA_HOME}" "$@"
+        "${SDPA_HOME}/libexec/sdpa/scripts/start-sdpa" -S "$state_dir" -H "${SDPA_HOME}" "$@"
         ;;
     selftest)
         shift
-        "${SDPA_SCRIPT_DIR}/sdpa-selftest" -s "${state_dir}" -H "${SDPA_HOME}" "${@}"
+        "${SDPA_HOME}/libexec/sdpa/scripts/sdpa-selftest" -s "${state_dir}" -H "${SDPA_HOME}" "${@}"
         ;;
     '')
         help
