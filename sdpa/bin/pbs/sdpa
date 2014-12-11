@@ -263,6 +263,12 @@ if [ "$1" = "version" ] ; then
     exit $?
 fi
 
+if [ "$1" = "gui" ] ; then
+    shift
+    start_gui $@
+    exit $?
+fi
+
 if [ "$1" = "-s" ] ; then
     shift
     state_dir="$1"; shift
@@ -295,13 +301,6 @@ case "$1" in
     submit)
         shift
         submit $@
-        ;;
-    help)
-        help
-        ;;
-    gui)
-        shift
-        start_gui $@
         ;;
     boot)
         shift
