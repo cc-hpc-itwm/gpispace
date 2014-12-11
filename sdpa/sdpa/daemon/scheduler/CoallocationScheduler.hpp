@@ -100,7 +100,7 @@ namespace sdpa
           if (_workers.count (wid) == 0)
           {
             throw std::runtime_error
-              ("tried storing result of worker that is not in reservation for job");
+              ("tried storing the result of a worker that doesn't exist in the job reservation");
           }
 
           m_map_worker_result[wid] = result;
