@@ -18,26 +18,6 @@ function debug ()
     fi
 }
 
-function prepend_to_path ()
-{
-    local var="$1"; shift
-    local val=$(eval echo \$${var})
-    for v ; do
-        if [ -z "$v" ] ; then
-            continue
-        fi
-        val=$(echo "$val" | sed "s,:$v:,:,g")
-        val=$(echo "$val" | sed -e "s,^$v:,,g")
-        val=$(echo "$val" | sed -e "s,:$v\$,,g")
-        if [ -z "$val" ] ; then
-            val="$v"
-        else
-            val="$v:$val"
-        fi
-    done
-    eval "export $var=$val"
-}
-
 if [ -z "$HOME" ]
 then
     export HOME=$(echo ~)
@@ -45,7 +25,6 @@ fi
 
 export SDPA_HOME=$(dirname $(dirname $(which "$0")))
 SDPA_SCRIPT_DIR="${SDPA_HOME}/libexec/sdpa/scripts"
-prepend_to_path PATH "$SDPA_HOME/bin"
 
 state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
 debug_enabled=false
