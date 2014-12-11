@@ -26,30 +26,6 @@ state_dir=
 #                                            #
 ##############################################
 
-function require()
-{
-    local tool="$1"; shift
-    if [ -z "$tool" ] ; then
-        return 2
-    fi
-
-    tool_bin=$(which "$tool" 2>/dev/null)
-    if [ -z "$tool_bin" ] ; then
-        tool_bin="$SDPA_HOME/bin/$tool"
-    fi
-
-    if [ ! -x "$tool_bin" ] ; then
-        echo "Could not locate required tool $tool" >&2
-        return 1
-    fi
-    eval "$tool=$tool_bin"
-    return 0
-}
-
-if ! require fhglogc ; then
-    exit 1
-fi
-
 function rexec ()
 {
     local node="$1"; shift
