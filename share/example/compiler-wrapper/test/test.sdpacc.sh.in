@@ -40,7 +40,7 @@ measured "install" ${make[@]} install                       || die $EX_ERR_RUN
 
 hostname > "${HOSTFILE}"                                    || die $EX_ERR_RUN
 
-measured "boot" sdpa boot -S "${DIR_STATE}" -A "${DIR_INST}/modules" -M -f "${HOSTFILE}" worker:1      \
+measured "boot" sdpa -s "${DIR_STATE}" boot -A "${DIR_INST}/modules" -M -f "${HOSTFILE}" worker:1      \
                                                             || die $EX_ERR_BOOT
 
 SDPA_STATE_DIR="${DIR_STATE}" measured "submit"             \

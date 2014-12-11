@@ -18,7 +18,7 @@ fi
 
 export SDPA_HOME=$(dirname $(dirname $(which "$0")))
 
-state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
+state_dir=
 
 ##############################################
 #                                            #
@@ -272,10 +272,11 @@ fi
 if [ "$1" = "-s" ] ; then
     shift
     state_dir="$1"; shift
-    if [ -z "$state_dir" ] ; then
-        log "E: empty state dir"
-        exit 1
-    fi
+fi
+
+if [ -z "$state_dir" ] ; then
+  log "E: empty state dir: specify -s"
+  exit 1
 fi
 
 if [ -f "${state_dir}/orchestrator.host" ]
