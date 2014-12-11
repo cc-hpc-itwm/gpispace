@@ -3,9 +3,6 @@
 # usage: sdpa {boot|stop|submit file}
 #
 
-orchestrator_host=
-orchestrator_port=
-
 function log ()
 {
     echo "$@" >&2
@@ -187,6 +184,20 @@ function submit ()
         output=/dev/null
     fi
 
+    if [ ! -f "${state_dir}/orchestrator.host" ]
+    then
+      log "E: submit: drts not properly started: orchestrator.host not found"
+      exit 1
+    fi
+    if [ ! -f "${state_dir}/orchestrator.port" ]
+    then
+      log "E: submit: drts not properly started: orchestrator.port not found"
+      exit 1
+    fi
+
+    local orchestrator_host=$(cat "${state_dir}/orchestrator.host")
+    local orchestrator_port=$(cat "${state_dir}/orchestrator.port")
+
     log "I: submitting file: $net"
     jobid=$( sdpac --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} submit "$net" 2>&1 )
     if [ $? -ne 0 ] ; then
@@ -253,15 +264,6 @@ fi
 if [ -z "$state_dir" ] ; then
   log "E: empty state dir: specify -s"
   exit 1
-fi
-
-if [ -f "${state_dir}/orchestrator.host" ]
-then
-  orchestrator_host=$(cat "${state_dir}/orchestrator.host")
-fi
-if [ -f "${state_dir}/orchestrator.port" ]
-then
-  orchestrator_port=$(cat "${state_dir}/orchestrator.port")
 fi
 
 case "$1" in
