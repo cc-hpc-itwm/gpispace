@@ -459,7 +459,7 @@ rexec_with_startup_messages ${master} orchestrator_startup_messages \
   --command "${sdpa_home}/bin/orchestrator" \
   --arguments -u '0' \
   --arguments -n "orchestrator" \
-  --environment LD_LIBRARY_PATH="${LD_LIBRARY_PATH}" \
+  --environment LD_LIBRARY_PATH="${LD_LIBRARY_PATH-":"}" \
   --environment FHGLOG_to_server="${log_host}:${log_port}" \
   --environment FHGLOG_level=$($verbose && echo TRACE || echo INFO) \
   --environment FHGLOG_to_file="${state_dir}/log/orchestrator.log"
@@ -639,7 +639,7 @@ function start_agent
       --arguments -m "${parent}" \
       --arguments -a "${gui_host}:${gui_port}" \
       $(if $gpi_enabled; then echo --arguments --vmem-socket "${gpi_socket}" ; fi) \
-      --environment LD_LIBRARY_PATH="${LD_LIBRARY_PATH}" \
+      --environment LD_LIBRARY_PATH="${LD_LIBRARY_PATH-":"}" \
       --environment FHGLOG_to_server="${log_host}:${log_port}" \
       --environment FHGLOG_level=$($verbose && echo TRACE || echo INFO) \
       --environment FHGLOG_to_file="${state_dir}/log/$name.log"
