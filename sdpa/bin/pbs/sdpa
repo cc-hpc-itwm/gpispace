@@ -264,12 +264,6 @@ then
   orchestrator_port=$(cat "${state_dir}/orchestrator.port")
 fi
 
-function sigterm()
-{
-    trap sigterm TERM
-}
-trap sigterm TERM
-
 case "$1" in
     stop)
         shift
