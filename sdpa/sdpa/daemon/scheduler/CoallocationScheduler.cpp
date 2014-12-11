@@ -5,6 +5,7 @@
 #include <sdpa/daemon/GenericDaemon.hpp>
 
 #include <climits>
+#include <chrono>
 #include <functional>
 #include <queue>
 
@@ -167,8 +168,6 @@ namespace sdpa
 
     void CoallocationScheduler::assignJobsToWorkers()
     {
-      start_pending_jobs();
-
       std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
 
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
@@ -216,19 +215,7 @@ namespace sdpa
               );
 
             allocation_table_.emplace (jobId, pReservation);
-
-            if (worker_manager().can_start_job (matching_workers))
-            {
-              for (worker_id_t const& worker : matching_workers)
-              {
-                worker_manager().findWorker (worker)->submit (jobId);
-              }
-              _serve_job (worker_id_list_t (matching_workers.begin(), matching_workers.end()), jobId);
-            }
-            else
-            {
-              _list_pending_jobs.push (jobId);
-            }
+            _list_pending_jobs.push (jobId);
           }
           catch (std::runtime_error const&)
           {
@@ -255,6 +242,8 @@ namespace sdpa
       {
         _jobs_to_schedule.push (id);
       }
+
+      start_pending_jobs();
     }
 
     void CoallocationScheduler::reschedule_pending_jobs_matching_worker
