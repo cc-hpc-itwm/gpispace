@@ -35,7 +35,6 @@ namespace sdpa
       void workerCanceled (const worker_id_t&, const job_id_t&);
       bool allPartialResultsCollected (const job_id_t& jid);
       bool groupFinished (const sdpa::job_id_t&);
-      worker_id_list_t workers (job_id_t) const;
 
       // -- used by daemon and self
       void enqueueJob (const sdpa::job_id_t&);

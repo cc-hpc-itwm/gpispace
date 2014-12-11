@@ -420,21 +420,6 @@ namespace sdpa
       }
     }
 
-    worker_id_list_t CoallocationScheduler::workers (job_id_t job_id) const
-    {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      allocation_table_t::const_iterator it = allocation_table_.find (job_id);
-      if (it != allocation_table_.end())
-      {
-        return it->second->getWorkerList();
-      }
-      else
-      {
-        throw std::runtime_error
-          ("workers: job missing in allocation table");
-      }
-    }
-
     void CoallocationScheduler::locked_job_id_list::push (job_id_t item)
     {
       boost::mutex::scoped_lock const _ (mtx_);
