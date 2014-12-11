@@ -116,11 +116,6 @@ while getopts ":hvg:l:m:i:S:c:C:L:s:n:M:N:H:" opt; do
     esac
 done
 
-if [ -n "${log_url}" ]
-then
-    export FHGLOG_to_server="${log_url}"
-fi
-
 if [ -z "${sdpa_home}" ]
 then
     echo >&2 "sdpa-home is empty, please specify -H"
@@ -278,6 +273,11 @@ arguments="${arguments} --arguments -s plugin.drts.library_path=${lib_path}"
 if [ -n "$numa_socket" ]
 then
     arguments="${arguments} --arguments -s plugin.drts.socket=$numa_socket"
+fi
+
+if [ -n "${log_url}" ]
+then
+  arguments="${arguments} --environment FHGLOG_to_server=\"${log_url}\""
 fi
 
 echo >&2 "I: starting worker: ${name} on host $(hostname) with parent ${master}"
