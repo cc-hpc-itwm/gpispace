@@ -242,8 +242,6 @@ namespace sdpa
       {
         _jobs_to_schedule.push (id);
       }
-
-      start_pending_jobs();
     }
 
     void CoallocationScheduler::reschedule_pending_jobs_matching_worker

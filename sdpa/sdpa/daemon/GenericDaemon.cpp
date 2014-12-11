@@ -1376,6 +1376,7 @@ namespace sdpa
         _scheduling_thread_notifier.wait (lock);
 
         scheduler().assignJobsToWorkers();
+        scheduler().start_pending_jobs();
       }
     }
 

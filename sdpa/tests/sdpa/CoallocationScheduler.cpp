@@ -127,16 +127,13 @@ BOOST_FIXTURE_TEST_CASE (testLoadBalancing, serveJob_checking_scheduler_and_job_
   expect_serveJob_call ("job_1", 1, {{"worker_0"},{"worker_1"}});
 
   _scheduler.assignJobsToWorkers();
-
-
+  _scheduler.start_pending_jobs();
 
   expect_serveJob_call ("job_2", 1, {{"worker_0"},{"worker_1"}});
   _scheduler.releaseReservation ("job_0");
   _scheduler.releaseReservation ("job_1");
 
-
-
-  _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 }
 
 BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_and_job_manager)
@@ -152,7 +149,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_a
 
   expect_serveJob_call ("job_0", {"worker_0"});
 
-  _scheduler.assignJobsToWorkers();
+  _scheduler.assignJobsToWorkers(); _scheduler.start_pending_jobs();
 
   _scheduler.worker_manager().addWorker ("worker_1", 1, {}, false, fhg::util::random_string());
   _scheduler.reschedule_pending_jobs_matching_worker ("worker_1");
@@ -160,6 +157,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_a
   expect_serveJob_call ("job_1", {"worker_1"});
 
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 }
 
 BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_scheduler_and_job_manager)
@@ -173,11 +171,10 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_schedule
   _scheduler.enqueueJob ("job_0");
   _scheduler.enqueueJob ("job_1");
 
-
   expect_serveJob_call ("job_0", {"worker_0"});
 
   _scheduler.assignJobsToWorkers();
-
+  _scheduler.start_pending_jobs();
 
   _scheduler.worker_manager().findWorker ("worker_1")->addCapabilities ({sdpa::capability_t ("C", "worker_1")});
   _scheduler.reschedule_pending_jobs_matching_worker ("worker_1");
@@ -185,6 +182,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_schedule
   expect_serveJob_call ("job_1", {"worker_1"});
 
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 }
 
 BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_manager)
@@ -200,12 +198,11 @@ BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_m
   _scheduler.enqueueJob ("2A");
   _scheduler.enqueueJob ("2B");
 
-
   expect_serveJob_call ("2A", {"A0", "A1"});
   expect_serveJob_call ("2B", {"B0", "B1"});
 
   _scheduler.assignJobsToWorkers();
-
+  _scheduler.start_pending_jobs();
 
   add_job ("1A", require ("A", 1));
 
@@ -213,12 +210,11 @@ BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_m
 
   expect_serveJob_call ("1A", 1, {{"A0"}, {"A1"}});
   _scheduler.assignJobsToWorkers();
-
+  _scheduler.start_pending_jobs();
 
   _scheduler.releaseReservation ("2A");
 
-
-  _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 }
 
 BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and_job_manager)
@@ -236,7 +232,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and
   expect_serveJob_call ("job_1", 1, {{"worker_0"}, {"worker_1"}});
 
   _scheduler.assignJobsToWorkers();
-
+  _scheduler.start_pending_jobs();
 
   _scheduler.releaseReservation ("job_0");
   _scheduler.worker_manager().deleteWorker ("worker_0");
@@ -248,6 +244,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and
   expect_serveJob_call ("job_0",  1, {{"worker_0"}, {"worker_1"}});
 
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 }
 
 BOOST_FIXTURE_TEST_CASE
@@ -259,12 +256,14 @@ BOOST_FIXTURE_TEST_CASE
   _scheduler.enqueueJob ("2");
 
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
   add_job ("1", require (1));
   _scheduler.enqueueJob ("1");
 
   expect_serveJob_call ("1", {"worker"});
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 }
 
 BOOST_FIXTURE_TEST_CASE
@@ -279,12 +278,14 @@ BOOST_FIXTURE_TEST_CASE
   _scheduler.enqueueJob (job_id_0);
   expect_serveJob_call (job_id_0, {worker_id});
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
   sdpa::job_id_t const job_id_1 (utils::random_peer_name());
   add_job (job_id_1, no_requirements());
   _scheduler.enqueueJob (job_id_1);
   expect_serveJob_call (job_id_1, {worker_id});
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 }
 
 BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
@@ -300,16 +301,18 @@ BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
   _scheduler.enqueueJob (job_id_0);
   expect_serveJob_call (job_id_0, {worker_id});
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
   sdpa::job_id_t const job_id_1 (utils::random_peer_name());
   add_job (job_id_1, no_requirements());
   _scheduler.enqueueJob (job_id_1);
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
   expect_serveJob_call (job_id_1, {worker_id});
 
   _scheduler.releaseReservation (job_id_0);
-  _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 }
 
 BOOST_FIXTURE_TEST_CASE
@@ -330,12 +333,14 @@ BOOST_FIXTURE_TEST_CASE
   _scheduler.enqueueJob (job_id_0);
   expect_serveJob_call (job_id_0, {worker_id});
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
   sdpa::job_id_t const job_id_1 (utils::random_peer_name());
   add_job (job_id_1, require ("B"));
   _scheduler.enqueueJob (job_id_1);
   expect_serveJob_call (job_id_1, {worker_id});
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 }
 
 BOOST_FIXTURE_TEST_CASE ( multiple_worker_job_submissions_with_requirements_no_children_allowed
@@ -358,16 +363,18 @@ BOOST_FIXTURE_TEST_CASE ( multiple_worker_job_submissions_with_requirements_no_c
   _scheduler.enqueueJob (job_id_0);
   expect_serveJob_call (job_id_0, {worker_id});
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
   sdpa::job_id_t const job_id_1 (utils::random_peer_name());
   add_job (job_id_1, require ("B"));
   _scheduler.enqueueJob (job_id_1);
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
   expect_serveJob_call (job_id_1, {worker_id});
 
   _scheduler.releaseReservation (job_id_0);
-  _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 }
 
 struct fixture_minimal_cost_assignment
@@ -763,6 +770,7 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
   _scheduler.enqueueJob (job_id);
 
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
   // require the job to be scheduled
   BOOST_REQUIRE_EQUAL (_scheduler.delete_job (job_id), 0);
@@ -795,6 +803,7 @@ BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_with_requirements_is_assigned_if_n
 
   // no serveJob expected
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
   BOOST_REQUIRE (_scheduler.delete_job (job_id_0));
 }
@@ -826,6 +835,7 @@ BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_without_requirements_is_assigned_i
 
   // no serveJob expected
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
   BOOST_REQUIRE (_scheduler.delete_job (job_id_0));
 }
@@ -887,19 +897,20 @@ BOOST_AUTO_TEST_CASE (scheduling_with_preassignment)
   _scheduler.enqueueJob (job_ids[6]);
 
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
   _scheduler.releaseReservation (job_ids[0]);
-  _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
   _scheduler.releaseReservation (job_ids[1]);
-  _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
   _scheduler.releaseReservation (job_ids[2]);
-  _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
   _scheduler.releaseReservation (job_ids[3]);
-  _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
   _scheduler.releaseReservation (job_ids[4]);
-  _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
   _scheduler.releaseReservation (job_ids[5]);
-  _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
   _scheduler.releaseReservation (job_ids[6]);
-  _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 }
