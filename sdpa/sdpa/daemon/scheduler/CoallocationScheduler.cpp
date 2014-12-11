@@ -300,8 +300,8 @@ namespace sdpa
       std::list<job_id_t> pending_jobs (_list_pending_jobs.get_and_clear());
       for (const job_id_t& job_id: pending_jobs)
       {
-        worker_id_list_t workers (allocation_table_.at (job_id)->getWorkerList());
-        if (worker_manager().can_start_job ({workers.begin(), workers.end()}))
+        std::set<worker_id_t> workers (allocation_table_.at (job_id)->workers());
+        if (worker_manager().can_start_job (workers))
         {
           for (worker_id_t const& worker : workers)
           {
@@ -325,7 +325,7 @@ namespace sdpa
       if (it != allocation_table_.end())
       {
         Reservation* ptr_reservation(it->second);
-        for (std::string worker : ptr_reservation->getWorkerList())
+        for (std::string worker : ptr_reservation->workers())
         {
           try {
               worker_manager().findWorker (worker)->deleteJob (job_id);

@@ -90,16 +90,14 @@ namespace sdpa
         typedef enum {FINISHED, FAILED, CANCELED} result_type;
 
         Reservation (std::set<worker_id_t> workers, double cost)
-          : m_list_workers (workers.begin(), workers.end())
-        , _cost (cost)
+          : _workers (workers)
+          , _cost (cost)
         {}
 
         void storeWorkerResult
           (const sdpa::worker_id_t& wid, const result_type& result)
         {
-          if ( std::find (m_list_workers.begin(), m_list_workers.end(), wid)
-             == m_list_workers.end()
-             )
+          if (_workers.count (wid) == 0)
           {
             throw std::runtime_error
               ("tried storing result of worker that is not in reservation for job");
@@ -110,7 +108,7 @@ namespace sdpa
 
         bool allWorkersTerminated() const
         {
-          return m_map_worker_result.size() == m_list_workers.size();
+          return m_map_worker_result.size() == _workers.size();
         }
 
         bool allGroupTasksFinishedSuccessfully()
@@ -127,14 +125,14 @@ namespace sdpa
           return true;
         }
 
-        sdpa::worker_id_list_t getWorkerList() const
+        std::set<worker_id_t> workers() const
         {
-          return m_list_workers;
+          return _workers;
         }
 
         sdpa::worker_id_list_t getListNotTerminatedWorkers() const
         {
-          sdpa::worker_id_list_t list_not_terminated_workers(m_list_workers);
+          sdpa::worker_id_list_t list_not_terminated_workers (_workers.begin(), _workers.end());
           for ( const worker_id_t& wid
               : m_map_worker_result | boost::adaptors::map_keys
               )
@@ -147,7 +145,7 @@ namespace sdpa
 
         double cost() const {return _cost;}
       private:
-        sdpa::worker_id_list_t m_list_workers;
+        std::set<worker_id_t> _workers;
         std::map<sdpa::worker_id_t, result_type> m_map_worker_result;
         double _cost;
       };
