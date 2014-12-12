@@ -914,3 +914,89 @@ BOOST_AUTO_TEST_CASE (scheduling_with_preassignment)
   _scheduler.releaseReservation (job_ids[6]);
   _scheduler.start_pending_jobs();
 }
+
+BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balancing)
+{
+  const unsigned int n_jobs (1000);
+  const unsigned int n_req_workers (1);
+
+  const std::vector<sdpa::worker_id_t>
+    worker_ids {"worker_0", "worker_1"};
+
+  const double computational_cost (1.0);
+  const double transfer_cost_host_0 (1.0);
+  const double transfer_cost_host_1 (4.0);
+  const double big_transfer_cost (std::numeric_limits<double>::max());
+
+  const std::function<double (std::string const&)>
+    test_transfer_cost ( [&transfer_cost_host_0, &transfer_cost_host_1, &big_transfer_cost]
+                         (const std::string& worker) -> double
+                         {
+                           return ( worker == "host_0")
+                                  ? transfer_cost_host_0
+                                  : worker == "host_1"
+                                  ? transfer_cost_host_1
+                                  : big_transfer_cost;
+                         }
+                       );
+
+  std::vector<sdpa::job_id_t> job_ids (n_jobs);
+  std::generate_n (job_ids.begin(), n_jobs, utils::random_peer_name);
+
+  sdpa::daemon::CoallocationScheduler
+    _scheduler ( [] (const sdpa::worker_id_list_t&, const sdpa::job_id_t&) {}
+               , [n_req_workers, &test_transfer_cost, &computational_cost] (const sdpa::job_id_t&)
+                 {
+                   return job_requirements_t ( {}
+                                             , we::type::schedule_data (n_req_workers)
+                                             , test_transfer_cost
+                                             , computational_cost
+                                             );
+                 }
+               );
+
+   _scheduler.worker_manager().addWorker ("worker_0", 1, {}, false, "host_0");
+   _scheduler.worker_manager().addWorker ("worker_1", 1, {}, false, "host_1");
+
+   std::for_each ( job_ids.begin()
+                 , job_ids.end()
+                 , std::bind ( &sdpa::daemon::CoallocationScheduler::enqueueJob
+                             , &_scheduler
+                             , std::placeholders::_1
+                             )
+                 );
+
+   sdpa::assignment_t assignment (_scheduler.assignJobsToWorkers());
+
+   std::set<sdpa::worker_id_t> set_worker_0 = {worker_ids[0]};
+   std::set<sdpa::worker_id_t> set_worker_1 = {worker_ids[1]};
+
+   double sum_costs_jobs_assigned_to_worker_0 (0.0);
+   double sum_costs_jobs_assigned_to_worker_1 (0.0);
+   double max_job_cost (transfer_cost_host_1 + computational_cost);
+
+   for ( const std::set<sdpa::worker_id_t>& job_assigned_workers
+       : assignment | boost::adaptors::map_values
+       )
+   {
+     if (job_assigned_workers == set_worker_0)
+     {
+       sum_costs_jobs_assigned_to_worker_0 += transfer_cost_host_0 + computational_cost;
+     }
+     else
+       if (job_assigned_workers == set_worker_1)
+       {
+         sum_costs_jobs_assigned_to_worker_1 += transfer_cost_host_1 + computational_cost;
+       }
+       else
+       {
+         std::runtime_error ("unexpected job assignment");
+       }
+   }
+
+   BOOST_REQUIRE_LE ( abs ( sum_costs_jobs_assigned_to_worker_1
+                          - sum_costs_jobs_assigned_to_worker_0
+                          )
+                    , max_job_cost
+                    );
+}
