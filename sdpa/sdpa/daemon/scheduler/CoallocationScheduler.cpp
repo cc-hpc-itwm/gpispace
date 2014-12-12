@@ -166,7 +166,7 @@ namespace sdpa
                              ) + computational_cost;
     }
 
-    void CoallocationScheduler::assignJobsToWorkers()
+    const assignment_t CoallocationScheduler::assignJobsToWorkers()
     {
       std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
 
@@ -242,6 +242,19 @@ namespace sdpa
       {
         _jobs_to_schedule.push (id);
       }
+
+      assignment_t assignment;
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      std::transform ( allocation_table_.begin()
+                     , allocation_table_.end()
+                     , std::inserter (assignment, assignment.end())
+                     , [](allocation_table_t::value_type const &p)
+                       {
+                         return std::make_pair (p.first, p.second->workers());
+                       }
+                     );
+
+      return assignment;
     }
 
     void CoallocationScheduler::reschedule_pending_jobs_matching_worker
