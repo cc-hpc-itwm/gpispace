@@ -915,7 +915,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
        }
        else
        {
-         std::runtime_error ("unexpected job assignment");
+         throw std::runtime_error ("unexpected job assignment");
        }
    }
 
