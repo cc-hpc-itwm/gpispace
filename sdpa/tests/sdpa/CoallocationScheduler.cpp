@@ -891,7 +891,8 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
                              )
                  );
 
-   sdpa::assignment_t assignment (_scheduler.assignJobsToWorkers());
+   sdpa::daemon::CoallocationScheduler::assignment_t
+     assignment (_scheduler.assignJobsToWorkers());
 
    std::set<sdpa::worker_id_t> set_worker_0 = {worker_ids[0]};
    std::set<sdpa::worker_id_t> set_worker_1 = {worker_ids[1]};

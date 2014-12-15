@@ -21,6 +21,8 @@ namespace sdpa
     class CoallocationScheduler
     {
     public:
+      typedef std::map<job_id_t, std::set<worker_id_t>> assignment_t;
+
       CoallocationScheduler ( std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)> serve
                             , std::function<job_requirements_t (const sdpa::job_id_t&)>
                             );

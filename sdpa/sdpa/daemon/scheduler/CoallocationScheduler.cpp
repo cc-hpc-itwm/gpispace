@@ -166,7 +166,7 @@ namespace sdpa
                              ) + computational_cost;
     }
 
-    assignment_t CoallocationScheduler::assignJobsToWorkers()
+    CoallocationScheduler::assignment_t CoallocationScheduler::assignJobsToWorkers()
     {
       std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
 
