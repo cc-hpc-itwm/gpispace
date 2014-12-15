@@ -1,14 +1,6 @@
-set (prgs
-  sdpa
-)
-
 set (scripts
   start-sdpa
   sdpa-selftest
-)
-
-install(PROGRAMS ${prgs}
-  DESTINATION bin
 )
 
 install(PROGRAMS ${scripts}
@@ -23,6 +15,14 @@ target_link_libraries (start-and-fork
   ${Boost_SYSTEM_LIBRARY}
 )
 install (TARGETS start-and-fork DESTINATION "bin")
+
+add_executable (sdpa-binary "sdpa.cpp")
+target_link_libraries (sdpa-binary
+  sdpa
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+)
+set_target_properties (sdpa-binary PROPERTIES OUTPUT_NAME "sdpa")
+install (TARGETS sdpa-binary DESTINATION "bin")
 
 add_executable (start-drts "start-drts.cpp")
 target_link_libraries (start-drts
