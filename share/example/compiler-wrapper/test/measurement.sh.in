@@ -1,6 +1,0 @@
-# mirko.rahn@itwm.fraunhofer.de
-
-print_measurement()
-{
-  echo "<DartMeasurement name=\"$1\" type=\"$2\">$3</DartMeasurement>"
-}
