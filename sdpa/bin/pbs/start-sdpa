@@ -501,7 +501,7 @@ if $gpi_enabled ; then
     info "using VMEM mem: ${gpi_mem} bytes per node"
     info "starting VMEM on: '${gpi_socket}' with a timeout of $((vmem_startup_timeout)) seconds"
 
-    startup_messages_raw=$(${SDPA_HOME}/bin/start-and-fork \
+    startup_messages_raw=$("${sdpa_home}/bin/start-and-fork" \
       --end-sentinel-value OKAY \
       --startup-messages-pipe-option --startup-messages-pipe \
       \
