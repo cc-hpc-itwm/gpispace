@@ -860,11 +860,11 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
 
   const std::function<double (std::string const&)>
     test_transfer_cost ( [&transfer_cost_host_0, &transfer_cost_host_1, &big_transfer_cost]
-                         (const std::string& worker) -> double
+                         (const std::string& host) -> double
                          {
-                           return ( worker == "host_0")
+                           return ( host == "host_0")
                                   ? transfer_cost_host_0
-                                  : worker == "host_1"
+                                  : host == "host_1"
                                   ? transfer_cost_host_1
                                   : big_transfer_cost;
                          }
