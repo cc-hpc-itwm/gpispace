@@ -168,7 +168,7 @@ int main (int argc, char** argv)
     // quick hack to easily start multiple instances
     if (identity == 0)
     {
-      unsigned long actual_count
+      unsigned long const worker_count
         ( fhg::util::boost::get_or_throw<std::invalid_argument>
             (count, "multiple-instance startup requires count") != 0
         ? count.get()
@@ -176,12 +176,12 @@ int main (int argc, char** argv)
         );
 
       std::cerr << "I: starting worker: " << name_prefix
-                << " x" << actual_count << " on host " << fhg::util::hostname()
+                << " x" << worker_count << " on host " << fhg::util::hostname()
                 << " with parent " << master << "\n";
 
       int fail_count (0);
       //! \todo do in parallel
-      for (unsigned long i (1); i <= actual_count; ++i)
+      for (unsigned long i (1); i <= worker_count; ++i)
       {
         try
         {
