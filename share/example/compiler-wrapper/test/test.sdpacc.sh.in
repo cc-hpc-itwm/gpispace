@@ -21,7 +21,7 @@ make+=( -C "${DIR_SOURCE}")
 
 cleanup()
 {
-  sdpa -s "${DIR_STATE}" stop
+  sdpa stop -s "${DIR_STATE}"
   rm -f "${HOSTFILE}"
   eval ${make[@]} uninstall
   eval ${make[@]} clean
@@ -40,7 +40,7 @@ measured "install" ${make[@]} install                       || die $EX_ERR_RUN
 
 hostname > "${HOSTFILE}"                                    || die $EX_ERR_RUN
 
-measured "boot" sdpa -s "${DIR_STATE}" boot -A "${DIR_INST}/modules" -M -f "${HOSTFILE}" worker:1      \
+measured "boot" sdpa boot -s "${DIR_STATE}" -A "${DIR_INST}/modules" -M -f "${HOSTFILE}" worker:1      \
                                                             || die $EX_ERR_BOOT
 
 SDPA_STATE_DIR="${DIR_STATE}" measured "submit"             \
@@ -58,7 +58,7 @@ actual_gxx=$("${DIR_BUILD}/hello.g++")                          || die $EX_ERR_R
 test "Hello World" = "$actual_gcc"                              || die $EX_ERR_RES
 test "Hello World" = "$actual_gxx"                              || die $EX_ERR_RES
 
-measured "stop" sdpa -s "${DIR_STATE}" stop                 || die $EX_ERR_STOP
+measured "stop" sdpa stop -s "${DIR_STATE}"                 || die $EX_ERR_STOP
 
 rm "${HOSTFILE}"                                         || die $EX_ERR_CLEANUP
 rm "${DIR_BUILD}/hello.gcc"                              || die $EX_ERR_CLEANUP

@@ -76,7 +76,7 @@ function cleanup ()
 {
     if $runtime_started
     then
-        sdpa -s "${state_dir}" stop
+        sdpa stop -s "${state_dir}"
     fi
     rm -rf "${builddir}"
 }
@@ -115,10 +115,10 @@ log_info "+ booting runtime system on: $(hostname -s)"
 
 echo "$(hostname -s)" > "${builddir}/hostfile"
 
-err=$(sdpa -s "${state_dir}" stop 2>&1)
+err=$(sdpa stop -s "${state_dir}" 2>&1)
 
 runtime_started=true
-sdpa -s "${state_dir}" boot -M -f "${builddir}/hostfile" -A "${builddir}" work:1 > "${builddir}/boot.log" 2>&1
+sdpa boot -s "${state_dir}" -M -f "${builddir}/hostfile" -A "${builddir}" work:1 > "${builddir}/boot.log" 2>&1
 ec=$?
 if [ $ec -ne 0 ] ; then
     log_error "++ boot failed: $err"
@@ -129,7 +129,7 @@ fi
 expected_response="sdpa.response.$challenge"
 
 log_info "++ submitting job..."
-sdpa -s "${state_dir}" submit \
+sdpa submit -s "${state_dir}" \
   "${builddir}/selftest.pnet.put" "${builddir}/result.pnet"
 if [ $? -ne 0 ] ; then
   log_error "++ selftest could not be submitted/executed"
@@ -149,7 +149,7 @@ else
     greeting="user $USER"
 fi
 
-sdpa -s "${state_dir}" stop >/dev/null 2>&1
+sdpa stop -s "${state_dir}" >/dev/null 2>&1
 runtime_started=false
 
 log_info "+ Congratulations $greeting, your installation is working!"

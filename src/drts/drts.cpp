@@ -113,8 +113,8 @@ namespace gspc
 
     command_boot
       << (_installation.gspc_home() / "bin" / "sdpa")
-      << " -s " << _state_directory
       << " boot"
+      << " -s " << _state_directory
       << " -f " << _nodefile;
 
     if (get_log_host (vm))
@@ -183,7 +183,7 @@ namespace gspc
   {
     _virtual_memory_api.reset();
 
-    system ( ( boost::format ("%1% -s %2% stop")
+    system ( ( boost::format ("%1% stop -s %2%")
              % (_installation.gspc_home() / "bin" / "sdpa")
              % _state_directory
              ).str()

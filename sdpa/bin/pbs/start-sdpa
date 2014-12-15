@@ -50,7 +50,7 @@ EOF
 on_ctrlC()
 {
         echo >&2 "Canceled..."
-        rexec "${master}" "${sdpa}" -s "${state_dir}" stop
+        rexec "${master}" "${sdpa}" stop -s "${state_dir}"
         exit 0
 }
 
@@ -425,7 +425,7 @@ mkdir -p "${processes_dir}" || {
 if [ $(find "${processes_dir}" -noleaf -name "*.pid" | wc -l) -ne 0 ]
 then
     warn "there are still pid files in \"${processes_dir}\", please make sure that the previous drts is stopped."
-    info "to stop the old one: run \"${sdpa_home}/bin/sdpa -s \"${state_dir}\" stop\""
+    info "to stop the old one: run \"${sdpa_home}/bin/sdpa stop -s \"${state_dir}\"\""
     error 2 "state directory is not clean"
 fi
 mkdir -p "${processes_dir}/${master}" || {
@@ -464,11 +464,11 @@ rexec_with_startup_messages ${master} orchestrator_startup_messages \
   --environment FHGLOG_level=$($verbose && echo TRACE || echo INFO) \
   --environment FHGLOG_to_file="${state_dir}/log/orchestrator.log"
 if [ ${?} -ne 0 ] ; then
-    rexec "${master}" "${sdpa}" -s "${state_dir}" stop
+    rexec "${master}" "${sdpa}" stop -s "${state_dir}"
     error 3 "could not start orchestrator"
 fi
 if [ ${#orchestrator_startup_messages[@]} != 5 ]; then
-  rexec "${master}" "${sdpa}" -s "${state_dir}" stop
+  rexec "${master}" "${sdpa}" stop -s "${state_dir}"
   error 3 "could not start orchestrator: expected 5 lines of startup messages"
 fi
 echo ${orchestrator_startup_messages[0]} > "${processes_dir}/${master}/orchestrator.pid"
@@ -482,7 +482,7 @@ wait_for_port_on_host ${network_retries} \
 ec=$?
 if [ $ec -ne 0 ]
 then
-    rexec "${master}" "${sdpa}" -s "${state_dir}" stop
+    rexec "${master}" "${sdpa}" stop -s "${state_dir}"
     if [ $ec -eq 1 ]
     then
         error 3 "could not start orchestrator, failed to appear after ${network_retries} seconds"
@@ -527,7 +527,7 @@ if $gpi_enabled ; then
 
     if [ ${ec} -ne 0 ]
     then
-        rexec "${master}" "${sdpa}" -s "${state_dir}" stop
+        rexec "${master}" "${sdpa}" stop -s "${state_dir}"
         error 3 "could not start vmem"
     fi
 
@@ -644,11 +644,11 @@ function start_agent
       --environment FHGLOG_level=$($verbose && echo TRACE || echo INFO) \
       --environment FHGLOG_to_file="${state_dir}/log/$name.log"
     if [ ${?} -ne 0 ] ; then
-      rexec "${master}" "${sdpa}" -s "${state_dir}" stop
+      rexec "${master}" "${sdpa}" stop -s "${state_dir}"
       error 3 "could not start agent ${name}"
     fi
     if [ ${#agent_startup_messages[@]} != 3 ]; then
-      rexec "${master}" "${sdpa}" -s "${state_dir}" stop
+      rexec "${master}" "${sdpa}" stop -s "${state_dir}"
       error 1 "could not start agent ${name}: expected 3 lines of startup messages"
     fi
     echo ${agent_startup_messages[0]} > "${processes_dir}/${host}/${name}.pid"
@@ -677,7 +677,7 @@ function start_agents
         ec=$?
         if [ $ec -ne 0 ]
         then
-            rexec "${master}" "${sdpa}" -s "${state_dir}" stop
+            rexec "${master}" "${sdpa}" stop -s "${state_dir}"
             error 3 "at least one agent could not be started!"
         fi
       done
@@ -745,7 +745,7 @@ function start_workers_for_capability
         ec=$?
         if [ $ec -ne 0 ]
         then
-            rexec "${master}" "${sdpa}" -s "${state_dir}" stop
+            rexec "${master}" "${sdpa}" stop -s "${state_dir}"
             error 3 "at least one worker could not be started!"
         fi
 
@@ -780,7 +780,7 @@ wait_on_pids
 ec=$?
 if [ $ec -ne 0 ]
 then
-    rexec "${master}" "${sdpa}" -s "${state_dir}" stop
+    rexec "${master}" "${sdpa}" stop -s "${state_dir}"
     error 3 "at least one agent could not be started!"
 fi
 
@@ -789,6 +789,6 @@ wait_on_pids
 ec=$?
 if [ $ec -ne 0 ]
 then
-    rexec "${master}" "${sdpa}" -s "${state_dir}" stop
+    rexec "${master}" "${sdpa}" stop -s "${state_dir}"
     error 3 "at least one worker could not be started!"
 fi
