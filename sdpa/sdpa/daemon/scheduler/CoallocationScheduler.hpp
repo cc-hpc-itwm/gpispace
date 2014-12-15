@@ -42,7 +42,7 @@ namespace sdpa
 
       // used by daemon and self and test
       void releaseReservation (const sdpa::job_id_t&);
-      const assignment_t assignJobsToWorkers();
+      assignment_t assignJobsToWorkers();
 
       bool cancelNotTerminatedWorkerJobs ( std::function<void (worker_id_t const&)> func
                                          , const sdpa::job_id_t& job_id);
