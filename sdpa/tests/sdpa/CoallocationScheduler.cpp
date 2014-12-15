@@ -848,9 +848,14 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
   const std::vector<sdpa::worker_id_t>
     worker_ids {"worker_0", "worker_1"};
 
-  const double computational_cost (1.0);
-  const double transfer_cost_host_0 (1.0);
-  const double transfer_cost_host_1 (4.0);
+  std::uniform_real_distribution<double> dist (1.0, 10.0);
+  std::random_device rand_dev;
+  std::mt19937 rand_engine (rand_dev());
+
+  const double computational_cost (dist (rand_engine));
+  const double transfer_cost_host_0 (dist (rand_engine));
+  const double transfer_cost_host_1 (dist (rand_engine));
+
   const double big_transfer_cost (std::numeric_limits<double>::max());
 
   const std::function<double (std::string const&)>
@@ -899,7 +904,11 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
 
    double sum_costs_jobs_assigned_to_worker_0 (0.0);
    double sum_costs_jobs_assigned_to_worker_1 (0.0);
-   double max_job_cost (transfer_cost_host_1 + computational_cost);
+   double max_job_cost ( std::max ( transfer_cost_host_0
+                                  , transfer_cost_host_1
+                                  )
+                       + computational_cost
+                       );
 
    for ( const std::set<sdpa::worker_id_t>& job_assigned_workers
        : assignment | boost::adaptors::map_values
