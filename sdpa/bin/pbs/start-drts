@@ -137,11 +137,6 @@ while getopts ":hvfg:l:m:i:b:S:c:C:L:s:n:M:N:H:" opt; do
     esac
 done
 
-if [ -n "${log_url}" ]
-then
-    export FHGLOG_to_server="${log_url}"
-fi
-
 if [ -z "${sdpa_home}" ]
 then
     echo >&2 "sdpa-home is empty, please specify -H"
@@ -306,6 +301,7 @@ startup_messages_raw=$(${sdpa_home}/bin/start-and-fork \
   --command "${bin}" \
   ${arguments} \
   --environment LD_LIBRARY_PATH="${sdpa_home}/lib:${sdpa_home}/libexec/sdpa" \
+  $(if [ -n ${log_url} ]; then echo --environment FHGLOG_to_server="${log_url}"; fi) \
   --environment FHGLOG_level=$(${verbose} && echo TRACE || echo INFO) \
   --environment FHGLOG_to_file="${logprefix}.log"
 )
