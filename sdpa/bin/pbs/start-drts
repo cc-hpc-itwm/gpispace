@@ -305,7 +305,7 @@ startup_messages_raw=$(${sdpa_home}/bin/start-and-fork \
   \
   --command "${bin}" \
   ${arguments} \
-  --environment LD_LIBRARY_PATH="${sdpa_home}/lib:${sdpa_home}/libexec/sdpa:${LD_LIBRARY_PATH}" \
+  --environment LD_LIBRARY_PATH="${sdpa_home}/lib:${sdpa_home}/libexec/sdpa" \
   --environment FHGLOG_level=$(${verbose} && echo TRACE || echo INFO) \
   --environment FHGLOG_to_file="${logprefix}.log"
 )
