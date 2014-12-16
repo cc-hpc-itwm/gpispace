@@ -26,6 +26,8 @@
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/count_if.hpp>
+#include <boost/range/algorithm/copy.hpp>
+#include <boost/range/algorithm_ext/push_back.hpp>
 
 #include <unordered_map>
 
@@ -33,6 +35,11 @@ namespace sdpa
 {
   namespace daemon
   {
+    std::string WorkerManager::host (const sdpa::worker_id_t& worker) const
+    {
+      return worker_map_.at(worker)->hostname();
+    }
+
     Worker::ptr_t WorkerManager::findWorker (const worker_id_t& worker_id)
     {
       boost::mutex::scoped_lock const _ (mtx_);
@@ -98,23 +105,26 @@ namespace sdpa
       worker_map_.erase (w);
     }
 
-    std::set<worker_id_t> WorkerManager::getAllNonReservedWorkers()
+    std::set<worker_id_t> WorkerManager::getAllNonReservedWorkers() const
     {
       boost::mutex::scoped_lock const _ (mtx_);
-      std::set<worker_id_t> set_workers;
-
-      for (Worker::ptr_t const& worker : worker_map_ | boost::adaptors::map_values)
+      std::set<worker_id_t> free_workers;
+      for ( Worker::ptr_t ptr_worker
+          : worker_map_
+          | boost::adaptors::map_values
+          | boost::adaptors::filtered
+             ([](const Worker::ptr_t& ptr_worker)
+               {return !ptr_worker->isReserved();}
+             )
+          )
       {
-        if (!worker->isReserved())
-        {
-          set_workers.insert (worker->name());
-        }
+        free_workers.insert (ptr_worker->name());
       }
 
-      return set_workers;
+      return free_workers;
     }
 
-    void WorkerManager::getCapabilities (sdpa::capabilities_set_t& agentCpbSet)
+    void WorkerManager::getCapabilities (sdpa::capabilities_set_t& agentCpbSet) const
     {
       boost::mutex::scoped_lock const _ (mtx_);
 
@@ -137,40 +147,42 @@ namespace sdpa
       }
     }
 
-    namespace
+    boost::optional<std::size_t> WorkerManager::matchRequirements
+      ( const Worker::ptr_t& pWorker
+      , const job_requirements_t& job_req_set
+      ) const
     {
-      boost::optional<std::size_t> matchRequirements
-        ( const Worker::ptr_t& pWorker
-        , const job_requirements_t& job_req_set
-        )
+      std::size_t matchingDeg (0);
+      if (job_req_set.numWorkers()>1 && pWorker->children_allowed())
       {
-        std::size_t matchingDeg (0);
-        if (job_req_set.numWorkers()>1 && pWorker->children_allowed())
+        return boost::none;
+      }
+      for (we::type::requirement_t req : job_req_set.getReqList())
+      {
+        if (pWorker->hasCapability (req.value()))
+        {
+          ++matchingDeg;
+        }
+        else if (req.is_mandatory())
         {
           return boost::none;
         }
-        for (we::type::requirement_t req : job_req_set.getReqList())
-        {
-          if (pWorker->hasCapability (req.value()))
-          {
-            ++matchingDeg;
-          }
-          else if (req.is_mandatory())
-          {
-            return boost::none;
-          }
-        }
-
-        return matchingDeg;
       }
+
+      return matchingDeg;
     }
 
     mmap_match_deg_worker_id_t WorkerManager::getMatchingDegreesAndWorkers
       ( const job_requirements_t& job_reqs
-      , const std::set<worker_id_t>& worker_set
       ) const
     {
-      if (worker_set.size() < job_reqs.numWorkers())
+      boost::mutex::scoped_lock const lock_worker_map (mtx_);
+      std::vector<worker_id_t> workers;
+      boost::copy ( worker_map_ | boost::adaptors::map_keys
+                  , std::back_inserter (workers)
+                  );
+
+      if (workers.size() < job_reqs.numWorkers())
       {
         return {};
       }
@@ -183,8 +195,7 @@ namespace sdpa
       // Searching and insertion operations have logarithmic complexity, as the
       // multimaps are implemented as binary search trees
 
-      boost::mutex::scoped_lock const lock_worker_map (mtx_);
-      for (const sdpa::worker_id_t& worker_id : worker_set)
+      for (const sdpa::worker_id_t& worker_id : workers)
       {
         const worker_map_t::const_iterator it (worker_map_.find (worker_id));
         if (it == worker_map_.end())
@@ -202,6 +213,44 @@ namespace sdpa
       }
 
       return mmap_match_deg_worker_id;
+    }
+
+    double WorkerManager::cost_assigned_jobs
+      ( const worker_id_t worker_id
+      , std::function<double (job_id_t job_id)> cost_reservation
+      )
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      return worker_map_.at (worker_id)->cost_assigned_jobs (cost_reservation);
+    }
+
+    bool WorkerManager::can_start_job (std::set<worker_id_t> workers) const
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      return std::all_of ( std::begin(workers)
+                         , std::end(workers)
+                         , [this] (const worker_id_t& worker_id)
+                           {return !worker_map_.at (worker_id)->isReserved();}
+                         );
+    }
+
+    std::set<job_id_t>  WorkerManager::remove_all_matching_pending_jobs
+      (const job_id_list_t& matching_jobs)
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      std::set<job_id_t> pending_jobs;
+      for (Worker::ptr_t ptr_worker : worker_map_ | boost::adaptors::map_values )
+      {
+        for (const job_id_t& job_id : matching_jobs)
+        {
+          if (ptr_worker->remove_job_if_pending (job_id))
+          {
+            pending_jobs.insert (job_id);
+          }
+        }
+      }
+
+      return pending_jobs;
     }
   }
 }
