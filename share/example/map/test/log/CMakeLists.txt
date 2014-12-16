@@ -28,7 +28,6 @@ fhg_add_test (test.cpp
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --virtual-memory-per-node ${size_virtual_memory}
        --virtual-memory-startup-timeout 60
-       --virtual-memory-port 10820
        --implementation "$<TARGET_FILE:log_map-impl>"
        --size-input ${size_input}
        --size-output ${size_output}
@@ -41,6 +40,6 @@ fhg_add_test (test.cpp
                  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARIES}
   DEPENDS log_map-impl
-  RESOURCE_LOCK requires_virtual_memory
   REQUIRES_INSTALLATION
+  REQUIRES_VIRTUAL_MEMORY
 )
