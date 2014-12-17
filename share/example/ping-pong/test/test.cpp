@@ -126,5 +126,5 @@ BOOST_AUTO_TEST_CASE (share_example_ping_pong)
             << std::endl
     ;
 
-  BOOST_REQUIRE_LT (avg, 1.0);
+  BOOST_REQUIRE_LT (avg, 3.0);
 }
