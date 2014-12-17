@@ -927,9 +927,9 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
        }
    }
 
-   BOOST_REQUIRE_LE ( abs ( sum_costs_jobs_assigned_to_worker_1
-                          - sum_costs_jobs_assigned_to_worker_0
-                          )
+   BOOST_REQUIRE_LE ( std::abs ( sum_costs_jobs_assigned_to_worker_1
+                               - sum_costs_jobs_assigned_to_worker_0
+                               )
                     , max_job_cost
                     );
 }
