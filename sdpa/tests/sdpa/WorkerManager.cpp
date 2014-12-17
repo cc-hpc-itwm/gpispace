@@ -7,6 +7,8 @@
 
 namespace
 {
+  const double computational_cost = 1.0;
+
   std::vector<std::string> generate_worker_names (const int n)
   {
     std::vector<std::string> worker_ids (n);
@@ -56,12 +58,13 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
                                      }
                                     , we::type::schedule_data()
                                     , null_transfer_cost
+                                    , computational_cost
                                     }
                                    );
 
   sdpa::mmap_match_deg_worker_id_t
     mmap_match_deg_worker_id
-      (worker_manager.getMatchingDegreesAndWorkers (job_req, set_workers));
+      (worker_manager.getMatchingDegreesAndWorkers (job_req));
 
   BOOST_REQUIRE_EQUAL (mmap_match_deg_worker_id.size(), worker_ids.size()-1);
   sdpa::mmap_match_deg_worker_id_t::iterator it (mmap_match_deg_worker_id.begin());
@@ -131,9 +134,14 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
 
   const sdpa::daemon::Worker::ptr_t ptrWorker (worker_manager.findWorker (worker_ids[0]));
   const sdpa::job_id_t job_id (fhg::util::random_string());
-  ptrWorker->submit (job_id);
 
+  ptrWorker->assign (job_id);
   boost::optional<sdpa::worker_id_t> worker_id (worker_manager.findSubmOrAckWorker (job_id));
+  BOOST_REQUIRE (worker_id);
+  BOOST_REQUIRE_EQUAL (*worker_id, worker_ids[0]);
+
+  ptrWorker->submit (job_id);
+  worker_id = worker_manager.findSubmOrAckWorker (job_id);
   BOOST_REQUIRE (worker_id);
   BOOST_REQUIRE_EQUAL (*worker_id, worker_ids[0]);
 

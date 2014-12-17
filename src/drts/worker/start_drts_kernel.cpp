@@ -140,27 +140,14 @@ namespace fhg
         environment.emplace ("FHGLOG_level", verbose ? "TRACE" : "INFO");
         environment.emplace
           ("FHGLOG_to_file", (logprefix / (name + ".log")).string());
+        environment.emplace ( "LD_LIBRARY_PATH"
+                            , (installation_dir / "lib").string() + ":"
+                            + (installation_dir / "libexec" / "sdpa").string()
+                            );
 
+        if (log_url)
         {
-          std::vector<boost::filesystem::path> LD_LIBRARY_PATH
-            {installation_dir / "lib", installation_dir / "libexec" / "sdpa"};
-
-          boost::optional<boost::filesystem::path> const outer_LD_LIBRARY_PATH
-            (fhg::util::getenv ("LD_LIBRARY_PATH"));
-          if (outer_LD_LIBRARY_PATH)
-          {
-            LD_LIBRARY_PATH.emplace_back (outer_LD_LIBRARY_PATH.get());
-          }
-
-          environment.emplace
-            ( "LD_LIBRARY_PATH"
-            , fhg::util::join (string_vector (LD_LIBRARY_PATH), ":")
-            );
-
-          if (log_url)
-          {
-            environment.emplace ("FHGLOG_to_server", log_url.get());
-          }
+          environment.emplace ("FHGLOG_to_server", log_url.get());
         }
 
         std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages

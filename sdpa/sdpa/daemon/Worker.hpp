@@ -29,6 +29,7 @@ namespace sdpa
                       , const std::string& hostname
                       );
 
+      void assign (const job_id_t&);
       void submit(const job_id_t&);
 
       void acknowledge(const job_id_t&);
@@ -54,6 +55,11 @@ namespace sdpa
 
       // methods related to reservation
       bool isReserved();
+
+      // cost
+      double cost_assigned_jobs (std::function<double (job_id_t job_id)>);
+
+      bool remove_job_if_pending (const job_id_t& job_id);
     private:
       void reserve();
       void free();
@@ -69,6 +75,7 @@ namespace sdpa
       std::string hostname_;
       double last_schedule_time_;
 
+      std::set<job_id_t> pending_;
       std::set<job_id_t> submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
       std::set<job_id_t> acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
 

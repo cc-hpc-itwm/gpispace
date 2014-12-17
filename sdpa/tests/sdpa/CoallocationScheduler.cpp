@@ -47,48 +47,66 @@ struct serveJob_checking_scheduler_and_job_manager
   {
     BOOST_REQUIRE_GE (_expected_serveJob_calls.count (jobId), 1);
     BOOST_CHECK_EQUAL (_expected_serveJob_calls[jobId].first, worker_list.size());
-    for (sdpa::worker_id_t worker : worker_list)
-    {
-      BOOST_REQUIRE (_expected_serveJob_calls[jobId].second.count (worker));
-    }
+
+    BOOST_REQUIRE_EQUAL
+      ( std::accumulate ( std::begin (_expected_serveJob_calls.at (jobId).second)
+                        , std::end (_expected_serveJob_calls.at (jobId).second)
+                        , 0
+                        , [&worker_list] (int assignment_counter, const std::set<sdpa::worker_id_t>& expected_workers)
+                          {return ( std::all_of ( worker_list.begin()
+                                                , worker_list.end()
+                                                , [&expected_workers] (const sdpa::worker_id_t& worker)
+                                                  {return expected_workers.count (worker);}
+                                                )
+                                  + assignment_counter
+                                  );
+                          }
+                        )
+         , 1
+        );
 
     _expected_serveJob_calls.erase (_expected_serveJob_calls.find (jobId));
   }
 
-  void expect_serveJob_call
-    (sdpa::job_id_t id, std::size_t count, std::set<sdpa::worker_id_t> list)
+  typedef std::set<std::set<sdpa::worker_id_t>> set_set_worker_id_t;
+
+  void expect_serveJob_call (sdpa::job_id_t id, std::set<sdpa::worker_id_t> list)
+  {
+    _expected_serveJob_calls.emplace
+      (id, std::make_pair<std::size_t, set_set_worker_id_t> (list.size(), {list}));
+  }
+
+  void expect_serveJob_call (sdpa::job_id_t id, std::size_t count, set_set_worker_id_t list)
   {
     _expected_serveJob_calls.emplace (id, std::make_pair (count, list));
   }
-  void expect_serveJob_call (sdpa::job_id_t id, std::set<sdpa::worker_id_t> list)
-  {
-    expect_serveJob_call (id, list.size(), list);
-  }
 
-  std::map<sdpa::job_id_t, std::pair<std::size_t, std::set<sdpa::worker_id_t>>>
+  std::map<sdpa::job_id_t, std::pair<std::size_t, set_set_worker_id_t>>
     _expected_serveJob_calls;
 };
 
 namespace
 {
+  const double computational_cost = 1.0;
+
   job_requirements_t require (std::string name_1)
   {
-    return {{we::type::requirement_t (name_1, true)}, we::type::schedule_data(), null_transfer_cost};
+    return {{we::type::requirement_t (name_1, true)}, we::type::schedule_data(), null_transfer_cost, computational_cost};
   }
 
   job_requirements_t require (std::string name, unsigned long workers)
   {
-    return {{we::type::requirement_t (name, true)}, we::type::schedule_data (workers), null_transfer_cost};
+    return {{we::type::requirement_t (name, true)}, we::type::schedule_data (workers), null_transfer_cost, computational_cost};
   }
 
   job_requirements_t require (unsigned long workers)
   {
-    return {{}, we::type::schedule_data (workers), null_transfer_cost};
+    return {{}, we::type::schedule_data (workers), null_transfer_cost, computational_cost};
   }
 
   job_requirements_t no_requirements()
   {
-    return {{}, we::type::schedule_data(), null_transfer_cost};
+    return {{}, we::type::schedule_data(), null_transfer_cost, computational_cost};
   }
 }
 
@@ -105,22 +123,17 @@ BOOST_FIXTURE_TEST_CASE (testLoadBalancing, serveJob_checking_scheduler_and_job_
   _scheduler.enqueueJob ("job_1");
   _scheduler.enqueueJob ("job_2");
 
-  expect_serveJob_call ("job_0", {"worker_0"});
-  expect_serveJob_call ("job_1", {"worker_1"});
+  expect_serveJob_call ("job_0", 1, {{"worker_0"},{"worker_1"}});
+  expect_serveJob_call ("job_1", 1, {{"worker_0"},{"worker_1"}});
 
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
-
-  _scheduler.worker_manager().findWorker ("worker_0")->deleteJob ("job_0");
-  _scheduler.worker_manager().findWorker ("worker_1")->deleteJob ("job_1");
-
+  expect_serveJob_call ("job_2", 1, {{"worker_0"},{"worker_1"}});
   _scheduler.releaseReservation ("job_0");
   _scheduler.releaseReservation ("job_1");
 
-
-  expect_serveJob_call ("job_2", {"worker_0"});
-
-  _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 }
 
 BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_and_job_manager)
@@ -136,13 +149,15 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_a
 
   expect_serveJob_call ("job_0", {"worker_0"});
 
-  _scheduler.assignJobsToWorkers();
+  _scheduler.assignJobsToWorkers(); _scheduler.start_pending_jobs();
 
   _scheduler.worker_manager().addWorker ("worker_1", 1, {}, false, fhg::util::random_string());
+  _scheduler.reschedule_pending_jobs_matching_worker ("worker_1");
 
   expect_serveJob_call ("job_1", {"worker_1"});
 
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 }
 
 BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_scheduler_and_job_manager)
@@ -156,17 +171,18 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_schedule
   _scheduler.enqueueJob ("job_0");
   _scheduler.enqueueJob ("job_1");
 
-
   expect_serveJob_call ("job_0", {"worker_0"});
 
   _scheduler.assignJobsToWorkers();
-
+  _scheduler.start_pending_jobs();
 
   _scheduler.worker_manager().findWorker ("worker_1")->addCapabilities ({sdpa::capability_t ("C", "worker_1")});
+  _scheduler.reschedule_pending_jobs_matching_worker ("worker_1");
 
   expect_serveJob_call ("job_1", {"worker_1"});
 
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 }
 
 BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_manager)
@@ -182,27 +198,23 @@ BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_m
   _scheduler.enqueueJob ("2A");
   _scheduler.enqueueJob ("2B");
 
-
   expect_serveJob_call ("2A", {"A0", "A1"});
   expect_serveJob_call ("2B", {"B0", "B1"});
 
   _scheduler.assignJobsToWorkers();
-
+  _scheduler.start_pending_jobs();
 
   add_job ("1A", require ("A", 1));
 
   _scheduler.enqueueJob ("1A");
 
+  expect_serveJob_call ("1A", 1, {{"A0"}, {"A1"}});
   _scheduler.assignJobsToWorkers();
-
-  _scheduler.worker_manager().findWorker ("A0")->deleteJob ("2A");
-  _scheduler.worker_manager().findWorker ("A1")->deleteJob ("2A");
+  _scheduler.start_pending_jobs();
 
   _scheduler.releaseReservation ("2A");
 
-  expect_serveJob_call ("1A", 1, {"A0", "A1"});
-
-  _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 }
 
 BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and_job_manager)
@@ -216,22 +228,23 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and
   _scheduler.enqueueJob ("job_0");
   _scheduler.enqueueJob ("job_1");
 
-  expect_serveJob_call ("job_0", {"worker_0"});
-  expect_serveJob_call ("job_1", {"worker_1"});
+  expect_serveJob_call ("job_0", 1, {{"worker_0"}, {"worker_1"}});
+  expect_serveJob_call ("job_1", 1, {{"worker_0"}, {"worker_1"}});
 
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
-
-  _scheduler.worker_manager().findWorker ("worker_0")->deleteJob ("job_0");
   _scheduler.releaseReservation ("job_0");
   _scheduler.worker_manager().deleteWorker ("worker_0");
   _scheduler.enqueueJob ("job_0");
 
   _scheduler.worker_manager().addWorker ("worker_0", 1, {}, false, fhg::util::random_string());
+  _scheduler.reschedule_pending_jobs_matching_worker ("worker_0");
 
-  expect_serveJob_call ("job_0", {"worker_0"});
+  expect_serveJob_call ("job_0",  1, {{"worker_0"}, {"worker_1"}});
 
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 }
 
 BOOST_FIXTURE_TEST_CASE
@@ -243,12 +256,14 @@ BOOST_FIXTURE_TEST_CASE
   _scheduler.enqueueJob ("2");
 
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
   add_job ("1", require (1));
   _scheduler.enqueueJob ("1");
 
   expect_serveJob_call ("1", {"worker"});
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 }
 
 BOOST_FIXTURE_TEST_CASE
@@ -263,12 +278,14 @@ BOOST_FIXTURE_TEST_CASE
   _scheduler.enqueueJob (job_id_0);
   expect_serveJob_call (job_id_0, {worker_id});
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
   sdpa::job_id_t const job_id_1 (utils::random_peer_name());
   add_job (job_id_1, no_requirements());
   _scheduler.enqueueJob (job_id_1);
   expect_serveJob_call (job_id_1, {worker_id});
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 }
 
 BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
@@ -284,16 +301,18 @@ BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
   _scheduler.enqueueJob (job_id_0);
   expect_serveJob_call (job_id_0, {worker_id});
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
   sdpa::job_id_t const job_id_1 (utils::random_peer_name());
   add_job (job_id_1, no_requirements());
   _scheduler.enqueueJob (job_id_1);
   _scheduler.assignJobsToWorkers();
-
-  _scheduler.worker_manager().findWorker (worker_id)->deleteJob (job_id_0);
+  _scheduler.start_pending_jobs();
 
   expect_serveJob_call (job_id_1, {worker_id});
-  _scheduler.assignJobsToWorkers();
+
+  _scheduler.releaseReservation (job_id_0);
+  _scheduler.start_pending_jobs();
 }
 
 BOOST_FIXTURE_TEST_CASE
@@ -314,12 +333,14 @@ BOOST_FIXTURE_TEST_CASE
   _scheduler.enqueueJob (job_id_0);
   expect_serveJob_call (job_id_0, {worker_id});
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
   sdpa::job_id_t const job_id_1 (utils::random_peer_name());
   add_job (job_id_1, require ("B"));
   _scheduler.enqueueJob (job_id_1);
   expect_serveJob_call (job_id_1, {worker_id});
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 }
 
 BOOST_FIXTURE_TEST_CASE ( multiple_worker_job_submissions_with_requirements_no_children_allowed
@@ -342,20 +363,50 @@ BOOST_FIXTURE_TEST_CASE ( multiple_worker_job_submissions_with_requirements_no_c
   _scheduler.enqueueJob (job_id_0);
   expect_serveJob_call (job_id_0, {worker_id});
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
   sdpa::job_id_t const job_id_1 (utils::random_peer_name());
   add_job (job_id_1, require ("B"));
   _scheduler.enqueueJob (job_id_1);
   _scheduler.assignJobsToWorkers();
-
-  _scheduler.worker_manager().findWorker (worker_id)->deleteJob (job_id_0);
+  _scheduler.start_pending_jobs();
 
   expect_serveJob_call (job_id_1, {worker_id});
-  _scheduler.assignJobsToWorkers();
+
+  _scheduler.releaseReservation (job_id_0);
+  _scheduler.start_pending_jobs();
 }
 
 struct fixture_minimal_cost_assignment
 {
+  fixture_minimal_cost_assignment()
+  : _scheduler
+      ( [](const sdpa::worker_id_list_t&, const sdpa::job_id_t&) {}
+      , [](const sdpa::job_id_t&) {return no_requirements();}
+      )
+  {
+    _scheduler.worker_manager().addWorker ("worker_01", 1, {}, false, "node1");
+    _scheduler.worker_manager().addWorker ("worker_02", 1, {}, false, "node1");
+    _scheduler.worker_manager().addWorker ("worker_03", 1, {}, false, "node1");
+    _scheduler.worker_manager().addWorker ("worker_04", 1, {}, false, "node1");
+    _scheduler.worker_manager().addWorker ("worker_05", 1, {}, false, "node2");
+    _scheduler.worker_manager().addWorker ("worker_06", 1, {}, false, "node2");
+    _scheduler.worker_manager().addWorker ("worker_07", 1, {}, false, "node2");
+    _scheduler.worker_manager().addWorker ("worker_08", 1, {}, false, "node2");
+    _scheduler.worker_manager().addWorker ("worker_09", 1, {}, false, "node3");
+    _scheduler.worker_manager().addWorker ("worker_10", 1, {}, false, "node3");
+    _scheduler.worker_manager().addWorker ("worker_11", 1, {}, false, "node3");
+    _scheduler.worker_manager().addWorker ("worker_12", 1, {}, false, "node3");
+    _scheduler.worker_manager().addWorker ("worker_13", 1, {}, false, "node4");
+    _scheduler.worker_manager().addWorker ("worker_14", 1, {}, false, "node4");
+    _scheduler.worker_manager().addWorker ("worker_15", 1, {}, false, "node4");
+    _scheduler.worker_manager().addWorker ("worker_16", 1, {}, false, "node4");
+    _scheduler.worker_manager().addWorker ("worker_17", 1, {}, false, "node5");
+    _scheduler.worker_manager().addWorker ("worker_18", 1, {}, false, "node5");
+    _scheduler.worker_manager().addWorker ("worker_19", 1, {}, false, "node5");
+    _scheduler.worker_manager().addWorker ("worker_20", 1, {}, false, "node5");
+  }
+
   double max_value (const std::map<std::string, double>& map_cost)
   {
     return std::max_element ( map_cost.begin()
@@ -381,8 +432,8 @@ struct fixture_minimal_cost_assignment
       };
 
     const std::set<sdpa::worker_id_t> set_assigned_workers
-      (sdpa::daemon::CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
-        (mmap_match_deg_worker, n_req_workers, transfer_cost)
+      (_scheduler.find_job_assignment_minimizing_total_cost
+        (mmap_match_deg_worker, n_req_workers, transfer_cost, 1.0)
       );
 
     BOOST_REQUIRE_EQUAL (set_assigned_workers.size(), n_req_workers);
@@ -407,6 +458,8 @@ struct fixture_minimal_cost_assignment
                                           )
                         );
   }
+
+  sdpa::daemon::CoallocationScheduler _scheduler;
 };
 
 BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_different_matching_degs_different_costs
@@ -703,6 +756,7 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
                     return job_requirements_t ( {}
                                               , we::type::schedule_data (n_req_workers)
                                               , test_transfer_cost
+                                              , computational_cost
                                               );
                   }
                 );
@@ -716,6 +770,7 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
   _scheduler.enqueueJob (job_id);
 
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
   // require the job to be scheduled
   BOOST_REQUIRE_EQUAL (_scheduler.delete_job (job_id), 0);
@@ -748,6 +803,7 @@ BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_with_requirements_is_assigned_if_n
 
   // no serveJob expected
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
   BOOST_REQUIRE (_scheduler.delete_job (job_id_0));
 }
@@ -779,6 +835,101 @@ BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_without_requirements_is_assigned_i
 
   // no serveJob expected
   _scheduler.assignJobsToWorkers();
+  _scheduler.start_pending_jobs();
 
   BOOST_REQUIRE (_scheduler.delete_job (job_id_0));
+}
+
+BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balancing)
+{
+  const unsigned int n_jobs (1000);
+  const unsigned int n_req_workers (1);
+
+  const std::vector<sdpa::worker_id_t>
+    worker_ids {"worker_0", "worker_1"};
+
+  std::uniform_real_distribution<double> dist (1.0, 10.0);
+  std::random_device rand_dev;
+  std::mt19937 rand_engine (rand_dev());
+
+  const double computational_cost (dist (rand_engine));
+  const double transfer_cost_host_0 (dist (rand_engine));
+  const double transfer_cost_host_1 (dist (rand_engine));
+
+  const std::function<double (std::string const&)>
+    test_transfer_cost ( [&transfer_cost_host_0, &transfer_cost_host_1]
+                         (const std::string& host) -> double
+                         {
+                           if (host == "host_0")
+                             return transfer_cost_host_0;
+                           if (host == "host_1")
+                             return transfer_cost_host_1;
+                           throw std::runtime_error ("Unexpected host argument in test transfer cost function");
+                         }
+                       );
+
+  std::vector<sdpa::job_id_t> job_ids (n_jobs);
+  std::generate_n (job_ids.begin(), n_jobs, utils::random_peer_name);
+
+  sdpa::daemon::CoallocationScheduler
+    _scheduler ( [] (const sdpa::worker_id_list_t&, const sdpa::job_id_t&) {}
+               , [n_req_workers, &test_transfer_cost, &computational_cost] (const sdpa::job_id_t&)
+                 {
+                   return job_requirements_t ( {}
+                                             , we::type::schedule_data (n_req_workers)
+                                             , test_transfer_cost
+                                             , computational_cost
+                                             );
+                 }
+               );
+
+   _scheduler.worker_manager().addWorker ("worker_0", 1, {}, false, "host_0");
+   _scheduler.worker_manager().addWorker ("worker_1", 1, {}, false, "host_1");
+
+   std::for_each ( job_ids.begin()
+                 , job_ids.end()
+                 , std::bind ( &sdpa::daemon::CoallocationScheduler::enqueueJob
+                             , &_scheduler
+                             , std::placeholders::_1
+                             )
+                 );
+
+   sdpa::daemon::CoallocationScheduler::assignment_t
+     assignment (_scheduler.assignJobsToWorkers());
+
+   std::set<sdpa::worker_id_t> set_worker_0 = {worker_ids[0]};
+   std::set<sdpa::worker_id_t> set_worker_1 = {worker_ids[1]};
+
+   double sum_costs_jobs_assigned_to_worker_0 (0.0);
+   double sum_costs_jobs_assigned_to_worker_1 (0.0);
+   double max_job_cost ( std::max ( transfer_cost_host_0
+                                  , transfer_cost_host_1
+                                  )
+                       + computational_cost
+                       );
+
+   for ( const std::set<sdpa::worker_id_t>& job_assigned_workers
+       : assignment | boost::adaptors::map_values
+       )
+   {
+     if (job_assigned_workers == set_worker_0)
+     {
+       sum_costs_jobs_assigned_to_worker_0 += transfer_cost_host_0 + computational_cost;
+     }
+     else
+       if (job_assigned_workers == set_worker_1)
+       {
+         sum_costs_jobs_assigned_to_worker_1 += transfer_cost_host_1 + computational_cost;
+       }
+       else
+       {
+         throw std::runtime_error ("unexpected job assignment");
+       }
+   }
+
+   BOOST_REQUIRE_LE ( std::abs ( sum_costs_jobs_assigned_to_worker_1
+                               - sum_costs_jobs_assigned_to_worker_0
+                               )
+                    , max_job_cost
+                    );
 }

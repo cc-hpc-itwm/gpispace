@@ -369,7 +369,7 @@ void GenericDaemon::handleSubmitJobEvent
   Job* pJob (addJob ( job_id
                     , e.description()
                     , itMaster
-                    , {{}, we::type::schedule_data(), null_transfer_cost}
+                    , {{}, we::type::schedule_data(), null_transfer_cost, 1.0} //!Note: an estimation of the computational cost of a master job?
                     )
              );
 
@@ -443,10 +443,12 @@ void GenericDaemon::handleWorkerRegistrationEvent
 
   child_proxy (this, source).worker_registration_ack();
 
-  request_scheduling();
-
-  if (was_new_worker && !workerCpbSet.empty())
+  if (was_new_worker)
   {
+    scheduler().reschedule_pending_jobs_matching_worker (event->name());
+
+    request_scheduling();
+
     // send to the masters my new set of capabilities
     for (master_info_t::value_type const& info : _master_info)
     {
@@ -534,6 +536,8 @@ void GenericDaemon::handleErrorEvent
           }
         }
 
+        scheduler().reschedule_pending_jobs_matching_worker (ptrWorker->name());
+
         const std::set<job_id_t> jobs_to_reschedule
           (ptrWorker->getJobListAndCleanQueues());
 
@@ -615,6 +619,7 @@ try
   const we::type::schedule_data schedule_data
     (activity.transition().get_schedule_data<unsigned long> (activity.input(), "num_worker"));
 
+  const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
   if (schedule_data.num_worker() && schedule_data.num_worker().get() == 0UL)
   {
     throw std::runtime_error ("invalid number of workers required: 0UL");
@@ -626,6 +631,7 @@ try
          , job_requirements_t ( activity.transition().requirements()
                               , schedule_data
                               , _virtual_memory_api->transfer_costs (activity)
+                              , computational_cost
                               )
          );
 
@@ -883,6 +889,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent
 
     if(bModified)
     {
+      scheduler().reschedule_pending_jobs_matching_worker (worker->second);
       request_scheduling();
       if( !isTop() )
       {
@@ -1439,6 +1446,7 @@ namespace sdpa
         _scheduling_thread_notifier.wait (lock);
 
         scheduler().assignJobsToWorkers();
+        scheduler().start_pending_jobs();
       }
     }
 
