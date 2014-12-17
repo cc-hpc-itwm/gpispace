@@ -187,28 +187,6 @@ parse_capability()
     return 0
 }
 
-# wait_for_port_on_host retries host port
-function wait_for_port_on_host ()
-{
-    local retries="${1}"; shift
-    local host="${1}"; shift
-    local port="${1}"; shift
-
-    until [ ${retries} -eq 0 ]
-    do
-        if ${check_port} -z "${host}" "${port}" </dev/null
-        then
-            return 0
-        else
-            sleep 1
-            retries=$((retries - 1))
-        fi
-    done
-
-    return 1
-}
-
-
 nodefile=
 verbose=false
 state_dir="$HOME/.sdpa/state"
@@ -216,7 +194,6 @@ gpi_enabled=true
 delete_logfiles=true
 app_path=
 number_of_groups=1
-network_retries=15
 time_to_wait_per_vmem_socket_in_seconds=60
 
 # guess memory sizes
@@ -402,16 +379,6 @@ if [ ! -x "${script_start_drts}" ] ; then
     error 2 "utility script '${script_start_drts}' is not executable"
 fi
 
-check_port=$(which nc 2>/dev/null)
-if [ $? -ne 0 ]
-then
-    check_port=$(which netcat 2>/dev/null)
-    if [ $? -ne 0 ]
-    then
-        error 2 "utility tool 'nc' or 'netcat' could not be found"
-    fi
-fi
-
 mkdir -p "${state_dir}" || {
     error 2 "could not 'mkdir -p \"${state_dir}\"'"
 }
@@ -476,20 +443,6 @@ echo -n ${orchestrator_startup_messages[1]} > "${state_dir}/orchestrator.host"
 echo -n ${orchestrator_startup_messages[2]} > "${state_dir}/orchestrator.port"
 echo ${orchestrator_startup_messages[3]} > "${state_dir}/orchestrator.rpc.host"
 echo ${orchestrator_startup_messages[4]} > "${state_dir}/orchestrator.rpc.port"
-
-wait_for_port_on_host ${network_retries} \
-  "${orchestrator_startup_messages[1]}" "${orchestrator_startup_messages[2]}"
-ec=$?
-if [ $ec -ne 0 ]
-then
-    rexec "${master}" "${sdpa}" stop -s "${state_dir}"
-    if [ $ec -eq 1 ]
-    then
-        error 3 "could not start orchestrator, failed to appear after ${network_retries} seconds"
-    else
-        error 3 "could not start orchestrator, could not connect after ${network_retries} seconds"
-    fi
-fi
 
 if $gpi_enabled ; then
     # compute memory sizes
