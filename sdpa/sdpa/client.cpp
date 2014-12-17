@@ -43,7 +43,6 @@ namespace sdpa
       , _drts_entrypoint_address
           (m_peer.connect_to (orchestrator_host, orchestrator_port))
     {
-      m_peer.start ();
       m_peer.async_recv ( &m_message
                         , std::bind ( &Client::handle_recv
                                     , this
@@ -56,7 +55,6 @@ namespace sdpa
     Client::~Client()
     {
       _stopping = true;
-      m_peer.stop();
     }
 
     void Client::handle_recv ( boost::system::error_code const & ec
