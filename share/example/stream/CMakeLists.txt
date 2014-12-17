@@ -20,7 +20,6 @@ fhg_add_test (stream.two_module_calls.cpp
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --virtual-memory-per-node ${size_virtual_memory}
        --virtual-memory-startup-timeout 60
-       --virtual-memory-port 10820
        --num-slots ${num_slots}
        --size-slot ${size_slot}
   LINK_LIBRARIES gspc
@@ -28,8 +27,8 @@ fhg_add_test (stream.two_module_calls.cpp
                  ${UTIL_LIBRARIES}
                  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARIES}
-  RESOURCE_LOCK requires_virtual_memory
   REQUIRES_INSTALLATION
+  REQUIRES_VIRTUAL_MEMORY
 )
 
 fhg_add_test (stream.one_module_call.cpp
@@ -40,7 +39,6 @@ fhg_add_test (stream.one_module_call.cpp
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --virtual-memory-per-node ${size_virtual_memory}
        --virtual-memory-startup-timeout 60
-       --virtual-memory-port 10820
        --num-slots ${num_slots}
        --size-slot ${size_slot}
   LINK_LIBRARIES gspc
@@ -48,6 +46,6 @@ fhg_add_test (stream.one_module_call.cpp
                  ${UTIL_LIBRARIES}
                  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARIES}
-  RESOURCE_LOCK requires_virtual_memory
   REQUIRES_INSTALLATION
+  REQUIRES_VIRTUAL_MEMORY
 )

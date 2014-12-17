@@ -138,10 +138,13 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/xsd/schemas.xml"
 )
 
+set (TEST_VMEM_PORT_COUNTER 10820)
+set (TEST_VMEM_PORTS_PER_TEST 100)
+
 macro(FHG_ADD_TEST)
   PARSE_ARGUMENTS(TEST
-    "LINK_LIBRARIES;DEPENDS;PROJECT;ARGS;DESCRIPTION;COMPILE_FLAGS;RESOURCE_LOCK;INCLUDE_DIRECTORIES"
-    "VERBOSE;BOOST_UNIT_TEST;REQUIRES_INSTALLATION;PERFORMANCE_TEST"
+    "LINK_LIBRARIES;DEPENDS;PROJECT;ARGS;DESCRIPTION;COMPILE_FLAGS;INCLUDE_DIRECTORIES"
+    "VERBOSE;BOOST_UNIT_TEST;REQUIRES_INSTALLATION;PERFORMANCE_TEST;REQUIRES_VIRTUAL_MEMORY"
     ${ARGN}
     )
   CAR(TEST_SOURCE ${TEST_DEFAULT_ARGS})
@@ -160,6 +163,13 @@ macro(FHG_ADD_TEST)
     # get the filename without extension
     string(REGEX REPLACE "(.*/)?(.*)\\.c.*" "${TEST_PREFIX}\\2" tc_name ${TEST_SOURCE})
 
+    if (TEST_REQUIRES_VIRTUAL_MEMORY)
+      set (TEST_ARGS ${TEST_ARGS} --virtual-memory-port ${TEST_VMEM_PORT_COUNTER})
+      math (EXPR TEST_VMEM_PORT_COUNTER
+                 "${TEST_VMEM_PORT_COUNTER} + ${TEST_VMEM_PORTS_PER_TEST}"
+      )
+    endif()
+
     if (TEST_VERBOSE)
       message (STATUS "adding test ${tc_name} ${TEST_ARGS} (${TEST_DESCRIPTION})")
     endif()
@@ -177,12 +187,6 @@ macro(FHG_ADD_TEST)
     get_test_property (${tc_name} LABELS tc_labels)
     if (NOT tc_labels)
       set (tc_labels)
-    endif()
-
-    if (TEST_RESOURCE_LOCK)
-      set_tests_properties (${tc_name}
-        PROPERTIES RESOURCE_LOCK ${TEST_RESOURCE_LOCK}
-        )
     endif()
 
     if (TEST_REQUIRES_INSTALLATION)
