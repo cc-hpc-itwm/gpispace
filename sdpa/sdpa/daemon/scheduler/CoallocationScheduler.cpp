@@ -14,11 +14,8 @@ namespace sdpa
   namespace daemon
   {
     CoallocationScheduler::CoallocationScheduler
-        ( std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)> serve_job
-        , std::function<job_requirements_t (const sdpa::job_id_t&)> job_requirements
-        )
-      : _serve_job (serve_job)
-      , _job_requirements (job_requirements)
+        (std::function<job_requirements_t (const sdpa::job_id_t&)> job_requirements)
+      : _job_requirements (job_requirements)
       , _worker_manager()
     {}
 
@@ -307,7 +304,8 @@ namespace sdpa
       return !list_not_terminated_workers.empty();
     }
 
-    std::set<job_id_t> CoallocationScheduler::start_pending_jobs()
+    std::set<job_id_t> CoallocationScheduler::start_pending_jobs
+      (std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)> serve_job)
     {
       std::set<job_id_t> jobs_started;
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
@@ -321,7 +319,8 @@ namespace sdpa
           {
             worker_manager().findWorker (worker)->submit (job_id);
           }
-          _serve_job ({workers.begin(), workers.end()}, job_id);
+
+          serve_job ({workers.begin(), workers.end()}, job_id);
           jobs_started.insert (job_id);
         }
         else
