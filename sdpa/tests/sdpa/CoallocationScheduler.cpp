@@ -19,19 +19,19 @@ namespace
   auto serve_job = [] (const sdpa::worker_id_list_t&, const sdpa::job_id_t&) {};
 }
 
-struct serveJob_checking_scheduler_and_job_manager
+struct fixture_scheduler_and_requirements
 {
   typedef std::set<sdpa::worker_id_t> set_workers_t;
   typedef std::set<sdpa::job_id_t> set_jobs_t;
 
-  serveJob_checking_scheduler_and_job_manager()
+  fixture_scheduler_and_requirements()
     : _scheduler
-      (std::bind (&serveJob_checking_scheduler_and_job_manager::requirements, this, std::placeholders::_1))
+      (std::bind (&fixture_scheduler_and_requirements::requirements, this, std::placeholders::_1))
   {}
 
   sdpa::daemon::CoallocationScheduler _scheduler;
 
-  ~serveJob_checking_scheduler_and_job_manager()
+  ~fixture_scheduler_and_requirements()
   {
   }
 
@@ -96,7 +96,7 @@ namespace
   }
 }
 
-BOOST_FIXTURE_TEST_CASE (load_balancing, serveJob_checking_scheduler_and_job_manager)
+BOOST_FIXTURE_TEST_CASE (load_balancing, fixture_scheduler_and_requirements)
 {
   _scheduler.worker_manager().addWorker ("worker_0", 1, {}, false, fhg::util::random_string());
   _scheduler.worker_manager().addWorker ("worker_1", 1, {}, false, fhg::util::random_string());
@@ -121,7 +121,7 @@ BOOST_FIXTURE_TEST_CASE (load_balancing, serveJob_checking_scheduler_and_job_man
                    );
 }
 
-BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_and_job_manager)
+BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, fixture_scheduler_and_requirements)
 {
   _scheduler.worker_manager().addWorker ("worker_0", 1, {}, false, fhg::util::random_string());
 
@@ -147,7 +147,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_a
 }
 
 
-BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_scheduler_and_job_manager)
+BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, fixture_scheduler_and_requirements)
 {
   _scheduler.worker_manager().addWorker ("worker_0", 1, {sdpa::capability_t ("C", "worker_0")}, false, fhg::util::random_string());
   _scheduler.worker_manager().addWorker ("worker_1", 1, {}, false, fhg::util::random_string());
@@ -173,7 +173,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_schedule
   BOOST_REQUIRE_EQUAL (count_assigned_jobs (new_assignment, "worker_1"), 1);
 }
 
-BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_manager)
+BOOST_FIXTURE_TEST_CASE (testCoallocSched, fixture_scheduler_and_requirements)
 {
   _scheduler.worker_manager().addWorker ("A0", 1, {sdpa::capability_t ("A", "A0")}, false, fhg::util::random_string());
   _scheduler.worker_manager().addWorker ("B0", 1, {sdpa::capability_t ("B", "B0")}, false, fhg::util::random_string());
@@ -204,7 +204,7 @@ BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_m
                 );
 }
 
-BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and_job_manager)
+BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, fixture_scheduler_and_requirements)
 {
   _scheduler.worker_manager().addWorker ("worker_0", 1, {}, false, fhg::util::random_string());
   _scheduler.worker_manager().addWorker ("worker_1", 1, {}, false, fhg::util::random_string());
@@ -249,7 +249,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and
 }
 
 BOOST_FIXTURE_TEST_CASE
-  (not_schedulable_job_does_not_block_others, serveJob_checking_scheduler_and_job_manager)
+  (not_schedulable_job_does_not_block_others, fixture_scheduler_and_requirements)
 {
   _scheduler.worker_manager().addWorker ("worker", 1, {}, false, fhg::util::random_string());
 
@@ -277,7 +277,7 @@ BOOST_FIXTURE_TEST_CASE
 }
 
 BOOST_FIXTURE_TEST_CASE
-  (multiple_job_submissions_no_requirements, serveJob_checking_scheduler_and_job_manager)
+  (multiple_job_submissions_no_requirements, fixture_scheduler_and_requirements)
 {
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
 
@@ -309,7 +309,7 @@ BOOST_FIXTURE_TEST_CASE
 }
 
 BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
-                        , serveJob_checking_scheduler_and_job_manager
+                        , fixture_scheduler_and_requirements
                         )
 {
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
@@ -346,7 +346,7 @@ BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
 }
 
 BOOST_FIXTURE_TEST_CASE
-  (multiple_worker_job_submissions_with_requirements, serveJob_checking_scheduler_and_job_manager)
+  (multiple_worker_job_submissions_with_requirements, fixture_scheduler_and_requirements)
 {
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
 
@@ -384,7 +384,7 @@ BOOST_FIXTURE_TEST_CASE
 }
 
 BOOST_FIXTURE_TEST_CASE ( multiple_worker_job_submissions_with_requirements_no_children_allowed
-                        , serveJob_checking_scheduler_and_job_manager
+                        , fixture_scheduler_and_requirements
                         )
 {
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
@@ -826,7 +826,7 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
 }
 
 BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_with_requirements_is_assigned_if_not_all_workers_are_leaves
-                        , serveJob_checking_scheduler_and_job_manager
+                        , fixture_scheduler_and_requirements
                         )
 {
   sdpa::worker_id_t const agent_id (utils::random_peer_name());
@@ -858,7 +858,7 @@ BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_with_requirements_is_assigned_if_n
 }
 
 BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_without_requirements_is_assigned_if_not_all_workers_are_leaves
-                        , serveJob_checking_scheduler_and_job_manager
+                        , fixture_scheduler_and_requirements
                         )
 {
   sdpa::worker_id_t const agent_id (utils::random_peer_name());
