@@ -20,6 +20,9 @@ namespace
 
 struct serveJob_checking_scheduler_and_job_manager
 {
+  typedef std::set<sdpa::worker_id_t> set_workers_t;
+  typedef std::set<sdpa::job_id_t> set_jobs_t;
+
   serveJob_checking_scheduler_and_job_manager()
     : _scheduler
       ( std::bind (&serveJob_checking_scheduler_and_job_manager::serveJob, this, std::placeholders::_1, std::placeholders::_2)
@@ -31,7 +34,6 @@ struct serveJob_checking_scheduler_and_job_manager
 
   ~serveJob_checking_scheduler_and_job_manager()
   {
-    BOOST_REQUIRE (_expected_serveJob_calls.empty());
   }
 
   void add_job (const sdpa::job_id_t& job_id, const job_requirements_t& reqs)
@@ -50,46 +52,9 @@ struct serveJob_checking_scheduler_and_job_manager
   std::map<sdpa::job_id_t, job_requirements_t> _requirements;
 
   void serveJob
-    (const sdpa::worker_id_list_t& worker_list, const sdpa::job_id_t& jobId)
+    (const sdpa::worker_id_list_t&, const sdpa::job_id_t& )
   {
-    BOOST_REQUIRE_GE (_expected_serveJob_calls.count (jobId), 1);
-    BOOST_CHECK_EQUAL (_expected_serveJob_calls[jobId].first, worker_list.size());
-
-    BOOST_REQUIRE_EQUAL
-      ( std::accumulate ( std::begin (_expected_serveJob_calls.at (jobId).second)
-                        , std::end (_expected_serveJob_calls.at (jobId).second)
-                        , 0
-                        , [&worker_list] (int assignment_counter, const std::set<sdpa::worker_id_t>& expected_workers)
-                          {return ( std::all_of ( worker_list.begin()
-                                                , worker_list.end()
-                                                , [&expected_workers] (const sdpa::worker_id_t& worker)
-                                                  {return expected_workers.count (worker);}
-                                                )
-                                  + assignment_counter
-                                  );
-                          }
-                        )
-         , 1
-        );
-
-    _expected_serveJob_calls.erase (_expected_serveJob_calls.find (jobId));
   }
-
-  typedef std::set<std::set<sdpa::worker_id_t>> set_set_worker_id_t;
-
-  void expect_serveJob_call (sdpa::job_id_t id, std::set<sdpa::worker_id_t> list)
-  {
-    _expected_serveJob_calls.emplace
-      (id, std::make_pair<std::size_t, set_set_worker_id_t> (list.size(), {list}));
-  }
-
-  void expect_serveJob_call (sdpa::job_id_t id, std::size_t count, set_set_worker_id_t list)
-  {
-    _expected_serveJob_calls.emplace (id, std::make_pair (count, list));
-  }
-
-  std::map<sdpa::job_id_t, std::pair<std::size_t, set_set_worker_id_t>>
-    _expected_serveJob_calls;
 
   unsigned long count_assigned_jobs ( sdpa::daemon::CoallocationScheduler::assignment_t assignment
                                     , const sdpa::worker_id_t& worker_id
@@ -227,23 +192,22 @@ BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_m
   _scheduler.enqueueJob ("2A");
   _scheduler.enqueueJob ("2B");
 
-  expect_serveJob_call ("2A", {"A0", "A1"});
-  expect_serveJob_call ("2B", {"B0", "B1"});
+  const sdpa::daemon::CoallocationScheduler::assignment_t
+    assignment (_scheduler.assignJobsToWorkers());
 
-  _scheduler.assignJobsToWorkers();
-  _scheduler.start_pending_jobs();
+  BOOST_REQUIRE_EQUAL (assignment.at ("2A"), set_workers_t ({"A0", "A1"}));
+  BOOST_REQUIRE_EQUAL (assignment.at ("2B"), set_workers_t ({"B0", "B1"}));
 
   add_job ("1A", require ("A", 1));
 
   _scheduler.enqueueJob ("1A");
 
-  expect_serveJob_call ("1A", 1, {{"A0"}, {"A1"}});
-  _scheduler.assignJobsToWorkers();
-  _scheduler.start_pending_jobs();
+  const sdpa::daemon::CoallocationScheduler::assignment_t
+    new_assignment (_scheduler.assignJobsToWorkers());
 
-  _scheduler.releaseReservation ("2A");
-
-  _scheduler.start_pending_jobs();
+  BOOST_REQUIRE ( new_assignment.at ("1A") == set_workers_t ({"A0"})
+               || new_assignment.at ("1A") == set_workers_t ({"A1"})
+                );
 }
 
 BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and_job_manager)
@@ -257,23 +221,37 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and
   _scheduler.enqueueJob ("job_0");
   _scheduler.enqueueJob ("job_1");
 
-  expect_serveJob_call ("job_0", 1, {{"worker_0"}, {"worker_1"}});
-  expect_serveJob_call ("job_1", 1, {{"worker_0"}, {"worker_1"}});
+  const sdpa::daemon::CoallocationScheduler::assignment_t
+    assignment (_scheduler.assignJobsToWorkers());
 
-  _scheduler.assignJobsToWorkers();
-  _scheduler.start_pending_jobs();
+  BOOST_REQUIRE ( assignment.at ("job_0") == set_workers_t ({"worker_0"})
+               || assignment.at ("job_0") == set_workers_t ({"worker_1"})
+                );
 
-  _scheduler.releaseReservation ("job_0");
+  BOOST_REQUIRE ( assignment.at ("job_1") == set_workers_t ({"worker_0"})
+               || assignment.at ("job_1") == set_workers_t ({"worker_1"})
+                );
+
+  BOOST_REQUIRE( assignment.at ("job_0") !=  assignment.at ("job_1"));
+
+  sdpa::job_id_t job_assigned_to_worker_0 ( assignment.at ("job_0") == set_workers_t ({"worker_0"})
+                                          ? "job_0"
+                                          : "job_1"
+                                          );
+
+  _scheduler.releaseReservation (job_assigned_to_worker_0);
   _scheduler.worker_manager().deleteWorker ("worker_0");
-  _scheduler.enqueueJob ("job_0");
+  _scheduler.enqueueJob (job_assigned_to_worker_0);
 
   _scheduler.worker_manager().addWorker ("worker_0", 1, {}, false, fhg::util::random_string());
   _scheduler.reschedule_pending_jobs_matching_worker ("worker_0");
 
-  expect_serveJob_call ("job_0",  1, {{"worker_0"}, {"worker_1"}});
+  const sdpa::daemon::CoallocationScheduler::assignment_t
+    new_assignment (_scheduler.assignJobsToWorkers());
 
-  _scheduler.assignJobsToWorkers();
-  _scheduler.start_pending_jobs();
+  BOOST_REQUIRE_EQUAL ( assignment.at (job_assigned_to_worker_0)
+                      , set_workers_t ({"worker_0"})
+                      );
 }
 
 BOOST_FIXTURE_TEST_CASE
@@ -284,15 +262,24 @@ BOOST_FIXTURE_TEST_CASE
   add_job ("2", require (2));
   _scheduler.enqueueJob ("2");
 
-  _scheduler.assignJobsToWorkers();
-  _scheduler.start_pending_jobs();
+  const sdpa::daemon::CoallocationScheduler::assignment_t
+    assignment (_scheduler.assignJobsToWorkers());
+
+  BOOST_REQUIRE (assignment.empty());
 
   add_job ("1", require (1));
   _scheduler.enqueueJob ("1");
 
-  expect_serveJob_call ("1", {"worker"});
-  _scheduler.assignJobsToWorkers();
-  _scheduler.start_pending_jobs();
+  const sdpa::daemon::CoallocationScheduler::assignment_t
+    new_assignment (_scheduler.assignJobsToWorkers());
+
+  BOOST_REQUIRE_EQUAL ( new_assignment.at ("1")
+                      , set_workers_t ({"worker"})
+                      );
+
+  BOOST_REQUIRE_EQUAL ( _scheduler.start_pending_jobs()
+                      , set_jobs_t ({"1"})
+                      );
 }
 
 BOOST_FIXTURE_TEST_CASE
@@ -302,19 +289,29 @@ BOOST_FIXTURE_TEST_CASE
 
   _scheduler.worker_manager().addWorker (worker_id, boost::none, {}, true, fhg::util::random_string());
 
-  sdpa::job_id_t const job_id_0 (utils::random_peer_name());
+  sdpa::job_id_t const job_id_0 (random_job_id());
   add_job (job_id_0, no_requirements());
   _scheduler.enqueueJob (job_id_0);
-  expect_serveJob_call (job_id_0, {worker_id});
-  _scheduler.assignJobsToWorkers();
-  _scheduler.start_pending_jobs();
 
-  sdpa::job_id_t const job_id_1 (utils::random_peer_name());
+  BOOST_REQUIRE_EQUAL ( _scheduler.assignJobsToWorkers().at (job_id_0)
+                      , set_workers_t ({worker_id})
+                      );
+
+  BOOST_REQUIRE_EQUAL ( _scheduler.start_pending_jobs()
+                      , set_jobs_t ({job_id_0})
+                      );
+
+  sdpa::job_id_t const job_id_1 (random_job_id());
   add_job (job_id_1, no_requirements());
   _scheduler.enqueueJob (job_id_1);
-  expect_serveJob_call (job_id_1, {worker_id});
-  _scheduler.assignJobsToWorkers();
-  _scheduler.start_pending_jobs();
+
+  BOOST_REQUIRE_EQUAL ( _scheduler.assignJobsToWorkers().at (job_id_1)
+                      , set_workers_t ({worker_id})
+                      );
+
+  BOOST_REQUIRE_EQUAL ( _scheduler.start_pending_jobs()
+                      , set_jobs_t ({job_id_1})
+                      );
 }
 
 BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
@@ -325,23 +322,33 @@ BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
 
   _scheduler.worker_manager().addWorker (worker_id, boost::none, {}, false, fhg::util::random_string());
 
-  sdpa::job_id_t const job_id_0 (utils::random_peer_name());
+  sdpa::job_id_t const job_id_0 (random_job_id());
   add_job (job_id_0, no_requirements());
   _scheduler.enqueueJob (job_id_0);
-  expect_serveJob_call (job_id_0, {worker_id});
-  _scheduler.assignJobsToWorkers();
-  _scheduler.start_pending_jobs();
 
-  sdpa::job_id_t const job_id_1 (utils::random_peer_name());
+  BOOST_REQUIRE_EQUAL ( _scheduler.assignJobsToWorkers().at (job_id_0)
+                      , set_workers_t ({worker_id})
+                      );
+
+  BOOST_REQUIRE_EQUAL ( _scheduler.start_pending_jobs()
+                      , set_jobs_t ({job_id_0})
+                      );
+
+  sdpa::job_id_t const job_id_1 (random_job_id());
   add_job (job_id_1, no_requirements());
   _scheduler.enqueueJob (job_id_1);
-  _scheduler.assignJobsToWorkers();
-  _scheduler.start_pending_jobs();
 
-  expect_serveJob_call (job_id_1, {worker_id});
+  BOOST_REQUIRE_EQUAL ( _scheduler.assignJobsToWorkers().at (job_id_1)
+                      , set_workers_t ({worker_id})
+                      );
+
+  BOOST_REQUIRE (_scheduler.start_pending_jobs().empty());
 
   _scheduler.releaseReservation (job_id_0);
-  _scheduler.start_pending_jobs();
+
+  BOOST_REQUIRE_EQUAL ( _scheduler.start_pending_jobs()
+                       , set_jobs_t ({job_id_1})
+                       );
 }
 
 BOOST_FIXTURE_TEST_CASE
@@ -357,19 +364,29 @@ BOOST_FIXTURE_TEST_CASE
                               , fhg::util::random_string()
     );
 
-  sdpa::job_id_t const job_id_0 (utils::random_peer_name());
+  sdpa::job_id_t const job_id_0 (random_job_id());
   add_job (job_id_0, require ("A"));
   _scheduler.enqueueJob (job_id_0);
-  expect_serveJob_call (job_id_0, {worker_id});
-  _scheduler.assignJobsToWorkers();
-  _scheduler.start_pending_jobs();
 
-  sdpa::job_id_t const job_id_1 (utils::random_peer_name());
+  BOOST_REQUIRE_EQUAL ( _scheduler.assignJobsToWorkers().at (job_id_0)
+                      , set_workers_t ({worker_id})
+                      );
+
+  BOOST_REQUIRE_EQUAL ( _scheduler.start_pending_jobs()
+                      , set_jobs_t ({job_id_0})
+                      );
+
+  sdpa::job_id_t const job_id_1 (random_job_id());
   add_job (job_id_1, require ("B"));
   _scheduler.enqueueJob (job_id_1);
-  expect_serveJob_call (job_id_1, {worker_id});
-  _scheduler.assignJobsToWorkers();
-  _scheduler.start_pending_jobs();
+
+  BOOST_REQUIRE_EQUAL ( _scheduler.assignJobsToWorkers().at (job_id_1)
+                      , set_workers_t ({worker_id})
+                      );
+
+  BOOST_REQUIRE_EQUAL ( _scheduler.start_pending_jobs()
+                      , set_jobs_t ({job_id_1})
+                      );
 }
 
 BOOST_FIXTURE_TEST_CASE ( multiple_worker_job_submissions_with_requirements_no_children_allowed
@@ -390,20 +407,30 @@ BOOST_FIXTURE_TEST_CASE ( multiple_worker_job_submissions_with_requirements_no_c
   sdpa::job_id_t const job_id_0 (utils::random_peer_name());
   add_job (job_id_0, require ("A"));
   _scheduler.enqueueJob (job_id_0);
-  expect_serveJob_call (job_id_0, {worker_id});
-  _scheduler.assignJobsToWorkers();
-  _scheduler.start_pending_jobs();
+
+  BOOST_REQUIRE_EQUAL ( _scheduler.assignJobsToWorkers().at (job_id_0)
+                      , set_workers_t ({worker_id})
+                      );
+
+  BOOST_REQUIRE_EQUAL ( _scheduler.start_pending_jobs()
+                      , set_jobs_t ({job_id_0})
+                      );
 
   sdpa::job_id_t const job_id_1 (utils::random_peer_name());
   add_job (job_id_1, require ("B"));
   _scheduler.enqueueJob (job_id_1);
-  _scheduler.assignJobsToWorkers();
-  _scheduler.start_pending_jobs();
 
-  expect_serveJob_call (job_id_1, {worker_id});
+  BOOST_REQUIRE_EQUAL ( _scheduler.assignJobsToWorkers().at (job_id_1)
+                      , set_workers_t ({worker_id})
+                      );
+
+   BOOST_REQUIRE (_scheduler.start_pending_jobs().empty());
 
   _scheduler.releaseReservation (job_id_0);
-  _scheduler.start_pending_jobs();
+
+  BOOST_REQUIRE_EQUAL ( _scheduler.start_pending_jobs()
+                      , set_jobs_t ({job_id_1})
+                      );
 }
 
 struct fixture_minimal_cost_assignment
