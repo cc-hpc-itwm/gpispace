@@ -64,7 +64,7 @@ namespace sdpa
         ) const;
 
       void reschedule_pending_jobs_matching_worker (const worker_id_t&);
-      void start_pending_jobs();
+      std::set<job_id_t> start_pending_jobs();
     private:
       std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)>
         _serve_job;
