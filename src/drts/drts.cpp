@@ -196,6 +196,14 @@ namespace gspc
   {
     return vmem_allocation (this, size, description);
   }
+  vmem_allocation scoped_runtime_system::alloc_and_fill
+    ( unsigned long size
+    , std::string const& description
+    , char const* const data
+    ) const
+  {
+    return vmem_allocation (this, size, description, data);
+  }
 
   stream scoped_runtime_system::create_stream ( std::string const& name
                                               , gspc::vmem_allocation const& buffer

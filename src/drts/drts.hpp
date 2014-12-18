@@ -70,6 +70,11 @@ namespace gspc
 
     vmem_allocation alloc
       (unsigned long size, std::string const& description) const;
+    vmem_allocation alloc_and_fill
+      ( unsigned long size
+      , std::string const& description
+      , char const* const data
+      ) const;
 
     unsigned long virtual_memory_total() const
     {
