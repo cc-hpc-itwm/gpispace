@@ -30,13 +30,61 @@
 
 namespace
 {
-  void run_test ( unsigned long num_worker
-                , boost::program_options::variables_map const& vm
-                , gspc::installation const& installation
-                , test::make const& make
-                , std::set<std::string> const& hostnames
-                )
+  void run_test (unsigned long num_worker)
   {
+    boost::program_options::options_description options_description;
+
+    options_description.add (test::options::shared_directory());
+    options_description.add (test::options::source_directory());
+    options_description.add (gspc::options::installation());
+    options_description.add (gspc::options::drts());
+
+    boost::program_options::variables_map vm;
+    boost::program_options::store
+      ( boost::program_options::command_line_parser
+        ( boost::unit_test::framework::master_test_suite().argc
+        , boost::unit_test::framework::master_test_suite().argv
+        )
+      . options (options_description).run()
+      , vm
+      );
+
+    fhg::util::temporary_path const shared_directory
+      (test::shared_directory (vm) / "share_example_workerlist");
+
+    test::scoped_state_directory const state_directory (shared_directory, vm);
+    test::scoped_nodefile_from_environment const nodefile_from_environment
+      (shared_directory, vm);
+
+    fhg::util::temporary_path const _installation_dir
+      (shared_directory / boost::filesystem::unique_path());
+    boost::filesystem::path const installation_dir (_installation_dir);
+
+    gspc::set_application_search_path (vm, installation_dir);
+
+    vm.notify();
+
+    std::set<std::string> const hostnames
+      ([&vm] () -> std::set<std::string>
+        {
+          std::vector<std::string> const hosts
+            (fhg::util::read_lines (gspc::require_nodefile (vm)));
+          return std::set<std::string> (hosts.begin(), hosts.end());
+        } ()
+      );
+
+    gspc::installation const installation (vm);
+
+    test::make const make
+      ( installation
+      , "workerlist"
+      , test::source_directory (vm)
+      , { {"LIB_DESTDIR", installation_dir.string()}
+        , {"CXXLIBRARYPATHS", (installation.gspc_home() / "lib").string()}
+        }
+      , "net lib install"
+    );
+
     gspc::scoped_runtime_system const drts
       (vm, installation, "worker:" + std::to_string (num_worker));
 
@@ -104,62 +152,15 @@ namespace
   }
 }
 
-BOOST_AUTO_TEST_CASE (share_example_workerlist)
+BOOST_AUTO_TEST_CASE (share_example_workerlist_1)
 {
-  boost::program_options::options_description options_description;
-
-  options_description.add (test::options::shared_directory());
-  options_description.add (test::options::source_directory());
-  options_description.add (gspc::options::installation());
-  options_description.add (gspc::options::drts());
-
-  boost::program_options::variables_map vm;
-  boost::program_options::store
-    ( boost::program_options::command_line_parser
-      ( boost::unit_test::framework::master_test_suite().argc
-      , boost::unit_test::framework::master_test_suite().argv
-      )
-    . options (options_description).run()
-    , vm
-    );
-
-  fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "share_example_workerlist");
-
-  test::scoped_state_directory const state_directory (shared_directory, vm);
-  test::scoped_nodefile_from_environment const nodefile_from_environment
-    (shared_directory, vm);
-
-  fhg::util::temporary_path const _installation_dir
-    (shared_directory / boost::filesystem::unique_path());
-  boost::filesystem::path const installation_dir (_installation_dir);
-
-  gspc::set_application_search_path (vm, installation_dir);
-
-  vm.notify();
-
-  std::set<std::string> const hostnames
-    ([&vm] () -> std::set<std::string>
-      {
-        std::vector<std::string> const hosts
-          (fhg::util::read_lines (gspc::require_nodefile (vm)));
-        return std::set<std::string> (hosts.begin(), hosts.end());
-      } ()
-    );
-
-  gspc::installation const installation (vm);
-
-  test::make const make
-    ( installation
-    , "workerlist"
-    , test::source_directory (vm)
-    , { {"LIB_DESTDIR", installation_dir.string()}
-      , {"CXXLIBRARYPATHS", (installation.gspc_home() / "lib").string()}
-      }
-    , "net lib install"
-    );
-
-  run_test (1, vm, installation, make, hostnames);
-  run_test (2, vm, installation, make, hostnames);
-  run_test (5, vm, installation, make, hostnames);
+  run_test (1);
+}
+BOOST_AUTO_TEST_CASE (share_example_workerlist_2)
+{
+  run_test (2);
+}
+BOOST_AUTO_TEST_CASE (share_example_workerlist_5)
+{
+  run_test (5);
 }
