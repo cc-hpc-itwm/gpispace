@@ -34,7 +34,6 @@ namespace sdpa
 
       void acknowledge(const job_id_t&);
 
-      // update last service time
       double lastScheduleTime() {lock_type lock(mtx_); return last_schedule_time_; }
 
       const worker_id_t &name() const { lock_type lock(mtx_); return name_; }
