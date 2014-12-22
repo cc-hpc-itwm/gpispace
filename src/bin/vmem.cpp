@@ -116,21 +116,23 @@ int main (int argc, char *argv[])
 
   fhg::util::thread::event<void> done;
 
-  signal_handlers.add (SIGINT, [&done] (int, siginfo_t*, void*) {
-      std::async (std::launch::async, [&done] {
-          done.notify();
-        });
-    });
-  signal_handlers.add (SIGTERM, [&done] (int, siginfo_t*, void*) {
-      std::async (std::launch::async, [&done] {
-          done.notify();
-        });
-    });
-  signal_handlers.add (SIGCHLD, [&done] (int, siginfo_t*, void*) {
-      std::async (std::launch::async, [&done] {
-          done.notify();
-        });
-    });
+  auto request_stop ( [&done] (int, siginfo_t*, void*)
+                      {
+                        std::async ( std::launch::async
+                                   , [&done]
+                                     {
+                                       done.notify();
+                                     }
+                                   );
+                      }
+                    );
+
+  fhg::util::scoped_signal_handler const SIGINT_handler
+    (signal_handlers, SIGINT, request_stop);
+  fhg::util::scoped_signal_handler const SIGTERM_handler
+    (signal_handlers, SIGTERM, request_stop);
+  fhg::util::scoped_signal_handler const SIGCHLD_handler
+    (signal_handlers, SIGCHLD, request_stop);
 
   {
     boost::iostreams::stream<boost::iostreams::file_descriptor_sink>

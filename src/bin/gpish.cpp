@@ -670,7 +670,8 @@ int main (int ac, char **av)
   initialize_shell (ac, av);
 
   fhg::util::signal_handler_manager signal_handler_manager;
-  signal_handler_manager.add (SIGINT, std::bind (&interrupt_shell));
+  fhg::util::scoped_signal_handler const interrupt_signal_handler
+    (signal_handler_manager, SIGINT, std::bind (&interrupt_shell));
 
   shell_t::get().run();
 

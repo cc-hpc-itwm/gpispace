@@ -22,16 +22,41 @@ namespace fhg
       signal_handler_manager();
       ~signal_handler_manager();
 
-      void add (int sig_num, boost::function<void (int, siginfo_t*, void*)> fun);
-
-      //! \note handles SEGV, BUS, ABRT, FPE
-      void add_log_backtrace_and_exit_for_critical_errors (fhg::log::Logger::ptr_t);
-
       void handle (int sig_num, siginfo_t* info, void* context) const;
 
+    private:
+      friend struct scoped_signal_handler;
+
       mutable boost::mutex _handler_mutex;
-      std::map<int, std::list<boost::function<void (int, siginfo_t*, void*)>>>
-        _handlers;
+      using functions = std::list<boost::function<void (int, siginfo_t*, void*)>>;
+      std::map<int, std::pair<struct sigaction, functions>> _handlers;
+    };
+
+    struct scoped_signal_handler
+    {
+      scoped_signal_handler ( signal_handler_manager&
+                            , int sig_num
+                            , boost::function<void (int, siginfo_t*, void*)>
+                            );
+      ~scoped_signal_handler();
+
+    private:
+      signal_handler_manager& _manager;
+      int _sig_num;
+      signal_handler_manager::functions::iterator _it;
+    };
+
+    struct scoped_log_backtrace_and_exit_for_critical_errors
+    {
+      scoped_log_backtrace_and_exit_for_critical_errors
+        (signal_handler_manager&, fhg::log::Logger::ptr_t);
+
+    private:
+      boost::function<void (int, siginfo_t*, void*)> const _handler;
+      scoped_signal_handler const _segv;
+      scoped_signal_handler const _bus;
+      scoped_signal_handler const _abrt;
+      scoped_signal_handler const _fpe;
     };
   }
 }

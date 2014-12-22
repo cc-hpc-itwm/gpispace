@@ -486,8 +486,10 @@ try
       (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
 
     fhg::util::signal_handler_manager signal_handler;
-    signal_handler.add (SIGTERM, std::bind (request_stop));
-    signal_handler.add (SIGINT, std::bind (request_stop));
+    fhg::util::scoped_signal_handler const SIGTERM_handler
+      (signal_handler, SIGTERM, std::bind (request_stop));
+    fhg::util::scoped_signal_handler const SIGINT_handler
+      (signal_handler, SIGINT, std::bind (request_stop));
 
     stop_requested.wait();
 
