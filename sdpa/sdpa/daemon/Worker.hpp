@@ -34,7 +34,7 @@ namespace sdpa
 
       void acknowledge(const job_id_t&);
 
-      double lastScheduleTime() {lock_type lock(mtx_); return last_schedule_time_; }
+      double lastTimeServed() {lock_type lock(mtx_); return last_time_served_; }
 
       const worker_id_t &name() const { lock_type lock(mtx_); return name_; }
       const std::string hostname() const;
@@ -72,7 +72,7 @@ namespace sdpa
       capabilities_set_t capabilities_;
       bool children_allowed_;
       std::string hostname_;
-      double last_schedule_time_;
+      double last_time_served_;
 
       std::set<job_id_t> pending_;
       std::set<job_id_t> submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)

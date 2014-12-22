@@ -21,7 +21,7 @@ namespace sdpa
       , capabilities_ (capabilities)
       , children_allowed_ (children_allowed)
       , hostname_ (hostname)
-      , last_schedule_time_ (0)
+      , last_time_served_ (0)
       , reserved_ (false)
     {
 
@@ -136,7 +136,7 @@ namespace sdpa
     {
       lock_type const _ (mtx_);
       reserved_ = true;
-      last_schedule_time_ = fhg::util::now();
+      last_time_served_ = fhg::util::now();
     }
 
     bool Worker::isReserved()
