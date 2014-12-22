@@ -1,5 +1,4 @@
 set (scripts
-  start-sdpa
   sdpa-selftest
 )
 
@@ -19,6 +18,7 @@ install (TARGETS start-and-fork DESTINATION "bin")
 add_executable (sdpa-binary "sdpa.cpp")
 target_link_libraries (sdpa-binary
   sdpa
+  gspc
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
 )
 set_target_properties (sdpa-binary PROPERTIES OUTPUT_NAME "sdpa")
