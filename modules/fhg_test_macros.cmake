@@ -98,7 +98,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libprocess.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/scripts/sdpa-selftest"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/scripts/start-drts"
-  "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/scripts/start-sdpa"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/make/common.mk"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/4.xml"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/5.xml"
