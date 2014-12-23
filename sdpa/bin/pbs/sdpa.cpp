@@ -190,7 +190,6 @@ int main (int argc, char** argv)
       ( "help\t\n"
         "version\t\n"
         "gui <gui port> <log port>\t\n"
-        "selftest\tperform a self-test\n"
         "boot [options]\tboot the runtime system\n"
         "stop [vmem|orchestrator|agent|drts [host...]]\tstop component(s) on hosts\n"
         "submit <file>\tsubmit a job"
@@ -460,18 +459,6 @@ int main (int argc, char** argv)
         , get_or_none<unsigned short> (vm, "vmem-port")
         , std::chrono::minutes (1)
         );
-    }
-    else if (command == "selftest")
-    {
-      std::pair<boost::filesystem::path, std::vector<std::string>> const
-        state_dir_and_extra_args (get_state_dir_and_extra_args (argc - 2, argv + 2));
-      system ( ( (SDPA_HOME / "libexec" / "sdpa" / "scripts" / "sdpa-selftest").string()
-               + " -s \"" + state_dir_and_extra_args.first.string()
-               + "\" -H \"" + SDPA_HOME.string() + "\" "
-               + fhg::util::join (state_dir_and_extra_args.second, " ")
-               ).c_str()
-             , "sdpa-selftest implementation"
-             );
     }
     else
     {
