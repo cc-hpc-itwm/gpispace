@@ -97,15 +97,17 @@ namespace we
 
       struct activity_data_type
       {
-        activity_data_type (id_type id, type::activity_t activity)
+        activity_data_type ( id_type id
+                           , std::unique_ptr<type::activity_t> activity
+                           )
           : _id (id)
-          , _activity (activity)
+          , _activity (std::move (activity))
         {}
 
         void child_finished (type::activity_t);
 
         id_type _id;
-        type::activity_t _activity;
+        std::unique_ptr<type::activity_t> _activity;
       };
 
       struct async_remove_queue
@@ -114,7 +116,7 @@ namespace we
         void put (activity_data_type, bool was_active);
 
         void remove_and_apply
-          (id_type, std::function<void (activity_data_type)>);
+          (id_type, std::function<void (activity_data_type const&)>);
         void apply (id_type, std::function<void (activity_data_type&)>);
 
         void forget (id_type);
