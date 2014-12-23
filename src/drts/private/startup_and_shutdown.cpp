@@ -587,8 +587,9 @@ namespace fhg
           ( nest_exceptions<std::runtime_error>
               ( [&]
                 {
-                  return fhg::rif::execute_and_get_startup_messages
-                    ( "--startup-messages-pipe"
+                  return remote_execute_and_get_startup_messages
+                    ( master
+                    , "--startup-messages-pipe"
                     , "OKAY"
                     , sdpa_home / "bin" / "vmem"
                     , { { "--nodefile", nodefile.string()
@@ -605,6 +606,7 @@ namespace fhg
                         , std::to_string (vmem_startup_timeout.get().count())
                       } }
                     , std::unordered_map<std::string, std::string>()
+                    , sdpa_home
                     );
                 }
                 , "could not start vmem"
