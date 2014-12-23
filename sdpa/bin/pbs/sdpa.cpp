@@ -3,7 +3,6 @@
 #include <drts/private/startup_and_shutdown.hpp>
 
 #include <fhg/revision.hpp>
-#include <fhg/util/executable_path.hpp>
 #include <fhg/util/read_file.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
@@ -20,20 +19,6 @@
 
 namespace
 {
-  void system (std::string const& command, std::string const& description)
-  {
-    if (int ec = fhg::util::system_with_blocked_SIGCHLD (command.c_str()))
-    {
-      throw std::runtime_error
-        (( boost::format ("Could not '%3%': error code '%1%', command was '%2%'")
-         % ec
-         % command
-         % description
-         ).str()
-        );
-    }
-  }
-
   std::ostream &operator<< ( std::ostream &stream
                            , std::chrono::system_clock::time_point const& tp
                            )
@@ -143,13 +128,9 @@ int main (int argc, char** argv)
 {
   try
   {
-    boost::filesystem::path const SDPA_HOME
-      (fhg::util::executable_path().parent_path().parent_path());
-
     std::string const command_description
       ( "help\t\n"
         "version\t\n"
-        "gui <gui port> <log port>\t\n"
         "stop [vmem|orchestrator|agent|drts [host...]]\tstop component(s) on hosts\n"
         "submit <file>\tsubmit a job"
       );
@@ -170,19 +151,6 @@ int main (int argc, char** argv)
     else if (command == "version")
     {
       std::cout << fhg::project_info ("GPI-Space");
-    }
-    else if (command == "gui")
-    {
-      if (argc != 4)
-      {
-        std::invalid_argument ("usage: 'sdpa gui <gui port> <log port>");
-      }
-
-      system ( ( (SDPA_HOME / "bin" / "sdpa-gui").string()
-               + argv[2] + " " + argv[3]
-               ).c_str()
-             , "sdpa-gui implementation"
-             );
     }
     else if (command == "stop")
     {
