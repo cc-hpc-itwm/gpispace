@@ -447,8 +447,6 @@ namespace fhg
           );
       }
 
-      boost::filesystem::path const sdpa (sdpa_home / "bin" / "sdpa");
-
       boost::filesystem::create_directories (state_dir);
 
       boost::filesystem::path const log_dir (state_dir / "log");
@@ -477,32 +475,23 @@ namespace fhg
 
       struct stop_drts_on_failure
       {
-        stop_drts_on_failure ( std::string master
-                             , boost::filesystem::path sdpa
-                             , boost::filesystem::path state_dir
-                             )
-          : _master (master)
-          , _sdpa (sdpa)
-          , _state_dir (state_dir)
+        stop_drts_on_failure (boost::filesystem::path const& state_dir)
+          : _state_dir (state_dir)
         {}
         ~stop_drts_on_failure()
         {
           if (!_successful)
           {
-            rexec ( _master
-                  , (boost::format ("%1% stop -s %2%") % _sdpa % _state_dir).str()
-                  );
+            shutdown (_state_dir, boost::none, {});
           }
         }
         void startup_successful()
         {
           _successful = true;
         }
-        std::string _master;
-        boost::filesystem::path _sdpa;
-        boost::filesystem::path _state_dir;
+        boost::filesystem::path const& _state_dir;
         bool _successful {false};
-      } stop_drts_on_failure = {master, sdpa, state_dir};
+      } stop_drts_on_failure = {state_dir};
 
       fhg::util::scoped_signal_handler interrupt_signal_handler
         ( signal_handler_manager
