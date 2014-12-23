@@ -2,6 +2,7 @@
 
 #include <drts/drts.hpp>
 #include <drts/private/option.hpp>
+#include <drts/private/startup_and_shutdown.hpp>
 
 #include <drts/stream.hpp>
 #include <drts/virtual_memory.hpp>
@@ -183,12 +184,7 @@ namespace gspc
   {
     _virtual_memory_api.reset();
 
-    system ( ( boost::format ("%1% stop -s %2%")
-             % (_installation.gspc_home() / "bin" / "sdpa")
-             % _state_directory
-             ).str()
-           , "stop runtime system"
-           );
+    fhg::drts::shutdown (_state_directory, boost::none, {});
   }
 
   vmem_allocation scoped_runtime_system::alloc
