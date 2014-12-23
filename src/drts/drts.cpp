@@ -16,9 +16,10 @@
 
 #include <sdpa/client.hpp>
 
+#include <fhg/util/hostname.hpp>
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/read_file.hpp>
-#include <fhg/util/system_with_blocked_SIGCHLD.hpp>
+#include <fhg/util/split.hpp>
 
 #include <boost/format.hpp>
 
@@ -64,21 +65,6 @@ namespace gspc
 
       return std::make_pair (nodes, unique_nodes.size());
     }
-
-    void system (std::string const& command, std::string const& description)
-    {
-      if (int ec = fhg::util::system_with_blocked_SIGCHLD (command.c_str()))
-      {
-        throw std::runtime_error
-          (( boost::format
-             ("Could not '%3%': error code '%1%', command was '%2%'")
-           % ec
-           % command
-           % description
-           ).str()
-          );
-      };
-    }
   }
 
   installation::installation
@@ -110,61 +96,49 @@ namespace gspc
         : nullptr
         )
   {
-    std::ostringstream command_boot;
+    unsigned short const default_log_port
+      ((65535 - 30000 + fhg::syscall::getuid() * 2) % 65535 + 1024);
+    unsigned short const default_gui_port (default_log_port + 1);
 
-    command_boot
-      << (_installation.gspc_home() / "bin" / "sdpa")
-      << " boot"
-      << " -s " << _state_directory
-      << " -f " << _nodefile;
-
-    if (get_log_host (vm))
+    std::vector<fhg::drts::worker_description> worker_descriptions;
+    for ( std::string const& description
+        : fhg::util::split<std::string, std::string> (topology_description, ' ')
+        )
     {
-      command_boot << " -l " << get_log_host (vm).get();
-
-      if (get_log_port (vm))
-      {
-        command_boot << ":" << get_log_port (vm).get();
-      }
+      //! \todo configurable: default number of processes
+      worker_descriptions.emplace_back
+        (fhg::drts::parse_capability (1, description));
     }
 
-    if (get_gui_host (vm))
-    {
-      command_boot << " -g " << get_gui_host (vm).get();
+    fhg::util::signal_handler_manager signal_handler_manager;
 
-      if (get_gui_port (vm))
-      {
-        command_boot << ":" << get_gui_port (vm).get();
-      }
-    }
-
-    if (_virtual_memory_per_node)
-    {
-      command_boot
-        << " -y " << *_virtual_memory_socket
-        << " -m " << *_virtual_memory_per_node
-        << " -T " << _virtual_memory_startup_timeout->count()
-        << " -P " << require_virtual_memory_port (vm)
-        ;
-    }
-    else
-    {
-      command_boot << " -M";
-    }
-
-    if (get_application_search_path (vm))
-    {
-      for ( boost::filesystem::path const& path
-          : {get_application_search_path (vm).get()}
-          )
-      {
-        command_boot << " -A " << boost::filesystem::canonical (path);
-      }
-    }
-
-    command_boot << " " << topology_description;
-
-    system (command_boot.str(), "start runtime system");
+    fhg::drts::startup
+      ( get_gui_host (vm).get_value_or (fhg::util::hostname())
+      , get_gui_port (vm).get_value_or (default_gui_port)
+      , get_log_host (vm).get_value_or (fhg::util::hostname())
+      , get_log_port (vm).get_value_or (default_log_port)
+      , _virtual_memory_per_node
+      //! \todo configurable: verbose logging
+      , false
+      , _virtual_memory_socket
+      , get_application_search_path (vm)
+      ? std::vector<boost::filesystem::path> ({boost::filesystem::canonical (get_application_search_path (vm).get())})
+      : std::vector<boost::filesystem::path>()
+      , _installation.gspc_home()
+      //! \todo configurable: number of segments
+      , 1
+      , _nodefile
+      , _state_directory
+      // !\todo configurable: delete logfiles
+      , true
+      , signal_handler_manager
+      , _virtual_memory_per_node
+      , _virtual_memory_startup_timeout
+      , worker_descriptions
+      , get_virtual_memory_port (vm)
+      //! \todo configurable: time to wait per vmem socket
+      , std::chrono::minutes (1)
+      );
 
     // taken from pbs/sdpa and bin/sdpac
     //! \todo Remove magic: specify filenames instead of relying on
