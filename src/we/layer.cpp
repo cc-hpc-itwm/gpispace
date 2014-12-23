@@ -3,6 +3,7 @@
 #include <we/layer.hpp>
 
 #include <fhg/assert.hpp>
+#include <fhg/util/make_unique.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/starts_with.hpp>
 
@@ -151,7 +152,10 @@ namespace we
     void layer::submit (id_type id, type::activity_t act)
     {
       _nets_to_extract_from.put
-        ( activity_data_type (id, act.transition().net() ? act : wrap (act))
+        ( activity_data_type ( id
+                             , fhg::util::make_unique<type::activity_t>
+                                 (act.transition().net() ? act : wrap (act))
+                             )
         , true
         );
     }
@@ -175,7 +179,7 @@ namespace we
     {
       _nets_to_extract_from.remove_and_apply
         ( id
-        , [this, id] (activity_data_type activity_data)
+        , [this, id] (activity_data_type const& activity_data)
         {
           const std::function<void()> after
             ([this, id]() { rts_canceled_and_forget (id); });
@@ -203,11 +207,12 @@ namespace we
 
       _nets_to_extract_from.remove_and_apply
         ( *parent
-        , [this, id, reason] (activity_data_type parent_activity)
+        , [this, id, reason] (activity_data_type const& parent_activity)
         {
+          id_type const parent_activity_id (parent_activity._id);
           const std::function<void()> after
-            ([this, parent_activity, reason]()
-            { rts_failed_and_forget (parent_activity._id, reason); }
+            ([this, parent_activity_id, reason]()
+            { rts_failed_and_forget (parent_activity_id, reason); }
             );
 
           if (_running_jobs.terminated (parent_activity._id, id))
@@ -307,7 +312,7 @@ namespace we
           (activity_data_type& activity_data)
         {
           boost::get<we::type::net_type&>
-            (activity_data._activity.transition().data())
+            (activity_data._activity->transition().data())
             .put_value (place_name, value);
 
           _rts_token_put (put_token_id);
@@ -356,7 +361,7 @@ namespace we
 
              //! \note We wrap all input activites in a net.
            = boost::get<we::type::net_type&>
-             (activity_data._activity.transition().data())
+             (activity_data._activity->transition().data())
            . fire_expressions_and_extract_activity_random
                (_random_extraction_engine)
            )
@@ -368,15 +373,15 @@ namespace we
         }
 
         if (  _running_jobs.contains (activity_data._id)
-           || ( boost::get<bool> ( activity_data._activity.transition().prop()
+           || ( boost::get<bool> ( activity_data._activity->transition().prop()
                                  . get ({"drts", "wait_for_output"})
                                  . get_value_or (false)
                                  )
-              && output_missing (activity_data._activity)
+              && output_missing (*activity_data._activity)
               )
            )
         {
-          _nets_to_extract_from.put (activity_data, was_active);
+          _nets_to_extract_from.put (std::move (activity_data), was_active);
         }
         else
         {
@@ -384,10 +389,10 @@ namespace we
             ( activity_data._id
             , fhg::util::starts_with
               ( wrapped_activity_prefix()
-              , activity_data._activity.transition().name()
+              , activity_data._activity->transition().name()
               )
-            ? unwrap (activity_data._activity)
-            : activity_data._activity
+            ? unwrap (*activity_data._activity)
+            : *activity_data._activity
             );
         }
       }
@@ -415,7 +420,7 @@ namespace we
     layer::activity_data_type
       layer::async_remove_queue::list_with_id_lookup::get_front()
     {
-      activity_data_type const activity_data (_container.front());
+      activity_data_type activity_data (std::move (_container.front()));
 
       _container.pop_front();
       _position_in_container.erase (activity_data._id);
@@ -425,8 +430,12 @@ namespace we
     void layer::async_remove_queue::list_with_id_lookup::push_back
       (activity_data_type activity_data)
     {
+      //! \note not a temporary but projected out before move
+      id_type const activity_data_id (activity_data._id);
       _position_in_container.emplace
-        (activity_data._id, _container.insert (_container.end(), activity_data));
+        ( activity_data_id
+        , _container.insert (_container.end(), std::move (activity_data))
+        );
     }
     layer::async_remove_queue::list_with_id_lookup::iterator
       layer::async_remove_queue::list_with_id_lookup::find (id_type id)
@@ -503,19 +512,19 @@ namespace we
       {
         if (active)
         {
-          _container.push_back (activity_data);
+          _container.push_back (std::move (activity_data));
 
           _condition_non_empty.notify_one();
         }
         else
         {
-          _container_inactive.push_back (activity_data);
+          _container_inactive.push_back (std::move (activity_data));
         }
       }
     }
 
     void layer::async_remove_queue::remove_and_apply
-      (id_type id, std::function<void (activity_data_type)> fun)
+      (id_type id, std::function<void (activity_data_type const&)> fun)
     {
       boost::recursive_mutex::scoped_lock const _ (_container_mutex);
 
@@ -525,12 +534,12 @@ namespace we
 
       if (pos_container != _container.end())
       {
-        fun (*pos_container->second);
+        fun (std::move (*pos_container->second));
         _container.erase (pos_container);
       }
       else if (pos_container_inactive != _container_inactive.end())
       {
-        fun (*pos_container_inactive->second);
+        fun (std::move (*pos_container_inactive->second));
         _container_inactive.erase (pos_container_inactive);
       }
       else
@@ -554,10 +563,11 @@ namespace we
       }
       else if (pos_container_inactive != _container_inactive.end())
       {
-        activity_data_type activity_data (*pos_container_inactive->second);
+        activity_data_type activity_data
+          (std::move (*pos_container_inactive->second));
         _container_inactive.erase (pos_container_inactive);
         fun (activity_data);
-        _container.push_back (activity_data);
+        _container.push_back (std::move (activity_data));
 
         _condition_non_empty.notify_one();
       }
@@ -582,7 +592,7 @@ namespace we
     {
       //! \note We wrap all input activites in a net.
       we::type::net_type& net
-        (boost::get<we::type::net_type&> (_activity.transition().data()));
+        (boost::get<we::type::net_type&> (_activity->transition().data()));
 
       for (const type::activity_t::token_on_port_t& top : child.output())
       {
