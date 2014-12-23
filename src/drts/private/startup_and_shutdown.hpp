@@ -47,6 +47,23 @@ namespace fhg
                  , boost::optional<unsigned short> vmem_port
                  , std::chrono::seconds time_to_wait_per_vmem_socket
                  );
+
+    //! \todo learn enum class
+    namespace components_type
+    {
+      enum components_type
+      {
+        vmem = 1 << 1,
+        orchestrator = 1 << 2,
+        agent = 1 << 3,
+        worker = 1 << 4,
+      };
+    }
+
+    void shutdown ( boost::filesystem::path const& state_dir
+                  , boost::optional<components_type::components_type> components
+                  , std::vector<std::string> const& hosts
+                  );
   }
 }
 

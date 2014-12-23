@@ -4,7 +4,6 @@
 
 #include <fhg/revision.hpp>
 #include <fhg/syscall.hpp>
-#include <fhg/util/boost/program_options/validators/existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/is_directory_if_exists.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_file.hpp>
 #include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
@@ -20,21 +19,12 @@
 #include <sdpa/client.hpp>
 #include <sdpa/job_states.hpp>
 
-#include <boost/asio.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/optional.hpp>
+#include <boost/asio/io_service.hpp>
 #include <boost/program_options.hpp>
-#include <boost/range/adaptors.hpp>
-#include <boost/range/iterator_range_core.hpp>
 #include <boost/tokenizer.hpp>
 
 #include <chrono>
-#include <cstdlib>
 #include <fstream>
-#include <future>
-#include <iomanip>
-#include <iostream>
-#include <vector>
 
 namespace
 {
@@ -51,171 +41,7 @@ namespace
         );
     }
   }
-}
 
-void rexec (std::string const& host, std::string const& command)
-{
-  std::string const ssh_opts
-    ("-q -x -T -n -C -4 -o CheckHostIP=no -o StrictHostKeyChecking=no");
-  system ("ssh " + ssh_opts + " " + host + " " + command, "rexec");
-}
-
-void terminate_processes_on_host
-  (std::string const& name, std::string const& host, std::vector<int> const& pids)
-{
-  if (!pids.empty())
-  {
-    std::cout << "terminating " << name << " on " << host
-              << ": " << fhg::util::join (pids, " ") << "\n";
-    rexec (host, "kill -TERM " + fhg::util::join (pids, " "));
-  }
-}
-
-void terminate_all_processes_of_a_kind ( boost::filesystem::path const& state_dir
-                                       , std::string const& kind
-                                       , std::vector<std::string> hosts
-                                       )
-{
-  boost::filesystem::path const processes_dir (state_dir / "processes");
-
-  if (hosts.empty())
-  {
-    for ( boost::filesystem::directory_entry const& entry
-        : boost::make_iterator_range
-      (boost::filesystem::directory_iterator (processes_dir), boost::filesystem::directory_iterator())
-        | boost::adaptors::filtered
-            ( [] (boost::filesystem::directory_entry const& entry)
-              {
-                return boost::filesystem::is_directory (entry.path());
-              }
-            )
-        )
-    {
-      hosts.emplace_back (entry.path().filename().string());
-    }
-  }
-
-  std::vector<std::future<void>> terminates;
-
-  for (std::string const& host : hosts)
-  {
-    std::set<boost::filesystem::path> pidfiles;
-
-    for ( boost::filesystem::directory_entry const& entry
-        : boost::make_iterator_range
-      (boost::filesystem::directory_iterator (processes_dir / host), boost::filesystem::directory_iterator())
-        | boost::adaptors::filtered
-            ( [&kind] (boost::filesystem::directory_entry const& entry)
-              {
-                return entry.status().type() == boost::filesystem::regular_file
-                  && entry.path().extension() == ".pid"
-                  && entry.path().stem().string().compare (0, kind.size(), kind);
-              }
-            )
-        )
-    {
-      pidfiles.emplace (entry.path());
-    }
-
-    terminates.emplace_back
-      ( std::async
-          ( std::launch::async
-          , [kind, host, pidfiles]()
-            {
-              std::vector<int> pids;
-              for (boost::filesystem::path const& pidfile : pidfiles)
-              {
-                pids.emplace_back (std::stoi (fhg::util::read_file (pidfile)));
-              }
-              terminate_processes_on_host (kind, host, pids);
-              for (boost::filesystem::path const& pidfile : pidfiles)
-              {
-                boost::filesystem::remove (pidfile);
-              }
-            }
-          )
-      );
-
-    if (terminates.size() >= 16)
-    {
-      for (std::future<void>& terminate : terminates)
-      {
-        terminate.get();
-      }
-      terminates.clear();
-    }
-  }
-
-  for (std::future<void>& terminate : terminates)
-  {
-    terminate.get();
-  }
-
-  for ( boost::filesystem::directory_entry const& entry
-      : boost::make_iterator_range
-    (boost::filesystem::directory_iterator (processes_dir), boost::filesystem::directory_iterator())
-      | boost::adaptors::filtered
-          ( [] (boost::filesystem::directory_entry const& entry)
-            {
-              return boost::filesystem::is_empty (entry.path());
-            }
-          )
-      )
-  {
-    boost::filesystem::remove (entry.path());
-  }
-}
-
-//! \todo learn enum class
-namespace components_type
-{
-  enum components_type
-  {
-    vmem = 1 << 1,
-    orchestrator = 1 << 2,
-    agent = 1 << 3,
-    worker = 1 << 4,
-  };
-}
-
-void stop ( boost::filesystem::path const& state_dir
-          , boost::optional<components_type::components_type> components
-          , std::vector<std::string> const& hosts
-          )
-{
-  if (!components)
-  {
-    components = components_type::components_type
-      ( components_type::vmem | components_type::orchestrator
-      | components_type::agent | components_type::worker
-      );
-  }
-
-  if (components.get() & components_type::vmem)
-  {
-    terminate_all_processes_of_a_kind (state_dir, "vmem", hosts);
-  }
-  if (components.get() & components_type::orchestrator)
-  {
-    boost::filesystem::remove (state_dir / "orchestrator.host");
-    boost::filesystem::remove (state_dir / "orchestrator.port");
-    boost::filesystem::remove (state_dir / "orchestrator.rpc.host");
-    boost::filesystem::remove (state_dir / "orchestrator.rpc.port");
-
-    terminate_all_processes_of_a_kind (state_dir, "orchestrator", hosts);
-  }
-  if (components.get() & components_type::agent)
-  {
-    terminate_all_processes_of_a_kind (state_dir, "agent", hosts);
-  }
-  if (components.get() & components_type::worker)
-  {
-    terminate_all_processes_of_a_kind (state_dir, "drts-kernel", hosts);
-  }
-}
-
-namespace
-{
   std::ostream &operator<< ( std::ostream &stream
                            , std::chrono::system_clock::time_point const& tp
                            )
@@ -402,38 +228,37 @@ int main (int argc, char** argv)
     }
     else if (command == "stop")
     {
-      //! \todo move to startup_and_shutdown
       std::pair<boost::filesystem::path, std::vector<std::string>> const
         state_dir_and_extra_args (get_state_dir_and_extra_args (argc - 2, argv + 2));
       if (!state_dir_and_extra_args.second.empty())
       {
         if (state_dir_and_extra_args.second.front() == "vmem")
         {
-          stop ( state_dir_and_extra_args.first
-               , components_type::vmem
-               , chop_first (state_dir_and_extra_args.second)
-               );
+          fhg::drts::shutdown ( state_dir_and_extra_args.first
+                              , fhg::drts::components_type::vmem
+                              , chop_first (state_dir_and_extra_args.second)
+                              );
         }
         else if (state_dir_and_extra_args.second.front() == "orchestrator")
         {
-          stop ( state_dir_and_extra_args.first
-               , components_type::orchestrator
-               , chop_first (state_dir_and_extra_args.second)
-               );
+          fhg::drts::shutdown ( state_dir_and_extra_args.first
+                              , fhg::drts::components_type::orchestrator
+                              , chop_first (state_dir_and_extra_args.second)
+                              );
         }
         else if (state_dir_and_extra_args.second.front() == "agent")
         {
-          stop ( state_dir_and_extra_args.first
-               , components_type::agent
-               , chop_first (state_dir_and_extra_args.second)
-               );
+          fhg::drts::shutdown ( state_dir_and_extra_args.first
+                              , fhg::drts::components_type::agent
+                              , chop_first (state_dir_and_extra_args.second)
+                              );
         }
         else if (state_dir_and_extra_args.second.front() == "drts")
         {
-          stop ( state_dir_and_extra_args.first
-               , components_type::worker
-               , chop_first (state_dir_and_extra_args.second)
-               );
+          fhg::drts::shutdown ( state_dir_and_extra_args.first
+                              , fhg::drts::components_type::worker
+                              , chop_first (state_dir_and_extra_args.second)
+                              );
         }
         else
         {
@@ -443,7 +268,7 @@ int main (int argc, char** argv)
       }
       else
       {
-        stop (state_dir_and_extra_args.first, boost::none, {});
+        fhg::drts::shutdown (state_dir_and_extra_args.first, boost::none, {});
       }
     }
     else if (command == "submit")

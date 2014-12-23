@@ -3,6 +3,7 @@
 #include <fhg/syscall.hpp>
 #include <fhg/util/getenv.hpp>
 #include <fhg/util/join.hpp>
+#include <fhg/util/read_file.hpp>
 #include <fhg/util/read_lines.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
@@ -14,12 +15,14 @@
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
+#include <boost/range/adaptors.hpp>
 #include <boost/regex.hpp>
 
 #include <algorithm>
 #include <chrono>
 #include <fstream>
 #include <functional>
+#include <future>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -779,6 +782,163 @@ namespace fhg
           );
 
       stop_drts_on_failure.startup_successful();
+    }
+
+    namespace
+    {
+      boost::iterator_range<boost::filesystem::directory_iterator>
+        directory_range (boost::filesystem::path const& path)
+      {
+        return { boost::filesystem::directory_iterator (path)
+               , boost::filesystem::directory_iterator()
+               };
+      }
+
+
+      void terminate_processes_on_host ( std::string const& name
+                                       , std::string const& host
+                                       , std::vector<pid_t> const& pids
+                                       )
+      {
+        if (!pids.empty())
+        {
+          std::cout << "terminating " << name << " on " << host
+                    << ": " << fhg::util::join (pids, " ") << "\n";
+          rexec (host, "kill -TERM " + fhg::util::join (pids, " "));
+        }
+      }
+
+      void terminate_all_processes_of_a_kind
+        ( boost::filesystem::path const& state_dir
+        , std::string const& kind
+        , std::vector<std::string> hosts
+        )
+      {
+        boost::filesystem::path const processes_dir (state_dir / "processes");
+
+        if (hosts.empty())
+        {
+          for ( boost::filesystem::directory_entry const& entry
+              : directory_range (processes_dir)
+              | boost::adaptors::filtered
+                  ( [] (boost::filesystem::directory_entry const& entry)
+                    {
+                      return boost::filesystem::is_directory (entry.path());
+                    }
+                  )
+              )
+          {
+            hosts.emplace_back (entry.path().filename().string());
+          }
+        }
+
+        std::vector<std::future<void>> terminates;
+
+        for (std::string const& host : hosts)
+        {
+          std::set<boost::filesystem::path> pidfiles;
+
+          for ( boost::filesystem::directory_entry const& entry
+              : directory_range (processes_dir / host)
+              | boost::adaptors::filtered
+                  ( [&kind] (boost::filesystem::directory_entry const& entry)
+                    {
+                      return entry.path().extension() == ".pid"
+                        && entry.status().type() == boost::filesystem::regular_file
+                        && entry.path().stem().string().compare
+                             (0, kind.size(), kind);
+                    }
+                  )
+              )
+          {
+            pidfiles.emplace (entry.path());
+          }
+
+          terminates.emplace_back
+            ( std::async
+                ( std::launch::async
+                , [kind, host, pidfiles]()
+                  {
+                    std::vector<int> pids;
+                    for (boost::filesystem::path const& pidfile : pidfiles)
+                    {
+                      pids.emplace_back ( boost::lexical_cast<pid_t>
+                                            (fhg::util::read_file (pidfile))
+                                        );
+                    }
+                    terminate_processes_on_host (kind, host, pids);
+                    for (boost::filesystem::path const& pidfile : pidfiles)
+                    {
+                      boost::filesystem::remove (pidfile);
+                    }
+                  }
+                )
+            );
+
+          if (terminates.size() >= 16)
+          {
+            for (std::future<void>& terminate : terminates)
+            {
+              terminate.get();
+            }
+            terminates.clear();
+          }
+        }
+
+        for (std::future<void>& terminate : terminates)
+        {
+          terminate.get();
+        }
+
+        for ( boost::filesystem::directory_entry const& entry
+            : directory_range (processes_dir)
+            | boost::adaptors::filtered
+                ( [] (boost::filesystem::directory_entry const& entry)
+                  {
+                    return boost::filesystem::is_empty (entry.path());
+                  }
+                )
+            )
+        {
+          boost::filesystem::remove (entry.path());
+        }
+      }
+    }
+
+    void shutdown ( boost::filesystem::path const& state_dir
+                  , boost::optional<components_type::components_type> components
+                  , std::vector<std::string> const& hosts
+                  )
+    {
+      if (!components)
+      {
+        components = components_type::components_type
+          ( components_type::vmem | components_type::orchestrator
+          | components_type::agent | components_type::worker
+          );
+      }
+
+      if (components.get() & components_type::vmem)
+      {
+        terminate_all_processes_of_a_kind (state_dir, "vmem", hosts);
+      }
+      if (components.get() & components_type::orchestrator)
+      {
+        boost::filesystem::remove (state_dir / "orchestrator.host");
+        boost::filesystem::remove (state_dir / "orchestrator.port");
+        boost::filesystem::remove (state_dir / "orchestrator.rpc.host");
+        boost::filesystem::remove (state_dir / "orchestrator.rpc.port");
+
+        terminate_all_processes_of_a_kind (state_dir, "orchestrator", hosts);
+      }
+      if (components.get() & components_type::agent)
+      {
+        terminate_all_processes_of_a_kind (state_dir, "agent", hosts);
+      }
+      if (components.get() & components_type::worker)
+      {
+        terminate_all_processes_of_a_kind (state_dir, "drts-kernel", hosts);
+      }
     }
   }
 }
