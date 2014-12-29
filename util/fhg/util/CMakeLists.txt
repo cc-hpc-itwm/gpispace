@@ -35,6 +35,7 @@ set (srcs
 
   hostname.cpp
 
+  print_exception.cpp
   system_with_blocked_SIGCHLD.cpp
 )
 

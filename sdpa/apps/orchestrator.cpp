@@ -8,6 +8,7 @@
 
 #include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
+#include <fhg/util/print_exception.hpp>
 
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
@@ -97,8 +98,8 @@ try
 
   stop_requested.wait();
 }
-catch (std::exception const& ex)
+catch (...)
 {
-  std::cerr << "EXCEPTION: " << ex.what() << std::endl;
+  fhg::util::print_current_exception (std::cerr, "EXCEPTION: ");
   return 1;
 }

@@ -3,6 +3,7 @@
 #include <fhglog/format.hpp>
 
 #include <fhg/util/parse/position.hpp>
+#include <fhg/util/print_exception.hpp>
 
 #include <boost/program_options.hpp>
 
@@ -12,6 +13,7 @@
 namespace po = boost::program_options;
 
 int main(int argc, char **argv)
+try
 {
   int filter = -1;
 
@@ -81,4 +83,9 @@ int main(int argc, char **argv)
   }
 
   return 0;
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EX: ");
+  return 1;
 }

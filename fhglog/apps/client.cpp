@@ -1,5 +1,7 @@
 // alexander.petry@itwm.fraunhofer.de
 
+#include <fhg/util/print_exception.hpp>
+
 #include <fhglog/LogMacros.hpp>
 #include <fhglog/remote/appender.hpp>
 
@@ -10,7 +12,8 @@
 
 namespace po = boost::program_options;
 
-int main (int argc, char **argv) try
+int main (int argc, char **argv)
+try
 {
   po::options_description desc("options");
 
@@ -77,8 +80,8 @@ int main (int argc, char **argv) try
 
   return 0;
 }
-catch (std::exception const & ex)
+catch (...)
 {
-  std::cerr << "Exception: " << ex.what() << std::endl;
+  fhg::util::print_current_exception (std::cerr, "Exception: ");
   return 1;
 }

@@ -18,6 +18,7 @@
 #include <fhglog/LogMacros.hpp>
 
 #include <fhg/util/make_unique.hpp>
+#include <fhg/util/print_exception.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 #include <fhg/revision.hpp>
@@ -504,15 +505,20 @@ try
     LOG (INFO, "gpi process (rank " << gpi_api.rank() << ") terminated");
     return EXIT_SUCCESS;
   }
-  catch (std::exception const & ex)
+  catch (...)
   {
-    LOG (ERROR, "gpi process (rank " << gpi_api.rank() << ") failed: " << ex.what());
+    std::ostringstream ss;
+    fhg::util::print_current_exception (ss, "");
+    LOG (ERROR, "gpi process (rank " << gpi_api.rank() << ") failed: " << ss.str());
     return EXIT_FAILURE;
   }
 }
-catch (std::exception const & ex)
+catch (...)
 {
-  LOG (ERROR, "GPI could not be started: " << ex.what());
+  std::ostringstream ss;
+  fhg::util::print_current_exception (ss, "");
+  LOG (ERROR, "GPI could not be started: " << ss.str());
+
   return EXIT_FAILURE;
 }
 

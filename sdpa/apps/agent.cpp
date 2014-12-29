@@ -7,6 +7,7 @@
 #include <fhglog/LogMacros.hpp>
 
 #include <fhg/util/boost/asio/ip/address.hpp>
+#include <fhg/util/print_exception.hpp>
 
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
@@ -37,6 +38,7 @@ namespace
 }
 
 int main (int argc, char **argv)
+try
 {
   namespace validators = fhg::util::boost::program_options;
 
@@ -140,4 +142,9 @@ int main (int argc, char **argv)
   }
 
   stop_requested.wait();
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EX: ");
+  return 1;
 }

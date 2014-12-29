@@ -13,9 +13,12 @@
 
 #include <pnete/ui/editor_window.hpp>
 
+#include <fhg/util/print_exception.hpp>
+
 #include <boost/program_options.hpp>
 
 int main (int argc, char *argv[])
+try
 {
   namespace po = boost::program_options;
   namespace setting = fhg::pnete::setting;
@@ -81,8 +84,6 @@ int main (int argc, char *argv[])
   setting::library_transition::update (paths_trusted_new, paths_untrusted_new);
   setting::splash::update (show_splash);
 
-  try
-  {
     std::list<fhg::util::scoped_dlhandle> plugins;
     for (std::string path : plugin_paths)
     {
@@ -93,13 +94,11 @@ int main (int argc, char *argv[])
     pente.startup ();
 
     return pente.exec ();
-  }
-  catch (const std::exception& e)
-  {
-    std::cerr << "EXCEPTION: " << e.what () << std::endl;
-
-    return EXIT_FAILURE;
-  }
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EXCEPTION: ");
+  return EXIT_FAILURE;
 }
 
 namespace fhg

@@ -1,5 +1,7 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
+#include <fhg/util/print_exception.hpp>
+
 #include <array>
 #include <cstdio>
 #include <iostream>
@@ -9,6 +11,7 @@
 #include <unistd.h>
 
 int main (int argc, char** argv)
+try
 {
   if (argc != 4)
   {
@@ -61,4 +64,9 @@ int main (int argc, char** argv)
   }
 
   return failflags;
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EX: ");
+  return 4;
 }

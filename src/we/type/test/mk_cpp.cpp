@@ -4,12 +4,15 @@
 #include <we/type/signature/show.hpp>
 #include <we/type/signature/cpp.hpp>
 
+#include <fhg/util/print_exception.hpp>
+
 #include <boost/program_options.hpp>
 
 #include <iostream>
 #include <fstream>
 
 int main (int argc, char** argv)
+try
 {
   using pnet::type::signature::structure_type;
   using pnet::type::signature::structured_type;
@@ -111,4 +114,9 @@ int main (int argc, char** argv)
     i << impl (p) << std::endl;
     i << impl (l) << std::endl;
   }
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EX: ");
+  return 1;
 }

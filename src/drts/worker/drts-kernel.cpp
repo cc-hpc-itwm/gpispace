@@ -4,6 +4,7 @@
 
 #include <plugin/core/kernel.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
+#include <fhg/util/print_exception.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/split.hpp>
 
@@ -19,6 +20,7 @@
 #include <vector>
 
 int main(int ac, char **av)
+try
 {
   boost::asio::io_service remote_log_io_service;
   FHGLOG_SETUP (remote_log_io_service);
@@ -152,4 +154,9 @@ int main(int ac, char **av)
   }
 
   return 0;
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EX: ");
+  return 1;
 }

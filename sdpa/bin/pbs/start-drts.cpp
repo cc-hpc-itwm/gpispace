@@ -6,6 +6,7 @@
 #include <fhg/util/boost/program_options/validators/existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/hostname.hpp>
+#include <fhg/util/print_exception.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
@@ -38,9 +39,8 @@ namespace
 }
 
 int main (int argc, char** argv)
+try
 {
-  try
-  {
     boost::program_options::options_description options;
     options.add_options()
       ("help,h", "print this help")
@@ -233,12 +233,11 @@ int main (int argc, char** argv)
         , sdpa_home
         );
     }
-  }
-  catch (std::runtime_error const& ex)
-  {
-    std::cerr << "E: " << ex.what() << std::endl;
-    return 1;
-  }
 
   return 0;
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "E: ");
+  return 1;
 }

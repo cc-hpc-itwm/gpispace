@@ -2,6 +2,7 @@
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <fhg/util/print_exception.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 
@@ -147,8 +148,8 @@ try
 
   return 0;
 }
-catch (std::exception const& ex)
+catch (...)
 {
-  std::cerr << "EX: " << ex.what() << std::endl;
+  fhg::util::print_current_exception (std::cerr, "EX: ");
   return 1;
 }

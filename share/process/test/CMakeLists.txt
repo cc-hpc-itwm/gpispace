@@ -69,6 +69,7 @@ fhg_add_test (environment.cpp
 )
 
 add_executable (threadsafety_binary threadsafety_binary.cpp)
+target_link_libraries (threadsafety_binary fhg-util)
 fhg_add_test (threadsafety.cpp
   ARGS ${CMAKE_CURRENT_BINARY_DIR}/threadsafety_binary --catch_system_errors=no
   PROJECT share_process

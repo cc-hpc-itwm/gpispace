@@ -5,6 +5,7 @@
 
 #include <fhg/assert.hpp>
 #include <fhg/revision.hpp>
+#include <fhg/util/print_exception.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 
 #include <fhglog/LogMacros.hpp>
@@ -561,6 +562,7 @@ static int cmd_memory_add (shell_t::argv_t const & av, shell_t & sh);
 static int cmd_memory_del (shell_t::argv_t const & av, shell_t & sh);
 
 int main (int ac, char **av)
+try
 {
   boost::asio::io_service remote_log_io_service;
   FHGLOG_SETUP (remote_log_io_service);
@@ -680,6 +682,11 @@ int main (int ac, char **av)
 
   shutdown_shell ();
   shutdown_state ();
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EX: ");
+  return 1;
 }
 
 void initialize_state ( boost::filesystem::path const & socket_dir

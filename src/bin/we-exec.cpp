@@ -3,6 +3,7 @@
 #include <fhg/revision.hpp>
 #include <fhg/util/join.hpp>
 #include <fhg/util/make_unique.hpp>
+#include <fhg/util/print_exception.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/split.hpp>
 
@@ -303,8 +304,8 @@ try
 
   return rc;
 }
-catch (const std::exception& e)
+catch (...)
 {
-  std::cerr << e.what() << std::endl;
+  fhg::util::print_current_exception (std::cerr, "");
   return 1;
 }
