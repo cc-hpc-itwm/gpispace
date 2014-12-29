@@ -894,26 +894,39 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
   const unsigned int n_jobs (1000);
   const unsigned int n_req_workers (1);
 
-  const std::vector<sdpa::worker_id_t>
-    worker_ids {"worker_0", "worker_1"};
+  const int n_workers (20);
+  std::vector<sdpa::worker_id_t> worker_ids (n_workers);
+  std::generate_n (worker_ids.begin(), n_workers, utils::random_peer_name);
 
-  std::uniform_real_distribution<double> dist (1.0, 10.0);
+  const int n_hosts (n_workers); // assume workers are running on distinct hosts
+  std::vector<sdpa::worker_id_t> host_ids (n_hosts);
+  std::generate_n (host_ids.begin(), n_hosts, utils::random_peer_name);
+
+  std::uniform_real_distribution<double> dist (1.0, n_hosts);
   std::random_device rand_dev;
   std::mt19937 rand_engine (rand_dev());
 
   const double computational_cost (dist (rand_engine));
-  const double transfer_cost_host_0 (dist (rand_engine));
-  const double transfer_cost_host_1 (dist (rand_engine));
+  std::vector<double> transfer_costs (n_hosts);
+  std::generate_n ( transfer_costs.begin()
+                  , n_hosts
+                  , [&dist,&rand_engine]() {return dist (rand_engine);}
+                  );
 
   const std::function<double (std::string const&)>
-    test_transfer_cost ( [&transfer_cost_host_0, &transfer_cost_host_1]
+    test_transfer_cost ( [&host_ids, &transfer_costs]
                          (const std::string& host) -> double
                          {
-                           if (host == "host_0")
-                             return transfer_cost_host_0;
-                           if (host == "host_1")
-                             return transfer_cost_host_1;
-                           throw std::runtime_error ("Unexpected host argument in test transfer cost function");
+                           std::vector<std::string>::const_iterator
+                             it (std::find (host_ids.begin(), host_ids.end(), host));
+                           if (it != host_ids.end())
+                           {
+                             return  transfer_costs[it - host_ids.begin()];
+                           }
+                           else
+                           {
+                             throw std::runtime_error ("Unexpected host argument in transfer cost function");
+                           }
                          }
                        );
 
@@ -921,7 +934,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
   std::generate_n (job_ids.begin(), n_jobs, utils::random_peer_name);
 
   sdpa::daemon::CoallocationScheduler
-    _scheduler ( [n_req_workers, &test_transfer_cost, &computational_cost] (const sdpa::job_id_t&)
+    _scheduler ( [&test_transfer_cost, &computational_cost] (const sdpa::job_id_t&)
                  {
                    return job_requirements_t ( {}
                                              , we::type::schedule_data (n_req_workers)
@@ -931,55 +944,43 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
                  }
                );
 
-   _scheduler.worker_manager().addWorker ("worker_0", 1, {}, false, "host_0");
-   _scheduler.worker_manager().addWorker ("worker_1", 1, {}, false, "host_1");
+  for (int i=0; i<n_workers;i++)
+  {
+    _scheduler.worker_manager().addWorker (worker_ids[i], 1, {}, false, host_ids[i]);
+  }
 
-   std::for_each ( job_ids.begin()
-                 , job_ids.end()
-                 , std::bind ( &sdpa::daemon::CoallocationScheduler::enqueueJob
-                             , &_scheduler
-                             , std::placeholders::_1
-                             )
-                 );
+  std::for_each ( job_ids.begin()
+                , job_ids.end()
+                , std::bind ( &sdpa::daemon::CoallocationScheduler::enqueueJob
+                            , &_scheduler
+                            , std::placeholders::_1
+                            )
+                );
 
-   sdpa::daemon::CoallocationScheduler::assignment_t
-     assignment (_scheduler.assignJobsToWorkers());
+  const sdpa::daemon::CoallocationScheduler::assignment_t
+    assignment (_scheduler.assignJobsToWorkers());
 
-   std::set<sdpa::worker_id_t> set_worker_0 = {worker_ids[0]};
-   std::set<sdpa::worker_id_t> set_worker_1 = {worker_ids[1]};
+  std::vector<double> sum_costs_assigned_jobs (n_workers, 0.0);
+  const double max_job_cost ( *std::max_element (transfer_costs.begin(), transfer_costs.end())
+                            + computational_cost
+                            );
 
-   double sum_costs_jobs_assigned_to_worker_0 (0.0);
-   double sum_costs_jobs_assigned_to_worker_1 (0.0);
-   double max_job_cost ( std::max ( transfer_cost_host_0
-                                  , transfer_cost_host_1
-                                  )
-                       + computational_cost
-                       );
+  for ( const std::set<sdpa::worker_id_t>& job_assigned_workers
+      : assignment | boost::adaptors::map_values
+      )
+  {
+    for (int k=0; k<n_workers; ++k)
+    {
+      sum_costs_assigned_jobs[k] += job_assigned_workers.count (worker_ids[k])
+                                  * (transfer_costs[k] + computational_cost);
+    }
+  }
 
-   for ( const std::set<sdpa::worker_id_t>& job_assigned_workers
-       : assignment | boost::adaptors::map_values
-       )
-   {
-     if (job_assigned_workers == set_worker_0)
-     {
-       sum_costs_jobs_assigned_to_worker_0 += transfer_cost_host_0 + computational_cost;
-     }
-     else
-       if (job_assigned_workers == set_worker_1)
-       {
-         sum_costs_jobs_assigned_to_worker_1 += transfer_cost_host_1 + computational_cost;
-       }
-       else
-       {
-         throw std::runtime_error ("unexpected job assignment");
-       }
-   }
-
-   BOOST_REQUIRE_LE ( std::abs ( sum_costs_jobs_assigned_to_worker_1
-                               - sum_costs_jobs_assigned_to_worker_0
-                               )
-                    , max_job_cost
-                    );
+  BOOST_REQUIRE_LE ( std::abs ( *std::max_element (sum_costs_assigned_jobs.begin(), sum_costs_assigned_jobs.end())
+                              - *std::min_element (sum_costs_assigned_jobs.begin(), sum_costs_assigned_jobs.end())
+                              )
+                   , max_job_cost
+                   );
 }
 
 BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_re_assignment_when_new_matching_worker_appears)
