@@ -56,7 +56,6 @@ namespace gspc
       {
         command << " " << arg;
       }
-      command << " >/dev/null 2>/dev/null </dev/null & echo $!; disown $!'";
       command << " | ssh -q " << rif.host << " /usr/bin/env bash -s";
 
       std::string buf;
@@ -172,6 +171,8 @@ namespace gspc
           {
             command.push_back (replace_rif_root (arg, _root));
           }
+          command.emplace_back
+            (">/dev/null 2>/dev/null </dev/null & echo $!; disown $!'");
           for (std::pair<std::string, std::string> const& kv : raw_environment)
           {
             environment[kv.first] = replace_rif_root (kv.second, _root);
