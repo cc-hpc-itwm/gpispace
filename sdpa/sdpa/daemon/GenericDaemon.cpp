@@ -635,7 +635,10 @@ try
          );
 
   scheduler().enqueueJob (job_id);
-  request_scheduling();
+  if (!scheduler().worker_manager().all_workers_busy())
+  {
+    request_scheduling();
+  }
 }
 catch (std::exception const& ex)
 {
