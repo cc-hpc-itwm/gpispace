@@ -62,6 +62,7 @@ namespace
 }
 
 int main (int argc, char *argv[])
+try
 {
   namespace validators = fhg::util::boost::program_options;
 
@@ -145,4 +146,9 @@ int main (int argc, char *argv[])
   done.wait();
 
   return 0;
+}
+catch (std::exception const& ex)
+{
+  std::cerr << "EX: " << ex.what() << std::endl;
+  return 1;
 }
