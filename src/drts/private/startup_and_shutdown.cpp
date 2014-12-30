@@ -347,6 +347,26 @@ namespace
        }
      }
   }
+
+  void wait_and_collect_exceptions (std::vector<std::future<void>>& futures)
+  {
+    std::vector<std::string> accumulated_whats;
+    for (std::future<void>& future : futures)
+    {
+      try
+      {
+        future.get();
+      }
+      catch (std::exception const& ex)
+      {
+        accumulated_whats.emplace_back (ex.what());
+      }
+    }
+    if (!accumulated_whats.empty())
+    {
+      throw std::runtime_error (fhg::util::join (accumulated_whats, ", "));
+    }
+  }
 }
 
 namespace fhg
@@ -680,24 +700,32 @@ namespace fhg
             }
             else
             {
+              std::vector<std::future<void>> startups;
               for (segment_info_t& info : segment_info)
               {
-                //! \todo do in parallel
-                info.master_hostinfo = start_agent ( info.hosts.front()
-                                                   , info.master_name
-                                                   , master_agent_name
-                                                   , master_agent_hostinfo
-                                                   , gui_host
-                                                   , gui_port
-                                                   , log_host
-                                                   , log_port
-                                                   , gpi_socket
-                                                   , verbose
-                                                   , sdpa_home
-                                                   , state_dir
-                                                   , processes_dir
-                                                   );
+                startups.emplace_back ( std::async
+                                          ( [&]
+                                            {
+                                              info.master_hostinfo = start_agent
+                                                ( info.hosts.front()
+                                                , info.master_name
+                                                , master_agent_name
+                                                , master_agent_hostinfo
+                                                , gui_host
+                                                , gui_port
+                                                , log_host
+                                                , log_port
+                                                , gpi_socket
+                                                , verbose
+                                                , sdpa_home
+                                                , state_dir
+                                                , processes_dir
+                                                );
+                                            }
+                                          )
+                                      );
               }
+              wait_and_collect_exceptions (startups);
             }
           }
           , "at least one agent could not be started!"
@@ -708,22 +736,29 @@ namespace fhg
           {
             for (segment_info_t const& info : segment_info)
             {
+              std::vector<std::future<void>> startups;
               for (worker_description const& description : worker_descriptions)
               {
-                //! \todo do in parallel
-                start_workers_for ( info
-                                  , description
-                                  , verbose
-                                  , gui_host
-                                  , gui_port
-                                  , log_host
-                                  , log_port
-                                  , state_dir
-                                  , gpi_socket
-                                  , app_path
-                                  , sdpa_home
-                                  );
+                startups.emplace_back ( std::async
+                                          ( [&]
+                                            {
+                                              start_workers_for ( info
+                                                                , description
+                                                                , verbose
+                                                                , gui_host
+                                                                , gui_port
+                                                                , log_host
+                                                                , log_port
+                                                                , state_dir
+                                                                , gpi_socket
+                                                                , app_path
+                                                                , sdpa_home
+                                                                );
+                                            }
+                                          )
+                                      );
               }
+              wait_and_collect_exceptions (startups);
             }
           }
           , "at least one worker could not be started!"
