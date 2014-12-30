@@ -5,6 +5,7 @@
 
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <sstream>
 #include <future>
@@ -41,51 +42,30 @@ namespace gspc
       return boost::algorithm::replace_all_copy (s, RIF_ROOT, root.string());
     }
 
-    pid_t rexec ( const rif_t::endpoint_t rif
-                , const std::vector<std::string>& cmd
-                , const std::map<std::string, std::string>& environment
-                )
+    pid_t rexec (const rif_t::endpoint_t rif, std::string const& command)
     {
-      std::ostringstream command;
-      command << "echo '/usr/bin/env";
-      for (auto kv : environment)
-      {
-        command << " " << kv.first << "=\"" << kv.second << "\"";
-      }
-      for (auto arg : cmd)
-      {
-        command << " " << arg;
-      }
-      command << " | ssh -q " << rif.host << " /usr/bin/env bash -s";
+      const scoped_popen pid_file
+        (("ssh -q " + rif.host + " " + command).c_str(), "r");
 
-      std::string buf;
-      const scoped_popen pid_file (command.str().c_str(), "r");
-      while (!feof (pid_file._))
+      struct free_on_scope_exit
       {
-        char c;
-        if (1 != ::fread (&c, sizeof (char), 1, pid_file._))
+        ~free_on_scope_exit()
         {
-          const int ec (::ferror (pid_file._));
-          if (ec != 0)
-          {
-            throw std::runtime_error
-              ("could not fread() remote pid: " + std::to_string (ec));
-          }
+          free (_);
+          _ = nullptr;
         }
-        else
-        {
-          buf += c;
-        }
+        char* _ {nullptr};
+      } line;
+      std::size_t length (0);
+
+      std::vector<std::string> lines;
+      ssize_t read;
+      while ((read = getline (&line._, &length, pid_file._)) != -1)
+      {
+        lines.emplace_back (line._, read - 1);
       }
 
-      errno = 0;
-      pid_t pid = std::strtoul (buf.c_str(), nullptr, 0);
-      if (0 == pid && errno != 0)
-      {
-        throw std::runtime_error
-          ("could not get remote pid from buffer: \"" + buf + "\"" + strerror (errno));
-      }
-      return pid;
+      return boost::lexical_cast<pid_t> (lines.at (0));
     }
 
     void run_asynchronously_and_wait ( const std::list<rif_t::endpoint_t>& rifs
@@ -142,18 +122,24 @@ namespace gspc
 
   rif_t::child_t::~child_t ()
   {
-    rexec (_rif, {"kill", "-TERM", std::to_string (_pid)}, {});
+    rexec (_rif, "/usr/bin/env kill -TERM " + std::to_string (_pid));
   }
 
   void rif_t::exec ( const std::list<rif_t::endpoint_t>& rifs
                    , const std::string& key
-                   , const std::vector<std::string>& raw_command
+                   , std::string const& startup_messages_pipe_option
+                   , std::string const& end_sentinel_value
+                   , boost::filesystem::path const& command
+                   , const std::vector<std::string>& raw_arguments
                    , const std::map<std::string, std::string>& raw_environment
+                   , boost::filesystem::path const& gspc_home
                    )
   {
     run_asynchronously_and_wait
       ( rifs
-      , [this, &key, &raw_command, &raw_environment] (rif_t::endpoint_t const& rif)
+      , [ this, &key, &startup_messages_pipe_option, &end_sentinel_value
+        , &command, &raw_arguments, &raw_environment, &gspc_home
+        ] (rif_t::endpoint_t const& rif)
         {
           {
             std::lock_guard<std::mutex> const _ (_processes_mutex);
@@ -165,21 +151,32 @@ namespace gspc
           }
 
           // this should be handled by the remote rif
-          std::vector<std::string> command;
-          std::map<std::string, std::string> environment (raw_environment);
-          for (std::string const& arg : raw_command)
+          std::string environment_string;
+          for (std::pair<std::string, std::string> const& var : raw_environment)
           {
-            command.push_back (replace_rif_root (arg, _root));
+            environment_string += " --environment " + var.first + "='"
+              + replace_rif_root (var.second, _root) + "'";
           }
-          command.emplace_back
-            (">/dev/null 2>/dev/null </dev/null & echo $!; disown $!'");
-          for (std::pair<std::string, std::string> const& kv : raw_environment)
+          std::string arguments_string;
+          for (std::string const& arg : raw_arguments)
           {
-            environment[kv.first] = replace_rif_root (kv.second, _root);
+            arguments_string += " --arguments " + replace_rif_root (arg, _root);
           }
 
           std::unique_ptr<child_t> child
-            (fhg::util::make_unique<child_t> (rif, rexec (rif, command, environment)));
+            ( fhg::util::make_unique<child_t>
+                ( rif
+                , rexec ( rif
+                        , ( "'" + (gspc_home / "bin" / "start-and-fork").string() + "'"
+                          + " --end-sentinel-value " + end_sentinel_value
+                          + " --startup-messages-pipe-option " + startup_messages_pipe_option
+                          + " --command '" + replace_rif_root (command.string(), _root) + "'"
+                          + arguments_string
+                          + environment_string
+                          )
+                        )
+                )
+            );
 
           std::lock_guard<std::mutex> const _ (_processes_mutex);
           _processes[rif][key].push_back (std::move (child));

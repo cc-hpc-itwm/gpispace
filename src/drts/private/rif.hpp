@@ -29,10 +29,14 @@ namespace gspc
 
     explicit rif_t (boost::filesystem::path const& root);
 
-    void exec ( const std::list<endpoint_t>& rifs
+    void exec ( const std::list<rif_t::endpoint_t>& rifs
               , const std::string& key
-              , const std::vector<std::string>& command
-              , const std::map<std::string, std::string>& environment
+              , std::string const& startup_messages_pipe_option
+              , std::string const& end_sentinel_value
+              , boost::filesystem::path const& command
+              , const std::vector<std::string>& raw_arguments
+              , const std::map<std::string, std::string>& raw_environment
+              , boost::filesystem::path const& gspc_home
               );
     void store ( const std::list<endpoint_t>& rifs
                , const std::string& data

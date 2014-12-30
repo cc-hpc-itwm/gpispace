@@ -30,6 +30,8 @@
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/container/manager.hpp>
 
+#include <boost/iostreams/device/file_descriptor.hpp>
+#include <boost/iostreams/stream.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/optional.hpp>
 
@@ -115,6 +117,8 @@ try
   memset (logfile, 0, sizeof(logfile));
   std::string default_memory_url ("gpi://?buffer_size=4194304&buffers=8");
 
+  int startup_messages_pipe_fd (-1);
+
   unsigned long long gpi_mem = (1<<26);
   unsigned int gpi_timeout = 120;
   boost::optional<unsigned short> port;
@@ -141,6 +145,7 @@ try
       fprintf(stderr, "    --version|-V\n");
       fprintf(stderr, "      print version information\n");
       fprintf(stderr, "\n");
+      fprintf(stderr, "    --startup-messages-pipe FD\n");
       fprintf(stderr, "    --socket PATH (%s)\n", socket_path);
       fprintf(stderr, "      create socket at this location\n");
       fprintf(stderr, "\n");
@@ -174,6 +179,17 @@ try
     {
       printf("%s\n", fhg::project_version());
       exit(EXIT_SUCCESS);
+    }
+    else if (std::string (av[i]) == "--startup-messages-pipe")
+    {
+      ++i;
+      if (i >= ac)
+      {
+        fprintf (stderr, "%s: missing argument to --startup-messages-pipe\n", program_name);
+        exit (EX_USAGE);
+      }
+
+      startup_messages_pipe_fd = boost::lexical_cast<int> (av[i]);
     }
     else if (strcmp(av[i], "--socket") == 0)
     {
@@ -408,6 +424,12 @@ try
     exit (EX_USAGE);
   }
 
+  if (startup_messages_pipe_fd == -1)
+  {
+    fprintf (stderr, "parameter --startup-messages-pipe missing\n");
+    exit (EX_USAGE);
+  }
+
   boost::asio::io_service remote_log_io_service;
   if (0 != configure_logging (&config, logfile, remote_log_io_service))
   {
@@ -491,6 +513,14 @@ try
       (signal_handler, SIGTERM, std::bind (request_stop));
     fhg::util::scoped_signal_handler const SIGINT_handler
       (signal_handler, SIGINT, std::bind (request_stop));
+
+    {
+      boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
+        startup_messages_pipe ( startup_messages_pipe_fd
+                              , boost::iostreams::close_handle
+                              );
+      startup_messages_pipe << "OKAY\n";
+    }
 
     stop_requested.wait();
 

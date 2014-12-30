@@ -80,8 +80,10 @@ namespace gspc
     _rif.exec
       ( {_rif_endpoints.front()}
       , "gaspi-master"
-      , { vmem_binary.string()
-        , "--log-host", log_host, "--log-port", std::to_string (log_port)
+      , "--startup-messages-pipe"
+      , "OKAY"
+      , vmem_binary
+      , { "--log-host", log_host, "--log-port", std::to_string (log_port)
         , "--log-level", log_level
         , "--gpi-mem", std::to_string (memory_size)
         , "--socket", socket.string()
@@ -95,6 +97,7 @@ namespace gspc
         , {"GASPI_TYPE", "GASPI_MASTER"}
         , {"GASPI_SET_NUMA_SOCKET", "0"}
         }
+      , installation.gspc_home()
       );
 
     _rif.exec
@@ -102,8 +105,10 @@ namespace gspc
                                            , _rif_endpoints.end()
                                            )
       , "gaspi-worker"
-      , { vmem_binary.string()
-        , "--log-host", log_host, "--log-port", std::to_string (log_port)
+      , "--startup-messages-pipe"
+      , "OKAY"
+      , vmem_binary
+      , { "--log-host", log_host, "--log-port", std::to_string (log_port)
         , "--log-level", log_level
         , "--gpi-mem", std::to_string (memory_size)
         , "--socket", socket.string()
@@ -117,6 +122,7 @@ namespace gspc
         , {"GASPI_TYPE", "GASPI_WORKER"}
         , {"GASPI_SET_NUMA_SOCKET", "0"}
         }
+      , installation.gspc_home()
       );
 
     std::chrono::steady_clock::time_point const until
