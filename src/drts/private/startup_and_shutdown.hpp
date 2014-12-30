@@ -45,7 +45,6 @@ namespace fhg
                  , boost::optional<std::chrono::seconds> vmem_startup_timeout
                  , std::vector<worker_description> worker_descriptions
                  , boost::optional<unsigned short> vmem_port
-                 , std::chrono::seconds time_to_wait_per_vmem_socket
                  );
 
     //! \todo learn enum class

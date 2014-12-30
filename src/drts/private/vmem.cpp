@@ -124,32 +124,6 @@ namespace gspc
         }
       , installation.gspc_home()
       );
-
-    std::chrono::steady_clock::time_point const until
-      ( std::chrono::steady_clock::now()
-      + std::chrono::seconds (startup_timeout_in_seconds)
-      );
-
-    while (std::chrono::steady_clock::now() < until)
-    {
-      if (boost::filesystem::exists (socket))
-      {
-        break;
-      }
-
-      std::this_thread::sleep_for
-        (std::min ( std::chrono::milliseconds (200)
-                  , std::chrono::duration_cast<std::chrono::milliseconds>
-                    (until - std::chrono::steady_clock::now())
-                  )
-        );
-    }
-
-    if (!boost::filesystem::exists (socket))
-    {
-      throw std::runtime_error
-        ("timeout while waiting for: " + socket.string());
-    }
   }
 
   vmem_t::~vmem_t()

@@ -136,8 +136,6 @@ namespace gspc
       , _virtual_memory_startup_timeout
       , worker_descriptions
       , get_virtual_memory_port (vm)
-      //! \todo configurable: time to wait per vmem socket
-      , std::chrono::minutes (1)
       );
 
     // taken from pbs/sdpa and bin/sdpac

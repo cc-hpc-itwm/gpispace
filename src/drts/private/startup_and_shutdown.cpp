@@ -421,7 +421,6 @@ namespace fhg
                  , boost::optional<std::chrono::seconds> vmem_startup_timeout
                  , std::vector<worker_description> worker_descriptions
                  , boost::optional<unsigned short> vmem_port
-                 , std::chrono::seconds time_to_wait_per_vmem_socket
                  )
     {
       std::vector<std::string> nodefile_content
@@ -624,48 +623,6 @@ namespace fhg
                       , "vmem"
                       , vmem_startup_messages.first
                       );
-
-        for (std::string const& host : hosts)
-        {
-          nest_exceptions<std::runtime_error>
-            ( [&]
-              {
-                try
-                {
-                  std::cout << "I: Checking for virtual memory socket on '"
-                            << host + "' ";
-                  rexec ( host
-                        , ( boost::format
-                              ( "/usr/bin/env bash -c \""
-                                "  for ((i=0; i < %1%; ++i)); do"
-                                "    if [ ! -e %2% ]; then"
-                                "      echo -n .;"
-                                "      sleep 0.1;"
-                                "     else"
-                                "       exit 0;"
-                                "    fi"
-                                "  done;"
-                                "  exit 1"
-                                "\""
-                              )
-                          % (time_to_wait_per_vmem_socket.count() * 10)
-                          % gpi_socket.get()
-                          ).str()
-                        );
-                  std::cout << "OK" << std::endl;
-                }
-                catch (...)
-                {
-                  std::cout << "FAILED" << std::endl;
-                  throw;
-                }
-              }
-              , "could not start virtual memory layer: socket failed to on '"
-              + host + "' appear after "
-              + std::to_string (time_to_wait_per_vmem_socket.count())
-              + " seconds"
-              );
-        }
       }
 
       std::vector<segment_info_t> segment_info;
