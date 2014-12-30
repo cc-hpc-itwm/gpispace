@@ -14,11 +14,8 @@ namespace sdpa
   namespace daemon
   {
     CoallocationScheduler::CoallocationScheduler
-        ( std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)> serve_job
-        , std::function<job_requirements_t (const sdpa::job_id_t&)> job_requirements
-        )
-      : _serve_job (serve_job)
-      , _job_requirements (job_requirements)
+        (std::function<job_requirements_t (const sdpa::job_id_t&)> job_requirements)
+      : _job_requirements (job_requirements)
       , _worker_manager()
     {}
 
@@ -43,7 +40,7 @@ namespace sdpa
 
     namespace
     {
-      typedef std::tuple<double, int, worker_id_t> cost_deg_wid_t;
+      typedef std::tuple<double, int, double, worker_id_t> cost_deg_wid_t;
 
       struct min_cost_max_deg_comp
       {
@@ -52,6 +49,10 @@ namespace sdpa
           return (  std::get<0>(lhs) < std::get<0>(rhs)
                  || (  std::get<0>(lhs) == std::get<0>(rhs)
                     && std::get<1>(lhs) > std::get<1>(rhs)
+                    )
+                 || (  std::get<0>(lhs) == std::get<0>(rhs)
+                    && std::get<1>(lhs) == std::get<1>(rhs)
+                    && std::get<2>(lhs) < std::get<2>(rhs)
                     )
                  );
         }
@@ -132,6 +133,7 @@ namespace sdpa
 
          bpq.push (std::make_tuple ( total_cost
                                    , it->first
+                                   , worker_info.last_time_served()
                                    , worker_info.worker_id()
                                    )
                   );
@@ -142,7 +144,7 @@ namespace sdpa
                       , std::inserter (assigned_workers, assigned_workers.begin())
                       , [] (const cost_deg_wid_t& cost_deg_wid) -> worker_id_t
                         {
-                          return  std::get<2> (cost_deg_wid);
+                          return  std::get<3> (cost_deg_wid);
                         }
                       );
 
@@ -307,8 +309,10 @@ namespace sdpa
       return !list_not_terminated_workers.empty();
     }
 
-    void CoallocationScheduler::start_pending_jobs()
+    std::set<job_id_t> CoallocationScheduler::start_pending_jobs
+      (std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)> serve_job)
     {
+      std::set<job_id_t> jobs_started;
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
       std::list<job_id_t> pending_jobs (_list_pending_jobs.get_and_clear());
       for (const job_id_t& job_id: pending_jobs)
@@ -320,13 +324,17 @@ namespace sdpa
           {
             worker_manager().findWorker (worker)->submit (job_id);
           }
-          _serve_job ({workers.begin(), workers.end()}, job_id);
+
+          serve_job ({workers.begin(), workers.end()}, job_id);
+          jobs_started.insert (job_id);
         }
         else
         {
           _list_pending_jobs.push (job_id);
         }
       }
+
+      return jobs_started;
     }
 
     void CoallocationScheduler::releaseReservation (const sdpa::job_id_t& job_id)
