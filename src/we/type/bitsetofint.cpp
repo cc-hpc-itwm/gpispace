@@ -39,6 +39,11 @@ namespace bitsetofint
     if ((x >> 6) < _container.size())
     {
       _container[(x >> 6)] &= ~(1UL << (x & 63));
+
+      while (_container.size() && !_container.back())
+      {
+        _container.pop_back();
+      }
     }
 
     return *this;
