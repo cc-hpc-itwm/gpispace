@@ -40,6 +40,12 @@ namespace sdpa
         || acknowledged_.count (job_id);
     }
 
+    bool Worker::has_pending_jobs()
+    {
+      lock_type const _ (mtx_);
+      return !pending_.empty();
+    }
+
     void Worker::assign (const job_id_t& jobId)
     {
       lock_type const _ (mtx_);

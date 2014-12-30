@@ -256,13 +256,13 @@ namespace sdpa
       return pending_jobs;
     }
 
-    bool WorkerManager::all_workers_busy() const
+    bool WorkerManager::all_workers_busy_and_have_pending_jobs() const
     {
       boost::mutex::scoped_lock const _(mtx_);
       return std::all_of ( worker_map_.begin()
                          , worker_map_.end()
                          , [](const worker_map_t::value_type& p)
-                             {return p.second->isReserved();}
+                             {return p.second->isReserved() && p.second->has_pending_jobs();}
                          );
     }
   }
