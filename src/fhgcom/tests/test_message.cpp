@@ -3,6 +3,8 @@
 
 #include <fhgcom/message.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 BOOST_AUTO_TEST_CASE ( test_message_constr_default )
 {
   BOOST_REQUIRE_EQUAL (fhg::com::message_t().size (), 0);

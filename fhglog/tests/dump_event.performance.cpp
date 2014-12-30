@@ -4,6 +4,7 @@
 #include <fhglog/LogMacros.hpp>
 #include <tests/dump_event.common.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/now.hpp>
 
 BOOST_AUTO_TEST_CASE (encode_with_time_constraint)

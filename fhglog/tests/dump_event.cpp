@@ -1,6 +1,8 @@
 #define BOOST_TEST_MODULE fhglog_event
 #include <boost/test/unit_test.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 #include <fhglog/LogMacros.hpp>
 #include <tests/dump_event.common.hpp>
 

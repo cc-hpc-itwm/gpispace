@@ -9,6 +9,8 @@
 #include <fhglog/remote/appender.hpp>
 #include <fhglog/remote/server.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 #include <boost/thread/scoped_thread.hpp>
 
 #include <functional>

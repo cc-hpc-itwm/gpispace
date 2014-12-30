@@ -8,6 +8,8 @@
 #include <we/type/value/poke.hpp>
 #include <we/exception.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 BOOST_AUTO_TEST_CASE (require_type)
 {
   using pnet::type::value::value_type;

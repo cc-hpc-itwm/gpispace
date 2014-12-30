@@ -8,6 +8,7 @@
 #include <test/make.hpp>
 #include <test/source_directory.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/read_file.hpp>
 
 #include <boost/format.hpp>

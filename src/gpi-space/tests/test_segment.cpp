@@ -2,6 +2,8 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 #include <gpi-space/pc/segment/segment.hpp>
 
 BOOST_AUTO_TEST_CASE (sequence_of_create_close_unlink_does_not_throw)

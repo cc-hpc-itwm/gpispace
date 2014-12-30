@@ -19,6 +19,7 @@
 #include <we/type/value/peek.hpp>
 
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/printer/set.hpp>
 #include <fhg/util/macros.hpp>
 #include <fhg/util/read_file.hpp>

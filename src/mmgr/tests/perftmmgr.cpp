@@ -5,6 +5,7 @@
 
 #include <mmgr/tmmgr.h>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/now.hpp>
 
 #include <set>
