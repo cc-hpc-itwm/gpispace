@@ -531,7 +531,7 @@ void GenericDaemon::handleErrorEvent
           }
         }
 
-        scheduler().reschedule_pending_jobs_matching_worker (ptrWorker->name());
+        scheduler().reschedule_pending_jobs_matching_worker (as_worker.get()->second);
 
         const std::set<job_id_t> jobs_to_reschedule
           (ptrWorker->getJobListAndCleanQueues());
