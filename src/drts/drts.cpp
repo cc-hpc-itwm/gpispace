@@ -156,7 +156,7 @@ namespace gspc
   {
     _virtual_memory_api.reset();
 
-    fhg::drts::shutdown (_state_directory, boost::none, {});
+    fhg::drts::shutdown (_state_directory);
   }
 
   vmem_allocation scoped_runtime_system::alloc

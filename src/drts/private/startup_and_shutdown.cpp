@@ -515,7 +515,7 @@ namespace fhg
         {
           if (!_successful)
           {
-            shutdown (_state_dir, boost::none, {});
+            shutdown (_state_dir);
           }
         }
         void startup_successful()
@@ -896,6 +896,18 @@ namespace fhg
       }
     }
 
+    //! \todo learn enum class
+    namespace components_type
+    {
+      enum components_type
+      {
+        vmem = 1 << 1,
+        orchestrator = 1 << 2,
+        agent = 1 << 3,
+        worker = 1 << 4,
+      };
+    }
+
     void shutdown ( boost::filesystem::path const& state_dir
                   , boost::optional<components_type::components_type> components
                   , std::vector<std::string> const& hosts
@@ -930,6 +942,11 @@ namespace fhg
       {
         terminate_all_processes_of_a_kind (state_dir, "drts-kernel", hosts);
       }
+    }
+
+    void shutdown (boost::filesystem::path const& state_dir)
+    {
+      shutdown (state_dir, boost::none, {});
     }
   }
 }
