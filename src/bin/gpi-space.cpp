@@ -190,6 +190,7 @@ try
       }
 
       startup_messages_pipe_fd = boost::lexical_cast<int> (av[i]);
+      ++i;
     }
     else if (strcmp(av[i], "--socket") == 0)
     {
