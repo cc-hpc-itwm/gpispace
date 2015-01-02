@@ -534,7 +534,7 @@ void GenericDaemon::handleErrorEvent
         scheduler().reschedule_pending_jobs_matching_worker (as_worker.get()->second);
 
         const std::set<job_id_t> jobs_to_reschedule
-          (ptrWorker->getJobListAndCleanQueues());
+          (scheduler().worker_manager().get_worker_jobs_and_clean_queues (as_worker.get()->second));
 
         for (sdpa::job_id_t jobId : jobs_to_reschedule)
         {

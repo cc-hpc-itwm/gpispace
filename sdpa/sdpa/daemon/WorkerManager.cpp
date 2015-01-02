@@ -291,5 +291,11 @@ namespace sdpa
       boost::mutex::scoped_lock const _(mtx_);
       return worker_map_.at (worker)->capabilities();
     }
+
+    const std::set<job_id_t> WorkerManager::get_worker_jobs_and_clean_queues (const worker_id_t& worker) const
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      return worker_map_.at (worker)->getJobListAndCleanQueues();
+    }
   }
 }
