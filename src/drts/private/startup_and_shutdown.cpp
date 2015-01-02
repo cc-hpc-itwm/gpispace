@@ -888,10 +888,7 @@ namespace fhg
             );
         }
 
-        for (std::future<void>& terminate : terminates)
-        {
-          terminate.get();
-        }
+        wait_and_collect_exceptions (terminates);
 
         for ( boost::filesystem::directory_entry const& entry
             : directory_range (processes_dir)
