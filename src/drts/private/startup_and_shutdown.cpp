@@ -638,7 +638,7 @@ namespace fhg
                         , "--virtual-memory-startup-timeout"
                         , std::to_string (vmem_startup_timeout.get().count())
                       } }
-                    , std::unordered_map<std::string, std::string>()
+                    , {{"PATH", fhg::util::getenv ("PATH").get_value_or ("")}}
                     , sdpa_home
                     );
                 }
