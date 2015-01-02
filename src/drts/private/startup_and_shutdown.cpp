@@ -947,6 +947,9 @@ namespace fhg
     void shutdown (boost::filesystem::path const& state_dir)
     {
       shutdown (state_dir, boost::none, {});
+
+      boost::filesystem::remove (state_dir / "processes");
+      boost::filesystem::remove (state_dir / "nodefile");
     }
   }
 }
