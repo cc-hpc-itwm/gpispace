@@ -6,6 +6,7 @@
 #include <fhg/util/read_file.hpp>
 #include <fhg/util/read_lines.hpp>
 #include <fhg/util/split.hpp>
+#include <fhg/util/starts_with.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
 #include <rif/execute_and_get_startup_messages.hpp>
@@ -828,8 +829,9 @@ namespace fhg
                     {
                       return entry.path().extension() == ".pid"
                         && entry.status().type() == boost::filesystem::regular_file
-                        && entry.path().stem().string().compare
-                             (0, kind.size(), kind);
+                        && fhg::util::starts_with
+                             (kind, entry.path().stem().string())
+                        ;
                     }
                   )
               )
