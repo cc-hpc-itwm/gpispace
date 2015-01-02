@@ -258,6 +258,26 @@ namespace
            };
   }
 
+  void wait_and_collect_exceptions (std::vector<std::future<void>>& futures)
+  {
+    std::vector<std::string> accumulated_whats;
+    for (std::future<void>& future : futures)
+    {
+      try
+      {
+        future.get();
+      }
+      catch (std::exception const& ex)
+      {
+        accumulated_whats.emplace_back (ex.what());
+      }
+    }
+    if (!accumulated_whats.empty())
+    {
+      throw std::runtime_error (fhg::util::join (accumulated_whats, ", "));
+    }
+  }
+
   void start_workers_for
     ( segment_info_t const& segment_info
     , fhg::drts::worker_description const& description
@@ -292,6 +312,7 @@ namespace
            (segment_info.master_name, segment_info.master_hostinfo)
        );
 
+     std::vector<std::future<void>> startups;
      std::size_t num_nodes (0);
      for (std::string const& host : segment_info.hosts)
      {
@@ -338,7 +359,17 @@ namespace
        argv.emplace_back ("-H");
        argv.emplace_back (sdpa_home.string());
 
-       rexec (host, script_start_drts.string() + " " + fhg::util::join (argv, " "));
+       startups.emplace_back
+         ( std::async ( std::launch::async
+                      , [&script_start_drts, host, argv]
+                        {
+                          rexec ( host
+                                , script_start_drts.string()
+                                + " " + fhg::util::join (argv, " ")
+                                );
+                        }
+                      )
+         );
 
        //! \todo does this work correctly for multi-segments?!
        ++num_nodes;
@@ -347,26 +378,8 @@ namespace
          break;
        }
      }
-  }
 
-  void wait_and_collect_exceptions (std::vector<std::future<void>>& futures)
-  {
-    std::vector<std::string> accumulated_whats;
-    for (std::future<void>& future : futures)
-    {
-      try
-      {
-        future.get();
-      }
-      catch (std::exception const& ex)
-      {
-        accumulated_whats.emplace_back (ex.what());
-      }
-    }
-    if (!accumulated_whats.empty())
-    {
-      throw std::runtime_error (fhg::util::join (accumulated_whats, ", "));
-    }
+     wait_and_collect_exceptions (startups);
   }
 }
 
@@ -705,7 +718,8 @@ namespace fhg
               for (segment_info_t& info : segment_info)
               {
                 startups.emplace_back ( std::async
-                                          ( [&]
+                                          ( std::launch::async
+                                          , [&]
                                             {
                                               info.master_hostinfo = start_agent
                                                 ( info.hosts.front()
@@ -737,29 +751,21 @@ namespace fhg
           {
             for (segment_info_t const& info : segment_info)
             {
-              std::vector<std::future<void>> startups;
               for (worker_description const& description : worker_descriptions)
               {
-                startups.emplace_back ( std::async
-                                          ( [&]
-                                            {
-                                              start_workers_for ( info
-                                                                , description
-                                                                , verbose
-                                                                , gui_host
-                                                                , gui_port
-                                                                , log_host
-                                                                , log_port
-                                                                , state_dir
-                                                                , gpi_socket
-                                                                , app_path
-                                                                , sdpa_home
-                                                                );
-                                            }
-                                          )
-                                      );
+                start_workers_for ( info
+                                  , description
+                                  , verbose
+                                  , gui_host
+                                  , gui_port
+                                  , log_host
+                                  , log_port
+                                  , state_dir
+                                  , gpi_socket
+                                  , app_path
+                                  , sdpa_home
+                                  );
               }
-              wait_and_collect_exceptions (startups);
             }
           }
           , "at least one worker could not be started!"
