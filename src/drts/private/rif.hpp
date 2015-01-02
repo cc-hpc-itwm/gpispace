@@ -27,8 +27,6 @@ namespace gspc
       bool operator== (const endpoint_t& other) const;
     };
 
-    explicit rif_t (boost::filesystem::path const& root);
-
     void exec ( const std::list<rif_t::endpoint_t>& rifs
               , const std::string& key
               , std::string const& startup_messages_pipe_option
@@ -38,18 +36,11 @@ namespace gspc
               , const std::map<std::string, std::string>& raw_environment
               , boost::filesystem::path const& gspc_home
               );
-    void store ( const std::list<endpoint_t>& rifs
-               , const std::string& data
-               , const boost::filesystem::path& path
-               );
     void stop ( const std::list<endpoint_t>& rifs
               , const std::string& key
               );
 
-    static boost::filesystem::path make_relative_to_rif_root (boost::filesystem::path const&);
   private:
-    const boost::filesystem::path _root;
-
     struct child_t
     {
       explicit child_t (const endpoint_t&, const pid_t);

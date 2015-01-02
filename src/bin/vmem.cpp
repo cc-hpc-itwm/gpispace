@@ -108,11 +108,12 @@ try
 
   fhg::util::signal_handler_manager signal_handlers;
 
-  gspc::rif_t rif ("/dev/shm/rif-" + std::to_string (getuid()));
+  gspc::rif_t rif;
 
   gspc::vmem_t vmem ( vm
                     , gspc::installation (vm)
                     , rif
+                    , vm["nodefile"].as<validators::existing_path>()
                     , read_nodes (vm["nodefile"].as<validators::existing_path>())
                     );
 

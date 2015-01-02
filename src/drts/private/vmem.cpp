@@ -16,6 +16,7 @@ namespace gspc
     ( boost::program_options::variables_map const& vm
     , gspc::installation const& installation
     , gspc::rif_t& rif
+    , boost::filesystem::path const& nodefile_path
     , std::pair<std::list<std::string>, unsigned long> const& machinefile
     )
     : _rif (rif)
@@ -54,22 +55,6 @@ namespace gspc
 
     const std::string& master (_rif_endpoints.front().host);
 
-    const std::string nodefile_path
-      (rif_t::make_relative_to_rif_root ("nodefile").string());
-
-    {
-      std::string in_memory_hostlist;
-      for (gspc::rif_t::endpoint_t const& rif: _rif_endpoints)
-      {
-        in_memory_hostlist += rif.host;
-        in_memory_hostlist += "\n";
-      }
-      _rif.store ( _rif_endpoints
-                 , in_memory_hostlist
-                 , nodefile_path
-                 );
-    }
-
     const std::string log_host (require_log_host (vm));
     const unsigned short log_port (require_log_port (vm));
     const std::string log_level (require_log_level (vm));
@@ -97,7 +82,7 @@ namespace gspc
                   , "--gpi-api", _rif_endpoints.size() > 1 ? "gaspi" : "fake"
                   , "--gpi-timeout", std::to_string (startup_timeout_in_seconds)
                   }
-                , { {"GASPI_MFILE", nodefile_path}
+                , { {"GASPI_MFILE", nodefile_path.string()}
                   , {"GASPI_MASTER", master}
                   , {"GASPI_SOCKET", "0"}
                   , {"GASPI_TYPE", "GASPI_MASTER"}
@@ -125,7 +110,7 @@ namespace gspc
         , "--gpi-api", _rif_endpoints.size() > 1 ? "gaspi" : "fake"
         , "--gpi-timeout", std::to_string (startup_timeout_in_seconds)
         }
-      , { {"GASPI_MFILE", nodefile_path}
+      , { {"GASPI_MFILE", nodefile_path.string()}
         , {"GASPI_MASTER", master}
         , {"GASPI_SOCKET", "0"}
         , {"GASPI_TYPE", "GASPI_WORKER"}

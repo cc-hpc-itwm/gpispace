@@ -12,6 +12,7 @@ namespace gspc
     vmem_t ( boost::program_options::variables_map const&
            , gspc::installation const&
            , gspc::rif_t&
+           , boost::filesystem::path const& nodefile_path
            , std::pair<std::list<std::string>, unsigned long> const& machinefile
            );
     ~vmem_t();

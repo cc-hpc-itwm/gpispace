@@ -6,7 +6,6 @@
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
 #include <boost/algorithm/string/replace.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <sstream>
@@ -34,15 +33,6 @@ namespace gspc
 
       FILE *_;
     };
-
-    std::string const RIF_ROOT {"<rif-root>"};
-
-    std::string replace_rif_root ( std::string const& s
-                                 , boost::filesystem::path const& root
-                                 )
-    {
-      return boost::algorithm::replace_all_copy (s, RIF_ROOT, root.string());
-    }
 
     pid_t rexec (const rif_t::endpoint_t rif, std::string const& command)
     {
@@ -112,16 +102,6 @@ namespace gspc
     }
   }
 
-  rif_t::rif_t (boost::filesystem::path const& root)
-    : _root (root)
-  {
-    // FIXME: we explicitly don't remove this directory in the dtor
-    // since we currently cannot ensure that it does not already
-    // exist/is cleaned up correctly, since we don't fully control
-    // remote rifs
-    boost::filesystem::create_directories (root);
-  }
-
   rif_t::endpoint_t::endpoint_t (const std::string& host, unsigned short port)
     : host (host)
     , port (port)
@@ -177,12 +157,12 @@ namespace gspc
           for (std::pair<std::string, std::string> const& var : raw_environment)
           {
             environment_string += " --environment " + var.first + "='"
-              + replace_rif_root (var.second, _root) + "'";
+              + var.second + "'";
           }
           std::string arguments_string;
           for (std::string const& arg : raw_arguments)
           {
-            arguments_string += " --arguments " + replace_rif_root (arg, _root);
+            arguments_string += " --arguments " + arg;
           }
 
           std::unique_ptr<child_t> child
@@ -192,7 +172,7 @@ namespace gspc
                         , ( "'" + (gspc_home / "bin" / "start-and-fork").string() + "'"
                           + " --end-sentinel-value " + end_sentinel_value
                           + " --startup-messages-pipe-option " + startup_messages_pipe_option
-                          + " --command '" + replace_rif_root (command.string(), _root) + "'"
+                          + " --command '" + command.string() + "'"
                           + arguments_string
                           + environment_string
                           )
@@ -227,35 +207,5 @@ namespace gspc
         _processes.erase (rif);
       }
     }
-  }
-
-  boost::filesystem::path
-  rif_t::make_relative_to_rif_root (boost::filesystem::path const& p)
-  {
-    return RIF_ROOT / p;
-  }
-
-  void rif_t::store ( const std::list<endpoint_t>& rifs
-                    , const std::string& data
-                    , const boost::filesystem::path& path
-                    )
-  {
-    run_asynchronously_and_wait
-      ( rifs
-      , [this, &data, &path] (rif_t::endpoint_t const& rif)
-        {
-          const std::string real_path (replace_rif_root (path.string(), _root));
-          std::ostringstream command;
-          command << "ssh -q " << rif.host
-                  << " 'mkdir -p $(dirname " << real_path << "); "
-                  << " /bin/cat > " << real_path << "'";
-          scoped_popen f (command.str().c_str(), "w");
-          if (1 != fwrite (data.data(), data.size(), 1, f._))
-          {
-            throw std::runtime_error
-              ("could not write to: " + path.string() + " on " + rif.host);
-          }
-        }
-      );
   }
 }
