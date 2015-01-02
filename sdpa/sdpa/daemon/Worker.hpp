@@ -46,17 +46,18 @@ namespace sdpa
 
       bool addCapabilities(const capabilities_set_t& cpbset);
       bool removeCapabilities(const capabilities_set_t& cpbset);
-      bool hasCapability(const std::string& cpbName);
+      bool hasCapability(const std::string& cpbName) const;
 
-      bool has_job( const job_id_t& job_id );
+      bool has_job( const job_id_t& job_id ) const;
+      bool has_pending_jobs() const;
 
       void deleteJob(const job_id_t &job_id );
 
       // methods related to reservation
-      bool isReserved();
+      bool isReserved() const;
 
       // cost
-      double cost_assigned_jobs (std::function<double (job_id_t job_id)>);
+      double cost_assigned_jobs (std::function<double (job_id_t job_id)>) const;
 
       bool remove_job_if_pending (const job_id_t& job_id);
     private:

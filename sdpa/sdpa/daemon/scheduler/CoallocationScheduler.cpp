@@ -118,7 +118,6 @@ namespace sdpa
        {
          const worker_id_host_info_t& worker_info = it->second;
 
-         boost::mutex::scoped_lock const _ (mtx_alloc_table_);
          double cost_preassigned_jobs = worker_manager().cost_assigned_jobs
                                           ( worker_info.worker_id()
                                           , [this](const job_id_t& job_id) -> double
@@ -170,6 +169,12 @@ namespace sdpa
 
     CoallocationScheduler::assignment_t CoallocationScheduler::assignJobsToWorkers()
     {
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      if (worker_manager().all_workers_busy_and_have_pending_jobs())
+      {
+        return {};
+      }
+
       std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
 
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
@@ -191,8 +196,6 @@ namespace sdpa
 
         if (!matching_workers.empty())
         {
-          boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-
           allocation_table_t::iterator it (allocation_table_.find (jobId));
           if (it != allocation_table_.end())
           {
@@ -246,7 +249,6 @@ namespace sdpa
       }
 
       assignment_t assignment;
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
       std::transform ( allocation_table_.begin()
                      , allocation_table_.end()
                      , std::inserter (assignment, assignment.end())

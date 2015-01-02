@@ -481,10 +481,6 @@ void GenericDaemon::handleErrorEvent
     {
       sdpa::job_id_t jobId(*error.job_id());
 
-      //! \todo ignore if worker no longer exists?
-      scheduler().worker_manager().findWorker
-        (as_worker.get()->second)->deleteJob (jobId);
-
       Job* pJob (findJob (jobId));
       if (!pJob)
       {
@@ -635,10 +631,7 @@ try
          );
 
   scheduler().enqueueJob (job_id);
-  if (!scheduler().worker_manager().all_workers_busy())
-  {
-    request_scheduling();
-  }
+  request_scheduling();
 }
 catch (std::exception const& ex)
 {
