@@ -926,6 +926,14 @@ namespace fhg
           );
       }
 
+      if (components.get() & components_type::worker)
+      {
+        terminate_all_processes_of_a_kind (state_dir, "drts-kernel", hosts);
+      }
+      if (components.get() & components_type::agent)
+      {
+        terminate_all_processes_of_a_kind (state_dir, "agent", hosts);
+      }
       if (components.get() & components_type::vmem)
       {
         terminate_all_processes_of_a_kind (state_dir, "vmem", hosts);
@@ -938,14 +946,6 @@ namespace fhg
         boost::filesystem::remove (state_dir / "orchestrator.rpc.port");
 
         terminate_all_processes_of_a_kind (state_dir, "orchestrator", hosts);
-      }
-      if (components.get() & components_type::agent)
-      {
-        terminate_all_processes_of_a_kind (state_dir, "agent", hosts);
-      }
-      if (components.get() & components_type::worker)
-      {
-        terminate_all_processes_of_a_kind (state_dir, "drts-kernel", hosts);
       }
     }
 
