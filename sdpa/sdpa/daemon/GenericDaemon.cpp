@@ -481,10 +481,6 @@ void GenericDaemon::handleErrorEvent
     {
       sdpa::job_id_t jobId(*error.job_id());
 
-      //! \todo ignore if worker no longer exists?
-      scheduler().worker_manager().findWorker
-        (as_worker.get()->second)->deleteJob (jobId);
-
       Job* pJob (findJob (jobId));
       if (!pJob)
       {
