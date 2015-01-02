@@ -271,5 +271,11 @@ namespace sdpa
       boost::mutex::scoped_lock const _(mtx_);
       worker_map_.at (worker_id)->assign (job_id);
     }
+
+    void WorkerManager::submit_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      worker_map_.at (worker_id)->submit (job_id);
+    }
   }
 }

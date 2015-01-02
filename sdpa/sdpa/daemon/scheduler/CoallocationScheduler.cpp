@@ -324,7 +324,7 @@ namespace sdpa
         {
           for (worker_id_t const& worker : workers)
           {
-            worker_manager().findWorker (worker)->submit (job_id);
+            worker_manager().submit_job_to_worker (job_id, worker);
           }
 
           serve_job ({workers.begin(), workers.end()}, job_id);
