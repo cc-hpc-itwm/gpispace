@@ -285,5 +285,11 @@ namespace sdpa
       boost::mutex::scoped_lock const _(mtx_);
       worker_map_.at (worker_id)->deleteJob (job_id);
     }
+
+    const capabilities_set_t& WorkerManager::worker_capabilities (const worker_id_t& worker) const
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      return worker_map_.at (worker)->capabilities();
+    }
   }
 }

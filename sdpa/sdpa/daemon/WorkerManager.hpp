@@ -58,6 +58,7 @@ namespace sdpa
     void assign_job_to_worker (const job_id_t&, const worker_id_t&);
     void submit_job_to_worker (const job_id_t&, const worker_id_t&);
     void delete_job_from_worker (const job_id_t &job_id, const worker_id_t& );
+    const capabilities_set_t& worker_capabilities (const worker_id_t&) const;
 
     private:
       worker_map_t  worker_map_;

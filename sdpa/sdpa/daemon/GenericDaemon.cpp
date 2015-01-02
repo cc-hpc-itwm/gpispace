@@ -527,7 +527,7 @@ void GenericDaemon::handleErrorEvent
           if (info.second.address)
           {
             parent_proxy (this, *info.second.address).capabilities_lost
-              (ptrWorker->capabilities());
+              (scheduler().worker_manager().worker_capabilities (as_worker.get()->second));
           }
         }
 
@@ -889,7 +889,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent
       if( !isTop() )
       {
         const sdpa::capabilities_set_t newWorkerCpbSet
-          (scheduler().worker_manager().findWorker (worker->second)->capabilities());
+          (scheduler().worker_manager().worker_capabilities (worker->second));
 
         if( !newWorkerCpbSet.empty() )
         {
