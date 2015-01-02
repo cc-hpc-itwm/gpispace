@@ -469,6 +469,15 @@ namespace fhg
         throw std::invalid_argument ("hostfile empty");
       }
 
+      boost::filesystem::path const uniqued_nodefile (state_dir / "nodefile");
+      {
+        std::ofstream uniqued_nodefile_stream (uniqued_nodefile.string());
+        for (std::string const& host : hosts)
+        {
+          uniqued_nodefile_stream << host << "\n";
+        }
+      }
+
       std::string const master (hosts.front());
 
       if (number_of_groups > hosts.size())
@@ -498,7 +507,6 @@ namespace fhg
       }
 
       boost::filesystem::create_directories (processes_dir / master);
-      boost::filesystem::copy_file (nodefile, state_dir / "nodefile");
 
       if (delete_logfiles)
       {
@@ -625,7 +633,7 @@ namespace fhg
                     , "--startup-messages-pipe"
                     , "OKAY"
                     , sdpa_home / "bin" / "vmem"
-                    , { { "--nodefile", nodefile.string()
+                    , { { "--nodefile", uniqued_nodefile.string()
                         , "--state-directory", state_dir.string()
                         , "--gspc-home", sdpa_home.string()
                         , "--log-host", log_host
