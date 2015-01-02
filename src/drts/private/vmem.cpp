@@ -6,6 +6,7 @@
 #include <fhg/util/make_unique.hpp>
 
 #include <chrono>
+#include <future>
 #include <thread>
 #include <unordered_set>
 
@@ -77,27 +78,35 @@ namespace gspc
     const unsigned long startup_timeout_in_seconds
       (require_virtual_memory_startup_timeout (vm));
 
-    _rif.exec
-      ( {_rif_endpoints.front()}
-      , "gaspi-master"
-      , "--startup-messages-pipe"
-      , "OKAY"
-      , vmem_binary
-      , { "--log-host", log_host, "--log-port", std::to_string (log_port)
-        , "--log-level", log_level
-        , "--gpi-mem", std::to_string (memory_size)
-        , "--socket", socket.string()
-        , "--port", std::to_string (port)
-        , "--gpi-api", _rif_endpoints.size() > 1 ? "gaspi" : "fake"
-        , "--gpi-timeout", std::to_string (startup_timeout_in_seconds)
-        }
-      , { {"GASPI_MFILE", nodefile_path}
-        , {"GASPI_MASTER", master}
-        , {"GASPI_SOCKET", "0"}
-        , {"GASPI_TYPE", "GASPI_MASTER"}
-        , {"GASPI_SET_NUMA_SOCKET", "0"}
-        }
-      , installation.gspc_home()
+    std::future<void> master_startup
+      ( std::async
+          ( std::launch::async
+          , [&]
+            {
+              _rif.exec
+                ( {_rif_endpoints.front()}
+                , "gaspi-master"
+                , "--startup-messages-pipe"
+                , "OKAY"
+                , vmem_binary
+                , { "--log-host", log_host, "--log-port", std::to_string (log_port)
+                  , "--log-level", log_level
+                  , "--gpi-mem", std::to_string (memory_size)
+                  , "--socket", socket.string()
+                  , "--port", std::to_string (port)
+                  , "--gpi-api", _rif_endpoints.size() > 1 ? "gaspi" : "fake"
+                  , "--gpi-timeout", std::to_string (startup_timeout_in_seconds)
+                  }
+                , { {"GASPI_MFILE", nodefile_path}
+                  , {"GASPI_MASTER", master}
+                  , {"GASPI_SOCKET", "0"}
+                  , {"GASPI_TYPE", "GASPI_MASTER"}
+                  , {"GASPI_SET_NUMA_SOCKET", "0"}
+                  }
+                , installation.gspc_home()
+                );
+            }
+          )
       );
 
     _rif.exec
@@ -124,6 +133,8 @@ namespace gspc
         }
       , installation.gspc_home()
       );
+
+    master_startup.get();
   }
 
   vmem_t::~vmem_t()
