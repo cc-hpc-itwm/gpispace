@@ -1,6 +1,7 @@
 #include <drts/private/rif.hpp>
 
 #include <fhg/syscall.hpp>
+#include <fhg/util/join.hpp>
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
@@ -92,9 +93,21 @@ namespace gspc
                       )
           );
       }
-      for (std::future<void> & f : background_tasks)
+      std::vector<std::string> accumulated_whats;
+      for (std::future<void>& future : background_tasks)
       {
-        f.wait();
+        try
+        {
+          future.get();
+        }
+        catch (std::exception const& ex)
+        {
+          accumulated_whats.emplace_back (ex.what());
+        }
+      }
+      if (!accumulated_whats.empty())
+      {
+        throw std::runtime_error (fhg::util::join (accumulated_whats, ", "));
       }
     }
   }
