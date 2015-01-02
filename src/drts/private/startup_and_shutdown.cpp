@@ -208,7 +208,7 @@ namespace
     , boost::optional<boost::filesystem::path> const& gpi_socket
     , bool verbose
     , boost::filesystem::path const& sdpa_home
-    , boost::filesystem::path const& state_dir
+    , boost::filesystem::path const& log_dir
     , boost::filesystem::path const& processes_dir
     )
   {
@@ -238,7 +238,7 @@ namespace
           , agent_startup_arguments
           , { {"FHGLOG_to_server", log_host + ":" + std::to_string (log_port)}
             , {"FHGLOG_level", verbose ? "TRACE" : "INFO"}
-            , {"FHGLOG_to_file", (state_dir / "log" / (name + ".log")).string()}
+            , {"FHGLOG_to_file", (log_dir / (name + ".log")).string()}
             }
           , sdpa_home
           )
@@ -689,7 +689,7 @@ namespace fhg
                             , gpi_socket
                             , verbose
                             , sdpa_home
-                            , state_dir
+                            , log_dir
                             , processes_dir
                             )
               );
@@ -718,7 +718,7 @@ namespace fhg
                                                 , gpi_socket
                                                 , verbose
                                                 , sdpa_home
-                                                , state_dir
+                                                , log_dir
                                                 , processes_dir
                                                 );
                                             }
