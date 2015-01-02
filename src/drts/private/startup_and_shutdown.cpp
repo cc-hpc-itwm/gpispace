@@ -135,6 +135,7 @@ namespace
                      , pid_t pid
                      )
   {
+    boost::filesystem::create_directories (processes_dir / host);
     std::ofstream ((processes_dir / host / (name + ".pid")).string()) << pid;
   }
 
@@ -215,8 +216,6 @@ namespace
   {
     std::cout << "I: starting agent: " << name << " on host " << host
               << " with parent " << parent_name << "\n";
-
-    boost::filesystem::create_directories (processes_dir / host);
 
     std::vector<std::string> agent_startup_arguments
       { "-u", "0"
@@ -505,8 +504,6 @@ namespace fhg
                   << " stop -s " << state_dir << "\n";
         throw std::runtime_error ("state directory is not clean");
       }
-
-      boost::filesystem::create_directories (processes_dir / master);
 
       if (delete_logfiles)
       {
