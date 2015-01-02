@@ -55,6 +55,8 @@ namespace sdpa
 
     std::set<job_id_t> remove_all_matching_pending_jobs (const job_id_list_t&);
 
+    void assign_job_to_worker (const job_id_t&, const worker_id_t&);
+
     private:
       worker_map_t  worker_map_;
 

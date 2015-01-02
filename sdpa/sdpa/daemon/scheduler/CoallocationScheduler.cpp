@@ -206,7 +206,7 @@ namespace sdpa
           {
             for (worker_id_t const& worker : matching_workers)
             {
-              worker_manager().findWorker (worker)->assign (jobId);
+              worker_manager().assign_job_to_worker (jobId, worker);
             }
 
             Reservation* pReservation
