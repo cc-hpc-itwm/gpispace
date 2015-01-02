@@ -265,13 +265,12 @@ namespace sdpa
       (const worker_id_t& worker)
     {
       job_id_list_t matching_jobs;
-      const Worker::ptr_t ptr_worker (worker_manager().findWorker (worker));
 
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
       for (const job_id_t& job_id : allocation_table_ | boost::adaptors::map_keys)
       {
         const job_requirements_t& requirements (_job_requirements (job_id));
-        if (worker_manager().matchRequirements (ptr_worker, requirements))
+        if (worker_manager().matchRequirements (worker, requirements))
         {
           matching_jobs.push_back (job_id);
         }

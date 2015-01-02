@@ -148,18 +148,18 @@ namespace sdpa
     }
 
     boost::optional<std::size_t> WorkerManager::matchRequirements
-      ( const Worker::ptr_t& pWorker
+      ( const worker_id_t& worker
       , const job_requirements_t& job_req_set
       ) const
     {
       std::size_t matchingDeg (0);
-      if (job_req_set.numWorkers()>1 && pWorker->children_allowed())
+      if (job_req_set.numWorkers()>1 && worker_map_.at (worker)->children_allowed())
       {
         return boost::none;
       }
       for (we::type::requirement_t req : job_req_set.getReqList())
       {
-        if (pWorker->hasCapability (req.value()))
+        if (worker_map_.at (worker)->hasCapability (req.value()))
         {
           ++matchingDeg;
         }
@@ -202,7 +202,7 @@ namespace sdpa
           continue;
 
         const boost::optional<std::size_t>
-          matchingDeg (matchRequirements (it->second, job_reqs));
+          matchingDeg (matchRequirements (it->second->name(), job_reqs));
 
         if (matchingDeg)
         {
