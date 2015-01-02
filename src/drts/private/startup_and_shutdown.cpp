@@ -886,15 +886,6 @@ namespace fhg
                   }
                 )
             );
-
-          if (terminates.size() >= 16)
-          {
-            for (std::future<void>& terminate : terminates)
-            {
-              terminate.get();
-            }
-            terminates.clear();
-          }
         }
 
         for (std::future<void>& terminate : terminates)
