@@ -134,7 +134,7 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/xsd/schemas.xml"
 )
 
-set (TEST_VMEM_PORT_COUNTER 10820)
+set (TEST_VMEM_PORT_COUNTER 10820 CACHE INTERNAL "counter for vmem-port")
 set (TEST_VMEM_PORTS_PER_TEST 100)
 
 macro(FHG_ADD_TEST)
@@ -161,8 +161,11 @@ macro(FHG_ADD_TEST)
 
     if (TEST_REQUIRES_VIRTUAL_MEMORY)
       set (TEST_ARGS ${TEST_ARGS} --virtual-memory-port ${TEST_VMEM_PORT_COUNTER})
-      math (EXPR TEST_VMEM_PORT_COUNTER
+      math (EXPR TEST_VMEM_PORT_COUNTER_TMP
                  "${TEST_VMEM_PORT_COUNTER} + ${TEST_VMEM_PORTS_PER_TEST}"
+      )
+      set (TEST_VMEM_PORT_COUNTER ${TEST_VMEM_PORT_COUNTER_TMP}
+        CACHE INTERNAL "NOTE: yep, cmake requires this temporary"
       )
     endif()
 
