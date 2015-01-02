@@ -68,6 +68,13 @@ namespace gspc
       return boost::lexical_cast<pid_t> (lines.at (0));
     }
 
+    void rexec_no_pid_returned
+      (const rif_t::endpoint_t rif, std::string const& command)
+    {
+      fhg::util::system_with_blocked_SIGCHLD
+        (("ssh -q " + rif.host + " " + command).c_str());
+    }
+
     void run_asynchronously_and_wait ( const std::list<rif_t::endpoint_t>& rifs
                                      , std::function<void (rif_t::endpoint_t const&)> fun
                                      )
@@ -122,7 +129,8 @@ namespace gspc
 
   rif_t::child_t::~child_t ()
   {
-    rexec (_rif, "/usr/bin/env kill -TERM " + std::to_string (_pid));
+    rexec_no_pid_returned
+      (_rif, "/usr/bin/env kill -TERM " + std::to_string (_pid));
   }
 
   void rif_t::exec ( const std::list<rif_t::endpoint_t>& rifs
