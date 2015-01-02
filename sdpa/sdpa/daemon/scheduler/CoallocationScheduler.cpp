@@ -226,7 +226,7 @@ namespace sdpa
           {
             for (const worker_id_t& wid : matching_workers)
             {
-              worker_manager().findWorker (wid)->deleteJob (jobId);
+              worker_manager().delete_job_from_worker (jobId, wid);
             }
 
             jobs_to_schedule.push_front (jobId);
@@ -351,9 +351,9 @@ namespace sdpa
         for (std::string worker : ptr_reservation->workers())
         {
           try {
-              worker_manager().findWorker (worker)->deleteJob (job_id);
+            worker_manager().delete_job_from_worker (job_id, worker);
           }
-          catch (const WorkerNotFoundException&)
+          catch (std::out_of_range const &)
           {
             // the worker might be gone in between
           }
