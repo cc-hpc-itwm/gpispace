@@ -621,47 +621,63 @@ namespace fhg
                   << " with a timeout of " << vmem_startup_timeout.get().count()
                   << " seconds\n";
 
-        std::pair<pid_t, std::vector<std::string>> const vmem_startup_messages
-          ( nest_exceptions<std::runtime_error>
-              ( [&]
-                {
-                  return remote_execute_and_get_startup_messages
-                    ( master
-                    , "--startup-messages-pipe"
-                    , "OKAY"
-                    , sdpa_home / "bin" / "vmem"
-                    , { { "--nodefile", uniqued_nodefile.string()
-                        , "--state-directory", state_dir.string()
-                        , "--gspc-home", sdpa_home.string()
-                        , "--log-host", log_host
-                        , "--log-port", std::to_string (log_port)
-                        , "--gui-host", gui_host
-                        , "--gui-port", std::to_string (gui_port)
-                        , "--virtual-memory-port", std::to_string (vmem_port.get())
-                        , "--virtual-memory-socket", gpi_socket.get().string()
-                        , "--virtual-memory-per-node", std::to_string (gpi_mem.get())
-                        , "--virtual-memory-startup-timeout"
-                        , std::to_string (vmem_startup_timeout.get().count())
-                      } }
-                    , {{"PATH", fhg::util::getenv ("PATH").get_value_or ("")}}
-                    , sdpa_home
-                    );
-                }
-                , "could not start vmem"
-                )
+        nest_exceptions<std::runtime_error>
+          ( [&]
+            {
+              std::vector<std::future<void>> futures;
+
+              for (std::string const& host : hosts)
+              {
+                futures.emplace_back
+                  ( std::async
+                      ( std::launch::async
+                      , [&, host]
+                      {
+                        std::pair<pid_t, std::vector<std::string>> const
+                          startup_messages
+                          ( remote_execute_and_get_startup_messages
+                              ( host
+                              , "--startup-messages-pipe"
+                              , "OKAY"
+                              , sdpa_home / "bin" / "gpi-space"
+                              , { "--log-host", log_host
+                                , "--log-port", std::to_string (log_port)
+                                , "--log-level", verbose ? "TRACE" : "INFO"
+                                , "--gpi-mem", std::to_string (gpi_mem.get())
+                                , "--socket", gpi_socket.get().string()
+                                , "--port", std::to_string (vmem_port.get())
+                                , "--gpi-api", hosts.size() > 1 ? "gaspi" : "fake"
+                                , "--gpi-timeout", std::to_string (vmem_startup_timeout.get().count())
+                                }
+                              , { {"GASPI_MFILE", uniqued_nodefile.string()}
+                                , {"GASPI_MASTER", master}
+                                , {"GASPI_SOCKET", "0"}
+                                , { "GASPI_TYPE"
+                                  , host == master ? "GASPI_MASTER" : "GASPI_WORKER"
+                                  }
+                                , {"GASPI_SET_NUMA_SOCKET", "0"}
+                                }
+                              , sdpa_home
+                              )
+                          );
+
+                        if (!startup_messages.second.empty())
+                        {
+                          throw std::logic_error
+                            (host + ": expected no startup messages");
+                        }
+
+                        write_pidfile
+                          (processes_dir, host, "vmem", startup_messages.first);
+                      }
+                    )
+                );
+              }
+
+              wait_and_collect_exceptions (futures);
+            }
+          , "could not start vmem"
           );
-
-        if (!vmem_startup_messages.second.empty())
-        {
-          throw std::logic_error
-            ("could not start vmem: expected no startup messages");
-        }
-
-        write_pidfile ( processes_dir
-                      , master
-                      , "vmem"
-                      , vmem_startup_messages.first
-                      );
       }
 
       std::vector<segment_info_t> segment_info;

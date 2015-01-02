@@ -21,9 +21,7 @@ add_library (gspc SHARED
   drts.cpp
   information_to_reattach.cpp
   private/option.cpp
-  private/rif.cpp
   private/startup_and_shutdown.cpp
-  private/vmem.cpp
   stream.cpp
   virtual_memory.cpp
 )
