@@ -2,6 +2,7 @@
 
 #include <fhg/syscall.hpp>
 #include <fhg/util/make_unique.hpp>
+#include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem.hpp>
