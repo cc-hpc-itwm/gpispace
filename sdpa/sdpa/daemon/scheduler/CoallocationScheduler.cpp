@@ -222,7 +222,7 @@ namespace sdpa
             allocation_table_.emplace (jobId, pReservation);
             _list_pending_jobs.push (jobId);
           }
-          catch (std::runtime_error const&)
+          catch (std::out_of_range const&)
           {
             for (const worker_id_t& wid : matching_workers)
             {
