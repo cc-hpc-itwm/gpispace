@@ -518,9 +518,6 @@ void GenericDaemon::handleErrorEvent
           throw WorkerNotFoundException();
         }
 
-        Worker::ptr_t ptrWorker
-          (scheduler().worker_manager().findWorker (as_worker.get()->second));
-
         // notify capability losses...
         for (master_info_t::value_type const& info : _master_info)
         {
