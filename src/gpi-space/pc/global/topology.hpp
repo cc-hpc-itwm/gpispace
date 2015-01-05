@@ -11,9 +11,6 @@
 
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/thread/condition.hpp>
 
 #include <fhgcom/peer.hpp>
 
@@ -24,7 +21,9 @@
 #include <gpi-space/pc/type/handle.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
 
+#include <condition_variable>
 #include <functional>
+#include <mutex>
 
 namespace gpi
 {
@@ -73,11 +72,6 @@ namespace gpi
         //    shutdown-requested()
         //       -> return: nil
 
-        typedef boost::recursive_mutex mutex_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
-        typedef boost::condition_variable_any condition_type;
-        typedef boost::shared_ptr<fhg::com::peer_t> peer_ptr;
-
         void message_received ( boost::system::error_code const &
                               , boost::optional<fhg::com::p2p::address_t>
                               , memory::manager_t&
@@ -98,14 +92,14 @@ namespace gpi
 
         void request (std::string const& name, std::string const& data);
 
-        mutable mutex_type m_mutex;
-        mutable mutex_type m_global_alloc_mutex;
-        mutable mutex_type m_request_mutex;
-        mutable mutex_type m_result_mutex;
-        mutable condition_type m_request_finished;
+        mutable std::mutex m_mutex;
+        mutable std::mutex m_global_alloc_mutex;
+        mutable std::mutex m_request_mutex;
+        mutable std::mutex m_result_mutex;
+        mutable std::condition_variable m_request_finished;
 
         bool m_shutting_down;
-        peer_ptr   m_peer;
+        boost::shared_ptr<fhg::com::peer_t>  m_peer;
         std::unordered_set<fhg::com::p2p::address_t> m_children;
         fhg::com::message_t m_incoming_msg;
 

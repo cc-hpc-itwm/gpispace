@@ -76,7 +76,7 @@ namespace gpi
         , m_peer (peer)
         , _gpi_api (gpi_api)
       {
-        lock_type lock(m_mutex);
+        std::unique_lock<std::mutex> const _ (m_mutex);
 
         // start the message handler
         m_peer->async_recv ( &m_incoming_msg
@@ -108,7 +108,7 @@ namespace gpi
       topology_t::~topology_t()
       {
         {
-          lock_type lock(m_mutex);
+          std::unique_lock<std::mutex> const _ (m_mutex);
           m_shutting_down = true;
         }
       }
@@ -120,9 +120,11 @@ namespace gpi
 
       void topology_t::request (std::string const& name, std::string const& req)
       {
-        lock_type request_lock (m_request_mutex); // one request
+        //! \note one request at a time due to state in
+        //! m_current_results and no message sequencing
+        std::unique_lock<std::mutex> const _ (m_request_mutex);
 
-        lock_type result_list_lock (m_result_mutex);
+        std::unique_lock<std::mutex> result_list_lock (m_result_mutex);
         m_current_results.clear ();
 
         for (fhg::com::p2p::address_t const& child : m_children)
@@ -130,22 +132,21 @@ namespace gpi
           cast (child, req);
         }
 
-        boost::system_time const timeout
-          (boost::get_system_time()+boost::posix_time::seconds(30));
-        while (m_current_results.size () != m_children.size())
+        if ( !m_request_finished.wait_for
+               ( result_list_lock
+               , std::chrono::seconds (30)
+               , [&]
+                 {
+                   return m_current_results.size() == m_children.size();
+                 }
+               )
+           )
         {
-          if (!m_request_finished.timed_wait (result_list_lock, timeout))
-          {
-            if (m_current_results.size() == m_children.size())
-            {
-              break;
-            }
-            else
-            {
-              throw std::runtime_error
-                (name + " failed: timed out after 30 seconds!");
-            }
-          }
+          throw std::runtime_error
+            ( name + " failed: timed out after 30 seconds: "
+            + std::to_string (m_current_results.size()) + " of "
+            + std::to_string (m_children.size()) + " results received"
+            );
         }
 
         std::vector<std::string> errors;
@@ -179,7 +180,7 @@ namespace gpi
                              )
       {
         // lock, so that no other process can make a global alloc
-        lock_type alloc_lock(m_global_alloc_mutex);
+        std::unique_lock<std::mutex> const _ (m_global_alloc_mutex);
 
         try
         {
@@ -332,7 +333,7 @@ namespace gpi
           }
           else if (av[0] == "+RES")
           {
-            lock_type const lck (m_result_mutex);
+            std::unique_lock<std::mutex> const _ (m_result_mutex);
 
             std::vector<std::string> const msg_vec (av.begin() + 2, av.end());
             m_current_results.emplace_back
