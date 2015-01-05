@@ -62,6 +62,7 @@ namespace sdpa
     const capabilities_set_t& worker_capabilities (const worker_id_t&) const;
     const std::set<job_id_t> get_worker_jobs_and_clean_queues (const worker_id_t&) const;
     bool add_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
+    bool remove_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
 
     private:
       worker_map_t  worker_map_;

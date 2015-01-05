@@ -919,7 +919,10 @@ void GenericDaemon::handleCapabilitiesLostEvent
     );
 
   try {
-    if (scheduler().worker_manager().findWorker (worker->second)->removeCapabilities(pCpbLostEvt->capabilities()))
+    if (scheduler().worker_manager().remove_worker_capabilities ( worker->second
+                                                                , pCpbLostEvt->capabilities()
+                                                                )
+       )
     {
       for (master_info_t::value_type const& info : _master_info)
       {

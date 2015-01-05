@@ -313,5 +313,13 @@ namespace sdpa
       boost::mutex::scoped_lock const _(mtx_);
       return worker_map_.at (worker_id)->addCapabilities (cpb_set);
     }
+
+    bool WorkerManager::remove_worker_capabilities ( const worker_id_t& worker_id
+                                                   , const capabilities_set_t& cpb_set
+                                                   )
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      return worker_map_.at (worker_id)->removeCapabilities (cpb_set);
+    }
   }
 }
