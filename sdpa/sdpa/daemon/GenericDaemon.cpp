@@ -156,11 +156,10 @@ GenericDaemon::GenericDaemon( const std::string name
   , _job_map_mutex()
   , job_map_()
   , _cleanup_job_map_on_dtor_helper (job_map_)
-  , _scheduler ( std::bind (&GenericDaemon::serveJob, this, std::placeholders::_1, std::placeholders::_2)
-               , [this] (job_id_t job_id)
-               {
-                 return findJob (job_id)->requirements();
-               }
+  , _scheduler ( [this] (job_id_t job_id)
+                 {
+                   return findJob (job_id)->requirements();
+                 }
                )
   , _scheduling_thread_mutex()
   , _scheduling_thread_notifier()
@@ -481,10 +480,6 @@ void GenericDaemon::handleErrorEvent
     case events::ErrorEvent::SDPA_EJOBREJECTED:
     {
       sdpa::job_id_t jobId(*error.job_id());
-
-      //! \todo ignore if worker no longer exists?
-      scheduler().worker_manager().findWorker
-        (as_worker.get()->second)->deleteJob (jobId);
 
       Job* pJob (findJob (jobId));
       if (!pJob)
@@ -1446,7 +1441,8 @@ namespace sdpa
         _scheduling_thread_notifier.wait (lock);
 
         scheduler().assignJobsToWorkers();
-        scheduler().start_pending_jobs();
+        scheduler().start_pending_jobs
+          (std::bind (&GenericDaemon::serveJob, this, std::placeholders::_1, std::placeholders::_2));
       }
     }
 

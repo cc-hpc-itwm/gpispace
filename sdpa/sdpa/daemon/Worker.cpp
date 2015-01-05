@@ -21,7 +21,7 @@ namespace sdpa
       , capabilities_ (capabilities)
       , children_allowed_ (children_allowed)
       , hostname_ (hostname)
-      , last_schedule_time_ (0)
+      , last_time_served_ (0)
       , reserved_ (false)
     {
 
@@ -32,12 +32,18 @@ namespace sdpa
       return hostname_;
     }
 
-    bool Worker::has_job( const job_id_t& job_id )
+    bool Worker::has_job( const job_id_t& job_id ) const
     {
       lock_type const _ (mtx_);
       return pending_.count (job_id)
         || submitted_.count (job_id)
         || acknowledged_.count (job_id);
+    }
+
+    bool Worker::has_pending_jobs() const
+    {
+      lock_type const _ (mtx_);
+      return !pending_.empty();
     }
 
     void Worker::assign (const job_id_t& jobId)
@@ -120,7 +126,7 @@ namespace sdpa
       return removed != 0;
     }
 
-    bool Worker::hasCapability(const std::string& cpbName)
+    bool Worker::hasCapability(const std::string& cpbName) const
     {
       lock_type const _ (mtx_);
 
@@ -136,10 +142,10 @@ namespace sdpa
     {
       lock_type const _ (mtx_);
       reserved_ = true;
-      last_schedule_time_ = fhg::util::now();
+      last_time_served_ = fhg::util::now();
     }
 
-    bool Worker::isReserved()
+    bool Worker::isReserved() const
     {
       lock_type const _ (mtx_);
       return reserved_;
@@ -170,7 +176,7 @@ namespace sdpa
     }
 
     double Worker::cost_assigned_jobs
-      (std::function<double (job_id_t job_id)> cost_reservation)
+      (std::function<double (job_id_t job_id)> cost_reservation) const
     {
       lock_type const _ (mtx_);
       return ( std::accumulate ( pending_.begin()

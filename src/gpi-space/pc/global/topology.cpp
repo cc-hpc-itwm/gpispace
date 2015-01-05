@@ -147,8 +147,32 @@ namespace gpi
 
       int topology_t::free (const gpi::pc::type::handle_t hdl)
       {
-        broadcast (detail::command_t("FREE") << hdl);
-        return 0;
+        int rc = 0;
+
+        rank_result_t res (all_reduce(  detail::command_t("FREE")
+                                     << hdl
+                                     , reduce::max_result
+                                     , rank_result_t (m_rank, 0) // my result
+                                     )
+                          );
+        rc = res.value;
+
+        if (rc != 0)
+        {
+          LOG ( ERROR
+              , "free: failed on node " << res.rank
+              << ": " << res.value
+              << ": " << res.message
+              );
+          throw std::runtime_error
+            ( "free: failed on at least one node: rank "
+            + boost::lexical_cast<std::string>(res.rank)
+            + " says: "
+            + res.message
+            );
+        }
+
+        return rc;
       }
 
       topology_t::result_list_t
@@ -491,7 +515,7 @@ namespace gpi
             try
             {
               memory_manager.remote_free(hdl);
-              cast (source, detail::command_t("+OK"));
+              cast (source, detail::command_t("+RES") << 0);
             }
             catch (std::exception const & ex)
             {
@@ -499,7 +523,7 @@ namespace gpi
                       , not m_shutting_down
                       , "could not free handle: " << ex.what()
                       );
-              cast (source, detail::command_t("+ERR") << 1 << ex.what ());
+              cast (source, detail::command_t("+RES") << 1 << ex.what ());
             }
           }
           else if (av [0] == "ADDMEM")
@@ -556,28 +580,6 @@ namespace gpi
                             )
               );
             m_request_finished.notify_one();
-          }
-          else if (av[0] == "+OK")
-          {
-          }
-          else if (av[0] == "+ERR")
-          {
-            std::vector<std::string> msg_vec ( av.begin ()+2
-                                             , av.end ()
-                                             );
-            MLOG_IF ( WARN
-                    , not m_shutting_down
-                    , "error on node " << find_rank (source)
-                    << ": " << av [1]
-                    << ": " << boost::algorithm::join (msg_vec, " ")
-                    );
-          }
-          else if (av[0] == "SHUTDOWN" && !m_shutting_down)
-          {
-            LOG(INFO, "shutting down");
-            m_children.clear();
-            m_shutting_down = true;
-            kill(getpid(), SIGTERM);
           }
           else
           {

@@ -58,17 +58,21 @@ namespace sdpa {
   public:
     worker_id_host_info_t ( const worker_id_t& worker_id
                           , const std::string& worker_host
+                          , const double& last_time_served
                           )
       : worker_id_ (worker_id)
       , worker_host_ (worker_host)
+      , last_time_served_ (last_time_served)
     {}
 
     const worker_id_t& worker_id() const {return worker_id_;}
     const std::string& worker_host() const {return worker_host_;}
+    double last_time_served() const { return  last_time_served_;}
 
   private:
     worker_id_t worker_id_;
     std::string worker_host_;
+    double last_time_served_;
   };
 
   typedef std::multimap<int, worker_id_host_info_t, std::greater<int>> mmap_match_deg_worker_id_t;

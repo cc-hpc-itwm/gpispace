@@ -207,7 +207,10 @@ namespace sdpa
         if (matchingDeg)
         {
           mmap_match_deg_worker_id.emplace ( *matchingDeg
-                                           , worker_id_host_info_t (worker_id, it->second->hostname())
+                                           , worker_id_host_info_t ( worker_id
+                                                                   , it->second->hostname()
+                                                                   , it->second->lastTimeServed()
+                                                                   )
                                            );
         }
       }
@@ -251,6 +254,16 @@ namespace sdpa
       }
 
       return pending_jobs;
+    }
+
+    bool WorkerManager::all_workers_busy_and_have_pending_jobs() const
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      return std::all_of ( worker_map_.begin()
+                         , worker_map_.end()
+                         , [](const worker_map_t::value_type& p)
+                             {return p.second->isReserved() && p.second->has_pending_jobs();}
+                         );
     }
   }
 }

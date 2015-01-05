@@ -51,6 +51,8 @@ namespace sdpa
 
     bool can_start_job (std::set<worker_id_t> workers) const;
 
+    bool all_workers_busy_and_have_pending_jobs() const;
+
     std::set<job_id_t> remove_all_matching_pending_jobs (const job_id_list_t&);
 
     private:
