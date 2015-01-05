@@ -105,7 +105,6 @@ namespace gpi
               );
 
           lock_type lock(m_mutex);
-          fhg_assert (m_peer);
           m_children[rank] = new_child;
         }
       }
