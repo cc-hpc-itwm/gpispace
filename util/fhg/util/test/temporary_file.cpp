@@ -12,7 +12,7 @@
 
 BOOST_AUTO_TEST_CASE (temporary_file)
 {
-  boost::filesystem::path const path ("temporary_file");
+  boost::filesystem::path const path ("temporary_file-temporary_file");
 
   BOOST_REQUIRE (!boost::filesystem::exists (path));
 

@@ -14,7 +14,7 @@ namespace
 {
   void test (std::string const& content)
   {
-    boost::filesystem::path const path ("temporary_file");
+    boost::filesystem::path const path ("temporary_file-read_file");
 
     BOOST_REQUIRE (!boost::filesystem::exists (path));
 
