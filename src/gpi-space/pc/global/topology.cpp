@@ -2,7 +2,6 @@
 
 #include <unistd.h>
 #include <stdio.h>
-#include <csignal> // kill
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -326,22 +325,6 @@ namespace gpi
           if (m_incoming_msg.header.src != m_peer->address())
           {
             m_shutting_down = true;
-
-            {
-              lock_type const lock (m_mutex);
-              m_children.erase (find_rank (m_incoming_msg.header.src));
-            }
-
-            kill(getpid(), SIGTERM);
-
-            m_peer->async_recv ( &m_incoming_msg
-                               , std::bind( &topology_t::message_received
-                                          , this
-                                          , std::placeholders::_1
-                                          , std::placeholders::_2
-                                          , std::ref (memory_manager)
-                                          )
-                               );
           }
         }
         else
