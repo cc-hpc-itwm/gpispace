@@ -39,30 +39,6 @@ namespace gpi
         typedef fhg::com::port_t port_t;
         typedef fhg::com::host_t host_t;
 
-        struct rank_result_t
-        {
-          rank_result_t ()
-            : rank(-1)
-            , value(-1)
-            , message ("")
-          {}
-
-          rank_result_t (gpi::rank_t r, int v, std::string const &msg="")
-            : rank(r)
-            , value(v)
-            , message (msg)
-          {}
-
-          gpi::rank_t rank;
-          int value;
-          std::string message;
-        };
-
-        typedef std::function<rank_result_t ( rank_result_t
-                                            , rank_result_t
-                                            )
-                             > fold_t;
-
         topology_t ( memory::manager_t& memory_manager
                    , api::gpi_api_t&
                    , boost::shared_ptr<fhg::com::peer_t> const&
@@ -77,30 +53,24 @@ namespace gpi
         virtual bool is_master () const override;
 
         // initiate a global alloc
-        virtual int alloc ( const gpi::pc::type::segment_id_t segment
-                  , const gpi::pc::type::handle_t
-                  , const gpi::pc::type::offset_t
-                  , const gpi::pc::type::size_t size
-                  , const gpi::pc::type::size_t local_size
-                  , const std::string & name
-                  ) override;
+        virtual void alloc ( const gpi::pc::type::segment_id_t segment
+                           , const gpi::pc::type::handle_t
+                           , const gpi::pc::type::offset_t
+                           , const gpi::pc::type::size_t size
+                           , const gpi::pc::type::size_t local_size
+                           , const std::string & name
+                           ) override;
 
-        virtual int free (const gpi::pc::type::handle_t) override;
+        virtual void free (const gpi::pc::type::handle_t) override;
 
-        virtual int add_memory ( const gpi::pc::type::segment_id_t seg_id
-                       , const std::string & url
-                       ) override;
-        virtual int del_memory (const gpi::pc::type::segment_id_t seg_id) override;
+        virtual void add_memory ( const gpi::pc::type::segment_id_t seg_id
+                                , const std::string & url
+                                ) override;
+        virtual void del_memory (const gpi::pc::type::segment_id_t seg_id) override;
       private:
         void cast (const gpi::rank_t rnk, const std::string & data);
 
         void broadcast(const std::string & data);
-
-        rank_result_t
-        all_reduce ( std::string const & req
-                   , fold_t fold_fun
-                   , rank_result_t myresult
-                   );
 
         // signals
         //    alloc-requested(handle_t, offset, size)
@@ -139,7 +109,6 @@ namespace gpi
         typedef boost::condition_variable_any condition_type;
         typedef boost::shared_ptr<fhg::com::peer_t> peer_ptr;
         typedef std::map<gpi::rank_t, child_t> child_map_t;
-        typedef std::list<rank_result_t> result_list_t;
 
         void message_received ( boost::system::error_code const &
                               , boost::optional<fhg::com::p2p::address_t>
@@ -164,7 +133,7 @@ namespace gpi
         void cast (child_t const &, const std::string &data);
         void cast (fhg::com::p2p::address_t const&, std::string const& data);
 
-        result_list_t request (const std::string &data);
+        void request (std::string const& name, std::string const& data);
 
         mutable mutex_type m_mutex;
         mutable mutex_type m_global_alloc_mutex;
@@ -178,7 +147,7 @@ namespace gpi
         child_map_t m_children;
         fhg::com::message_t m_incoming_msg;
 
-        result_list_t m_current_results;
+        std::vector<boost::optional<std::string>> m_current_results;
 
         api::gpi_api_t& _gpi_api;
       };

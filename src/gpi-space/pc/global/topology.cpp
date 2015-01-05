@@ -10,6 +10,7 @@
 
 #include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
+#include <fhg/util/join.hpp>
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
@@ -65,17 +66,6 @@ namespace gpi
         private:
           std::vector<std::string> parts;
         };
-      }
-
-      namespace reduce
-      {
-        topology_t::rank_result_t
-        max_result ( const topology_t::rank_result_t a
-                   , const topology_t::rank_result_t b
-                   )
-        {
-          return (a.value > b.value ? a : b);
-        }
       }
 
       topology_t::topology_t ( memory::manager_t& memory_manager
@@ -145,38 +135,7 @@ namespace gpi
         m_children.erase (rank);
       }
 
-      int topology_t::free (const gpi::pc::type::handle_t hdl)
-      {
-        int rc = 0;
-
-        rank_result_t res (all_reduce(  detail::command_t("FREE")
-                                     << hdl
-                                     , reduce::max_result
-                                     , rank_result_t (m_rank, 0) // my result
-                                     )
-                          );
-        rc = res.value;
-
-        if (rc != 0)
-        {
-          LOG ( ERROR
-              , "free: failed on node " << res.rank
-              << ": " << res.value
-              << ": " << res.message
-              );
-          throw std::runtime_error
-            ( "free: failed on at least one node: rank "
-            + boost::lexical_cast<std::string>(res.rank)
-            + " says: "
-            + res.message
-            );
-        }
-
-        return rc;
-      }
-
-      topology_t::result_list_t
-      topology_t::request (std::string const & req)
+      void topology_t::request (std::string const& name, std::string const& req)
       {
         lock_type request_lock (m_request_mutex); // one request
 
@@ -197,136 +156,69 @@ namespace gpi
             }
             else
             {
-              throw std::runtime_error ("request " + req + " timedout after 30 seconds!");
+              throw std::runtime_error
+                (name + " failed: timed out after 30 seconds!");
             }
           }
         }
 
-        return m_current_results;
-      }
-
-      topology_t::rank_result_t
-      topology_t::all_reduce ( std::string const & req
-                             , fold_t fold_fun
-                             , rank_result_t result
-                             )
-      {
-        result_list_t results (request(req));
-        while (results.size())
+        std::vector<std::string> errors;
+        for (boost::optional<std::string>& partial_result : m_current_results)
         {
-          result = fold_fun(results.front(), result);
-          results.pop_front();
+          if (partial_result)
+          {
+            errors.emplace_back (std::move (*partial_result));
+          }
         }
-        return result;
+
+        if (!errors.empty())
+        {
+          LOG (ERROR, name << " failed: " << fhg::util::join (errors, "; "));
+          throw std::runtime_error
+            (name + " failed: " + fhg::util::join (errors, "; "));
+        }
       }
 
-      int topology_t::alloc ( const gpi::pc::type::segment_id_t seg
-                            , const gpi::pc::type::handle_t hdl
-                            , const gpi::pc::type::offset_t offset
-                            , const gpi::pc::type::size_t size
-                            , const gpi::pc::type::size_t local_size
-                            , const std::string & name
-                            )
+      void topology_t::free (const gpi::pc::type::handle_t hdl)
+      {
+        request ("free", detail::command_t ("FREE") << hdl);
+      }
+
+      void topology_t::alloc ( const gpi::pc::type::segment_id_t seg
+                             , const gpi::pc::type::handle_t hdl
+                             , const gpi::pc::type::offset_t offset
+                             , const gpi::pc::type::size_t size
+                             , const gpi::pc::type::size_t local_size
+                             , const std::string & name
+                             )
       {
         // lock, so that no other process can make a global alloc
         lock_type alloc_lock(m_global_alloc_mutex);
 
         try
         {
-          rank_result_t res (all_reduce(  detail::command_t("ALLOC")
-                                       << seg
-                                       << hdl
-                                       << offset
-                                       << size
-                                       << local_size
-                                       << name
-                                       , reduce::max_result
-                                       , rank_result_t (m_rank, 0) // my result
-                                       )
-                            );
-          if (res.value != 0)
-          {
-            LOG(ERROR,"allocation on node " << res.rank << " failed: " << res.value);
-            throw std::runtime_error
-              ( "global allocation failed on at least one node: rank "
-              + boost::lexical_cast<std::string>(res.rank)
-              + " says: "
-              + res.message
-              );
-          }
-          else
-          {
-            return 0;
-          }
+          request ( "alloc"
+                  , detail::command_t ("ALLOC")
+                  << seg << hdl << offset << size << local_size << name
+                  );
         }
-        catch (std::exception const & ex)
+        catch (...)
         {
           free (hdl);
           throw;
         }
       }
 
-      int topology_t::add_memory ( const gpi::pc::type::segment_id_t seg_id
-                                 , const std::string & url
-                                 )
+      void topology_t::add_memory ( const gpi::pc::type::segment_id_t seg_id
+                                  , const std::string & url
+                                  )
       {
-        int rc = 0;
-
-        rank_result_t res (all_reduce(  detail::command_t("ADDMEM")
-                                     << seg_id
-                                     << url
-                                     , reduce::max_result
-                                     , rank_result_t (m_rank, 0) // my result
-                                     )
-                          );
-        rc = res.value;
-
-        if (rc != 0)
-        {
-          LOG ( ERROR
-              , "add_memory: failed on node " << res.rank
-              << ": " << res.value
-              << ": " << res.message
-              );
-          throw std::runtime_error
-            ( "add_memory: failed on at least one node: rank "
-            + boost::lexical_cast<std::string>(res.rank)
-            + " says: "
-            + res.message
-            );
-        }
-
-        return rc;
+        request ("add_memory", detail::command_t ("ADDMEM") << seg_id << url);
       }
 
-      int topology_t::del_memory (const gpi::pc::type::segment_id_t seg_id)
+      void topology_t::del_memory (const gpi::pc::type::segment_id_t seg_id)
       {
-        int rc = 0;
-
-        rank_result_t res (all_reduce(  detail::command_t("DELMEM")
-                                     << seg_id
-                                     , reduce::max_result
-                                     , rank_result_t (m_rank, 0) // my result
-                                     )
-                          );
-        rc = res.value;
-
-        if (rc != 0)
-        {
-          LOG ( ERROR
-              , "del_memory: failed on node " << res.rank
-              << ": " << res.value
-              << ": " << res.message
-              );
-          throw std::runtime_error
-            ( "del_memory: failed on at least one node: rank "
-            + boost::lexical_cast<std::string>(res.rank)
-            + " says: "
-            + res.message
-            );
-        }
-
-        return rc;
+        request ("del_memory", detail::command_t ("DELMEM") << seg_id);
       }
 
       void topology_t::cast( const gpi::rank_t rnk
@@ -569,15 +461,14 @@ namespace gpi
           }
           else if (av[0] == "+RES")
           {
-            lock_type lck(m_result_mutex);
-            std::vector<std::string> msg_vec ( av.begin ()+2
-                                             , av.end ()
-                                             );
-            m_current_results.push_back
-              (rank_result_t( find_rank (source)
-                            , boost::lexical_cast<int>(av[1])
-                            , boost::algorithm::join (msg_vec, " ")
-                            )
+            lock_type const lck (m_result_mutex);
+
+            std::vector<std::string> const msg_vec (av.begin() + 2, av.end());
+            m_current_results.emplace_back
+              ( boost::make_optional
+                  ( boost::lexical_cast<int> (av[1])
+                  , fhg::util::join (av.begin() + 2, av.end(), " ")
+                  )
               );
             m_request_finished.notify_one();
           }
