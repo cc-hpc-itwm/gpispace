@@ -39,7 +39,7 @@
 
                       statistics.start =
                         std::chrono::duration_cast<std::chrono::microseconds>
-                          (std::chrono::steady_clock::now().time_since_epoch()).count();
+                          (std::chrono::system_clock::now().time_since_epoch()).count();
                       return 0;
                     ]]></code>
                 </module>
@@ -83,7 +83,7 @@
                     <code><![CDATA[
                        ping.microseconds =
                          std::chrono::duration_cast<std::chrono::microseconds>
-                           (std::chrono::steady_clock::now().time_since_epoch()).count();
+                           (std::chrono::system_clock::now().time_since_epoch()).count();
                        ping.seq = seq;
                     ]]></code>
                 </module>
@@ -108,7 +108,7 @@
                       double const rtt
                         (static_cast<double>
                           ( std::chrono::duration_cast<std::chrono::microseconds>
-                              (std::chrono::steady_clock::now().time_since_epoch()).count()
+                              (std::chrono::system_clock::now().time_since_epoch()).count()
                           -
                             ping.microseconds
                           )
@@ -151,7 +151,7 @@
                     <code><![CDATA[
                       statistics.end =
                         std::chrono::duration_cast<std::chrono::microseconds>
-                          (std::chrono::steady_clock::now().time_since_epoch()).count();
+                          (std::chrono::system_clock::now().time_since_epoch()).count();
 
                       double const avg (statistics.sum / statistics.count);
                       double const dev (std::sqrt ((statistics.sqsum / statistics.count) - (avg * avg)));
