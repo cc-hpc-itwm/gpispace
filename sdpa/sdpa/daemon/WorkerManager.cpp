@@ -40,16 +40,6 @@ namespace sdpa
       return worker_map_.at(worker)->hostname();
     }
 
-    Worker::ptr_t WorkerManager::findWorker (const worker_id_t& worker_id)
-    {
-      boost::mutex::scoped_lock const _ (mtx_);
-      worker_map_t::iterator it = worker_map_.find(worker_id);
-      if( it != worker_map_.end() )
-        return it->second;
-      else
-        throw WorkerNotFoundException();
-    }
-
     bool WorkerManager::hasWorker(const worker_id_t& worker_id) const
     {
       boost::mutex::scoped_lock const _ (mtx_);

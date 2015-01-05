@@ -20,7 +20,6 @@ namespace sdpa
     public:
       typedef std::unordered_map<worker_id_t, Worker::ptr_t> worker_map_t;
 
-      Worker::ptr_t findWorker (const worker_id_t& worker_id);
       bool hasWorker (const worker_id_t& worker_id) const;
       const boost::optional<worker_id_t> findSubmOrAckWorker (const sdpa::job_id_t& job_id) const;
 

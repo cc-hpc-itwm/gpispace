@@ -132,7 +132,6 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker (worker_ids[0], 1, {sdpa::capability_t ("A", worker_ids[0])}, random_bool(), fhg::util::random_string());
 
-  const sdpa::daemon::Worker::ptr_t ptrWorker (worker_manager.findWorker (worker_ids[0]));
   const sdpa::job_id_t job_id (fhg::util::random_string());
 
   worker_manager.assign_job_to_worker (job_id, worker_ids[0]);
