@@ -67,8 +67,6 @@ namespace gpi
                                 ) override;
         virtual void del_memory (const gpi::pc::type::segment_id_t seg_id) override;
       private:
-        void cast (const gpi::rank_t rnk, const std::string & data);
-
         void broadcast(const std::string & data);
 
         // signals
@@ -120,7 +118,6 @@ namespace gpi
          *
          * @param to the rank to cast the message to
          */
-        void cast (child_t const &, const std::string &data);
         void cast (fhg::com::p2p::address_t const&, std::string const& data);
 
         void request (std::string const& name, std::string const& data);

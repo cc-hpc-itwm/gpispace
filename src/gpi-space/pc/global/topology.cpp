@@ -210,26 +210,6 @@ namespace gpi
         request ("del_memory", detail::command_t ("DELMEM") << seg_id);
       }
 
-      void topology_t::cast( const gpi::rank_t rnk
-                           , const std::string & data
-                           )
-      {
-        lock_type lock(m_mutex);
-        child_map_t::const_iterator it(m_children.find(rnk));
-        if (it == m_children.end())
-        {
-          LOG( ERROR
-             , "cannot send to rank " << rnk << ":"
-             << " message routing not yet implemented"
-             );
-          throw std::runtime_error("cannot send to this rank, not a direct child and routing is not yet implemented!");
-        }
-        else
-        {
-          cast (it->second, data);
-        }
-      }
-
       void topology_t::message_sent (boost::system::error_code const& ec)
       {
         if (not m_shutting_down && ec)
@@ -237,19 +217,6 @@ namespace gpi
           MLOG (ERROR, "failed sending a message: " << ec);
           m_peer->stop ();
         }
-      }
-
-      void topology_t::cast( const child_t & child
-                           , const std::string & data
-                           )
-      {
-        m_peer->async_send ( child.address
-                           , data
-                           , std::bind ( &topology_t::message_sent
-                                       , this
-                                       , std::placeholders::_1
-                                       )
-                           );
       }
 
       void topology_t::cast
@@ -268,7 +235,7 @@ namespace gpi
       {
         for (child_map_t::value_type const & n : m_children)
         {
-          cast(n.second, data);
+          cast(n.second.address, data);
         }
       }
 
