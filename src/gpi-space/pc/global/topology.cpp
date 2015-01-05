@@ -581,28 +581,6 @@ namespace gpi
               );
             m_request_finished.notify_one();
           }
-          else if (av[0] == "+OK")
-          {
-          }
-          else if (av[0] == "+ERR")
-          {
-            std::vector<std::string> msg_vec ( av.begin ()+2
-                                             , av.end ()
-                                             );
-            MLOG_IF ( WARN
-                    , not m_shutting_down
-                    , "error on node " << find_rank (source)
-                    << ": " << av [1]
-                    << ": " << boost::algorithm::join (msg_vec, " ")
-                    );
-          }
-          else if (av[0] == "SHUTDOWN" && !m_shutting_down)
-          {
-            LOG(INFO, "shutting down");
-            m_children.clear();
-            m_shutting_down = true;
-            kill(getpid(), SIGTERM);
-          }
           else
           {
             LOG(WARN, "invalid command: '" << av[0] <<"'");
