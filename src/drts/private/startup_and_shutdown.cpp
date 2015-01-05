@@ -534,7 +534,7 @@ namespace fhg
       fhg::util::scoped_signal_handler interrupt_signal_handler
         ( signal_handler_manager
         ,  SIGINT
-        , [] (int, siginfo*, void*)
+        , [] (int, siginfo_t*, void*)
           {
             throw std::runtime_error ("Canceled...");
           }
