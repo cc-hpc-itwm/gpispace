@@ -10,6 +10,7 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 #include <fhg/util/join.hpp>
+#include <fhg/util/print_exception.hpp>
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
@@ -272,6 +273,8 @@ namespace gpi
       {
         // TODO: push message to message handler
 
+        try
+        {
           // split message
           std::vector<std::string> av;
           boost::algorithm::split ( av, msg
@@ -280,9 +283,10 @@ namespace gpi
                                   );
           if (av.empty())
           {
-            LOG (ERROR, "ignoring empty command");
+            throw std::logic_error ("empty command");
           }
-          else if (av[0] == "ALLOC")
+
+          if (av[0] == "ALLOC")
           {
             type::segment_id_t seg (boost::lexical_cast<type::segment_id_t>(av[1]));
             type::handle_t hdl (boost::lexical_cast<type::handle_t>(av[2]));
@@ -295,40 +299,19 @@ namespace gpi
                                              )
               ); // TODO unquote and join (av[4]...)
 
-            try
-            {
-              int res
-                (memory_manager.remote_alloc( seg
-                                                      , hdl
-                                                      , offset
-                                                      , size
-                                                      , local_size
-                                                      , name
-                                                      )
-                );
-              cast (source, detail::command_t("+RES") << res);
-            }
-            catch (std::exception const &ex)
-            {
-              cast (source, detail::command_t("+RES") << 2 << ex.what ());
-            }
+            memory_manager.remote_alloc( seg
+                                       , hdl
+                                       , offset
+                                       , size
+                                       , local_size
+                                       , name
+                                       );
           }
           else if (av[0] == "FREE")
           {
             type::handle_t hdl (boost::lexical_cast<type::handle_t>(av[1]));
-            try
-            {
-              memory_manager.remote_free(hdl);
-              cast (source, detail::command_t("+RES") << 0);
-            }
-            catch (std::exception const & ex)
-            {
-              MLOG_IF ( WARN
-                      , not m_shutting_down
-                      , "could not free handle: " << ex.what()
-                      );
-              cast (source, detail::command_t("+RES") << 1 << ex.what ());
-            }
+
+            memory_manager.remote_free(hdl);
           }
           else if (av [0] == "ADDMEM")
           {
@@ -339,37 +322,13 @@ namespace gpi
                                              )
               ); // TODO unquote and join (av[4]...)
 
-            try
-            {
-              memory_manager.remote_add_memory (seg_id, url_s, *this);
-              cast (source, detail::command_t("+RES") << 0);
-            }
-            catch (std::exception const & ex)
-            {
-              MLOG( ERROR
-                  , "add_memory(" << seg_id << ", '" << url_s << "')"
-                  << " failed: " << ex.what()
-                  );
-              cast (source, detail::command_t("+RES") << 1 << ex.what ());
-            }
+            memory_manager.remote_add_memory (seg_id, url_s, *this);
           }
           else if (av [0] == "DELMEM")
           {
             type::segment_id_t seg_id = boost::lexical_cast<type::segment_id_t> (av[1]);
 
-            try
-            {
-              memory_manager.remote_del_memory (seg_id, *this);
-              cast (source, detail::command_t("+RES") << 0);
-            }
-            catch (std::exception const & ex)
-            {
-              MLOG( ERROR
-                  , "del_memory(" << seg_id <<  ")"
-                  << " failed: " << ex.what()
-                  );
-              cast (source, detail::command_t("+RES") << 1 << ex.what ());
-            }
+            memory_manager.remote_del_memory (seg_id, *this);
           }
           else if (av[0] == "+RES")
           {
@@ -386,8 +345,18 @@ namespace gpi
           }
           else
           {
-            LOG(WARN, "invalid command: '" << av[0] <<"'");
+            throw std::logic_error ("invalid command: " + av[0]);
           }
+
+          cast (source, detail::command_t ("+RES") << 0);
+        }
+        catch (...)
+        {
+          std::ostringstream sstr;
+          fhg::util::print_current_exception (sstr, "");
+          MLOG (ERROR, "handling command '" + msg + "' failed: " << sstr.str());
+          cast (source, detail::command_t ("+RES") << 1 << sstr.str());
+        }
       }
     }
   }
