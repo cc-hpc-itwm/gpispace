@@ -88,10 +88,25 @@ namespace gpi
                                       )
                            );
 
-        for (std::size_t n(0); n < _gpi_api.number_of_nodes(); ++n)
+        for (std::size_t rank (0); rank < _gpi_api.number_of_nodes(); ++rank)
         {
-          if (_gpi_api.rank() != n)
-            add_child(n);
+          if (_gpi_api.rank() == rank)
+          {
+            continue;
+          }
+
+          child_t new_child(rank);
+
+          new_child.address =
+            m_peer->connect_to_or_use_existing_connection
+              ( fhg::com::host_t (_gpi_api.hostname_of_rank (rank))
+              , fhg::com::port_t
+                  (std::to_string (_gpi_api.communication_port_of_rank (rank)))
+              );
+
+          lock_type lock(m_mutex);
+          fhg_assert (m_peer);
+          m_children[rank] = new_child;
         }
       }
 
@@ -106,22 +121,6 @@ namespace gpi
       bool topology_t::is_master () const
       {
         return 0 == m_rank;
-      }
-
-      void topology_t::add_child(const gpi::rank_t rank)
-      {
-        child_t new_child(rank);
-
-        new_child.address =
-          m_peer->connect_to_or_use_existing_connection
-            ( fhg::com::host_t (_gpi_api.hostname_of_rank (rank))
-            , fhg::com::port_t
-                (std::to_string (_gpi_api.communication_port_of_rank (rank)))
-            );
-
-        lock_type lock(m_mutex);
-        fhg_assert (m_peer);
-        m_children[rank] = new_child;
       }
 
       void topology_t::request (std::string const& name, std::string const& req)

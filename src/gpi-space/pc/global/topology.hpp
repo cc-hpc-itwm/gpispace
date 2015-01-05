@@ -45,8 +45,6 @@ namespace gpi
                    );
         ~topology_t ();
 
-        void add_child(const gpi::rank_t rank);
-
         void establish ();
 
         virtual bool is_master () const override;
