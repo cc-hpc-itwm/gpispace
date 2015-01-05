@@ -46,7 +46,6 @@ namespace gpi
         ~topology_t ();
 
         void add_child(const gpi::rank_t rank);
-        void del_child(const gpi::rank_t rank);
 
         void establish ();
 
@@ -123,7 +122,6 @@ namespace gpi
                             , const std::string &
                             , memory::manager_t&
                             );
-        void handle_error (fhg::com::p2p::address_t const&);
 
         /**
          * Cast a single message to a given rank.

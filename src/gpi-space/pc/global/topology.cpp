@@ -125,16 +125,6 @@ namespace gpi
         m_children[rank] = new_child;
       }
 
-      void topology_t::del_child(const gpi::rank_t rank)
-      {
-        lock_type lock(m_mutex);
-
-        // if connected:
-        //    send disconnect to child
-        //    remove connection
-        m_children.erase (rank);
-      }
-
       void topology_t::request (std::string const& name, std::string const& req)
       {
         lock_type request_lock (m_request_mutex); // one request
@@ -335,7 +325,14 @@ namespace gpi
         {
           if (m_incoming_msg.header.src != m_peer->address())
           {
-            handle_error (m_incoming_msg.header.src);
+            m_shutting_down = true;
+
+            {
+              lock_type const lock (m_mutex);
+              m_children.erase (find_rank (m_incoming_msg.header.src));
+            }
+
+            kill(getpid(), SIGTERM);
 
             m_peer->async_recv ( &m_incoming_msg
                                , std::bind( &topology_t::message_received
@@ -477,16 +474,6 @@ namespace gpi
             LOG(WARN, "invalid command: '" << av[0] <<"'");
           }
       }
-
-      void topology_t::handle_error (fhg::com::p2p::address_t const& source)
-      {
-        gpi::rank_t rank (find_rank (source));
-          m_shutting_down = true;
-
-          del_child (rank);
-
-          kill(getpid(), SIGTERM);
-        }
 
       gpi::rank_t topology_t::find_rank (fhg::com::p2p::address_t address) const
       {
