@@ -583,9 +583,10 @@ void GenericDaemon::handleErrorEvent
       if(ptrJob)
       {
         try {
-            ptrJob->Dispatch();
-            scheduler().worker_manager().findWorker
-              (as_worker.get()->second)->acknowledge (*error.job_id());
+          ptrJob->Dispatch();
+          scheduler().worker_manager().acknowledge_job_sent_to_worker ( *error.job_id()
+                                                                      , as_worker.get()->second
+                                                                      );
         }
         catch(WorkerNotFoundException const &)
         {
@@ -1141,7 +1142,9 @@ void GenericDaemon::handleSubmitJobAckEvent
       try
       {
         ptrJob->Dispatch();
-        scheduler().worker_manager().findWorker (worker->second)->acknowledge (pEvent->job_id());
+        scheduler().worker_manager().acknowledge_job_sent_to_worker ( pEvent->job_id()
+                                                                    , worker->second
+                                                                    );
       }
       catch(WorkerNotFoundException const &ex1)
       {

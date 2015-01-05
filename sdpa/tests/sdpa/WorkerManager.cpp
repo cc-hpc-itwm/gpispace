@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
   BOOST_REQUIRE (worker_id);
   BOOST_REQUIRE_EQUAL (*worker_id, worker_ids[0]);
 
-  ptrWorker->acknowledge (job_id);
+  worker_manager.acknowledge_job_sent_to_worker (job_id, worker_ids[0]);
   worker_id = worker_manager.findSubmOrAckWorker (job_id);
   BOOST_REQUIRE (worker_id);
   BOOST_REQUIRE_EQUAL (*worker_id, worker_ids[0]);
