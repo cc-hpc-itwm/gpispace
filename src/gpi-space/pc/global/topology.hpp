@@ -73,28 +73,10 @@ namespace gpi
         //    shutdown-requested()
         //       -> return: nil
 
-        struct child_t
-        {
-          child_t ()
-            : rank((gpi::rank_t)-1)
-            , last_signal(0)
-          {}
-
-          child_t (const gpi::rank_t r)
-            : rank (r)
-            , last_signal (0)
-          {}
-
-          gpi::rank_t rank;
-          fhg::com::p2p::address_t address;
-          time_t      last_signal;
-        };
-
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
         typedef boost::condition_variable_any condition_type;
         typedef boost::shared_ptr<fhg::com::peer_t> peer_ptr;
-        typedef std::map<gpi::rank_t, child_t> child_map_t;
 
         void message_received ( boost::system::error_code const &
                               , boost::optional<fhg::com::p2p::address_t>
@@ -123,9 +105,8 @@ namespace gpi
         mutable condition_type m_request_finished;
 
         bool m_shutting_down;
-        gpi::rank_t m_rank;
         peer_ptr   m_peer;
-        child_map_t m_children;
+        std::unordered_set<fhg::com::p2p::address_t> m_children;
         fhg::com::message_t m_incoming_msg;
 
         std::vector<boost::optional<std::string>> m_current_results;

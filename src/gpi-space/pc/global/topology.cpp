@@ -72,7 +72,6 @@ namespace gpi
                              , boost::shared_ptr<fhg::com::peer_t> const& peer
                              )
         : m_shutting_down (false)
-        , m_rank (gpi_api.rank())
         , m_peer (peer)
         , _gpi_api (gpi_api)
       {
@@ -95,17 +94,13 @@ namespace gpi
             continue;
           }
 
-          child_t new_child(rank);
-
-          new_child.address =
-            m_peer->connect_to_or_use_existing_connection
-              ( fhg::com::host_t (_gpi_api.hostname_of_rank (rank))
-              , fhg::com::port_t
-                  (std::to_string (_gpi_api.communication_port_of_rank (rank)))
-              );
-
-          lock_type lock(m_mutex);
-          m_children[rank] = new_child;
+          m_children.emplace
+            ( m_peer->connect_to_or_use_existing_connection
+                ( fhg::com::host_t (_gpi_api.hostname_of_rank (rank))
+                , fhg::com::port_t
+                    (std::to_string (_gpi_api.communication_port_of_rank (rank)))
+                )
+            );
         }
       }
 
@@ -119,7 +114,7 @@ namespace gpi
 
       bool topology_t::is_master () const
       {
-        return 0 == m_rank;
+        return 0 == _gpi_api.rank();
       }
 
       void topology_t::request (std::string const& name, std::string const& req)
@@ -129,9 +124,9 @@ namespace gpi
         lock_type result_list_lock (m_result_mutex);
         m_current_results.clear ();
 
-        for (child_map_t::value_type const& child : m_children)
+        for (fhg::com::p2p::address_t const& child : m_children)
         {
-          cast (child.second.address, req);
+          cast (child, req);
         }
 
         boost::system_time const timeout
@@ -267,10 +262,6 @@ namespace gpi
           {
             m_shutting_down = true;
           }
-        }
-        else
-        {
-          LOG(TRACE, "topology on " << m_rank << " is shutting down");
         }
       }
 
