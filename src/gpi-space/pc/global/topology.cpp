@@ -230,27 +230,12 @@ namespace gpi
         }
       }
 
-      void topology_t::message_sent ( child_t & child
-                                    , std::string const & data
-                                    , boost::system::error_code const & ec
-                                    )
+      void topology_t::message_sent (boost::system::error_code const& ec)
       {
         if (not m_shutting_down && ec)
         {
-          if (++child.error_counter > 10)
-          {
-            MLOG (ERROR, "exceeded error counter for rank " << child.rank);
-            m_peer->stop ();
-          }
-          else
-          {
-            usleep (child.error_counter * 200 * 1000);
-            cast (child, data);
-          }
-        }
-        else
-        {
-          child.error_counter = 0;
+          MLOG (ERROR, "failed sending a message: " << ec);
+          m_peer->stop ();
         }
       }
 
@@ -262,8 +247,6 @@ namespace gpi
                            , data
                            , std::bind ( &topology_t::message_sent
                                        , this
-                                       , child
-                                       , data
                                        , std::placeholders::_1
                                        )
                            );
@@ -276,8 +259,6 @@ namespace gpi
                            , data
                            , std::bind ( &topology_t::message_sent
                                        , this
-                                       , m_children.at (find_rank (address))
-                                       , data
                                        , std::placeholders::_1
                                        )
                            );

@@ -86,19 +86,16 @@ namespace gpi
           child_t ()
             : rank((gpi::rank_t)-1)
             , last_signal(0)
-            , error_counter(0)
           {}
 
           child_t (const gpi::rank_t r)
             : rank (r)
             , last_signal (0)
-            , error_counter (0)
           {}
 
           gpi::rank_t rank;
           fhg::com::p2p::address_t address;
           time_t      last_signal;
-          std::size_t error_counter;
         };
 
         gpi::rank_t find_rank (fhg::com::p2p::address_t) const;
@@ -113,10 +110,7 @@ namespace gpi
                               , boost::optional<fhg::com::p2p::address_t>
                               , memory::manager_t&
                               );
-        void message_sent ( child_t & child
-                          , std::string const & data
-                          , boost::system::error_code const &
-                          );
+        void message_sent (boost::system::error_code const&);
 
         void handle_message ( fhg::com::p2p::address_t const&
                             , const std::string &
