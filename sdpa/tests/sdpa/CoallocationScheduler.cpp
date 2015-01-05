@@ -163,7 +163,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, fixture_scheduler_and_requ
 
   BOOST_REQUIRE_EQUAL (count_assigned_jobs (assignment, "worker_0"), 2);
 
-  _scheduler.worker_manager().findWorker ("worker_1")->addCapabilities ({sdpa::capability_t ("C", "worker_1")});
+  _scheduler.worker_manager().add_worker_capabilities ("worker_1", {sdpa::capability_t ("C", "worker_1")});
   _scheduler.reschedule_pending_jobs_matching_worker ("worker_1");
 
   const sdpa::daemon::CoallocationScheduler::assignment_t

@@ -877,8 +877,8 @@ void GenericDaemon::handleCapabilitiesGainedEvent
       }
     }
 
-    bool bModified = scheduler().worker_manager().findWorker
-      (worker->second)->addCapabilities (workerCpbSet);
+    bool bModified (scheduler().worker_manager().add_worker_capabilities
+      (worker->second, workerCpbSet));
 
     if(bModified)
     {
