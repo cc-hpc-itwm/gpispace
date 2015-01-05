@@ -45,8 +45,6 @@ namespace gpi
                    );
         ~topology_t ();
 
-        void establish ();
-
         virtual bool is_master () const override;
 
         // initiate a global alloc
