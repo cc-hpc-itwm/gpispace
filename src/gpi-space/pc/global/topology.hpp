@@ -67,8 +67,6 @@ namespace gpi
                                 ) override;
         virtual void del_memory (const gpi::pc::type::segment_id_t seg_id) override;
       private:
-        void broadcast(const std::string & data);
-
         // signals
         //    alloc-requested(handle_t, offset, size)
         //       -> return: No, Yes, Defrag

@@ -131,7 +131,10 @@ namespace gpi
         lock_type result_list_lock (m_result_mutex);
         m_current_results.clear ();
 
-        broadcast (req);
+        for (child_map_t::value_type const& child : m_children)
+        {
+          cast (child.second.address, req);
+        }
 
         boost::system_time const timeout
           (boost::get_system_time()+boost::posix_time::seconds(30));
@@ -229,14 +232,6 @@ namespace gpi
                                        , std::placeholders::_1
                                        )
                            );
-      }
-
-      void topology_t::broadcast (const std::string &data)
-      {
-        for (child_map_t::value_type const & n : m_children)
-        {
-          cast(n.second.address, data);
-        }
       }
 
       /*
