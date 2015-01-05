@@ -438,22 +438,6 @@ namespace gpi
             LOG(WARN, "invalid command: '" << av[0] <<"'");
           }
       }
-
-      gpi::rank_t topology_t::find_rank (fhg::com::p2p::address_t address) const
-      {
-        decltype (m_children)::const_iterator child
-          ( std::find_if
-              ( m_children.cbegin(), m_children.cend()
-              , [&address] (decltype (m_children)::value_type const& elem)
-                {
-                  return elem.second.address == address;
-                }
-              )
-          );
-        return child != m_children.end()
-          ? child->first
-          : throw std::runtime_error ("find_rank (unknown address)");
-      }
     }
   }
 }

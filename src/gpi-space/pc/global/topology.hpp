@@ -98,8 +98,6 @@ namespace gpi
           time_t      last_signal;
         };
 
-        gpi::rank_t find_rank (fhg::com::p2p::address_t) const;
-
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
         typedef boost::condition_variable_any condition_type;
