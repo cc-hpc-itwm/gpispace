@@ -335,7 +335,6 @@ namespace gpi
           {
             std::unique_lock<std::mutex> const _ (m_result_mutex);
 
-            std::vector<std::string> const msg_vec (av.begin() + 2, av.end());
             m_current_results.emplace_back
               ( boost::make_optional
                   ( boost::lexical_cast<int> (av[1])
