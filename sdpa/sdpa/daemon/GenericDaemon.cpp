@@ -510,15 +510,8 @@ void GenericDaemon::handleErrorEvent
       if( isSubscriber(source) )
         unsubscribe(source);
 
-      try
+      if (as_worker)
       {
-        //! \todo express try-catch as if (!!as_worker)
-        if (!as_worker)
-        {
-          throw WorkerNotFoundException();
-        }
-
-        // notify capability losses...
         for (master_info_t::value_type const& info : _master_info)
         {
           if (info.second.address)
@@ -542,14 +535,14 @@ void GenericDaemon::handleErrorEvent
             pJob->Reschedule();
 
             if (!scheduler().cancelNotTerminatedWorkerJobs
-                  ( [this, &jobId](const sdpa::worker_id_t& wid)
-                  {
-                    child_proxy (this, address_by_worker (wid).get()->second)
-                      .cancel_job (jobId);
-                  }
-                  , jobId
-                  )
+              ( [this, &jobId](const sdpa::worker_id_t& wid)
+                {
+                  child_proxy (this, address_by_worker (wid).get()->second)
+                    .cancel_job (jobId);
+                }
+                , jobId
                 )
+              )
             {
               scheduler().releaseReservation (jobId);
               scheduler().enqueueJob (jobId);
@@ -561,15 +554,15 @@ void GenericDaemon::handleErrorEvent
         _worker_connections.right.erase (as_worker.get());
         request_scheduling();
       }
-      catch (WorkerNotFoundException const& /*ignored*/)
+      else
       {
         if (as_master)
         {
           as_master.get()->second.address = boost::none;
-
           request_registration_soon (as_master.get());
         }
       }
+
       break;
     }
     case events::ErrorEvent::SDPA_EJOBEXISTS:
