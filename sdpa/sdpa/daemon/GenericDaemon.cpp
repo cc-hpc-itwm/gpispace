@@ -572,20 +572,17 @@ void GenericDaemon::handleErrorEvent
       // Only now should be the job state machine make a transition to RUNNING
       // this means that the job was not rejected, no error occurred etc ....
       // find the job ptrJob and call
-      Job* ptrJob = findJob(*error.job_id());
-      if(ptrJob)
+      if (as_worker)
       {
-        try {
+        Job* ptrJob = findJob(*error.job_id());
+        if(ptrJob)
+        {
           ptrJob->Dispatch();
           scheduler().worker_manager().acknowledge_job_sent_to_worker ( *error.job_id()
                                                                       , as_worker.get()->second
                                                                       );
         }
-        catch(WorkerNotFoundException const &)
-        {
-        }
       }
-
       break;
     }
     default:
