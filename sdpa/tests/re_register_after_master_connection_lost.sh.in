@@ -34,7 +34,8 @@ orchestrator_1_startup_messages_raw=$(start-and-fork \
   --end-sentinel-value OKAY \
   --startup-messages-pipe-option --startup-messages-pipe \
   --command "$(which orchestrator)" \
-  --arguments --name "orchestrator"
+  --arguments --name "orchestrator" \
+  )
 
 old_IFS=${IFS}
 IFS=$'\n'
@@ -48,7 +49,8 @@ agent_startup_messages_raw=$(start-and-fork \
   --startup-messages-pipe-option --startup-messages-pipe \
   --command "$(which agent)" \
   --arguments --name "agent" \
-  --arguments --master "orchestrator%${orchestrator_1_startup_messages[1]}%${orchestrator_1_startup_messages[2]}"
+  --arguments --master "orchestrator%${orchestrator_1_startup_messages[1]}%${orchestrator_1_startup_messages[2]}" \
+  )
 
 old_IFS=${IFS}
 IFS=$'\n'
@@ -67,7 +69,8 @@ orchestrator_2_startup_messages_raw=$(start-and-fork \
   --startup-messages-pipe-option --startup-messages-pipe \
   --command "$(which orchestrator)" \
   --arguments --name "orchestrator" \
-  --arguments --url "localhost:${orchestrator_1_startup_messages[2]}"
+  --arguments --url "localhost:${orchestrator_1_startup_messages[2]}" \
+  )
 
 old_IFS=${IFS}
 IFS=$'\n'

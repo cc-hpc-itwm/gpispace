@@ -114,11 +114,14 @@ BOOST_FIXTURE_TEST_CASE (load_balancing, fixture_scheduler_and_requirements)
   const sdpa::daemon::CoallocationScheduler::assignment_t
     assignment (_scheduler.assignJobsToWorkers());
 
-  BOOST_REQUIRE_LE ( std::abs ( count_assigned_jobs (assignment, "worker_0")
-                              - count_assigned_jobs (assignment, "worker_1")
-                              )
-                   , 1
-                   );
+  unsigned long const assigned_to_worker_0
+    (count_assigned_jobs (assignment, "worker_0"));
+  unsigned long const assigned_to_worker_1
+    (count_assigned_jobs (assignment, "worker_1"));
+
+  BOOST_REQUIRE (  (assigned_to_worker_0 <= assigned_to_worker_1 + 1UL)
+                && (assigned_to_worker_1 <= assigned_to_worker_0 + 1UL)
+                );
 }
 
 BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, fixture_scheduler_and_requirements)
