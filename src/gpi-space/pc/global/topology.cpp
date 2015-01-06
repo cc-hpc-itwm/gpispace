@@ -342,6 +342,8 @@ namespace gpi
                   )
               );
             m_request_finished.notify_one();
+
+            return;
           }
           else
           {
