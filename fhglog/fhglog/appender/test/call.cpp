@@ -3,6 +3,8 @@
 #define BOOST_TEST_MODULE appender_call
 #include <boost/test/unit_test.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 #include <fhglog/appender/call.hpp>
 #include <fhglog/LogMacros.hpp>
 

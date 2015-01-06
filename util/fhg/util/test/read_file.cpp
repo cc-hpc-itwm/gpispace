@@ -3,6 +3,7 @@
 #define BOOST_TEST_MODULE read_file
 #include <boost/test/unit_test.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/read_file.hpp>
 
 #include <fhg/util/temporary_file.hpp>
@@ -13,7 +14,7 @@ namespace
 {
   void test (std::string const& content)
   {
-    boost::filesystem::path const path ("temporary_file");
+    boost::filesystem::path const path ("temporary_file-read_file");
 
     BOOST_REQUIRE (!boost::filesystem::exists (path));
 

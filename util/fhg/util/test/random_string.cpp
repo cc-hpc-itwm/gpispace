@@ -5,6 +5,7 @@
 
 #include <fhg/util/random_string.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/require_exception.hpp>
 
 #include <cmath>

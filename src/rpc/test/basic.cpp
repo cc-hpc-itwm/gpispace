@@ -6,6 +6,7 @@
 #include <rpc/client.hpp>
 
 #include <fhg/util/boost/asio/ip/address.hpp>
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/printer/tuple.hpp>
 #include <fhg/util/boost/test/require_exception.hpp>
 

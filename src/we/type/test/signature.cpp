@@ -14,6 +14,8 @@
 
 #include <we/exception.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 #include <sstream>
 #include <unordered_map>
 

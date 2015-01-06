@@ -4,6 +4,7 @@
 
 #include <plugin/core/kernel.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
+#include <fhg/util/print_exception.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/split.hpp>
 
@@ -19,6 +20,7 @@
 #include <vector>
 
 int main(int ac, char **av)
+try
 {
   boost::asio::io_service remote_log_io_service;
   FHGLOG_SETUP (remote_log_io_service);
@@ -102,11 +104,13 @@ int main(int ac, char **av)
   }
 
   fhg::util::signal_handler_manager signal_handlers;
+  fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
+    crit_error_handler (signal_handlers, logger);
 
-  signal_handlers.add_log_backtrace_and_exit_for_critical_errors (logger);
-
-  signal_handlers.add (SIGTERM, std::bind (request_stop));
-  signal_handlers.add (SIGINT, std::bind (request_stop));
+  fhg::util::scoped_signal_handler const SIGTERM_handler
+    (signal_handlers, SIGTERM, std::bind (request_stop));
+  fhg::util::scoped_signal_handler const SIGINT_handler
+    (signal_handlers, SIGINT, std::bind (request_stop));
 
   boost::asio::io_service peer_io_service;
   if (config_variables.count ("plugin.drts.gui_url"))
@@ -150,4 +154,9 @@ int main(int ac, char **av)
   }
 
   return 0;
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EX: ");
+  return 1;
 }

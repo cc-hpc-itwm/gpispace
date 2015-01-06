@@ -6,6 +6,8 @@
 
 #include <fhglog/LogMacros.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 #include <gpi-space/pc/memory/task.hpp>
 
 struct SetupLogging

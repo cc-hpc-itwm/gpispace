@@ -6,6 +6,8 @@
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 #include <test/make.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
 #include <test/scoped_state_directory.hpp>

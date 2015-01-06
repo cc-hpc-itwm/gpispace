@@ -9,6 +9,7 @@
 
 #include <fhg/revision.hpp>
 #include <fhg/util/first_then.hpp>
+#include <fhg/util/print_exception.hpp>
 
 enum {
     EXIT_INVALID_ARGUMENTS = EXIT_FAILURE,
@@ -58,7 +59,9 @@ namespace jpna
   }
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+try
+{
     namespace po = boost::program_options;
 
     std::vector<std::string> inputFiles;
@@ -157,4 +160,9 @@ int main(int argc, char *argv[]) {
     }
 
     return exitCode;
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EX: ");
+  return 1;
 }

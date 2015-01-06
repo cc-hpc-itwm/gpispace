@@ -8,6 +8,8 @@
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 BOOST_GLOBAL_FIXTURE (setup_logging)
 
 BOOST_AUTO_TEST_CASE (testCoallocationWorkflow)

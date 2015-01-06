@@ -9,9 +9,10 @@
 #include <we/type/value/show.hpp>
 
 #include <fhg/revision.hpp>
-#include <fhg/util/starts_with.hpp>
 #include <fhg/util/indenter.hpp>
+#include <fhg/util/print_exception.hpp>
 #include <fhg/util/read_bool.hpp>
+#include <fhg/util/starts_with.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
@@ -719,9 +720,9 @@ try
 
   return EXIT_SUCCESS;
 }
-catch (const std::exception& e)
+catch (...)
 {
-  std::cerr << e.what() << std::endl;
+  fhg::util::print_current_exception (std::cerr, "");
 
   return EXIT_FAILURE;
 }

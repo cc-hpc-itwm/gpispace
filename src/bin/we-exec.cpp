@@ -3,6 +3,7 @@
 #include <fhg/revision.hpp>
 #include <fhg/util/join.hpp>
 #include <fhg/util/make_unique.hpp>
+#include <fhg/util/print_exception.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/split.hpp>
 
@@ -176,8 +177,8 @@ try
   std::vector<std::function<void()>> request_stops (num_worker);
 
   fhg::util::signal_handler_manager signal_handlers;
-
-  signal_handlers.add_log_backtrace_and_exit_for_critical_errors (logger);
+  fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
+    crit_error_handler (signal_handlers, logger);
 
   std::mutex mutex_signal_manager;
 
@@ -199,12 +200,14 @@ try
           fhg::core::wait_until_stopped waiter;
           const std::function<void()> request_stop (waiter.make_request_stop());
 
-          {
-            std::unique_lock<std::mutex> const _ (mutex_signal_manager);
+          std::unique_lock<std::mutex> mutex_lock (mutex_signal_manager);
 
-            signal_handlers.add (SIGTERM, std::bind (request_stop));
-            signal_handlers.add (SIGINT, std::bind (request_stop));
-          }
+          fhg::util::scoped_signal_handler const SIGTERM_handler
+            (signal_handlers, SIGTERM, std::bind (request_stop));
+          fhg::util::scoped_signal_handler const SIGINT_handler
+            (signal_handlers, SIGINT, std::bind (request_stop));
+
+          mutex_lock.unlock();
 
           request_stops[num_worker] = request_stop;
 
@@ -301,8 +304,8 @@ try
 
   return rc;
 }
-catch (const std::exception& e)
+catch (...)
 {
-  std::cerr << e.what() << std::endl;
+  fhg::util::print_current_exception (std::cerr, "");
   return 1;
 }

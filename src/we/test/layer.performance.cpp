@@ -6,6 +6,7 @@
 
 #include <we/test/layer.common.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/now.hpp>
 
 #include <functional>

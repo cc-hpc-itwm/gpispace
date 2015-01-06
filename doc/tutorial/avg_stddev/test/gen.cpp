@@ -1,4 +1,6 @@
 
+#include <fhg/util/print_exception.hpp>
+
 #include <iostream>
 #include <string>
 #include <stdexcept>
@@ -11,6 +13,7 @@
 #include <writer.hpp>
 
 int main (int argc, char** argv)
+try
 {
   namespace po = boost::program_options;
 
@@ -66,10 +69,9 @@ int main (int argc, char** argv)
     po::store (po::parse_command_line(argc, argv, desc), vm);
     po::notify (vm);
   }
-  catch (const std::exception& ex)
+  catch (...)
   {
-    std::cerr << "invalid argument: " << ex.what() << std::endl;
-    return EXIT_FAILURE;
+    std::throw_with_nested (std::invalid_argument ("invalid argument"));
   }
 
   if (vm.count ("help"))
@@ -160,4 +162,9 @@ int main (int argc, char** argv)
   std::cerr << "number = " << number << std::endl;
   std::cerr << "mean = " << sum / number << std::endl;
   std::cerr << "sigma = " << (sqsum - sum * sum / number) / number << std::endl;
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EX: ");
+  return 1;
 }

@@ -11,9 +11,6 @@ namespace fhg
 {
   namespace rif
   {
-    //! \todo ensure thread safety: uses invocation specific global state
-    //!       for signal handling: let signal handler dispatch to correct
-    //!       invocation instead using a map or alike
     //! \note child shall not exit with >= 240: used for execve-error handling
     //! \note child shall send end_sentinel_value before closing pipe to
     //!       indicate success or close pipe / exit before opening pipe to

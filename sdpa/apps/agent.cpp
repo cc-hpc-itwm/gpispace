@@ -7,6 +7,7 @@
 #include <fhglog/LogMacros.hpp>
 
 #include <fhg/util/boost/asio/ip/address.hpp>
+#include <fhg/util/print_exception.hpp>
 
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
@@ -37,6 +38,7 @@ namespace
 }
 
 int main (int argc, char **argv)
+try
 {
   namespace validators = fhg::util::boost::program_options;
 
@@ -119,11 +121,13 @@ int main (int argc, char **argv)
     (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
 
   fhg::util::signal_handler_manager signal_handlers;
+  fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
+    crit_error_handler (signal_handlers, logger);
 
-  signal_handlers.add_log_backtrace_and_exit_for_critical_errors (logger);
-
-  signal_handlers.add (SIGTERM, std::bind (request_stop));
-  signal_handlers.add (SIGINT, std::bind (request_stop));
+  fhg::util::scoped_signal_handler const SIGTERM_handler
+    (signal_handlers, SIGTERM, std::bind (request_stop));
+  fhg::util::scoped_signal_handler const SIGINT_handler
+    (signal_handlers, SIGINT, std::bind (request_stop));
 
   {
     boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
@@ -138,4 +142,9 @@ int main (int argc, char **argv)
   }
 
   stop_requested.wait();
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EX: ");
+  return 1;
 }

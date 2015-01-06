@@ -4,6 +4,7 @@
                           time with multiple binaries
 
 #include <fhg/syscall.hpp>
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/printer/chrono.hpp>
 #include <fhg/util/getenv.hpp>
 #include <fhg/util/hostname.hpp>

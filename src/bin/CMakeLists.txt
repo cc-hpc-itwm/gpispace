@@ -1,15 +1,5 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-fhg_add_runtime_executable (vmem.cpp
-  LINK_LIBRARIES fhg-util
-                 gspc
-                 ${FhgLog_LIBRARY}
-                 ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_IOSTREAMS_LIBRARY}
-                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-)
-
 find_package (LibReadline REQUIRED QUIET)
 include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
 
@@ -45,6 +35,7 @@ fhg_add_runtime_executable (gpi-space.cpp
                  ${FhgLog_LIBRARY}
                  ${CMAKE_THREAD_LIBS_INIT}
                  ${Boost_FILESYSTEM_LIBRARY}
+                 ${Boost_IOSTREAMS_LIBRARY}
                  ${Boost_SERIALIZATION_LIBRARY}
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}

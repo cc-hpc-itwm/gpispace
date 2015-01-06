@@ -3,6 +3,8 @@
 
 #include <sysexits.h>
 
+#include <fhg/util/print_exception.hpp>
+
 //! \todo eliminate this include (that completes type transition_t::data)
 #include <we/type/net.hpp>
 #include <we/type/activity.hpp>
@@ -97,8 +99,7 @@ struct output_port_and_token
   std::string delim;
 };
 
-int
-main (int argc, char ** argv)
+int main (int argc, char ** argv)
 try
 {
   std::string input ("-");
@@ -257,8 +258,8 @@ try
 
   return EX_OK;
 }
-catch (const std::exception& e)
+catch (...)
 {
-  std::cerr << e.what() << std::endl;
+  fhg::util::print_current_exception (std::cerr, "");
   return EXIT_FAILURE;
 }

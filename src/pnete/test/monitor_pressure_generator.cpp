@@ -2,6 +2,7 @@
 //! \note This "test" does not test anything, but is a pressure-generator for sdpa-gui only.
 
 #include <fhglog/LogMacros.hpp>
+#include <fhg/util/print_exception.hpp>
 #include <cstdlib>
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
@@ -83,6 +84,7 @@ std::string worker_gen()
 }
 
 int main(int ac, char **av)
+try
 {
   if (ac < 3)
   {
@@ -132,4 +134,9 @@ int main(int ac, char **av)
   boost::this_thread::sleep (boost::posix_time::seconds (2));
 
   return 0;
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EX: ");
+  return 1;
 }

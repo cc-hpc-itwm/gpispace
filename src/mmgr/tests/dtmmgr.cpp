@@ -5,6 +5,8 @@
 
 #include <mmgr/dtmmgr.h>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 namespace
 {
   void fMemmove ( const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc

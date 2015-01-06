@@ -18,8 +18,6 @@
 #include <mutex>
 #include <system_error>
 
-#include <signal.h>
-
 namespace fhg
 {
   namespace rif
@@ -145,14 +143,6 @@ namespace fhg
 
         return envp;
       }
-
-      std::mutex GLOBAL_signal_handler_mutex;
-      std::function<void (siginfo_t*)> GLOBAL_signal_handler;
-      void GLOBAL_forwarding_signal_handler (int, siginfo_t* info, void*)
-      {
-        std::unique_lock<std::mutex> const _ (GLOBAL_signal_handler_mutex);
-        GLOBAL_signal_handler (info);
-      }
     }
 
     std::pair<pid_t, std::vector<std::string>> execute_and_get_startup_messages
@@ -163,34 +153,8 @@ namespace fhg
       , std::unordered_map<std::string, std::string> const& environment
       )
     {
-      boost::optional<std::pair<bool, int>> child_status;
-
       int pipe_fds[2];
       fhg::syscall::pipe (pipe_fds);
-
-      struct sigaction old_sigact;
-
-      GLOBAL_signal_handler =
-        [&child_status, &pipe_fds] (siginfo_t* sig_info)
-        {
-          if (  sig_info->si_code != CLD_EXITED
-             && sig_info->si_code != CLD_KILLED
-             && sig_info->si_code != CLD_DUMPED
-             )
-          {
-            return;
-          }
-
-          child_status = std::make_pair
-            (sig_info->si_code == CLD_EXITED, sig_info->si_status);
-        };
-      {
-        struct sigaction sigact;
-        memset (&sigact, 0, sizeof (sigact));
-        sigact.sa_sigaction = GLOBAL_forwarding_signal_handler;
-        sigact.sa_flags = SA_RESTART | SA_SIGINFO;
-        fhg::syscall::sigaction (SIGCHLD, &sigact, &old_sigact);
-      }
 
       pid_t const pid (fhg::syscall::fork());
 
@@ -208,55 +172,54 @@ namespace fhg
           messages.emplace_back (std::move (line));
         }
 
+        if (line != end_sentinel_value)
         {
-          fhg::syscall::sigaction (SIGCHLD, &old_sigact, nullptr);
-          std::unique_lock<std::mutex> const _ (GLOBAL_signal_handler_mutex);
-          GLOBAL_signal_handler = nullptr;
-        }
-
-        if (line != end_sentinel_value || child_status)
-        {
-          if (!child_status)
+          int child_status (0);
+          if (fhg::syscall::waitpid (pid, &child_status, WNOHANG) == pid)
           {
-            throw std::runtime_error ("pipe closed before end-sentinel-value read");
+            if (WIFSIGNALED (child_status))
+            {
+              throw std::runtime_error
+                ("child signalled: " + std::to_string (WTERMSIG (child_status)));
+            }
+            else if (WIFEXITED (child_status))
+            {
+              switch (WEXITSTATUS (child_status))
+              {
+              case 241:
+                throw std::system_error
+                  (std::make_error_code (std::errc::argument_list_too_long));
+              case 242:
+                throw std::system_error
+                  (std::make_error_code (std::errc::filename_too_long));
+              case 243:
+                throw std::system_error
+                  (std::make_error_code (std::errc::invalid_argument));
+              case 244:
+                throw std::system_error
+                  (std::make_error_code (std::errc::no_such_file_or_directory));
+              case 245:
+                throw std::system_error
+                  (std::make_error_code (std::errc::not_a_directory));
+              case 246:
+                throw std::system_error
+                  (std::make_error_code (std::errc::permission_denied));
+              case 247:
+                throw std::system_error
+                  (std::make_error_code (std::errc::too_many_symbolic_link_levels));
+              case 240:
+                throw std::runtime_error
+                  ("execve failed: unknown error");
+              default:
+                throw std::runtime_error
+                  ("child exited: " + std::to_string (WEXITSTATUS (child_status)));
+              }
+            }
+            //! \note can't really happen, but just fall through to
+            //! generic exception
           }
 
-          if (!child_status->first)
-          {
-            throw std::runtime_error
-              ("child signalled: " + std::to_string (child_status->second));
-          }
-
-          switch (child_status->second)
-          {
-          case 241:
-            throw std::system_error
-              (std::make_error_code (std::errc::argument_list_too_long));
-          case 242:
-            throw std::system_error
-              (std::make_error_code (std::errc::filename_too_long));
-          case 243:
-            throw std::system_error
-              (std::make_error_code (std::errc::invalid_argument));
-          case 244:
-            throw std::system_error
-              (std::make_error_code (std::errc::no_such_file_or_directory));
-          case 245:
-            throw std::system_error
-              (std::make_error_code (std::errc::not_a_directory));
-          case 246:
-            throw std::system_error
-              (std::make_error_code (std::errc::permission_denied));
-          case 247:
-            throw std::system_error
-              (std::make_error_code (std::errc::too_many_symbolic_link_levels));
-         case 240:
-            throw std::runtime_error
-              ("execve failed: unknown error");
-         default:
-            throw std::runtime_error
-              ("child exited: " + std::to_string (child_status->second));
-          }
+          throw std::runtime_error ("pipe closed before end-sentinel-value read");
         }
 
         return {pid, std::move (messages)};

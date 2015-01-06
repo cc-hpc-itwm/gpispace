@@ -1,5 +1,7 @@
 // alexander.petry@itwm.fraunhofer.de
 
+#include <fhg/util/print_exception.hpp>
+
 #include <fhglog/appender/stream.hpp>
 #include <fhglog/LogMacros.hpp>
 #include <fhglog/format.hpp>
@@ -97,9 +99,8 @@ try
 
   return 0;
 }
-catch (const std::exception& e)
+catch (...)
 {
-  std::cerr << "Exception occured: " << e.what() << std::endl;
-
+  fhg::util::print_current_exception (std::cerr, "Exception occured: ");
   return EXIT_FAILURE;
 }

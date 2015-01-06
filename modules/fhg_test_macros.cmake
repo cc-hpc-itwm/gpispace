@@ -18,11 +18,9 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/bin/pnetget"
   "${CMAKE_INSTALL_PREFIX}/bin/pnetput"
   "${CMAKE_INSTALL_PREFIX}/bin/pnetv"
-  "${CMAKE_INSTALL_PREFIX}/bin/sdpa"
   "${CMAKE_INSTALL_PREFIX}/bin/sdpa-gui"
   "${CMAKE_INSTALL_PREFIX}/bin/sdpac"
   "${CMAKE_INSTALL_PREFIX}/bin/un.xosview"
-  "${CMAKE_INSTALL_PREFIX}/bin/vmem"
   "${CMAKE_INSTALL_PREFIX}/bin/we-exec"
   "${CMAKE_INSTALL_PREFIX}/etc/sdpa/sdpa.env"
   "${CMAKE_INSTALL_PREFIX}/external/boost/include/boost/version.hpp"
@@ -91,14 +89,11 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/lib/libwfhd.so.1"
   "${CMAKE_INSTALL_PREFIX}/libexec/fhg/plugins/gpi.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/fhg/plugins/gpi_compat.so"
-  "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/apps/selftest/selftest.xml"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libdetermine_size.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libdo_load.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libdo_write.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libprocess.so"
-  "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/scripts/sdpa-selftest"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/scripts/start-drts"
-  "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/scripts/start-sdpa"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/make/common.mk"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/4.xml"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/5.xml"
@@ -138,7 +133,7 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/xsd/schemas.xml"
 )
 
-set (TEST_VMEM_PORT_COUNTER 10820)
+set (TEST_VMEM_PORT_COUNTER 10820 CACHE INTERNAL "counter for vmem-port")
 set (TEST_VMEM_PORTS_PER_TEST 100)
 
 macro(FHG_ADD_TEST)
@@ -165,8 +160,11 @@ macro(FHG_ADD_TEST)
 
     if (TEST_REQUIRES_VIRTUAL_MEMORY)
       set (TEST_ARGS ${TEST_ARGS} --virtual-memory-port ${TEST_VMEM_PORT_COUNTER})
-      math (EXPR TEST_VMEM_PORT_COUNTER
+      math (EXPR TEST_VMEM_PORT_COUNTER_TMP
                  "${TEST_VMEM_PORT_COUNTER} + ${TEST_VMEM_PORTS_PER_TEST}"
+      )
+      set (TEST_VMEM_PORT_COUNTER ${TEST_VMEM_PORT_COUNTER_TMP}
+        CACHE INTERNAL "NOTE: yep, cmake requires this temporary"
       )
     endif()
 

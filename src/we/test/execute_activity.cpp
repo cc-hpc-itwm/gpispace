@@ -18,6 +18,8 @@
 #include <we/type/expression.fwd.hpp>
 #include <we/type/net.fwd.hpp>
 
+#include <fhg/util/print_exception.hpp>
+
 using we::edge::PT;
 using we::edge::PT_READ;
 using we::edge::TP;
@@ -137,6 +139,7 @@ struct exec_context : public we::context
 };
 
 int main (int ac, char ** av)
+try
 {
   if (ac < 2)
   {
@@ -162,4 +165,9 @@ int main (int ac, char ** av)
   }
 
   return EXIT_SUCCESS;
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EX: ");
+  return EXIT_FAILURE;
 }

@@ -31,7 +31,7 @@ fhg_add_test (test_segment.cpp
                  fhg-util
 )
 
-fhg_add_test (test_sfs_area.cpp dummy_topology.cpp
+fhg_add_test (test_sfs_area.cpp
   PROJECT gpi-space
   BOOST_UNIT_TEST
   LINK_LIBRARIES gpi-space-pc-segment

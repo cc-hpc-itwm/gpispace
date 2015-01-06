@@ -2,6 +2,7 @@
 #include <pnete/ui/log_monitor.hpp>
 
 #include <fhg/revision.hpp>
+#include <fhg/util/print_exception.hpp>
 
 #include <QApplication>
 #include <QTabWidget>
@@ -10,6 +11,7 @@
 #include <iostream>
 
 int main (int ac, char *av[])
+try
 {
   if (ac < 2)
   {
@@ -37,4 +39,9 @@ int main (int ac, char *av[])
   window.show();
 
   return a.exec();
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EX: ");
+  return 1;
 }

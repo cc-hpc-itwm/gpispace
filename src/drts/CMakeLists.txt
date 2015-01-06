@@ -21,17 +21,18 @@ add_library (gspc SHARED
   drts.cpp
   information_to_reattach.cpp
   private/option.cpp
-  private/rif.cpp
-  private/vmem.cpp
+  private/startup_and_shutdown.cpp
   stream.cpp
   virtual_memory.cpp
 )
 target_link_libraries (gspc
   sdpa
+  rif
   pnet
   gpi-space-pc-client-static
   gpi-space-pc-segment
   ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_REGEX_LIBRARY}
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
 )
 

@@ -2,6 +2,8 @@
 
 #include <fhg/revision.hpp>
 
+#include <fhg/util/print_exception.hpp>
+
 #include <we/expr/parse/parser.hpp>
 #include <we/type/activity.hpp>
 //! \todo eliminate this include (that completes type transition_t::data)
@@ -16,7 +18,8 @@
 #include <fstream>
 #include <iostream>
 
-int main (int argc, char** argv) try
+int main (int argc, char** argv)
+try
 {
   namespace po = boost::program_options;
 
@@ -108,8 +111,8 @@ int main (int argc, char** argv) try
 
   return EXIT_SUCCESS;
 }
-catch (const std::exception& e)
+catch (...)
 {
-  std::cerr << e.what() << std::endl;
+  fhg::util::print_current_exception (std::cerr, "");
   return EXIT_FAILURE;
 }

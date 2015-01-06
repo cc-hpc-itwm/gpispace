@@ -2,6 +2,8 @@
 
 #include <utils.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 #include <boost/test/unit_test.hpp>
 
 BOOST_GLOBAL_FIXTURE (setup_logging)

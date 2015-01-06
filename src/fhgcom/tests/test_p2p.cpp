@@ -4,6 +4,8 @@
 #include <fhgcom/header.hpp>
 #include <fhgcom/tests/address_printer.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 BOOST_AUTO_TEST_CASE ( test_address )
 {
   BOOST_CHECK_EQUAL (16ul, sizeof (fhg::com::p2p::address_t));

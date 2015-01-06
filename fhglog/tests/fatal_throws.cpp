@@ -3,6 +3,8 @@
 #define BOOST_TEST_MODULE error_handler
 #include <boost/test/unit_test.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 BOOST_AUTO_TEST_CASE (exception_on_fatal)
 {
   std::string const msg ("testing FATAL throws");

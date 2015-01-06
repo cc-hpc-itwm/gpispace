@@ -15,13 +15,13 @@ namespace fhg
 {
   namespace util
   {
-    template<typename T, typename U>
-      inline std::list<U>
+    template<typename T, typename U, typename C = std::list<U>>
+      inline C
     split ( const T & x
           , const typename std::iterator_traits<typename T::const_iterator>::value_type & s
           )
     {
-      std::list<U> path;
+      C path;
       T key;
 
       for (typename T::const_iterator pos (x.begin()); pos != x.end(); ++pos)

@@ -10,6 +10,7 @@
 
 #include <we/type/value/boost/test/printer.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/require_exception.hpp>
 
 BOOST_AUTO_TEST_CASE (fresh_has_empty_search_path)

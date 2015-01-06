@@ -4,6 +4,7 @@
 
 #include <fhg/util/boost/program_options/validators.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
+#include <fhg/util/print_exception.hpp>
 #include <fhg/util/split.hpp>
 
 #include <boost/any.hpp>
@@ -130,8 +131,8 @@ try
 
   return 0;
 }
-catch (std::exception const& ex)
+catch (...)
 {
-  std::cerr << "EXCEPTION: " << ex.what() << std::endl;
+  fhg::util::print_current_exception (std::cerr, "EXCEPTION: ");
   return 1;
 }

@@ -11,6 +11,7 @@
 #include <fhglog/appender/stream.hpp>
 
 #include <fhg/util/getenv.hpp>
+#include <fhg/util/print_exception.hpp>
 #include <fhg/util/split.hpp>
 
 #include <sdpa/job_states.hpp>
@@ -243,7 +244,9 @@ namespace
   }
 }
 
-int main (int argc, char **argv) {
+int main (int argc, char **argv)
+try
+{
   const std::string name(argv[0]);
 
   NewConfig cfg;
@@ -345,8 +348,6 @@ int main (int argc, char **argv) {
     if (lvl > 1) fhg::log::Logger::get()->setLevel(fhg::log::TRACE);
   }
 
-  try
-  {
     fhg::log::Logger::ptr_t logger (fhg::log::Logger::get ("sdpac"));
 
     const std::string &command(cfg.get("command"));
@@ -502,10 +503,9 @@ int main (int argc, char **argv) {
       std::cerr << "unknown command: " << command << std::endl;
       return (ERR_USAGE);
     }
-  }
-  catch (std::exception const &ex)
-  {
-    std::cerr << "sdpac: failed: " << ex.what() << std::endl;
-    return UNKNOWN_ERROR;
-  }
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "sdpac: failed: ");
+  return UNKNOWN_ERROR;
 }
