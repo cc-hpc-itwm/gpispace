@@ -852,49 +852,43 @@ void GenericDaemon::handleCapabilitiesGainedEvent
         (worker_by_address (source), "capabilities_gained for unknown worker")
     );
 
-  try
+  sdpa::capabilities_set_t workerCpbSet;
+
+  for (const sdpa::capability_t& cpb : pCpbGainEvt->capabilities() )
   {
-    sdpa::capabilities_set_t workerCpbSet;
-
-    for (const sdpa::capability_t& cpb : pCpbGainEvt->capabilities() )
+    // own capabilities have always the depth 0
+    if( !isOwnCapability(cpb) )
     {
-      // own capabilities have always the depth 0
-      if( !isOwnCapability(cpb) )
-      {
-        sdpa::capability_t cpbMod(cpb);
-        cpbMod.incDepth();
-        workerCpbSet.insert(cpbMod);
-      }
+      sdpa::capability_t cpbMod(cpb);
+      cpbMod.incDepth();
+      workerCpbSet.insert(cpbMod);
     }
+  }
 
-    bool bModified (scheduler().worker_manager().add_worker_capabilities
-      (worker->second, workerCpbSet));
+  bool bModified (scheduler().worker_manager().add_worker_capabilities
+    (worker->second, workerCpbSet));
 
-    if(bModified)
+  if(bModified)
+  {
+    scheduler().reschedule_pending_jobs_matching_worker (worker->second);
+    request_scheduling();
+    if( !isTop() )
     {
-      scheduler().reschedule_pending_jobs_matching_worker (worker->second);
-      request_scheduling();
-      if( !isTop() )
-      {
-        const sdpa::capabilities_set_t newWorkerCpbSet
-          (scheduler().worker_manager().worker_capabilities (worker->second));
+      const sdpa::capabilities_set_t newWorkerCpbSet
+        (scheduler().worker_manager().worker_capabilities (worker->second));
 
-        if( !newWorkerCpbSet.empty() )
+      if( !newWorkerCpbSet.empty() )
+      {
+        for (master_info_t::value_type const& info : _master_info)
         {
-          for (master_info_t::value_type const& info : _master_info)
+          if (info.second.address)
           {
-            if (info.second.address)
-            {
-              parent_proxy (this, *info.second.address).capabilities_gained
-                (newWorkerCpbSet);
-            }
+            parent_proxy (this, *info.second.address).capabilities_gained
+              (newWorkerCpbSet);
           }
         }
       }
     }
-  }
-  catch( const WorkerNotFoundException& ex )
-  {
   }
 }
 
@@ -908,24 +902,19 @@ void GenericDaemon::handleCapabilitiesLostEvent
         (worker_by_address (source), "capabilities_lost for unknown worker")
     );
 
-  try {
-    if (scheduler().worker_manager().remove_worker_capabilities ( worker->second
-                                                                , pCpbLostEvt->capabilities()
-                                                                )
-       )
+  if (scheduler().worker_manager().remove_worker_capabilities ( worker->second
+                                                              , pCpbLostEvt->capabilities()
+                                                              )
+     )
+  {
+    for (master_info_t::value_type const& info : _master_info)
     {
-      for (master_info_t::value_type const& info : _master_info)
+      if (info.second.address)
       {
-        if (info.second.address)
-        {
-          parent_proxy (this, *info.second.address).capabilities_lost
-            (pCpbLostEvt->capabilities());
-        }
+        parent_proxy (this, *info.second.address).capabilities_lost
+          (pCpbLostEvt->capabilities());
       }
     }
-  }
-  catch( const WorkerNotFoundException& ex)
-  {
   }
 }
 
