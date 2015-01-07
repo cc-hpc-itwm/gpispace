@@ -468,6 +468,8 @@ namespace fhg
         throw std::invalid_argument ("hostfile empty");
       }
 
+      boost::filesystem::create_directories (state_dir);
+
       boost::filesystem::path const uniqued_nodefile (state_dir / "nodefile");
       {
         std::ofstream uniqued_nodefile_stream (uniqued_nodefile.string());
@@ -487,8 +489,6 @@ namespace fhg
           + std::to_string (hosts.size())
           );
       }
-
-      boost::filesystem::create_directories (state_dir);
 
       boost::filesystem::path const log_dir (state_dir / "log");
       boost::filesystem::path const processes_dir (state_dir / "processes");
