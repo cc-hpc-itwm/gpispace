@@ -4,7 +4,6 @@
 #define SDPA_DAEMON_WORKER_MANAGER_HPP 1
 
 #include <sdpa/daemon/Worker.hpp>
-#include <sdpa/daemon/exceptions.hpp>
 #include <sdpa/job_requirements.hpp>
 
 #include <boost/optional.hpp>

@@ -33,7 +33,6 @@
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
 #include <sdpa/events/put_token.hpp>
 #include <sdpa/id_generator.hpp>
-#include <sdpa/daemon/exceptions.hpp>
 
 #include <fhg/util/boost/optional.hpp>
 #include <fhg/util/hostname.hpp>
