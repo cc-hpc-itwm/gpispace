@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE (delete_worker)
   BOOST_REQUIRE (worker_manager.hasWorker(worker_ids[0]));
   BOOST_REQUIRE (!worker_manager.hasWorker(worker_ids[1]));
 
-  BOOST_REQUIRE_THROW (worker_manager.deleteWorker (worker_ids[2]), std::runtime_error);
+  BOOST_REQUIRE(!worker_manager.deleteWorker (worker_ids[2]));
 }
 
 BOOST_AUTO_TEST_CASE (get_capabilities)

@@ -33,7 +33,7 @@ namespace sdpa
                      , const std::string& hostname
                      );
 
-      void deleteWorker (const worker_id_t& workerId);
+      bool deleteWorker (const worker_id_t& workerId);
 
       void getCapabilities (sdpa::capabilities_set_t& cpbset) const;
 
