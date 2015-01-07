@@ -1113,27 +1113,18 @@ void GenericDaemon::handleSubmitJobAckEvent
   Job* ptrJob = findJob(pEvent->job_id());
   if(ptrJob)
   {
-      if(ptrJob->getStatus() == sdpa:: status::CANCELING)
-        return;
+    if(ptrJob->getStatus() == sdpa:: status::CANCELING)
+      return;
 
-      decltype (_worker_connections.right)::iterator const worker
-        ( fhg::util::boost::get_or_throw<std::runtime_error>
-          (worker_by_address (source), "submit_job_ack for unknown worker")
-        );
+    decltype (_worker_connections.right)::iterator const worker
+      ( fhg::util::boost::get_or_throw<std::runtime_error>
+         (worker_by_address (source), "submit_job_ack for unknown worker")
+      );
 
-      try
-      {
-        ptrJob->Dispatch();
-        scheduler().worker_manager().acknowledge_job_sent_to_worker ( pEvent->job_id()
-                                                                    , worker->second
-                                                                    );
-      }
-      catch(WorkerNotFoundException const &ex1)
-      {
-        // the worker should register first, before posting a job request
-        events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(events::ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
-        sendEventToOther (worker->first, pErrorEvt);
-      }
+    ptrJob->Dispatch();
+    scheduler().worker_manager().acknowledge_job_sent_to_worker ( pEvent->job_id()
+                                                                , worker->second
+                                                                );
   }
   else
   {
