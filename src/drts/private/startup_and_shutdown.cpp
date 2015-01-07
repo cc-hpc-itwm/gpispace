@@ -473,9 +473,32 @@ namespace fhg
       boost::filesystem::path const uniqued_nodefile (state_dir / "nodefile");
       {
         std::ofstream uniqued_nodefile_stream (uniqued_nodefile.string());
+
+        if (!uniqued_nodefile_stream)
+        {
+          throw std::runtime_error
+            ( ( boost::format ("Could not create nodefile %1%: %2%")
+              % uniqued_nodefile
+              % strerror (errno)
+              )
+            . str()
+            );
+        }
+
         for (std::string const& host : hosts)
         {
           uniqued_nodefile_stream << host << "\n";
+        }
+
+        if (!uniqued_nodefile_stream)
+        {
+          throw std::runtime_error
+            ( ( boost::format ("Could not write to nodefile %1%: %2%")
+              % uniqued_nodefile
+              % strerror (errno)
+              )
+            . str()
+            );
         }
       }
 
