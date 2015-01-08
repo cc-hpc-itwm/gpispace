@@ -11,8 +11,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/bin/pnet2dot"
   "${CMAKE_INSTALL_PREFIX}/bin/pnetc"
   "${CMAKE_INSTALL_PREFIX}/bin/pnete"
-  "${CMAKE_INSTALL_PREFIX}/bin/pnetget"
-  "${CMAKE_INSTALL_PREFIX}/bin/pnetput"
   "${CMAKE_INSTALL_PREFIX}/bin/pnetv"
   "${CMAKE_INSTALL_PREFIX}/bin/sdpa-gui"
   "${CMAKE_INSTALL_PREFIX}/bin/sdpac"

@@ -58,10 +58,6 @@ ifndef PNET2DOT
   PNET2DOT := $(SDPA_BIN)/pnet2dot
 endif
 
-ifndef PNETPUT
-  PNETPUT := $(SDPA_BIN)/pnetput
-endif
-
 ifndef PNETV
   PNETV := $(SDPA_BIN)/pnetv
 endif
@@ -113,14 +109,6 @@ ifndef NET_VALIDATION
     $(error variable XML undefined but needed to derive variable NET_VALIDATION)
   else
     NET_VALIDATION := $(NET).validation
-  endif
-endif
-
-ifndef PUT
-  ifndef MAIN
-    $(error variable MAIN undefined but needed to derive variable PUT)
-  else
-    PUT := $(NET).put
   endif
 endif
 
@@ -229,9 +217,6 @@ PNETC_NOINLINE += --synthesize-virtual-places true
 
 PNETC_LIST_DEPENDENCIES := $(PNETC) --list-dependencies /dev/stdout
 
-PNETPUT += $(addprefix -p ,$(PUT_PORT))
-PNETPUT += $(PNETPUT_OPTS)
-
 PNETV += $(PNETV_OPTS)
 
 # does not work for paths that contain spaces
@@ -242,17 +227,16 @@ XMLLINT += --schema $(SDPA_XML_SCHEMA)
 
 ###############################################################################
 
-.PHONY: default build dot ps svg net verify validate put gen lib
+.PHONY: default build dot ps svg net verify validate gen lib
 
 default: build
 
-build: put lib $(BUILD)
+build: lib $(BUILD)
 
 dot: $(DOT) $(DOT_NOINLINE)
 ps: $(PS) $(PS_NOINLINE)
 svg: $(SVG) $(SVG_NOINLINE)
 net: $(NET)
-put: $(PUT)
 gen: $(GEN)/Makefile
 verify: $(NET_VERIFICATION)
 validate: $(NET_VALIDATION)
@@ -279,9 +263,6 @@ $(NET): $(XML) $(DEP) | $(BUILDDIR)
 $(NET_NOINLINE): $(XML) $(DEP) | $(BUILDDIR)
 	$(PNETC_NOINLINE) -i $(XML) -o /dev/null -MP -MT $@ -MM $(NET_NOINLINE).d
 	$(PNETC_NOINLINE) -i $(XML) -o $@
-
-$(PUT): $(NET)
-	$(PNETPUT) --if $(NET) --of $(PUT)
 
 ###############################################################################
 
@@ -382,7 +363,6 @@ else
 clean: $(CLEAN)
 	-$(RM) -f -r $(GEN)
 	-$(RM) -f $(NET)
-	-$(RM) -f $(PUT)
 	-$(RM) -f $(NET_NOINLINE)
 	-$(RM) -f $(DOT)
 	-$(RM) -f $(DOT_NOINLINE)
@@ -408,10 +388,9 @@ endif
 help:
 	@echo "default      'build'"
 	@echo
-	@echo "build        'put' & 'lib' & run recipes for targets in BUILD"
+	@echo "build        'lib' & run recipes for targets in BUILD"
 	@echo
 	@echo "net          build pnet from xml"
-	@echo "put          'net' & put tokens into the workflow"
 	@echo
 	@echo "gen          generate code into gen"
 	@echo "lib          'gen' & build libs from code in gen"
@@ -470,7 +449,6 @@ showconfig:
 	@echo 'NET_NOINLINE     = $(NET_NOINLINE)'
 	@echo 'NET_VERIFICATION = $(NET_VERIFICATION)'
 	@echo 'NET_VALIDATION   = $(NET_VALIDATION)'
-	@echo 'PUT              = $(PUT)'
 	@echo 'GEN              = $(GEN)'
 	@echo 'OUT              = $(OUT)'
 	@echo 'DOT              = $(DOT)'
@@ -496,9 +474,6 @@ showconfig:
 	@echo 'PNETC_OPTS        = $(PNETC_OPTS)'
 	@echo 'PNETC_LINK_PREFIX = $(PNETC_LINK_PREFIX)'
 	@echo
-	@echo 'PUT_PORT          = $(PUT_PORT)'
-	@echo 'PNETPUT_OPTS      = $(PNETPUT_OPTS)'
-	@echo
 	@echo 'PNETV_OPTS        = $(PNETV_OPTS)'
 	@echo
 	@echo 'BUILD             = $(BUILD)'
@@ -512,7 +487,6 @@ showconfig:
 	@echo 'PNETC_NOINLINE          = $(PNETC_NOINLINE)'
 	@echo 'PNETC_LIST_DEPENDENCIES = $(PNETC_LIST_DEPENDENCIES)'
 	@echo 'PNET2DOT                = $(PNET2DOT)'
-	@echo 'PNETPUT                 = $(PNETPUT)'
 	@echo 'PNETV                   = $(PNETV)'
 	@echo 'SDPA                    = $(SDPA)'
 	@echo 'XMLLINT                 = $(XMLLINT)'
