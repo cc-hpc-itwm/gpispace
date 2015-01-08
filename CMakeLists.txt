@@ -127,7 +127,6 @@ set (FhgCom_LIBRARY fhgcom)
 set (FVM_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fvm-pc)
 
 set (PNETC_LIB_DIR "share/sdpa/xml/lib")
-set (PNETC_EXAMPLES_DIR "share/sdpa/xml/examples")
 set (SDPA_APPS_DIR "libexec/sdpa/apps")
 
 include (CTest)
