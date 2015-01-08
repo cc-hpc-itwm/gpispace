@@ -138,7 +138,6 @@ namespace gspc
       , get_virtual_memory_port (vm)
       );
 
-    // taken from pbs/sdpa and bin/sdpac
     //! \todo Remove magic: specify filenames instead of relying on
     //! file? Let an c++-ified sdpa-boot() return them.
     _orchestrator_host = fhg::util::read_file
