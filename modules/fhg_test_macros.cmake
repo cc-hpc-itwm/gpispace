@@ -6,7 +6,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/bin/drts-kernel"
   "${CMAKE_INSTALL_PREFIX}/bin/fhglog-dump"
   "${CMAKE_INSTALL_PREFIX}/bin/gpi-space"
-  "${CMAKE_INSTALL_PREFIX}/bin/gpish"
   "${CMAKE_INSTALL_PREFIX}/bin/gspcmonc"
   "${CMAKE_INSTALL_PREFIX}/bin/mk.xosview"
   "${CMAKE_INSTALL_PREFIX}/bin/orchestrator"

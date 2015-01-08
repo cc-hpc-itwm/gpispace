@@ -28,7 +28,6 @@ namespace gspc
       , std::string const& description
       )
     {
-      // taken from bin/gpish
       gpi::pc::type::segment_id_t const segment_id (1);
 
       gpi::pc::type::handle_id_t handle_id

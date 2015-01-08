@@ -3,25 +3,6 @@
 find_package (LibReadline REQUIRED QUIET)
 include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
 
-fhg_add_runtime_executable (gpish.cpp
-  LINK_LIBRARIES gpi-space-pc-client-static
-                 gpi-space-pc-segment
-                 ${LibReadline_LIBRARY}
-                 ${FhgLog_LIBRARY}
-                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
-                 ${Boost_SERIALIZATION_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
-                 ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-                 ${CMAKE_THREAD_LIBS_INIT}
-                 fhg-revision
-)
-
-set_target_properties (gpish
-  PROPERTIES
-  INSTALL_RPATH "${CMAKE_INSTALL_RPATH}"
-)
-
 fhg_add_runtime_executable (gpi-space.cpp
   LINK_LIBRARIES gpi-space-gpiapi
                  gpi-space-pc-container
