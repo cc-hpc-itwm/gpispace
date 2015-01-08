@@ -1,21 +1,19 @@
 
 include_directories (src)
-include_directories (src/filehandler)
-include_directories (src/utils)
 
 add_library(determine_size SHARED
             ./src/determine_size.cpp
-            ./src/utils/swap_bytes.cpp
+            ./src/swap_bytes.cpp
            )
 
 add_library(do_load SHARED
             ./src/do_load.cpp
-            ./src/utils/swap_bytes.cpp
+            ./src/swap_bytes.cpp
            )
 
 add_library(do_write SHARED
             ./src/do_write.cpp
-            ./src/utils/swap_bytes.cpp
+            ./src/swap_bytes.cpp
            )
 
 install(FILES src/do_load.hpp src/determine_size.hpp src/do_write.hpp
