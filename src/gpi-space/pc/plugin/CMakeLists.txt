@@ -10,7 +10,6 @@ fhg_add_plugin(gpi gpi.cpp
     ${Boost_SERIALIZATION_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
   INSTALL
-  HEADERS gpi.hpp
 )
 
 fhg_add_plugin(gpi_compat gpi_compat.cpp
