@@ -8,7 +8,7 @@ fhg_add_test (drts_should_handle_multiple_workflows_being_submitted_during_lifet
   PROJECT sdpa_test
   BOOST_UNIT_TEST
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_SOURCE_DIR}/share/selftest/xml"
+       --source-directory "${CMAKE_SOURCE_DIR}/share/selftest"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
   LINK_LIBRARIES gspc
                  test-utilities
