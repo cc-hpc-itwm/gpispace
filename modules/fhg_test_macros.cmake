@@ -37,7 +37,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/fhglog/Logger.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/fhglog/event.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/fhglog/level.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/fvm-pc/pc.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/pnete/plugin/plugin_api.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/pnete/plugin/plugin_base.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/process/process.hpp"

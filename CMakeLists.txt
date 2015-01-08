@@ -132,7 +132,6 @@ set (SDPA_APPS_DIR "libexec/sdpa/apps")
 
 include (CTest)
 add_subdirectory (fhglog)
-add_subdirectory (fvm-pc)
 add_subdirectory (util)
 add_subdirectory (application)
 add_subdirectory (src)
