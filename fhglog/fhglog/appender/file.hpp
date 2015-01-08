@@ -34,6 +34,8 @@ namespace fhg
      virtual void append (const LogEvent&) override;
 
    private:
+     std::string const _path;
+     std::ios_base::openmode const _mode;
      std::ofstream _stream;
      std::string const _format;
      int const _flush_interval;

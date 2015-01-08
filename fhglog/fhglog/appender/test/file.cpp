@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE (throw_on_unwritable_file)
   BOOST_REQUIRE_THROW
     (fhg::log::FileAppender ( "/non-existing-dir/test.log"
                             ,  fhg::log::default_format::LONG()
-                            )
+                            ).append (fhg::log::LogEvent())
     , std::exception
     );
 }
