@@ -5,7 +5,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/bin/agent"
   "${CMAKE_INSTALL_PREFIX}/bin/drts-kernel"
   "${CMAKE_INSTALL_PREFIX}/bin/fhglog-dump"
-  "${CMAKE_INSTALL_PREFIX}/bin/fhglogd"
   "${CMAKE_INSTALL_PREFIX}/bin/gpi-space"
   "${CMAKE_INSTALL_PREFIX}/bin/gpish"
   "${CMAKE_INSTALL_PREFIX}/bin/gspcmonc"
