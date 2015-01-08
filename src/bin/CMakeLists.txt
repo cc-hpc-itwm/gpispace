@@ -51,24 +51,6 @@ install (TARGETS gpi-space
   DESTINATION bin
 )
 
-
-fhg_add_runtime_executable (
-  we-exec.cpp
-  LINK_LIBRARIES fhg-revision
-                 pnet
-                 we-dev # for the client only
-                 fhg-plugin
-                 sdpa
-                 fake-drts-kernel-plugin
-                 ${FhgLog_LIBRARY}
-                 ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
-                 ${Boost_SERIALIZATION_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-                 ${CMAKE_DL_LIBS}
-)
-
 fhg_add_runtime_executable (
   pnetget.cpp
   LINK_LIBRARIES fhg-revision

@@ -66,18 +66,6 @@ ifndef PNETV
   PNETV := $(SDPA_BIN)/pnetv
 endif
 
-ifndef WE_EXEC_CMD
-  WE_EXEC_CMD := $(SDPA_BIN)/we-exec
-endif
-
-ifndef WE_EXEC_WORKER
-  WE_EXEC_WORKER := 2
-endif
-
-ifndef WE_EXEC_OUTPUT
-  WE_EXEC_OUTPUT := /dev/null
-endif
-
 ifndef SDPA
   SDPA := $(SDPA_BIN)/sdpa
 endif
@@ -219,7 +207,6 @@ endif
 ###############################################################################
 
 PATH_LIB += $(GEN)/pnetc/op
-WE_EXEC_LIBPATHS += $(PATH_LIB)
 CXXINCLUDEPATHS += $(SDPA_INCLUDE)
 
 ###############################################################################
@@ -250,22 +237,12 @@ PNETV += $(PNETV_OPTS)
 # does not work for paths that contain spaces
 pathify = $(subst $() ,:,$(1))
 
-ifneq "$(CXXLIBRARYPATHS)" ""
-  WE_EXEC := LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(call pathify,$(CXXLIBRARYPATHS))
-endif
-WE_EXEC += $(WE_EXEC_ENV)
-WE_EXEC += $(WE_EXEC_CMD)
-WE_EXEC += --w $(WE_EXEC_WORKER)
-WE_EXEC += $(addprefix -L,$(WE_EXEC_LIBPATHS))
-WE_EXEC += -o $(WE_EXEC_OUTPUT)
-WE_EXEC += $(WE_EXEC_OPTS)
-
 XMLLINT += --noout
 XMLLINT += --schema $(SDPA_XML_SCHEMA)
 
 ###############################################################################
 
-.PHONY: default build dot ps svg net verify validate put gen lib run
+.PHONY: default build dot ps svg net verify validate put gen lib
 
 default: build
 
@@ -379,22 +356,6 @@ endif
 
 ###############################################################################
 
-ifeq "$(TEE)" ""
-
-run: lib $(PUT)
-	$(warning Missing 'tee'. Save output into $(OUT).)
-	$(warning To watch the output on the fly install 'tee'.)
-	$(WE_EXEC) --net $(PUT) 2>&1 > $(OUT)
-
-else
-
-run: lib $(PUT)
-	$(WE_EXEC) --net $(PUT) 2>&1 | $(TEE) $(OUT); exit $${PIPESTATUS[0]}
-
-endif
-
-###############################################################################
-
 .PHONY: install modinstall uninstall moduninstall
 
 install: modinstall $(INSTALL)
@@ -454,7 +415,6 @@ help:
 	@echo
 	@echo "gen          generate code into gen"
 	@echo "lib          'gen' & build libs from code in gen"
-	@echo "run          'lib' & 'put' & execute workflow"
 	@echo
 	@echo "validate     validate the xml"
 	@echo "verify       'net' & verify the pnet"
@@ -524,7 +484,6 @@ showconfig:
 	@echo
 	@echo 'DEP               = $(DEP)'
 	@echo 'PATH_LIB          = $(PATH_LIB)'
-	@echo 'WE_EXEC_LIBPATHS  = $(WE_EXEC_LIBPATHS)'
 	@echo 'LIB_DESTDIR       = $(LIB_DESTDIR)'
 	@echo
 	@echo 'CXXINCLUDEPATHS   = $(CXXINCLUDEPATHS)'
@@ -542,13 +501,6 @@ showconfig:
 	@echo
 	@echo 'PNETV_OPTS        = $(PNETV_OPTS)'
 	@echo
-	@echo 'WE_EXEC_ENV       = $(WE_EXEC_ENV)'
-	@echo 'WE_EXEC_CMD       = $(WE_EXEC_CMD)'
-	@echo 'WE_EXEC_OUTPUT    = $(WE_EXEC_OUTPUT)'
-	@echo 'WE_EXEC_WORKER    = $(WE_EXEC_WORKER)'
-	@echo 'WE_EXEC_LIBPATHS  = $(WE_EXEC_LIBPATHS)'
-	@echo 'WE_EXEC_OPTS      = $(WE_EXEC_OPTS)'
-	@echo
 	@echo 'BUILD             = $(BUILD)'
 	@echo 'CLEAN             = $(CLEAN)'
 	@echo 'INSTALL           = $(INSTALL)'
@@ -562,6 +514,5 @@ showconfig:
 	@echo 'PNET2DOT                = $(PNET2DOT)'
 	@echo 'PNETPUT                 = $(PNETPUT)'
 	@echo 'PNETV                   = $(PNETV)'
-	@echo 'WE_EXEC                 = $(WE_EXEC)'
 	@echo 'SDPA                    = $(SDPA)'
 	@echo 'XMLLINT                 = $(XMLLINT)'
