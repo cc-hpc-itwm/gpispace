@@ -13,6 +13,7 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/bin/pnete"
   "${CMAKE_INSTALL_PREFIX}/bin/pnetv"
   "${CMAKE_INSTALL_PREFIX}/bin/sdpa-gui"
+  "${CMAKE_INSTALL_PREFIX}/bin/start-and-fork"
   "${CMAKE_INSTALL_PREFIX}/bin/sdpac"
   "${CMAKE_INSTALL_PREFIX}/etc/sdpa/sdpa.env"
   "${CMAKE_INSTALL_PREFIX}/external/boost/include/boost/version.hpp"
