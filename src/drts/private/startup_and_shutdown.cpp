@@ -307,6 +307,7 @@ namespace
                              + ": expected 2 lines of startup messages"
                              );
     }
+
     write_pidfile (processes_dir, host, name, agent_startup_messages.first);
 
     return { agent_startup_messages.second[0]
@@ -334,6 +335,47 @@ namespace
     }
   }
 
+  void add_plugin_option ( std::vector<std::string>& arguments
+                         , std::string name
+                         , const char* value
+                         )
+  {
+    arguments.emplace_back ("-s");
+    arguments.emplace_back ("plugin." + name + "=" + value);
+  }
+  void add_plugin_option ( std::vector<std::string>& arguments
+                         , std::string name
+                         , std::string value
+                         )
+  {
+    add_plugin_option (arguments, name, value.c_str());
+  }
+  void add_plugin_option ( std::vector<std::string>& arguments
+                         , std::string name
+                         , boost::filesystem::path value
+                         )
+  {
+    add_plugin_option (arguments, name, value.string().c_str());
+  }
+  void add_plugin_option ( std::vector<std::string>& arguments
+                         , std::string name
+                         , unsigned long value
+                         )
+  {
+    add_plugin_option (arguments, name, std::to_string (value).c_str());
+  }
+
+  std::vector<std::string> string_vector
+    (std::vector<boost::filesystem::path> const& container)
+  {
+    std::vector<std::string> result;
+    for (boost::filesystem::path const& elem : container)
+    {
+      result.emplace_back (elem.string());
+    }
+    return result;
+  }
+
   void start_workers_for
     ( segment_info_t const& segment_info
     , fhg::drts::worker_description const& description
@@ -342,90 +384,149 @@ namespace
     , unsigned short gui_port
     , std::string const& log_host
     , unsigned short log_port
-    , boost::filesystem::path const& state_dir
+    , boost::filesystem::path const& processes_dir
+    , boost::filesystem::path const& log_dir
     , boost::optional<boost::filesystem::path> const& gpi_socket
     , std::vector<boost::filesystem::path> const& app_path
     , boost::filesystem::path const& sdpa_home
     )
   {
-     std::string name (fhg::util::join (description.capabilities, "+"));
-     std::replace_if (name.begin(), name.end(), boost::is_any_of ("+#."), '_');
+     std::string name_prefix (fhg::util::join (description.capabilities, "+"));
+     std::replace_if
+       (name_prefix.begin(), name_prefix.end(), boost::is_any_of ("+#."), '_');
 
-     boost::filesystem::path const script_start_drts
-       (sdpa_home / "libexec" / "sdpa" / "scripts" / "start-drts");
-
-     std::cout << "I: starting " << name << " workers (segment "
+     std::cout << "I: starting " << name_prefix << " workers (segment "
                << segment_info.master_name << ", "
                << description.num_per_node << "/host, "
                << ( description.max_nodes == 0 ? "unlimited"
                   : description.max_nodes == 1 ? "unique"
                   : "global max: " + std::to_string (description.max_nodes)
                   )
-               << ", " << description.shm_size << " SHM)...\n";
-
-     std::string const parent
-       ( build_parent_with_hostinfo
-           (segment_info.master_name, segment_info.master_hostinfo)
-       );
+               << ", " << description.shm_size << " SHM) with parent "
+               << segment_info.master_name << " on host "
+               << fhg::util::join (segment_info.hosts, ", ") << "\n";
 
      std::vector<std::future<void>> startups;
+
      std::size_t num_nodes (0);
      for (std::string const& host : segment_info.hosts)
      {
-       //! \todo Quoting?
-       std::vector<std::string> argv;
-       if (verbose)
+       for ( unsigned long identity (0)
+           ; identity < description.num_per_node
+           ; ++identity
+           )
        {
-         argv.emplace_back ("-v");
-       }
-       argv.emplace_back ("-c");
-       argv.emplace_back (std::to_string (description.num_per_node));
-       argv.emplace_back ("-n");
-       argv.emplace_back (name);
-       argv.emplace_back ("-m");
-       argv.emplace_back (parent);
-       argv.emplace_back ("-g");
-       argv.emplace_back (gui_host + ":" + std::to_string (gui_port));
-       argv.emplace_back ("-l");
-       argv.emplace_back (log_host + ":" + std::to_string (log_port));
-       for (std::string const& capability : description.capabilities)
-       {
-         argv.emplace_back ("-C");
-         argv.emplace_back (capability);
-       }
-       argv.emplace_back ("-s");
-       argv.emplace_back (state_dir.string());
-       if (gpi_socket)
-       {
-         argv.emplace_back ("-M");
-         argv.emplace_back (std::to_string (description.shm_size));
-         argv.emplace_back ("-S");
-         argv.emplace_back (gpi_socket->string());
-       }
-       if (description.socket)
-       {
-         argv.emplace_back ("-N");
-         argv.emplace_back (std::to_string (description.socket.get()));
-       }
-       if (!app_path.empty())
-       {
-         argv.emplace_back ("-L");
-         argv.emplace_back (fhg::util::join (app_path, ":"));
-       }
-       argv.emplace_back ("-H");
-       argv.emplace_back (sdpa_home.string());
+         startups.emplace_back
+           ( std::async
+               ( std::launch::async
+               , [&, host, identity]
+                 {
+                   std::vector<std::string> arguments;
+                   std::unordered_map<std::string, std::string> environment;
 
-       startups.emplace_back
-         ( std::async ( std::launch::async
-                      , [&script_start_drts, host, argv]
-                        {
-                          rexec ( host
-                                , script_start_drts.string()
-                                + " " + fhg::util::join (argv, " ")
-                                );
-                        }
-                      )
-         );
+                   arguments.emplace_back ("-L");
+                   arguments.emplace_back
+                     ((sdpa_home / "libexec" / "fhg" / "plugins").string());
+
+                   add_plugin_option
+                     ( arguments
+                     , "drts.master"
+                     , build_parent_with_hostinfo
+                         (segment_info.master_name, segment_info.master_hostinfo)
+                     );
+                   add_plugin_option (arguments, "drts.backlog", 1);
+                   add_plugin_option
+                     (arguments, "drts.max_reconnect_attempts", 128);
+                   add_plugin_option ( arguments
+                                     , "drts.gui_url"
+                                     , gui_host + ":" + std::to_string (gui_port)
+                                     );
+                   add_plugin_option
+                     ( arguments
+                     , "drts.library_path"
+                     , fhg::util::join (string_vector (app_path), ",")
+                     );
+
+                   std::vector<std::string> capabilities
+                     (description.capabilities);
+
+                   if (description.shm_size)
+                   {
+                     capabilities.emplace_back ("GPI");
+
+                     arguments.emplace_back ("--gpi_enabled");
+                     add_plugin_option
+                       (arguments, "gpi.socket", gpi_socket.get());
+                     add_plugin_option
+                       (arguments, "gpi.startmode", "wait");
+                     add_plugin_option
+                       (arguments, "gpi_compat.shm_size", description.shm_size);
+                   }
+
+                   add_plugin_option ( arguments
+                                     , "drts.capabilities"
+                                     , fhg::util::join (capabilities, ",")
+                                     );
+
+                   if (description.socket)
+                   {
+                     add_plugin_option
+                       (arguments, "drts.socket", description.socket.get());
+                   }
+
+                   environment.emplace ("FHGLOG_level", verbose ? "TRACE" : "INFO");
+
+                   environment.emplace ( "LD_LIBRARY_PATH"
+                                       , (sdpa_home / "lib").string() + ":"
+                                       + (sdpa_home / "libexec" / "sdpa").string()
+                                       );
+
+                   environment.emplace ( "FHGLOG_to_server"
+                                       , log_host + ":" + std::to_string (log_port)
+                                       );
+
+                   std::string const name
+                     ( name_prefix + "-" + host
+                     + "-" + std::to_string (identity + 1)
+                     + ( description.socket
+                       ? ("." + std::to_string (description.socket.get()))
+                       : std::string()
+                       )
+                     );
+
+                   arguments.emplace_back ("-n");
+                   arguments.emplace_back (name);
+
+                   environment.emplace
+                     ("FHGLOG_to_file", (log_dir / (name + ".log")).string());
+
+                   std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages
+                     ( remote_execute_and_get_startup_messages
+                       ( host
+                       , "--startup-messages-pipe"
+                       , "OKAY"
+                       , sdpa_home / "bin" / "drts-kernel"
+                       , arguments
+                       , environment
+                       , sdpa_home
+                       )
+                     );
+
+                   if (!pid_and_startup_messages.second.empty())
+                   {
+                     throw std::runtime_error
+                       ("could not start " + name + ": expected no startup messages");
+                   }
+
+                   write_pidfile ( processes_dir
+                                 , host
+                                 , "drts-kernel-" + name
+                                 , pid_and_startup_messages.first
+                                 );
+                 }
+               )
+           );
+       }
 
        //! \todo does this work correctly for multi-segments?!
        ++num_nodes;
@@ -861,7 +962,8 @@ namespace fhg
                                   , gui_port
                                   , log_host
                                   , log_port
-                                  , state_dir
+                                  , processes_dir
+                                  , log_dir
                                   , gpi_socket
                                   , app_path
                                   , sdpa_home
