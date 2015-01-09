@@ -208,8 +208,6 @@ private:
       m_shm_ptr = api->ptr (m_shm_hdl);
     }
 
-    LOG(INFO, "successfully initialized gpi state");
-
     m_was_connected = true;
     m_gpi_state = ST_CONNECTED;
 

@@ -41,7 +41,6 @@ public:
 
     if (start_synchronous)
     {
-      LOG(INFO, "gpi plugin starting in synchronous mode, this might take forever!");
       restart_loop();
     }
     else
