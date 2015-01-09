@@ -489,7 +489,7 @@ void DRTSImpl::handleSubmitJobEvent
   if (e->job_id())
   {
      map_of_jobs_t::iterator job_it (m_jobs.find(*e->job_id()));
-     if (job_it == m_jobs.end())
+     if (job_it != m_jobs.end())
      {
        send_event ( source
                   , new sdpa::events::ErrorEvent
