@@ -4,6 +4,10 @@
 
 #include <we/loader/exceptions.hpp>
 
+#include <boost/format.hpp>
+
+#include <exception>
+
 namespace we
 {
   namespace loader
@@ -27,12 +31,15 @@ namespace we
 
       func_ptr.symbol = dlsym (_dlhandle.handle(), "we_mod_initialize");
 
-      if (func_ptr.function != nullptr)
+      if (func_ptr.function == nullptr)
       {
-        const unsigned int LOADER_VERSION (1U);
-
-        func_ptr.function (this, LOADER_VERSION);
+        throw std::logic_error
+          ((boost::format ("Missing initialize function in %1%") % path).str());
       }
+
+      const unsigned int LOADER_VERSION (1U);
+
+      func_ptr.function (this, LOADER_VERSION);
     }
     void Module::name (const std::string& a_name)
     {
