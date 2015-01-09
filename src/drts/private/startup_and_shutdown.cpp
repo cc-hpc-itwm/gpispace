@@ -79,7 +79,7 @@ namespace
     std::string arguments_string;
     for (std::string const& arg : arguments)
     {
-      arguments_string += " --arguments " + arg;
+      arguments_string += " --arguments '" + arg + "'";
     }
 
     struct scoped_popen
