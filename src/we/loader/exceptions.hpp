@@ -56,18 +56,6 @@ namespace we
       MEMBER (search_path, std::string);
     };
 
-    class module_already_registered : public std::runtime_error
-    {
-    public:
-      explicit module_already_registered (const std::string& name)
-        : std::runtime_error
-          ((boost::format ("module '%1%' already registered") % name).str())
-        , _name (name)
-      {}
-
-      MEMBER (name, std::string);
-    };
-
     class function_not_found : public std::runtime_error
     {
     public:

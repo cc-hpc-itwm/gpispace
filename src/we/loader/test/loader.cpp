@@ -53,36 +53,6 @@ BOOST_AUTO_TEST_CASE (answer_question)
   }
 }
 
-BOOST_AUTO_TEST_CASE (load_failed)
-{
-  we::loader::loader loader;
-
-  fhg::util::boost::test::require_exception<we::loader::module_load_failed>
-    ( [&loader] { loader.load ("name", "<path>"); }
-    , "could not load module '<path>': <path>:"
-      " cannot open shared object file: No such file or directory"
-    );
-}
-
-BOOST_AUTO_TEST_CASE (load_okay)
-{
-  we::loader::loader loader;
-
-  BOOST_REQUIRE (loader.load ("name", "./libanswer.so"));
-}
-
-BOOST_AUTO_TEST_CASE (load_already_registered)
-{
-  we::loader::loader loader;
-
-  BOOST_REQUIRE (loader.load ("name", "./libanswer.so"));
-
-  fhg::util::boost::test::require_exception<we::loader::module_already_registered>
-    ( [&loader] { loader.load ("name", "<path>"); }
-    , "module 'name' already registered"
-    );
-}
-
 BOOST_AUTO_TEST_CASE (bracket_not_found_empty_search_path)
 {
   we::loader::loader loader;
@@ -112,10 +82,10 @@ BOOST_AUTO_TEST_CASE (bracket_okay_load)
 
 BOOST_AUTO_TEST_CASE (load_order)
 {
-  we::loader::loader loader;
+  we::loader::loader loader ({"."});
 
-  BOOST_REQUIRE (loader.load ("a", "./liborder_a.so"));
-  BOOST_REQUIRE (loader.load ("b", "./liborder_b.so"));
+  BOOST_REQUIRE_EQUAL (loader["order_a"].path(), "./liborder_a.so");
+  BOOST_REQUIRE_EQUAL (loader["order_b"].path(), "./liborder_b.so");
 
   BOOST_REQUIRE_EQUAL (start().size(), 2);
 }
