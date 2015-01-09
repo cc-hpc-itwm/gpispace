@@ -486,6 +486,26 @@ void DRTSImpl::handleSubmitJobEvent
     throw std::runtime_error ("got SubmitJob from not yet connected master");
   }
 
+  if (e->job_id())
+  {
+     map_of_jobs_t::iterator job_it (m_jobs.find(*e->job_id()));
+     if (job_it == m_jobs.end())
+     {
+       send_event ( source
+                  , new sdpa::events::ErrorEvent
+                      ( sdpa::events::ErrorEvent::SDPA_EJOBEXISTS
+                      , "The job already exists!"
+                      , *e->job_id()
+                      )
+                  );
+      return;
+     }
+  }
+  else
+  {
+    throw std::runtime_error ("Received job with an unspecified job id");
+  }
+
   boost::shared_ptr<DRTSImpl::Job> job (new DRTSImpl::Job( DRTSImpl::Job::ID(*e->job_id())
                                                  , DRTSImpl::Job::Description(e->description())
                                                  , master
