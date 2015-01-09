@@ -1,6 +1,0 @@
-<structs>
-
-  <include-structs href="store/bunch.xml"/>
-  <include-structs href="store/volume.xml"/>
-
-</structs>

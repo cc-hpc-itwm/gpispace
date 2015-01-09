@@ -83,8 +83,6 @@ include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
 add_executable (expression_shell expr/shell.cpp)
 target_link_libraries (expression_shell pnet ${LibReadline_LIBRARY})
 
-add_subdirectory (util)
-
 add_subdirectory (expr/parse/test)
 add_subdirectory (expr/test)
 add_subdirectory (loader/test)
