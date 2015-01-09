@@ -10,7 +10,7 @@ namespace we
 {
   namespace loader
   {
-    loader::loader (std::list<boost::filesystem::path> search_path)
+    loader::loader (std::list<boost::filesystem::path> const& search_path)
       : _search_path (search_path)
     {}
 

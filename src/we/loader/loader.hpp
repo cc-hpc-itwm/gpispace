@@ -19,7 +19,7 @@ namespace we
     {
     public:
       loader() = default;
-      loader (std::list<boost::filesystem::path>);
+      loader (std::list<boost::filesystem::path> const&);
       ~loader();
 
       Module& operator[] (const std::string &module);
