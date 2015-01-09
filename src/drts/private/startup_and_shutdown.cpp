@@ -82,46 +82,62 @@ namespace
       arguments_string += " --arguments '" + arg + "'";
     }
 
-    struct scoped_popen
-    {
-      scoped_popen (const char* command, const char* type)
-        : _ (fhg::syscall::popen (command, type))
-      {}
-      ~scoped_popen()
-      {
-        fhg::syscall::pclose (_);
-      }
-      FILE* _;
-    } process
-        ( ( "ssh " + ssh_opts + " " + host
-          + " /usr/bin/env LD_LIBRARY_PATH='"
-          + fhg::util::getenv ("LD_LIBRARY_PATH").get_value_or ("")
-          + "' '" + (sdpa_home / "bin" / "start-and-fork").string() + "'"
-          + " --end-sentinel-value " + end_sentinel_value
-          + " --startup-messages-pipe-option " + startup_messages_pipe_option
-          + " --command '" + command.string() + "'"
-          + arguments_string
-          + environment_string
-          ).c_str()
-        , "r"
-        );
-
-    struct free_on_scope_exit
-    {
-      ~free_on_scope_exit()
-      {
-        free (_);
-        _ = nullptr;
-      }
-      char* _ {nullptr};
-    } line;
-    std::size_t length (0);
-
     std::vector<std::string> lines;
-    ssize_t read;
-    while ((read = getline (&line._, &length, process._)) != -1)
+
     {
-      lines.emplace_back (line._, read - 1);
+      struct scoped_popen
+      {
+        scoped_popen (const char* command, const char* type)
+          : _ (fhg::syscall::popen (command, type))
+          , _command (command)
+        {}
+        ~scoped_popen()
+        {
+          int const status (fhg::syscall::pclose (_));
+
+          if (WIFEXITED (status) && WEXITSTATUS (status) != 0)
+          {
+            throw std::runtime_error
+              ("'" + _command + "' failed: " + std::to_string (WEXITSTATUS (status)));
+          }
+          else if (WIFSIGNALED (status))
+          {
+            throw std::runtime_error
+              ("'" + _command + "' signaled: " + std::to_string (WTERMSIG (status)));
+          }
+        }
+        FILE* _;
+        std::string _command;
+      } process
+          ( ( "ssh " + ssh_opts + " " + host
+            + " /usr/bin/env LD_LIBRARY_PATH='"
+            + fhg::util::getenv ("LD_LIBRARY_PATH").get_value_or ("")
+            + "' '" + (sdpa_home / "bin" / "start-and-fork").string() + "'"
+            + " --end-sentinel-value " + end_sentinel_value
+            + " --startup-messages-pipe-option " + startup_messages_pipe_option
+            + " --command '" + command.string() + "'"
+            + arguments_string
+            + environment_string
+            ).c_str()
+          , "r"
+          );
+
+      struct free_on_scope_exit
+      {
+        ~free_on_scope_exit()
+        {
+          free (_);
+          _ = nullptr;
+        }
+        char* _ {nullptr};
+      } line;
+      std::size_t length (0);
+
+      ssize_t read;
+      while ((read = getline (&line._, &length, process._)) != -1)
+      {
+        lines.emplace_back (line._, read - 1);
+      }
     }
 
     return { boost::lexical_cast<pid_t> (lines.at (0))
