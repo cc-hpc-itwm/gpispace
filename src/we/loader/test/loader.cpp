@@ -13,34 +13,9 @@
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/require_exception.hpp>
 
-BOOST_AUTO_TEST_CASE (fresh_has_empty_search_path)
-{
-  we::loader::loader loader;
-
-  BOOST_REQUIRE_EQUAL (loader.search_path(), "");
-}
-
-BOOST_AUTO_TEST_CASE (append_and_clear_serch_path)
-{
-  we::loader::loader loader;
-  loader.append_search_path ("p");
-
-  BOOST_REQUIRE_EQUAL (loader.search_path(), "\"p\"");
-
-  loader.append_search_path ("q");
-
-  BOOST_REQUIRE_EQUAL (loader.search_path(), "\"p\":\"q\"");
-
-  loader.clear_search_path();
-
-  BOOST_REQUIRE_EQUAL (loader.search_path(), "");
-}
-
 BOOST_AUTO_TEST_CASE (answer_question)
 {
-  we::loader::loader loader;
-
-  loader.append_search_path (".");
+  we::loader::loader loader ({"."});
 
   {
     expr::eval::context out;
@@ -108,7 +83,7 @@ BOOST_AUTO_TEST_CASE (load_already_registered)
     );
 }
 
-BOOST_AUTO_TEST_CASE (bracket_not_found)
+BOOST_AUTO_TEST_CASE (bracket_not_found_empty_search_path)
 {
   we::loader::loader loader;
 
@@ -116,9 +91,11 @@ BOOST_AUTO_TEST_CASE (bracket_not_found)
     ( [&loader] { loader["name"]; }
     , "module 'libname.so' not found in ''"
     );
+}
 
-  loader.append_search_path ("<p>");
-  loader.append_search_path ("<q>");
+BOOST_AUTO_TEST_CASE (bracket_not_found_nonempty_search_path)
+{
+  we::loader::loader loader ({"<p>","<q>"});
 
   fhg::util::boost::test::require_exception<we::loader::module_not_found>
     ( [&loader] { loader["name"]; }
@@ -128,20 +105,7 @@ BOOST_AUTO_TEST_CASE (bracket_not_found)
 
 BOOST_AUTO_TEST_CASE (bracket_okay_load)
 {
-  we::loader::loader loader;
-  loader.append_search_path (".");
-
-  BOOST_REQUIRE_EQUAL (loader["answer"].path(), "./libanswer.so");
-}
-
-BOOST_AUTO_TEST_CASE (bracket_okay_from_table)
-{
-  we::loader::loader loader;
-  loader.append_search_path (".");
-
-  BOOST_REQUIRE_EQUAL (loader["answer"].path(), "./libanswer.so");
-
-  loader.clear_search_path();
+  we::loader::loader loader ({"."});
 
   BOOST_REQUIRE_EQUAL (loader["answer"].path(), "./libanswer.so");
 }

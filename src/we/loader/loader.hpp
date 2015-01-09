@@ -26,11 +26,6 @@ namespace we
 
       Module* load (const std::string&, const boost::filesystem::path&);
 
-      void clear_search_path();
-      void append_search_path (const boost::filesystem::path&);
-
-      std::string search_path() const;
-
    private:
       mutable std::recursive_mutex _table_mutex;
       typedef std::unordered_map<std::string, Module*> module_table_t;

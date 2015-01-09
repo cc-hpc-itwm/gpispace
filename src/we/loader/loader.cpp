@@ -46,7 +46,10 @@ namespace we
         }
       }
 
-      throw module_not_found (file_name.string(), search_path());
+      throw module_not_found
+        ( file_name.string()
+        , fhg::util::join (_search_path.begin(), _search_path.end(), ":")
+        );
     }
 
     Module* loader::load ( const std::string& name
@@ -65,27 +68,6 @@ namespace we
       _module_stack.push (mod);
 
       return _module_table.emplace (name, mod).first->second;
-    }
-
-    void loader::clear_search_path()
-    {
-      std::unique_lock<std::recursive_mutex> const _ (_search_path_mutex);
-
-      _search_path.clear();
-    }
-
-    void loader::append_search_path (const boost::filesystem::path & p)
-    {
-      std::unique_lock<std::recursive_mutex> const _ (_search_path_mutex);
-
-      _search_path.push_back (p);
-    }
-
-    std::string loader::search_path() const
-    {
-      std::unique_lock<std::recursive_mutex> const _ (_search_path_mutex);
-
-      return fhg::util::join (_search_path.begin(), _search_path.end(), ":");
     }
   }
 }
