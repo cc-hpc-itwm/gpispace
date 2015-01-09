@@ -25,7 +25,7 @@ namespace we
 
     Module& loader::operator[] (const std::string& module)
     {
-      std::unique_lock<std::recursive_mutex> const _ (_table_mutex);
+      std::unique_lock<std::mutex> const _ (_table_mutex);
 
       module_table_t::const_iterator mod (_module_table.find (module));
 
