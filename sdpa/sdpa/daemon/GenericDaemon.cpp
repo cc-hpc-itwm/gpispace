@@ -566,11 +566,6 @@ void GenericDaemon::handleErrorEvent
     }
     case events::ErrorEvent::SDPA_EJOBEXISTS:
     {
-      // do the same as when receiving a SubmitJobAckEvent
-
-      // Only now should be the job state machine make a transition to RUNNING
-      // this means that the job was not rejected, no error occurred etc ....
-      // find the job ptrJob and call
       if (as_worker)
       {
         Job* ptrJob = findJob(*error.job_id());
