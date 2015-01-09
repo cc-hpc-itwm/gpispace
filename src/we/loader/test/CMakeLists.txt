@@ -5,7 +5,6 @@ fhg_add_test (loader.cpp
   PROJECT we_loader
   LINK_LIBRARIES pnet
                  order_stack
-                 ${FhgLog_LIBRARY}
                  ${CMAKE_DL_LIBS}
   DEPENDS question
           answer
@@ -17,7 +16,6 @@ fhg_add_test (module.cpp
   BOOST_UNIT_TEST
   PROJECT we_loader
   LINK_LIBRARIES pnet
-                 ${FhgLog_LIBRARY}
                  ${CMAKE_DL_LIBS}
   DEPENDS initialize_throws
           empty_not_linked_with_pnet

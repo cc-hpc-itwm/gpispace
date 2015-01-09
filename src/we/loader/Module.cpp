@@ -4,8 +4,6 @@
 
 #include <we/loader/exceptions.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 namespace we
 {
   namespace loader
@@ -35,8 +33,6 @@ namespace we
 
         func_ptr.function (this, LOADER_VERSION);
       }
-
-      MLOG (TRACE, "loaded module " << name_ << " from " << path_);
     }
     void Module::name (const std::string& a_name)
     {
