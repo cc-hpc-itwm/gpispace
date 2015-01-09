@@ -36,8 +36,6 @@ namespace we
 
       const boost::filesystem::path file_name ("lib" + module + ".so");
 
-      std::unique_lock<std::recursive_mutex> const __ (_search_path_mutex);
-
       for (boost::filesystem::path const& p : _search_path)
       {
         if (boost::filesystem::exists (p / file_name))

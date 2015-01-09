@@ -31,7 +31,6 @@ namespace we
       typedef std::unordered_map<std::string, Module*> module_table_t;
       module_table_t _module_table;
       std::stack<Module*> _module_stack;
-      mutable std::recursive_mutex _search_path_mutex;
       std::list<boost::filesystem::path> _search_path;
     };
   }
