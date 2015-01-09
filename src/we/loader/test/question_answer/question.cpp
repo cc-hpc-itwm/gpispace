@@ -20,8 +20,3 @@ WE_MOD_INITIALIZE_START (question);
   WE_REGISTER_FUN_AS (question, "question");
 }
 WE_MOD_INITIALIZE_END (question);
-
-WE_MOD_FINALIZE_START (question);
-{
-}
-WE_MOD_FINALIZE_END (question);

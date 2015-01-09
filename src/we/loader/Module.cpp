@@ -6,8 +6,6 @@
 
 #include <fhglog/LogMacros.hpp>
 
-#include <iostream>
-
 namespace we
 {
   namespace loader
@@ -39,44 +37,6 @@ namespace we
       }
 
       MLOG (TRACE, "loaded module " << name_ << " from " << path_);
-    }
-    Module::~Module()
-    {
-      MLOG (TRACE, "unloading " << name_);
-
-      try
-      {
-        struct
-        {
-          union
-          {
-            void * symbol;
-            void (*function) (IModule*);
-          };
-        } func_ptr;
-
-        func_ptr.symbol = dlsym (_dlhandle.handle(), "we_mod_finalize");
-
-        if (func_ptr.function != nullptr)
-        {
-          func_ptr.function (this);
-        }
-      }
-      catch (const std::exception& ex)
-      {
-        std::cerr << "E: **** module " << name()
-                  << " from file " << path()
-                  << " had errors during close: "
-                  << ex.what()
-                  << std::endl;
-      }
-      catch (...)
-      {
-        std::cerr << "E: **** module " << name()
-                  << " from file " << path()
-                  << " had unknown errors during close!"
-                  << std::endl;
-      }
     }
     void Module::name (const std::string& a_name)
     {

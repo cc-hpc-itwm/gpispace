@@ -146,29 +146,12 @@ BOOST_AUTO_TEST_CASE (bracket_okay_from_table)
   BOOST_REQUIRE_EQUAL (loader["answer"].name(), "answer");
 }
 
-BOOST_AUTO_TEST_CASE (unload_order)
+BOOST_AUTO_TEST_CASE (load_order)
 {
-  {
-    we::loader::loader loader;
+  we::loader::loader loader;
 
-    BOOST_REQUIRE (loader.load ("a", "./liborder_a.so"));
-    BOOST_REQUIRE (loader.load ("b", "./liborder_b.so"));
+  BOOST_REQUIRE (loader.load ("a", "./liborder_a.so"));
+  BOOST_REQUIRE (loader.load ("b", "./liborder_b.so"));
 
-    BOOST_REQUIRE_EQUAL (start().size(), 2);
-  }
-
-  BOOST_REQUIRE_EQUAL (stop().size(), 2);
-
-  std::stack<std::string> stop_expected;
-  while (!start().empty())
-  {
-    stop_expected.push (start().top()); start().pop();
-  }
-
-  while (!stop().empty())
-  {
-    BOOST_REQUIRE_EQUAL (stop().top(), stop_expected.top());
-    stop().pop();
-    stop_expected.pop();
-  }
+  BOOST_REQUIRE_EQUAL (start().size(), 2);
 }

@@ -24,8 +24,3 @@ WE_MOD_INITIALIZE_START (answer);
   WE_REGISTER_FUN_AS (answer,  "answer");
 }
 WE_MOD_INITIALIZE_END (answer);
-
-WE_MOD_FINALIZE_START (answer);
-{
-}
-WE_MOD_FINALIZE_END (answer);

@@ -48,16 +48,4 @@
     }\
   }
 
-#define WE_MOD_FINALIZE_START(modname)\
-  extern "C"\
-  {\
-     void DLL_PUBLIC we_mod_finalize(::we::loader::IModule *);  \
-     void DLL_PUBLIC we_mod_finalize(::we::loader::IModule *mod)\
-     {\
-        (void)(mod)
-
-#define WE_MOD_FINALIZE_END(modname)\
-     }\
-  }
-
 #endif

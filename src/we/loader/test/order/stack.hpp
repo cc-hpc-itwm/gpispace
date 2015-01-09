@@ -5,6 +5,5 @@
 #include <string>
 
 extern std::stack<std::string>& start();
-extern std::stack<std::string>& stop();
 
 #endif
