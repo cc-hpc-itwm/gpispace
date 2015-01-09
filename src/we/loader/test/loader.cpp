@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE (answer_question)
 
 BOOST_AUTO_TEST_CASE (bracket_not_found_empty_search_path)
 {
-  we::loader::loader loader;
+  we::loader::loader loader ({});
 
   fhg::util::boost::test::require_exception<we::loader::module_not_found>
     ( [&loader] { loader["name"]; }
