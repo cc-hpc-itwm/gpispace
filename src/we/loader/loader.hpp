@@ -25,7 +25,7 @@ namespace we
       Module& operator[] (const std::string &module);
 
    private:
-      mutable std::mutex _table_mutex;
+      std::mutex _table_mutex;
       typedef std::unordered_map<std::string, Module*> module_table_t;
       module_table_t _module_table;
       std::stack<Module*> _module_stack;
