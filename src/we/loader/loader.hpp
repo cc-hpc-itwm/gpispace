@@ -5,7 +5,6 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/thread.hpp>
-#include <boost/utility.hpp>
 
 #include <list>
 #include <stack>
