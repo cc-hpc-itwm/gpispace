@@ -41,8 +41,6 @@
         {volatile int _ = WE_GUARD_SYMBOL; (void)_;} \
         mod->name (#modname)
 
-#define WE_REGISTER_FUN(fun)                   \
-        mod->add_function(#fun, &fun)
 #define WE_REGISTER_FUN_AS(fun,as)             \
         mod->add_function(as, &fun)
 
