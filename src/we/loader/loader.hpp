@@ -17,7 +17,6 @@ namespace we
     class loader : boost::noncopyable
     {
     public:
-      loader() = default;
       loader (std::list<boost::filesystem::path> const&);
 
       Module const& operator[] (const std::string &module);
