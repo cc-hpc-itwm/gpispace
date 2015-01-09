@@ -4,9 +4,9 @@
 #include <we/loader/Module.hpp>
 
 #include <boost/filesystem.hpp>
-#include <boost/thread.hpp>
 
 #include <list>
+#include <mutex>
 #include <stack>
 #include <string>
 #include <unordered_map>
@@ -32,11 +32,11 @@ namespace we
       std::string search_path() const;
 
    private:
-      mutable boost::recursive_mutex _table_mutex;
+      mutable std::recursive_mutex _table_mutex;
       typedef std::unordered_map<std::string, Module*> module_table_t;
       module_table_t _module_table;
       std::stack<Module*> _module_stack;
-      mutable boost::recursive_mutex _search_path_mutex;
+      mutable std::recursive_mutex _search_path_mutex;
       std::list<boost::filesystem::path> _search_path;
     };
   }

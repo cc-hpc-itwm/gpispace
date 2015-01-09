@@ -25,7 +25,7 @@ namespace we
 
     Module& loader::operator[] (const std::string& module)
     {
-      boost::unique_lock<boost::recursive_mutex> const _ (_table_mutex);
+      std::unique_lock<std::recursive_mutex> const _ (_table_mutex);
 
       module_table_t::const_iterator mod (_module_table.find (module));
 
@@ -36,7 +36,7 @@ namespace we
 
       const boost::filesystem::path file_name ("lib" + module + ".so");
 
-      boost::unique_lock<boost::recursive_mutex> const __ (_search_path_mutex);
+      std::unique_lock<std::recursive_mutex> const __ (_search_path_mutex);
 
       for (boost::filesystem::path const& p : _search_path)
       {
@@ -53,7 +53,7 @@ namespace we
                          , const boost::filesystem::path& path
                          )
     {
-      boost::unique_lock<boost::recursive_mutex> const _ (_table_mutex);
+      std::unique_lock<std::recursive_mutex> const _ (_table_mutex);
 
       if (_module_table.find (name) != _module_table.end())
       {
@@ -69,21 +69,21 @@ namespace we
 
     void loader::clear_search_path()
     {
-      boost::unique_lock<boost::recursive_mutex> const _ (_search_path_mutex);
+      std::unique_lock<std::recursive_mutex> const _ (_search_path_mutex);
 
       _search_path.clear();
     }
 
     void loader::append_search_path (const boost::filesystem::path & p)
     {
-      boost::unique_lock<boost::recursive_mutex> const _ (_search_path_mutex);
+      std::unique_lock<std::recursive_mutex> const _ (_search_path_mutex);
 
       _search_path.push_back (p);
     }
 
     std::string loader::search_path() const
     {
-      boost::unique_lock<boost::recursive_mutex> const _ (_search_path_mutex);
+      std::unique_lock<std::recursive_mutex> const _ (_search_path_mutex);
 
       return fhg::util::join (_search_path.begin(), _search_path.end(), ":");
     }
