@@ -5,8 +5,6 @@
 #include <fhg/util/boost/test/printer/tuple.hpp>
 #include <fhg/util/boost/test.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 #include <we/type/bytearray.hpp>
 
 #include <fhg/util/random_string.hpp>
