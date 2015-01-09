@@ -38,8 +38,7 @@
      void DLL_PUBLIC we_mod_initialize(::we::loader::IModule *mod)                \
      {\
         (void)(mod);                               \
-        {volatile int _ = WE_GUARD_SYMBOL; (void)_;} \
-        mod->name (#modname)
+        {volatile int _ = WE_GUARD_SYMBOL; (void)_;}
 
 #define WE_REGISTER_FUN_AS(fun,as)             \
         mod->add_function(as, &fun)

@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE (bracket_okay_load)
   we::loader::loader loader;
   loader.append_search_path (".");
 
-  BOOST_REQUIRE_EQUAL (loader["answer"].name(), "answer");
+  BOOST_REQUIRE_EQUAL (loader["answer"].path(), "./libanswer.so");
 }
 
 BOOST_AUTO_TEST_CASE (bracket_okay_from_table)
@@ -139,11 +139,11 @@ BOOST_AUTO_TEST_CASE (bracket_okay_from_table)
   we::loader::loader loader;
   loader.append_search_path (".");
 
-  BOOST_REQUIRE_EQUAL (loader["answer"].name(), "answer");
+  BOOST_REQUIRE_EQUAL (loader["answer"].path(), "./libanswer.so");
 
   loader.clear_search_path();
 
-  BOOST_REQUIRE_EQUAL (loader["answer"].name(), "answer");
+  BOOST_REQUIRE_EQUAL (loader["answer"].path(), "./libanswer.so");
 }
 
 BOOST_AUTO_TEST_CASE (load_order)

@@ -52,20 +52,11 @@ BOOST_AUTO_TEST_CASE (ctor_failed_bad_boost_version)
 #undef XSTR
 }
 
-BOOST_AUTO_TEST_CASE (ctor_okay_name_path)
+BOOST_AUTO_TEST_CASE (ctor_okay_path)
 {
   we::loader::Module const m ("./libempty.so");
 
-  BOOST_REQUIRE_EQUAL (m.name(), "empty");
   BOOST_REQUIRE_EQUAL (m.path(), "./libempty.so");
-}
-
-BOOST_AUTO_TEST_CASE (set_name)
-{
-  we::loader::Module m ("./libempty.so");
-  m.name ("name");
-
-  BOOST_REQUIRE_EQUAL (m.name(), "name");
 }
 
 BOOST_AUTO_TEST_CASE (call_not_found)
@@ -83,7 +74,7 @@ BOOST_AUTO_TEST_CASE (call_not_found)
              , std::map<std::string, void*>()
              );
     }
-    , "function 'empty::<name>' not found"
+    , "function \"./libempty.so\"::<name> not found"
     );
 }
 
@@ -139,6 +130,6 @@ BOOST_AUTO_TEST_CASE (duplicate_function)
 
   fhg::util::boost::test::require_exception<we::loader::duplicate_function>
     ( [&m] { m.add_function ("f", &inc); }
-    , "duplicate function 'empty::f'"
+    , "duplicate function \"./libempty.so\"::f"
     );
 }

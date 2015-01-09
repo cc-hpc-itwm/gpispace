@@ -22,8 +22,6 @@ namespace we
              , int flags = RTLD_NOW | RTLD_GLOBAL
              );
 
-      virtual void name (const std::string&) override;
-      const std::string &name() const;
       const std::string &path() const;
 
       void call ( const std::string& f
@@ -36,7 +34,6 @@ namespace we
       virtual void add_function (const std::string&, WrapperFunction) override;
 
     private:
-      std::string name_;
       std::string path_;
 
       class dlhandle

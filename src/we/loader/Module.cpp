@@ -15,8 +15,7 @@ namespace we
     Module::Module ( const std::string& path
                    , int flags
                    )
-      : name_()
-      , path_ (path)
+      : path_ (path)
       , _dlhandle (path, flags)
       , call_table_()
     {
@@ -39,14 +38,6 @@ namespace we
 
       func_ptr.function (this);
     }
-    void Module::name (const std::string& a_name)
-    {
-      name_ = a_name;
-    }
-    const std::string &Module::name() const
-    {
-      return name_;
-    }
     const std::string &Module::path() const
     {
       return path_;
@@ -63,7 +54,7 @@ namespace we
 
       if (fun == call_table_.end())
       {
-        throw function_not_found (name_, function);
+        throw function_not_found (path_, function);
       }
       else
       {
@@ -74,7 +65,7 @@ namespace we
     {
       if (! call_table_.emplace (name, f).second)
       {
-        throw duplicate_function (name_, name);
+        throw duplicate_function (path_, name);
       }
     }
 

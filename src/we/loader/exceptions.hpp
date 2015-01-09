@@ -1,6 +1,7 @@
 #ifndef WE_LOADER_EXCEPTIONS_HPP
 #define WE_LOADER_EXCEPTIONS_HPP 1
 
+#include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 
 #include <stdexcept>
@@ -70,11 +71,11 @@ namespace we
     class function_not_found : public std::runtime_error
     {
     public:
-      explicit function_not_found ( std::string const& module
+      explicit function_not_found ( boost::filesystem::path const& module
                                   , std::string const& name
                                   )
         : std::runtime_error
-          ( ( boost::format ("function '%1%::%2%' not found")
+          ( ( boost::format ("function %1%::%2% not found")
             % module
             % name
             ).str()
@@ -83,18 +84,18 @@ namespace we
         , _name (name)
       {}
 
-      MEMBER (module, std::string);
+      MEMBER (module, boost::filesystem::path);
       MEMBER (name, std::string);
     };
 
     class duplicate_function : public std::runtime_error
     {
     public:
-      explicit duplicate_function ( std::string const& module
+      explicit duplicate_function ( boost::filesystem::path const& module
                                   , std::string const& name
                                   )
         : std::runtime_error
-          ( ( boost::format ("duplicate function '%1%::%2%'")
+          ( ( boost::format ("duplicate function %1%::%2%")
             % module
             % name
             ).str()
@@ -103,7 +104,7 @@ namespace we
         , _name (name)
       {}
 
-      MEMBER (module, std::string);
+      MEMBER (module, boost::filesystem::path);
       MEMBER (name, std::string);
     };
 #undef MEMBER
