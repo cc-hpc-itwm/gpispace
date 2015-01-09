@@ -25,7 +25,7 @@ namespace we
         union
         {
           void * symbol;
-          void (*function)(IModule*, unsigned int);
+          void (*function)(IModule*);
         };
       } func_ptr;
 
@@ -37,9 +37,7 @@ namespace we
           ((boost::format ("Missing initialize function in %1%") % path).str());
       }
 
-      const unsigned int LOADER_VERSION (1U);
-
-      func_ptr.function (this, LOADER_VERSION);
+      func_ptr.function (this);
     }
     void Module::name (const std::string& a_name)
     {

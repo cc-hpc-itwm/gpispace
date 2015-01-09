@@ -34,8 +34,8 @@
 #define WE_MOD_INITIALIZE_START(modname)\
   extern "C" \
   {\
-     void DLL_PUBLIC we_mod_initialize(::we::loader::IModule *, unsigned int);   \
-     void DLL_PUBLIC we_mod_initialize(::we::loader::IModule *mod, unsigned int)                \
+     void DLL_PUBLIC we_mod_initialize(::we::loader::IModule *);   \
+     void DLL_PUBLIC we_mod_initialize(::we::loader::IModule *mod)                \
      {\
         (void)(mod);                               \
         {volatile int _ = WE_GUARD_SYMBOL; (void)_;} \
