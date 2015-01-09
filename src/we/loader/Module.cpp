@@ -56,10 +56,8 @@ namespace we
       {
         throw function_not_found (path_, function);
       }
-      else
-      {
-        (*fun->second)(info, input, output, memory_buffer);
-      }
+
+      (*fun->second)(info, input, output, memory_buffer);
     }
     void Module::add_function (const std::string& name, WrapperFunction f)
     {
