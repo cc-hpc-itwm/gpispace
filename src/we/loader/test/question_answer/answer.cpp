@@ -21,7 +21,7 @@ static void answer ( drts::worker::context*
 WE_MOD_INITIALIZE_START (answer);
 {
   the_answer = 42L;
-  WE_REGISTER_FUN (answer);
+  WE_REGISTER_FUN_AS (answer,  "answer");
 }
 WE_MOD_INITIALIZE_END (answer);
 

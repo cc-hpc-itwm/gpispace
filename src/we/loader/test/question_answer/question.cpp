@@ -17,7 +17,7 @@ static void question ( drts::worker::context*
 WE_MOD_INITIALIZE_START (question);
 {
   get_answer();
-  WE_REGISTER_FUN (question);
+  WE_REGISTER_FUN_AS (question, "question");
 }
 WE_MOD_INITIALIZE_END (question);
 
