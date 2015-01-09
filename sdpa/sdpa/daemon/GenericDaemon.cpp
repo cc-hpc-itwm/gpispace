@@ -576,6 +576,15 @@ void GenericDaemon::handleErrorEvent
                                                                       , as_worker.get()->second
                                                                       );
         }
+        else
+        {
+          throw std::runtime_error
+            ( ( boost::format( "The worker %1% reported double submission for the unexisting job %2%!")
+              % as_worker.get()->second
+              % *error.job_id()
+              ).str()
+            );
+        }
       }
       else
       {
