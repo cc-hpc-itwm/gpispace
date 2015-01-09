@@ -40,7 +40,11 @@ namespace we
       {
         if (boost::filesystem::exists (p / file_name))
         {
-          return *load (module, p / file_name);
+          Module* mod (new Module ((p / file_name).string()));
+
+          _module_stack.push (mod);
+
+          return *_module_table.emplace (module, mod).first->second;
         }
       }
 
@@ -48,24 +52,6 @@ namespace we
         ( file_name.string()
         , fhg::util::join (_search_path.begin(), _search_path.end(), ":")
         );
-    }
-
-    Module* loader::load ( const std::string& name
-                         , const boost::filesystem::path& path
-                         )
-    {
-      std::unique_lock<std::recursive_mutex> const _ (_table_mutex);
-
-      if (_module_table.find (name) != _module_table.end())
-      {
-        throw module_already_registered (name);
-      }
-
-      Module* mod (new Module (path.string()));
-
-      _module_stack.push (mod);
-
-      return _module_table.emplace (name, mod).first->second;
     }
   }
 }

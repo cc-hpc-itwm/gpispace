@@ -25,8 +25,6 @@ namespace we
       Module& operator[] (const std::string &module);
 
    private:
-      Module* load (const std::string&, const boost::filesystem::path&);
-
       mutable std::recursive_mutex _table_mutex;
       typedef std::unordered_map<std::string, Module*> module_table_t;
       module_table_t _module_table;
