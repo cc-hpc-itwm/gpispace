@@ -7,7 +7,6 @@
 
 #include <list>
 #include <mutex>
-#include <stack>
 #include <string>
 #include <unordered_map>
 
@@ -20,15 +19,12 @@ namespace we
     public:
       loader() = default;
       loader (std::list<boost::filesystem::path> const&);
-      ~loader();
 
-      Module& operator[] (const std::string &module);
+      Module const& operator[] (const std::string &module);
 
    private:
       std::mutex _table_mutex;
-      typedef std::unordered_map<std::string, Module*> module_table_t;
-      module_table_t _module_table;
-      std::stack<Module*> _module_stack;
+      std::unordered_map<std::string, std::unique_ptr<Module>> _module_table;
       std::list<boost::filesystem::path> const _search_path;
     };
   }
