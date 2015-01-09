@@ -29,7 +29,7 @@ namespace we
       typedef std::unordered_map<std::string, Module*> module_table_t;
       module_table_t _module_table;
       std::stack<Module*> _module_stack;
-      std::list<boost::filesystem::path> _search_path;
+      std::list<boost::filesystem::path> const _search_path;
     };
   }
 }
