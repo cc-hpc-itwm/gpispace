@@ -47,7 +47,7 @@ namespace we
                       , const expr::eval::context& input
                       , expr::eval::context& output
                       , std::map<std::string, void*> const& memory_buffer
-                      )
+                      ) const
     {
       const std::unordered_map<std::string, WrapperFunction>::const_iterator
         fun (call_table_.find (function));
