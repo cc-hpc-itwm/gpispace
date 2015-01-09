@@ -8,7 +8,6 @@
 
 #include <drts/worker/context_fwd.hpp>
 
-#include <list>
 #include <map>
 #include <string>
 
