@@ -33,6 +33,43 @@
 
 namespace
 {
+  //! \note Works around sshd's MaxStartups:
+  // Specifies the maximum number of concurrent unauthenticated con-
+  // nections to the sshd daemon.  Additional connections will be
+  // dropped until authentication succeeds or the LoginGraceTime
+  // expires for a connection.	The default is 10.
+  //  (see man sshd_config)
+  // We limit to 3 to "allow" parallel testing.
+  constexpr const std::size_t parallel_ssh_limit (3);
+  std::mutex parallel_ssh_limit_mutex;
+  std::condition_variable parallel_ssh_limit_freed_condition;
+  std::unordered_map<std::string, std::size_t> parallel_ssh_limit_counter;
+  struct parallel_ssh_limiter
+  {
+    parallel_ssh_limiter (std::string const& host)
+      : _host (host)
+    {
+      std::unique_lock<std::mutex> lock (parallel_ssh_limit_mutex);
+      parallel_ssh_limit_freed_condition.wait
+        ( lock
+        , [this] { return parallel_ssh_limit_counter[_host] < parallel_ssh_limit; }
+        );
+      ++parallel_ssh_limit_counter[_host];
+    }
+    ~parallel_ssh_limiter()
+    {
+      {
+        std::unique_lock<std::mutex> const _ (parallel_ssh_limit_mutex);
+        if (--parallel_ssh_limit_counter[_host] == 0)
+        {
+          parallel_ssh_limit_counter.erase (_host);
+        }
+      }
+      parallel_ssh_limit_freed_condition.notify_one();
+    }
+    std::string const& _host;
+  };
+
   void system (std::string const& command, std::string const& description)
   {
     if (int ec = fhg::util::system_with_blocked_SIGCHLD (command.c_str()))
@@ -52,6 +89,8 @@ namespace
 
   void rexec (std::string const& host, std::string const& command)
   {
+    parallel_ssh_limiter const _ (host);
+
     system ( "ssh " + ssh_opts + " " + host
            + " /usr/bin/env LD_LIBRARY_PATH='"
            + fhg::util::getenv ("LD_LIBRARY_PATH").get_value_or ("")
@@ -85,6 +124,8 @@ namespace
     std::vector<std::string> lines;
 
     {
+      parallel_ssh_limiter const _ (host);
+
       struct scoped_popen
       {
         scoped_popen (const char* command, const char* type)
