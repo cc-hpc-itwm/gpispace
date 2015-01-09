@@ -40,16 +40,6 @@ namespace sdpa
       return worker_map_.at(worker)->hostname();
     }
 
-    Worker::ptr_t WorkerManager::findWorker (const worker_id_t& worker_id)
-    {
-      boost::mutex::scoped_lock const _ (mtx_);
-      worker_map_t::iterator it = worker_map_.find(worker_id);
-      if( it != worker_map_.end() )
-        return it->second;
-      else
-        throw WorkerNotFoundException();
-    }
-
     bool WorkerManager::hasWorker(const worker_id_t& worker_id) const
     {
       boost::mutex::scoped_lock const _ (mtx_);
@@ -94,15 +84,10 @@ namespace sdpa
     }
 
 
-    void WorkerManager::deleteWorker (const worker_id_t& workerId)
+    bool WorkerManager::deleteWorker (const worker_id_t& workerId)
     {
       boost::mutex::scoped_lock const _ (mtx_);
-      worker_map_t::iterator w (worker_map_.find (workerId));
-
-      if (w == worker_map_.end())
-        throw WorkerNotFoundException();
-
-      worker_map_.erase (w);
+      return worker_map_.erase (workerId) != 0;
     }
 
     std::set<worker_id_t> WorkerManager::getAllNonReservedWorkers() const
@@ -148,18 +133,18 @@ namespace sdpa
     }
 
     boost::optional<std::size_t> WorkerManager::matchRequirements
-      ( const Worker::ptr_t& pWorker
+      ( const worker_id_t& worker
       , const job_requirements_t& job_req_set
       ) const
     {
       std::size_t matchingDeg (0);
-      if (job_req_set.numWorkers()>1 && pWorker->children_allowed())
+      if (job_req_set.numWorkers()>1 && worker_map_.at (worker)->children_allowed())
       {
         return boost::none;
       }
       for (we::type::requirement_t req : job_req_set.getReqList())
       {
-        if (pWorker->hasCapability (req.value()))
+        if (worker_map_.at (worker)->hasCapability (req.value()))
         {
           ++matchingDeg;
         }
@@ -202,7 +187,7 @@ namespace sdpa
           continue;
 
         const boost::optional<std::size_t>
-          matchingDeg (matchRequirements (it->second, job_reqs));
+          matchingDeg (matchRequirements (it->second->name(), job_reqs));
 
         if (matchingDeg)
         {
@@ -264,6 +249,62 @@ namespace sdpa
                          , [](const worker_map_t::value_type& p)
                              {return p.second->isReserved() && p.second->has_pending_jobs();}
                          );
+    }
+
+    void WorkerManager::assign_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      worker_map_.at (worker_id)->assign (job_id);
+    }
+
+    void WorkerManager::submit_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      worker_map_.at (worker_id)->submit (job_id);
+    }
+
+    void WorkerManager::acknowledge_job_sent_to_worker ( const job_id_t& job_id
+                                                       , const worker_id_t& worker_id
+                                                       )
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      worker_map_.at (worker_id)->acknowledge (job_id);
+    }
+
+    void WorkerManager::delete_job_from_worker ( const job_id_t &job_id
+                                               , const worker_id_t& worker_id
+                                               )
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      worker_map_.at (worker_id)->deleteJob (job_id);
+    }
+
+    const capabilities_set_t& WorkerManager::worker_capabilities (const worker_id_t& worker) const
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      return worker_map_.at (worker)->capabilities();
+    }
+
+    const std::set<job_id_t> WorkerManager::get_worker_jobs_and_clean_queues (const worker_id_t& worker) const
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      return worker_map_.at (worker)->getJobListAndCleanQueues();
+    }
+
+    bool WorkerManager::add_worker_capabilities ( const worker_id_t& worker_id
+                                                , const capabilities_set_t& cpb_set
+                                                )
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      return worker_map_.at (worker_id)->addCapabilities (cpb_set);
+    }
+
+    bool WorkerManager::remove_worker_capabilities ( const worker_id_t& worker_id
+                                                   , const capabilities_set_t& cpb_set
+                                                   )
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      return worker_map_.at (worker_id)->removeCapabilities (cpb_set);
     }
   }
 }

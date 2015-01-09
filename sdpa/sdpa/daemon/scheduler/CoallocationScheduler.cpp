@@ -206,7 +206,7 @@ namespace sdpa
           {
             for (worker_id_t const& worker : matching_workers)
             {
-              worker_manager().findWorker (worker)->assign (jobId);
+              worker_manager().assign_job_to_worker (jobId, worker);
             }
 
             Reservation* pReservation
@@ -222,11 +222,11 @@ namespace sdpa
             allocation_table_.emplace (jobId, pReservation);
             _list_pending_jobs.push (jobId);
           }
-          catch (std::runtime_error const&)
+          catch (std::out_of_range const&)
           {
             for (const worker_id_t& wid : matching_workers)
             {
-              worker_manager().findWorker (wid)->deleteJob (jobId);
+              worker_manager().delete_job_from_worker (jobId, wid);
             }
 
             jobs_to_schedule.push_front (jobId);
@@ -265,13 +265,12 @@ namespace sdpa
       (const worker_id_t& worker)
     {
       job_id_list_t matching_jobs;
-      const Worker::ptr_t ptr_worker (worker_manager().findWorker (worker));
 
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
       for (const job_id_t& job_id : allocation_table_ | boost::adaptors::map_keys)
       {
         const job_requirements_t& requirements (_job_requirements (job_id));
-        if (worker_manager().matchRequirements (ptr_worker, requirements))
+        if (worker_manager().matchRequirements (worker, requirements))
         {
           matching_jobs.push_back (job_id);
         }
@@ -324,7 +323,7 @@ namespace sdpa
         {
           for (worker_id_t const& worker : workers)
           {
-            worker_manager().findWorker (worker)->submit (job_id);
+            worker_manager().submit_job_to_worker (job_id, worker);
           }
 
           serve_job ({workers.begin(), workers.end()}, job_id);
@@ -351,9 +350,9 @@ namespace sdpa
         for (std::string worker : ptr_reservation->workers())
         {
           try {
-              worker_manager().findWorker (worker)->deleteJob (job_id);
+            worker_manager().delete_job_from_worker (job_id, worker);
           }
-          catch (const WorkerNotFoundException&)
+          catch (std::out_of_range const &)
           {
             // the worker might be gone in between
           }

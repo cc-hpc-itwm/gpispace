@@ -80,14 +80,8 @@ namespace sdpa
       notify_subscribers<events::JobFinishedEvent>
         (pEvt->job_id(), pEvt->job_id(), pEvt->result());
 
-      try
-      {
-        scheduler().releaseReservation (pEvt->job_id());
-        request_scheduling();
-      }
-      catch (WorkerNotFoundException const&)
-      {
-      }
+      scheduler().releaseReservation (pEvt->job_id());
+      request_scheduling();
     }
 
     void Orchestrator::handleJobFailedEvent
@@ -107,14 +101,8 @@ namespace sdpa
       notify_subscribers<events::JobFailedEvent>
         (pEvt->job_id(), pEvt->job_id(), pEvt->error_message());
 
-      try
-      {
-        scheduler().releaseReservation (pEvt->job_id());
-        request_scheduling();
-      }
-      catch (const WorkerNotFoundException&)
-      {
-      }
+      scheduler().releaseReservation (pEvt->job_id());
+      request_scheduling();
     }
 
     void Orchestrator::handleCancelJobEvent

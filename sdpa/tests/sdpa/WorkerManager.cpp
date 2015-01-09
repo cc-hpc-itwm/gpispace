@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE (delete_worker)
   BOOST_REQUIRE (worker_manager.hasWorker(worker_ids[0]));
   BOOST_REQUIRE (!worker_manager.hasWorker(worker_ids[1]));
 
-  BOOST_REQUIRE_THROW (worker_manager.deleteWorker (worker_ids[2]), std::runtime_error);
+  BOOST_REQUIRE(!worker_manager.deleteWorker (worker_ids[2]));
 }
 
 BOOST_AUTO_TEST_CASE (get_capabilities)
@@ -133,20 +133,19 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker (worker_ids[0], 1, {sdpa::capability_t ("A", worker_ids[0])}, random_bool(), fhg::util::random_string());
 
-  const sdpa::daemon::Worker::ptr_t ptrWorker (worker_manager.findWorker (worker_ids[0]));
   const sdpa::job_id_t job_id (fhg::util::random_string());
 
-  ptrWorker->assign (job_id);
+  worker_manager.assign_job_to_worker (job_id, worker_ids[0]);
   boost::optional<sdpa::worker_id_t> worker_id (worker_manager.findSubmOrAckWorker (job_id));
   BOOST_REQUIRE (worker_id);
   BOOST_REQUIRE_EQUAL (*worker_id, worker_ids[0]);
 
-  ptrWorker->submit (job_id);
+  worker_manager.submit_job_to_worker (job_id, worker_ids[0]);
   worker_id = worker_manager.findSubmOrAckWorker (job_id);
   BOOST_REQUIRE (worker_id);
   BOOST_REQUIRE_EQUAL (*worker_id, worker_ids[0]);
 
-  ptrWorker->acknowledge (job_id);
+  worker_manager.acknowledge_job_sent_to_worker (job_id, worker_ids[0]);
   worker_id = worker_manager.findSubmOrAckWorker (job_id);
   BOOST_REQUIRE (worker_id);
   BOOST_REQUIRE_EQUAL (*worker_id, worker_ids[0]);

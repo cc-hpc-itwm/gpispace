@@ -6,8 +6,6 @@
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
-#include <sdpa/daemon/exceptions.hpp>
-#include <sdpa/job_requirements.hpp>
 #include <sdpa/types.hpp>
 
 #include <boost/optional.hpp>

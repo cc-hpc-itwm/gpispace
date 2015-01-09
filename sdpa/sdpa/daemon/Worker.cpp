@@ -1,6 +1,5 @@
 #include <sdpa/daemon/Worker.hpp>
 #include <stdexcept>
-#include <sdpa/daemon/exceptions.hpp>
 #include <fhg/util/now.hpp>
 #include <iostream>
 #include <algorithm>
