@@ -577,6 +577,12 @@ void GenericDaemon::handleErrorEvent
                                                                       );
         }
       }
+      else
+      {
+        throw std::runtime_error ( "Not-registered worker reported double submission of the job "
+                                 +  *error.job_id()
+                                 );
+      }
       break;
     }
     default:
