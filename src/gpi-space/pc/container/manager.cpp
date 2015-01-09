@@ -40,7 +40,7 @@ namespace gpi
 
           while (! m_processes.empty())
           {
-            detach_process (m_processes.begin()->first);
+            detach_process (m_processes.begin()->first, true);
           }
 
         _memory_manager.clear();
@@ -285,8 +285,15 @@ namespace gpi
           start ();
       }
 
-      void manager_t::detach_process (const gpi::pc::type::process_id_t id)
+      void manager_t::detach_process ( const gpi::pc::type::process_id_t id
+                                     , bool called_from_dtor
+                                     )
       {
+        if (m_stopping && !called_from_dtor)
+        {
+          return;
+        }
+
         boost::mutex::scoped_lock const _ (_mutex_processes);
 
         if (m_processes.find (id) == m_processes.end())
