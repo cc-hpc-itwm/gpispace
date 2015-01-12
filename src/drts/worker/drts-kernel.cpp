@@ -2,13 +2,12 @@
 
 #include <drts/worker/drts.hpp>
 
-#include <plugin/core/kernel.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/print_exception.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/split.hpp>
-
+#include <fhg/util/thread/event.hpp>
 #include <fhglog/LogMacros.hpp>
 
 #include <boost/iostreams/device/file_descriptor.hpp>
@@ -104,10 +103,9 @@ try
   }
   config_variables["kernel_name"] = kernel_name;
 
-  fhg::core::wait_until_stopped waiter;
-  const std::function<void()> request_stop (waiter.make_request_stop());
-
-  fhg::core::kernel_t kernel (request_stop);
+  fhg::util::thread::event<> stop_requested;
+  const std::function<void()> request_stop
+    (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
 
   fhg::util::signal_handler_manager signal_handlers;
   fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
@@ -169,7 +167,7 @@ try
       startup_messages_pipe << "OKAY\n";
     }
 
-    waiter.wait();
+    stop_requested.wait();
   }
   else
   {
@@ -189,7 +187,7 @@ try
       startup_messages_pipe << "OKAY\n";
     }
 
-    waiter.wait();
+    stop_requested.wait();
   }
 
   return 0;
