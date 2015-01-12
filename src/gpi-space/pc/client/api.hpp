@@ -41,9 +41,6 @@ namespace gpi
 
         void start ();
 
-        void path (std::string const & p);
-        std::string const & path () const;
-
         //! \todo add const (do not call stop()) in memcpy, ptr, wait
         //! and replace /*const*/ in
         //!   src/drts/worker/drts-kernel.cpp

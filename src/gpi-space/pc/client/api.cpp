@@ -116,15 +116,6 @@ namespace gpi
         return fhg::syscall::read (m_socket, buf, sz);
       }
 
-      void api_t::path (std::string const & p)
-      {
-        m_path = p;
-      }
-      std::string const & api_t::path () const
-      {
-        return m_path;
-      }
-
       gpi::pc::proto::message_t
       api_t::communicate(gpi::pc::proto::message_t const & rqst)
       {
