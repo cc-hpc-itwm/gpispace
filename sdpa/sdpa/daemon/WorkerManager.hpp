@@ -69,7 +69,6 @@ namespace sdpa
       = boost::bimap < boost::bimaps::unordered_set_of<std::string>
                      , boost::bimaps::unordered_set_of<fhg::com::p2p::address_t>
                      >;
-    worker_connections_t _worker_connections;
 
     boost::optional<WorkerManager::worker_connections_t::right_map::iterator>
       worker_by_address (fhg::com::p2p::address_t const&);
@@ -79,6 +78,7 @@ namespace sdpa
 
     private:
       worker_map_t  worker_map_;
+      worker_connections_t _worker_connections;
 
       mutable boost::mutex mtx_;
     };
