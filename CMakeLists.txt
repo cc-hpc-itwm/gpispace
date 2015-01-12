@@ -131,8 +131,6 @@ set (MMGR_LIBRARY_SHARED mmgr.shared)
 
 set (FhgCom_LIBRARY fhgcom)
 
-set (FVM_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fvm-pc)
-
 set (PNETC_LIB_DIR "share/sdpa/xml/lib")
 set (SDPA_APPS_DIR "libexec/sdpa/apps")
 
