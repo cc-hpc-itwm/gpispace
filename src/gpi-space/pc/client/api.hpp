@@ -65,9 +65,6 @@ namespace gpi
         gpi::pc::type::handle::descriptor_t
         info(const gpi::pc::type::handle_t h);
 
-        gpi::pc::type::handle::list_t
-        list_allocations (const gpi::pc::type::segment_id_t seg = gpi::pc::type::segment::SEG_INVAL);
-
         gpi::pc::type::queue_id_t
         memcpy ( gpi::pc::type::memory_location_t const & dst
                , gpi::pc::type::memory_location_t const & src

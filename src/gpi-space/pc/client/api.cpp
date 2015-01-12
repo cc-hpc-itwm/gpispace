@@ -513,42 +513,6 @@ namespace gpi
         m_segments.erase (id);
       }
 
-      gpi::pc::type::handle::list_t
-      api_t::list_allocations (const gpi::pc::type::segment_id_t seg)
-      {
-        proto::memory::list_t rqst;
-        rqst.segment = seg;
-
-        proto::message_t rply;
-        try
-        {
-          rply = communicate(proto::memory::message_t(rqst));
-        }
-        catch (std::exception const & ex)
-        {
-          stop ();
-          throw;
-        }
-
-        try
-        {
-          proto::memory::message_t mem_msg (boost::get<proto::memory::message_t> (rply));
-          proto::memory::list_reply_t handles (boost::get<proto::memory::list_reply_t>(mem_msg));
-          return handles.list;
-        }
-        catch (boost::bad_get const &)
-        {
-          proto::error::error_t result (boost::get<proto::error::error_t>(rply));
-          LOG(ERROR, "could not get handle list: " << result.code << ": " << result.detail);
-          throw std::runtime_error ("handle listing failed: " + result.detail);
-        }
-        catch (std::exception const & ex)
-        {
-          stop ();
-          throw;
-        }
-      }
-
       bool api_t::ping ()
       {
         if (!is_connected())
