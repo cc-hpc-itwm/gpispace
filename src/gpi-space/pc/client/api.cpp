@@ -542,41 +542,6 @@ namespace gpi
         lock_type lock (m_mutex);
         m_garbage_segments.clear();
       }
-
-      gpi::pc::type::segment_id_t api_t::add_memory (const std::string & url)
-      {
-        gpi::pc::proto::message_t const rply;
-          (communicate (gpi::pc::proto::segment::message_t
-                        (gpi::pc::proto::segment::add_memory_t (url)))
-          );
-        try
-        {
-          return boost::get<gpi::pc::proto::segment::register_reply_t>
-            (boost::get<gpi::pc::proto::segment::message_t>(rply)).id;
-        }
-        catch (boost::bad_get const &)
-        {
-          throw
-            std::runtime_error (boost::get<proto::error::error_t>(rply).detail);
-        }
-      }
-
-      void api_t::del_memory (gpi::pc::type::segment_id_t id)
-      {
-        proto::error::error_t const result
-          ( boost::get<proto::error::error_t>
-            ( communicate
-              ( gpi::pc::proto::segment::message_t
-                (proto::segment::del_memory_t (id))
-              )
-            )
-          );
-
-        if (result.code != proto::error::success)
-        {
-          throw std::runtime_error (result.detail);
-        }
-      }
     }
   }
 }

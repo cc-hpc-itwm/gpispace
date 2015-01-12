@@ -89,9 +89,6 @@ namespace gpi
                                                     );
         void unregister_segment(const gpi::pc::type::segment_id_t);
 
-        gpi::pc::type::segment_id_t add_memory (const std::string & url);
-        void del_memory (gpi::pc::type::segment_id_t);
-
         bool ping ();
 
         segment_set_t const & garbage_segments () const;
