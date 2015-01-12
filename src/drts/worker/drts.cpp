@@ -1,7 +1,6 @@
 #include <drts/worker/drts.hpp>
 
 //! \todo remove when redoing ctor
-#include <plugin/plugin.hpp>
 #include <fhg/util/getenv.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/hostname.hpp>
@@ -21,6 +20,21 @@
 #include <boost/range/adaptor/map.hpp>
 
 #include <functional>
+
+//! \note Temporary, while config_variables are passed in as map<>.
+#include <boost/optional.hpp>
+#include <boost/lexical_cast.hpp>
+
+template<typename T> boost::optional<T> get
+  (std::string key, std::map<std::string, std::string> const& vals)
+{
+  const std::map<std::string, std::string>::const_iterator it (vals.find (key));
+  if (it != vals.end())
+  {
+    return boost::lexical_cast<T> (it->second);
+  }
+  return boost::none;
+}
 
 wfe_task_t::wfe_task_t (std::string id, std::string worker_name, std::list<std::string> workers)
   : id (id)
