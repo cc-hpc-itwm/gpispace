@@ -1,9 +1,4 @@
-set(hdrs
-  plugin.hpp
-)
-
 set (core_srcs
-  core/plugin.cpp
   core/kernel.cpp
 )
 
