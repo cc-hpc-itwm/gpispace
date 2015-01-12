@@ -91,7 +91,6 @@ namespace gpi
 
         bool ping ();
 
-        segment_set_t const & garbage_segments () const;
         void garbage_collect ();
       private:
         typedef boost::recursive_mutex mutex_type;

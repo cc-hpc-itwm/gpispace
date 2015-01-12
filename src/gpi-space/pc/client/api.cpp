@@ -532,11 +532,6 @@ namespace gpi
         }
       }
 
-      api_t::segment_set_t const & api_t::garbage_segments () const
-      {
-        return m_garbage_segments;
-      }
-
       void api_t::garbage_collect ()
       {
         lock_type lock (m_mutex);
