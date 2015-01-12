@@ -98,7 +98,6 @@ namespace gpi
         gpi::pc::type::segment_id_t add_memory (const std::string & url);
         void del_memory (gpi::pc::type::segment_id_t);
 
-        gpi::pc::type::info::descriptor_t collect_info () const;
         bool ping ();
 
         bool is_attached (const gpi::pc::type::segment_id_t id);
@@ -119,7 +118,6 @@ namespace gpi
         int m_socket;
         segment_map_t m_segments;
         segment_set_t m_garbage_segments;
-        gpi::pc::type::info::descriptor_t m_info;
       };
     }
   }

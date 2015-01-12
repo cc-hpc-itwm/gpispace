@@ -73,13 +73,6 @@ namespace gpi
         }
 
         m_socket = open_socket (m_path);
-
-            m_info = boost::get<proto::control::info_reply_t>
-              ( boost::get<proto::control::message_t>
-               ( communicate
-                 (proto::control::message_t (proto::control::info_t()))
-               )
-              ).info;
       }
 
       void api_t::stop ()
@@ -744,11 +737,6 @@ namespace gpi
         {
           throw std::runtime_error (result.detail);
         }
-      }
-
-      gpi::pc::type::info::descriptor_t api_t::collect_info () const
-      {
-        return m_info;
       }
     }
   }
