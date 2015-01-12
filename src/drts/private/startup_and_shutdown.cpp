@@ -1,6 +1,8 @@
 #include <drts/private/startup_and_shutdown.hpp>
 
 #include <fhg/syscall.hpp>
+#include <fhg/util/boost/serialization/path.hpp>
+#include <fhg/util/boost/serialization/unordered_map.hpp>
 #include <fhg/util/getenv.hpp>
 #include <fhg/util/join.hpp>
 #include <fhg/util/read_file.hpp>
@@ -9,15 +11,17 @@
 #include <fhg/util/starts_with.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
-#include <rif/execute_and_get_startup_messages.hpp>
+#include <rpc/client.hpp>
 
 #include <boost/algorithm/string/classification.hpp>
+#include <boost/asio/io_service.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/adaptors.hpp>
 #include <boost/regex.hpp>
+#include <boost/thread/scoped_thread.hpp>
 
 #include <algorithm>
 #include <chrono>
@@ -33,157 +37,54 @@
 
 namespace
 {
-  //! \note Works around sshd's MaxStartups:
-  // Specifies the maximum number of concurrent unauthenticated con-
-  // nections to the sshd daemon.  Additional connections will be
-  // dropped until authentication succeeds or the LoginGraceTime
-  // expires for a connection.	The default is 10.
-  //  (see man sshd_config)
-  // We limit to 3 to "allow" parallel testing.
-  constexpr const std::size_t parallel_ssh_limit (3);
-  std::mutex parallel_ssh_limit_mutex;
-  std::condition_variable parallel_ssh_limit_freed_condition;
-  std::unordered_map<std::string, std::size_t> parallel_ssh_limit_counter;
-  struct parallel_ssh_limiter
+  template<typename R, typename... Args>
+    R rexec ( std::string const& host, unsigned short port
+            , std::string const& function_name
+            , Args... args
+            )
   {
-    parallel_ssh_limiter (std::string const& host)
-      : _host (host)
+    boost::asio::io_service io_service;
+    boost::asio::io_service::work const io_service_work_ (io_service);
+    boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> const
+      io_service_thread ([&io_service] { io_service.run(); });
+
+    fhg::rpc::remote_endpoint endpoint
+      ( io_service
+      , host, port
+      , fhg::rpc::exception::serialization_functions()
+      );
+
+    struct stop_io_service_on_scope_exit
     {
-      std::unique_lock<std::mutex> lock (parallel_ssh_limit_mutex);
-      parallel_ssh_limit_freed_condition.wait
-        ( lock
-        , [this] { return parallel_ssh_limit_counter[_host] < parallel_ssh_limit; }
-        );
-      ++parallel_ssh_limit_counter[_host];
-    }
-    ~parallel_ssh_limiter()
-    {
+      ~stop_io_service_on_scope_exit()
       {
-        std::unique_lock<std::mutex> const _ (parallel_ssh_limit_mutex);
-        if (--parallel_ssh_limit_counter[_host] == 0)
-        {
-          parallel_ssh_limit_counter.erase (_host);
-        }
+        _io_service.stop();
       }
-      parallel_ssh_limit_freed_condition.notify_one();
-    }
-    std::string const& _host;
-  };
+      boost::asio::io_service& _io_service;
+    } foo {io_service};
 
-  void system (std::string const& command, std::string const& description)
-  {
-    if (int ec = fhg::util::system_with_blocked_SIGCHLD (command.c_str()))
-    {
-      throw std::runtime_error
-        (( boost::format ("Could not '%3%': error code '%1%', command was '%2%'")
-         % ec
-         % command
-         % description
-         ).str()
-        );
-    }
-  }
-
-  std::string const ssh_opts
-    ("-q -x -T -n -C -4 -o CheckHostIP=no -o StrictHostKeyChecking=no");
-
-  void rexec (std::string const& host, std::string const& command)
-  {
-    parallel_ssh_limiter const _ (host);
-
-    system ( "ssh " + ssh_opts + " " + host
-           + " /usr/bin/env LD_LIBRARY_PATH='"
-           + fhg::util::getenv ("LD_LIBRARY_PATH").get_value_or ("")
-           + "' '" + command + "'"
-           , "rexec"
-           );
+    return fhg::rpc::sync_remote_function<R (Args...)>
+      (endpoint, function_name) (args...);
   }
 
   std::pair<pid_t, std::vector<std::string>> remote_execute_and_get_startup_messages
-    ( std::string const& host
-    , std::string const& startup_messages_pipe_option
-    , std::string const& end_sentinel_value
-    , boost::filesystem::path const& command
-    , std::vector<std::string> const& arguments
-    , std::unordered_map<std::string, std::string> const& environment
-    , boost::filesystem::path const& sdpa_home
+    ( std::string const& host, unsigned short port
+    , std::string startup_messages_pipe_option
+    , std::string end_sentinel_value
+    , boost::filesystem::path command
+    , std::vector<std::string> arguments
+    , std::unordered_map<std::string, std::string> environment
     )
   {
-    std::string environment_string;
-    for (std::pair<std::string, std::string> const& var : environment)
-    {
-      environment_string
-        += " --environment " + var.first + "='" + var.second + "'";
-    }
-    std::string arguments_string;
-    for (std::string const& arg : arguments)
-    {
-      arguments_string += " --arguments '" + arg + "'";
-    }
-
-    std::vector<std::string> lines;
-
-    {
-      parallel_ssh_limiter const _ (host);
-
-      struct scoped_popen
-      {
-        scoped_popen (const char* command, const char* type)
-          : _ (fhg::syscall::popen (command, type))
-          , _command (command)
-        {}
-        ~scoped_popen()
-        {
-          int const status (fhg::syscall::pclose (_));
-
-          if (WIFEXITED (status) && WEXITSTATUS (status) != 0)
-          {
-            throw std::runtime_error
-              ("'" + _command + "' failed: " + std::to_string (WEXITSTATUS (status)));
-          }
-          else if (WIFSIGNALED (status))
-          {
-            throw std::runtime_error
-              ("'" + _command + "' signaled: " + std::to_string (WTERMSIG (status)));
-          }
-        }
-        FILE* _;
-        std::string _command;
-      } process
-          ( ( "ssh " + ssh_opts + " " + host
-            + " /usr/bin/env LD_LIBRARY_PATH='"
-            + fhg::util::getenv ("LD_LIBRARY_PATH").get_value_or ("")
-            + "' '" + (sdpa_home / "bin" / "start-and-fork").string() + "'"
-            + " --end-sentinel-value " + end_sentinel_value
-            + " --startup-messages-pipe-option " + startup_messages_pipe_option
-            + " --command '" + command.string() + "'"
-            + arguments_string
-            + environment_string
-            ).c_str()
-          , "r"
-          );
-
-      struct free_on_scope_exit
-      {
-        ~free_on_scope_exit()
-        {
-          free (_);
-          _ = nullptr;
-        }
-        char* _ {nullptr};
-      } line;
-      std::size_t length (0);
-
-      ssize_t read;
-      while ((read = getline (&line._, &length, process._)) != -1)
-      {
-        lines.emplace_back (line._, read - 1);
-      }
-    }
-
-    return { boost::lexical_cast<pid_t> (lines.at (0))
-           , {lines.begin() + 1, lines.end()}
-           };
+    return rexec<std::pair<pid_t, std::vector<std::string>>>
+      ( host, port
+      , "execute_and_get_startup_messages"
+      , startup_messages_pipe_option
+      , end_sentinel_value
+      , command
+      , arguments
+      , environment
+      );
   }
 
   void write_pidfile ( boost::filesystem::path const& processes_dir
@@ -269,6 +170,7 @@ namespace
     , boost::filesystem::path const& sdpa_home
     , boost::filesystem::path const& log_dir
     , boost::filesystem::path const& processes_dir
+    , unsigned short rif_port
     )
   {
     std::cout << "I: starting agent: " << name << " on host " << host
@@ -288,7 +190,7 @@ namespace
 
     std::pair<pid_t, std::vector<std::string>> const agent_startup_messages
       ( remote_execute_and_get_startup_messages
-          ( host
+          ( host, rif_port
           , "--startup-messages-pipe"
           , "OKAY"
           , sdpa_home / "bin" / "agent"
@@ -297,7 +199,6 @@ namespace
             , {"FHGLOG_level", verbose ? "TRACE" : "INFO"}
             , {"FHGLOG_to_file", (log_dir / (name + ".log")).string()}
             }
-          , sdpa_home
           )
       );
 
@@ -389,6 +290,7 @@ namespace
     , boost::optional<boost::filesystem::path> const& gpi_socket
     , std::vector<boost::filesystem::path> const& app_path
     , boost::filesystem::path const& sdpa_home
+    , unsigned short rif_port
     )
   {
      std::string name_prefix (fhg::util::join (description.capabilities, "+"));
@@ -502,13 +404,12 @@ namespace
 
                    std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages
                      ( remote_execute_and_get_startup_messages
-                       ( host
+                       ( host, rif_port
                        , "--startup-messages-pipe"
                        , "OKAY"
                        , sdpa_home / "bin" / "drts-kernel"
                        , arguments
                        , environment
-                       , sdpa_home
                        )
                      );
 
@@ -612,6 +513,7 @@ namespace fhg
                  , boost::optional<std::chrono::seconds> vmem_startup_timeout
                  , std::vector<worker_description> worker_descriptions
                  , boost::optional<unsigned short> vmem_port
+                 , unsigned short rif_port
                  )
     {
       std::vector<std::string> nodefile_content
@@ -694,14 +596,16 @@ namespace fhg
 
       struct stop_drts_on_failure
       {
-        stop_drts_on_failure (boost::filesystem::path const& state_dir)
+        stop_drts_on_failure
+            (boost::filesystem::path const& state_dir, unsigned short rif_port)
           : _state_dir (state_dir)
+          , _rif_port (rif_port)
         {}
         ~stop_drts_on_failure()
         {
           if (!_successful)
           {
-            shutdown (_state_dir);
+            shutdown (_state_dir, _rif_port);
           }
         }
         void startup_successful()
@@ -709,8 +613,9 @@ namespace fhg
           _successful = true;
         }
         boost::filesystem::path const& _state_dir;
+        unsigned short _rif_port;
         bool _successful {false};
-      } stop_drts_on_failure = {state_dir};
+      } stop_drts_on_failure = {state_dir, rif_port};
 
       fhg::util::scoped_signal_handler interrupt_signal_handler
         ( signal_handler_manager
@@ -733,7 +638,7 @@ namespace fhg
             ( [&]
               {
                 return remote_execute_and_get_startup_messages
-                  ( master
+                  ( master, rif_port
                   , "--startup-messages-pipe"
                   , "OKAY"
                   , sdpa_home / "bin" / "orchestrator"
@@ -742,7 +647,6 @@ namespace fhg
                     , {"FHGLOG_level", verbose ? "TRACE" : "INFO"}
                     , {"FHGLOG_to_file", (state_dir / "log" / "orchestrator.log").string()}
                     }
-                  , sdpa_home
                   );
               }
               , "could not start orchestrator"
@@ -817,7 +721,7 @@ namespace fhg
                         std::pair<pid_t, std::vector<std::string>> const
                           startup_messages
                           ( remote_execute_and_get_startup_messages
-                              ( host
+                              ( host, rif_port
                               , "--startup-messages-pipe"
                               , "OKAY"
                               , sdpa_home / "bin" / "gpi-space"
@@ -838,7 +742,6 @@ namespace fhg
                                   }
                                 , {"GASPI_SET_NUMA_SOCKET", "0"}
                                 }
-                              , sdpa_home
                               )
                           );
 
@@ -907,6 +810,7 @@ namespace fhg
                             , sdpa_home
                             , log_dir
                             , processes_dir
+                            , rif_port
                             )
               );
 
@@ -937,6 +841,7 @@ namespace fhg
                                                 , sdpa_home
                                                 , log_dir
                                                 , processes_dir
+                                                , rif_port
                                                 );
                                             }
                                           )
@@ -967,6 +872,7 @@ namespace fhg
                                   , gpi_socket
                                   , app_path
                                   , sdpa_home
+                                  , rif_port
                                   );
               }
             }
@@ -990,6 +896,7 @@ namespace fhg
 
       void terminate_processes_on_host ( std::string const& name
                                        , std::string const& host
+                                       , unsigned short rif_port
                                        , std::vector<pid_t> const& pids
                                        )
       {
@@ -997,7 +904,21 @@ namespace fhg
         {
           std::cout << "terminating " << name << " on " << host
                     << ": " << fhg::util::join (pids, " ") << "\n";
-          rexec (host, "kill -TERM " + fhg::util::join (pids, " "));
+          try
+          {
+            rexec<void> (host, rif_port, "kill", pids);
+          }
+          catch (...)
+          {
+            std::throw_with_nested
+              ( std::runtime_error
+                  (( boost::format ("Could not terminate %1% on %2%")
+                   % name
+                   % host
+                   ).str()
+                  )
+              );
+          }
         }
       }
 
@@ -1005,6 +926,7 @@ namespace fhg
         ( boost::filesystem::path const& state_dir
         , std::string const& kind
         , std::vector<std::string> hosts
+        , unsigned short rif_port
         )
       {
         boost::filesystem::path const processes_dir (state_dir / "processes");
@@ -1051,7 +973,7 @@ namespace fhg
           terminates.emplace_back
             ( std::async
                 ( std::launch::async
-                , [kind, host, pidfiles]()
+                , [kind, host, rif_port, pidfiles]()
                   {
                     std::vector<int> pids;
                     for (boost::filesystem::path const& pidfile : pidfiles)
@@ -1060,7 +982,7 @@ namespace fhg
                                             (fhg::util::read_file (pidfile))
                                         );
                     }
-                    terminate_processes_on_host (kind, host, pids);
+                    terminate_processes_on_host (kind, host, rif_port, pids);
                     for (boost::filesystem::path const& pidfile : pidfiles)
                     {
                       boost::filesystem::remove (pidfile);
@@ -1102,6 +1024,7 @@ namespace fhg
     void shutdown ( boost::filesystem::path const& state_dir
                   , boost::optional<components_type::components_type> components
                   , std::vector<std::string> const& hosts
+                  , unsigned short rif_port
                   )
     {
       if (!components)
@@ -1114,15 +1037,17 @@ namespace fhg
 
       if (components.get() & components_type::worker)
       {
-        terminate_all_processes_of_a_kind (state_dir, "drts-kernel", hosts);
+        terminate_all_processes_of_a_kind
+          (state_dir, "drts-kernel", hosts, rif_port);
       }
       if (components.get() & components_type::agent)
       {
-        terminate_all_processes_of_a_kind (state_dir, "agent", hosts);
+        terminate_all_processes_of_a_kind
+          (state_dir, "agent", hosts, rif_port);
       }
       if (components.get() & components_type::vmem)
       {
-        terminate_all_processes_of_a_kind (state_dir, "vmem", hosts);
+        terminate_all_processes_of_a_kind (state_dir, "vmem", hosts, rif_port);
       }
       if (components.get() & components_type::orchestrator)
       {
@@ -1131,13 +1056,15 @@ namespace fhg
         boost::filesystem::remove (state_dir / "orchestrator.rpc.host");
         boost::filesystem::remove (state_dir / "orchestrator.rpc.port");
 
-        terminate_all_processes_of_a_kind (state_dir, "orchestrator", hosts);
+        terminate_all_processes_of_a_kind
+          (state_dir, "orchestrator", hosts, rif_port);
       }
     }
 
-    void shutdown (boost::filesystem::path const& state_dir)
+    void shutdown
+      (boost::filesystem::path const& state_dir, unsigned short rif_port)
     {
-      shutdown (state_dir, boost::none, {});
+      shutdown (state_dir, boost::none, {}, rif_port);
 
       boost::filesystem::remove (state_dir / "processes");
       boost::filesystem::remove (state_dir / "nodefile");

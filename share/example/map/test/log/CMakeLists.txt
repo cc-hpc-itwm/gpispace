@@ -42,4 +42,5 @@ fhg_add_test (test.cpp
   DEPENDS log_map-impl
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY
+  REQUIRES_RIF
 )

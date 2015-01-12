@@ -27,7 +27,6 @@ add_library (gspc SHARED
 )
 target_link_libraries (gspc
   sdpa
-  rif
   pnet
   gpi-space-pc-client-static
   gpi-space-pc-segment

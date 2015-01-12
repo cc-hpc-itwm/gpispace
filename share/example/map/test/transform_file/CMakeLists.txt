@@ -53,4 +53,5 @@ fhg_add_test (test.cpp
   DEPENDS transform_file_map-impl
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY
+  REQUIRES_RIF
 )

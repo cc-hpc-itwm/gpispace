@@ -18,11 +18,11 @@ namespace fhg
     //!       sent is not an error
     //! \note returned messages do not contain end_sentinel_value
     std::pair<pid_t, std::vector<std::string>> execute_and_get_startup_messages
-      ( std::string const& startup_messages_pipe_option
-      , std::string const& end_sentinel_value
-      , boost::filesystem::path const& command
-      , std::vector<std::string> const& arguments
-      , std::unordered_map<std::string, std::string> const& environment
+      ( std::string startup_messages_pipe_option
+      , std::string end_sentinel_value
+      , boost::filesystem::path command
+      , std::vector<std::string> arguments
+      , std::unordered_map<std::string, std::string> environment
       );
   }
 }

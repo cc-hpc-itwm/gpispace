@@ -95,6 +95,7 @@ namespace gspc
           (_virtual_memory_socket->string())
         : nullptr
         )
+      , _rif_port (require_rif_port (vm))
   {
     unsigned short const default_log_port
       ((65535 - 30000 + fhg::syscall::getuid() * 2) % 65535 + 1024);
@@ -136,6 +137,7 @@ namespace gspc
       , _virtual_memory_startup_timeout
       , worker_descriptions
       , get_virtual_memory_port (vm)
+      , _rif_port
       );
 
     //! \todo Remove magic: specify filenames instead of relying on
@@ -155,7 +157,7 @@ namespace gspc
   {
     _virtual_memory_api.reset();
 
-    fhg::drts::shutdown (_state_directory);
+    fhg::drts::shutdown (_state_directory, _rif_port);
   }
 
   vmem_allocation scoped_runtime_system::alloc

@@ -23,6 +23,7 @@ foreach (SPLIT_VERSION ${SPLIT_JOIN_SPLIT_VERSIONS})
                    ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                    ${Boost_FILESYSTEM_LIBRARIES}
     REQUIRES_INSTALLATION
+    REQUIRES_RIF
   )
 endforeach()
 
@@ -48,5 +49,6 @@ foreach (SPLIT_VERSION ${SPLIT_JOIN_SPLIT_VERSIONS})
                    ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                    ${Boost_FILESYSTEM_LIBRARIES}
     REQUIRES_INSTALLATION
+    REQUIRES_RIF
   )
 endforeach()

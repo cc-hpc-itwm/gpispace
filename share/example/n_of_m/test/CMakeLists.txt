@@ -17,6 +17,7 @@ fhg_add_test (test.cpp
                  ${Boost_FILESYSTEM_LIBRARY}
   DEPENDS demo.bin
   REQUIRES_INSTALLATION
+  REQUIRES_RIF
 )
 
 

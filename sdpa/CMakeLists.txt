@@ -6,6 +6,5 @@ include_directories (${FhgLog_INCLUDE_DIR})
 
 add_subdirectory (sdpa)
 add_subdirectory (apps)
-add_subdirectory (bin)
 
   add_subdirectory (tests)
