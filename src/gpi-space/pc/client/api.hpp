@@ -42,7 +42,6 @@ namespace gpi
         void start ();
         void stop ();
 
-        bool is_connected () const;
         void path (std::string const & p);
         std::string const & path () const;
 
@@ -91,6 +90,7 @@ namespace gpi
 
       private:
         bool ping ();
+        bool is_connected () const;
 
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
