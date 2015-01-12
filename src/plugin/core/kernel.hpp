@@ -1,15 +1,8 @@
 #ifndef FHG_PLUGIN_CORE_KERNEL_HPP
 #define FHG_PLUGIN_CORE_KERNEL_HPP 1
 
-#include <string>
-#include <list>
-
-#include <boost/thread.hpp>
-
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/thread/queue.hpp>
-
-#include <plugin/core/plugin.hpp>
 
 namespace fhg
 {
@@ -29,27 +22,10 @@ namespace fhg
     class kernel_t
     {
     public:
-      typedef std::vector<std::string> search_path_t;
-
-      kernel_t ( fhg::core::kernel_t::search_path_t search_path
-               , std::function<void()> request_stop
-               , std::map<std::string, std::string> config_variables
-               );
-      ~kernel_t ();
+      kernel_t (std::function<void()> request_stop);
 
       std::function<void()> _stop;
       void stop() { _stop(); }
-
-      void load_plugin_by_name (std::string const & name);
-      void load_plugin_from_file (std::string const & file);
-
-    private:
-      std::map<std::string, boost::shared_ptr<plugin_t>> m_plugins;
-      std::list<std::string> m_load_order;
-
-      std::map<std::string, std::string> m_config;
-
-      search_path_t m_search_path;
     };
   }
 }

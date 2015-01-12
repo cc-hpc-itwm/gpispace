@@ -319,10 +319,6 @@ namespace
                    std::vector<std::string> arguments;
                    std::unordered_map<std::string, std::string> environment;
 
-                   arguments.emplace_back ("-L");
-                   arguments.emplace_back
-                     ((sdpa_home / "libexec" / "fhg" / "plugins").string());
-
                    add_plugin_option
                      ( arguments
                      , "drts.master"

@@ -45,15 +45,11 @@ try
 
   std::vector<std::string> config_vars;
   std::string kernel_name;
-  fhg::core::kernel_t::search_path_t search_path;
 
   desc.add_options()
     ("help,h", "this message")
     ("name,n", po::value<std::string>(&kernel_name), "give the kernel a name")
     ("set,s", po::value<std::vector<std::string>>(&config_vars), "set a parameter to a value key=value")
-    ( "add-search-path,L", po::value<fhg::core::kernel_t::search_path_t>(&search_path)
-    , "add a path to the search path for plugins"
-    )
     ( "startup-messages-pipe"
     , po::value<int>()->required()
     , "pipe filedescriptor to use for communication during startup (ports used, ...)"
@@ -111,7 +107,7 @@ try
   fhg::core::wait_until_stopped waiter;
   const std::function<void()> request_stop (waiter.make_request_stop());
 
-  fhg::core::kernel_t kernel (search_path, request_stop, config_variables);
+  fhg::core::kernel_t kernel (request_stop);
 
   fhg::util::signal_handler_manager signal_handlers;
   fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
