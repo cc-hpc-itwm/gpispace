@@ -21,10 +21,7 @@ namespace we
       Module ( const std::string& path
              , int flags = RTLD_NOW | RTLD_GLOBAL
              );
-      virtual ~Module();
 
-      virtual void name (const std::string&) override;
-      const std::string &name() const;
       const std::string &path() const;
 
       void call ( const std::string& f
@@ -32,12 +29,11 @@ namespace we
                 , const expr::eval::context& in
                 , expr::eval::context& out
                 , std::map<std::string, void*> const& memory_buffer
-                );
+                ) const;
 
       virtual void add_function (const std::string&, WrapperFunction) override;
 
     private:
-      std::string name_;
       std::string path_;
 
       class dlhandle

@@ -822,8 +822,7 @@ namespace fhg
           , const boost::filesystem::path& temporary_path
           )
         {
-          we::loader::loader loader;
-          loader.append_search_path (temporary_path / "pnetc" / "op");
+          we::loader::loader loader ({temporary_path / "pnetc" / "op"});
 
           eval_context context (loader);
 

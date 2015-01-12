@@ -6,9 +6,3 @@ std::stack<std::string>& start()
 
   return s;
 }
-std::stack<std::string>& stop()
-{
-  static std::stack<std::string> s;
-
-  return s;
-}
