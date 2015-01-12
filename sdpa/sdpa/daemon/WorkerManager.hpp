@@ -35,7 +35,7 @@ namespace sdpa
                      , const fhg::com::p2p::address_t& address
                      );
 
-      bool deleteWorker (const worker_id_t& workerId);
+      void deleteWorker (const worker_id_t& workerId);
 
       void getCapabilities (sdpa::capabilities_set_t& cpbset) const;
 
