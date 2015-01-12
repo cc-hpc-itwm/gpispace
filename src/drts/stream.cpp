@@ -55,9 +55,12 @@ namespace gspc
       , _number_of_slots
           (get_number_of_slots_or_throw (buffer.size(), _size_of_slot))
       , _offset_to_meta_data (_number_of_slots * _size_of_slot)
-      , _flags (_virtual_memory, "flags_" + name, _number_of_slots)
-      , _update (_virtual_memory, "update_" + name, _number_of_slots)
-      , _data (_virtual_memory, "data_" + name, _size_of_slot)
+      , _flags
+        (_virtual_memory, "stream_producer_flags_" + name, _number_of_slots)
+      , _update
+        (_virtual_memory, "stream_producer_update_" + name, _number_of_slots)
+      , _data
+        (_virtual_memory, "stream_producer_data_" + name, _size_of_slot)
       , _free_slots()
       , _sequence_number (0)
     {

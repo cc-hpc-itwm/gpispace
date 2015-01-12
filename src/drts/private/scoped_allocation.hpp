@@ -21,7 +21,7 @@ namespace gspc
         )
           : _virtual_memory (virtual_memory)
           , _segment (_virtual_memory->register_segment
-                       ( "stream_producer_" + description
+                       ( description
                        , size
                        , gpi::pc::F_EXCLUSIVE | gpi::pc::F_FORCE_UNLINK
                        )
@@ -54,7 +54,7 @@ namespace gspc
         , _handle (_virtual_memory->alloc
                     ( _scoped_segment
                     , size
-                    , "stream_producer_" + description
+                    , description
                     , gpi::pc::F_EXCLUSIVE
                     )
                   )
