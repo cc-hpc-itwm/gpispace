@@ -57,9 +57,6 @@ namespace gpi
                                 );
         void free (const type::handle_id_t);
 
-        gpi::pc::type::handle::descriptor_t
-        info(const gpi::pc::type::handle_t h);
-
         gpi::pc::type::queue_id_t
         memcpy ( gpi::pc::type::memory_location_t const & dst
                , gpi::pc::type::memory_location_t const & src
@@ -88,6 +85,9 @@ namespace gpi
         bool ping ();
         bool is_connected () const;
         void stop ();
+        gpi::pc::type::handle::descriptor_t
+        info(const gpi::pc::type::handle_t h);
+
 
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
