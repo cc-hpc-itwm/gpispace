@@ -66,10 +66,18 @@ namespace gpi
 
         if (m_socket != -1)
         {
-          if (ping ())
+          try
+          {
+            communicate ( gpi::pc::proto::control::message_t
+                          (gpi::pc::proto::control::ping_t())
+                        );
+
             return;
-          else
+          }
+          catch (std::exception const & ex)
+          {
             stop ();
+          }
         }
 
         m_socket = open_socket (m_path);
@@ -496,22 +504,6 @@ namespace gpi
         // remove local
         lock_type lock (m_mutex);
         m_segments.erase (id);
-      }
-
-      bool api_t::ping ()
-      {
-        try
-        {
-          communicate ( gpi::pc::proto::control::message_t
-                        (gpi::pc::proto::control::ping_t())
-                      );
-          return true;
-        }
-        catch (std::exception const & ex)
-        {
-          stop ();
-          return false;
-        }
       }
     }
   }

@@ -82,7 +82,6 @@ namespace gpi
         void unregister_segment(const gpi::pc::type::segment_id_t);
 
       private:
-        bool ping ();
         void stop ();
         gpi::pc::type::handle::descriptor_t
         info(const gpi::pc::type::handle_t h);
