@@ -97,8 +97,6 @@ namespace gpi
 
         bool ping ();
 
-        segment_map_t const &  segments () const;
-        segment_map_t &  segments ();
         segment_set_t const & garbage_segments () const;
         void garbage_collect ();
       private:

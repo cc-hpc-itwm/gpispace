@@ -568,16 +568,6 @@ namespace gpi
         }
       }
 
-      api_t::segment_map_t const & api_t::segments () const
-      {
-        return m_segments;
-      }
-
-      api_t::segment_map_t & api_t::segments ()
-      {
-        return m_segments;
-      }
-
       api_t::segment_set_t const & api_t::garbage_segments () const
       {
         return m_garbage_segments;
