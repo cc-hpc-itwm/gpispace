@@ -91,16 +91,12 @@ namespace gpi
                                                     , const gpi::pc::type::flags_t = 0
                                                     );
         void unregister_segment(const gpi::pc::type::segment_id_t);
-        void attach_segment(const gpi::pc::type::segment_id_t id);
-        void detach_segment(const gpi::pc::type::segment_id_t id);
-        gpi::pc::type::segment::list_t list_segments ();
 
         gpi::pc::type::segment_id_t add_memory (const std::string & url);
         void del_memory (gpi::pc::type::segment_id_t);
 
         bool ping ();
 
-        bool is_attached (const gpi::pc::type::segment_id_t id);
         segment_map_t const &  segments () const;
         segment_map_t &  segments ();
         segment_set_t const & garbage_segments () const;
