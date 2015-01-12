@@ -70,10 +70,10 @@ namespace sdpa
                      , boost::bimaps::unordered_set_of<fhg::com::p2p::address_t>
                      >;
 
-    boost::optional<WorkerManager::worker_connections_t::right_map::iterator>
+    boost::optional<WorkerManager::worker_connections_t::right_iterator>
       worker_by_address (fhg::com::p2p::address_t const&);
 
-    boost::optional<WorkerManager::worker_connections_t::left_map::iterator>
+    boost::optional<WorkerManager::worker_connections_t::left_iterator>
       address_by_worker (std::string const&);
 
     private:
