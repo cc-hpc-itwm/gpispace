@@ -46,6 +46,14 @@ namespace gpi
         void path (std::string const & p);
         std::string const & path () const;
 
+        //! \todo add const (do not call stop()) in memcpy, ptr, wait
+        //! and replace /*const*/ in
+        //!   src/drts/worker/drts-kernel.cpp
+        //!   src/drts/worker/drts.cpp
+        //!   src/drts/worker/drts.hpp
+        //!   src/we/loader/module_call.cpp
+        //!   src/we/loader/module_call.hpp
+
         // api to gpi
         type::handle_id_t alloc ( const type::segment_id_t
                                 , const type::size_t

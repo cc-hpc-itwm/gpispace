@@ -1,12 +1,15 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
 #include <drts/worker/context.hpp>
+#include <drts/private/scoped_allocation.hpp>
 
 #include <fhgcom/message.hpp>
 #include <fhgcom/peer.hpp>
 
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/thread/set.hpp>
+
+#include <gpi-space/pc/client/api.hpp>
 
 #include <sdpa/capability.hpp>
 #include <sdpa/daemon/NotificationEvent.hpp>
@@ -68,6 +71,8 @@ public:
           , std::string search_path
           , boost::optional<std::pair<std::string, boost::asio::io_service&>> gui_info
           , std::string worker_name
+          , gpi::pc::client::api_t /*const*/* virtual_memory_api
+          , gspc::scoped_allocation /*const*/* shared_memory
           );
   ~WFEImpl();
 
@@ -97,6 +102,9 @@ private:
   we::loader::loader m_loader;
 
   boost::optional<sdpa::daemon::NotificationService> _notification_service;
+
+  gpi::pc::client::api_t /*const*/* _virtual_memory_api;
+  gspc::scoped_allocation /*const*/* _shared_memory;
 };
 
 class DRTSImpl : public sdpa::events::EventHandler
@@ -215,6 +223,9 @@ public:
     , boost::asio::io_service& peer_io_service
     , boost::optional<std::pair<std::string, boost::asio::io_service&>> gui_info
     , std::map<std::string, std::string> config_variables
+    , std::string const& kernel_name
+    , gpi::pc::client::api_t /*const*/* virtual_memory_socket
+    , gspc::scoped_allocation /*const*/* shared_memory
     );
   ~DRTSImpl();
 

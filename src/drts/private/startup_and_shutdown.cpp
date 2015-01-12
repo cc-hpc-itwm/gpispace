@@ -253,13 +253,6 @@ namespace
   }
   void add_plugin_option ( std::vector<std::string>& arguments
                          , std::string name
-                         , boost::filesystem::path value
-                         )
-  {
-    add_plugin_option (arguments, name, value.string().c_str());
-  }
-  void add_plugin_option ( std::vector<std::string>& arguments
-                         , std::string name
                          , unsigned long value
                          )
   {
@@ -356,13 +349,11 @@ namespace
                    {
                      capabilities.emplace_back ("GPI");
 
-                     arguments.emplace_back ("--gpi_enabled");
-                     add_plugin_option
-                       (arguments, "gpi.socket", gpi_socket.get());
-                     add_plugin_option
-                       (arguments, "gpi.startmode", "wait");
-                     add_plugin_option
-                       (arguments, "gpi_compat.shm_size", description.shm_size);
+                     arguments.emplace_back ("--virtual-memory-socket");
+                     arguments.emplace_back (gpi_socket.get().string());
+                     arguments.emplace_back ("--shared-memory-size");
+                     arguments.emplace_back
+                       (std::to_string (description.shm_size));
                    }
 
                    add_plugin_option ( arguments

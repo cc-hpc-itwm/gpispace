@@ -81,8 +81,15 @@ namespace
   {
     boost::mt19937 _engine;
 
-    wfe_exec_context (we::loader::loader& module_loader, wfe_task_t& target)
+    wfe_exec_context
+      ( we::loader::loader& module_loader
+      , gpi::pc::client::api_t /*const*/* virtual_memory_api
+      , gspc::scoped_allocation /*const*/* shared_memory
+      , wfe_task_t& target
+      )
       : loader (module_loader)
+      , _virtual_memory_api (virtual_memory_api)
+      , _shared_memory (shared_memory)
       , task (target)
     {}
 
@@ -110,7 +117,13 @@ namespace
     {
       try
       {
-        we::loader::module_call (loader, &task.context, act, mod);
+        we::loader::module_call ( loader
+                                , _virtual_memory_api
+                                , _shared_memory
+                                , &task.context
+                                , act
+                                , mod
+                                );
       }
       catch (std::exception const &ex)
       {
@@ -142,16 +155,21 @@ namespace
 
   private:
     we::loader::loader& loader;
+    gpi::pc::client::api_t /*const*/* _virtual_memory_api;
+    gspc::scoped_allocation /*const*/* _shared_memory;
     wfe_task_t& task;
   };
 }
 
-WFEImpl::WFEImpl ( fhg::log::Logger::ptr_t logger
-                 , boost::optional<std::size_t> target_socket
-                 , std::string search_path
-                 , boost::optional<std::pair<std::string, boost::asio::io_service&>> gui_info
-                 , std::string worker_name
-                 )
+WFEImpl::WFEImpl
+  ( fhg::log::Logger::ptr_t logger
+  , boost::optional<std::size_t> target_socket
+  , std::string search_path
+  , boost::optional<std::pair<std::string, boost::asio::io_service&>> gui_info
+  , std::string worker_name
+  , gpi::pc::client::api_t /*const*/* virtual_memory_api
+  , gspc::scoped_allocation /*const*/* shared_memory
+  )
   : _logger (logger)
   , _numa_socket_setter ( target_socket
                         ? numa_socket_setter (*target_socket)
@@ -167,6 +185,8 @@ WFEImpl::WFEImpl ( fhg::log::Logger::ptr_t logger
                             (gui_info->first, gui_info->second)
                           : boost::optional<sdpa::daemon::NotificationService>()
                           )
+  , _virtual_memory_api (virtual_memory_api)
+  , _shared_memory (shared_memory)
 {
   {
     // TODO: figure out, why this doesn't work as it is supposed to
@@ -245,7 +265,8 @@ int WFEImpl::execute ( std::string const &job_id
   {
     try
     {
-      wfe_exec_context ctxt (m_loader, task);
+      wfe_exec_context ctxt
+        (m_loader, _virtual_memory_api, _shared_memory, task);
 
       task.activity.execute (&ctxt);
 
@@ -320,17 +341,21 @@ DRTSImpl::DRTSImpl
     , boost::asio::io_service& peer_io_service
     , boost::optional<std::pair<std::string, boost::asio::io_service&>> gui_info
     , std::map<std::string, std::string> config_variables
+    , std::string const& kernel_name
+    , gpi::pc::client::api_t /*const*/* virtual_memory_api
+    , gspc::scoped_allocation /*const*/* shared_memory
     )
-  : _logger
-    (fhg::log::Logger::get (*get<std::string> ("kernel_name", config_variables)))
+  : _logger (fhg::log::Logger::get (kernel_name))
   , _request_stop (request_stop)
   , m_shutting_down (false)
-  , m_my_name (*get<std::string> ("kernel_name", config_variables))
+  , m_my_name (kernel_name)
   , m_wfe ( _logger
           , get<std::size_t> ("plugin.drts.socket", config_variables)
           , get<std::string> ("plugin.drts.library_path", config_variables).get_value_or (fhg::util::getenv("PC_LIBRARY_PATH").get_value_or (""))
           , gui_info
           , m_my_name
+          , virtual_memory_api
+          , shared_memory
           )
   , m_max_reconnect_attempts (get<std::size_t> ("plugin.drts.max_reconnect_attempts", config_variables).get_value_or (0))
   , m_reconnect_counter (0)
