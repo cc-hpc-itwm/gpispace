@@ -500,14 +500,6 @@ namespace gpi
 
       bool api_t::ping ()
       {
-        {
-          lock_type lock (m_mutex);
-          if (m_socket == -1)
-          {
-            return false;
-          };
-        }
-
         try
         {
           communicate ( gpi::pc::proto::control::message_t
