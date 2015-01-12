@@ -229,11 +229,6 @@ namespace sdpa {
 
       std::string _name;
 
-      boost::optional<WorkerManager::worker_connections_t::right_map::iterator>
-        worker_by_address (fhg::com::p2p::address_t const&);
-      boost::optional<WorkerManager::worker_connections_t::left_map::iterator>
-        address_by_worker (std::string const&);
-
       friend struct sdpa::opaque_job_master_t::implementation;
 
       master_info_t _master_info;

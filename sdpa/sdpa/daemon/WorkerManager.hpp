@@ -70,6 +70,12 @@ namespace sdpa
                      >;
     worker_connections_t _worker_connections;
 
+    boost::optional<WorkerManager::worker_connections_t::right_map::iterator>
+      worker_by_address (fhg::com::p2p::address_t const&);
+
+    boost::optional<WorkerManager::worker_connections_t::left_map::iterator>
+      address_by_worker (std::string const&);
+
     private:
       worker_map_t  worker_map_;
 

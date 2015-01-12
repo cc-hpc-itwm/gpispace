@@ -288,7 +288,7 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
 
       for (const worker_id_t& worker_id : worker_list)
       {
-        child_proxy (this, address_by_worker (worker_id).get()->second)
+        child_proxy (this, scheduler().worker_manager().address_by_worker (worker_id).get()->second)
           .submit_job (ptrJob->id(), ptrJob->description(), worker_list);
       }
   }
@@ -467,7 +467,7 @@ void GenericDaemon::handleErrorEvent
   boost::optional<master_info_t::iterator> const as_master
     (master_by_address (source));
   boost::optional<WorkerManager::worker_connections_t::right_map::iterator> const as_worker
-    (worker_by_address (source));
+    (scheduler().worker_manager().worker_by_address (source));
 
   // if it'a communication error, inspect all jobs and
   // send results if they are in a terminal state
@@ -536,7 +536,7 @@ void GenericDaemon::handleErrorEvent
             if (!scheduler().cancelNotTerminatedWorkerJobs
               ( [this, &jobId](const sdpa::worker_id_t& wid)
                 {
-                  child_proxy (this, address_by_worker (wid).get()->second)
+                  child_proxy (this, scheduler().worker_manager().address_by_worker (wid).get()->second)
                     .cancel_job (jobId);
                 }
                 , jobId
@@ -657,7 +657,7 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
 
   if (worker_id)
   {
-    child_proxy (this, address_by_worker (*worker_id).get()->second)
+    child_proxy (this, scheduler().worker_manager().address_by_worker (*worker_id).get()->second)
       .cancel_job (job_id);
   }
   else
@@ -753,22 +753,6 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
   }
 }
 
-    auto GenericDaemon::worker_by_address (fhg::com::p2p::address_t const& address)
-      -> boost::optional<WorkerManager::worker_connections_t::right_map::iterator>
-    {
-      WorkerManager::worker_connections_t::right_map::iterator it
-        (scheduler().worker_manager()._worker_connections.right.find (address));
-      return boost::make_optional (it != scheduler().worker_manager()._worker_connections.right.end(), it);
-    }
-
-    auto GenericDaemon::address_by_worker (std::string const& worker)
-      -> boost::optional<WorkerManager::worker_connections_t::left_map::iterator>
-    {
-      WorkerManager::worker_connections_t::left_map::iterator it
-        (scheduler().worker_manager()._worker_connections.left.find (worker));
-      return boost::make_optional (it != scheduler().worker_manager()._worker_connections.left.end(), it);
-    }
-
     boost::optional<GenericDaemon::master_info_t::iterator>
       GenericDaemon::master_by_address (fhg::com::p2p::address_t const& address)
     {
@@ -858,7 +842,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent
 
  WorkerManager::worker_connections_t::right_map::iterator const worker
     ( fhg::util::boost::get_or_throw<std::runtime_error>
-        (worker_by_address (source), "capabilities_gained for unknown worker")
+        (scheduler().worker_manager().worker_by_address (source), "capabilities_gained for unknown worker")
     );
 
   sdpa::capabilities_set_t workerCpbSet;
@@ -908,7 +892,7 @@ void GenericDaemon::handleCapabilitiesLostEvent
 
  WorkerManager::worker_connections_t::right_map::iterator const worker
     ( fhg::util::boost::get_or_throw<std::runtime_error>
-        (worker_by_address (source), "capabilities_lost for unknown worker")
+        (scheduler().worker_manager().worker_by_address (source), "capabilities_lost for unknown worker")
     );
 
   if (scheduler().worker_manager().remove_worker_capabilities ( worker->second
@@ -1127,7 +1111,7 @@ void GenericDaemon::handleSubmitJobAckEvent
 
    WorkerManager::worker_connections_t::right_map::iterator const worker
       ( fhg::util::boost::get_or_throw<std::runtime_error>
-         (worker_by_address (source), "submit_job_ack for unknown worker")
+         (scheduler().worker_manager().worker_by_address (source), "submit_job_ack for unknown worker")
       );
 
     ptrJob->Dispatch();
@@ -1196,7 +1180,7 @@ void GenericDaemon::handleJobFailedAckEvent
 
       if (pJob && worker_id)
       {
-        child_proxy (this, address_by_worker (*worker_id).get()->second)
+        child_proxy (this, scheduler().worker_manager().address_by_worker (*worker_id).get()->second)
           .discover_job_states (job_id, discover_id);
       }
       else if (pJob)
@@ -1228,7 +1212,7 @@ void GenericDaemon::handleJobFailedAckEvent
         _discover_sources.emplace
           (std::make_pair (pEvt->discover_id(), pEvt->job_id()), source);
 
-        child_proxy (this, address_by_worker (*worker_id).get()->second)
+        child_proxy (this, scheduler().worker_manager().address_by_worker (*worker_id).get()->second)
           .discover_job_states (pEvt->job_id(), pEvt->discover_id());
       }
       //! \todo Other criteria to know it was submitted to the
@@ -1324,7 +1308,7 @@ void GenericDaemon::handleJobFailedAckEvent
       {
         _put_token_source.emplace (event->put_token_id(), source);
 
-        child_proxy (this, address_by_worker (*worker_id).get()->second)
+        child_proxy (this, scheduler().worker_manager().address_by_worker (*worker_id).get()->second)
           .put_token ( event->job_id()
                      , event->put_token_id()
                      , event->place_name()
