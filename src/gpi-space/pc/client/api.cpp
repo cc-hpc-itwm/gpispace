@@ -64,22 +64,6 @@ namespace gpi
       {
         lock_type lock (m_mutex);
 
-        if (m_socket != -1)
-        {
-          try
-          {
-            communicate ( gpi::pc::proto::control::message_t
-                          (gpi::pc::proto::control::ping_t())
-                        );
-
-            return;
-          }
-          catch (std::exception const & ex)
-          {
-            stop ();
-          }
-        }
-
         m_socket = open_socket (m_path);
       }
 
