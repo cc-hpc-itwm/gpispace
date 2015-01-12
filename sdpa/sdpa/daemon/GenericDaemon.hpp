@@ -42,7 +42,6 @@
 #include <we/layer.hpp>
 #include <we/type/schedule_data.hpp>
 
-#include <boost/bimap.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
 #include <boost/utility.hpp>
@@ -230,15 +229,9 @@ namespace sdpa {
 
       std::string _name;
 
-      using worker_connections_t
-        = boost::bimap < boost::bimaps::unordered_set_of<std::string>
-                       , boost::bimaps::unordered_set_of<fhg::com::p2p::address_t>
-                       >;
-      worker_connections_t _worker_connections;
-
-      boost::optional<worker_connections_t::right_map::iterator>
+      boost::optional<WorkerManager::worker_connections_t::right_map::iterator>
         worker_by_address (fhg::com::p2p::address_t const&);
-      boost::optional<worker_connections_t::left_map::iterator>
+      boost::optional<WorkerManager::worker_connections_t::left_map::iterator>
         address_by_worker (std::string const&);
 
       friend struct sdpa::opaque_job_master_t::implementation;

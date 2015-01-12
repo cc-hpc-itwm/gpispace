@@ -434,7 +434,7 @@ void GenericDaemon::handleWorkerRegistrationEvent
     }
   }
 
-  _worker_connections.left.insert ({event->name(), source});
+  scheduler().worker_manager()._worker_connections.left.insert ({event->name(), source});
 
   const bool was_new_worker
     (scheduler().worker_manager().addWorker (event->name(), event->capacity(), workerCpbSet, event->children_allowed(), event->hostname()));
@@ -466,7 +466,7 @@ void GenericDaemon::handleErrorEvent
 
   boost::optional<master_info_t::iterator> const as_master
     (master_by_address (source));
-  boost::optional<worker_connections_t::right_map::iterator> const as_worker
+  boost::optional<WorkerManager::worker_connections_t::right_map::iterator> const as_worker
     (worker_by_address (source));
 
   // if it'a communication error, inspect all jobs and
@@ -550,7 +550,7 @@ void GenericDaemon::handleErrorEvent
         }
 
         scheduler().worker_manager().deleteWorker (as_worker.get()->second);
-        _worker_connections.right.erase (as_worker.get());
+        scheduler().worker_manager()._worker_connections.right.erase (as_worker.get());
         request_scheduling();
       }
       else
@@ -754,19 +754,19 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
 }
 
     auto GenericDaemon::worker_by_address (fhg::com::p2p::address_t const& address)
-      -> boost::optional<worker_connections_t::right_map::iterator>
+      -> boost::optional<WorkerManager::worker_connections_t::right_map::iterator>
     {
-      worker_connections_t::right_map::iterator it
-        (_worker_connections.right.find (address));
-      return boost::make_optional (it != _worker_connections.right.end(), it);
+      WorkerManager::worker_connections_t::right_map::iterator it
+        (scheduler().worker_manager()._worker_connections.right.find (address));
+      return boost::make_optional (it != scheduler().worker_manager()._worker_connections.right.end(), it);
     }
 
     auto GenericDaemon::address_by_worker (std::string const& worker)
-      -> boost::optional<worker_connections_t::left_map::iterator>
+      -> boost::optional<WorkerManager::worker_connections_t::left_map::iterator>
     {
-      worker_connections_t::left_map::iterator it
-        (_worker_connections.left.find (worker));
-      return boost::make_optional (it != _worker_connections.left.end(), it);
+      WorkerManager::worker_connections_t::left_map::iterator it
+        (scheduler().worker_manager()._worker_connections.left.find (worker));
+      return boost::make_optional (it != scheduler().worker_manager()._worker_connections.left.end(), it);
     }
 
     boost::optional<GenericDaemon::master_info_t::iterator>
@@ -856,7 +856,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent
      return;
    }
 
- worker_connections_t::right_map::iterator const worker
+ WorkerManager::worker_connections_t::right_map::iterator const worker
     ( fhg::util::boost::get_or_throw<std::runtime_error>
         (worker_by_address (source), "capabilities_gained for unknown worker")
     );
@@ -906,7 +906,7 @@ void GenericDaemon::handleCapabilitiesLostEvent
 {
   // tell the scheduler to remove the capabilities of the worker source
 
- worker_connections_t::right_map::iterator const worker
+ WorkerManager::worker_connections_t::right_map::iterator const worker
     ( fhg::util::boost::get_or_throw<std::runtime_error>
         (worker_by_address (source), "capabilities_lost for unknown worker")
     );
@@ -1125,7 +1125,7 @@ void GenericDaemon::handleSubmitJobAckEvent
     if(ptrJob->getStatus() == sdpa:: status::CANCELING)
       return;
 
-   worker_connections_t::right_map::iterator const worker
+   WorkerManager::worker_connections_t::right_map::iterator const worker
       ( fhg::util::boost::get_or_throw<std::runtime_error>
          (worker_by_address (source), "submit_job_ack for unknown worker")
       );
