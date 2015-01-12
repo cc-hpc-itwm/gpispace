@@ -77,7 +77,7 @@ namespace sdpa
       {
         return false;
       }
-      _worker_connections.left.insert ({workerId, address});
+      worker_connections_.left.insert ({workerId, address});
       Worker::ptr_t pWorker( new Worker( workerId, capacity, cpbSet,  children_allowed, hostname, address) );
       worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
 
@@ -90,7 +90,7 @@ namespace sdpa
       boost::mutex::scoped_lock const _ (mtx_);
 
       worker_map_.erase (workerId);
-      _worker_connections.left.erase (workerId);
+      worker_connections_.left.erase (workerId);
     }
 
     std::set<worker_id_t> WorkerManager::getAllNonReservedWorkers() const
@@ -314,16 +314,16 @@ namespace sdpa
       WorkerManager::worker_by_address (fhg::com::p2p::address_t const& address)
     {
       WorkerManager::worker_connections_t::right_map::iterator it
-        (_worker_connections.right.find (address));
-      return boost::make_optional (it != _worker_connections.right.end(), it);
+        (worker_connections_.right.find (address));
+      return boost::make_optional (it != worker_connections_.right.end(), it);
     }
 
     boost::optional<WorkerManager::worker_connections_t::left_map::iterator>
       WorkerManager::address_by_worker (std::string const& worker)
     {
       WorkerManager::worker_connections_t::left_map::iterator it
-        (_worker_connections.left.find (worker));
-      return boost::make_optional (it != _worker_connections.left.end(), it);
+        (worker_connections_.left.find (worker));
+      return boost::make_optional (it != worker_connections_.left.end(), it);
     }
   }
 }

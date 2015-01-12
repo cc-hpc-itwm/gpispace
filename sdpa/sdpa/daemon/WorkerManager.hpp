@@ -78,7 +78,7 @@ namespace sdpa
 
     private:
       worker_map_t  worker_map_;
-      worker_connections_t _worker_connections;
+      worker_connections_t worker_connections_;
 
       mutable boost::mutex mtx_;
     };
