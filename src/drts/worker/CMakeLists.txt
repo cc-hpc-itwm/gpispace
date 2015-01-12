@@ -17,13 +17,6 @@ target_link_libraries (fake-drts-kernel-plugin
   ${Boost_DATE_TIME_LIBRARY}
   ${Boost_SYSTEM_LIBRARY})
 
-add_library (start_drts_kernel "start_drts_kernel.cpp")
-target_link_libraries (start_drts_kernel
-  rif
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}
-)
-
 fhg_add_runtime_executable (drts-kernel.cpp
   LINK_LIBRARIES fhg-plugin
                  fake-drts-kernel-plugin
