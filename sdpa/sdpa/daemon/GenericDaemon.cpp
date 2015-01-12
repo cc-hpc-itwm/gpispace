@@ -548,7 +548,6 @@ void GenericDaemon::handleErrorEvent
         }
 
         scheduler().worker_manager().deleteWorker (as_worker.get()->second);
-        scheduler().worker_manager()._worker_connections.right.erase (as_worker.get());
         request_scheduling();
       }
       else

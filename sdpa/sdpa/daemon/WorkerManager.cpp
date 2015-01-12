@@ -88,7 +88,9 @@ namespace sdpa
     void WorkerManager::deleteWorker (const worker_id_t& workerId)
     {
       boost::mutex::scoped_lock const _ (mtx_);
+
       worker_map_.erase (workerId);
+      _worker_connections.left.erase (workerId);
     }
 
     std::set<worker_id_t> WorkerManager::getAllNonReservedWorkers() const
