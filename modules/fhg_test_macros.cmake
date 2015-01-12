@@ -74,8 +74,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/lib/libgspc.so"
   "${CMAKE_INSTALL_PREFIX}/lib/libmmgr.so.1"
   "${CMAKE_INSTALL_PREFIX}/lib/libwe-dev.so.1"
-  "${CMAKE_INSTALL_PREFIX}/libexec/fhg/plugins/gpi.so"
-  "${CMAKE_INSTALL_PREFIX}/libexec/fhg/plugins/gpi_compat.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libdetermine_size.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libdo_load.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libdo_write.so"

@@ -140,8 +140,6 @@ add_library (pnet
   xml/parse/util/weparse.cpp
   xml/parse/util/position.cpp
   xml/parse/warning.cpp
-
-  gpi-space/pc/plugin/gpi_compat.cpp
 )
 
 target_link_libraries (pnet
