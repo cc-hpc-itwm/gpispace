@@ -90,8 +90,6 @@ namespace gpi
         void unregister_segment(const gpi::pc::type::segment_id_t);
 
         bool ping ();
-
-        void garbage_collect ();
       private:
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;

@@ -531,12 +531,6 @@ namespace gpi
           return false;
         }
       }
-
-      void api_t::garbage_collect ()
-      {
-        lock_type lock (m_mutex);
-        m_garbage_segments.clear();
-      }
     }
   }
 }
