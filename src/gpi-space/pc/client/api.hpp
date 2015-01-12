@@ -83,7 +83,6 @@ namespace gpi
 
       private:
         bool ping ();
-        bool is_connected () const;
         void stop ();
         gpi::pc::type::handle::descriptor_t
         info(const gpi::pc::type::handle_t h);

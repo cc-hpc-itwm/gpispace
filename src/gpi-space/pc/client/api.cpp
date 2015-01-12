@@ -100,12 +100,6 @@ namespace gpi
         }
       }
 
-      bool api_t::is_connected () const
-      {
-        lock_type lock (m_mutex);
-        return m_socket != -1;
-      }
-
       ssize_t api_t::write (const void * buf, size_t sz)
       {
         return fhg::syscall::write (m_socket, buf, sz);
@@ -506,8 +500,13 @@ namespace gpi
 
       bool api_t::ping ()
       {
-        if (!is_connected())
-          return false;
+        {
+          lock_type lock (m_mutex);
+          if (m_socket == -1)
+          {
+            return false;
+          };
+        }
 
         try
         {
