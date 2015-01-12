@@ -32,6 +32,7 @@ namespace sdpa
                      , const capabilities_set_t& cpbset
                      , const bool children_allowed
                      , const std::string& hostname
+                     , const fhg::com::p2p::address_t& address
                      );
 
       bool deleteWorker (const worker_id_t& workerId);

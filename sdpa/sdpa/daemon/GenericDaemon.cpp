@@ -434,10 +434,8 @@ void GenericDaemon::handleWorkerRegistrationEvent
     }
   }
 
-  scheduler().worker_manager()._worker_connections.left.insert ({event->name(), source});
-
   const bool was_new_worker
-    (scheduler().worker_manager().addWorker (event->name(), event->capacity(), workerCpbSet, event->children_allowed(), event->hostname()));
+    (scheduler().worker_manager().addWorker (event->name(), event->capacity(), workerCpbSet, event->children_allowed(), event->hostname(), source));
 
   child_proxy (this, source).worker_registration_ack();
 

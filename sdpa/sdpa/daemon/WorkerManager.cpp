@@ -68,6 +68,7 @@ namespace sdpa
                                   , const capabilities_set_t& cpbSet
                                   , const bool children_allowed
                                   , const std::string& hostname
+                                  , const fhg::com::p2p::address_t& address
                                   )
     {
       boost::mutex::scoped_lock const _ (mtx_);
@@ -76,7 +77,7 @@ namespace sdpa
       {
         return false;
       }
-
+      _worker_connections.left.insert ({workerId, address});
       Worker::ptr_t pWorker( new Worker( workerId, capacity, cpbSet,  children_allowed, hostname) );
       worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
 
