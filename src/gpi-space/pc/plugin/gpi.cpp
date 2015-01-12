@@ -1,17 +1,7 @@
-#include <fhglog/LogMacros.hpp>
-
-#include <boost/thread.hpp>
-
-#include <fhg/util/read_bool.hpp>
 #include <plugin/plugin.hpp>
 #include <gpi-space/pc/plugin/gpi.hpp>
 
 #include <gpi-space/pc/client/api.hpp>
-
-#include <boost/thread/scoped_thread.hpp>
-
-typedef boost::recursive_mutex         mutex_type;
-typedef boost::unique_lock<mutex_type> lock_type;
 
 class GpiPluginImpl : FHG_PLUGIN
                     , public gpi::GPI
@@ -19,65 +9,9 @@ class GpiPluginImpl : FHG_PLUGIN
 public:
   GpiPluginImpl (std::function<void()>, std::list<Plugin*>, std::map<std::string, std::string> config_variables)
     : api ("")
-    , _try_start_loop (nullptr)
   {
-    const std::string socket_path
-      ( get<std::string> ("plugin.gpi.socket", config_variables)
-      .get_value_or ( "/var/tmp/S-gpi-space."
-                    + boost::lexical_cast<std::string>(getuid())
-                    + "."
-                    + boost::lexical_cast<std::string>(0) // numa socket
-                    )
-      );
-    const bool start_synchronous
-      (get<std::string> ("plugin.gpi.startmode", config_variables) == std::string ("wait"));
-    boost::optional<std::size_t> max_retries_until_defer_startup
-      ( start_synchronous
-      ? boost::optional<std::size_t>()
-      : get<std::size_t> ("plugin.gpi.retries_to_defer", config_variables).get_value_or (1)
-      );
-
-    api.path (socket_path);
-
-    if (start_synchronous)
-    {
-      restart_loop();
-    }
-    else
-    {
-      std::size_t retries_until_defer_startup
-        (std::max (max_retries_until_defer_startup.get_value_or (0), std::size_t (1)));
-
-      bool connected = false;
-
-      do
-      {
-        retries_until_defer_startup--;
-
-        connected = try_start();
-
-        if (! connected && retries_until_defer_startup)
-        {
-          boost::this_thread::sleep (boost::posix_time::seconds (5));
-        }
-        else
-        {
-          break;
-        }
-      } while (true);
-
-      if (! connected)
-      {
-        _try_start_loop = new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-          (&GpiPluginImpl::restart_loop, this);
-      }
-    }
-  }
-
-  virtual ~GpiPluginImpl()
-  {
-    delete _try_start_loop;
-    _try_start_loop = nullptr;
+    api.path (get<std::string> ("plugin.gpi.socket", config_variables).get());
+    api.start ();
   }
 
   virtual gpi::pc::type::handle_id_t alloc ( const gpi::pc::type::segment_id_t seg_id
@@ -176,16 +110,7 @@ public:
 
   virtual bool connect () override
   {
-    lock_type lock (m_state_mtx);
-
-    if (! is_connected())
-    {
-      return try_start ();
-    }
-    else
-    {
       return true;
-    }
   }
 
   virtual bool ping () override
@@ -193,37 +118,7 @@ public:
     return api.ping();
   }
 private:
-  bool try_start ()
-  {
-    lock_type lock (m_state_mtx);
-
-    try
-    {
-      api.start ();
-      return true;
-    }
-    catch (std::exception const &ex)
-    {
-      MLOG ( WARN
-           , "could not start gpi connection on `" << api.path() << "': " << ex.what()
-           );
-      return false;
-    }
-  }
-
-  void restart_loop ()
-  {
-    while (! try_start())
-    {
-      boost::this_thread::sleep (boost::posix_time::milliseconds (2500));
-    }
-  }
-
-  mutable mutex_type     m_state_mtx;
   gpi::pc::client::api_t api;
-
-  boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>*
-    _try_start_loop;
 };
 
 EXPORT_FHG_PLUGIN (gpi, GpiPluginImpl, "");

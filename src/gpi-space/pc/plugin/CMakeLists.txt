@@ -6,9 +6,7 @@ fhg_add_plugin(gpi gpi.cpp
   LINK_LIBRARIES
     gpi-space-pc-client-static
     gpi-space-pc-segment
-    ${FhgLog_LIBRARY_SHARED}
     ${Boost_SERIALIZATION_LIBRARY}
-    ${Boost_SYSTEM_LIBRARY}
   INSTALL
 )
 
