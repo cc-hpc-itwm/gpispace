@@ -311,19 +311,19 @@ namespace sdpa
     }
 
     auto WorkerManager::worker_by_address (fhg::com::p2p::address_t const& address)
-       -> boost::optional<WorkerManager::worker_connections_t::right_map::iterator>
-     {
-       WorkerManager::worker_connections_t::right_map::iterator it
-         (_worker_connections.right.find (address));
-       return boost::make_optional (it != _worker_connections.right.end(), it);
-     }
+      > boost::optional<WorkerManager::worker_connections_t::right_map::iterator>
+    {
+      WorkerManager::worker_connections_t::right_map::iterator it
+        (_worker_connections.right.find (address));
+      return boost::make_optional (it != _worker_connections.right.end(), it);
+    }
 
-     auto WorkerManager::address_by_worker (std::string const& worker)
-       -> boost::optional<WorkerManager::worker_connections_t::left_map::iterator>
-     {
-       WorkerManager::worker_connections_t::left_map::iterator it
-         (_worker_connections.left.find (worker));
-       return boost::make_optional (it != _worker_connections.left.end(), it);
-     }
+    auto WorkerManager::address_by_worker (std::string const& worker)
+      -> boost::optional<WorkerManager::worker_connections_t::left_map::iterator>
+    {
+      WorkerManager::worker_connections_t::left_map::iterator it
+        (_worker_connections.left.find (worker));
+      return boost::make_optional (it != _worker_connections.left.end(), it);
+    }
   }
 }
