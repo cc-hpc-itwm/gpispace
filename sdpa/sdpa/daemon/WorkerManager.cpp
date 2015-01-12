@@ -78,7 +78,7 @@ namespace sdpa
         return false;
       }
       _worker_connections.left.insert ({workerId, address});
-      Worker::ptr_t pWorker( new Worker( workerId, capacity, cpbSet,  children_allowed, hostname) );
+      Worker::ptr_t pWorker( new Worker( workerId, capacity, cpbSet,  children_allowed, hostname, address) );
       worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
 
       return true;

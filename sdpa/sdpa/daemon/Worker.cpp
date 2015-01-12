@@ -14,12 +14,14 @@ namespace sdpa
                    , const capabilities_set_t& capabilities
                    , const bool children_allowed
                    , const std::string& hostname
+                   , const fhg::com::p2p::address_t& address
                    )
       : name_ (name)
       , capacity_ (cap)
       , capabilities_ (capabilities)
       , children_allowed_ (children_allowed)
       , hostname_ (hostname)
+      , address_ (address)
       , last_time_served_ (0)
       , reserved_ (false)
     {
@@ -29,6 +31,11 @@ namespace sdpa
     const std::string Worker::hostname() const
     {
       return hostname_;
+    }
+
+    fhg::com::p2p::address_t Worker::address() const
+    {
+      return address_;
     }
 
     bool Worker::has_job( const job_id_t& job_id ) const
