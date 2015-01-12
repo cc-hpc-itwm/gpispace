@@ -75,9 +75,6 @@ namespace gpi
                , const gpi::pc::type::queue_id_t queue
                );
 
-        gpi::pc::type::handle_t
-        memset (const gpi::pc::type::handle_t h, int value, size_t count);
-
         std::function<double (std::string const&)>
         transfer_costs (std::list<std::pair<we::local::range, we::global::range>> const&);
 
