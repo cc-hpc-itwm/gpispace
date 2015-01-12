@@ -15,9 +15,6 @@
 
 #include <fhglog/LogMacros.hpp>
 
-#include <plugin/core/kernel.hpp>
-#include <plugin/plugin.hpp>
-
 #include <boost/asio/io_service.hpp>
 #include <boost/ref.hpp>
 #include <boost/shared_ptr.hpp>
