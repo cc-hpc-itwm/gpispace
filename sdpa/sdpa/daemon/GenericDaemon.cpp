@@ -466,7 +466,7 @@ void GenericDaemon::handleErrorEvent
 
   boost::optional<master_info_t::iterator> const as_master
     (master_by_address (source));
-  boost::optional<decltype (_worker_connections.right)::iterator> const as_worker
+  boost::optional<worker_connections_t::right_map::iterator> const as_worker
     (worker_by_address (source));
 
   // if it'a communication error, inspect all jobs and
@@ -754,17 +754,17 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
 }
 
     auto GenericDaemon::worker_by_address (fhg::com::p2p::address_t const& address)
-      -> boost::optional<decltype (_worker_connections.right)::iterator>
+      -> boost::optional<worker_connections_t::right_map::iterator>
     {
-      decltype (_worker_connections.right)::iterator it
+      worker_connections_t::right_map::iterator it
         (_worker_connections.right.find (address));
       return boost::make_optional (it != _worker_connections.right.end(), it);
     }
 
     auto GenericDaemon::address_by_worker (std::string const& worker)
-      -> boost::optional<decltype (_worker_connections.left)::iterator>
+      -> boost::optional<worker_connections_t::left_map::iterator>
     {
-      decltype (_worker_connections.left)::iterator it
+      worker_connections_t::left_map::iterator it
         (_worker_connections.left.find (worker));
       return boost::make_optional (it != _worker_connections.left.end(), it);
     }
@@ -856,7 +856,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent
      return;
    }
 
-  decltype (_worker_connections.right)::iterator const worker
+ worker_connections_t::right_map::iterator const worker
     ( fhg::util::boost::get_or_throw<std::runtime_error>
         (worker_by_address (source), "capabilities_gained for unknown worker")
     );
@@ -906,7 +906,7 @@ void GenericDaemon::handleCapabilitiesLostEvent
 {
   // tell the scheduler to remove the capabilities of the worker source
 
-  decltype (_worker_connections.right)::iterator const worker
+ worker_connections_t::right_map::iterator const worker
     ( fhg::util::boost::get_or_throw<std::runtime_error>
         (worker_by_address (source), "capabilities_lost for unknown worker")
     );
@@ -1125,7 +1125,7 @@ void GenericDaemon::handleSubmitJobAckEvent
     if(ptrJob->getStatus() == sdpa:: status::CANCELING)
       return;
 
-    decltype (_worker_connections.right)::iterator const worker
+   worker_connections_t::right_map::iterator const worker
       ( fhg::util::boost::get_or_throw<std::runtime_error>
          (worker_by_address (source), "submit_job_ack for unknown worker")
       );

@@ -236,9 +236,9 @@ namespace sdpa {
                        >;
       worker_connections_t _worker_connections;
 
-      boost::optional<decltype (_worker_connections.right)::iterator>
+      boost::optional<worker_connections_t::right_map::iterator>
         worker_by_address (fhg::com::p2p::address_t const&);
-      boost::optional<decltype (_worker_connections.left)::iterator>
+      boost::optional<worker_connections_t::left_map::iterator>
         address_by_worker (std::string const&);
 
       friend struct sdpa::opaque_job_master_t::implementation;
