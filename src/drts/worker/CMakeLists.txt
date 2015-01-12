@@ -18,8 +18,7 @@ target_link_libraries (fake-drts-kernel-plugin
   ${Boost_SYSTEM_LIBRARY})
 
 fhg_add_runtime_executable (drts-kernel.cpp
-  LINK_LIBRARIES fhg-plugin
-                 fake-drts-kernel-plugin
+  LINK_LIBRARIES fake-drts-kernel-plugin
                  ${UTIL_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_IOSTREAMS_LIBRARY}

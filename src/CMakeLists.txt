@@ -9,8 +9,6 @@ include_directories(${UTIL_INCLUDE_DIR})
 find_package(HWLOC REQUIRED QUIET)
 include_directories(SYSTEM ${HWLOC_INCLUDE_DIR})
 
-add_subdirectory(plugin)
-
 add_subdirectory (fhgcom)
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
