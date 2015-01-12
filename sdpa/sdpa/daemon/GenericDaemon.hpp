@@ -230,9 +230,11 @@ namespace sdpa {
 
       std::string _name;
 
-      boost::bimap < boost::bimaps::unordered_set_of<std::string>
-                   , boost::bimaps::unordered_set_of<fhg::com::p2p::address_t>
-                   > _worker_connections;
+      using worker_connections_t
+        = boost::bimap < boost::bimaps::unordered_set_of<std::string>
+                       , boost::bimaps::unordered_set_of<fhg::com::p2p::address_t>
+                       >;
+      worker_connections_t _worker_connections;
 
       boost::optional<decltype (_worker_connections.right)::iterator>
         worker_by_address (fhg::com::p2p::address_t const&);
