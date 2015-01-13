@@ -83,11 +83,7 @@ namespace gpi
           }
           m_socket = -1;
 
-          // move all segments to trash
-          while (! m_segments.empty())
-          {
-            m_segments.erase (m_segments.begin());
-          }
+          m_segments.clear();
         }
       }
 
