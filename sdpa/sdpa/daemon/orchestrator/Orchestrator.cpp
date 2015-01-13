@@ -141,7 +141,7 @@ namespace sdpa
         scheduler().worker_manager().findSubmOrAckWorker(pEvt->job_id());
       if (worker_id)
       {
-        child_proxy (this, address_by_worker (*worker_id).get()->second)
+        child_proxy (this, scheduler().worker_manager().address_by_worker (*worker_id).get()->second)
           .cancel_job (pEvt->job_id());
       }
       else

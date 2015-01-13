@@ -42,7 +42,6 @@
 #include <we/layer.hpp>
 #include <we/type/schedule_data.hpp>
 
-#include <boost/bimap.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
 #include <boost/utility.hpp>
@@ -229,15 +228,6 @@ namespace sdpa {
       fhg::log::Logger::ptr_t _logger;
 
       std::string _name;
-
-      boost::bimap < boost::bimaps::unordered_set_of<std::string>
-                   , boost::bimaps::unordered_set_of<fhg::com::p2p::address_t>
-                   > _worker_connections;
-
-      boost::optional<decltype (_worker_connections.right)::iterator>
-        worker_by_address (fhg::com::p2p::address_t const&);
-      boost::optional<decltype (_worker_connections.left)::iterator>
-        address_by_worker (std::string const&);
 
       friend struct sdpa::opaque_job_master_t::implementation;
 

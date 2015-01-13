@@ -68,6 +68,7 @@ namespace sdpa
                                   , const capabilities_set_t& cpbSet
                                   , const bool children_allowed
                                   , const std::string& hostname
+                                  , const fhg::com::p2p::address_t& address
                                   )
     {
       boost::mutex::scoped_lock const _ (mtx_);
@@ -76,18 +77,20 @@ namespace sdpa
       {
         return false;
       }
-
-      Worker::ptr_t pWorker( new Worker( workerId, capacity, cpbSet,  children_allowed, hostname) );
+      worker_connections_.left.insert ({workerId, address});
+      Worker::ptr_t pWorker( new Worker( workerId, capacity, cpbSet,  children_allowed, hostname, address) );
       worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
 
       return true;
     }
 
 
-    bool WorkerManager::deleteWorker (const worker_id_t& workerId)
+    void WorkerManager::deleteWorker (const worker_id_t& workerId)
     {
       boost::mutex::scoped_lock const _ (mtx_);
-      return worker_map_.erase (workerId) != 0;
+
+      worker_map_.erase (workerId);
+      worker_connections_.left.erase (workerId);
     }
 
     std::set<worker_id_t> WorkerManager::getAllNonReservedWorkers() const
@@ -305,6 +308,22 @@ namespace sdpa
     {
       boost::mutex::scoped_lock const _(mtx_);
       return worker_map_.at (worker_id)->removeCapabilities (cpb_set);
+    }
+
+    boost::optional<WorkerManager::worker_connections_t::right_iterator>
+      WorkerManager::worker_by_address (fhg::com::p2p::address_t const& address)
+    {
+      WorkerManager::worker_connections_t::right_iterator it
+        (worker_connections_.right.find (address));
+      return boost::make_optional (it != worker_connections_.right.end(), it);
+    }
+
+    boost::optional<WorkerManager::worker_connections_t::left_iterator>
+      WorkerManager::address_by_worker (std::string const& worker)
+    {
+      WorkerManager::worker_connections_t::left_iterator it
+        (worker_connections_.left.find (worker));
+      return boost::make_optional (it != worker_connections_.left.end(), it);
     }
   }
 }

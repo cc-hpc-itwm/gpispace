@@ -26,6 +26,7 @@ namespace sdpa
                       , const capabilities_set_t&
                       , const bool children_allowed
                       , const std::string& hostname
+                      , const fhg::com::p2p::address_t& address
                       );
 
       void assign (const job_id_t&);
@@ -37,6 +38,7 @@ namespace sdpa
 
       const worker_id_t &name() const { lock_type lock(mtx_); return name_; }
       const std::string hostname() const;
+      fhg::com::p2p::address_t address() const;
       boost::optional<unsigned int> capacity() const { lock_type lock(mtx_); return capacity_; }
 
       // capabilities
@@ -72,6 +74,7 @@ namespace sdpa
       capabilities_set_t capabilities_;
       bool children_allowed_;
       std::string hostname_;
+      fhg::com::p2p::address_t address_;
       double last_time_served_;
 
       std::set<job_id_t> pending_;

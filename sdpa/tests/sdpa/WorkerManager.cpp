@@ -34,13 +34,14 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
   const std::vector<std::string> worker_ids (generate_worker_names (4));
 
   sdpa::daemon::WorkerManager worker_manager;
-  worker_manager.addWorker (worker_ids[0], 1, {sdpa::capability_t ("A", worker_ids[0])}, random_bool(), fhg::util::random_string());
-  worker_manager.addWorker (worker_ids[1], 1, {sdpa::capability_t ("B", worker_ids[1])}, random_bool(), fhg::util::random_string());
+  worker_manager.addWorker (worker_ids[0], 1, {sdpa::capability_t ("A", worker_ids[0])}, random_bool(), fhg::util::random_string(), fhg::util::random_string());
+  worker_manager.addWorker (worker_ids[1], 1, {sdpa::capability_t ("B", worker_ids[1])}, random_bool(), fhg::util::random_string(), fhg::util::random_string());
   worker_manager.addWorker (worker_ids[2], 1, { sdpa::capability_t ("A", worker_ids[2])
                                               , sdpa::capability_t ("B", worker_ids[2])
                                               , sdpa::capability_t ("C", worker_ids[2])
                                               }
                                               , random_bool()
+                                              , fhg::util::random_string()
                                               , fhg::util::random_string()
                            );
 
@@ -48,6 +49,7 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
                                               , sdpa::capability_t ("B", worker_ids[3])
                                               }
                                               , random_bool()
+                                              , fhg::util::random_string()
                                               , fhg::util::random_string()
                            );
 
@@ -79,9 +81,9 @@ BOOST_AUTO_TEST_CASE (add_worker)
   const std::vector<std::string> worker_ids (generate_worker_names (3));
 
   sdpa::daemon::WorkerManager worker_manager;
-  worker_manager.addWorker (worker_ids[0], 1, {sdpa::capability_t ("A", worker_ids[0])}, random_bool(), fhg::util::random_string());
-  worker_manager.addWorker (worker_ids[1], 1, {sdpa::capability_t ("B", worker_ids[1])}, random_bool(), fhg::util::random_string());
-  worker_manager.addWorker (worker_ids[2], 1, {sdpa::capability_t ("C", worker_ids[2])}, random_bool(), fhg::util::random_string());
+  worker_manager.addWorker (worker_ids[0], 1, {sdpa::capability_t ("A", worker_ids[0])}, random_bool(), fhg::util::random_string(), fhg::util::random_string());
+  worker_manager.addWorker (worker_ids[1], 1, {sdpa::capability_t ("B", worker_ids[1])}, random_bool(), fhg::util::random_string(), fhg::util::random_string());
+  worker_manager.addWorker (worker_ids[2], 1, {sdpa::capability_t ("C", worker_ids[2])}, random_bool(), fhg::util::random_string(), fhg::util::random_string());
 
   BOOST_REQUIRE (worker_manager.hasWorker (worker_ids[0]));
   BOOST_REQUIRE (worker_manager.hasWorker (worker_ids[1]));
@@ -93,15 +95,13 @@ BOOST_AUTO_TEST_CASE (delete_worker)
   const std::vector<std::string> worker_ids (generate_worker_names (3));
 
   sdpa::daemon::WorkerManager worker_manager;
-  worker_manager.addWorker (worker_ids[0], 1, {sdpa::capability_t ("A", worker_ids[0])}, random_bool(), fhg::util::random_string());
-  worker_manager.addWorker (worker_ids[1], 1, {sdpa::capability_t ("B", worker_ids[1])}, random_bool(), fhg::util::random_string());
+  worker_manager.addWorker (worker_ids[0], 1, {sdpa::capability_t ("A", worker_ids[0])}, random_bool(), fhg::util::random_string(), fhg::util::random_string());
+  worker_manager.addWorker (worker_ids[1], 1, {sdpa::capability_t ("B", worker_ids[1])}, random_bool(), fhg::util::random_string(), fhg::util::random_string());
 
   worker_manager.deleteWorker (worker_ids[1]);
 
   BOOST_REQUIRE (worker_manager.hasWorker(worker_ids[0]));
   BOOST_REQUIRE (!worker_manager.hasWorker(worker_ids[1]));
-
-  BOOST_REQUIRE(!worker_manager.deleteWorker (worker_ids[2]));
 }
 
 BOOST_AUTO_TEST_CASE (get_capabilities)
@@ -116,9 +116,9 @@ BOOST_AUTO_TEST_CASE (get_capabilities)
   sdpa::capabilities_set_t::iterator it (expected_ccapabilities.begin());
 
   sdpa::daemon::WorkerManager worker_manager;
-  worker_manager.addWorker (worker_ids[0], 1, {*it++}, random_bool(), fhg::util::random_string());
-  worker_manager.addWorker (worker_ids[1], 1, {*it++}, random_bool(), fhg::util::random_string());
-  worker_manager.addWorker (worker_ids[2], 1, {*it++}, random_bool(), fhg::util::random_string());
+  worker_manager.addWorker (worker_ids[0], 1, {*it++}, random_bool(), fhg::util::random_string(), fhg::util::random_string());
+  worker_manager.addWorker (worker_ids[1], 1, {*it++}, random_bool(), fhg::util::random_string(), fhg::util::random_string());
+  worker_manager.addWorker (worker_ids[2], 1, {*it++}, random_bool(), fhg::util::random_string(), fhg::util::random_string());
 
   sdpa::capabilities_set_t acquired_capabilities;
   worker_manager.getCapabilities (acquired_capabilities);
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
   const std::vector<std::string> worker_ids (generate_worker_names (1));
 
   sdpa::daemon::WorkerManager worker_manager;
-  worker_manager.addWorker (worker_ids[0], 1, {sdpa::capability_t ("A", worker_ids[0])}, random_bool(), fhg::util::random_string());
+  worker_manager.addWorker (worker_ids[0], 1, {sdpa::capability_t ("A", worker_ids[0])}, random_bool(), fhg::util::random_string(), fhg::util::random_string());
 
   const sdpa::job_id_t job_id (fhg::util::random_string());
 

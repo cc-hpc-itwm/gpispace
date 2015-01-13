@@ -6,6 +6,8 @@
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/job_requirements.hpp>
 
+#include <boost/bimap.hpp>
+#include <boost/bimap/unordered_set_of.hpp>
 #include <boost/optional.hpp>
 
 #include <unordered_map>
@@ -30,9 +32,10 @@ namespace sdpa
                      , const capabilities_set_t& cpbset
                      , const bool children_allowed
                      , const std::string& hostname
+                     , const fhg::com::p2p::address_t& address
                      );
 
-      bool deleteWorker (const worker_id_t& workerId);
+      void deleteWorker (const worker_id_t& workerId);
 
       void getCapabilities (sdpa::capabilities_set_t& cpbset) const;
 
@@ -62,8 +65,20 @@ namespace sdpa
     bool add_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
     bool remove_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
 
+    using worker_connections_t
+      = boost::bimap < boost::bimaps::unordered_set_of<std::string>
+                     , boost::bimaps::unordered_set_of<fhg::com::p2p::address_t>
+                     >;
+
+    boost::optional<WorkerManager::worker_connections_t::right_iterator>
+      worker_by_address (fhg::com::p2p::address_t const&);
+
+    boost::optional<WorkerManager::worker_connections_t::left_iterator>
+      address_by_worker (std::string const&);
+
     private:
       worker_map_t  worker_map_;
+      worker_connections_t worker_connections_;
 
       mutable boost::mutex mtx_;
     };
