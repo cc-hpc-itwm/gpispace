@@ -143,7 +143,7 @@ try
     }
 
     struct sigaction _orig;
-  } scoped_NOCLDWAIT;
+  } const scoped_NOCLDWAIT;
 
   const boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
     io_service_thread ([&io_service]() { io_service.run(); });
