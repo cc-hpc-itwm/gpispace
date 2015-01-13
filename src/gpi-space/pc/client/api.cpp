@@ -86,7 +86,6 @@ namespace gpi
           // move all segments to trash
           while (! m_segments.empty())
           {
-            m_garbage_segments.insert (m_segments.begin()->second);
             m_segments.erase (m_segments.begin());
           }
         }
@@ -445,7 +444,6 @@ namespace gpi
           LOG(WARN, "   new segment: " << *seg);
           LOG(WARN, "moving my one into the trash");
 
-          m_garbage_segments.insert (m_segments.at(seg->id()));
           m_segments.erase(seg->id());
         }
 

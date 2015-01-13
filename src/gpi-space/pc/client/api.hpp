@@ -17,7 +17,6 @@
 
 #include <list>
 #include <map>
-#include <set>
 #include <string>
 #include <utility>
 
@@ -32,7 +31,6 @@ namespace gpi
       public:
         typedef boost::shared_ptr<gpi::pc::segment::segment_t> segment_ptr;
         typedef std::map<gpi::pc::type::segment_id_t, segment_ptr> segment_map_t;
-        typedef std::set<segment_ptr> segment_set_t;
 
         explicit
         api_t (std::string const & path);
@@ -98,7 +96,6 @@ namespace gpi
         std::string m_path;
         int m_socket;
         segment_map_t m_segments;
-        segment_set_t m_garbage_segments;
       };
     }
   }
