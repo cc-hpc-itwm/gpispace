@@ -87,16 +87,6 @@ namespace gpi
         }
       }
 
-      ssize_t api_t::write (const void * buf, size_t sz)
-      {
-        return fhg::syscall::write (m_socket, buf, sz);
-      }
-
-      ssize_t api_t::read (void * buf, size_t sz)
-      {
-        return fhg::syscall::read (m_socket, buf, sz);
-      }
-
       gpi::pc::proto::message_t
       api_t::communicate(gpi::pc::proto::message_t const & rqst)
       {
@@ -113,8 +103,8 @@ namespace gpi
         ::memset (&header, 0, sizeof(header));
         header.length = data.size();
 
-        if ( (this->write (&header, sizeof(header)) <= 0)
-           || (this->write (data.c_str(), data.size()) <= 0)
+        if ( (fhg::syscall::write (m_socket, &header, sizeof(header)) <= 0)
+           || (fhg::syscall::write (m_socket, data.c_str(), data.size()) <= 0)
            )
         {
           stop ();
@@ -122,14 +112,14 @@ namespace gpi
         }
 
         // receive
-        if (this->read  (&header, sizeof (header)) <= 0)
+        if (fhg::syscall::read (m_socket, &header, sizeof (header)) <= 0)
         {
           stop ();
           throw std::runtime_error ("could not receive data header");
         }
 
         std::vector<char> buffer (header.length);
-        if (this->read (&buffer[0], header.length) <= 0)
+        if (fhg::syscall::read (m_socket, &buffer[0], header.length) <= 0)
         {
           stop ();
           throw std::runtime_error ("could not receive data");

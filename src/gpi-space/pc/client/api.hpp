@@ -89,8 +89,6 @@ namespace gpi
         typedef boost::unique_lock<mutex_type> lock_type;
 
         gpi::pc::proto::message_t communicate (gpi::pc::proto::message_t const &);
-        ssize_t write (const void * buf, size_t sz);
-        ssize_t read (void * buf, size_t sz);
 
         mutable mutex_type m_mutex;
         std::string m_path;
