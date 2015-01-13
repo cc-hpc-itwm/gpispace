@@ -20,6 +20,7 @@
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/read_file.hpp>
 #include <fhg/util/split.hpp>
+#include <fhg/syscall.hpp>
 
 #include <boost/format.hpp>
 
