@@ -126,6 +126,25 @@ try
 
   io_service.notify_fork (boost::asio::io_service::fork_child);
 
+  struct scoped_NOCLDWAIT
+  {
+    scoped_NOCLDWAIT()
+    {
+      fhg::syscall::sigaction (SIGCHLD, nullptr, &_orig);
+
+      struct sigaction sigact (_orig);
+      sigact.sa_flags = SA_NOCLDWAIT;
+
+      fhg::syscall::sigaction (SIGCHLD, &sigact, nullptr);
+    }
+    ~scoped_NOCLDWAIT()
+    {
+      fhg::syscall::sigaction (SIGCHLD, &_orig, nullptr);
+    }
+
+    struct sigaction _orig;
+  } scoped_NOCLDWAIT;
+
   const boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
     io_service_thread ([&io_service]() { io_service.run(); });
 
