@@ -25,4 +25,5 @@ fhg_add_test (test.cpp
                  ${Boost_FILESYSTEM_LIBRARIES}
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY
+  REQUIRES_RIF
 )

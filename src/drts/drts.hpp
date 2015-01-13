@@ -115,6 +115,8 @@ namespace gspc
       _nodes_and_number_of_unique_nodes;
     std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
 
+    unsigned short _rif_port;
+
     std::string _orchestrator_host;
     unsigned short _orchestrator_port;
   };

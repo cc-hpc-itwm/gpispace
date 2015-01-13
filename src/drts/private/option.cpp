@@ -40,6 +40,8 @@ namespace gspc
         {"virtual-memory-port"};
       constexpr char const* const virtual_memory_startup_timeout
         {"virtual-memory-startup-timeout"};
+
+      constexpr char const* const rif_port {"rif-port"};
     }
   }
 
@@ -115,6 +117,11 @@ namespace gspc
         ( name::application_search_path
         , boost::program_options::value<validators::existing_directory>()
         , "adds a path to the list of application search paths"
+        )
+        ( name::rif_port
+        , boost::program_options::value<validators::positive_integral<unsigned short>>()
+          ->required()
+        , "port of running remote-interface daemon"
         )
         ;
 
@@ -275,6 +282,8 @@ namespace gspc
   ACCESS_PATH (virtual_memory_socket, validators::nonexisting_path);
   ACCESS_POSITIVE_INTEGRAL (virtual_memory_port, unsigned short);
   ACCESS_POSITIVE_INTEGRAL (virtual_memory_startup_timeout, unsigned long);
+
+  ACCESS_POSITIVE_INTEGRAL (rif_port, unsigned short);
 
 #undef ACCESS_POSITIVE_INTEGRAL
 #undef ACCESS_STRING

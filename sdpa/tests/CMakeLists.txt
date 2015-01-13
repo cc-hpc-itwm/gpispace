@@ -16,6 +16,7 @@ fhg_add_test (drts_should_handle_multiple_workflows_being_submitted_during_lifet
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
                  ${Boost_FILESYSTEM_LIBRARY}
   REQUIRES_INSTALLATION
+  REQUIRES_RIF
 )
 
 fhg_add_test (id_generator

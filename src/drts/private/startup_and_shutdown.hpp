@@ -45,9 +45,12 @@ namespace fhg
                  , boost::optional<std::chrono::seconds> vmem_startup_timeout
                  , std::vector<worker_description> worker_descriptions
                  , boost::optional<unsigned short> vmem_port
+                 , unsigned short rif_port
                  );
 
-    void shutdown (boost::filesystem::path const& state_dir);
+    void shutdown ( boost::filesystem::path const& state_dir
+                  , unsigned short rif_port
+                  );
   }
 }
 

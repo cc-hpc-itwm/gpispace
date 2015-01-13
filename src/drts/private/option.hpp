@@ -36,6 +36,8 @@ namespace gspc
   ACCESS (virtual_memory_port, unsigned short);
   ACCESS (virtual_memory_startup_timeout, unsigned long);
 
+  ACCESS (rif_port, unsigned short);
+
 #undef ACCESS
 #undef REQUIRE
 #undef GET
