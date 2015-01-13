@@ -51,7 +51,7 @@ namespace gpi
         type::handle_id_t alloc ( const type::segment_id_t
                                 , const type::size_t
                                 , const std::string & desc
-                                , const type::flags_t = gpi::pc::F_NONE
+                                , const type::flags_t
                                 );
         void free (const type::handle_id_t);
 
@@ -75,7 +75,7 @@ namespace gpi
 
         gpi::pc::type::segment_id_t register_segment( std::string const & name
                                                     , const gpi::pc::type::size_t sz
-                                                    , const gpi::pc::type::flags_t = 0
+                                                    , const gpi::pc::type::flags_t
                                                     );
         void unregister_segment(const gpi::pc::type::segment_id_t);
 
