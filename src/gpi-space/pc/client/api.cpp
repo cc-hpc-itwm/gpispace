@@ -4,6 +4,7 @@
 #include <gpi-space/pc/type/flags.hpp>
 
 #include <fhg/assert.hpp>
+#include <fhg/syscall.hpp>
 #include <fhglog/LogMacros.hpp>
 
 #include <boost/archive/binary_oarchive.hpp>
