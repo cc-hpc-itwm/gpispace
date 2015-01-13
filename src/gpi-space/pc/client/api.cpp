@@ -8,6 +8,7 @@
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/format.hpp>
 #include <boost/range/adaptor/map.hpp>
 
 #include <sys/un.h>
@@ -270,8 +271,6 @@ namespace gpi
       void *
       api_t::ptr(const gpi::pc::type::handle_t h)
       {
-        try
-        {
           gpi::pc::type::handle::descriptor_t
             descriptor = info(h);
 
@@ -281,15 +280,11 @@ namespace gpi
           {
             return seg_it->second->ptr<char>() + descriptor.offset;
           }
-          else
-          {
-            return nullptr;
-          }
-        }
-        catch (std::exception const &)
-        {
-          return nullptr;
-        }
+
+          throw std::runtime_error
+            ((boost::format("Requested pointer for unknown handle '%1%'") % h
+             ).str()
+            );
       }
 
       gpi::pc::type::queue_id_t
