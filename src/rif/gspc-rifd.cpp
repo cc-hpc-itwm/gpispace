@@ -25,6 +25,27 @@ namespace
   {
     constexpr const char* const port {"port"};
   }
+
+  void reap_children (int)
+  {
+    try
+    {
+      while (fhg::syscall::waitpid (-1, nullptr, WNOHANG) > 0)
+      {
+        //! \note Just wait for all pending ones to reap them.
+        //! see http://www.microhowto.info/howto/reap_zombie_processes_using_a_sigchld_handler.html
+      }
+    }
+    catch (boost::system::system_error const& ex)
+    {
+      if (ex.code() == boost::system::errc::no_child_process)
+      {
+        return;
+      }
+
+      throw;
+    }
+  }
 }
 
 int main (int argc, char** argv)
@@ -125,6 +146,26 @@ try
   fhg::syscall::close (2);
 
   io_service.notify_fork (boost::asio::io_service::fork_child);
+
+  struct scoped_child_reaper
+  {
+    scoped_child_reaper()
+    {
+      struct sigaction sigact;
+      memset (&sigact, 0, sizeof (sigact));
+
+      sigact.sa_handler = reap_children;
+      sigact.sa_flags = SA_NOCLDSTOP | SA_NOCLDWAIT | SA_RESTART;
+
+      fhg::syscall::sigaction (SIGCHLD, &sigact, &_orig);
+    }
+    ~scoped_child_reaper()
+    {
+      fhg::syscall::sigaction (SIGCHLD, &_orig, nullptr);
+    }
+
+    struct sigaction _orig;
+  } const scoped_child_reaper;
 
   const boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
     io_service_thread ([&io_service]() { io_service.run(); });
