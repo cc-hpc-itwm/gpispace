@@ -25,6 +25,27 @@ namespace
   {
     constexpr const char* const port {"port"};
   }
+
+  void reap_children (int)
+  {
+    try
+    {
+      while (fhg::syscall::waitpid (-1, nullptr, WNOHANG) > 0)
+      {
+        //! \note Just wait for all pending ones to reap them.
+        //! see http://www.microhowto.info/howto/reap_zombie_processes_using_a_sigchld_handler.html
+      }
+    }
+    catch (boost::system::system_error const& ex)
+    {
+      if (ex.code() == boost::system::errc::no_child_process)
+      {
+        return;
+      }
+
+      throw;
+    }
+  }
 }
 
 int main (int argc, char** argv)
@@ -130,12 +151,13 @@ try
   {
     scoped_NOCLDWAIT()
     {
-      fhg::syscall::sigaction (SIGCHLD, nullptr, &_orig);
+      struct sigaction sigact;
+      memset (&sigact, 0, sizeof (sigact));
 
-      struct sigaction sigact (_orig);
-      sigact.sa_flags = SA_NOCLDWAIT;
+      sigact.sa_handler = reap_children;
+      sigact.sa_flags = SA_NOCLDSTOP | SA_NOCLDWAIT | SA_RESTART;
 
-      fhg::syscall::sigaction (SIGCHLD, &sigact, nullptr);
+      fhg::syscall::sigaction (SIGCHLD, &sigact, &_orig);
     }
     ~scoped_NOCLDWAIT()
     {
