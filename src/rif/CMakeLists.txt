@@ -18,3 +18,11 @@ fhg_add_runtime_executable ("gspc-bootstrap-rifd.cpp"
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
 )
+fhg_add_runtime_executable ("gspc-teardown-rifd.cpp"
+  LINK_LIBRARIES rpc
+                 net
+                 fhg-util
+                 ${Boost_FILESYSTEM_LIBRARY}
+                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
+)
