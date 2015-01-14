@@ -147,9 +147,9 @@ try
 
   io_service.notify_fork (boost::asio::io_service::fork_child);
 
-  struct scoped_NOCLDWAIT
+  struct scoped_child_reaper
   {
-    scoped_NOCLDWAIT()
+    scoped_child_reaper()
     {
       struct sigaction sigact;
       memset (&sigact, 0, sizeof (sigact));
@@ -159,13 +159,13 @@ try
 
       fhg::syscall::sigaction (SIGCHLD, &sigact, &_orig);
     }
-    ~scoped_NOCLDWAIT()
+    ~scoped_child_reaper()
     {
       fhg::syscall::sigaction (SIGCHLD, &_orig, nullptr);
     }
 
     struct sigaction _orig;
-  } const scoped_NOCLDWAIT;
+  } const scoped_child_reaper;
 
   const boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
     io_service_thread ([&io_service]() { io_service.run(); });
