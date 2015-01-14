@@ -4,6 +4,8 @@
 #include <boost/serialization/split_free.hpp>
 
 #include <string>
+#include <stdexcept>
+#include <sstream>
 
 #include <unistd.h>
 
@@ -19,11 +21,28 @@ namespace fhg
 
       //! \note Serialization only.
       entry_point() = default;
+
       entry_point (std::string const& hostname, unsigned short port, pid_t pid)
         : hostname (hostname)
         , port (port)
         , pid (pid)
       {}
+
+      entry_point (std::string const& input)
+      {
+        std::istringstream iss (input);
+        if (!(iss >> hostname >> port >> pid))
+        {
+          throw std::runtime_error
+            ("parse error: expected 'host port pid': got '" + input + "'");
+        }
+      }
+      std::string to_string() const
+      {
+        std::ostringstream oss;
+        oss << hostname << ' ' << port << ' ' << pid;
+        return oss.str();
+      }
     };
   }
 }

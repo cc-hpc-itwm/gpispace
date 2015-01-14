@@ -135,25 +135,14 @@ try
       );
   }
 
-  std::vector<fhg::rif::entry_point> entry_points;
-  for ( std::string const& line
-      : fhg::util::read_lines
-          ( vm.at (option::entry_points_file)
-          . as<fhg::util::boost::program_options::existing_path>()
-          )
-      )
-  {
-    std::string hostname;
-    unsigned short port;
-    pid_t pid;
-    std::istringstream iss (line);
-    if (!(iss >> hostname >> port >> pid))
-    {
-      throw std::runtime_error
-        ("parse error: expected 'host port pid': got '" + line + "'");
-    }
-    entry_points.emplace_back (hostname, port, pid);
-  }
+  std::vector<std::string> const lines
+    ( fhg::util::read_lines
+        ( vm.at (option::entry_points_file)
+        . as<fhg::util::boost::program_options::existing_path>()
+        )
+    );
+  std::vector<fhg::rif::entry_point> const entry_points
+    (lines.begin(), lines.end());
 
   fhg::util::nest_exceptions<std::runtime_error>
     ( [&]
@@ -168,10 +157,7 @@ try
         {
           for (fhg::rif::entry_point const& entry_point : failed_entry_points)
           {
-            std::cout << entry_point.hostname
-                      << ' ' << entry_point.port
-                      << ' ' << entry_point.pid
-                      << '\n';
+            std::cout << entry_point.to_string() << '\n';
           }
 
           throw;

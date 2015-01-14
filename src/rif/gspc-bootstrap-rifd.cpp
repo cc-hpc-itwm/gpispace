@@ -271,10 +271,7 @@ try
 
   for (fhg::rif::entry_point const& entry_point : entry_points)
   {
-    std::cout << entry_point.hostname
-              << ' ' << entry_point.port
-              << ' ' << entry_point.pid
-              << '\n';
+    std::cout << entry_point.to_string() << '\n';
   }
 }
 catch (...)
