@@ -9,6 +9,7 @@
 #include <rpc/exception_serialization.hpp>
 
 #include <fhg/util/boost/serialization/tuple.hpp>
+#include <fhg/util/make_indices.hpp>
 
 #include <network/connection.hpp>
 
@@ -195,28 +196,9 @@ namespace fhg
 
     namespace
     {
-      template<std::size_t...> struct indices;
-
-      template<std::size_t, typename> struct make_indices_impl;
-      template<std::size_t N, std::size_t... Indices>
-        struct make_indices_impl<N, indices<Indices...>>
-      {
-        using type = typename make_indices_impl<N - 1, indices<N, Indices...>>::type;
-      };
-      template<std::size_t... Indices>
-        struct make_indices_impl<0, indices<Indices...>>
-      {
-        using type = indices<0, Indices...>;
-      };
-
-      //! \note create indices<0, …, Size - 1>
-      //! \note potentially slow for large N, and limited by -ftemplate-depth.
-      template<std::size_t Size>
-        using make_indices = typename make_indices_impl<Size - 1, indices<>>::type;
-
       template<typename> struct apply_tuple_impl;
       template<std::size_t... Indices>
-        struct apply_tuple_impl<indices<Indices...>>
+        struct apply_tuple_impl<fhg::util::indices<Indices...>>
       {
         template<typename Op, typename... OpArgs>
           static typename std::result_of<Op (OpArgs...)>::type
@@ -231,15 +213,15 @@ namespace fhg
         typename std::result_of<Op (OpArgs...)>::type
           apply_tuple (Op&& op, std::tuple<OpArgs...>&& t)
       {
-        return apply_tuple_impl<make_indices<sizeof... (OpArgs)>>::apply
-          (std::forward<Op> (op), std::forward<std::tuple<OpArgs...>> (t));
+        return apply_tuple_impl<fhg::util::make_indices<sizeof... (OpArgs)>>
+          ::apply (std::forward<Op> (op), std::forward<std::tuple<OpArgs...>> (t));
       }
 
       //! \note Alternative to serializing whole tuple
 
       // template<typename, typename> struct unwrap_arguments_impl;
       // template<typename arguments_type, std::size_t... Indices>
-      //   struct unwrap_arguments_impl<arguments_type, indices<Indices...>>
+      //   struct unwrap_arguments_impl<arguments_type, fhg::util::indices<Indices...>>
       // {
       //   template<size_t i>
       //     using argument_type = typename std::tuple_element<i, arguments_type>::type;
@@ -256,8 +238,9 @@ namespace fhg
       //   arguments_type unwrap_arguments (util::parse::position& buffer)
       // {
       //   return unwrap_arguments_impl
-      //     <arguments_type, make_indices<std::tuple_size<arguments_type>::value>>
-      //     ::apply (buffer);
+      //     < arguments_type
+      //     , fhg::util::make_indices<std::tuple_size<arguments_type>::value>
+      //     >::apply (buffer);
       // }
 
       template<typename arguments_type>
