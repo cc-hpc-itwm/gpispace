@@ -9,8 +9,6 @@
 #include <fhg/util/nest_exceptions.hpp>
 #include <fhg/util/print_exception.hpp>
 #include <fhg/util/read_lines.hpp>
-#include <fhg/util/system_with_blocked_SIGCHLD.hpp>
-#include <fhg/util/wait_and_collect_exceptions.hpp>
 
 #include <network/server.hpp>
 
@@ -25,6 +23,7 @@
 #include <boost/thread/scoped_thread.hpp>
 
 #include <condition_variable>
+#include <iostream>
 #include <mutex>
 #include <unordered_map>
 #include <vector>
