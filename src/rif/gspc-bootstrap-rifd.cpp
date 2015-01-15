@@ -108,9 +108,6 @@ try
     ( option::port
     , boost::program_options::value
         <fhg::util::boost::program_options::positive_integral<unsigned short>>()
-      //! \todo make optional and allow rif to chose port, requires to
-      //! prepare next steps to deal with rif_port_by_hostname
-      ->required()
     , "port to listen on"
     )
     ( option::hostfile
