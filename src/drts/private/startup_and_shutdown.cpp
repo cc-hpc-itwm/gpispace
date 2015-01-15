@@ -3,10 +3,12 @@
 #include <fhg/util/boost/serialization/path.hpp>
 #include <fhg/util/boost/serialization/unordered_map.hpp>
 #include <fhg/util/join.hpp>
+#include <fhg/util/nest_exceptions.hpp>
 #include <fhg/util/read_file.hpp>
 #include <fhg/util/read_lines.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/starts_with.hpp>
+#include <fhg/util/wait_and_collect_exceptions.hpp>
 
 #include <rpc/client.hpp>
 
@@ -115,21 +117,6 @@ namespace
            ).str();
   }
 
-  template<typename Exception, typename... ExceptionArgs, typename Fun>
-    auto nest_exceptions (Fun&& fun, ExceptionArgs... exception_args)
-      -> decltype (fun())
-  {
-    try
-    {
-      return fun();
-    }
-    catch (...)
-    {
-      std::throw_with_nested
-        (Exception (std::forward<ExceptionArgs> (exception_args)...));
-    }
-  }
-
   template<typename Res, typename Enum, typename Match>
     boost::optional<Res> get_match (Match& match, Enum part)
   {
@@ -211,26 +198,6 @@ namespace
     return { agent_startup_messages.second[0]
            , boost::lexical_cast<unsigned short> (agent_startup_messages.second[1])
            };
-  }
-
-  void wait_and_collect_exceptions (std::vector<std::future<void>>& futures)
-  {
-    std::vector<std::string> accumulated_whats;
-    for (std::future<void>& future : futures)
-    {
-      try
-      {
-        future.get();
-      }
-      catch (std::exception const& ex)
-      {
-        accumulated_whats.emplace_back (ex.what());
-      }
-    }
-    if (!accumulated_whats.empty())
-    {
-      throw std::runtime_error (fhg::util::join (accumulated_whats, ", "));
-    }
   }
 
   void add_plugin_option ( std::vector<std::string>& arguments
@@ -421,7 +388,7 @@ namespace
        }
      }
 
-     wait_and_collect_exceptions (startups);
+     fhg::util::wait_and_collect_exceptions (startups);
   }
 }
 
@@ -618,7 +585,7 @@ namespace fhg
                 << gui_host << ":" << gui_port << "\n";
 
       std::pair<pid_t, std::vector<std::string>> const orchestrator_startup_messages
-        ( nest_exceptions<std::runtime_error>
+        ( fhg::util::nest_exceptions<std::runtime_error>
             ( [&]
               {
                 return remote_execute_and_get_startup_messages
@@ -690,7 +657,7 @@ namespace fhg
                   << " with a timeout of " << vmem_startup_timeout.get().count()
                   << " seconds\n";
 
-        nest_exceptions<std::runtime_error>
+        fhg::util::nest_exceptions<std::runtime_error>
           ( [&]
             {
               std::vector<std::future<void>> futures;
@@ -742,7 +709,7 @@ namespace fhg
                 );
               }
 
-              wait_and_collect_exceptions (futures);
+              fhg::util::wait_and_collect_exceptions (futures);
             }
           , "could not start vmem"
           );
@@ -776,7 +743,7 @@ namespace fhg
         }
       }
 
-      nest_exceptions<std::runtime_error>
+      fhg::util::nest_exceptions<std::runtime_error>
         ( [&]
           {
             std::string const master_agent_name ("agent-" + master + "-0");
@@ -831,13 +798,13 @@ namespace fhg
                                           )
                                       );
               }
-              wait_and_collect_exceptions (startups);
+              fhg::util::wait_and_collect_exceptions (startups);
             }
           }
           , "at least one agent could not be started!"
           );
 
-      nest_exceptions<std::runtime_error>
+      fhg::util::nest_exceptions<std::runtime_error>
         ( [&]
           {
             for (segment_info_t const& info : segment_info)
@@ -976,7 +943,7 @@ namespace fhg
             );
         }
 
-        wait_and_collect_exceptions (terminates);
+        fhg::util::wait_and_collect_exceptions (terminates);
 
         for ( boost::filesystem::directory_entry const& entry
             : directory_range (processes_dir)

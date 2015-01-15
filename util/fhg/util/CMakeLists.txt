@@ -37,6 +37,7 @@ set (srcs
 
   print_exception.cpp
   system_with_blocked_SIGCHLD.cpp
+  wait_and_collect_exceptions.cpp
 )
 
 add_library (fhg-util ${srcs})
