@@ -4,17 +4,14 @@
 #include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/join.hpp>
-#include <fhg/util/nest_exceptions.hpp>
 #include <fhg/util/print_exception.hpp>
 #include <fhg/util/read_lines.hpp>
 
-#include <rif/strategy/ssh.hpp>
+#include <rif/strategy/meta.hpp>
 
 #include <boost/program_options.hpp>
-#include <boost/range/adaptor/map.hpp>
 
 #include <iostream>
-#include <unordered_map>
 #include <vector>
 
 namespace
@@ -29,12 +26,8 @@ namespace
 int main (int argc, char** argv)
 try
 {
-  std::unordered_map
-    < std::string
-    , std::function<void ( std::vector<fhg::rif::entry_point> const&
-                         , std::vector<fhg::rif::entry_point>&
-                         )>
-    > const strategies {{"ssh", fhg::rif::strategy::ssh::teardown}};
+  std::vector<std::string> const strategies
+    {fhg::rif::strategy::available_strategies()};
 
   boost::program_options::options_description options_description;
   options_description.add_options()
@@ -45,9 +38,7 @@ try
     )
     ( option::strategy
     , boost::program_options::value<std::string>()->required()
-    , ( "strategy: one of "
-      + fhg::util::join (strategies | boost::adaptors::map_keys, ", ")
-      ).c_str()
+    , ("strategy: one of " + fhg::util::join (strategies, ", ")).c_str()
     )
     ;
 
@@ -63,13 +54,13 @@ try
 
   std::string const strategy (vm.at (option::strategy).as<std::string>());
 
-  if (!strategies.count (strategy))
+  if (std::find (strategies.begin(), strategies.end(), strategy) == strategies.end())
   {
     throw std::invalid_argument
       (( boost::format ("invalid argument '%1%' for --%2%: one of %3%")
        % strategy
        % option::strategy
-       % fhg::util::join (strategies | boost::adaptors::map_keys, ", ")
+       % fhg::util::join (strategies, ", ")
        ).str()
       );
   }
@@ -83,27 +74,21 @@ try
   std::vector<fhg::rif::entry_point> const entry_points
     (lines.begin(), lines.end());
 
-  fhg::util::nest_exceptions<std::runtime_error>
-    ( [&]
-      {
-        std::vector<fhg::rif::entry_point> failed_entry_points;
+  std::vector<fhg::rif::entry_point> failed_entry_points;
 
-        try
-        {
-          strategies.at (strategy) (entry_points, failed_entry_points);
-        }
-        catch (...)
-        {
-          for (fhg::rif::entry_point const& entry_point : failed_entry_points)
-          {
-            std::cout << entry_point.to_string() << '\n';
-          }
+  try
+  {
+    fhg::rif::strategy::teardown (strategy, entry_points, failed_entry_points);
+  }
+  catch (...)
+  {
+    for (fhg::rif::entry_point const& entry_point : failed_entry_points)
+    {
+      std::cout << entry_point.to_string() << '\n';
+    }
 
-          throw;
-        }
-      }
-    , "teardown-" + strategy + " failed: "
-    );
+    throw;
+  }
 
   return 0;
 }
