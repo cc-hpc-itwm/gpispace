@@ -12,6 +12,8 @@
 
 #include <network/server.hpp>
 
+#include <rif/strategy/ssh.hpp>
+
 #include <rpc/server.hpp>
 
 #include <boost/asio/io_service.hpp>
@@ -33,58 +35,6 @@ namespace
     constexpr const char* const entry_points_file {"entry-points-file"};
     constexpr const char* const strategy {"strategy"};
   }
-
-  namespace strategy
-  {
-    void ssh ( std::vector<fhg::rif::entry_point> const& entry_points
-             , std::vector<fhg::rif::entry_point>& failed_entry_points
-             )
-    {
-      std::mutex failed_entry_points_guard;
-
-      std::vector<std::future<void>> sshs;
-
-      for (fhg::rif::entry_point const& entry_point : entry_points)
-      {
-        std::string const command
-          ( ( boost::format ("ssh %1% %2% /bin/kill -TERM %3%")
-            % "-q -x -T -n -o CheckHostIP=no -o StrictHostKeyChecking=no"
-            % entry_point.hostname
-            % entry_point.pid
-            ).str()
-          );
-
-        sshs.emplace_back
-          ( std::async
-              ( std::launch::async
-              , [ command, entry_point
-                , &failed_entry_points_guard, &failed_entry_points
-                ]
-                {
-                  if ( int ec
-                     = fhg::util::system_with_blocked_SIGCHLD (command.c_str())
-                     )
-                  {
-                    std::unique_lock<std::mutex> const _
-                      (failed_entry_points_guard);
-                    failed_entry_points.emplace_back (entry_point);
-
-                    throw std::runtime_error
-                      ( ( boost::format ("%1%: %2% failed: %3%")
-                        % entry_point.hostname
-                        % command
-                        % ec
-                        ).str()
-                      );
-                  }
-                }
-              )
-          );
-      }
-
-      fhg::util::wait_and_collect_exceptions (sshs);
-    }
-  }
 }
 
 int main (int argc, char** argv)
@@ -95,7 +45,7 @@ try
     , std::function<void ( std::vector<fhg::rif::entry_point> const&
                          , std::vector<fhg::rif::entry_point>&
                          )>
-    > const strategies {{"ssh", strategy::ssh}};
+    > const strategies {{"ssh", fhg::rif::strategy::ssh::teardown}};
 
   boost::program_options::options_description options_description;
   options_description.add_options()

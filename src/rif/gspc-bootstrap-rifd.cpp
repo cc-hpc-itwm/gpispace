@@ -14,6 +14,8 @@
 
 #include <network/server.hpp>
 
+#include <rif/strategy/ssh.hpp>
+
 #include <rpc/server.hpp>
 
 #include <boost/asio/io_service.hpp>
@@ -36,57 +38,6 @@ namespace
     constexpr const char* const strategy {"strategy"};
     constexpr const char* const gspc_home {"gspc-home"};
   }
-
-  namespace strategy
-  {
-    void ssh ( std::vector<std::string> const& hostnames
-             , boost::optional<unsigned short> const& port
-             , std::string const& register_host
-             , unsigned short register_port
-             , boost::filesystem::path const& binary
-             )
-    {
-      std::vector<std::future<void>> sshs;
-
-      for (std::string const& hostname : hostnames)
-      {
-        std::string const command
-          ( ( boost::format
-                ("ssh %1% %2% %3% %4% --register-host %5% --register-port %6%")
-            % "-q -x -T -n -o CheckHostIP=no -o StrictHostKeyChecking=no"
-            % hostname
-            % binary
-            % (port ? "--port " + std::to_string (*port) : "")
-            % register_host
-            % register_port
-            ).str()
-          );
-
-        sshs.emplace_back
-          ( std::async
-              ( std::launch::async
-              , [hostname, command]
-                {
-                  if ( int ec
-                     = fhg::util::system_with_blocked_SIGCHLD (command.c_str())
-                     )
-                  {
-                    throw std::runtime_error
-                      ( ( boost::format ("%1%: %2% failed: %3%")
-                        % hostname
-                        % command
-                        % ec
-                        ).str()
-                      );
-                  }
-                }
-              )
-          );
-      }
-
-      fhg::util::wait_and_collect_exceptions (sshs);
-    }
-  }
 }
 
 int main (int argc, char** argv)
@@ -101,7 +52,7 @@ try
                          , boost::filesystem::path const&
                          )
                    >
-    > const strategies {{"ssh", strategy::ssh}};
+    > const strategies {{"ssh", fhg::rif::strategy::ssh::bootstrap}};
 
   boost::program_options::options_description options_description;
   options_description.add_options()
