@@ -107,7 +107,6 @@ namespace gspc
 
     installation const _installation;
     boost::filesystem::path const _state_directory;
-    boost::filesystem::path const _nodefile;
     boost::optional<unsigned long> _virtual_memory_per_node;
     boost::optional<boost::filesystem::path> _virtual_memory_socket;
     boost::optional<std::chrono::seconds> _virtual_memory_startup_timeout;
@@ -115,7 +114,7 @@ namespace gspc
       _nodes_and_number_of_unique_nodes;
     std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
 
-    unsigned short _rif_port;
+    std::vector<std::string> _rif_entry_points_file_content;
 
     std::string _orchestrator_host;
     unsigned short _orchestrator_port;

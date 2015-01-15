@@ -5,6 +5,8 @@
 
 #include <fhg/util/signal_handler_manager.hpp>
 
+#include <rif/entry_point.hpp>
+
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
 
@@ -37,7 +39,6 @@ namespace fhg
                  , std::vector<boost::filesystem::path> app_path
                  , boost::filesystem::path sdpa_home
                  , std::size_t number_of_groups
-                 , boost::filesystem::path nodefile
                  , boost::filesystem::path state_dir
                  , bool delete_logfiles
                  , fhg::util::signal_handler_manager& signal_handler_manager
@@ -45,11 +46,11 @@ namespace fhg
                  , boost::optional<std::chrono::seconds> vmem_startup_timeout
                  , std::vector<worker_description> worker_descriptions
                  , boost::optional<unsigned short> vmem_port
-                 , unsigned short rif_port
+                 , std::vector<fhg::rif::entry_point> const&
                  );
 
     void shutdown ( boost::filesystem::path const& state_dir
-                  , unsigned short rif_port
+                  , std::vector<fhg::rif::entry_point> const&
                   );
   }
 }

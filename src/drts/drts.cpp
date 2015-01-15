@@ -19,6 +19,7 @@
 #include <fhg/util/hostname.hpp>
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/read_file.hpp>
+#include <fhg/util/read_lines.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/syscall.hpp>
 
@@ -80,7 +81,6 @@ namespace gspc
     )
       : _installation (installation)
       , _state_directory (require_state_directory (vm))
-      , _nodefile (boost::filesystem::canonical (require_nodefile (vm)))
       , _virtual_memory_per_node (get_virtual_memory_per_node (vm))
       , _virtual_memory_socket (get_virtual_memory_socket (vm))
       , _virtual_memory_startup_timeout
@@ -89,14 +89,16 @@ namespace gspc
           (std::chrono::seconds (get_virtual_memory_startup_timeout (vm).get()))
         : boost::none
         )
-      , _nodes_and_number_of_unique_nodes (read_nodes (_nodefile))
+      , _nodes_and_number_of_unique_nodes
+          (read_nodes (boost::filesystem::canonical (require_nodefile (vm))))
       , _virtual_memory_api
         ( _virtual_memory_socket
         ? fhg::util::make_unique<gpi::pc::client::api_t>
           (_virtual_memory_socket->string())
         : nullptr
         )
-      , _rif_port (require_rif_port (vm))
+      , _rif_entry_points_file_content
+          (fhg::util::read_lines (require_rif_entry_points_file (vm)))
   {
     unsigned short const default_log_port
       ((65535 - 30000 + fhg::syscall::getuid() * 2) % 65535 + 1024);
@@ -129,7 +131,6 @@ namespace gspc
       , _installation.gspc_home()
       //! \todo configurable: number of segments
       , 1
-      , _nodefile
       , _state_directory
       // !\todo configurable: delete logfiles
       , true
@@ -138,7 +139,9 @@ namespace gspc
       , _virtual_memory_startup_timeout
       , worker_descriptions
       , get_virtual_memory_port (vm)
-      , _rif_port
+      , { _rif_entry_points_file_content.begin()
+        , _rif_entry_points_file_content.end()
+        }
       );
 
     //! \todo Remove magic: specify filenames instead of relying on
@@ -158,7 +161,11 @@ namespace gspc
   {
     _virtual_memory_api.reset();
 
-    fhg::drts::shutdown (_state_directory, _rif_port);
+    fhg::drts::shutdown ( _state_directory
+                        , { _rif_entry_points_file_content.begin()
+                          , _rif_entry_points_file_content.end()
+                          }
+                        );
   }
 
   vmem_allocation scoped_runtime_system::alloc

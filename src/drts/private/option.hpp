@@ -36,7 +36,7 @@ namespace gspc
   ACCESS (virtual_memory_port, unsigned short);
   ACCESS (virtual_memory_startup_timeout, unsigned long);
 
-  ACCESS (rif_port, unsigned short);
+  ACCESS (rif_entry_points_file, boost::filesystem::path);
 
 #undef ACCESS
 #undef REQUIRE

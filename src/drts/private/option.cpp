@@ -6,6 +6,7 @@
 #include <fhg/util/boost/program_options/validators/existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/validators/is_directory_if_exists.hpp>
+#include <fhg/util/boost/program_options/validators/nonempty_file.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
@@ -41,7 +42,7 @@ namespace gspc
       constexpr char const* const virtual_memory_startup_timeout
         {"virtual-memory-startup-timeout"};
 
-      constexpr char const* const rif_port {"rif-port"};
+      constexpr char const* const rif_entry_points_file {"rif-entry-points-file"};
     }
   }
 
@@ -118,10 +119,10 @@ namespace gspc
         , boost::program_options::value<validators::existing_directory>()
         , "adds a path to the list of application search paths"
         )
-        ( name::rif_port
-        , boost::program_options::value<validators::positive_integral<unsigned short>>()
+        ( name::rif_entry_points_file
+        , boost::program_options::value<validators::nonempty_file>()
           ->required()
-        , "port of running remote-interface daemon"
+        , "entry point description of running remote-interface daemons"
         )
         ;
 
@@ -283,7 +284,7 @@ namespace gspc
   ACCESS_POSITIVE_INTEGRAL (virtual_memory_port, unsigned short);
   ACCESS_POSITIVE_INTEGRAL (virtual_memory_startup_timeout, unsigned long);
 
-  ACCESS_POSITIVE_INTEGRAL (rif_port, unsigned short);
+  ACCESS_PATH (rif_entry_points_file, validators::nonempty_file);
 
 #undef ACCESS_POSITIVE_INTEGRAL
 #undef ACCESS_STRING

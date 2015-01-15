@@ -144,7 +144,9 @@ macro(FHG_ADD_TEST)
     string(REGEX REPLACE "(.*/)?(.*)\\.c.*" "${TEST_PREFIX}\\2" tc_name ${TEST_SOURCE})
 
     if (TEST_REQUIRES_RIF)
-      set (TEST_ARGS ${TEST_ARGS} --rif-port ${TESTING_RIF_PORT})
+      set (TEST_ARGS ${TEST_ARGS}
+        --rif-entry-points-file ${TESTING_RIF_ENTRY_POINT_FILE}
+      )
     endif()
 
     if (TEST_REQUIRES_VIRTUAL_MEMORY)
