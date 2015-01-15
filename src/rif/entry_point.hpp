@@ -6,6 +6,7 @@
 #include <string>
 #include <stdexcept>
 #include <sstream>
+#include <tuple>
 
 #include <unistd.h>
 
@@ -42,6 +43,12 @@ namespace fhg
         std::ostringstream oss;
         oss << hostname << ' ' << port << ' ' << pid;
         return oss.str();
+      }
+
+      bool operator== (entry_point const& other) const
+      {
+        return std::tie (hostname, port, pid)
+          == std::tie (other.hostname, other.port, other.pid);
       }
     };
   }
