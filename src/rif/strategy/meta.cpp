@@ -3,6 +3,7 @@
 #include <rif/strategy/meta.hpp>
 
 #include <fhg/util/boost/asio/ip/address.hpp>
+#include <fhg/util/join.hpp>
 #include <fhg/util/nest_exceptions.hpp>
 
 #include <network/server.hpp>
@@ -47,6 +48,17 @@ namespace fhg
                           >
                       >
           > const strategies {{"ssh", {ssh::bootstrap, ssh::teardown}}};
+
+        void validate_strategy (std::string const& strategy)
+        {
+          if (!strategies.count (strategy))
+          {
+            throw std::invalid_argument
+              ("invalid strategy '" + strategy + "'. available strategies: "
+              + fhg::util::join (available_strategies(), ", ")
+              );
+          }
+        }
       }
 
       std::vector<std::string> available_strategies()
@@ -62,6 +74,8 @@ namespace fhg
         , boost::filesystem::path const& gspc_home
         )
       {
+        validate_strategy (strategy);
+
         std::mutex entry_points_guard;
         std::condition_variable entry_point_added;
         std::vector<fhg::rif::entry_point> entry_points;
@@ -165,6 +179,8 @@ namespace fhg
                     , std::vector<fhg::rif::entry_point>& failed_entry_points
                     )
       {
+        validate_strategy (strategy);
+
         fhg::util::nest_exceptions<std::runtime_error>
           ( [&]
             {
