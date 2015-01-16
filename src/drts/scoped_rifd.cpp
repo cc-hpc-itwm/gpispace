@@ -23,6 +23,8 @@ namespace gspc
     {}
     ~implementation()
     {
+      //! \todo somehow report the failed teardown and how to get rid
+      //! of left-overs (see #482 Clean shutdown binary)
       std::vector<fhg::rif::entry_point> failed_entry_points;
       fhg::rif::strategy::teardown
         (_strategy, _entry_points, failed_entry_points);
