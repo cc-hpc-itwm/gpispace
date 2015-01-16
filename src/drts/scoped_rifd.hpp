@@ -3,6 +3,8 @@
 #ifndef FHG_GSPC_SCOPED_RIFD_HPP
 #define FHG_GSPC_SCOPED_RIFD_HPP
 
+#include <drts/scoped_rifd.fwd.hpp>
+
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
 
