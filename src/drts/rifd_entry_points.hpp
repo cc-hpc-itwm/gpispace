@@ -23,6 +23,7 @@ namespace gspc
     struct implementation;
     implementation* _;
     friend class scoped_rifd;
+    friend class scoped_runtime_system;
 
     rifd_entry_points (implementation*);
   };

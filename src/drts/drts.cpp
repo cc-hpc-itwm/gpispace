@@ -2,6 +2,7 @@
 
 #include <drts/drts.hpp>
 #include <drts/private/option.hpp>
+#include <drts/private/rifd_entry_points_impl.hpp>
 #include <drts/private/startup_and_shutdown.hpp>
 
 #include <drts/stream.hpp>
@@ -97,8 +98,7 @@ namespace gspc
           (_virtual_memory_socket->string())
         : nullptr
         )
-      , _rif_entry_points_file_content
-          (fhg::util::read_lines (require_rif_entry_points_file (vm)))
+      , _rif_entry_points (require_rif_entry_points_file (vm))
   {
     unsigned short const default_log_port
       ((65535 - 30000 + fhg::syscall::getuid() * 2) % 65535 + 1024);
@@ -139,9 +139,7 @@ namespace gspc
       , _virtual_memory_startup_timeout
       , worker_descriptions
       , get_virtual_memory_port (vm)
-      , { _rif_entry_points_file_content.begin()
-        , _rif_entry_points_file_content.end()
-        }
+      , _rif_entry_points._->_entry_points
       );
 
     //! \todo Remove magic: specify filenames instead of relying on
@@ -161,11 +159,7 @@ namespace gspc
   {
     _virtual_memory_api.reset();
 
-    fhg::drts::shutdown ( _state_directory
-                        , { _rif_entry_points_file_content.begin()
-                          , _rif_entry_points_file_content.end()
-                          }
-                        );
+    fhg::drts::shutdown (_state_directory, _rif_entry_points._->_entry_points);
   }
 
   vmem_allocation scoped_runtime_system::alloc

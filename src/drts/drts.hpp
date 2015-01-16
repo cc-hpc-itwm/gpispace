@@ -6,8 +6,9 @@
 #include <drts/drts.fwd.hpp>
 
 #include <drts/information_to_reattach.fwd.hpp>
-#include <drts/virtual_memory.fwd.hpp>
+#include <drts/rifd_entry_points.hpp>
 #include <drts/stream.hpp>
+#include <drts/virtual_memory.fwd.hpp>
 
 #include <we/type/value.hpp>
 
@@ -114,7 +115,7 @@ namespace gspc
       _nodes_and_number_of_unique_nodes;
     std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
 
-    std::vector<std::string> _rif_entry_points_file_content;
+    rifd_entry_points _rif_entry_points;
 
     std::string _orchestrator_host;
     unsigned short _orchestrator_port;
