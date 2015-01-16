@@ -9,6 +9,7 @@ set_target_properties (rotate PROPERTIES COMPILE_FLAGS -std=c99)
 fhg_add_test (file_input.cpp
   PROJECT share_process
   BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/.."
   ARGS ${CMAKE_CURRENT_BINARY_DIR}/interleave
   LINK_LIBRARIES process fhg-util
   DEPENDS interleave
@@ -17,6 +18,7 @@ fhg_add_test (file_input.cpp
 fhg_add_test (file_output.cpp
   PROJECT share_process
   BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/.."
   ARGS ${CMAKE_CURRENT_BINARY_DIR}/deinterleave
   LINK_LIBRARIES process fhg-util
   DEPENDS deinterleave
@@ -25,6 +27,7 @@ fhg_add_test (file_output.cpp
 fhg_add_test (all.cpp
   PROJECT share_process
   BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/.."
   ARGS ${CMAKE_CURRENT_BINARY_DIR}/rotate
   LINK_LIBRARIES process
   DEPENDS rotate
@@ -33,6 +36,7 @@ fhg_add_test (all.cpp
 fhg_add_test (redefine.cpp
   PROJECT share_process
   BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/.."
   LINK_LIBRARIES process
 )
 
@@ -41,6 +45,7 @@ find_program (CAT_BINARY "cat" PATH_SUFFIXES "bin")
 fhg_add_test (big.cpp
   PROJECT share_process
   BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/.."
   ARGS 1048576 "${CAT_BINARY}"
   LINK_LIBRARIES process
 )
@@ -48,6 +53,7 @@ fhg_add_test (big.cpp
 fhg_add_test (basics.cpp
   PROJECT share_process
   BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/.."
   LINK_LIBRARIES process
 )
 
@@ -55,12 +61,14 @@ fhg_add_test (child_stops_consuming.cpp
   ARGS --catch_system_errors=no
   PROJECT share_process
   BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/.."
   LINK_LIBRARIES process
 )
 
 fhg_add_test (environment.cpp
   PROJECT share_process
   BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/.."
   ARGS ${CMAKE_CURRENT_BINARY_DIR}/env
   LINK_LIBRARIES process fhg-util
   DEPENDS env
@@ -72,6 +80,7 @@ fhg_add_test (threadsafety.cpp
   ARGS ${CMAKE_CURRENT_BINARY_DIR}/threadsafety_binary --catch_system_errors=no
   PROJECT share_process
   BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/.."
   LINK_LIBRARIES process
   DEPENDS threadsafety_binary
 )

@@ -1,9 +1,10 @@
 # mirko.rahn@itwm.fraunhofer.de
 
-include_directories (${CMAKE_SOURCE_DIR}/share/example)
-
 add_library (log_map-impl SHARED
   implementation.cpp
+)
+target_include_directories (log_map-impl
+  PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
 )
 
 math (EXPR size_communication_buffer "8 * 4 << 20")
@@ -20,6 +21,7 @@ fhg_add_test (test.cpp
   PROJECT share_example_map_log
   BOOST_UNIT_TEST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}"
+                      PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/../../"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
