@@ -66,6 +66,11 @@ namespace gspc
                           , installation const&
                           , std::string const& topology_description
                           );
+    scoped_runtime_system ( boost::program_options::variables_map const& vm
+                          , installation const&
+                          , std::string const& topology_description
+                          , rifd_entry_points const& entry_points
+                          );
 
     ~scoped_runtime_system();
 

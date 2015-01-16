@@ -76,9 +76,23 @@ namespace gspc
   {}
 
   scoped_runtime_system::scoped_runtime_system
+      ( boost::program_options::variables_map const& vm
+      , installation const& installation
+      , std::string const& topology_description
+      )
+    : scoped_runtime_system
+        ( vm
+        , installation
+        , topology_description
+        , require_rif_entry_points_file (vm)
+        )
+  {}
+
+  scoped_runtime_system::scoped_runtime_system
     ( boost::program_options::variables_map const& vm
     , installation const& installation
     , std::string const& topology_description
+    , rifd_entry_points const& entry_points
     )
       : _installation (installation)
       , _state_directory (require_state_directory (vm))
@@ -98,7 +112,7 @@ namespace gspc
           (_virtual_memory_socket->string())
         : nullptr
         )
-      , _rif_entry_points (require_rif_entry_points_file (vm))
+      , _rif_entry_points (entry_points)
   {
     unsigned short const default_log_port
       ((65535 - 30000 + fhg::syscall::getuid() * 2) % 65535 + 1024);
