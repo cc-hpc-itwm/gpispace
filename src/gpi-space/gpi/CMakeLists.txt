@@ -3,8 +3,6 @@ include_directories(${GASPI_INCLUDE_DIR})
 
 find_package (IBVerbs REQUIRED)
 
-include_directories(${GPI_INCLUDE_DIR})
-
 set (hdrs
   system.hpp
   api.hpp
