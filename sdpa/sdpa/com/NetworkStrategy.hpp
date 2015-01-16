@@ -19,7 +19,6 @@ namespace sdpa
     public:
       NetworkStrategy ( std::function<void (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr)> event_handler
                       , boost::asio::io_service& peer_io_service
-                      , std::string const & peer_name
                       , fhg::com::host_t const & host
                       , fhg::com::port_t const & port
                       );

@@ -243,7 +243,7 @@ namespace utils
                      _event_queue.put (source, e);
                    }
                  , _peer_io_service
-                 , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
+                 , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
                  )
       , _event_thread (&basic_drts_component::event_thread, this)
     {}
