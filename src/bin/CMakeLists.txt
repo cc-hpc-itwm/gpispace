@@ -1,8 +1,5 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-find_package (LibReadline REQUIRED QUIET)
-include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
-
 fhg_add_runtime_executable (gpi-space.cpp
   LINK_LIBRARIES gpi-space-gpiapi
                  gpi-space-pc-container
