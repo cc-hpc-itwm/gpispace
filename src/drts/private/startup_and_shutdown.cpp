@@ -40,9 +40,10 @@ namespace
                      , pid_t pid
                      )
   {
-    boost::filesystem::create_directories (processes_dir / entry_point.hostname);
-    std::ofstream stream
-      ((processes_dir / entry_point.hostname / (name + ".pid")).string());
+    boost::filesystem::path const output_dir
+      (processes_dir / entry_point.to_string());
+    boost::filesystem::create_directories (output_dir);
+    std::ofstream stream ((output_dir / (name + ".pid")).string());
     if (!stream || !(stream << pid))
     {
       throw std::runtime_error
@@ -845,7 +846,7 @@ namespace fhg
           std::set<boost::filesystem::path> pidfiles;
 
           for ( boost::filesystem::directory_entry const& entry
-              : directory_range (processes_dir / entry_point.hostname)
+              : directory_range (processes_dir / entry_point.to_string())
               | boost::adaptors::filtered
                   ( [&kind] (boost::filesystem::directory_entry const& entry)
                     {
