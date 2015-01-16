@@ -3,11 +3,6 @@ include_directories(${GASPI_INCLUDE_DIR})
 
 find_package (IBVerbs REQUIRED)
 
-set (hdrs
-  system.hpp
-  api.hpp
-)
-
 set (srcs
   system.cpp
   fake_api.cpp
