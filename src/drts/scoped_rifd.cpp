@@ -2,6 +2,8 @@
 
 #include <drts/scoped_rifd.hpp>
 
+#include <drts/private/rifd_entry_points_impl.hpp>
+
 #include <rif/strategy/meta.hpp>
 
 namespace gspc
@@ -46,5 +48,10 @@ namespace gspc
   {
     delete _;
     _ = nullptr;
+  }
+
+  rifd_entry_points scoped_rifd::entry_points() const
+  {
+    return {new rifd_entry_points::implementation (_->_entry_points)};
   }
 }

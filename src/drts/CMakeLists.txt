@@ -7,6 +7,8 @@ install (FILES
   client.hpp
   drts.fwd.hpp
   drts.hpp
+  rifd_entry_points.fwd.hpp
+  rifd_entry_points.hpp
   scoped_rifd.fwd.hpp
   scoped_rifd.hpp
   stream.fwd.hpp
@@ -24,6 +26,7 @@ add_library (gspc SHARED
   information_to_reattach.cpp
   private/option.cpp
   private/startup_and_shutdown.cpp
+  rifd_entry_points.cpp
   scoped_rifd.cpp
   stream.cpp
   virtual_memory.cpp

@@ -5,6 +5,8 @@
 
 #include <drts/scoped_rifd.fwd.hpp>
 
+#include <drts/rifd_entry_points.hpp>
+
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
 
@@ -22,6 +24,8 @@ namespace gspc
                 , boost::filesystem::path const& gspc_home
                 );
     ~scoped_rifd();
+
+    rifd_entry_points entry_points() const;
 
   private:
     struct implementation;
