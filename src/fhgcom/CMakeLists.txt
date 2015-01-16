@@ -1,7 +1,5 @@
 include_directories (${FhgLog_INCLUDE_DIR})
 
-include_directories (${UTIL_INCLUDE_DIR})
-
 set (srcs
   session.cpp
   peer.cpp

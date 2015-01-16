@@ -1,6 +1,5 @@
 # mirko.rahn@itwm.fraunhofer.de
 
-include_directories (${UTIL_INCLUDE_DIR})
 include_directories (${CMAKE_SOURCE_DIR})
 
 set (REENTRANT_VERSION not_reentrant)

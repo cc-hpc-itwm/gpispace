@@ -122,6 +122,8 @@ include_directories ("${CMAKE_SOURCE_DIR}/sdpa")
 set (UTIL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/util)
 set (UTIL_LIBRARIES fhg-revision fhg-util)
 
+include_directories ("${UTIL_INCLUDE_DIR}")
+
 set (FhgLog_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhglog)
 set (FhgLog_LIBRARY fhglog)
 set (FhgLog_LIBRARY_SHARED fhglog-shared)

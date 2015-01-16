@@ -1,6 +1,5 @@
 # alexander.petry@itwm.fraunhofer.de
 
-include_directories (${UTIL_INCLUDE_DIR})
 include_directories (${CMAKE_SOURCE_DIR})
 
 fhg_add_test (test.cpp

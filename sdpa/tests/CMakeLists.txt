@@ -1,7 +1,6 @@
 add_subdirectory(sdpa)
 add_subdirectory(bin)
 
-include_directories (${UTIL_INCLUDE_DIR})
 include_directories (${CMAKE_SOURCE_DIR})
 
 fhg_add_test (drts_should_handle_multiple_workflows_being_submitted_during_lifetime.cpp

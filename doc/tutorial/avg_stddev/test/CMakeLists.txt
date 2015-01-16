@@ -11,7 +11,6 @@ target_link_libraries (gen.bin
   pthread
 )
 
-include_directories (${UTIL_INCLUDE_DIR})
 include_directories (${CMAKE_SOURCE_DIR})
 
 fhg_add_test (test.cpp

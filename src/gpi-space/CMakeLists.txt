@@ -20,8 +20,6 @@ endif()
 
 include_directories(${FhgLog_INCLUDE_DIR})
 
-include_directories(${UTIL_INCLUDE_DIR})
-
 find_package (LibRT REQUIRED QUIET)
 include_directories(SYSTEM ${LIBRT_INCLUDE_DIR})
 

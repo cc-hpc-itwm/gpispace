@@ -18,7 +18,6 @@ target_link_libraries (transform_file_map-impl
   transform_file_type
 )
 
-include_directories (${UTIL_INCLUDE_DIR})
 include_directories (${CMAKE_SOURCE_DIR})
 
 math (EXPR size_communication_buffer "8 * 4 << 20")
