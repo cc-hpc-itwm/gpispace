@@ -1,13 +1,9 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
 find_package(HWLOC REQUIRED QUIET)
 include_directories(SYSTEM ${HWLOC_INCLUDE_DIR})
 
 add_subdirectory (fhgcom)
-
-include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
 find_library (IBverbs_LIBRARY
   NAMES ibverbs
