@@ -14,7 +14,7 @@ if (SHARED_DIRECTORY_FOR_TESTS STREQUAL ${required_string_option_sentinel_value}
 endif()
 
 SET (TESTING_RIF_ENTRY_POINT_FILE ${required_string_option_sentinel_value}
-  CACHE PATH "port of a started rif daemon"
+  CACHE PATH "entry points file of started rif daemons"
 )
 if (TESTING_RIF_ENTRY_POINT_FILE STREQUAL ${required_string_option_sentinel_value})
   message (FATAL_ERROR "required variable TESTING_RIF_ENTRY_POINT_FILE not set")
