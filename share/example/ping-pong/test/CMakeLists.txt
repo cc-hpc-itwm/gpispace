@@ -1,11 +1,10 @@
 # alexander.petry@itwm.fraunhofer.de
 
-include_directories (${CMAKE_SOURCE_DIR})
-
 fhg_add_test (test.cpp
   PROJECT share_example_ping-pong
   BOOST_UNIT_TEST
   PERFORMANCE_TEST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}"
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/.."
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"

@@ -18,8 +18,6 @@ target_link_libraries (transform_file_map-impl
   transform_file_type
 )
 
-include_directories (${CMAKE_SOURCE_DIR})
-
 math (EXPR size_communication_buffer "8 * 4 << 20")
 
 math (EXPR size_input "20 << 20")
@@ -33,6 +31,7 @@ math (EXPR size_virtual_memory
 fhg_add_test (test.cpp
   PROJECT share_example_map_transform_file
   BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}"
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/../../"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
