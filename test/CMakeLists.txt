@@ -1,5 +1,3 @@
-include_directories (${CMAKE_SOURCE_DIR})
-
 add_library (test-utilities SHARED
   make.cpp
   scoped_nodefile_from_environment.cpp
@@ -8,6 +6,7 @@ add_library (test-utilities SHARED
   source_directory.cpp
   virtual_memory_socket_name_for_localhost.cpp
 )
+target_include_directories (test-utilities PRIVATE "${CMAKE_SOURCE_DIR}")
 target_link_libraries (test-utilities
   fhg-util
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
