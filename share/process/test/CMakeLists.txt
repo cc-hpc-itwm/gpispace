@@ -1,6 +1,4 @@
 
-include_directories (${CMAKE_CURRENT_SOURCE_DIR})
-
 add_executable (interleave interleave.c)
 add_executable (deinterleave deinterleave.c)
 add_executable (env env.cpp)
