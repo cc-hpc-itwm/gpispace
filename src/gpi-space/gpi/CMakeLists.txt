@@ -3,11 +3,9 @@ include_directories(${GASPI_INCLUDE_DIR})
 
 find_package (IBVerbs REQUIRED)
 
-set (srcs
+add_library (gpi-space-gpiapi
   system.cpp
   fake_api.cpp
   gaspi.cpp
 )
-
-add_library (gpi-space-gpiapi ${srcs})
 target_link_libraries (gpi-space-gpiapi ${GASPI_LIBRARY} ${IBVerbs_LIBRARY})
