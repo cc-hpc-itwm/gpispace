@@ -1,7 +1,6 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
 find_package(HWLOC REQUIRED QUIET)
-include_directories(SYSTEM ${HWLOC_INCLUDE_DIR})
 
 add_subdirectory (fhgcom)
 
