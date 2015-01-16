@@ -8,6 +8,7 @@
 #include <drts/rifd_entry_points.hpp>
 
 #include <boost/filesystem/path.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 
 #include <string>
@@ -15,7 +16,7 @@
 
 namespace gspc
 {
-  class scoped_rifd
+  class scoped_rifd : boost::noncopyable
   {
   public:
     scoped_rifd ( std::string const& strategy
