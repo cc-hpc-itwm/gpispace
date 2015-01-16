@@ -18,8 +18,6 @@ else()
   message (FATAL_ERROR "_SC_GETPW_R_SIZE_MAX doesn't seem to be defined on this machine")
 endif()
 
-include_directories(${FhgLog_INCLUDE_DIR})
-
 find_package (LibRT REQUIRED QUIET)
 include_directories(SYSTEM ${LIBRT_INCLUDE_DIR})
 
