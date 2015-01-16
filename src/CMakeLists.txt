@@ -2,8 +2,6 @@
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-include_directories(${FhgLog_INCLUDE_DIR})
-
 find_package(HWLOC REQUIRED QUIET)
 include_directories(SYSTEM ${HWLOC_INCLUDE_DIR})
 

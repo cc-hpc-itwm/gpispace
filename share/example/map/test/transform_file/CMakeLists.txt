@@ -1,7 +1,6 @@
 # mirko.rahn@itwm.fraunhofer.de
 
 include_directories (${CMAKE_SOURCE_DIR}/share/example)
-include_directories (${FhgLog_INCLUDE_DIR})
 
 add_library (transform_file_type
   type.cpp
