@@ -3,8 +3,6 @@
 
 #include <sdpa/events/SDPAEvent.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
@@ -43,8 +41,6 @@ namespace sdpa
       void handle_recv ( boost::system::error_code const & ec
                        , boost::optional<fhg::com::p2p::address_t> source_name
                        );
-
-      fhg::log::Logger::ptr_t _logger;
 
       std::function<void (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr)> _event_handler;
 

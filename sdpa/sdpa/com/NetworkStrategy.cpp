@@ -20,8 +20,7 @@ namespace sdpa
                                      , fhg::com::host_t const & host
                                      , fhg::com::port_t const & port
                                      )
-      : _logger (fhg::log::Logger::get ("NetworkStrategy " + peer_name))
-      , _event_handler (event_handler)
+      : _event_handler (event_handler)
       , m_peer ( new fhg::com::peer_t
                  ( peer_io_service
                  , fhg::com::host_t (host)
