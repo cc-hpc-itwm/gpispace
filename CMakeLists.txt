@@ -119,10 +119,9 @@ include_directories (${CMAKE_SOURCE_DIR}/src)
 include_directories ("${CMAKE_SOURCE_DIR}/sdpa")
 
 # replacement for find_package (<one of our subprojects>)
-set (UTIL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/util)
 set (UTIL_LIBRARIES fhg-revision fhg-util)
 
-include_directories ("${UTIL_INCLUDE_DIR}")
+include_directories ("${CMAKE_SOURCE_DIR}/util")
 
 set (FhgLog_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhglog)
 set (FhgLog_LIBRARY fhglog)
