@@ -10,17 +10,15 @@
 #include <fhg/util/starts_with.hpp>
 #include <fhg/util/wait_and_collect_exceptions.hpp>
 
-#include <rpc/client.hpp>
+#include <rif/client.hpp>
 
 #include <boost/algorithm/string/classification.hpp>
-#include <boost/asio/io_service.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/adaptors.hpp>
 #include <boost/regex.hpp>
-#include <boost/thread/scoped_thread.hpp>
 
 #include <algorithm>
 #include <chrono>
@@ -36,56 +34,6 @@
 
 namespace
 {
-  template<typename R, typename... Args>
-    R rexec ( fhg::rif::entry_point const& entry_point
-            , std::string const& function_name
-            , Args... args
-            )
-  {
-    boost::asio::io_service io_service;
-    boost::asio::io_service::work const io_service_work_ (io_service);
-    boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> const
-      io_service_thread ([&io_service] { io_service.run(); });
-
-    fhg::rpc::remote_endpoint endpoint
-      ( io_service
-      , entry_point.hostname, entry_point.port
-      , fhg::rpc::exception::serialization_functions()
-      );
-
-    struct stop_io_service_on_scope_exit
-    {
-      ~stop_io_service_on_scope_exit()
-      {
-        _io_service.stop();
-      }
-      boost::asio::io_service& _io_service;
-    } foo {io_service};
-
-    return fhg::rpc::sync_remote_function<R (Args...)>
-      (endpoint, function_name) (args...);
-  }
-
-  std::pair<pid_t, std::vector<std::string>> remote_execute_and_get_startup_messages
-    ( fhg::rif::entry_point const& entry_point
-    , std::string startup_messages_pipe_option
-    , std::string end_sentinel_value
-    , boost::filesystem::path command
-    , std::vector<std::string> arguments
-    , std::unordered_map<std::string, std::string> environment
-    )
-  {
-    return rexec<std::pair<pid_t, std::vector<std::string>>>
-      ( entry_point
-      , "execute_and_get_startup_messages"
-      , startup_messages_pipe_option
-      , end_sentinel_value
-      , command
-      , arguments
-      , environment
-      );
-  }
-
   void write_pidfile ( boost::filesystem::path const& processes_dir
                      , fhg::rif::entry_point const& entry_point
                      , std::string const& name
@@ -181,9 +129,8 @@ namespace
     }
 
     std::pair<pid_t, std::vector<std::string>> const agent_startup_messages
-      ( remote_execute_and_get_startup_messages
-          ( rif_entry_point
-          , "--startup-messages-pipe"
+      ( fhg::rif::client (rif_entry_point).execute_and_get_startup_messages
+          ( "--startup-messages-pipe"
           , "OKAY"
           , sdpa_home / "bin" / "agent"
           , agent_startup_arguments
@@ -191,7 +138,7 @@ namespace
             , {"FHGLOG_level", verbose ? "TRACE" : "INFO"}
             , {"FHGLOG_to_file", (log_dir / (name + ".log")).string()}
             }
-          )
+          ).get()
       );
 
     if (agent_startup_messages.second.size() != 2)
@@ -375,14 +322,13 @@ namespace
                      ("FHGLOG_to_file", (log_dir / (name + ".log")).string());
 
                    std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages
-                     ( remote_execute_and_get_startup_messages
-                       ( entry_point
-                       , "--startup-messages-pipe"
+                     ( fhg::rif::client (entry_point).execute_and_get_startup_messages
+                       ( "--startup-messages-pipe"
                        , "OKAY"
                        , sdpa_home / "bin" / "drts-kernel"
                        , arguments
                        , environment
-                       )
+                       ).get()
                      );
 
                    if (!pid_and_startup_messages.second.empty())
@@ -591,9 +537,8 @@ namespace fhg
         ( fhg::util::nest_exceptions<std::runtime_error>
             ( [&]
               {
-                return remote_execute_and_get_startup_messages
-                  ( master
-                  , "--startup-messages-pipe"
+                return rif::client (master).execute_and_get_startup_messages
+                  ( "--startup-messages-pipe"
                   , "OKAY"
                   , sdpa_home / "bin" / "orchestrator"
                   , {"-u", "0", "-n", "orchestrator"}
@@ -601,7 +546,7 @@ namespace fhg
                     , {"FHGLOG_level", verbose ? "TRACE" : "INFO"}
                     , {"FHGLOG_to_file", (state_dir / "log" / "orchestrator.log").string()}
                     }
-                  );
+                  ).get();
               }
               , "could not start orchestrator"
               )
@@ -674,9 +619,8 @@ namespace fhg
                       {
                         std::pair<pid_t, std::vector<std::string>> const
                           startup_messages
-                          ( remote_execute_and_get_startup_messages
-                              ( entry_point
-                              , "--startup-messages-pipe"
+                          ( rif::client (entry_point).execute_and_get_startup_messages
+                              ( "--startup-messages-pipe"
                               , "OKAY"
                               , sdpa_home / "bin" / "gpi-space"
                               , { "--log-host", log_host
@@ -699,7 +643,7 @@ namespace fhg
                                   }
                                 , {"GASPI_SET_NUMA_SOCKET", "0"}
                                 }
-                              )
+                              ).get()
                           );
 
                         if (!startup_messages.second.empty())
@@ -870,7 +814,7 @@ namespace fhg
                     << ": " << fhg::util::join (pids, " ") << "\n";
           try
           {
-            rexec<void> (entry_point, "kill", pids);
+            rif::client (entry_point).kill (pids).get();
           }
           catch (...)
           {
