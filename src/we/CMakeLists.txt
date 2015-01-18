@@ -77,8 +77,6 @@ install (FILES
   DESTINATION include/we/type/literal
 )
 
-find_package (LibReadline REQUIRED QUIET)
-
 add_executable (expression_shell expr/shell.cpp)
 target_include_directories (expression_shell
   PRIVATE "${LibReadline_INCLUDE_DIR}"
