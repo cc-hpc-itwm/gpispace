@@ -91,8 +91,6 @@ find_package (Boost 1.55 REQUIRED QUIET COMPONENTS
 # the precondition shall be checked everywhere, where needed.
 add_definitions (-DBOOST_THREAD_THROW_IF_PRECONDITION_NOT_SATISFIED)
 
-get_filename_component (BOOST_ROOT "${Boost_INCLUDE_DIR}" PATH CACHE)
-
 # sdpa needs boost::mpl::vector with more than $default elements for state machine
 add_definitions ("-DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS")
 add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")

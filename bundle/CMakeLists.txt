@@ -1,5 +1,7 @@
 # bundle up
 
+get_filename_component (BOOST_ROOT "${Boost_INCLUDE_DIR}" PATH)
+
 install (DIRECTORY "${BOOST_ROOT}/"
   DESTINATION "${CMAKE_INSTALL_PREFIX}/external/boost"
   USE_SOURCE_PERMISSIONS
