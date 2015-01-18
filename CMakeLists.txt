@@ -106,10 +106,10 @@ find_package (Boost 1.55 REQUIRED QUIET COMPONENTS
   thread
   unit_test_framework
 )
-find_package (GASPI 1.1.0 REQUIRED)
+find_package (GASPI 1.1.0 REQUIRED QUIET)
 find_package (Graphviz COMPONENTS cdt gvc graph pathplan REQUIRED QUIET)
 find_package (HWLOC REQUIRED QUIET)
-find_package (IBVerbs REQUIRED)
+find_package (IBVerbs REQUIRED QUIET)
 find_package (LibRT REQUIRED QUIET)
 find_package (LibReadline REQUIRED QUIET)
 find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
