@@ -87,12 +87,10 @@ set (UTIL_LIBRARIES fhg-revision fhg-util)
 set (FhgLog_LIBRARY fhglog)
 
 set (MMGR_LIBRARY mmgr)
-set (MMGR_LIBRARY_SHARED mmgr.shared)
 
 set (FhgCom_LIBRARY fhgcom)
 
 set (PNETC_LIB_DIR "share/sdpa/xml/lib")
-set (SDPA_APPS_DIR "libexec/sdpa/apps")
 
 find_package (Boost 1.55 REQUIRED QUIET COMPONENTS
   date_time
