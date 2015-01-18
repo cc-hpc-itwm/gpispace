@@ -44,11 +44,6 @@ set (CMAKE_MODULE_PATH
   "$ENV{CMAKE_MODULE_PATH}"
 )
 
-include (fhg_executable_macros)
-include (fhg_test_macros)
-
-include (CompilerFlags)
-
 if (${CMAKE_BUILD_TYPE} MATCHES "Release")
   add_definitions ("-DFHG_ASSERT_MODE=0")
 else()
@@ -59,8 +54,6 @@ add_definitions ("-DBOOST_FILESYSTEM_VERSION=3")
 add_definitions ("-DBOOST_FILESYSTEM_NO_DEPRECATED")
 add_definitions ("-DBOOST_NO_CXX11_SCOPED_ENUMS") # required if linking against boost not built with c++11
 
-find_package (Threads REQUIRED QUIET)
-
 # Boost
 if (NOT BOOST_ROOT)
   set (BOOST_ROOT $ENV{BOOST_ROOT})
@@ -69,21 +62,6 @@ endif()
 if (BOOST_ROOT)
   set (Boost_NO_SYSTEM_PATHS ON)
 endif()
-
-find_package (Boost 1.55 REQUIRED QUIET COMPONENTS
-  date_time
-  filesystem
-  iostreams
-  program_options
-  random
-  regex
-  serialization
-  signals
-  system
-  test_exec_monitor
-  thread
-  unit_test_framework
-)
 
 # Boost.Thread now throws when preconditions are not met.
 # This is the case when calling join() in some tests, while
@@ -96,9 +74,6 @@ add_definitions ("-DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS")
 add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
 
 set (FHG_QT_MOC_BOOST_HACK_OPTIONS "-DBOOST_LEXICAL_CAST_INCLUDED;-DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED;-DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION")
-
-find_package (HWLOC REQUIRED QUIET)
-find_package (Graphviz COMPONENTS cdt gvc graph pathplan REQUIRED QUIET)
 
 # RPATH configuration
 set (CMAKE_SKIP_BUILD_RPATH FALSE)
@@ -119,21 +94,39 @@ set (FhgCom_LIBRARY fhgcom)
 set (PNETC_LIB_DIR "share/sdpa/xml/lib")
 set (SDPA_APPS_DIR "libexec/sdpa/apps")
 
-include (CTest)
-find_package (LibReadline REQUIRED QUIET)
-find_package (LibRT REQUIRED QUIET)
+find_package (Boost 1.55 REQUIRED QUIET COMPONENTS
+  date_time
+  filesystem
+  iostreams
+  program_options
+  random
+  regex
+  serialization
+  signals
+  system
+  test_exec_monitor
+  thread
+  unit_test_framework
+)
 find_package (GASPI 1.1.0 REQUIRED)
+find_package (Graphviz COMPONENTS cdt gvc graph pathplan REQUIRED QUIET)
+find_package (HWLOC REQUIRED QUIET)
 find_package (IBVerbs REQUIRED)
+find_package (LibRT REQUIRED QUIET)
+find_package (LibReadline REQUIRED QUIET)
 find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
-include (${QT_USE_FILE})
-
-INCLUDE (InstallRequiredSystemLibraries)
-
-include (cmake_parse_arguments)
-include (car_cdr_macros)
-
-find_package (source_highlite REQUIRED QUIET)
+find_package (Threads REQUIRED QUIET)
 find_package (asciidoc 8.6.7 REQUIRED QUIET)
+find_package (source_highlite REQUIRED QUIET)
+
+include (${QT_USE_FILE})
+include (CTest)
+include (CompilerFlags)
+include (InstallRequiredSystemLibraries)
+include (car_cdr_macros)
+include (cmake_parse_arguments)
+include (fhg_executable_macros)
+include (fhg_test_macros)
 
 macro (ADD_ASCIIDOC)
   parse_arguments (DOC
