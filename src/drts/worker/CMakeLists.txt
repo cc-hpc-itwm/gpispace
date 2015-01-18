@@ -6,7 +6,7 @@ target_include_directories (fake-drts-kernel-plugin
 )
 target_link_libraries (fake-drts-kernel-plugin
   we-dev
-  ${UTIL_LIBRARIES}
+  fhg-util
   sdpa
   fhgcom
   ${HWLOC_SHARED_LIBRARY}
@@ -19,7 +19,7 @@ target_link_libraries (fake-drts-kernel-plugin
 
 fhg_add_runtime_executable (drts-kernel.cpp
   LINK_LIBRARIES fake-drts-kernel-plugin
-                 ${UTIL_LIBRARIES}
+                 fhg-util
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_IOSTREAMS_LIBRARY}
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}

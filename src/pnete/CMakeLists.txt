@@ -144,7 +144,7 @@ qt4_wrap_cpp (plugin_wrapped_cpps ${plugin_tomoc})
                    sdpa
                    fhglog
                    fhg-revision
-                   ${UTIL_LIBRARIES}
+                   fhg-util
                    ${Boost_FILESYSTEM_LIBRARY}
                    ${Boost_PROGRAM_OPTIONS_LIBRARY}
                    ${Boost_THREAD_LIBRARY}

@@ -35,7 +35,7 @@ fhg_add_test (test.cpp
        --user-data "y()"
   LINK_LIBRARIES gspc
                  test-utilities
-                 ${UTIL_LIBRARIES}
+                 fhg-util
                  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARIES}
   DEPENDS log_map-impl

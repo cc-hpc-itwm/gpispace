@@ -23,7 +23,7 @@ fhg_add_test (test.cpp
        --generator "${CMAKE_CURRENT_BINARY_DIR}/gen.bin"
   LINK_LIBRARIES gspc
                  test-utilities
-                 ${UTIL_LIBRARIES}
+                 fhg-util
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
                  ${Boost_FILESYSTEM_LIBRARY}
   REQUIRES_INSTALLATION

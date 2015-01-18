@@ -18,7 +18,7 @@ fhg_add_test (test.cpp
   LINK_LIBRARIES gspc
                  test-utilities
                  transform_file_type
-                 ${UTIL_LIBRARIES}
+                 fhg-util
                  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARIES}
   REQUIRES_INSTALLATION

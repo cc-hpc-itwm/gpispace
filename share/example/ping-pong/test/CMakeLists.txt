@@ -10,7 +10,7 @@ fhg_add_test (test.cpp
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
   LINK_LIBRARIES gspc
                  test-utilities
-                 ${UTIL_LIBRARIES}
+                 fhg-util
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
                  ${Boost_FILESYSTEM_LIBRARY}
   REQUIRES_INSTALLATION

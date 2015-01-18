@@ -17,7 +17,7 @@ foreach (SPLIT_VERSION ${SPLIT_JOIN_SPLIT_VERSIONS})
          --expected-output 333383335000
     LINK_LIBRARIES gspc
                    test-utilities
-                   ${UTIL_LIBRARIES}
+                   fhg-util
                    ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                    ${Boost_FILESYSTEM_LIBRARIES}
     REQUIRES_INSTALLATION
@@ -44,7 +44,7 @@ foreach (SPLIT_VERSION ${SPLIT_JOIN_SPLIT_VERSIONS})
          --expected-output 2666866670000
     LINK_LIBRARIES gspc
                    test-utilities
-                   ${UTIL_LIBRARIES}
+                   fhg-util
                    ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                    ${Boost_FILESYSTEM_LIBRARIES}
     REQUIRES_INSTALLATION

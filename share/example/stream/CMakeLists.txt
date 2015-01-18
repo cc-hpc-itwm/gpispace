@@ -21,7 +21,7 @@ fhg_add_test (stream.two_module_calls.cpp
        --size-slot ${size_slot}
   LINK_LIBRARIES gspc
                  test-utilities
-                 ${UTIL_LIBRARIES}
+                 fhg-util
                  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARIES}
   REQUIRES_INSTALLATION
@@ -42,7 +42,7 @@ fhg_add_test (stream.one_module_call.cpp
        --size-slot ${size_slot}
   LINK_LIBRARIES gspc
                  test-utilities
-                 ${UTIL_LIBRARIES}
+                 fhg-util
                  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARIES}
   REQUIRES_INSTALLATION

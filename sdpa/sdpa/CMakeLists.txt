@@ -21,5 +21,5 @@ target_link_libraries (sdpa
   ${Boost_DATE_TIME_LIBRARY}
   fhgcom
   ${Boost_THREAD_LIBRARY}
-  ${UTIL_LIBRARIES}
+  fhg-util
   pnet)

@@ -77,8 +77,6 @@ set (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set (CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set (CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../external/boost/lib:\$ORIGIN/../../../lib/:\$ORIGIN/../../../external/boost/lib")
 
-set (UTIL_LIBRARIES fhg-util)
-
 set (PNETC_LIB_DIR "share/sdpa/xml/lib")
 
 find_package (Boost 1.55 REQUIRED QUIET COMPONENTS
