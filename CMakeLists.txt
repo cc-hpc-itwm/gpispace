@@ -60,9 +60,6 @@ add_definitions ("-DBOOST_FILESYSTEM_NO_DEPRECATED")
 add_definitions ("-DBOOST_NO_CXX11_SCOPED_ENUMS") # required if linking against boost not built with c++11
 
 find_package (Threads REQUIRED QUIET)
-if (CMAKE_USE_PTHREADS_INIT)
-  link_libraries (${CMAKE_THREAD_LIBS_INIT} rt)
-endif()
 
 # Boost
 if (NOT BOOST_ROOT)
@@ -96,10 +93,6 @@ add_definitions (-DBOOST_THREAD_THROW_IF_PRECONDITION_NOT_SATISFIED)
 
 get_filename_component (BOOST_ROOT "${Boost_INCLUDE_DIR}" PATH CACHE)
 
-include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
-# TODO : Remove again?
-link_directories (${Boost_LIBRARY_DIRS})
-
 # sdpa needs boost::mpl::vector with more than $default elements for state machine
 add_definitions ("-DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS")
 add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
@@ -115,16 +108,10 @@ set (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set (CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set (CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../external/boost/lib:\$ORIGIN/../../../lib/:\$ORIGIN/../../../external/boost/lib")
 
-include_directories (${CMAKE_SOURCE_DIR}/src)
-include_directories ("${CMAKE_SOURCE_DIR}/sdpa")
-
 # replacement for find_package (<one of our subprojects>)
 set (UTIL_LIBRARIES fhg-revision fhg-util)
 
-include_directories ("${CMAKE_SOURCE_DIR}/util")
-
 set (FhgLog_LIBRARY fhglog)
-include_directories ("${CMAKE_SOURCE_DIR}/fhglog")
 
 set (MMGR_LIBRARY mmgr)
 set (MMGR_LIBRARY_SHARED mmgr.shared)
@@ -176,6 +163,19 @@ macro (ADD_ASCIIDOC)
     )
   endif()
 endmacro()
+
+include_directories ("${CMAKE_SOURCE_DIR}/fhglog")
+include_directories ("${CMAKE_SOURCE_DIR}/sdpa")
+include_directories ("${CMAKE_SOURCE_DIR}/util")
+include_directories ("${CMAKE_SOURCE_DIR}/src")
+include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
+
+# TODO : Remove again?
+link_directories (${Boost_LIBRARY_DIRS})
+
+if (CMAKE_USE_PTHREADS_INIT)
+  link_libraries (${CMAKE_THREAD_LIBS_INIT} rt)
+endif()
 
 add_subdirectory (bundle)
 add_subdirectory (doc)
