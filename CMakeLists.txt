@@ -20,8 +20,6 @@ if (TESTING_RIF_PORT STREQUAL ${required_string_option_sentinel_value})
   message (FATAL_ERROR "required variable TESTING_RIF_PORT not set")
 endif()
 
-configure_file ("${CMAKE_SOURCE_DIR}/CTestCustom.cmake" "${CMAKE_BINARY_DIR}/CTestCustom.cmake" COPYONLY)
-
 execute_process (
   COMMAND git rev-parse HEAD
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -172,3 +170,5 @@ add_subdirectory (share)
 add_subdirectory (src)
 add_subdirectory (test)
 add_subdirectory (util)
+
+configure_file ("${CMAKE_SOURCE_DIR}/CTestCustom.cmake" "${CMAKE_BINARY_DIR}/CTestCustom.cmake" COPYONLY)
