@@ -19,7 +19,6 @@ else()
 endif()
 
 find_package (LibRT REQUIRED QUIET)
-include_directories(SYSTEM ${LIBRT_INCLUDE_DIR})
 
 add_subdirectory(gpi)
 add_subdirectory(pc)
