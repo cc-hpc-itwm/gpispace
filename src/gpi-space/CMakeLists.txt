@@ -21,11 +21,6 @@ endif()
 find_package (LibRT REQUIRED QUIET)
 include_directories(SYSTEM ${LIBRT_INCLUDE_DIR})
 
-set (hdrs
-  types.hpp
-  exception.hpp
-  )
-
 add_subdirectory(gpi)
 add_subdirectory(pc)
 add_subdirectory (tests)
