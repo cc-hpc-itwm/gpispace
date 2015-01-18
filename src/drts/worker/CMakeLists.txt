@@ -1,7 +1,5 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-find_package (HWLOC REQUIRED QUIET)
-
 add_library (fake-drts-kernel-plugin drts.cpp)
 target_include_directories (fake-drts-kernel-plugin
   PRIVATE "${HWLOC_INCLUDE_DIR}"

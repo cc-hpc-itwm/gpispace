@@ -1,7 +1,5 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-find_package(HWLOC REQUIRED QUIET)
-
 add_subdirectory (fhgcom)
 
 find_library (IBverbs_LIBRARY
