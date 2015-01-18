@@ -1,25 +1,18 @@
 cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
+set (CMAKE_SKIP_BUILD_RPATH FALSE)
+set (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set (CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+set (CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../external/boost/lib:\$ORIGIN/../../../lib/:\$ORIGIN/../../../external/boost/lib")
+# Where are the additional libraries installed? Note: provide includes
+# path here, subsequent checks will resolve everything else
+set (CMAKE_MODULE_PATH
+  "${CMAKE_MODULE_PATH}"
+  "${CMAKE_SOURCE_DIR}/modules"
+  "$ENV{CMAKE_MODULE_PATH}"
+)
 
 set (PROJECT_VERSION "14.03")
 set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
-
-set (required_string_option_sentinel_value "required_string_option_sentinel_value-NOT_SET")
-
-SET (SHARED_DIRECTORY_FOR_TESTS ${required_string_option_sentinel_value} CACHE PATH
-  "shared directory for tests"
-)
-
-if (SHARED_DIRECTORY_FOR_TESTS STREQUAL ${required_string_option_sentinel_value})
-  message (FATAL_ERROR "required variable SHARED_DIRECTORY_FOR_TESTS not set")
-endif()
-
-SET (TESTING_RIF_PORT ${required_string_option_sentinel_value} CACHE STRING
-  "port of a started rif daemon"
-)
-if (TESTING_RIF_PORT STREQUAL ${required_string_option_sentinel_value})
-  message (FATAL_ERROR "required variable TESTING_RIF_PORT not set")
-endif()
-
 execute_process (
   COMMAND git rev-parse HEAD
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -34,23 +27,21 @@ else()
   message (FATAL_ERROR "could not discover revision info, please define -DPROJECT_REVISION by hand!")
 endif()
 
-# Where are the additional libraries installed? Note: provide includes
-# path here, subsequent checks will resolve everything else
-set (CMAKE_MODULE_PATH
-  "${CMAKE_MODULE_PATH}"
-  "${CMAKE_SOURCE_DIR}/modules"
-  "$ENV{CMAKE_MODULE_PATH}"
-)
+set (required_string_option_sentinel_value "required_string_option_sentinel_value-NOT_SET")
 
-if (${CMAKE_BUILD_TYPE} MATCHES "Release")
-  add_definitions ("-DFHG_ASSERT_MODE=0")
-else()
-  add_definitions ("-DFHG_ASSERT_MODE=1")
+SET (SHARED_DIRECTORY_FOR_TESTS ${required_string_option_sentinel_value} CACHE PATH
+  "shared directory for tests"
+)
+if (SHARED_DIRECTORY_FOR_TESTS STREQUAL ${required_string_option_sentinel_value})
+  message (FATAL_ERROR "required variable SHARED_DIRECTORY_FOR_TESTS not set")
 endif()
 
-add_definitions ("-DBOOST_FILESYSTEM_VERSION=3")
-add_definitions ("-DBOOST_FILESYSTEM_NO_DEPRECATED")
-add_definitions ("-DBOOST_NO_CXX11_SCOPED_ENUMS") # required if linking against boost not built with c++11
+SET (TESTING_RIF_PORT ${required_string_option_sentinel_value} CACHE STRING
+  "port of a started rif daemon"
+)
+if (TESTING_RIF_PORT STREQUAL ${required_string_option_sentinel_value})
+  message (FATAL_ERROR "required variable TESTING_RIF_PORT not set")
+endif()
 
 if (NOT BOOST_ROOT)
   set (BOOST_ROOT $ENV{BOOST_ROOT})
@@ -59,6 +50,19 @@ endif()
 if (BOOST_ROOT)
   set (Boost_NO_SYSTEM_PATHS ON)
 endif()
+
+if (${CMAKE_BUILD_TYPE} MATCHES "Release")
+  add_definitions ("-DFHG_ASSERT_MODE=0")
+else()
+  add_definitions ("-DFHG_ASSERT_MODE=1")
+endif()
+
+set (FHG_QT_MOC_BOOST_HACK_OPTIONS "-DBOOST_LEXICAL_CAST_INCLUDED;-DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED;-DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION")
+set (PNETC_LIB_DIR "share/sdpa/xml/lib")
+
+add_definitions ("-DBOOST_FILESYSTEM_VERSION=3")
+add_definitions ("-DBOOST_FILESYSTEM_NO_DEPRECATED")
+add_definitions ("-DBOOST_NO_CXX11_SCOPED_ENUMS") # required if linking against boost not built with c++11
 
 # Boost.Thread now throws when preconditions are not met.
 # This is the case when calling join() in some tests, while
@@ -69,15 +73,6 @@ add_definitions (-DBOOST_THREAD_THROW_IF_PRECONDITION_NOT_SATISFIED)
 # sdpa needs boost::mpl::vector with more than $default elements for state machine
 add_definitions ("-DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS")
 add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
-
-set (FHG_QT_MOC_BOOST_HACK_OPTIONS "-DBOOST_LEXICAL_CAST_INCLUDED;-DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED;-DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION")
-
-set (CMAKE_SKIP_BUILD_RPATH FALSE)
-set (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set (CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-set (CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../external/boost/lib:\$ORIGIN/../../../lib/:\$ORIGIN/../../../external/boost/lib")
-
-set (PNETC_LIB_DIR "share/sdpa/xml/lib")
 
 find_package (Boost 1.55 REQUIRED QUIET COMPONENTS
   date_time
