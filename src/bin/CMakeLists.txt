@@ -8,7 +8,7 @@ fhg_add_runtime_executable (gpi-space.cpp
                  gpi-space-pc-segment
                  fhg-revision
                  fhg-util
-                 ${MMGR_LIBRARY}
+                 mmgr
                  fhgcom
                  ${FhgLog_LIBRARY}
                  ${CMAKE_THREAD_LIBS_INIT}

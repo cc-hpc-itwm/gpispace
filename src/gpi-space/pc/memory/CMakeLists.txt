@@ -15,6 +15,6 @@ target_include_directories (gpi-space-pc-memory
 )
 target_link_libraries (gpi-space-pc-memory
   gpi-space-pc-segment
-  ${MMGR_LIBRARY}
+  mmgr
   gpi-space_url
   )
