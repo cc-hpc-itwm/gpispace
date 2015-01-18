@@ -14,11 +14,7 @@ endif()
 
 add_subdirectory (gpi-space)
 
-  find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
-
   set (LIB_PREFIX "fhg_pnete_")
-
-  include(${QT_USE_FILE})
 
   add_subdirectory (pnete)
   add_subdirectory (util)
