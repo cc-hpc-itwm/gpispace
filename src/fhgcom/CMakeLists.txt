@@ -1,12 +1,9 @@
-set (srcs
-  session.cpp
-  peer.cpp
+ADD_LIBRARY(fhgcom
   connection.cpp
-
   header.cpp
+  peer.cpp
+  session.cpp
 )
-
-ADD_LIBRARY(fhgcom ${srcs})
 target_link_libraries (fhgcom fhglog)
 
   add_subdirectory (tests)
