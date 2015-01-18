@@ -18,8 +18,6 @@ else()
   message (FATAL_ERROR "_SC_GETPW_R_SIZE_MAX doesn't seem to be defined on this machine")
 endif()
 
-find_package (LibRT REQUIRED QUIET)
-
 add_subdirectory(gpi)
 add_subdirectory(pc)
 add_subdirectory (tests)
