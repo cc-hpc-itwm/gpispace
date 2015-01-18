@@ -2,16 +2,6 @@
 
 add_subdirectory (fhgcom)
 
-find_library (IBverbs_LIBRARY
-  NAMES ibverbs
-  HINTS ${LIBIBVERBS_HOME} ENV LIBIBVERBS_HOME
-  PATH_SUFFIXES lib lib64
-)
-
-if (NOT IBverbs_LIBRARY)
-  message (FATAL_ERROR "IBverbs missing")
-endif()
-
 add_subdirectory (gpi-space)
 
   set (LIB_PREFIX "fhg_pnete_")
