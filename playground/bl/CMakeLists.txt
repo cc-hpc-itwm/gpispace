@@ -2,10 +2,6 @@
 
 add_definitions (-Wno-unused-parameter)
 
-find_package (Qt4 4.7.1 COMPONENTS QtCore QtGui QtNetwork REQUIRED QUIET)
-
-include (${QT_USE_FILE})
-
 include_directories (${CMAKE_SOURCE_DIR}/editor/src)
 
 qt4_wrap_cpp (wrapped_cpps_server dummy_server.hpp OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
