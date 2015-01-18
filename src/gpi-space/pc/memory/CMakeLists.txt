@@ -1,4 +1,4 @@
-set (srcs
+ADD_LIBRARY(gpi-space-pc-memory
   memory_buffer.cpp
   memory_area.cpp
   handle_generator.cpp
@@ -9,9 +9,7 @@ set (srcs
   task.cpp
   transfer_queue.cpp
   transfer_manager.cpp
-  )
-
-ADD_LIBRARY(gpi-space-pc-memory ${srcs})
+)
 target_link_libraries (gpi-space-pc-memory
   gpi-space-pc-segment
   ${MMGR_LIBRARY}
