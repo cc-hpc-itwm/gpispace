@@ -4,7 +4,7 @@ fhg_add_test (test_handle_generator.cpp
   INCLUDE_DIRECTORIES PRIVATE SYSTEM "${LIBRT_INCLUDE_DIR}"
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
-                 ${FhgCom_LIBRARY}
+                 fhgcom
                  ${FhgLog_LIBRARY}
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
@@ -16,7 +16,7 @@ fhg_add_test (test_memory_area.cpp
   INCLUDE_DIRECTORIES PRIVATE SYSTEM "${LIBRT_INCLUDE_DIR}"
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
-                 ${FhgCom_LIBRARY}
+                 fhgcom
                  ${FhgLog_LIBRARY}
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
@@ -28,7 +28,7 @@ fhg_add_test (test_segment.cpp
   INCLUDE_DIRECTORIES PRIVATE SYSTEM "${LIBRT_INCLUDE_DIR}"
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
-                 ${FhgCom_LIBRARY}
+                 fhgcom
                  ${FhgLog_LIBRARY}
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
@@ -40,7 +40,7 @@ fhg_add_test (test_sfs_area.cpp
   INCLUDE_DIRECTORIES PRIVATE SYSTEM "${LIBRT_INCLUDE_DIR}"
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
-                 ${FhgCom_LIBRARY}
+                 fhgcom
                  ${FhgLog_LIBRARY}
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${CMAKE_THREAD_LIBS_INIT}
@@ -53,7 +53,7 @@ fhg_add_test (test_task.cpp
   INCLUDE_DIRECTORIES PRIVATE SYSTEM "${LIBRT_INCLUDE_DIR}"
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
-                 ${FhgCom_LIBRARY}
+                 fhgcom
                  ${FhgLog_LIBRARY}
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util

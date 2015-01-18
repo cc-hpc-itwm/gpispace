@@ -19,7 +19,7 @@ target_link_libraries (sdpa
   rpc
   ${Boost_SERIALIZATION_LIBRARY}
   ${Boost_DATE_TIME_LIBRARY}
-  ${FhgCom_LIBRARY}
+  fhgcom
   ${Boost_THREAD_LIBRARY}
   ${UTIL_LIBRARIES}
   pnet)

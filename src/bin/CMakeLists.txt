@@ -9,7 +9,7 @@ fhg_add_runtime_executable (gpi-space.cpp
                  fhg-revision
                  fhg-util
                  ${MMGR_LIBRARY}
-                 ${FhgCom_LIBRARY}
+                 fhgcom
                  ${FhgLog_LIBRARY}
                  ${CMAKE_THREAD_LIBS_INIT}
                  ${Boost_FILESYSTEM_LIBRARY}

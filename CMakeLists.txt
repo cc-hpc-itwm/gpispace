@@ -83,8 +83,6 @@ set (FhgLog_LIBRARY fhglog)
 
 set (MMGR_LIBRARY mmgr)
 
-set (FhgCom_LIBRARY fhgcom)
-
 set (PNETC_LIB_DIR "share/sdpa/xml/lib")
 
 find_package (Boost 1.55 REQUIRED QUIET COMPONENTS
