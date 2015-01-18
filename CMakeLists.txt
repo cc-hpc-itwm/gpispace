@@ -54,7 +54,6 @@ add_definitions ("-DBOOST_FILESYSTEM_VERSION=3")
 add_definitions ("-DBOOST_FILESYSTEM_NO_DEPRECATED")
 add_definitions ("-DBOOST_NO_CXX11_SCOPED_ENUMS") # required if linking against boost not built with c++11
 
-# Boost
 if (NOT BOOST_ROOT)
   set (BOOST_ROOT $ENV{BOOST_ROOT})
 endif()
@@ -75,13 +74,11 @@ add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
 
 set (FHG_QT_MOC_BOOST_HACK_OPTIONS "-DBOOST_LEXICAL_CAST_INCLUDED;-DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED;-DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION")
 
-# RPATH configuration
 set (CMAKE_SKIP_BUILD_RPATH FALSE)
 set (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set (CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set (CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../external/boost/lib:\$ORIGIN/../../../lib/:\$ORIGIN/../../../external/boost/lib")
 
-# replacement for find_package (<one of our subprojects>)
 set (UTIL_LIBRARIES fhg-revision fhg-util)
 
 set (FhgLog_LIBRARY fhglog)
