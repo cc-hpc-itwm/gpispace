@@ -142,7 +142,7 @@ qt4_wrap_cpp (plugin_wrapped_cpps ${plugin_tomoc})
                    pnet
                    fhg-util
                    sdpa
-                   ${FhgLog_LIBRARY}
+                   fhglog
                    ${UTIL_LIBRARIES}
                    ${Boost_FILESYSTEM_LIBRARY}
                    ${Boost_PROGRAM_OPTIONS_LIBRARY}
@@ -173,7 +173,7 @@ install (FILES "plugin/plugin_api.hpp" "plugin/plugin_base.hpp"
     LINK_LIBRARIES pnet
                    "fhg_util_qt"
                    fhg-revision
-                   ${FhgLog_LIBRARY}
+                   fhglog
                    ${Boost_THREAD_LIBRARY}
                    ${QT_LIBRARIES}
   )
@@ -182,7 +182,7 @@ install (FILES "plugin/plugin_api.hpp" "plugin/plugin_base.hpp"
     LINK_LIBRARIES pnet
                    "fhg_util_qt"
                    fhg-util
-                   ${FhgLog_LIBRARY}
+                   fhglog
                    ${Boost_THREAD_LIBRARY}
                    ${QT_LIBRARIES}
   )

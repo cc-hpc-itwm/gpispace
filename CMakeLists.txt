@@ -79,8 +79,6 @@ set (CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../external/boost/
 
 set (UTIL_LIBRARIES fhg-revision fhg-util)
 
-set (FhgLog_LIBRARY fhglog)
-
 set (PNETC_LIB_DIR "share/sdpa/xml/lib")
 
 find_package (Boost 1.55 REQUIRED QUIET COMPONENTS

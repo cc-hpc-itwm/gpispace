@@ -2,7 +2,7 @@
 
 fhg_add_runtime_executable (orchestrator.cpp
   LINK_LIBRARIES sdpa
-                 ${FhgLog_LIBRARY}
+                 fhglog
                  pnet
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
                  ${Boost_IOSTREAMS_LIBRARY}
@@ -11,7 +11,7 @@ fhg_add_runtime_executable (orchestrator.cpp
 
 fhg_add_runtime_executable (agent.cpp
   LINK_LIBRARIES sdpa
-                 ${FhgLog_LIBRARY}
+                 fhglog
                  pnet
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
                  ${Boost_IOSTREAMS_LIBRARY}

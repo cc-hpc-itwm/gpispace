@@ -10,7 +10,7 @@ fhg_add_runtime_executable (gpi-space.cpp
                  fhg-util
                  mmgr
                  fhgcom
-                 ${FhgLog_LIBRARY}
+                 fhglog
                  ${CMAKE_THREAD_LIBS_INIT}
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_IOSTREAMS_LIBRARY}

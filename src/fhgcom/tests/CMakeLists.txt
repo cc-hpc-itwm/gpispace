@@ -2,14 +2,14 @@ fhg_add_test (test_message.cpp
   PROJECT fhgcom
   BOOST_UNIT_TEST
   LINK_LIBRARIES fhgcom
-                 ${FhgLog_LIBRARY}
+                 fhglog
 )
 
 fhg_add_test (test_p2p.cpp
   PROJECT fhgcom
   BOOST_UNIT_TEST
   LINK_LIBRARIES fhgcom
-                 ${FhgLog_LIBRARY}
+                 fhglog
 )
 
 fhg_add_test (test_peer.cpp
@@ -17,7 +17,7 @@ fhg_add_test (test_peer.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES fhgcom
                  fhg-util
-                 ${FhgLog_LIBRARY}
+                 fhglog
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_SERIALIZATION_LIBRARY}
                  ${Boost_DATE_TIME_LIBRARY}

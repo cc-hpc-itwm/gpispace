@@ -5,7 +5,7 @@ fhg_add_test (test_handle_generator.cpp
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
                  fhgcom
-                 ${FhgLog_LIBRARY}
+                 fhglog
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )
@@ -17,7 +17,7 @@ fhg_add_test (test_memory_area.cpp
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
                  fhgcom
-                 ${FhgLog_LIBRARY}
+                 fhglog
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )
@@ -29,7 +29,7 @@ fhg_add_test (test_segment.cpp
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
                  fhgcom
-                 ${FhgLog_LIBRARY}
+                 fhglog
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )
@@ -41,7 +41,7 @@ fhg_add_test (test_sfs_area.cpp
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
                  fhgcom
-                 ${FhgLog_LIBRARY}
+                 fhglog
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
@@ -54,7 +54,7 @@ fhg_add_test (test_task.cpp
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
                  fhgcom
-                 ${FhgLog_LIBRARY}
+                 fhglog
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )
