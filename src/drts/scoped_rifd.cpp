@@ -2,7 +2,11 @@
 
 #include <drts/scoped_rifd.hpp>
 
+#include <drts/drts.hpp>
+#include <drts/private/option.hpp>
 #include <drts/private/rifd_entry_points_impl.hpp>
+
+#include <fhg/util/read_lines.hpp>
 
 #include <rif/strategy/meta.hpp>
 
@@ -35,6 +39,18 @@ namespace gspc
     std::string _strategy;
     std::vector<fhg::rif::entry_point> _entry_points;
   };
+
+  scoped_rifd::scoped_rifd ( boost::program_options::variables_map const& vm
+                           , installation const& installation
+                           )
+    : scoped_rifd
+        ( require_rif_strategy (vm)
+        , fhg::util::read_lines (require_nodefile (vm))
+        , get_rif_port (vm)
+        , installation.gspc_home()
+        )
+  {}
+
 
   scoped_rifd::scoped_rifd ( std::string const& strategy
                            , std::vector<std::string> const& hostnames
