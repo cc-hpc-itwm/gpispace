@@ -67,14 +67,33 @@ namespace fhg
         return {_.begin(), _.end()};
       }
 
+      namespace
+      {
+        std::vector<std::string> stable_unique (std::vector<std::string> in)
+        {
+          std::vector<std::string> res;
+          std::set<std::string> seen;
+          for (std::string& elem : in)
+          {
+            if (seen.insert (elem).second)
+            {
+              res.emplace_back (std::move (elem));
+            }
+          }
+          return res;
+        }
+      }
+
       std::vector<fhg::rif::entry_point> bootstrap
         ( std::string const& strategy
-        , std::vector<std::string> const& hostnames
+        , std::vector<std::string> const& hostnames_in
         , boost::optional<unsigned short> const& port
         , boost::filesystem::path const& gspc_home
         )
       {
         validate_strategy (strategy);
+
+        std::vector<std::string> const hostnames (stable_unique (hostnames_in));
 
         std::mutex entry_points_guard;
         std::condition_variable entry_point_added;
