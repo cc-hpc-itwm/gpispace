@@ -119,6 +119,17 @@ namespace gspc
         , boost::program_options::value<validators::existing_directory>()
         , "adds a path to the list of application search paths"
         )
+        ;
+
+      return drts;
+    }
+
+    boost::program_options::options_description external_rifd()
+    {
+      boost::program_options::options_description drts
+        ("Remote Interface Daemon (externally started)");
+
+      drts.add_options()
         ( name::rif_entry_points_file
         , boost::program_options::value<validators::nonempty_file>()
           ->required()

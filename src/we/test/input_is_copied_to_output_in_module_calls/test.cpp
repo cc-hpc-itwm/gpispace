@@ -30,6 +30,7 @@ BOOST_AUTO_TEST_CASE (we_input_is_copied_to_output_in_module_calls)
   options_description.add (test::options::shared_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
+  options_description.add (gspc::options::external_rifd());
 
   boost::program_options::variables_map vm;
   boost::program_options::store
