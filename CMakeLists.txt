@@ -19,6 +19,12 @@ SET (TESTING_RIF_ENTRY_POINT_FILE ${required_string_option_sentinel_value}
 if (TESTING_RIF_ENTRY_POINT_FILE STREQUAL ${required_string_option_sentinel_value})
   message (FATAL_ERROR "required variable TESTING_RIF_ENTRY_POINT_FILE not set")
 endif()
+SET (TESTING_RIF_STRATEGY ${required_string_option_sentinel_value}
+  CACHE STRING "strategy to use for starting scoped rif daemons"
+)
+if (TESTING_RIF_STRATEGY STREQUAL ${required_string_option_sentinel_value})
+  message (FATAL_ERROR "required variable TESTING_RIF_STRATEGY not set")
+endif()
 
 configure_file ("${CMAKE_SOURCE_DIR}/CTestCustom.cmake" "${CMAKE_BINARY_DIR}/CTestCustom.cmake" COPYONLY)
 

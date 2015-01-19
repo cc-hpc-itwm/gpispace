@@ -5,6 +5,7 @@
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -31,7 +32,7 @@ BOOST_AUTO_TEST_CASE (xml_transport_bytearray)
   options_description.add (test::options::shared_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
-  options_description.add (gspc::options::external_rifd());
+  options_description.add (gspc::options::scoped_rifd());
 
   boost::program_options::variables_map vm;
   boost::program_options::store
@@ -71,7 +72,9 @@ BOOST_AUTO_TEST_CASE (xml_transport_bytearray)
   pnet::type::value::value_type const point
     (pnet::type::value::read ("Struct [x := 1.0, y := 2.0]"));
 
-  gspc::scoped_runtime_system const drts (vm, installation, "work:2");
+  gspc::scoped_rifd const rifd (vm, installation);
+  gspc::scoped_runtime_system const drts
+    (vm, installation, "work:2", rifd.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
