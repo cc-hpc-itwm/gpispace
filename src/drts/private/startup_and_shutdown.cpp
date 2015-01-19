@@ -51,19 +51,8 @@ namespace
     }
   }
 
-  using hostinfo_type = std::pair<std::string, unsigned short>;
-
-  void write_hostinfo ( boost::filesystem::path const& state_dir
-                      , std::string const& name
-                      , hostinfo_type const& hostinfo
-                      )
-  {
-    std::ofstream ((state_dir / (name + ".host")).string()) << hostinfo.first;
-    std::ofstream ((state_dir / (name + ".port")).string()) << hostinfo.second;
-  }
-
   std::string build_parent_with_hostinfo
-    (std::string const& name, hostinfo_type const& hostinfo)
+    (std::string const& name, fhg::drts::hostinfo_type const& hostinfo)
   {
     return ( boost::format ("%1%%%%2%%%%3%")
            % name
@@ -88,7 +77,7 @@ namespace
   {
     std::vector<fhg::rif::entry_point> entry_points;
     std::string master_name;
-    hostinfo_type master_hostinfo;
+    fhg::drts::hostinfo_type master_hostinfo;
     segment_info_t ( std::vector<fhg::rif::entry_point> const& entry_points
                    , std::string const& master_name
                    )
@@ -97,11 +86,11 @@ namespace
     {}
   };
 
-  hostinfo_type start_agent
+  fhg::drts::hostinfo_type start_agent
     ( fhg::rif::entry_point const& rif_entry_point
     , std::string const& name
     , std::string const& parent_name
-    , hostinfo_type const& parent_hostinfo
+    , fhg::drts::hostinfo_type const& parent_hostinfo
     , std::string const& gui_host
     , unsigned short gui_port
     , std::string const& log_host
@@ -414,25 +403,26 @@ namespace fhg
         };
     }
 
-    void startup ( std::string gui_host
-                 , unsigned short gui_port
-                 , std::string log_host
-                 , unsigned short log_port
-                 , bool gpi_enabled
-                 , bool verbose
-                 , boost::optional<boost::filesystem::path> gpi_socket
-                 , std::vector<boost::filesystem::path> app_path
-                 , boost::filesystem::path sdpa_home
-                 , std::size_t number_of_groups
-                 , boost::filesystem::path state_dir
-                 , bool delete_logfiles
-                 , fhg::util::signal_handler_manager& signal_handler_manager
-                 , boost::optional<std::size_t> gpi_mem
-                 , boost::optional<std::chrono::seconds> vmem_startup_timeout
-                 , std::vector<worker_description> worker_descriptions
-                 , boost::optional<unsigned short> vmem_port
-                 , std::vector<fhg::rif::entry_point> const& rif_entry_points
-                 )
+    hostinfo_type startup
+      ( std::string gui_host
+      , unsigned short gui_port
+      , std::string log_host
+      , unsigned short log_port
+      , bool gpi_enabled
+      , bool verbose
+      , boost::optional<boost::filesystem::path> gpi_socket
+      , std::vector<boost::filesystem::path> app_path
+      , boost::filesystem::path sdpa_home
+      , std::size_t number_of_groups
+      , boost::filesystem::path state_dir
+      , bool delete_logfiles
+      , fhg::util::signal_handler_manager& signal_handler_manager
+      , boost::optional<std::size_t> gpi_mem
+      , boost::optional<std::chrono::seconds> vmem_startup_timeout
+      , std::vector<worker_description> worker_descriptions
+      , boost::optional<unsigned short> vmem_port
+      , std::vector<fhg::rif::entry_point> const& rif_entry_points
+      )
     {
       boost::filesystem::create_directories (state_dir);
 
@@ -575,8 +565,6 @@ namespace fhg
         , boost::lexical_cast<unsigned short>
             (orchestrator_startup_messages.second[3])
         );
-      write_hostinfo (state_dir, "orchestrator", orchestrator_hostinfo);
-      write_hostinfo (state_dir, "orchestrator.rpc", orchestrator_rpc_hostinfo);
 
       if (gpi_enabled)
       {
@@ -791,6 +779,8 @@ namespace fhg
           );
 
       stop_drts_on_failure.startup_successful();
+
+      return orchestrator_hostinfo;
     }
 
     namespace
@@ -941,11 +931,6 @@ namespace fhg
       }
       if (components.get() & components_type::orchestrator)
       {
-        boost::filesystem::remove (state_dir / "orchestrator.host");
-        boost::filesystem::remove (state_dir / "orchestrator.port");
-        boost::filesystem::remove (state_dir / "orchestrator.rpc.host");
-        boost::filesystem::remove (state_dir / "orchestrator.rpc.port");
-
         terminate_all_processes_of_a_kind
           (state_dir, "orchestrator", rif_entry_points);
       }

@@ -130,7 +130,7 @@ namespace gspc
 
     fhg::util::signal_handler_manager signal_handler_manager;
 
-    fhg::drts::startup
+    std::tie (_orchestrator_host, _orchestrator_port) = fhg::drts::startup
       ( get_gui_host (vm).get_value_or (fhg::util::hostname())
       , get_gui_port (vm).get_value_or (default_gui_port)
       , get_log_host (vm).get_value_or (fhg::util::hostname())
@@ -155,13 +155,6 @@ namespace gspc
       , get_virtual_memory_port (vm)
       , _rif_entry_points._->_entry_points
       );
-
-    //! \todo Remove magic: specify filenames instead of relying on
-    //! file? Let an c++-ified sdpa-boot() return them.
-    _orchestrator_host = fhg::util::read_file
-      (_state_directory / "orchestrator.host");
-    _orchestrator_port = boost::lexical_cast<unsigned short>
-      (fhg::util::read_file (_state_directory / "orchestrator.port"));
 
     if (_virtual_memory_per_node)
     {
