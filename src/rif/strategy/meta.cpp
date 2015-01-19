@@ -21,6 +21,7 @@
 #include <mutex>
 #include <stdexcept>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 namespace fhg
@@ -72,10 +73,10 @@ namespace fhg
         std::vector<std::string> stable_unique (std::vector<std::string> in)
         {
           std::vector<std::string> res;
-          std::set<std::string> seen;
+          std::unordered_set<std::string> seen;
           for (std::string& elem : in)
           {
-            if (seen.insert (elem).second)
+            if (seen.emplace (elem).second)
             {
               res.emplace_back (std::move (elem));
             }
