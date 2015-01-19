@@ -11,13 +11,6 @@ else()
   message (FATAL_ERROR "unistd.h is required for sysconf")
 endif()
 
-include (CheckSymbolExists)
-check_symbol_exists (_SC_GETPW_R_SIZE_MAX unistd.h HAVE_GETPW_R_SIZE_MAX)
-if (HAVE_GETPW_R_SIZE_MAX)
-else()
-  message (FATAL_ERROR "_SC_GETPW_R_SIZE_MAX doesn't seem to be defined on this machine")
-endif()
-
 add_subdirectory(gpi)
 add_subdirectory(pc)
 add_subdirectory (tests)
