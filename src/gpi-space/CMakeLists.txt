@@ -1,16 +1,3 @@
-include (CheckIncludeFile)
-check_include_file (sys/types.h HAVE_SYS_TYPES_H)
-if (HAVE_SYS_TYPES_H)
-else()
-  message (FATAL_ERROR "sys/types.h is required for mode_t")
-endif()
-
-check_include_file (unistd.h HAVE_UNISTD_H)
-if (HAVE_UNISTD_H)
-else()
-  message (FATAL_ERROR "unistd.h is required for sysconf")
-endif()
-
 add_subdirectory(gpi)
 add_subdirectory(pc)
 add_subdirectory (tests)
