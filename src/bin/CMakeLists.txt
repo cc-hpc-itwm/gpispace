@@ -1,8 +1,5 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-find_package (LibReadline REQUIRED QUIET)
-include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
-
 fhg_add_runtime_executable (gpi-space.cpp
   LINK_LIBRARIES gpi-space-gpiapi
                  gpi-space-pc-container
@@ -11,9 +8,9 @@ fhg_add_runtime_executable (gpi-space.cpp
                  gpi-space-pc-segment
                  fhg-revision
                  fhg-util
-                 ${MMGR_LIBRARY}
-                 ${FhgCom_LIBRARY}
-                 ${FhgLog_LIBRARY}
+                 mmgr
+                 fhgcom
+                 fhglog
                  ${CMAKE_THREAD_LIBS_INIT}
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_IOSTREAMS_LIBRARY}

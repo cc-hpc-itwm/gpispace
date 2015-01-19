@@ -1,14 +1,11 @@
 # mirko.rahn@itwm.fraunhofer.de
 
-include_directories (${CMAKE_SOURCE_DIR}/share/example)
-include_directories (${FhgLog_INCLUDE_DIR})
-
 add_library (log_map-impl SHARED
   implementation.cpp
 )
-
-include_directories (${UTIL_INCLUDE_DIR})
-include_directories (${CMAKE_SOURCE_DIR})
+target_include_directories (log_map-impl
+  PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
+)
 
 math (EXPR size_communication_buffer "8 * 4 << 20")
 
@@ -23,6 +20,8 @@ math (EXPR size_virtual_memory
 fhg_add_test (test.cpp
   PROJECT share_example_map_log
   BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}"
+                      PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/../../"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
@@ -36,7 +35,7 @@ fhg_add_test (test.cpp
        --user-data "y()"
   LINK_LIBRARIES gspc
                  test-utilities
-                 ${UTIL_LIBRARIES}
+                 fhg-util
                  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARIES}
   DEPENDS log_map-impl

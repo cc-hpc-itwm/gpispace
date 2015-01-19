@@ -4,23 +4,9 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 
 #include <gpi-space/pc/memory/task.hpp>
-
-struct SetupLogging
-{
-  boost::asio::io_service io_service;
-  SetupLogging ()
-  {
-    setenv ("FHGLOG_level", "TRACE", true);
-    FHGLOG_SETUP (io_service);
-  }
-};
-
-BOOST_GLOBAL_FIXTURE( SetupLogging );
 
 BOOST_AUTO_TEST_CASE ( simple_task )
 {

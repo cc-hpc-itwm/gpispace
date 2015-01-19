@@ -1,8 +1,9 @@
-include_directories (${CMAKE_CURRENT_SOURCE_DIR})
-include_directories (${UTIL_INCLUDE_DIR})
-
 add_library (process process.cpp)
 add_library (process.shared SHARED process.cpp)
+target_include_directories (process PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_directories (process.shared
+  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+)
 set_target_properties (process.shared PROPERTIES OUTPUT_NAME process)
 target_link_libraries (process
   ${Boost_FILESYSTEM_LIBRARY}

@@ -3,7 +3,6 @@
 
 #include <iostream>
 
-#include <fhglog/LogMacros.hpp>
 #include <sdpa/com/NetworkStrategy.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
@@ -69,7 +68,6 @@ BOOST_AUTO_TEST_CASE (perform_test)
                 , std::placeholders::_2
                 )
     , peer_io_service
-    , "peer-1"
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
     );

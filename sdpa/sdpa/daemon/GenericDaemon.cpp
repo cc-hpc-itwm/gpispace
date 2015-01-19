@@ -181,7 +181,6 @@ GenericDaemon::GenericDaemon( const std::string name
                         _event_queue.put (source, e);
                       }
                       , peer_io_service
-                      , name /*name for peer*/
                       , host_from_url (url)
                       , port_from_url (url)
                       )

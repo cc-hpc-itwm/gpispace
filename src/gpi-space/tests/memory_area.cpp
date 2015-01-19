@@ -4,8 +4,6 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 
 #include <gpi-space/pc/type/flags.hpp>

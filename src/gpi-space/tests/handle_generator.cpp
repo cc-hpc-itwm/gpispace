@@ -1,8 +1,6 @@
 #define BOOST_TEST_MODULE GpiSpaceHandleGeneratorTest
 #include <boost/test/unit_test.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 
 #include <gpi-space/pc/memory/handle_generator.hpp>

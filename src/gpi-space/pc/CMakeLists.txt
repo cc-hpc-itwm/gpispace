@@ -1,4 +1,3 @@
-add_subdirectory (type)
 add_subdirectory (client)
 add_subdirectory (segment)
 add_subdirectory (memory)

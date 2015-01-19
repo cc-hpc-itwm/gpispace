@@ -77,10 +77,10 @@ install (FILES
   DESTINATION include/we/type/literal
 )
 
-find_package (LibReadline REQUIRED QUIET)
-include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
-
 add_executable (expression_shell expr/shell.cpp)
+target_include_directories (expression_shell
+  PRIVATE "${LibReadline_INCLUDE_DIR}"
+)
 target_link_libraries (expression_shell pnet ${LibReadline_LIBRARY})
 
 add_subdirectory (expr/parse/test)

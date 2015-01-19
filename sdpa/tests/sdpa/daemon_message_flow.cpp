@@ -13,7 +13,7 @@ namespace
 {
   struct network_strategy
   {
-    network_strategy (std::string name)
+    network_strategy()
       : _event_received()
       , _network
         ( [this] (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr e)
@@ -21,7 +21,7 @@ namespace
             _event_received.notify (e);
           }
         , _peer_io_service
-        , name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
+        , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
         )
     {}
 
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
     , rpc_io_service
     );
 
-  network_strategy child (child_name);
+  network_strategy child;
 
   child.send ( child.connect_to
                  ( fhg::com::host_t

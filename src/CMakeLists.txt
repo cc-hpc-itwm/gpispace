@@ -1,37 +1,10 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
-include_directories(${FhgLog_INCLUDE_DIR})
-
-include_directories(${UTIL_INCLUDE_DIR})
-
-find_package(HWLOC REQUIRED QUIET)
-include_directories(SYSTEM ${HWLOC_INCLUDE_DIR})
-
 add_subdirectory (fhgcom)
-
-include_directories (${CMAKE_CURRENT_SOURCE_DIR})
-
-find_library (IBverbs_LIBRARY
-  NAMES ibverbs
-  HINTS ${LIBIBVERBS_HOME} ENV LIBIBVERBS_HOME
-  PATH_SUFFIXES lib lib64
-)
-
-if (NOT IBverbs_LIBRARY)
-  message (FATAL_ERROR "IBverbs missing")
-endif()
 
 add_subdirectory (gpi-space)
 
-  find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
-
-  include_directories ( ${CMAKE_SOURCE_DIR}/sdpa
-                      )
   set (LIB_PREFIX "fhg_pnete_")
-
-  include(${QT_USE_FILE})
 
   add_subdirectory (pnete)
   add_subdirectory (util)
