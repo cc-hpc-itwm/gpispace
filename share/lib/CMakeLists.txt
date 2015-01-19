@@ -1,4 +1,4 @@
-set (xmls
+install (FILES
   4.xml
   5.xml
   6.xml
@@ -15,9 +15,6 @@ set (xmls
   trigger_when.xml
   triple.xml
   wait.xml
-  )
-
-install (FILES ${xmls}
   DESTINATION ${PNETC_LIB_DIR}
   )
 

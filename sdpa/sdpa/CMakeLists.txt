@@ -1,4 +1,4 @@
-set (srcs
+ADD_LIBRARY(sdpa
   capability.cpp
   client.cpp
   com/NetworkStrategy.cpp
@@ -11,7 +11,6 @@ set (srcs
   daemon/orchestrator/Orchestrator.cpp
 )
 
-ADD_LIBRARY(sdpa ${srcs})
 target_link_libraries (sdpa
   gpi-space-pc-client-static
   gpi-space-pc-segment
