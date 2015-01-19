@@ -23,7 +23,6 @@ namespace fhg
       << std::endl << "  * " << head << std::endl
       << std::endl << "version:  " << project_version()
       << std::endl << "revision: " << project_revision()
-      << std::endl << "built:    @FHG_BUILD_TIMESTAMP@"
       << std::endl << "contact:  @PROJECT_CONTACT@"
       << std::endl
       << std::endl << "Copyright 2009-2014 Fraunhofer ITWM"
