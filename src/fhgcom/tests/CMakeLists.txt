@@ -1,19 +1,19 @@
-fhg_add_test (test_message.cpp
-  PROJECT fhgcom
+fhg_add_test (message.cpp
+  PROJECT fhgcom_test
   BOOST_UNIT_TEST
   LINK_LIBRARIES fhgcom
                  fhglog
 )
 
-fhg_add_test (test_p2p.cpp
-  PROJECT fhgcom
+fhg_add_test (p2p.cpp
+  PROJECT fhgcom_test
   BOOST_UNIT_TEST
   LINK_LIBRARIES fhgcom
                  fhglog
 )
 
-fhg_add_test (test_peer.cpp
-  PROJECT fhgcom
+fhg_add_test (peer.cpp
+  PROJECT fhgcom_test
   BOOST_UNIT_TEST
   LINK_LIBRARIES fhgcom
                  fhg-util
