@@ -36,23 +36,6 @@ and to add `$HOME/gspc-<VERSION>/bin` to the search path, e.g. in case
 $ export PATH=$HOME/gspc-<VERSION>/bin:$PATH
 ----
 
-The installation can be tested with
-
-[source,bash]
-----
-$ gspc selftest
-----
-
-When GPI-Space is installed correctly the output will be something
-like:
-
-----
-GPI-Space selftest started...
-test FOO: OKAY
-test BAR: OKAY
-GPI-Space selftest completed: 0 error(s)
-----
-
 == Distributed runtime system
 
 agent, orchestrator, worker, client
