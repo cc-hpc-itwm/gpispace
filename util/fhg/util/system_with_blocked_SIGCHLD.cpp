@@ -4,6 +4,9 @@
 
 #include <fhg/syscall.hpp>
 
+#include <boost/format.hpp>
+
+#include <exception>
 #include <cstdlib>
 
 namespace fhg
@@ -31,6 +34,19 @@ namespace fhg
       } const signal_blocker;
 
       return std::system (command);
+    }
+
+    void system_with_blocked_SIGCHLD_or_throw (std::string const& command)
+    {
+      if (int ec = fhg::util::system_with_blocked_SIGCHLD (command.c_str()))
+      {
+        throw std::runtime_error
+          (( boost::format ("Could not run '%1%': error code '%2%'")
+           % command
+           % ec
+           ).str()
+          );
+      }
     }
   }
 }
