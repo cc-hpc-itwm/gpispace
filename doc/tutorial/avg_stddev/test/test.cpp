@@ -17,6 +17,7 @@
 
 #include <fhg/util/boost/program_options/validators/executable.hpp>
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <fhg/util/nest_exceptions.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 #include <fhg/util/temporary_file.hpp>
 #include <fhg/util/temporary_path.hpp>
@@ -101,30 +102,26 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
   long const size_buffer (8 << 20);
   long const num_buffer (10);
 
-  //! \todo inline the generator code instead of calling a binary
-  std::ostringstream command_generate;
+  fhg::util::nest_exceptions<std::runtime_error>
+    ([&generator, &size_buffer, &num_values, &data_file]()
+     {
+       //! \todo inline the generator code instead of calling a binary
+       std::ostringstream command_generate;
 
-  command_generate
-    << generator
-    << " -b " << size_buffer
-    << " -n " << num_values
-    << " -s 31415926"
-    << " -m 0"
-    << " -g 1"
-    << " -o " << data_file
-    ;
+       command_generate
+         << generator
+         << " -b " << size_buffer
+         << " -n " << num_values
+         << " -s 31415926"
+         << " -m 0"
+         << " -g 1"
+         << " -o " << data_file
+         ;
 
-  if ( int ec
-     = fhg::util::system_with_blocked_SIGCHLD (command_generate.str().c_str())
-     )
-  {
-    throw std::runtime_error
-      (( boost::format ("Could not generate data: command '%1%', error '%2%'")
-       % command_generate.str()
-       % ec
-       ).str()
-      );
-  }
+       fhg::util::system_with_blocked_SIGCHLD_or_throw (command_generate.str());
+     }
+    , "Could not generate data"
+    );
 
   gspc::scoped_rifd const rifd (vm, installation);
   gspc::scoped_runtime_system const drts

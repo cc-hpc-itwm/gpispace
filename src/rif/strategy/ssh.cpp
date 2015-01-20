@@ -2,6 +2,7 @@
 
 #include <rif/strategy/ssh.hpp>
 
+#include <fhg/util/nest_exceptions.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 #include <fhg/util/wait_and_collect_exceptions.hpp>
 
@@ -47,18 +48,13 @@ namespace fhg
                   ( std::launch::async
                   , [hostname, command]
                     {
-                      if ( int ec
-                         = fhg::util::system_with_blocked_SIGCHLD (command.c_str())
-                         )
-                      {
-                        throw std::runtime_error
-                          ( ( boost::format ("%1%: %2% failed: %3%")
-                            % hostname
-                            % command
-                            % ec
-                            ).str()
-                          );
-                      }
+                      fhg::util::nest_exceptions<std::runtime_error>
+                        ([&hostname, &command]()
+                         {
+                           fhg::util::system_with_blocked_SIGCHLD_or_throw (command);
+                         }
+                        , hostname
+                        );
                     }
                   )
               );
@@ -92,22 +88,24 @@ namespace fhg
                     , &failed_entry_points_guard, &failed_entry_points
                     ]
                     {
-                      if ( int ec
-                         = fhg::util::system_with_blocked_SIGCHLD (command.c_str())
-                         )
-                      {
-                        std::unique_lock<std::mutex> const _
-                          (failed_entry_points_guard);
-                        failed_entry_points.emplace_back (entry_point);
+                      fhg::util::nest_exceptions<std::runtime_error>
+                        ([&]()
+                         {
+                           try
+                           {
+                             fhg::util::system_with_blocked_SIGCHLD_or_throw (command);
+                           }
+                           catch (...)
+                           {
+                             std::unique_lock<std::mutex> const _
+                               (failed_entry_points_guard);
+                             failed_entry_points.emplace_back (entry_point);
 
-                        throw std::runtime_error
-                          ( ( boost::format ("%1%: %2% failed: %3%")
-                            % entry_point.hostname
-                            % command
-                            % ec
-                            ).str()
-                          );
-                      }
+                             throw;
+                           }
+                         }
+                        , entry_point.hostname
+                        );
                     }
                   )
               );
