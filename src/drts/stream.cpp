@@ -71,7 +71,7 @@ namespace gspc
             , _offset_to_meta_data
             }
           , _number_of_slots
-          , gpi::pc::type::queue_id_t()
+          , GPI_PC_INVAL
           )
         );
 
@@ -119,7 +119,7 @@ namespace gspc
               , _offset_to_meta_data
               }
             , _number_of_slots
-            , gpi::pc::type::queue_id_t()
+            , GPI_PC_INVAL
             )
           );
 
@@ -156,7 +156,7 @@ namespace gspc
             }
           , {_data, 0}
           , data.size()
-          , gpi::pc::type::queue_id_t()
+          , GPI_PC_INVAL
           )
         );
 

@@ -113,7 +113,7 @@ namespace gspc
         ( {_->_handle_id, 0}
         , {buffer, 0}
         , size
-        , gpi::pc::type::queue_id_t()
+        , GPI_PC_INVAL
         )
       );
   }
