@@ -9,8 +9,6 @@ namespace fhg
 {
   namespace util
   {
-    int system_with_blocked_SIGCHLD (const char*);
-
     void system_with_blocked_SIGCHLD_or_throw (std::string const&);
   }
 }

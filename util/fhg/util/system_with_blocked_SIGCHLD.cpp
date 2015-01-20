@@ -13,7 +13,7 @@ namespace fhg
 {
   namespace util
   {
-    int system_with_blocked_SIGCHLD (const char* command)
+    void system_with_blocked_SIGCHLD_or_throw (std::string const& command)
     {
       struct scoped_SIGCHLD_block
       {
@@ -33,12 +33,7 @@ namespace fhg
         sigset_t _signals_to_restore;
       } const signal_blocker;
 
-      return std::system (command);
-    }
-
-    void system_with_blocked_SIGCHLD_or_throw (std::string const& command)
-    {
-      if (int ec = fhg::util::system_with_blocked_SIGCHLD (command.c_str()))
+      if (int ec = std::system (command.c_str()))
       {
         throw std::runtime_error
           (( boost::format ("Could not run '%1%': error code '%2%'")
