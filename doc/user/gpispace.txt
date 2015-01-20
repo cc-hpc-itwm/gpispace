@@ -70,16 +70,12 @@ development and execution of GPI-Space workflows",align="center",width="75%"]
 === Advanced: fhglog*
 .
 
-=== Advanced: fhgcfg
-.
-
 === Advanced: gspc*
 .
 
 == Workflows
 
 === Small example (predefined)
-=== Submit
 === Extract results
 === Workflow description language
 
@@ -310,14 +306,12 @@ code above is equivalent to
 === Big example (superbinning)
 === Library
 === Editor
-=== Advanced: Execute (we-exec)
 === Advanced: Debugging
 
 == Virtual memory
 === Start and Stop
 === Interface
 === Example
-=== Advanced: gpish
 
 == Reference
 
