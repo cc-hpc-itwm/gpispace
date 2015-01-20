@@ -36,11 +36,17 @@ if (SHARED_DIRECTORY_FOR_TESTS STREQUAL ${required_string_option_sentinel_value}
   message (FATAL_ERROR "required variable SHARED_DIRECTORY_FOR_TESTS not set")
 endif()
 
-SET (TESTING_RIF_PORT ${required_string_option_sentinel_value} CACHE STRING
-  "port of a started rif daemon"
+SET (TESTING_RIF_ENTRY_POINT_FILE ${required_string_option_sentinel_value}
+  CACHE PATH "entry points file of started rif daemons"
 )
-if (TESTING_RIF_PORT STREQUAL ${required_string_option_sentinel_value})
-  message (FATAL_ERROR "required variable TESTING_RIF_PORT not set")
+if (TESTING_RIF_ENTRY_POINT_FILE STREQUAL ${required_string_option_sentinel_value})
+  message (FATAL_ERROR "required variable TESTING_RIF_ENTRY_POINT_FILE not set")
+endif()
+SET (TESTING_RIF_STRATEGY ${required_string_option_sentinel_value}
+  CACHE STRING "strategy to use for starting scoped rif daemons"
+)
+if (TESTING_RIF_STRATEGY STREQUAL ${required_string_option_sentinel_value})
+  message (FATAL_ERROR "required variable TESTING_RIF_STRATEGY not set")
 endif()
 
 if (NOT BOOST_ROOT)

@@ -2,6 +2,7 @@
 
 #include <drts/drts.hpp>
 #include <drts/private/option.hpp>
+#include <drts/private/rifd_entry_points_impl.hpp>
 #include <drts/private/startup_and_shutdown.hpp>
 
 #include <drts/stream.hpp>
@@ -19,6 +20,7 @@
 #include <fhg/util/hostname.hpp>
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/read_file.hpp>
+#include <fhg/util/read_lines.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/syscall.hpp>
 
@@ -74,13 +76,26 @@ namespace gspc
   {}
 
   scoped_runtime_system::scoped_runtime_system
+      ( boost::program_options::variables_map const& vm
+      , installation const& installation
+      , std::string const& topology_description
+      )
+    : scoped_runtime_system
+        ( vm
+        , installation
+        , topology_description
+        , require_rif_entry_points_file (vm)
+        )
+  {}
+
+  scoped_runtime_system::scoped_runtime_system
     ( boost::program_options::variables_map const& vm
     , installation const& installation
     , std::string const& topology_description
+    , rifd_entry_points const& entry_points
     )
       : _installation (installation)
       , _state_directory (require_state_directory (vm))
-      , _nodefile (boost::filesystem::canonical (require_nodefile (vm)))
       , _virtual_memory_per_node (get_virtual_memory_per_node (vm))
       , _virtual_memory_socket (get_virtual_memory_socket (vm))
       , _virtual_memory_startup_timeout
@@ -89,14 +104,15 @@ namespace gspc
           (std::chrono::seconds (get_virtual_memory_startup_timeout (vm).get()))
         : boost::none
         )
-      , _nodes_and_number_of_unique_nodes (read_nodes (_nodefile))
+      , _nodes_and_number_of_unique_nodes
+          (read_nodes (boost::filesystem::canonical (require_nodefile (vm))))
       , _virtual_memory_api
         ( _virtual_memory_socket
         ? fhg::util::make_unique<gpi::pc::client::api_t>
           (_virtual_memory_socket->string())
         : nullptr
         )
-      , _rif_port (require_rif_port (vm))
+      , _rif_entry_points (entry_points)
   {
     unsigned short const default_log_port
       ((65535 - 30000 + fhg::syscall::getuid() * 2) % 65535 + 1024);
@@ -114,7 +130,7 @@ namespace gspc
 
     fhg::util::signal_handler_manager signal_handler_manager;
 
-    fhg::drts::startup
+    std::tie (_orchestrator_host, _orchestrator_port) = fhg::drts::startup
       ( get_gui_host (vm).get_value_or (fhg::util::hostname())
       , get_gui_port (vm).get_value_or (default_gui_port)
       , get_log_host (vm).get_value_or (fhg::util::hostname())
@@ -129,7 +145,6 @@ namespace gspc
       , _installation.gspc_home()
       //! \todo configurable: number of segments
       , 1
-      , _nodefile
       , _state_directory
       // !\todo configurable: delete logfiles
       , true
@@ -138,15 +153,8 @@ namespace gspc
       , _virtual_memory_startup_timeout
       , worker_descriptions
       , get_virtual_memory_port (vm)
-      , _rif_port
+      , _rif_entry_points._->_entry_points
       );
-
-    //! \todo Remove magic: specify filenames instead of relying on
-    //! file? Let an c++-ified sdpa-boot() return them.
-    _orchestrator_host = fhg::util::read_file
-      (_state_directory / "orchestrator.host");
-    _orchestrator_port = boost::lexical_cast<unsigned short>
-      (fhg::util::read_file (_state_directory / "orchestrator.port"));
 
     if (_virtual_memory_per_node)
     {
@@ -158,7 +166,7 @@ namespace gspc
   {
     _virtual_memory_api.reset();
 
-    fhg::drts::shutdown (_state_directory, _rif_port);
+    fhg::drts::shutdown (_state_directory, _rif_entry_points._->_entry_points);
   }
 
   vmem_allocation scoped_runtime_system::alloc

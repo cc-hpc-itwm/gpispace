@@ -6,9 +6,13 @@
 #include <fhg/util/boost/program_options/validators/existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/validators/is_directory_if_exists.hpp>
+#include <fhg/util/boost/program_options/validators/nonempty_file.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <fhg/util/join.hpp>
+
+#include <rif/strategy/meta.hpp>
 
 #include <boost/format.hpp>
 
@@ -41,7 +45,9 @@ namespace gspc
       constexpr char const* const virtual_memory_startup_timeout
         {"virtual-memory-startup-timeout"};
 
+      constexpr char const* const rif_entry_points_file {"rif-entry-points-file"};
       constexpr char const* const rif_port {"rif-port"};
+      constexpr char const* const rif_strategy {"rif-strategy"};
     }
   }
 
@@ -118,10 +124,44 @@ namespace gspc
         , boost::program_options::value<validators::existing_directory>()
         , "adds a path to the list of application search paths"
         )
-        ( name::rif_port
-        , boost::program_options::value<validators::positive_integral<unsigned short>>()
+        ;
+
+      return drts;
+    }
+
+    boost::program_options::options_description external_rifd()
+    {
+      boost::program_options::options_description drts
+        ("Remote Interface Daemon (externally started)");
+
+      drts.add_options()
+        ( name::rif_entry_points_file
+        , boost::program_options::value<validators::nonempty_file>()
           ->required()
-        , "port of running remote-interface daemon"
+        , "entry point description of running remote-interface daemons"
+        )
+        ;
+
+      return drts;
+    }
+
+    boost::program_options::options_description scoped_rifd()
+    {
+      boost::program_options::options_description drts
+        ("Remote Interface Daemon (internally started)");
+
+      drts.add_options()
+        ( name::rif_strategy
+        , boost::program_options::value<std::string>()->required()
+        , ( "strategy used to bootstrap rifd (one of "
+          + fhg::util::join (fhg::rif::strategy::available_strategies(), ", ")
+          + ")"
+          ).c_str()
+        )
+        ( name::rif_port
+        , boost::program_options::value
+            <fhg::util::boost::program_options::positive_integral<unsigned short>>()
+        , "port for rifd to listen on"
         )
         ;
 
@@ -283,7 +323,9 @@ namespace gspc
   ACCESS_POSITIVE_INTEGRAL (virtual_memory_port, unsigned short);
   ACCESS_POSITIVE_INTEGRAL (virtual_memory_startup_timeout, unsigned long);
 
+  ACCESS_PATH (rif_entry_points_file, validators::nonempty_file);
   ACCESS_POSITIVE_INTEGRAL (rif_port, unsigned short);
+  ACCESS_STRING (rif_strategy, std::string);
 
 #undef ACCESS_POSITIVE_INTEGRAL
 #undef ACCESS_STRING

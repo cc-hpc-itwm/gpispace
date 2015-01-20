@@ -32,6 +32,7 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
   options_description.add (test::options::shared_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
+  options_description.add (gspc::options::external_rifd());
 
   boost::program_options::variables_map vm;
   boost::program_options::store

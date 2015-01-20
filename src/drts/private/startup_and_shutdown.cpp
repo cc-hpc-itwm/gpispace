@@ -10,17 +10,15 @@
 #include <fhg/util/starts_with.hpp>
 #include <fhg/util/wait_and_collect_exceptions.hpp>
 
-#include <rpc/client.hpp>
+#include <rif/client.hpp>
 
 #include <boost/algorithm/string/classification.hpp>
-#include <boost/asio/io_service.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/adaptors.hpp>
 #include <boost/regex.hpp>
-#include <boost/thread/scoped_thread.hpp>
 
 #include <algorithm>
 #include <chrono>
@@ -36,79 +34,25 @@
 
 namespace
 {
-  template<typename R, typename... Args>
-    R rexec ( std::string const& host, unsigned short port
-            , std::string const& function_name
-            , Args... args
-            )
-  {
-    boost::asio::io_service io_service;
-    boost::asio::io_service::work const io_service_work_ (io_service);
-    boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> const
-      io_service_thread ([&io_service] { io_service.run(); });
-
-    fhg::rpc::remote_endpoint endpoint
-      ( io_service
-      , host, port
-      , fhg::rpc::exception::serialization_functions()
-      );
-
-    struct stop_io_service_on_scope_exit
-    {
-      ~stop_io_service_on_scope_exit()
-      {
-        _io_service.stop();
-      }
-      boost::asio::io_service& _io_service;
-    } foo {io_service};
-
-    return fhg::rpc::sync_remote_function<R (Args...)>
-      (endpoint, function_name) (args...);
-  }
-
-  std::pair<pid_t, std::vector<std::string>> remote_execute_and_get_startup_messages
-    ( std::string const& host, unsigned short port
-    , std::string startup_messages_pipe_option
-    , std::string end_sentinel_value
-    , boost::filesystem::path command
-    , std::vector<std::string> arguments
-    , std::unordered_map<std::string, std::string> environment
-    )
-  {
-    return rexec<std::pair<pid_t, std::vector<std::string>>>
-      ( host, port
-      , "execute_and_get_startup_messages"
-      , startup_messages_pipe_option
-      , end_sentinel_value
-      , command
-      , arguments
-      , environment
-      );
-  }
-
   void write_pidfile ( boost::filesystem::path const& processes_dir
-                     , std::string const& host
+                     , fhg::rif::entry_point const& entry_point
                      , std::string const& name
                      , pid_t pid
                      )
   {
-    boost::filesystem::create_directories (processes_dir / host);
-    std::ofstream ((processes_dir / host / (name + ".pid")).string()) << pid;
-  }
-
-  using hostinfo_type = std::pair<std::string, unsigned short>;
-
-  void write_hostinfo ( boost::filesystem::path const& state_dir
-                      , std::string const& name
-                      , hostinfo_type const& hostinfo
-                      )
-  {
-    std::ofstream ((state_dir / (name + ".host")).string()) << hostinfo.first;
-    std::ofstream ((state_dir / (name + ".port")).string()) << hostinfo.second;
+    boost::filesystem::path const output_dir
+      (processes_dir / entry_point.to_string());
+    boost::filesystem::create_directories (output_dir);
+    std::ofstream stream ((output_dir / (name + ".pid")).string());
+    if (!stream || !(stream << pid))
+    {
+      throw std::runtime_error
+        ("unable to write pidfile for " + name + " on " + entry_point.hostname);
+    }
   }
 
   std::string build_parent_with_hostinfo
-    (std::string const& name, hostinfo_type const& hostinfo)
+    (std::string const& name, fhg::drts::hostinfo_type const& hostinfo)
   {
     return ( boost::format ("%1%%%%2%%%%3%")
            % name
@@ -131,20 +75,22 @@ namespace
 
   struct segment_info_t
   {
-    std::vector<std::string> hosts;
+    std::vector<fhg::rif::entry_point> entry_points;
     std::string master_name;
-    hostinfo_type master_hostinfo;
-    segment_info_t (std::vector<std::string> hosts, std::string master_name)
-      : hosts (hosts)
+    fhg::drts::hostinfo_type master_hostinfo;
+    segment_info_t ( std::vector<fhg::rif::entry_point> const& entry_points
+                   , std::string const& master_name
+                   )
+      : entry_points (entry_points)
       , master_name (master_name)
     {}
   };
 
-  hostinfo_type start_agent
-    ( std::string const& host
+  fhg::drts::hostinfo_type start_agent
+    ( fhg::rif::entry_point const& rif_entry_point
     , std::string const& name
     , std::string const& parent_name
-    , hostinfo_type const& parent_hostinfo
+    , fhg::drts::hostinfo_type const& parent_hostinfo
     , std::string const& gui_host
     , unsigned short gui_port
     , std::string const& log_host
@@ -154,10 +100,10 @@ namespace
     , boost::filesystem::path const& sdpa_home
     , boost::filesystem::path const& log_dir
     , boost::filesystem::path const& processes_dir
-    , unsigned short rif_port
     )
   {
-    std::cout << "I: starting agent: " << name << " on host " << host
+    std::cout << "I: starting agent: " << name << " on host "
+              << rif_entry_point.hostname
               << " with parent " << parent_name << "\n";
 
     std::vector<std::string> agent_startup_arguments
@@ -173,9 +119,8 @@ namespace
     }
 
     std::pair<pid_t, std::vector<std::string>> const agent_startup_messages
-      ( remote_execute_and_get_startup_messages
-          ( host, rif_port
-          , "--startup-messages-pipe"
+      ( fhg::rif::client (rif_entry_point).execute_and_get_startup_messages
+          ( "--startup-messages-pipe"
           , "OKAY"
           , sdpa_home / "bin" / "agent"
           , agent_startup_arguments
@@ -183,7 +128,7 @@ namespace
             , {"FHGLOG_level", verbose ? "TRACE" : "INFO"}
             , {"FHGLOG_to_file", (log_dir / (name + ".log")).string()}
             }
-          )
+          ).get()
       );
 
     if (agent_startup_messages.second.size() != 2)
@@ -193,7 +138,11 @@ namespace
                              );
     }
 
-    write_pidfile (processes_dir, host, name, agent_startup_messages.first);
+    write_pidfile ( processes_dir
+                  , rif_entry_point
+                  , name
+                  , agent_startup_messages.first
+                  );
 
     return { agent_startup_messages.second[0]
            , boost::lexical_cast<unsigned short> (agent_startup_messages.second[1])
@@ -247,7 +196,6 @@ namespace
     , boost::optional<boost::filesystem::path> const& gpi_socket
     , std::vector<boost::filesystem::path> const& app_path
     , boost::filesystem::path const& sdpa_home
-    , unsigned short rif_port
     )
   {
      std::string name_prefix (fhg::util::join (description.capabilities, "+"));
@@ -263,12 +211,22 @@ namespace
                   )
                << ", " << description.shm_size << " SHM) with parent "
                << segment_info.master_name << " on host "
-               << fhg::util::join (segment_info.hosts, ", ") << "\n";
+               << fhg::util::join
+                    ( segment_info.entry_points
+                    | boost::adaptors::transformed
+                        ( [] (fhg::rif::entry_point const& entry_point)
+                          {
+                            return entry_point.hostname;
+                          }
+                        )
+                    , ", "
+                    )
+               << "\n";
 
      std::vector<std::future<void>> startups;
 
      std::size_t num_nodes (0);
-     for (std::string const& host : segment_info.hosts)
+     for (fhg::rif::entry_point const& entry_point : segment_info.entry_points)
      {
        for ( unsigned long identity (0)
            ; identity < description.num_per_node
@@ -278,7 +236,7 @@ namespace
          startups.emplace_back
            ( std::async
                ( std::launch::async
-               , [&, host, identity]
+               , [&, entry_point, identity]
                  {
                    std::vector<std::string> arguments;
                    std::unordered_map<std::string, std::string> environment;
@@ -339,7 +297,7 @@ namespace
                                        );
 
                    std::string const name
-                     ( name_prefix + "-" + host
+                     ( name_prefix + "-" + entry_point.hostname
                      + "-" + std::to_string (identity + 1)
                      + ( description.socket
                        ? ("." + std::to_string (description.socket.get()))
@@ -354,14 +312,13 @@ namespace
                      ("FHGLOG_to_file", (log_dir / (name + ".log")).string());
 
                    std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages
-                     ( remote_execute_and_get_startup_messages
-                       ( host, rif_port
-                       , "--startup-messages-pipe"
+                     ( fhg::rif::client (entry_point).execute_and_get_startup_messages
+                       ( "--startup-messages-pipe"
                        , "OKAY"
                        , sdpa_home / "bin" / "drts-kernel"
                        , arguments
                        , environment
-                       )
+                       ).get()
                      );
 
                    if (!pid_and_startup_messages.second.empty())
@@ -371,7 +328,7 @@ namespace
                    }
 
                    write_pidfile ( processes_dir
-                                 , host
+                                 , entry_point
                                  , "drts-kernel-" + name
                                  , pid_and_startup_messages.first
                                  );
@@ -446,66 +403,54 @@ namespace fhg
         };
     }
 
-    void startup ( std::string gui_host
-                 , unsigned short gui_port
-                 , std::string log_host
-                 , unsigned short log_port
-                 , bool gpi_enabled
-                 , bool verbose
-                 , boost::optional<boost::filesystem::path> gpi_socket
-                 , std::vector<boost::filesystem::path> app_path
-                 , boost::filesystem::path sdpa_home
-                 , std::size_t number_of_groups
-                 , boost::filesystem::path nodefile
-                 , boost::filesystem::path state_dir
-                 , bool delete_logfiles
-                 , fhg::util::signal_handler_manager& signal_handler_manager
-                 , boost::optional<std::size_t> gpi_mem
-                 , boost::optional<std::chrono::seconds> vmem_startup_timeout
-                 , std::vector<worker_description> worker_descriptions
-                 , boost::optional<unsigned short> vmem_port
-                 , unsigned short rif_port
-                 )
+    hostinfo_type startup
+      ( std::string gui_host
+      , unsigned short gui_port
+      , std::string log_host
+      , unsigned short log_port
+      , bool gpi_enabled
+      , bool verbose
+      , boost::optional<boost::filesystem::path> gpi_socket
+      , std::vector<boost::filesystem::path> app_path
+      , boost::filesystem::path sdpa_home
+      , std::size_t number_of_groups
+      , boost::filesystem::path state_dir
+      , bool delete_logfiles
+      , fhg::util::signal_handler_manager& signal_handler_manager
+      , boost::optional<std::size_t> gpi_mem
+      , boost::optional<std::chrono::seconds> vmem_startup_timeout
+      , std::vector<worker_description> worker_descriptions
+      , boost::optional<unsigned short> vmem_port
+      , std::vector<fhg::rif::entry_point> const& rif_entry_points
+      )
     {
-      std::vector<std::string> nodefile_content
-        (fhg::util::read_lines (nodefile));
-      std::vector<std::string> const hosts
-        ( nodefile_content.begin()
-        , std::unique (nodefile_content.begin(), nodefile_content.end())
-        );
-
-      if (hosts.empty())
-      {
-        throw std::invalid_argument ("hostfile empty");
-      }
-
       boost::filesystem::create_directories (state_dir);
 
-      boost::filesystem::path const uniqued_nodefile (state_dir / "nodefile");
+      boost::filesystem::path const nodefile (state_dir / "nodefile");
       {
-        std::ofstream uniqued_nodefile_stream (uniqued_nodefile.string());
+        std::ofstream nodefile_stream (nodefile.string());
 
-        if (!uniqued_nodefile_stream)
+        if (!nodefile_stream)
         {
           throw std::runtime_error
             ( ( boost::format ("Could not create nodefile %1%: %2%")
-              % uniqued_nodefile
+              % nodefile
               % strerror (errno)
               )
             . str()
             );
         }
 
-        for (std::string const& host : hosts)
+        for (fhg::rif::entry_point const& entry_point : rif_entry_points)
         {
-          uniqued_nodefile_stream << host << "\n";
+          nodefile_stream << entry_point.hostname << "\n";
         }
 
-        if (!uniqued_nodefile_stream)
+        if (!nodefile_stream)
         {
           throw std::runtime_error
             ( ( boost::format ("Could not write to nodefile %1%: %2%")
-              % uniqued_nodefile
+              % nodefile
               % strerror (errno)
               )
             . str()
@@ -513,14 +458,14 @@ namespace fhg
         }
       }
 
-      std::string const master (hosts.front());
+      fhg::rif::entry_point const& master (rif_entry_points.front());
 
-      if (number_of_groups > hosts.size())
+      if (number_of_groups > rif_entry_points.size())
       {
         throw std::invalid_argument
-          ( "number of groups must not be larger than number of hosts: "
+          ( "number of groups must not be larger than number of rif entry points: "
           + std::to_string (number_of_groups) + " > "
-          + std::to_string (hosts.size())
+          + std::to_string (rif_entry_points.size())
           );
       }
 
@@ -547,16 +492,11 @@ namespace fhg
 
       struct stop_drts_on_failure
       {
-        stop_drts_on_failure
-            (boost::filesystem::path const& state_dir, unsigned short rif_port)
-          : _state_dir (state_dir)
-          , _rif_port (rif_port)
-        {}
         ~stop_drts_on_failure()
         {
           if (!_successful)
           {
-            shutdown (_state_dir, _rif_port);
+            shutdown (_state_dir, _rif_entry_points);
           }
         }
         void startup_successful()
@@ -564,9 +504,9 @@ namespace fhg
           _successful = true;
         }
         boost::filesystem::path const& _state_dir;
-        unsigned short _rif_port;
-        bool _successful {false};
-      } stop_drts_on_failure = {state_dir, rif_port};
+        std::vector<fhg::rif::entry_point> const& _rif_entry_points;
+        bool _successful;
+      } stop_drts_on_failure = {state_dir, rif_entry_points, false};
 
       fhg::util::scoped_signal_handler interrupt_signal_handler
         ( signal_handler_manager
@@ -578,7 +518,7 @@ namespace fhg
         );
 
       std::cout << "I: using nodefile: " << nodefile << "\n"
-                << "starting base sdpa components on " << master << "...\n"
+                << "starting base sdpa components on " << master.hostname << "...\n"
                 << "I: sending log events to: "
                 << log_host << ":" << log_port << "\n"
                 << "I: sending execution events to: "
@@ -588,9 +528,8 @@ namespace fhg
         ( fhg::util::nest_exceptions<std::runtime_error>
             ( [&]
               {
-                return remote_execute_and_get_startup_messages
-                  ( master, rif_port
-                  , "--startup-messages-pipe"
+                return rif::client (master).execute_and_get_startup_messages
+                  ( "--startup-messages-pipe"
                   , "OKAY"
                   , sdpa_home / "bin" / "orchestrator"
                   , {"-u", "0", "-n", "orchestrator"}
@@ -598,7 +537,7 @@ namespace fhg
                     , {"FHGLOG_level", verbose ? "TRACE" : "INFO"}
                     , {"FHGLOG_to_file", (state_dir / "log" / "orchestrator.log").string()}
                     }
-                  );
+                  ).get();
               }
               , "could not start orchestrator"
               )
@@ -626,8 +565,6 @@ namespace fhg
         , boost::lexical_cast<unsigned short>
             (orchestrator_startup_messages.second[3])
         );
-      write_hostinfo (state_dir, "orchestrator", orchestrator_hostinfo);
-      write_hostinfo (state_dir, "orchestrator.rpc", orchestrator_rpc_hostinfo);
 
       if (gpi_enabled)
       {
@@ -662,18 +599,17 @@ namespace fhg
             {
               std::vector<std::future<void>> futures;
 
-              for (std::string const& host : hosts)
+              for (fhg::rif::entry_point const& entry_point : rif_entry_points)
               {
                 futures.emplace_back
                   ( std::async
                       ( std::launch::async
-                      , [&, host]
+                      , [&, entry_point]
                       {
                         std::pair<pid_t, std::vector<std::string>> const
                           startup_messages
-                          ( remote_execute_and_get_startup_messages
-                              ( host, rif_port
-                              , "--startup-messages-pipe"
+                          ( rif::client (entry_point).execute_and_get_startup_messages
+                              ( "--startup-messages-pipe"
                               , "OKAY"
                               , sdpa_home / "bin" / "gpi-space"
                               , { "--log-host", log_host
@@ -682,28 +618,36 @@ namespace fhg
                                 , "--gpi-mem", std::to_string (gpi_mem.get())
                                 , "--socket", gpi_socket.get().string()
                                 , "--port", std::to_string (vmem_port.get())
-                                , "--gpi-api", hosts.size() > 1 ? "gaspi" : "fake"
+                                , "--gpi-api"
+                                , rif_entry_points.size() > 1 ? "gaspi" : "fake"
                                 , "--gpi-timeout", std::to_string (vmem_startup_timeout.get().count())
                                 }
-                              , { {"GASPI_MFILE", uniqued_nodefile.string()}
-                                , {"GASPI_MASTER", master}
+                              , { {"GASPI_MFILE", nodefile.string()}
+                                , {"GASPI_MASTER", master.hostname}
                                 , {"GASPI_SOCKET", "0"}
                                 , { "GASPI_TYPE"
-                                  , host == master ? "GASPI_MASTER" : "GASPI_WORKER"
+                                  , entry_point == master
+                                  ? "GASPI_MASTER"
+                                  : "GASPI_WORKER"
                                   }
                                 , {"GASPI_SET_NUMA_SOCKET", "0"}
                                 }
-                              )
+                              ).get()
                           );
 
                         if (!startup_messages.second.empty())
                         {
                           throw std::logic_error
-                            (host + ": expected no startup messages");
+                            ( entry_point.hostname
+                            + ": expected no startup messages"
+                            );
                         }
 
-                        write_pidfile
-                          (processes_dir, host, "vmem", startup_messages.first);
+                        write_pidfile ( processes_dir
+                                      , entry_point
+                                      , "vmem"
+                                      , startup_messages.first
+                                      );
                       }
                     )
                 );
@@ -719,26 +663,31 @@ namespace fhg
       {
         if (number_of_groups == 1)
         {
-          segment_info.emplace_back (hosts, "agent-" + master + "-0");
+          segment_info.emplace_back
+            (rif_entry_points, "agent-" + master.hostname + "-0");
         }
         else
         {
-          std::size_t const hosts_per_group (hosts.size() / number_of_groups);
-          std::size_t const remaining_hosts (hosts.size() % number_of_groups);
+          std::size_t const hosts_per_group
+            (rif_entry_points.size() / number_of_groups);
+          std::size_t const remaining_hosts
+            (rif_entry_points.size() % number_of_groups);
 
           for (std::size_t i (0); i < number_of_groups; i += hosts_per_group)
           {
             segment_info.emplace_back
-              ( std::vector<std::string>
-                  (hosts.begin() + i, hosts.begin() + i + hosts_per_group)
-              , "agent-" + hosts[i] + "-1"
+              ( std::vector<fhg::rif::entry_point>
+                  ( rif_entry_points.begin() + i
+                  , rif_entry_points.begin() + i + hosts_per_group
+                  )
+              , "agent-" + rif_entry_points[i].hostname + "-1"
               );
           }
 
-          segment_info.back().hosts.insert
-            ( segment_info.back().hosts.end()
-            , segment_info.back().hosts.rbegin() + remaining_hosts
-            , segment_info.back().hosts.rbegin()
+          segment_info.back().entry_points.insert
+            ( segment_info.back().entry_points.end()
+            , segment_info.back().entry_points.rbegin() + remaining_hosts
+            , segment_info.back().entry_points.rbegin()
             );
         }
       }
@@ -746,7 +695,8 @@ namespace fhg
       fhg::util::nest_exceptions<std::runtime_error>
         ( [&]
           {
-            std::string const master_agent_name ("agent-" + master + "-0");
+            std::string const master_agent_name
+              ("agent-" + master.hostname + "-0");
             hostinfo_type const master_agent_hostinfo
               ( start_agent ( master
                             , master_agent_name
@@ -761,7 +711,6 @@ namespace fhg
                             , sdpa_home
                             , log_dir
                             , processes_dir
-                            , rif_port
                             )
               );
 
@@ -779,7 +728,7 @@ namespace fhg
                                           , [&]
                                             {
                                               info.master_hostinfo = start_agent
-                                                ( info.hosts.front()
+                                                ( info.entry_points.front()
                                                 , info.master_name
                                                 , master_agent_name
                                                 , master_agent_hostinfo
@@ -792,7 +741,6 @@ namespace fhg
                                                 , sdpa_home
                                                 , log_dir
                                                 , processes_dir
-                                                , rif_port
                                                 );
                                             }
                                           )
@@ -823,7 +771,6 @@ namespace fhg
                                   , gpi_socket
                                   , app_path
                                   , sdpa_home
-                                  , rif_port
                                   );
               }
             }
@@ -832,6 +779,8 @@ namespace fhg
           );
 
       stop_drts_on_failure.startup_successful();
+
+      return orchestrator_hostinfo;
     }
 
     namespace
@@ -846,18 +795,17 @@ namespace fhg
 
 
       void terminate_processes_on_host ( std::string const& name
-                                       , std::string const& host
-                                       , unsigned short rif_port
+                                       , fhg::rif::entry_point const& entry_point
                                        , std::vector<pid_t> const& pids
                                        )
       {
         if (!pids.empty())
         {
-          std::cout << "terminating " << name << " on " << host
+          std::cout << "terminating " << name << " on " << entry_point.hostname
                     << ": " << fhg::util::join (pids, " ") << "\n";
           try
           {
-            rexec<void> (host, rif_port, "kill", pids);
+            rif::client (entry_point).kill (pids).get();
           }
           catch (...)
           {
@@ -865,7 +813,7 @@ namespace fhg
               ( std::runtime_error
                   (( boost::format ("Could not terminate %1% on %2%")
                    % name
-                   % host
+                   % entry_point.hostname
                    ).str()
                   )
               );
@@ -876,36 +824,19 @@ namespace fhg
       void terminate_all_processes_of_a_kind
         ( boost::filesystem::path const& state_dir
         , std::string const& kind
-        , std::vector<std::string> hosts
-        , unsigned short rif_port
+        , std::vector<fhg::rif::entry_point> const& rif_entry_points
         )
       {
         boost::filesystem::path const processes_dir (state_dir / "processes");
 
-        if (hosts.empty())
-        {
-          for ( boost::filesystem::directory_entry const& entry
-              : directory_range (processes_dir)
-              | boost::adaptors::filtered
-                  ( [] (boost::filesystem::directory_entry const& entry)
-                    {
-                      return boost::filesystem::is_directory (entry.path());
-                    }
-                  )
-              )
-          {
-            hosts.emplace_back (entry.path().filename().string());
-          }
-        }
-
         std::vector<std::future<void>> terminates;
 
-        for (std::string const& host : hosts)
+        for (fhg::rif::entry_point const& entry_point : rif_entry_points)
         {
           std::set<boost::filesystem::path> pidfiles;
 
           for ( boost::filesystem::directory_entry const& entry
-              : directory_range (processes_dir / host)
+              : directory_range (processes_dir / entry_point.to_string())
               | boost::adaptors::filtered
                   ( [&kind] (boost::filesystem::directory_entry const& entry)
                     {
@@ -924,7 +855,7 @@ namespace fhg
           terminates.emplace_back
             ( std::async
                 ( std::launch::async
-                , [kind, host, rif_port, pidfiles]()
+                , [kind, entry_point, pidfiles]
                   {
                     std::vector<int> pids;
                     for (boost::filesystem::path const& pidfile : pidfiles)
@@ -933,7 +864,7 @@ namespace fhg
                                             (fhg::util::read_file (pidfile))
                                         );
                     }
-                    terminate_processes_on_host (kind, host, rif_port, pids);
+                    terminate_processes_on_host (kind, entry_point, pids);
                     for (boost::filesystem::path const& pidfile : pidfiles)
                     {
                       boost::filesystem::remove (pidfile);
@@ -944,19 +875,6 @@ namespace fhg
         }
 
         fhg::util::wait_and_collect_exceptions (terminates);
-
-        for ( boost::filesystem::directory_entry const& entry
-            : directory_range (processes_dir)
-            | boost::adaptors::filtered
-                ( [] (boost::filesystem::directory_entry const& entry)
-                  {
-                    return boost::filesystem::is_empty (entry.path());
-                  }
-                )
-            )
-        {
-          boost::filesystem::remove (entry.path());
-        }
       }
     }
 
@@ -974,8 +892,7 @@ namespace fhg
 
     void shutdown ( boost::filesystem::path const& state_dir
                   , boost::optional<components_type::components_type> components
-                  , std::vector<std::string> const& hosts
-                  , unsigned short rif_port
+                  , std::vector<fhg::rif::entry_point> const& rif_entry_points
                   )
     {
       if (!components)
@@ -989,33 +906,41 @@ namespace fhg
       if (components.get() & components_type::worker)
       {
         terminate_all_processes_of_a_kind
-          (state_dir, "drts-kernel", hosts, rif_port);
+          (state_dir, "drts-kernel", rif_entry_points);
       }
       if (components.get() & components_type::agent)
       {
-        terminate_all_processes_of_a_kind
-          (state_dir, "agent", hosts, rif_port);
+        terminate_all_processes_of_a_kind (state_dir, "agent", rif_entry_points);
       }
       if (components.get() & components_type::vmem)
       {
-        terminate_all_processes_of_a_kind (state_dir, "vmem", hosts, rif_port);
+        terminate_all_processes_of_a_kind (state_dir, "vmem", rif_entry_points);
       }
       if (components.get() & components_type::orchestrator)
       {
-        boost::filesystem::remove (state_dir / "orchestrator.host");
-        boost::filesystem::remove (state_dir / "orchestrator.port");
-        boost::filesystem::remove (state_dir / "orchestrator.rpc.host");
-        boost::filesystem::remove (state_dir / "orchestrator.rpc.port");
-
         terminate_all_processes_of_a_kind
-          (state_dir, "orchestrator", hosts, rif_port);
+          (state_dir, "orchestrator", rif_entry_points);
+      }
+
+      for ( boost::filesystem::directory_entry const& entry
+          : directory_range (state_dir / "processes")
+          | boost::adaptors::filtered
+              ( [] (boost::filesystem::directory_entry const& entry)
+                {
+                  return boost::filesystem::is_empty (entry.path());
+                }
+              )
+          )
+      {
+        boost::filesystem::remove (entry.path());
       }
     }
 
-    void shutdown
-      (boost::filesystem::path const& state_dir, unsigned short rif_port)
+    void shutdown ( boost::filesystem::path const& state_dir
+                  , std::vector<fhg::rif::entry_point> const& rif_entry_points
+                  )
     {
-      shutdown (state_dir, boost::none, {}, rif_port);
+      shutdown (state_dir, boost::none, rif_entry_points);
 
       boost::filesystem::remove (state_dir / "processes");
       boost::filesystem::remove (state_dir / "nodefile");

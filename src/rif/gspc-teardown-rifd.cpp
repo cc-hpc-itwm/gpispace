@@ -4,26 +4,14 @@
 #include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/join.hpp>
-#include <fhg/util/nest_exceptions.hpp>
 #include <fhg/util/print_exception.hpp>
 #include <fhg/util/read_lines.hpp>
-#include <fhg/util/system_with_blocked_SIGCHLD.hpp>
-#include <fhg/util/wait_and_collect_exceptions.hpp>
 
-#include <network/server.hpp>
+#include <rif/strategy/meta.hpp>
 
-#include <rpc/server.hpp>
-
-#include <boost/asio/io_service.hpp>
-#include <boost/asio/ip/tcp.hpp>
 #include <boost/program_options.hpp>
-#include <boost/range/adaptor/map.hpp>
-#include <boost/range/adaptor/transformed.hpp>
-#include <boost/thread/scoped_thread.hpp>
 
-#include <condition_variable>
-#include <mutex>
-#include <unordered_map>
+#include <iostream>
 #include <vector>
 
 namespace
@@ -33,69 +21,13 @@ namespace
     constexpr const char* const entry_points_file {"entry-points-file"};
     constexpr const char* const strategy {"strategy"};
   }
-
-  namespace strategy
-  {
-    void ssh ( std::vector<fhg::rif::entry_point> const& entry_points
-             , std::vector<fhg::rif::entry_point>& failed_entry_points
-             )
-    {
-      std::mutex failed_entry_points_guard;
-
-      std::vector<std::future<void>> sshs;
-
-      for (fhg::rif::entry_point const& entry_point : entry_points)
-      {
-        std::string const command
-          ( ( boost::format ("ssh %1% %2% /bin/kill -TERM %3%")
-            % "-q -x -T -n -o CheckHostIP=no -o StrictHostKeyChecking=no"
-            % entry_point.hostname
-            % entry_point.pid
-            ).str()
-          );
-
-        sshs.emplace_back
-          ( std::async
-              ( std::launch::async
-              , [ command, entry_point
-                , &failed_entry_points_guard, &failed_entry_points
-                ]
-                {
-                  if ( int ec
-                     = fhg::util::system_with_blocked_SIGCHLD (command.c_str())
-                     )
-                  {
-                    std::unique_lock<std::mutex> const _
-                      (failed_entry_points_guard);
-                    failed_entry_points.emplace_back (entry_point);
-
-                    throw std::runtime_error
-                      ( ( boost::format ("%1%: %2% failed: %3%")
-                        % entry_point.hostname
-                        % command
-                        % ec
-                        ).str()
-                      );
-                  }
-                }
-              )
-          );
-      }
-
-      fhg::util::wait_and_collect_exceptions (sshs);
-    }
-  }
 }
 
 int main (int argc, char** argv)
 try
 {
-  std::unordered_map
-    < std::string
-    , std::function<void ( std::vector<fhg::rif::entry_point> const&
-                         , std::vector<fhg::rif::entry_point>&
-                         )>
-    > const strategies {{"ssh", strategy::ssh}};
+  std::vector<std::string> const strategies
+    {fhg::rif::strategy::available_strategies()};
 
   boost::program_options::options_description options_description;
   options_description.add_options()
@@ -106,9 +38,7 @@ try
     )
     ( option::strategy
     , boost::program_options::value<std::string>()->required()
-    , ( "strategy: one of "
-      + fhg::util::join (strategies | boost::adaptors::map_keys, ", ")
-      ).c_str()
+    , ("strategy: one of " + fhg::util::join (strategies, ", ")).c_str()
     )
     ;
 
@@ -124,13 +54,13 @@ try
 
   std::string const strategy (vm.at (option::strategy).as<std::string>());
 
-  if (!strategies.count (strategy))
+  if (std::find (strategies.begin(), strategies.end(), strategy) == strategies.end())
   {
     throw std::invalid_argument
       (( boost::format ("invalid argument '%1%' for --%2%: one of %3%")
        % strategy
        % option::strategy
-       % fhg::util::join (strategies | boost::adaptors::map_keys, ", ")
+       % fhg::util::join (strategies, ", ")
        ).str()
       );
   }
@@ -144,27 +74,21 @@ try
   std::vector<fhg::rif::entry_point> const entry_points
     (lines.begin(), lines.end());
 
-  fhg::util::nest_exceptions<std::runtime_error>
-    ( [&]
-      {
-        std::vector<fhg::rif::entry_point> failed_entry_points;
+  std::vector<fhg::rif::entry_point> failed_entry_points;
 
-        try
-        {
-          strategies.at (strategy) (entry_points, failed_entry_points);
-        }
-        catch (...)
-        {
-          for (fhg::rif::entry_point const& entry_point : failed_entry_points)
-          {
-            std::cout << entry_point.to_string() << '\n';
-          }
+  try
+  {
+    fhg::rif::strategy::teardown (strategy, entry_points, failed_entry_points);
+  }
+  catch (...)
+  {
+    for (fhg::rif::entry_point const& entry_point : failed_entry_points)
+    {
+      std::cout << entry_point.to_string() << '\n';
+    }
 
-          throw;
-        }
-      }
-    , "teardown-" + strategy + " failed: "
-    );
+    throw;
+  }
 
   return 0;
 }

@@ -47,6 +47,7 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
   options_description.add (test::options::source_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
+  options_description.add (gspc::options::external_rifd());
   options_description.add (gspc::options::virtual_memory());
 
   boost::program_options::variables_map vm;
