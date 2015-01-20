@@ -7,6 +7,7 @@
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/scoped_rifd.hpp>
 #include <drts/virtual_memory.hpp>
 
 #include <test/make.hpp>
@@ -126,7 +127,7 @@ BOOST_AUTO_TEST_CASE (share_example_map_transform_file)
   options_description.add (test::options::source_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
-  options_description.add (gspc::options::external_rifd());
+  options_description.add (gspc::options::scoped_rifd());
   options_description.add (gspc::options::virtual_memory());
 
   boost::program_options::variables_map vm;
@@ -203,8 +204,9 @@ BOOST_AUTO_TEST_CASE (share_example_map_transform_file)
 
   topology_description << "worker:2," << (2 * size_block);
 
+  gspc::scoped_rifd const rifd (vm, installation);
   gspc::scoped_runtime_system const drts
-    (vm, installation, topology_description.str());
+    (vm, installation, topology_description.str(), rifd.entry_points());
 
   gspc::vmem_allocation const allocation_input
     (drts.alloc (size_input, "map_input"));

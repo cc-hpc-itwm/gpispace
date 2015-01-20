@@ -13,5 +13,5 @@ fhg_add_test (test.cpp
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
                  ${Boost_FILESYSTEM_LIBRARY}
   REQUIRES_INSTALLATION
-  REQUIRES_RIF
+  START_SCOPED_RIF
 )

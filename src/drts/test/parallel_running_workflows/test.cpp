@@ -5,6 +5,7 @@
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -32,7 +33,7 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
   options_description.add (test::options::shared_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
-  options_description.add (gspc::options::external_rifd());
+  options_description.add (gspc::options::scoped_rifd());
 
   boost::program_options::variables_map vm;
   boost::program_options::store
@@ -84,7 +85,9 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
     , "net lib install"
     );
 
-  gspc::scoped_runtime_system const drts (vm, installation, "worker:2");
+  gspc::scoped_rifd const rifd (vm, installation);
+  gspc::scoped_runtime_system const drts
+    (vm, installation, "worker:2", rifd.entry_points());
 
   auto submit_fun
     ( [&filename_a, &filename_b, &drts]
