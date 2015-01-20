@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
          << " -o " << data_file
          ;
 
-       fhg::util::system_with_blocked_SIGCHLD_or_throw (command_generate.str());
+       fhg::util::system_with_blocked_SIGCHLD (command_generate.str());
      }
     , "Could not generate data"
     );

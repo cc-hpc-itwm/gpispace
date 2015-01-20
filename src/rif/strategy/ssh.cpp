@@ -51,7 +51,7 @@ namespace fhg
                       fhg::util::nest_exceptions<std::runtime_error>
                         ([&hostname, &command]()
                          {
-                           fhg::util::system_with_blocked_SIGCHLD_or_throw (command);
+                           fhg::util::system_with_blocked_SIGCHLD (command);
                          }
                         , hostname
                         );
@@ -93,7 +93,7 @@ namespace fhg
                          {
                            try
                            {
-                             fhg::util::system_with_blocked_SIGCHLD_or_throw (command);
+                             fhg::util::system_with_blocked_SIGCHLD (command);
                            }
                            catch (...)
                            {

@@ -9,7 +9,7 @@ namespace fhg
 {
   namespace util
   {
-    void system_with_blocked_SIGCHLD_or_throw (std::string const&);
+    void system_with_blocked_SIGCHLD (std::string const&);
   }
 }
 

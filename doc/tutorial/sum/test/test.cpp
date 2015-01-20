@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
          << " -C " << (test::source_directory (vm) / "src")
          ;
 
-       fhg::util::system_with_blocked_SIGCHLD_or_throw (make_module.str());
+       fhg::util::system_with_blocked_SIGCHLD (make_module.str());
      }
     , "Could not 'make sum_module'"
     );

@@ -42,6 +42,6 @@ namespace test
       << " " << make_targets
       ;
 
-    fhg::util::system_with_blocked_SIGCHLD_or_throw (command.str());
+    fhg::util::system_with_blocked_SIGCHLD (command.str());
   }
 }
