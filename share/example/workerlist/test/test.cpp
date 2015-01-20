@@ -6,6 +6,7 @@
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
 #include <drts/private/option.hpp>
+#include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -38,8 +39,13 @@ namespace
                 , std::set<std::string> const& hostnames
                 )
   {
+    gspc::scoped_rifd const rifd (vm, installation);
     gspc::scoped_runtime_system const drts
-      (vm, installation, "worker:" + std::to_string (num_worker));
+      ( vm
+      , installation
+      , "worker:" + std::to_string (num_worker)
+      , rifd.entry_points()
+      );
 
     std::multimap<std::string, pnet::type::value::value_type> const result
       ( gspc::client (drts)
@@ -113,7 +119,7 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
   options_description.add (test::options::source_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
-  options_description.add (gspc::options::external_rifd());
+  options_description.add (gspc::options::scoped_rifd());
 
   boost::program_options::variables_map vm;
   boost::program_options::store

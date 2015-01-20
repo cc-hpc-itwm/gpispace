@@ -26,7 +26,7 @@ fhg_add_test (stream.two_module_calls.cpp
                  ${Boost_FILESYSTEM_LIBRARIES}
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY
-  REQUIRES_RIF
+  START_SCOPED_RIF
 )
 
 fhg_add_test (stream.one_module_call.cpp
@@ -47,5 +47,5 @@ fhg_add_test (stream.one_module_call.cpp
                  ${Boost_FILESYSTEM_LIBRARIES}
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY
-  REQUIRES_RIF
+  START_SCOPED_RIF
 )

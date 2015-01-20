@@ -5,6 +5,7 @@
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -38,7 +39,7 @@ namespace
     options_description.add (test::options::shared_directory());
     options_description.add (gspc::options::installation());
     options_description.add (gspc::options::drts());
-    options_description.add (gspc::options::external_rifd());
+    options_description.add (gspc::options::scoped_rifd());
 
     boost::program_options::variables_map vm;
     boost::program_options::store
@@ -76,7 +77,9 @@ namespace
       , "net lib install"
       );
 
-    gspc::scoped_runtime_system const drts (vm, installation, "ping:1 pong:1");
+    gspc::scoped_rifd const rifd (vm, installation);
+    gspc::scoped_runtime_system const drts
+      (vm, installation, "ping:1 pong:1", rifd.entry_points());
 
     return gspc::client (drts).put_and_run
       (gspc::workflow (make.build_directory() / (main + ".pnet")), {{"n", n}});
