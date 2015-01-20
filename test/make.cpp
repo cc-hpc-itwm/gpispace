@@ -25,7 +25,7 @@ namespace test
   {
     {
       std::set<std::string> const supported_targets
-        {"net", "net lib install", "verify"};
+        {"net", "net lib install"};
 
       if (!supported_targets.count (make_targets))
       {
