@@ -922,19 +922,18 @@ namespace fhg
           (state_dir, "orchestrator", rif_entry_points);
       }
 
-        for ( boost::filesystem::directory_entry const& entry
-            : directory_range (state_dir / "processes")
-            | boost::adaptors::filtered
-                ( [] (boost::filesystem::directory_entry const& entry)
-                  {
-                    return boost::filesystem::is_empty (entry.path());
-                  }
-                )
-            )
-        {
-          boost::filesystem::remove (entry.path());
-        }
-
+      for ( boost::filesystem::directory_entry const& entry
+          : directory_range (state_dir / "processes")
+          | boost::adaptors::filtered
+              ( [] (boost::filesystem::directory_entry const& entry)
+                {
+                  return boost::filesystem::is_empty (entry.path());
+                }
+              )
+          )
+      {
+        boost::filesystem::remove (entry.path());
+      }
     }
 
     void shutdown ( boost::filesystem::path const& state_dir
