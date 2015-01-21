@@ -270,7 +270,7 @@ namespace fhg
         to_send_t to_send;
         to_send.message.header.src = my_addr_.get();
         to_send.message.header.dst = addr;
-        to_send.message.assign (data.begin(), data.end());
+        to_send.message.assign (data);
         to_send.handler = completion_handler;
         cd.o_queue.push_back (to_send);
 
