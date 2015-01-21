@@ -4,13 +4,16 @@
 
 #include <fhg/syscall.hpp>
 
+#include <boost/format.hpp>
+
+#include <exception>
 #include <cstdlib>
 
 namespace fhg
 {
   namespace util
   {
-    int system_with_blocked_SIGCHLD (const char* command)
+    void system_with_blocked_SIGCHLD (std::string const& command)
     {
       struct scoped_SIGCHLD_block
       {
@@ -30,7 +33,15 @@ namespace fhg
         sigset_t _signals_to_restore;
       } const signal_blocker;
 
-      return std::system (command);
+      if (int ec = std::system (command.c_str()))
+      {
+        throw std::runtime_error
+          (( boost::format ("Could not run '%1%': error code '%2%'")
+           % command
+           % ec
+           ).str()
+          );
+      }
     }
   }
 }

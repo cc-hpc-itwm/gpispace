@@ -18,6 +18,7 @@
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <fhg/util/nest_exceptions.hpp>
 #include <fhg/util/temporary_path.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
@@ -71,30 +72,21 @@ BOOST_AUTO_TEST_CASE (tutorial_hello_world)
   //! \todo ...instead of taking the installation directory
   boost::filesystem::path const sum_module_dir (_installation_dir);
 
-  {
-    std::ostringstream make_module;
+  fhg::util::nest_exceptions<std::runtime_error>
+    ([&sum_module_dir, &vm]()
+     {
+       std::ostringstream make_module;
 
-    make_module
-      << "make"
-      << " BUILDDIR=" << sum_module_dir
-      << " -C " << (test::source_directory (vm) / "src")
-      ;
+       make_module
+         << "make"
+         << " BUILDDIR=" << sum_module_dir
+         << " -C " << (test::source_directory (vm) / "src")
+         ;
 
-    if ( int ec
-       = fhg::util::system_with_blocked_SIGCHLD (make_module.str().c_str())
-       )
-    {
-      throw std::runtime_error
-        (( boost::format
-           ( "Could not 'make hello_world_module': error code '%1%'"
-           ", command was '%2%'"
-           )
-         % ec
-         % make_module.str()
-         ).str()
-        );
-    };
-  }
+       fhg::util::system_with_blocked_SIGCHLD (make_module.str());
+     }
+    , "Could not 'make hello_world_module'"
+    );
 
   gspc::installation const installation (vm);
 

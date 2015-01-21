@@ -42,14 +42,6 @@ namespace test
       << " " << make_targets
       ;
 
-    if (int ec = fhg::util::system_with_blocked_SIGCHLD (command.str().c_str()))
-    {
-      throw std::runtime_error
-        (( boost::format ("Could not run '%1%': error code '%2%'")
-         % command.str()
-         % ec
-         ).str()
-        );
-    }
+    fhg::util::system_with_blocked_SIGCHLD (command.str());
   }
 }
