@@ -91,65 +91,6 @@ namespace gpi
 
         typedef std::vector<descriptor_t> list_t;
 
-        // just for ostream hacking
-        struct ostream_header {};
-
-        inline
-        std::ostream & operator << (std::ostream & os, const ostream_header &)
-        {
-          std::ios_base::fmtflags saved_flags (os.flags());
-          char saved_fill = os.fill (' ');
-          std::size_t saved_width = os.width (0);
-
-          os.flags (std::ios::adjustfield);
-
-          std::cout << "  "; // special flag indicator
-          // ID
-          os.width (5);
-          os << "ID";
-          os << " ";
-
-          // REFCOUNT
-          os.width (4);
-          os << "REF";
-          os << " ";
-
-          // ALLOCS
-          os.width (8);
-          os << "#ALLOC";
-          os << " ";
-
-          // FLAGS
-          os.width (sizeof(gpi::pc::type::flags_t)*2 + 2);
-          os << "FLAGS";
-          os << " ";
-
-          // AVAIL
-          os.width (12);
-          os << "AVAIL";
-          os << " ";
-
-          // SIZE
-          os.width (12);
-          os << "SIZE";
-          os << " ";
-
-          // CREATION TIME
-          os.width (17);
-          os << "TSTAMP";
-          os << " ";
-
-          // NAME
-          os << "NAME";
-          os << "  ";
-
-          os.flags (saved_flags);
-          os.fill (saved_fill);
-          os.width (saved_width);
-
-          return os;
-        }
-
         inline
         std::ostream & operator << (std::ostream & os, const descriptor_t & d)
         {
