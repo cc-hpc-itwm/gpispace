@@ -200,7 +200,7 @@ namespace
   {
      std::string name_prefix (fhg::util::join (description.capabilities, "+"));
      std::replace_if
-       (name_prefix.begin(), name_prefix.end(), boost::is_any_of ("+#."), '_');
+       (name_prefix.begin(), name_prefix.end(), boost::is_any_of ("+#.-"), '_');
 
      std::cout << "I: starting " << name_prefix << " workers (segment "
                << segment_info.master_name << ", "
