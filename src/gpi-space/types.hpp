@@ -9,7 +9,6 @@ namespace gpi
 {
   typedef uint64_t offset_t;
   typedef uint64_t rank_t;
-  typedef uint64_t timeout_t;
   typedef uint64_t queue_desc_t; // queue descriptor
   typedef uint64_t size_t;
   typedef float    version_t;
