@@ -138,8 +138,6 @@ namespace gpi
 
           if (area->in_use ())
           {
-            LOG(WARN, "memory area is still in use: " << area->descriptor());
-
             // TODO: maybe move memory segment to garbage area
 
             throw std::runtime_error
@@ -258,8 +256,6 @@ namespace gpi
 
         m_areas [area->get_id ()] = area;
         area->init ();
-
-        LOG(TRACE, "memory registered:" << area->descriptor ());
       }
 
       manager_t::area_ptr
@@ -568,8 +564,6 @@ namespace gpi
 
           if (area->in_use ())
           {
-            LOG(WARN, "memory area is still in use: " << area->descriptor ());
-
             // TODO: maybe move memory segment to garbage area
 
             throw std::runtime_error
