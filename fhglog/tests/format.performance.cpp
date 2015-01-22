@@ -6,21 +6,22 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhglog/format.hpp>
 
+#include <fhg/util/boost/test/printer/chrono.hpp>
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
-#include <fhg/util/now.hpp>
+#include <fhg/util/measure_average_time.hpp>
 
 BOOST_AUTO_TEST_CASE (formatting_performance)
 {
-  double t (-fhg::util::now());
-
-  for (std::size_t count (0); count < 100000; ++count)
-  {
-    format ( fhg::log::default_format::LONG()
-           , FHGLOG_MKEVENT_HERE (TRACE, "hello world!")
-           );
-  }
-
-  t += fhg::util::now();
-
-  BOOST_REQUIRE_LT (t, 1.0);
+  BOOST_REQUIRE_LT
+    ( fhg::util::measure_average_time<std::chrono::microseconds>
+      ( []()
+        {
+          format ( fhg::log::default_format::LONG()
+                 , FHGLOG_MKEVENT_HERE (TRACE, "hello world!")
+                 );
+        }
+       , 100000
+      )
+    , std::chrono::microseconds (10)
+    );
 }
