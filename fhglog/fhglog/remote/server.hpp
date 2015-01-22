@@ -27,8 +27,7 @@ namespace fhg
         boost::asio::ip::udp::socket socket_;
         boost::asio::ip::udp::endpoint sender_endpoint_;
 
-        enum { max_length = (2<<16) };
-        char data_[max_length];
+        char data_[2 << 16];
 
         void async_receive();
       };

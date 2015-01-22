@@ -37,7 +37,7 @@ namespace fhg
       void LogServer::async_receive()
       {
         socket_.async_receive_from
-          ( boost::asio::buffer (data_, max_length)
+          ( boost::asio::buffer (data_, sizeof (data_))
           , sender_endpoint_
           , [this]( const boost::system::error_code& error
                   , size_t bytes_recv
