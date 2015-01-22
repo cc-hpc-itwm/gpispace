@@ -22,16 +22,7 @@ namespace fhg
                          , message                      \
                          )
 
-    struct flush_at_end_of_scope_t
-    {
-      ~flush_at_end_of_scope_t()
-      {
-        ::fhg::log::Logger::get()->flush();
-      }
-    };
-
 #define FHGLOG_SETUP(remote_log_io_service)                             \
-    ::fhg::log::flush_at_end_of_scope_t _1e872d1a_6dcf_11e3_9e3b_13f239ecd3ca; \
     ::fhg::log::configure (remote_log_io_service)
 
 #define __LOG(logger, level, msg)                               \
