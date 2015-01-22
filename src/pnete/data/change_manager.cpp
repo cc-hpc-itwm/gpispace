@@ -2122,7 +2122,7 @@ namespace fhg
 #undef ACTION_CTOR_ARGS
 
       template<typename Sig, typename... Args>
-        void change_manager_t::emit_signal (Sig&& fun, Args... args)
+        void change_manager_t::emit_signal (Sig&& fun, Args&&... args)
       {
         emit (this->*fun) (args...);
       }

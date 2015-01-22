@@ -138,7 +138,7 @@ namespace sdpa {
       bool isSubscriber(const fhg::com::p2p::address_t&);
       std::list<fhg::com::p2p::address_t> subscribers (job_id_t) const;
       template<typename Event, typename... Args>
-        void notify_subscribers (job_id_t job_id, Args... args)
+        void notify_subscribers (job_id_t job_id, Args&&... args)
       {
         for (fhg::com::p2p::address_t const& subscriber : subscribers (job_id))
         {
