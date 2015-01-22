@@ -55,8 +55,7 @@ try
     return EXIT_SUCCESS;
   }
 
-  fhg::log::Logger::get("dump")->setLevel
-    (vm.count("quiet") ? fhg::log::ERROR : fhg::log::from_int (filter));
+  fhg::log::Logger::get("dump")->setLevel (fhg::log::from_int (filter));
 
   const std::string format_string (vm["format"].as<std::string>());
 
