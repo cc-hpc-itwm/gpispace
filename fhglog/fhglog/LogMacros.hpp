@@ -21,7 +21,7 @@ namespace fhg
                          , message                      \
                          )
 
-#define __LOG(logger, level, msg)                               \
+#define LLOG(level, logger, msg)                                \
     do                                                          \
     {                                                           \
       if (logger->isLevelEnabled (::fhg::log::level))           \
@@ -32,7 +32,6 @@ namespace fhg
       }                                                         \
     } while (0)
 
-#define LLOG(level, logger, msg) __LOG(logger, level, msg)
 #define LLOG_IF(level, logger, condition, msg)  \
     do                                          \
     {                                           \
