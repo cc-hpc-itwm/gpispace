@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE (pnetv_use_sequence)
   boost::filesystem::path const temporary_path (_temporary_path);
 
   fhg::util::system_with_blocked_SIGCHLD
-    (( boost::format ("%1%/bin/pnetc -i %2% | %1%/bin/pnetv -i -> %3%")
+    (( boost::format ("%1%/bin/pnetc -i %2% | %1%/bin/pnetv -i - > %3%")
      % gspc::installation (vm).gspc_home()
      % (test::source_directory (vm) / "use_sequence.xml")
      % (temporary_path / "use_sequence.pnet.verification")
