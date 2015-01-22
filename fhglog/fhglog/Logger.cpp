@@ -1,5 +1,4 @@
 #include    "Logger.hpp"
-#include    <stdexcept>
 #include    <iostream>
 #include <boost/thread.hpp>
 
@@ -80,11 +79,6 @@ namespace fhg
         {
           appender->append(event);
         }
-      }
-
-      if (event.severity() == FATAL)
-      {
-        throw std::runtime_error (event.message());
       }
     }
 

@@ -111,7 +111,6 @@ namespace fhg
         case 'I': ++pos; return INFO;
         case 'W': ++pos; return WARN;
         case 'E': ++pos; return ERROR;
-        case 'F': ++pos; return FATAL;
         }
 
         throw std::runtime_error ("unknown log level");
@@ -169,7 +168,6 @@ namespace
       case fhg::log::INFO: return 'I';
       case fhg::log::WARN: return 'W';
       case fhg::log::ERROR: return 'E';
-      case fhg::log::FATAL: return 'F';
       }
 
       throw std::runtime_error ("unknown log level");

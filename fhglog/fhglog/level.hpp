@@ -13,7 +13,6 @@ namespace fhg
                , INFO
                , WARN
                , ERROR
-               , FATAL
                };
 
     Level from_int (int);

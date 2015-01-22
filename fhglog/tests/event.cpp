@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE (event_ctor_should_regard_severity)
 
 BOOST_AUTO_TEST_CASE (illegal_loglevel_should_throw)
 {
-  BOOST_REQUIRE_THROW ( fhg::log::from_int (fhg::log::FATAL + 1)
+  BOOST_REQUIRE_THROW ( fhg::log::from_int (fhg::log::ERROR + 1)
                       , std::runtime_error
                       );
 }

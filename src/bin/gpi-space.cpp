@@ -583,9 +583,6 @@ static int configure_logging ( const config_t *cfg
   case 'E':
     log_level = "ERROR";
     break;
-  case 'F':
-    log_level = "FATAL";
-    break;
   }
 
   setenv("FHGLOG_to_server", server_url, true);

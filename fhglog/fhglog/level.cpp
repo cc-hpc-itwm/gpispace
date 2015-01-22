@@ -15,7 +15,7 @@ namespace fhg
   {
     Level from_int (int l)
     {
-      if (l < TRACE || l > FATAL)
+      if (l < TRACE || l > ERROR)
       {
         throw std::runtime_error ("the specified log-level is out of range!");
       }
@@ -25,7 +25,7 @@ namespace fhg
 
     const std::string& string (Level l)
     {
-      if (l < TRACE || l > FATAL)
+      if (l < TRACE || l > ERROR)
       {
         throw std::runtime_error ("the specified log-level is out of range!");
       }
@@ -35,7 +35,6 @@ namespace fhg
         , "INFO"
         , "WARN"
         , "ERROR"
-        , "FATAL"
         };
 
       return map[l];
@@ -48,7 +47,7 @@ namespace fhg
         namespace parse = fhg::util::parse;
 
         std::string const any
-          ("one of 'TRACE', 'INFO', 'WARN', 'ERROR' or 'FATAL'");
+          ("one of 'TRACE', 'INFO', 'WARN' or 'ERROR'");
 
         if (pos.end())
         {
@@ -61,7 +60,6 @@ namespace fhg
         case 'I': ++pos; parse::require::require (pos, "NFO"); return INFO;
         case 'W': ++pos; parse::require::require (pos, "ARN"); return WARN;
         case 'E': ++pos; parse::require::require (pos, "RROR"); return ERROR;
-        case 'F': ++pos; parse::require::require (pos, "ATAL"); return FATAL;
         default: throw parse::error::expected (any, pos);
         }
       }
