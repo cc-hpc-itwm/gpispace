@@ -5,6 +5,7 @@
 
 #include <fhglog/LogMacros.hpp>
 #include <fhglog/appender/file.hpp>
+#include <fhglog/format.hpp>
 
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/read_file.hpp>

@@ -5,6 +5,7 @@
 #include <fhglog/Appender.hpp>
 #include <fhglog/appender/file.hpp>
 #include <fhglog/event.hpp>
+#include <fhglog/format.hpp>
 #include <fhglog/level.hpp>
 #include <fhglog/appender/stream.hpp>
 #include <fhglog/LogMacros.hpp>

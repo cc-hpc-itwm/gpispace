@@ -7,7 +7,6 @@
 #include <fstream>
 #include <stdexcept>
 
-#include <fhglog/format.hpp>
 #include <fhglog/Appender.hpp>
 
 #include <boost/shared_ptr.hpp>

@@ -2,6 +2,8 @@
 
 #include <fhglog/appender/file.hpp>
 
+#include <fhglog/format.hpp>
+
 namespace fhg
 {
   namespace log
