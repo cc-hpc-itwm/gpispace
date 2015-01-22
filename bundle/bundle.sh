@@ -37,8 +37,6 @@ function bundle_dependencies ()
     export IFS="
 "
 
-    echo "-- Bundle: Examining $file"
-
     for dep_and_path in $(ldd "$file" | grep '=> \(not\|/\)' | awk '{printf("%s:%s\n", $1, $3)}') ; do
         dep=$(echo -n "$dep_and_path" | cut -d: -f 1)
         pth=$(echo -n "$dep_and_path" | cut -d: -f 2)
@@ -65,8 +63,6 @@ function bundle_dependencies ()
                 echo "-- Installing: Bundle: $tgt"
                 cp "$pth" "$tgt" || exit 1
                 bundle_dependencies "$pth"
-            else
-                echo "-- Up-to-date: Bundle: $tgt"
             fi
         fi
     done
