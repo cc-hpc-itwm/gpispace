@@ -10,13 +10,9 @@ namespace fhg
   {
     FileAppender::FileAppender ( const std::string& path
                                , const std::string& fmt
-                               , int flush_interval
-                               , const std::ios_base::openmode& mode
                                )
       : _path (path)
-      , _mode (mode)
       , _format (fmt)
-      , _flush_interval (flush_interval)
       , _event_count (0)
     {
       _stream.exceptions (std::ios_base::badbit | std::ios_base::failbit);
@@ -31,12 +27,15 @@ namespace fhg
     {
       if (!_stream.is_open())
       {
-        _stream.open (_path, _mode);
+        _stream.open
+          (_path
+          , std::ios_base::out | std::ios_base::app | std::ios_base::binary
+          );
       }
 
       _stream << format (_format, event);
 
-      if (++_event_count >= _flush_interval)
+      if (++_event_count >= 5)
       {
         flush();
         _event_count = 0;
