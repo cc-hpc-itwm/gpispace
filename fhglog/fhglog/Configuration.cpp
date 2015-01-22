@@ -3,6 +3,7 @@
 #include <fhglog/Configuration.hpp>
 
 #include <fhglog/Appender.hpp>
+#include <fhglog/Logger.hpp>
 #include <fhglog/appender/file.hpp>
 #include <fhglog/event.hpp>
 #include <fhglog/format.hpp>
