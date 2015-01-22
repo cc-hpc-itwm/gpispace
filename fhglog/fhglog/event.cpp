@@ -1,5 +1,6 @@
 #include <fhglog/event.hpp>
 
+#include <fhg/util/macros.hpp>
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
@@ -165,7 +166,7 @@ namespace
       case fhg::log::ERROR: return 'E';
       }
 
-      throw std::runtime_error ("unknown log level");
+      INVALID_ENUM_VALUE (fhg::log::level, level);
     }
 
     class tstamp
