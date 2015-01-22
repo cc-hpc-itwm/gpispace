@@ -4,7 +4,6 @@
 #define FHGLOG_REMOTE_LOG_SERVER_HPP 1
 
 #include <fhglog/Logger.hpp>
-#include <fhglog/remote/appender.hpp>
 
 #include <boost/asio.hpp>
 
