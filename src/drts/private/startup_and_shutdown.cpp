@@ -833,10 +833,19 @@ namespace fhg
 
         for (fhg::rif::entry_point const& entry_point : rif_entry_points)
         {
+          //! \todo revert HACK: actually remember where stuff is
+          //! running and only try to kill stuff there
+          boost::filesystem::path const entry_point_dir
+            (processes_dir / entry_point.to_string());
+          if (!boost::filesystem::exists (entry_point_dir))
+          {
+            continue;
+          }
+
           std::set<boost::filesystem::path> pidfiles;
 
           for ( boost::filesystem::directory_entry const& entry
-              : directory_range (processes_dir / entry_point.to_string())
+              : directory_range (entry_point_dir)
               | boost::adaptors::filtered
                   ( [&kind] (boost::filesystem::directory_entry const& entry)
                     {
