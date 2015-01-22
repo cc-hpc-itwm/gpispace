@@ -7,14 +7,9 @@ namespace
 {
   fhg::log::LogEvent gen_event()
   {
-    std::vector<std::string> tags;
-    tags.push_back ("foo");
-    tags.push_back ("bar");
-
     fhg::log::LogEvent evt ( fhg::log::TRACE
                            , __FILE__
                            , "main", __LINE__, "hello world!"
-                           , tags
                            );
 
     evt.trace ("trace1\"trace1");

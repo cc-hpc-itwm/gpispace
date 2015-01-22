@@ -28,7 +28,6 @@ namespace fhg
                       , const function_type &a_function
                       , const line_type &a_line
                       , const std::string &a_message
-                      , std::vector<std::string> const& tags
                       )
       : severity_(a_severity)
       , path_(a_path)
@@ -40,7 +39,6 @@ namespace fhg
       , tid_(syscall (SYS_gettid))
       , host_ (fhg::util::hostname())
       , trace_ ()
-      , tags_ (tags)
     {}
 
     LogEvent::LogEvent()
@@ -54,7 +52,6 @@ namespace fhg
       , tid_()
       , host_ ()
       , trace_ ()
-      , tags_ ()
     {
     }
 
@@ -132,7 +129,6 @@ namespace fhg
       , tid_ ((++pos, read_integral<pid_t> (pos)))
       , host_ ((++pos, read_string (pos)))
       , trace_ ((++pos, read_vec (pos)))
-      , tags_ ((++pos, read_vec (pos)))
     {}
 
     LogEvent LogEvent::from_string (const std::string& str)
@@ -219,11 +215,6 @@ std::ostream& operator<< (std::ostream& os, const fhg::log::LogEvent& event)
   os << ',' << encode::string (event.host());
   os << ',';
   for (std::string const& t : event.trace())
-  {
-    os << encode::string (t);
-  }
-  os << ',';
-  for (std::string const& t : event.tags())
   {
     os << encode::string (t);
   }
