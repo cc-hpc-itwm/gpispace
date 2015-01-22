@@ -39,39 +39,32 @@ namespace fhg
         socket_.async_receive_from
           ( boost::asio::buffer (data_, max_length)
           , sender_endpoint_
-          , std::bind ( &LogServer::handle_receive_from
-                      , this
-                      , std::placeholders::_1
-                      , std::placeholders::_2
-                      )
+          , [this]( const boost::system::error_code& error
+                  , size_t bytes_recv
+                  )
+          {
+            if (!error && bytes_recv > 0)
+            {
+              std::string const msg (data_ , data_ + bytes_recv);
+
+              if (msg == "QUIT deadbeef")
+              {
+                return;
+              }
+
+              LogEvent evt (LogEvent::from_string (msg));
+
+              {
+                std::ostringstream ostr;
+                ostr << sender_endpoint_;
+                evt.trace (ostr.str());
+              }
+              _log->log (evt);
+            }
+
+            async_receive();
+          }
           );
-      }
-
-      void LogServer::handle_receive_from
-        ( const boost::system::error_code& error
-        , size_t bytes_recv
-        )
-      {
-        if (!error && bytes_recv > 0)
-        {
-          std::string const msg (data_ , data_ + bytes_recv);
-
-          if (msg == "QUIT deadbeef")
-          {
-            return;
-          }
-
-          LogEvent evt (LogEvent::from_string (msg));
-
-          {
-            std::ostringstream ostr;
-            ostr << sender_endpoint_;
-            evt.trace (ostr.str());
-          }
-          _log->log (evt);
-        }
-
-        async_receive();
       }
     }
   }

@@ -22,9 +22,6 @@ namespace fhg
                   , unsigned short port
                   );
 
-        void handle_receive_from ( const boost::system::error_code&
-                                 , size_t bytes_recv
-                                 );
       private:
         fhg::log::Logger::ptr_t _log;
         boost::asio::ip::udp::socket socket_;
