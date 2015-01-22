@@ -48,8 +48,6 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
   area.list_allocations (1, list);
   BOOST_CHECK_EQUAL (list.size(), 1u);
 
-  std::cout << "descriptor = " << desc << std::endl;
-
   area.free (hdl);
   BOOST_CHECK_EQUAL (2048u, area.descriptor().local_size);
   BOOST_CHECK_EQUAL (2048u, area.descriptor().avail);

@@ -44,12 +44,6 @@ namespace gpi
 
       area_t::~area_t ()
       {
-        LOG_IF ( WARN
-               , m_handles.size()
-               , "there are still handles left at destruction time."
-               << " area = " << m_descriptor.id
-               << " handles = " << m_handles.size()
-               );
         dtmmgr_finalize (&m_mmgr);
       }
 
@@ -96,7 +90,6 @@ namespace gpi
           }
           catch (std::exception const & ex)
           {
-            LOG(WARN, "could not free handle: " << d);
           }
         }
       }
@@ -219,13 +212,6 @@ namespace gpi
           throw std::invalid_argument("check_bounds: no such handle");
         if (! (loc.offset < hdl_it->second.size && (loc.offset + size) <= hdl_it->second.size))
         {
-          CLOG( ERROR
-              , "shm.memory"
-              , "out-of-bounds access:"
-              << " hdl=" << hdl_it->second
-              << " size=" << hdl_it->second.size
-              << " range=["<<loc.offset << ", " << loc.offset+size << "]"
-              );
           throw std::invalid_argument
             ( ( boost::format ("out-of-bounds: access to %1%-handle %2%:"
                               " range [%3%,%4%) is not withing [0,%5%)"
@@ -471,17 +457,9 @@ namespace gpi
           }
           break;
         case RET_HANDLE_UNKNOWN:
-          LOG( ERROR
-             , "***** INCONSISTENCY DETECTED *****:"
-             << " mmgr did not know handle " << desc
-             );
           throw std::runtime_error ("inconsistent state: no such handle");
           break;
         case RET_FAILURE:
-          LOG( ERROR
-             , "unknown error during free:"
-             << " handle = " << desc
-             );
           throw std::runtime_error ("no such handle");
           break;
         }
@@ -524,17 +502,9 @@ namespace gpi
           update_descriptor_from_mmgr ();
           break;
         case RET_HANDLE_UNKNOWN:
-          LOG( ERROR
-             , "***** INCONSISTENCY DETECTED *****:"
-             << " mmgr did not know handle " << desc
-             );
           throw std::runtime_error ("inconsistent state: no such handle");
           break;
         case RET_FAILURE:
-          LOG( ERROR
-             , "unknown error during free:"
-             << " handle = " << desc
-             );
           throw std::runtime_error ("no such handle");
           break;
         }

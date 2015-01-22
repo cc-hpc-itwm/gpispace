@@ -422,8 +422,6 @@ namespace gpi
         {
           LOG(WARN, "There is already a segment attached with id " << seg->id());
           LOG(WARN, "DANGER, this looks like an inconsistency!");
-          LOG(WARN, "    my segment: " << *m_segments.at(seg->id()));
-          LOG(WARN, "   new segment: " << *seg);
           LOG(WARN, "moving my one into the trash");
 
           m_segments.erase(seg->id());

@@ -12,36 +12,6 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/thread.hpp>
 
-BOOST_AUTO_TEST_CASE (parse_peer_info_full)
-{
-  fhg::com::peer_info_t ("peer@[::1]:1234");
-}
-
-BOOST_AUTO_TEST_CASE (parse_peer_info_wo_name)
-{
-  fhg::com::peer_info_t ("[::1]:1234");
-}
-
-namespace
-{
-  void ctor (std::string const& url)
-  {
-    (void)fhg::com::peer_info_t (url);
-  }
-}
-
-BOOST_AUTO_TEST_CASE (parse_peer_info_wo_port)
-{
-  BOOST_REQUIRE_THROW ( ctor ("localhost")
-                      , std::runtime_error
-                      );
-}
-
-BOOST_AUTO_TEST_CASE (parse_peer_info_wi_name)
-{
-  fhg::com::peer_info_t ("peer@localhost:1234");
-}
-
 BOOST_AUTO_TEST_CASE (peer_run_single)
 {
   using namespace fhg::com;
