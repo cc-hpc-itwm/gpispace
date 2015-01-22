@@ -22,7 +22,6 @@ try
   desc.add_options()
     ("help,h", "this message")
     ("filter,F", po::value<int>(&filter)->default_value(filter), "filter events with a smaller level")
-    ("color,c", po::value<std::string>()->default_value("auto"), "colored output")
     ( "format,f", po::value<std::string>()->default_value("short")
     , "possible values:\n"
     "  short:\t use a short logging format (eq. to \"%s: %l %p:%L - %m%n\")\n"
@@ -68,9 +67,6 @@ try
         , format_string == "full" ? fhg::log::default_format::LONG()
         : format_string == "short" ? fhg::log::default_format::SHORT()
         : fhg::log::check_format (format_string)
-        , vm["color"].as<std::string>() == "on"
-        ? fhg::log::StreamAppender::COLOR_ON
-        : fhg::log::StreamAppender::COLOR_OFF
         )
       )
     );
