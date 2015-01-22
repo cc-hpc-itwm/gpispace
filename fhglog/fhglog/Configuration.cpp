@@ -9,15 +9,12 @@
 #include <fhglog/format.hpp>
 #include <fhglog/level.hpp>
 #include <fhglog/appender/stream.hpp>
-#include <fhglog/LogMacros.hpp>
 #include <fhglog/remote/appender.hpp>
 
-#include <fhg/util/read_bool.hpp>
 #include <fhg/util/split.hpp>
 
 #include <algorithm> // std::transform
 #include <cctype>    // std::tolower
-#include <iostream>
 
 #ifdef __APPLE__
 #include <crt_externs.h> // _NSGetEnviron

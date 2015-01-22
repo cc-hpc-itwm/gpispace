@@ -1,8 +1,5 @@
 #include    "Logger.hpp"
-#include    <iostream>
 #include <boost/thread.hpp>
-
-#include <boost/range/adaptor/map.hpp>
 
 #include <unordered_map>
 

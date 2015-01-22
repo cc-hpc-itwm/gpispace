@@ -6,13 +6,8 @@
 #include <fhg/util/hostname.hpp>
 #include <fhg/util/now.hpp>
 
-#include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
-
 #include <iostream>
-#include <iterator>
 #include <sstream>
-#include <sys/time.h>
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
