@@ -5,11 +5,12 @@
 
 #include <drts/drts.hpp>
 
-#include <test/make.hpp>
 #include <test/source_directory.hpp>
 
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/read_file.hpp>
+#include <fhg/util/system_with_blocked_SIGCHLD.hpp>
+#include <fhg/util/temporary_path.hpp>
 
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
@@ -33,14 +34,15 @@ BOOST_AUTO_TEST_CASE (pnetv_use_sequence)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
+  fhg::util::temporary_path const _temporary_path;
+  boost::filesystem::path const temporary_path (_temporary_path);
 
-  test::make const make
-    ( installation
-    , "use_sequence"
-    , test::source_directory (vm)
-    , {{"XML", "use_sequence.xml"}}
-    , "verify"
+  fhg::util::system_with_blocked_SIGCHLD
+    (( boost::format ("%1%/bin/pnetc -i %2% | %1%/bin/pnetv -i - > %3%")
+     % gspc::installation (vm).gspc_home()
+     % (test::source_directory (vm) / "use_sequence.xml")
+     % (temporary_path / "use_sequence.pnet.verification")
+     ).str()
     );
 
   std::string const expected_result
@@ -58,12 +60,12 @@ BOOST_AUTO_TEST_CASE (pnetv_use_sequence)
 %1%::_outer_break: (TERMINATES)
 %1%: (TERMINATES)
 )EOS")
-     % (make.build_directory() / "use_sequence.pnet").string()
+     % "stdin"
      ).str()
     );
 
   BOOST_REQUIRE_EQUAL ( expected_result
-                      , fhg::util::read_file ( make.build_directory()
+                      , fhg::util::read_file ( temporary_path
                                              / "use_sequence.pnet.verification"
                                              )
                       );

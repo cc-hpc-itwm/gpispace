@@ -58,10 +58,6 @@ ifndef PNET2DOT
   PNET2DOT := $(SDPA_BIN)/pnet2dot
 endif
 
-ifndef PNETV
-  PNETV := $(SDPA_BIN)/pnetv
-endif
-
 ifndef SDPA
   SDPA := $(SDPA_BIN)/sdpa
 endif
@@ -93,14 +89,6 @@ ifndef NET_NOINLINE
     $(error variable MAIN undefined but needed to derive variable NET_NOINLINE)
   else
     NET_NOINLINE := $(BUILDDIR)/$(MAIN).noinline.pnet
-  endif
-endif
-
-ifndef NET_VERIFICATION
-  ifndef NET
-    $(error variable NET undefined but needed to derive variable NET_VERIFICATION)
-  else
-    NET_VERIFICATION := $(NET).verification
   endif
 endif
 
@@ -217,8 +205,6 @@ PNETC_NOINLINE += --synthesize-virtual-places true
 
 PNETC_LIST_DEPENDENCIES := $(PNETC) --list-dependencies /dev/stdout
 
-PNETV += $(PNETV_OPTS)
-
 # does not work for paths that contain spaces
 pathify = $(subst $() ,:,$(1))
 
@@ -227,7 +213,7 @@ XMLLINT += --schema $(SDPA_XML_SCHEMA)
 
 ###############################################################################
 
-.PHONY: default build dot ps svg net verify validate gen lib
+.PHONY: default build dot ps svg net validate gen lib
 
 default: build
 
@@ -238,7 +224,6 @@ ps: $(PS) $(PS_NOINLINE)
 svg: $(SVG) $(SVG_NOINLINE)
 net: $(NET)
 gen: $(GEN)/Makefile
-verify: $(NET_VERIFICATION)
 validate: $(NET_VALIDATION)
 
 ###############################################################################
@@ -263,11 +248,6 @@ $(NET): $(XML) $(DEP) | $(BUILDDIR)
 $(NET_NOINLINE): $(XML) $(DEP) | $(BUILDDIR)
 	$(PNETC_NOINLINE) -i $(XML) -o /dev/null -MP -MT $@ -MM $(NET_NOINLINE).d
 	$(PNETC_NOINLINE) -i $(XML) -o $@
-
-###############################################################################
-
-$(NET_VERIFICATION): $(NET)
-	$(PNETV) -i $(NET) > $@
 
 ###############################################################################
 
@@ -375,7 +355,6 @@ clean: $(CLEAN)
 	-$(RM) -f $(NET_NOINLINE).d
 	-$(RM) -f $(NET).gen.d
 	-$(RM) -f $(NET_VALIDATION).d
-	-$(RM) -f $(NET_VERIFICATION)
 	-$(RM) -f $(NET_VALIDATION)
 	-$(RM) -f *~
 
@@ -396,7 +375,6 @@ help:
 	@echo "lib          'gen' & build libs from code in gen"
 	@echo
 	@echo "validate     validate the xml"
-	@echo "verify       'net' & verify the pnet"
 	@echo
 	@echo "dot          'net' & generate .dot"
 	@echo "ps           'dot' & generate postscript"
@@ -447,7 +425,6 @@ showconfig:
 	@echo 'DEP_XML          = $(DEP_XML)'
 	@echo 'NET              = $(NET)'
 	@echo 'NET_NOINLINE     = $(NET_NOINLINE)'
-	@echo 'NET_VERIFICATION = $(NET_VERIFICATION)'
 	@echo 'NET_VALIDATION   = $(NET_VALIDATION)'
 	@echo 'GEN              = $(GEN)'
 	@echo 'OUT              = $(OUT)'
@@ -474,8 +451,6 @@ showconfig:
 	@echo 'PNETC_OPTS        = $(PNETC_OPTS)'
 	@echo 'PNETC_LINK_PREFIX = $(PNETC_LINK_PREFIX)'
 	@echo
-	@echo 'PNETV_OPTS        = $(PNETV_OPTS)'
-	@echo
 	@echo 'BUILD             = $(BUILD)'
 	@echo 'CLEAN             = $(CLEAN)'
 	@echo 'INSTALL           = $(INSTALL)'
@@ -487,6 +462,5 @@ showconfig:
 	@echo 'PNETC_NOINLINE          = $(PNETC_NOINLINE)'
 	@echo 'PNETC_LIST_DEPENDENCIES = $(PNETC_LIST_DEPENDENCIES)'
 	@echo 'PNET2DOT                = $(PNET2DOT)'
-	@echo 'PNETV                   = $(PNETV)'
 	@echo 'SDPA                    = $(SDPA)'
 	@echo 'XMLLINT                 = $(XMLLINT)'
