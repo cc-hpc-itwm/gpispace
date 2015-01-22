@@ -33,7 +33,7 @@ namespace fhg
           );
       }
 
-      _stream << format (_format, event);
+      format (_stream, _format, event);
 
       if (++_event_count >= 5)
       {

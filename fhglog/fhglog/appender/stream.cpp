@@ -17,7 +17,7 @@ namespace fhg
 
     void StreamAppender::append (const LogEvent& event)
     {
-      _stream << format (_format, event);
+      format (_stream, _format, event);
     }
 
     void StreamAppender::flush()
