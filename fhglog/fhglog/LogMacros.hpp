@@ -1,7 +1,6 @@
 #ifndef FHG_LOG_LOGMACROS_INC
 #define FHG_LOG_LOGMACROS_INC
 
-#include <fhglog/Configuration.hpp>
 #include <fhglog/Logger.hpp>
 
 #include <boost/current_function.hpp>
@@ -21,9 +20,6 @@ namespace fhg
                          , __LINE__                     \
                          , message                      \
                          )
-
-#define FHGLOG_SETUP(remote_log_io_service)                             \
-    ::fhg::log::configure (remote_log_io_service)
 
 #define __LOG(logger, level, msg)                               \
     do                                                          \

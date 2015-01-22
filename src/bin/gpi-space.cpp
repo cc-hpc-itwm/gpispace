@@ -15,6 +15,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <fhglog/Configuration.hpp>
 #include <fhglog/LogMacros.hpp>
 
 #include <fhg/util/make_unique.hpp>
@@ -599,7 +600,7 @@ static int configure_logging ( const config_t *cfg
     setenv ("FHGLOG_to_file", logfile, true);
   }
 
-  FHGLOG_SETUP (remote_log_io_service);
+  fhg::log::configure (remote_log_io_service);
 
   return 0;
 }

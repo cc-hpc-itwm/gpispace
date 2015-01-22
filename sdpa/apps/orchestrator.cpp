@@ -4,6 +4,7 @@
 #include <vector>
 #include <csignal>
 
+#include <fhglog/Configuration.hpp>
 #include <fhglog/LogMacros.hpp>
 
 #include <fhg/util/boost/asio/ip/address.hpp>
@@ -32,7 +33,7 @@ try
     std::string orchUrl;
 
   boost::asio::io_service remote_log_io_service;
-  FHGLOG_SETUP (remote_log_io_service);
+  fhg::log::configure (remote_log_io_service);
 
     po::options_description desc("Allowed options");
     desc.add_options()
