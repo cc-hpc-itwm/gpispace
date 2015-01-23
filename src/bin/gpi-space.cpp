@@ -41,33 +41,6 @@ static const char * program_name = "gpi-space";
 #define MAX_PATH_LEN 4096
 #define MAX_HOST_LEN 1024
 
-struct config_t
-{
-  config_t()
-    : magic (0)
-    // socket
-    // log_host
-    , log_port (2438)
-    , log_level ('I')
-  {
-    memset (socket, 0, sizeof(socket));
-
-    if (gethostname (log_host, MAX_HOST_LEN) != 0)
-    {
-      snprintf ( log_host
-               , MAX_HOST_LEN
-               , "localhost"
-               );
-    }
-  }
-
-  int  magic;
-  char socket[MAX_PATH_LEN];
-  char log_host[MAX_HOST_LEN];
-  unsigned short log_port;
-  char log_level;
-} __attribute__((packed));
-
 typedef gpi::api::gpi_api_t gpi_api_t;
 
 // exit codes
@@ -122,7 +95,21 @@ try
 
   std::vector<std::string> mem_urls;
 
-  config_t config;
+  int  magic (0);
+  char socket[MAX_PATH_LEN];
+  char log_host[MAX_HOST_LEN];
+  unsigned short log_port (2438);
+  char log_level ('I');
+
+  memset (socket, 0, sizeof(socket));
+
+  if (gethostname (log_host, MAX_HOST_LEN) != 0)
+  {
+    snprintf ( log_host
+             , MAX_HOST_LEN
+             , "localhost"
+             );
+  }
 
   // parse command line
   i = 1;
@@ -154,9 +141,9 @@ try
       fprintf(stderr, "         sfs://<path>?create=true&size=1073741824\n");
       fprintf(stderr, "\n");
       fprintf(stderr, "LOG options\n");
-      fprintf(stderr, "    --log-host HOST (%s)\n", config.log_host);
-      fprintf(stderr, "    --log-port PORT (%hu)\n", config.log_port);
-      fprintf(stderr, "    --log-level {T, D, I, W, E, F} (%c)\n", config.log_level);
+      fprintf(stderr, "    --log-host HOST (%s)\n", log_host);
+      fprintf(stderr, "    --log-port PORT (%hu)\n", log_port);
+      fprintf(stderr, "    --log-level {T, D, I, W, E, F} (%c)\n", log_level);
       fprintf(stderr, "         _T_race, _D_ebug, _I_nfo\n");
       fprintf(stderr, "         _W_arn, _E_rror, _F_atal_\n");
       fprintf(stderr, "\n");
@@ -194,11 +181,11 @@ try
       ++i;
       if (i < ac)
       {
-        if ((strlen(av[i]) + 1) > sizeof(config.socket))
+        if ((strlen(av[i]) + 1) > sizeof(socket))
         {
           fprintf(stderr, "%s: path to socket is too large!\n", program_name);
           fprintf(stderr, "    at most %lu characters are supported\n"
-                 , sizeof(config.socket) - 1
+                 , sizeof(socket) - 1
                  );
           exit(EX_INVAL);
         }
@@ -269,13 +256,13 @@ try
       ++i;
       if (i < ac)
       {
-        if ((strlen(av[i] + 1) > sizeof(config.log_host)))
+        if ((strlen(av[i] + 1) > sizeof(log_host)))
         {
           fprintf(stderr, "%s: hostname is too large!\n", program_name);
-          fprintf(stderr, "    at most %lu characters are supported\n", sizeof(config.log_host));
+          fprintf(stderr, "    at most %lu characters are supported\n", sizeof(log_host));
           exit(EX_INVAL);
         }
-        strncpy(config.log_host, av[i], sizeof(config.log_host));
+        strncpy(log_host, av[i], sizeof(log_host));
         ++i;
       }
       else
@@ -289,7 +276,7 @@ try
       ++i;
       if (i < ac)
       {
-        if (sscanf(av[i], "%hu", &config.log_port) == 0)
+        if (sscanf(av[i], "%hu", &log_port) == 0)
         {
           fprintf(stderr, "%s: log-port invalid: %s\n", program_name, av[i]);
           exit(EX_INVAL);
@@ -307,7 +294,7 @@ try
       ++i;
       if (i < ac)
       {
-        config.log_level = av[i][0];
+        log_level = av[i][0];
         ++i;
       }
       else
@@ -425,35 +412,35 @@ try
 
   // logging oonfiguration
   snprintf( server_url, sizeof(server_url), "%s:%hu"
-          , config.log_host, config.log_port
+          , log_host, log_port
           );
-  const char *log_level = nullptr;
-  switch (config.log_level)
+  const char *log_level_str = nullptr;
+  switch (log_level)
   {
   case 'T':
-    log_level = "TRACE";
+    log_level_str = "TRACE";
     break;
   case 'D':
-    log_level = "DEBUG";
+    log_level_str = "DEBUG";
     break;
   case 'I':
-    log_level = "INFO";
+    log_level_str = "INFO";
     break;
   case 'W':
-    log_level = "WARN";
+    log_level_str = "WARN";
     break;
   case 'E':
-    log_level = "ERROR";
+    log_level_str = "ERROR";
     break;
   case 'F':
-    log_level = "FATAL";
+    log_level_str = "FATAL";
     break;
   }
 
   setenv("FHGLOG_to_server", server_url, true);
-  if (log_level)
+  if (log_level_str)
   {
-    setenv("FHGLOG_level", log_level, true);
+    setenv("FHGLOG_level", log_level_str, true);
   }
   setenv ("FHGLOG_to_console", "stderr", true);
 
@@ -464,8 +451,8 @@ try
 
   FHGLOG_SETUP (remote_log_io_service);
 
-  snprintf ( config.socket
-           , sizeof(config.socket)
+  snprintf ( socket
+           , sizeof(socket)
            , "%s"
            , socket_path
            );
@@ -528,9 +515,9 @@ try
       mem_urls.push_back (default_memory_url);
 
     const gpi::pc::container::manager_t container_manager
-      (config.socket, mem_urls, gpi_api, topology_peer);
+      (socket, mem_urls, gpi_api, topology_peer);
 
-    LOG (INFO, "started GPI interface on rank " << gpi_api.rank() << " at " << config.socket);
+    LOG (INFO, "started GPI interface on rank " << gpi_api.rank() << " at " << socket);
 
     fhg::util::thread::event<> stop_requested;
     const std::function<void()> request_stop
