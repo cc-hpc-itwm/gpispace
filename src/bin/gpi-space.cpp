@@ -41,8 +41,6 @@ static const char * program_name = "gpi-space";
 #define MAX_PATH_LEN 4096
 #define MAX_HOST_LEN 1024
 
-typedef gpi::api::gpi_api_t gpi_api_t;
-
 // exit codes
 static const int EX_USAGE = 2;
 static const int EX_INVAL = 3;
@@ -50,7 +48,7 @@ static const int EX_INVAL = 3;
 namespace
 {
   enum requested_api_t { API_fake, API_gaspi };
-  std::unique_ptr<gpi_api_t> create_gpi_api
+  std::unique_ptr<gpi::api::gpi_api_t> create_gpi_api
     ( requested_api_t requested_api
     , const unsigned long long memory_size
     , const unsigned short p
@@ -483,7 +481,7 @@ try
 
 
   // initialize gpi api
-  std::unique_ptr<gpi_api_t> gpi_api_
+  std::unique_ptr<gpi::api::gpi_api_t> gpi_api_
     (create_gpi_api ( requested_api
                     , gpi_mem
                     , *port
@@ -491,7 +489,7 @@ try
                     , topology_peer->local_endpoint().port()
                     )
     );
-  gpi_api_t& gpi_api (*gpi_api_);
+  gpi::api::gpi_api_t& gpi_api (*gpi_api_);
 
   LOG (INFO, "GPI started: " << gpi_api.rank());
 
