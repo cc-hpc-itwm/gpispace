@@ -803,21 +803,16 @@ namespace fhg
         {
           std::cout << "terminating " << name << " on " << entry_point.hostname
                     << ": " << fhg::util::join (pids, " ") << "\n";
-          try
-          {
-            rif::client (entry_point).kill (pids).get();
-          }
-          catch (...)
-          {
-            std::throw_with_nested
-              ( std::runtime_error
-                  (( boost::format ("Could not terminate %1% on %2%")
-                   % name
-                   % entry_point.hostname
-                   ).str()
-                  )
-              );
-          }
+          fhg::util::nest_exceptions<std::runtime_error>
+            ( [&entry_point, &pids]
+              {
+                rif::client (entry_point).kill (pids).get();
+              }
+            , ( boost::format ("Could not terminate %1% on %2%")
+              % name
+              % entry_point.hostname
+              ).str()
+            );
         }
       }
 
