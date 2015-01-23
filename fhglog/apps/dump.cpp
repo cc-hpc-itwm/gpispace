@@ -61,12 +61,13 @@ try
     return EXIT_SUCCESS;
   }
 
-  fhg::log::Logger::get("dump")->setLevel
+  fhg::log::Logger::ptr_t logger (fhg::log::Logger::get ("dump"));
+  logger->setLevel
     (fhg::log::from_string (vm.at (option::level).as<std::string>()));
 
   const std::string format_string (vm["format"].as<std::string>());
 
-  fhg::log::Logger::get("dump")->addAppender
+  logger->addAppender
     ( fhg::log::Appender::ptr_t
       ( new fhg::log::StreamAppender
         ( std::cout
@@ -81,7 +82,7 @@ try
   fhg::util::parse::position_istream pos (std::cin);
   while (std::cin.good())
   {
-    fhg::log::Logger::get("dump")->log (fhg::log::LogEvent (pos));
+    logger->log (fhg::log::LogEvent (pos));
   }
 
   return 0;
