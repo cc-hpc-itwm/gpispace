@@ -12,16 +12,22 @@
 
 namespace po = boost::program_options;
 
+namespace
+{
+  namespace option
+  {
+    constexpr char const* const level ("level");
+  }
+}
+
 int main(int argc, char **argv)
 try
 {
-  int filter = -1;
-
   po::options_description desc("options");
 
   desc.add_options()
     ("help,h", "this message")
-    ("filter,F", po::value<int>(&filter)->default_value(filter), "filter events with a smaller level")
+    (option::level, po::value<std::string>()->required(), "filter events with a smaller level")
     ( "format,f", po::value<std::string>()->default_value("short")
     , "possible values:\n"
     "  short:\t use a short logging format (eq. to \"%s: %l %p:%L - %m%n\")\n"
@@ -55,7 +61,8 @@ try
     return EXIT_SUCCESS;
   }
 
-  fhg::log::Logger::get("dump")->setLevel (fhg::log::from_int (filter));
+  fhg::log::Logger::get("dump")->setLevel
+    (fhg::log::from_string (vm.at (option::level).as<std::string>()));
 
   const std::string format_string (vm["format"].as<std::string>());
 
