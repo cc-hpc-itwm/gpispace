@@ -17,6 +17,7 @@ namespace
   namespace option
   {
     constexpr char const* const level ("level");
+    constexpr char const* const format ("format");
   }
 }
 
@@ -28,7 +29,7 @@ try
   desc.add_options()
     ("help,h", "this message")
     (option::level, po::value<std::string>()->required(), "filter events with a smaller level")
-    ( "format,f", po::value<std::string>()->default_value("short")
+    (option::format, po::value<std::string>()->default_value("short")
     , "possible values:\n"
     "  short:\t use a short logging format (eq. to \"%s: %l %p:%L - %m%n\")\n"
     "   full:\t use a long logging format (eq. to \"%t %S %l pid:%R thread:%T %p:%L (%F) - %m%n\")\n"
@@ -65,7 +66,7 @@ try
   logger->setLevel
     (fhg::log::from_string (vm.at (option::level).as<std::string>()));
 
-  const std::string format_string (vm["format"].as<std::string>());
+  const std::string format_string (vm.at (option::format).as<std::string>());
 
   logger->addAppender
     ( fhg::log::Appender::ptr_t
