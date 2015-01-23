@@ -32,7 +32,7 @@ try
     (option::format, po::value<std::string>()->default_value("short")
     , "possible values:\n"
     "  short:\t use a short logging format (eq. to \"%s: %l %p:%L - %m%n\")\n"
-    "   full:\t use a long logging format (eq. to \"%t %S %l pid:%R thread:%T %p:%L (%F) - %m%n\")\n"
+    "   long:\t use a long logging format (eq. to \"%t %S %l pid:%R thread:%T %p:%L (%F) - %m%n\")\n"
     " custom:\t provide your own format\n"
     "   format flags:\n"
     "      %s - log level (short)\n"
@@ -72,7 +72,7 @@ try
     ( fhg::log::Appender::ptr_t
       ( new fhg::log::StreamAppender
         ( std::cout
-        , format_string == "full" ? fhg::log::default_format::LONG()
+        , format_string == "long" ? fhg::log::default_format::LONG()
         : format_string == "short" ? fhg::log::default_format::SHORT()
         : fhg::log::check_format (format_string)
         )
