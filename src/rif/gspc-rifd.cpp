@@ -7,6 +7,7 @@
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/boost/serialization/path.hpp>
 #include <fhg/util/boost/serialization/unordered_map.hpp>
+#include <fhg/util/join.hpp>
 #include <fhg/util/print_exception.hpp>
 
 #include <network/server.hpp>
@@ -97,25 +98,36 @@ try
     , "kill"
     , [] (std::vector<pid_t> const& pids)
       {
+        std::vector<std::string> failed_statuses;
         for (pid_t pid : pids)
         {
-          fhg::syscall::kill (pid, SIGTERM);
-          int status;
-          fhg::syscall::waitpid (pid, &status, 0);
-          if (WIFEXITED (status) && WEXITSTATUS (status))
+          try
           {
-            throw std::runtime_error
-              ( "process did not exit properly: returned "
-              + std::to_string (WEXITSTATUS (status))
-              );
+            fhg::syscall::kill (pid, SIGTERM);
+            int status;
+            fhg::syscall::waitpid (pid, &status, 0);
+            if (WIFEXITED (status) && WEXITSTATUS (status))
+            {
+              throw std::runtime_error
+                ("returned " + std::to_string (WEXITSTATUS (status)));
+            }
+            else if (WIFSIGNALED (status))
+            {
+              throw std::runtime_error
+                ("signaled " + std::to_string (WTERMSIG (status)));
+            }
           }
-          else if (WIFSIGNALED (status))
+          catch (...)
           {
-            throw std::runtime_error
-              ( "process did not exit properly: signaled "
-              + std::to_string (WTERMSIG (status))
-              );
+            std::ostringstream oss;
+            fhg::util::print_current_exception
+              (oss, std::to_string (pid) + ": ");
+            failed_statuses.emplace_back (oss.str());
           }
+        }
+        if (!failed_statuses.empty())
+        {
+          throw std::runtime_error (fhg::util::join (failed_statuses, ", "));
         }
       }
     );
