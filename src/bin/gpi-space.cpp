@@ -211,37 +211,37 @@ try
       }()
     );
 
-    // other url examples are:
-    //      gpi://?buffers=8&buffer_size=4194304 GPI memory
-    //      sfs://<path>?create=true&size=1073741824
-    const gpi::pc::container::manager_t container_manager
-      ( socket_path.string()
-      , {"gpi://?buffer_size=4194304&buffers=8"}
-      , *gpi_api
-      , topology_peer
-      );
+  // other url examples are:
+  //      gpi://?buffers=8&buffer_size=4194304 GPI memory
+  //      sfs://<path>?create=true&size=1073741824
+  const gpi::pc::container::manager_t container_manager
+    ( socket_path.string()
+    , {"gpi://?buffer_size=4194304&buffers=8"}
+    , *gpi_api
+    , topology_peer
+    );
 
-    fhg::util::thread::event<> stop_requested;
-    const std::function<void()> request_stop
-      (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
+  fhg::util::thread::event<> stop_requested;
+  const std::function<void()> request_stop
+    (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
 
-    fhg::util::signal_handler_manager signal_handler;
-    fhg::util::scoped_signal_handler const SIGTERM_handler
-      (signal_handler, SIGTERM, std::bind (request_stop));
-    fhg::util::scoped_signal_handler const SIGINT_handler
-      (signal_handler, SIGINT, std::bind (request_stop));
+  fhg::util::signal_handler_manager signal_handler;
+  fhg::util::scoped_signal_handler const SIGTERM_handler
+    (signal_handler, SIGTERM, std::bind (request_stop));
+  fhg::util::scoped_signal_handler const SIGINT_handler
+    (signal_handler, SIGINT, std::bind (request_stop));
 
-    {
-      boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
-        startup_messages_pipe ( startup_messages_pipe_fd
-                              , boost::iostreams::close_handle
-                              );
-      startup_messages_pipe << "OKAY\n";
-    }
+  {
+    boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
+      startup_messages_pipe ( startup_messages_pipe_fd
+                            , boost::iostreams::close_handle
+                            );
+    startup_messages_pipe << "OKAY\n";
+  }
 
-    stop_requested.wait();
+  stop_requested.wait();
 
-    return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 }
 catch (...)
 {
