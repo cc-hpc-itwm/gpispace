@@ -1,7 +1,6 @@
 set (srcs
   Configuration.cpp
   Logger.cpp
-  color_map.cpp
   event.cpp
   level.cpp
   appender/file.cpp

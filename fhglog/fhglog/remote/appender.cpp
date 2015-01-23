@@ -2,14 +2,7 @@
 
 #include <fhglog/remote/appender.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 #include <fhg/util/split.hpp>
-
-#include <boost/array.hpp>
-#include <boost/lexical_cast.hpp>
-
-#include <sstream>
 
 namespace fhg
 {

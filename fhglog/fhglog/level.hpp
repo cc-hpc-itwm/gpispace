@@ -13,10 +13,8 @@ namespace fhg
                , INFO
                , WARN
                , ERROR
-               , FATAL
                };
 
-    Level from_int (int);
     Level from_string (std::string const&);
     const std::string& string (Level);
   }
