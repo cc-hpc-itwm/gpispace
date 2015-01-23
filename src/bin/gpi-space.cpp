@@ -74,9 +74,6 @@ typedef gpi::api::gpi_api_t gpi_api_t;
 static const int EX_USAGE = 2;
 static const int EX_INVAL = 3;
 
-static int configure_logging
-  (const config_t *cfg, const char* logfile, boost::asio::io_service&);
-
 namespace
 {
   enum requested_api_t { API_fake, API_gaspi };
@@ -432,10 +429,49 @@ try
   }
 
   boost::asio::io_service remote_log_io_service;
-  if (0 != configure_logging (&config, logfile, remote_log_io_service))
+
+  char server_url[MAX_HOST_LEN + 32];
+
+  // logging oonfiguration
+  snprintf( server_url, sizeof(server_url), "%s:%hu"
+          , config.log_host, config.log_port
+          );
+  const char *log_level = nullptr;
+  switch (config.log_level)
   {
-    fprintf (stderr, "could not setup logging");
+  case 'T':
+    log_level = "TRACE";
+    break;
+  case 'D':
+    log_level = "DEBUG";
+    break;
+  case 'I':
+    log_level = "INFO";
+    break;
+  case 'W':
+    log_level = "WARN";
+    break;
+  case 'E':
+    log_level = "ERROR";
+    break;
+  case 'F':
+    log_level = "FATAL";
+    break;
   }
+
+  setenv("FHGLOG_to_server", server_url, true);
+  if (log_level)
+  {
+    setenv("FHGLOG_level", log_level, true);
+  }
+  setenv ("FHGLOG_to_console", "stderr", true);
+
+  if (strlen (logfile) > 0)
+  {
+    setenv ("FHGLOG_to_file", logfile, true);
+  }
+
+  FHGLOG_SETUP (remote_log_io_service);
 
   snprintf ( config.socket
            , sizeof(config.socket)
@@ -551,55 +587,4 @@ catch (...)
   LOG (ERROR, "GPI could not be started: " << ss.str());
 
   return EXIT_FAILURE;
-}
-
-static int configure_logging ( const config_t *cfg
-                             , const char* logfile
-                             , boost::asio::io_service& remote_log_io_service
-                             )
-{
-  char server_url[MAX_HOST_LEN + 32];
-
-  // logging oonfiguration
-  snprintf( server_url, sizeof(server_url), "%s:%hu"
-          , cfg->log_host, cfg->log_port
-          );
-  const char *log_level = nullptr;
-  switch (cfg->log_level)
-  {
-  case 'T':
-    log_level = "TRACE";
-    break;
-  case 'D':
-    log_level = "DEBUG";
-    break;
-  case 'I':
-    log_level = "INFO";
-    break;
-  case 'W':
-    log_level = "WARN";
-    break;
-  case 'E':
-    log_level = "ERROR";
-    break;
-  case 'F':
-    log_level = "FATAL";
-    break;
-  }
-
-  setenv("FHGLOG_to_server", server_url, true);
-  if (log_level)
-  {
-    setenv("FHGLOG_level", log_level, true);
-  }
-  setenv ("FHGLOG_to_console", "stderr", true);
-
-  if (strlen (logfile) > 0)
-  {
-    setenv ("FHGLOG_to_file", logfile, true);
-  }
-
-  FHGLOG_SETUP (remote_log_io_service);
-
-  return 0;
 }
