@@ -178,7 +178,7 @@ namespace fhg
         void set_expression (data::handle::expression&, const QString&);
 
         template<typename Sig, typename... Args>
-          void emit_signal (Sig&&, Args... args);
+          void emit_signal (Sig&&, Args&&... args);
 
       signals:
 

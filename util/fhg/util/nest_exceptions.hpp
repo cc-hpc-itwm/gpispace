@@ -9,7 +9,7 @@ namespace fhg
   namespace util
   {
     template<typename Exception, typename... ExceptionArgs, typename Fun>
-      auto nest_exceptions (Fun&& fun, ExceptionArgs... exception_args)
+      auto nest_exceptions (Fun&& fun, ExceptionArgs&&... exception_args)
       -> decltype (fun())
     {
       try
