@@ -13,16 +13,6 @@ namespace fhg
 {
   namespace log
   {
-    Level from_int (int l)
-    {
-      if (l < TRACE || l > ERROR)
-      {
-        throw std::runtime_error ("the specified log-level is out of range!");
-      }
-
-      return Level (l);
-    }
-
     const std::string& string (Level l)
     {
       if (l < TRACE || l > ERROR)

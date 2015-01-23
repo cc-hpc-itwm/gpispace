@@ -14,13 +14,6 @@ BOOST_AUTO_TEST_CASE (event_ctor_should_regard_severity)
   BOOST_REQUIRE_EQUAL (evt.severity(), fhg::log::TRACE);
 }
 
-BOOST_AUTO_TEST_CASE (illegal_loglevel_should_throw)
-{
-  BOOST_REQUIRE_THROW ( fhg::log::from_int (fhg::log::ERROR + 1)
-                      , std::runtime_error
-                      );
-}
-
 //! \todo This does not really test anything
 BOOST_AUTO_TEST_CASE (ctor_should_not_throw_and_should_be_copyable)
 {

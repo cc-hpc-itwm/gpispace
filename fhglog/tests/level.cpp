@@ -9,22 +9,6 @@
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/require_exception.hpp>
 
-BOOST_AUTO_TEST_CASE (from_int)
-{
-#define OKAY(_l, _i)                                            \
-  BOOST_REQUIRE_EQUAL (fhg::log::_l, fhg::log::from_int (_i))
-
-  OKAY (TRACE, 0);
-  OKAY (INFO, 1);
-  OKAY (WARN, 2);
-  OKAY (ERROR, 3);
-
-#undef OKAY
-
-  BOOST_REQUIRE_THROW (fhg::log::from_int (-1), std::runtime_error);
-  BOOST_REQUIRE_THROW (fhg::log::from_int (6), std::runtime_error);
-}
-
 BOOST_AUTO_TEST_CASE (from_string)
 {
 #define OKAY(_l, _s)                                                    \
