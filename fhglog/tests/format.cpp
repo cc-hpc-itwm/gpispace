@@ -24,7 +24,6 @@ BOOST_AUTO_TEST_CASE (short_severity)
   CHECK (INFO, "I");
   CHECK (WARN, "W");
   CHECK (ERROR, "E");
-  CHECK (FATAL, "F");
 
 #undef CHECK
 }
@@ -39,7 +38,6 @@ BOOST_AUTO_TEST_CASE (severity)
   CHECK (INFO, "INFO");
   CHECK (WARN, "WARN");
   CHECK (ERROR, "ERROR");
-  CHECK (FATAL, "FATAL");
 
 #undef CHECK
 }

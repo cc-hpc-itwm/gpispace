@@ -8,6 +8,7 @@
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/thread/event.hpp>
+#include <fhglog/Configuration.hpp>
 #include <fhglog/LogMacros.hpp>
 
 #include <boost/iostreams/device/file_descriptor.hpp>
@@ -35,7 +36,7 @@ int main(int ac, char **av)
 try
 {
   boost::asio::io_service remote_log_io_service;
-  FHGLOG_SETUP (remote_log_io_service);
+  fhg::log::configure (remote_log_io_service);
   fhg::log::Logger::ptr_t logger (fhg::log::Logger::get());
 
   namespace po = boost::program_options;

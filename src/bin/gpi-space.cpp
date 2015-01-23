@@ -15,6 +15,7 @@
 
 #include <fhgcom/peer.hpp>
 
+#include <fhglog/Configuration.hpp>
 #include <fhglog/LogMacros.hpp>
 
 #include <gpi-space/gpi/api.hpp>
@@ -181,7 +182,7 @@ try
   }
 
   boost::asio::io_service remote_log_io_service;
-  FHGLOG_SETUP (remote_log_io_service);
+  fhg::log::configure (remote_log_io_service);
 
   boost::asio::io_service topology_peer_io_service;
   boost::shared_ptr<fhg::com::peer_t> topology_peer

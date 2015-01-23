@@ -9,23 +9,6 @@
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/require_exception.hpp>
 
-BOOST_AUTO_TEST_CASE (from_int)
-{
-#define OKAY(_l, _i)                                            \
-  BOOST_REQUIRE_EQUAL (fhg::log::_l, fhg::log::from_int (_i))
-
-  OKAY (TRACE, 0);
-  OKAY (INFO, 1);
-  OKAY (WARN, 2);
-  OKAY (ERROR, 3);
-  OKAY (FATAL, 4);
-
-#undef OKAY
-
-  BOOST_REQUIRE_THROW (fhg::log::from_int (-1), std::runtime_error);
-  BOOST_REQUIRE_THROW (fhg::log::from_int (6), std::runtime_error);
-}
-
 BOOST_AUTO_TEST_CASE (from_string)
 {
 #define OKAY(_l, _s)                                                    \
@@ -35,7 +18,6 @@ BOOST_AUTO_TEST_CASE (from_string)
   OKAY (INFO, "INFO");
   OKAY (WARN, "WARN");
   OKAY (ERROR, "ERROR");
-  OKAY (FATAL, "FATAL");
 
 #undef OKAY
 
@@ -63,12 +45,6 @@ BOOST_AUTO_TEST_CASE (from_string)
       "ERROR more\n"
       "     ^\n"
     );
-  fhg::util::boost::test::require_exception<std::runtime_error>
-    ( [] { fhg::log::from_string ("FATALmore"); }
-    , "PARSE ERROR [5]: additional input\n"
-      "FATAL more\n"
-      "     ^\n"
-    );
 
 #define THROW(_s)                                                \
   BOOST_REQUIRE_THROW ( fhg::log::from_string (_s)               \
@@ -87,7 +63,6 @@ BOOST_AUTO_TEST_CASE (from_string)
   THROW ("info");
   THROW ("warn");
   THROW ("error");
-  THROW ("fatal");
 
 #undef THROW
 }
@@ -103,7 +78,6 @@ BOOST_AUTO_TEST_CASE (string)
   OKAY (INFO, "INFO");
   OKAY (WARN, "WARN");
   OKAY (ERROR, "ERROR");
-  OKAY (FATAL, "FATAL");
 
 #undef OKAY
 
@@ -127,7 +101,6 @@ BOOST_AUTO_TEST_CASE (from_string_string_id)
   OKAY (INFO);
   OKAY (WARN);
   OKAY (ERROR);
-  OKAY (FATAL);
 
 #undef OKAY
 }
@@ -144,7 +117,6 @@ BOOST_AUTO_TEST_CASE (string_from_string_id)
   OKAY ("INFO");
   OKAY ("WARN");
   OKAY ("ERROR");
-  OKAY ("FATAL");
 
 #undef OKAY
 }

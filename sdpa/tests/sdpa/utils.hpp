@@ -13,7 +13,7 @@
 #include <fhg/util/boost/test/printer/optional.hpp>
 #include <fhg/util/random_string.hpp>
 
-#include <fhglog/LogMacros.hpp>
+#include <fhglog/Configuration.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/ref.hpp>
@@ -34,7 +34,7 @@ struct setup_logging
   setup_logging()
   {
     setenv ("FHGLOG_level", "TRACE", true);
-    FHGLOG_SETUP (io_service);
+    fhg::log::configure (io_service);
   }
 };
 
