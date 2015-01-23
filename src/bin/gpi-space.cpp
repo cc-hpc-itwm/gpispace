@@ -29,7 +29,7 @@
 #include <boost/make_shared.hpp>
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
+#include <boost/thread/scoped_thread.hpp>
 
 #include <chrono>
 #include <memory>
@@ -189,23 +189,10 @@ try
         (topology_peer_io_service, fhg::com::host_t ("*"), fhg::com::port_t ("0"))
     );
 
+  boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> const
+    topology_peer_thread (&fhg::com::peer_t::run, topology_peer);
 
-  boost::shared_ptr<boost::thread> topology_peer_thread
-    (boost::make_shared<boost::thread> (&fhg::com::peer_t::run, topology_peer));
-
-  try
-  {
-    topology_peer->start ();
-  }
-  catch (std::exception const& ex)
-  {
-    LOG(ERROR, "could not start peer: " << ex.what());
-    topology_peer_thread->interrupt();
-    topology_peer_thread->join();
-    topology_peer.reset();
-    topology_peer_thread.reset();
-    throw;
-  }
+  topology_peer->start();
 
   std::unique_ptr<gpi::api::gpi_api_t> const gpi_api
     ( [&gpi_mem, &gpi_timeout, &port, &requested_api, &topology_peer]()
@@ -271,14 +258,6 @@ try
     }
 
     stop_requested.wait();
-
-    topology_peer->stop();
-    if (topology_peer_thread->joinable())
-    {
-      topology_peer_thread->join();
-    }
-    topology_peer.reset();
-    topology_peer_thread.reset();
 
     LOG (INFO, "gpi process (rank " << gpi_api->rank() << ") terminated");
     return EXIT_SUCCESS;
