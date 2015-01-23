@@ -326,15 +326,6 @@ try
           fprintf(stderr, "%s: mem-size invalid: %s\n", program_name, av[i]);
           exit(EX_INVAL);
         }
-        if (gpi_mem < sizeof(config_t))
-        {
-          fprintf (stderr
-                  , "%s: memory size too small, at least %lu bytes required!\n"
-                  , program_name
-                  , sizeof(config_t)
-                  );
-          exit(EX_INVAL);
-        }
         ++i;
       }
       else
