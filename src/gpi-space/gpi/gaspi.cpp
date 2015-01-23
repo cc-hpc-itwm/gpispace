@@ -24,12 +24,13 @@ namespace gpi
                             , T... arguments
                             )
       {
-        const int rc = f (arguments...);
+        gaspi_return_t const rc (f (arguments...));
         if (rc != 0)
         {
           throw gpi::exception::gpi_error
             ( gpi::error::internal_error()
-            , function_name + " failed: gaspi_return_t := " + std::to_string (rc)
+            , function_name + " failed: " + gaspi_error_str (rc)
+            + " (" + std::to_string (rc) + ")"
             );
         }
       }
