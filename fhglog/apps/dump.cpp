@@ -10,8 +10,6 @@
 #include <fstream>
 #include <iostream>
 
-namespace po = boost::program_options;
-
 namespace
 {
   namespace option
@@ -24,12 +22,12 @@ namespace
 int main(int argc, char **argv)
 try
 {
-  po::options_description desc("options");
+  boost::program_options::options_description desc("options");
 
   desc.add_options()
     ("help,h", "this message")
-    (option::level, po::value<std::string>()->required(), "filter events with a smaller level")
-    (option::format, po::value<std::string>()->default_value("short")
+    (option::level, boost::program_options::value<std::string>()->required(), "filter events with a smaller level")
+    (option::format, boost::program_options::value<std::string>()->default_value("short")
     , ("possible values:\n"
     "  short:\t use a short logging format (" + fhg::log::default_format::SHORT() + ")\n"
     "   long:\t use a long logging format (" + fhg::log::default_format::LONG() + ")\n"
@@ -51,9 +49,9 @@ try
     )
     ;
 
-  po::variables_map vm;
-  po::store (po::parse_command_line(argc, argv, desc), vm);
-  po::notify (vm);
+  boost::program_options::variables_map vm;
+  boost::program_options::store (boost::program_options::parse_command_line(argc, argv, desc), vm);
+  boost::program_options::notify (vm);
 
   if (vm.count("help"))
   {
