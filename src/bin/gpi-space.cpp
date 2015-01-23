@@ -211,22 +211,6 @@ try
       }()
     );
 
-  LOG (INFO, "GPI started: " << gpi_api->rank());
-
-  if (0 == gpi_api->rank())
-  {
-    LOG (INFO, "GPISpace version: " << fhg::project_version());
-    LOG (INFO, "GPISpace revision: " << fhg::project_revision());
-    LOG (INFO, "GPIApi version: " << gpi_api->version());
-  }
-
-    LOG ( TRACE
-        ,  "rank=" << gpi_api->rank()
-        << " dma=" << gpi_api->dma_ptr()
-        << " #nodes=" << gpi_api->number_of_nodes()
-        << " mem_size=" << gpi_api->memory_size()
-        );
-
     // other url examples are:
     //      gpi://?buffers=8&buffer_size=4194304 GPI memory
     //      sfs://<path>?create=true&size=1073741824
@@ -236,8 +220,6 @@ try
       , *gpi_api
       , topology_peer
       );
-
-    LOG (INFO, "started GPI interface on rank " << gpi_api->rank() << " at " << socket_path);
 
     fhg::util::thread::event<> stop_requested;
     const std::function<void()> request_stop
@@ -259,7 +241,6 @@ try
 
     stop_requested.wait();
 
-    LOG (INFO, "gpi process (rank " << gpi_api->rank() << ") terminated");
     return EXIT_SUCCESS;
 }
 catch (...)
