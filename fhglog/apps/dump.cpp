@@ -30,9 +30,9 @@ try
     ("help,h", "this message")
     (option::level, po::value<std::string>()->required(), "filter events with a smaller level")
     (option::format, po::value<std::string>()->default_value("short")
-    , "possible values:\n"
-    "  short:\t use a short logging format (eq. to \"%s: %l %p:%L - %m%n\")\n"
-    "   long:\t use a long logging format (eq. to \"%t %S %l pid:%R thread:%T %p:%L (%F) - %m%n\")\n"
+    , ("possible values:\n"
+    "  short:\t use a short logging format (" + fhg::log::default_format::SHORT() + ")\n"
+    "   long:\t use a long logging format (" + fhg::log::default_format::LONG() + ")\n"
     " custom:\t provide your own format\n"
     "   format flags:\n"
     "      %s - log level (short)\n"
@@ -47,7 +47,7 @@ try
     "      %T - thread id\n"
     "      %R - process id\n"
     "      %n - new line\n"
-    "      %l - logger name"
+    "      %l - logger name").c_str()
     )
     ;
 
