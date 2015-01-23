@@ -233,8 +233,6 @@ try
     LOG (INFO, "GPIApi version: " << gpi_api->version());
   }
 
-  try
-  {
     LOG ( TRACE
         ,  "rank=" << gpi_api->rank()
         << " dma=" << gpi_api->dma_ptr()
@@ -284,14 +282,6 @@ try
 
     LOG (INFO, "gpi process (rank " << gpi_api->rank() << ") terminated");
     return EXIT_SUCCESS;
-  }
-  catch (...)
-  {
-    std::ostringstream ss;
-    fhg::util::print_current_exception (ss, "");
-    LOG (ERROR, "gpi process (rank " << gpi_api->rank() << ") failed: " << ss.str());
-    return EXIT_FAILURE;
-  }
 }
 catch (...)
 {
