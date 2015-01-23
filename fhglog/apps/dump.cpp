@@ -1,5 +1,5 @@
 #include <fhglog/appender/stream.hpp>
-#include <fhglog/LogMacros.hpp>
+#include <fhglog/Logger.hpp>
 #include <fhglog/format.hpp>
 
 #include <fhg/util/parse/position.hpp>
