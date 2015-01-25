@@ -615,6 +615,7 @@ namespace fhg
                               , { "--log-host", log_host
                                 , "--log-port", std::to_string (log_port)
                                 , "--log-level", verbose ? "TRACE" : "INFO"
+                                , "--log-file", (log_dir / ("vmem-" + entry_point.hostname + ".log")).string()
                                 , "--gpi-mem", std::to_string (gpi_mem.get())
                                 , "--socket", gpi_socket.get().string()
                                 , "--port", std::to_string (vmem_port.get())
