@@ -13,6 +13,8 @@ set (srcs
 
 ADD_LIBRARY(sdpa ${srcs})
 target_link_libraries (sdpa
+  gpi-space-pc-client-static
+  gpi-space-pc-segment
   ${Boost_SERIALIZATION_LIBRARY}
   ${Boost_DATE_TIME_LIBRARY}
   ${FhgCom_LIBRARY}

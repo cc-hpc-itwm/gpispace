@@ -54,12 +54,16 @@ namespace fhg
           {
             if (port.is_tunnel())
             {
-              const boost::optional<std::string> tunnel_direction
-                (port.get().properties().get ("fhg.pnete.tunnel.direction"));
+              boost::optional<pnet::type::value::value_type> const tunnel_direction
+                ( port.get().properties().get
+                    ({"fhg", "pnete", "tunnel", "direction"})
+                );
 
               return !tunnel_direction ? we::type::PORT_IN
-                : *tunnel_direction == "out" ? we::type::PORT_OUT
-                : *tunnel_direction == "in" ? we::type::PORT_IN
+                : boost::get<std::string> (*tunnel_direction) == "out"
+                  ? we::type::PORT_OUT
+                : boost::get<std::string> (*tunnel_direction) == "in"
+                  ? we::type::PORT_IN
                 : throw std::runtime_error
                   ("bad fhg.pnete.tunnel.direction (neither 'in' nor 'out')");
             }

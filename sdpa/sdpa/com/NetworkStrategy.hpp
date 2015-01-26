@@ -20,6 +20,7 @@ namespace sdpa
     {
     public:
       NetworkStrategy ( std::function<void (sdpa::events::SDPAEvent::Ptr)> event_handler
+                      , boost::asio::io_service& peer_io_service
                       , std::string const & peer_name
                       , fhg::com::host_t const & host
                       , fhg::com::port_t const & port
@@ -31,7 +32,9 @@ namespace sdpa
 
     private:
       void handle_send (boost::shared_ptr<events::SDPAEvent> const & e, boost::system::error_code const & ec);
-      void handle_recv (boost::system::error_code const & ec);
+      void handle_recv ( boost::system::error_code const & ec
+                       , boost::optional<std::string> source_name
+                       );
 
       void kvs_error_handler (boost::system::error_code const &);
 

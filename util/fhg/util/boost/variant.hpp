@@ -60,6 +60,15 @@ namespace fhg
       }
 
       template<typename T, typename variant_type>
+        boost::optional<T const&> get_or_none
+          (boost::optional<variant_type> const& variant)
+      {
+        return variant
+          ? boost::apply_visitor (get_or_none_impl<const T>(), variant.get())
+          : boost::none;
+      }
+
+      template<typename T, typename variant_type>
         bool is_of_type (const variant_type& variant)
       {
         return boost::apply_visitor (is_of_type_impl<T>(), variant);

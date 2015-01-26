@@ -37,7 +37,7 @@
 #define PARENT_IMPL(PARENT,TYPE)                                        \
   bool TYPE ## _type::has_parent() const                                \
   {                                                                     \
-    return _parent;                                                     \
+    return !!_parent;                                                   \
   }                                                                     \
   boost::optional<const PARENT ## _type&>                               \
   TYPE ## _type::parent() const                                         \

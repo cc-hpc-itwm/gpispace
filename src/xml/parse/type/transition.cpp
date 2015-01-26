@@ -917,12 +917,15 @@ namespace xml
 
               if (num_outport > 1)
               {
-                const std::string
-                  key ("pnetc.warning.inline_many_output_ports");
                 const boost::optional<const ::we::type::property::value_type&>
-                  warning_switch (properties.get (key));
+                  warning_switch ( properties.get ( { "pnetc"
+                                                    , "warning"
+                                                    , "inline_many_output_ports"
+                                                    }
+                                                  )
+                                 );
 
-                if (!warning_switch || *warning_switch != "off")
+                if (boost::get<bool> (warning_switch.get_value_or (false)))
                 {
                   state.warn ( warning::inline_many_output_ports
                              ( trans.name()
@@ -995,7 +998,7 @@ namespace xml
             {
               we::type::property::type properties;
 
-              properties.set ("pnetc.tunnel", we::type::property::value_type());
+              properties.set ({"pnetc", "tunnel"}, we::type::property::value_type());
 
               we_net.add_connection
                 ( we::edge::PT

@@ -1,6 +1,14 @@
 #ifndef FHGLOG_CONFIGURATION_HPP
 #define FHGLOG_CONFIGURATION_HPP 1
 
+namespace boost
+{
+  namespace asio
+  {
+    class io_service;
+  }
+}
+
 namespace fhg
 {
   namespace log
@@ -17,7 +25,7 @@ namespace fhg
      *  FHGLOG_disabled={anything}       disable logging if defined
      */
 
-    void configure();
+    void configure (boost::asio::io_service& remote_log_io_service);
   }
 }
 

@@ -18,6 +18,28 @@ if [ -z "$SDPA_HOME" ] ; then
     exit 1
 fi
 
+if [ -z "${SDPA_STATE_DIR}" ]
+then
+  echo "SDPA must be started! (SDPA_STATE_DIR is empty)" >&2
+  exit 1
+fi
+if [ ! -f "${SDPA_STATE_DIR}/kvs.host" ]
+then
+  echo "SDPA must be started! (kvs host not found)" >&2
+  exit 1
+fi
+if [ ! -f "${SDPA_STATE_DIR}/kvs.port" ]
+then
+  echo "SDPA must be started! (kvs port not found)" >&2
+  exit 1
+fi
+
+# todo: remove magic: specify filenames instead of relying on files?
+kvs_host=$(cat "${SDPA_STATE_DIR}/kvs.host")
+kvs_port=$(cat "${SDPA_STATE_DIR}/kvs.port")
+
+SDPACFLAGS="--kvs-host ${kvs_host} --kvs-port ${kvs_port}"
+
 # try to avoid cyclic execution of $self
 mydir=$(readlink -f $(cd $(dirname $(which $0)) && pwd))
 self="$mydir/$(basename $0)"

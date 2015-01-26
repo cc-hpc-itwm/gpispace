@@ -22,7 +22,6 @@ namespace gpi
 
         ~segment_t ();
 
-        bool is_special () const;
         void create (const mode_t mode = 00600);
         void open ();
         void close ();

@@ -38,9 +38,11 @@ namespace xml
         , std::string const& global
         , std::string const& local
         , const we::type::property::type& properties
+        , boost::optional<bool> const& not_modified_in_module_call
         )
           : memory_transfer_type
             (position_of_definition, global, local, properties)
+          , _not_modified_in_module_call (not_modified_in_module_call)
       {}
 
       memory_getput::memory_getput
@@ -48,9 +50,11 @@ namespace xml
         , std::string const& global
         , std::string const& local
         , const we::type::property::type& properties
+        , boost::optional<bool> const& not_modified_in_module_call
         )
           : memory_transfer_type
             (position_of_definition, global, local, properties)
+          , _not_modified_in_module_call (not_modified_in_module_call)
       {}
 
       namespace dump
@@ -79,12 +83,16 @@ namespace xml
         void dump (::fhg::util::xml::xmlstream& s, const memory_put& mp)
         {
           s.open ("memory-put");
+          s.attr
+            ("not-modified-in-module-call", mp.not_modified_in_module_call());
           dump_transfer (s, mp);
           s.close();
         }
         void dump (::fhg::util::xml::xmlstream& s, const memory_getput& mp)
         {
           s.open ("memory-getput");
+          s.attr
+            ("not-modified-in-module-call", mp.not_modified_in_module_call());
           dump_transfer (s, mp);
           s.close();
         }

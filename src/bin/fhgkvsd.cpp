@@ -18,43 +18,21 @@
 
 int main(int ac, char *av[])
 {
-  FHGLOG_SETUP();
+  boost::asio::io_service remote_log_io_service;
+  FHGLOG_SETUP (remote_log_io_service);
 
   fhg::log::Logger::ptr_t logger (fhg::log::Logger::get ("fhgkvsd"));
 
   namespace po = boost::program_options;
 
-  std::string server_address ("*");
-  std::string server_port ("2439");
   std::string pidfile;
   bool daemonize = false;
-
-  if (getenv("KVS_URL") != nullptr)
-  {
-    try
-    {
-      using namespace fhg::com;
-      peer_info_t pi (getenv("KVS_URL"));
-      server_address = pi.host(server_address);
-      server_port = pi.port(server_port);
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "W: malformed environment variable KVS_URL: " << ex.what() << std::endl;
-    }
-  }
-
-  bool reuse_address (true);
-  std::string store_path;
 
   po::options_description desc ("options");
   desc.add_options()
     ("help,h", "print this help")
-    ("bind,b", po::value<std::string>(&server_address)->default_value(server_address), "bind to this address")
-    ("port,p", po::value<std::string>(&server_port)->default_value(server_port), "port or service name to use")
-    ("reuse-address", po::value<bool>(&reuse_address)->default_value(reuse_address), "reuse address")
-    ("store,s", po::value<std::string>(&store_path), "path to persistent store")
-    ("clear,C", "start with an empty store")
+    ("bind", po::value<std::string>()->required(), "bind to this address")
+    ("port", po::value<std::string>()->required(), "port or service name to use")
     ("pidfile", po::value<std::string>(&pidfile)->required(), "write pid to pidfile (required)")
     ("daemonize", "daemonize after all checks were successful")
     ;
@@ -84,11 +62,6 @@ int main(int ac, char *av[])
   if (vm.count ("daemonize"))
     daemonize = true;
 
-  if (server_address == "*")
-  {
-    server_address = "0";
-  }
-
   if (pidfile.empty())
   {
     std::cerr << "parameter to --pidfile is empty!" << std::endl
@@ -108,42 +81,28 @@ int main(int ac, char *av[])
 
     fhg::util::pidfile_writer pidfile_writer (pidfile);
 
-    fhg::com::kvs::server::kvsd kvsd
-      (boost::optional<std::string> (!store_path.empty(), store_path));
-    if (vm.count ("clear"))
-    {
-      kvsd.clear ("");
-    }
-
-    signal_handler.add ( SIGHUP
-                       , [&kvsd] (int, siginfo_t*, void*) { kvsd.clear (""); }
-                       );
-    signal_handler.add ( SIGUSR1
-                       , [&kvsd] (int, siginfo_t*, void*) { kvsd.save(); }
-                       );
-    signal_handler.add ( SIGUSR2
-                       , [&kvsd] (int, siginfo_t*, void*) { kvsd.load(); }
-                       );
+    fhg::com::kvs::server::kvsd kvsd;
 
     fhg::com::tcp_server server ( io_service
                                 , kvsd
-                                , server_address
-                                , server_port
-                                , reuse_address
+                                , vm["bind"].as<std::string>() == "*"
+                                ? "0"
+                                : vm["bind"].as<std::string>()
+                                , vm["port"].as<std::string>()
+                                , true
                                 );
 
-    io_service.notify_fork (boost::asio::io_service::fork_prepare);
+    std::cout << server.port() << std::endl;
+
     if (daemonize)
     {
-      fhg::util::fork_and_daemonize_child_and_abandon_parent();
+      fhg::util::fork_and_daemonize_child_and_abandon_parent
+        ({&remote_log_io_service, &io_service});
     }
 
     pidfile_writer.write();
 
-    io_service.notify_fork (boost::asio::io_service::fork_child);
     io_service.run();
-
-    kvsd.save();
 
     if (not pidfile.empty())
     {

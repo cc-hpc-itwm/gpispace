@@ -6,12 +6,10 @@
 #include <we/type/value.hpp>
 #include <we/type/value/name.hpp>
 #include <we/type/value/name_of.hpp>
-#include <we/type/value/of_type.hpp>
 #include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
 #include <we/type/value/positions.hpp>
 #include <we/type/value/read.hpp>
-#include <we/type/value/remove.hpp>
 #include <we/type/value/show.hpp>
 #include <we/type/value/wrap.hpp>
 #include <we/type/value/unwrap.hpp>
@@ -27,6 +25,7 @@
 #include <fhg/util/indenter.hpp>
 
 #include <fhg/util/boost/test/printer/list.hpp>
+#include <fhg/util/boost/test/printer/optional.hpp>
 #include <fhg/util/boost/test/printer/set.hpp>
 #include <fhg/util/boost/test/printer/map.hpp>
 #include <fhg/util/boost/test/require_exception.hpp>
@@ -268,13 +267,11 @@ BOOST_AUTO_TEST_CASE (peek)
 
   {
     BOOST_CHECK_NE (peek ("set", m2), boost::none);
-    BOOST_CHECK_EQUAL (*peek ("set", m2), set);
-    // BOOST_REQUIRE_EQUAL (*peek ("set", m2), set);
-    // | Does not compile. Why?
+    BOOST_CHECK_EQUAL (peek ("set", m2).get(), set);
   }
   {
     BOOST_CHECK_NE (peek ("m1.l1", m2), boost::none);
-    BOOST_CHECK_EQUAL (*peek ("m1.l1", m2), l1);
+    BOOST_CHECK_EQUAL (peek ("m1.l1", m2).get(), l1);
   }
 }
 
@@ -293,7 +290,7 @@ BOOST_AUTO_TEST_CASE (peek_ref)
 
   {
     const std::list<value_type>& g
-      (boost::get<const std::list<value_type>&> (*peek ("l", m)));
+      (boost::get<const std::list<value_type>&> (peek ("l", m).get()));
 
     BOOST_CHECK (g.empty());
   }
@@ -302,7 +299,7 @@ BOOST_AUTO_TEST_CASE (peek_ref)
 
   {
     std::list<value_type>& r
-      (boost::get<std::list<value_type>&> (*peek ("l", m)));
+      (boost::get<std::list<value_type>&> (peek ("l", m).get()));
 
     BOOST_CHECK (r.empty());
 
@@ -311,7 +308,7 @@ BOOST_AUTO_TEST_CASE (peek_ref)
 
   {
     const std::list<value_type>& g
-      (boost::get<const std::list<value_type>&> (*peek ("l", m)));
+      (boost::get<const std::list<value_type>&> (peek ("l", m).get()));
 
     BOOST_CHECK_EQUAL (g.size(), 1U);
     BOOST_CHECK_EQUAL (*g.begin(), value_type (19));
@@ -333,120 +330,21 @@ BOOST_AUTO_TEST_CASE (poke)
     poke ("s", v, s);
 
     BOOST_CHECK_NE (peek ("s", v), boost::none);
-    BOOST_CHECK_EQUAL (*peek ("s", v), s);
+    BOOST_CHECK_EQUAL (peek ("s", v).get(), s);
   }
   {
     poke ("i", v, i);
     BOOST_CHECK_NE (peek ("i", v), boost::none);
-    BOOST_CHECK_EQUAL (*peek ("i", v), i);
+    BOOST_CHECK_EQUAL (peek ("i", v).get(), i);
 
     poke ("i.i", v, i);
     BOOST_CHECK_NE (peek ("i.i", v), boost::none);
-    BOOST_CHECK_EQUAL (*peek ("i.i", v), i);
+    BOOST_CHECK_EQUAL (peek ("i.i", v).get(), i);
 
     BOOST_CHECK_NE (peek ("i", v), boost::none);
-    BOOST_CHECK_NE (peek ("i", *peek ("i", v)), boost::none);
-    BOOST_CHECK_EQUAL (*peek ("i", *peek ("i", v)), i);
+    BOOST_CHECK_NE (peek ("i", peek ("i", v).get()), boost::none);
+    BOOST_CHECK_EQUAL (peek ("i", peek ("i", v).get()).get(), i);
   }
-}
-
-BOOST_AUTO_TEST_CASE (test_remove)
-{
-  using pnet::type::value::value_type;
-  using pnet::type::value::poke;
-
-  {
-    value_type v (1);
-    pnet::type::value::remove (std::list<std::string>(), v);
-
-    BOOST_REQUIRE_EQUAL (v, value_type());
-  }
-  {
-    value_type v (1);
-
-    fhg::util::boost::test::require_exception<std::runtime_error>
-      ( [&v] { pnet::type::value::remove ("bar", v); }
-      , "value_type::remove: trying to remove from unstructured value"
-      );
-  }
-
-  {
-    value_type v;
-    poke ("foo", v, value_type (1));
-    pnet::type::value::remove (std::list<std::string>(), v);
-
-    BOOST_REQUIRE_EQUAL (v, value_type());
-  }
-  {
-    value_type v;
-    poke ("foo", v, value_type (1));
-
-    fhg::util::boost::test::require_exception<std::runtime_error>
-      ( [&v] { pnet::type::value::remove ("bar", v); }
-      , "value_type::remove: key not found"
-      );
-  }
-
-  {
-    value_type v;
-    poke ("foo", v, value_type (1));
-    pnet::type::value::remove ("foo", v);
-
-    BOOST_REQUIRE_EQUAL (v, value_type (structured_type()));
-  }
-
-  {
-    value_type v;
-    poke ("baz", poke ("foo", v, value_type (structured_type())), value_type (3));
-    poke ("bar", v, value_type (2));
-    pnet::type::value::remove ("foo", v);
-
-    value_type r;
-    poke ("bar", r, value_type (2));
-
-    BOOST_REQUIRE_EQUAL (v, r);
-  }
-
-  {
-    value_type v;
-    poke ("baz", poke ("foo", v, value_type (structured_type())), value_type (3));
-    poke ("bar", v, value_type (2));
-    pnet::type::value::remove ("foo.baz", v);
-
-    value_type r;
-    poke ("foo", r, value_type (structured_type()));
-    poke ("bar", r, value_type (2));
-
-    BOOST_REQUIRE_EQUAL (v, r);
-  }
-}
-
-BOOST_AUTO_TEST_CASE (signature_of_type)
-{
-  using pnet::type::value::of_type;
-  using pnet::type::value::value_type;
-
-#define CHECK(_name, _value)                                            \
-  BOOST_CHECK_EQUAL (of_type (pnet::type::value::_name()), value_type (_value))
-
-  CHECK (CONTROL, we::type::literal::control());
-  CHECK (BOOL, false);
-  CHECK (INT, 0);
-  CHECK (LONG, 0L);
-  CHECK (UINT, 0U);
-  CHECK (ULONG, 0UL);
-  CHECK (FLOAT, 0.0f);
-  CHECK (DOUBLE, 0.0);
-  CHECK (CHAR, '\0');
-  CHECK (STRING, std::string (""));
-  CHECK (BITSET, bitsetofint::type());
-  CHECK (BYTEARRAY, we::type::bytearray());
-  CHECK (LIST, std::list<value_type>());
-  CHECK (SET, std::set<value_type>());
-  std::map<value_type, value_type> m;
-  CHECK (MAP, m);
-
-#undef CHECK
 }
 
 BOOST_AUTO_TEST_CASE (signature_name_of)

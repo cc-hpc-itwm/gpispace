@@ -1,9 +1,14 @@
 #define BOOST_TEST_MODULE WeTypeBytearrayTest
 #include <boost/test/unit_test.hpp>
 
+#include <fhg/util/boost/test/printer/tuple.hpp>
+#include <fhg/util/boost/test.hpp>
+
 #include <fhglog/LogMacros.hpp>
 
 #include <we/type/bytearray.hpp>
+
+#include <fhg/util/random_string.hpp>
 
 #include <inttypes.h>
 
@@ -59,6 +64,13 @@ BOOST_AUTO_TEST_CASE (ba_convert)
 
   BOOST_CHECK_EQUAL (x.copy (&v), 8);
   BOOST_CHECK_EQUAL (v, (1UL << 63));
+}
+
+BOOST_AUTO_TEST_CASE (ba_to_string_after_ctor_string_is_id)
+{
+  std::string const s (fhg::util::random_string());
+
+  BOOST_REQUIRE_EQUAL (we::type::bytearray (s).to_string(), s);
 }
 
 #include <sstream>
@@ -150,4 +162,37 @@ BOOST_AUTO_TEST_CASE (ba_assign_from_alien)
 
   BOOST_CHECK_EQUAL (ba.copy (&f), sizeof(float));
   BOOST_CHECK_EQUAL (f, 1.0f);
+}
+
+namespace
+{
+  template<typename T> void use_ctor_and_copy_and_require_equal (T x)
+  {
+    we::type::bytearray ba (x);
+    T y;
+    ba.copy (&y);
+    BOOST_REQUIRE_EQUAL (x, y);
+  }
+
+  struct pod_t
+  {
+    int x;
+    int y;
+  };
+  bool operator== (pod_t const& lhs, pod_t const& rhs)
+  {
+    return lhs.x == rhs.x && lhs.y == rhs.y;
+  }
+}
+
+FHG_BOOST_TEST_LOG_VALUE_PRINTER (pod_t, os, pod)
+{
+  os << pod.x << ", " << pod.y;
+}
+
+BOOST_AUTO_TEST_CASE (ctor_from_T)
+{
+  use_ctor_and_copy_and_require_equal (1.0f);
+  use_ctor_and_copy_and_require_equal (pod_t {1, 15});
+  use_ctor_and_copy_and_require_equal (std::make_tuple (false, 8.0, 'a'));
 }

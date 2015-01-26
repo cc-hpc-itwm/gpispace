@@ -27,9 +27,6 @@ namespace gpi
       virtual int del_memory (const gpi::pc::type::segment_id_t seg_id) override;
 
       virtual bool is_master () const override;
-
-      virtual int go () override;
-      virtual int wait_for_go () override;
     };
   }
 }

@@ -3,6 +3,10 @@
 #include <drts/drts.hpp>
 #include <drts/virtual_memory.hpp>
 
+#include <we/type/value/poke.hpp>
+
+#include <fhg/util/make_unique.hpp>
+
 #include <gpi-space/pc/client/api.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/type/flags.hpp>
@@ -16,10 +20,11 @@ namespace gspc
 {
   namespace
   {
-    gpi::pc::type::handle_id_t vmem_alloc ( gpi::pc::client::api_t* api
-                                          , unsigned long const size
-                                          , std::string const& description
-                                          )
+    gpi::pc::type::handle_id_t vmem_alloc
+      ( std::unique_ptr<gpi::pc::client::api_t> const& api
+      , unsigned long const size
+      , std::string const& description
+      )
     {
       // taken from bin/gpish
       gpi::pc::type::segment_id_t const segment_id (1);
@@ -28,7 +33,7 @@ namespace gspc
         (api->alloc ( segment_id
                     , size
                     , description
-                    , gpi::pc::F_GLOBAL | gpi::pc::F_PERSISTENT
+                    , gpi::pc::F_GLOBAL
                     )
         );
 
@@ -49,12 +54,13 @@ namespace gspc
 
   struct vmem_allocation::implementation
   {
-    implementation ( gpi::pc::client::api_t* api
+    implementation ( std::unique_ptr<gpi::pc::client::api_t> const& api
                    , unsigned long size
                    , std::string const& description
                    )
       : _api (api)
-      , _handle_id (vmem_alloc (_api, size, description))
+      , _size (size)
+      , _handle_id (vmem_alloc (_api, _size, description))
       , _disowned (false)
     {}
     ~implementation()
@@ -66,13 +72,15 @@ namespace gspc
     }
     implementation (implementation&& other)
       : _api (std::move (other._api))
+      , _size (std::move (other._size))
       , _handle_id (std::move (other._handle_id))
       , _disowned (std::move (other._disowned))
     {
       other._disowned = true;
     }
 
-    gpi::pc::client::api_t* _api;
+    std::unique_ptr<gpi::pc::client::api_t> const& _api;
+    unsigned long const _size;
     gpi::pc::type::handle_id_t _handle_id;
     bool _disowned;
   };
@@ -81,14 +89,12 @@ namespace gspc
                                    , unsigned long size
                                    , std::string const& description
                                    )
-    : _ ( new vmem_allocation::implementation
+    : _ ( fhg::util::make_unique<vmem_allocation::implementation>
           (drts->_virtual_memory_api, size, description)
         )
   {}
   vmem_allocation::~vmem_allocation()
-  {
-    delete _;
-  }
+  {}
   std::string const vmem_allocation::handle() const
   {
     // taken from gpi-space/pc/type/handle.hpp
@@ -102,9 +108,18 @@ namespace gspc
 
     return oss.str();
   }
+  pnet::type::value::value_type vmem_allocation::global_memory_range() const
+  {
+    pnet::type::value::value_type name;
+    pnet::type::value::poke ("name", name, handle());
+    pnet::type::value::value_type range;
+    pnet::type::value::poke ("handle", range, name);
+    pnet::type::value::poke ("offset", range, 0UL);
+    pnet::type::value::poke ("size", range, _->_size);
+
+    return range;
+  }
   vmem_allocation::vmem_allocation (vmem_allocation&& other)
     : _ (std::move (other._))
-  {
-    other._ = nullptr;
-  }
+  {}
 }

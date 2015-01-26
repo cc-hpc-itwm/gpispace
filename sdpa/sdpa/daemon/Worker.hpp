@@ -15,40 +15,42 @@ namespace sdpa
 {
   namespace daemon
   {
-    class Worker
-    {
+    class Worker {
     public:
+
       typedef boost::shared_ptr<Worker> ptr_t;
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
 
-      explicit Worker ( const worker_id_t&
-                      , const boost::optional<unsigned int>&
+      explicit Worker ( const worker_id_t& name
+                      , const boost::optional<unsigned int>& cap
                       , const capabilities_set_t&
-                      , const std::string&
+                      , const bool children_allowed
+                      , const std::string& hostname
                       );
 
-      void submit (const job_id_t&);
-      void acknowledge (const job_id_t&);
+      void submit(const job_id_t&);
+
+      void acknowledge(const job_id_t&);
 
       // update last service time
       double lastScheduleTime() {lock_type lock(mtx_); return last_schedule_time_; }
 
       const worker_id_t &name() const { lock_type lock(mtx_); return name_; }
       const std::string hostname() const;
-
       boost::optional<unsigned int> capacity() const { lock_type lock(mtx_); return capacity_; }
 
       // capabilities
       const capabilities_set_t& capabilities() const;
+      bool children_allowed() const { return children_allowed_;}
 
-      bool addCapabilities (const capabilities_set_t& cpbset);
-      void removeCapabilities (const capabilities_set_t& cpbset);
-      bool hasCapability (const std::string& cpbName);
+      bool addCapabilities(const capabilities_set_t& cpbset);
+      void removeCapabilities(const capabilities_set_t& cpbset);
+      bool hasCapability(const std::string& cpbName);
 
-      bool has_job (const job_id_t& job_id);
+      bool has_job( const job_id_t& job_id );
 
-      void deleteJob (const job_id_t &job_id );
+      void deleteJob(const job_id_t &job_id );
 
       // methods related to reservation
       bool isReserved();
@@ -63,6 +65,7 @@ namespace sdpa
       worker_id_t name_; //! name of the worker
       boost::optional<unsigned int> capacity_;
       capabilities_set_t capabilities_;
+      bool children_allowed_;
       std::string hostname_;
       double last_schedule_time_;
 

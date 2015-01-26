@@ -11,7 +11,7 @@
 #include <pnete/data/handle/port.hpp>
 #include <pnete/data/handle/transition.hpp>
 
-#include <fhg/util/read_bool.hpp>
+#include <fhg/util/boost/variant.hpp>
 
 #include <xml/parse/error.hpp>
 #include <xml/parse/id/types.hpp>
@@ -252,37 +252,23 @@ namespace fhg
         change_manager, document
 
 
-        template<typename T>
-          ::we::type::property::value_type to_property_type (const T& t)
-        {
-          return
-            boost::lexical_cast< ::we::type::property::value_type> (t);
-        }
-
-        template<typename T>
-          T from_property_type (const ::we::type::property::value_type& v)
-        {
-          return
-            boost::lexical_cast<T> (v);
-        }
-
         template<typename HANDLE_TYPE>
           void set_property ( ACTION_ARG_LIST_NO_DOCUMENT
                             , const HANDLE_TYPE& handle
-                            , const ::we::type::property::key_type& key
+                            , const ::we::type::property::path_type& path
                             , const ::we::type::property::value_type& val
                             )
         {
           typedef HANDLE_TYPE handle_type;
           typedef void (change_manager_t::* signal_type)
             ( const handle_type&
-            , const ::we::type::property::key_type&
+            , const ::we::type::property::path_type&
             , const ::we::type::property::value_type&
             );
 
-          handle.get_ref().properties().set (key, val);
+          handle.get_ref().properties().set (path, val);
           EMIT_SIGNAL ( static_cast<signal_type> (&signal::property_changed)
-                      , handle, key, val
+                      , handle, path, val
                       );
         }
 
@@ -298,24 +284,24 @@ namespace fhg
             ( const QString& name
             , ACTION_ARG_LIST
             , const handle_type& handle
-            , const ::we::type::property::key_type& key
+            , const ::we::type::property::path_type& path
             , const ::we::type::property::value_type& val
             )
               : ACTION_INIT (name)
               , _handle (handle)
-              , _key (key)
+              , _path (path)
               , _new_value (val)
-              , _old_value (*handle.get().properties().get (key))
+              , _old_value (*handle.get().properties().get (path))
           { }
 
           virtual void undo() override
           {
-            set_property (ACTION_IMPL_ARGS, _handle, _key, _old_value);
+            set_property (ACTION_IMPL_ARGS, _handle, _path, _old_value);
           }
 
           virtual void redo() override
           {
-            set_property (ACTION_IMPL_ARGS, _handle, _key, _new_value);
+            set_property (ACTION_IMPL_ARGS, _handle, _path, _new_value);
           }
 
           const ::we::type::property::value_type& new_value
@@ -331,7 +317,7 @@ namespace fhg
         private:
           ACTION_MEMBERS;
           const handle_type _handle;
-          const ::we::type::property::key_type _key;
+          const ::we::type::property::path_type _path;
           ::we::type::property::value_type _new_value;
           const ::we::type::property::value_type _old_value;
         };
@@ -454,24 +440,22 @@ namespace fhg
               , _id (id)
               , _handle (handle)
               , _outer (outer)
-              , _set_x_action ( new action::meta_set_property<handle_type>
-                                ( QObject::tr ("set_transition_property_action")
-                                , ACTION_CTOR_ARGS, handle
-                                , !_outer
-                                ? "fhg.pnete.position.x"
-                                : "fhg.pnete.outer_position.x"
-                                , to_property_type (position.x())
-                                )
-                              )
-              , _set_y_action ( new action::meta_set_property<handle_type>
-                                ( QObject::tr ("set_transition_property_action")
-                                , ACTION_CTOR_ARGS, handle
-                                , !_outer
-                                ? "fhg.pnete.position.y"
-                                : "fhg.pnete.outer_position.y"
-                                , to_property_type (position.y())
-                                )
-                              )
+              , _set_x_action
+                ( new action::meta_set_property<handle_type>
+                  ( QObject::tr ("set_transition_property_action")
+                  , ACTION_CTOR_ARGS, handle
+                  , {"fhg", "pnete", !_outer ? "position" : "outer_position", "x"}
+                  , position.x()
+                  )
+                )
+              , _set_y_action
+                ( new action::meta_set_property<handle_type>
+                  ( QObject::tr ("set_transition_property_action")
+                  , ACTION_CTOR_ARGS, handle
+                  , {"fhg", "pnete", !_outer ? "position" : "outer_position", "y"}
+                  , position.y()
+                  )
+                )
           { }
 
           virtual void undo() override
@@ -1161,10 +1145,9 @@ namespace fhg
         template<typename ID>
           bool is_hard_hidden (const ID& id)
         {
-          return fhg::util::read_bool
-            ( id.get().properties().get ("fhg.pnete.is_hard_hidden")
-            .get_value_or ("false")
-            );
+          return util::boost::get_or_none<bool>
+              (id.get().properties().get ({"fhg", "pnete", "is_hard_hidden"}))
+            .get_value_or (false);
         }
 
         template<typename A, typename B>
@@ -1173,7 +1156,7 @@ namespace fhg
           we::type::property::type prop;
           if (is_hard_hidden (a) || is_hard_hidden (b))
           {
-            prop.set ("fhg.pnete.is_hard_hidden", "true");
+            prop.set ({"fhg", "pnete", "is_hard_hidden"}, true);
           }
           return prop;
         }
@@ -1320,7 +1303,7 @@ namespace fhg
           );
 
         place.get_ref().properties().set
-          ("fhg.pnete.is_implicit_place", "true");
+          ({"fhg", "pnete", "is_implicit_place"}, true);
 
         push (new action::add_place (ACTION_CTOR_ARGS (net), net.id(), place));
 
@@ -1330,13 +1313,21 @@ namespace fhg
         add_connection (place_handle, port_b, true);
 
         const boost::optional<std::string> port_a_slot_return
-          (port_a.get().properties().get ("fhg.seislib.slot.return"));
+          ( util::boost::get_or_none<std::string>
+              (port_a.get().properties().get ({"fhg", "seislib", "slot", "return"}))
+          );
         const boost::optional<std::string> port_b_slot_return
-          (port_b.get().properties().get ("fhg.seislib.slot.return"));
+          ( util::boost::get_or_none<std::string>
+              (port_b.get().properties().get ({"fhg", "seislib", "slot", "return"}))
+          );
         const boost::optional<std::string> port_a_slot_uses
-          (port_a.get().properties().get ("fhg.seislib.slot.uses"));
+          ( util::boost::get_or_none<std::string>
+              (port_a.get().properties().get ({"fhg", "seislib", "slot", "uses"}))
+          );
         const boost::optional<std::string> port_b_slot_uses
-          (port_b.get().properties().get ("fhg.seislib.slot.uses"));
+          ( util::boost::get_or_none<std::string>
+              (port_b.get().properties().get ({"fhg", "seislib", "slot", "uses"}))
+          );
 
         // one does, other does not
         if (  !port_a_slot_uses && !port_a_slot_return
@@ -1386,9 +1377,9 @@ namespace fhg
                          );
 
           port_a.get_ref().properties().set
-            ("fhg.seislib.slot.connected_via", place_name);
+            ({"fhg", "seislib", "slot", "connected_via"}, place_name);
           port_b.get_ref().properties().set
-            ("fhg.seislib.slot.connected_via", place_name);
+            ({"fhg", "seislib", "slot", "connected_via"}, place_name);
         }
         else
         {
@@ -1405,8 +1396,10 @@ namespace fhg
         if (connect.get().resolved_port())
         {
           const boost::optional<std::string> connected_via
-            ( connect.get().resolved_port()->get().properties().get
-              ("fhg.seislib.slot.connected_via")
+            ( util::boost::get_or_none<std::string>
+                ( connect.get().resolved_port()->get().properties().get
+                    ({"fhg", "seislib", "slot", "connected_via"})
+                )
             );
           if (connected_via)
           {
@@ -1420,7 +1413,7 @@ namespace fhg
               delete_place (handle::place (*pl, connect.document()));
             }
             connect.get().resolved_port()->get_ref().properties().del
-              ("fhg.seislib.slot.connected_via");
+              ({"fhg", "seislib", "slot", "connected_via"});
           }
         }
 
@@ -1460,24 +1453,24 @@ namespace fhg
 
       void change_manager_t::set_property
         ( const data::handle::connect& connect
-        , const ::we::type::property::key_type& key
+        , const ::we::type::property::path_type& path
         , const ::we::type::property::value_type& val
         )
       {
         push ( new action::meta_set_property<handle::connect>
                ( tr ("set_connect_property_action")
-               , ACTION_CTOR_ARGS (connect), connect, key, val
+               , ACTION_CTOR_ARGS (connect), connect, path, val
                )
              );
       }
 
       void change_manager_t::no_undo_set_property
         ( const data::handle::connect& connect
-        , const ::we::type::property::key_type& key
+        , const ::we::type::property::path_type& path
         , const ::we::type::property::value_type& val
         )
       {
-        action::set_property (ACTION_CTOR_ARGS (connect), connect, key, val);
+        action::set_property (ACTION_CTOR_ARGS (connect), connect, path, val);
       }
 
       // -- place_map -----------------------------------------------
@@ -1488,8 +1481,10 @@ namespace fhg
         if (place_map.get().resolved_tunnel_port())
         {
           const boost::optional<std::string> connected_via
-            ( place_map.get().resolved_tunnel_port()->get().properties().get
-              ("fhg.seislib.slot.connected_via")
+            ( util::boost::get_or_none<std::string>
+                ( place_map.get().resolved_tunnel_port()->get().properties().get
+                    ({"fhg", "seislib", "slot", "connected_via"})
+                )
             );
           if (connected_via)
           {
@@ -1503,7 +1498,7 @@ namespace fhg
               delete_place (handle::place (*pl, place_map.document()));
             }
             place_map.get().resolved_tunnel_port()->get_ref().properties().del
-              ("fhg.seislib.slot.connected_via");
+              ({"fhg", "seislib", "slot", "connected_via"});
           }
         }
 
@@ -1516,24 +1511,24 @@ namespace fhg
 
       void change_manager_t::set_property
         ( const data::handle::place_map& place_map
-        , const ::we::type::property::key_type& key
+        , const ::we::type::property::path_type& path
         , const ::we::type::property::value_type& val
         )
       {
         push ( new action::meta_set_property<handle::place_map>
                ( tr ("set_place_map_property_action")
-               , ACTION_CTOR_ARGS (place_map), place_map, key, val
+               , ACTION_CTOR_ARGS (place_map), place_map, path, val
                )
              );
       }
 
       void change_manager_t::no_undo_set_property
         ( const data::handle::place_map& place_map
-        , const ::we::type::property::key_type& key
+        , const ::we::type::property::path_type& path
         , const ::we::type::property::value_type& val
         )
       {
-        action::set_property (ACTION_CTOR_ARGS (place_map), place_map, key, val);
+        action::set_property (ACTION_CTOR_ARGS (place_map), place_map, path, val);
       }
 
       // -- transition -----------------------------------------------
@@ -1575,7 +1570,9 @@ namespace fhg
                 )
         {
           const boost::optional<std::string> place_name
-            (port.get().properties().get ("fhg.pnete.auto-connect"));
+            ( util::boost::get_or_none<std::string>
+                (port.get().properties().get ({"fhg", "pnete", "auto-connect"}))
+            );
           if (place_name)
           {
             boost::optional<xml::parse::id::ref::place> place
@@ -1653,7 +1650,9 @@ namespace fhg
             continue;
           }
           const handle::connect h (c, transition.document());
-          if (h.resolved_port().get().properties().get ("fhg.pnete.is_hard_hidden"))
+          if ( h.resolved_port().get().properties().get
+                 ({"fhg", "pnete", "is_hard_hidden"})
+             )
           {
             remove_connection (h);
           }
@@ -1669,7 +1668,9 @@ namespace fhg
             continue;
           }
           const handle::place_map h (c, transition.document());
-          if (h.tunnel_port().get().properties().get ("fhg.pnete.is_hard_hidden"))
+          if ( h.tunnel_port().get().properties().get
+                 ({"fhg", "pnete", "is_hard_hidden"})
+             )
           {
             remove_place_map (h);
           }
@@ -1701,25 +1702,25 @@ namespace fhg
 
       void change_manager_t::set_property
         ( const data::handle::transition& transition
-        , const ::we::type::property::key_type& key
+        , const ::we::type::property::path_type& path
         , const ::we::type::property::value_type& val
         )
       {
         push ( new action::meta_set_property<handle::transition>
                ( tr ("set_transition_property_action")
-               , ACTION_CTOR_ARGS (transition), transition, key, val
+               , ACTION_CTOR_ARGS (transition), transition, path, val
                )
              );
       }
 
       void change_manager_t::no_undo_set_property
         ( const data::handle::transition& transition
-        , const ::we::type::property::key_type& key
+        , const ::we::type::property::path_type& path
         , const ::we::type::property::value_type& val
         )
       {
         action::set_property
-          (ACTION_CTOR_ARGS (transition), transition, key, val);
+          (ACTION_CTOR_ARGS (transition), transition, path, val);
       }
 
       void change_manager_t::move_item ( const handle::transition& transition
@@ -1739,13 +1740,13 @@ namespace fhg
       {
         action::set_property ( ACTION_CTOR_ARGS (transition)
                              , transition
-                             , "fhg.pnete.position.x"
-                             , action::to_property_type (position.x())
+                             , {"fhg", "pnete", "position", "x"}
+                             , position.x()
                              );
         action::set_property ( ACTION_CTOR_ARGS (transition)
                              , transition
-                             , "fhg.pnete.position.y"
-                             , action::to_property_type (position.y())
+                             , {"fhg", "pnete", "position", "y"}
+                             , position.y()
                              );
       }
 
@@ -1950,7 +1951,7 @@ namespace fhg
 
       void change_manager_t::make_explicit (const data::handle::place& place)
       {
-        set_property (place, "fhg.pnete.is_implicit_place", "false");
+        set_property (place, {"fhg", "pnete", "is_implicit_place"}, false);
       }
 
       void change_manager_t::make_virtual (const data::handle::place& p)
@@ -2011,24 +2012,24 @@ namespace fhg
 
       void change_manager_t::set_property
         ( const data::handle::place& place
-        , const ::we::type::property::key_type& key
+        , const ::we::type::property::path_type& path
         , const ::we::type::property::value_type& val
         )
       {
         push ( new action::meta_set_property<handle::place>
                ( tr ("set_place_property_action")
-               , ACTION_CTOR_ARGS (place), place, key, val
+               , ACTION_CTOR_ARGS (place), place, path, val
                )
              );
       }
 
       void change_manager_t::no_undo_set_property
         ( const data::handle::place& place
-        , const ::we::type::property::key_type& key
+        , const ::we::type::property::path_type& path
         , const ::we::type::property::value_type& val
         )
       {
-        action::set_property (ACTION_CTOR_ARGS (place), place, key, val);
+        action::set_property (ACTION_CTOR_ARGS (place), place, path, val);
       }
 
       void change_manager_t::move_item ( const handle::place& place
@@ -2048,13 +2049,13 @@ namespace fhg
       {
         action::set_property ( ACTION_CTOR_ARGS (place)
                              , place
-                             , "fhg.pnete.position.x"
-                             , action::to_property_type (position.x())
+                             , {"fhg", "pnete", "position", "x"}
+                             , position.x()
                              );
         action::set_property ( ACTION_CTOR_ARGS (place)
                              ,  place
-                             , "fhg.pnete.position.y"
-                             , action::to_property_type (position.y())
+                             , {"fhg", "pnete", "position", "y"}
+                             , position.y()
                              );
       }
 
@@ -2205,24 +2206,24 @@ namespace fhg
 
       void change_manager_t::set_property
         ( const data::handle::port& port
-        , const ::we::type::property::key_type& key
+        , const ::we::type::property::path_type& path
         , const ::we::type::property::value_type& val
         )
       {
         push ( new action::meta_set_property<handle::port>
                ( tr ("set_port_property_action")
-               , ACTION_CTOR_ARGS (port), port, key, val
+               , ACTION_CTOR_ARGS (port), port, path, val
                )
              );
       }
 
       void change_manager_t::no_undo_set_property
         ( const data::handle::port& port
-        , const ::we::type::property::key_type& key
+        , const ::we::type::property::path_type& path
         , const ::we::type::property::value_type& val
         )
       {
-        action::set_property (ACTION_CTOR_ARGS (port), port, key, val);
+        action::set_property (ACTION_CTOR_ARGS (port), port, path, val);
       }
 
       void change_manager_t::set_name
@@ -2323,13 +2324,13 @@ namespace fhg
       {
         action::set_property ( ACTION_CTOR_ARGS (port)
                              , port
-                             , "fhg.pnete.position.x"
-                             , action::to_property_type (position.x())
+                             , {"fhg", "pnete", "position", "x"}
+                             , position.x()
                              );
         action::set_property ( ACTION_CTOR_ARGS (port)
                              , port
-                             , "fhg.pnete.position.y"
-                             , action::to_property_type (position.y())
+                             , {"fhg", "pnete", "position", "y"}
+                             , position.y()
                              );
       }
 
@@ -2342,24 +2343,24 @@ namespace fhg
 
       void change_manager_t::set_property
         ( const data::handle::function& function
-        , const ::we::type::property::key_type& key
+        , const ::we::type::property::path_type& path
         , const ::we::type::property::value_type& val
         )
       {
         push ( new action::meta_set_property<handle::function>
                ( tr ("set_function_property_action")
-               , ACTION_CTOR_ARGS (function), function, key, val
+               , ACTION_CTOR_ARGS (function), function, path, val
                )
              );
       }
 
       void change_manager_t::no_undo_set_property
         ( const data::handle::function& function
-        , const ::we::type::property::key_type& key
+        , const ::we::type::property::path_type& path
         , const ::we::type::property::value_type& val
         )
       {
-        action::set_property (ACTION_CTOR_ARGS (function), function, key, val);
+        action::set_property (ACTION_CTOR_ARGS (function), function, path, val);
       }
 
       // - expression ------------------------------------------------

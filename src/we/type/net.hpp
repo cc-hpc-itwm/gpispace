@@ -6,7 +6,6 @@
 #include <we/type/net.fwd.hpp>
 
 #include <we/type/activity.hpp>
-#include <we/serialize/unordered_map.hpp>
 #include <we/type/connection.hpp>
 #include <we/type/id.hpp>
 #include <we/type/place.hpp>
@@ -14,6 +13,8 @@
 #include <we/type/value.hpp>
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
+
+#include <fhg/util/boost/serialization/unordered_map.hpp>
 
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
@@ -93,6 +94,7 @@ namespace we
       place_to_port_type const& place_to_port() const;
 
       void put_value (place_id_type, const pnet::type::value::value_type&);
+      void put_value (std::string place_name, pnet::type::value::value_type const&);
 
       const std::list<pnet::type::value::value_type>&
         get_token (place_id_type) const;
@@ -126,6 +128,7 @@ namespace we
     private:
       place_id_type _place_id;
       std::unordered_map<place_id_type, place::type> _pmap;
+      std::unordered_map<std::string, place_id_type> _place_id_by_name;
 
       transition_id_type _transition_id;
       std::unordered_map<transition_id_type, we::type::transition_t> _tmap;
@@ -201,6 +204,7 @@ namespace we
       {
         ar & BOOST_SERIALIZATION_NVP (_place_id);
         ar & BOOST_SERIALIZATION_NVP (_pmap);
+        ar & BOOST_SERIALIZATION_NVP (_place_id_by_name);
         ar & BOOST_SERIALIZATION_NVP (_transition_id);
         ar & BOOST_SERIALIZATION_NVP (_tmap);
         ar & BOOST_SERIALIZATION_NVP (_adj_pt_consume);
@@ -256,6 +260,7 @@ namespace we
       {
         ar & BOOST_SERIALIZATION_NVP (_place_id);
         ar & BOOST_SERIALIZATION_NVP (_pmap);
+        ar & BOOST_SERIALIZATION_NVP (_place_id_by_name);
         ar & BOOST_SERIALIZATION_NVP (_transition_id);
         ar & BOOST_SERIALIZATION_NVP (_tmap);
         ar & BOOST_SERIALIZATION_NVP (_adj_pt_consume);

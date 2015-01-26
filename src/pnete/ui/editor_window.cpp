@@ -7,6 +7,7 @@
 #include <pnete/data/handle/net.hpp>
 #include <pnete/data/internal.hpp>
 #include <pnete/data/manager.hpp>
+#include <pnete/plugin/plugin_api.hpp>
 #include <pnete/ui/StructureView.hpp>
 #include <pnete/ui/TransitionLibraryModel.hpp>
 #include <pnete/ui/dock_widget.hpp>
@@ -20,6 +21,8 @@
 #include <pnete/ui/size.hpp>
 #include <pnete/ui/transition_library_view.hpp>
 
+#include <fhg/util/boost/variant.hpp>
+#include <fhg/util/dl.hpp>
 #include <fhg/util/num.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/temporary_path.hpp>
@@ -85,8 +88,12 @@ namespace fhg
   {
     namespace ui
     {
-      editor_window::editor_window (QWidget* parent)
+      editor_window::editor_window ( data::manager& data_manager
+                                   , std::list<util::scoped_dlhandle> const& plugins
+                                   , QWidget* parent
+                                   )
         : QMainWindow (parent)
+        , _data_manager (data_manager)
         , _transition_library (new transition_library_view (20, 5, this))
         , _transition_library_dock
           (new dock_widget (tr ("library_window"), _transition_library))
@@ -110,9 +117,10 @@ namespace fhg
         addDockWidget (_transition_library_dock);
         addDockWidget (_undo_view_dock);
 
-        setup_menu_and_toolbar();
+        setup_menu_and_toolbar (plugins);
 
-        _transition_library->setModel (new TransitionLibraryModel (this));
+        _transition_library->setModel
+          (new TransitionLibraryModel (_data_manager, this));
 
         //! \todo Hand down qApp instead of accessing global state.
         connect ( qApp
@@ -168,21 +176,15 @@ namespace fhg
 
       void editor_window::slot_new_expression()
       {
-        create_windows ( data::manager::instance()
-                       . create (data::internal_type::expression)
-                       );
+        create_windows (_data_manager.create (data::internal_type::expression));
       }
       void editor_window::slot_new_module_call()
       {
-        create_windows ( data::manager::instance()
-                       . create (data::internal_type::module_call)
-                       );
+        create_windows (_data_manager.create (data::internal_type::module_call));
       }
       void editor_window::slot_new_net()
       {
-        create_windows ( data::manager::instance()
-                       . create (data::internal_type::net)
-                       );
+        create_windows (_data_manager.create (data::internal_type::net));
       }
 
       void editor_window::open()
@@ -195,7 +197,7 @@ namespace fhg
           return;
         }
 
-        create_windows (data::manager::instance().load (filename));
+        create_windows (_data_manager.load (filename));
       }
 
       void editor_window::save_file()
@@ -223,7 +225,7 @@ namespace fhg
           filename.append (".xpnet");
         }
 
-        data::manager::instance().save
+        _data_manager.save
           (_accessed_widgets.top()->function().document(), filename);
       }
 
@@ -245,11 +247,15 @@ namespace fhg
           : public boost::static_visitor<document_view*>
         {
         private:
+          data::manager& _data_manager;
           const data::handle::function& _function;
 
         public:
-          document_view_for_handle (const data::handle::function& function)
-            : _function (function)
+          document_view_for_handle ( data::manager& data_manager
+                                   , const data::handle::function& function
+                                   )
+            : _data_manager (data_manager)
+            , _function (function)
           { }
 
           document_view* operator() (const data::handle::expression& expr) const
@@ -275,13 +281,13 @@ namespace fhg
             return new document_view
               ( _function
               , QObject::tr ("<<anonymous net>>")
-              , new net_widget (net, _function)
+              , new net_widget (_data_manager, net, _function)
               );
           }
         };
 
         document_view* document_view_factory
-          (const data::handle::function& function)
+          (data::manager& data_manager, const data::handle::function& function)
         {
           //! \todo Why is putting a temporary into apply_visitor impossible?!
           const boost::variant < data::handle::expression
@@ -289,7 +295,7 @@ namespace fhg
                                , data::handle::net
                                > content (function.content_handle());
           return boost::apply_visitor
-            (document_view_for_handle (function), content);
+            (document_view_for_handle (data_manager, function), content);
         }
       }
 
@@ -298,7 +304,7 @@ namespace fhg
       {
         _undo_group->addStack (&function.document()->change_manager());
 
-        document_view* doc_view (document_view_factory (function));
+        document_view* doc_view (document_view_factory (_data_manager, function));
 
         if (!_accessed_widgets.empty())
         {
@@ -513,7 +519,8 @@ namespace fhg
         }
       }
 
-      void editor_window::setup_menu_and_toolbar()
+      void editor_window::setup_menu_and_toolbar
+        (std::list<util::scoped_dlhandle> const& plugins)
       {
         QMenuBar* menu_bar (new QMenuBar (this));
         setMenuBar (menu_bar);
@@ -558,6 +565,35 @@ namespace fhg
                                    , SLOT (open_remote_execution())
                                    );
 
+        for (util::scoped_dlhandle const& dl_handle : plugins)
+        {
+          plugin::plugin_base const* const plugin
+            ( dl_handle.sym<decltype (fhg_pnete_create_plugin)>
+              ("fhg_pnete_create_plugin") (this)
+            );
+
+          for (QPair<QString, QList<QAction*>> menu_desc : plugin->menus())
+          {
+            QMenu* menu (new QMenu (menu_desc.first, this));
+            menu_bar->addMenu (menu);
+
+            for (QAction* action : menu_desc.second)
+            {
+              menu->addAction (action);
+            }
+          }
+          for (QPair<QString, QList<QAction*>> toolbar_desc : plugin->toolbars())
+          {
+            QToolBar* toolbar (new QToolBar (toolbar_desc.first, this));
+            addToolBar (Qt::TopToolBarArea, toolbar);
+            toolbar->setFloatable (false);
+
+            for (QAction* action : toolbar_desc.second)
+            {
+              toolbar->addAction (action);
+            }
+          }
+        }
       }
 
       void editor_window::setup_file_actions (QMenuBar* menu_bar)
@@ -748,7 +784,9 @@ namespace fhg
             if (port.direction() == we::type::PORT_TUNNEL)
             {
               const boost::optional<std::string> tunnel_direction
-                (port.properties().get ("fhg.pnete.tunnel.direction"));
+                ( util::boost::get_or_none<std::string>
+                    (port.properties().get ({"fhg", "pnete", "tunnel", "direction"}))
+                );
 
               return !tunnel_direction ? we::type::PORT_IN
                 : *tunnel_direction == "out" ? we::type::PORT_OUT
@@ -865,21 +903,19 @@ namespace fhg
               (trans.get().resolved_function());
 
             {
-              const std::string gens
-                ( fun.get().properties().get ("fhg.seislib.slot.num.generator")
-                .get_value_or ("0")
-                );
-              fhg::util::parse::position_string pos (gens);
-              slot_gen_count += fhg::util::read_int (pos);
+              slot_gen_count += util::boost::get_or_none<long>
+                ( fun.get().properties().get
+                    ({"fhg", "seislib", "slot", "num", "generator"})
+                )
+                .get_value_or (0);
             }
 
             {
-              const std::string gens
-                ( fun.get().properties().get ("fhg.seislib.slot.num.store")
-                .get_value_or ("0")
-                );
-              fhg::util::parse::position_string pos (gens);
-              slot_store_count += fhg::util::read_int (pos);
+              slot_store_count += util::boost::get_or_none<long>
+                ( fun.get().properties().get
+                    ({"fhg", "seislib", "slot", "num", "store"})
+                )
+                .get_value_or (0);
             }
 
             for ( const xml::parse::id::ref::port& pid
@@ -1355,8 +1391,10 @@ namespace fhg
               const std::pair<QWidget*, boost::function<QString()> > ret
                 ( widget_for_item ( xml_port->get().type()
                                   , opt_std_to_qstring
-                                  ( xml_port->get().properties().get
-                                  ("fhg.pnete.port.default")
+                                  ( util::boost::get_or_none<std::string>
+                                      ( xml_port->get().properties().get
+                                          ({"fhg", "pnete", "port", "default"})
+                                      )
                                   )
                                   )
                 );
@@ -1415,7 +1453,13 @@ namespace fhg
 
         //! \todo Use real kvs host+port
         //! \todo Configurable name of orchestrator, non-static
-        static sdpa::client::Client client ("orchestrator", "localhost", "2439");
+        static boost::asio::io_service peer_io_service;
+        static boost::asio::io_service kvs_client_io_service;
+        static sdpa::client::Client client ( "orchestrator"
+                                           , peer_io_service
+                                           , kvs_client_io_service
+                                           , "localhost", "2439"
+                                           );
 
         const std::string job_id
           (client.submitJob (activity_and_fun.first.to_string()));

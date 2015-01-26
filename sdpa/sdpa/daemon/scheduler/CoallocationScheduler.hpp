@@ -51,7 +51,7 @@ namespace sdpa
       static std::set<worker_id_t> find_job_assignment_minimizing_memory_transfer_cost
         ( const mmap_match_deg_worker_id_t& mmap_matching_workers
         , const size_t n_req_workers
-        , const std::map<std::string, double>& map_host_transfer_cost
+        , const std::function<double (std::string const&)> transfer_cost
         );
 
     private:

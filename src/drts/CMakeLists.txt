@@ -3,13 +3,22 @@
 add_subdirectory (worker)
 
 install (FILES
+  client.fwd.hpp
+  client.hpp
+  drts.fwd.hpp
   drts.hpp
+  vmem.hpp
+  rif.hpp
   virtual_memory.hpp
+  virtual_memory.fwd.hpp
   DESTINATION include/drts/
 )
 
 add_library (gspc SHARED
+  client.cpp
   drts.cpp
+  vmem.cpp
+  rif.cpp
   virtual_memory.cpp
 )
 target_link_libraries (gspc
@@ -18,9 +27,13 @@ target_link_libraries (gspc
   gpi-space-pc-client-static
   gpi-space-pc-segment
   ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}
 )
 
 install (TARGETS
   gspc
   DESTINATION lib/
 )
+
+add_subdirectory (test/parallel_running_workflows)
+add_subdirectory (test/put_token)

@@ -37,25 +37,13 @@ namespace fhg
     {
       namespace
       {
-        qreal read_qreal (boost::optional<const std::string&> inp)
-        {
-          if (!inp)
-          {
-            throw std::runtime_error ("bad input: not a string");
-          }
-
-          util::parse::position_string pos (*inp);
-          util::parse::require::skip_spaces (pos);
-          return util::read_double (pos);
-        }
-
         template<typename ID>
           bool is_hard_hidden (const ID& id)
         {
-          return fhg::util::read_bool
-            ( id.get().properties().get
-              ("fhg.pnete.is_hard_hidden").get_value_or ("false")
-            );
+          return boost::get<bool> ( id.get().properties().get
+                                      ({"fhg", "pnete", "is_hard_hidden"})
+                                  . get_value_or (false)
+                                  );
         }
 
         template<typename ID_TYPE>
@@ -64,25 +52,22 @@ namespace fhg
                                            , const bool outer = false
                                            )
         {
-          const std::string var_name ( !outer
-                                     ? "fhg.pnete.position"
-                                     : "fhg.pnete.outer_position"
-                                     );
+          const std::string var_name (!outer ? "position" : "outer_position");
 
-          if (!id.get().properties().get (var_name + ".x"))
+          if (!id.get().properties().get ({"fhg", "pnete", var_name, "x"}))
           {
-            id.get_ref().properties().set (var_name + ".x", "0.0");
+            id.get_ref().properties().set ({"fhg", "pnete", var_name, "x"}, 0.0);
           }
-          if (!id.get().properties().get (var_name + ".y"))
+          if (!id.get().properties().get ({"fhg", "pnete", var_name, "y"}))
           {
-            id.get_ref().properties().set (var_name + ".y", "0.0");
+            id.get_ref().properties().set ({"fhg", "pnete", var_name, "y"}, 0.0);
           }
 
           item->set_just_pos_but_not_in_property
-            ( QPointF
-              ( read_qreal (id.get().properties().get (var_name + ".x"))
-              , read_qreal (id.get().properties().get (var_name + ".y"))
-              )
+            ( boost::get<double>
+              (*id.get().properties().get ({"fhg", "pnete", var_name, "x"}))
+            , boost::get<double>
+              (*id.get().properties().get ({"fhg", "pnete", var_name, "y"}))
             );
         }
 
@@ -268,11 +253,13 @@ namespace fhg
 
       namespace display
       {
-        ui::graph::scene_type* net ( const data::handle::net& net
+        ui::graph::scene_type* net ( data::manager& data_manager
+                                   , const data::handle::net& net
                                    , const data::handle::function& parent
                                    )
         {
-          ui::graph::scene_type* scene (new ui::graph::scene_type (net, parent));
+          ui::graph::scene_type* scene
+            (new ui::graph::scene_type (data_manager, net, parent));
 
           weaver::net wn (net.document(), scene, parent.id());
           from::net (&wn, net.id());

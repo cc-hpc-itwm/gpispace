@@ -10,6 +10,8 @@
 
 #include <fhgcom/peer.hpp>
 
+#include <we/type/value.hpp>
+
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/optional.hpp>
 #include <boost/thread.hpp>
@@ -45,6 +47,8 @@ namespace sdpa
     {
     public:
       Client ( std::string orchestrator
+             , boost::asio::io_service& peer_io_service
+             , boost::asio::io_service& kvs_client_io_service
              , std::string kvs_host, std::string kvs_port
              );
       ~Client();
@@ -56,6 +60,8 @@ namespace sdpa
       void deleteJob(const job_id_t &);
       result_t retrieveResults(const job_id_t &);
       sdpa::discovery_info_t discoverJobStates(const we::layer::id_type& discover_id, const job_id_t &job_id);
+      void put_token
+        (job_id_t, std::string place_name, pnet::type::value::value_type);
 
       sdpa::status::code wait_for_terminal_state (job_id_t, job_info_t&);
       sdpa::status::code wait_for_terminal_state_polling (job_id_t, job_info_t&);
@@ -73,7 +79,7 @@ namespace sdpa
       template<typename Expected, typename Sent>
         Expected send_and_wait_for_reply (Sent event);
 
-      void handle_recv (boost::system::error_code const & ec);
+      void handle_recv (boost::system::error_code const & ec, boost::optional<std::string> source_name);
 
       fhg::com::kvs::kvsc_ptr_t _kvs_client;
       fhg::com::peer_t m_peer;

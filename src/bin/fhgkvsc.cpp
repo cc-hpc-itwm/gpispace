@@ -1,278 +1,89 @@
-#include <fhglog/LogMacros.hpp>
-
-#include <iostream>
-#include <boost/program_options.hpp>
-
-#include <fhgcom/peer_info.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
-enum my_exit_codes
-  {
-     EX_OK = EXIT_SUCCESS
-   , EX_ERR = EXIT_FAILURE
-     , EX_INVAL // invalid argument
-     , EX_SEARCH // key not found
-     , EX_CONN // connection failed
-  };
+#include <fhglog/LogMacros.hpp>
 
+#include <boost/date_time/posix_time/posix_time_duration.hpp>
+#include <boost/program_options.hpp>
 
-int main(int ac, char *av[])
+#include <iostream>
+
+namespace
 {
-  FHGLOG_SETUP();
+  enum
+  { EX_OK = EXIT_SUCCESS
+  , EX_ERR = EXIT_FAILURE
+  , EX_INVAL // invalid argument
+  };
+}
 
-  namespace po = boost::program_options;
+int main (int argc, char *argv[])
+{
+  boost::asio::io_service remote_log_io_service;
+  FHGLOG_SETUP (remote_log_io_service);
 
-  std::string server_address ("localhost");
-  std::string server_port ("2439");
+  boost::program_options::options_description desc ("fhgkvsc options");
 
-  if (getenv("KVS_URL") != nullptr)
-  {
-    try
-    {
-      using namespace fhg::com;
-      peer_info_t pi (getenv("KVS_URL"));
-      server_address = pi.host(server_address);
-      server_port = pi.port(server_port);
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "W: malformed environment variable KVS_URL: " << ex.what() << std::endl;
-    }
-  }
-
-  std::string key;
-  std::string value;
-  size_t timeout (120 * 1000);
-
-  std::vector<std::string> key_list;
-
-  po::options_description desc ("options");
   desc.add_options()
-    ("help,h", "print this help")
-    ("host,H", po::value<std::string>(&server_address)->default_value(server_address), "use this host")
-    ("port,P", po::value<std::string>(&server_port)->default_value(server_port), "port or service name to use")
-    ("key,k", po::value<std::string>(&key), "key to put or get")
-    ("value,v", po::value<std::string>(&value), "value to store")
-    ("full,f", "key must match completely")
+    ( "host"
+    , boost::program_options::value<std::string>()->required()
+    , "use this host"
+    )
+    ( "port"
+    , boost::program_options::value<std::string>()->required()
+    , "port or service name to use"
+    )
+    ( "get,g"
+    , boost::program_options::value<std::vector<std::string>>()->required()
+    , "get values from the key-value store"
+    );
 
-    ("save,S", "save the database on the server")
-    ("load,L", "reload the database on the server")
-    ("list-all,l", "list all entries in the server")
-    ("clear,C", "clear entries on the server")
-    ("term", "terminate a running kvs daemon")
-    ("timeout,T", po::value<size_t>(&timeout)->default_value (timeout), "timeout in milliseconds")
-    ("put,p", po::value<std::string>(&key), "store a value in the key-value store")
-    ("get,g", po::value<std::vector<std::string>>(&key_list), "get values from the key-value store")
-    ("del,d", po::value<std::vector<std::string>>(&key_list), "delete entries from the key-value store")
-    ("cnt", po::value<std::string>(&key), "atomically increment/decrement a numeric entry")
-    ;
+  boost::program_options::variables_map vm;
 
-  po::variables_map vm;
   try
   {
-    po::store (po::parse_command_line (ac, av, desc), vm);
-    po::notify (vm);
+    boost::program_options::store
+      (boost::program_options::parse_command_line (argc, argv, desc), vm);
+    boost::program_options::notify (vm);
   }
-  catch (std::exception const & ex)
+  catch (std::exception const& ex)
   {
     std::cerr << "invalid argument: " << ex.what() << std::endl;
-    std::cerr << "try " << av[0] << " -h to get some help" << std::endl;
+    std::cerr << "usage: " << desc << std::endl;
+
     return EX_INVAL;
   }
 
-  if (vm.count ("help"))
+  try
   {
-    std::cerr << "usage: " << av[0] << std::endl;
-    std::cerr << std::endl;
-    std::cerr << desc << std::endl;
-    return EX_OK;
-  }
+    boost::asio::io_service io_service;
+    fhg::com::kvs::client::kvsc client ( io_service
+                                       , vm["host"].as<std::string>()
+                                       , vm["port"].as<std::string>()
+                                       , true
+                                       , boost::posix_time::seconds (120)
+                                       , 1
+                                       );
 
-  fhg::com::kvs::client::kvsc client ( server_address
-                                     , server_port
-                                     , true
-                                     , boost::posix_time::milliseconds(timeout)
-                                     , 1
-                                     );
-
-  if (vm.count ("load"))
-  {
-    try
-    {
-      client.load();
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "E: " << ex.what() << std::endl;
-      return EX_CONN;
-    }
-  }
-  else if (vm.count ("save"))
-  {
-    try
-    {
-      client.save();
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "E: " << ex.what() << std::endl;
-      return EX_CONN;
-    }
-  }
-  else if (vm.count ("term"))
-  {
-    try
-    {
-      client.term (15, "client requested termination");
-    }
-    catch (std::exception const &ex)
-    {
-      std::cerr << "E: " << ex.what() << std::endl;
-      return EX_CONN;
-    }
-  }
-  else if (vm.count ("list-all"))
-  {
-    try
-    {
-      std::map<std::string, std::string> entries (client.list());
-      for ( std::map<std::string, std::string>::const_iterator e (entries.begin())
-          ; e != entries.end()
-          ; ++e
-        )
-      {
-        std::cout << e->first << " = " << e->second << std::endl;
-      }
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "E: " << ex.what() << std::endl;
-      return EX_CONN;
-    }
-  }
-  else if (vm.count ("clear"))
-  {
-    try
-    {
-      client.clear();
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "E: " << ex.what() << std::endl;
-      return EX_CONN;
-    }
-  }
-  else if (vm.count ("get"))
-  {
     std::size_t count (0);
 
-    for ( std::vector<std::string>::const_iterator k (key_list.begin())
-        ; k != key_list.end()
-        ; ++k
-        )
+    for (std::string const& k : vm["get"].as<std::vector<std::string>>())
     {
-      try
+      for ( std::pair<std::string, std::string> const& key_value
+          : client.get (k)
+          )
       {
-        std::map<std::string, std::string> entries (client.get(*k));
-        if (vm.count("full"))
-        {
-          if (entries.find(*k) != entries.end())
-          {
-            std::cout << entries.at(*k) << std::endl;
-            count = 1;
-          }
-          else if (! value.empty())
-          {
-            std::cout << value << std::endl;
-          }
-          else
-          {
-            throw std::runtime_error ("no such entry: " + *k);
-          }
-        }
-        else
-        {
-          for ( std::map<std::string, std::string>::const_iterator e (entries.begin())
-              ; e != entries.end()
-              ; ++e
-              )
-          {
-            std::cout << e->first << " = " << e->second << std::endl;
-            ++count;
-          }
-        }
-      }
-      catch (std::exception const & ex)
-      {
-        std::cerr << "E: " << ex.what() << std::endl;
-      }
-    }
-    return count > 0 ? EX_OK : EX_ERR;
-  }
-  else if (vm.count("put"))
-  {
-    if (value.empty())
-    {
-      std::cerr << "E: put: value must not be empty" << std::endl;
-      return EX_INVAL;
-    }
+        std::cout << key_value.first << " = " << key_value.second << std::endl;
 
-    try
-    {
-        client.put (key, value);
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "E: " << ex.what() << std::endl;
-      return EX_CONN;
-    }
-  }
-  else if (vm.count("cnt"))
-  {
-    int step = 1;
-    if (! value.empty())
-    {
-      try
-      {
-        step = boost::lexical_cast<int>(value);
-      }
-      catch (std::exception const &)
-      {
-        std::cerr << "invalid argument: value must be an integer: " << value << std::endl;
-        return EX_INVAL;
-      }
-    }
-
-    try
-    {
-      std::cout << client.inc (key, step) << std::endl;
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "E: cnt operation failed: " << ex.what() << std::endl;
-      return EX_CONN;
-    }
-  }
-  else if (vm.count ("del"))
-  {
-    std::size_t count (0);
-    for ( std::vector<std::string>::const_iterator k (key_list.begin())
-        ; k != key_list.end()
-        ; ++k
-        )
-    {
-      try
-      {
-        client.del (*k);
         ++count;
       }
-      catch (std::exception const & ex)
-      {
-        std::cerr << "E: " << ex.what() << std::endl;
-      }
     }
-    return count > 0 ? EX_OK : EX_ERR;
-  }
 
-  return EX_OK;
+    return (count > 0) ? EX_OK : EX_ERR;
+  }
+  catch (std::exception const& ex)
+  {
+    std::cerr << "E: " << ex.what() << std::endl;
+
+    return EX_ERR;
+  }
 }

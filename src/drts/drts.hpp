@@ -3,15 +3,23 @@
 #ifndef DRTS_DRTS_HPP
 #define DRTS_DRTS_HPP
 
-#include <drts/virtual_memory.hpp>
+#include <drts/drts.fwd.hpp>
+
+#include <drts/client.fwd.hpp>
+#include <drts/virtual_memory.fwd.hpp>
+
+#include <we/type/value.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
 
+#include <chrono>
+#include <list>
+#include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 
 namespace gpi
 {
@@ -28,57 +36,51 @@ namespace gspc
 {
   namespace options
   {
-    namespace name
-    {
-      constexpr char const* const log_host {"log-host"};
-      constexpr char const* const log_port {"log-port"};
-      constexpr char const* const gui_host {"gui-host"};
-      constexpr char const* const gui_port {"gui-port"};
-
-      constexpr char const* const state_directory {"state-directory"};
-      constexpr char const* const gspc_home {"gspc-home"};
-      constexpr char const* const nodefile {"nodefile"};
-      constexpr char const* const application_search_path
-        {"application-search-path"};
-
-      constexpr char const* const virtual_memory_manager
-        {"virtual-memory-manager"};
-      constexpr char const* const virtual_memory_per_node
-        {"virtual-memory-per-node"};
-      constexpr char const* const virtual_memory_socket
-        {"virtual-memory-socket"};
-    }
-
     boost::program_options::options_description logging();
+    boost::program_options::options_description installation();
     boost::program_options::options_description drts();
     boost::program_options::options_description virtual_memory();
   }
+
+  class installation
+  {
+  public:
+    installation (boost::program_options::variables_map const& vm);
+
+    boost::filesystem::path const& gspc_home() const
+    {
+      return _gspc_home;
+    }
+
+  private:
+    boost::filesystem::path const _gspc_home;
+  };
 
   class scoped_runtime_system
   {
   public:
     scoped_runtime_system ( boost::program_options::variables_map const& vm
+                          , installation const&
                           , std::string const& topology_description
                           );
 
     ~scoped_runtime_system();
-
-    void put_and_run
-      ( boost::filesystem::path const& workflow
-      , std::unordered_map<std::string, std::unordered_set<std::string>> const&
-          values_on_ports
-      ) const;
 
     vmem_allocation alloc
       (unsigned long size, std::string const& description) const;
 
     unsigned long virtual_memory_total() const
     {
-      return _nodes.size() * (*_virtual_memory_per_node - 32UL * (1UL << 20UL));
+      return number_of_unique_nodes()
+        * (*_virtual_memory_per_node - 32UL * (1UL << 20UL));
     }
-    std::unordered_set<std::string> const& nodes() const
+    unsigned long number_of_unique_nodes() const
     {
-      return _nodes;
+      return _nodes_and_number_of_unique_nodes.second;
+    }
+    std::unique_ptr<gpi::pc::client::api_t> const& virtual_memory_api() const
+    {
+      return _virtual_memory_api;
     }
 
     scoped_runtime_system (scoped_runtime_system const&) = delete;
@@ -88,15 +90,67 @@ namespace gspc
 
   private:
     friend class vmem_allocation;
+    friend class client;
 
-    boost::filesystem::path const _gspc_home;
+    installation const _installation;
     boost::filesystem::path const _state_directory;
     boost::filesystem::path const _nodefile;
     boost::optional<unsigned long> _virtual_memory_per_node;
     boost::optional<boost::filesystem::path> _virtual_memory_socket;
-    std::unordered_set<std::string> _nodes;
-    gpi::pc::client::api_t* _virtual_memory_api;
+    boost::optional<std::chrono::seconds> _virtual_memory_startup_timeout;
+    std::pair<std::list<std::string>, unsigned long> const
+      _nodes_and_number_of_unique_nodes;
+    std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
+
+    std::string _kvs_host;
+    unsigned short _kvs_port;
   };
+
+  void set_gspc_home ( boost::program_options::variables_map&
+                     , boost::filesystem::path const&
+                     );
+  void set_state_directory ( boost::program_options::variables_map&
+                           , boost::filesystem::path const&
+                           );
+  void set_nodefile ( boost::program_options::variables_map&
+                    , boost::filesystem::path const&
+                    );
+  boost::filesystem::path get_nodefile (boost::program_options::variables_map const&);
+  void set_virtual_memory_per_node ( boost::program_options::variables_map&
+                                   , unsigned long
+                                   );
+  unsigned long get_virtual_memory_per_node (boost::program_options::variables_map const&);
+  unsigned short get_virtual_memory_port (boost::program_options::variables_map const&);
+  unsigned long get_virtual_memory_startup_timeout (boost::program_options::variables_map const&);
+  void set_virtual_memory_socket ( boost::program_options::variables_map&
+                                 , boost::filesystem::path const&
+                                 );
+  boost::filesystem::path
+  get_not_yet_existing_virtual_memory_socket (boost::program_options::variables_map const&);
+
+  void set_application_search_path ( boost::program_options::variables_map&
+                                   , boost::filesystem::path const&
+                                   );
+  void set_log_host ( boost::program_options::variables_map&
+                    , std::string const&
+                    );
+  std::string get_log_host (boost::program_options::variables_map const&);
+  void set_log_level ( boost::program_options::variables_map&
+                     , std::string const&
+                     );
+  std::string get_log_level (boost::program_options::variables_map const&);
+  void set_gui_host ( boost::program_options::variables_map&
+                    , std::string const&
+                    );
+  std::string get_gui_host (boost::program_options::variables_map const&);
+  void set_log_port ( boost::program_options::variables_map&
+                    , unsigned short
+                    );
+  unsigned short get_log_port (boost::program_options::variables_map const&);
+  void set_gui_port ( boost::program_options::variables_map&
+                    , unsigned short
+                    );
+  unsigned short get_gui_port (boost::program_options::variables_map const&);
 }
 
 #endif

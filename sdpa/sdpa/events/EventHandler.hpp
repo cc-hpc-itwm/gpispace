@@ -30,6 +30,8 @@ namespace sdpa
     class CapabilitiesLostEvent;
     class SubscribeEvent;
     class SubscribeAckEvent;
+    class put_token;
+    class put_token_ack;
 
     class EventHandler
     {
@@ -80,6 +82,10 @@ namespace sdpa
       { throw std::runtime_error ("UNHANDLED EVENT: DiscoverJobStates"); }
       virtual void handleDiscoverJobStatesReplyEvent (const DiscoverJobStatesReplyEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: DiscoverJobStatesReply"); }
+      virtual void handle_put_token (const put_token*)
+      { throw std::runtime_error ("UNHANDLED EVENT: put_token"); }
+      virtual void handle_put_token_ack (const put_token_ack*)
+      { throw std::runtime_error ("UNHANDLED EVENT: put_token_ack"); }
     };
   }
 }

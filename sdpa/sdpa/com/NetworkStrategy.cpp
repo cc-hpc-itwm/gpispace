@@ -20,6 +20,7 @@ namespace sdpa
     }
 
     NetworkStrategy::NetworkStrategy ( std::function<void (sdpa::events::SDPAEvent::Ptr)> event_handler
+                                     , boost::asio::io_service& peer_io_service
                                      , std::string const & peer_name
                                      , fhg::com::host_t const & host
                                      , fhg::com::port_t const & port
@@ -28,7 +29,8 @@ namespace sdpa
       : _logger (fhg::log::Logger::get ("NetworkStrategy " + peer_name))
       , _event_handler (event_handler)
       , m_peer ( new fhg::com::peer_t
-                 ( peer_name
+                 ( peer_io_service
+                 , peer_name
                  , fhg::com::host_t (host)
                  , fhg::com::port_t (port)
                  , kvs_client
@@ -45,7 +47,11 @@ namespace sdpa
       m_peer->start ();
       m_peer->async_recv
         ( &m_message
-        , std::bind(&NetworkStrategy::handle_recv, this, std::placeholders::_1)
+        , std::bind ( &NetworkStrategy::handle_recv
+                    , this
+                    , std::placeholders::_1
+                    , std::placeholders::_2
+                    )
         );
     }
 
@@ -107,7 +113,9 @@ namespace sdpa
       }
     }
 
-    void NetworkStrategy::handle_recv (boost::system::error_code const & ec)
+    void NetworkStrategy::handle_recv ( boost::system::error_code const & ec
+                                      , boost::optional<std::string> source_name
+                                      )
     {
       static sdpa::events::Codec codec;
 
@@ -120,26 +128,19 @@ namespace sdpa
 
         m_peer->async_recv
           ( &m_message
-          , std::bind(&NetworkStrategy::handle_recv, this, std::placeholders::_1)
+          , std::bind ( &NetworkStrategy::handle_recv
+                      , this
+                      , std::placeholders::_1
+                      , std::placeholders::_2
+                      )
           );
       }
       else if (! m_shutting_down)
       {
-        const fhg::com::p2p::address_t & addr = m_message.header.src;
-        if (addr != m_peer->address())
+        if (m_message.header.src != m_peer->address())
         {
-          std::string other;
-          try
-          {
-            other = m_peer->resolve_addr (addr);
-          }
-          catch (std::exception const&)
-          {
-            other = "unknown source";
-          }
-
           sdpa::events::ErrorEvent::Ptr
-            error(new sdpa::events::ErrorEvent ( other
+            error(new sdpa::events::ErrorEvent ( source_name.get_value_or ("unknown source")
                                                 , m_peer->name()
                                                 , (ec == boost::asio::error::eof) // Connection closed cleanly by peer
                                                 ? sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
@@ -151,7 +152,11 @@ namespace sdpa
 
           m_peer->async_recv
            ( &m_message
-           , std::bind(&NetworkStrategy::handle_recv, this, std::placeholders::_1)
+           , std::bind ( &NetworkStrategy::handle_recv
+                       , this
+                       , std::placeholders::_1
+                       , std::placeholders::_2
+                       )
            );
         }
       }

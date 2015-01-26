@@ -1,0 +1,34 @@
+<defun name="wait_for_token_put">
+  <in name="in" type="string" place="in"/>
+  <out name="good" type="string" place="good"/>
+  <out name="bad" type="string" place="bad"/>
+  <net>
+    <place name="in" type="string"/>
+    <place name="good" type="string"/>
+    <place name="bad" type="string"/>
+
+    <transition name="good">
+      <defun>
+        <inout name="x" type="string"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${x} :eq: "good"
+      </condition>
+      <connect-in port="x" place="in"/>
+      <connect-out port="x" place="good"/>
+    </transition>
+
+    <transition name="bad">
+      <defun>
+        <inout name="x" type="string"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${x} :ne: "good"
+      </condition>
+      <connect-in port="x" place="in"/>
+      <connect-out port="x" place="bad"/>
+    </transition>
+  </net>
+</defun>

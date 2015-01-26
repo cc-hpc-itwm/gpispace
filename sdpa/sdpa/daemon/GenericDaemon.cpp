@@ -31,11 +31,13 @@
 #include <sdpa/events/JobStatusReplyEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
+#include <sdpa/events/put_token.hpp>
 #include <sdpa/id_generator.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
-#include <fhg/util/macros.hpp>
 #include <fhg/util/hostname.hpp>
+#include <fhg/util/macros.hpp>
+#include <fhg/util/make_unique.hpp>
 
 #include <boost/tokenizer.hpp>
 #include <boost/range/adaptor/filtered.hpp>
@@ -43,6 +45,8 @@
 #include <functional>
 #include <sstream>
 #include <algorithm>
+#include <thread>
+#include <chrono>
 
 namespace sdpa {
   namespace daemon {
@@ -74,12 +78,21 @@ namespace
   }
 }
 
+    GenericDaemon::virtual_memory_api::virtual_memory_api (boost::filesystem::path const& socket)
+      : _ (socket.string())
+    {
+      _.start();
+    }
+
 GenericDaemon::GenericDaemon( const std::string name
                             , const std::string url
+                            , boost::asio::io_service& peer_io_service
+                            , boost::asio::io_service& kvs_client_io_service
                             , std::string kvs_host
                             , std::string kvs_port
+                            , boost::optional<boost::filesystem::path> const& vmem_socket
                             , const master_info_list_t arrMasterInfo
-                            , const boost::optional<std::string>& guiUrl
+                            , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
                             , bool create_wfe
                             )
   : _logger (fhg::log::Logger::get (name))
@@ -104,23 +117,28 @@ GenericDaemon::GenericDaemon( const std::string name
   , mtx_master_()
   , mtx_cpb_()
   , m_capabilities()
-  , m_guiService ( guiUrl && !guiUrl->empty()
+  , m_guiService ( gui_info && !gui_info->first.empty()
                  ? boost::optional<NotificationService>
-                   (NotificationService (*guiUrl))
+                   (NotificationService (gui_info->first, gui_info->second))
                  : boost::none
                  )
   , _max_consecutive_registration_attempts (360)
   , _max_consecutive_network_faults (360)
   , _registration_timeout (boost::posix_time::seconds (1))
   , _event_queue()
-  , _kvs_client
-    ( new fhg::com::kvs::client::kvsc
-      (kvs_host, kvs_port, true, boost::posix_time::seconds(120), 1)
-    )
+  , _kvs_client ( new fhg::com::kvs::client::kvsc
+                  ( kvs_client_io_service
+                  , kvs_host, kvs_port
+                  , true
+                  , boost::posix_time::seconds (120)
+                  , 1
+                  )
+                )
   , _network_strategy ( [this] (events::SDPAEvent::Ptr const& e)
                       {
                         _event_queue.put (e);
                       }
+                      , peer_io_service
                       , name /*name for peer*/
                       , host_from_url (url)
                       , port_from_url (url)
@@ -135,6 +153,7 @@ GenericDaemon::GenericDaemon( const std::string name
                            , std::bind (&GenericDaemon::canceled, this, std::placeholders::_1)
                            , std::bind (&GenericDaemon::discover, this, std::placeholders::_1, std::placeholders::_2)
                            , std::bind (&GenericDaemon::discovered, this, std::placeholders::_1, std::placeholders::_2)
+                           , std::bind (&GenericDaemon::token_put, this, std::placeholders::_1)
                            , std::bind (&GenericDaemon::gen_id, this)
                            , *_random_extraction_engine
                            )
@@ -143,6 +162,11 @@ GenericDaemon::GenericDaemon( const std::string name
   , _registration_threads()
   , _scheduling_thread (&GenericDaemon::scheduling_thread, this)
   , _event_handler_thread (&GenericDaemon::handle_events, this)
+  , _virtual_memory_api
+    ( vmem_socket
+    ? fhg::util::make_unique<virtual_memory_api> (*vmem_socket)
+    : nullptr
+    )
 {
   // ask kvs if there is already an entry for (name.id = m_strAgentUID)
   //     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -171,6 +195,43 @@ GenericDaemon::cleanup_job_map_on_dtor_helper::~cleanup_job_map_on_dtor_helper()
   {
     delete pJob;
   }
+}
+
+//! \todo Move to gpi::pc::client::api_t
+std::function<double (std::string const&)>
+  GenericDaemon::virtual_memory_api::transfer_costs (const we::type::activity_t& activity)
+{
+  if (!activity.transition().module_call())
+    return null_transfer_cost;
+
+  expr::eval::context context;
+
+  for ( std::pair< pnet::type::value::value_type
+                , we::port_id_type
+                > const& token_on_port
+      : activity.input()
+      )
+  {
+   context.bind_ref
+     ( activity.transition().ports_input().at (token_on_port.second).name()
+     , token_on_port.first
+     );
+  }
+
+  std::list<std::pair<we::local::range, we::global::range>>
+    vm_transfers (activity.transition().module_call()->gets (context));
+
+  std::list<std::pair<we::local::range, we::global::range>>
+    puts_before (activity.transition().module_call()->puts_evaluated_before_call (context));
+
+  vm_transfers.splice (vm_transfers.end(), puts_before);
+
+  if (vm_transfers.empty())
+  {
+    return null_transfer_cost;
+  }
+
+  return _.transfer_costs (vm_transfers);
 }
 
 const std::string& GenericDaemon::name() const
@@ -235,7 +296,13 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
   // One should parse the workflow in order to be able to create a valid job
-  Job* pJob (addJob(job_id, e.description(), hasWorkflowEngine(), e.from(), job_requirements_t()));
+  Job* pJob (addJob ( job_id
+                    , e.description()
+                    , hasWorkflowEngine()
+                    , e.from()
+                    , {{}, we::type::schedule_data(), null_transfer_cost}
+                    )
+             );
 
   //! \todo Don't ack before we know that we can: may fail 20 lines
   //! below. add Nack event of some sorts to not need
@@ -304,7 +371,7 @@ void GenericDaemon::handleWorkerRegistrationEvent
   }
 
   const bool was_new_worker
-    (scheduler().worker_manager().addWorker (worker_id, event->capacity(), workerCpbSet, event->hostname()));
+    (scheduler().worker_manager().addWorker (worker_id, event->capacity(), workerCpbSet, event->children_allowed(), event->hostname()));
 
   child_proxy (this, worker_id).worker_registration_ack();
 
@@ -493,17 +560,9 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
   }
 }
 
-/* Implements Gwes2Sdpa */
-/**
- * Submit an atomic activity to the SDPA.
- * This method is to be called by the GS in order to delegate
- * the execution of activities.
- * The SDPA will use the callback handler SdpaGwes in order
- * to notify the GS about activity status transitions.
- */
-void GenericDaemon::submit( const we::layer::id_type& job_id
-                          , const we::type::activity_t& activity
-                          )
+void GenericDaemon::submit ( const we::layer::id_type& job_id
+                           , const we::type::activity_t& activity
+                           )
 try
 {
   const we::type::schedule_data schedule_data
@@ -518,7 +577,10 @@ try
          , activity.to_string()
          , false
          , name()
-         , job_requirements_t (activity.transition().requirements(), schedule_data)
+         , job_requirements_t ( activity.transition().requirements()
+                              , schedule_data
+                              , _virtual_memory_api->transfer_costs (activity)
+                              )
          );
 
   scheduler().enqueueJob (job_id);
@@ -1180,6 +1242,74 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
       }
     }
 
+    namespace
+    {
+      template<typename Map>
+        typename Map::mapped_type take (Map& map, typename Map::key_type key)
+      {
+        typename Map::iterator const it (map.find (key));
+        if (it == map.end())
+        {
+          throw std::runtime_error ("take: key " + key + " not found");
+        }
+
+        typename Map::mapped_type v (std::move (it->second));
+        map.erase (it);
+        return v;
+      }
+    }
+
+    void GenericDaemon::handle_put_token (const events::put_token* event)
+    {
+      Job* job (findJob (event->job_id()));
+
+      const boost::optional<worker_id_t> worker_id
+        (scheduler().worker_manager().findSubmOrAckWorker (event->job_id()));
+
+      if (job && worker_id)
+      {
+        _put_token_source.emplace (event->put_token_id(), event->from());
+
+        child_proxy (this, *worker_id).put_token ( event->job_id()
+                                                 , event->put_token_id()
+                                                 , event->place_name()
+                                                 , event->value()
+                                                 );
+      }
+      //! \todo Other criteria to know it was submitted to the
+      //! wfe. All jobs are regarded as going to the wfe and the only
+      //! way to prevent a loop is to check whether the discover comes
+      //! out of the wfe. Special "worker" id?
+      else if (job && workflowEngine())
+      {
+        _put_token_source.emplace (event->put_token_id(), event->from());
+
+        //! \todo There is a race here: between SubmitJobAck and
+        //! we->submit(), there's still a lot of stuff. We can't
+        //! guarantee, that the job is already submitted to the wfe!
+        //! We need to handle the "pending" state.
+        workflowEngine()->put_token ( event->job_id()
+                                    , event->put_token_id()
+                                    , event->place_name()
+                                    , event->value()
+                                    );
+      }
+      else
+      {
+        throw std::runtime_error
+          ("unable to put token: " + event->job_id() + " unknown or not running");
+      }
+    }
+    void GenericDaemon::handle_put_token_ack (const events::put_token_ack* event)
+    {
+      parent_proxy (this, take (_put_token_source, event->put_token_id()))
+        .put_token_ack (event->put_token_id());
+    }
+    void GenericDaemon::token_put (std::string put_token_id)
+    {
+      parent_proxy (this, take (_put_token_source, put_token_id))
+        .put_token_ack (put_token_id);
+    }
 
 void GenericDaemon::handleRetrieveJobResultsEvent(const events::RetrieveJobResultsEvent* pEvt )
 {
@@ -1306,6 +1436,26 @@ namespace sdpa
         );
     }
 
+    void GenericDaemon::child_proxy::put_token
+      ( job_id_t job_id
+      , std::string put_token_id
+      , std::string place_name
+      , pnet::type::value::value_type value
+      ) const
+    {
+      _that->sendEventToOther
+        ( boost::shared_ptr<events::put_token>
+          ( new events::put_token ( _that->name()
+                                  , _name
+                                  , job_id
+                                  , put_token_id
+                                  , place_name
+                                  , value
+                                  )
+          )
+        );
+    }
+
     GenericDaemon::parent_proxy::parent_proxy
         (GenericDaemon* that, worker_id_t name)
       : _that (that)
@@ -1320,7 +1470,7 @@ namespace sdpa
       _that->sendEventToOther
         ( events::WorkerRegistrationEvent::Ptr
           ( new events::WorkerRegistrationEvent
-            (_that->name(), _name, capacity, capabilities, fhg::util::hostname())
+            (_that->name(), _name, capacity, capabilities, true, fhg::util::hostname())
           )
         );
     }
@@ -1427,6 +1577,17 @@ namespace sdpa
       _that->sendEventToOther
         ( events::JobResultsReplyEvent::Ptr
           (new events::JobResultsReplyEvent (_that->name(), _name, id, result))
+        );
+    }
+
+    void GenericDaemon::parent_proxy::put_token_ack
+      (std::string put_token_id) const
+    {
+      _that->sendEventToOther
+        ( boost::shared_ptr<events::put_token_ack>
+          ( new events::put_token_ack
+            (_that->name(), _name, put_token_id)
+          )
         );
     }
   }

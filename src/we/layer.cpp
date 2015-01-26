@@ -1,9 +1,9 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/layer.hpp>
-#include <we/exception.hpp>
 
 #include <fhg/assert.hpp>
+#include <fhg/util/read_bool.hpp>
 #include <fhg/util/starts_with.hpp>
 
 #include <boost/range/adaptor/map.hpp>
@@ -20,6 +20,7 @@ namespace we
         , std::function<void (id_type)> rts_canceled
         , std::function<void (id_type, id_type)> rts_discover
         , std::function<void (id_type, sdpa::discovery_info_t)> rts_discovered
+        , std::function<void (std::string)> rts_token_put
         , std::function<id_type()> rts_id_generator
         , std::mt19937& random_extraction_engine
         )
@@ -30,6 +31,7 @@ namespace we
       , _rts_canceled (rts_canceled)
       , _rts_discover (rts_discover)
       , _rts_discovered (rts_discovered)
+      , _rts_token_put (rts_token_put)
       , _rts_id_generator (rts_id_generator)
       , _random_extraction_engine (random_extraction_engine)
       , _extract_from_nets_thread (&layer::extract_from_nets, this)
@@ -293,6 +295,51 @@ namespace we
       }
     }
 
+    void layer::put_token ( id_type id
+                          , std::string put_token_id
+                          , std::string place_name
+                          , pnet::type::value::value_type value
+                          )
+    {
+      _nets_to_extract_from.apply
+        ( id
+        , [this, put_token_id, place_name, value]
+          (activity_data_type& activity_data)
+        {
+          boost::get<we::type::net_type&>
+            (activity_data._activity.transition().data())
+            .put_value (place_name, value);
+
+          _rts_token_put (put_token_id);
+        }
+        );
+    }
+
+  namespace
+  {
+    bool output_missing (type::activity_t const& activity)
+    {
+      if ( activity.output().size()
+         < activity.transition().ports_output().size()
+         )
+      {
+        return true;
+      }
+
+      std::unordered_set<port_id_type> port_ids_with_output;
+
+      for ( port_id_type port_id : activity.output()
+          | boost::adaptors::map_values
+          )
+      {
+        port_ids_with_output.emplace (port_id);
+      }
+
+      return port_ids_with_output.size()
+        != activity.transition().ports_output().size();
+    }
+  }
+
     void layer::extract_from_nets()
     {
       while (true)
@@ -305,22 +352,14 @@ namespace we
         //! fire_expression_and_extract_activity_random (endless loop
         //! in expressions)?
 
-        boost::optional<type::activity_t> activity;
-        try
-        {
-          //! \note We wrap all input activites in a net.
-          activity = boost::get<we::type::net_type&>
-            (activity_data._activity.transition().data())
-            . fire_expressions_and_extract_activity_random
-              (_random_extraction_engine);
-        }
-        catch (pnet::exception::type_error const& ex)
-        {
-          _rts_failed (activity_data._id, ex.what ());
-          return;
-        }
+        if ( boost::optional<type::activity_t> activity
 
-        if (activity)
+             //! \note We wrap all input activites in a net.
+           = boost::get<we::type::net_type&>
+             (activity_data._activity.transition().data())
+           . fire_expressions_and_extract_activity_random
+               (_random_extraction_engine)
+           )
         {
           const id_type child_id (_rts_id_generator());
           _running_jobs.started (activity_data._id, child_id);
@@ -328,7 +367,14 @@ namespace we
           was_active = true;
         }
 
-        if (_running_jobs.contains (activity_data._id))
+        if (  _running_jobs.contains (activity_data._id)
+           || ( boost::get<bool> ( activity_data._activity.transition().prop()
+                                 . get ({"drts", "wait_for_output"})
+                                 . get_value_or (false)
+                                 )
+              && output_missing (activity_data._activity)
+              )
+           )
         {
           _nets_to_extract_from.put (activity_data, was_active);
         }

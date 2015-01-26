@@ -19,8 +19,11 @@ namespace fhg
     {
       using boost::asio::ip::udp;
 
-      RemoteAppender::RemoteAppender (const std::string& location)
-        : logserver_ (*udp::resolver (io_service_)
+      RemoteAppender::RemoteAppender ( const std::string& location
+                                     , boost::asio::io_service& io_service
+                                     )
+        : io_service_ (io_service)
+        , logserver_ (*udp::resolver (io_service_)
                      . resolve
                        ( udp::resolver::query
                          ( udp::v4()

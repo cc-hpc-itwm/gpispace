@@ -20,6 +20,15 @@ fhg_add_runtime_executable (fhgkvsd.cpp
                  ${Boost_THREAD_LIBRARY}
 )
 
+fhg_add_runtime_executable (vmem.cpp
+  LINK_LIBRARIES fhg-util
+                 gspc
+                 ${FhgLog_LIBRARY}
+                 ${Boost_FILESYSTEM_LIBRARY}
+                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
+)
+
 find_package (LibReadline REQUIRED QUIET)
 include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
 

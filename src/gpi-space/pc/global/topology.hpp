@@ -66,7 +66,8 @@ namespace gpi
         static port_t const & any_port ();
         static host_t const & any_addr ();
 
-        topology_t ( const fhg::com::host_t & host
+        topology_t ( boost::asio::io_service& peer_io_service
+                   , const fhg::com::host_t & host
                    , const fhg::com::port_t & port
                    , memory::manager_t& memory_manager
                    , fhg::com::kvs::kvsc_ptr_t kvs_client
@@ -80,9 +81,6 @@ namespace gpi
         void establish ();
 
         virtual bool is_master () const override;
-
-        virtual int go () override;
-        virtual int wait_for_go () override;
 
         // initiate a global alloc
         virtual int alloc ( const gpi::pc::type::segment_id_t segment
@@ -151,6 +149,7 @@ namespace gpi
         typedef std::list<rank_result_t> result_list_t;
 
         void message_received ( boost::system::error_code const &
+                              , boost::optional<std::string> source_name
                               , memory::manager_t&
                               );
         void message_sent ( child_t & child
@@ -179,13 +178,8 @@ namespace gpi
         mutable mutex_type m_request_mutex;
         mutable mutex_type m_result_mutex;
         mutable condition_type m_request_finished;
-        mutable mutex_type m_go_event_mutex;
-        mutable condition_type m_go_received_event;
 
         bool m_shutting_down;
-        bool m_go_received;
-        size_t m_waiting_for_go;
-        bool m_established;
         gpi::rank_t m_rank;
         fhg::com::kvs::kvsc_ptr_t _kvs_client;
         peer_ptr   m_peer;

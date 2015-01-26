@@ -99,9 +99,6 @@ Most binary operations are strongly typed, i.e. they only accept tokens of the s
 .B add (a, b), sub(a, b)
         Concatenate chars and strings, otherwise add.
 
-.B substr(string s, long len) -> string
-        Get a substring of length len of string s.
-
 .B mul, div, divint
 
 .B mod, modint

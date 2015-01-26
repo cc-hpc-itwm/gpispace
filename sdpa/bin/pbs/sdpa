@@ -3,6 +3,9 @@
 # usage: sdpa {start|stop|status|submit file}
 #
 
+kvs_host=
+kvs_port=
+
 function log ()
 {
     echo "$@" >&2
@@ -98,58 +101,12 @@ function rexec ()
     fi
 }
 
-function initialize ()
-{
-    local node_file=
-    local hostfile="${1}"; shift
-
-    if [ -z "$hostfile" ] ; then
-        log "E: hostfile not set"
-        log "usage: init: [-h] [-F hostfile] [-s state-dir]"
-        return 1
-    fi
-
-    if [ ! -r "$hostfile" ] ; then
-        log "E: cannot read hostfile: $hostfile"
-        return 1
-    fi
-
-    if ! grep -q -e "^$(hostname -f)$" "${hostfile}" ; then
-        if ! grep -q -e "^$(hostname -s)$" "${hostfile}" ; then
-            log "E: could not find current host '$(hostname)' in hostfile: $hostfile"
-            return 1
-        fi
-    fi
-
-    if [ ! -d "$state_dir" ] ; then
-        local msg=$( mkdir -p "$state_dir" 2>&1 )
-        if [ $? -ne 0 ] ; then
-            echo "E: failed to create state-dir: $state_dir: $msg" >&2
-            return 1
-        fi
-    fi
-
-    mkdir -p "$state_dir/log" || {
-        echo >&2 "E: could not create log directory!"
-        return 1
-    }
-
-    node_file="${state_dir}/nodefile"
-
-    if ! cp "$hostfile" "$node_file" ; then
-        log "E: could not copy nodefile from '$hostfile' to '$node_file'"
-        return 1
-    fi
-}
-
 function help ()
 {
     cat >&2 <<EOF
 usage: `basename $0` command [parameters...]
 
    available commands:
-        init        - initialize environment file
-                      execute this in a a fresh allocation
      selftest       - perform a self-test
 
   start [component] - start all components or "component"
@@ -180,7 +137,7 @@ function is_proc_alive ()
         return 1
     fi
 
-    if grep -q "$name" /proc/$pid/cmdline >/dev/null 2>&1 ; then
+    if ps --pid "${pid}" -o comm= | grep -q "$name" ; then
         if kill -0 "$pid" >/dev/null 2>&1 ; then
             return 0
         else
@@ -231,25 +188,24 @@ function stop_proc ()
     local pid_file="$state_dir/$name.pid"
     local pid=$( cat "$pid_file" 2>/dev/null )
     if [ -n "$pid" ] ; then
-        echo -n "    sending SIGTERM to $name ($pid)..." >&2
+        echo -n "    sending SIGTERM to $name ($pid)" >&2
         for (( i=0; i<3; ++i )); do
-            if is_proc_alive "$name" "$pid" ; then
-                echo -n "."
+            if is_proc_alive "$binary" "$pid" ; then
+                echo -n "." >&2
                 kill -TERM "$pid" >/dev/null 2>&1
                 sleep 1
             else
-                :> "$pid_file"
                 echo "ok" >&2
                 break
             fi
         done
     fi
 
-    if is_proc_alive "$name" "$pid" ; then
+    if is_proc_alive "$binary" "$pid" ; then
         kill -KILL "$pid" >/dev/null 2>&1
         echo "killed" >&2
     else
-        pkill "$name" >/dev/null 2>&1
+        pkill "$binary" >/dev/null 2>&1
         return 0
     fi
 }
@@ -292,28 +248,25 @@ function status_agent ()
 
 function start_kvs ()
 {
-    if ! on_master_node ; then
-        log "E: kvs must be started on the master node"
-        exit 1
-    fi
-    kvs_port="${1}" ; shift
-    if [ -z "$kvs_port" ] ; then
-        log "E: kvs port is missing!"
-        return 1
-    fi
-
-    if ! start_proc "fhgkvsd" "$SDPA_HOME/bin/fhgkvsd" -s "" "-C" "-b" "0" "-p" "${kvs_port}" "--pidfile" "$state_dir/fhgkvsd.pid" "--daemonize"; then
+    if ! start_proc "fhgkvsd" "$SDPA_HOME/bin/fhgkvsd" --bind "0" --port '*' "--pidfile" "$state_dir/fhgkvsd.pid" "--daemonize" > "${state_dir}/kvs.port"; then
         log "E: could not start kvs, giving up!"
         return 1
-    else
-        sleep 1
-        return 0
     fi
+    local kvs_host=$(hostname -f)
+    local kvs_port=$(cat "${state_dir}/log/fhgkvsd.log")
+    echo -n "${kvs_host}" > "${state_dir}/kvs.host"
+    echo -n "${kvs_port}" > "${state_dir}/kvs.port"
+    log "I: kvs started at ${kvs_host}:${kvs_port}"
+    return 0
 }
 
 function stop_kvs ()
 {
     echo "fhgkvsd"
+
+    rm -f "${state_dir}/kvs.host"
+    rm -f "${state_dir}/kvs.port"
+
     if ! stop_proc "fhgkvsd" "fhgkvsd" ; then
         echo "E: could not stop kvs!" >&2
         return 1
@@ -323,7 +276,7 @@ function stop_kvs ()
 function stop_orch ()
 {
     echo "orchestrator"
-    if ! stop_proc "orchestrator" "$SDPA_SCRIPT_DIR/start-orch" ; then
+    if ! stop_proc "orchestrator" "orchestrator" ; then
         echo "E: could not stop orchestrator" >&2
         return 1
     fi
@@ -536,11 +489,11 @@ function start_gui ()
     "$SDPA_HOME/bin/sdpa-gui" $gui_port $log_port &
 }
 
-function stop_gpi ()
+function stop_vmem ()
 {
-    log "gpi"
-    if ! stop_proc "gpi-space" "gpi-space" ; then
-        log "E: could not stop gpi"
+    log "vmem"
+    if ! stop_proc "vmem" "vmem" ; then
+        log "E: could not stop vmem"
         return 1
     else
         return 0
@@ -567,7 +520,7 @@ function start ()
 
 function stop ()
 {
-    local parts="drts agg orch gpi kvs"
+    local parts="drts agg orch vmem kvs"
 
     local p
     local rc=0
@@ -594,16 +547,16 @@ function status_kvs ()
     is_proc_alive "fhgkvsd" $(cat "$state_dir/fhgkvsd.pid" 2>/dev/null)
 }
 
-function status_gpi ()
+function status_vmem ()
 {
-    is_proc_alive "gpi-space" $(cat "$state_dir/gpi-space.pid" 2>/dev/null)
+    is_proc_alive "vmem" $(cat "$state_dir/vmem.pid" 2>/dev/null)
 }
 
 function status ()
 {
     local parts=$1
     if [ -z "$parts" ] ; then
-        parts="kvs orch agg gpi drts"
+        parts="kvs orch agg vmem drts"
     else
         shift
     fi
@@ -632,7 +585,7 @@ function status ()
                 rc=$(( rc + 1 ))
             fi
         else
-            sdpac status $p
+            sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} status $p
         fi
     done
     return $rc
@@ -654,15 +607,15 @@ function submit ()
     fi
 
     log "I: submitting file: $net"
-    jobid=$( sdpac submit "$net" 2>&1 )
+    jobid=$( sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} submit "$net" 2>&1 )
     if [ $? -ne 0 ] ; then
         log "E: submission failed: $jobid"
         return 4
     else
         log "  + job ($jobid)"
         echo "$jobid" > "$state_dir/current_job"
-        sdpac wait "$jobid"
-        s=$(sdpac status "${jobid}")
+        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} wait "$jobid"
+        s=$(sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} status "${jobid}")
         log "    $jobid -> $s"
         s=$(echo "$s" | tr 'A-Z' 'a-z')
         case "$s" in
@@ -679,29 +632,12 @@ function submit ()
                 log "W: unknown state: $s"
                 ;;
         esac
-        sdpac -o "$output" --force results "$jobid"
-        sdpac delete "${jobid}"
+        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} -o "$output" --force results "$jobid"
+        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} delete "${jobid}"
         if [ $? -eq 0 ] ; then
             echo "  - job ($jobid)"
         fi
     fi
-}
-
-function on_valid_host ()
-{
-    local host="$(hostname -s)"
-    if test -r "$state_dir/nodefile" ; then
-        if grep -q -e "^$host" "$state_dir/nodefile" ; then
-            return 0
-        else
-            #log "W: your hostname ($host) does not match any in $state_dir/nodefile"
-            return 1
-        fi
-    else
-        log "E: no nodefile present"
-        return 2
-    fi
-    return 1
 }
 
 function get_master_node()
@@ -711,22 +647,6 @@ function get_master_node()
     else
         return 1
     fi
-}
-
-function on_master_node ()
-{
-    if test -r "$state_dir/nodefile" ; then
-        local master=$( head -n 1 "$state_dir/nodefile" )
-        if [ "$master" = "$(hostname -s)" ] ; then
-            return 0
-        fi
-        if [ "$master" = "$(hostname -f)" ] ; then
-            return 0
-        fi
-    else
-        log "E: no nodefile present"
-    fi
-    return 1
 }
 
 ##########################################################
@@ -757,14 +677,13 @@ if [ "$1" = "-s" ] ; then
     export SDPA_STATE_DIR="$state_dir"
 fi
 
-if [ "$1" = "init" ] ; then
-    shift
-    if ! initialize $@; then
-        log "E: could not initialize!"
-        exit 1
-    else
-        exit 0
-    fi
+if [ -f "${state_dir}/kvs.host" ]
+then
+  kvs_host=$(cat "${state_dir}/kvs.host")
+fi
+if [ -f "${state_dir}/kvs.port" ]
+then
+  kvs_port=$(cat "${state_dir}/kvs.port")
 fi
 
 if [ "$1" = "gui" ] ; then
@@ -779,42 +698,20 @@ function sigterm()
 }
 trap sigterm TERM
 
-function require_state ()
-{
-    if ! on_valid_host ; then
-#    log "W: you are executing 'sdpa' on an invalid host!"
-#    log "W: this might not be what you want"
-#    log "I: please run 'sdpa init' on the master node first!"
-        :
-    fi
-}
-
 case "$1" in
     start)
-        require_state
         shift
         start $@
         ;;
     stop)
-        require_state
-        if ! on_master_node ; then
-            log "E: not on master node"
-            exit 1
-        fi
         shift
         stop $@
         ;;
     status)
-        require_state
-        if ! on_master_node ; then
-            log "E: not on master node"
-            exit 1
-        fi
         shift
         status $@
         ;;
     submit)
-        require_state
         shift
         submit $@
         ;;
@@ -835,7 +732,7 @@ case "$1" in
         ;;
     selftest)
         shift
-        "${SDPA_SCRIPT_DIR}/sdpa-selftest" -H "${SDPA_HOME}" "${@}"
+        "${SDPA_SCRIPT_DIR}/sdpa-selftest" -s "${state_dir}" -H "${SDPA_HOME}" "${@}"
         ;;
     '')
         help

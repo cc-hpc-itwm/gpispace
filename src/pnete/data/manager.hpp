@@ -25,8 +25,6 @@ namespace fhg
       class manager
       {
       private:
-        manager();
-
         typedef QString id_type;
         typedef boost::bimaps::set_of<id_type> ids_type;
         typedef boost::bimaps::set_of<internal_type*> datas_type;
@@ -37,7 +35,7 @@ namespace fhg
         std::size_t _unnamed_current;
 
       public:
-        static manager& instance();
+        manager();
 
         handle::function load (const QString& filename);
         handle::function create (const internal_type::kind&);

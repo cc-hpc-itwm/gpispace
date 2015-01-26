@@ -387,6 +387,7 @@ namespace xml
                                         , std::string const&
                                         , std::string const&
                                         , we::type::property::type const&
+                                        , boost::optional<bool> const&
                                         )> make_transfer
         )
       {
@@ -438,7 +439,17 @@ namespace xml
           }
         }
 
-        return make_transfer (node, state, global, local, properties);
+        return make_transfer
+          ( node
+          , state
+          , global
+          , local
+          , properties
+          , fhg::util::boost::fmap<std::string, bool>
+            ( fhg::util::read_bool
+            , optional (node, "not-modified-in-module-call")
+            )
+          );
       }
 
       type::memory_get memory_get
@@ -452,6 +463,7 @@ namespace xml
                , std::string const& global
                , std::string const& local
                , we::type::property::type const& properties
+               , boost::optional<bool> const& // ignored
                )
           { return type::memory_get
               ( state.position (node)
@@ -474,11 +486,13 @@ namespace xml
                , std::string const& global
                , std::string const& local
                , we::type::property::type const& properties
+               , boost::optional<bool> const& not_modified_in_module_call
                )
           { return type::memory_put ( state.position (node)
                                     , global
                                     , local
                                     , properties
+                                    , not_modified_in_module_call
                                     );
           }
           );
@@ -495,11 +509,13 @@ namespace xml
                , std::string const& global
                , std::string const& local
                , we::type::property::type const& properties
+               , boost::optional<bool> const& not_modified_in_module_call
                )
           { return type::memory_getput ( state.position (node)
                                        , global
                                        , local
                                        , properties
+                                       , not_modified_in_module_call
                                        );
           }
           );
@@ -875,21 +891,21 @@ namespace xml
               {
                 if (cdata.empty())
                 {
-//                           throw error::property_generic
-//                             ( "no value given"
-//                             , state.prop_path()
-//                             , state.file_in_progress()
-//                             );
-
-                  util::property::set_state (state, prop, state.prop_path());
+                  util::property::set_state
+                    ( state
+                    , prop
+                    , state.prop_path()
+                    , we::type::property::value_type()
+                    );
                 }
                 else
                 {
-                  util::property::set_state ( state
-                                            , prop
-                                            , state.prop_path()
-                                            , cdata.front()
-                                            );
+                  util::property::set_state
+                    ( state
+                    , prop
+                    , state.prop_path()
+                    , pnet::type::value::read (cdata.front())
+                    );
                 }
               }
               else
@@ -906,7 +922,7 @@ namespace xml
                 util::property::set_state ( state
                                           , prop
                                           , state.prop_path()
-                                          , *value
+                                          , pnet::type::value::read (*value)
                                           );
               }
 
@@ -1283,7 +1299,12 @@ namespace xml
                                   )
       {
         const id::module id (state.id_mapper()->next_id());
-        const std::string name (required ("module_type", node, "name", state));
+        const std::string name
+          (validate_name ( required ("module_type", node, "name", state)
+                         , "module_type"
+                         , state.file_in_progress()
+                         )
+          );
         const std::string signature
           (required ("module_type", node, "function", state));
         const boost::optional<bool> pass_context

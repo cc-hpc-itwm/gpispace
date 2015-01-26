@@ -7,14 +7,19 @@
 #include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
+#include <gpi-space/pc/type/memory_location.hpp>
+
+#include <we/type/range.hpp>
 
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
+#include <list>
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 
 namespace gpi
 {
@@ -22,6 +27,22 @@ namespace gpi
   {
     namespace client
     {
+      struct transfer_t
+      {
+        transfer_t ( gpi::pc::type::memory_location_t const& src
+                   , gpi::pc::type::memory_location_t const& dst
+                   , std::size_t amount
+                   )
+          : src (src)
+          , dst (dst)
+          , amount (amount)
+        {}
+
+        const gpi::pc::type::memory_location_t src;
+        const gpi::pc::type::memory_location_t dst;
+        const std::size_t amount;
+      };
+
       class api_t : public boost::noncopyable
       {
       public:
@@ -64,6 +85,9 @@ namespace gpi
 
         gpi::pc::type::handle_t
         memset (const gpi::pc::type::handle_t h, int value, size_t count);
+
+        std::function<double (std::string const&)>
+        transfer_costs (std::list<std::pair<we::local::range, we::global::range>> const&);
 
         void * ptr(const gpi::pc::type::handle_t h);
 

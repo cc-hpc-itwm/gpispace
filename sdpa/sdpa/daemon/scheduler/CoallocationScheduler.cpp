@@ -44,20 +44,15 @@ namespace sdpa
     {
       typedef std::tuple<double, int, worker_id_t> cost_deg_wid_t;
 
-      bool operator< (cost_deg_wid_t const& lhs, cost_deg_wid_t const& rhs)
-      {
-        return (  std::get<0>(lhs) < std::get<0>(rhs)
-               || (  std::get<0>(lhs) == std::get<0>(rhs)
-                  && std::get<1>(lhs) > std::get<1>(rhs)
-                  )
-               );
-      };
-
       struct min_cost_max_deg_comp
       {
         bool operator() (const cost_deg_wid_t& lhs, const cost_deg_wid_t& rhs) const
         {
-          return (lhs<rhs);
+          return (  std::get<0>(lhs) < std::get<0>(rhs)
+                 || (  std::get<0>(lhs) == std::get<0>(rhs)
+                    && std::get<1>(lhs) > std::get<1>(rhs)
+                    )
+                 );
         }
       };
 
@@ -66,7 +61,7 @@ namespace sdpa
                                   , min_cost_max_deg_comp
                                   > base_priority_queue_t;
 
-      class bounded_priority_queue_t : public base_priority_queue_t
+      class bounded_priority_queue_t : private base_priority_queue_t
       {
       public:
         explicit bounded_priority_queue_t (std::size_t capacity)
@@ -75,20 +70,25 @@ namespace sdpa
 
       void push (cost_deg_wid_t next_tuple)
       {
-        if (size() < capacity())
+        if (size() < capacity_)
         {
           base_priority_queue_t::push (next_tuple);
           return;
         }
 
-        if (next_tuple < top())
+        if (comp (next_tuple, top()))
         {
-          base_priority_queue_t::pop();
+          pop();
           base_priority_queue_t::push (next_tuple);
         }
       }
 
-      const size_t capacity() const { return capacity_;}
+      using base_priority_queue_t::pop;
+      using base_priority_queue_t::top;
+      using base_priority_queue_t::size;
+
+      container_type::const_iterator begin() const {return c.begin();}
+      container_type::const_iterator end() const {return c.end();}
 
       private:
         size_t capacity_;
@@ -98,10 +98,12 @@ namespace sdpa
     std::set<worker_id_t> CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
       ( const mmap_match_deg_worker_id_t& mmap_matching_workers
       , const size_t n_req_workers
-      , const std::map<std::string
-      , double>& map_host_transfer_cost
+      , const std::function<double (std::string const&)> transfer_cost
       )
     {
+      if (mmap_matching_workers.size() < n_req_workers)
+        return {};
+
       std::set<worker_id_t> assigned_workers;
 
       bounded_priority_queue_t bpq (n_req_workers);
@@ -112,13 +114,15 @@ namespace sdpa
           )
       {
         const worker_id_host_info_t& worker_info = it->second;
-        const double cost = map_host_transfer_cost.at (worker_info.worker_host());
 
-        bpq.push (std::make_tuple (cost, it->first, worker_info.worker_id()));
+        bpq.push (std::make_tuple ( transfer_cost (worker_info.worker_host())
+                                  , it->first, worker_info.worker_id()
+                                  )
+                 );
       }
 
-      std::transform ( &(bpq.top())
-                     , &(bpq.top()) + bpq.size()
+      std::transform ( bpq.begin()
+                     , bpq.end()
                      , std::inserter (assigned_workers, assigned_workers.begin())
                      , [] (const cost_deg_wid_t& cost_deg_wid) -> worker_id_t
                        {
@@ -129,53 +133,10 @@ namespace sdpa
       return assigned_workers;
     }
 
-    namespace
-    {
-      std::map<std::string, double> getMemoryTransferCosts(const mmap_match_deg_worker_id_t& mmap_matching_workers)
-      {
-        // Note: this is the default implementation when the transfer costs are uniform.
-        // It will be replaced later by a real implementation which gets the costs
-        // from the associated activity
-
-        std::map<std::string, double> map_host_transfer_cost;
-        for (const worker_id_host_info_t& pair_wid_host : mmap_matching_workers | boost::adaptors::map_values )
-        {
-          if (!map_host_transfer_cost.count(pair_wid_host.worker_host()))
-          {
-            map_host_transfer_cost.emplace (pair_wid_host.worker_host(), 1.0);
-          }
-        }
-
-        return map_host_transfer_cost;
-      }
-
-      std::set<worker_id_t> find_assignment_for_job
-        ( const std::set<worker_id_t>& available_workers
-        , const job_requirements_t& requirements
-        , std::function<mmap_match_deg_worker_id_t
-                          ( const job_requirements_t&
-                          , const std::set<worker_id_t>&
-                          )
-                       > match_requirements
-        )
-      {
-        mmap_match_deg_worker_id_t
-          mmap_matching_workers (match_requirements (requirements, available_workers));
-
-        if (mmap_matching_workers.size() >= requirements.numWorkers())
-        {
-          return CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
-            (mmap_matching_workers, requirements.numWorkers(), getMemoryTransferCosts (mmap_matching_workers));
-        }
-
-        return  std::set<worker_id_t>();
-      }
-    }
-
     void CoallocationScheduler::assignJobsToWorkers()
     {
       std::set<worker_id_t> setAvailWorkers
-        (worker_manager().getSetOfWorkersNotReserved());
+        (worker_manager().getAllNonReservedWorkers());
 
       std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
 
@@ -186,16 +147,12 @@ namespace sdpa
         sdpa::job_id_t jobId (jobs_to_schedule.front());
         jobs_to_schedule.pop_front();
 
+        const job_requirements_t& requirements (_job_requirements (jobId));
         const std::set<worker_id_t> matching_workers
-          ( find_assignment_for_job
-            ( setAvailWorkers
-            , _job_requirements (jobId)
-            , std::bind
-              ( &WorkerManager::getListMatchingWorkers
-              , &worker_manager()
-              , std::placeholders::_1
-              , std::placeholders::_2
-              )
+          ( find_job_assignment_minimizing_memory_transfer_cost
+            ( worker_manager().getMatchingDegreesAndWorkers (requirements, setAvailWorkers)
+            , requirements.numWorkers()
+            , requirements.transfer_cost()
             )
           );
 

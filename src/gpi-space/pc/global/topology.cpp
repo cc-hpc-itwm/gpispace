@@ -123,23 +123,22 @@ namespace gpi
         return h;
       }
 
-      topology_t::topology_t ( const fhg::com::host_t & host
+      topology_t::topology_t ( boost::asio::io_service& peer_io_service
+                             , const fhg::com::host_t & host
                              , const fhg::com::port_t & port
                              , memory::manager_t& memory_manager
                              , fhg::com::kvs::kvsc_ptr_t kvs_client
                              , api::gpi_api_t& gpi_api
                              )
         : m_shutting_down (false)
-        , m_go_received (false)
-        , m_waiting_for_go (0)
-        , m_established (false)
         , m_rank (gpi_api.rank())
         , _kvs_client (kvs_client)
         , _gpi_api (gpi_api)
       {
         lock_type lock(m_mutex);
         m_peer.reset
-          (new fhg::com::peer_t( detail::rank_to_name (m_rank)
+          (new fhg::com::peer_t( peer_io_service
+                               , detail::rank_to_name (m_rank)
                                , host
                                , port
                                , _kvs_client
@@ -169,6 +168,7 @@ namespace gpi
                            , std::bind( &topology_t::message_received
                                       , this
                                       , std::placeholders::_1
+                                      , std::placeholders::_2
                                       , std::ref (memory_manager)
                                       )
                            );
@@ -177,11 +177,6 @@ namespace gpi
         {
           if (_gpi_api.rank() != n)
             add_child(n);
-        }
-
-        if (_gpi_api.is_master ())
-        {
-          establish();
         }
       }
 
@@ -207,47 +202,6 @@ namespace gpi
       bool topology_t::is_master () const
       {
         return 0 == m_rank;
-      }
-
-      int topology_t::wait_for_go ()
-      {
-        lock_type lock (m_go_event_mutex);
-
-        ++m_waiting_for_go;
-
-        boost::system_time const timeout
-          (boost::get_system_time()+boost::posix_time::seconds(30));
-
-        while (not m_go_received)
-        {
-          if (m_shutting_down)
-            break;
-          if (not m_go_received_event.timed_wait (lock, timeout))
-          {
-            if (not m_go_received)
-            {
-              --m_waiting_for_go;
-              throw std::runtime_error ("did not receive GO within 30 seconds");
-            }
-          }
-        }
-
-        --m_waiting_for_go;
-        if (0 == m_waiting_for_go)
-        {
-          m_go_received = false;
-        }
-
-        if (m_shutting_down)
-          throw std::runtime_error ("shutting down");
-
-        return 0;
-      }
-
-      int topology_t::go ()
-      {
-        broadcast (detail::command_t("GO"));
-        return 0;
       }
 
       void topology_t::add_child(const gpi::rank_t rank)
@@ -331,9 +285,6 @@ namespace gpi
       {
         // lock, so that no other process can make a global alloc
         lock_type alloc_lock(m_global_alloc_mutex);
-
-        // acquire cluster wide access to the gpi resource
-        boost::unique_lock<gpi::api::gpi_api_t> gpi_lock (_gpi_api);
 
         try
         {
@@ -433,38 +384,6 @@ namespace gpi
         return rc;
       }
 
-      void topology_t::establish ()
-      {
-        LOG(TRACE, "establishing topology...");
-
-        try
-        {
-          rank_result_t res (all_reduce( detail::command_t("CONNECT")
-                                       , reduce::max_result
-                                       , rank_result_t (m_rank, 0) // my result
-                                       )
-                            );
-          if (res.value != 0)
-          {
-            LOG (ERROR,"connection failed: " << res.rank << " failed: " << res.value);
-            throw std::runtime_error
-              ( "connections could not be established to at least one node: rank "
-              + boost::lexical_cast<std::string>(res.rank)
-              + " says: "
-              + res.message
-              );
-          }
-          else
-          {
-            m_established = true;
-          }
-        }
-        catch (std::exception const & ex)
-        {
-          throw;
-        }
-      }
-
       void topology_t::cast( const gpi::rank_t rnk
                            , const std::string & data
                            )
@@ -553,14 +472,14 @@ namespace gpi
        */
 
       void topology_t::message_received
-        (boost::system::error_code const &ec, memory::manager_t& memory_manager)
+        ( boost::system::error_code const &ec
+        , boost::optional<std::string> source_name
+        , memory::manager_t& memory_manager
+        )
       {
         if (! ec)
         {
-          const fhg::com::p2p::address_t & addr = m_incoming_msg.header.src;
-          const std::string name(m_peer->resolve_addr (addr));
-
-          handle_message( detail::name_to_rank(name)
+          handle_message( detail::name_to_rank(source_name.get())
                         , std::string( m_incoming_msg.buf()
                                      , m_incoming_msg.header.length
                                      )
@@ -571,23 +490,22 @@ namespace gpi
                              , std::bind( &topology_t::message_received
                                         , this
                                         , std::placeholders::_1
+                                        , std::placeholders::_2
                                         , std::ref (memory_manager)
                                         )
                              );
         }
         else if (! m_shutting_down)
         {
-          const fhg::com::p2p::address_t & addr = m_incoming_msg.header.src;
-          if (addr != m_peer->address())
+          if (m_incoming_msg.header.src != m_peer->address())
           {
-            const std::string name(m_peer->resolve_addr (addr));
-
-            handle_error (detail::name_to_rank(name));
+            handle_error (detail::name_to_rank(source_name.get()));
 
             m_peer->async_recv ( &m_incoming_msg
                                , std::bind( &topology_t::message_received
                                           , this
                                           , std::placeholders::_1
+                                          , std::placeholders::_2
                                           , std::ref (memory_manager)
                                           )
                                );
@@ -606,15 +524,6 @@ namespace gpi
       {
         // TODO: push message to message handler
 
-        if (rank != m_rank && msg == "CONNECT")
-        {
-          add_child(rank); // actually set_parent(rank)?
-          cast (rank, detail::command_t("+RES") << 0);
-
-          m_established = true;
-        }
-        else
-        {
           // split message
           std::vector<std::string> av;
           boost::algorithm::split ( av, msg
@@ -743,12 +652,6 @@ namespace gpi
                     << ": " << boost::algorithm::join (msg_vec, " ")
                     );
           }
-          else if (av [0] == "GO")
-          {
-            lock_type lck (m_go_event_mutex);
-            m_go_received = true;
-            m_go_received_event.notify_all ();
-          }
           else if (av[0] == "SHUTDOWN" && !m_shutting_down)
           {
             LOG(INFO, "shutting down");
@@ -760,19 +663,12 @@ namespace gpi
           {
             LOG(WARN, "invalid command: '" << av[0] <<"'");
           }
-        }
       }
 
       void topology_t::handle_error ( const gpi::rank_t rank
                                     )
       {
-        if (m_established || m_waiting_for_go)
-        {
           m_shutting_down = true;
-          if (m_waiting_for_go)
-          {
-            m_go_received_event.notify_all ();
-          }
 
           del_child (rank);
 
@@ -788,7 +684,6 @@ namespace gpi
 
           kill(getpid(), SIGTERM);
         }
-      }
     }
   }
 }

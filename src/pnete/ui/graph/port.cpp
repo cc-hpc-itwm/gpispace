@@ -63,7 +63,7 @@ namespace fhg
             ( this
             , "property_changed"
             , "data::handle::port, "
-              "we::type::property::key_type, we::type::property::value_type"
+              "we::type::property::path_type, we::type::property::value_type"
             );
 
           handle.connect_to_change_mgr
@@ -314,18 +314,18 @@ namespace fhg
           }
           else
           {
-            const boost::optional<std::string> tunnel_direction
+            const boost::optional<pnet::type::value::value_type> tunnel_direction
               (handle().get().properties().get
-                ("fhg.pnete.tunnel.direction")
+                ({"fhg", "pnete", "tunnel", "direction"})
               );
 
             if (tunnel_direction)
             {
-              if (*tunnel_direction == "out")
+              if (boost::get<std::string> (*tunnel_direction) == "out")
               {
                 cap::add_outgoing (poly, pos);
               }
-              else if (*tunnel_direction == "in")
+              else if (boost::get<std::string> (*tunnel_direction) == "in")
               {
                 cap::add_incoming (poly, pos);
               }
@@ -467,34 +467,14 @@ namespace fhg
           }
         }
 
-        namespace
-        {
-          qreal read_qreal (const std::string& inp)
-          {
-            util::parse::position_string pos (inp);
-            fhg::util::parse::require::skip_spaces (pos);
-            return util::read_double (pos);
-          }
-        }
-
         void port_item::property_changed
           ( const data::handle::port& changed_handle
-          , const ::we::type::property::key_type& key
+          , const ::we::type::property::path_type& path
           , const ::we::type::property::value_type& value
           )
         {
           if (changed_handle == handle())
           {
-            const std::string required_position_variable
-              ( parentItem() == nullptr
-              ? "fhg.pnete.position"
-              : "fhg.pnete.outer_position"
-              );
-
-            const ::we::type::property::path_type path
-              (pnet::type::value::path::split (key));
-
-
             ::we::type::property::path_type::const_iterator pos (path.begin());
             ::we::type::property::path_type::const_iterator const end (path.end());
 
@@ -517,18 +497,18 @@ namespace fhg
                 if (*pos == "x")
                 {
                   set_just_pos_but_not_in_property
-                    (QPointF (read_qreal (value), this->pos().y()));
+                    (boost::get<double> (value), this->pos().y());
                 }
                 else if (*pos == "y")
                 {
                   set_just_pos_but_not_in_property
-                    (QPointF (this->pos().x(), read_qreal (value)));
+                    (this->pos().x(), boost::get<double> (value));
                 }
               }
             }
             else
             {
-              handle_property_change (key, value);
+              handle_property_change (path, value);
             }
           }
         }

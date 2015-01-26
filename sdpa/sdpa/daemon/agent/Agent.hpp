@@ -14,10 +14,13 @@ namespace sdpa
     public:
       Agent ( const std::string& name
             , const std::string& url
+            , boost::asio::io_service& peer_io_service
+            , boost::asio::io_service& kvs_client_io_service
             , std::string kvs_host
             , std::string kvs_port
+            , boost::optional<boost::filesystem::path> const& vmem_socket
             , const sdpa::master_info_list_t arrMasterNames
-            , const boost::optional<std::string>& guiUrl
+            , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
             );
 
     protected:

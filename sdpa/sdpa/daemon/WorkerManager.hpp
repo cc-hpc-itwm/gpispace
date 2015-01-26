@@ -25,21 +25,21 @@ namespace sdpa
       const boost::optional<worker_id_t> findSubmOrAckWorker (const sdpa::job_id_t& job_id) const;
 
       //! returns whether worker was actually added (i.e. false when already there)
-      bool addWorker ( const worker_id_t& workerId
-                     , boost::optional<unsigned int> capacity
-                     , const capabilities_set_t&
-                     , const std::string& hostname
-                     );
+    bool addWorker ( const worker_id_t& workerId
+                   , boost::optional<unsigned int> capacity
+                   , const capabilities_set_t& cpbset
+                   , const bool children_allowed
+                   , const std::string& hostname
+                   );
 
       void deleteWorker (const worker_id_t& workerId);
 
       void getCapabilities (sdpa::capabilities_set_t& cpbset);
 
       sdpa::job_id_list_t getJobListAndCleanQueues (const  Worker::ptr_t& pWorker);
-      std::set<worker_id_t> getSetOfWorkersNotReserved();
+      std::set<worker_id_t> getAllNonReservedWorkers();
 
-      boost::optional<sdpa::worker_id_t> getBestMatchingWorker (const job_requirements_t&, const sdpa::worker_id_list_t&) const;
-      mmap_match_deg_worker_id_t getListMatchingWorkers (const job_requirements_t&, const std::set<worker_id_t>&) const;
+      mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers (const job_requirements_t&, const std::set<worker_id_t>&) const;
 
   private:
       worker_map_t  worker_map_;

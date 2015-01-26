@@ -13,6 +13,7 @@
 
     <cinclude href="hello_util.h"/>    <!-- shared object -->
     <ld flag="-lhello_util"/>
+    <ld flag="-Wl,-rpath='$$ORIGIN'"/>
 
     <cinclude href="iostream"/>
 

@@ -11,6 +11,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/asio/io_service.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
@@ -560,7 +561,8 @@ static int cmd_memory_del (shell_t::argv_t const & av, shell_t & sh);
 
 int main (int ac, char **av)
 {
-  FHGLOG_SETUP();
+  boost::asio::io_service remote_log_io_service;
+  FHGLOG_SETUP (remote_log_io_service);
 
   if (isatty(0))
     interactive = true;
@@ -1326,15 +1328,11 @@ int cmd_segment_list (shell_t::argv_t const & av, shell_t & sh)
     {
       if (av[1] == "all")
         mode = 0;
-      else if (av[1] == "special")
-        mode = 1;
       else if (av[1] == "shared")
         mode = 2;
-      else if (av[1] == "attached")
-        mode = 3;
       else
       {
-        std::cerr << "usage: list [all(*) | special | shared | attached]" << std::endl;
+        std::cerr << "usage: list [all(*) | shared]" << std::endl;
         return 1;
       }
     }
@@ -1352,23 +1350,8 @@ int cmd_segment_list (shell_t::argv_t const & av, shell_t & sh)
       case 0:
         std::cout << desc << std::endl;;
         break;
-      case 1:
-        if (gpi::flag::is_set (desc.flags, gpi::pc::F_SPECIAL))
-        {
-          std::cout << desc << std::endl;
-        }
-        break;
       case 2:
-        if (! gpi::flag::is_set (desc.flags, gpi::pc::F_SPECIAL))
-        {
-          std::cout << desc << std::endl;
-        }
-        break;
-      case 3:
-        if (gpi::flag::is_set (desc.flags, gpi::pc::F_ATTACHED))
-        {
-          std::cout << desc << std::endl;
-        }
+        std::cout << desc << std::endl;
         break;
       }
     }

@@ -7,6 +7,8 @@
 #include <we/type/port.hpp>
 #include <we/type/transition.hpp>
 
+#include <fhg/util/boost/optional.hpp>
+
 #include <boost/format.hpp>
 
 #include <fstream>
@@ -72,11 +74,9 @@ class TransitionVisitor: public boost::static_visitor<void> {
             transitions_[tid] = transition;
 
             /* If there is a limit on number of firings, implement it using an additional place. */
-            if (boost::optional<const we::type::property::value_type &> limit = t.prop().get("fhg.pnetv.firings_limit")) {
+            if (boost::optional<const we::type::property::value_type &> limit = t.prop().get({"fhg", "pnetv", "firings_limit"})) {
               transition->addInputPlace
-                ( petriNet_->createPlace
-                  (boost::lexical_cast<TokenCount> (*limit))
-                );
+                (petriNet_->createPlace (boost::get<TokenCount> (*limit)));
             }
         }
 

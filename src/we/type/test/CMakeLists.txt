@@ -4,7 +4,7 @@
 
 fhg_add_test (bytearray.cpp
   BOOST_UNIT_TEST
-  LINK_LIBRARIES pnet
+  LINK_LIBRARIES pnet fhg-util
 )
 
 fhg_add_test (value.cpp

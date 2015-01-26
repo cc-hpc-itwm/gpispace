@@ -145,7 +145,7 @@ namespace
 WFEImpl::WFEImpl ( fhg::log::Logger::ptr_t logger
                  , boost::optional<std::size_t> target_socket
                  , std::string search_path
-                 , boost::optional<std::string> gui_url
+                 , boost::optional<std::pair<std::string, boost::asio::io_service&>> gui_info
                  , std::string worker_name
                  )
   : _logger (logger)
@@ -158,8 +158,9 @@ WFEImpl::WFEImpl ( fhg::log::Logger::ptr_t logger
   , m_loader ( fhg::util::split<std::string, boost::filesystem::path>
                (search_path, ':')
              )
-  , _notification_service ( gui_url
-                          ? sdpa::daemon::NotificationService (*gui_url)
+  , _notification_service ( gui_info
+                          ? sdpa::daemon::NotificationService
+                            (gui_info->first, gui_info->second)
                           : boost::optional<sdpa::daemon::NotificationService>()
                           )
 {
@@ -304,14 +305,21 @@ void WFEImpl::cancel (std::string const &job_id)
 }
 
 
-DRTSImpl::DRTSImpl (std::function<void()> request_stop, std::map<std::string, std::string> config_variables)
+DRTSImpl::DRTSImpl
+    ( std::function<void()> request_stop
+    , boost::asio::io_service& peer_io_service
+    , boost::asio::io_service& kvs_client_io_service
+    , boost::optional<std::pair<std::string, boost::asio::io_service&>> gui_info
+    , std::map<std::string, std::string> config_variables
+    )
   : _logger
     (fhg::log::Logger::get (*get<std::string> ("kernel_name", config_variables)))
   , _request_stop (request_stop)
   , _kvs_client
     (new fhg::com::kvs::client::kvsc
-      ( get<std::string> ("plugin.drts.kvs_host", config_variables).get_value_or ("localhost")
-      , get<std::string> ("plugin.drts.kvs_port", config_variables).get_value_or ("2439")
+      ( kvs_client_io_service
+      , *get<std::string> ("plugin.drts.kvs_host", config_variables)
+      , *get<std::string> ("plugin.drts.kvs_port", config_variables)
       , true // auto_reconnect
       , boost::posix_time::duration_from_string
         ( get<std::string> ("plugin.drts.kvs_timeout", config_variables)
@@ -326,7 +334,7 @@ DRTSImpl::DRTSImpl (std::function<void()> request_stop, std::map<std::string, st
   , m_wfe ( _logger
           , get<std::size_t> ("plugin.drts.socket", config_variables)
           , get<std::string> ("plugin.drts.library_path", config_variables).get_value_or (fhg::util::getenv("PC_LIBRARY_PATH").get_value_or (""))
-          , get<std::string> ("plugin.drts.gui_url", config_variables)
+          , gui_info
           , m_my_name
           )
   , m_max_reconnect_attempts (get<std::size_t> ("plugin.drts.max_reconnect_attempts", config_variables).get_value_or (0))
@@ -364,7 +372,8 @@ DRTSImpl::DRTSImpl (std::function<void()> request_stop, std::map<std::string, st
   // initialize peer
   m_peer.reset
     ( new fhg::com::peer_t
-      ( m_my_name
+      ( peer_io_service
+      , m_my_name
       , host
       , port
       , _kvs_client
@@ -867,12 +876,13 @@ void DRTSImpl::start_connect ()
     if (! master_it->second)
     {
       sdpa::events::WorkerRegistrationEvent::Ptr evt
-        (new sdpa::events::WorkerRegistrationEvent( m_my_name
-                                                  , master_it->first
-                                                  , m_backlog_size
-                                                  , {}
-                                                  , fhg::util::hostname()
-                                                  )
+        (new sdpa::events::WorkerRegistrationEvent ( m_my_name
+                                                   , master_it->first
+                                                   , m_backlog_size
+                                                   , sdpa::capabilities_set_t()
+                                                   , false
+                                                   , fhg::util::hostname()
+                                                   )
         );
 
       try
@@ -939,11 +949,14 @@ void DRTSImpl::start_receiver()
   m_peer->async_recv(&m_message, std::bind( &DRTSImpl::handle_recv
                                           , this
                                           , std::placeholders::_1
+                                          , std::placeholders::_2
                                           )
                     );
 }
 
-void DRTSImpl::handle_recv (boost::system::error_code const & ec)
+void DRTSImpl::handle_recv ( boost::system::error_code const & ec
+                           , boost::optional<std::string> source_name
+                           )
 {
   static sdpa::events::Codec codec;
 
@@ -968,12 +981,9 @@ void DRTSImpl::handle_recv (boost::system::error_code const & ec)
   }
   else if (! m_shutting_down)
   {
-    const fhg::com::p2p::address_t & addr = m_message.header.src;
-    if (addr != m_peer->address())
+    if (m_message.header.src != m_peer->address())
     {
-      const std::string other_name(m_peer->resolve_addr (addr));
-
-      map_of_masters_t::iterator master(m_masters.find(other_name));
+      map_of_masters_t::iterator master(m_masters.find(source_name.get()));
       if (master != m_masters.end() && master->second)
       {
         master->second = false;

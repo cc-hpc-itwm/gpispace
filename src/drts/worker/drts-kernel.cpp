@@ -3,7 +3,6 @@
 #include <drts/worker/drts.hpp>
 
 #include <plugin/core/kernel.hpp>
-#include <plugin/core/license.hpp>
 #include <fhg/util/daemonize.hpp>
 #include <fhg/util/pidfile_writer.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
@@ -19,7 +18,8 @@
 
 int main(int ac, char **av)
 {
-  FHGLOG_SETUP();
+  boost::asio::io_service remote_log_io_service;
+  FHGLOG_SETUP (remote_log_io_service);
   fhg::log::Logger::ptr_t logger (fhg::log::Logger::get());
 
   namespace po = boost::program_options;
@@ -90,15 +90,14 @@ int main(int ac, char **av)
 
   const bool daemonize (vm.count ("daemonize"));
 
-  fhg::plugin::magically_check_license (logger);
-
   if (not pidfile.empty())
   {
     fhg::util::pidfile_writer const pidfile_writer (pidfile);
 
     if (daemonize)
     {
-      fhg::util::fork_and_daemonize_child_and_abandon_parent();
+      fhg::util::fork_and_daemonize_child_and_abandon_parent
+        ({&remote_log_io_service});
     }
 
     pidfile_writer.write();
@@ -107,7 +106,8 @@ int main(int ac, char **av)
   {
     if (daemonize)
     {
-      fhg::util::fork_and_daemonize_child_and_abandon_parent();
+      fhg::util::fork_and_daemonize_child_and_abandon_parent
+        ({&remote_log_io_service});
     }
   }
 
@@ -128,9 +128,31 @@ int main(int ac, char **av)
   signal_handlers.add (SIGTERM, std::bind (request_stop));
   signal_handlers.add (SIGINT, std::bind (request_stop));
 
-  DRTSImpl const plugin (request_stop, config_variables);
-
-  waiter.wait();
+  boost::asio::io_service peer_io_service;
+  boost::asio::io_service kvs_client_io_service;
+  if (config_variables.count ("plugin.drts.gui_url"))
+  {
+    boost::asio::io_service gui_io_service;
+    DRTSImpl const plugin
+      ( request_stop
+      , peer_io_service
+      , kvs_client_io_service
+      , std::pair<std::string, boost::asio::io_service&>
+        (config_variables.at ("plugin.drts.gui_url"), gui_io_service)
+      , config_variables
+      );
+    waiter.wait();
+  }
+  else
+  {
+    DRTSImpl const plugin ( request_stop
+                          , peer_io_service
+                          , kvs_client_io_service
+                          , boost::none
+                          , config_variables
+                          );
+    waiter.wait();
+  }
 
   return 0;
 }

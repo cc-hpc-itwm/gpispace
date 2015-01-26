@@ -13,7 +13,6 @@ endmacro()
 bundle_apps(
   agent
   drts-kernel
-  fhgcfg
   fhgkvsc
   fhgkvsd
   fhglog-dump
@@ -46,7 +45,7 @@ install(CODE "
 
   file(GLOB_RECURSE PLUGINS
          \"\${CMAKE_INSTALL_PREFIX}/libexec/fhg/plugins/*.so\")
-  execute_process(COMMAND ${CMAKE_SOURCE_DIR}/sdpa/bin/pbs/bundle.sh
+  execute_process(COMMAND ${CMAKE_SOURCE_DIR}/bundle/bundle.sh
                           -p \"\${CMAKE_INSTALL_PREFIX}\"
                           -d
                           -L \"\${CMAKE_INSTALL_PREFIX}/lib\"

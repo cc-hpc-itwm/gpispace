@@ -3,6 +3,8 @@
 #ifndef _PNETE_UI_TRANSITION_LIBRARY_ITEM_HPP
 #define _PNETE_UI_TRANSITION_LIBRARY_ITEM_HPP 1
 
+#include <pnete/data/manager.fwd.hpp>
+
 #include <QList>
 #include <QObject>
 #include <QFileInfo>
@@ -20,6 +22,7 @@ namespace fhg
       public:
         TransitionLibraryItem (QObject*);
         TransitionLibraryItem ( const QFileInfo& fileinfo
+                              , data::manager&
                               , bool is_folder
                               , bool trusted = false
                               , QObject* parent = nullptr

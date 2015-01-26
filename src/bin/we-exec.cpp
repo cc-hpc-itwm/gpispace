@@ -6,7 +6,6 @@
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/split.hpp>
 
-#include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/kvs/kvsd.hpp>
 #include <fhgcom/tcp_server.hpp>
 
@@ -16,6 +15,7 @@
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 
+#include <boost/asio/io_service.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/program_options.hpp>
@@ -26,7 +26,8 @@
 int main (int argc, char **argv)
 try
 {
-  FHGLOG_SETUP();
+  boost::asio::io_service remote_log_io_service;
+  FHGLOG_SETUP (remote_log_io_service);
   fhg::log::Logger::ptr_t logger (fhg::log::Logger::get());
 
   boost::program_options::options_description desc ("options");
@@ -114,16 +115,16 @@ try
   struct kvs_server : boost::noncopyable
   {
     kvs_server (std::string const& host)
-      : _io_service_pool (1)
-      , _kvs_daemon (boost::none)
-      , _tcp_server
-        (_io_service_pool.get_io_service(), _kvs_daemon, host, "0", true)
-      , _io_thread (&fhg::com::io_service_pool::run, &_io_service_pool)
+      : _io_service()
+      , _io_service_work (_io_service)
+      , _kvs_daemon()
+      , _tcp_server (_io_service, _kvs_daemon, host, "0", true)
+      , _io_service_thread ([this] { _io_service.run(); })
     {}
     ~kvs_server()
     {
       _tcp_server.stop();
-      _io_service_pool.stop();
+      _io_service.stop();
     }
 
     std::string port() const
@@ -132,23 +133,39 @@ try
     }
 
   private:
-    fhg::com::io_service_pool _io_service_pool;
+    boost::asio::io_service _io_service;
+    boost::asio::io_service::work _io_service_work;
     fhg::com::kvs::server::kvsd _kvs_daemon;
     fhg::com::tcp_server _tcp_server;
-    boost::scoped_thread<boost::join_if_joinable> _io_thread;
+    boost::scoped_thread<boost::join_if_joinable> _io_service_thread;
   } const kvs_server (host);
 
   std::string const kvs_port (kvs_server.port());
   std::string const orchestrator_name ("orchestrator");
   std::string const agent_name ("agent");
 
+  boost::asio::io_service orchestrator_peer_io_service;
+  boost::asio::io_service orchestrator_kvs_client_io_service;
   sdpa::daemon::Orchestrator const orchestrator
-    (orchestrator_name, host, host, kvs_port);
+    ( orchestrator_name
+    , host
+    , orchestrator_peer_io_service
+    , orchestrator_kvs_client_io_service
+    , host
+    , kvs_port
+    );
 
+  boost::asio::io_service agent_peer_io_service;
+  boost::asio::io_service agent_kvs_client_io_service;
   sdpa::daemon::Agent const agent
     ( agent_name
     , host
+    , agent_peer_io_service
+    , agent_kvs_client_io_service
     , host, kvs_port
+    , vm.count ("vmem-socket")
+      ? boost::make_optional (boost::filesystem::path (vm["vmem-socket"].as<std::string>()))
+      : boost::none
     , {sdpa::MasterInfo (orchestrator_name)}
     , boost::none
     );
@@ -238,9 +255,31 @@ try
             kernel.load_plugin_by_name ("gpi_compat");
           }
 
-          DRTSImpl const plugin (request_stop, config_variables);
-
-          waiter.wait();
+          boost::asio::io_service peer_io_service;
+          boost::asio::io_service kvs_client_io_service;
+          if (config_variables.count ("plugin.drts.gui_url"))
+          {
+            boost::asio::io_service gui_io_service;
+            DRTSImpl const plugin
+              ( request_stop
+              , peer_io_service
+              , kvs_client_io_service
+              , std::pair<std::string, boost::asio::io_service&>
+                (config_variables.at ("plugin.drts.gui_url"), gui_io_service)
+              , config_variables
+              );
+            waiter.wait();
+          }
+          else
+          {
+            DRTSImpl const plugin ( request_stop
+                                  , peer_io_service
+                                  , kvs_client_io_service
+                                  , boost::none
+                                  , config_variables
+                                  );
+            waiter.wait();
+          }
         }
         )
       );
@@ -252,7 +291,14 @@ try
     : we::type::activity_t (boost::filesystem::path (path_to_act))
     );
 
-  sdpa::client::Client client (orchestrator_name, host, kvs_port);
+  boost::asio::io_service client_peer_io_service;
+  boost::asio::io_service client_kvs_client_io_service;
+  sdpa::client::Client client ( orchestrator_name
+                              , client_peer_io_service
+                              , client_kvs_client_io_service
+                              , host
+                              , kvs_port
+                              );
 
   sdpa::job_id_t const job_id (client.submitJob (activity.to_string()));
 

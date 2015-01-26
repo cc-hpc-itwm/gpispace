@@ -7,10 +7,12 @@
 
 BOOST_AUTO_TEST_CASE (process_big)
 {
-  BOOST_REQUIRE_GT (boost::unit_test::framework::master_test_suite().argc, 1);
+  BOOST_REQUIRE_EQUAL (boost::unit_test::framework::master_test_suite().argc, 3);
 
   const std::size_t size
     (atoi (boost::unit_test::framework::master_test_suite().argv[1]));
+  std::string const cat
+    (boost::unit_test::framework::master_test_suite().argv[2]);
   const std::size_t count (size / sizeof (int));
 
   std::vector<int> in (count);
@@ -23,7 +25,7 @@ BOOST_AUTO_TEST_CASE (process_big)
   }
 
   {
-    BOOST_REQUIRE_EQUAL (process::execute ("cat", &in[0], size, &out[0], size), size);
+    BOOST_REQUIRE_EQUAL (process::execute (cat, &in[0], size, &out[0], size), size);
 
     for (std::size_t i (0); i < count; ++i)
     {
@@ -33,7 +35,7 @@ BOOST_AUTO_TEST_CASE (process_big)
 
   // inplace
   {
-    BOOST_REQUIRE_EQUAL (process::execute ("cat", &in[0], size, &in[0], size), size);
+    BOOST_REQUIRE_EQUAL (process::execute (cat, &in[0], size, &in[0], size), size);
 
     for (std::size_t i (0); i < count; ++i)
     {

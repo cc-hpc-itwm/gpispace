@@ -30,7 +30,8 @@ namespace fhg
     public:
       typedef std::function <void (boost::system::error_code const &)> handler_t;
 
-      peer_t ( std::string const & name
+      peer_t ( boost::asio::io_service&
+             , std::string const & name
              , host_t const & host
              , port_t const & port
              , kvs::kvsc_ptr_t kvs_client
@@ -61,10 +62,14 @@ namespace fhg
                 , std::string const & data
                 );
 
-      void async_recv (message_t *m, handler_t h);
+      void async_recv
+        ( message_t *m
+        , std::function<void ( boost::system::error_code
+                             , boost::optional<std::string> source_name
+                             )
+                       >
+        );
       void recv (message_t *m);
-
-      std::string resolve_addr (p2p::address_t const &);
 
     protected:
       void handle_hello_message (connection_t::ptr_t, const message_t *m);
@@ -91,7 +96,10 @@ namespace fhg
         {}
 
         message_t  *message;
-        handler_t  handler;
+        std::function<void ( boost::system::error_code
+                           , boost::optional<std::string> source_name
+                           )
+                     > handler;
       };
 
       struct connection_data_t
@@ -130,15 +138,12 @@ namespace fhg
 
       kvs::kvsc_ptr_t _kvs_client;
 
-      boost::asio::io_service io_service_;
-      boost::shared_ptr<boost::asio::io_service::work> io_service_work_;
+      boost::asio::io_service& io_service_;
+      boost::asio::io_service::work io_service_work_;
       boost::asio::ip::tcp::acceptor acceptor_;
       boost::asio::deadline_timer m_renew_kvs_entries_timer;
 
       boost::shared_ptr<boost::thread> m_peer_thread;
-
-      typedef std::unordered_map<p2p::address_t, std::string> reverse_lookup_cache_t;
-      reverse_lookup_cache_t reverse_lookup_cache_;
 
       std::unordered_map<p2p::address_t, connection_data_t> connections_;
 
@@ -147,7 +152,7 @@ namespace fhg
       connection_t::ptr_t listen_;
 
       std::list<to_recv_t> m_to_recv;
-      std::list<const message_t *> m_pending;
+      std::list<std::pair<const message_t *, std::string /*remote_name*/>> m_pending;
 
       handler_t m_kvs_error_handler;
     };

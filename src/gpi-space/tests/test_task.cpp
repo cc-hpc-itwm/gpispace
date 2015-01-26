@@ -1,6 +1,7 @@
 #define BOOST_TEST_MODULE GpiSpaceTaskTest
 #include <boost/test/unit_test.hpp>
 
+#include <boost/asio/io_service.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 
 #include <fhglog/LogMacros.hpp>
@@ -9,9 +10,11 @@
 
 struct SetupLogging
 {
+  boost::asio::io_service io_service;
   SetupLogging ()
   {
-    FHGLOG_SETUP();
+    setenv ("FHGLOG_level", "TRACE", true);
+    FHGLOG_SETUP (io_service);
   }
 };
 
