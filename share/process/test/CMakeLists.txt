@@ -51,6 +51,7 @@ fhg_add_test (basics.cpp
 )
 
 fhg_add_test (child_stops_consuming.cpp
+  ARGS --catch_system_errors=no
   PROJECT share_process
   BOOST_UNIT_TEST
   LINK_LIBRARIES process

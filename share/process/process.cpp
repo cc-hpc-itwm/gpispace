@@ -62,10 +62,12 @@ namespace process
         fhg::syscall::close (err.write);
       }
 
-      int maximum_open_files (sysconf (_SC_OPEN_MAX));
-      for (int i (3); i < maximum_open_files; ++i)
+      const int maximum_open_files (sysconf (_SC_OPEN_MAX));
+      for (int i (0); i < maximum_open_files; ++i)
       {
-        if (i != sync_pc.read && i != sync_cp.write)
+        if ( i != sync_pc.read && i != sync_cp.write
+          && i != STDIN_FILENO && i != STDOUT_FILENO && i != STDERR_FILENO
+           )
         {
           try
           {
@@ -89,25 +91,18 @@ namespace process
       void circular_reader
         (int fd, circular_buffer& circ_buf, std::size_t& bytes_read)
       {
-        std::vector<char> buf (PIPE_BUF);
+        std::array<char, PIPE_BUF> buf;
 
         bytes_read = 0;
 
-        for (;;)
+        ssize_t r;
+        do
         {
-          const ssize_t r (fhg::syscall::read (fd, buf.data(), PIPE_BUF));
-
-          if (r == 0)
-          {
-            break;
-          }
-          else
-          {
-            bytes_read += r;
-
-            std::copy (buf.data(), buf.data() + r, std::back_inserter (circ_buf));
-          }
+          r = fhg::syscall::read (fd, buf.data(), PIPE_BUF);
+          bytes_read += r;
+          std::copy (buf.data(), buf.data() + r, std::back_inserter (circ_buf));
         }
+        while (r != 0);
       }
 
       void reader (int fd, buffer output, std::size_t& bytes_read)
@@ -116,23 +111,17 @@ namespace process
 
         bytes_read = 0;
 
-        for (;;)
+        ssize_t r;
+        do
         {
           const std::size_t to_read
             (std::min (std::size_t (PIPE_BUF), output.size() - bytes_read));
 
-          const ssize_t r (fhg::syscall::read (fd, buf, to_read));
-
-          if (r == 0)
-          {
-            break;
-          }
-          else
-          {
-            buf += r;
-            bytes_read += r;
-          }
+          r = fhg::syscall::read (fd, buf, to_read);
+          buf += r;
+          bytes_read += r;
         }
+        while (r != 0);
       }
 
       void writer (int fd, const_buffer input, std::size_t& written)
@@ -232,30 +221,13 @@ namespace process
       std::size_t consumed_accum (0);
 
       char buffer[PIPE_BUF];
-      for (;;)
+      ssize_t consumed;
+      do
       {
-        try
-        {
-          const ssize_t consumed
-            (fhg::syscall::read (fd, buffer, sizeof (buffer)));
-
-          if (consumed == 0)
-          {
-            break;
-          }
-
-          consumed_accum += consumed;
-        }
-        catch (boost::system::system_error const& err)
-        {
-          //! \note if fd is nonblocking and there is nothing to read
-          if (err.code() == boost::system::errc::resource_unavailable_try_again)
-          {
-            break;
-          }
-          throw;
-        }
+        consumed = fhg::syscall::read (fd, buffer, sizeof (buffer));
+        consumed_accum += consumed;
       }
+      while (consumed != 0);
 
       return consumed_accum;
     }
@@ -368,7 +340,7 @@ namespace process
       std::size_t writer_i (0);
       for (file_const_buffer const& file_input : files_input)
       {
-        std::string filename (make_unique_temporary_filename());
+        const std::string filename (make_unique_temporary_filename());
 
         tempfifos.emplace_back (fhg::util::make_unique<tempfifo_t> (filename));
 
@@ -400,7 +372,7 @@ namespace process
       std::size_t reader_i (0);
       for (file_buffer const& file_output : files_output)
       {
-        std::string filename (make_unique_temporary_filename());
+        const std::string filename (make_unique_temporary_filename());
 
         tempfifos.emplace_back (fhg::util::make_unique<tempfifo_t> (filename));
 
@@ -434,7 +406,7 @@ namespace process
     fhg::syscall::pipe (synchronization_fd_parent_child.both);
     fhg::syscall::pipe (synchronization_fd_child_parent.both);
 
-    pid_t pid (fhg::syscall::fork());
+    const pid_t pid (fhg::syscall::fork());
 
     if (pid == pid_t (0))
     {
@@ -562,8 +534,10 @@ namespace process
 
       thread_buf_stdin.interrupt();
 
-      //! \note first consume, then subtract: bytes_written_stdin still
-      //! grows while consuming!
+      //! \note first consume, then subtract: bytes_written_stdin is
+      //! also written to in the writer thread. the thread will stop
+      //! modifying it as soon as comsume_everything returned. thus, a
+      //! sequence point is required.
       {
         const std::size_t consumed (consume_everything (in.read));
         ret.bytes_written_stdin -= consumed;
