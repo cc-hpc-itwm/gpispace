@@ -7,6 +7,7 @@
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/boost/serialization/path.hpp>
 #include <fhg/util/boost/serialization/unordered_map.hpp>
+#include <fhg/util/join.hpp>
 #include <fhg/util/print_exception.hpp>
 
 #include <network/server.hpp>
@@ -29,27 +30,6 @@ namespace
     constexpr const char* const port {"port"};
     constexpr const char* const register_host {"register-host"};
     constexpr const char* const register_port {"register-port"};
-  }
-
-  void reap_children (int)
-  {
-    try
-    {
-      while (fhg::syscall::waitpid (-1, nullptr, WNOHANG) > 0)
-      {
-        //! \note Just wait for all pending ones to reap them.
-        //! see http://www.microhowto.info/howto/reap_zombie_processes_using_a_sigchld_handler.html
-      }
-    }
-    catch (boost::system::system_error const& ex)
-    {
-      if (ex.code() == boost::system::errc::no_child_process)
-      {
-        return;
-      }
-
-      throw;
-    }
   }
 }
 
@@ -118,9 +98,36 @@ try
     , "kill"
     , [] (std::vector<pid_t> const& pids)
       {
+        std::vector<std::string> failed_statuses;
         for (pid_t pid : pids)
         {
-          fhg::syscall::kill (pid, SIGTERM);
+          try
+          {
+            fhg::syscall::kill (pid, SIGTERM);
+            int status;
+            fhg::syscall::waitpid (pid, &status, 0);
+            if (WIFEXITED (status) && WEXITSTATUS (status))
+            {
+              throw std::runtime_error
+                ("returned " + std::to_string (WEXITSTATUS (status)));
+            }
+            else if (WIFSIGNALED (status))
+            {
+              throw std::runtime_error
+                ("signaled " + std::to_string (WTERMSIG (status)));
+            }
+          }
+          catch (...)
+          {
+            std::ostringstream oss;
+            fhg::util::print_current_exception
+              (oss, std::to_string (pid) + ": ");
+            failed_statuses.emplace_back (oss.str());
+          }
+        }
+        if (!failed_statuses.empty())
+        {
+          throw std::runtime_error (fhg::util::join (failed_statuses, ", "));
         }
       }
     );
@@ -203,26 +210,6 @@ try
   fhg::syscall::close (2);
 
   io_service.notify_fork (boost::asio::io_service::fork_child);
-
-  struct scoped_child_reaper
-  {
-    scoped_child_reaper()
-    {
-      struct sigaction sigact;
-      memset (&sigact, 0, sizeof (sigact));
-
-      sigact.sa_handler = reap_children;
-      sigact.sa_flags = SA_NOCLDSTOP | SA_NOCLDWAIT | SA_RESTART;
-
-      fhg::syscall::sigaction (SIGCHLD, &sigact, &_orig);
-    }
-    ~scoped_child_reaper()
-    {
-      fhg::syscall::sigaction (SIGCHLD, &_orig, nullptr);
-    }
-
-    struct sigaction _orig;
-  } const scoped_child_reaper;
 
   const boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
     io_service_thread ([&io_service]() { io_service.run(); });
