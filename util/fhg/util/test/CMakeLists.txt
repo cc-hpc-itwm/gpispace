@@ -47,9 +47,3 @@ fhg_add_test (read_file.cpp
   PROJECT fhg_util
   LINK_LIBRARIES fhg-util
 )
-
-fhg_add_test (ini_parse.cpp
-  BOOST_UNIT_TEST
-  PROJECT fhg_util
-  LINK_LIBRARIES fhg-util
-)

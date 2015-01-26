@@ -48,7 +48,7 @@ namespace fhg
         remote_job_waiting (sdpa::client::Client*, const std::string&, const xml::parse::id::ref::function&);
 
       protected:
-        virtual void run();
+        virtual void run() override;
 
       signals:
         void remote_job_finished (sdpa::client::Client*, const QString&, xml::parse::id::ref::function*);
@@ -69,7 +69,7 @@ namespace fhg
 
         void add_transition_library_path (const QString&, bool trusted = false);
 
-        virtual QMenu* createPopupMenu();
+        virtual QMenu* createPopupMenu() override;
 
       public slots:
         void slot_new_expression();
@@ -101,7 +101,7 @@ namespace fhg
         void show_execution_monitor (int port);
 
       protected:
-        virtual void closeEvent (QCloseEvent*);
+        virtual void closeEvent (QCloseEvent*) override;
 
       private:
         transition_library_view* _transition_library;

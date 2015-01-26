@@ -63,7 +63,7 @@ namespace sdpa {
   typedef std::set<discovery_info_t> discovery_info_set_t;
   struct discovery_info_t
   {
-    discovery_info_t () {}
+    discovery_info_t () = default;
     discovery_info_t (job_id_t job_id
                      , boost::optional<sdpa::status::code> state
                      , discovery_info_set_t children

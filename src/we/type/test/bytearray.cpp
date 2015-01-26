@@ -77,7 +77,7 @@ struct p
   double _x;
   long _y;
 
-  p () : _x(), _y() {}
+  p () = default;
   p (const double & x, const long & y) : _x (x), _y (y) {}
 
   friend class boost::serialization::access;
@@ -99,7 +99,7 @@ struct q
   p _p;
   std::string _s;
 
-  q () : _p(), _s() {}
+  q () = default;
   q (const p & p, const std::string & s) : _p(p), _s(s) {}
 
   friend class boost::serialization::access;

@@ -10,13 +10,11 @@ set (srcs
   remove_prefix.cpp
   read_bool.cpp
   now.cpp
-  ini-parser.cpp
 
   ostream_modifier.cpp
 
   parse/position.cpp
   parse/error.cpp
-  parse/ini.cpp
   parse/require.cpp
   parse/until.cpp
 

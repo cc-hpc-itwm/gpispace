@@ -46,10 +46,7 @@ namespace fhg
                                predicates_iterator;
 
             public:
-              cached_predicates ()
-                : _cache ()
-                , _predicates ()
-              {}
+              cached_predicates () = default;
               explicit cached_predicates (const predicate_type& predicate)
                 : _cache ()
                 , _predicates ()

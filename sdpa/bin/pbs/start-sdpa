@@ -14,7 +14,6 @@ usage: $(basename $0) [options]
 
   -h: this help
   -v: be verbose
-  -n: dry run
   -A path: add a path to the list of application search paths
   -f: node file to use
   -S: state directory to use
@@ -38,6 +37,7 @@ usage: $(basename $0) [options]
 
         Please contact your local administrator responsible for GPI in
         case you don't have permissions for that folder.
+  -y: Socket file to communicate with the virtual memory manager
 
   -k: kvs port (=$kvs_port)
   -l: log url (=${log_url})
@@ -99,16 +99,6 @@ assert_not_empty()
     if [ -z "$val" ]
     then
         error 2 "'${var}' must not be empty"
-    fi
-}
-
-dry_run_p=false
-dry_run()
-{
-    if $dry_run_p ; then
-        log "would run: $@"
-    else
-        "$@"
     fi
 }
 
@@ -196,7 +186,7 @@ function wait_for_port_on_host ()
 
     until [ ${retries} -eq 0 ]
     do
-        if ${check_port} -w 0 "${host}" "${port}" </dev/null
+        if ${check_port} -z "${host}" "${port}" </dev/null
         then
             return 0
         else
@@ -266,7 +256,7 @@ if [ ${#@} -eq 0 ] ; then
 fi
 
 shiftcount=0
-while getopts ":hvnf:S:m:s:C:p:MA:dG:k:x:l:g:H:" opt; do
+while getopts ":hvnf:S:m:s:C:p:MA:dG:k:x:l:g:H:y:" opt; do
     case $opt in
         h)
             usage
@@ -275,10 +265,6 @@ while getopts ":hvnf:S:m:s:C:p:MA:dG:k:x:l:g:H:" opt; do
         v)
             verbose=true
             shiftcount=$((shiftcount + 1))
-            ;;
-        n)
-            dry_run_p=true
-            shiftcount=$(( shiftcount + 1 ))
             ;;
         f)
             nodefile="$OPTARG"
@@ -335,6 +321,11 @@ while getopts ":hvnf:S:m:s:C:p:MA:dG:k:x:l:g:H:" opt; do
         x)
             gpi_exe="$OPTARG"
             assert_not_empty gpi_exe
+            shiftcount=$((shiftcount + 2))
+            ;;
+        y)
+            gpi_socket="${OPTARG}"
+            assert_not_empty gpi_socket
             shiftcount=$((shiftcount + 2))
             ;;
         l)
@@ -444,11 +435,6 @@ if [ ! -x "${script_start_orchestrator}" ] ; then
     error 2 "utility script '${script_start_orchestrator}' is not executable"
 fi
 
-script_start_gpi="${sdpa_home}/libexec/sdpa/scripts/start-gpi"
-if [ ! -x "${script_start_gpi}" ] ; then
-    error 2 "utility script '${script_start_gpi}' is not executable"
-fi
-
 check_port=$(which nc 2>/dev/null)
 if [ $? -ne 0 ]
 then
@@ -461,7 +447,7 @@ fi
 
 info "using nodefile: $nodefile"
 
-dry_run rexec $master /usr/bin/env "${sdpa}" -s "${state_dir}" init "$nodefile" </dev/null || {
+rexec $master /usr/bin/env "${sdpa}" -s "${state_dir}" init "$nodefile" </dev/null || {
     error 2 "could not initialize SDPA!"
 }
 
@@ -480,7 +466,7 @@ else
     opt_verbose_flag=""
 fi
 
-dry_run rexec $master ${sdpa} -s "${state_dir}" start kvs ${kvs_port}
+rexec $master ${sdpa} -s "${state_dir}" start kvs ${kvs_port}
 ec=$?
 if [ $ec -ne 0 ]
 then
@@ -494,7 +480,7 @@ then
     error 3 "could not start kvs: failed to appear at ${master}:${kvs_port} after ${network_retries} seconds"
 fi
 
-dry_run rexec $master "${script_start_orchestrator}" \
+rexec $master "${script_start_orchestrator}" \
     $opt_verbose_flag \
     -s "$state_dir" \
     -P "$state_dir/orchestrator.pid" \
@@ -533,16 +519,15 @@ if $gpi_enabled ; then
     info "using GPI mem: ${gpi_mem} bytes per node"
     info "starting GPI using: '$gpi_exe' on '${gpi_socket}'"
 
-    dry_run "${script_start_gpi}" \
-        -s "$state_dir" \
-        -x "${gpi_exe}" \
-        -D \
-        -f \
-        -P "$state_dir/gpi-space.pid" \
-        -m "$gpi_mem" \
-        -k "${master}" -K "$kvs_port" \
-        -l "${log_host}" -L "${log_port}" \
-        -S "${gpi_socket}"
+    rexec $master /usr/bin/env FHGLOG_to_server="${log_host}:${log_port}" \
+        "${gpi_exe}" \
+        --log-file "$state_dir/log/gpi-space.log" \
+        --daemonize \
+        --pidfile "$state_dir/gpi-space.pid" \
+        --gpi-mem "$gpi_mem" \
+        --kvs-host "${master}" --kvs-port "$kvs_port" \
+        --log-host "${log_host}" --log-port "${log_port}" \
+        --socket "${gpi_socket}"
 
     ec=$?
     if [ $ec -ne 0 ]
@@ -617,7 +602,7 @@ function start_agent
 
     info "starting agent: ${name} on host ${host} with parent ${parent}"
 
-    dry_run rexec ${host} "${script_start_agent}" \
+    rexec ${host} "${script_start_agent}" \
         $opt_verbose_flag \
         -D \
         -n "${name}" \
@@ -710,7 +695,7 @@ function start_workers_for_capability
         fi
         argv+=(-H "${sdpa_home}")
 
-        dry_run rexec $host "$script_start_drts" "${argv[@]}" &
+        rexec $host "$script_start_drts" "${argv[@]}" &
 
         pids+=( $! )
 

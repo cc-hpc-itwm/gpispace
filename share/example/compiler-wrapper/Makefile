@@ -8,12 +8,18 @@ PUT_PORT += cwd=\""$(PWD)"\"
 PNETPUT_OPTS += -p "argv=List(\"-o\", \"$(BUILDDIR)/hello\", \"$(CURDIR)/src/hello.c\")"
 CLEAN += clean/hello clean/sdpacc
 BUILD += gen-sdpacc
+INSTALL += install/sdpacc install/example
+UNINSTALL += uninstall/sdpacc uninstall/example
 
 ###############################################################################
 
 CXXLIBRARYPATHS += $(SDPA_HOME)/libexec/sdpa
 
 ###############################################################################
+
+ifndef SDPA_HOME
+$(error "SDPA_HOME is not set, please set it to the installation path of GPISpace")
+endif
 
 include $(SDPA_HOME)/share/sdpa/make/common.mk
 
@@ -32,3 +38,27 @@ clean/hello:
 .PHONY: clean/sdpacc
 clean/sdpacc:
 	-$(RM) '$(BUILDDIR)/sdpacc'
+
+.PHONY: install/sdpacc
+install/sdpacc: gen-sdpacc
+	mkdir -p "$(DESTDIR)/bin"
+	cp "$(BUILDDIR)/sdpacc" "$(DESTDIR)/bin/sdpacc"
+	ln -sf "sdpacc" "${DESTDIR}/bin/sdpacc.gcc"
+	ln -sf "sdpacc" "${DESTDIR}/bin/sdpacc.g++"
+
+.PHONY: uninstall/sdpacc
+uninstall/sdpacc:
+	-$(RM) "$(DESTDIR)/bin/sdpacc"
+	-$(RM) "${DESTDIR}/bin/sdpacc.gcc"
+	-$(RM) "${DESTDIR}/bin/sdpacc.g++"
+	-rmdir "$(DESTDIR)/bin"
+
+.PHONY: install/example
+install/example: $(CURDIR)/src/hello.c
+	mkdir -p "$(DESTDIR)/src"
+	cp $^ "$(DESTDIR)/src"
+
+.PHONY: uninstall/example
+uninstall/example:
+	-$(RM) "$(DESTDIR)/src/hello.c"
+	-rmdir "$(DESTDIR)/src"

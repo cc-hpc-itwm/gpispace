@@ -30,8 +30,6 @@ trap 'cleanup' EXIT
 measured "build-wrapper" ${make[@]} lib                     || die $EX_ERR_RUN
 measured "run" WE_EXEC_WORKER=4 ${make[@]} run              || die $EX_ERR_RUN
 
-grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
-
 expected="Struct [in := 196347269L, total := 250000000L]"
 
 test "$(pnetget -i "${RESULT}" -p ratio)" = "${expected}"   || die $EX_ERR_RES

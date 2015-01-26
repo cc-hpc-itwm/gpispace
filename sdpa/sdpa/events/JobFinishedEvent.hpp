@@ -22,7 +22,7 @@ namespace sdpa
         , result_ (job_result)
       {}
 
-      virtual void handleBy (EventHandler* handler)
+      virtual void handleBy (EventHandler* handler) override
       {
         handler->handleJobFinishedEvent (this);
       }

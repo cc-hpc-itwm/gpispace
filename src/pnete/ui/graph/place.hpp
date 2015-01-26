@@ -38,17 +38,17 @@ namespace fhg
             , base_item* parent = nullptr
             );
 
-          virtual const data::handle::place& handle() const;
+          virtual const data::handle::place& handle() const override;
 
-          virtual bool is_connectable_with (const connectable_item*) const;
+          virtual bool is_connectable_with (const connectable_item*) const override;
 
           std::string name() const;
-          const std::string& we_type() const;
+          virtual const std::string& we_type() const override;
 
-          virtual void setPos (const QPointF&);
-          virtual QPainterPath shape() const;
+          virtual void setPos (const QPointF&) override;
+          virtual QPainterPath shape() const override;
 
-          virtual bool is_movable() const;
+          virtual bool is_movable() const override;
 
         public slots:
           void refresh_content();
@@ -74,10 +74,10 @@ namespace fhg
           virtual void paint ( QPainter* painter
                              , const QStyleOptionGraphicsItem* option
                              , QWidget* widget = nullptr
-                             );
+                             ) override;
 
           enum { Type = place_graph_type };
-          virtual int type() const { return Type; }
+          virtual int type() const override { return Type; }
 
         private:
           data::handle::place _handle;

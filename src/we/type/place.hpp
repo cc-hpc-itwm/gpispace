@@ -25,7 +25,7 @@ namespace place
     we::type::property::type& property();
 
     //! \todo eliminate the need for the default constructor
-    type ();
+    type () = default;
     type ( const std::string& name
          , const pnet::type::signature::signature_type& signature
          , const we::type::property::type& prop = we::type::property::type ()

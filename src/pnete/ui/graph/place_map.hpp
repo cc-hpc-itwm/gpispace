@@ -35,12 +35,12 @@ namespace fhg
         public:
           place_map (port_item*, place_item*, const data::handle::place_map&);
 
-          virtual const data::handle::place_map& handle() const;
+          virtual const data::handle::place_map& handle() const override;
 
-          virtual QPainterPath shape() const;
+          virtual QPainterPath shape() const override;
 
           enum { Type = place_map_graph_type };
-          virtual int type() const { return Type; }
+          virtual int type() const override { return Type; }
 
         public slots:
           void place_map_removed (const data::handle::place_map&);

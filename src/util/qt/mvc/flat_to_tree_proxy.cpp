@@ -85,7 +85,7 @@ namespace fhg
           struct transform_nop
             : public util::qt::mvc::transform_functions_model::transform_function
           {
-            virtual QString operator() (QModelIndex index) const
+            virtual QString operator() (QModelIndex index) const override
             {
               return index.data().toString();
             }

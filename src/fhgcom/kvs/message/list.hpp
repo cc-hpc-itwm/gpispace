@@ -22,7 +22,7 @@ namespace fhg
         {
           typedef std::map<std::string, std::string> map_type;
 
-          list () {}
+          list () = default;
 
           const map_type & entries () const { return entries_; }
           map_type & entries () { return entries_; }

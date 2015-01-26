@@ -33,14 +33,14 @@ namespace fhg
                       , QObject* parent = nullptr
                       );
 
-          int rowCount (const QModelIndex& = QModelIndex()) const;
-          int columnCount (const QModelIndex& = QModelIndex()) const;
-          Qt::ItemFlags flags (const QModelIndex&) const;
+          virtual int rowCount (const QModelIndex& = QModelIndex()) const override;
+          virtual int columnCount (const QModelIndex& = QModelIndex()) const override;
+          virtual Qt::ItemFlags flags (const QModelIndex&) const override;
 
-          QVariant data (const QModelIndex&, int = Qt::DisplayRole) const;
-          QVariant headerData (int, Qt::Orientation, int = Qt::DisplayRole) const;
+          virtual QVariant data (const QModelIndex&, int = Qt::DisplayRole) const override;
+          virtual QVariant headerData (int, Qt::Orientation, int = Qt::DisplayRole) const override;
 
-          bool setData (const QModelIndex&, const QVariant&, int = Qt::EditRole);
+          virtual bool setData (const QModelIndex&, const QVariant&, int = Qt::EditRole) override;
 
         public slots:
           void port_added (const data::handle::port&);

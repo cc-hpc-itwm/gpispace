@@ -71,8 +71,12 @@ namespace utils
   {
     we::type::transition_t transition
       ( name
-      , we::type::module_call_t
-        (fhg::util::random_string(), fhg::util::random_string())
+      , we::type::module_call_t ( fhg::util::random_string()
+                                , fhg::util::random_string()
+                                , std::unordered_map<std::string, std::string>()
+                                , std::list<we::type::memory_transfer>()
+                                , std::list<we::type::memory_transfer>()
+                                )
       , boost::none
       , true
       , we::type::property::type()
@@ -107,8 +111,12 @@ namespace utils
               );
     we::type::transition_t transition
       ( fhg::util::random_string()
-      , we::type::module_call_t
-        (fhg::util::random_string(), fhg::util::random_string())
+      , we::type::module_call_t ( fhg::util::random_string()
+                                , fhg::util::random_string()
+                                , std::unordered_map<std::string, std::string>()
+                                , std::list<we::type::memory_transfer>()
+                                , std::list<we::type::memory_transfer>()
+                                )
       , boost::none
       , true
       , props
@@ -173,7 +181,7 @@ namespace utils
     }
     std::string kvs_port() const
     {
-      return boost::lexical_cast<std::string> (_tcp_server.TESTONLY_port());
+      return boost::lexical_cast<std::string> (_tcp_server.port());
     }
 
   private:
@@ -314,14 +322,14 @@ namespace utils
     }
 
     virtual void handleWorkerRegistrationAckEvent
-      (const sdpa::events::WorkerRegistrationAckEvent* e)
+      (const sdpa::events::WorkerRegistrationAckEvent* e) override
     {
       BOOST_REQUIRE (_master_name);
       BOOST_REQUIRE_EQUAL (e->from(), _master_name);
     }
 
     virtual void handleWorkerRegistrationEvent
-      (const sdpa::events::WorkerRegistrationEvent* e)
+      (const sdpa::events::WorkerRegistrationEvent* e) override
     {
       BOOST_REQUIRE (_accept_workers);
       BOOST_REQUIRE (_accepted_workers.insert (e->from()).second);
@@ -332,7 +340,7 @@ namespace utils
         );
     }
 
-    virtual void handleErrorEvent (const sdpa::events::ErrorEvent* e)
+    virtual void handleErrorEvent (const sdpa::events::ErrorEvent* e) override
     {
       if (e->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN)
       {
@@ -428,7 +436,7 @@ namespace utils
       , _announce_job (announce_job)
     {}
 
-    virtual void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* e)
+    virtual void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* e) override
     {
       const std::string name
         (we::type::activity_t (e->description()).transition().name());
@@ -443,7 +451,7 @@ namespace utils
       _announce_job (name);
     }
     virtual void handleJobFinishedAckEvent
-      (const sdpa::events::JobFinishedAckEvent*)
+      (const sdpa::events::JobFinishedAckEvent*) override
     {
       // can be ignored as we clean up in finish() already
     }
@@ -485,7 +493,7 @@ namespace utils
       : basic_drts_worker (name, master)
     {}
 
-    virtual void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* e)
+    virtual void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* e) override
     {
       _network.perform
         ( sdpa::events::SDPAEvent::Ptr
@@ -500,7 +508,7 @@ namespace utils
         );
     }
     virtual void handleJobFinishedAckEvent
-      (const sdpa::events::JobFinishedAckEvent*)
+      (const sdpa::events::JobFinishedAckEvent*) override
     {
       // can be ignored as we don't have any state
     }
@@ -519,7 +527,7 @@ namespace utils
     {}
 
     void handleJobFinishedAckEvent
-      (const sdpa::events::JobFinishedAckEvent* e)
+      (const sdpa::events::JobFinishedAckEvent* e) override
     {
       _finished_ack.notify (e->job_id());
     }

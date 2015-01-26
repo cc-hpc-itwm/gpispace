@@ -29,7 +29,6 @@ trap 'cleanup' EXIT
 measured "build-wrapper" ${make[@]} lib                     || die $EX_ERR_RUN
 measured "run" WE_EXEC_WORKER=1 ${make[@]} run              || die $EX_ERR_RUN
 
-grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
 test "$(pnetget -i "${RESULT}" -p s)" = "$(echo -e "7L\n1L")"                \
                                                             || die $EX_ERR_RES
 

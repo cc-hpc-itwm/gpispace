@@ -39,9 +39,9 @@ namespace fhg
         void zoomed (int to);
 
       protected:
-        virtual void wheelEvent (QWheelEvent* event);
+        virtual void wheelEvent (QWheelEvent* event) override;
 
-        virtual QSize sizeHint() const;
+        virtual QSize sizeHint() const override;
 
       private:
         int _currentScale;

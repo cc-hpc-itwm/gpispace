@@ -18,7 +18,7 @@ public:
   server (int port, const QString& hostlist, QObject* parent = nullptr);
 
 protected:
-  virtual void incomingConnection (int);
+  virtual void incomingConnection (int) override;
 
 private:
   QString _hostlist;
@@ -31,7 +31,7 @@ public:
   thread (int socket_descriptor, const QString& hostlist, QObject* parent = nullptr);
 
 protected:
-  void run();
+  virtual void run() override;
 
 private slots:
   void may_read();

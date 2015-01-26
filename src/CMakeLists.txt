@@ -23,6 +23,7 @@ add_subdirectory(plugin)
 add_subdirectory (fhgcom)
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
+include_directories (${CMAKE_SOURCE_DIR}/fvm-pc)
 
 find_library (IBverbs_LIBRARY
   NAMES ibverbs
@@ -74,6 +75,7 @@ add_library (pnet
   we/expr/token/type.cpp
   we/field.cpp
   we/loader/loader.cpp
+  we/loader/module_call.cpp
   we/layer.cpp
   we/type/activity.cpp
   we/require_type.cpp
@@ -125,6 +127,8 @@ add_library (pnet
   xml/parse/type/connect.cpp
   xml/parse/type/expression.cpp
   xml/parse/type/function.cpp
+  xml/parse/type/memory_buffer.cpp
+  xml/parse/type/memory_transfer.cpp
   xml/parse/type/mod.cpp
   xml/parse/type/net.cpp
   xml/parse/type/place.cpp
@@ -153,6 +157,8 @@ add_library (pnet
   xml/parse/util/weparse.cpp
   xml/parse/util/position.cpp
   xml/parse/warning.cpp
+
+  gpi-space/pc/plugin/gpi_compat.cpp
 )
 
 target_link_libraries (pnet

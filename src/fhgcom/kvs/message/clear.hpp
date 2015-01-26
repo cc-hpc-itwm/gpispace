@@ -18,7 +18,7 @@ namespace fhg
       {
         struct clear
         {
-          clear () {}
+          clear () = default;
 
           explicit clear (const std::string & regexp)
             : regexp_(regexp)

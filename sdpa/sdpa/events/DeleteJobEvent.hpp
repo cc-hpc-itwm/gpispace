@@ -19,7 +19,7 @@ namespace sdpa
         : sdpa::events::JobEvent (from, to, job_id)
       {}
 
-      virtual void handleBy (EventHandler* handler)
+      virtual void handleBy (EventHandler* handler) override
       {
         handler->handleDeleteJobEvent (this);
       }

@@ -41,6 +41,8 @@ namespace xml
                     , const std::string& function
                     , const boost::optional<std::string>& port_return
                     , const std::list<std::string>& port_arg
+                    , boost::optional<std::string> _memory_buffer_return
+                    , std::list<std::string> _memory_buffer_arg
                     , const boost::optional<std::string>& code
                     , const boost::optional<util::position_type>& pod_of_code
                     , const std::list<std::string>& cincludes
@@ -54,6 +56,8 @@ namespace xml
         const std::string& function() const;
         const boost::optional<std::string>& port_return() const;
         const std::list<std::string>& port_arg() const;
+        const boost::optional<std::string>& memory_buffer_return() const;
+        const std::list<std::string>& memory_buffer_arg() const;
         const boost::optional<std::string>& code() const;
         const boost::optional<util::position_type>
           position_of_definition_of_code() const;
@@ -77,6 +81,8 @@ namespace xml
         std::string _function;
         boost::optional<std::string> _port_return;
         std::list<std::string> _port_arg;
+        boost::optional<std::string> _memory_buffer_return;
+        std::list<std::string> _memory_buffer_arg;
         boost::optional<std::string> _code;
         boost::optional<util::position_type> _position_of_definition_of_code;
         std::list<std::string> _cincludes;

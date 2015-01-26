@@ -59,8 +59,6 @@ NOINLINE_NOT_ENDS_WITH += write_config
 
 ###############################################################################
 
-WE_EXEC_LOAD += $(SDPA_LIBEXEC)/fake/libfvm-pc.so
-
 WE_EXEC_LIBPATHS += $(PATH_LIB)
 
 ###############################################################################
@@ -93,7 +91,6 @@ PNETC += --gen-cxxflags=-I..
 PNETC += --force-overwrite-file=true
 PNETC += --Wbackup-file=false
 
-WE_EXEC += $(addprefix --load ,$(WE_EXEC_LOAD))
 WE_EXEC += $(addprefix -L ,$(WE_EXEC_LIBPATHS))
 
 ###############################################################################

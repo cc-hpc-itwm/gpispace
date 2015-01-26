@@ -13,7 +13,7 @@ namespace gpi
   class GPI
   {
   public:
-    virtual ~GPI() {}
+    virtual ~GPI() = default;
 
     virtual gpi::pc::type::handle_id_t alloc ( const gpi::pc::type::segment_id_t
                                              , const gpi::pc::type::size_t

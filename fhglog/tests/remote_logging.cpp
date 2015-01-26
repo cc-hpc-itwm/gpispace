@@ -25,13 +25,13 @@ namespace
       , service_ (s)
     {}
 
-    void append (const fhg::log::LogEvent& event)
+    virtual void append (const fhg::log::LogEvent& event) override
     {
       _appender->append (event);
       service_.stop();
     }
 
-    void flush()
+    virtual void flush() override
     {
       _appender->flush();
     }

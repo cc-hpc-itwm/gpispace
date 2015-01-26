@@ -272,6 +272,10 @@ int fvmLeave()
 
 static void require_gpi_state (std::string const & fun_name)
 {
+  if (!gpi_compat)
+  {
+    throw std::runtime_error (fun_name + ": could not ensure gpi state: gpi_compat nullptr");
+  }
   int ec = gpi_compat->ensure_gpi_state ();
   if (ec < 0)
   {

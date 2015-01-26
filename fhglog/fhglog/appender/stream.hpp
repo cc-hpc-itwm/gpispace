@@ -25,8 +25,8 @@ namespace fhg
                      , ColorMode color_mode = COLOR_OFF
                      );
 
-      virtual void append (const LogEvent&);
-      virtual void flush();
+      virtual void append (const LogEvent&) override;
+      virtual void flush() override;
 
     private:
       std::ostream& _stream;

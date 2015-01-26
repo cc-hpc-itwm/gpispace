@@ -32,7 +32,6 @@ namespace fhg
         {
         public:
           expected (const std::string&, const position&);
-          virtual ~expected() throw() {}
         };
 
         template<typename From, typename To>
@@ -46,7 +45,6 @@ namespace fhg
                       , pos
                       )
           {}
-          virtual ~value_too_big() throw() {}
         };
 
         template<typename I>
@@ -62,7 +60,6 @@ namespace fhg
                       , pos
                       )
           {}
-          virtual ~unexpected_digit() throw() {}
         };
       }
     }

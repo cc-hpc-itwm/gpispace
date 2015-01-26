@@ -32,3 +32,8 @@ install (FILES
   util/parse/require.hpp
   DESTINATION include/fhg/util/parse
 )
+
+install (FILES
+  util/dl.hpp
+  DESTINATION include/fhg/util
+)

@@ -20,7 +20,7 @@ namespace fhg
         {
         public:
           open (const std::string&);
-          std::ostream& operator() (std::ostream&) const;
+          virtual std::ostream& operator() (std::ostream&) const override;
         private:
           const std::string _name;
         };
@@ -28,7 +28,7 @@ namespace fhg
         class close : public ostream::modifier
         {
         public:
-          std::ostream& operator() (std::ostream&) const;
+          virtual std::ostream& operator() (std::ostream&) const override;
         };
       }
     }

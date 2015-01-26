@@ -16,7 +16,7 @@ namespace fhg
       class position
       {
       public:
-        virtual ~position() {}
+        virtual ~position() = default;
 
         virtual char operator*() const = 0;
         virtual void operator++() = 0;
@@ -35,30 +35,30 @@ namespace fhg
                         , const std::string::const_iterator& end
                         );
 
-        virtual char operator*() const
+        virtual char operator*() const override
         {
           return *_pos;
         }
-        virtual void operator++()
+        virtual void operator++() override
         {
           ++_k;
           ++_pos;
         }
-        virtual void advance (std::size_t d)
+        virtual void advance (std::size_t d) override
         {
           _k += d;
           std::advance (_pos, d);
         }
-        virtual bool end() const
+        virtual bool end() const override
         {
           return _pos == _end;
         }
-        virtual std::size_t eaten() const
+        virtual std::size_t eaten() const override
         {
           return _k;
         }
 
-        virtual std::string error_message (const std::string&) const;
+        virtual std::string error_message (const std::string&) const override;
 
       private:
         std::size_t _k;
@@ -75,30 +75,30 @@ namespace fhg
                                 , const std::vector<char>::const_iterator &end
                                 );
 
-        virtual char operator*() const
+        virtual char operator*() const override
         {
           return *_pos;
         }
-        virtual void operator++()
+        virtual void operator++() override
         {
           ++_k;
           ++_pos;
         }
-        virtual void advance (std::size_t d)
+        virtual void advance (std::size_t d) override
         {
           _k += d;
           std::advance (_pos, d);
         }
-        virtual bool end() const
+        virtual bool end() const override
         {
           return _pos == _end;
         }
-        virtual std::size_t eaten() const
+        virtual std::size_t eaten() const override
         {
           return _k;
         }
 
-        virtual std::string error_message (const std::string&) const;
+        virtual std::string error_message (const std::string&) const override;
 
       private:
         std::size_t _k;
@@ -112,30 +112,30 @@ namespace fhg
       public:
         position_istream (std::istream&);
 
-        virtual char operator*() const
+        virtual char operator*() const override
         {
           return *_pos;
         }
-        virtual void operator++()
+        virtual void operator++() override
         {
           ++_k;
           ++_pos;
         }
-        virtual void advance (std::size_t d)
+        virtual void advance (std::size_t d) override
         {
           _k += d;
           std::advance (_pos, d);
         }
-        virtual bool end() const
+        virtual bool end() const override
         {
           return _pos == std::istream_iterator<char>();
         }
-        virtual std::size_t eaten() const
+        virtual std::size_t eaten() const override
         {
           return _k;
         }
 
-        virtual std::string error_message (const std::string&) const;
+        virtual std::string error_message (const std::string&) const override;
 
       private:
         std::size_t _k;

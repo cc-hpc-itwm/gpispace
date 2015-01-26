@@ -19,17 +19,17 @@ namespace fhg
         public:
           //! \note the popover_widget takes ownership of content!
           popover_widget(QWidget* content);
-          QSize sizeHint() const;
+          virtual QSize sizeHint() const override;
 
           QPoint arrowAdjustment() const;
 
         protected:
-          virtual void paintEvent(QPaintEvent* event);
-          virtual void resizeEvent(QResizeEvent* event);
-          virtual void closeEvent(QCloseEvent* event);
-          virtual void showEvent(QShowEvent* event);
-          virtual void leaveEvent(QEvent* event);
-          virtual void enterEvent(QEvent* event);
+          virtual void paintEvent(QPaintEvent* event) override;
+          virtual void resizeEvent(QResizeEvent* event) override;
+          virtual void closeEvent(QCloseEvent* event) override;
+          virtual void showEvent(QShowEvent* event) override;
+          virtual void leaveEvent(QEvent* event) override;
+          virtual void enterEvent(QEvent* event) override;
 
         public slots:
           void animationFinished();

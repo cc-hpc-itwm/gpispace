@@ -88,5 +88,12 @@ namespace fhg
 
       return fhg::util::random_string_without (forbidden);
     }
+
+    std::string random_string_without_zero()
+    {
+      static std::string const zero (1, '\0');
+
+      return fhg::util::random_string_without (zero);
+    }
   }
 }

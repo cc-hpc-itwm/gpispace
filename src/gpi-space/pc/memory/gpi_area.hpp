@@ -41,53 +41,53 @@ namespace gpi
                    , api::gpi_api_t&
                    );
 
-        bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const;
-        Arena_t grow_direction (const gpi::pc::type::flags_t) const;
+        virtual bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const override;
+        virtual Arena_t grow_direction (const gpi::pc::type::flags_t) const override;
 
-        void alloc_hook (const gpi::pc::type::handle::descriptor_t &);
-        void  free_hook (const gpi::pc::type::handle::descriptor_t &);
+        virtual void alloc_hook (const gpi::pc::type::handle::descriptor_t &) override;
+        virtual void  free_hook (const gpi::pc::type::handle::descriptor_t &) override;
 
-        int get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
+        virtual int get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
                                         , const gpi::pc::type::memory_location_t dst
                                         , area_t & dst_area
                                         , gpi::pc::type::size_t amount
                                         , gpi::pc::type::size_t queue
                                         , task_list_t & tasks
-                                        );
+                                        ) override;
 
-        int get_send_tasks ( area_t & src_area
+        virtual int get_send_tasks ( area_t & src_area
                            , const gpi::pc::type::memory_location_t src
                            , const gpi::pc::type::memory_location_t dst
                            , gpi::pc::type::size_t amount
                            , gpi::pc::type::size_t queue
                            , task_list_t & tasks
-                           );
+                           ) override;
 
-        int get_recv_tasks ( area_t & dst_area
+        virtual int get_recv_tasks ( area_t & dst_area
                            , const gpi::pc::type::memory_location_t dst
                            , const gpi::pc::type::memory_location_t src
                            , gpi::pc::type::size_t amount
                            , gpi::pc::type::size_t queue
                            , task_list_t & tasks
-                           );
+                           ) override;
       private:
-        void init ();
+        virtual void init () override;
 
-        bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
+        virtual bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
                             , const gpi::pc::type::offset_t begin
                             , const gpi::pc::type::size_t   range_size
-                            ) const;
+                            ) const override;
 
         gpi::pc::type::offset_t
         handle_to_global_offset ( const gpi::pc::type::offset_t
                                 , const gpi::pc::type::size_t per_node_size
                                 ) const;
 
-        void *raw_ptr (gpi::pc::type::offset_t off);
+        virtual void *raw_ptr (gpi::pc::type::offset_t off) override;
 
-        gpi::pc::type::size_t get_local_size ( const gpi::pc::type::size_t size
+        virtual gpi::pc::type::size_t get_local_size ( const gpi::pc::type::size_t size
                                              , const gpi::pc::type::flags_t flags
-                                             ) const;
+                                             ) const override;
 
 
         void * m_ptr;

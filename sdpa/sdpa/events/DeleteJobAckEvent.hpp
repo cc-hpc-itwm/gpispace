@@ -19,7 +19,7 @@ namespace sdpa
         :  sdpa::events::JobEvent( a_from, a_to, a_job_id)
       {}
 
-      virtual void handleBy(EventHandler*)
+      virtual void handleBy(EventHandler*) override
       {
         throw std::runtime_error
           ( "This method should never be called as only the client should handle"

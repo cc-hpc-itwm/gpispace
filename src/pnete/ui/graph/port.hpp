@@ -40,26 +40,27 @@ namespace fhg
 
           const qreal& length() const;
 
-          virtual const data::handle::port& handle() const;
+          virtual const data::handle::port& handle() const override;
 
           const std::string& name() const;
-          const std::string& we_type () const;
+          virtual const std::string& we_type () const override;
 
           port::orientation::type orientation() const;
 
-          virtual bool is_connectable_with (const connectable_item*) const;
-          virtual bool may_be_connected() const;
+          virtual bool is_connectable_with (const connectable_item*) const override;
+          virtual bool may_be_connected() const override;
 
           enum { Type = port_graph_type };
-          virtual int type() const { return Type; }
+          virtual int type() const override { return Type; }
 
           virtual void add_cap_for_direction (QPolygonF*, const QPointF&) const;
 
-          virtual QPainterPath shape() const;
+          QRectF bounding_rect(bool cap = true, int cap_factor = 0) const;
+          virtual QPainterPath shape() const override;
           virtual void
-          paint (QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
+          paint (QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
 
-          virtual void setPos (const QPointF&);
+          virtual void setPos (const QPointF&) override;
 
           void setPos_no_collision_detection (const QPointF&);
 
@@ -97,10 +98,10 @@ namespace fhg
             : port_item (handle, parent)
             {}
 
-          virtual void add_cap_for_direction (QPolygonF*, const QPointF&) const;
+          virtual void add_cap_for_direction (QPolygonF*, const QPointF&) const override;
 
           enum { Type = top_level_port_graph_type };
-          virtual int type() const { return Type; }
+          virtual int type() const override { return Type; }
         };
       }
     }

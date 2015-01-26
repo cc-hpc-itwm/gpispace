@@ -38,6 +38,9 @@ namespace expr
       void bind_and_discard_ref ( const std::list<std::string>&
                                 , const pnet::type::value::value_type&
                                 );
+      void bind_and_discard_ref ( const std::string&
+                                , const pnet::type::value::value_type&
+                                );
 
       void bind ( const std::list<std::string>&
                 , const pnet::type::value::value_type&

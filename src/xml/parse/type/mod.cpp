@@ -13,6 +13,8 @@
 //! \todo remove, needed to make we::type::net_type a complete type
 #include <we/type/net.hpp>
 
+#include <fhg/assert.hpp>
+
 namespace xml
 {
   namespace parse
@@ -30,21 +32,24 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
-      module_type::module_type ( ID_CONS_PARAM (module)
-                               , PARENT_CONS_PARAM (function)
-                               , const util::position_type& pod
-                               , const std::string& name
-                               , const std::string& function
-                               , const boost::optional<std::string>& port_return
-                               , const std::list<std::string>& port_arg
-                               , const boost::optional<std::string>& code
-                               , const boost::optional<util::position_type>& pod_of_code
-                               , const std::list<std::string>& cincludes
-                               , const std::list<std::string>& ldflags
-                               , const std::list<std::string>& cxxflags
-                               , const std::list<link_type>& links
-                               , const boost::optional<bool> &pass_context
-                               )
+      module_type::module_type
+        ( ID_CONS_PARAM (module)
+        , PARENT_CONS_PARAM (function)
+        , const util::position_type& pod
+        , const std::string& name
+        , const std::string& function
+        , const boost::optional<std::string>& port_return
+        , const std::list<std::string>& port_arg
+        , boost::optional<std::string> memory_buffer_return
+        , std::list<std::string> memory_buffer_arg
+        , const boost::optional<std::string>& code
+        , const boost::optional<util::position_type>& pod_of_code
+        , const std::list<std::string>& cincludes
+        , const std::list<std::string>& ldflags
+        , const std::list<std::string>& cxxflags
+        , const std::list<link_type>& links
+        , const boost::optional<bool> &pass_context
+        )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
         , PARENT_INITIALIZE()
@@ -52,6 +57,8 @@ namespace xml
         , _function (function)
         , _port_return (port_return)
         , _port_arg (port_arg)
+        , _memory_buffer_return (memory_buffer_return)
+        , _memory_buffer_arg (memory_buffer_arg)
         , _code (code)
         , _position_of_definition_of_code (pod_of_code)
         , _cincludes (cincludes)
@@ -60,6 +67,8 @@ namespace xml
         , _links (links)
         , _pass_context (pass_context)
       {
+        fhg_assert (!(_port_return && _memory_buffer_return));
+
         _id_mapper->put (_id, *this);
       }
 
@@ -78,6 +87,15 @@ namespace xml
       const std::list<std::string>& module_type::port_arg() const
       {
         return _port_arg;
+      }
+      const boost::optional<std::string>&
+        module_type::memory_buffer_return() const
+      {
+        return _memory_buffer_return;
+      }
+      const std::list<std::string>& module_type::memory_buffer_arg() const
+      {
+        return _memory_buffer_arg;
       }
       const boost::optional<std::string>& module_type::code() const
       {
@@ -137,6 +155,8 @@ namespace xml
           , _function
           , _port_return
           , _port_arg
+          , _memory_buffer_return
+          , _memory_buffer_arg
           , _code
           , _position_of_definition_of_code
           , _cincludes

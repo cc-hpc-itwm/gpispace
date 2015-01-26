@@ -50,8 +50,6 @@ touch_file &
 
 measured "run" ${make[@]} run                               || die $EX_ERR_RUN
 
-grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
-
 touch "${STOP_FILE}"                                        || die $EX_ERR_ENV
 
 wait                                                        || die $EX_ERR_ENV
