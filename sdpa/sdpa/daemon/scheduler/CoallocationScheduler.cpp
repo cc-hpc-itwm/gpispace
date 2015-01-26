@@ -4,7 +4,9 @@
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 
+#include <climits>
 #include <functional>
+#include <queue>
 
 namespace sdpa
 {
@@ -40,63 +42,156 @@ namespace sdpa
 
     namespace
     {
-      std::set<worker_id_t> find_assignment_for_job
-        ( worker_id_list_t available_workers
-        , job_requirements_t requirements
-        , std::function<boost::optional<worker_id_t>
-                          (job_requirements_t, worker_id_list_t)
-                       > best_match
-        )
+      typedef std::tuple<double, int, worker_id_t> cost_deg_wid_t;
+
+      bool operator< (cost_deg_wid_t const& lhs, cost_deg_wid_t const& rhs)
       {
-        std::size_t remaining_workers_needed (requirements.numWorkers());
-        std::set<worker_id_t> workers;
+        return (  std::get<0>(lhs) < std::get<0>(rhs)
+               || (  std::get<0>(lhs) == std::get<0>(rhs)
+                  && std::get<1>(lhs) > std::get<1>(rhs)
+                  )
+               );
+      };
 
-        while (remaining_workers_needed --> 0)
+      struct min_cost_max_deg_comp
+      {
+        bool operator() (const cost_deg_wid_t& lhs, const cost_deg_wid_t& rhs) const
         {
-          const boost::optional<worker_id_t> matching_worker
-            ( available_workers.empty() ? boost::none
-            : requirements.empty() ? available_workers.front()
-            : best_match (requirements, available_workers)
-            );
+          return (lhs<rhs);
+        }
+      };
 
-          if (!matching_worker)
-          {
-            return std::set<worker_id_t>();
-          }
+      typedef std::priority_queue < cost_deg_wid_t
+                                  , std::vector<cost_deg_wid_t>
+                                  , min_cost_max_deg_comp
+                                  > base_priority_queue_t;
 
-          available_workers.erase
-            ( std::find ( available_workers.begin(), available_workers.end()
-                        , *matching_worker
-                        )
-            );
+      class bounded_priority_queue_t : public base_priority_queue_t
+      {
+      public:
+        explicit bounded_priority_queue_t (std::size_t capacity)
+          : capacity_ (capacity)
+        {}
 
-          workers.insert (*matching_worker);
+      void push (cost_deg_wid_t next_tuple)
+      {
+        if (size() < capacity())
+        {
+          base_priority_queue_t::push (next_tuple);
+          return;
         }
 
-        return workers;
+        if (next_tuple < top())
+        {
+          base_priority_queue_t::pop();
+          base_priority_queue_t::push (next_tuple);
+        }
+      }
+
+      const size_t capacity() const { return capacity_;}
+
+      private:
+        size_t capacity_;
+      };
+    }
+
+    std::set<worker_id_t> CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
+      ( const mmap_match_deg_worker_id_t& mmap_matching_workers
+      , const size_t n_req_workers
+      , const std::map<std::string
+      , double>& map_host_transfer_cost
+      )
+    {
+      std::set<worker_id_t> assigned_workers;
+
+      bounded_priority_queue_t bpq (n_req_workers);
+
+      for ( mmap_match_deg_worker_id_t::const_iterator it = mmap_matching_workers.begin()
+          ; it != mmap_matching_workers.end()
+          ; ++it
+          )
+      {
+        const worker_id_host_info_t& worker_info = it->second;
+        const double cost = map_host_transfer_cost.at (worker_info.worker_host());
+
+        bpq.push (std::make_tuple (cost, it->first, worker_info.worker_id()));
+      }
+
+      std::transform ( &(bpq.top())
+                     , &(bpq.top()) + bpq.size()
+                     , std::inserter (assigned_workers, assigned_workers.begin())
+                     , [] (const cost_deg_wid_t& cost_deg_wid) -> worker_id_t
+                       {
+                         return  std::get<2> (cost_deg_wid);
+                       }
+                     );
+
+      return assigned_workers;
+    }
+
+    namespace
+    {
+      std::map<std::string, double> getMemoryTransferCosts(const mmap_match_deg_worker_id_t& mmap_matching_workers)
+      {
+        // Note: this is the default implementation when the transfer costs are uniform.
+        // It will be replaced later by a real implementation which gets the costs
+        // from the associated activity
+
+        std::map<std::string, double> map_host_transfer_cost;
+        for (const worker_id_host_info_t& pair_wid_host : mmap_matching_workers | boost::adaptors::map_values )
+        {
+          if (!map_host_transfer_cost.count(pair_wid_host.worker_host()))
+          {
+            map_host_transfer_cost.emplace (pair_wid_host.worker_host(), 1.0);
+          }
+        }
+
+        return map_host_transfer_cost;
+      }
+
+      std::set<worker_id_t> find_assignment_for_job
+        ( const std::set<worker_id_t>& available_workers
+        , const job_requirements_t& requirements
+        , std::function<mmap_match_deg_worker_id_t
+                          ( const job_requirements_t&
+                          , const std::set<worker_id_t>&
+                          )
+                       > match_requirements
+        )
+      {
+        mmap_match_deg_worker_id_t
+          mmap_matching_workers (match_requirements (requirements, available_workers));
+
+        if (mmap_matching_workers.size() >= requirements.numWorkers())
+        {
+          return CoallocationScheduler::find_job_assignment_minimizing_memory_transfer_cost
+            (mmap_matching_workers, requirements.numWorkers(), getMemoryTransferCosts (mmap_matching_workers));
+        }
+
+        return  std::set<worker_id_t>();
       }
     }
 
     void CoallocationScheduler::assignJobsToWorkers()
     {
-      sdpa::worker_id_list_t listAvailWorkers
-        (worker_manager().getListWorkersNotReserved());
+      std::set<worker_id_t> setAvailWorkers
+        (worker_manager().getSetOfWorkersNotReserved());
 
       std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
 
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
 
-      while (!listAvailWorkers.empty() && !jobs_to_schedule.empty())
+      while (!setAvailWorkers.empty() && !jobs_to_schedule.empty())
       {
         sdpa::job_id_t jobId (jobs_to_schedule.front());
         jobs_to_schedule.pop_front();
 
         const std::set<worker_id_t> matching_workers
           ( find_assignment_for_job
-            ( listAvailWorkers
+            ( setAvailWorkers
             , _job_requirements (jobId)
             , std::bind
-              ( &WorkerManager::getBestMatchingWorker
+              ( &WorkerManager::getListMatchingWorkers
               , &worker_manager()
               , std::placeholders::_1
               , std::placeholders::_2
@@ -106,42 +201,46 @@ namespace sdpa
 
         if (!matching_workers.empty())
         {
-          for (worker_id_t const& worker : matching_workers)
-          {
-            listAvailWorkers.erase
-              ( std::find
-                (listAvailWorkers.begin(), listAvailWorkers.end(), worker)
-              );
-          }
+          std::set<worker_id_t> set_free_workers_left;
+          std::set_difference ( setAvailWorkers.begin()
+                              , setAvailWorkers.end()
+                              , matching_workers.begin()
+                              , matching_workers.end()
+                              , std::inserter ( set_free_workers_left
+                                              , set_free_workers_left.begin()
+                                              )
+                              );
+
+          setAvailWorkers.swap (set_free_workers_left);
 
           boost::mutex::scoped_lock const _ (mtx_alloc_table_);
 
-            allocation_table_t::iterator it (allocation_table_.find (jobId));
-            if (it != allocation_table_.end())
+          allocation_table_t::iterator it (allocation_table_.find (jobId));
+          if (it != allocation_table_.end())
+          {
+            throw std::runtime_error ("already have reservation for job");
+          }
+
+          try
+          {
+            for (worker_id_t const& worker : matching_workers)
             {
-              throw std::runtime_error ("already have reservation for job");
+              worker_manager().findWorker (worker)->submit (jobId);
+            }
+            _serve_job (worker_id_list_t (matching_workers.begin(), matching_workers.end()), jobId);
+
+            Reservation* pReservation (new Reservation (matching_workers));
+            allocation_table_.emplace (jobId, pReservation);
+          }
+          catch (std::runtime_error const&)
+          {
+            for (const worker_id_t& wid : matching_workers)
+            {
+              worker_manager().findWorker (wid)->deleteJob (jobId);
             }
 
-            try
-            {
-              for (worker_id_t const& worker : matching_workers)
-              {
-                worker_manager().findWorker (worker)->submit (jobId);
-              }
-              _serve_job (worker_id_list_t (matching_workers.begin(), matching_workers.end()), jobId);
-
-              Reservation* pReservation (new Reservation (matching_workers));
-              allocation_table_.emplace (jobId, pReservation);
-            }
-            catch (std::runtime_error const&)
-            {
-              for (const worker_id_t& wid : matching_workers)
-              {
-                worker_manager().findWorker (wid)->deleteJob (jobId);
-              }
-
-              jobs_to_schedule.push_front (jobId);
-            }
+            jobs_to_schedule.push_front (jobId);
+          }
         }
         else
         {
