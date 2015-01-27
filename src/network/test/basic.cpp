@@ -5,6 +5,7 @@
 #include <network/connection.hpp>
 #include <network/server.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/printer/vector.hpp>
 #include <fhg/util/random_string.hpp>
 #include <fhg/util/thread/event.hpp>

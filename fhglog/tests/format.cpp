@@ -7,6 +7,8 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhglog/format.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 BOOST_AUTO_TEST_CASE (percentage_escapes_percentage)
 {
   BOOST_REQUIRE_EQUAL (fhg::log::format ("%%", fhg::log::LogEvent()), "%");
@@ -22,7 +24,6 @@ BOOST_AUTO_TEST_CASE (short_severity)
   CHECK (INFO, "I");
   CHECK (WARN, "W");
   CHECK (ERROR, "E");
-  CHECK (FATAL, "F");
 
 #undef CHECK
 }
@@ -37,7 +38,6 @@ BOOST_AUTO_TEST_CASE (severity)
   CHECK (INFO, "INFO");
   CHECK (WARN, "WARN");
   CHECK (ERROR, "ERROR");
-  CHECK (FATAL, "FATAL");
 
 #undef CHECK
 }

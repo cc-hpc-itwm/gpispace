@@ -4,8 +4,9 @@
 
 #include "parse.hpp"
 
-#include <fhg/util/parse/error.hpp>
 #include <fhg/util/alphanum.hpp>
+#include <fhg/util/parse/error.hpp>
+#include <fhg/util/print_exception.hpp>
 
 #include <iostream>
 
@@ -575,6 +576,7 @@ void thread::send_some_status_updates()
 }
 
 int main (int argc, char** argv)
+try
 {
   QApplication app (argc, argv);
 
@@ -595,5 +597,10 @@ int main (int argc, char** argv)
 
   const server s (port, hostlist);
 
-  app.exec();
+  return app.exec();
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EX: ");
+  return 1;
 }

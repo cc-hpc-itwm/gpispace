@@ -5,6 +5,7 @@
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -15,6 +16,8 @@
 #include <we/type/value.hpp>
 
 #include <fhg/util/boost/program_options/validators/executable.hpp>
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <fhg/util/nest_exceptions.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 #include <fhg/util/temporary_file.hpp>
 #include <fhg/util/temporary_path.hpp>
@@ -45,6 +48,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
   options_description.add (test::options::source_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
+  options_description.add (gspc::options::scoped_rifd());
 
   boost::program_options::variables_map vm;
   boost::program_options::store
@@ -98,32 +102,30 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
   long const size_buffer (8 << 20);
   long const num_buffer (10);
 
-  //! \todo inline the generator code instead of calling a binary
-  std::ostringstream command_generate;
+  fhg::util::nest_exceptions<std::runtime_error>
+    ([&generator, &size_buffer, &num_values, &data_file]()
+     {
+       //! \todo inline the generator code instead of calling a binary
+       std::ostringstream command_generate;
 
-  command_generate
-    << generator
-    << " -b " << size_buffer
-    << " -n " << num_values
-    << " -s 31415926"
-    << " -m 0"
-    << " -g 1"
-    << " -o " << data_file
-    ;
+       command_generate
+         << generator
+         << " -b " << size_buffer
+         << " -n " << num_values
+         << " -s 31415926"
+         << " -m 0"
+         << " -g 1"
+         << " -o " << data_file
+         ;
 
-  if ( int ec
-     = fhg::util::system_with_blocked_SIGCHLD (command_generate.str().c_str())
-     )
-  {
-    throw std::runtime_error
-      (( boost::format ("Could not generate data: command '%1%', error '%2%'")
-       % command_generate.str()
-       % ec
-       ).str()
-      );
-  }
+       fhg::util::system_with_blocked_SIGCHLD (command_generate.str());
+     }
+    , "Could not generate data"
+    );
 
-  gspc::scoped_runtime_system const drts (vm, installation, "worker:4");
+  gspc::scoped_rifd const rifd (vm, installation);
+  gspc::scoped_runtime_system const drts
+    (vm, installation, "worker:4", rifd.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts)

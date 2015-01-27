@@ -46,28 +46,53 @@ namespace fhg
       fhg_assert (GLOBAL_manager == this);
       GLOBAL_manager = nullptr;
 
-      for (int sig_num : _handlers | boost::adaptors::map_keys)
+      for (decltype (_handlers)::value_type const& handler : _handlers)
       {
-        fhg::syscall::signal (sig_num, SIG_DFL);
+        fhg::syscall::sigaction (handler.first, &handler.second.first, nullptr);
       }
     }
 
-    void signal_handler_manager::add
-      (int sig_num, boost::function<void (int, siginfo_t*, void*)> fun)
+    void signal_handler_manager::handle
+      (int sig_num, siginfo_t* info, void* context) const
     {
       boost::mutex::scoped_lock const _ (_handler_mutex);
+      for ( const boost::function<void (int, siginfo_t*, void*)>& fun
+          : _handlers.find (sig_num)->second.second
+          )
+      {
+        fun (sig_num, info, context);
+      }
+    }
 
-      if (_handlers.find (sig_num) == _handlers.end())
+    scoped_signal_handler::scoped_signal_handler
+        ( signal_handler_manager& manager
+        , int sig_num
+        , boost::function<void (int, siginfo_t*, void*)> fun
+        )
+      : _manager (manager)
+      , _sig_num (sig_num)
+    {
+      boost::mutex::scoped_lock const _ (_manager._handler_mutex);
+
+      if (_manager._handlers.find (_sig_num) == _manager._handlers.end())
       {
         struct sigaction sigact;
         memset (&sigact, 0, sizeof (sigact));
         sigact.sa_sigaction = signal_handler;
         sigact.sa_flags = SA_RESTART | SA_SIGINFO;
 
-        fhg::syscall::sigaction (sig_num, &sigact, nullptr);
+        fhg::syscall::sigaction
+          (_sig_num, &sigact, &_manager._handlers[_sig_num].first);
       }
 
-      _handlers[sig_num].push_back (fun);
+      _it = _manager._handlers[_sig_num].second.insert
+        (_manager._handlers[_sig_num].second.end(), fun);
+    }
+    scoped_signal_handler::~scoped_signal_handler()
+    {
+      boost::mutex::scoped_lock const _ (_manager._handler_mutex);
+
+      _manager._handlers.find (_sig_num)->second.second.erase (_it);
     }
 
     namespace
@@ -107,25 +132,20 @@ namespace fhg
       }
     }
 
-    void signal_handler_manager::add_log_backtrace_and_exit_for_critical_errors
-      (fhg::log::Logger::ptr_t logger)
-    {
-      add (SIGSEGV, std::bind (&crit_err_hdlr, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, logger));
-      add (SIGBUS, std::bind (&crit_err_hdlr, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, logger));
-      add (SIGABRT, std::bind (&crit_err_hdlr, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, logger));
-      add (SIGFPE, std::bind (&crit_err_hdlr, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, logger));
-    }
-
-    void signal_handler_manager::handle
-      (int sig_num, siginfo_t* info, void* context) const
-    {
-      boost::mutex::scoped_lock const _ (_handler_mutex);
-      for ( const boost::function<void (int, siginfo_t*, void*)>& fun
-          : _handlers.find (sig_num)->second
-          )
-      {
-        fun (sig_num, info, context);
-      }
-    }
+    scoped_log_backtrace_and_exit_for_critical_errors::
+      scoped_log_backtrace_and_exit_for_critical_errors
+        (signal_handler_manager& manager, fhg::log::Logger::ptr_t logger)
+      : _handler ( std::bind ( &crit_err_hdlr
+                             , std::placeholders::_1
+                             , std::placeholders::_2
+                             , std::placeholders::_3
+                             , logger
+                             )
+                 )
+      , _segv (manager, SIGSEGV, _handler)
+      , _bus (manager, SIGBUS, _handler)
+      , _abrt (manager, SIGABRT, _handler)
+      , _fpe (manager, SIGFPE, _handler)
+    {}
   }
 }

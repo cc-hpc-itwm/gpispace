@@ -1,9 +1,5 @@
-#include    "Logger.hpp"
-#include    <stdexcept>
-#include    <iostream>
+#include <fhglog/Logger.hpp>
 #include <boost/thread.hpp>
-
-#include <boost/range/adaptor/map.hpp>
 
 #include <unordered_map>
 
@@ -80,11 +76,6 @@ namespace fhg
         {
           appender->append(event);
         }
-      }
-
-      if (event.severity() == FATAL)
-      {
-        throw std::runtime_error (event.message());
       }
     }
 

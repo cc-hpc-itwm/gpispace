@@ -1,6 +1,7 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
 #include <fhg/syscall.hpp>
+#include <fhg/util/print_exception.hpp>
 
 #include <network/server.hpp>
 
@@ -121,6 +122,7 @@ private:
 
 
 int main (int argc, char** argv)
+try
 {
   if (argc < 2)
   {
@@ -138,4 +140,9 @@ int main (int argc, char** argv)
     io_service_thread ([&io_service]() { io_service.run(); });
 
   return 0;
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EX: ");
+  return 1;
 }

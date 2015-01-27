@@ -5,6 +5,7 @@
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/scoped_rifd.hpp>
 #include <drts/virtual_memory.hpp>
 
 #include <test/make.hpp>
@@ -19,6 +20,7 @@
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/temporary_path.hpp>
 
 #include <boost/filesystem.hpp>
@@ -46,6 +48,7 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
   options_description.add (test::options::source_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
+  options_description.add (gspc::options::scoped_rifd());
   options_description.add (gspc::options::virtual_memory());
 
   boost::program_options::variables_map vm;
@@ -86,8 +89,13 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
   unsigned long const num_bytes
     (vm[option_num_bytes].as<validators::positive_integral<unsigned long>>());
 
+  gspc::scoped_rifd const rifd (vm, installation);
   gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:1," + std::to_string (num_bytes));
+    ( vm
+    , installation
+    , "worker:1," + std::to_string (num_bytes)
+    , rifd.entry_points()
+    );
 
   gspc::vmem_allocation const allocation_data (drts.alloc (num_bytes, "data"));
 

@@ -33,7 +33,6 @@
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
 #include <sdpa/events/put_token.hpp>
 #include <sdpa/id_generator.hpp>
-#include <sdpa/daemon/exceptions.hpp>
 
 #include <fhg/util/boost/optional.hpp>
 #include <fhg/util/hostname.hpp>
@@ -156,11 +155,10 @@ GenericDaemon::GenericDaemon( const std::string name
   , _job_map_mutex()
   , job_map_()
   , _cleanup_job_map_on_dtor_helper (job_map_)
-  , _scheduler ( std::bind (&GenericDaemon::serveJob, this, std::placeholders::_1, std::placeholders::_2)
-               , [this] (job_id_t job_id)
-               {
-                 return findJob (job_id)->requirements();
-               }
+  , _scheduler ( [this] (job_id_t job_id)
+                 {
+                   return findJob (job_id)->requirements();
+                 }
                )
   , _scheduling_thread_mutex()
   , _scheduling_thread_notifier()
@@ -183,7 +181,6 @@ GenericDaemon::GenericDaemon( const std::string name
                         _event_queue.put (source, e);
                       }
                       , peer_io_service
-                      , name /*name for peer*/
                       , host_from_url (url)
                       , port_from_url (url)
                       )
@@ -290,7 +287,7 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
 
       for (const worker_id_t& worker_id : worker_list)
       {
-        child_proxy (this, address_by_worker (worker_id).get()->second)
+        child_proxy (this, scheduler().worker_manager().address_by_worker (worker_id).get()->second)
           .submit_job (ptrJob->id(), ptrJob->description(), worker_list);
       }
   }
@@ -436,10 +433,8 @@ void GenericDaemon::handleWorkerRegistrationEvent
     }
   }
 
-  _worker_connections.left.insert ({event->name(), source});
-
   const bool was_new_worker
-    (scheduler().worker_manager().addWorker (event->name(), event->capacity(), workerCpbSet, event->children_allowed(), event->hostname()));
+    (scheduler().worker_manager().addWorker (event->name(), event->capacity(), workerCpbSet, event->children_allowed(), event->hostname(), source));
 
   child_proxy (this, source).worker_registration_ack();
 
@@ -468,8 +463,8 @@ void GenericDaemon::handleErrorEvent
 
   boost::optional<master_info_t::iterator> const as_master
     (master_by_address (source));
-  boost::optional<decltype (_worker_connections.right)::iterator> const as_worker
-    (worker_by_address (source));
+  boost::optional<WorkerManager::worker_connections_t::right_map::iterator> const as_worker
+    (scheduler().worker_manager().worker_by_address (source));
 
   // if it'a communication error, inspect all jobs and
   // send results if they are in a terminal state
@@ -481,10 +476,6 @@ void GenericDaemon::handleErrorEvent
     case events::ErrorEvent::SDPA_EJOBREJECTED:
     {
       sdpa::job_id_t jobId(*error.job_id());
-
-      //! \todo ignore if worker no longer exists?
-      scheduler().worker_manager().findWorker
-        (as_worker.get()->second)->deleteJob (jobId);
 
       Job* pJob (findJob (jobId));
       if (!pJob)
@@ -515,31 +506,21 @@ void GenericDaemon::handleErrorEvent
       if( isSubscriber(source) )
         unsubscribe(source);
 
-      try
+      if (as_worker)
       {
-        //! \todo express try-catch as if (!!as_worker)
-        if (!as_worker)
-        {
-          throw WorkerNotFoundException();
-        }
-
-        Worker::ptr_t ptrWorker
-          (scheduler().worker_manager().findWorker (as_worker.get()->second));
-
-        // notify capability losses...
         for (master_info_t::value_type const& info : _master_info)
         {
           if (info.second.address)
           {
             parent_proxy (this, *info.second.address).capabilities_lost
-              (ptrWorker->capabilities());
+              (scheduler().worker_manager().worker_capabilities (as_worker.get()->second));
           }
         }
 
-        scheduler().reschedule_pending_jobs_matching_worker (ptrWorker->name());
+        scheduler().reschedule_pending_jobs_matching_worker (as_worker.get()->second);
 
         const std::set<job_id_t> jobs_to_reschedule
-          (ptrWorker->getJobListAndCleanQueues());
+          (scheduler().worker_manager().get_worker_jobs_and_clean_queues (as_worker.get()->second));
 
         for (sdpa::job_id_t jobId : jobs_to_reschedule)
         {
@@ -550,14 +531,14 @@ void GenericDaemon::handleErrorEvent
             pJob->Reschedule();
 
             if (!scheduler().cancelNotTerminatedWorkerJobs
-                  ( [this, &jobId](const sdpa::worker_id_t& wid)
-                  {
-                    child_proxy (this, address_by_worker (wid).get()->second)
-                      .cancel_job (jobId);
-                  }
-                  , jobId
-                  )
+              ( [this, &jobId](const sdpa::worker_id_t& wid)
+                {
+                  child_proxy (this, scheduler().worker_manager().address_by_worker (wid).get()->second)
+                    .cancel_job (jobId);
+                }
+                , jobId
                 )
+              )
             {
               scheduler().releaseReservation (jobId);
               scheduler().enqueueJob (jobId);
@@ -566,40 +547,47 @@ void GenericDaemon::handleErrorEvent
         }
 
         scheduler().worker_manager().deleteWorker (as_worker.get()->second);
-        _worker_connections.right.erase (as_worker.get());
         request_scheduling();
       }
-      catch (WorkerNotFoundException const& /*ignored*/)
+      else
       {
         if (as_master)
         {
           as_master.get()->second.address = boost::none;
-
           request_registration_soon (as_master.get());
         }
       }
+
       break;
     }
     case events::ErrorEvent::SDPA_EJOBEXISTS:
     {
-      // do the same as when receiving a SubmitJobAckEvent
-
-      // Only now should be the job state machine make a transition to RUNNING
-      // this means that the job was not rejected, no error occurred etc ....
-      // find the job ptrJob and call
-      Job* ptrJob = findJob(*error.job_id());
-      if(ptrJob)
+      if (as_worker)
       {
-        try {
-            ptrJob->Dispatch();
-            scheduler().worker_manager().findWorker
-              (as_worker.get()->second)->acknowledge (*error.job_id());
-        }
-        catch(WorkerNotFoundException const &)
+        Job* ptrJob = findJob(*error.job_id());
+        if(ptrJob)
         {
+          ptrJob->Dispatch();
+          scheduler().worker_manager().acknowledge_job_sent_to_worker ( *error.job_id()
+                                                                      , as_worker.get()->second
+                                                                      );
+        }
+        else
+        {
+          throw std::runtime_error
+            ( ( boost::format( "The worker %1% reported double submission for the unexisting job %2%!")
+              % as_worker.get()->second
+              % *error.job_id()
+              ).str()
+            );
         }
       }
-
+      else
+      {
+        throw std::runtime_error ( "Not-registered worker reported double submission of the job "
+                                 +  *error.job_id()
+                                 );
+      }
       break;
     }
     default:
@@ -665,7 +653,7 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
 
   if (worker_id)
   {
-    child_proxy (this, address_by_worker (*worker_id).get()->second)
+    child_proxy (this, scheduler().worker_manager().address_by_worker (*worker_id).get()->second)
       .cancel_job (job_id);
   }
   else
@@ -761,22 +749,6 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
   }
 }
 
-    auto GenericDaemon::worker_by_address (fhg::com::p2p::address_t const& address)
-      -> boost::optional<decltype (_worker_connections.right)::iterator>
-    {
-      decltype (_worker_connections.right)::iterator it
-        (_worker_connections.right.find (address));
-      return boost::make_optional (it != _worker_connections.right.end(), it);
-    }
-
-    auto GenericDaemon::address_by_worker (std::string const& worker)
-      -> boost::optional<decltype (_worker_connections.left)::iterator>
-    {
-      decltype (_worker_connections.left)::iterator it
-        (_worker_connections.left.find (worker));
-      return boost::make_optional (it != _worker_connections.left.end(), it);
-    }
-
     boost::optional<GenericDaemon::master_info_t::iterator>
       GenericDaemon::master_by_address (fhg::com::p2p::address_t const& address)
     {
@@ -864,54 +836,48 @@ void GenericDaemon::handleCapabilitiesGainedEvent
      return;
    }
 
-  decltype (_worker_connections.right)::iterator const worker
+ WorkerManager::worker_connections_t::right_map::iterator const worker
     ( fhg::util::boost::get_or_throw<std::runtime_error>
-        (worker_by_address (source), "capabilities_gained for unknown worker")
+        (scheduler().worker_manager().worker_by_address (source), "capabilities_gained for unknown worker")
     );
 
-  try
+  sdpa::capabilities_set_t workerCpbSet;
+
+  for (const sdpa::capability_t& cpb : pCpbGainEvt->capabilities() )
   {
-    sdpa::capabilities_set_t workerCpbSet;
-
-    for (const sdpa::capability_t& cpb : pCpbGainEvt->capabilities() )
+    // own capabilities have always the depth 0
+    if( !isOwnCapability(cpb) )
     {
-      // own capabilities have always the depth 0
-      if( !isOwnCapability(cpb) )
-      {
-        sdpa::capability_t cpbMod(cpb);
-        cpbMod.incDepth();
-        workerCpbSet.insert(cpbMod);
-      }
+      sdpa::capability_t cpbMod(cpb);
+      cpbMod.incDepth();
+      workerCpbSet.insert(cpbMod);
     }
+  }
 
-    bool bModified = scheduler().worker_manager().findWorker
-      (worker->second)->addCapabilities (workerCpbSet);
+  bool bModified (scheduler().worker_manager().add_worker_capabilities
+    (worker->second, workerCpbSet));
 
-    if(bModified)
+  if(bModified)
+  {
+    scheduler().reschedule_pending_jobs_matching_worker (worker->second);
+    request_scheduling();
+    if( !isTop() )
     {
-      scheduler().reschedule_pending_jobs_matching_worker (worker->second);
-      request_scheduling();
-      if( !isTop() )
-      {
-        const sdpa::capabilities_set_t newWorkerCpbSet
-          (scheduler().worker_manager().findWorker (worker->second)->capabilities());
+      const sdpa::capabilities_set_t newWorkerCpbSet
+        (scheduler().worker_manager().worker_capabilities (worker->second));
 
-        if( !newWorkerCpbSet.empty() )
+      if( !newWorkerCpbSet.empty() )
+      {
+        for (master_info_t::value_type const& info : _master_info)
         {
-          for (master_info_t::value_type const& info : _master_info)
+          if (info.second.address)
           {
-            if (info.second.address)
-            {
-              parent_proxy (this, *info.second.address).capabilities_gained
-                (newWorkerCpbSet);
-            }
+            parent_proxy (this, *info.second.address).capabilities_gained
+              (newWorkerCpbSet);
           }
         }
       }
     }
-  }
-  catch( const WorkerNotFoundException& ex )
-  {
   }
 }
 
@@ -920,26 +886,24 @@ void GenericDaemon::handleCapabilitiesLostEvent
 {
   // tell the scheduler to remove the capabilities of the worker source
 
-  decltype (_worker_connections.right)::iterator const worker
+ WorkerManager::worker_connections_t::right_map::iterator const worker
     ( fhg::util::boost::get_or_throw<std::runtime_error>
-        (worker_by_address (source), "capabilities_lost for unknown worker")
+        (scheduler().worker_manager().worker_by_address (source), "capabilities_lost for unknown worker")
     );
 
-  try {
-    if (scheduler().worker_manager().findWorker (worker->second)->removeCapabilities(pCpbLostEvt->capabilities()))
+  if (scheduler().worker_manager().remove_worker_capabilities ( worker->second
+                                                              , pCpbLostEvt->capabilities()
+                                                              )
+     )
+  {
+    for (master_info_t::value_type const& info : _master_info)
     {
-      for (master_info_t::value_type const& info : _master_info)
+      if (info.second.address)
       {
-        if (info.second.address)
-        {
-          parent_proxy (this, *info.second.address).capabilities_lost
-            (pCpbLostEvt->capabilities());
-        }
+        parent_proxy (this, *info.second.address).capabilities_lost
+          (pCpbLostEvt->capabilities());
       }
     }
-  }
-  catch( const WorkerNotFoundException& ex)
-  {
   }
 }
 
@@ -1138,25 +1102,18 @@ void GenericDaemon::handleSubmitJobAckEvent
   Job* ptrJob = findJob(pEvent->job_id());
   if(ptrJob)
   {
-      if(ptrJob->getStatus() == sdpa:: status::CANCELING)
-        return;
+    if(ptrJob->getStatus() == sdpa:: status::CANCELING)
+      return;
 
-      decltype (_worker_connections.right)::iterator const worker
-        ( fhg::util::boost::get_or_throw<std::runtime_error>
-          (worker_by_address (source), "submit_job_ack for unknown worker")
-        );
+   WorkerManager::worker_connections_t::right_map::iterator const worker
+      ( fhg::util::boost::get_or_throw<std::runtime_error>
+         (scheduler().worker_manager().worker_by_address (source), "submit_job_ack for unknown worker")
+      );
 
-      try
-      {
-        ptrJob->Dispatch();
-        scheduler().worker_manager().findWorker (worker->second)->acknowledge (pEvent->job_id());
-      }
-      catch(WorkerNotFoundException const &ex1)
-      {
-        // the worker should register first, before posting a job request
-        events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(events::ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
-        sendEventToOther (worker->first, pErrorEvt);
-      }
+    ptrJob->Dispatch();
+    scheduler().worker_manager().acknowledge_job_sent_to_worker ( pEvent->job_id()
+                                                                , worker->second
+                                                                );
   }
   else
   {
@@ -1219,7 +1176,7 @@ void GenericDaemon::handleJobFailedAckEvent
 
       if (pJob && worker_id)
       {
-        child_proxy (this, address_by_worker (*worker_id).get()->second)
+        child_proxy (this, scheduler().worker_manager().address_by_worker (*worker_id).get()->second)
           .discover_job_states (job_id, discover_id);
       }
       else if (pJob)
@@ -1251,7 +1208,7 @@ void GenericDaemon::handleJobFailedAckEvent
         _discover_sources.emplace
           (std::make_pair (pEvt->discover_id(), pEvt->job_id()), source);
 
-        child_proxy (this, address_by_worker (*worker_id).get()->second)
+        child_proxy (this, scheduler().worker_manager().address_by_worker (*worker_id).get()->second)
           .discover_job_states (pEvt->job_id(), pEvt->discover_id());
       }
       //! \todo Other criteria to know it was submitted to the
@@ -1347,7 +1304,7 @@ void GenericDaemon::handleJobFailedAckEvent
       {
         _put_token_source.emplace (event->put_token_id(), source);
 
-        child_proxy (this, address_by_worker (*worker_id).get()->second)
+        child_proxy (this, scheduler().worker_manager().address_by_worker (*worker_id).get()->second)
           .put_token ( event->job_id()
                      , event->put_token_id()
                      , event->place_name()
@@ -1446,7 +1403,8 @@ namespace sdpa
         _scheduling_thread_notifier.wait (lock);
 
         scheduler().assignJobsToWorkers();
-        scheduler().start_pending_jobs();
+        scheduler().start_pending_jobs
+          (std::bind (&GenericDaemon::serveJob, this, std::placeholders::_1, std::placeholders::_2));
       }
     }
 

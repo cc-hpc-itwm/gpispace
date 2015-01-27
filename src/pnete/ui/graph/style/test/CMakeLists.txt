@@ -2,4 +2,6 @@
 
 fhg_add_test (cached_predicates.cpp
   BOOST_UNIT_TEST
-  DESCRIPTION "test caching of style predicates used in pnete")
+  DESCRIPTION "test caching of style predicates used in pnete"
+  LINK_LIBRARIES fhg-util
+)

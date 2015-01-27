@@ -4,7 +4,9 @@
                           time with multiple binaries
 
 #include <fhg/syscall.hpp>
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/printer/chrono.hpp>
+#include <fhg/util/getenv.hpp>
 #include <fhg/util/hostname.hpp>
 #include <fhg/util/macros.hpp>
 #include <fhg/util/split.hpp>
@@ -88,12 +90,13 @@ namespace
     client_output_buffer.fill (0);
     process::execute_return_type const client_return_values
       ( process::execute
-          ( ( boost::format ("/usr/bin/ssh %1% %2% %3% %4% %5%")
+          ( ( boost::format ("/usr/bin/ssh %1% /usr/bin/env LD_LIBRARY_PATH=%6% %2% %3% %4% %5%")
             % client_host
             % boost::filesystem::canonical (multiple_binaries_binary).string()
             % fhg::util::hostname()
             % port
             % payload_size
+            % fhg::util::getenv ("LD_LIBRARY_PATH").get_value_or ("")
             ).str()
           , {nullptr, 0}
           , {client_output_buffer.data(), client_output_buffer.size()}

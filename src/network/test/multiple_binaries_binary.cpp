@@ -6,6 +6,7 @@
 
 #include <fhg/util/daemonize.hpp>
 #include <fhg/util/measure_average_time.hpp>
+#include <fhg/util/print_exception.hpp>
 #include <fhg/util/thread/event.hpp>
 
 #include <boost/asio/ip/tcp.hpp>
@@ -137,8 +138,8 @@ try
   }
   return 0;
 }
-catch (std::runtime_error const& ex)
+catch (...)
 {
-  std::cerr << ex.what() << std::endl;
+  fhg::util::print_current_exception (std::cerr, "EX: ");
   return 1;
 }

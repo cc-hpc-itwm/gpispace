@@ -2,11 +2,13 @@
 
 #include <drts/worker/drts.hpp>
 
-#include <plugin/core/kernel.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
+#include <fhg/util/make_unique.hpp>
+#include <fhg/util/print_exception.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/split.hpp>
-
+#include <fhg/util/thread/event.hpp>
+#include <fhglog/Configuration.hpp>
 #include <fhglog/LogMacros.hpp>
 
 #include <boost/iostreams/device/file_descriptor.hpp>
@@ -18,10 +20,23 @@
 #include <string>
 #include <vector>
 
+//! \todo move to a central option name collection
+namespace
+{
+  namespace option_name
+  {
+    constexpr char const* const virtual_memory_socket
+      {"virtual-memory-socket"};
+    constexpr char const* const shared_memory_size
+      {"shared-memory-size"};
+  }
+}
+
 int main(int ac, char **av)
+try
 {
   boost::asio::io_service remote_log_io_service;
-  FHGLOG_SETUP (remote_log_io_service);
+  fhg::log::configure (remote_log_io_service);
   fhg::log::Logger::ptr_t logger (fhg::log::Logger::get());
 
   namespace po = boost::program_options;
@@ -30,19 +45,24 @@ int main(int ac, char **av)
 
   std::vector<std::string> config_vars;
   std::string kernel_name;
-  fhg::core::kernel_t::search_path_t search_path;
 
   desc.add_options()
     ("help,h", "this message")
     ("name,n", po::value<std::string>(&kernel_name), "give the kernel a name")
     ("set,s", po::value<std::vector<std::string>>(&config_vars), "set a parameter to a value key=value")
-    ("gpi_enabled", "load gpi api")
-    ( "add-search-path,L", po::value<fhg::core::kernel_t::search_path_t>(&search_path)
-    , "add a path to the search path for plugins"
-    )
     ( "startup-messages-pipe"
     , po::value<int>()->required()
     , "pipe filedescriptor to use for communication during startup (ports used, ...)"
+    )
+    ( option_name::virtual_memory_socket
+    , po::value<fhg::util::boost::program_options::existing_path>()
+    , "socket file to communicate with the virtual memory manager"
+      ", if given the virtual memory manager is required to be running"
+      ", if not given, the kernel can not manage memory"
+    )
+    ( option_name::shared_memory_size
+    , po::value<unsigned long>()
+    , "size of shared memory associated with the kernel"
     )
     ;
 
@@ -70,13 +90,6 @@ int main(int ac, char **av)
     return EXIT_SUCCESS;
   }
 
-  std::vector<std::string> mods_to_load;
-  if (vm.count ("gpi_enabled"))
-  {
-    mods_to_load.push_back ("gpi");
-    mods_to_load.push_back ("gpi_compat");
-  }
-
   std::map<std::string, std::string> config_variables;
   for (const std::string& p : config_vars)
   {
@@ -91,22 +104,46 @@ int main(int ac, char **av)
   }
   config_variables["kernel_name"] = kernel_name;
 
-  fhg::core::wait_until_stopped waiter;
-  const std::function<void()> request_stop (waiter.make_request_stop());
-
-  fhg::core::kernel_t kernel (search_path, request_stop, config_variables);
-
-  for (std::string const & p : mods_to_load)
-  {
-    kernel.load_plugin_by_name (p);
-  }
+  fhg::util::thread::event<> stop_requested;
+  const std::function<void()> request_stop
+    (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
 
   fhg::util::signal_handler_manager signal_handlers;
+  fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
+    crit_error_handler (signal_handlers, logger);
 
-  signal_handlers.add_log_backtrace_and_exit_for_critical_errors (logger);
+  fhg::util::scoped_signal_handler const SIGTERM_handler
+    (signal_handlers, SIGTERM, std::bind (request_stop));
+  fhg::util::scoped_signal_handler const SIGINT_handler
+    (signal_handlers, SIGINT, std::bind (request_stop));
 
-  signal_handlers.add (SIGTERM, std::bind (request_stop));
-  signal_handlers.add (SIGINT, std::bind (request_stop));
+  std::unique_ptr<gpi::pc::client::api_t> const virtual_memory_api
+    ( vm.count (option_name::virtual_memory_socket)
+      ? fhg::util::make_unique<gpi::pc::client::api_t>
+        ((static_cast<boost::filesystem::path>
+            ( vm[option_name::virtual_memory_socket]
+              .as<fhg::util::boost::program_options::existing_path>()
+            )
+         ).string()
+        )
+      : nullptr
+    );
+  if (virtual_memory_api)
+  {
+    virtual_memory_api->start();
+  }
+  std::unique_ptr<gspc::scoped_allocation> const shared_memory
+    ( ( virtual_memory_api
+      && vm.count (option_name::shared_memory_size)
+      && vm[option_name::shared_memory_size].as<unsigned long>() > 0
+      )
+      ? fhg::util::make_unique<gspc::scoped_allocation>
+        ( virtual_memory_api
+        , kernel_name + "-shared_memory"
+        , vm[option_name::shared_memory_size].as<unsigned long>()
+        )
+      : nullptr
+    );
 
   boost::asio::io_service peer_io_service;
   if (config_variables.count ("plugin.drts.gui_url"))
@@ -118,6 +155,9 @@ int main(int ac, char **av)
       , std::pair<std::string, boost::asio::io_service&>
         (config_variables.at ("plugin.drts.gui_url"), gui_io_service)
       , config_variables
+      , kernel_name
+      , virtual_memory_api.get()
+      , shared_memory.get()
       );
 
     {
@@ -128,7 +168,7 @@ int main(int ac, char **av)
       startup_messages_pipe << "OKAY\n";
     }
 
-    waiter.wait();
+    stop_requested.wait();
   }
   else
   {
@@ -136,8 +176,10 @@ int main(int ac, char **av)
                           , peer_io_service
                           , boost::none
                           , config_variables
+                          , kernel_name
+                          , virtual_memory_api.get()
+                          , shared_memory.get()
                           );
-
     {
       boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
         startup_messages_pipe ( vm["startup-messages-pipe"].as<int>()
@@ -146,8 +188,13 @@ int main(int ac, char **av)
       startup_messages_pipe << "OKAY\n";
     }
 
-    waiter.wait();
+    stop_requested.wait();
   }
 
   return 0;
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EX: ");
+  return 1;
 }

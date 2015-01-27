@@ -5,6 +5,7 @@
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -15,6 +16,7 @@
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/temporary_path.hpp>
 
 #include <boost/format.hpp>
@@ -31,6 +33,7 @@ BOOST_AUTO_TEST_CASE (share_lib_cache_demo)
   options_description.add (test::options::shared_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
+  options_description.add (gspc::options::scoped_rifd());
 
   boost::program_options::variables_map vm;
   boost::program_options::store
@@ -72,7 +75,9 @@ BOOST_AUTO_TEST_CASE (share_lib_cache_demo)
     , "net lib install"
     );
 
-  gspc::scoped_runtime_system const drts (vm, installation, "work:4");
+  gspc::scoped_rifd const rifd (vm, installation);
+  gspc::scoped_runtime_system const drts
+    (vm, installation, "work:4", rifd.entry_points());
 
   long const num_id (6);
   long const multiplicity (4);

@@ -13,10 +13,7 @@
 #include <fhg/util/boost/test/printer/optional.hpp>
 #include <fhg/util/random_string.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
-#include <plugin/core/kernel.hpp>
-#include <plugin/plugin.hpp>
+#include <fhglog/Configuration.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/ref.hpp>
@@ -37,7 +34,7 @@ struct setup_logging
   setup_logging()
   {
     setenv ("FHGLOG_level", "TRACE", true);
-    FHGLOG_SETUP (io_service);
+    fhg::log::configure (io_service);
   }
 };
 
@@ -246,7 +243,7 @@ namespace utils
                      _event_queue.put (source, e);
                    }
                  , _peer_io_service
-                 , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
+                 , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
                  )
       , _event_thread (&basic_drts_component::event_thread, this)
     {}

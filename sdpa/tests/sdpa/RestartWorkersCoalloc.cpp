@@ -6,6 +6,8 @@
 
 #include <sdpa/events/CancelJobEvent.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 BOOST_GLOBAL_FIXTURE (setup_logging)
 
 namespace

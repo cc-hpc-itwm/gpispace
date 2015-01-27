@@ -26,7 +26,7 @@ namespace fhg
       }
 
       template<typename Exception, typename T, typename... Args>
-        T get_or_throw (boost::optional<T> const& optional, Args... args)
+        T get_or_throw (boost::optional<T> const& optional, Args&&... args)
       {
         if (!optional)
         {

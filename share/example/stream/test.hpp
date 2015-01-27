@@ -5,6 +5,7 @@
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/scoped_rifd.hpp>
 #include <drts/stream.hpp>
 #include <drts/virtual_memory.hpp>
 
@@ -19,6 +20,7 @@
 #include <we/type/value/peek.hpp>
 
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/printer/set.hpp>
 #include <fhg/util/macros.hpp>
 #include <fhg/util/read_file.hpp>
@@ -69,6 +71,7 @@ namespace share_example_stream_test
     options_description.add (test::options::source_directory());
     options_description.add (gspc::options::installation());
     options_description.add (gspc::options::drts());
+    options_description.add (gspc::options::scoped_rifd());
     options_description.add (gspc::options::virtual_memory());
 
     boost::program_options::variables_map vm;
@@ -116,8 +119,9 @@ namespace share_example_stream_test
 
     unsigned long const size (num_slots * (size_slot + 1));
 
+    gspc::scoped_rifd const rifd (vm, installation);
     gspc::scoped_runtime_system const drts
-      (vm, installation, topology (size_slot));
+      (vm, installation, topology (size_slot), rifd.entry_points());
 
     gspc::vmem_allocation const allocation_buffer
       (drts.alloc (size, workflow_name + "_buffer"));

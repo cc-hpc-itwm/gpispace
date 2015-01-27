@@ -5,6 +5,7 @@
 
 #include <process.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/printer/vector.hpp>
 
 #include <boost/thread/scoped_thread.hpp>

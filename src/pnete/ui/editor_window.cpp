@@ -705,7 +705,8 @@ namespace fhg
           virtual void handle_internally (we::type::activity_t& act, mod_t const& mod) override
           {
             //!\todo pass a real drts::worker::context here
-            we::loader::module_call (loader, nullptr, act, mod);
+            we::loader::module_call
+              (loader, nullptr, nullptr, nullptr, act, mod);
           }
 
           virtual void handle_internally (we::type::activity_t& , expr_t const&) override

@@ -5,6 +5,7 @@
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -15,6 +16,7 @@
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/random_string.hpp>
 
 #include <boost/filesystem.hpp>
@@ -30,6 +32,7 @@ BOOST_AUTO_TEST_CASE (sdpa_test_drts_should_handle_multiple_workflows_being_subm
   options_description.add (test::options::source_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
+  options_description.add (gspc::options::scoped_rifd());
 
   boost::program_options::variables_map vm;
   boost::program_options::store
@@ -69,7 +72,9 @@ BOOST_AUTO_TEST_CASE (sdpa_test_drts_should_handle_multiple_workflows_being_subm
     , "net lib install"
     );
 
-    gspc::scoped_runtime_system const drts (vm, installation, "work:1");
+  gspc::scoped_rifd const rifd (vm, installation);
+  gspc::scoped_runtime_system const drts
+    (vm, installation, "work:1", rifd.entry_points());
 
     std::string const challenge (fhg::util::random_string_without ("\"\\"));
 

@@ -9,6 +9,7 @@
 #include <xml/parse/type/function.hpp>
 
 #include <fhg/revision.hpp>
+#include <fhg/util/print_exception.hpp>
 
 #include <we/type/activity.hpp>
 
@@ -16,8 +17,6 @@
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
-
-#include <fhg/revision.hpp>
 
 // ************************************************************************* //
 
@@ -204,6 +203,7 @@ void list_dependencies ( const xml::parse::state::type& state
 }
 
 int main (int argc, char** argv)
+try
 {
   std::string input ("/dev/stdin");
   std::string output ("/dev/stdout");
@@ -244,10 +244,9 @@ int main (int argc, char** argv)
               );
     po::notify (vm);
   }
-  catch (std::exception const & ex)
+  catch (...)
   {
-    std::cerr << "invalid argument: " << ex.what() << std::endl;
-    return EXIT_FAILURE;
+    std::throw_with_nested (std::invalid_argument ("invalid argument"));
   }
 
   if (vm.count ("help"))
@@ -281,8 +280,6 @@ int main (int argc, char** argv)
     state.dump_dependencies() = input + ".d";
   }
 
-  try
-  {
     const xml::parse::id::ref::function function
       (xml::parse::just_parse (state, input));
 
@@ -313,13 +310,11 @@ int main (int argc, char** argv)
       std::ofstream out (output.c_str());
       out << xml::parse::xml_to_we (function, state).to_string();
     }
-  }
-  catch (const std::exception& ex)
-  {
-    std::cerr << "pnetc: failed: " << ex.what() << std::endl;
-
-    return EXIT_FAILURE;
-  }
 
   return EXIT_SUCCESS;
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "pnetc: failed: ");
+  return EXIT_FAILURE;
 }

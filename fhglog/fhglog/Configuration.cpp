@@ -3,19 +3,18 @@
 #include <fhglog/Configuration.hpp>
 
 #include <fhglog/Appender.hpp>
+#include <fhglog/Logger.hpp>
 #include <fhglog/appender/file.hpp>
 #include <fhglog/event.hpp>
+#include <fhglog/format.hpp>
 #include <fhglog/level.hpp>
 #include <fhglog/appender/stream.hpp>
-#include <fhglog/LogMacros.hpp>
 #include <fhglog/remote/appender.hpp>
 
-#include <fhg/util/read_bool.hpp>
 #include <fhg/util/split.hpp>
 
 #include <algorithm> // std::transform
 #include <cctype>    // std::tolower
-#include <iostream>
 
 #ifdef __APPLE__
 #include <crt_externs.h> // _NSGetEnviron
@@ -38,7 +37,6 @@ namespace fhg
           , to_file_()
           , to_server_()
           , fmt_string_ (default_format::SHORT())
-          , color_ (StreamAppender::COLOR_OFF)
           , disabled_ (false)
         {}
 
@@ -52,7 +50,6 @@ namespace fhg
         std::string to_file_;
         std::string to_server_;
         std::string fmt_string_;
-        StreamAppender::ColorMode color_;
         bool disabled_;
       };
 
@@ -108,13 +105,6 @@ namespace fhg
         {
           to_server_ = val;
         }
-        else if (key == "color")
-        {
-          color_ = val == "off" ? StreamAppender::COLOR_OFF
-                 : val == "on" ? StreamAppender::COLOR_ON
-                 : throw std::runtime_error
-                     ("expected: 'on' or 'off' for key 'color'");
-        }
         else if (key == "disabled")
         {
           disabled_ = true;
@@ -140,7 +130,6 @@ namespace fhg
                                 : "stdlog" == to_console_ ? std::clog
                                 : std::cerr
                                 , fmt_string_
-                                , color_
                                 )
                             )
             );

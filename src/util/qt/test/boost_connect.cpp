@@ -6,6 +6,8 @@
 
 #include <util/qt/boost_connect.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 #include <boost/lambda/bind.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/test/unit_test.hpp>

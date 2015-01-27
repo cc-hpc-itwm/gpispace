@@ -6,7 +6,6 @@
 #include <sdpa/capability.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
-#include <sdpa/daemon/exceptions.hpp>
 
 #include <boost/optional.hpp>
 #include <boost/algorithm/string.hpp>
@@ -27,6 +26,7 @@ namespace sdpa
                       , const capabilities_set_t&
                       , const bool children_allowed
                       , const std::string& hostname
+                      , const fhg::com::p2p::address_t& address
                       );
 
       void assign (const job_id_t&);
@@ -34,11 +34,11 @@ namespace sdpa
 
       void acknowledge(const job_id_t&);
 
-      // update last service time
-      double lastScheduleTime() {lock_type lock(mtx_); return last_schedule_time_; }
+      double lastTimeServed() {lock_type lock(mtx_); return last_time_served_; }
 
       const worker_id_t &name() const { lock_type lock(mtx_); return name_; }
       const std::string hostname() const;
+      fhg::com::p2p::address_t address() const;
       boost::optional<unsigned int> capacity() const { lock_type lock(mtx_); return capacity_; }
 
       // capabilities
@@ -47,17 +47,18 @@ namespace sdpa
 
       bool addCapabilities(const capabilities_set_t& cpbset);
       bool removeCapabilities(const capabilities_set_t& cpbset);
-      bool hasCapability(const std::string& cpbName);
+      bool hasCapability(const std::string& cpbName) const;
 
-      bool has_job( const job_id_t& job_id );
+      bool has_job( const job_id_t& job_id ) const;
+      bool has_pending_jobs() const;
 
       void deleteJob(const job_id_t &job_id );
 
       // methods related to reservation
-      bool isReserved();
+      bool isReserved() const;
 
       // cost
-      double cost_assigned_jobs (std::function<double (job_id_t job_id)>);
+      double cost_assigned_jobs (std::function<double (job_id_t job_id)>) const;
 
       bool remove_job_if_pending (const job_id_t& job_id);
     private:
@@ -73,7 +74,8 @@ namespace sdpa
       capabilities_set_t capabilities_;
       bool children_allowed_;
       std::string hostname_;
-      double last_schedule_time_;
+      fhg::com::p2p::address_t address_;
+      double last_time_served_;
 
       std::set<job_id_t> pending_;
       std::set<job_id_t> submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)

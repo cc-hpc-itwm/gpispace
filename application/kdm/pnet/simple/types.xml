@@ -1,5 +1,0 @@
-<structs>
-  <include-structs href="types/config.xml"/>
-  <include-structs href="types/volume.xml"/>
-  <include-structs href="types/bunch.xml"/>
-</structs>

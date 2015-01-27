@@ -4,13 +4,7 @@
 #include <we/type/port.hpp>
 #include <we/type/range.hpp>
 
-#include <fvm-pc/pc.hpp>
-// used
-// fvmGetShmemPtr
-// fvmGetShmemSize
-// fvmGetGlobalData
-// fvmPutGlobalData
-// waitComm
+#include <drts/worker/context.hpp>
 
 //! \todo remove, needed to make a complete type
 #include <we/type/net.hpp>
@@ -77,14 +71,64 @@ namespace we
       unsigned long _position;
     };
 
+    typedef unsigned long fvmAllocHandle_t;
+    typedef unsigned long fvmSize_t;
+    typedef unsigned long fvmOffset_t;
+    typedef unsigned long fvmShmemOffset_t;
+
+    void put_global_data
+      ( gpi::pc::client::api_t /*const*/& virtual_memory_api
+      , gspc::scoped_allocation /*const*/& shared_memory
+      , const fvmAllocHandle_t global_memory_handle
+      , const fvmOffset_t global_memory_offset
+      , const fvmSize_t size
+      , const fvmShmemOffset_t shared_memory_offset
+      )
+    {
+      virtual_memory_api.wait
+        ( virtual_memory_api.memcpy
+          ( gpi::pc::type::memory_location_t
+            (global_memory_handle, global_memory_offset)
+          , gpi::pc::type::memory_location_t
+            (shared_memory, shared_memory_offset)
+          , size
+          , GPI_PC_INVAL
+          )
+        );
+    }
+
+    void get_global_data
+      ( gpi::pc::client::api_t /*const*/& virtual_memory_api
+      , gspc::scoped_allocation /*const*/& shared_memory
+      , const fvmAllocHandle_t global_memory_handle
+      , const fvmOffset_t global_memory_offset
+      , const fvmSize_t size
+      , const fvmShmemOffset_t shared_memory_offset
+      )
+    {
+      virtual_memory_api.wait
+        ( virtual_memory_api.memcpy
+          ( gpi::pc::type::memory_location_t
+            (shared_memory, shared_memory_offset)
+          , gpi::pc::type::memory_location_t
+            (global_memory_handle, global_memory_offset)
+          , size
+          , GPI_PC_INVAL
+          )
+        );
+    }
+
     void transfer
-      ( std::function<fvmCommHandle_t ( const fvmAllocHandle_t
-                                      , const fvmOffset_t
-                                      , const fvmSize_t
-                                      , const fvmShmemOffset_t
-                                      , const fvmAllocHandle_t
-                                      )
-                     > do_transfer
+      ( std::function<void
+                      ( gpi::pc::client::api_t /*const*/&
+                      , gspc::scoped_allocation /*const*/&
+                      , const fvmAllocHandle_t
+                      , const fvmOffset_t
+                      , const fvmSize_t
+                      , const fvmShmemOffset_t
+                      )> do_transfer
+      , gpi::pc::client::api_t /*const*/* virtual_memory_api
+      , gspc::scoped_allocation /*const*/* shared_memory
       , std::unordered_map<std::string, buffer> const& memory_buffer
       , std::list<std::pair<local::range, global::range>> const& transfers
       )
@@ -112,14 +156,13 @@ namespace we
 
         //! \todo check global range, needs knowledge about global memory
 
-        waitComm
-          ( do_transfer
-            ( std::stoul (global.handle().name(), nullptr, 16)
-            , global.offset()
-            , local.size()
-            , memory_buffer.at (local.buffer()).position() + local.offset()
-            , 0
-            )
+        do_transfer
+          ( *virtual_memory_api
+          , *shared_memory
+          , std::stoul (global.handle().name(), nullptr, 16)
+          , global.offset()
+          , local.size()
+          , memory_buffer.at (local.buffer()).position() + local.offset()
           );
       }
     }
@@ -127,11 +170,14 @@ namespace we
 
   namespace loader
   {
-    void module_call ( we::loader::loader& loader
-                     , drts::worker::context* context
-                     , we::type::activity_t& act
-                     , const we::type::module_call_t& module_call
-                     )
+    void module_call
+      ( we::loader::loader& loader
+      , gpi::pc::client::api_t /*const*/* virtual_memory_api
+      , gspc::scoped_allocation /*const*/* shared_memory
+      , drts::worker::context* context
+      , we::type::activity_t& act
+      , const we::type::module_call_t& module_call
+      )
     {
       unsigned long position (0);
 
@@ -142,7 +188,23 @@ namespace we
           : module_call.memory_buffers()
           )
       {
-        char* const local_memory (static_cast<char*> (fvmGetShmemPtr()));
+        if (!virtual_memory_api || !shared_memory)
+        {
+          throw std::logic_error
+            ( ( boost::format
+                ( "module call '%1%::%2%' with %3% memory transfers scheduled "
+                  "to worker '%4%' that is unable to manage memory"
+                )
+              % module_call.module()
+              % module_call.function()
+              % module_call.memory_buffers().size()
+              % context->worker_name()
+              ).str()
+            );
+        }
+
+        char* const local_memory
+          (static_cast<char*> (virtual_memory_api->ptr (*shared_memory)));
 
         unsigned long const size
           (evaluate_size_or_die (act, buffer_and_size.second));
@@ -152,20 +214,21 @@ namespace we
 
         position += size;
 
-        if (position > fvmGetShmemSize())
+        if (position > shared_memory->size())
         {
           //! \todo specific exception
           throw std::runtime_error
             ( ( boost::format ("not enough local memory: %1% > %2%")
               % position
-              % fvmGetShmemSize()
+              % shared_memory->size()
               ).str()
             );
         }
       }
 
-      transfer
-        (fvmGetGlobalData, memory_buffer, module_call.gets (input (act)));
+      transfer ( get_global_data, virtual_memory_api, shared_memory
+               , memory_buffer, module_call.gets (input (act))
+               );
 
       std::list<std::pair<local::range, global::range>> const
         puts_evaluated_before_call
@@ -186,10 +249,11 @@ namespace we
         act.add_output (port_id, out.value (port.name()));
       }
 
-      transfer (fvmPutGlobalData, memory_buffer, puts_evaluated_before_call);
-      transfer ( fvmPutGlobalData
-               , memory_buffer
-               , module_call.puts_evaluated_after_call (out)
+      transfer ( put_global_data, virtual_memory_api, shared_memory
+               , memory_buffer, puts_evaluated_before_call
+               );
+      transfer ( put_global_data, virtual_memory_api, shared_memory
+               , memory_buffer, module_call.puts_evaluated_after_call (out)
                );
     }
   }

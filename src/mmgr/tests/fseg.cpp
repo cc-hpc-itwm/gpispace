@@ -5,6 +5,8 @@
 
 #include <mmgr/fseg.h>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 BOOST_AUTO_TEST_CASE (fseg)
 {
   FSeg_t FSeg = nullptr;

@@ -4,9 +4,9 @@
 
 #include <we/loader/exceptions.hpp>
 
-#include <fhglog/LogMacros.hpp>
+#include <boost/format.hpp>
 
-#include <iostream>
+#include <exception>
 
 namespace we
 {
@@ -15,8 +15,7 @@ namespace we
     Module::Module ( const std::string& path
                    , int flags
                    )
-      : name_()
-      , path_ (path)
+      : path_ (path)
       , _dlhandle (path, flags)
       , call_table_()
     {
@@ -25,66 +24,19 @@ namespace we
         union
         {
           void * symbol;
-          void (*function)(IModule*, unsigned int);
+          void (*function)(IModule*);
         };
       } func_ptr;
 
       func_ptr.symbol = dlsym (_dlhandle.handle(), "we_mod_initialize");
 
-      if (func_ptr.function != nullptr)
+      if (func_ptr.function == nullptr)
       {
-        const unsigned int LOADER_VERSION (1U);
-
-        func_ptr.function (this, LOADER_VERSION);
+        throw std::logic_error
+          ((boost::format ("Missing initialize function in %1%") % path).str());
       }
 
-      MLOG (TRACE, "loaded module " << name_ << " from " << path_);
-    }
-    Module::~Module()
-    {
-      MLOG (TRACE, "unloading " << name_);
-
-      try
-      {
-        struct
-        {
-          union
-          {
-            void * symbol;
-            void (*function) (IModule*);
-          };
-        } func_ptr;
-
-        func_ptr.symbol = dlsym (_dlhandle.handle(), "we_mod_finalize");
-
-        if (func_ptr.function != nullptr)
-        {
-          func_ptr.function (this);
-        }
-      }
-      catch (const std::exception& ex)
-      {
-        std::cerr << "E: **** module " << name()
-                  << " from file " << path()
-                  << " had errors during close: "
-                  << ex.what()
-                  << std::endl;
-      }
-      catch (...)
-      {
-        std::cerr << "E: **** module " << name()
-                  << " from file " << path()
-                  << " had unknown errors during close!"
-                  << std::endl;
-      }
-    }
-    void Module::name (const std::string& a_name)
-    {
-      name_ = a_name;
-    }
-    const std::string &Module::name() const
-    {
-      return name_;
+      func_ptr.function (this);
     }
     const std::string &Module::path() const
     {
@@ -95,25 +47,23 @@ namespace we
                       , const expr::eval::context& input
                       , expr::eval::context& output
                       , std::map<std::string, void*> const& memory_buffer
-                      )
+                      ) const
     {
       const std::unordered_map<std::string, WrapperFunction>::const_iterator
         fun (call_table_.find (function));
 
       if (fun == call_table_.end())
       {
-        throw function_not_found (name_, function);
+        throw function_not_found (path_, function);
       }
-      else
-      {
-        (*fun->second)(info, input, output, memory_buffer);
-      }
+
+      (*fun->second)(info, input, output, memory_buffer);
     }
     void Module::add_function (const std::string& name, WrapperFunction f)
     {
       if (! call_table_.emplace (name, f).second)
       {
-        throw duplicate_function (name_, name);
+        throw duplicate_function (path_, name);
       }
     }
 

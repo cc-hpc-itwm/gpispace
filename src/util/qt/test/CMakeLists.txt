@@ -7,6 +7,6 @@ qt4_automoc (${mocd_files})
 
 fhg_add_test (boost_connect.cpp ${mocd_files}
   BOOST_UNIT_TEST
-  LINK_LIBRARIES fhg_util_qt ${QT_LIBRARIES}
+  LINK_LIBRARIES fhg_util_qt ${QT_LIBRARIES} fhg-util
   DESCRIPTION "connecting a Qt signal to a std::function"
 )

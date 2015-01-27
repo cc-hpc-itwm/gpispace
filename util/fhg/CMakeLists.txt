@@ -1,17 +1,5 @@
 add_subdirectory(util)
 
-execute_process(COMMAND cat ${CMAKE_BINARY_DIR}/build.tstamp
-                OUTPUT_VARIABLE FHG_BUILD_TIMESTAMP
-                ERROR_QUIET
-                OUTPUT_STRIP_TRAILING_WHITESPACE
-               )
-
-if ("${FHG_BUILD_TIMESTAMP}" STREQUAL "")
-  execute_process (COMMAND "date" "+%y-%m" OUTPUT_VARIABLE __year_and_month OUTPUT_STRIP_TRAILING_WHITESPACE)
-  set(FHG_BUILD_TIMESTAMP "${__year_and_month}")
-  set(__year_and_month)
-endif ()
-
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/revision.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp.new @ONLY)
 
 execute_process(

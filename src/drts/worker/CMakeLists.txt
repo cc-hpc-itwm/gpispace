@@ -1,14 +1,14 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-find_package (HWLOC REQUIRED QUIET)
-include_directories (SYSTEM ${HWLOC_INCLUDE_DIR})
-
 add_library (fake-drts-kernel-plugin drts.cpp)
+target_include_directories (fake-drts-kernel-plugin
+  PRIVATE "${HWLOC_INCLUDE_DIR}"
+)
 target_link_libraries (fake-drts-kernel-plugin
   we-dev
-  ${UTIL_LIBRARIES}
+  fhg-util
   sdpa
-  ${FhgCom_LIBRARY}
+  fhgcom
   ${HWLOC_SHARED_LIBRARY}
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
@@ -18,13 +18,15 @@ target_link_libraries (fake-drts-kernel-plugin
   ${Boost_SYSTEM_LIBRARY})
 
 fhg_add_runtime_executable (drts-kernel.cpp
-  LINK_LIBRARIES fhg-plugin
-                 fake-drts-kernel-plugin
-                 ${UTIL_LIBRARIES}
+  LINK_LIBRARIES fake-drts-kernel-plugin
+                 fhg-util
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_IOSTREAMS_LIBRARY}
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
                  ${Boost_THREAD_LIBRARY}
+)
+target_include_directories (drts-kernel
+  PRIVATE "${HWLOC_INCLUDE_DIR}"
 )
 
 install (FILES context_fwd.hpp context.hpp

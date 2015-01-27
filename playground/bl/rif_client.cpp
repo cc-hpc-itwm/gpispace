@@ -2,6 +2,8 @@
 
 #include <rpc/client.hpp>
 
+#include <fhg/util/print_exception.hpp>
+
 #include <boost/asio/io_service.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/thread/scoped_thread.hpp>
@@ -13,6 +15,7 @@
 #include <vector>
 
 int main (int argc, char** argv)
+try
 {
   if (argc < 4)
   {
@@ -54,4 +57,9 @@ int main (int argc, char** argv)
   io_service.stop();
 
   return 0;
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EX: ");
+  return 1;
 }

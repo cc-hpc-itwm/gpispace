@@ -1239,13 +1239,6 @@ namespace xml
           }
           stream << fhg::util::cpp::block::close (indent) << std::endl;
           stream << "WE_MOD_INITIALIZE_END (" << modname << ");" << std::endl;
-
-          stream << std::endl;
-          stream << "WE_MOD_FINALIZE_START (" << modname << ");";
-          stream << fhg::util::cpp::block::open (indent);
-          stream << fhg::util::cpp::block::close (indent);
-          stream << std::endl;
-          stream << "WE_MOD_FINALIZE_END (" << modname << ");" << std::endl;
         }
       }
 

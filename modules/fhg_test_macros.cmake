@@ -5,26 +5,17 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/bin/agent"
   "${CMAKE_INSTALL_PREFIX}/bin/drts-kernel"
   "${CMAKE_INSTALL_PREFIX}/bin/fhglog-dump"
-  "${CMAKE_INSTALL_PREFIX}/bin/fhglogc"
-  "${CMAKE_INSTALL_PREFIX}/bin/fhglogd"
   "${CMAKE_INSTALL_PREFIX}/bin/gpi-space"
-  "${CMAKE_INSTALL_PREFIX}/bin/gpish"
+  "${CMAKE_INSTALL_PREFIX}/bin/gspc-bootstrap-rifd"
+  "${CMAKE_INSTALL_PREFIX}/bin/gspc-rifd"
+  "${CMAKE_INSTALL_PREFIX}/bin/gspc-teardown-rifd"
   "${CMAKE_INSTALL_PREFIX}/bin/gspcmonc"
-  "${CMAKE_INSTALL_PREFIX}/bin/mk.xosview"
   "${CMAKE_INSTALL_PREFIX}/bin/orchestrator"
   "${CMAKE_INSTALL_PREFIX}/bin/pnet2dot"
   "${CMAKE_INSTALL_PREFIX}/bin/pnetc"
   "${CMAKE_INSTALL_PREFIX}/bin/pnete"
-  "${CMAKE_INSTALL_PREFIX}/bin/pnetget"
-  "${CMAKE_INSTALL_PREFIX}/bin/pnetput"
   "${CMAKE_INSTALL_PREFIX}/bin/pnetv"
-  "${CMAKE_INSTALL_PREFIX}/bin/sdpa"
   "${CMAKE_INSTALL_PREFIX}/bin/sdpa-gui"
-  "${CMAKE_INSTALL_PREFIX}/bin/sdpac"
-  "${CMAKE_INSTALL_PREFIX}/bin/un.xosview"
-  "${CMAKE_INSTALL_PREFIX}/bin/vmem"
-  "${CMAKE_INSTALL_PREFIX}/bin/we-exec"
-  "${CMAKE_INSTALL_PREFIX}/etc/sdpa/sdpa.env"
   "${CMAKE_INSTALL_PREFIX}/external/boost/include/boost/version.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/client.fwd.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/client.hpp"
@@ -38,7 +29,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/drts/virtual_memory.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/worker/context.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/worker/context_fwd.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/fhg/plugins/gpi.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/fhg/util/dl.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/fhg/util/parse/error.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/fhg/util/parse/position.hpp"
@@ -49,7 +39,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/fhglog/Logger.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/fhglog/event.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/fhglog/level.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/fvm-pc/pc.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/pnete/plugin/plugin_api.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/pnete/plugin/plugin_base.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/process/process.hpp"
@@ -79,8 +68,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/from_value.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/unwrap.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/wrap.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/we/util/wfhd.h"
-  "${CMAKE_INSTALL_PREFIX}/lib/libfhg-plugin.so.1"
   "${CMAKE_INSTALL_PREFIX}/lib/libfhg-util.a"
   "${CMAKE_INSTALL_PREFIX}/lib/libfhg-util.so.1"
   "${CMAKE_INSTALL_PREFIX}/lib/libfhglog.a"
@@ -88,17 +75,10 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/lib/libgspc.so"
   "${CMAKE_INSTALL_PREFIX}/lib/libmmgr.so.1"
   "${CMAKE_INSTALL_PREFIX}/lib/libwe-dev.so.1"
-  "${CMAKE_INSTALL_PREFIX}/lib/libwfhd.so.1"
-  "${CMAKE_INSTALL_PREFIX}/libexec/fhg/plugins/gpi.so"
-  "${CMAKE_INSTALL_PREFIX}/libexec/fhg/plugins/gpi_compat.so"
-  "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/apps/selftest/selftest.xml"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libdetermine_size.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libdo_load.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libdo_write.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libprocess.so"
-  "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/scripts/sdpa-selftest"
-  "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/scripts/start-drts"
-  "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/scripts/start-sdpa"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/make/common.mk"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/4.xml"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/5.xml"
@@ -138,10 +118,13 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/xsd/schemas.xml"
 )
 
+set (TEST_VMEM_PORT_COUNTER 10820 CACHE INTERNAL "counter for vmem-port")
+set (TEST_VMEM_PORTS_PER_TEST 100)
+
 macro(FHG_ADD_TEST)
   PARSE_ARGUMENTS(TEST
-    "LINK_LIBRARIES;DEPENDS;PROJECT;ARGS;DESCRIPTION;COMPILE_FLAGS;RESOURCE_LOCK;INCLUDE_DIRECTORIES"
-    "VERBOSE;BOOST_UNIT_TEST;REQUIRES_INSTALLATION;PERFORMANCE_TEST"
+    "LINK_LIBRARIES;DEPENDS;PROJECT;ARGS;DESCRIPTION;COMPILE_FLAGS;INCLUDE_DIRECTORIES"
+    "VERBOSE;BOOST_UNIT_TEST;REQUIRES_INSTALLATION;PERFORMANCE_TEST;REQUIRES_VIRTUAL_MEMORY;START_SCOPED_RIF"
     ${ARGN}
     )
   CAR(TEST_SOURCE ${TEST_DEFAULT_ARGS})
@@ -160,6 +143,20 @@ macro(FHG_ADD_TEST)
     # get the filename without extension
     string(REGEX REPLACE "(.*/)?(.*)\\.c.*" "${TEST_PREFIX}\\2" tc_name ${TEST_SOURCE})
 
+    if (TEST_START_SCOPED_RIF)
+      set (TEST_ARGS ${TEST_ARGS} --rif-strategy ${TESTING_RIF_STRATEGY})
+    endif()
+
+    if (TEST_REQUIRES_VIRTUAL_MEMORY)
+      set (TEST_ARGS ${TEST_ARGS} --virtual-memory-port ${TEST_VMEM_PORT_COUNTER})
+      math (EXPR TEST_VMEM_PORT_COUNTER_TMP
+                 "${TEST_VMEM_PORT_COUNTER} + ${TEST_VMEM_PORTS_PER_TEST}"
+      )
+      set (TEST_VMEM_PORT_COUNTER ${TEST_VMEM_PORT_COUNTER_TMP}
+        CACHE INTERNAL "NOTE: yep, cmake requires this temporary"
+      )
+    endif()
+
     if (TEST_VERBOSE)
       message (STATUS "adding test ${tc_name} ${TEST_ARGS} (${TEST_DESCRIPTION})")
     endif()
@@ -177,12 +174,6 @@ macro(FHG_ADD_TEST)
     get_test_property (${tc_name} LABELS tc_labels)
     if (NOT tc_labels)
       set (tc_labels)
-    endif()
-
-    if (TEST_RESOURCE_LOCK)
-      set_tests_properties (${tc_name}
-        PROPERTIES RESOURCE_LOCK ${TEST_RESOURCE_LOCK}
-        )
     endif()
 
     if (TEST_REQUIRES_INSTALLATION)

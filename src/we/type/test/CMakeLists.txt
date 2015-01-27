@@ -34,12 +34,13 @@ add_custom_command (
   DEPENDS mk_cpp
 )
 
-include_directories (${CMAKE_CURRENT_BINARY_DIR})
 add_library (sig_op ${CMAKE_CURRENT_BINARY_DIR}/sig_op.cpp)
+target_include_directories (sig_op PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 
 fhg_add_test (sig.cpp
   BOOST_UNIT_TEST
   PROJECT we
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
   LINK_LIBRARIES sig_op pnet
 )
 

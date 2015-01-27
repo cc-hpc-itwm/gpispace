@@ -1,8 +1,0 @@
-<structs>
-
-  <struct name="pair_to_reduce">
-    <field name="vol" type="volume_with_store"/>
-    <field name="sum" type="volume_in_reduction"/>
-  </struct>
-
-</structs>

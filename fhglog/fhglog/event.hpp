@@ -41,7 +41,6 @@ namespace fhg
                , const function_type& function
                , const line_type& line
                , const message_type& message
-               , std::vector<std::string> const& = std::vector<std::string>()
                );
 
       bool operator< (const LogEvent&) const;
@@ -56,7 +55,6 @@ namespace fhg
       const pid_t& tid() const { return tid_; }
       const std::vector<std::string>& trace() const { return trace_; }
       const std::string& host() const { return host_; }
-      const std::vector<std::string>& tags () const { return tags_; }
 
       void trace (const std::string& name) const
       {
@@ -76,7 +74,6 @@ namespace fhg
       pid_t tid_;
       std::string host_;
       mutable std::vector<std::string> trace_;
-      std::vector<std::string> tags_;
     };
   }
 }

@@ -3,6 +3,7 @@
 #define BOOST_TEST_MODULE read_lines
 #include <boost/test/unit_test.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/read_lines.hpp>
 
 #include <fhg/syscall.hpp>

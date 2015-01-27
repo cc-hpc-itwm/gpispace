@@ -5,12 +5,15 @@
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
 #include <test/scoped_state_directory.hpp>
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
+
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
@@ -28,6 +31,7 @@ BOOST_AUTO_TEST_CASE (share_example_concurrent)
   options_description.add (test::options::shared_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
+  options_description.add (gspc::options::scoped_rifd());
 
   boost::program_options::variables_map vm;
   boost::program_options::store
@@ -58,7 +62,9 @@ BOOST_AUTO_TEST_CASE (share_example_concurrent)
     , "net"
     );
 
-  gspc::scoped_runtime_system const drts (vm, installation, "");
+  gspc::scoped_rifd const rifd (vm, installation);
+  gspc::scoped_runtime_system const drts
+    (vm, installation, "", rifd.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts)

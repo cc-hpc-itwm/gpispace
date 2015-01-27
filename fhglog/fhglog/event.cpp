@@ -1,18 +1,14 @@
 #include <fhglog/event.hpp>
 
+#include <fhg/util/macros.hpp>
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
 #include <fhg/util/hostname.hpp>
 #include <fhg/util/now.hpp>
 
-#include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
-
 #include <iostream>
-#include <iterator>
 #include <sstream>
-#include <sys/time.h>
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -28,7 +24,6 @@ namespace fhg
                       , const function_type &a_function
                       , const line_type &a_line
                       , const std::string &a_message
-                      , std::vector<std::string> const& tags
                       )
       : severity_(a_severity)
       , path_(a_path)
@@ -40,7 +35,6 @@ namespace fhg
       , tid_(syscall (SYS_gettid))
       , host_ (fhg::util::hostname())
       , trace_ ()
-      , tags_ (tags)
     {}
 
     LogEvent::LogEvent()
@@ -54,7 +48,6 @@ namespace fhg
       , tid_()
       , host_ ()
       , trace_ ()
-      , tags_ ()
     {
     }
 
@@ -114,7 +107,6 @@ namespace fhg
         case 'I': ++pos; return INFO;
         case 'W': ++pos; return WARN;
         case 'E': ++pos; return ERROR;
-        case 'F': ++pos; return FATAL;
         }
 
         throw std::runtime_error ("unknown log level");
@@ -132,7 +124,6 @@ namespace fhg
       , tid_ ((++pos, read_integral<pid_t> (pos)))
       , host_ ((++pos, read_string (pos)))
       , trace_ ((++pos, read_vec (pos)))
-      , tags_ ((++pos, read_vec (pos)))
     {}
 
     LogEvent LogEvent::from_string (const std::string& str)
@@ -173,10 +164,9 @@ namespace
       case fhg::log::INFO: return 'I';
       case fhg::log::WARN: return 'W';
       case fhg::log::ERROR: return 'E';
-      case fhg::log::FATAL: return 'F';
       }
 
-      throw std::runtime_error ("unknown log level");
+      INVALID_ENUM_VALUE (fhg::log::level, level);
     }
 
     class tstamp
@@ -219,11 +209,6 @@ std::ostream& operator<< (std::ostream& os, const fhg::log::LogEvent& event)
   os << ',' << encode::string (event.host());
   os << ',';
   for (std::string const& t : event.trace())
-  {
-    os << encode::string (t);
-  }
-  os << ',';
-  for (std::string const& t : event.tags())
   {
     os << encode::string (t);
   }

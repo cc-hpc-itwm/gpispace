@@ -24,6 +24,11 @@ namespace gspc
                     , unsigned long size
                     , std::string const& description
                     );
+    vmem_allocation ( scoped_runtime_system const* const
+                    , unsigned long size
+                    , std::string const& description
+                    , char const* const data
+                    );
 
   public:
     //! \note default, but implementation::~implementation() only known in .cpp

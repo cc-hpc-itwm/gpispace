@@ -6,8 +6,6 @@
 #include <drts/information_to_reattach.hpp>
 #include <drts/private/information_to_reattach.hpp>
 
-#include <gpi-space/pc/client/api.hpp>
-
 #include <sdpa/client.hpp>
 
 #include <we/type/activity.hpp>

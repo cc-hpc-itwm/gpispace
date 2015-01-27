@@ -178,23 +178,8 @@ namespace fhg
         // - expression ----------------------------------------------
         void set_expression (data::handle::expression&, const QString&);
 
-#define EMITTER_ARGS(Z,N,TEXT) BOOST_PP_COMMA_IF(N)                     \
-      typename boost::mpl::at_c                                         \
-        < boost::function_types::parameter_types<Fun>                   \
-        , BOOST_PP_ADD (N, 1)                                           \
-        >::type
-
-#define EMITTER_BODY(Z,ARGC,TEXT)                                       \
-      template<typename Fun>                                            \
-      void BOOST_PP_CAT (emit_signal, ARGC)                             \
-        ( Fun fun                                                       \
-        , BOOST_PP_REPEAT (ARGC, EMITTER_ARGS, BOOST_PP_EMPTY)          \
-        );
-
-      BOOST_PP_REPEAT_FROM_TO (1, 10, EMITTER_BODY, BOOST_PP_EMPTY)
-
-#undef EMITTER_ARGS
-#undef EMITTER_BODY
+        template<typename Sig, typename... Args>
+          void emit_signal (Sig&&, Args&&... args);
 
       signals:
 

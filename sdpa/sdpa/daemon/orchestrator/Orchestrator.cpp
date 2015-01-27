@@ -80,16 +80,8 @@ namespace sdpa
       notify_subscribers<events::JobFinishedEvent>
         (pEvt->job_id(), pEvt->job_id(), pEvt->result());
 
-      try
-      {
-        scheduler().releaseReservation (pEvt->job_id());
-        scheduler().worker_manager().findWorker
-          (worker_by_address (source).get()->second)->deleteJob (pEvt->job_id());
-        request_scheduling();
-      }
-      catch (WorkerNotFoundException const&)
-      {
-      }
+      scheduler().releaseReservation (pEvt->job_id());
+      request_scheduling();
     }
 
     void Orchestrator::handleJobFailedEvent
@@ -109,16 +101,8 @@ namespace sdpa
       notify_subscribers<events::JobFailedEvent>
         (pEvt->job_id(), pEvt->job_id(), pEvt->error_message());
 
-      try
-      {
-        scheduler().releaseReservation (pEvt->job_id());
-        scheduler().worker_manager().findWorker
-          (worker_by_address (source).get()->second)->deleteJob (pJob->id());
-        request_scheduling();
-      }
-      catch (const WorkerNotFoundException&)
-      {
-      }
+      scheduler().releaseReservation (pEvt->job_id());
+      request_scheduling();
     }
 
     void Orchestrator::handleCancelJobEvent
@@ -157,7 +141,7 @@ namespace sdpa
         scheduler().worker_manager().findSubmOrAckWorker(pEvt->job_id());
       if (worker_id)
       {
-        child_proxy (this, address_by_worker (*worker_id).get()->second)
+        child_proxy (this, scheduler().worker_manager().address_by_worker (*worker_id).get()->second)
           .cancel_job (pEvt->job_id());
       }
       else

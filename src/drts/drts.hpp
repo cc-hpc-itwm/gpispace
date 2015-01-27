@@ -6,8 +6,9 @@
 #include <drts/drts.fwd.hpp>
 
 #include <drts/information_to_reattach.fwd.hpp>
-#include <drts/virtual_memory.fwd.hpp>
+#include <drts/rifd_entry_points.hpp>
 #include <drts/stream.hpp>
+#include <drts/virtual_memory.fwd.hpp>
 
 #include <we/type/value.hpp>
 
@@ -41,6 +42,8 @@ namespace gspc
     boost::program_options::options_description logging();
     boost::program_options::options_description installation();
     boost::program_options::options_description drts();
+    boost::program_options::options_description external_rifd();
+    boost::program_options::options_description scoped_rifd();
     boost::program_options::options_description virtual_memory();
   }
 
@@ -65,11 +68,21 @@ namespace gspc
                           , installation const&
                           , std::string const& topology_description
                           );
+    scoped_runtime_system ( boost::program_options::variables_map const& vm
+                          , installation const&
+                          , std::string const& topology_description
+                          , rifd_entry_points const& entry_points
+                          );
 
     ~scoped_runtime_system();
 
     vmem_allocation alloc
       (unsigned long size, std::string const& description) const;
+    vmem_allocation alloc_and_fill
+      ( unsigned long size
+      , std::string const& description
+      , char const* const data
+      ) const;
 
     unsigned long virtual_memory_total() const
     {
@@ -102,13 +115,14 @@ namespace gspc
 
     installation const _installation;
     boost::filesystem::path const _state_directory;
-    boost::filesystem::path const _nodefile;
     boost::optional<unsigned long> _virtual_memory_per_node;
     boost::optional<boost::filesystem::path> _virtual_memory_socket;
     boost::optional<std::chrono::seconds> _virtual_memory_startup_timeout;
     std::pair<std::list<std::string>, unsigned long> const
       _nodes_and_number_of_unique_nodes;
     std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
+
+    rifd_entry_points _rif_entry_points;
 
     std::string _orchestrator_host;
     unsigned short _orchestrator_port;

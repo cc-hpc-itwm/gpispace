@@ -74,7 +74,6 @@ namespace
     case fhg::log::INFO: return QColor (25, 25, 25);
     case fhg::log::WARN: return QColor (255, 140, 0);
     case fhg::log::ERROR: return QColor (255, 0, 0);
-    case fhg::log::FATAL: return QColor (165, 42, 42);
     default: return QColor (0, 0, 0);
     }
   }
@@ -336,7 +335,6 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
                                        << tr ("Info")
                                        << tr ("Warn")
                                        << tr ("Error")
-                                       << tr ("Fatal")
                                        );
 
   fhg::util::qt::boost_connect<void (int)>

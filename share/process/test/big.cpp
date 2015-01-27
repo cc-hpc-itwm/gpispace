@@ -3,6 +3,8 @@
 #define BOOST_TEST_MODULE process_big
 #include <boost/test/unit_test.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 #include <process.hpp>
 
 BOOST_AUTO_TEST_CASE (process_big)

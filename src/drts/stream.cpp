@@ -7,8 +7,9 @@
 #include <drts/drts.fwd.hpp>
 #include <drts/virtual_memory.hpp>
 
+#include <drts/private/scoped_allocation.hpp>
+
 #include <gpi-space/pc/client/api.hpp>
-#include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/type/handle.hpp>
 
 #include <fhg/util/make_unique.hpp>
@@ -25,73 +26,6 @@ namespace gspc
 {
   struct stream::implementation
   {
-    class scoped_allocation
-    {
-      class scoped_segment
-      {
-      public:
-        scoped_segment
-          ( std::unique_ptr<gpi::pc::client::api_t> const& virtual_memory
-          , std::string const& description
-          , unsigned long size
-          )
-            : _virtual_memory (virtual_memory)
-            , _segment (_virtual_memory->register_segment
-                         ( "stream_producer_" + description
-                         , size
-                         , gpi::pc::F_EXCLUSIVE | gpi::pc::F_FORCE_UNLINK
-                         )
-                       )
-        {}
-
-        ~scoped_segment()
-        {
-          _virtual_memory->unregister_segment (_segment);
-        }
-
-        operator gpi::pc::type::handle_id_t const& () const
-        {
-          return _segment;
-        }
-
-      private:
-        std::unique_ptr<gpi::pc::client::api_t> const& _virtual_memory;
-        gpi::pc::type::handle_id_t const _segment;
-      };
-
-    public:
-      scoped_allocation
-        ( std::unique_ptr<gpi::pc::client::api_t> const& virtual_memory
-        , std::string const& description
-        , unsigned long size
-        )
-        : _virtual_memory (virtual_memory)
-        , _scoped_segment (scoped_segment (_virtual_memory, description, size))
-        , _handle (_virtual_memory->alloc
-                    ( _scoped_segment
-                    , size
-                    , "stream_producer_" + description
-                    , gpi::pc::F_EXCLUSIVE
-                    )
-                  )
-      {}
-
-      ~scoped_allocation()
-      {
-        _virtual_memory->free (_handle);
-      }
-
-      operator gpi::pc::type::handle_t const& () const
-      {
-        return _handle;
-      }
-
-    private:
-      std::unique_ptr<gpi::pc::client::api_t> const& _virtual_memory;
-      scoped_segment const _scoped_segment;
-      gpi::pc::type::handle_t const _handle;
-    };
-
     std::size_t get_number_of_slots_or_throw ( std::size_t const available
                                              , std::size_t const size_of_slot
                                              )
@@ -121,9 +55,12 @@ namespace gspc
       , _number_of_slots
           (get_number_of_slots_or_throw (buffer.size(), _size_of_slot))
       , _offset_to_meta_data (_number_of_slots * _size_of_slot)
-      , _flags (_virtual_memory, "flags_" + name, _number_of_slots)
-      , _update (_virtual_memory, "update_" + name, _number_of_slots)
-      , _data (_virtual_memory, "data_" + name, _size_of_slot)
+      , _flags
+        (_virtual_memory, "stream_producer_flags_" + name, _number_of_slots)
+      , _update
+        (_virtual_memory, "stream_producer_update_" + name, _number_of_slots)
+      , _data
+        (_virtual_memory, "stream_producer_data_" + name, _size_of_slot)
       , _free_slots()
       , _sequence_number (0)
     {
@@ -134,7 +71,7 @@ namespace gspc
             , _offset_to_meta_data
             }
           , _number_of_slots
-          , gpi::pc::type::queue_id_t()
+          , GPI_PC_INVAL
           )
         );
 
@@ -182,7 +119,7 @@ namespace gspc
               , _offset_to_meta_data
               }
             , _number_of_slots
-            , gpi::pc::type::queue_id_t()
+            , GPI_PC_INVAL
             )
           );
 
@@ -219,7 +156,7 @@ namespace gspc
             }
           , {_data, 0}
           , data.size()
-          , gpi::pc::type::queue_id_t()
+          , GPI_PC_INVAL
           )
         );
 

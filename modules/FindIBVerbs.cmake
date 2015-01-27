@@ -5,12 +5,16 @@
 
 include (FindPackageHandleStandardArgs)
 
-find_library (IBVerbs_LIBRARY
+find_library (IBverbs_LIBRARY
   NAMES ibverbs
-  HINTS ${IBVERBS_HOME} ENV IBVERBS_HOME
+  HINTS ${LIBIBVERBS_HOME} ENV LIBIBVERBS_HOME
   PATH_SUFFIXES lib lib64
-  )
+)
 
-mark_as_advanced (IBVerbs_LIBRARY)
+if (NOT IBverbs_LIBRARY)
+  message (FATAL_ERROR "IBverbs missing")
+endif()
 
-find_package_handle_standard_args (IBVerbs REQUIRED_VARS IBVerbs_LIBRARY)
+mark_as_advanced (IBverbs_LIBRARY)
+
+find_package_handle_standard_args (IBVerbs REQUIRED_VARS IBverbs_LIBRARY)

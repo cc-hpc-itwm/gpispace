@@ -1,5 +1,7 @@
 #include <pnete/ui/gspc_monitor.hpp>
 
+#include <fhg/util/print_exception.hpp>
+
 #include <QApplication>
 #include <QString>
 
@@ -26,8 +28,8 @@ try
 
   return app.exec();
 }
-catch (const std::runtime_error& err)
+catch (...)
 {
-  std::cerr << "error: " << err.what() << "\n";
+  fhg::util::print_current_exception (std::cerr, "error: ");
   return 1;
 }

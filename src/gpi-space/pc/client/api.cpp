@@ -4,10 +4,12 @@
 #include <gpi-space/pc/type/flags.hpp>
 
 #include <fhg/assert.hpp>
+#include <fhg/syscall.hpp>
 #include <fhglog/LogMacros.hpp>
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/format.hpp>
 #include <boost/range/adaptor/map.hpp>
 
 #include <sys/un.h>
@@ -64,22 +66,7 @@ namespace gpi
       {
         lock_type lock (m_mutex);
 
-        if (m_socket != -1)
-        {
-          if (ping ())
-            return;
-          else
-            stop ();
-        }
-
         m_socket = open_socket (m_path);
-
-            m_info = boost::get<proto::control::info_reply_t>
-              ( boost::get<proto::control::message_t>
-               ( communicate
-                 (proto::control::message_t (proto::control::info_t()))
-               )
-              ).info;
       }
 
       void api_t::stop ()
@@ -98,38 +85,8 @@ namespace gpi
           }
           m_socket = -1;
 
-          // move all segments to trash
-          while (! m_segments.empty())
-          {
-            m_garbage_segments.insert (m_segments.begin()->second);
-            m_segments.erase (m_segments.begin());
-          }
+          m_segments.clear();
         }
-      }
-
-      bool api_t::is_connected () const
-      {
-        lock_type lock (m_mutex);
-        return m_socket != -1;
-      }
-
-      ssize_t api_t::write (const void * buf, size_t sz)
-      {
-        return fhg::syscall::write (m_socket, buf, sz);
-      }
-
-      ssize_t api_t::read (void * buf, size_t sz)
-      {
-        return fhg::syscall::read (m_socket, buf, sz);
-      }
-
-      void api_t::path (std::string const & p)
-      {
-        m_path = p;
-      }
-      std::string const & api_t::path () const
-      {
-        return m_path;
       }
 
       gpi::pc::proto::message_t
@@ -148,8 +105,8 @@ namespace gpi
         ::memset (&header, 0, sizeof(header));
         header.length = data.size();
 
-        if ( (this->write (&header, sizeof(header)) <= 0)
-           || (this->write (data.c_str(), data.size()) <= 0)
+        if ( (fhg::syscall::write (m_socket, &header, sizeof(header)) <= 0)
+           || (fhg::syscall::write (m_socket, data.c_str(), data.size()) <= 0)
            )
         {
           stop ();
@@ -157,14 +114,14 @@ namespace gpi
         }
 
         // receive
-        if (this->read  (&header, sizeof (header)) <= 0)
+        if (fhg::syscall::read (m_socket, &header, sizeof (header)) <= 0)
         {
           stop ();
           throw std::runtime_error ("could not receive data header");
         }
 
         std::vector<char> buffer (header.length);
-        if (this->read (&buffer[0], header.length) <= 0)
+        if (fhg::syscall::read (m_socket, &buffer[0], header.length) <= 0)
         {
           stop ();
           throw std::runtime_error ("could not receive data");
@@ -225,12 +182,6 @@ namespace gpi
         {
           throw std::runtime_error ("handle could not be free'd: " + result.detail);
         }
-      }
-
-      gpi::pc::type::handle_t
-      api_t::memset (const gpi::pc::type::handle_t, int, size_t)
-      {
-        throw std::runtime_error("memset: not yet implemented");
       }
 
       namespace
@@ -321,8 +272,6 @@ namespace gpi
       void *
       api_t::ptr(const gpi::pc::type::handle_t h)
       {
-        try
-        {
           gpi::pc::type::handle::descriptor_t
             descriptor = info(h);
 
@@ -332,15 +281,11 @@ namespace gpi
           {
             return seg_it->second->ptr<char>() + descriptor.offset;
           }
-          else
-          {
-            return nullptr;
-          }
-        }
-        catch (std::exception const &)
-        {
-          return nullptr;
-        }
+
+          throw std::runtime_error
+            ((boost::format("Requested pointer for unknown handle '%1%'") % h
+             ).str()
+            );
       }
 
       gpi::pc::type::queue_id_t
@@ -374,18 +319,6 @@ namespace gpi
           stop ();
           throw;
         }
-      }
-
-      std::vector<gpi::pc::type::size_t>
-      api_t::wait ()
-      {
-        std::vector<gpi::pc::type::size_t> res;
-        gpi::pc::type::info::descriptor_t info(collect_info ());
-        for (gpi::pc::type::size_t q(0); q < info.queues; ++q)
-        {
-          res.push_back(wait(q));
-        }
-        return res;
       }
 
       gpi::pc::type::size_t
@@ -489,11 +422,8 @@ namespace gpi
         {
           LOG(WARN, "There is already a segment attached with id " << seg->id());
           LOG(WARN, "DANGER, this looks like an inconsistency!");
-          LOG(WARN, "    my segment: " << *m_segments.at(seg->id()));
-          LOG(WARN, "   new segment: " << *seg);
           LOG(WARN, "moving my one into the trash");
 
-          m_garbage_segments.insert (m_segments.at(seg->id()));
           m_segments.erase(seg->id());
         }
 
@@ -507,115 +437,6 @@ namespace gpi
         }
 
         return seg->id();
-      }
-
-      gpi::pc::type::segment::list_t
-      api_t::list_segments ()
-      {
-        proto::segment::list_t rqst;
-
-        proto::message_t rply (communicate(proto::segment::message_t (rqst)));
-        try
-        {
-          proto::segment::message_t seg_msg (boost::get<proto::segment::message_t>(rply));
-          proto::segment::list_reply_t segments (boost::get<proto::segment::list_reply_t> (seg_msg));
-          return segments.list;
-        }
-        catch (boost::bad_get const &)
-        {
-          proto::error::error_t result
-            (boost::get<proto::error::error_t>(rply));
-          throw std::runtime_error ("segment listing failed: " + result.detail);
-        }
-        catch (std::exception const & ex)
-        {
-          stop ();
-          throw;
-        }
-      }
-
-      void
-      api_t::attach_segment (const gpi::pc::type::segment_id_t id)
-      {
-        {
-          lock_type lock (m_mutex);
-          if (m_segments.find (id) != m_segments.end())
-          {
-            throw std::runtime_error ("already attached");
-          }
-        }
-
-        // get listing of segments
-        gpi::pc::type::segment::list_t descriptors
-          (list_segments ());
-
-        // find the correct descriptor
-        const gpi::pc::type::segment::descriptor_t * desc (nullptr);
-        for ( gpi::pc::type::segment::list_t::const_iterator it (descriptors.begin())
-            ; it != descriptors.end()
-            ; ++it
-            )
-        {
-          if (it->id == id)
-          {
-            desc = &(*it);
-            break;
-          }
-        }
-
-        if (!desc)
-        {
-          throw std::runtime_error ("no such segment");
-        }
-
-        // open segment
-        segment_ptr seg (new gpi::pc::segment::segment_t(desc->name, desc->local_size, id));
-          seg->open();
-
-        // communicate
-        {
-          proto::segment::attach_t rqst;
-          rqst.id = id;
-
-          proto::message_t rply (communicate(proto::segment::message_t (rqst)));
-          proto::error::error_t result
-            (boost::get<proto::error::error_t>(rply));
-          if (result.code != proto::error::success)
-          {
-            throw std::runtime_error ("could not attach to segment: " + result.detail);
-          }
-          else
-          {
-            lock_type lock (m_mutex);
-            m_segments [seg->id()] = seg;
-          }
-        }
-      }
-
-      void
-      api_t::detach_segment (const gpi::pc::type::segment_id_t id)
-      {
-        proto::segment::detach_t rqst;
-        rqst.id = id;
-
-        try
-        {
-          proto::message_t rply (communicate(proto::segment::message_t(rqst)));
-          proto::error::error_t result
-            (boost::get<proto::error::error_t>(rply));
-          if (result.code != proto::error::success)
-          {
-            LOG(ERROR, "could not detach from segment: " << result.code << ": " << result.detail);
-            // throw or silently ignore?
-          }
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "detach failed: " << ex.what());
-        }
-
-        lock_type lock (m_mutex);
-        m_segments.erase (id);
       }
 
       void
@@ -645,128 +466,6 @@ namespace gpi
         // remove local
         lock_type lock (m_mutex);
         m_segments.erase (id);
-      }
-
-      gpi::pc::type::handle::list_t
-      api_t::list_allocations (const gpi::pc::type::segment_id_t seg)
-      {
-        proto::memory::list_t rqst;
-        rqst.segment = seg;
-
-        proto::message_t rply;
-        try
-        {
-          rply = communicate(proto::memory::message_t(rqst));
-        }
-        catch (std::exception const & ex)
-        {
-          stop ();
-          throw;
-        }
-
-        try
-        {
-          proto::memory::message_t mem_msg (boost::get<proto::memory::message_t> (rply));
-          proto::memory::list_reply_t handles (boost::get<proto::memory::list_reply_t>(mem_msg));
-          return handles.list;
-        }
-        catch (boost::bad_get const &)
-        {
-          proto::error::error_t result (boost::get<proto::error::error_t>(rply));
-          LOG(ERROR, "could not get handle list: " << result.code << ": " << result.detail);
-          throw std::runtime_error ("handle listing failed: " + result.detail);
-        }
-        catch (std::exception const & ex)
-        {
-          stop ();
-          throw;
-        }
-      }
-
-      bool api_t::ping ()
-      {
-        if (!is_connected())
-          return false;
-
-        try
-        {
-          communicate ( gpi::pc::proto::control::message_t
-                        (gpi::pc::proto::control::ping_t())
-                      );
-          return true;
-        }
-        catch (std::exception const & ex)
-        {
-          stop ();
-          return false;
-        }
-      }
-
-      bool api_t::is_attached (const gpi::pc::type::segment_id_t seg_id)
-      {
-        lock_type lock (m_mutex);
-        return m_segments.find (seg_id) != m_segments.end();
-      }
-
-      api_t::segment_map_t const & api_t::segments () const
-      {
-        return m_segments;
-      }
-
-      api_t::segment_map_t & api_t::segments ()
-      {
-        return m_segments;
-      }
-
-      api_t::segment_set_t const & api_t::garbage_segments () const
-      {
-        return m_garbage_segments;
-      }
-
-      void api_t::garbage_collect ()
-      {
-        lock_type lock (m_mutex);
-        m_garbage_segments.clear();
-      }
-
-      gpi::pc::type::segment_id_t api_t::add_memory (const std::string & url)
-      {
-        gpi::pc::proto::message_t const rply;
-          (communicate (gpi::pc::proto::segment::message_t
-                        (gpi::pc::proto::segment::add_memory_t (url)))
-          );
-        try
-        {
-          return boost::get<gpi::pc::proto::segment::register_reply_t>
-            (boost::get<gpi::pc::proto::segment::message_t>(rply)).id;
-        }
-        catch (boost::bad_get const &)
-        {
-          throw
-            std::runtime_error (boost::get<proto::error::error_t>(rply).detail);
-        }
-      }
-
-      void api_t::del_memory (gpi::pc::type::segment_id_t id)
-      {
-        proto::error::error_t const result
-          ( boost::get<proto::error::error_t>
-            ( communicate
-              ( gpi::pc::proto::segment::message_t
-                (proto::segment::del_memory_t (id))
-              )
-            )
-          );
-
-        if (result.code != proto::error::success)
-        {
-          throw std::runtime_error (result.detail);
-        }
-      }
-
-      gpi::pc::type::info::descriptor_t api_t::collect_info () const
-      {
-        return m_info;
       }
     }
   }

@@ -3,6 +3,8 @@
 #include <drts/drts.hpp>
 #include <drts/virtual_memory.hpp>
 
+#include <drts/private/scoped_allocation.hpp>
+
 #include <we/type/value/poke.hpp>
 
 #include <fhg/util/make_unique.hpp>
@@ -26,7 +28,6 @@ namespace gspc
       , std::string const& description
       )
     {
-      // taken from bin/gpish
       gpi::pc::type::segment_id_t const segment_id (1);
 
       gpi::pc::type::handle_id_t handle_id
@@ -93,6 +94,29 @@ namespace gspc
           (drts->_virtual_memory_api, size, description)
         )
   {}
+  vmem_allocation::vmem_allocation ( scoped_runtime_system const* const drts
+                                   , unsigned long size
+                                   , std::string const& description
+                                   , char const* const data
+                                   )
+    : vmem_allocation (drts, size, description)
+  {
+    scoped_allocation const buffer
+      (drts->_virtual_memory_api, "vmem_allocation_buffer", size);
+
+    char* const content
+      (static_cast<char* const> (drts->_virtual_memory_api->ptr (buffer)));
+    std::copy (data, data + size, content);
+
+    drts->_virtual_memory_api->wait
+      ( drts->_virtual_memory_api->memcpy
+        ( {_->_handle_id, 0}
+        , {buffer, 0}
+        , size
+        , GPI_PC_INVAL
+        )
+      );
+  }
   vmem_allocation::~vmem_allocation()
   {}
   std::string const vmem_allocation::handle() const
