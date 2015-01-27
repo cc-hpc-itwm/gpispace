@@ -3,31 +3,35 @@
 #ifndef SHARE_EXAMPLE_STREAM_TEST_HPP
 #define SHARE_EXAMPLE_STREAM_TEST_HPP
 
-#include <share/example/stream/producer.hpp>
-
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/stream.hpp>
 #include <drts/virtual_memory.hpp>
 
 #include <test/make.hpp>
-#include <test/scoped_nodefile_with_localhost.hpp>
+#include <test/scoped_nodefile_from_environment.hpp>
 #include <test/scoped_state_directory.hpp>
 #include <test/shared_directory.hpp>
 #include <test/source_directory.hpp>
+#include <test/virtual_memory_socket_name_for_localhost.hpp>
 
 #include <we/type/value.hpp>
+#include <we/type/value/peek.hpp>
 
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <fhg/util/boost/test/printer/set.hpp>
+#include <fhg/util/macros.hpp>
 #include <fhg/util/read_file.hpp>
-#include <fhg/util/temporary_file.hpp>
 #include <fhg/util/temporary_path.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/test/unit_test.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 #include <chrono>
 #include <functional>
+#include <set>
 #include <string>
 #include <thread>
 
@@ -38,6 +42,7 @@ namespace share_example_stream_test
     ( std::string const& workflow_name
     , std::function<std::string (unsigned long size_slot)> const& topology
     , std::chrono::duration<R, P> const& sleep_after_produce
+    , double IFDEF_NDEBUG (allowed_average_round_trip_time)
     )
   {
     namespace validators = fhg::util::boost::program_options;
@@ -80,7 +85,7 @@ namespace share_example_stream_test
       (test::shared_directory (vm) / ("share_example_stream" + workflow_name));
 
     test::scoped_state_directory const state_directory (shared_directory, vm);
-    test::scoped_nodefile_with_localhost const nodefile_with_localhost
+    test::scoped_nodefile_from_environment const nodefile_from_environment
       (shared_directory, vm);
 
     fhg::util::temporary_path const _installation_dir
@@ -88,20 +93,9 @@ namespace share_example_stream_test
     boost::filesystem::path const installation_dir (_installation_dir);
 
     gspc::set_application_search_path (vm, installation_dir);
-
-    boost::filesystem::path const virtual_memory_socket
-      ( boost::filesystem::temp_directory_path()
-      / boost::filesystem::unique_path()
-      );
-
-    gspc::set_virtual_memory_socket (vm, virtual_memory_socket);
+    test::set_virtual_memory_socket_name_for_localhost (vm);
 
     vm.notify();
-
-    fhg::util::temporary_file const temporary_file
-      (shared_directory / boost::filesystem::unique_path());
-
-    boost::filesystem::path const log_file (temporary_file);
 
     gspc::installation const installation (vm);
 
@@ -115,20 +109,18 @@ namespace share_example_stream_test
       , "net lib install"
       );
 
-    unsigned long const num_slots
+    gspc::stream::number_of_slots const num_slots
       (vm[option_num_slots].as<validators::positive_integral<unsigned long>>());
-    unsigned long const size_slot
+    gspc::stream::size_of_slot const size_slot
       (vm[option_size_slot].as<validators::positive_integral<unsigned long>>());
 
-    unsigned long const size (num_slots * size_slot);
+    unsigned long const size (num_slots * (size_slot + 1));
 
     gspc::scoped_runtime_system const drts
       (vm, installation, topology (size_slot));
 
     gspc::vmem_allocation const allocation_buffer
       (drts.alloc (size, workflow_name + "_buffer"));
-    gspc::vmem_allocation const allocation_meta
-      (drts.alloc (num_slots, workflow_name + "_meta"));
     gspc::client client (drts);
 
     gspc::workflow workflow
@@ -136,24 +128,27 @@ namespace share_example_stream_test
 
     workflow.set_wait_for_output();
 
-    sdpa::job_id_t const job_id
-      (client.submit (workflow, {{"log_file", log_file.string()}}));
+    unsigned long const rounds (20 * num_slots);
 
-    stream::producer producer ( drts.virtual_memory_api()
-                              , allocation_buffer
-                              , allocation_meta
-                              , num_slots
-                              , size_slot
-                              , &client
-                              , job_id
-                              , "work_package"
-                              );
+    gspc::job_id_t const job_id
+      (client.submit (workflow, {{"rounds", rounds}}));
+
+    gspc::stream stream
+      (drts.create_stream ( "stream_test"
+                          , allocation_buffer
+                          , size_slot
+                          , [&client, &job_id] (pnet::type::value::value_type const& value) -> void
+                            {
+                              client.put_token (job_id, "work_package", value);
+                            }
+                          )
+      );
 
     std::chrono::high_resolution_clock clock;
 
-    std::ostringstream expected_output;
+    std::set<std::string> expected_output;
 
-    for (unsigned long id (0); id < 20 * num_slots; ++id)
+    for (unsigned long id (0); id < rounds; ++id)
     {
       std::chrono::high_resolution_clock::rep const now
         ( std::chrono::duration_cast<std::chrono::microseconds>
@@ -162,9 +157,9 @@ namespace share_example_stream_test
 
       std::string const data ((boost::format ("%1% %2%") % id % now).str());
 
-      expected_output << data << std::endl;
+      expected_output.emplace (data);
 
-      producer.produce (data);
+      stream.write (data);
 
       std::this_thread::sleep_for (sleep_after_produce);
     }
@@ -175,9 +170,39 @@ namespace share_example_stream_test
       (client.wait_and_extract (job_id));
 
     BOOST_REQUIRE_EQUAL (result.count ("done"), 1);
+    BOOST_REQUIRE_EQUAL (result.count ("statistic"), 1);
+    BOOST_REQUIRE_EQUAL (result.count ("packages"), rounds);
 
-    BOOST_REQUIRE_EQUAL
-      (expected_output.str(), fhg::util::read_file (log_file));
+#ifdef NDEBUG
+    {
+      pnet::type::value::value_type const& statistic
+        (result.find ("statistic")->second);
+
+      BOOST_REQUIRE (!!pnet::type::value::peek ("count", statistic));
+      BOOST_REQUIRE_EQUAL
+        ( boost::get<unsigned long>
+          (*pnet::type::value::peek ("count", statistic)) + 1UL
+        , rounds
+        );
+
+      BOOST_REQUIRE (!!pnet::type::value::peek ("sum", statistic));
+      BOOST_REQUIRE_LE
+        ( boost::get<double> (*pnet::type::value::peek ("sum", statistic))
+        , rounds * allowed_average_round_trip_time
+        );
+    }
+#endif
+
+    std::set<std::string> output;
+
+    for ( pnet::type::value::value_type const& package
+        : result.equal_range ("packages") | boost::adaptors::map_values
+        )
+    {
+      output.emplace (boost::get<std::string> (package));
+    }
+
+    BOOST_REQUIRE_EQUAL (expected_output, output);
   }
 }
 

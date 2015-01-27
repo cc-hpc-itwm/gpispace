@@ -50,7 +50,7 @@ EOF
 on_ctrlC()
 {
         echo >&2 "Canceled..."
-        "${sdpa}" -s "${state_dir}" stop
+        rexec "${master}" "${sdpa}" -s "${state_dir}" stop
         exit 0
 }
 
@@ -87,14 +87,15 @@ assert_not_empty()
     fi
 }
 
+rexec_ssh_opts="-q -x -T -n -C -4 -o CheckHostIP=no -o StrictHostKeyChecking=no"
+
 # helper function to execute something remotely
 function rexec ()
 {
     local node="$1"; shift
     local err
     local rc
-    local ssh_opts="-q -x -T -n -C -4 -c arcfour,blowfish-cbc -o CheckHostIP=no -o StrictHostKeyChecking=no"
-    local cmd="ssh $ssh_opts $node /usr/bin/env LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\" $@"
+    local cmd="ssh ${rexec_ssh_opts} $node /usr/bin/env LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\" $@"
     err=$($cmd </dev/null 2>&1)
     rc=$?
     if [ $rc -ne 0 ] ; then
@@ -106,6 +107,30 @@ function rexec ()
         fi
         return 0
     fi
+}
+
+function rexec_with_startup_messages()
+{
+  local node="${1}"; shift
+  local target_var="${1}"; shift
+  # todo: use local filesystem on remote host, not shared
+  local command="ssh ${rexec_ssh_opts} ${node} \
+    /usr/bin/env LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\" \
+      ${sdpa_home}/bin/start-and-fork \
+       --end-sentinel-value OKAY \
+       --startup-messages-pipe-option --startup-messages-pipe \
+       \
+       ${@}"
+
+  local startup_messages_raw=$(${command})
+  local ec=${?}
+
+  local old_IFS=${IFS}
+  IFS=$'\n'
+  eval "${target_var}=(${startup_messages_raw})"
+  IFS=${old_IFS}
+
+  return ${ec}
 }
 
 parse_capability()
@@ -183,38 +208,6 @@ function wait_for_port_on_host ()
     return 1
 }
 
-function wait_for_process ()
-{
-    local retries="${1}"; shift
-    local name="${1}"; shift
-    local kvs_host="${1}"; shift
-    local kvs_port="${1}"; shift
-
-    local host_port=()
-
-    until [ $retries -eq 0 ]
-    do
-        host_port=( $("${sdpa_home}/bin/fhgkvsc" --host "${kvs_host}" --port "${kvs_port}" -g p2p.peer | grep -B 2 "$name" | head -n 2 | awk '{print $3}') )
-        if [ ${#host_port[@]} -eq 2 ]
-        then
-            if wait_for_port_on_host ${retries} "${host_port[0]}" "${host_port[1]}"
-            then
-                return 0
-            else
-                return 2
-            fi
-        else
-            sleep 1
-            retries=$((retries - 1))
-        fi
-    done
-
-    return 1
-}
-
-# Execute function on_ctrlC() receiving SIGINT signal
-#
-trap 'on_ctrlC' SIGINT
 
 nodefile=
 verbose=false
@@ -419,13 +412,24 @@ then
     fi
 fi
 
-info "using nodefile: $nodefile"
-
 mkdir -p "${state_dir}" || {
     error 2 "could not 'mkdir -p \"${state_dir}\"'"
 }
 mkdir -p "${state_dir}/log" || {
     error 2 "could not 'mkdir -p \"${state_dir}/log\"'"
+}
+processes_dir="${state_dir}/processes"
+mkdir -p "${processes_dir}" || {
+    error 2 "could not 'mkdir -p \"${processes_dir}\"'"
+}
+if [ $(find "${processes_dir}" -noleaf -name "*.pid" | wc -l) -ne 0 ]
+then
+    warn "there are still pid files in \"${processes_dir}\", please make sure that the previous drts is stopped."
+    info "to stop the old one: run \"${sdpa_home}/bin/sdpa -s \"${state_dir}\" stop\""
+    error 2 "state directory is not clean"
+fi
+mkdir -p "${processes_dir}/${master}" || {
+    error 2 "could not 'mkdir -p \"${processes_dir}/${master}\"'"
 }
 cp "${nodefile}" "${state_dir}/nodefile" || {
     error 2 "could not 'cp ${nodefile} ${state_dir}/nodefile'"
@@ -435,6 +439,11 @@ if $delete_logfiles ; then
     find "${state_dir}/log" -type f -delete
 fi
 
+# Execute function on_ctrlC() receiving SIGINT signal
+#
+trap 'on_ctrlC' SIGINT
+
+info "using nodefile: $nodefile"
 log "starting base sdpa components on $master..."
 info "sending log events to: ${log_url}"
 info "sending execution events to: ${gui_url}"
@@ -446,46 +455,33 @@ else
     opt_verbose_flag=""
 fi
 
-rexec "${master}" ${sdpa} -s "${state_dir}" start kvs
-ec=$?
-if [ $ec -ne 0 ]
-then
-    "${sdpa}" -s "${state_dir}" stop
-    error 3 "could not start kvs"
-fi
-
-kvs_host=$(cat "${state_dir}/kvs.host")
-kvs_port=$(cat "${state_dir}/kvs.port")
-
-if ! wait_for_port_on_host ${network_retries} "${kvs_host}" "${kvs_port}"
-then
-    "${sdpa}" -s "${state_dir}" stop
-    error 3 "could not start kvs: failed to appear at ${kvs_host}:${kvs_port} after ${network_retries} seconds"
-fi
-
-rexec $master /usr/bin/env \
-    FHGLOG_to_server="${log_host}:${log_port}" \
-    FHGLOG_level=$($verbose && echo "TRACE" || echo "INFO") \
-    FHGLOG_to_file="${state_dir}/log/orchestrator.log" \
-    "${sdpa_home}/bin/orchestrator" \
-    --pidfile "$state_dir/orchestrator.pid" \
-    --daemonize \
-    --kvs-host="${kvs_host}" \
-    --kvs-port="${kvs_port}" \
-    -u '0' \
-    -n "orchestrator"
-ec=$?
-if [ $ec -ne 0 ]
-then
-    "${sdpa}" -s "${state_dir}" stop
+rexec_with_startup_messages ${master} orchestrator_startup_messages \
+  --command "${sdpa_home}/bin/orchestrator" \
+  --arguments -u '0' \
+  --arguments -n "orchestrator" \
+  --environment FHGLOG_to_server="${log_host}:${log_port}" \
+  --environment FHGLOG_level=$($verbose && echo TRACE || echo INFO) \
+  --environment FHGLOG_to_file="${state_dir}/log/orchestrator.log"
+if [ ${?} -ne 0 ] ; then
+    rexec "${master}" "${sdpa}" -s "${state_dir}" stop
     error 3 "could not start orchestrator"
 fi
+if [ ${#orchestrator_startup_messages[@]} != 5 ]; then
+  rexec "${master}" "${sdpa}" -s "${state_dir}" stop
+  error 3 "could not start orchestrator: expected 5 lines of startup messages"
+fi
+echo ${orchestrator_startup_messages[0]} > "${processes_dir}/${master}/orchestrator.pid"
+echo -n ${orchestrator_startup_messages[1]} > "${state_dir}/orchestrator.host"
+echo -n ${orchestrator_startup_messages[2]} > "${state_dir}/orchestrator.port"
+echo ${orchestrator_startup_messages[3]} > "${state_dir}/orchestrator.rpc.host"
+echo ${orchestrator_startup_messages[4]} > "${state_dir}/orchestrator.rpc.port"
 
-wait_for_process ${network_retries} "orchestrator" "${kvs_host}" "${kvs_port}"
+wait_for_port_on_host ${network_retries} \
+  "${orchestrator_startup_messages[1]}" "${orchestrator_startup_messages[2]}"
 ec=$?
 if [ $ec -ne 0 ]
 then
-    "${sdpa}" -s "${state_dir}" stop
+    rexec "${master}" "${sdpa}" -s "${state_dir}" stop
     if [ $ec -eq 1 ]
     then
         error 3 "could not start orchestrator, failed to appear after ${network_retries} seconds"
@@ -504,38 +500,57 @@ if $gpi_enabled ; then
     info "using VMEM mem: ${gpi_mem} bytes per node"
     info "starting VMEM on: '${gpi_socket}' with a timeout of $((vmem_startup_timeout)) seconds"
 
-    vmem_pid=$("${sdpa_home}/bin/vmem" \
-        --nodefile "${nodefile}" \
-        --state-directory "${state_dir}" \
-        --gspc-home "${sdpa_home}" \
-        --kvs-host "${kvs_host}" --kvs-port "${kvs_port}" \
-        --log-host "${log_host}" --log-port "${log_port}" \
-        --gui-host "${gui_host}" --gui-port "${gui_port}" \
-        --virtual-memory-port ${vmem_port} \
-        --virtual-memory-socket "${gpi_socket}" \
-        --virtual-memory-per-node "${gpi_mem}" \
-        --virtual-memory-startup-timeout ${vmem_startup_timeout} 2>&1)
-    ec=$?
-    if [ $ec -ne 0 ]
+    startup_messages_raw=$(${SDPA_HOME}/bin/start-and-fork \
+      --end-sentinel-value OKAY \
+      --startup-messages-pipe-option --startup-messages-pipe \
+      \
+      --command "${sdpa_home}/bin/vmem" \
+      --arguments --nodefile "${nodefile}" \
+      --arguments --state-directory "${state_dir}" \
+      --arguments --gspc-home "${sdpa_home}" \
+      --arguments --log-host "${log_host}" \
+      --arguments --log-port "${log_port}" \
+      --arguments --gui-host "${gui_host}" \
+      --arguments --gui-port "${gui_port}" \
+      --arguments --virtual-memory-port ${vmem_port} \
+      --arguments --virtual-memory-socket "${gpi_socket}" \
+      --arguments --virtual-memory-per-node "${gpi_mem}" \
+      --arguments --virtual-memory-startup-timeout ${vmem_startup_timeout} \
+    )
+    ec=${?}
+
+    old_IFS=${IFS}
+    IFS=$'\n'
+    startup_messages=(${startup_messages_raw})
+    IFS=${old_IFS}
+
+    if [ ${ec} -ne 0 ]
     then
-        "${sdpa}" -s "${state_dir}" stop
-        error 3 "could not start vmem: ${vmem_pid}"
-    else
-        echo "${vmem_pid}" > "$state_dir/vmem.pid"
+        rexec "${master}" "${sdpa}" -s "${state_dir}" stop
+        error 3 "could not start vmem"
     fi
+
+    if [ ${#startup_messages[@]} != 1 ]; then
+      error 3 "could not start vmem: expected 1 lines of startup messages"
+    fi
+
+    vmem_pid=${startup_messages[0]}
+    echo "${vmem_pid}" > "${processes_dir}/${master}/vmem.pid"
 
     for host in $(sort -u "${nodefile}")
     do
       echo -n "I: Checking for virtual memory socket on '${host}' "
-      ssh "${host}" "for ((i=0; i < $((10 * ${time_to_wait_per_vmem_socket_in_seconds})); ++i)); do \
-                     if [ ! -e ${gpi_socket} ]; then \
-                       echo -n .; \
-                       sleep 0.1; \
-                     else \
-                       exit 0;
-                     fi \
-                   done; \
-                   exit 1"
+      ssh "${host}" "/usr/bin/env bash -c \"\
+          for ((i=0; i < $((10 * ${time_to_wait_per_vmem_socket_in_seconds})); ++i)); do \
+            if [ ! -e ${gpi_socket} ]; then \
+              echo -n .; \
+              sleep 0.1; \
+             else \
+               exit 0;
+            fi \
+          done; \
+          exit 1 \
+          \""
       if [ ${?} -ne 0 ]
       then
         echo "FAILED"
@@ -611,47 +626,60 @@ function start_agent
 
     info "starting agent: ${name} on host ${host} with parent ${parent}"
 
-    rexec ${host} /usr/bin/env \
-        FHGLOG_to_server="${log_host}:${log_port}" \
-        FHGLOG_level=$($verbose && echo "TRACE" || echo "INFO") \
-        FHGLOG_to_file="${state_dir}/log/$name.log" \
-        "${sdpa_home}/bin/agent" \
-        --pidfile "$state_dir/${name}.pid" \
-        --daemonize \
-        --kvs-host="${kvs_host}" \
-        --kvs-port="${kvs_port}" \
-        $(if $gpi_enabled ; then echo --vmem-socket="${gpi_socket}" ; fi) \
-        -u '0' \
-        -a "${gui_host}:${gui_port}" \
-        -m "${parent}" \
-        -n "${name}" &
-    pids+=( $! )
+    mkdir -p "${processes_dir}/${host}" || {
+        error 3 "could not mkdir -p \"${processes_dir}/${host}\"!"
+    }
+    local agent_startup_messages=()
+
+    rexec_with_startup_messages ${host} agent_startup_messages \
+      --command "${sdpa_home}/bin/agent" \
+      --arguments -u '0' \
+      --arguments -n "${name}" \
+      --arguments -m "${parent}" \
+      --arguments -a "${gui_host}:${gui_port}" \
+      $(if $gpi_enabled; then echo --arguments --vmem-socket "${gpi_socket}" ; fi) \
+      --environment FHGLOG_to_server="${log_host}:${log_port}" \
+      --environment FHGLOG_level=$($verbose && echo TRACE || echo INFO) \
+      --environment FHGLOG_to_file="${state_dir}/log/$name.log"
+    if [ ${?} -ne 0 ] ; then
+      rexec "${master}" "${sdpa}" -s "${state_dir}" stop
+      error 3 "could not start agent ${name}"
+    fi
+    if [ ${#agent_startup_messages[@]} != 3 ]; then
+      rexec "${master}" "${sdpa}" -s "${state_dir}" stop
+      error 1 "could not start agent ${name}: expected 3 lines of startup messages"
+    fi
+    echo ${agent_startup_messages[0]} > "${processes_dir}/${host}/${name}.pid"
+    echo -n ${agent_startup_messages[1]} > "${state_dir}/${name}.host"
+    echo -n ${agent_startup_messages[2]} > "${state_dir}/${name}.port"
 }
 
 function start_agents
 {
-    start_agent ${master} "agent-${master}-0" "orchestrator"
-    ec=$?
+    start_agent ${master} "agent-${master}-0" \
+      "orchestrator%${orchestrator_startup_messages[1]}%${orchestrator_startup_messages[2]}" &
+    pids+=( $! )
 
-    if [ ${#segment_master[@]} -eq 1 ] ; then
-        return $ec
-    fi
-
-    local i=
-    for ((i = 0 ; i < ${#segment_master[@]} ; ++i)) ; do
+    if [ ! ${#segment_master[@]} -eq 1 ] ; then
+      local i=
+      for ((i = 0 ; i < ${#segment_master[@]} ; ++i)) ; do
         host_idx=${segment_host_index[$i]}
         host=${hosts[${host_idx}]}
         name="agent-${host}-1"
+        parent="agent-${master}-0"
 
-        start_agent "${host}" "${name}" "agent-${master}-0"
+        start_agent "${host}" "${name}" \
+          "${parent}%$(cat "${state_dir}/${parent}.host")%$(cat "${state_dir}/${parent}.port")" &
+        pids+=( $! )
         wait_if_necessary
         ec=$?
         if [ $ec -ne 0 ]
         then
-            "${sdpa}" -s "${state_dir}" stop
+            rexec "${master}" "${sdpa}" -s "${state_dir}" stop
             error 3 "at least one agent could not be started!"
         fi
-    done
+      done
+    fi
 }
 
 function start_workers_for_capability
@@ -674,7 +702,8 @@ function start_workers_for_capability
     num_nodes=0
     caps_arg=$(echo "$capability" | tr '+' '\n' | xargs -n1 echo '-C')
 
-    parent=${segment_master[$segment]}
+    parent_name=${segment_master[$segment]}
+    parent="${parent_name}%$(cat "${state_dir}/${parent_name}.host")%$(cat "${state_dir}/${parent_name}.port")"
     group_start=${segment_host_index[$segment]}
     group_size=${segment_size[$segment]}
     group_end=$((group_start + group_size))
@@ -686,12 +715,9 @@ function start_workers_for_capability
         local name="${capability/[+#.]/_}"
 
         argv=($opt_verbose_flag)
-        argv+=(-D)
         argv+=(-c $num_per_node)
         argv+=(-n "$name")
         argv+=(-m "$parent")
-        argv+=(-k "${kvs_host}")
-        argv+=(-K "${kvs_port}")
         argv+=(-g "${gui_host}:${gui_port}")
         argv+=(-l "${log_host}:${log_port}")
         argv+=($caps_arg)
@@ -717,7 +743,7 @@ function start_workers_for_capability
         ec=$?
         if [ $ec -ne 0 ]
         then
-            "${sdpa}" -s "${state_dir}" stop
+            rexec "${master}" "${sdpa}" -s "${state_dir}" stop
             error 3 "at least one worker could not be started!"
         fi
 
@@ -752,7 +778,7 @@ wait_on_pids
 ec=$?
 if [ $ec -ne 0 ]
 then
-    "${sdpa}" -s "${state_dir}" stop
+    rexec "${master}" "${sdpa}" -s "${state_dir}" stop
     error 3 "at least one agent could not be started!"
 fi
 
@@ -761,6 +787,6 @@ wait_on_pids
 ec=$?
 if [ $ec -ne 0 ]
 then
-    "${sdpa}" -s "${state_dir}" stop
+    rexec "${master}" "${sdpa}" -s "${state_dir}" stop
     error 3 "at least one worker could not be started!"
 fi

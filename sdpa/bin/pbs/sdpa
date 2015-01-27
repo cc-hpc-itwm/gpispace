@@ -1,10 +1,10 @@
 #!/bin/bash
 #
-# usage: sdpa {start|stop|status|submit file}
+# usage: sdpa {boot|stop|submit file}
 #
 
-kvs_host=
-kvs_port=
+orchestrator_host=
+orchestrator_port=
 
 function log ()
 {
@@ -85,7 +85,7 @@ function rexec ()
     local node="$1"; shift
     local err
     local rc
-    local ssh_opts="-q -x -T -n -C -4 -c arcfour,blowfish-cbc -o CheckHostIP=no -o StrictHostKeyChecking=no"
+    local ssh_opts="-q -x -T -n -C -4 -o CheckHostIP=no -o StrictHostKeyChecking=no"
     local cmd="ssh $ssh_opts $node $@"
     debug $cmd
     err=$($cmd 2>&1)
@@ -107,369 +107,82 @@ function help ()
 usage: `basename $0` command [parameters...]
 
    available commands:
-     selftest       - perform a self-test
+        selftest - perform a self-test
+            boot - boot the runtime system
+            stop - stop components
+                     optional arguments: component [host...]
+                     terminates the component on the given hosts or all
+                     components: drts agent orchestrator vmem
+             gui - start the GUI
 
-  start [component] - start all components or "component"
-   stop [component] - stop all components or "component"
- status [component] - get the current status of component
-                gui - start the GUI
-             bundle - bundle an application and its libraries
-
-      submit <file> - submit a job
- cancel [job-id...] - cancel the given job or the current job
-     unload-modules - unload modules in the process containers
+   submit <file> - submit a job
 
 EOF
                       return 0
 }
 
-function is_proc_alive ()
+function terminate_processes_on_host()
 {
-    local name="$1" ; shift
-    local pid="$1" ; shift
+    local type="${1}"; shift
+    local host="${1}"; shift
+    local pids="${@}"; shift
 
-    if [ -z "$name" ] ; then
-        echo "E: usage: is_proc_alive <binary> <pid>" >&2
-        exit 42
+    if [ -n "${pids}" ]
+    then
+        log "terminating ${type} on ${host}: ${pids}"
+        rexec "${host}" kill -TERM "${pids}"
     fi
+}
 
-    if [ -z "$pid" ] ; then
-        return 1
+function terminate_all_processes_of_a_kind()
+{
+    local kind="${1}"; shift
+    local hosts=(${@})
+    if [ ${#hosts[@]} -eq 0 ]
+    then
+        hosts=($(find "${state_dir}/processes" -maxdepth 1 -mindepth 1 | xargs -r -n 1 basename))
     fi
-
-    if ps --pid "${pid}" -o comm= | grep -q "$name" ; then
-        if kill -0 "$pid" >/dev/null 2>&1 ; then
-            return 0
-        else
-            echo "E: $name: there seems to be an alien around!" >&2
-            echo "E:       cannot send signal to $pid" >&2
-            return 2 # not allowed to send signals!
+    processes_dir="${state_dir}/processes"
+    local background_jobs=()
+    for host in ${hosts[@]}
+    do
+        local pids=($(find "${state_dir}/processes/${host}" -name "${kind}*.pid" | xargs -r sed -e '$s/$/\n/'))
+        terminate_processes_on_host "${kind}" "${host}" ${pids[@]} &
+        # this shouldn't be neccesary when pidfile_writer deletes pid files
+        find "${state_dir}/processes/${host}" -name "${kind}*.pid" -delete
+        background_jobs+=($!)
+        if [ ${#background_jobs[@]} -ge 16 ]
+        then
+            wait ${background_jobs[@]}
+            background_jobs=()
         fi
-    else
-        return 1 # not there
+    done
+    if [ ${#background_jobs[@]} -gt 0 ]
+    then
+        wait ${background_jobs[@]}
+        background_jobs=()
     fi
-}
-
-function start_proc ()
-{
-    local name="$1" ; shift
-    local binary="$1" ; shift
-
-    # check for old one
-    local pid_file="$state_dir/$name.pid"
-    local log_file="$state_dir/log/$name.log"
-    local pid=$( cat "$pid_file" 2>/dev/null )
-    if ! is_proc_alive "$name" "$pid" ; then
-        :> "$pid_file"
-        debug $binary "$@"
-        $binary "$@" </dev/null >"$log_file" 2>&1
-        for (( i = 0 ; i < 6 ; ++i )) ; do
-            sleep 0.5
-            pid=$( cat "$pid_file" 2>/dev/null )
-            if [ -n "$pid" ] ; then
-                if is_proc_alive "$name" "$pid" ; then
-                    echo "+ $name ($pid)" >&2
-                    return 0
-                fi
-            fi
-        done
-        echo "- $name (dead), check '$log_file' for more - here are the last 3 lines:"
-        tail -n 3 "$log_file" >&2
-        return 1
-    fi
-    return 0
-}
-
-function stop_proc ()
-{
-    local name="$1" ; shift
-    local binary="$1" ; shift
-
-    local pid_file="$state_dir/$name.pid"
-    local pid=$( cat "$pid_file" 2>/dev/null )
-    if [ -n "$pid" ] ; then
-        echo -n "    sending SIGTERM to $name ($pid)" >&2
-        for (( i=0; i<3; ++i )); do
-            if is_proc_alive "$binary" "$pid" ; then
-                echo -n "." >&2
-                kill -TERM "$pid" >/dev/null 2>&1
-                sleep 1
-            else
-                echo "ok" >&2
-                break
-            fi
-        done
-    fi
-
-    if is_proc_alive "$binary" "$pid" ; then
-        kill -KILL "$pid" >/dev/null 2>&1
-        echo "killed" >&2
-    else
-        pkill "$binary" >/dev/null 2>&1
-        return 0
-    fi
-}
-
-function stop_agent_on_node ()
-{
-    local node="${1}" ; shift
-    local rc=0
-    local err=""
-
-    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/stop-agent" 2>&1)
-    rc=$?
-
-    if [ $rc -ne 0 -a $rc -ne 2 ] ; then
-        echo >&2 "stop-agent on node '$node' failed: $rc: $err"
-    fi
-
-    return $rc
+    find "${state_dir}/processes" -mindepth 1 -type d -empty -delete
 }
 
 function stop_agent ()
 {
-    echo "agent (all nodes)" >&2
-    node_loop stop_agent_on_node $@
-    ec=$?
-    if [ $ec -ne 0 ] ; then
-        return $ec
-    fi
+    terminate_all_processes_of_a_kind "agent" "$@"
 }
 
-function status_agent ()
+function stop_orchestrator ()
 {
-    local name="$1" ; shift
+    rm -f "${state_dir}/orchestrator.host"
+    rm -f "${state_dir}/orchestrator.port"
+    rm -f "${state_dir}/orchestrator.rpc.host"
+    rm -f "${state_dir}/orchestrator.rpc.port"
 
-    local node=$(get_master_node)
-    local cmd="rexec $node $SDPA_SCRIPT_DIR/status-agent -n $name-$node"
-    debug $cmd
-    $cmd </dev/null >/dev/null 2>&1
-}
-
-function start_kvs ()
-{
-    if ! start_proc "fhgkvsd" "$SDPA_HOME/bin/fhgkvsd" --bind "0" --port '*' "--pidfile" "$state_dir/fhgkvsd.pid" "--daemonize" > "${state_dir}/kvs.port"; then
-        log "E: could not start kvs, giving up!"
-        return 1
-    fi
-    local kvs_host=$(hostname -f)
-    local kvs_port=$(cat "${state_dir}/log/fhgkvsd.log")
-    echo -n "${kvs_host}" > "${state_dir}/kvs.host"
-    echo -n "${kvs_port}" > "${state_dir}/kvs.port"
-    log "I: kvs started at ${kvs_host}:${kvs_port}"
-    return 0
-}
-
-function stop_kvs ()
-{
-    echo "fhgkvsd"
-
-    rm -f "${state_dir}/kvs.host"
-    rm -f "${state_dir}/kvs.port"
-
-    if ! stop_proc "fhgkvsd" "fhgkvsd" ; then
-        echo "E: could not stop kvs!" >&2
-        return 1
-    fi
-}
-
-function stop_orch ()
-{
-    echo "orchestrator"
-    if ! stop_proc "orchestrator" "orchestrator" ; then
-        echo "E: could not stop orchestrator" >&2
-        return 1
-    fi
-}
-
-function stop_agg ()
-{
-    if ! stop_agent ; then
-        echo "E: could not stop agent" >&2
-        return 1
-    fi
-}
-
-function node_loop ()
-{
-    if [ ! -r "${state_dir}/nodefile" ] ; then
-        echo "Cannot read nodefile: ${state_dir}/nodefile" >&2
-        return 1
-    fi
-
-    local body="$1" ; shift
-
-    nodes=$(uniq "${state_dir}/nodefile")
-
-    local rc=0
-    local bunch_size=16
-    local count=0
-    local procs=
-    local node=
-    local p
-    echo -n "   " >&2
-    for node in $nodes; do
-        count=$(( count + 1 ))
-
-        debug " ++++ executing $body $@ on $node" >&2
-
-        echo -n " $node" >&2
-
-        $body $node $@ &
-
-        procs="$procs $!"
-        if [ $count -ge $bunch_size ] ; then
-            for p in $procs ; do
-                wait $p
-                rc=$(( rc + $? ))
-            done
-            procs=
-            count=0
-            echo
-            echo -n "   " >&2
-        fi
-    done
-    for p in $procs ; do
-        wait $p
-        rc=$(( rc + $? ))
-    done
-    echo >&2
-    return $rc
+    terminate_all_processes_of_a_kind "orchestrator" "$@"
 }
 
 function stop_drts ()
 {
-    local node=
-    local ident=
-
-    argv="$@"
-    OPTIND=1
-    while getopts ":hN:i:" opt $argv; do
-        case $opt in
-            h)
-                echo "usage: drts: [-h] [-N node [-i identity]" >&2
-                return 0
-                ;;
-            N)
-                node=$OPTARG
-                shift 2
-                ;;
-            i)
-                ident=$OPTARG
-                shift 2
-                ;;
-            \?)
-                ;;
-        esac
-    done
-
-    if [ -z "$node" ] ; then
-        echo "process container (all nodes)" >&2
-        node_loop stop_drts_on_node $@
-        ec=$?
-        if [ $ec -ne 0 ] ; then
-            return $ec
-        fi
-    else
-        if [ -z "$ident" ] ; then
-            echo "process container $node" >&2
-            stop_drts_on_node "$node" $@
-            ec=$?
-            return $ec
-        else
-            echo "process container $node-$ident" >&2
-            stop_drts_on_node "$node" -i "$ident" $@
-            ec=$?
-            return $ec
-        fi
-    fi
-}
-
-function status_drts ()
-{
-    local node=
-    local ident=
-
-    argv="$@"
-    OPTIND=1
-    while getopts ":hN:i:" opt $argv; do
-        case $opt in
-            h)
-                echo "usage: drts: [-h] [-N node [-i identity]" >&2
-                return 0
-                ;;
-            N)
-                node=$OPTARG
-                shift 2
-                ;;
-            i)
-                ident=$OPTARG
-                shift 2
-                ;;
-            \?)
-                ;;
-        esac
-    done
-
-    if [ -z "$node" ] ; then
-        echo "process container (all nodes)" >&2
-        node_loop status_drts_on_node $@
-        ec=$?
-        if [ $ec -ne 0 ] ; then
-            echo "$err"
-            return $ec
-        fi
-    else
-        if [ -z "$ident" ] ; then
-            echo -n "process container $node" >&2
-            status_drts_on_node "$node" $@
-            ec=$?
-            if [ $ec -eq 0 ] ; then
-                echo " ok" >&2
-            else
-                echo " dead" >&2
-            fi
-            return $ec
-        else
-            echo "process container $node-$ident" >&2
-            status_drts_on_node "$node" -i "$ident" $@
-            ec=$?
-            if [ $ec -eq 0 ] ; then
-                echo " ok" >&2
-            else
-                echo " dead" >&2
-            fi
-            return $ec
-        fi
-    fi
-}
-
-function stop_drts_on_node ()
-{
-    local node=$1 ; shift
-    local err
-    local ec
-    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/stop-drts" $@)
-    ec=$?
-    if [ $ec -ne 0 ] ; then
-        log "W: stop-drts on node $node failed: $ec: $err"
-    fi
-    return $ec
-}
-
-function status_drts_on_node ()
-{
-    local node=$1 ; shift
-    local err
-    local ec
-    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/status-drts" -s "$@" 2>&1)
-    ec=$?
-    if [ $ec -ne 0 ] ; then
-        if [ -n "$err" ] ; then
-            log "W: status-drts on node $node failed: $ec: $err"
-        fi
-    fi
-    return $ec
+    terminate_all_processes_of_a_kind "drts-kernel" "$@"
 }
 
 function start_gui ()
@@ -491,101 +204,24 @@ function start_gui ()
 
 function stop_vmem ()
 {
-    log "vmem"
-    if ! stop_proc "vmem" "vmem" ; then
-        log "E: could not stop vmem"
-        return 1
-    else
-        return 0
-    fi
-}
-
-function start ()
-{
-    local part=$1; shift
-    if [ -z "$part" ] ; then
-        echo >&2 "start: requires a component to start: kvs"
-        return 1
-    fi
-
-    start_${part} $@
-    rc=$?
-
-    if [ $rc -ne 0 ] ; then
-        log "Start of $part failed!"
-    fi
-
-    return $rc
+    terminate_all_processes_of_a_kind "vmem" "$@"
 }
 
 function stop ()
 {
-    local parts="drts agg orch vmem kvs"
-
-    local p
-    local rc=0
-    for p in $parts ; do
-        if ! stop_$p $@ ; then
-            rc=$(( rc + 1 ))
-        fi
-    done
-    return $rc
-}
-
-function status_orch ()
-{
-    is_proc_alive "orchestrator" $(cat "$state_dir/orchestrator.pid" 2>/dev/null)
-}
-
-function status_agg ()
-{
-    status_agent "agent-$(get_master_node)-0"
-}
-
-function status_kvs ()
-{
-    is_proc_alive "fhgkvsd" $(cat "$state_dir/fhgkvsd.pid" 2>/dev/null)
-}
-
-function status_vmem ()
-{
-    is_proc_alive "vmem" $(cat "$state_dir/vmem.pid" 2>/dev/null)
-}
-
-function status ()
-{
-    local parts=$1
-    if [ -z "$parts" ] ; then
-        parts="kvs orch agg vmem drts"
+    local parts=()
+    if [ -n "${1}" ]
+    then
+        parts=("$1"); shift
     else
-        shift
+        parts=(drts agent orchestrator vmem)
     fi
 
-    # check system status
-    local rc=0
     local p
-    local err
-    for p in $parts ; do
-        local cmd
-        cmd="status_$p"
-        if type "$cmd" >/dev/null 2>&1 ; then
-            err=$(status_$p $@)
-            ec=$?
-            if [ $ec -eq 0 ] ; then
-                :
-#               log "$p is alive"
-            elif [ $ec -eq 23 ] ; then
-                log "$p is deactivated"
-            else
-                if [ -z "$err" ] ; then
-                    log "$p is dead"
-                else
-                    log "$p is dead: $err"
-                fi
-                rc=$(( rc + 1 ))
-            fi
-        else
-            sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} status $p
+    local rc=0
+    for p in ${parts[@]} ; do
+        if ! stop_$p $@ ; then
+            rc=$(( rc + 1 ))
         fi
     done
     return $rc
@@ -607,15 +243,15 @@ function submit ()
     fi
 
     log "I: submitting file: $net"
-    jobid=$( sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} submit "$net" 2>&1 )
+    jobid=$( sdpac --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} submit "$net" 2>&1 )
     if [ $? -ne 0 ] ; then
         log "E: submission failed: $jobid"
         return 4
     else
         log "  + job ($jobid)"
         echo "$jobid" > "$state_dir/current_job"
-        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} wait "$jobid"
-        s=$(sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} status "${jobid}")
+        sdpac --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} wait "$jobid"
+        s=$(sdpac --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} status "${jobid}")
         log "    $jobid -> $s"
         s=$(echo "$s" | tr 'A-Z' 'a-z')
         case "$s" in
@@ -632,20 +268,11 @@ function submit ()
                 log "W: unknown state: $s"
                 ;;
         esac
-        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} -o "$output" --force results "$jobid"
-        sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} delete "${jobid}"
+        sdpac --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} -o "$output" --force results "$jobid"
+        sdpac --orchestrator-host ${orchestrator_host} --orchestrator-port ${orchestrator_port} delete "${jobid}"
         if [ $? -eq 0 ] ; then
             echo "  - job ($jobid)"
         fi
-    fi
-}
-
-function get_master_node()
-{
-    if test -r "$state_dir/nodefile" ; then
-        head -n 1 "$state_dir/nodefile"
-    else
-        return 1
     fi
 }
 
@@ -677,19 +304,13 @@ if [ "$1" = "-s" ] ; then
     export SDPA_STATE_DIR="$state_dir"
 fi
 
-if [ -f "${state_dir}/kvs.host" ]
+if [ -f "${state_dir}/orchestrator.host" ]
 then
-  kvs_host=$(cat "${state_dir}/kvs.host")
+  orchestrator_host=$(cat "${state_dir}/orchestrator.host")
 fi
-if [ -f "${state_dir}/kvs.port" ]
+if [ -f "${state_dir}/orchestrator.port" ]
 then
-  kvs_port=$(cat "${state_dir}/kvs.port")
-fi
-
-if [ "$1" = "gui" ] ; then
-    shift
-    start_gui $@
-    exit $?
+  orchestrator_port=$(cat "${state_dir}/orchestrator.port")
 fi
 
 function sigterm()
@@ -699,17 +320,9 @@ function sigterm()
 trap sigterm TERM
 
 case "$1" in
-    start)
-        shift
-        start $@
-        ;;
     stop)
         shift
         stop $@
-        ;;
-    status)
-        shift
-        status $@
         ;;
     submit)
         shift
@@ -721,10 +334,6 @@ case "$1" in
     gui)
         shift
         start_gui $@
-        ;;
-    bundle)
-        shift
-        "${SDPA_SCRIPT_DIR}/bundle.sh" "$@"
         ;;
     boot)
         shift

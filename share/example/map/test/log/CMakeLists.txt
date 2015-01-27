@@ -10,8 +10,6 @@ add_library (log_map-impl SHARED
 include_directories (${UTIL_INCLUDE_DIR})
 include_directories (${CMAKE_SOURCE_DIR})
 
-get_target_property (location_log_map-impl log_map-impl LOCATION)
-
 math (EXPR size_communication_buffer "8 * 4 << 20")
 
 math (EXPR size_input 50)
@@ -31,7 +29,7 @@ fhg_add_test (test.cpp
        --virtual-memory-per-node ${size_virtual_memory}
        --virtual-memory-startup-timeout 60
        --virtual-memory-port 10820
-       --implementation "${location_log_map-impl}"
+       --implementation "$<TARGET_FILE:log_map-impl>"
        --size-input ${size_input}
        --size-output ${size_output}
        --size-block ${size_block}
@@ -43,6 +41,6 @@ fhg_add_test (test.cpp
                  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARIES}
   DEPENDS log_map-impl
-  RESOURCE_LOCK starts_drts_environment
+  RESOURCE_LOCK requires_virtual_memory
   REQUIRES_INSTALLATION
 )

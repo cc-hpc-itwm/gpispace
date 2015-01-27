@@ -8,10 +8,11 @@
 #include <drts/virtual_memory.hpp>
 
 #include <test/make.hpp>
-#include <test/scoped_nodefile_with_localhost.hpp>
+#include <test/scoped_nodefile_from_environment.hpp>
 #include <test/scoped_state_directory.hpp>
 #include <test/shared_directory.hpp>
 #include <test/source_directory.hpp>
+#include <test/virtual_memory_socket_name_for_localhost.hpp>
 
 #include <we/type/bytearray.hpp>
 #include <we/type/literal/control.hpp>
@@ -94,7 +95,7 @@ BOOST_AUTO_TEST_CASE (share_example_map_log)
     (test::shared_directory (vm) / "share_example_map_log");
 
   test::scoped_state_directory const state_directory (shared_directory, vm);
-  test::scoped_nodefile_with_localhost const nodefile_with_localhost
+  test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
 
   fhg::util::temporary_path const _installation_dir
@@ -102,10 +103,7 @@ BOOST_AUTO_TEST_CASE (share_example_map_log)
   boost::filesystem::path const installation_dir (_installation_dir);
 
   gspc::set_application_search_path (vm, installation_dir);
-  gspc::set_virtual_memory_socket ( vm
-                                  , boost::filesystem::temp_directory_path()
-                                  / boost::filesystem::unique_path()
-                                  );
+  test::set_virtual_memory_socket_name_for_localhost (vm);
 
   vm.notify();
 

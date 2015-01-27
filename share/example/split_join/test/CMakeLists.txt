@@ -22,7 +22,6 @@ foreach (SPLIT_VERSION ${SPLIT_JOIN_SPLIT_VERSIONS})
                    ${UTIL_LIBRARIES}
                    ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                    ${Boost_FILESYSTEM_LIBRARIES}
-    RESOURCE_LOCK starts_drts_environment
     REQUIRES_INSTALLATION
   )
 endforeach()
@@ -48,7 +47,6 @@ foreach (SPLIT_VERSION ${SPLIT_JOIN_SPLIT_VERSIONS})
                    ${UTIL_LIBRARIES}
                    ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                    ${Boost_FILESYSTEM_LIBRARIES}
-    RESOURCE_LOCK starts_drts_environment
     REQUIRES_INSTALLATION
   )
 endforeach()

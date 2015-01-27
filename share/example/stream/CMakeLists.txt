@@ -4,8 +4,6 @@ include_directories ("${CMAKE_SOURCE_DIR}")
 include_directories ("${UTIL_INCLUDE_DIR}")
 include_directories ("${FVM_INCLUDE_DIR}")
 
-add_library (producer producer.cpp)
-
 math (EXPR size_communication_buffer "8 * 4 << 20")
 
 math (EXPR size_slot "2 << 10")
@@ -27,11 +25,10 @@ fhg_add_test (stream.two_module_calls.cpp
        --size-slot ${size_slot}
   LINK_LIBRARIES gspc
                  test-utilities
-                 producer
                  ${UTIL_LIBRARIES}
                  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARIES}
-  RESOURCE_LOCK starts_drts_environment
+  RESOURCE_LOCK requires_virtual_memory
   REQUIRES_INSTALLATION
 )
 
@@ -48,10 +45,9 @@ fhg_add_test (stream.one_module_call.cpp
        --size-slot ${size_slot}
   LINK_LIBRARIES gspc
                  test-utilities
-                 producer
                  ${UTIL_LIBRARIES}
                  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARIES}
-  RESOURCE_LOCK starts_drts_environment
+  RESOURCE_LOCK requires_virtual_memory
   REQUIRES_INSTALLATION
 )

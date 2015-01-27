@@ -47,3 +47,12 @@ fhg_add_test (read_file.cpp
   PROJECT fhg_util
   LINK_LIBRARIES fhg-util
 )
+
+include_directories (${CMAKE_SOURCE_DIR})
+
+fhg_add_test (read_lines.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhg_util
+  ARGS --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
+  LINK_LIBRARIES gspc fhg-util test-utilities
+)

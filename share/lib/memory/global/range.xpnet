@@ -1,0 +1,9 @@
+<structs>
+  <include-structs href="memory/global/handle.xpnet"/>
+
+  <struct name="global_memory_range">
+    <field name="handle" type="global_memory_handle_type"/>
+    <field name="offset" type="unsigned long"/>
+    <field name="size" type="unsigned long"/>
+  </struct>
+</structs>

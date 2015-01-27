@@ -7,9 +7,6 @@ set (srcs
   peer.cpp
   connection.cpp
 
-  tcp_server.cpp
-  tcp_client.cpp
-
   header.cpp
 )
 

@@ -6,15 +6,17 @@
 
 #include <fhglog/LogMacros.hpp>
 
+#include <fhg/util/boost/asio/ip/address.hpp>
+
+#include <boost/iostreams/device/file_descriptor.hpp>
+#include <boost/iostreams/stream.hpp>
 #include <boost/program_options.hpp>
 
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <we/layer.hpp>
 #include <boost/filesystem/path.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
+#include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
-#include <fhg/util/daemonize.hpp>
-#include <fhg/util/pidfile_writer.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
@@ -41,9 +43,7 @@ int main (int argc, char **argv)
   std::string agentName;
   std::string agentUrl;
   std::vector<std::string> arrMasterNames;
-  std::string arrMasterUrls;
   std::string appGuiUrl;
-  std::string pidfile;
   boost::optional<bfs::path> vmem_socket;
 
   boost::asio::io_service remote_log_io_service;
@@ -54,16 +54,15 @@ int main (int argc, char **argv)
     ("help,h", "Display this message")
     ("name,n", po::value<std::string>(&agentName)->default_value("agent"), "Agent's logical name")
     ("url,u",  po::value<std::string>(&agentUrl)->default_value("localhost"), "Agent's url")
-    //("orch_name,m",  po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
-    ("master,m", po::value<std::vector<std::string>>(&arrMasterNames)->multitoken(), "Agent's master list")
+    ("master,m", po::value<std::vector<std::string>>(&arrMasterNames)->multitoken(), "Agent's master list, of format 'name%host%port'")
     ("app_gui_url,a", po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
-    ("kvs-host",  po::value<std::string>()->required(), "The kvs daemon's host")
-    ("kvs-port",  po::value<std::string>()->required(), "The kvs daemon's port")
-    ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
-    ("daemonize", "daemonize after all checks were successful")
     ( option_name::vmem_socket
     , boost::program_options::value<validators::nonempty_string>()
     , "socket file to communicate with the virtual memory manager"
+    )
+    ( "startup-messages-pipe"
+    , po::value<int>()->required()
+    , "pipe filedescriptor to use for communication during startup (ports used, ...)"
     )
     ;
 
@@ -86,57 +85,32 @@ int main (int argc, char **argv)
     vmem_socket = bfs::path (vm[option_name::vmem_socket].as<validators::nonempty_string>());
   }
 
-  if( arrMasterNames.empty() )
-    arrMasterNames.push_back("orchestrator"); // default master name
-
-  sdpa::master_info_list_t listMasterInfo;
-
-  if (not pidfile.empty())
+  std::vector<std::tuple<std::string, fhg::com::host_t, fhg::com::port_t>> masters;
+  for (std::string const& name_host_port : arrMasterNames)
   {
-    fhg::util::pidfile_writer const pidfile_writer (pidfile);
+    boost::tokenizer<boost::char_separator<char>> const tok
+      (name_host_port, boost::char_separator<char> ("%"));
 
-    if (vm.count ("daemonize"))
+    std::vector<std::string> const parts (tok.begin(), tok.end());
+
+    if (parts.size() != 3)
     {
-      fhg::util::fork_and_daemonize_child_and_abandon_parent
-        ({&remote_log_io_service});
+      throw std::runtime_error
+        ("invalid master information: has to be of format 'name%host%port'");
     }
 
-    pidfile_writer.write();
-  }
-  else
-  {
-    if (vm.count ("daemonize"))
-    {
-      fhg::util::fork_and_daemonize_child_and_abandon_parent
-        ({&remote_log_io_service});
-    }
-  }
-
-  {
-    std::stringstream startup_message;
-    startup_message << "Starting agent '" << agentName
-                    << "' at '" << agentUrl
-                    << "', having masters: ";
-
-    for (const std::string& master : arrMasterNames)
-    {
-      startup_message << master << ", ";
-      listMasterInfo.push_back (sdpa::MasterInfo (master));
-    }
+    masters.emplace_back
+      (parts[0], fhg::com::host_t (parts[1]), fhg::com::port_t (parts[2]));
   }
 
   boost::asio::io_service gui_io_service;
   boost::asio::io_service peer_io_service;
-  boost::asio::io_service kvs_client_io_service;
   const sdpa::daemon::Agent agent
     ( agentName
     , agentUrl
     , peer_io_service
-    , kvs_client_io_service
-    , vm["kvs-host"].as<std::string>()
-    , vm["kvs-port"].as<std::string>()
     , vmem_socket
-    , listMasterInfo
+    , masters
     , std::pair<std::string, boost::asio::io_service&> (appGuiUrl, gui_io_service)
     );
 
@@ -151,6 +125,17 @@ int main (int argc, char **argv)
   signal_handlers.add (SIGTERM, std::bind (request_stop));
   signal_handlers.add (SIGINT, std::bind (request_stop));
 
+  {
+    boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
+      startup_messages_pipe ( vm["startup-messages-pipe"].as<int>()
+                            , boost::iostreams::close_handle
+                            );
+    startup_messages_pipe << fhg::util::connectable_to_address_string
+                               (agent.peer_local_endpoint().address())
+                          << "\n";
+    startup_messages_pipe << agent.peer_local_endpoint().port() << "\n";
+    startup_messages_pipe << "OKAY\n";
+  }
 
   stop_requested.wait();
 }

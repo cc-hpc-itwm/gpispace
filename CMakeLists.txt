@@ -13,6 +13,8 @@ if (SHARED_DIRECTORY_FOR_TESTS STREQUAL ${required_string_option_sentinel_value}
   message (FATAL_ERROR "required variable SHARED_DIRECTORY_FOR_TESTS not set")
 endif()
 
+configure_file ("${CMAKE_SOURCE_DIR}/CTestCustom.cmake" "${CMAKE_BINARY_DIR}/CTestCustom.cmake" COPYONLY)
+
 execute_process (
   COMMAND git rev-parse HEAD
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -35,6 +37,7 @@ set (CMAKE_MODULE_PATH
   "$ENV{CMAKE_MODULE_PATH}"
 )
 
+include (fhg_executable_macros)
 include (fhg_test_macros)
 
 include (CompilerFlags)
@@ -66,6 +69,7 @@ endif()
 find_package (Boost 1.55 REQUIRED QUIET COMPONENTS
   date_time
   filesystem
+  iostreams
   program_options
   random
   regex

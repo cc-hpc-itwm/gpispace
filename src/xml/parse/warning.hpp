@@ -631,6 +631,14 @@ namespace xml
       private:
         const id::ref::function _function;
       };
+
+      class struct_redefined : public generic
+      {
+      public:
+        struct_redefined ( const type::structure_type& early
+                         , const type::structure_type& late
+                         );
+      };
     }
   }
 }

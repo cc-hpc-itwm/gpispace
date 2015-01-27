@@ -30,8 +30,12 @@ namespace gspc
     ~vmem_allocation();
 
     std::string const handle() const;
+    std::size_t size() const;
 
     pnet::type::value::value_type global_memory_range() const;
+    pnet::type::value::value_type global_memory_range ( std::size_t const offset
+                                                      , std::size_t const size
+                                                      ) const;
 
     vmem_allocation (vmem_allocation const&) = delete;
     vmem_allocation& operator= (vmem_allocation const&) = delete;

@@ -62,7 +62,7 @@ namespace process
         fhg::syscall::close (err.write);
       }
 
-      const int maximum_open_files (sysconf (_SC_OPEN_MAX));
+      const long maximum_open_files (fhg::syscall::sysconf (_SC_OPEN_MAX));
       for (int i (0); i < maximum_open_files; ++i)
       {
         if ( i != sync_pc.read && i != sync_cp.write

@@ -5,8 +5,9 @@
 
 #include <drts/drts.fwd.hpp>
 
-#include <drts/client.fwd.hpp>
+#include <drts/information_to_reattach.fwd.hpp>
 #include <drts/virtual_memory.fwd.hpp>
+#include <drts/stream.hpp>
 
 #include <we/type/value.hpp>
 
@@ -15,6 +16,7 @@
 #include <boost/program_options.hpp>
 
 #include <chrono>
+#include <functional>
 #include <list>
 #include <map>
 #include <memory>
@@ -83,6 +85,12 @@ namespace gspc
       return _virtual_memory_api;
     }
 
+    stream create_stream ( std::string const& name
+                         , gspc::vmem_allocation const& buffer
+                         , gspc::stream::size_of_slot const&
+                         , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
+                         ) const;
+
     scoped_runtime_system (scoped_runtime_system const&) = delete;
     scoped_runtime_system& operator= (scoped_runtime_system const&) = delete;
     scoped_runtime_system (scoped_runtime_system&&) = delete;
@@ -90,7 +98,7 @@ namespace gspc
 
   private:
     friend class vmem_allocation;
-    friend class client;
+    friend class information_to_reattach;
 
     installation const _installation;
     boost::filesystem::path const _state_directory;
@@ -102,55 +110,16 @@ namespace gspc
       _nodes_and_number_of_unique_nodes;
     std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
 
-    std::string _kvs_host;
-    unsigned short _kvs_port;
+    std::string _orchestrator_host;
+    unsigned short _orchestrator_port;
   };
-
-  void set_gspc_home ( boost::program_options::variables_map&
-                     , boost::filesystem::path const&
-                     );
-  void set_state_directory ( boost::program_options::variables_map&
-                           , boost::filesystem::path const&
-                           );
-  void set_nodefile ( boost::program_options::variables_map&
-                    , boost::filesystem::path const&
-                    );
-  boost::filesystem::path get_nodefile (boost::program_options::variables_map const&);
-  void set_virtual_memory_per_node ( boost::program_options::variables_map&
-                                   , unsigned long
-                                   );
-  unsigned long get_virtual_memory_per_node (boost::program_options::variables_map const&);
-  unsigned short get_virtual_memory_port (boost::program_options::variables_map const&);
-  unsigned long get_virtual_memory_startup_timeout (boost::program_options::variables_map const&);
-  void set_virtual_memory_socket ( boost::program_options::variables_map&
-                                 , boost::filesystem::path const&
-                                 );
-  boost::filesystem::path
-  get_not_yet_existing_virtual_memory_socket (boost::program_options::variables_map const&);
 
   void set_application_search_path ( boost::program_options::variables_map&
                                    , boost::filesystem::path const&
                                    );
-  void set_log_host ( boost::program_options::variables_map&
-                    , std::string const&
-                    );
-  std::string get_log_host (boost::program_options::variables_map const&);
-  void set_log_level ( boost::program_options::variables_map&
-                     , std::string const&
+  void set_gspc_home ( boost::program_options::variables_map&
+                     , boost::filesystem::path const&
                      );
-  std::string get_log_level (boost::program_options::variables_map const&);
-  void set_gui_host ( boost::program_options::variables_map&
-                    , std::string const&
-                    );
-  std::string get_gui_host (boost::program_options::variables_map const&);
-  void set_log_port ( boost::program_options::variables_map&
-                    , unsigned short
-                    );
-  unsigned short get_log_port (boost::program_options::variables_map const&);
-  void set_gui_port ( boost::program_options::variables_map&
-                    , unsigned short
-                    );
-  unsigned short get_gui_port (boost::program_options::variables_map const&);
 }
 
 #endif

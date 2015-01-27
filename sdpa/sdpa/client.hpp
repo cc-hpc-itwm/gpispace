@@ -46,10 +46,9 @@ namespace sdpa
     class Client : boost::noncopyable
     {
     public:
-      Client ( std::string orchestrator
+      Client ( fhg::com::host_t const& orchestrator_host
+             , fhg::com::port_t const& orchestrator_port
              , boost::asio::io_service& peer_io_service
-             , boost::asio::io_service& kvs_client_io_service
-             , std::string kvs_host, std::string kvs_port
              );
       ~Client();
 
@@ -67,25 +66,18 @@ namespace sdpa
       sdpa::status::code wait_for_terminal_state_polling (job_id_t, job_info_t&);
 
     private:
-      std::string _name;
-
       fhg::thread::queue<sdpa::events::SDPAEvent::Ptr> m_incoming_events;
-
-      // config variables
-      std::string orchestrator_;
-
-      fhg::com::message_t message_for_event (const sdpa::events::SDPAEvent*);
 
       template<typename Expected, typename Sent>
         Expected send_and_wait_for_reply (Sent event);
 
-      void handle_recv (boost::system::error_code const & ec, boost::optional<std::string> source_name);
+      void handle_recv (boost::system::error_code const & ec, boost::optional<fhg::com::p2p::address_t>);
 
-      fhg::com::kvs::kvsc_ptr_t _kvs_client;
       fhg::com::peer_t m_peer;
       fhg::com::message_t m_message;
       boost::strict_scoped_thread<> _peer_thread;
       bool _stopping;
+      fhg::com::p2p::address_t _drts_entrypoint_address;
     };
   }
 }

@@ -63,15 +63,9 @@ namespace gpi
                                             )
                              > fold_t;
 
-        static port_t const & any_port ();
-        static host_t const & any_addr ();
-
-        topology_t ( boost::asio::io_service& peer_io_service
-                   , const fhg::com::host_t & host
-                   , const fhg::com::port_t & port
-                   , memory::manager_t& memory_manager
-                   , fhg::com::kvs::kvsc_ptr_t kvs_client
+        topology_t ( memory::manager_t& memory_manager
                    , api::gpi_api_t&
+                   , boost::shared_ptr<fhg::com::peer_t> const&
                    );
         ~topology_t ();
 
@@ -99,10 +93,8 @@ namespace gpi
         virtual int del_memory (const gpi::pc::type::segment_id_t seg_id) override;
       private:
         void cast (const gpi::rank_t rnk, const std::string & data);
-        void cast (const gpi::rank_t rnk, const char *data, const std::size_t len);
 
         void broadcast(const std::string & data);
-        void broadcast(const char *data, const std::size_t len);
 
         rank_result_t
         all_reduce ( std::string const & req
@@ -135,21 +127,22 @@ namespace gpi
           {}
 
           gpi::rank_t rank;
-          std::string name;
+          fhg::com::p2p::address_t address;
           time_t      last_signal;
           std::size_t error_counter;
         };
 
+        gpi::rank_t find_rank (fhg::com::p2p::address_t) const;
+
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
         typedef boost::condition_variable_any condition_type;
-        typedef boost::shared_ptr<boost::thread> thread_ptr;
         typedef boost::shared_ptr<fhg::com::peer_t> peer_ptr;
         typedef std::map<gpi::rank_t, child_t> child_map_t;
         typedef std::list<rank_result_t> result_list_t;
 
         void message_received ( boost::system::error_code const &
-                              , boost::optional<std::string> source_name
+                              , boost::optional<fhg::com::p2p::address_t>
                               , memory::manager_t&
                               );
         void message_sent ( child_t & child
@@ -157,12 +150,11 @@ namespace gpi
                           , boost::system::error_code const &
                           );
 
-        void handle_message ( const gpi::rank_t rank
+        void handle_message ( fhg::com::p2p::address_t const&
                             , const std::string &
                             , memory::manager_t&
                             );
-        void handle_error ( const gpi::rank_t rank
-                          );
+        void handle_error (fhg::com::p2p::address_t const&);
 
         /**
          * Cast a single message to a given rank.
@@ -170,6 +162,7 @@ namespace gpi
          * @param to the rank to cast the message to
          */
         void cast (child_t const &, const std::string &data);
+        void cast (fhg::com::p2p::address_t const&, std::string const& data);
 
         result_list_t request (const std::string &data);
 
@@ -181,9 +174,7 @@ namespace gpi
 
         bool m_shutting_down;
         gpi::rank_t m_rank;
-        fhg::com::kvs::kvsc_ptr_t _kvs_client;
         peer_ptr   m_peer;
-        thread_ptr m_peer_thread;
         child_map_t m_children;
         fhg::com::message_t m_incoming_msg;
 

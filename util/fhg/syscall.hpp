@@ -46,6 +46,7 @@ namespace fhg
     sighandler_t signal (int signum, sighandler_t handler);
     int socket (int domain, int type, int protocol);
     void stat (const char* path, struct stat* buf);
+    long sysconf (int name);
     void unlink (const char* pathname);
     pid_t wait (pid_t pid, int* status, int options, struct rusage* rusage);
     pid_t waitpid (pid_t pid, int* status, int options);

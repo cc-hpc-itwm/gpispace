@@ -7,7 +7,7 @@
 #include <drts/drts.hpp>
 
 #include <test/make.hpp>
-#include <test/scoped_nodefile_with_localhost.hpp>
+#include <test/scoped_nodefile_from_environment.hpp>
 #include <test/scoped_state_directory.hpp>
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
@@ -65,10 +65,12 @@ BOOST_AUTO_TEST_CASE (share_example_split_join)
     );
 
   fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "share_example_split_join");
+    ( test::shared_directory (vm)
+    / boost::filesystem::unique_path ("share_example_split_join-%%%%-%%%%-%%%%-%%%%")
+    );
 
   test::scoped_state_directory const state_directory (shared_directory, vm);
-  test::scoped_nodefile_with_localhost const nodefile_with_localhost
+  test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
 
   vm.notify();

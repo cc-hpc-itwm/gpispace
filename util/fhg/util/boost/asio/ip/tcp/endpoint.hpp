@@ -1,6 +1,10 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
+#ifndef FHG_UTIL_BOOST_ASIO_IP_TCP_ENDPOINT_HPP
+#define FHG_UTIL_BOOST_ASIO_IP_TCP_ENDPOINT_HPP
+
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/functional/hash.hpp>
 #include <boost/serialization/split_free.hpp>
 
 #include <functional>
@@ -49,8 +53,12 @@ namespace std
 
     result_type operator() (argument_type const& endpoint) const
     {
-      //! \todo actual hashing
-      return 0;
+      size_t seed (0);
+      boost::hash_combine (seed, endpoint.address().to_string());
+      boost::hash_combine (seed, endpoint.port());
+      return seed;
     }
   };
 }
+
+#endif

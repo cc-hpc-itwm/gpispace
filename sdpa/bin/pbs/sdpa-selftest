@@ -128,20 +128,22 @@ if [ $ec -ne 0 ] ; then
 fi
 
 # todo: remove magic: specify filenames instead of relying on files?
-kvs_host=$(cat "${state_dir}/kvs.host")
-kvs_port=$(cat "${state_dir}/kvs.port")
+orchestrator_host=$(cat "${state_dir}/orchestrator.host")
+orchestrator_port=$(cat "${state_dir}/orchestrator.port")
+SDPACFLAGS=(--orchestrator-host "${orchestrator_host}" \
+            --orchestrator-port ${orchestrator_port})
 
 expected_response="sdpa.response.$challenge"
 
 log_info "++ submitting job..."
-job_id=$(sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} submit "${builddir}/selftest.pnet.put")
+job_id=$(sdpac ${SDPACFLAGS[@]} submit "${builddir}/selftest.pnet.put")
 log_info "+++ job-id: $job_id"
 
 walltime=15
 log_info "++++ waiting at most $walltime seconds for job to return..."
 job_state=42
 for ((i=0 ; i < $walltime ; ++i)) ; do
-    job_status=$(sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} status "$job_id")
+    job_status=$(sdpac ${SDPACFLAGS[@]} status "$job_id")
     if echo "$job_status" | grep -q -i -e 'finished' ; then
         log_info "+++ job has finished"
         job_state=0
@@ -164,12 +166,12 @@ if [ "$job_state" -ne 0 ] ; then
 fi
 
 log_info "+++ retrieving results"
-if ! sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} --force -o "${builddir}/result.pnet" results "$job_id" 2>/dev/null ; then
+if ! sdpac ${SDPACFLAGS[@]} --force -o "${builddir}/result.pnet" results "$job_id" 2>/dev/null ; then
     log_error "++++ could not retrieve results"
     exit 6
 fi
 
-if ! sdpac --kvs-host "${kvs_host}" --kvs-port ${kvs_port} delete "$job_id" ; then
+if ! sdpac ${SDPACFLAGS[@]} delete "$job_id" ; then
     log_error "++++ could not delete job"
     exit 7
 fi

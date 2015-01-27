@@ -86,14 +86,15 @@ namespace
     {}
 
     virtual void handleDiscoverJobStatesEvent
-      (const sdpa::events::DiscoverJobStatesEvent* e) override
+      ( fhg::com::p2p::address_t const& source
+      , const sdpa::events::DiscoverJobStatesEvent* e
+      ) override
     {
       _network.perform
-        ( sdpa::events::SDPAEvent::Ptr
+        ( source
+        , sdpa::events::SDPAEvent::Ptr
           ( new sdpa::events::DiscoverJobStatesReplyEvent
-            ( _name
-            , e->from()
-            , e->discover_id()
+            ( e->discover_id()
             , sdpa::discovery_info_t
               (e->job_id(), reply, sdpa::discovery_info_set_t())
             )
@@ -126,8 +127,7 @@ namespace
   template<sdpa::status::code reply>
   void check_discover_worker_job_status()
   {
-    const utils::kvs_server kvs_server;
-    const utils::orchestrator orchestrator (kvs_server);
+    const utils::orchestrator orchestrator;
     const utils::agent agent (orchestrator);
 
     fhg::util::thread::event<std::string> job_submitted;
@@ -168,8 +168,7 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status)
 
 BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 {
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
 
   BOOST_REQUIRE_EQUAL
     ( utils::client (orchestrator)
@@ -180,8 +179,7 @@ BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 {
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
 
   utils::client client (orchestrator);
 
@@ -193,8 +191,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
 {
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
   const utils::agent agent (orchestrator);
 
   utils::client client (orchestrator);
@@ -234,8 +231,7 @@ namespace
 
   void verify_child_count_in_agent_chain (const std::size_t num_agents)
   {
-    const utils::kvs_server kvs_server;
-    const utils::orchestrator orchestrator (kvs_server);
+    const utils::orchestrator orchestrator;
     boost::ptr_list<utils::agent> agents;
     agents.push_back (new utils::agent (orchestrator));
 

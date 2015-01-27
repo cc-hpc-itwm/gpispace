@@ -4,6 +4,7 @@
 #include <fhg/util/now.hpp>
 #include <iostream>
 #include <algorithm>
+#include <numeric>
 
 namespace sdpa
 {
@@ -34,12 +35,24 @@ namespace sdpa
     bool Worker::has_job( const job_id_t& job_id )
     {
       lock_type const _ (mtx_);
-      return submitted_.count (job_id) || acknowledged_.count (job_id);
+      return pending_.count (job_id)
+        || submitted_.count (job_id)
+        || acknowledged_.count (job_id);
+    }
+
+    void Worker::assign (const job_id_t& jobId)
+    {
+      lock_type const _ (mtx_);
+      pending_.insert (jobId);
     }
 
     void Worker::submit (const job_id_t& jobId)
     {
       lock_type const _ (mtx_);
+      if (!pending_.erase (jobId))
+      {
+        throw std::runtime_error ("subnmit: no pending job with the id " + jobId + " was found!");
+      }
       submitted_.insert (jobId);
       if (!children_allowed_)
       {
@@ -60,6 +73,7 @@ namespace sdpa
     void Worker::deleteJob(const job_id_t &job_id)
     {
       lock_type const _ (mtx_);
+      pending_.erase (job_id);
       submitted_.erase (job_id);
       acknowledged_.erase (job_id);
       free();
@@ -95,13 +109,15 @@ namespace sdpa
       return bModified;
     }
 
-    void Worker::removeCapabilities( const capabilities_set_t& cpbset )
+    bool Worker::removeCapabilities( const capabilities_set_t& cpbset )
     {
+      capabilities_set_t::size_type removed (0);
       lock_type const _ (mtx_);
       for (Capability const& capability : cpbset)
       {
-        capabilities_.erase (capability);
+        removed += capabilities_.erase (capability);
       }
+      return removed != 0;
     }
 
     bool Worker::hasCapability(const std::string& cpbName)
@@ -143,12 +159,50 @@ namespace sdpa
       lock_type const _ (mtx_);
       std::set<job_id_t> listAssignedJobs;
 
+      listAssignedJobs.insert (pending_.begin(), pending_.end());
       listAssignedJobs.insert (submitted_.begin(), submitted_.end());
       listAssignedJobs.insert (acknowledged_.begin(), acknowledged_.end());
+      pending_.clear();
       submitted_.clear();
       acknowledged_.clear();
 
       return listAssignedJobs;
+    }
+
+    double Worker::cost_assigned_jobs
+      (std::function<double (job_id_t job_id)> cost_reservation)
+    {
+      lock_type const _ (mtx_);
+      return ( std::accumulate ( pending_.begin()
+                               , pending_.end()
+                               , 0.0
+                               , [&cost_reservation] (double total_cost, job_id_t job_id)
+                                 {
+                                   return total_cost + cost_reservation (job_id);
+                                 }
+                               )
+             + std::accumulate ( submitted_.begin()
+                               , submitted_.end()
+                               , 0.0
+                               , [&cost_reservation] (double total_cost, job_id_t job_id)
+                                 {
+                                   return total_cost + cost_reservation (job_id);
+                                 }
+                               )
+             + std::accumulate ( acknowledged_.begin()
+                               , acknowledged_.end()
+                               , 0.0
+                               , [&cost_reservation] (double total_cost, job_id_t job_id)
+                                 {
+                                   return total_cost + cost_reservation (job_id);
+                                 }
+                               )
+             );
+    }
+
+    bool Worker::remove_job_if_pending (const job_id_t& job_id)
+    {
+      return pending_.erase (job_id);
     }
   }
 }

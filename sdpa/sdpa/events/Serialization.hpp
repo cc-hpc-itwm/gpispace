@@ -25,29 +25,27 @@
     (Archive& _ARCHIVE, TYPE* VARIABLE_NAME, const unsigned int)
 
 
-#define SAVE_SDPAEVENT_CONSTRUCT_DATA(EVENT_VARIABLE)   \
-  SAVE_TO_ARCHIVE (EVENT_VARIABLE->from());             \
-  SAVE_TO_ARCHIVE (EVENT_VARIABLE->to())
-
-#define LOAD_SDPAEVENT_CONSTRUCT_DATA(FROM_VAR_NAME, TO_VAR_NAME)        \
-  LOAD_FROM_ARCHIVE (sdpa::events::SDPAEvent::address_t, FROM_VAR_NAME); \
-  LOAD_FROM_ARCHIVE (sdpa::events::SDPAEvent::address_t, TO_VAR_NAME)
+#define SAVE_SDPAEVENT_CONSTRUCT_DATA(EVENT_VARIABLE) \
+  (void) _ARCHIVE;                                    \
+  (void) EVENT_VARIABLE
+#define LOAD_SDPAEVENT_CONSTRUCT_DATA()         \
+  (void) _ARCHIVE
 
 
 #define SAVE_JOBEVENT_CONSTRUCT_DATA(EVENT_VARIABLE)    \
   SAVE_SDPAEVENT_CONSTRUCT_DATA (EVENT_VARIABLE);       \
   SAVE_TO_ARCHIVE (EVENT_VARIABLE->job_id())
 
-#define LOAD_JOBEVENT_CONSTRUCT_DATA(FROM_VAR_NAME, TO_VAR_NAME, JOB_ID_VAR_NAME) \
-  LOAD_SDPAEVENT_CONSTRUCT_DATA (FROM_VAR_NAME, TO_VAR_NAME);           \
+#define LOAD_JOBEVENT_CONSTRUCT_DATA(JOB_ID_VAR_NAME)                \
+  LOAD_SDPAEVENT_CONSTRUCT_DATA();                                   \
   LOAD_FROM_ARCHIVE (sdpa::job_id_t, JOB_ID_VAR_NAME)
 
 
 #define SAVE_MGMTEVENT_CONSTRUCT_DATA(EVENT_VARIABLE) \
   SAVE_SDPAEVENT_CONSTRUCT_DATA (EVENT_VARIABLE)
 
-#define LOAD_MGMTEVENT_CONSTRUCT_DATA(FROM_VAR_NAME, TO_VAR_NAME) \
-  LOAD_SDPAEVENT_CONSTRUCT_DATA (FROM_VAR_NAME, TO_VAR_NAME)
+#define LOAD_MGMTEVENT_CONSTRUCT_DATA()         \
+  LOAD_SDPAEVENT_CONSTRUCT_DATA()
 
 
 #define CONSTRUCT_DATA_DEFS_FOR_EMPTY_JOBEVENT_OVERLOAD(TYPE) \
@@ -57,9 +55,9 @@
   }                                                           \
   LOAD_CONSTRUCT_DATA_DEF (TYPE, e)                           \
   {                                                           \
-    LOAD_JOBEVENT_CONSTRUCT_DATA (from, to, job_id);          \
+    LOAD_JOBEVENT_CONSTRUCT_DATA (job_id);                    \
                                                               \
-    ::new (e) TYPE (from, to, job_id);                        \
+    ::new (e) TYPE (job_id);                                  \
   }
 
 #define CONSTRUCT_DATA_DEFS_FOR_EMPTY_MGMTEVENT_OVERLOAD(TYPE) \
@@ -69,9 +67,9 @@
   }                                                            \
   LOAD_CONSTRUCT_DATA_DEF (TYPE, e)                            \
   {                                                            \
-    LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);                  \
+    LOAD_MGMTEVENT_CONSTRUCT_DATA();                           \
                                                                \
-    ::new (e) TYPE (from, to);                                 \
+    ::new (e) TYPE();                                          \
   }
 
 #include <boost/serialization/list.hpp>

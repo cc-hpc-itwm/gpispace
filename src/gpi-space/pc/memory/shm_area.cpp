@@ -253,6 +253,13 @@ namespace gpi
           ("get_specific_transfer_tasks not implemented on shm_area");
       }
 
+      double shm_area_t::get_transfer_costs ( const gpi::pc::type::memory_region_t&
+                                            , const gpi::rank_t
+                                            ) const
+      {
+        return 0.0;
+      }
+
       area_ptr_t shm_area_t::create
         (std::string const &url_s, handle_generator_t& handle_generator)
       {

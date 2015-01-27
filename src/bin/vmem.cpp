@@ -2,15 +2,16 @@
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
-#include <fhg/util/daemonize.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 
 #include <drts/drts.hpp>
-#include <drts/vmem.hpp>
-#include <drts/rif.hpp>
+#include <drts/private/vmem.hpp>
+#include <drts/private/rif.hpp>
 
 #include <boost/filesystem.hpp>
+#include <boost/iostreams/device/file_descriptor.hpp>
+#include <boost/iostreams/stream.hpp>
 #include <boost/program_options.hpp>
 
 #include <fstream>
@@ -27,8 +28,6 @@ namespace
   namespace option
   {
     constexpr const char* help {"help"};
-    constexpr const char* kvs_host {"kvs-host"};
-    constexpr const char* kvs_port {"kvs-port"};
   }
 
   std::pair<std::list<std::string>, unsigned long>
@@ -72,13 +71,9 @@ int main (int argc, char *argv[])
 
   generic_options.add_options()
     (option::help, "print usage information")
-    ( option::kvs_host
-    , boost::program_options::value<validators::nonempty_string>()->required()
-    , "kvs host to use"
-    )
-    ( option::kvs_port
-    , boost::program_options::value<validators::positive_integral<unsigned short>>()->required()
-    , "kvs port to use"
+    ( "startup-messages-pipe"
+    , boost::program_options::value<int>()->required()
+    , "pipe filedescriptor to use for communication during startup (ports used, ...)"
     )
     ;
 
@@ -117,16 +112,7 @@ int main (int argc, char *argv[])
                     , gspc::installation (vm)
                     , rif
                     , read_nodes (vm["nodefile"].as<validators::existing_path>())
-                    , vm[option::kvs_host].as<validators::nonempty_string>()
-                    , vm[option::kvs_port].as<validators::positive_integral<unsigned short>>()
                     );
-
-  boost::optional<pid_t> child (fhg::util::fork_and_daemonize_child());
-  if (child)
-  {
-    std::cout << *child << std::endl;
-    exit (EXIT_SUCCESS);
-  }
 
   fhg::util::thread::event<void> done;
 
@@ -145,6 +131,14 @@ int main (int argc, char *argv[])
           done.notify();
         });
     });
+
+  {
+    boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
+      startup_messages_pipe ( vm["startup-messages-pipe"].as<int>()
+                            , boost::iostreams::close_handle
+                            );
+    startup_messages_pipe << "OKAY\n";
+  }
 
   done.wait();
 

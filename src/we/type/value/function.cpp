@@ -390,6 +390,44 @@ namespace pnet
             default: throw exception::eval (_token, l, r);
             }
           }
+          value_type operator() (structured_type l, structured_type r) const
+          {
+            auto const traverse
+              ([this, &l, &r] (bool early) -> bool
+               {
+                 structured_type::const_iterator lpos (l.begin());
+                 structured_type::const_iterator rpos (r.begin());
+
+                 while (  lpos != l.end() && rpos!=r.end()
+                       && lpos->first == rpos->first
+                       )
+                 {
+                   if (  boost::apply_visitor
+                           (*this, lpos->second, rpos->second)
+                      == value_type (early)
+                      )
+                   {
+                     return early;
+                   }
+
+                   ++lpos; ++rpos;
+                 }
+                 if (lpos != l.end() || rpos != r.end())
+                 {
+                   throw exception::eval (_token, l, r);
+                 }
+
+                 return !early;
+               }
+              );
+
+            switch (_token)
+            {
+            case expr::token::ne: return traverse (true);
+            case expr::token::eq: return traverse (false);
+            default: throw exception::eval (_token, l, r);
+            }
+          }
           template<typename L, typename R>
             value_type operator() (const L& l, const R& r) const
           {

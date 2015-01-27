@@ -132,6 +132,7 @@ namespace xml
         ACCESS (Wvirtual_place_not_tunneled)
         ACCESS (Wduplicate_template_parameter)
         ACCESS (Wsynthesize_anonymous_function)
+        ACCESS (Wstruct_redefined)
 
         ACCESS (no_inline)
         ACCESS (synthesize_virtual_places)
@@ -172,6 +173,7 @@ namespace xml
         WARN (duplicate_template_parameter)
         WARN (struct_shadowed)
         WARN (synthesize_anonymous_function)
+        WARN (struct_redefined)
 
 #undef WARN
 
@@ -267,6 +269,7 @@ namespace xml
         bool _Wvirtual_place_not_tunneled;
         bool _Wduplicate_template_parameter;
         bool _Wsynthesize_anonymous_function;
+        bool _Wstruct_redefined;
 
         std::string _dump_xml_file;
         std::string _dump_dependencies;
@@ -322,6 +325,7 @@ namespace xml
         std::string _OWvirtual_place_not_tunneled;
         std::string _OWduplicate_template_parameter;
         std::string _OWsynthesize_anonymous_function;
+        std::string _OWstruct_redefined;
 
         std::string _Odump_xml_file;
         std::string _Odump_dependencies;

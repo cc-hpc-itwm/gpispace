@@ -1,6 +1,9 @@
 #ifndef FHG_COM_PEER_INFO_HPP
 #define FHG_COM_PEER_INFO_HPP 1
 
+#include <string>
+#include <stdexcept>
+
 namespace fhg
 {
   namespace com

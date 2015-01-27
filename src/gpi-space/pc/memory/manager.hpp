@@ -73,6 +73,7 @@ namespace gpi
         void remote_free(const gpi::pc::type::handle_t hdl);
         void free (const gpi::pc::type::handle_t hdl);
         gpi::pc::type::handle::descriptor_t info (const gpi::pc::type::handle_t hdl) const;
+        std::map<std::string, double> get_transfer_costs (const std::list<gpi::pc::type::memory_region_t>&) const;
 
         void garbage_collect () {}
         void garbage_collect (const gpi::pc::type::process_id_t);

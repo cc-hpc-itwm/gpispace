@@ -1,6 +1,8 @@
 set (srcs
   ../syscall.cpp
 
+  boost/asio/ip/address.cpp
+
   backtracing_exception.cpp
   daemonize.cpp
   signal_handler_manager.cpp
@@ -28,6 +30,7 @@ set (srcs
 
   xml.cpp
   read_file.cpp
+  read_lines.cpp
 
   hostname.cpp
 
