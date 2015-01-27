@@ -227,7 +227,7 @@ namespace xml
 
       bool function_type::has_parent() const
       {
-        return _parent;
+        return !!_parent;
       }
 
       void function_type::unparent()
@@ -481,12 +481,12 @@ namespace xml
 
       bool function_type::is_known_port_in (const std::string & name) const
       {
-        return get_port_in (name);
+        return !!get_port_in (name);
       }
 
       bool function_type::is_known_port_out (const std::string & name) const
       {
-        return get_port_out (name);
+        return !!get_port_out (name);
       }
 
       bool function_type::is_known_port (const std::string & name) const
@@ -1095,7 +1095,7 @@ namespace xml
           ( function_specialize
             ( map
             , get
-            , st::join (known_structs, st::make (structs), state)
+            , st::join (known_structs, st::make (structs, state), state)
             , state
             , *this
             )
@@ -1239,13 +1239,6 @@ namespace xml
           }
           stream << fhg::util::cpp::block::close (indent) << std::endl;
           stream << "WE_MOD_INITIALIZE_END (" << modname << ");" << std::endl;
-
-          stream << std::endl;
-          stream << "WE_MOD_FINALIZE_START (" << modname << ");";
-          stream << fhg::util::cpp::block::open (indent);
-          stream << fhg::util::cpp::block::close (indent);
-          stream << std::endl;
-          stream << "WE_MOD_FINALIZE_END (" << modname << ");" << std::endl;
         }
       }
 

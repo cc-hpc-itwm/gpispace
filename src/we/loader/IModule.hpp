@@ -8,7 +8,6 @@
 
 #include <drts/worker/context_fwd.hpp>
 
-#include <list>
 #include <map>
 #include <string>
 
@@ -27,7 +26,6 @@ namespace we
     public:
       virtual ~IModule() {}
 
-      virtual void name (const std::string &name) = 0;
       virtual void add_function (const std::string&, WrapperFunction) = 0;
     };
   }

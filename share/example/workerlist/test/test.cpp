@@ -3,10 +3,13 @@
 #define BOOST_TEST_MODULE share_example_workerlist
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/private/option.hpp>
+#include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
-#include <test/scoped_nodefile_with_localhost.hpp>
+#include <test/scoped_nodefile_from_environment.hpp>
 #include <test/scoped_state_directory.hpp>
 #include <test/shared_directory.hpp>
 #include <test/source_directory.hpp>
@@ -14,7 +17,9 @@
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/hostname.hpp>
+#include <fhg/util/read_lines.hpp>
 #include <fhg/util/temporary_path.hpp>
 
 #include <boost/filesystem.hpp>
@@ -22,6 +27,8 @@
 #include <boost/program_options.hpp>
 
 #include <map>
+#include <set>
+#include <string>
 
 namespace
 {
@@ -29,15 +36,23 @@ namespace
                 , boost::program_options::variables_map const& vm
                 , gspc::installation const& installation
                 , test::make const& make
+                , std::set<std::string> const& hostnames
                 )
   {
+    gspc::scoped_rifd const rifd (vm, installation);
     gspc::scoped_runtime_system const drts
-      (vm, installation, "worker:" + std::to_string (num_worker));
+      ( vm
+      , installation
+      , "worker:" + std::to_string (num_worker)
+      , rifd.entry_points()
+      );
 
     std::multimap<std::string, pnet::type::value::value_type> const result
-      (drts.put_and_run ( make.build_directory() / "workerlist.pnet"
-                        , {{"num_workers", num_worker}}
-                        )
+      ( gspc::client (drts)
+      . put_and_run
+        ( gspc::workflow (make.build_directory() / "workerlist.pnet")
+        , {{"num_workers", num_worker}}
+        )
       );
 
     BOOST_REQUIRE_EQUAL (result.size(), 2);
@@ -48,30 +63,51 @@ namespace
     BOOST_REQUIRE_EQUAL (result.count (port_workers), 1);
     BOOST_REQUIRE_EQUAL (result.count (port_hostnames), 1);
 
-    std::list<pnet::type::value::value_type> worker_names;
-    std::map
-      <pnet::type::value::value_type, pnet::type::value::value_type> host_names;
+    //! \todo needs to be a function on the drts topology
+    //! or the topology has to answer 'is_worker_valid (worker))'
+    std::set<std::string> const worker_names
+      ([&hostnames, &num_worker] () -> std::set<std::string>
+        {
+          std::set<std::string> workers;
+          for (std::string const& hostname : hostnames)
+          {
+            for (unsigned long i (0); i < num_worker; ++i)
+            {
+              workers.emplace ( ( boost::format ("worker-%1%-%2%")
+                                % hostname
+                                % (i + 1)
+                                ).str()
+                              );
+            }
+          }
+          return workers;
+        } ()
+      );
 
-    for (unsigned long i (0); i < num_worker; ++i)
+    for ( std::pair< pnet::type::value::value_type
+                   , pnet::type::value::value_type
+                   > const& worker_with_host
+        : boost::get<std::map< pnet::type::value::value_type
+                             , pnet::type::value::value_type
+                             >
+                    > (result.find (port_hostnames)->second)
+        )
     {
-      std::string const worker_name ( ( boost::format ("worker-%1%-%2%")
-                                      % fhg::util::hostname()
-                                      % (i + 1)
-                                      ).str()
-                                    );
-
-      worker_names.emplace_back (worker_name);
-      host_names.emplace (worker_name, fhg::util::hostname());
+      BOOST_REQUIRE_GT (hostnames.count (boost::get<std::string> (worker_with_host.second)), 0ul);
+      BOOST_REQUIRE_GT (worker_names.count (boost::get<std::string> (worker_with_host.first)), 0ul);
     }
 
-    BOOST_CHECK_EQUAL
-      ( result.find (port_workers)->second
-      , pnet::type::value::value_type (worker_names)
-      );
-    BOOST_CHECK_EQUAL
-      ( result.find (port_hostnames)->second
-      , pnet::type::value::value_type (host_names)
-      );
+    {
+      std::set<pnet::type::value::value_type> seen_workers;
+      for ( pnet::type::value::value_type const& worker
+          : boost::get<std::list<pnet::type::value::value_type>>
+              (result.find (port_workers)->second)
+          )
+      {
+        BOOST_REQUIRE_GT (worker_names.count (boost::get<std::string> (worker)), 0ul);
+        BOOST_REQUIRE (seen_workers.emplace (worker).second);
+      }
+    }
   }
 }
 
@@ -83,6 +119,7 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
   options_description.add (test::options::source_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
+  options_description.add (gspc::options::scoped_rifd());
 
   boost::program_options::variables_map vm;
   boost::program_options::store
@@ -98,7 +135,7 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
     (test::shared_directory (vm) / "share_example_workerlist");
 
   test::scoped_state_directory const state_directory (shared_directory, vm);
-  test::scoped_nodefile_with_localhost const nodefile_with_localhost
+  test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
 
   fhg::util::temporary_path const _installation_dir
@@ -108,6 +145,15 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
   gspc::set_application_search_path (vm, installation_dir);
 
   vm.notify();
+
+  std::set<std::string> const hostnames
+    ([&vm] () -> std::set<std::string>
+      {
+        std::vector<std::string> const hosts
+          (fhg::util::read_lines (gspc::require_nodefile (vm)));
+        return std::set<std::string> (hosts.begin(), hosts.end());
+      } ()
+    );
 
   gspc::installation const installation (vm);
 
@@ -121,7 +167,7 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
     , "net lib install"
     );
 
-  run_test (1, vm, installation, make);
-  run_test (2, vm, installation, make);
-  run_test (5, vm, installation, make);
+  run_test (1, vm, installation, make, hostnames);
+  run_test (2, vm, installation, make, hostnames);
+  run_test (5, vm, installation, make, hostnames);
 }

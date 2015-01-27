@@ -1,8 +1,11 @@
 set (srcs
   ../syscall.cpp
 
+  boost/asio/ip/address.cpp
+
   backtracing_exception.cpp
   daemonize.cpp
+  executable_path.cpp
   signal_handler_manager.cpp
   pidfile_writer.cpp
   random_string.cpp
@@ -28,10 +31,13 @@ set (srcs
 
   xml.cpp
   read_file.cpp
+  read_lines.cpp
 
   hostname.cpp
 
+  print_exception.cpp
   system_with_blocked_SIGCHLD.cpp
+  wait_and_collect_exceptions.cpp
 )
 
 add_library (fhg-util ${srcs})

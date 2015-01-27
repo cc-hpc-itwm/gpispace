@@ -5,7 +5,7 @@
 #include <pnete/data/handle/function.hpp>
 #include <pnete/data/manager.hpp>
 
-#include <fhg/util/read_bool.hpp>
+#include <fhg/util/boost/variant.hpp>
 
 #include <QtAlgorithms>
 
@@ -17,23 +17,24 @@ namespace fhg
     {
       namespace
       {
-        QString name_for_file (data::manager& data_manager, const QString& filename)
+        QString name_for_file
+          (data::manager& data_manager, const QString& filename)
         {
           const data::handle::function f (data_manager.load (filename));
-          return QString::fromStdString (f.get().properties()
-            .get ("fhg.pnete.library_name")
-            .get_value_or (f.get().name()
-            .get_value_or ("<<anonymous>>")));
+          return QString::fromStdString
+            ( util::boost::get_or_none<std::string>
+                (f.get().properties().get ({"fhg", "pnete", "library_name"}))
+              .get_value_or (f.get().name().get_value_or ("<<anonymous>>"))
+            );
         }
-      }
 
-      bool is_disabled (data::manager& data_manager, const QString& filename)
-      {
-        const data::handle::function f (data_manager.load (filename));
-        return fhg::util::read_bool
-          ( f.get().properties().get ("fhg.pnete.library_disabled")
-          .get_value_or ("false")
-          );
+        bool is_disabled (data::manager& data_manager, const QString& filename)
+        {
+          const data::handle::function f (data_manager.load (filename));
+          return util::boost::get_or_none<bool>
+            (f.get().properties().get ({"fhg", "pnete", "library_disabled"}))
+            .get_value_or (false);
+        }
       }
 
       TransitionLibraryItem::TransitionLibraryItem (QObject* parent)
@@ -55,8 +56,10 @@ namespace fhg
                                                    )
         : QObject(parent)
         , _is_folder (is_folder)
-        , _disabled
-          (!_is_folder && is_disabled (data_manager, fileinfo.absoluteFilePath()))
+        , _disabled ( _is_folder
+                    ? false
+                    : is_disabled (data_manager, fileinfo.absoluteFilePath())
+                    )
         , _fileinfo (fileinfo)
         , _trusted (trusted)
         , _name ( _is_folder

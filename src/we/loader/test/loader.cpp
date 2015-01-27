@@ -10,36 +10,12 @@
 
 #include <we/type/value/boost/test/printer.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/require_exception.hpp>
-
-BOOST_AUTO_TEST_CASE (fresh_has_empty_search_path)
-{
-  we::loader::loader loader;
-
-  BOOST_REQUIRE_EQUAL (loader.search_path(), "");
-}
-
-BOOST_AUTO_TEST_CASE (append_and_clear_serch_path)
-{
-  we::loader::loader loader;
-  loader.append_search_path ("p");
-
-  BOOST_REQUIRE_EQUAL (loader.search_path(), "\"p\"");
-
-  loader.append_search_path ("q");
-
-  BOOST_REQUIRE_EQUAL (loader.search_path(), "\"p\":\"q\"");
-
-  loader.clear_search_path();
-
-  BOOST_REQUIRE_EQUAL (loader.search_path(), "");
-}
 
 BOOST_AUTO_TEST_CASE (answer_question)
 {
-  we::loader::loader loader;
-
-  loader.append_search_path (".");
+  we::loader::loader loader ({"."});
 
   {
     expr::eval::context out;
@@ -77,47 +53,19 @@ BOOST_AUTO_TEST_CASE (answer_question)
   }
 }
 
-BOOST_AUTO_TEST_CASE (load_failed)
+BOOST_AUTO_TEST_CASE (bracket_not_found_empty_search_path)
 {
-  we::loader::loader loader;
-
-  fhg::util::boost::test::require_exception<we::loader::module_load_failed>
-    ( [&loader] { loader.load ("name", "<path>"); }
-    , "could not load module '<path>': <path>:"
-      " cannot open shared object file: No such file or directory"
-    );
-}
-
-BOOST_AUTO_TEST_CASE (load_okay)
-{
-  we::loader::loader loader;
-
-  BOOST_REQUIRE (loader.load ("name", "./libanswer.so"));
-}
-
-BOOST_AUTO_TEST_CASE (load_already_registered)
-{
-  we::loader::loader loader;
-
-  BOOST_REQUIRE (loader.load ("name", "./libanswer.so"));
-
-  fhg::util::boost::test::require_exception<we::loader::module_already_registered>
-    ( [&loader] { loader.load ("name", "<path>"); }
-    , "module 'name' already registered"
-    );
-}
-
-BOOST_AUTO_TEST_CASE (bracket_not_found)
-{
-  we::loader::loader loader;
+  we::loader::loader loader ({});
 
   fhg::util::boost::test::require_exception<we::loader::module_not_found>
     ( [&loader] { loader["name"]; }
     , "module 'libname.so' not found in ''"
     );
+}
 
-  loader.append_search_path ("<p>");
-  loader.append_search_path ("<q>");
+BOOST_AUTO_TEST_CASE (bracket_not_found_nonempty_search_path)
+{
+  we::loader::loader loader ({"<p>","<q>"});
 
   fhg::util::boost::test::require_exception<we::loader::module_not_found>
     ( [&loader] { loader["name"]; }
@@ -127,47 +75,17 @@ BOOST_AUTO_TEST_CASE (bracket_not_found)
 
 BOOST_AUTO_TEST_CASE (bracket_okay_load)
 {
-  we::loader::loader loader;
-  loader.append_search_path (".");
+  we::loader::loader loader ({"."});
 
-  BOOST_REQUIRE_EQUAL (loader["answer"].name(), "answer");
+  BOOST_REQUIRE_EQUAL (loader["answer"].path(), "./libanswer.so");
 }
 
-BOOST_AUTO_TEST_CASE (bracket_okay_from_table)
+BOOST_AUTO_TEST_CASE (load_order)
 {
-  we::loader::loader loader;
-  loader.append_search_path (".");
+  we::loader::loader loader ({"."});
 
-  BOOST_REQUIRE_EQUAL (loader["answer"].name(), "answer");
+  BOOST_REQUIRE_EQUAL (loader["order_a"].path(), "./liborder_a.so");
+  BOOST_REQUIRE_EQUAL (loader["order_b"].path(), "./liborder_b.so");
 
-  loader.clear_search_path();
-
-  BOOST_REQUIRE_EQUAL (loader["answer"].name(), "answer");
-}
-
-BOOST_AUTO_TEST_CASE (unload_order)
-{
-  {
-    we::loader::loader loader;
-
-    BOOST_REQUIRE (loader.load ("a", "./liborder_a.so"));
-    BOOST_REQUIRE (loader.load ("b", "./liborder_b.so"));
-
-    BOOST_REQUIRE_EQUAL (start().size(), 2);
-  }
-
-  BOOST_REQUIRE_EQUAL (stop().size(), 2);
-
-  std::stack<std::string> stop_expected;
-  while (!start().empty())
-  {
-    stop_expected.push (start().top()); start().pop();
-  }
-
-  while (!stop().empty())
-  {
-    BOOST_REQUIRE_EQUAL (stop().top(), stop_expected.top());
-    stop().pop();
-    stop_expected.pop();
-  }
+  BOOST_REQUIRE_EQUAL (start().size(), 2);
 }

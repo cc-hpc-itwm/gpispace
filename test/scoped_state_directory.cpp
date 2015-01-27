@@ -3,6 +3,7 @@
 #include <test/scoped_state_directory.hpp>
 
 #include <drts/drts.hpp>
+#include <drts/private/option.hpp>
 
 namespace test
 {

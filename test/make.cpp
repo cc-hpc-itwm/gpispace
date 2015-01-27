@@ -2,10 +2,12 @@
 
 #include <test/make.hpp>
 
+#include <fhg/util/join.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
 #include <boost/format.hpp>
 
+#include <exception>
 #include <sstream>
 #include <stdexcept>
 
@@ -21,6 +23,22 @@ namespace test
                        / boost::filesystem::unique_path()
                        )
   {
+    {
+      std::set<std::string> const supported_targets
+        {"net", "net lib install"};
+
+      if (!supported_targets.count (make_targets))
+      {
+        throw std::invalid_argument
+          (( boost::format
+             ("unsupported make_targets '%1%', supported are {%2%}")
+           % make_targets
+           % fhg::util::join (supported_targets, ", ")
+           ).str()
+          );
+      }
+    }
+
     std::ostringstream command;
 
     command
@@ -42,14 +60,6 @@ namespace test
       << " " << make_targets
       ;
 
-    if (int ec = fhg::util::system_with_blocked_SIGCHLD (command.str().c_str()))
-    {
-      throw std::runtime_error
-        (( boost::format ("Could not run '%1%': error code '%2%'")
-         % command.str()
-         % ec
-         ).str()
-        );
-    }
+    fhg::util::system_with_blocked_SIGCHLD (command.str());
   }
 }

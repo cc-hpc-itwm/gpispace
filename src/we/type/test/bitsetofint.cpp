@@ -5,6 +5,8 @@
 
 #include <we/type/bitsetofint.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 #include <sstream>
 #include <set>
 
@@ -520,4 +522,12 @@ BOOST_AUTO_TEST_CASE (listing)
     const std::set<unsigned long> e (b.elements());
     BOOST_REQUIRE_EQUAL_COLLECTIONS (s.begin(), s.end(), e.begin(), e.end());
   }
+}
+
+BOOST_AUTO_TEST_CASE (trailing_zeros_are_removed)
+{
+  std::ostringstream oss;
+  oss << bitsetofint::type().ins (1).del (1);
+
+  BOOST_REQUIRE_EQUAL (oss.str(), "{}");
 }

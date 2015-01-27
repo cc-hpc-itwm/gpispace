@@ -10,7 +10,9 @@
 #include <xml/parse/type/struct.hpp>
 
 #include <we/type/property.hpp>
+#include <we/type/value/show.hpp>
 
+#include <fhg/util/boost/optional.hpp>
 #include <fhg/util/join.hpp>
 
 #include <boost/format.hpp>
@@ -333,7 +335,7 @@ namespace xml
           std::ostringstream s;
 
           s << "unknown property " << fhg::util::join (key, ".")
-            << " value " << val
+            << " value " << pnet::type::value::show (val)
             << " in " << path
             ;
 
@@ -628,6 +630,14 @@ namespace xml
 
       private:
         const id::ref::function _function;
+      };
+
+      class struct_redefined : public generic
+      {
+      public:
+        struct_redefined ( const type::structure_type& early
+                         , const type::structure_type& late
+                         );
       };
     }
   }

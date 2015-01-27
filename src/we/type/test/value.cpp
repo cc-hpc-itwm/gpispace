@@ -24,7 +24,9 @@
 #include <fhg/util/num.hpp>
 #include <fhg/util/indenter.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/printer/list.hpp>
+#include <fhg/util/boost/test/printer/optional.hpp>
 #include <fhg/util/boost/test/printer/set.hpp>
 #include <fhg/util/boost/test/printer/map.hpp>
 #include <fhg/util/boost/test/require_exception.hpp>
@@ -266,13 +268,11 @@ BOOST_AUTO_TEST_CASE (peek)
 
   {
     BOOST_CHECK_NE (peek ("set", m2), boost::none);
-    BOOST_CHECK_EQUAL (*peek ("set", m2), set);
-    // BOOST_REQUIRE_EQUAL (*peek ("set", m2), set);
-    // | Does not compile. Why?
+    BOOST_CHECK_EQUAL (peek ("set", m2).get(), set);
   }
   {
     BOOST_CHECK_NE (peek ("m1.l1", m2), boost::none);
-    BOOST_CHECK_EQUAL (*peek ("m1.l1", m2), l1);
+    BOOST_CHECK_EQUAL (peek ("m1.l1", m2).get(), l1);
   }
 }
 
@@ -291,7 +291,7 @@ BOOST_AUTO_TEST_CASE (peek_ref)
 
   {
     const std::list<value_type>& g
-      (boost::get<const std::list<value_type>&> (*peek ("l", m)));
+      (boost::get<const std::list<value_type>&> (peek ("l", m).get()));
 
     BOOST_CHECK (g.empty());
   }
@@ -300,7 +300,7 @@ BOOST_AUTO_TEST_CASE (peek_ref)
 
   {
     std::list<value_type>& r
-      (boost::get<std::list<value_type>&> (*peek ("l", m)));
+      (boost::get<std::list<value_type>&> (peek ("l", m).get()));
 
     BOOST_CHECK (r.empty());
 
@@ -309,7 +309,7 @@ BOOST_AUTO_TEST_CASE (peek_ref)
 
   {
     const std::list<value_type>& g
-      (boost::get<const std::list<value_type>&> (*peek ("l", m)));
+      (boost::get<const std::list<value_type>&> (peek ("l", m).get()));
 
     BOOST_CHECK_EQUAL (g.size(), 1U);
     BOOST_CHECK_EQUAL (*g.begin(), value_type (19));
@@ -331,20 +331,20 @@ BOOST_AUTO_TEST_CASE (poke)
     poke ("s", v, s);
 
     BOOST_CHECK_NE (peek ("s", v), boost::none);
-    BOOST_CHECK_EQUAL (*peek ("s", v), s);
+    BOOST_CHECK_EQUAL (peek ("s", v).get(), s);
   }
   {
     poke ("i", v, i);
     BOOST_CHECK_NE (peek ("i", v), boost::none);
-    BOOST_CHECK_EQUAL (*peek ("i", v), i);
+    BOOST_CHECK_EQUAL (peek ("i", v).get(), i);
 
     poke ("i.i", v, i);
     BOOST_CHECK_NE (peek ("i.i", v), boost::none);
-    BOOST_CHECK_EQUAL (*peek ("i.i", v), i);
+    BOOST_CHECK_EQUAL (peek ("i.i", v).get(), i);
 
     BOOST_CHECK_NE (peek ("i", v), boost::none);
-    BOOST_CHECK_NE (peek ("i", *peek ("i", v)), boost::none);
-    BOOST_CHECK_EQUAL (*peek ("i", *peek ("i", v)), i);
+    BOOST_CHECK_NE (peek ("i", peek ("i", v).get()), boost::none);
+    BOOST_CHECK_EQUAL (peek ("i", peek ("i", v).get()).get(), i);
   }
 }
 
@@ -376,6 +376,42 @@ BOOST_AUTO_TEST_CASE (signature_name_of)
 #undef CHECK
 }
 
+namespace
+{
+  struct user_defined_type {};
+
+  bool operator== (user_defined_type const&, user_defined_type const&)
+  {
+    return true;
+  }
+}
+
+FHG_BOOST_TEST_LOG_VALUE_PRINTER (user_defined_type, os, /**/)
+{
+  os << "user_defined_type()";
+}
+
+namespace pnet
+{
+  namespace type
+  {
+    namespace value
+    {
+      template<>
+        inline value_type to_value<user_defined_type> (user_defined_type const&)
+      {
+        return value_type();
+      }
+      template<>
+        inline user_defined_type from_value<user_defined_type>
+          (value_type const&)
+      {
+        return user_defined_type();
+      }
+    }
+  }
+}
+
 BOOST_AUTO_TEST_CASE (unwrap)
 {
   namespace value = pnet::type::value;
@@ -398,6 +434,18 @@ BOOST_AUTO_TEST_CASE (unwrap)
     lt.push_back (1L);
 
     BOOST_CHECK_EQUAL (lt, value::unwrap<long> (lv));
+  }
+
+  {
+    std::list<value::value_type> lv;
+    lv.push_back (pnet::type::value::to_value (user_defined_type()));
+    lv.push_back (pnet::type::value::to_value (user_defined_type()));
+
+    std::list<user_defined_type> lt;
+    lt.push_back (user_defined_type());
+    lt.push_back (user_defined_type());
+
+    BOOST_CHECK_EQUAL (lt, value::unwrap<user_defined_type> (lv));
   }
 }
 

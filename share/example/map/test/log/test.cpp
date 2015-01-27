@@ -3,14 +3,17 @@
 #define BOOST_TEST_MODULE share_example_map_log
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/scoped_rifd.hpp>
 #include <drts/virtual_memory.hpp>
 
 #include <test/make.hpp>
-#include <test/scoped_nodefile_with_localhost.hpp>
+#include <test/scoped_nodefile_from_environment.hpp>
 #include <test/scoped_state_directory.hpp>
 #include <test/shared_directory.hpp>
 #include <test/source_directory.hpp>
+#include <test/virtual_memory_socket_name_for_localhost.hpp>
 
 #include <we/type/bytearray.hpp>
 #include <we/type/literal/control.hpp>
@@ -18,6 +21,7 @@
 #include <we/type/value/boost/test/printer.hpp>
 #include <we/type/value/read.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/program_options/validators/executable.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
@@ -77,6 +81,7 @@ BOOST_AUTO_TEST_CASE (share_example_map_log)
   options_description.add (test::options::source_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
+  options_description.add (gspc::options::scoped_rifd());
   options_description.add (gspc::options::virtual_memory());
 
   boost::program_options::variables_map vm;
@@ -93,7 +98,7 @@ BOOST_AUTO_TEST_CASE (share_example_map_log)
     (test::shared_directory (vm) / "share_example_map_log");
 
   test::scoped_state_directory const state_directory (shared_directory, vm);
-  test::scoped_nodefile_with_localhost const nodefile_with_localhost
+  test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
 
   fhg::util::temporary_path const _installation_dir
@@ -101,10 +106,7 @@ BOOST_AUTO_TEST_CASE (share_example_map_log)
   boost::filesystem::path const installation_dir (_installation_dir);
 
   gspc::set_application_search_path (vm, installation_dir);
-  gspc::set_virtual_memory_socket ( vm
-                                  , boost::filesystem::temp_directory_path()
-                                  / boost::filesystem::unique_path()
-                                  );
+  test::set_virtual_memory_socket_name_for_localhost (vm);
 
   vm.notify();
 
@@ -141,8 +143,9 @@ BOOST_AUTO_TEST_CASE (share_example_map_log)
 
   topology_description << "worker:2," << (2 * size_block);
 
+  gspc::scoped_rifd const rifd (vm, installation);
   gspc::scoped_runtime_system const drts
-    (vm, installation, topology_description.str());
+    (vm, installation, topology_description.str(), rifd.entry_points());
 
   gspc::vmem_allocation const allocation_input
     (drts.alloc (size_input, "map_input"));
@@ -150,8 +153,8 @@ BOOST_AUTO_TEST_CASE (share_example_map_log)
     (drts.alloc (size_output, "map_output"));
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    ( drts.put_and_run
-      ( make.build_directory() / "map.pnet"
+    ( gspc::client (drts).put_and_run
+      ( gspc::workflow (make.build_directory() / "map.pnet")
       , { {"input", allocation_input.global_memory_range()}
         , {"output", allocation_output.global_memory_range()}
         , {"num_block", num_block}

@@ -8,6 +8,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/signals2.hpp>
 
+#include <gpi-space/types.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/type/handle.hpp>
 #include <gpi-space/pc/type/memory_location.hpp>
@@ -145,6 +146,9 @@ namespace gpi
                                , memory_pool_t & buffer_pool
                                , task_list_t & tasks
                                );
+        virtual double get_transfer_costs ( const gpi::pc::type::memory_region_t&
+                                          , const gpi::rank_t
+                                          ) const = 0;
       protected:
         area_t ( const gpi::pc::type::segment::segment_type type
                , const gpi::pc::type::process_id_t creator

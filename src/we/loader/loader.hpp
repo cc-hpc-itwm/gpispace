@@ -4,11 +4,9 @@
 #include <we/loader/Module.hpp>
 
 #include <boost/filesystem.hpp>
-#include <boost/thread.hpp>
-#include <boost/utility.hpp>
 
 #include <list>
-#include <stack>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 
@@ -19,26 +17,14 @@ namespace we
     class loader : boost::noncopyable
     {
     public:
-      loader() = default;
-      loader (std::list<boost::filesystem::path>);
-      ~loader();
+      loader (std::list<boost::filesystem::path> const&);
 
-      Module& operator[] (const std::string &module);
-
-      Module* load (const std::string&, const boost::filesystem::path&);
-
-      void clear_search_path();
-      void append_search_path (const boost::filesystem::path&);
-
-      std::string search_path() const;
+      Module const& operator[] (const std::string &module);
 
    private:
-      mutable boost::recursive_mutex _table_mutex;
-      typedef std::unordered_map<std::string, Module*> module_table_t;
-      module_table_t _module_table;
-      std::stack<Module*> _module_stack;
-      mutable boost::recursive_mutex _search_path_mutex;
-      std::list<boost::filesystem::path> _search_path;
+      std::mutex _table_mutex;
+      std::unordered_map<std::string, std::unique_ptr<Module>> _module_table;
+      std::list<boost::filesystem::path> const _search_path;
     };
   }
 }

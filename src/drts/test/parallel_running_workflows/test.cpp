@@ -3,16 +3,19 @@
 #define BOOST_TEST_MODULE drts_parallel_running_workflows
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
-#include <test/scoped_nodefile_with_localhost.hpp>
+#include <test/scoped_nodefile_from_environment.hpp>
 #include <test/scoped_state_directory.hpp>
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
 
 #include <we/type/value.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/temporary_file.hpp>
 #include <fhg/util/temporary_path.hpp>
 
@@ -30,6 +33,7 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
   options_description.add (test::options::shared_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
+  options_description.add (gspc::options::scoped_rifd());
 
   boost::program_options::variables_map vm;
   boost::program_options::store
@@ -45,7 +49,7 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
     (test::shared_directory (vm) / "drts_parallel_running_workflows");
 
   test::scoped_state_directory const state_directory (shared_directory, vm);
-  test::scoped_nodefile_with_localhost const nodefile_with_localhost
+  test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
 
   fhg::util::temporary_path const _installation_dir
@@ -81,15 +85,17 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
     , "net lib install"
     );
 
-  gspc::scoped_runtime_system const drts (vm, installation, "worker:2");
+  gspc::scoped_rifd const rifd (vm, installation);
+  gspc::scoped_runtime_system const drts
+    (vm, installation, "worker:2", rifd.entry_points());
 
   auto submit_fun
     ( [&filename_a, &filename_b, &drts]
       (std::string pnet, std::string port, test::make const& make)
     {
       std::multimap<std::string, pnet::type::value::value_type> const result
-        ( drts.put_and_run
-          ( make.build_directory() / pnet
+        ( gspc::client (drts).put_and_run
+          ( gspc::workflow (make.build_directory() / pnet)
           , { {"filename_a", filename_a.string()}
             , {"filename_b", filename_b.string()}
             , {"timeout_in_seconds", 5U}

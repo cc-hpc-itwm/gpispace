@@ -21,6 +21,7 @@
 #include <pnete/ui/size.hpp>
 #include <pnete/ui/transition_library_view.hpp>
 
+#include <fhg/util/boost/variant.hpp>
 #include <fhg/util/dl.hpp>
 #include <fhg/util/num.hpp>
 #include <fhg/util/read_bool.hpp>
@@ -87,10 +88,14 @@ namespace fhg
     {
       editor_window::editor_window ( data::manager& data_manager
                                    , std::list<util::scoped_dlhandle> const& plugins
+                                   , boost::optional<std::string> orchestrator_host
+                                   , boost::optional<unsigned short> orchestrator_port
                                    , QWidget* parent
                                    )
         : QMainWindow (parent)
         , _data_manager (data_manager)
+        , _orchestrator_host (orchestrator_host)
+        , _orchestrator_port (orchestrator_port)
         , _transition_library (new transition_library_view (20, 5, this))
         , _transition_library_dock
           (new dock_widget (tr ("library_window"), _transition_library))
@@ -702,7 +707,8 @@ namespace fhg
           virtual void handle_internally (we::type::activity_t& act, mod_t const& mod) override
           {
             //!\todo pass a real drts::worker::context here
-            we::loader::module_call (loader, nullptr, act, mod);
+            we::loader::module_call
+              (loader, nullptr, nullptr, nullptr, act, mod);
           }
 
           virtual void handle_internally (we::type::activity_t& , expr_t const&) override
@@ -781,7 +787,9 @@ namespace fhg
             if (port.direction() == we::type::PORT_TUNNEL)
             {
               const boost::optional<std::string> tunnel_direction
-                (port.properties().get ("fhg.pnete.tunnel.direction"));
+                ( util::boost::get_or_none<std::string>
+                    (port.properties().get ({"fhg", "pnete", "tunnel", "direction"}))
+                );
 
               return !tunnel_direction ? we::type::PORT_IN
                 : *tunnel_direction == "out" ? we::type::PORT_OUT
@@ -899,21 +907,19 @@ namespace fhg
               (trans.get().resolved_function());
 
             {
-              const std::string gens
-                ( fun.get().properties().get ("fhg.seislib.slot.num.generator")
-                .get_value_or ("0")
-                );
-              fhg::util::parse::position_string pos (gens);
-              slot_gen_count += fhg::util::read_int (pos);
+              slot_gen_count += util::boost::get_or_none<long>
+                ( fun.get().properties().get
+                    ({"fhg", "seislib", "slot", "num", "generator"})
+                )
+                .get_value_or (0);
             }
 
             {
-              const std::string gens
-                ( fun.get().properties().get ("fhg.seislib.slot.num.store")
-                .get_value_or ("0")
-                );
-              fhg::util::parse::position_string pos (gens);
-              slot_store_count += fhg::util::read_int (pos);
+              slot_store_count += util::boost::get_or_none<long>
+                ( fun.get().properties().get
+                    ({"fhg", "seislib", "slot", "num", "store"})
+                )
+                .get_value_or (0);
             }
 
             for ( const xml::parse::id::ref::port& pid
@@ -1328,11 +1334,14 @@ namespace fhg
 
       remote_job_waiting::remote_job_waiting
         ( std::pair<we::type::activity_t, xml::parse::id::ref::function> act_fun
-        , std::string kvs_host
-        , std::string kvs_port
-        , std::string orchestrator_name
+        , std::string orchestrator_host
+        , std::string orchestrator_port
+        , boost::asio::io_service& io_service
         )
-          : _client (orchestrator_name, kvs_host, kvs_port)
+          : _client ( fhg::com::host_t (orchestrator_host)
+                    , fhg::com::port_t (orchestrator_port)
+                    , io_service
+                    )
           , _job_id (_client.submitJob (act_fun.first.to_string()))
           , _function (act_fun.second)
       {}
@@ -1380,9 +1389,10 @@ namespace fhg
           ( std::pair < we::type::activity_t
                       , xml::parse::id::ref::function
                       >* activity_and_fun
-          , std::string* kvs_host
-          , std::string* kvs_port
-          , std::string* orchestrator_name
+          , boost::optional<std::string> cmdarg_orchestrator_host
+          , boost::optional<unsigned short> cmdarg_orchestrator_port
+          , std::string* orchestrator_host
+          , std::string* orchestrator_port
           )
         {
           QMap<QString, boost::function<QString()> > value_getters;
@@ -1391,12 +1401,20 @@ namespace fhg
           dialog.setWindowTitle ("Please enter input values and drts info");
           new QVBoxLayout (&dialog);
 
-          QLineEdit* kvs_host_edit (new QLineEdit ("localhost"));
-          QSpinBox* kvs_port_edit (new QSpinBox);
-          kvs_port_edit->setMinimum (1 << 10);
-          kvs_port_edit->setMaximum (1 << 16);
-          QLineEdit* orchestrator_name_edit (new QLineEdit ("orchestrator"));
+          QLineEdit* orchestrator_host_edit
+            ( new QLineEdit ( QString::fromStdString
+                              (cmdarg_orchestrator_host.get_value_or ("localhost"))
+                            )
+            );
+          QSpinBox* orchestrator_port_edit (new QSpinBox);
+          orchestrator_port_edit->setMinimum (1 << 10);
+          orchestrator_port_edit->setMaximum (1 << 16);
+          if (cmdarg_orchestrator_port)
+          {
+            orchestrator_port_edit->setValue (cmdarg_orchestrator_port.get());
+          }
 
+          if (!cmdarg_orchestrator_host || !cmdarg_orchestrator_port)
           {
             QGroupBox* box (new QGroupBox (QObject::tr ("drts_info")));
 
@@ -1404,10 +1422,14 @@ namespace fhg
 
             QFormLayout* box_layout (new QFormLayout (box));
 
-            box_layout->addRow (QObject::tr ("kvs_host"), kvs_host_edit);
-            box_layout->addRow (QObject::tr ("kvs_port"), kvs_port_edit);
-            box_layout->addRow
-              (QObject::tr ("orchestrator_name"), orchestrator_name_edit);
+            if (!cmdarg_orchestrator_host)
+            {
+              box_layout->addRow (QObject::tr ("orchestrator_host"), orchestrator_host_edit);
+            }
+            if (!cmdarg_orchestrator_port)
+            {
+              box_layout->addRow (QObject::tr ("orchestrator_port"), orchestrator_port_edit);
+            }
           }
 
           QMap<boost::optional<QString>, QStringList> port_groups;
@@ -1442,20 +1464,17 @@ namespace fhg
             {
               const QString port_name (group ? *group + "__xxx__" + val : val);
 
-              if (port_name.startsWith ("REFLECT_"))
-              {
-                continue;
-              }
-
               const boost::optional<const xml::parse::id::ref::port&> xml_port
                 (activity_and_fun->second.get().get_port_in (port_name.toStdString()));
 
               const std::pair<QWidget*, boost::function<QString()> > ret
                 ( widget_for_item ( xml_port->get().type()
                                   , opt_std_to_qstring
-                                    ( xml_port->get().properties().get
-                                      ("fhg.pnete.port.default")
-                                    )
+                                  ( util::boost::get_or_none<std::string>
+                                      ( xml_port->get().properties().get
+                                          ({"fhg", "pnete", "port", "default"})
+                                      )
+                                  )
                                   )
                 );
               box_layout->addRow (val, ret.first);
@@ -1491,9 +1510,8 @@ namespace fhg
             ++i;
           }
 
-          *kvs_host = kvs_host_edit->text().toStdString();
-          *kvs_port = std::to_string (kvs_port_edit->value());
-          *orchestrator_name = orchestrator_name_edit->text().toStdString();
+          *orchestrator_host = orchestrator_host_edit->text().toStdString();
+          *orchestrator_port = std::to_string (orchestrator_port_edit->value());
 
           return true;
         }
@@ -1507,15 +1525,15 @@ namespace fhg
         std::pair<we::type::activity_t, xml::parse::id::ref::function>
           activity_and_fun (prepare_activity (_accessed_widgets, temporary_path));
 
-        std::string kvs_host;
-        std::string kvs_port;
-        std::string orchestrator_name;
+        std::string orchestrator_host;
+        std::string orchestrator_port;
 
         if ( !request_drts_info_and_tokens_for_ports
              ( &activity_and_fun
-             , &kvs_host
-             , &kvs_port
-             , &orchestrator_name
+             , _orchestrator_host
+             , _orchestrator_port
+             , &orchestrator_host
+             , &orchestrator_port
              )
            )
         {
@@ -1526,9 +1544,10 @@ namespace fhg
         // loader.append_search_path (temporary_path / "pnetc" / "op");
 
         _action_execute_current_file_remote_via_prompt->setEnabled (false);
+        static boost::asio::io_service peer_io_service;
         remote_job_waiting* waiter
           ( new remote_job_waiting
-            (activity_and_fun, kvs_host, kvs_port, orchestrator_name)
+            (activity_and_fun, orchestrator_host, orchestrator_port, peer_io_service)
           );
         connect ( waiter
                 , SIGNAL (remote_job_failed (sdpa::client::Client*,QString))

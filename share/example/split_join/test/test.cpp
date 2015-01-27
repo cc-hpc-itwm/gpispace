@@ -3,10 +3,12 @@
 #define BOOST_TEST_MODULE share_example_split_join
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
-#include <test/scoped_nodefile_with_localhost.hpp>
+#include <test/scoped_nodefile_from_environment.hpp>
 #include <test/scoped_state_directory.hpp>
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
@@ -14,6 +16,7 @@
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 
 #include <boost/filesystem.hpp>
@@ -53,6 +56,7 @@ BOOST_AUTO_TEST_CASE (share_example_split_join)
   options_description.add (test::options::shared_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
+  options_description.add (gspc::options::scoped_rifd());
 
   boost::program_options::variables_map vm;
   boost::program_options::store
@@ -64,10 +68,12 @@ BOOST_AUTO_TEST_CASE (share_example_split_join)
     );
 
   fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "share_example_split_join");
+    ( test::shared_directory (vm)
+    / boost::filesystem::unique_path ("share_example_split_join-%%%%-%%%%-%%%%-%%%%")
+    );
 
   test::scoped_state_directory const state_directory (shared_directory, vm);
-  test::scoped_nodefile_with_localhost const nodefile_with_localhost
+  test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
 
   vm.notify();
@@ -84,7 +90,9 @@ BOOST_AUTO_TEST_CASE (share_example_split_join)
     , "net"
     );
 
-  gspc::scoped_runtime_system const drts (vm, installation, "work:4");
+  gspc::scoped_rifd const rifd (vm, installation);
+  gspc::scoped_runtime_system const drts
+    (vm, installation, "work:4", rifd.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> input;
 
@@ -94,7 +102,11 @@ BOOST_AUTO_TEST_CASE (share_example_split_join)
   }
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    (drts.put_and_run (make.build_directory() / (main + ".pnet"), input));
+    ( gspc::client (drts)
+    . put_and_run ( gspc::workflow (make.build_directory() / (main + ".pnet"))
+                  , input
+                  )
+    );
 
   std::vector<long> const expected_output
     (vm[option_expected_output].as<std::vector<long>>());

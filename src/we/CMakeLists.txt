@@ -22,7 +22,7 @@ add_library (we-dev SHARED
   loader/Module.cpp
 )
 
-target_link_libraries(we-dev fhg-util fhglog ${CMAKE_DL_LIBS})
+target_link_libraries(we-dev fhg-util ${CMAKE_DL_LIBS})
 set_target_properties (we-dev PROPERTIES OUTPUT_NAME we-dev VERSION 1)
 
 install (TARGETS we-dev
@@ -57,6 +57,7 @@ install (FILES
   type/value/read.hpp
   type/value/show.hpp
   type/value/to_value.hpp
+  type/value/from_value.hpp
   type/value/wrap.hpp
   type/value/unwrap.hpp
   DESTINATION include/we/type/value
@@ -76,13 +77,11 @@ install (FILES
   DESTINATION include/we/type/literal
 )
 
-find_package (LibReadline REQUIRED QUIET)
-include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
-
 add_executable (expression_shell expr/shell.cpp)
+target_include_directories (expression_shell
+  PRIVATE "${LibReadline_INCLUDE_DIR}"
+)
 target_link_libraries (expression_shell pnet ${LibReadline_LIBRARY})
-
-add_subdirectory (util)
 
 add_subdirectory (expr/parse/test)
 add_subdirectory (expr/test)

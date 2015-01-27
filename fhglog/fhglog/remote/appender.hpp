@@ -18,15 +18,14 @@ namespace fhg
       class RemoteAppender : public Appender
       {
       public:
-        explicit
-        RemoteAppender (const std::string &location);
+        RemoteAppender (const std::string &location, boost::asio::io_service&);
         virtual ~RemoteAppender();
 
         virtual void append (const LogEvent&) override;
         virtual void flush() override {}
 
       private:
-        boost::asio::io_service io_service_;
+        boost::asio::io_service& io_service_;
         boost::asio::ip::udp::endpoint logserver_;
         std::unique_ptr<boost::asio::ip::udp::socket> socket_;
       };

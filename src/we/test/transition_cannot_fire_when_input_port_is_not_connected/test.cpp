@@ -3,10 +3,12 @@
 #define BOOST_TEST_MODULE we_transition_cannot_fire_when_input_port_is_not_connected
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
-#include <test/scoped_nodefile_with_localhost.hpp>
+#include <test/scoped_nodefile_from_environment.hpp>
 #include <test/scoped_state_directory.hpp>
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
@@ -14,6 +16,7 @@
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/temporary_path.hpp>
 
 #include <boost/program_options.hpp>
@@ -29,6 +32,7 @@ BOOST_AUTO_TEST_CASE
   options_description.add (test::options::shared_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
+  options_description.add (gspc::options::scoped_rifd());
 
   boost::program_options::variables_map vm;
   boost::program_options::store
@@ -46,7 +50,7 @@ BOOST_AUTO_TEST_CASE
     );
 
   test::scoped_state_directory const state_directory (shared_directory, vm);
-  test::scoped_nodefile_with_localhost const nodefile_with_localhost
+  test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
 
   vm.notify();
@@ -61,11 +65,15 @@ BOOST_AUTO_TEST_CASE
     , "net"
     );
 
-  gspc::scoped_runtime_system const drts (vm, installation, "work:2");
+  gspc::scoped_rifd const rifd (vm, installation);
+  gspc::scoped_runtime_system const drts
+    (vm, installation, "work:2", rifd.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    ( drts.put_and_run
-      ( make.build_directory() / "transition_with_unconnected_input_port.pnet"
+    ( gspc::client (drts).put_and_run
+      ( gspc::workflow ( make.build_directory()
+                       / "transition_with_unconnected_input_port.pnet"
+                       )
       , {{"i", 0L}}
       )
     );

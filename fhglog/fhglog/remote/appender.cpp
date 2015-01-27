@@ -2,14 +2,7 @@
 
 #include <fhglog/remote/appender.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 #include <fhg/util/split.hpp>
-
-#include <boost/array.hpp>
-#include <boost/lexical_cast.hpp>
-
-#include <sstream>
 
 namespace fhg
 {
@@ -19,22 +12,22 @@ namespace fhg
     {
       using boost::asio::ip::udp;
 
-      RemoteAppender::RemoteAppender (const std::string& location)
-        : logserver_ (*udp::resolver (io_service_)
+      RemoteAppender::RemoteAppender ( const std::string& location
+                                     , boost::asio::io_service& io_service
+                                     )
+        : io_service_ (io_service)
+        , logserver_ (*udp::resolver (io_service_)
                      . resolve
                        ( udp::resolver::query
                          ( udp::v4()
-                         , fhg::util::split_string (location, ':').first.c_str()
-                         , "0"
+                         , fhg::util::split_string (location, ':').first
+                         , fhg::util::split_string (location, ':').second
+                         , udp::resolver::query::flags()
                          )
                        )
                      )
         , socket_ (new udp::socket (io_service_, udp::v4()))
-      {
-        logserver_.port ( boost::lexical_cast<unsigned long>
-                          (fhg::util::split_string (location, ':').second)
-                        );
-      }
+      {}
 
       RemoteAppender::~RemoteAppender()
       {

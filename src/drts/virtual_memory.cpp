@@ -3,6 +3,8 @@
 #include <drts/drts.hpp>
 #include <drts/virtual_memory.hpp>
 
+#include <drts/private/scoped_allocation.hpp>
+
 #include <we/type/value/poke.hpp>
 
 #include <fhg/util/make_unique.hpp>
@@ -26,7 +28,6 @@ namespace gspc
       , std::string const& description
       )
     {
-      // taken from bin/gpish
       gpi::pc::type::segment_id_t const segment_id (1);
 
       gpi::pc::type::handle_id_t handle_id
@@ -93,6 +94,29 @@ namespace gspc
           (drts->_virtual_memory_api, size, description)
         )
   {}
+  vmem_allocation::vmem_allocation ( scoped_runtime_system const* const drts
+                                   , unsigned long size
+                                   , std::string const& description
+                                   , char const* const data
+                                   )
+    : vmem_allocation (drts, size, description)
+  {
+    scoped_allocation const buffer
+      (drts->_virtual_memory_api, "vmem_allocation_buffer", size);
+
+    char* const content
+      (static_cast<char* const> (drts->_virtual_memory_api->ptr (buffer)));
+    std::copy (data, data + size, content);
+
+    drts->_virtual_memory_api->wait
+      ( drts->_virtual_memory_api->memcpy
+        ( {_->_handle_id, 0}
+        , {buffer, 0}
+        , size
+        , GPI_PC_INVAL
+        )
+      );
+  }
   vmem_allocation::~vmem_allocation()
   {}
   std::string const vmem_allocation::handle() const
@@ -108,16 +132,34 @@ namespace gspc
 
     return oss.str();
   }
-  pnet::type::value::value_type vmem_allocation::global_memory_range() const
+  std::size_t vmem_allocation::size() const
   {
-    pnet::type::value::value_type name;
-    pnet::type::value::poke ("name", name, handle());
+    return _->_size;
+  }
+  pnet::type::value::value_type vmem_allocation::global_memory_range
+    ( std::size_t const offset
+    , std::size_t const size
+    ) const
+  {
+    if ((offset + size) > _->_size)
+    {
+      throw std::logic_error
+        ((boost::format ("slice [%1%, %2%) is outside of allocation")
+         % offset % (offset + size)
+         ).str()
+        );
+    }
+
     pnet::type::value::value_type range;
-    pnet::type::value::poke ("handle", range, name);
-    pnet::type::value::poke ("offset", range, 0UL);
-    pnet::type::value::poke ("size", range, _->_size);
+    pnet::type::value::poke (std::list<std::string> {"handle", "name"}, range, handle());
+    pnet::type::value::poke (std::list<std::string> {"offset"}, range, offset);
+    pnet::type::value::poke (std::list<std::string> {"size"}, range, size);
 
     return range;
+  }
+  pnet::type::value::value_type vmem_allocation::global_memory_range() const
+  {
+    return global_memory_range (0UL, _->_size);
   }
   vmem_allocation::vmem_allocation (vmem_allocation&& other)
     : _ (std::move (other._))

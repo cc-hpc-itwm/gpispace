@@ -28,6 +28,7 @@ fhg_add_test (
 
 fhg_add_test (diagnostics.cpp
   BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/.."
   LINK_LIBRARIES pnet ${Boost_FILESYSTEM_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY}
   DESCRIPTION "check parser diagnostics"
 )

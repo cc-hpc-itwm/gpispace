@@ -6,6 +6,8 @@
 #include <pnete/data/handle/function.hpp>
 #include <pnete/data/handle/place.hpp>
 
+#include <fhg/util/boost/variant.hpp>
+
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/port.hpp>
@@ -78,12 +80,12 @@ namespace fhg
             if (port.get().direction() == we::type::PORT_TUNNEL)
             {
               const boost::optional<std::string> tunnel_direction
-                (port.get().properties().get
-                  ("fhg.pnete.tunnel.direction")
+                ( util::boost::get_or_none<std::string>
+                    (port.get().properties().get ({"fhg", "pnete", "tunnel", "direction"}))
                 );
 
               return !tunnel_direction ? we::type::PORT_TUNNEL
-                :  *tunnel_direction == "out" ? we::type::PORT_OUT
+                : *tunnel_direction == "out" ? we::type::PORT_OUT
                 : *tunnel_direction == "in" ? we::type::PORT_IN
                 : throw std::runtime_error
                   ("bad fhg.pnete.tunnel.direction (neither 'in' nor 'out')");
@@ -153,7 +155,7 @@ namespace fhg
 
         bool port::is_connected() const
         {
-          return get().place;
+          return !!get().place;
         }
         place port::connected_place() const
         {
@@ -168,11 +170,11 @@ namespace fhg
                  (std::make_pair (name.toStdString(), get().direction()));
         }
 
-        void port::set_property ( const ::we::type::property::key_type& key
+        void port::set_property ( const ::we::type::property::path_type& path
                                 , const ::we::type::property::value_type& val
                                 ) const
         {
-          change_manager().set_property (*this, key, val);
+          change_manager().set_property (*this, path, val);
         }
 
         void port::move (const QPointF& position, const bool outer) const

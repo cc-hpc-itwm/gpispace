@@ -27,10 +27,10 @@ namespace fhg
         return t;
       }
 
-      void put (T const & t)
+      template<class... Args> void put (Args&&... args)
       {
         boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
-        m_container.push_back (t);
+        m_container.emplace_back (std::forward<Args> (args)...);
         m_get_cond.notify_one();
       }
 

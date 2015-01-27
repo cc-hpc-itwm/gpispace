@@ -11,7 +11,9 @@
 #include <we/type/value/read.hpp>
 #include <we/type/value/poke.hpp>
 
-#include <fhg/util/now.hpp>
+#include <we/test/layer.common.hpp>
+
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/random_string.hpp>
 
 #include <boost/lexical_cast.hpp>
@@ -69,6 +71,7 @@ struct daemon
             , std::bind (&daemon::canceled, this, std::placeholders::_1)
             , std::bind (&daemon::discover, this, std::placeholders::_1, std::placeholders::_2)
             , std::bind (&daemon::discovered, this, std::placeholders::_1, std::placeholders::_2)
+            , std::bind (&daemon::token_put, this, std::placeholders::_1)
             , std::bind (&daemon::generate_id, this)
             , _random_engine
             )
@@ -94,6 +97,9 @@ struct daemon
     BOOST_REQUIRE (_to_finished.empty());
     BOOST_REQUIRE (_to_failed.empty());
     BOOST_REQUIRE (_to_canceled.empty());
+    BOOST_REQUIRE (_to_discover.empty());
+    BOOST_REQUIRE (_to_discovered.empty());
+    BOOST_REQUIRE (_to_token_put.empty());
   }
 
 #define INC_IN_PROGRESS(COUNTER)                                \
@@ -295,6 +301,29 @@ struct daemon
     DEC_IN_PROGRESS (replies);
   }
 
+  DECLARE_EXPECT_CLASS ( token_put
+                       , std::string put_token_id
+                       , _put_token_id (put_token_id)
+                       , we::layer::id_type _put_token_id
+                       , _put_token_id == put_token_id
+                       );
+
+  void token_put (std::string put_token_id)
+  {
+    std::list<expect_token_put*>::iterator const e
+      ( boost::find_if ( _to_token_put
+                       , std::bind (&expect_token_put::eq, std::placeholders::_1, put_token_id)
+                       )
+      );
+
+    BOOST_REQUIRE (e != _to_token_put.end());
+
+    (*e)->happened();
+    _to_token_put.erase (e);
+
+    DEC_IN_PROGRESS (replies);
+  }
+
   void do_submit ( we::layer::id_type id
                  , we::type::activity_t act
                  )
@@ -350,6 +379,17 @@ struct daemon
     layer.discovered (discover_id, result);
   }
 
+  void do_put_token ( we::layer::id_type id
+                    , std::string put_token_id
+                    , std::string place_name
+                    , pnet::type::value::value_type value
+                    )
+  {
+    INC_IN_PROGRESS (replies);
+
+    layer.put_token (id, put_token_id, place_name, value);
+  }
+
   boost::mutex _generate_id_mutex;
   unsigned long _cnt;
   we::layer::id_type generate_id()
@@ -366,20 +406,6 @@ struct daemon
   unsigned long _in_progress_jobs_layer;
   unsigned long _in_progress_replies;
 };
-
-namespace
-{
-  namespace value
-  {
-    pnet::type::value::value_type const CONTROL
-      (pnet::type::value::read ("[]"));
-  }
-  namespace signature
-  {
-    pnet::type::signature::signature_type CONTROL (std::string ("control"));
-    pnet::type::signature::signature_type LONG (std::string ("long"));
-  }
-}
 
 BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
 {
@@ -421,47 +447,6 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
       );
 
     expect_finished const _ (this, id, activity_expected);
-
-    do_submit (id, activity);
-  }
-}
-
-BOOST_FIXTURE_TEST_CASE (invalid_expressions_shall_fail, daemon)
-{
-  we::type::transition_t transition
-    ( "expression"
-    , we::type::expression_t ("${out} := ${in} + 1UL")
-    , boost::none
-    , true
-    , we::type::property::type()
-    , we::priority_type()
-    );
-  transition.add_port
-    (we::type::port_t ( "in"
-                      , we::type::PORT_IN
-                      , signature::LONG
-                      , we::type::property::type()
-                      )
-    );
-  transition.add_port
-    (we::type::port_t ( "out"
-                      , we::type::PORT_OUT
-                      , signature::LONG
-                      , we::type::property::type()
-                      )
-    );
-
-  we::type::activity_t activity (transition, boost::none);
-  activity.add_input ( transition.input_port_by_name ("in")
-                     , pnet::type::value::read ("1L")
-                     );
-
-  we::layer::id_type const id (generate_id());
-
-  {
-    const std::string message ("type error: eval  +  (1L, 1UL)");
-
-    expect_failed const _ (this, id, message);
 
     do_submit (id, activity);
   }
@@ -525,116 +510,6 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
     }
 
     do_finished (child_id, activity_result);
-  }
-}
-
-namespace
-{
-  std::tuple< we::type::transition_t
-            , we::type::transition_t
-            , we::transition_id_type
-            >
-    net_with_childs (bool put_on_input, std::size_t token_count)
-  {
-    we::type::transition_t transition
-      ( "module call"
-      , we::type::module_call_t
-        ( "m"
-        , "f"
-        , std::unordered_map<std::string, std::string>()
-        , std::list<we::type::memory_transfer>()
-        , std::list<we::type::memory_transfer>()
-        )
-      , boost::none
-      , true
-      , we::type::property::type()
-      , we::priority_type()
-      );
-    we::port_id_type const port_id_in
-      ( transition.add_port ( we::type::port_t ( "in"
-                                               , we::type::PORT_IN
-                                               , signature::CONTROL
-                                               , we::type::property::type()
-                                               )
-                            )
-      );
-    we::port_id_type const port_id_out
-      ( transition.add_port ( we::type::port_t ( "out"
-                                               , we::type::PORT_OUT
-                                               , signature::CONTROL
-                                               , we::type::property::type()
-                                               )
-                            )
-      );
-
-    we::type::net_type net;
-
-    we::place_id_type const place_id_in
-      (net.add_place (place::type ("in", signature::CONTROL)));
-    we::place_id_type const place_id_out
-      (net.add_place (place::type ("out", signature::CONTROL)));
-
-    for (std::size_t i (0); i < token_count; ++i)
-    {
-      net.put_value (put_on_input ? place_id_in : place_id_out, value::CONTROL);
-    }
-
-    we::transition_id_type const transition_id
-      (net.add_transition (transition));
-
-    {
-      using we::edge::TP;
-      using we::edge::PT;
-      we::type::property::type empty;
-
-      net.add_connection (TP, transition_id, place_id_out, port_id_out, empty);
-      net.add_connection (PT, transition_id, place_id_in, port_id_in, empty);
-    }
-
-    return std::make_tuple
-      ( we::type::transition_t ( "net"
-                               , net
-                               , boost::none
-                               , true
-                               , we::type::property::type()
-                               , we::priority_type()
-                               )
-      , transition
-      , transition_id
-      );
-  }
-
-  std::tuple< we::type::activity_t
-            , we::type::activity_t
-            , we::type::activity_t
-            , we::type::activity_t
-            >
-    activity_with_child (std::size_t token_count)
-  {
-    we::transition_id_type transition_id_child;
-    we::type::transition_t transition_in;
-    we::type::transition_t transition_out;
-    we::type::transition_t transition_child;
-    std::tie (transition_in, transition_child, transition_id_child) =
-      net_with_childs (true, token_count);
-    std::tie (transition_out, std::ignore, std::ignore) =
-      net_with_childs (false, token_count);
-
-    we::type::activity_t activity_input (transition_in, boost::none);
-    we::type::activity_t activity_output (transition_out, boost::none);
-
-    we::type::activity_t activity_child
-      (transition_child, transition_id_child);
-    activity_child.add_input
-      (transition_child.input_port_by_name ("in"), value::CONTROL);
-
-    we::type::activity_t activity_result
-      (transition_child, transition_id_child);
-    activity_result.add_output
-      (transition_child.output_port_by_name ("out"), value::CONTROL);
-
-    return std::make_tuple
-      (activity_input, activity_output, activity_child, activity_result);
   }
 }
 
@@ -1017,103 +892,6 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-#ifdef NDEBUG
-namespace
-{
-  void submit_fake ( std::vector<we::layer::id_type>* ids
-                   , we::layer::id_type id
-                   , we::type::activity_t
-                   )
-  {
-    ids->push_back (id);
-  }
-
-  void finished_fake ( volatile bool* finished
-                     , we::layer::id_type
-                     , we::type::activity_t
-                     )
-  {
-    *finished = true;
-  }
-
-  void cancel (we::layer::id_type){}
-  void failed (we::layer::id_type, std::string){}
-  void canceled (we::layer::id_type){}
-  void discover (we::layer::id_type, we::layer::id_type){}
-  void discovered (we::layer::id_type, sdpa::discovery_info_t){}
-
-  boost::mutex generate_id_mutex;
-  we::layer::id_type generate_id()
-  {
-    boost::mutex::scoped_lock const _ (generate_id_mutex);
-    static unsigned long _cnt (0);
-    return boost::lexical_cast<we::layer::id_type> (++_cnt);
-  }
-}
-
-BOOST_AUTO_TEST_CASE
-  (performance_finished_shall_be_called_after_finished_N_childs)
-{
-  const std::size_t num_activities (10);
-  const std::size_t num_child_per_activity (250);
-
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_output;
-  we::type::activity_t activity_child;
-  we::type::activity_t activity_result;
-  std::tie (activity_input, activity_output, activity_child, activity_result)
-    = activity_with_child (num_child_per_activity);
-
-  std::vector<we::layer::id_type> child_ids;
-  child_ids.reserve (num_child_per_activity * num_activities);
-
-  bool finished (false);
-
-  std::mt19937 _random_engine;
-
-  we::layer layer
-    ( std::bind (&submit_fake, &child_ids, std::placeholders::_1, std::placeholders::_2)
-    , std::bind (&cancel, std::placeholders::_1)
-    , std::bind (&finished_fake, &finished, std::placeholders::_1, std::placeholders::_2)
-    , &failed
-    , &canceled
-    , &discover
-    , &discovered
-    , &generate_id
-    , _random_engine
-    );
-
-  double t (-fhg::util::now());
-
-  for (std::size_t i (0); i < num_activities; ++i)
-  {
-    layer.submit (generate_id(), activity_input);
-  }
-
-  //! \todo Don't busy wait
-  while (child_ids.size() != child_ids.capacity())
-  {
-    boost::this_thread::yield();
-  }
-
-  for (we::layer::id_type child_id : child_ids)
-  {
-    layer.finished (child_id, activity_result);
-  }
-
-  //! \todo Don't busy wait
-  while (!finished)
-  {
-    boost::this_thread::yield();
-  }
-
-  t += fhg::util::now();
-
-  BOOST_REQUIRE_LT (t, 1.0);
-}
-#endif
-
-
 BOOST_FIXTURE_TEST_CASE
   (discovered_shall_be_called_after_discover_one_child, daemon)
 {
@@ -1225,6 +1003,46 @@ BOOST_FIXTURE_TEST_CASE
 
     do_finished (child_id_A, activity_result);
     do_finished (child_id_B, activity_result);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE (layer_properly_puts_token, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_output;
+  we::type::activity_t activity_child;
+  we::type::activity_t activity_result;
+  std::tie (activity_input, std::ignore, activity_child, activity_result)
+    = activity_with_child (1);
+  std::tie (std::ignore, activity_output, std::ignore, std::ignore)
+    = activity_with_child (2);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
+
+  {
+    expect_submit const _ (this, &child_id_a, activity_child);
+
+    do_submit (id, activity_input);
+  }
+
+  {
+    std::string const put_token_id (fhg::util::random_string());
+    expect_token_put const token_put (this, put_token_id);
+    //! \note Race: can't ensure that child_id_b is triggered by putting token
+    expect_submit const submitted (this, &child_id_b, activity_child);
+
+    do_put_token (id, put_token_id, "in", value::CONTROL);
+  }
+
+  {
+    //! \note Race: can't ensure that both finishes are required
+    expect_finished const _ (this, id, activity_output);
+
+    do_finished (child_id_a, activity_result);
+    do_finished (child_id_b, activity_result);
   }
 }
 
@@ -1350,6 +1168,7 @@ namespace
                , std::bind (&disallow, "canceled")
                , std::bind (&disallow, "discover")
                , std::bind (&disallow, "discovered")
+               , std::bind (&disallow, "token_put")
                , std::bind
                  (&wfe_and_counter_of_submitted_requirements::generate_id, this)
                , _random_extraction_engine

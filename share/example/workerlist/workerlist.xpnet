@@ -16,7 +16,7 @@
         <properties name="fhg">
           <properties name="drts">
             <properties name="schedule">
-              <property key="num_worker">${num_workers}</property>
+              <property key="num_worker">"${num_workers}"</property>
             </properties>
           </properties>
         </properties>

@@ -6,100 +6,86 @@
 #include <sdpa/capability.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
-#include <sdpa/daemon/exceptions.hpp>
 
 #include <boost/optional.hpp>
+#include <boost/algorithm/string.hpp>
 
-namespace sdpa { namespace daemon {
+namespace sdpa
+{
+  namespace daemon
+  {
+    class Worker {
+    public:
 
-  /**
-    This class holds all information about an attached worker.
+      typedef boost::shared_ptr<Worker> ptr_t;
+      typedef boost::recursive_mutex mutex_type;
+      typedef boost::unique_lock<mutex_type> lock_type;
 
-    On the orchestrator this represents an aggregator and on the aggregator
-    all information about attached NREs is held in this class.
-  */
+      explicit Worker ( const worker_id_t& name
+                      , const boost::optional<unsigned int>& cap
+                      , const capabilities_set_t&
+                      , const bool children_allowed
+                      , const std::string& hostname
+                      , const fhg::com::p2p::address_t& address
+                      );
 
-  class Worker {
-  public:
+      void assign (const job_id_t&);
+      void submit(const job_id_t&);
 
-    typedef boost::shared_ptr<Worker> ptr_t;
-    typedef boost::recursive_mutex mutex_type;
-    typedef boost::unique_lock<mutex_type> lock_type;
+      void acknowledge(const job_id_t&);
 
-    /**
-      A worker has a globally unique name.
+      double lastTimeServed() {lock_type lock(mtx_); return last_time_served_; }
 
-      @param name a unique name for the worker
-      */
-    explicit Worker( 	const worker_id_t& name,
-    					const boost::optional<unsigned int>& cap
-                   , const capabilities_set_t&);
+      const worker_id_t &name() const { lock_type lock(mtx_); return name_; }
+      const std::string hostname() const;
+      fhg::com::p2p::address_t address() const;
+      boost::optional<unsigned int> capacity() const { lock_type lock(mtx_); return capacity_; }
 
-    void submit(const job_id_t&);
+      // capabilities
+      const capabilities_set_t& capabilities() const;
+      bool children_allowed() const { return children_allowed_;}
 
-    /**
-	 Acknowledge a given job id and move it to the acknowledged_ queue.
+      bool addCapabilities(const capabilities_set_t& cpbset);
+      bool removeCapabilities(const capabilities_set_t& cpbset);
+      bool hasCapability(const std::string& cpbName) const;
 
-	 @param job_id the job_id to acknowledge
-	 */
-    void acknowledge(const job_id_t&);
+      bool has_job( const job_id_t& job_id ) const;
+      bool has_pending_jobs() const;
 
-    // update last service time
-    double lastScheduleTime() {lock_type lock(mtx_); return last_schedule_time_; }
+      void deleteJob(const job_id_t &job_id );
 
-    /**
-      Return the name of the worker.
-    */
-    const worker_id_t &name() const { lock_type lock(mtx_); return name_; }
+      // methods related to reservation
+      bool isReserved() const;
 
-    /**
-         Return the rank of the worker.
-     */
-    boost::optional<unsigned int> capacity() const { lock_type lock(mtx_); return capacity_; }
+      // cost
+      double cost_assigned_jobs (std::function<double (job_id_t job_id)>) const;
 
-    // capabilities
-    const capabilities_set_t& capabilities() const;
+      bool remove_job_if_pending (const job_id_t& job_id);
+    private:
+      void reserve();
+      void free();
+    public:
 
-    bool addCapabilities(const capabilities_set_t& cpbset);
-    void removeCapabilities(const capabilities_set_t& cpbset);
-    bool hasCapability(const std::string& cpbName);
+      std::set<job_id_t> getJobListAndCleanQueues();
 
-    /**
-         Checks if the worker has job
-    */
-    bool has_job( const job_id_t& job_id );
+    private:
+      worker_id_t name_; //! name of the worker
+      boost::optional<unsigned int> capacity_;
+      capabilities_set_t capabilities_;
+      bool children_allowed_;
+      std::string hostname_;
+      fhg::com::p2p::address_t address_;
+      double last_time_served_;
 
+      std::set<job_id_t> pending_;
+      std::set<job_id_t> submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
+      std::set<job_id_t> acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
 
-    /**
-      Remove a job that was finished or failed from the acknowledged_ queue
+      bool reserved_;
 
-      a second flag is needed in the case the job is canceled (in order to look into the other queues, as well)
-      @param last_job_id the id of the last sucessfully submitted job
-    */
-    void deleteJob(const job_id_t &job_id );
-
-    // methods related to reservation
-    bool isReserved();
-  private:
-    void reserve();
-    void free();
-  public:
-
-    std::set<job_id_t> getJobListAndCleanQueues();
-
-  private:
-    worker_id_t name_; //! name of the worker
-    boost::optional<unsigned int> capacity_;
-    capabilities_set_t capabilities_;
-    double last_schedule_time_;
-
-    std::set<job_id_t> submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
-    std::set<job_id_t> acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
-
-    bool reserved_;
-
-    mutable mutex_type mtx_;
-  };
-}}
+      mutable mutex_type mtx_;
+    };
+  }
+}
 
 #endif

@@ -8,6 +8,8 @@
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 #include <functional>
 
 BOOST_GLOBAL_FIXTURE (setup_logging)
@@ -28,7 +30,8 @@ namespace
       , _announce_cancel (announce_cancel)
     {}
 
-    void handleCancelJobEvent (const sdpa::events::CancelJobEvent* e) override
+    void handleCancelJobEvent
+      (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent* e) override
     {
       const std::map<std::string, job_t>::const_iterator it
         ( std::find_if
@@ -40,7 +43,7 @@ namespace
           )
         );
       BOOST_REQUIRE (it != _jobs.end());
-      BOOST_REQUIRE_EQUAL (e->from(), it->second._owner);
+      BOOST_REQUIRE_EQUAL (source, it->second._owner);
 
       _announce_cancel (it->first);
     }
@@ -51,8 +54,9 @@ namespace
       _jobs.erase (name);
 
       _network.perform
-        ( sdpa::events::SDPAEvent::Ptr
-          (new sdpa::events::CancelJobAckEvent (_name, job._owner, job._id))
+        ( job._owner
+        , sdpa::events::SDPAEvent::Ptr
+            (new sdpa::events::CancelJobAckEvent (job._id))
         );
     }
 
@@ -63,8 +67,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE (cancel_no_agent)
 {
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
 
   utils::client client (orchestrator);
 
@@ -78,8 +81,7 @@ BOOST_AUTO_TEST_CASE (cancel_no_agent)
 
 BOOST_AUTO_TEST_CASE (cancel_with_agent)
 {
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
   const utils::agent agent (orchestrator);
 
   fhg::util::thread::event<> job_submitted;
@@ -106,8 +108,7 @@ BOOST_AUTO_TEST_CASE (cancel_with_agent)
 
 BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
 {
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
 
   utils::client client (orchestrator);
 
@@ -123,8 +124,7 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
 
 BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
 {
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
   const utils::agent agent (orchestrator);
 
   fhg::util::thread::event<> job_submitted;

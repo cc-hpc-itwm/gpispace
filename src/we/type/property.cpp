@@ -2,7 +2,6 @@
 
 #include <we/type/property.hpp>
 
-#include <we/type/value/path/split.hpp>
 #include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
 #include <we/type/value/dump.hpp>
@@ -16,88 +15,6 @@
 #include <functional>
 #include <iterator>
 
-namespace
-{
-  struct first_is : public std::unary_function<const std::string&, bool>
-  {
-    first_is (const std::string& what)
-      : _what (what)
-    {}
-
-    template<typename T>
-    bool operator() (const T& x)
-    {
-      return x.first == _what;
-    }
-
-  private:
-    const std::string _what;
-  };
-
-  class visitor_remove : public boost::static_visitor<void>
-  {
-  public:
-    visitor_remove ( const std::list<std::string>::const_iterator& key
-                   , const std::list<std::string>::const_iterator& end
-                   , pnet::type::value::value_type& node
-                   )
-      : _key (key)
-      , _end (end)
-      , _node (node)
-    {}
-
-    void operator() (pnet::type::value::structured_type& m) const
-    {
-      if (_key == _end)
-      {
-        _node = pnet::type::value::value_type();
-      }
-      else
-      {
-        pnet::type::value::structured_type::iterator pos
-          (std::find_if (m.begin(), m.end(), first_is (*_key)));
-
-        if (pos == m.end())
-        {
-          throw std::runtime_error ("value_type::remove: key not found");
-        }
-
-        const std::list<std::string>::const_iterator next
-          (std::next (_key));
-
-        if (next == _end)
-        {
-          m.erase (pos);
-        }
-        else
-        {
-          pnet::type::value::value_type& v (pos->second);
-
-          boost::apply_visitor (visitor_remove (next, _end, v), v);
-        }
-      }
-    }
-
-    template<typename T> void operator() (T&) const
-    {
-      if (_key == _end)
-      {
-        _node = pnet::type::value::value_type();
-      }
-      else
-      {
-        throw std::runtime_error
-          ("value_type::remove: trying to remove from unstructured value");
-      }
-    }
-
-  private:
-    const std::list<std::string>::const_iterator& _key;
-    const std::list<std::string>::const_iterator& _end;
-    pnet::type::value::value_type& _node;
-  };
-}
-
 namespace we
 {
   namespace type
@@ -108,7 +25,7 @@ namespace we
         : _value (pnet::type::value::structured_type())
       {}
 
-      pnet::type::value::value_type const& type::value() const
+      value_type const& type::value() const
       {
         return _value;
       }
@@ -118,67 +35,102 @@ namespace we
         return boost::get<pnet::type::value::structured_type const&> (_value);
       }
 
-      void type::set ( const path_type::const_iterator& pos
-                     , const path_type::const_iterator& end
-                     , const value_type& val
-                     )
-      {
-        pnet::type::value::poke (pos, end, _value, val);
-      }
-
       void type::set (const path_type& path, const value_type& val)
       {
-        return set (path.begin(), path.end(), val);
-      }
-
-      void type::set (const std::string& path, const value_type& val)
-      {
-        return set (pnet::type::value::path::split (path), val);
-      }
-
-      boost::optional<const value_type&> type::get
-        ( const path_type::const_iterator& pos
-        , const path_type::const_iterator& end
-        ) const
-      {
-        boost::optional<const pnet::type::value::value_type&> mapped
-          (pnet::type::value::peek (pos, end, _value));
-
-        if (!mapped)
-        {
-          return boost::none;
-        }
-
-        return fhg::util::boost::get_or_none<value_type> (*mapped);
+        pnet::type::value::poke (path.begin(), path.end(), _value, val);
       }
 
       boost::optional<const value_type&>
         type::get (const path_type& path) const
       {
-        return get (path.begin(), path.end());
+        return pnet::type::value::peek (path.begin(), path.end(), _value);
       }
 
-      boost::optional<const value_type&>
-        type::get (const std::string& path) const
+      namespace
       {
-        return get (pnet::type::value::path::split (path));
+        struct first_is : public std::unary_function<const std::string&, bool>
+        {
+          first_is (const std::string& what)
+            : _what (what)
+          {}
+
+          template<typename T>
+          bool operator() (const T& x)
+          {
+            return x.first == _what;
+          }
+
+        private:
+          const std::string _what;
+        };
+
+        class visitor_remove : public boost::static_visitor<void>
+        {
+        public:
+          visitor_remove ( const std::list<std::string>::const_iterator& key
+                         , const std::list<std::string>::const_iterator& end
+                         , value_type& node
+                         )
+            : _key (key)
+            , _end (end)
+            , _node (node)
+          {}
+
+          void operator() (pnet::type::value::structured_type& m) const
+          {
+            if (_key == _end)
+            {
+              _node = value_type();
+            }
+            else
+            {
+              pnet::type::value::structured_type::iterator pos
+                (std::find_if (m.begin(), m.end(), first_is (*_key)));
+
+              if (pos == m.end())
+              {
+                throw std::runtime_error ("value_type::remove: key not found");
+              }
+
+              const std::list<std::string>::const_iterator next
+                (std::next (_key));
+
+              if (next == _end)
+              {
+                m.erase (pos);
+              }
+              else
+              {
+                value_type& v (pos->second);
+
+                boost::apply_visitor (visitor_remove (next, _end, v), v);
+              }
+            }
+          }
+
+          template<typename T> void operator() (T&) const
+          {
+            if (_key == _end)
+            {
+              _node = value_type();
+            }
+            else
+            {
+              throw std::runtime_error
+                ("value_type::remove: trying to remove from unstructured value");
+            }
+          }
+
+        private:
+          const std::list<std::string>::const_iterator& _key;
+          const std::list<std::string>::const_iterator& _end;
+          value_type& _node;
+        };
       }
 
-      void type::del ( const path_type::const_iterator& pos
-                     , const path_type::const_iterator& end
-                     )
+      void type::del (path_type const& path)
       {
-        boost::apply_visitor (visitor_remove (pos, end, _value), _value);
-      }
-
-      void type::del (const path_type& path)
-      {
-        return del (path.begin(), path.end());
-      }
-
-      void type::del (const std::string& path)
-      {
-        return del (pnet::type::value::path::split (path));
+        boost::apply_visitor (visitor_remove (path.begin(), path.end(), _value), _value);
       }
 
       namespace dump

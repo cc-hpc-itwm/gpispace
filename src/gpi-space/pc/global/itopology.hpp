@@ -26,24 +26,21 @@ namespace gpi
         virtual bool is_master () const = 0;
 
         // initiate a global alloc
-        virtual int alloc ( const gpi::pc::type::segment_id_t segment
-                          , const gpi::pc::type::handle_t
-                          , const gpi::pc::type::offset_t
-                          , const gpi::pc::type::size_t size
-                          , const gpi::pc::type::size_t local_size
-                          , const std::string & name
-                          ) = 0;
+        virtual void alloc ( const gpi::pc::type::segment_id_t segment
+                           , const gpi::pc::type::handle_t
+                           , const gpi::pc::type::offset_t
+                           , const gpi::pc::type::size_t size
+                           , const gpi::pc::type::size_t local_size
+                           , const std::string & name
+                           ) = 0;
 
-        virtual int free (const gpi::pc::type::handle_t) = 0;
+        virtual void free (const gpi::pc::type::handle_t) = 0;
 
-        virtual int add_memory ( const gpi::pc::type::segment_id_t seg_id
-                               , std::string const & url
-                               ) = 0;
+        virtual void add_memory ( const gpi::pc::type::segment_id_t seg_id
+                                , std::string const & url
+                                ) = 0;
 
-        virtual int del_memory (const gpi::pc::type::segment_id_t seg_id) = 0;
-
-        virtual int go () = 0;
-        virtual int wait_for_go () = 0;
+        virtual void del_memory (const gpi::pc::type::segment_id_t seg_id) = 0;
       };
     }
   }

@@ -88,6 +88,9 @@ namespace gpi
                         , const gpi::pc::type::size_t size
                         , boost::system::error_code &ec
                         );
+        double get_transfer_costs ( const gpi::pc::type::memory_region_t&
+                                  , const gpi::rank_t
+                                  ) const override;
 
         void * m_ptr;
         int    m_fd;

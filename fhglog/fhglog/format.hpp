@@ -82,16 +82,6 @@ namespace fhg
               os << std::hex << evt.tid();
             }
             break;
-          case '#':
-            {
-              fhg::util::first_then<std::string> sep ("#", ",#");
-
-              for (std::string const& tag : evt.tags())
-              {
-                os << sep << tag;
-              }
-            }
-            break;
           case 'l':
             {
               fhg::util::first_then<std::string> sep ("", "->");

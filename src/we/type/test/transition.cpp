@@ -9,6 +9,7 @@
 //! \todo: eliminate this include that just completes the type
 #include <we/type/net.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/random_string.hpp>
 
 namespace
@@ -43,14 +44,8 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_constant_string)
   std::string const key (fhg::util::random_string());
   std::string const value (fhg::util::random_string_without ("\\\""));
 
-  we::type::property::path_type path;
-  path.push_back ("fhg");
-  path.push_back ("drts");
-  path.push_back ("schedule");
-  path.push_back (key);
-
   we::type::property::type properties;
-  properties.set (path, "\"" + value + "\"");
+  properties.set ({"fhg", "drts", "schedule", key}, "\"" + value + "\"");
 
   we::type::transition_t const transition
     ( fhg::util::random_string()
@@ -72,14 +67,10 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_constant_long)
   std::string const key (fhg::util::random_string());
   unsigned long const value (rand());
 
-  we::type::property::path_type path;
-  path.push_back ("fhg");
-  path.push_back ("drts");
-  path.push_back ("schedule");
-  path.push_back (key);
-
   we::type::property::type properties;
-  properties.set (path, boost::lexical_cast<std::string> (value) + "UL");
+  properties.set ( {"fhg", "drts", "schedule", key}
+                 , boost::lexical_cast<std::string> (value) + "UL"
+                 );
 
   we::type::transition_t const transition
     ( fhg::util::random_string()
@@ -102,14 +93,8 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_simple)
   std::string const port_name (fhg::util::random_identifier());
   unsigned long const value (rand());
 
-  we::type::property::path_type path;
-  path.push_back ("fhg");
-  path.push_back ("drts");
-  path.push_back ("schedule");
-  path.push_back (key);
-
   we::type::property::type properties;
-  properties.set (path, "${" + port_name + "}");
+  properties.set ({"fhg", "drts", "schedule", key}, "${" + port_name + "}");
 
   we::type::transition_t transition
     ( fhg::util::random_string()
@@ -148,14 +133,10 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_sum)
   unsigned long const value1 (rand());
   unsigned long const value2 (rand());
 
-  we::type::property::path_type path;
-  path.push_back ("fhg");
-  path.push_back ("drts");
-  path.push_back ("schedule");
-  path.push_back (key);
-
   we::type::property::type properties;
-  properties.set (path, "${" + port_name1 + "} + ${" + port_name2 + "}");
+  properties.set ( {"fhg", "drts", "schedule", key}
+                 , "${" + port_name1 + "} + ${" + port_name2 + "}"
+                 );
 
   we::type::transition_t transition
     ( fhg::util::random_string()

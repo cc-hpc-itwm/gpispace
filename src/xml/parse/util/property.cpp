@@ -70,7 +70,7 @@ namespace xml
               ( state
               , x
               , path_and_value.first
-              , boost::get<std::string> (path_and_value.second)
+              , path_and_value.second
               );
           }
         }

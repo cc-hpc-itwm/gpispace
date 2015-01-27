@@ -41,11 +41,11 @@ namespace fhg
         }
 
         void transition::set_property
-          ( const ::we::type::property::key_type& key
+          ( const ::we::type::property::path_type& path
           , const ::we::type::property::value_type& val
           ) const
         {
-          change_manager().set_property (*this, key, val);
+          change_manager().set_property (*this, path, val);
         }
 
         void transition::move (const QPointF& position, const bool outer) const

@@ -345,8 +345,8 @@ namespace fhg
         const boost::optional<int> left_row (selected_row (_available_view));
         const boost::optional<int> right_row (selected_row (_selected_view));
 
-        _select->setEnabled (left_row);
-        _deselect->setEnabled (right_row);
+        _select->setEnabled (!!left_row);
+        _deselect->setEnabled (!!right_row);
         _move_up->setEnabled (right_row && *right_row > 0);
         _move_down->setEnabled
           (right_row && *right_row < _selected->rowCount() - 1);

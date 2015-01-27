@@ -2,6 +2,7 @@
 
 #include <utils.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/random_string.hpp>
 
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
@@ -15,13 +16,12 @@ namespace
   class drts_component_observing_capabilities : public utils::basic_drts_component
   {
   public:
-    drts_component_observing_capabilities (utils::kvs_server const& kvs_server)
-      : utils::basic_drts_component
-        (utils::random_peer_name(), kvs_server, true)
+    drts_component_observing_capabilities()
+      : utils::basic_drts_component (utils::random_peer_name(), true)
     {}
 
     virtual void handleCapabilitiesGainedEvent
-      (const sdpa::events::CapabilitiesGainedEvent* event) override
+      (fhg::com::p2p::address_t const&, const sdpa::events::CapabilitiesGainedEvent* event) override
     {
       boost::mutex::scoped_lock const _ (_mutex);
       for (const sdpa::capability_t& cpb : event->capabilities())
@@ -32,7 +32,7 @@ namespace
     }
 
     virtual void handleCapabilitiesLostEvent
-      (const sdpa::events::CapabilitiesLostEvent* event) override
+      (fhg::com::p2p::address_t const&, const sdpa::events::CapabilitiesLostEvent* event) override
     {
       boost::mutex::scoped_lock const _ (_mutex);
       for (const sdpa::capability_t& cpb : event->capabilities())
@@ -69,8 +69,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
 {
-  const utils::kvs_server kvs_server;
-  drts_component_observing_capabilities observer (kvs_server);
+  drts_component_observing_capabilities observer;
 
   const utils::agent agent (observer);
 
@@ -92,8 +91,7 @@ BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
 
 BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
 {
-  const utils::kvs_server kvs_server;
-  drts_component_observing_capabilities observer (kvs_server);
+  drts_component_observing_capabilities observer;
 
   const utils::agent agent (observer);
 

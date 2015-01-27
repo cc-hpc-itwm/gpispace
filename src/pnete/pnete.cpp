@@ -2,8 +2,6 @@
 
 #include <pnete/pnete.hpp>
 
-#include <fhgcom/kvs/kvsc.hpp>
-
 #include <iostream>
 #include <stdexcept>
 
@@ -15,9 +13,23 @@
 
 #include <pnete/ui/editor_window.hpp>
 
+#include <fhg/util/print_exception.hpp>
+
 #include <boost/program_options.hpp>
 
+namespace
+{
+  template<typename T> boost::optional<T> get_optional
+    (boost::program_options::variables_map vm, std::string what)
+  {
+    return vm.count (what)
+      ? boost::make_optional<T> (vm[what].as<T>())
+      : boost::none;
+  }
+}
+
 int main (int argc, char *argv[])
+try
 {
   namespace po = boost::program_options;
   namespace setting = fhg::pnete::setting;
@@ -71,6 +83,8 @@ int main (int argc, char *argv[])
     , po::value<decltype (plugin_paths)> (&plugin_paths)
     , "paths of plugins to load"
     )
+    ("orchestrator-host", po::value<std::string>(), "host of orchestrator")
+    ("orchestrator-port", po::value<unsigned short>(), "port of orchestrator")
     ;
 
   po::positional_options_description p;
@@ -99,8 +113,6 @@ int main (int argc, char *argv[])
   setting::splash::update (show_splash);
   setting::template_filename::update (QString::fromStdString (template_filename));
 
-  try
-  {
     std::list<fhg::util::scoped_dlhandle> plugins;
     for (std::string path : plugin_paths)
     {
@@ -108,7 +120,9 @@ int main (int argc, char *argv[])
     }
 
     fhg::pnete::PetriNetEditor pente (plugins, argc, argv);
-    pente.startup();
+    pente.startup ( get_optional<std::string> (vm, "orchestrator-host")
+                  , get_optional<unsigned short> (vm, "orchestrator-port")
+                  );
 
     if (vm.count ("port-log"))
     {
@@ -120,13 +134,11 @@ int main (int argc, char *argv[])
     }
 
     return pente.exec ();
-  }
-  catch (const std::exception& e)
-  {
-    std::cerr << "EXCEPTION: " << e.what () << std::endl;
-
-    return EXIT_FAILURE;
-  }
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EXCEPTION: ");
+  return EXIT_FAILURE;
 }
 
 namespace fhg
@@ -150,13 +162,16 @@ namespace fhg
       , _editor_windows ()
     {}
 
-    void PetriNetEditor::startup()
+    void PetriNetEditor::startup ( boost::optional<std::string> orchestrator_host
+                                 , boost::optional<unsigned short> orchestrator_port
+                                 )
     {
       showSplashScreen ();
 
       setupLocalization ();
 
-      ui::editor_window* editor_window (create_editor_window());
+      ui::editor_window* editor_window
+        (create_editor_window (orchestrator_host, orchestrator_port));
 
       setting::library_transition::update (editor_window);
 
@@ -205,9 +220,13 @@ namespace fhg
       installTranslator (&_penteTranslator);
     }
 
-    ui::editor_window* PetriNetEditor::create_editor_window()
+    ui::editor_window* PetriNetEditor::create_editor_window
+      ( boost::optional<std::string> orchestrator_host
+      , boost::optional<unsigned short> orchestrator_port
+      )
     {
-      _editor_windows << new ui::editor_window (_data_manager, _plugins);
+      _editor_windows << new ui::editor_window
+        (_data_manager, _plugins, orchestrator_host, orchestrator_port);
 
       return _editor_windows.back();
     }

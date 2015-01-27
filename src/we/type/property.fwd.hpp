@@ -17,12 +17,11 @@ namespace we
   {
     namespace property
     {
-      typedef std::string key_type;
-      typedef std::string value_type;
+      typedef pnet::type::value::value_type value_type;
 
       struct type;
 
-      typedef std::list<key_type> path_type;
+      typedef std::list<std::string> path_type;
     }
   }
 }

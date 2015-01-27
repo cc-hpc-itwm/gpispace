@@ -4,14 +4,18 @@
 #include <vector>
 #include <csignal>
 
+#include <fhglog/Configuration.hpp>
 #include <fhglog/LogMacros.hpp>
 
+#include <fhg/util/boost/asio/ip/address.hpp>
+#include <fhg/util/boost/program_options/validators/existing_path.hpp>
+#include <fhg/util/print_exception.hpp>
+
+#include <boost/iostreams/device/file_descriptor.hpp>
+#include <boost/iostreams/stream.hpp>
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <boost/filesystem/path.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
-#include <fhg/util/daemonize.hpp>
-#include <fhg/util/pidfile_writer.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 
@@ -23,23 +27,23 @@ namespace bfs = boost::filesystem;
 namespace po = boost::program_options;
 
 int main (int argc, char **argv)
+try
 {
     std::string orchName;
     std::string orchUrl;
-    std::string pidfile;
 
-    FHGLOG_SETUP();
+  boost::asio::io_service remote_log_io_service;
+  fhg::log::configure (remote_log_io_service);
 
     po::options_description desc("Allowed options");
     desc.add_options()
        ("help,h", "Display this message")
        ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
        ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
-       ("kvs-host",  po::value<std::string>()->required(), "The kvs daemon's host")
-       ("kvs-port",  po::value<std::string>()->required(), "The kvs daemon's port")
-       ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
-       ("daemonize", "daemonize after all checks were successful")
-       ;
+       ( "startup-messages-pipe"
+       , po::value<int>()->required()
+       , "pipe filedescriptor to use for communication during startup (ports used, ...)"
+       );
 
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
@@ -55,30 +59,13 @@ int main (int argc, char **argv)
 
     po::notify(vm);
 
-    if (not pidfile.empty())
-    {
-      fhg::util::pidfile_writer const pidfile_writer (pidfile);
-
-      if (vm.count ("daemonize"))
-      {
-        fhg::util::fork_and_daemonize_child_and_abandon_parent();
-      }
-
-      pidfile_writer.write();
-    }
-    else
-    {
-      if (vm.count ("daemonize"))
-      {
-        fhg::util::fork_and_daemonize_child_and_abandon_parent();
-      }
-    }
-
+  boost::asio::io_service peer_io_service;
+  boost::asio::io_service rpc_io_service;
   const sdpa::daemon::Orchestrator orchestrator
     ( orchName
     , orchUrl
-    , vm["kvs-host"].as<std::string>()
-    , vm["kvs-port"].as<std::string>()
+    , peer_io_service
+    , rpc_io_service
     );
 
   fhg::util::thread::event<> stop_requested;
@@ -86,12 +73,34 @@ int main (int argc, char **argv)
     (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
 
   fhg::util::signal_handler_manager signal_handlers;
+  fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
+    crit_error_handler (signal_handlers, logger);
 
-  signal_handlers.add_log_backtrace_and_exit_for_critical_errors (logger);
+  fhg::util::scoped_signal_handler const SIGTERM_handler
+    (signal_handlers, SIGTERM, std::bind (request_stop));
+  fhg::util::scoped_signal_handler const SIGINT_handler
+    (signal_handlers, SIGINT, std::bind (request_stop));
 
-  signal_handlers.add (SIGTERM, std::bind (request_stop));
-  signal_handlers.add (SIGINT, std::bind (request_stop));
-
+  {
+    boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
+      startup_messages_pipe ( vm["startup-messages-pipe"].as<int>()
+                            , boost::iostreams::close_handle
+                            );
+    startup_messages_pipe << fhg::util::connectable_to_address_string
+                               (orchestrator.peer_local_endpoint().address())
+                          << "\n";
+    startup_messages_pipe << orchestrator.peer_local_endpoint().port() << "\n";
+    startup_messages_pipe << fhg::util::connectable_to_address_string
+                               (orchestrator.rpc_local_endpoint().address())
+                          << "\n";
+    startup_messages_pipe << orchestrator.rpc_local_endpoint().port() << "\n";
+    startup_messages_pipe << "OKAY\n";
+  }
 
   stop_requested.wait();
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EXCEPTION: ");
+  return 1;
 }

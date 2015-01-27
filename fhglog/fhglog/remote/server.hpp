@@ -4,7 +4,6 @@
 #define FHGLOG_REMOTE_LOG_SERVER_HPP 1
 
 #include <fhglog/Logger.hpp>
-#include <fhglog/remote/appender.hpp>
 
 #include <boost/asio.hpp>
 
@@ -22,16 +21,12 @@ namespace fhg
                   , unsigned short port
                   );
 
-        void handle_receive_from ( const boost::system::error_code&
-                                 , size_t bytes_recv
-                                 );
       private:
         fhg::log::Logger::ptr_t _log;
         boost::asio::ip::udp::socket socket_;
         boost::asio::ip::udp::endpoint sender_endpoint_;
 
-        enum { max_length = (2<<16) };
-        char data_[max_length];
+        char data_[2 << 16];
 
         void async_receive();
       };

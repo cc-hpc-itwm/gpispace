@@ -19,10 +19,8 @@ namespace we
       : _v()
     {}
     bytearray::bytearray (const char* const buf, const std::size_t size)
-      : _v()
-    {
-      std::copy (buf, buf + size, std::back_inserter (_v));
-    }
+      : _v (buf, buf + size)
+    {}
     bytearray::bytearray (std::string const& s)
       : bytearray (s.data(), s.size())
     {}

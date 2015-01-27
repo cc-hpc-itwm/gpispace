@@ -9,9 +9,10 @@
 #include <we/type/value/show.hpp>
 
 #include <fhg/revision.hpp>
-#include <fhg/util/starts_with.hpp>
 #include <fhg/util/indenter.hpp>
+#include <fhg/util/print_exception.hpp>
 #include <fhg/util/read_bool.hpp>
+#include <fhg/util/starts_with.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
@@ -304,8 +305,8 @@ namespace
         std::ostringstream virt;
 
         if ( opts.show_virtual
-           && fhg::util::read_bool
-              (place.property().get ("virtual").get_value_or ("false"))
+           && boost::get<bool>
+                (place.property().get ({"virtual"}).get_value_or (false))
            )
         {
             virt << endl << props ("virtual");
@@ -377,7 +378,7 @@ namespace
                  : ""
                  );
 
-            if (place_to_port.info.get ("pnetc.tunnel"))
+            if (place_to_port.info.get ({"pnetc", "tunnel"}))
             {
               s << association();
             }
@@ -719,9 +720,9 @@ try
 
   return EXIT_SUCCESS;
 }
-catch (const std::exception& e)
+catch (...)
 {
-  std::cerr << e.what() << std::endl;
+  fhg::util::print_current_exception (std::cerr, "");
 
   return EXIT_FAILURE;
 }

@@ -1,7 +1,10 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef DRTS_VMEM_HPP
-#define DRTS_VMEM_HPP
+#ifndef DRTS_VIRTUAL_MEMORY_HPP
+#define DRTS_VIRTUAL_MEMORY_HPP
+
+#include <drts/virtual_memory.fwd.hpp>
+#include <drts/drts.fwd.hpp>
 
 #include <we/type/value.hpp>
 
@@ -21,14 +24,23 @@ namespace gspc
                     , unsigned long size
                     , std::string const& description
                     );
+    vmem_allocation ( scoped_runtime_system const* const
+                    , unsigned long size
+                    , std::string const& description
+                    , char const* const data
+                    );
 
   public:
     //! \note default, but implementation::~implementation() only known in .cpp
     ~vmem_allocation();
 
     std::string const handle() const;
+    std::size_t size() const;
 
     pnet::type::value::value_type global_memory_range() const;
+    pnet::type::value::value_type global_memory_range ( std::size_t const offset
+                                                      , std::size_t const size
+                                                      ) const;
 
     vmem_allocation (vmem_allocation const&) = delete;
     vmem_allocation& operator= (vmem_allocation const&) = delete;

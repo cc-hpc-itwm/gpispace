@@ -593,6 +593,13 @@ namespace gpi
         throw std::runtime_error ("not yet implemented");
       }
 
+      double sfs_area_t::get_transfer_costs ( const gpi::pc::type::memory_region_t& transfer
+                                            , const gpi::rank_t rank
+                                            ) const
+      {
+        return transfer.size;
+      }
+
       gpi::pc::type::size_t
       sfs_area_t::read_from_impl ( gpi::pc::type::offset_t offset
                                  , void *buffer

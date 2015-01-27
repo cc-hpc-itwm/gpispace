@@ -46,9 +46,9 @@ namespace fhg
       public:
         remote_job_waiting
           ( std::pair<we::type::activity_t, xml::parse::id::ref::function>
-          , std::string kvs_host
-          , std::string kvs_port
-          , std::string orchestrator_name
+          , std::string orchestrator_host
+          , std::string orchestrator_port
+          , boost::asio::io_service& io_service
           );
 
       protected:
@@ -71,6 +71,8 @@ namespace fhg
       public:
         editor_window ( data::manager&
                       , std::list<util::scoped_dlhandle> const& plugins
+                      , boost::optional<std::string> orchestrator_host
+                      , boost::optional<unsigned short> orchestrator_port
                       , QWidget *parent = nullptr
                       );
 
@@ -112,6 +114,9 @@ namespace fhg
 
       private:
         data::manager& _data_manager;
+
+        boost::optional<std::string> _orchestrator_host;
+        boost::optional<unsigned short> _orchestrator_port;
 
         transition_library_view* _transition_library;
         dock_widget* _transition_library_dock;

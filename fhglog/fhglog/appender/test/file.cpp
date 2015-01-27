@@ -5,7 +5,9 @@
 
 #include <fhglog/LogMacros.hpp>
 #include <fhglog/appender/file.hpp>
+#include <fhglog/format.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/read_file.hpp>
 #include <fhg/util/temporary_file.hpp>
 
@@ -14,7 +16,7 @@ BOOST_AUTO_TEST_CASE (throw_on_unwritable_file)
   BOOST_REQUIRE_THROW
     (fhg::log::FileAppender ( "/non-existing-dir/test.log"
                             ,  fhg::log::default_format::LONG()
-                            )
+                            ).append (fhg::log::LogEvent())
     , std::exception
     );
 }

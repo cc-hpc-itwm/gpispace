@@ -900,11 +900,12 @@ namespace xml
                 }
                 else
                 {
-                  util::property::set_state ( state
-                                            , prop
-                                            , state.prop_path()
-                                            , cdata.front()
-                                            );
+                  util::property::set_state
+                    ( state
+                    , prop
+                    , state.prop_path()
+                    , pnet::type::value::read (cdata.front())
+                    );
                 }
               }
               else
@@ -921,7 +922,7 @@ namespace xml
                 util::property::set_state ( state
                                           , prop
                                           , state.prop_path()
-                                          , *value
+                                          , pnet::type::value::read (*value)
                                           );
               }
 

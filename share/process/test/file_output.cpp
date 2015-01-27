@@ -5,6 +5,7 @@
 
 #include <process.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/printer/vector.hpp>
 
 BOOST_AUTO_TEST_CASE (process_file_output)

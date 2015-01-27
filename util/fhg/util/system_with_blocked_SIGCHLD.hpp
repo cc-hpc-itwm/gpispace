@@ -3,11 +3,13 @@
 #ifndef FHG_UTIL_SYSTEM_WITH_BLOCKED_SIGCHLD_HPP
 #define FHG_UTIL_SYSTEM_WITH_BLOCKED_SIGCHLD_HPP
 
+#include <string>
+
 namespace fhg
 {
   namespace util
   {
-    int system_with_blocked_SIGCHLD (const char*);
+    void system_with_blocked_SIGCHLD (std::string const&);
   }
 }
 

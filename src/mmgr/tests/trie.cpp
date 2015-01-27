@@ -5,6 +5,8 @@
 
 #include <mmgr/trie.h>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 BOOST_AUTO_TEST_CASE (trie)
 {
   TrieMap_t tm = nullptr;

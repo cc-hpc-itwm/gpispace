@@ -1,5 +1,7 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
+#include <fhg/util/print_exception.hpp>
+
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -256,6 +258,7 @@ std::ostream& operator<< (std::ostream& os, const type_3& x)
 #include <boost/archive/text_oarchive.hpp>
 
 int main (int, char**)
+try
 {
   std::stringstream ss;
 
@@ -275,4 +278,9 @@ int main (int, char**)
   }
 
   return 0;
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EX: ");
+  return 1;
 }

@@ -5,6 +5,8 @@
 
 #include <pnete/data/handle/function.hpp>
 
+#include <we/type/value/show.hpp>
+
 #include <QStandardItem>
 
 #include <boost/format.hpp>
@@ -352,14 +354,16 @@ namespace fhg
           xs ("property", props.list(), from::property);
         }
 
-        WSIG(tv, property::open, ::we::type::property::key_type, key)
+        WSIG(tv, property::open, ::we::type::property::path_type::value_type, key)
         {
           push (append (key));
         }
         WSIGE(tv, property::close) { pop(); }
         WSIG(tv, property::value, ::we::type::property::value_type, val)
         {
-          add_value (val);
+          std::ostringstream sstr;
+          sstr << pnet::type::value::show (val);
+          add_value (sstr.str());
         }
 
         WSIG(tv, structure::open, std::string, name)

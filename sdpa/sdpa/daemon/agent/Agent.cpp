@@ -13,18 +13,25 @@ namespace sdpa
   {
     Agent::Agent ( const std::string& name
                  , const std::string& url
-                 , std::string kvs_host
-                 , std::string kvs_port
+                 , boost::asio::io_service& peer_io_service
                  , boost::optional<boost::filesystem::path> const& virtual_memory_socket
-                 , const sdpa::master_info_list_t arrMasterNames
-                 , const boost::optional<std::string>& guiUrl
+                 , std::vector<name_host_port_tuple> const& masters
+                 , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
                  )
-      : GenericDaemon (name, url, kvs_host, kvs_port, virtual_memory_socket, arrMasterNames, guiUrl, true)
+      : GenericDaemon ( name
+                      , url
+                      , peer_io_service
+                      , virtual_memory_socket
+                      , masters
+                      , gui_info
+                      , true
+                      )
     {}
 
-    void Agent::handleJobFinishedEvent (const events::JobFinishedEvent* pEvt)
+    void Agent::handleJobFinishedEvent
+      (fhg::com::p2p::address_t const& source, const events::JobFinishedEvent* pEvt)
     {
-      child_proxy (this, pEvt->from()).job_finished_ack (pEvt->job_id());
+      child_proxy (this, source).job_finished_ack (pEvt->job_id());
 
       Job* pJob (findJob (pEvt->job_id()));
       if (!hasWorkflowEngine())
@@ -35,7 +42,8 @@ namespace sdpa
       }
       else
       {
-        scheduler().workerFinished (pEvt->from(), pEvt->job_id());
+        scheduler().workerFinished
+          (scheduler().worker_manager().worker_by_address (source).get()->second, pEvt->job_id());
 
         const bool bAllPartResCollected
           (scheduler().allPartialResultsCollected (pEvt->job_id()));
@@ -80,9 +88,10 @@ namespace sdpa
       }
     }
 
-    void Agent::handleJobFailedEvent (const events::JobFailedEvent* pEvt)
+    void Agent::handleJobFailedEvent
+      (fhg::com::p2p::address_t const& source, const events::JobFailedEvent* pEvt)
     {
-      child_proxy (this, pEvt->from()).job_failed_ack (pEvt->job_id());
+      child_proxy (this, source).job_failed_ack (pEvt->job_id());
 
       Job* pJob (findJob (pEvt->job_id()));
       if (!hasWorkflowEngine())
@@ -93,7 +102,8 @@ namespace sdpa
       }
       else
       {
-        scheduler().workerFailed (pEvt->from(), pEvt->job_id());
+        scheduler().workerFailed
+          (scheduler().worker_manager().worker_by_address (source).get()->second, pEvt->job_id());
         bool bAllPartResCollected (scheduler().allPartialResultsCollected (pEvt->job_id()));
 
         if (bAllPartResCollected)
@@ -127,7 +137,8 @@ namespace sdpa
       }
     }
 
-    void Agent::handleCancelJobEvent (const events::CancelJobEvent* pEvt)
+    void Agent::handleCancelJobEvent
+      (fhg::com::p2p::address_t const&, const events::CancelJobEvent* pEvt)
     {
       Job* pJob (findJob (pEvt->job_id()));
       if (!pJob)
@@ -161,7 +172,8 @@ namespace sdpa
       }
     }
 
-    void Agent::handleCancelJobAckEvent (const events::CancelJobAckEvent* pEvt)
+    void Agent::handleCancelJobAckEvent
+      (fhg::com::p2p::address_t const& source, const events::CancelJobAckEvent* pEvt)
     {
       Job* pJob (findJob(pEvt->job_id()));
 
@@ -177,7 +189,8 @@ namespace sdpa
       }
       else
       {
-        scheduler().workerCanceled (pEvt->from(), pEvt->job_id());
+        scheduler().workerCanceled
+          (scheduler().worker_manager().worker_by_address (source).get()->second, pEvt->job_id());
         const bool bTaskGroupComputed
           (scheduler().allPartialResultsCollected (pEvt->job_id()));
 

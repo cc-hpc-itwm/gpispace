@@ -6,6 +6,8 @@
 
 #include <sdpa/events/CancelJobEvent.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 BOOST_GLOBAL_FIXTURE (setup_logging)
 
 namespace
@@ -28,13 +30,12 @@ namespace
     }
 
     void handleCancelJobEvent
-      (const sdpa::events::CancelJobEvent* pEvt) override
+      (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent* pEvt) override
     {
       _network.perform
-        ( sdpa::events::SDPAEvent::Ptr
-          ( new sdpa::events::CancelJobAckEvent
-            (_name, pEvt->from(), pEvt->job_id())
-          )
+        ( source
+        , sdpa::events::SDPAEvent::Ptr
+          (new sdpa::events::CancelJobAckEvent (pEvt->job_id()))
         );
 
       boost::mutex::scoped_lock const _ (_mtx_cancel);
@@ -58,8 +59,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_running)
 {
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
   const utils::agent agent (orchestrator);
 
   utils::client client (orchestrator);
@@ -97,8 +97,7 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnin
 
 BOOST_AUTO_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is_missing)
 {
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
   const utils::agent agent (orchestrator);
 
   utils::client client (orchestrator);

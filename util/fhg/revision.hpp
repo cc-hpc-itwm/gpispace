@@ -7,7 +7,6 @@
 
 namespace fhg
 {
-  extern const char* project_summary();
   extern const char* project_version();
   extern const char* project_revision();
 

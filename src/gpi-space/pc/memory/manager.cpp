@@ -138,8 +138,6 @@ namespace gpi
 
           if (area->in_use ())
           {
-            LOG(WARN, "memory area is still in use: " << area->descriptor());
-
             // TODO: maybe move memory segment to garbage area
 
             throw std::runtime_error
@@ -258,8 +256,6 @@ namespace gpi
 
         m_areas [area->get_id ()] = area;
         area->init ();
-
-        LOG(TRACE, "memory registered:" << area->descriptor ());
       }
 
       manager_t::area_ptr
@@ -391,6 +387,24 @@ namespace gpi
       manager_t::info (const gpi::pc::type::handle_t hdl) const
       {
         return get_area_by_handle(hdl)->descriptor(hdl);
+      }
+
+      std::map<std::string, double>
+      manager_t::get_transfer_costs (const std::list<gpi::pc::type::memory_region_t>& transfers) const
+      {
+        std::map<std::string, double> costs;
+
+        for (gpi::pc::type::memory_region_t const& transfer : transfers)
+        {
+          const area_ptr area (get_area_by_handle (transfer.location.handle));
+
+          for (gpi::rank_t rank = 0; rank < _gpi_api.number_of_nodes(); ++rank)
+          {
+            costs[_gpi_api.hostname_of_rank (rank)] += area->get_transfer_costs (transfer, rank);
+          }
+        }
+
+        return costs;
       }
 
       void
@@ -550,8 +564,6 @@ namespace gpi
 
           if (area->in_use ())
           {
-            LOG(WARN, "memory area is still in use: " << area->descriptor ());
-
             // TODO: maybe move memory segment to garbage area
 
             throw std::runtime_error

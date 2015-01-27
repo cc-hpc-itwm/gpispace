@@ -12,16 +12,16 @@ set (XML_PARSE_TEST_XPNETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/xpnets")
 
 configure_file (parser_fixture.hpp.in parser_fixture.hpp @ONLY)
 
-include_directories (${CMAKE_CURRENT_BINARY_DIR})
-
 fhg_add_test (parse_duplicate_connect.cpp
   BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
   LINK_LIBRARIES pnet ${Boost_FILESYSTEM_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY}
   DESCRIPTION "pnetc shall throw if there are mutiple connections with the same port, place and direction"
 )
 
 fhg_add_test (parse_compile_and_compare.cpp
   BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
   LINK_LIBRARIES pnet ${Boost_FILESYSTEM_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY}
   DESCRIPTION "pnetc shall produce the same output as given in the reference files"
 )

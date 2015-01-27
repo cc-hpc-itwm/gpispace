@@ -6,8 +6,6 @@
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
-#include <sdpa/daemon/exceptions.hpp>
-#include <sdpa/job_requirements.hpp>
 #include <sdpa/types.hpp>
 
 #include <boost/optional.hpp>
@@ -21,9 +19,9 @@ namespace sdpa
     class CoallocationScheduler
     {
     public:
-      CoallocationScheduler ( std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)> serve
-                            , std::function<job_requirements_t (const sdpa::job_id_t&)>
-                            );
+      typedef std::map<job_id_t, std::set<worker_id_t>> assignment_t;
+
+      CoallocationScheduler (std::function<job_requirements_t (const sdpa::job_id_t&)>);
 
       const WorkerManager& worker_manager() const;
       WorkerManager& worker_manager();
@@ -35,7 +33,6 @@ namespace sdpa
       void workerCanceled (const worker_id_t&, const job_id_t&);
       bool allPartialResultsCollected (const job_id_t& jid);
       bool groupFinished (const sdpa::job_id_t&);
-      worker_id_list_t workers (job_id_t) const;
 
       // -- used by daemon and self
       void enqueueJob (const sdpa::job_id_t&);
@@ -43,14 +40,29 @@ namespace sdpa
 
       // used by daemon and self and test
       void releaseReservation (const sdpa::job_id_t&);
-      void assignJobsToWorkers();
+      assignment_t assignJobsToWorkers();
 
       bool cancelNotTerminatedWorkerJobs ( std::function<void (worker_id_t const&)> func
                                          , const sdpa::job_id_t& job_id);
 
+      std::set<worker_id_t> find_job_assignment_minimizing_total_cost
+        ( const mmap_match_deg_worker_id_t& mmap_matching_workers
+        , const size_t n_req_workers
+        , const std::function<double (std::string const&)> transfer_cost
+        , const double computational_cost
+        );
+
+      double compute_reservation_cost
+        ( const job_id_t&
+        , const std::set<worker_id_t>&
+        , const std::function<std::string (const sdpa::worker_id_t& wid)>
+        , const double computational_cost
+        ) const;
+
+      void reschedule_pending_jobs_matching_worker (const worker_id_t&);
+      std::set<job_id_t> start_pending_jobs
+        (std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)>);
     private:
-      std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)>
-        _serve_job;
       std::function<job_requirements_t (const sdpa::job_id_t&)>
         _job_requirements;
 
@@ -74,19 +86,18 @@ namespace sdpa
       public:
         typedef enum {FINISHED, FAILED, CANCELED} result_type;
 
-        Reservation (std::set<worker_id_t> workers)
-          : m_list_workers (workers.begin(), workers.end())
+        Reservation (std::set<worker_id_t> workers, double cost)
+          : _workers (workers)
+          , _cost (cost)
         {}
 
         void storeWorkerResult
           (const sdpa::worker_id_t& wid, const result_type& result)
         {
-          if ( std::find (m_list_workers.begin(), m_list_workers.end(), wid)
-             == m_list_workers.end()
-             )
+          if (_workers.count (wid) == 0)
           {
             throw std::runtime_error
-              ("tried storing result of worker that is not in reservation for job");
+              ("tried storing the result of a worker that doesn't exist in the job reservation");
           }
 
           m_map_worker_result[wid] = result;
@@ -94,7 +105,7 @@ namespace sdpa
 
         bool allWorkersTerminated() const
         {
-          return m_map_worker_result.size() == m_list_workers.size();
+          return m_map_worker_result.size() == _workers.size();
         }
 
         bool allGroupTasksFinishedSuccessfully()
@@ -111,14 +122,14 @@ namespace sdpa
           return true;
         }
 
-        sdpa::worker_id_list_t getWorkerList() const
+        std::set<worker_id_t> workers() const
         {
-          return m_list_workers;
+          return _workers;
         }
 
         sdpa::worker_id_list_t getListNotTerminatedWorkers() const
         {
-          sdpa::worker_id_list_t list_not_terminated_workers(m_list_workers);
+          sdpa::worker_id_list_t list_not_terminated_workers (_workers.begin(), _workers.end());
           for ( const worker_id_t& wid
               : m_map_worker_result | boost::adaptors::map_keys
               )
@@ -129,15 +140,18 @@ namespace sdpa
           return list_not_terminated_workers;
         }
 
+        double cost() const {return _cost;}
       private:
-        sdpa::worker_id_list_t m_list_workers;
+        std::set<worker_id_t> _workers;
         std::map<sdpa::worker_id_t, result_type> m_map_worker_result;
+        double _cost;
       };
 
       mutable boost::mutex mtx_alloc_table_;
       typedef std::unordered_map<sdpa::job_id_t, Reservation*>
         allocation_table_t;
       allocation_table_t allocation_table_;
+      locked_job_id_list _list_pending_jobs;
     };
   }
 }

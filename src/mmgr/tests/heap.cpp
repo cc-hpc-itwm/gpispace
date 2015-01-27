@@ -5,6 +5,8 @@
 
 #include <mmgr/heap.h>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 BOOST_AUTO_TEST_CASE (heap)
 {
   Heap_t h = nullptr;

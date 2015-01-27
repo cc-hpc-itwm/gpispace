@@ -1,19 +1,4 @@
-set (hdrs
-  memory_buffer.hpp
-  handle_buffer.hpp
-  memory_area.hpp
-  handle_generator.hpp
-  manager.hpp
-  gpi_area.hpp
-  shm_area.hpp
-  sfs_area.hpp
-  memory_transfer_t.hpp
-  task.hpp
-  transfer_queue.hpp
-  transfer_manager.hpp
-  )
-
-set (srcs
+ADD_LIBRARY(gpi-space-pc-memory
   memory_buffer.cpp
   memory_area.cpp
   handle_generator.cpp
@@ -24,11 +9,12 @@ set (srcs
   task.cpp
   transfer_queue.cpp
   transfer_manager.cpp
-  )
-
-ADD_LIBRARY(gpi-space-pc-memory ${hdrs} ${srcs})
+)
+target_include_directories (gpi-space-pc-memory
+  PRIVATE SYSTEM "${LIBRT_INCLUDE_DIR}"
+)
 target_link_libraries (gpi-space-pc-memory
   gpi-space-pc-segment
-  ${MMGR_LIBRARY}
+  mmgr
   gpi-space_url
   )

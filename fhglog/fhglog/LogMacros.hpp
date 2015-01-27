@@ -1,7 +1,6 @@
 #ifndef FHG_LOG_LOGMACROS_INC
 #define FHG_LOG_LOGMACROS_INC
 
-#include <fhglog/Configuration.hpp>
 #include <fhglog/Logger.hpp>
 
 #include <boost/current_function.hpp>
@@ -22,23 +21,7 @@ namespace fhg
                          , message                      \
                          )
 
-    struct flush_at_end_of_scope_t
-    {
-      ~flush_at_end_of_scope_t()
-      {
-        ::fhg::log::Logger::get()->flush();
-      }
-    };
-
-    template <typename T>
-    void suppress_unused_variable_warning (T) {}
-
-#define FHGLOG_SETUP()                                                  \
-    ::fhg::log::flush_at_end_of_scope_t _1e872d1a_6dcf_11e3_9e3b_13f239ecd3ca; \
-    ::fhg::log::suppress_unused_variable_warning (_1e872d1a_6dcf_11e3_9e3b_13f239ecd3ca); \
-    ::fhg::log::configure()
-
-#define __LOG(logger, level, msg)                               \
+#define LLOG(level, logger, msg)                                \
     do                                                          \
     {                                                           \
       if (logger->isLevelEnabled (::fhg::log::level))           \
@@ -49,7 +32,6 @@ namespace fhg
       }                                                         \
     } while (0)
 
-#define LLOG(level, logger, msg) __LOG(logger, level, msg)
 #define LLOG_IF(level, logger, condition, msg)  \
     do                                          \
     {                                           \

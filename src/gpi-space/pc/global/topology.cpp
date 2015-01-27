@@ -2,7 +2,6 @@
 
 #include <unistd.h>
 #include <stdio.h>
-#include <csignal> // kill
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -10,8 +9,8 @@
 
 #include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
-
-#include <fhgcom/kvs/kvsc.hpp>
+#include <fhg/util/join.hpp>
+#include <fhg/util/print_exception.hpp>
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
@@ -26,35 +25,6 @@ namespace gpi
     {
       namespace detail
       {
-        static void kvs_error_handler (boost::system::error_code const &)
-        {
-          MLOG (ERROR, "could not contact KVS, terminating");
-          kill (getpid (), SIGTERM);
-        }
-
-        static std::string rank_to_name (const gpi::rank_t rnk)
-        {
-          if (rnk == (gpi::rank_t)-1)
-          {
-            throw std::invalid_argument("invalid rank: -1");
-          }
-
-          return "gpi-" + boost::lexical_cast<std::string>(rnk);
-        }
-
-        static gpi::rank_t name_to_rank(const std::string &name)
-        {
-          unsigned int rnk (-1);
-          if (sscanf(name.c_str(), "gpi-%u", &rnk) < 1)
-          {
-            throw std::invalid_argument("invalid name: " + name);
-          }
-          else
-          {
-            return rnk;
-          }
-        }
-
         struct command_t
         {
           typedef std::vector<std::string> string_vec;
@@ -98,453 +68,165 @@ namespace gpi
         };
       }
 
-      namespace reduce
-      {
-        topology_t::rank_result_t
-        max_result ( const topology_t::rank_result_t a
-                   , const topology_t::rank_result_t b
-                   )
-        {
-          return (a.value > b.value ? a : b);
-        }
-      }
-
-      fhg::com::port_t const &
-      topology_t::any_port ()
-      {
-        static fhg::com::port_t p("0");
-        return p;
-      }
-
-      fhg::com::host_t const &
-      topology_t::any_addr ()
-      {
-        static fhg::com::host_t h ("*");
-        return h;
-      }
-
-      topology_t::topology_t ( const fhg::com::host_t & host
-                             , const fhg::com::port_t & port
-                             , memory::manager_t& memory_manager
-                             , fhg::com::kvs::kvsc_ptr_t kvs_client
+      topology_t::topology_t ( memory::manager_t& memory_manager
                              , api::gpi_api_t& gpi_api
+                             , boost::shared_ptr<fhg::com::peer_t> const& peer
                              )
         : m_shutting_down (false)
-        , m_go_received (false)
-        , m_waiting_for_go (0)
-        , m_established (false)
-        , m_rank (gpi_api.rank())
-        , _kvs_client (kvs_client)
+        , m_peer (peer)
         , _gpi_api (gpi_api)
       {
-        lock_type lock(m_mutex);
-        m_peer.reset
-          (new fhg::com::peer_t( detail::rank_to_name (m_rank)
-                               , host
-                               , port
-                               , _kvs_client
-                               , detail::kvs_error_handler
-                               )
-          );
-
-        m_peer_thread.reset
-          (new boost::thread(&fhg::com::peer_t::run, m_peer));
-
-        try
-        {
-          m_peer->start ();
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "could not start peer: " << ex.what());
-          m_peer_thread->interrupt();
-          m_peer_thread->join();
-          m_peer.reset();
-          m_peer_thread.reset();
-          throw;
-        }
+        std::unique_lock<std::mutex> const _ (m_mutex);
 
         // start the message handler
         m_peer->async_recv ( &m_incoming_msg
                            , std::bind( &topology_t::message_received
                                       , this
                                       , std::placeholders::_1
+                                      , std::placeholders::_2
                                       , std::ref (memory_manager)
                                       )
                            );
 
-        for (std::size_t n(0); n < _gpi_api.number_of_nodes(); ++n)
+        for (std::size_t rank (0); rank < _gpi_api.number_of_nodes(); ++rank)
         {
-          if (_gpi_api.rank() != n)
-            add_child(n);
-        }
+          if (_gpi_api.rank() == rank)
+          {
+            continue;
+          }
 
-        if (_gpi_api.is_master ())
-        {
-          establish();
+          m_children.emplace
+            ( m_peer->connect_to_or_use_existing_connection
+                ( fhg::com::host_t (_gpi_api.hostname_of_rank (rank))
+                , fhg::com::port_t
+                    (std::to_string (_gpi_api.communication_port_of_rank (rank)))
+                )
+            );
         }
       }
 
       topology_t::~topology_t()
       {
         {
-          lock_type lock(m_mutex);
+          std::unique_lock<std::mutex> const _ (m_mutex);
           m_shutting_down = true;
         }
-
-        if (m_peer)
-        {
-          m_peer->stop();
-        }
-        if (m_peer_thread->joinable())
-        {
-          m_peer_thread->join();
-        }
-        m_peer.reset();
-        m_peer_thread.reset();
       }
 
       bool topology_t::is_master () const
       {
-        return 0 == m_rank;
+        return 0 == _gpi_api.rank();
       }
 
-      int topology_t::wait_for_go ()
+      void topology_t::request (std::string const& name, std::string const& req)
       {
-        lock_type lock (m_go_event_mutex);
+        //! \note one request at a time due to state in
+        //! m_current_results and no message sequencing
+        std::unique_lock<std::mutex> const _ (m_request_mutex);
 
-        ++m_waiting_for_go;
-
-        boost::system_time const timeout
-          (boost::get_system_time()+boost::posix_time::seconds(30));
-
-        while (not m_go_received)
-        {
-          if (m_shutting_down)
-            break;
-          if (not m_go_received_event.timed_wait (lock, timeout))
-          {
-            if (not m_go_received)
-            {
-              --m_waiting_for_go;
-              throw std::runtime_error ("did not receive GO within 30 seconds");
-            }
-          }
-        }
-
-        --m_waiting_for_go;
-        if (0 == m_waiting_for_go)
-        {
-          m_go_received = false;
-        }
-
-        if (m_shutting_down)
-          throw std::runtime_error ("shutting down");
-
-        return 0;
-      }
-
-      int topology_t::go ()
-      {
-        broadcast (detail::command_t("GO"));
-        return 0;
-      }
-
-      void topology_t::add_child(const gpi::rank_t rank)
-      {
-        child_t new_child(rank);
-        new_child.name = detail::rank_to_name (rank);
-
-        lock_type lock(m_mutex);
-        fhg_assert (m_peer);
-        m_children[rank] = new_child;
-      }
-
-      void topology_t::del_child(const gpi::rank_t rank)
-      {
-        lock_type lock(m_mutex);
-
-        // if connected:
-        //    send disconnect to child
-        //    remove connection
-        m_children.erase (rank);
-      }
-
-      int topology_t::free (const gpi::pc::type::handle_t hdl)
-      {
-        broadcast (detail::command_t("FREE") << hdl);
-        return 0;
-      }
-
-      topology_t::result_list_t
-      topology_t::request (std::string const & req)
-      {
-        lock_type request_lock (m_request_mutex); // one request
-
-        lock_type result_list_lock (m_result_mutex);
+        std::unique_lock<std::mutex> result_list_lock (m_result_mutex);
         m_current_results.clear ();
 
-        broadcast (req);
-
-        boost::system_time const timeout
-          (boost::get_system_time()+boost::posix_time::seconds(30));
-        while (m_current_results.size () != m_children.size())
+        for (fhg::com::p2p::address_t const& child : m_children)
         {
-          if (!m_request_finished.timed_wait (result_list_lock, timeout))
+          cast (child, req);
+        }
+
+        if ( !m_request_finished.wait_for
+               ( result_list_lock
+               , std::chrono::seconds (30)
+               , [&]
+                 {
+                   return m_current_results.size() == m_children.size();
+                 }
+               )
+           )
+        {
+          throw std::runtime_error
+            ( name + " failed: timed out after 30 seconds: "
+            + std::to_string (m_current_results.size()) + " of "
+            + std::to_string (m_children.size()) + " results received"
+            );
+        }
+
+        std::vector<std::string> errors;
+        for (boost::optional<std::string>& partial_result : m_current_results)
+        {
+          if (partial_result)
           {
-            if (m_current_results.size() == m_children.size())
-            {
-              break;
-            }
-            else
-            {
-              throw std::runtime_error ("request " + req + " timedout after 30 seconds!");
-            }
+            errors.emplace_back (std::move (*partial_result));
           }
         }
 
-        return m_current_results;
+        if (!errors.empty())
+        {
+          LOG (ERROR, name << " failed: " << fhg::util::join (errors, "; "));
+          throw std::runtime_error
+            (name + " failed: " + fhg::util::join (errors, "; "));
+        }
       }
 
-      topology_t::rank_result_t
-      topology_t::all_reduce ( std::string const & req
-                             , fold_t fold_fun
-                             , rank_result_t result
+      void topology_t::free (const gpi::pc::type::handle_t hdl)
+      {
+        request ("free", detail::command_t ("FREE") << hdl);
+      }
+
+      void topology_t::alloc ( const gpi::pc::type::segment_id_t seg
+                             , const gpi::pc::type::handle_t hdl
+                             , const gpi::pc::type::offset_t offset
+                             , const gpi::pc::type::size_t size
+                             , const gpi::pc::type::size_t local_size
+                             , const std::string & name
                              )
       {
-        result_list_t results (request(req));
-        while (results.size())
-        {
-          result = fold_fun(results.front(), result);
-          results.pop_front();
-        }
-        return result;
-      }
-
-      int topology_t::alloc ( const gpi::pc::type::segment_id_t seg
-                            , const gpi::pc::type::handle_t hdl
-                            , const gpi::pc::type::offset_t offset
-                            , const gpi::pc::type::size_t size
-                            , const gpi::pc::type::size_t local_size
-                            , const std::string & name
-                            )
-      {
         // lock, so that no other process can make a global alloc
-        lock_type alloc_lock(m_global_alloc_mutex);
-
-        // acquire cluster wide access to the gpi resource
-        boost::unique_lock<gpi::api::gpi_api_t> gpi_lock (_gpi_api);
+        std::unique_lock<std::mutex> const _ (m_global_alloc_mutex);
 
         try
         {
-          rank_result_t res (all_reduce(  detail::command_t("ALLOC")
-                                       << seg
-                                       << hdl
-                                       << offset
-                                       << size
-                                       << local_size
-                                       << name
-                                       , reduce::max_result
-                                       , rank_result_t (m_rank, 0) // my result
-                                       )
-                            );
-          if (res.value != 0)
-          {
-            LOG(ERROR,"allocation on node " << res.rank << " failed: " << res.value);
-            throw std::runtime_error
-              ( "global allocation failed on at least one node: rank "
-              + boost::lexical_cast<std::string>(res.rank)
-              + " says: "
-              + res.message
-              );
-          }
-          else
-          {
-            return 0;
-          }
+          request ( "alloc"
+                  , detail::command_t ("ALLOC")
+                  << seg << hdl << offset << size << local_size << name
+                  );
         }
-        catch (std::exception const & ex)
+        catch (...)
         {
           free (hdl);
           throw;
         }
       }
 
-      int topology_t::add_memory ( const gpi::pc::type::segment_id_t seg_id
-                                 , const std::string & url
-                                 )
+      void topology_t::add_memory ( const gpi::pc::type::segment_id_t seg_id
+                                  , const std::string & url
+                                  )
       {
-        int rc = 0;
-
-        rank_result_t res (all_reduce(  detail::command_t("ADDMEM")
-                                     << seg_id
-                                     << url
-                                     , reduce::max_result
-                                     , rank_result_t (m_rank, 0) // my result
-                                     )
-                          );
-        rc = res.value;
-
-        if (rc != 0)
-        {
-          LOG ( ERROR
-              , "add_memory: failed on node " << res.rank
-              << ": " << res.value
-              << ": " << res.message
-              );
-          throw std::runtime_error
-            ( "add_memory: failed on at least one node: rank "
-            + boost::lexical_cast<std::string>(res.rank)
-            + " says: "
-            + res.message
-            );
-        }
-
-        return rc;
+        request ("add_memory", detail::command_t ("ADDMEM") << seg_id << url);
       }
 
-      int topology_t::del_memory (const gpi::pc::type::segment_id_t seg_id)
+      void topology_t::del_memory (const gpi::pc::type::segment_id_t seg_id)
       {
-        int rc = 0;
-
-        rank_result_t res (all_reduce(  detail::command_t("DELMEM")
-                                     << seg_id
-                                     , reduce::max_result
-                                     , rank_result_t (m_rank, 0) // my result
-                                     )
-                          );
-        rc = res.value;
-
-        if (rc != 0)
-        {
-          LOG ( ERROR
-              , "del_memory: failed on node " << res.rank
-              << ": " << res.value
-              << ": " << res.message
-              );
-          throw std::runtime_error
-            ( "del_memory: failed on at least one node: rank "
-            + boost::lexical_cast<std::string>(res.rank)
-            + " says: "
-            + res.message
-            );
-        }
-
-        return rc;
+        request ("del_memory", detail::command_t ("DELMEM") << seg_id);
       }
 
-      void topology_t::establish ()
-      {
-        LOG(TRACE, "establishing topology...");
-
-        try
-        {
-          rank_result_t res (all_reduce( detail::command_t("CONNECT")
-                                       , reduce::max_result
-                                       , rank_result_t (m_rank, 0) // my result
-                                       )
-                            );
-          if (res.value != 0)
-          {
-            LOG (ERROR,"connection failed: " << res.rank << " failed: " << res.value);
-            throw std::runtime_error
-              ( "connections could not be established to at least one node: rank "
-              + boost::lexical_cast<std::string>(res.rank)
-              + " says: "
-              + res.message
-              );
-          }
-          else
-          {
-            m_established = true;
-          }
-        }
-        catch (std::exception const & ex)
-        {
-          throw;
-        }
-      }
-
-      void topology_t::cast( const gpi::rank_t rnk
-                           , const std::string & data
-                           )
-      {
-        lock_type lock(m_mutex);
-        child_map_t::const_iterator it(m_children.find(rnk));
-        if (it == m_children.end())
-        {
-          LOG( ERROR
-             , "cannot send to rank " << rnk << ":"
-             << " message routing not yet implemented"
-             );
-          throw std::runtime_error("cannot send to this rank, not a direct child and routing is not yet implemented!");
-        }
-        else
-        {
-          cast (it->second, data);
-        }
-      }
-
-      void topology_t::cast( const gpi::rank_t rnk
-                           , const char * data
-                           , const std::size_t len
-                           )
-      {
-        cast(rnk, std::string(data, len));
-      }
-
-      void topology_t::message_sent ( child_t & child
-                                    , std::string const & data
-                                    , boost::system::error_code const & ec
-                                    )
+      void topology_t::message_sent (boost::system::error_code const& ec)
       {
         if (not m_shutting_down && ec)
         {
-          if (++child.error_counter > 10)
-          {
-            MLOG (ERROR, "exceeded error counter for " << child.name);
-            m_peer->stop ();
-          }
-          else
-          {
-            usleep (child.error_counter * 200 * 1000);
-            cast (child, data);
-          }
-        }
-        else
-        {
-          child.error_counter = 0;
+          MLOG (ERROR, "failed sending a message: " << ec);
+          m_peer->stop ();
         }
       }
 
-      void topology_t::cast( const child_t & child
-                           , const std::string & data
-                           )
+      void topology_t::cast
+        (fhg::com::p2p::address_t const& address, std::string const& data)
       {
-        m_peer->async_send ( child.name
+        m_peer->async_send ( address
                            , data
                            , std::bind ( &topology_t::message_sent
                                        , this
-                                       , child
-                                       , data
                                        , std::placeholders::_1
                                        )
                            );
-      }
-
-      void topology_t::broadcast (const std::string &data)
-      {
-        for (child_map_t::value_type const & n : m_children)
-        {
-          cast(n.second, data);
-        }
-      }
-
-      void topology_t::broadcast ( const char *data
-                                 , const std::size_t len
-                                 )
-      {
-        return broadcast(std::string(data, len));
       }
 
       /*
@@ -553,14 +235,14 @@ namespace gpi
        */
 
       void topology_t::message_received
-        (boost::system::error_code const &ec, memory::manager_t& memory_manager)
+        ( boost::system::error_code const &ec
+        , boost::optional<fhg::com::p2p::address_t>
+        , memory::manager_t& memory_manager
+        )
       {
         if (! ec)
         {
-          const fhg::com::p2p::address_t & addr = m_incoming_msg.header.src;
-          const std::string name(m_peer->resolve_addr (addr));
-
-          handle_message( detail::name_to_rank(name)
+          handle_message( m_incoming_msg.header.src
                         , std::string( m_incoming_msg.buf()
                                      , m_incoming_msg.header.length
                                      )
@@ -571,49 +253,28 @@ namespace gpi
                              , std::bind( &topology_t::message_received
                                         , this
                                         , std::placeholders::_1
+                                        , std::placeholders::_2
                                         , std::ref (memory_manager)
                                         )
                              );
         }
         else if (! m_shutting_down)
         {
-          const fhg::com::p2p::address_t & addr = m_incoming_msg.header.src;
-          if (addr != m_peer->address())
+          if (m_incoming_msg.header.src != m_peer->address())
           {
-            const std::string name(m_peer->resolve_addr (addr));
-
-            handle_error (detail::name_to_rank(name));
-
-            m_peer->async_recv ( &m_incoming_msg
-                               , std::bind( &topology_t::message_received
-                                          , this
-                                          , std::placeholders::_1
-                                          , std::ref (memory_manager)
-                                          )
-                               );
+            m_shutting_down = true;
           }
-        }
-        else
-        {
-          LOG(TRACE, "topology on " << m_rank << " is shutting down");
         }
       }
 
-      void topology_t::handle_message ( const gpi::rank_t rank
+      void topology_t::handle_message ( fhg::com::p2p::address_t const& source
                                       , std::string const &msg
                                       , memory::manager_t& memory_manager
                                       )
       {
         // TODO: push message to message handler
 
-        if (rank != m_rank && msg == "CONNECT")
-        {
-          add_child(rank); // actually set_parent(rank)?
-          cast (rank, detail::command_t("+RES") << 0);
-
-          m_established = true;
-        }
-        else
+        try
         {
           // split message
           std::vector<std::string> av;
@@ -623,9 +284,10 @@ namespace gpi
                                   );
           if (av.empty())
           {
-            LOG (ERROR, "ignoring empty command");
+            throw std::logic_error ("empty command");
           }
-          else if (av[0] == "ALLOC")
+
+          if (av[0] == "ALLOC")
           {
             type::segment_id_t seg (boost::lexical_cast<type::segment_id_t>(av[1]));
             type::handle_t hdl (boost::lexical_cast<type::handle_t>(av[2]));
@@ -638,40 +300,19 @@ namespace gpi
                                              )
               ); // TODO unquote and join (av[4]...)
 
-            try
-            {
-              int res
-                (memory_manager.remote_alloc( seg
-                                                      , hdl
-                                                      , offset
-                                                      , size
-                                                      , local_size
-                                                      , name
-                                                      )
-                );
-              cast (rank, detail::command_t("+RES") << res);
-            }
-            catch (std::exception const &ex)
-            {
-              cast (rank, detail::command_t("+RES") << 2 << ex.what ());
-            }
+            memory_manager.remote_alloc( seg
+                                       , hdl
+                                       , offset
+                                       , size
+                                       , local_size
+                                       , name
+                                       );
           }
           else if (av[0] == "FREE")
           {
             type::handle_t hdl (boost::lexical_cast<type::handle_t>(av[1]));
-            try
-            {
-              memory_manager.remote_free(hdl);
-              cast (rank, detail::command_t("+OK"));
-            }
-            catch (std::exception const & ex)
-            {
-              MLOG_IF ( WARN
-                      , not m_shutting_down
-                      , "could not free handle: " << ex.what()
-                      );
-              cast (rank, detail::command_t("+ERR") << 1 << ex.what ());
-            }
+
+            memory_manager.remote_free(hdl);
           }
           else if (av [0] == "ADDMEM")
           {
@@ -682,111 +323,41 @@ namespace gpi
                                              )
               ); // TODO unquote and join (av[4]...)
 
-            try
-            {
-              memory_manager.remote_add_memory (seg_id, url_s, *this);
-              cast (rank, detail::command_t("+RES") << 0);
-            }
-            catch (std::exception const & ex)
-            {
-              MLOG( ERROR
-                  , "add_memory(" << seg_id << ", '" << url_s << "')"
-                  << " failed: " << ex.what()
-                  );
-              cast (rank, detail::command_t("+RES") << 1 << ex.what ());
-            }
+            memory_manager.remote_add_memory (seg_id, url_s, *this);
           }
           else if (av [0] == "DELMEM")
           {
             type::segment_id_t seg_id = boost::lexical_cast<type::segment_id_t> (av[1]);
 
-            try
-            {
-              memory_manager.remote_del_memory (seg_id, *this);
-              cast (rank, detail::command_t("+RES") << 0);
-            }
-            catch (std::exception const & ex)
-            {
-              MLOG( ERROR
-                  , "del_memory(" << seg_id <<  ")"
-                  << " failed: " << ex.what()
-                  );
-              cast (rank, detail::command_t("+RES") << 1 << ex.what ());
-            }
+            memory_manager.remote_del_memory (seg_id, *this);
           }
           else if (av[0] == "+RES")
           {
-            lock_type lck(m_result_mutex);
-            std::vector<std::string> msg_vec ( av.begin ()+2
-                                             , av.end ()
-                                             );
-            m_current_results.push_back
-              (rank_result_t( rank
-                            , boost::lexical_cast<int>(av[1])
-                            , boost::algorithm::join (msg_vec, " ")
-                            )
+            std::unique_lock<std::mutex> const _ (m_result_mutex);
+
+            m_current_results.emplace_back
+              ( boost::make_optional
+                  ( boost::lexical_cast<int> (av[1])
+                  , fhg::util::join (av.begin() + 2, av.end(), " ")
+                  )
               );
             m_request_finished.notify_one();
-          }
-          else if (av[0] == "+OK")
-          {
-          }
-          else if (av[0] == "+ERR")
-          {
-            std::vector<std::string> msg_vec ( av.begin ()+2
-                                             , av.end ()
-                                             );
-            MLOG_IF ( WARN
-                    , not m_shutting_down
-                    , "error on node " << rank
-                    << ": " << av [1]
-                    << ": " << boost::algorithm::join (msg_vec, " ")
-                    );
-          }
-          else if (av [0] == "GO")
-          {
-            lock_type lck (m_go_event_mutex);
-            m_go_received = true;
-            m_go_received_event.notify_all ();
-          }
-          else if (av[0] == "SHUTDOWN" && !m_shutting_down)
-          {
-            LOG(INFO, "shutting down");
-            m_children.clear();
-            m_shutting_down = true;
-            kill(getpid(), SIGTERM);
+
+            return;
           }
           else
           {
-            LOG(WARN, "invalid command: '" << av[0] <<"'");
+            throw std::logic_error ("invalid command: " + av[0]);
           }
+
+          cast (source, detail::command_t ("+RES") << 0);
         }
-      }
-
-      void topology_t::handle_error ( const gpi::rank_t rank
-                                    )
-      {
-        if (m_established || m_waiting_for_go)
+        catch (...)
         {
-          m_shutting_down = true;
-          if (m_waiting_for_go)
-          {
-            m_go_received_event.notify_all ();
-          }
-
-          del_child (rank);
-
-          // delete my kvs entry and the one from the child in case it couldn't
-          gpi::rank_t rnks [] = { m_rank , rank };
-          for (size_t i = 0 ; i < 2 ; ++i)
-          {
-            std::string peer_name = fhg::com::p2p::to_string
-              (fhg::com::p2p::address_t (detail::rank_to_name (rnks[i])));
-            std::string kvs_key = "p2p.peer." + peer_name;
-            _kvs_client->del (kvs_key);
-          }
-
-          kill(getpid(), SIGTERM);
+          std::ostringstream sstr;
+          fhg::util::print_current_exception (sstr, "");
+          MLOG (ERROR, "handling command '" + msg + "' failed: " << sstr.str());
+          cast (source, detail::command_t ("+RES") << 1 << sstr.str());
         }
       }
     }

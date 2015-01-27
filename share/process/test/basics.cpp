@@ -1,6 +1,8 @@
 #define BOOST_TEST_MODULE ProcessBasics
 #include <boost/test/unit_test.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 #include <csignal>
 
 #include <process.hpp>

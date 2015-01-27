@@ -14,20 +14,24 @@ namespace sdpa
     public:
       Agent ( const std::string& name
             , const std::string& url
-            , std::string kvs_host
-            , std::string kvs_port
+            , boost::asio::io_service& peer_io_service
             , boost::optional<boost::filesystem::path> const& vmem_socket
-            , const sdpa::master_info_list_t arrMasterNames
-            , const boost::optional<std::string>& guiUrl
+            , std::vector<name_host_port_tuple> const&
+            , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
             );
 
     protected:
-      virtual void handleJobFinishedEvent (const sdpa::events::JobFinishedEvent*) override;
-      virtual void handleJobFailedEvent (const sdpa::events::JobFailedEvent*) override;
+      virtual void handleJobFinishedEvent
+        (fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedEvent*) override;
+      virtual void handleJobFailedEvent
+        (fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedEvent*) override;
 
-      virtual void handleCancelJobEvent (const sdpa::events::CancelJobEvent*) override;
-      virtual void handleCancelJobAckEvent (const sdpa::events::CancelJobAckEvent*) override;
-      virtual void handleDeleteJobEvent (const sdpa::events::DeleteJobEvent*) override
+      virtual void handleCancelJobEvent
+        (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent*) override;
+      virtual void handleCancelJobAckEvent
+        (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobAckEvent*) override;
+      virtual void handleDeleteJobEvent
+        (fhg::com::p2p::address_t const&, const sdpa::events::DeleteJobEvent*) override
       {
         throw std::runtime_error("The agent should not call handleDeleteJobEvent!");
       }

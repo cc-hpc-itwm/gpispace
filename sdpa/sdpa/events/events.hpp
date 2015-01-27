@@ -24,5 +24,6 @@
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
 #include <sdpa/events/SubscribeEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
+#include <sdpa/events/put_token.hpp>
 
 #endif

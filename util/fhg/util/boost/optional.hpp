@@ -24,6 +24,17 @@ namespace fhg
           return boost::none;
         }
       }
+
+      template<typename Exception, typename T, typename... Args>
+        T get_or_throw (boost::optional<T> const& optional, Args&&... args)
+      {
+        if (!optional)
+        {
+          throw Exception (args...);
+        }
+
+        return optional.get();
+      }
     }
   }
 }

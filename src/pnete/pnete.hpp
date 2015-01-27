@@ -30,7 +30,9 @@ namespace fhg
         (std::list<util::scoped_dlhandle> const& plugins, int& argc, char *argv[]);
       virtual ~PetriNetEditor ();
 
-      void startup();
+      void startup ( boost::optional<std::string> orchestrator_host
+                   , boost::optional<unsigned short> orchestrator_port
+                   );
       void logging (int port);
       void exec_monitor (int port);
 
@@ -44,7 +46,10 @@ namespace fhg
 
       void showSplashScreen();
       void setupLocalization();
-      ui::editor_window* create_editor_window();
+      ui::editor_window* create_editor_window
+        ( boost::optional<std::string> orchestrator_host
+        , boost::optional<unsigned short> orchestrator_port
+        );
     };
   }
 }

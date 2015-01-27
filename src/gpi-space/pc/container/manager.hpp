@@ -30,7 +30,7 @@ namespace gpi
         manager_t ( std::string const & p
                     , std::vector<std::string> const& default_memory_urls
                   , api::gpi_api_t& gpi_api
-                  , fhg::com::kvs::kvsc_ptr_t kvs_client
+                  , boost::shared_ptr<fhg::com::peer_t> const& topology_peer
                     );
 
         ~manager_t ();
@@ -62,7 +62,9 @@ namespace gpi
         void handle_process_error ( const gpi::pc::type::process_id_t proc_id
                                   , int error
                                   );
-        void detach_process (const gpi::pc::type::process_id_t);
+        void detach_process ( const gpi::pc::type::process_id_t
+                            , bool called_from_dtor = false
+                            );
 
         gpi::api::gpi_api_t& _gpi_api;
         memory::manager_t _memory_manager;

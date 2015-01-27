@@ -43,6 +43,8 @@ namespace we
             , std::function<void (id_type discover_id, id_type)> rts_discover
               // result of discover (parent) -> top level
             , std::function<void (id_type discover_id, sdpa::discovery_info_t)> rts_discovered
+              // result of put_token (parent) -> top level
+            , std::function<void (std::string put_token_id)> rts_token_put
             , std::function<id_type()> rts_id_generator
             , std::mt19937& random_extraction_engine
             );
@@ -70,6 +72,13 @@ namespace we
       // shall not be called from within rts_discover!
       void discovered (id_type discover_id, sdpa::discovery_info_t);
 
+      // initial from exec_layer -> top level, unique put_token_id
+      void put_token ( id_type
+                     , std::string put_token_id
+                     , std::string place_name
+                     , pnet::type::value::value_type
+                     );
+
     private:
       std::function<void (id_type, type::activity_t)> _rts_submit;
       std::function<void (id_type)> _rts_cancel;
@@ -78,6 +87,7 @@ namespace we
       std::function<void (id_type)> _rts_canceled;
       std::function<void (id_type, id_type)> _rts_discover;
       std::function<void (id_type, sdpa::discovery_info_t)> _rts_discovered;
+      std::function<void (std::string)> _rts_token_put;
       std::function<id_type()> _rts_id_generator;
 
       void rts_finished_and_forget (id_type, type::activity_t);
@@ -87,15 +97,17 @@ namespace we
 
       struct activity_data_type
       {
-        activity_data_type (id_type id, type::activity_t activity)
+        activity_data_type ( id_type id
+                           , std::unique_ptr<type::activity_t> activity
+                           )
           : _id (id)
-          , _activity (activity)
+          , _activity (std::move (activity))
         {}
 
         void child_finished (type::activity_t);
 
         id_type _id;
-        type::activity_t _activity;
+        std::unique_ptr<type::activity_t> _activity;
       };
 
       struct async_remove_queue
@@ -104,7 +116,7 @@ namespace we
         void put (activity_data_type, bool was_active);
 
         void remove_and_apply
-          (id_type, std::function<void (activity_data_type)>);
+          (id_type, std::function<void (activity_data_type const&)>);
         void apply (id_type, std::function<void (activity_data_type&)>);
 
         void forget (id_type);

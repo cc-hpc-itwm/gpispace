@@ -61,7 +61,7 @@ namespace fhg
             ( this
             , "property_changed"
             , "data::handle::transition, "
-              "we::type::property::key_type, we::type::property::value_type"
+              "we::type::property::path_type, we::type::property::value_type"
             );
 
           handle.connect_to_change_mgr
@@ -238,13 +238,13 @@ namespace fhg
 
         void transition_item::property_changed
           ( const data::handle::transition& changed_handle
-          , const ::we::type::property::key_type& key
+          , const ::we::type::property::path_type& path
           , const ::we::type::property::value_type& value
           )
         {
           if (changed_handle == handle())
           {
-            handle_property_change (key, value);
+            handle_property_change (path, value);
           }
         }
 

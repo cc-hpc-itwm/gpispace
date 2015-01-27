@@ -1,13 +1,7 @@
-set (hdrs
-  itopology.hpp
-  topology.hpp
+ADD_LIBRARY(gpi-space-pc-global topology.cpp)
+target_include_directories (gpi-space-pc-global
+  PRIVATE SYSTEM "${LIBRT_INCLUDE_DIR}"
 )
-
-set (srcs
-  topology.cpp
-)
-
-ADD_LIBRARY(gpi-space-pc-global ${hdrs} ${srcs})
 target_link_libraries(gpi-space-pc-global
-  ${FhgCom_LIBRARY}
+  fhgcom
 )

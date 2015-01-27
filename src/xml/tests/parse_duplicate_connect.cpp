@@ -5,6 +5,8 @@
 #include <xml/parse/error.hpp>
 #include <parser_fixture.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 BOOST_FIXTURE_TEST_CASE (different_directions, parser_fixture)
 {
   BOOST_REQUIRE_NO_THROW (parse ("connect_in_out_same.xpnet"));

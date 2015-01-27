@@ -4,11 +4,6 @@
 
 namespace fhg
 {
-  const char* project_summary()
-  {
-    return "GPI-Space - productive parallel programming and efficient execution";
-  }
-
   const char* project_version()
   {
     return "@PROJECT_VERSION@";
@@ -23,14 +18,14 @@ namespace fhg
   {
     std::ostringstream s;
 
-    s << project_summary() << std::endl
+    s << "GPI-Space - productive parallel programming and efficient execution"
+      << std::endl
       << std::endl << "  * " << head << std::endl
       << std::endl << "version:  " << project_version()
       << std::endl << "revision: " << project_revision()
-      << std::endl << "built:    @FHG_BUILD_TIMESTAMP@"
       << std::endl << "contact:  @PROJECT_CONTACT@"
       << std::endl
-      << std::endl << "Copyright 2009-2014 Fraunhofer ITWM"
+      << std::endl << "Copyright 2009-2015 Fraunhofer ITWM"
       << std::endl
       ;
 

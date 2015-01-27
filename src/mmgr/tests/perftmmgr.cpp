@@ -5,6 +5,7 @@
 
 #include <mmgr/tmmgr.h>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/now.hpp>
 
 #include <set>
@@ -45,33 +46,27 @@ namespace
 
     tmmgr_init (&tmmgr, num_handles, 1);
 
-#ifdef NDEBUG
     double t_alloc (-fhg::util::now());
-#endif
 
     for (Handle_t const& handle : handles)
     {
       BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, handle, 1), ALLOC_SUCCESS);
     }
 
-#ifdef NDEBUG
     t_alloc += fhg::util::now();
 
     BOOST_REQUIRE_LT (t_alloc, 1.);
 
     double t_free (-fhg::util::now());
-#endif
 
     for (Handle_t const& handle : handles)
     {
       BOOST_REQUIRE_EQUAL (tmmgr_free (&tmmgr, handle), RET_SUCCESS);
     }
 
-#ifdef NDEBUG
     t_free += fhg::util::now();
 
     BOOST_REQUIRE_LT (t_free, t_alloc);
-#endif
   }
 }
 

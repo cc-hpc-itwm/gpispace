@@ -3,10 +3,12 @@
 #define BOOST_TEST_MODULE tutorial_sum
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
-#include <test/scoped_nodefile_with_localhost.hpp>
+#include <test/scoped_nodefile_from_environment.hpp>
 #include <test/scoped_state_directory.hpp>
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
@@ -15,6 +17,8 @@
 #include <we/type/value/poke.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <fhg/util/nest_exceptions.hpp>
 #include <fhg/util/temporary_path.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
@@ -34,7 +38,9 @@ namespace
     , boost::filesystem::path const& pnet
     )
   {
-    gspc::scoped_runtime_system const drts (vm, installation, "work:4");
+    gspc::scoped_rifd const rifd (vm, installation);
+    gspc::scoped_runtime_system const drts
+      (vm, installation, "work:4", rifd.entry_points());
 
     auto pair
       ( [] (long x, long y) -> pnet::type::value::value_type
@@ -47,7 +53,11 @@ namespace
       );
 
     std::multimap<std::string, pnet::type::value::value_type> const result
-      (drts.put_and_run (pnet, {{"p", pair (3, 4)}, {"p", pair (-2, 3)}}));
+      ( gspc::client (drts)
+      . put_and_run ( gspc::workflow (pnet)
+                    , {{"p", pair (3, 4)}, {"p", pair (-2, 3)}}
+                    )
+      );
 
     BOOST_REQUIRE_EQUAL (result.size(), 2);
 
@@ -82,6 +92,7 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_expr)
   options_description.add (test::options::shared_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
+  options_description.add (gspc::options::scoped_rifd());
 
   boost::program_options::variables_map vm;
   boost::program_options::store
@@ -97,7 +108,7 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_expr)
     (test::shared_directory (vm) / "tutorial_sum_expr");
 
   test::scoped_state_directory const state_directory (shared_directory, vm);
-  test::scoped_nodefile_with_localhost const nodefile_with_localhost
+  test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
 
   vm.notify();
@@ -124,6 +135,7 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
   options_description.add (test::options::shared_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
+  options_description.add (gspc::options::scoped_rifd());
 
   boost::program_options::variables_map vm;
   boost::program_options::store
@@ -139,7 +151,7 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
     (test::shared_directory (vm) / "tutorial_sum_mod");
 
   test::scoped_state_directory const state_directory (shared_directory, vm);
-  test::scoped_nodefile_with_localhost const nodefile_with_localhost
+  test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
 
   fhg::util::temporary_path const _installation_dir
@@ -154,28 +166,21 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
     (shared_directory / boost::filesystem::unique_path());
   boost::filesystem::path const sum_module_dir (_sum_module_dir);
 
-  {
-    std::ostringstream make_module;
+  fhg::util::nest_exceptions<std::runtime_error>
+    ([&sum_module_dir, &vm]()
+     {
+       std::ostringstream make_module;
 
-    make_module
-      << "make"
-      << " DIR_BUILD=" << sum_module_dir
-      << " -C " << (test::source_directory (vm) / "src")
-      ;
+       make_module
+         << "make"
+         << " DIR_BUILD=" << sum_module_dir
+         << " -C " << (test::source_directory (vm) / "src")
+         ;
 
-    if ( int ec
-       = fhg::util::system_with_blocked_SIGCHLD (make_module.str().c_str())
-       )
-    {
-      throw std::runtime_error
-        (( boost::format
-           ("Could not 'make sum_module': error code '%1%', command was '%2%'")
-         % ec
-         % make_module.str()
-         ).str()
-        );
-    };
-  }
+       fhg::util::system_with_blocked_SIGCHLD (make_module.str());
+     }
+    , "Could not 'make sum_module'"
+    );
 
   gspc::installation const installation (vm);
 

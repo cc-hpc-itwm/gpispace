@@ -40,7 +40,7 @@ namespace gpi
 
           while (! m_processes.empty())
           {
-            detach_process (m_processes.begin()->first);
+            detach_process (m_processes.begin()->first, true);
           }
 
         _memory_manager.clear();
@@ -250,7 +250,7 @@ namespace gpi
       manager_t::manager_t ( std::string const & p
                            , std::vector<std::string> const& default_memory_urls
                            , api::gpi_api_t& gpi_api
-                           , fhg::com::kvs::kvsc_ptr_t kvs_client
+                           , boost::shared_ptr<fhg::com::peer_t> const& topology_peer
                            )
         : m_path (p)
         , m_socket (-1)
@@ -258,12 +258,7 @@ namespace gpi
         , m_process_counter (0)
         , _gpi_api (gpi_api)
         , _memory_manager (gpi_api)
-        , _topology ( global::topology_t::any_addr()
-                    , global::topology_t::any_port() // topology_t::port_t("10821")
-                    , _memory_manager
-                    , kvs_client
-                    , gpi_api
-                    )
+        , _topology (_memory_manager, gpi_api, topology_peer)
       {
         if ( default_memory_urls.size ()
            >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID
@@ -287,20 +282,18 @@ namespace gpi
           }
         }
 
-          if (_topology.is_master ())
-          {
-            _topology.go ();
-          }
-          else
-          {
-            _topology.wait_for_go ();
-          }
-
           start ();
       }
 
-      void manager_t::detach_process (const gpi::pc::type::process_id_t id)
+      void manager_t::detach_process ( const gpi::pc::type::process_id_t id
+                                     , bool called_from_dtor
+                                     )
       {
+        if (m_stopping && !called_from_dtor)
+        {
+          return;
+        }
+
         boost::mutex::scoped_lock const _ (_mutex_processes);
 
         if (m_processes.find (id) == m_processes.end())

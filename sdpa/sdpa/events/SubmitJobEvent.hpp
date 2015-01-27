@@ -15,13 +15,11 @@ namespace sdpa
       typedef boost::shared_ptr<SubmitJobEvent> Ptr;
 
       SubmitJobEvent
-        ( const address_t& a_from
-        , const address_t& a_to
-        , const boost::optional<sdpa::job_id_t>& a_job_id
+        ( const boost::optional<sdpa::job_id_t>& a_job_id
         , const job_desc_t& a_description
         , const sdpa::worker_id_list_t& worker_list = sdpa::worker_id_list_t()
         )
-          : SDPAEvent( a_from, a_to)
+          : SDPAEvent()
           , _job_id (a_job_id)
           , desc_ (a_description)
           , worker_list_ (worker_list)
@@ -40,9 +38,10 @@ namespace sdpa
         return worker_list_;
       }
 
-      virtual void handleBy (EventHandler* handler) override
+      virtual void handleBy
+        (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
-        handler->handleSubmitJobEvent (this);
+        handler->handleSubmitJobEvent (source, this);
       }
 
     private:
@@ -61,12 +60,12 @@ namespace sdpa
 
     LOAD_CONSTRUCT_DATA_DEF (SubmitJobEvent, e)
     {
-      LOAD_SDPAEVENT_CONSTRUCT_DATA (from, to);
+      LOAD_SDPAEVENT_CONSTRUCT_DATA();
       LOAD_FROM_ARCHIVE (boost::optional<sdpa::job_id_t>, job_id);
       LOAD_FROM_ARCHIVE (sdpa::job_desc_t, description);
       LOAD_FROM_ARCHIVE (sdpa::worker_id_list_t, worker_list);
 
-      ::new (e) SubmitJobEvent (from, to, job_id, description, worker_list);
+      ::new (e) SubmitJobEvent (job_id, description, worker_list);
     }
   }
 }

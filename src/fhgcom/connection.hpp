@@ -59,7 +59,10 @@ namespace fhg
       const p2p::address_t & remote_address () const { return m_remote_addr; }
 
       void local_address  (const p2p::address_t & a) { m_local_addr = a; }
-      void remote_address (const p2p::address_t & a) { m_remote_addr = a; }
+      void remote_address (const p2p::address_t & a)
+      {
+        m_remote_addr = a;
+      }
     private:
       struct to_send_t
       {

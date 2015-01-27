@@ -51,6 +51,10 @@ namespace gpi
                                              ) const override;
 
 
+        double get_transfer_costs ( const gpi::pc::type::memory_region_t&
+                                  , const gpi::rank_t
+                                  ) const override;
+
         static bool unlink_after_open (const gpi::pc::type::flags_t);
         static bool unlink_after_close (const gpi::pc::type::flags_t);
 

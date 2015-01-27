@@ -2,6 +2,7 @@
 //! \note This "test" does not test anything, but is a pressure-generator for sdpa-gui only.
 
 #include <fhglog/LogMacros.hpp>
+#include <fhg/util/print_exception.hpp>
 #include <cstdlib>
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
@@ -83,6 +84,7 @@ std::string worker_gen()
 }
 
 int main(int ac, char **av)
+try
 {
   if (ac < 3)
   {
@@ -96,10 +98,12 @@ int main(int ac, char **av)
   const int worker_count (ac >= 4 ? atoi (av[3]) : 1);
   const int duration (ac >= 5 ? 1000 / atoi (av[4]) : 1);
 
+  boost::asio::io_service io_service;
+
   const NotificationService service_a
-    ((boost::format ("localhost:%1%") % port_a).str());
+    ((boost::format ("localhost:%1%") % port_a).str(), io_service);
   const NotificationService service_b
-    ((boost::format ("localhost:%1%") % port_b).str());
+    ((boost::format ("localhost:%1%") % port_b).str(), io_service);
 
   std::vector<std::string> worker_names (worker_count);
   std::generate (worker_names.begin(), worker_names.end(), worker_gen);
@@ -130,4 +134,9 @@ int main(int ac, char **av)
   boost::this_thread::sleep (boost::posix_time::seconds (2));
 
   return 0;
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EX: ");
+  return 1;
 }

@@ -9,6 +9,8 @@
 #include <fhglog/remote/appender.hpp>
 #include <fhglog/remote/server.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 #include <boost/thread/scoped_thread.hpp>
 
 #include <functional>
@@ -68,7 +70,10 @@ BOOST_AUTO_TEST_CASE (log_to_fake_remote_stream)
     const boost::strict_scoped_thread<> service_thread
       ([&io_service] { io_service.run(); });
 
-    fhg::log::remote::RemoteAppender appender ("localhost:2438");
+    boost::asio::io_service appender_io_service;
+
+    fhg::log::remote::RemoteAppender appender
+      ("localhost:2438", appender_io_service);
 
     appender.append (FHGLOG_MKEVENT_HERE (ERROR, "hello server!"));
   }
@@ -78,6 +83,10 @@ BOOST_AUTO_TEST_CASE (log_to_fake_remote_stream)
 
 BOOST_AUTO_TEST_CASE (throw_with_unknown_host)
 {
+  boost::asio::io_service appender_io_service;
+
   BOOST_REQUIRE_THROW
-    (fhg::log::remote::RemoteAppender ("unknown-host"), std::runtime_error);
+    ( fhg::log::remote::RemoteAppender ("unknown-host", appender_io_service)
+    , std::runtime_error
+    );
 }

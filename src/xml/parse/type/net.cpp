@@ -444,7 +444,7 @@ namespace xml
           specialized_function.get_ref().specialize
             ( specialize.type_map
             , specialize.type_get
-            , st::join (known_structs, st::make (structs), state)
+            , st::join (known_structs, st::make (structs, state), state)
             , state
             );
 
@@ -472,7 +472,7 @@ namespace xml
           function.specialize
             ( map
             , get
-            , st::join (known_structs, st::make (structs), state)
+            , st::join (known_structs, st::make (structs, state), state)
             , state
             );
 
@@ -489,7 +489,7 @@ namespace xml
           transition.specialize
             ( map
             , get
-            , st::join (known_structs, st::make (structs), state)
+            , st::join (known_structs, st::make (structs, state), state)
             , state
             );
 
@@ -675,7 +675,7 @@ namespace xml
 
             if (place.is_virtual())
             {
-              prop.set ("virtual", "true");
+              prop.set ({"virtual"}, true);
             }
 
             const we::place_id_type pid

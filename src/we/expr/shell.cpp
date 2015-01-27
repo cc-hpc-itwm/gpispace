@@ -5,6 +5,8 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/type/value/show.hpp>
 
+#include <fhg/util/print_exception.hpp>
+
 #include <readline/history.h>
 #include <readline/readline.h>
 
@@ -35,6 +37,7 @@ namespace
 }
 
 int main()
+try
 {
   std::cout << "clear context: #" << std::endl
             << "list state: ?" << std::endl
@@ -116,4 +119,9 @@ int main()
   std::cout << std::endl;
 
   return EXIT_SUCCESS;
+}
+catch (...)
+{
+  fhg::util::print_current_exception (std::cerr, "EXCEPTION: ");
+  return EXIT_FAILURE;
 }

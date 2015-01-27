@@ -38,10 +38,9 @@ namespace fhg
         data.resize (header.length);
       }
 
-      template <typename Iterator>
-      void assign (Iterator begin, Iterator end)
+      void assign (std::string const& x)
       {
-        data.assign(begin, end);
+        data.assign(x.begin(), x.end());
         header.length = data.size ();
       }
 

@@ -7,25 +7,7 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhglog/format.hpp>
 
-#include <fhg/util/now.hpp>
-
-#ifdef NDEBUG
-BOOST_AUTO_TEST_CASE (formatting_performance)
-{
-  double t (-fhg::util::now());
-
-  for (std::size_t count (0); count < 100000; ++count)
-  {
-    format ( fhg::log::default_format::LONG()
-           , FHGLOG_MKEVENT_HERE (TRACE, "hello world!")
-           );
-  }
-
-  t += fhg::util::now();
-
-  BOOST_REQUIRE_LT (t, 1.0);
-}
-#endif
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 
 BOOST_AUTO_TEST_CASE (percentage_escapes_percentage)
 {
@@ -42,7 +24,6 @@ BOOST_AUTO_TEST_CASE (short_severity)
   CHECK (INFO, "I");
   CHECK (WARN, "W");
   CHECK (ERROR, "E");
-  CHECK (FATAL, "F");
 
 #undef CHECK
 }
@@ -57,7 +38,6 @@ BOOST_AUTO_TEST_CASE (severity)
   CHECK (INFO, "INFO");
   CHECK (WARN, "WARN");
   CHECK (ERROR, "ERROR");
-  CHECK (FATAL, "FATAL");
 
 #undef CHECK
 }

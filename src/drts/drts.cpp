@@ -1,6 +1,12 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <drts/drts.hpp>
+#include <drts/private/option.hpp>
+#include <drts/private/rifd_entry_points_impl.hpp>
+#include <drts/private/startup_and_shutdown.hpp>
+
+#include <drts/stream.hpp>
+#include <drts/virtual_memory.hpp>
 
 #include <we/expr/parse/parser.hpp>
 #include <we/type/activity.hpp>
@@ -11,16 +17,12 @@
 
 #include <sdpa/client.hpp>
 
-#include <fhg/util/boost/program_options/validators/executable.hpp>
-#include <fhg/util/boost/program_options/validators/existing_directory.hpp>
-#include <fhg/util/boost/program_options/validators/existing_path.hpp>
-#include <fhg/util/boost/program_options/validators/is_directory_if_exists.hpp>
-#include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
-#include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
-#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <fhg/util/hostname.hpp>
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/read_file.hpp>
-#include <fhg/util/system_with_blocked_SIGCHLD.hpp>
+#include <fhg/util/read_lines.hpp>
+#include <fhg/util/split.hpp>
+#include <fhg/syscall.hpp>
 
 #include <boost/format.hpp>
 
@@ -31,132 +33,10 @@
 #include <sstream>
 #include <stdexcept>
 #include <thread>
+#include <unordered_set>
 
 namespace gspc
 {
-  namespace validators = fhg::util::boost::program_options;
-
-  namespace options
-  {
-    namespace name
-    {
-      namespace
-      {
-        constexpr char const* const log_host {"log-host"};
-        constexpr char const* const log_port {"log-port"};
-        constexpr char const* const gui_host {"gui-host"};
-        constexpr char const* const gui_port {"gui-port"};
-
-        constexpr char const* const state_directory {"state-directory"};
-        constexpr char const* const gspc_home {"gspc-home"};
-        constexpr char const* const nodefile {"nodefile"};
-        constexpr char const* const application_search_path
-          {"application-search-path"};
-
-        constexpr char const* const virtual_memory_manager
-          {"virtual-memory-manager"};
-        constexpr char const* const virtual_memory_per_node
-          {"virtual-memory-per-node"};
-        constexpr char const* const virtual_memory_socket
-          {"virtual-memory-socket"};
-      }
-    }
-
-    boost::program_options::options_description logging()
-    {
-      boost::program_options::options_description logging ("Logging");
-
-      logging.add_options()
-        ( name::log_host
-        , boost::program_options::value<validators::nonempty_string>()
-        ->required()
-        , "name of log host"
-        )
-        ( name::log_port
-        , boost::program_options::value
-          <validators::positive_integral<unsigned short>>()->required()
-        , "port on log-host to log to"
-        )
-        ( name::gui_host
-        , boost::program_options::value<validators::nonempty_string>()
-          ->required()
-        , "name of gui host"
-        )
-        ( name::gui_port
-        , boost::program_options::value
-          <validators::positive_integral<unsigned short>>()->required()
-        , "port on gui-host to send to"
-        )
-        ;
-
-      return logging;
-    }
-
-    boost::program_options::options_description installation()
-    {
-      boost::program_options::options_description
-        installation ("GSPC Installation");
-
-      installation.add_options()
-        ( name::gspc_home
-        , boost::program_options::value<validators::existing_directory>()
-        ->required()
-        , "gspc installation directory"
-        )
-        ;
-
-      return installation;
-    }
-
-    boost::program_options::options_description drts()
-    {
-      boost::program_options::options_description drts ("Runtime system");
-
-      drts.add_options()
-        ( name::nodefile
-        , boost::program_options::value<validators::existing_path>()->required()
-        , "nodefile"
-        )
-        ( name::state_directory
-        , boost::program_options::value<validators::is_directory_if_exists>()
-        ->required()
-        , "directory where to store drts runtime state information"
-        )
-        //! \todo let it be a list of existing_directories
-        ( name::application_search_path
-        , boost::program_options::value<validators::existing_directory>()
-        , "adds a path to the list of application search paths"
-        )
-        ;
-
-      return drts;
-    }
-
-    boost::program_options::options_description virtual_memory()
-    {
-      boost::program_options::options_description vmem ("Virtual memory");
-
-      vmem.add_options()
-        ( name::virtual_memory_manager
-        , boost::program_options::value<validators::executable>()->required()
-        , "memory manager, typically installed in the privilegded folder"
-        )
-        ( name::virtual_memory_per_node
-        , boost::program_options::value
-          <validators::positive_integral<unsigned long>>()->required()
-        , "virtual memory per node in bytes"
-        )
-        ( name::virtual_memory_socket
-        , boost::program_options::value<validators::nonexisting_path>()
-        ->required()
-        , "socket file to communicate with the virtual memory manager"
-        )
-        ;
-
-      return vmem;
-    }
-  }
-
   namespace
   {
     std::pair<std::list<std::string>, unsigned long>
@@ -188,140 +68,93 @@ namespace gspc
 
       return std::make_pair (nodes, unique_nodes.size());
     }
-
-    void system (std::string const& command, std::string const& description)
-    {
-      if (int ec = fhg::util::system_with_blocked_SIGCHLD (command.c_str()))
-      {
-        throw std::runtime_error
-          (( boost::format
-             ("Could not '%3%': error code '%1%', command was '%2%'")
-           % ec
-           % command
-           % description
-           ).str()
-          );
-      };
-    }
   }
 
   installation::installation
     (boost::program_options::variables_map const& vm)
-    : _gspc_home
-      ( boost::filesystem::canonical
-        (vm[options::name::gspc_home].as<validators::existing_directory>())
+      : _gspc_home (boost::filesystem::canonical (require_gspc_home (vm)))
+  {}
+
+  scoped_runtime_system::scoped_runtime_system
+      ( boost::program_options::variables_map const& vm
+      , installation const& installation
+      , std::string const& topology_description
       )
+    : scoped_runtime_system
+        ( vm
+        , installation
+        , topology_description
+        , require_rif_entry_points_file (vm)
+        )
   {}
 
   scoped_runtime_system::scoped_runtime_system
     ( boost::program_options::variables_map const& vm
     , installation const& installation
     , std::string const& topology_description
+    , rifd_entry_points const& entry_points
     )
       : _installation (installation)
-      , _state_directory
-        ( vm[options::name::state_directory]
-        . as<validators::is_directory_if_exists>()
-        )
-      , _nodefile
-        ( boost::filesystem::canonical
-          (vm[options::name::nodefile].as<validators::existing_path>())
-        )
-      , _virtual_memory_per_node
-        ( vm.count (options::name::virtual_memory_per_node)
+      , _state_directory (require_state_directory (vm))
+      , _virtual_memory_per_node (get_virtual_memory_per_node (vm))
+      , _virtual_memory_socket (get_virtual_memory_socket (vm))
+      , _virtual_memory_startup_timeout
+        ( get_virtual_memory_startup_timeout (vm)
         ? boost::make_optional
-          ( vm[options::name::virtual_memory_per_node]
-          . as<validators::positive_integral<unsigned long>>()
-          )
+          (std::chrono::seconds (get_virtual_memory_startup_timeout (vm).get()))
         : boost::none
         )
-      , _virtual_memory_socket
-        ( vm.count (options::name::virtual_memory_socket)
-        ? boost::make_optional
-          ( vm[options::name::virtual_memory_socket]
-          . as<validators::nonexisting_path>()
-          )
-        : boost::none
-        )
-      , _nodes_and_number_of_unique_nodes (read_nodes (_nodefile))
+      , _nodes_and_number_of_unique_nodes
+          (read_nodes (boost::filesystem::canonical (require_nodefile (vm))))
       , _virtual_memory_api
         ( _virtual_memory_socket
         ? fhg::util::make_unique<gpi::pc::client::api_t>
           (_virtual_memory_socket->string())
         : nullptr
         )
+      , _rif_entry_points (entry_points)
   {
-    std::ostringstream command_boot;
+    unsigned short const default_log_port
+      ((65535 - 30000 + fhg::syscall::getuid() * 2) % 65535 + 1024);
+    unsigned short const default_gui_port (default_log_port + 1);
 
-    command_boot
-      << (_installation.gspc_home() / "bin" / "sdpa")
-      << " -s " << _state_directory
-      << " boot"
-      << " -f " << _nodefile;
-
-    if (vm.count (options::name::log_host))
+    std::vector<fhg::drts::worker_description> worker_descriptions;
+    for ( std::string const& description
+        : fhg::util::split<std::string, std::string> (topology_description, ' ')
+        )
     {
-      command_boot << " -l " <<
-        (vm[options::name::log_host].as<validators::nonempty_string>());
-
-      if (vm.count (options::name::log_port))
-      {
-        command_boot << ":" <<
-          ( vm[options::name::log_port]
-          . as<validators::positive_integral<unsigned short>>()
-          );
-      }
+      //! \todo configurable: default number of processes
+      worker_descriptions.emplace_back
+        (fhg::drts::parse_capability (1, description));
     }
 
-    if (vm.count (options::name::gui_host))
-    {
-      command_boot << " -g " <<
-        (vm[options::name::gui_host].as<validators::nonempty_string>());
+    fhg::util::signal_handler_manager signal_handler_manager;
 
-      if (vm.count (options::name::gui_port))
-      {
-        command_boot << ":" <<
-          ( vm[options::name::gui_port]
-          . as<validators::positive_integral<unsigned short>>()
-          );
-      }
-    }
-
-    if (_virtual_memory_per_node)
-    {
-      boost::filesystem::path const virtual_memory_manager
-        ( boost::filesystem::canonical
-          ( vm[options::name::virtual_memory_manager]
-          . as<validators::executable>()
-          )
-        );
-
-      command_boot
-        << " -x " << virtual_memory_manager
-        << " -y " << *_virtual_memory_socket
-        << " -m " << *_virtual_memory_per_node
-        ;
-    }
-    else
-    {
-      command_boot << " -M";
-    }
-
-    if (vm.count (options::name::application_search_path))
-    {
-      for ( boost::filesystem::path const& path
-          : { vm[options::name::application_search_path]
-            . as<validators::existing_directory>()
-            }
-          )
-      {
-        command_boot << " -A " << boost::filesystem::canonical (path);
-      }
-    }
-
-    command_boot << " " << topology_description;
-
-    system (command_boot.str(), "start runtime system");
+    std::tie (_orchestrator_host, _orchestrator_port) = fhg::drts::startup
+      ( get_gui_host (vm).get_value_or (fhg::util::hostname())
+      , get_gui_port (vm).get_value_or (default_gui_port)
+      , get_log_host (vm).get_value_or (fhg::util::hostname())
+      , get_log_port (vm).get_value_or (default_log_port)
+      , _virtual_memory_per_node
+      //! \todo configurable: verbose logging
+      , false
+      , _virtual_memory_socket
+      , get_application_search_path (vm)
+      ? std::vector<boost::filesystem::path> ({boost::filesystem::canonical (get_application_search_path (vm).get())})
+      : std::vector<boost::filesystem::path>()
+      , _installation.gspc_home()
+      //! \todo configurable: number of segments
+      , 1
+      , _state_directory
+      // !\todo configurable: delete logfiles
+      , true
+      , signal_handler_manager
+      , _virtual_memory_per_node
+      , _virtual_memory_startup_timeout
+      , worker_descriptions
+      , get_virtual_memory_port (vm)
+      , _rif_entry_points._->_entry_points
+      );
 
     if (_virtual_memory_per_node)
     {
@@ -333,89 +166,7 @@ namespace gspc
   {
     _virtual_memory_api.reset();
 
-    system ( ( boost::format ("%1% -s %2% stop")
-             % (_installation.gspc_home() / "bin" / "sdpa")
-             % _state_directory
-             ).str()
-           , "stop runtime system"
-           );
-  }
-
-  std::multimap<std::string, pnet::type::value::value_type>
-    scoped_runtime_system::put_and_run
-    ( boost::filesystem::path const& workflow
-    , std::multimap< std::string
-                   , pnet::type::value::value_type
-                   > const& values_on_ports
-    ) const
-  {
-    // taken from bin/pnetput
-    we::type::activity_t activity (workflow);
-
-    for ( std::pair< std::string
-                   , pnet::type::value::value_type
-                   > const& value_on_port
-        : values_on_ports
-        )
-    {
-      activity.add_input
-        ( activity.transition().input_port_by_name (value_on_port.first)
-        , value_on_port.second
-        );
-    }
-
-    // taken from pbs/sdpa and bin/sdpac
-    //! \todo Remove magic: specify filenames instead of relying on
-    //! file? Let an c++-ified sdpa-boot() return them.
-    std::string const kvs_host
-      (fhg::util::read_file (_state_directory / "kvs.host"));
-    unsigned short const kvs_port
-      ( boost::lexical_cast<unsigned short>
-        (fhg::util::read_file (_state_directory / "kvs.port"))
-      );
-
-    sdpa::client::Client api
-      ("orchestrator", kvs_host, std::to_string (kvs_port));
-
-    std::string const job_id (api.submitJob (activity.to_string()));
-
-    std::cerr << "waiting for job " << job_id << std::endl;
-
-    sdpa::client::job_info_t job_info;
-
-    sdpa::status::code const status
-      (api.wait_for_terminal_state (job_id, job_info));
-
-    if (sdpa::status::FAILED == status)
-    {
-      //! \todo decorate the exception with the most progressed activity
-      throw std::runtime_error
-        (( boost::format ("Job %1%: failed: error-message := %2%")
-         % job_id
-         % job_info.error_message
-         ).str()
-        );
-    }
-
-    we::type::activity_t const result_activity (api.retrieveResults (job_id));
-
-    api.deleteJob (job_id);
-
-    std::multimap<std::string, pnet::type::value::value_type> result;
-
-    for ( std::pair<pnet::type::value::value_type, we::port_id_type>
-           const& value_on_port
-        : result_activity.output()
-        )
-    {
-      result.emplace
-        ( result_activity.transition().ports_output()
-        . at (value_on_port.second).name()
-        , value_on_port.first
-        );
-    }
-
-    return result;
+    fhg::drts::shutdown (_state_directory, _rif_entry_points._->_entry_points);
   }
 
   vmem_allocation scoped_runtime_system::alloc
@@ -423,112 +174,21 @@ namespace gspc
   {
     return vmem_allocation (this, size, description);
   }
-
-  namespace
+  vmem_allocation scoped_runtime_system::alloc_and_fill
+    ( unsigned long size
+    , std::string const& description
+    , char const* const data
+    ) const
   {
-    template<typename T>
-      void set_as ( boost::program_options::variables_map& vm
-                  , std::string const& option_name
-                  , std::string const& value
-                  )
-    {
-      std::pair<boost::program_options::variables_map::iterator, bool> const
-        pos_and_success
-        ( vm.insert
-          ( std::make_pair
-            ( option_name
-            , boost::program_options::variable_value (T (value), false)
-            )
-          )
-        );
-
-      if (!pos_and_success.second)
-      {
-        throw std::runtime_error
-          (( boost::format
-             ("Failed to set option '%1%' to '%2%': Found old value '%3%'")
-           % option_name
-           % value
-           % pos_and_success.first->second.as<T>()
-           ).str()
-          );
-      }
-    }
+    return vmem_allocation (this, size, description, data);
   }
 
-  void set_gspc_home ( boost::program_options::variables_map& vm
-                     , boost::filesystem::path const& path
-                     )
+  stream scoped_runtime_system::create_stream ( std::string const& name
+                                              , gspc::vmem_allocation const& buffer
+                                              , stream::size_of_slot const& size_of_slot
+                                              , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
+                                              ) const
   {
-    set_as<validators::existing_directory>
-      (vm, options::name::gspc_home, path.string());
-  }
-  void set_state_directory ( boost::program_options::variables_map& vm
-                           , boost::filesystem::path const& path
-                           )
-  {
-    set_as<validators::is_directory_if_exists>
-      (vm, options::name::state_directory, path.string());
-  }
-  void set_nodefile ( boost::program_options::variables_map& vm
-                    , boost::filesystem::path const& path
-                    )
-  {
-    set_as<validators::existing_path>
-      (vm, options::name::nodefile, path.string());
-  }
-  void set_virtual_memory_manager ( boost::program_options::variables_map& vm
-                                  , boost::filesystem::path const& path
-                                  )
-  {
-    set_as<validators::executable>
-      (vm, options::name::virtual_memory_manager, path.string());
-  }
-  void set_virtual_memory_per_node ( boost::program_options::variables_map& vm
-                                   , unsigned long size
-                                  )
-  {
-    set_as<validators::positive_integral<unsigned long>>
-      (vm, options::name::virtual_memory_per_node, std::to_string (size));
-  }
-  void set_virtual_memory_socket ( boost::program_options::variables_map& vm
-                                 , boost::filesystem::path const& path
-                                  )
-  {
-    set_as<validators::nonexisting_path>
-      (vm, options::name::virtual_memory_socket, path.string());
-  }
-  void set_application_search_path ( boost::program_options::variables_map& vm
-                                   , boost::filesystem::path const& path
-                                  )
-  {
-    set_as<validators::existing_directory>
-      (vm, options::name::application_search_path, path.string());
-  }
-  void set_log_host ( boost::program_options::variables_map& vm
-                    , std::string const& host
-                    )
-  {
-    set_as<validators::nonempty_string> (vm, options::name::log_host, host);
-  }
-  void set_gui_host ( boost::program_options::variables_map& vm
-                    , std::string const& host
-                    )
-  {
-    set_as<validators::nonempty_string> (vm, options::name::gui_host, host);
-  }
-  void set_log_port ( boost::program_options::variables_map& vm
-                    , unsigned short port
-                    )
-  {
-    set_as<validators::positive_integral<unsigned short>>
-      (vm, options::name::log_port, std::to_string (port));
-  }
-  void set_gui_port ( boost::program_options::variables_map& vm
-                    , unsigned short port
-                    )
-  {
-    set_as<validators::positive_integral<unsigned short>>
-      (vm, options::name::gui_port, std::to_string (port));
+    return stream (*this, name, buffer, size_of_slot, on_slot_filled);
   }
 }

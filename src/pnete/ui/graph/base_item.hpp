@@ -52,6 +52,7 @@ namespace fhg
 
           scene_type* scene() const;
 
+          void set_just_pos_but_not_in_property (qreal x, qreal y);
           void set_just_pos_but_not_in_property (const QPointF&);
 
           virtual void set_just_orientation_but_not_in_property
@@ -62,6 +63,7 @@ namespace fhg
 
           virtual void no_undo_setPos (const QPointF&);
 
+          void no_undo_no_raster_setPos (qreal x, qreal y);
           virtual void no_undo_no_raster_setPos (const QPointF&);
 
           void clear_style_cache();
@@ -81,7 +83,7 @@ namespace fhg
           virtual QRectF boundingRect() const override;
 
           virtual void handle_property_change
-            ( const ::we::type::property::key_type& key
+            ( const ::we::type::property::path_type& path
             , const ::we::type::property::value_type& value
             );
 

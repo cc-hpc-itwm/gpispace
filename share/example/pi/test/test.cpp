@@ -3,10 +3,12 @@
 #define BOOST_TEST_MODULE share_example_pi
 #include <boost/test/unit_test.hpp>
 
+#include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
-#include <test/scoped_nodefile_with_localhost.hpp>
+#include <test/scoped_nodefile_from_environment.hpp>
 #include <test/scoped_state_directory.hpp>
 #include <test/shared_directory.hpp>
 #include <test/source_directory.hpp>
@@ -15,6 +17,7 @@
 #include <we/type/value/poke.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/temporary_path.hpp>
 
 #include <boost/filesystem.hpp>
@@ -32,6 +35,7 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
   options_description.add (test::options::source_directory());
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
+  options_description.add (gspc::options::scoped_rifd());
 
   boost::program_options::variables_map vm;
   boost::program_options::store
@@ -47,7 +51,7 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
     (test::shared_directory (vm) / "share_example_pi");
 
   test::scoped_state_directory const state_directory (shared_directory, vm);
-  test::scoped_nodefile_with_localhost const nodefile_with_localhost
+  test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
 
   fhg::util::temporary_path const _installation_dir
@@ -68,18 +72,21 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
     , "net lib install"
     );
 
-  gspc::scoped_runtime_system const drts (vm, installation, "worker:12");
+  gspc::scoped_rifd const rifd (vm, installation);
+  gspc::scoped_runtime_system const drts
+    (vm, installation, "worker:12", rifd.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    (drts.put_and_run ( make.build_directory() / "pi.pnet"
-                      , { {"num_packet", 500L}
-                        , {"points_per_packet", 1000000L}
-                        , {"credit_generate", 20L}
-                        , {"credit_run", 10L}
-                        , {"credit_get_key", 20L}
-                        , {"seed", 3141L}
-                        }
-                      )
+    ( gspc::client (drts)
+    . put_and_run ( gspc::workflow (make.build_directory() / "pi.pnet")
+                  , { {"num_packet", 500L}
+                    , {"points_per_packet", 1000000L}
+                    , {"credit_generate", 20L}
+                    , {"credit_run", 10L}
+                    , {"credit_get_key", 20L}
+                    , {"seed", 3141L}
+                    }
+                  )
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 1);

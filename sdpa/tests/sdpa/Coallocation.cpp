@@ -8,12 +8,13 @@
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 BOOST_GLOBAL_FIXTURE (setup_logging)
 
 BOOST_AUTO_TEST_CASE (testCoallocationWorkflow)
 {
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
   const utils::agent agent (orchestrator);
 
   const utils::fake_drts_worker_directly_finishing_jobs worker_0 (agent);
@@ -31,7 +32,7 @@ namespace
   we::type::activity_t net_with_two_childs_requiring_n_workers (unsigned long n)
   {
     we::type::property::type props;
-    props.set ("fhg.drts.schedule.num_worker", std::to_string (n) + "UL");
+    props.set ({"fhg", "drts", "schedule", "num_worker"}, std::to_string (n) + "UL");
     we::type::transition_t transition_0
       ( fhg::util::random_string()
       , we::type::module_call_t ( fhg::util::random_string()
@@ -79,9 +80,9 @@ namespace
     we::type::net_type net;
 
     we::place_id_type const place_id_in_0
-      (net.add_place (place::type (port_name, std::string ("string"))));
+      (net.add_place (place::type (port_name + "1", std::string ("string"))));
     we::place_id_type const place_id_in_1
-      (net.add_place (place::type (port_name, std::string ("string"))));
+      (net.add_place (place::type (port_name + "2", std::string ("string"))));
 
     net.put_value (place_id_in_0, fhg::util::random_string_without ("\\\""));
     net.put_value (place_id_in_1, fhg::util::random_string_without ("\\\""));
@@ -122,8 +123,7 @@ BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_part_of_coallocat
   //! \note issue #374
 
   // 0. setup environment orch -> agent.
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
   const utils::agent agent (orchestrator);
 
   // 1. start worker 1
@@ -201,8 +201,7 @@ BOOST_AUTO_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are_av
 {
   //! \note related to issue #374
 
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
   const utils::agent agent (orchestrator);
 
   fhg::util::thread::event<std::string> job_submitted_1;
@@ -275,11 +274,11 @@ namespace
     }
 
     void handleCancelJobEvent
-      (const sdpa::events::CancelJobEvent* pEvt) override
+      (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent* pEvt) override
     {
       boost::mutex::scoped_lock const _ (_cancels_mutex);
 
-      _cancels.emplace (pEvt->job_id(), pEvt->from());
+      _cancels.emplace (pEvt->job_id(), source);
       _announce_cancel (pEvt->job_id());
     }
 
@@ -287,19 +286,20 @@ namespace
     {
       boost::mutex::scoped_lock const _ (_cancels_mutex);
 
-      const std::string master (_cancels.at (job_id));
+      const fhg::com::p2p::address_t master (_cancels.at (job_id));
       _cancels.erase (job_id);
 
       _network.perform
-        ( sdpa::events::SDPAEvent::Ptr
-          (new sdpa::events::CancelJobAckEvent (_name, master, job_id))
+        ( master
+        , sdpa::events::SDPAEvent::Ptr
+          (new sdpa::events::CancelJobAckEvent (job_id))
         );
     }
 
   private:
     std::function<void (std::string)> _announce_cancel;
     mutable boost::mutex _cancels_mutex;
-    std::map<std::string, std::string> _cancels;
+    std::map<std::string, fhg::com::p2p::address_t> _cancels;
   };
 }
 
@@ -307,8 +307,7 @@ BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_worke
 {
   //! \note related to issue #374
 
-  const utils::kvs_server kvs_server;
-  const utils::orchestrator orchestrator (kvs_server);
+  const utils::orchestrator orchestrator;
   const utils::agent agent (orchestrator);
 
   utils::client client (orchestrator);

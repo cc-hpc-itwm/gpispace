@@ -25,10 +25,13 @@
 #ifndef FHG_UTIL_QT_BOOST_CONNECT_HPP
 #define FHG_UTIL_QT_BOOST_CONNECT_HPP
 
+#include <fhg/util/make_indices.hpp>
+
 #include <QtCore/QObject>
 #include <QtCore/QMetaType>
 
 #include <functional>
+#include <type_traits>
 
 namespace fhg
 {
@@ -46,9 +49,72 @@ namespace fhg
           virtual void invoke (void** args) = 0;
         };
 
-        template<typename Signature>
-          class connection_adapter : public abstract_connection_adapter
-        { };
+        namespace
+        {
+          template<typename T>
+          using remove_const_reference
+            = typename std::remove_const<typename std::remove_reference<T>::type>::type;
+
+          template<typename...> struct append_qMetaTypeId;
+          template<> struct append_qMetaTypeId<>
+          {
+            static QByteArray apply (QByteArray bytearray) { return bytearray; }
+          };
+          template<typename U, typename... Rest>
+            struct append_qMetaTypeId<U, Rest...>
+          {
+            static QByteArray apply (QByteArray bytearray)
+            {
+              bytearray.append
+                (QMetaType::typeName (qMetaTypeId<remove_const_reference<U>>()));
+              if (sizeof... (Rest))
+              {
+                bytearray.append (",");
+              }
+              return append_qMetaTypeId<Rest...>::apply (bytearray);
+            }
+          };
+        }
+
+        template<typename Signature> class connection_adapter;
+        template<typename... T>
+          class connection_adapter<void (T...)>
+          : public abstract_connection_adapter
+        {
+        public:
+          explicit connection_adapter (std::function<void (T...)> const& f)
+            : _invoke_impl (f)
+          { }
+
+          static QByteArray build_signature()
+          {
+            return append_qMetaTypeId<T...>::apply (QByteArray ("fake("))
+              .append (")");
+          }
+
+          virtual void invoke (void** args) override
+          {
+            _invoke_impl.apply (args);
+          }
+
+        private:
+          template<typename> struct invoke_impl;
+          template<std::size_t... Indices>
+            struct invoke_impl<indices<Indices...>>
+          {
+            invoke_impl (std::function<void (T...)> const& function)
+              : _function (function)
+            {}
+            void apply (void** args)
+            {
+              return _function ( *reinterpret_cast<remove_const_reference<T>*>
+                                   (args[Indices+1])...
+                               );
+            }
+            std::function<void (T...)> _function;
+          };
+          invoke_impl<fhg::util::make_indices<sizeof... (T)>> _invoke_impl;
+        };
 
         bool connect_impl ( QObject* sender
                           , const char* signal
@@ -96,7 +162,5 @@ namespace fhg
     }
   }
 }
-
-#include <util/qt/boost_connect_specializes.hpp>
 
 #endif

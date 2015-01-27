@@ -4,19 +4,14 @@
 #include <fhglog/event.hpp>
 #include <fhglog/level.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 //! \todo This should test way more
 BOOST_AUTO_TEST_CASE (event_ctor_should_regard_severity)
 {
   const fhg::log::LogEvent evt
     (fhg::log::TRACE, "file", "function", 34, "hello world!");
   BOOST_REQUIRE_EQUAL (evt.severity(), fhg::log::TRACE);
-}
-
-BOOST_AUTO_TEST_CASE (illegal_loglevel_should_throw)
-{
-  BOOST_REQUIRE_THROW ( fhg::log::from_int (fhg::log::FATAL + 1)
-                      , std::runtime_error
-                      );
 }
 
 //! \todo This does not really test anything

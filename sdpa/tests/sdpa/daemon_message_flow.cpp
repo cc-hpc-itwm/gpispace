@@ -4,30 +4,36 @@
 
 #include <utils.hpp>
 
+#include <fhg/util/boost/asio/ip/address.hpp>
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 #include <boost/test/unit_test.hpp>
 
 namespace
 {
   struct network_strategy
   {
-    network_strategy (std::string name, utils::kvs_server const& kvs_server)
+    network_strategy()
       : _event_received()
-      , _kvs_client
-        ( new fhg::com::kvs::client::kvsc
-          ( kvs_server.kvs_host(), kvs_server.kvs_port()
-          , true, boost::posix_time::seconds (120), 1
-          )
-        )
       , _network
-        ( [this] (sdpa::events::SDPAEvent::Ptr e) { _event_received.notify (e); }
-        , name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
-        , _kvs_client
+        ( [this] (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr e)
+          {
+            _event_received.notify (e);
+          }
+        , _peer_io_service
+        , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
         )
     {}
 
-    void send (sdpa::events::SDPAEvent* event)
+    fhg::com::p2p::address_t connect_to
+      (fhg::com::host_t const& host, fhg::com::port_t const& port)
     {
-      _network.perform (sdpa::events::SDPAEvent::Ptr (event));
+      return _network.connect_to (host, port);
+    }
+
+    void send (fhg::com::p2p::address_t const& destination, sdpa::events::SDPAEvent* event)
+    {
+      _network.perform (destination, sdpa::events::SDPAEvent::Ptr (event));
     }
 
     template<typename T> boost::shared_ptr<T> wait_for_event()
@@ -38,7 +44,7 @@ namespace
 
   private:
     fhg::util::thread::event<sdpa::events::SDPAEvent::Ptr> _event_received;
-    fhg::com::kvs::kvsc_ptr_t _kvs_client;
+    boost::asio::io_service _peer_io_service;
     sdpa::com::NetworkStrategy _network;
   };
 }
@@ -105,15 +111,26 @@ BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
   const std::string orchestrator_name (utils::random_peer_name());
   const std::string child_name (utils::random_peer_name());
 
-  const utils::kvs_server kvs_server;
-
+  boost::asio::io_service peer_io_service;
+  boost::asio::io_service rpc_io_service;
   const sdpa::daemon::Orchestrator orchestrator
-    (orchestrator_name, "localhost", kvs_server.kvs_host(), kvs_server.kvs_port());
+    ( orchestrator_name
+    , "localhost"
+    , peer_io_service
+    , rpc_io_service
+    );
 
-  network_strategy child (child_name, kvs_server);
+  network_strategy child;
 
-  child.send ( new sdpa::events::JobFinishedAckEvent
-               (child_name, orchestrator_name, fhg::util::random_string())
+  child.send ( child.connect_to
+                 ( fhg::com::host_t
+                     ( fhg::util::connectable_to_address_string
+                         (orchestrator.peer_local_endpoint().address())
+                     )
+                 , fhg::com::port_t
+                     (std::to_string (orchestrator.peer_local_endpoint().port()))
+                 )
+             , new sdpa::events::JobFinishedAckEvent (fhg::util::random_string())
              );
 
   sdpa::events::ErrorEvent::Ptr event

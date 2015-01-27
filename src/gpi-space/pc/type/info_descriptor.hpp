@@ -2,8 +2,6 @@
 #define GPI_SPACE_PC_TYPE_INFO_DESCRIPTOR_HPP 1
 
 #include <vector>
-#include <iostream>
-#include <iomanip>
 
 // serialization
 #include <boost/serialization/nvp.hpp>
@@ -46,25 +44,6 @@ namespace gpi
             ar & BOOST_SERIALIZATION_NVP( queue_depth );
           }
         };
-
-        inline
-        std::ostream & operator<< (std::ostream & os, const descriptor_t & d)
-        {
-          std::ios_base::fmtflags saved_flags (os.flags());
-          char saved_fill = os.fill (' ');
-          std::size_t saved_width = os.width (0);
-
-          std::cout << "rank="  << d.rank << " ";
-          std::cout << "nodes=" << d.nodes << " ";
-          std::cout << "queues="   << d.queues << " ";
-          std::cout << "depth="   << d.queue_depth;
-
-          os.flags (saved_flags);
-          os.fill (saved_fill);
-          os.width (saved_width);
-
-          return os;
-        }
       }
     }
   }

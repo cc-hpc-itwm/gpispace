@@ -9,6 +9,7 @@
 #include <we/type/value/boost/test/printer.hpp>
 #include <we/type/value/show.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/require_exception.hpp>
 #include <fhg/util/random_string.hpp>
 
@@ -17,64 +18,6 @@
 #include <random>
 #include <string>
 #include <stack>
-
-#ifdef NDEBUG
-#include <fhg/util/now.hpp>
-
-BOOST_AUTO_TEST_CASE (performance_parse_once_eval_often)
-{
-  double const t (-fhg::util::now());
-
-  const long round (750);
-  const long max (2000);
-  const std::string input ("${a} < ${b}");
-
-  expr::eval::context context;
-
-  context.bind ("b", max);
-
-  expr::parse::parser parser (input);
-
-  for (int r (0); r < round; ++r)
-  {
-    long i (0);
-
-    do
-    {
-      context.bind ("a", i++);
-    }
-    while (parser.eval_front_bool (context));
-  }
-
-  BOOST_REQUIRE_LT (t + fhg::util::now(), 1.0);
-}
-
-BOOST_AUTO_TEST_CASE (performance_often_parse_and_eval)
-{
-  double const t (-fhg::util::now());
-
-  const long round (75);
-  const long max (2000);
-  const std::string input ("${a} < ${b}");
-
-  expr::eval::context context;
-
-  context.bind ("b", max);
-
-  for (int r (0); r < round; ++r)
-  {
-    long i (0);
-
-    do
-    {
-      context.bind ("a", i++);
-    }
-    while (expr::parse::parser (input, context).get_front_bool());
-  }
-
-  BOOST_REQUIRE_LT (t + fhg::util::now(), 1.0);
-}
-#endif
 
 namespace
 {
@@ -371,6 +314,17 @@ namespace
   }
 }
 
+namespace
+{
+  template<typename T>
+    void require_ctor_exception
+    (std::string const& input, std::string const& message)
+  {
+    fhg::util::boost::test::require_exception<T>
+      ([&input]() { (void)expr::parse::parser (input); }, message);
+  }
+}
+
 BOOST_AUTO_TEST_CASE (token_cmp)
 {
 #define CHECK(_lhs, _rhs, _lt, _le, _gt, _ge, _eq)                      \
@@ -427,6 +381,19 @@ BOOST_AUTO_TEST_CASE (token_cmp)
   check_equality ("y(4)", "y()", false);
   check_equality ("y()", "y(4)", false);
   check_equality ("y(4)", "y(4)", true);
+
+  check_equality ("Struct[]", "Struct[]", true);
+  check_equality ("Struct[a:=0]", "Struct[a:=0]", true);
+  check_equality ("Struct[a:=0]", "Struct[a:=1]", false);
+
+  require_ctor_exception<pnet::exception::eval>
+    ( "Struct [a:=0] == Struct [b:=0]"
+    , "type error: eval  ==  (Struct [a := 0], Struct [b := 0])"
+    );
+  require_ctor_exception<pnet::exception::eval>
+    ( "Struct [a:=0] == Struct [a:=0L]"
+    , "type error: eval  ==  (0, 0L)"
+    );
 }
 
 namespace
@@ -774,14 +741,6 @@ BOOST_AUTO_TEST_CASE (token_max)
 
 namespace
 {
-  template<typename T>
-    void require_ctor_exception
-    (std::string const& input, std::string const& message)
-  {
-    fhg::util::boost::test::require_exception<T>
-      ([&input]() { (void)expr::parse::parser (input); }, message);
-  }
-
   template<typename T>
     T minus (T const& l, T const& r)
   {

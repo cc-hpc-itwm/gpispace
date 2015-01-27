@@ -68,6 +68,11 @@ namespace fhg
         memcpy (&u, &a, sizeof(boost::uuids::uuid));
         return boost::lexical_cast<std::string>(u);
       }
+
+      std::size_t hash_value (address_t const& address)
+      {
+        return std::hash<address_t>() (address);
+      }
     }
   }
 }

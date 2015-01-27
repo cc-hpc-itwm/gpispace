@@ -1,6 +1,0 @@
-<structs>
-  <struct name="VOLUME">
-    <field name="id" type="long"/>
-    <field name="offset" type="long"/>
-  </struct>
-</structs>

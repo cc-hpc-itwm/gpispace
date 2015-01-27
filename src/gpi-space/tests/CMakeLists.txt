@@ -1,55 +1,60 @@
-fhg_add_test (test_handle_generator.cpp
-  PROJECT gpi-space
+fhg_add_test (handle_generator.cpp
+  PROJECT gpi-space_test
   BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE SYSTEM "${LIBRT_INCLUDE_DIR}"
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
-                 ${FhgCom_LIBRARY}
-                 ${FhgLog_LIBRARY}
+                 fhgcom
+                 fhglog
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )
 
-fhg_add_test (test_memory_area.cpp
-  PROJECT gpi-space
+fhg_add_test (memory_area.cpp
+  PROJECT gpi-space_test
   BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE SYSTEM "${LIBRT_INCLUDE_DIR}"
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
-                 ${FhgCom_LIBRARY}
-                 ${FhgLog_LIBRARY}
+                 fhgcom
+                 fhglog
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )
 
-fhg_add_test (test_segment.cpp
-  PROJECT gpi-space
+fhg_add_test (segment.cpp
+  PROJECT gpi-space_test
   BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE SYSTEM "${LIBRT_INCLUDE_DIR}"
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
-                 ${FhgCom_LIBRARY}
-                 ${FhgLog_LIBRARY}
+                 fhgcom
+                 fhglog
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )
 
-fhg_add_test (test_sfs_area.cpp dummy_topology.cpp
-  PROJECT gpi-space
+fhg_add_test (sfs_area.cpp
+  PROJECT gpi-space_test
   BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE SYSTEM "${LIBRT_INCLUDE_DIR}"
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
-                 ${FhgCom_LIBRARY}
-                 ${FhgLog_LIBRARY}
+                 fhgcom
+                 fhglog
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )
 
-fhg_add_test (test_task.cpp
-  PROJECT gpi-space
+fhg_add_test (task.cpp
+  PROJECT gpi-space_test
   BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE SYSTEM "${LIBRT_INCLUDE_DIR}"
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
-                 ${FhgCom_LIBRARY}
-                 ${FhgLog_LIBRARY}
+                 fhgcom
+                 fhglog
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )

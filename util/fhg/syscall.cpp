@@ -27,6 +27,17 @@ namespace fhg
         return rc;
       }
 
+      template<typename T>
+      T *nullptr_fails_with_errno (T *rc)
+      {
+        if (rc == nullptr)
+        {
+          throw boost::system::system_error
+            (boost::system::error_code (errno, boost::system::system_category()));
+        }
+        return rc;
+      }
+
       template<>
         void negative_one_fails_with_errno<void, int> (int rc)
       {
@@ -111,13 +122,6 @@ namespace fhg
     void execve (const char* filename, char* const argv[], char* const envp[])
     {
       negative_one_fails_with_errno<void> (::execve (filename, argv, envp));
-
-      abort(); // execve either does not return, or returns negative, thus throws
-    }
-
-    void execvp (const char* filename, char* const argv[])
-    {
-      negative_one_fails_with_errno<void> (::execvp (filename, argv));
 
       abort(); // execve either does not return, or returns negative, thus throws
     }
@@ -254,6 +258,18 @@ namespace fhg
       return negative_one_fails_with_errno<void> (::stat (path, buf));
     }
 
+    long sysconf (int name)
+    {
+      errno = 0;
+      long const ret  (::sysconf (name));
+      if (ret == -1 && errno == EINVAL)
+      {
+        throw boost::system::system_error
+          (boost::system::error_code (EINVAL, boost::system::system_category()));
+      }
+      return ret;
+    }
+
     void unlink (const char* pathname)
     {
       return negative_one_fails_with_errno<void> (::unlink (pathname));
@@ -280,6 +296,16 @@ namespace fhg
     {
       return negative_one_fails_with_errno<int>
         (::connect (sock, address, addr_len));
+    }
+
+    FILE *popen (const char *command, const char *type)
+    {
+      return nullptr_fails_with_errno<FILE> (::popen (command, type));
+    }
+
+    int pclose (FILE *stream)
+    {
+      return negative_one_fails_with_errno<int> (::pclose (stream));
     }
   }
 }

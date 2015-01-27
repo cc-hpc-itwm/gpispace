@@ -5,6 +5,8 @@
 
 #include <process.hpp>
 
+#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+
 #include <boost/optional.hpp>
 
 #include <signal.h>

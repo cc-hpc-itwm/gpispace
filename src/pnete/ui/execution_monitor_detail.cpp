@@ -485,7 +485,7 @@ namespace fhg
             );
 
           const bool merge_away_small_intervals
-            (true || descr.distribute_vertically);
+            (descr.distribute_vertically);
 
           const qreal horizontal_scale
             (qreal (rect.width()) / qreal (visible_range.length()));

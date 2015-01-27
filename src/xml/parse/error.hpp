@@ -15,6 +15,7 @@
 #include <we/type/signature.hpp>
 #include <we/type/signature/show.hpp>
 
+#include <fhg/util/boost/optional.hpp>
 #include <fhg/util/join.hpp>
 
 #include <xml/parse/rapidxml/1.13/rapidxml.hpp>
