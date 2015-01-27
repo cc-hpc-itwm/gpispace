@@ -202,6 +202,10 @@ namespace xml
           _in_progress.push_back (path);
 
           std::ifstream stream (path.string().c_str());
+          if (!stream)
+          {
+            throw std::runtime_error ("unable to open file " + path.string());
+          }
 
           const T x (generic_parse<T> (parse, stream));
 
