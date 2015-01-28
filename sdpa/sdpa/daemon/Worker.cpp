@@ -24,6 +24,7 @@ namespace sdpa
       , address_ (address)
       , last_time_served_ (0)
       , reserved_ (false)
+      , backlog_full_ (false)
     {
 
     }
@@ -216,5 +217,16 @@ namespace sdpa
     {
       return pending_.erase (job_id);
     }
+
+    bool Worker::backlog_full() const
+    {
+      return backlog_full_;
+    }
+
+    void Worker::set_backlog_full (bool backlog_full)
+    {
+      backlog_full_ = backlog_full;
+    }
+
   }
 }
