@@ -313,6 +313,13 @@ namespace sdpa
       return worker_map_.at (worker_id)->removeCapabilities (cpb_set);
     }
 
+    void WorkerManager::set_worker_backlog_full ( const worker_id_t& worker_id
+                                                , bool val)
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+      return worker_map_.at (worker_id)->set_backlog_full (val);
+    }
+
     boost::optional<WorkerManager::worker_connections_t::right_iterator>
       WorkerManager::worker_by_address (fhg::com::p2p::address_t const& address)
     {
