@@ -163,6 +163,94 @@ namespace utils
       );
   }
 
+  we::type::activity_t net_with_two_children_requiring_n_workers (unsigned long n)
+  {
+    we::type::property::type props;
+    props.set ({"fhg", "drts", "schedule", "num_worker"}, std::to_string (n) + "UL");
+    we::type::transition_t transition_0
+      ( fhg::util::random_string()
+      , we::type::module_call_t ( fhg::util::random_string()
+                                , fhg::util::random_string()
+                                , std::unordered_map<std::string, std::string>()
+                                , std::list<we::type::memory_transfer>()
+                                , std::list<we::type::memory_transfer>()
+                                )
+      , boost::none
+      , true
+      , props
+      , we::priority_type()
+      );
+    we::type::transition_t transition_1
+      ( fhg::util::random_string()
+      , we::type::module_call_t ( fhg::util::random_string()
+                                , fhg::util::random_string()
+                                , std::unordered_map<std::string, std::string>()
+                                , std::list<we::type::memory_transfer>()
+                                , std::list<we::type::memory_transfer>()
+                                )
+      , boost::none
+      , true
+      , props
+      , we::priority_type()
+      );
+    const std::string port_name (fhg::util::random_string());
+    we::port_id_type const port_id_in_0
+      ( transition_0.add_port ( we::type::port_t ( port_name
+                                                 , we::type::PORT_IN
+                                                 , std::string ("string")
+                                                 , we::type::property::type()
+                                                 )
+                              )
+      );
+    we::port_id_type const port_id_in_1
+      ( transition_1.add_port ( we::type::port_t ( port_name
+                                                 , we::type::PORT_IN
+                                                 , std::string ("string")
+                                                 , we::type::property::type()
+                                                 )
+                              )
+      );
+
+    we::type::net_type net;
+
+    we::place_id_type const place_id_in_0
+      (net.add_place (place::type (port_name + "1", std::string ("string"))));
+    we::place_id_type const place_id_in_1
+      (net.add_place (place::type (port_name + "2", std::string ("string"))));
+
+    net.put_value (place_id_in_0, fhg::util::random_string_without ("\\\""));
+    net.put_value (place_id_in_1, fhg::util::random_string_without ("\\\""));
+
+    we::transition_id_type const transition_id_0
+      (net.add_transition (transition_0));
+    we::transition_id_type const transition_id_1
+      (net.add_transition (transition_1));
+
+    net.add_connection ( we::edge::PT
+                       , transition_id_0
+                       , place_id_in_0
+                       , port_id_in_0
+                       , we::type::property::type()
+                       );
+    net.add_connection ( we::edge::PT
+                       , transition_id_1
+                       , place_id_in_1
+                       , port_id_in_1
+                       , we::type::property::type()
+                       );
+
+    return we::type::activity_t
+      ( we::type::transition_t ( fhg::util::random_string()
+                               , net
+                               , boost::none
+                               , true
+                               , we::type::property::type()
+                               , we::priority_type()
+                               )
+      , boost::none
+      );
+  }
+
   struct orchestrator : boost::noncopyable
   {
     orchestrator()
