@@ -189,6 +189,9 @@ namespace sdpa
         if (it == worker_map_.end())
           continue;
 
+        if (it->second->backlog_full())
+          continue;
+
         const boost::optional<std::size_t>
           matchingDeg (matchRequirements (it->second->name(), job_reqs));
 
