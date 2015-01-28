@@ -563,7 +563,7 @@ void DRTSImpl::handleSubmitJobEvent
           );
       send_event ( source
                  , new sdpa::events::ErrorEvent
-                   ( sdpa::events::ErrorEvent::SDPA_EJOBREJECTED
+                   ( sdpa::events::ErrorEvent::SDPA_EBACKLOGFULL
                    , "I am busy right now, please try again later!"
                    , *e->job_id()
                    ));

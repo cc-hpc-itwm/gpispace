@@ -473,7 +473,7 @@ void GenericDaemon::handleErrorEvent
   {
     // this  should  better go  into  a  distinct  event, since  the  ErrorEvent
     // 'reason' should not be reused for important information
-    case events::ErrorEvent::SDPA_EJOBREJECTED:
+    case events::ErrorEvent::SDPA_EBACKLOGFULL:
     {
       sdpa::job_id_t jobId(*error.job_id());
 
