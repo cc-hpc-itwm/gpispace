@@ -499,15 +499,13 @@ namespace utils
       const std::string name
         (we::type::activity_t (e->description()).transition().name());
 
-      _jobs.emplace (name, job_t (*e->job_id(), source));
-
       _network.perform
         ( source
         , sdpa::events::SDPAEvent::Ptr
           (new sdpa::events::SubmitJobAckEvent (*e->job_id()))
         );
 
-      _announce_job (name);
+      add_job (name, *e->job_id(), source);
     }
     virtual void handleJobFinishedAckEvent
       (fhg::com::p2p::address_t const&, const sdpa::events::JobFinishedAckEvent*) override
@@ -527,6 +525,16 @@ namespace utils
             (job._id, we::type::activity_t().to_string())
           )
         );
+    }
+
+
+    void add_job ( const std::string& name
+                 , const sdpa::job_id_t& job_id
+                 , const fhg::com::p2p::address_t& owner
+                 )
+    {
+      _jobs.emplace (name, job_t (job_id, owner));
+      _announce_job (name);
     }
 
   protected:
