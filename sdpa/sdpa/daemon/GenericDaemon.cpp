@@ -1301,6 +1301,16 @@ void GenericDaemon::handleJobFailedAckEvent
       }
     }
 
+    void GenericDaemon::handleCanTakeJobsEvent
+      (fhg::com::p2p::address_t const& source, const events::CanTakeJobsEvent*)
+    {
+      boost::optional<WorkerManager::worker_connections_t::right_map::iterator> const as_worker
+          (scheduler().worker_manager().worker_by_address (source));
+
+      scheduler().worker_manager().set_worker_backlog_full (as_worker.get()->second, false);
+      request_scheduling ();
+    }
+
     namespace
     {
       template<typename Map>
