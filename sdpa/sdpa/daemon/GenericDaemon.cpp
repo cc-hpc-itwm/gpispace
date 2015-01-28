@@ -476,17 +476,43 @@ void GenericDaemon::handleErrorEvent
     case events::ErrorEvent::SDPA_EBACKLOGFULL:
     {
       sdpa::job_id_t jobId(*error.job_id());
-
       Job* pJob (findJob (jobId));
       if (!pJob)
       {
-        throw std::runtime_error ("EJOBREJECTED for unknown job");
+        throw std::runtime_error ("Got SDPA_EBACKLOGFULL error related to unknown job!");
       }
-      scheduler().releaseReservation (jobId);
-      pJob->Reschedule(); // put the job back into the pending state
-      scheduler().enqueueJob (jobId);
 
-      request_scheduling();
+      if (as_worker)
+      {
+        Job* pJob = findJob (jobId);
+        scheduler().worker_manager().set_worker_backlog_full (as_worker.get()->second, true);
+
+        if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
+        {
+          scheduler().workerCanceled (as_worker.get()->second, jobId);
+          pJob->Reschedule();
+
+          if (!scheduler().cancelNotTerminatedWorkerJobs
+               ( [this, &jobId](const sdpa::worker_id_t& wid)
+                 {
+                   child_proxy (this, scheduler().worker_manager().address_by_worker (wid).get()->second)
+                     .cancel_job (jobId);
+                 }
+               , jobId
+               )
+             )
+          {
+            scheduler().releaseReservation (jobId);
+            scheduler().enqueueJob (jobId);
+            scheduler().assignJobsToWorkers();
+          }
+        }
+      }
+      else
+      {
+        throw std::runtime_error ("Unknown entity (unregister worker) rejected the job " + jobId);
+      }
+
       break;
     }
     case events::ErrorEvent::SDPA_EWORKERNOTREG:
