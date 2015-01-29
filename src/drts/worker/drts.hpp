@@ -351,7 +351,6 @@ private:
   std::set<sdpa::Capability> m_virtual_capabilities;
 
   // jobs + their states
-  size_t m_backlog_size;
   map_of_jobs_t m_jobs;
 
   concurrent_bounded_queue<boost::shared_ptr<DRTSImpl::Job>> m_pending_jobs;

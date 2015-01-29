@@ -373,8 +373,7 @@ DRTSImpl::DRTSImpl
           )
   , m_max_reconnect_attempts (get<std::size_t> ("plugin.drts.max_reconnect_attempts", config_variables).get_value_or (0))
   , m_reconnect_counter (0)
-  , m_backlog_size (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3))
-  , m_pending_jobs (m_backlog_size)
+  , m_pending_jobs (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3))
 {
   //! \todo ctor parameters
   const std::list<std::string> master_list
@@ -919,7 +918,7 @@ void DRTSImpl::start_connect ()
     {
       sdpa::events::WorkerRegistrationEvent::Ptr evt
         (new sdpa::events::WorkerRegistrationEvent ( m_my_name
-                                                   , m_backlog_size
+                                                   , m_pending_jobs.capacity()
                                                    , sdpa::capabilities_set_t()
                                                    , false
                                                    , fhg::util::hostname()
