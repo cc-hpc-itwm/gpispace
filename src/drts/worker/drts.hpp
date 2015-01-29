@@ -74,7 +74,7 @@ public:
     :_capacity(capacity)
   {}
 
-  T get()
+  std::pair<T, bool> get()
   {
     boost::unique_lock<boost::mutex> lock (_mtx);
     _cond_non_empty.wait (lock, [this] { return !_container.empty(); });
@@ -82,7 +82,7 @@ public:
     T t (_container.front());
     _container.pop_front();
 
-    return t;
+    return std::make_pair (t, _container.size() == _capacity-1);
   }
 
   template<class... Args>

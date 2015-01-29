@@ -755,7 +755,23 @@ void DRTSImpl::job_execution_thread ()
 {
   for (;;)
   {
-    boost::shared_ptr<DRTSImpl::Job> job = m_pending_jobs.get();
+    boost::shared_ptr<DRTSImpl::Job> job;
+    bool notify_can_take_jobs (false);
+    std::tie (job, notify_can_take_jobs) = m_pending_jobs.get();
+
+    if (notify_can_take_jobs)
+    {
+      for ( const master_network_info& master_info
+          : m_masters
+          | boost::adaptors::map_values
+          )
+      {
+       send_event
+         ( master_info.address.get()
+         , new sdpa::events::CanTakeJobsEvent()
+         );
+      }
+    }
 
     if (DRTSImpl::Job::PENDING == job->cmp_and_swp_state( DRTSImpl::Job::PENDING
                                                     , DRTSImpl::Job::RUNNING
