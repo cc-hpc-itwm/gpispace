@@ -34,12 +34,6 @@ namespace fhg
         m_get_cond.notify_one();
       }
 
-      size_type INDICATES_A_RACE_size() const
-      {
-        boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
-        return m_container.size();
-      }
-
       void INDICATES_A_RACE_clear()
       {
         boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
