@@ -374,6 +374,7 @@ DRTSImpl::DRTSImpl
   , m_max_reconnect_attempts (get<std::size_t> ("plugin.drts.max_reconnect_attempts", config_variables).get_value_or (0))
   , m_reconnect_counter (0)
   , m_backlog_size (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3))
+  , m_pending_jobs (m_backlog_size)
 {
   //! \todo ctor parameters
   const std::list<std::string> master_list
@@ -556,7 +557,7 @@ void DRTSImpl::handleSubmitJobEvent
   {
     boost::mutex::scoped_lock job_map_lock(m_job_map_mutex);
 
-    if (m_backlog_size && m_pending_jobs.INDICATES_A_RACE_size() >= m_backlog_size)
+    if (!m_pending_jobs.try_put (job))
     {
       LLOG ( WARN, _logger
           , "cannot accept new job (" << job->id() << "), backlog is full."
@@ -575,8 +576,6 @@ void DRTSImpl::handleSubmitJobEvent
                  , new sdpa::events::SubmitJobAckEvent (job->id())
                  );
       m_jobs.emplace (job->id(), job);
-
-      m_pending_jobs.put(job);
     }
   }
 

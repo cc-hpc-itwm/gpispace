@@ -63,6 +63,53 @@ private:
   hwloc_topology_t m_topology;
 };
 
+template <typename T>
+class concurrent_bounded_queue
+{
+public:
+  typedef std::list<T> container_type;
+  typedef typename container_type::size_type size_type;
+
+  concurrent_bounded_queue (size_type capacity)
+    :_capacity(capacity)
+  {}
+
+  T get()
+  {
+    boost::unique_lock<boost::mutex> lock (_mtx);
+    _cond_non_empty.wait (lock, [this] { return !_container.empty(); });
+
+    T t (_container.front());
+    _container.pop_front();
+
+    return t;
+  }
+
+  template<class... Args>
+  bool try_put (Args&&... args)
+  {
+    boost::unique_lock<boost::mutex> const _ (_mtx);
+
+    if (_container.size() < _capacity)
+    {
+      _container.emplace_back (std::forward<Args> (args)...);
+      _cond_non_empty.notify_one();
+      return true;
+    }
+
+    return false;
+  }
+
+  size_type capacity() {return _capacity;}
+
+private:
+  boost::mutex _mtx;
+  boost::condition_variable_any _cond_non_empty;
+
+  container_type _container;
+  size_type _capacity;
+};
+
 class WFEImpl
 {
 public:
@@ -307,7 +354,7 @@ private:
   size_t m_backlog_size;
   map_of_jobs_t m_jobs;
 
-  fhg::thread::queue<boost::shared_ptr<DRTSImpl::Job>> m_pending_jobs;
+  concurrent_bounded_queue<boost::shared_ptr<DRTSImpl::Job>> m_pending_jobs;
 
   fhg::thread::set _registration_threads;
 };
