@@ -755,7 +755,7 @@ void DRTSImpl::job_execution_thread ()
   for (;;)
   {
     boost::shared_ptr<DRTSImpl::Job> job;
-    bool notify_can_take_jobs (false);
+    bool notify_can_take_jobs;
     std::tie (job, notify_can_take_jobs) = m_pending_jobs.get();
 
     if (notify_can_take_jobs)
