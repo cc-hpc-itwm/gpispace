@@ -6,6 +6,7 @@
 #include <sdpa/client.hpp>
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
+#include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
@@ -617,6 +618,55 @@ namespace utils
 
   private:
     fhg::util::thread::event<std::string> _finished_ack;
+  };
+
+  class fake_drts_worker_notifying_cancel
+    : public utils::fake_drts_worker_waiting_for_finished_ack
+  {
+  public:
+    fake_drts_worker_notifying_cancel
+      ( std::function<void (std::string)> announce_job
+      , std::function<void (std::string)> announce_cancel
+      , const utils::agent& master_agent
+      )
+      : utils::fake_drts_worker_waiting_for_finished_ack
+          (announce_job, master_agent)
+      , _announce_cancel (announce_cancel)
+    {}
+    ~fake_drts_worker_notifying_cancel()
+    {
+      BOOST_REQUIRE (_cancels.empty());
+    }
+
+    void handleCancelJobEvent
+      ( fhg::com::p2p::address_t const& source
+      , const sdpa::events::CancelJobEvent* pEvt
+      ) override
+    {
+      boost::mutex::scoped_lock const _ (_cancels_mutex);
+
+      _cancels.emplace (pEvt->job_id(), source);
+      _announce_cancel (pEvt->job_id());
+    }
+
+    void canceled (std::string job_id)
+    {
+      boost::mutex::scoped_lock const _ (_cancels_mutex);
+
+      const fhg::com::p2p::address_t master (_cancels.at (job_id));
+      _cancels.erase (job_id);
+
+      _network.perform
+        ( master
+        , sdpa::events::SDPAEvent::Ptr
+            (new sdpa::events::CancelJobAckEvent (job_id))
+        );
+    }
+
+  private:
+    std::function<void (std::string)> _announce_cancel;
+    mutable boost::mutex _cancels_mutex;
+    std::map<std::string, fhg::com::p2p::address_t> _cancels;
   };
 
   struct client : boost::noncopyable

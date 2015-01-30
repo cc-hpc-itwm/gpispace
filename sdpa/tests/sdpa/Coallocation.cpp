@@ -4,7 +4,6 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 
@@ -162,56 +161,6 @@ BOOST_AUTO_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are_av
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-namespace
-{
-  class fake_drts_worker_notifying_cancel
-    : public utils::fake_drts_worker_waiting_for_finished_ack
-  {
-  public:
-    fake_drts_worker_notifying_cancel
-        ( std::function<void (std::string)> announce_job
-        , std::function<void (std::string)> announce_cancel
-        , const utils::agent& master_agent
-        )
-      : utils::fake_drts_worker_waiting_for_finished_ack
-        (announce_job, master_agent)
-      , _announce_cancel (announce_cancel)
-    {}
-    ~fake_drts_worker_notifying_cancel()
-    {
-      BOOST_REQUIRE (_cancels.empty());
-    }
-
-    void handleCancelJobEvent
-      (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent* pEvt) override
-    {
-      boost::mutex::scoped_lock const _ (_cancels_mutex);
-
-      _cancels.emplace (pEvt->job_id(), source);
-      _announce_cancel (pEvt->job_id());
-    }
-
-    void canceled (std::string job_id)
-    {
-      boost::mutex::scoped_lock const _ (_cancels_mutex);
-
-      const fhg::com::p2p::address_t master (_cancels.at (job_id));
-      _cancels.erase (job_id);
-
-      _network.perform
-        ( master
-        , sdpa::events::SDPAEvent::Ptr
-          (new sdpa::events::CancelJobAckEvent (job_id))
-        );
-    }
-
-  private:
-    std::function<void (std::string)> _announce_cancel;
-    mutable boost::mutex _cancels_mutex;
-    std::map<std::string, fhg::com::p2p::address_t> _cancels;
-  };
-}
-
 BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated)
 {
   //! \note related to issue #374
@@ -226,7 +175,7 @@ BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_worke
   fhg::util::thread::event<std::string> job_submitted_1;
   fhg::util::thread::event<std::string> cancel_requested_1;
   bool worker_1_shall_not_get_a_job (false);
-  fake_drts_worker_notifying_cancel worker_1
+  utils::fake_drts_worker_notifying_cancel worker_1
     ([&job_submitted_1, &worker_1_shall_not_get_a_job] (std::string j)
     {
       BOOST_REQUIRE (!worker_1_shall_not_get_a_job);
@@ -238,7 +187,7 @@ BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_worke
 
   fhg::util::thread::event<std::string> job_submitted_2;
   fhg::util::thread::event<std::string> cancel_requested_2;
-  fake_drts_worker_notifying_cancel worker_2
+  utils::fake_drts_worker_notifying_cancel worker_2
     ( [&job_submitted_2] (std::string j) { job_submitted_2.notify (j); }
     , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
     , agent
