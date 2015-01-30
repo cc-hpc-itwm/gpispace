@@ -152,20 +152,23 @@ BOOST_AUTO_TEST_CASE (one_worker_reports_backlog_full_the_2_siblings_are_cancell
     , agent
     );
 
-  const std::string job_name (job_submitted_1.wait());
+  const std::string job_name_1 (job_submitted_1.wait());
   job_submitted_2.wait();
   job_submitted_3.wait();
 
   const utils::fake_drts_worker_directly_finishing_jobs worker_4 (agent);
 
-  worker_1.report_backlog_full (job_name);
+  worker_1.report_backlog_full (job_name_1);
   worker_2.canceled (cancel_requested_2.wait());
   worker_3.canceled (cancel_requested_3.wait());
 
-  job_submitted_2.wait();
-  job_submitted_3.wait();
-  worker_2.finish_and_wait_for_ack (job_name);
-  worker_3.finish_and_wait_for_ack (job_name);
+  const std::string job_name_2 (job_submitted_2.wait());
+  const std::string job_name_3 (job_submitted_3.wait());
+
+  BOOST_REQUIRE_EQUAL (job_name_2, job_name_3);
+
+  worker_2.finish_and_wait_for_ack (job_name_2);
+  worker_3.finish_and_wait_for_ack (job_name_3);
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
@@ -210,13 +213,16 @@ BOOST_AUTO_TEST_CASE (one_worker_reports_backlog_full_the_still_running_sibling_
   worker_2.report_backlog_full (job_name);
   worker_3.canceled (cancel_requested_3.wait());
 
-  job_submitted_1.wait();
-  job_submitted_3.wait();
-  job_submitted_4.wait();
+  std::string job_name_1 (job_submitted_1.wait());
+  std::string job_name_3 (job_submitted_3.wait());
+  std::string job_name_4 (job_submitted_4.wait());
 
-  worker_1.finish_and_wait_for_ack (job_name);
-  worker_3.finish_and_wait_for_ack (job_name);
-  worker_4.finish_and_wait_for_ack (job_name);
+  BOOST_REQUIRE_EQUAL (job_name_1, job_name_3);
+  BOOST_REQUIRE_EQUAL (job_name_1, job_name_4);
+
+  worker_1.finish_and_wait_for_ack (job_name_1);
+  worker_3.finish_and_wait_for_ack (job_name_3);
+  worker_4.finish_and_wait_for_ack (job_name_4);
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
