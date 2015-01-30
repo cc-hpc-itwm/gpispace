@@ -6,6 +6,7 @@
 #include <fhgcom/message.hpp>
 #include <fhgcom/peer.hpp>
 
+#include <fhg/util/thread/bounded_queue.hpp>
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/thread/set.hpp>
 
@@ -61,50 +62,6 @@ public:
 
 private:
   hwloc_topology_t m_topology;
-};
-
-template <typename T>
-class concurrent_bounded_queue
-{
-public:
-  concurrent_bounded_queue (std::size_t capacity)
-    :_capacity(capacity)
-  {}
-
-  std::pair<T, bool> get()
-  {
-    boost::unique_lock<boost::mutex> lock (_mtx);
-    _cond_non_empty.wait (lock, [this] { return !_container.empty(); });
-
-    T t (_container.front());
-    _container.pop_front();
-
-    return std::make_pair (t, _container.size() == _capacity-1);
-  }
-
-  template<class... Args>
-  bool try_put (Args&&... args)
-  {
-    boost::unique_lock<boost::mutex> const _ (_mtx);
-
-    if (_container.size() < _capacity)
-    {
-      _container.emplace_back (std::forward<Args> (args)...);
-      _cond_non_empty.notify_one();
-      return true;
-    }
-
-    return false;
-  }
-
-  std::size_t capacity() {return _capacity;}
-
-private:
-  boost::mutex _mtx;
-  boost::condition_variable_any _cond_non_empty;
-
-  std::list<T> _container;
-  std::size_t _capacity;
 };
 
 class WFEImpl
@@ -350,7 +307,7 @@ private:
   // jobs + their states
   map_of_jobs_t m_jobs;
 
-  concurrent_bounded_queue<boost::shared_ptr<DRTSImpl::Job>> m_pending_jobs;
+  fhg::thread::bounded_queue<boost::shared_ptr<DRTSImpl::Job>> m_pending_jobs;
 
   fhg::thread::set _registration_threads;
 };
