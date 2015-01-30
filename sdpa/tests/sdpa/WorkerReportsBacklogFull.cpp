@@ -31,6 +31,7 @@ namespace
         (we::type::activity_t (e->description()).transition().name());
 
       add_job (name, *e->job_id(), source);
+      announce_job (name);
     }
 
     void report_backlog_full (std::string name)
