@@ -67,10 +67,7 @@ template <typename T>
 class concurrent_bounded_queue
 {
 public:
-  typedef std::list<T> container_type;
-  typedef typename container_type::size_type size_type;
-
-  concurrent_bounded_queue (size_type capacity)
+  concurrent_bounded_queue (std::size_t capacity)
     :_capacity(capacity)
   {}
 
@@ -100,14 +97,14 @@ public:
     return false;
   }
 
-  size_type capacity() {return _capacity;}
+  std::size_t capacity() {return _capacity;}
 
 private:
   boost::mutex _mtx;
   boost::condition_variable_any _cond_non_empty;
 
-  container_type _container;
-  size_type _capacity;
+  std::list<T> _container;
+  std::size_t _capacity;
 };
 
 class WFEImpl
