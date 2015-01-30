@@ -487,7 +487,6 @@ void GenericDaemon::handleErrorEvent
         throw std::runtime_error ("Unknown entity (unregister worker) rejected the job " + jobId);
       }
 
-      Job* pJob = findJob (jobId);
       scheduler().worker_manager().set_worker_backlog_full (as_worker.get()->second, true);
 
       if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
@@ -509,6 +508,10 @@ void GenericDaemon::handleErrorEvent
           scheduler().enqueueJob (jobId);
           scheduler().assignJobsToWorkers();
         }
+      }
+      else
+      {
+        throw std::runtime_error ("Got SDPA_EBACKLOGFULL error for an already terminated job!");
       }
 
       break;
