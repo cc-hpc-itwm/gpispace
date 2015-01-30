@@ -314,9 +314,10 @@ namespace sdpa
     }
 
     void WorkerManager::set_worker_backlog_full ( const worker_id_t& worker_id
-                                                , bool val)
+                                                , bool val
+                                                )
     {
-      boost::mutex::scoped_lock const _(mtx_);
+      boost::mutex::scoped_lock const _ (mtx_);
       return worker_map_.at (worker_id)->set_backlog_full (val);
     }
 
