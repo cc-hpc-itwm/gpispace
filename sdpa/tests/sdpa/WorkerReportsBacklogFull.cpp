@@ -5,7 +5,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sdpa/events/JobFinishedAckEvent.hpp>
-#include <sdpa/events/CanTakeJobsEvent.hpp>
+#include <sdpa/events/BacklogNoLongerFullEvent.hpp>
 
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 
@@ -54,7 +54,7 @@ namespace
     {
       _network.perform
         ( _master.get()
-        , sdpa::events::SDPAEvent::Ptr (new sdpa::events::CanTakeJobsEvent())
+        , sdpa::events::SDPAEvent::Ptr (new sdpa::events::BacklogNoLongerFullEvent())
         );
     }
 

@@ -767,7 +767,7 @@ void DRTSImpl::job_execution_thread ()
       {
        send_event
          ( master_info.address.get()
-         , new sdpa::events::CanTakeJobsEvent()
+         , new sdpa::events::BacklogNoLongerFullEvent()
          );
       }
     }
