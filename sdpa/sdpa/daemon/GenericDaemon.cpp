@@ -482,35 +482,33 @@ void GenericDaemon::handleErrorEvent
         throw std::runtime_error ("Got SDPA_EBACKLOGFULL error related to unknown job!");
       }
 
-      if (as_worker)
-      {
-        Job* pJob = findJob (jobId);
-        scheduler().worker_manager().set_worker_backlog_full (as_worker.get()->second, true);
-
-        if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
-        {
-          scheduler().workerCanceled (as_worker.get()->second, jobId);
-          pJob->Reschedule();
-
-          if (!scheduler().cancelNotTerminatedWorkerJobs
-               ( [this, &jobId](const sdpa::worker_id_t& wid)
-                 {
-                   child_proxy (this, scheduler().worker_manager().address_by_worker (wid).get()->second)
-                     .cancel_job (jobId);
-                 }
-               , jobId
-               )
-             )
-          {
-            scheduler().releaseReservation (jobId);
-            scheduler().enqueueJob (jobId);
-            scheduler().assignJobsToWorkers();
-          }
-        }
-      }
-      else
+      if (!as_worker)
       {
         throw std::runtime_error ("Unknown entity (unregister worker) rejected the job " + jobId);
+      }
+
+      Job* pJob = findJob (jobId);
+      scheduler().worker_manager().set_worker_backlog_full (as_worker.get()->second, true);
+
+      if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
+      {
+        scheduler().workerCanceled (as_worker.get()->second, jobId);
+        pJob->Reschedule();
+
+        if (!scheduler().cancelNotTerminatedWorkerJobs
+             ( [this, &jobId](const sdpa::worker_id_t& wid)
+               {
+                 child_proxy (this, scheduler().worker_manager().address_by_worker (wid).get()->second)
+                   .cancel_job (jobId);
+               }
+             , jobId
+             )
+           )
+        {
+          scheduler().releaseReservation (jobId);
+          scheduler().enqueueJob (jobId);
+          scheduler().assignJobsToWorkers();
+        }
       }
 
       break;
