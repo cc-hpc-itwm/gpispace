@@ -34,6 +34,7 @@ namespace sdpa
     class SubscribeAckEvent;
     class put_token;
     class put_token_ack;
+    class BacklogNoLongerFullEvent;
 
     class EventHandler
     {
@@ -88,6 +89,8 @@ namespace sdpa
       { throw std::runtime_error ("UNHANDLED EVENT: put_token"); }
       virtual void handle_put_token_ack (fhg::com::p2p::address_t const&, const put_token_ack*)
       { throw std::runtime_error ("UNHANDLED EVENT: put_token_ack"); }
+      virtual void handleBacklogNoLongerFullEvent (fhg::com::p2p::address_t const&, const BacklogNoLongerFullEvent*)
+         { throw std::runtime_error ("UNHANDLED EVENT: BacklogNoLongerFullEvent"); }
     };
   }
 }

@@ -56,6 +56,8 @@ namespace sdpa
 
       // methods related to reservation
       bool isReserved() const;
+      bool backlog_full() const;
+      void set_backlog_full (bool);
 
       // cost
       double cost_assigned_jobs (std::function<double (job_id_t job_id)>) const;
@@ -82,6 +84,7 @@ namespace sdpa
       std::set<job_id_t> acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
 
       bool reserved_;
+      bool backlog_full_;
 
       mutable mutex_type mtx_;
     };

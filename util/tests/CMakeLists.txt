@@ -22,3 +22,9 @@ fhg_add_test(counter.cpp
   PROJECT util
   LINK_LIBRARIES fhg-util
 )
+
+fhg_add_test(bounded_queue.cpp
+  BOOST_UNIT_TEST
+  PROJECT util
+  LINK_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} fhg-util
+)

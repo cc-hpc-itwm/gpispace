@@ -189,6 +189,9 @@ namespace sdpa
         if (it == worker_map_.end())
           continue;
 
+        if (it->second->backlog_full())
+          continue;
+
         const boost::optional<std::size_t>
           matchingDeg (matchRequirements (it->second->name(), job_reqs));
 
@@ -308,6 +311,14 @@ namespace sdpa
     {
       boost::mutex::scoped_lock const _(mtx_);
       return worker_map_.at (worker_id)->removeCapabilities (cpb_set);
+    }
+
+    void WorkerManager::set_worker_backlog_full ( const worker_id_t& worker_id
+                                                , bool val
+                                                )
+    {
+      boost::mutex::scoped_lock const _ (mtx_);
+      return worker_map_.at (worker_id)->set_backlog_full (val);
     }
 
     boost::optional<WorkerManager::worker_connections_t::right_iterator>

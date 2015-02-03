@@ -6,6 +6,7 @@
 #include <fhgcom/message.hpp>
 #include <fhgcom/peer.hpp>
 
+#include <fhg/util/thread/bounded_queue.hpp>
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/thread/set.hpp>
 
@@ -304,10 +305,9 @@ private:
   std::set<sdpa::Capability> m_virtual_capabilities;
 
   // jobs + their states
-  size_t m_backlog_size;
   map_of_jobs_t m_jobs;
 
-  fhg::thread::queue<boost::shared_ptr<DRTSImpl::Job>> m_pending_jobs;
+  fhg::thread::bounded_queue<boost::shared_ptr<DRTSImpl::Job>> m_pending_jobs;
 
   fhg::thread::set _registration_threads;
 };

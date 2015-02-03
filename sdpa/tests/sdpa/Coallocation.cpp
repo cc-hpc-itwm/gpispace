@@ -4,7 +4,6 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 
@@ -27,97 +26,6 @@ BOOST_AUTO_TEST_CASE (testCoallocationWorkflow)
     );
 }
 
-namespace
-{
-  we::type::activity_t net_with_two_childs_requiring_n_workers (unsigned long n)
-  {
-    we::type::property::type props;
-    props.set ({"fhg", "drts", "schedule", "num_worker"}, std::to_string (n) + "UL");
-    we::type::transition_t transition_0
-      ( fhg::util::random_string()
-      , we::type::module_call_t ( fhg::util::random_string()
-                                , fhg::util::random_string()
-                                , std::unordered_map<std::string, std::string>()
-                                , std::list<we::type::memory_transfer>()
-                                , std::list<we::type::memory_transfer>()
-                                )
-      , boost::none
-      , true
-      , props
-      , we::priority_type()
-      );
-    we::type::transition_t transition_1
-      ( fhg::util::random_string()
-      , we::type::module_call_t ( fhg::util::random_string()
-                                , fhg::util::random_string()
-                                , std::unordered_map<std::string, std::string>()
-                                , std::list<we::type::memory_transfer>()
-                                , std::list<we::type::memory_transfer>()
-                                )
-      , boost::none
-      , true
-      , props
-      , we::priority_type()
-      );
-    const std::string port_name (fhg::util::random_string());
-    we::port_id_type const port_id_in_0
-      ( transition_0.add_port ( we::type::port_t ( port_name
-                                                 , we::type::PORT_IN
-                                                 , std::string ("string")
-                                                 , we::type::property::type()
-                                                 )
-                              )
-      );
-    we::port_id_type const port_id_in_1
-      ( transition_1.add_port ( we::type::port_t ( port_name
-                                                 , we::type::PORT_IN
-                                                 , std::string ("string")
-                                                 , we::type::property::type()
-                                                 )
-                              )
-      );
-
-    we::type::net_type net;
-
-    we::place_id_type const place_id_in_0
-      (net.add_place (place::type (port_name + "1", std::string ("string"))));
-    we::place_id_type const place_id_in_1
-      (net.add_place (place::type (port_name + "2", std::string ("string"))));
-
-    net.put_value (place_id_in_0, fhg::util::random_string_without ("\\\""));
-    net.put_value (place_id_in_1, fhg::util::random_string_without ("\\\""));
-
-    we::transition_id_type const transition_id_0
-      (net.add_transition (transition_0));
-    we::transition_id_type const transition_id_1
-      (net.add_transition (transition_1));
-
-    net.add_connection ( we::edge::PT
-                       , transition_id_0
-                       , place_id_in_0
-                       , port_id_in_0
-                       , we::type::property::type()
-                       );
-    net.add_connection ( we::edge::PT
-                       , transition_id_1
-                       , place_id_in_1
-                       , port_id_in_1
-                       , we::type::property::type()
-                       );
-
-    return we::type::activity_t
-      ( we::type::transition_t ( fhg::util::random_string()
-                               , net
-                               , boost::none
-                               , true
-                               , we::type::property::type()
-                               , we::priority_type()
-                               )
-      , boost::none
-      );
-  }
-}
-
 BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done)
 {
   //! \note issue #374
@@ -134,7 +42,7 @@ BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_part_of_coallocat
   // 2. submit workflow which generates tasks (2) that require 2 workers
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
-    (client.submit_job (net_with_two_childs_requiring_n_workers (2).to_string()));
+    (client.submit_job (utils::net_with_two_children_requiring_n_workers (2).to_string()));
 
   // 3. start worker 2
   fhg::util::thread::event<std::string> job_submitted_2;
@@ -210,7 +118,7 @@ BOOST_AUTO_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are_av
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
-    (client.submit_job (net_with_two_childs_requiring_n_workers (2).to_string()));
+    (client.submit_job (utils::net_with_two_children_requiring_n_workers (2).to_string()));
 
   fhg::util::thread::event<std::string> job_submitted_2;
   bool worker_2_shall_not_get_a_job (false);
@@ -253,56 +161,6 @@ BOOST_AUTO_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are_av
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-namespace
-{
-  class fake_drts_worker_notifying_cancel
-    : public utils::fake_drts_worker_waiting_for_finished_ack
-  {
-  public:
-    fake_drts_worker_notifying_cancel
-        ( std::function<void (std::string)> announce_job
-        , std::function<void (std::string)> announce_cancel
-        , const utils::agent& master_agent
-        )
-      : utils::fake_drts_worker_waiting_for_finished_ack
-        (announce_job, master_agent)
-      , _announce_cancel (announce_cancel)
-    {}
-    ~fake_drts_worker_notifying_cancel()
-    {
-      BOOST_REQUIRE (_cancels.empty());
-    }
-
-    void handleCancelJobEvent
-      (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent* pEvt) override
-    {
-      boost::mutex::scoped_lock const _ (_cancels_mutex);
-
-      _cancels.emplace (pEvt->job_id(), source);
-      _announce_cancel (pEvt->job_id());
-    }
-
-    void canceled (std::string job_id)
-    {
-      boost::mutex::scoped_lock const _ (_cancels_mutex);
-
-      const fhg::com::p2p::address_t master (_cancels.at (job_id));
-      _cancels.erase (job_id);
-
-      _network.perform
-        ( master
-        , sdpa::events::SDPAEvent::Ptr
-          (new sdpa::events::CancelJobAckEvent (job_id))
-        );
-    }
-
-  private:
-    std::function<void (std::string)> _announce_cancel;
-    mutable boost::mutex _cancels_mutex;
-    std::map<std::string, fhg::com::p2p::address_t> _cancels;
-  };
-}
-
 BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated)
 {
   //! \note related to issue #374
@@ -312,12 +170,12 @@ BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_worke
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
-    (client.submit_job (net_with_two_childs_requiring_n_workers (3).to_string()));
+    (client.submit_job (utils::net_with_two_children_requiring_n_workers (3).to_string()));
 
   fhg::util::thread::event<std::string> job_submitted_1;
   fhg::util::thread::event<std::string> cancel_requested_1;
   bool worker_1_shall_not_get_a_job (false);
-  fake_drts_worker_notifying_cancel worker_1
+  utils::fake_drts_worker_notifying_cancel worker_1
     ([&job_submitted_1, &worker_1_shall_not_get_a_job] (std::string j)
     {
       BOOST_REQUIRE (!worker_1_shall_not_get_a_job);
@@ -329,7 +187,7 @@ BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_worke
 
   fhg::util::thread::event<std::string> job_submitted_2;
   fhg::util::thread::event<std::string> cancel_requested_2;
-  fake_drts_worker_notifying_cancel worker_2
+  utils::fake_drts_worker_notifying_cancel worker_2
     ( [&job_submitted_2] (std::string j) { job_submitted_2.notify (j); }
     , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
     , agent

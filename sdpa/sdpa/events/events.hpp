@@ -25,5 +25,6 @@
 #include <sdpa/events/SubscribeEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
 #include <sdpa/events/put_token.hpp>
+#include <sdpa/events/BacklogNoLongerFullEvent.hpp>
 
 #endif

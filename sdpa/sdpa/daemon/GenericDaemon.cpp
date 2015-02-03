@@ -473,20 +473,47 @@ void GenericDaemon::handleErrorEvent
   {
     // this  should  better go  into  a  distinct  event, since  the  ErrorEvent
     // 'reason' should not be reused for important information
-    case events::ErrorEvent::SDPA_EJOBREJECTED:
+    case events::ErrorEvent::SDPA_EBACKLOGFULL:
     {
       sdpa::job_id_t jobId(*error.job_id());
-
       Job* pJob (findJob (jobId));
       if (!pJob)
       {
-        throw std::runtime_error ("EJOBREJECTED for unknown job");
+        throw std::runtime_error ("Got SDPA_EBACKLOGFULL error related to unknown job!");
       }
-      scheduler().releaseReservation (jobId);
-      pJob->Reschedule(); // put the job back into the pending state
-      scheduler().enqueueJob (jobId);
 
-      request_scheduling();
+      if (!as_worker)
+      {
+        throw std::runtime_error ("Unknown entity (unregister worker) rejected the job " + jobId);
+      }
+
+      scheduler().worker_manager().set_worker_backlog_full (as_worker.get()->second, true);
+
+      if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
+      {
+        scheduler().workerCanceled (as_worker.get()->second, jobId);
+        pJob->Reschedule();
+
+        if (!scheduler().cancelNotTerminatedWorkerJobs
+             ( [this, &jobId](const sdpa::worker_id_t& wid)
+               {
+                 child_proxy (this, scheduler().worker_manager().address_by_worker (wid).get()->second)
+                   .cancel_job (jobId);
+               }
+             , jobId
+             )
+           )
+        {
+          scheduler().releaseReservation (jobId);
+          scheduler().enqueueJob (jobId);
+          scheduler().assignJobsToWorkers();
+        }
+      }
+      else
+      {
+        throw std::runtime_error ("Got SDPA_EBACKLOGFULL error for an already terminated job!");
+      }
+
       break;
     }
     case events::ErrorEvent::SDPA_EWORKERNOTREG:
@@ -1273,6 +1300,16 @@ void GenericDaemon::handleJobFailedAckEvent
 
         _discover_sources.erase (source);
       }
+    }
+
+    void GenericDaemon::handleBacklogNoLongerFullEvent
+      (fhg::com::p2p::address_t const& source, const events::BacklogNoLongerFullEvent*)
+    {
+      boost::optional<WorkerManager::worker_connections_t::right_map::iterator> const as_worker
+          (scheduler().worker_manager().worker_by_address (source));
+
+      scheduler().worker_manager().set_worker_backlog_full (as_worker.get()->second, false);
+      request_scheduling ();
     }
 
     namespace

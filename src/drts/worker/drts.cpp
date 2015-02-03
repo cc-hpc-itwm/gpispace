@@ -373,7 +373,7 @@ DRTSImpl::DRTSImpl
           )
   , m_max_reconnect_attempts (get<std::size_t> ("plugin.drts.max_reconnect_attempts", config_variables).get_value_or (0))
   , m_reconnect_counter (0)
-  , m_backlog_size (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3))
+  , m_pending_jobs (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3))
 {
   //! \todo ctor parameters
   const std::list<std::string> master_list
@@ -556,14 +556,14 @@ void DRTSImpl::handleSubmitJobEvent
   {
     boost::mutex::scoped_lock job_map_lock(m_job_map_mutex);
 
-    if (m_backlog_size && m_pending_jobs.INDICATES_A_RACE_size() >= m_backlog_size)
+    if (!m_pending_jobs.try_put (job))
     {
       LLOG ( WARN, _logger
           , "cannot accept new job (" << job->id() << "), backlog is full."
           );
       send_event ( source
                  , new sdpa::events::ErrorEvent
-                   ( sdpa::events::ErrorEvent::SDPA_EJOBREJECTED
+                   ( sdpa::events::ErrorEvent::SDPA_EBACKLOGFULL
                    , "I am busy right now, please try again later!"
                    , *e->job_id()
                    ));
@@ -575,8 +575,6 @@ void DRTSImpl::handleSubmitJobEvent
                  , new sdpa::events::SubmitJobAckEvent (job->id())
                  );
       m_jobs.emplace (job->id(), job);
-
-      m_pending_jobs.put(job);
     }
   }
 
@@ -756,7 +754,23 @@ void DRTSImpl::job_execution_thread ()
 {
   for (;;)
   {
-    boost::shared_ptr<DRTSImpl::Job> job = m_pending_jobs.get();
+    boost::shared_ptr<DRTSImpl::Job> job;
+    bool notify_can_take_jobs;
+    std::tie (job, notify_can_take_jobs) = m_pending_jobs.get();
+
+    if (notify_can_take_jobs)
+    {
+      for ( const master_network_info& master_info
+          : m_masters
+          | boost::adaptors::map_values
+          )
+      {
+       send_event
+         ( master_info.address.get()
+         , new sdpa::events::BacklogNoLongerFullEvent()
+         );
+      }
+    }
 
     if (DRTSImpl::Job::PENDING == job->cmp_and_swp_state( DRTSImpl::Job::PENDING
                                                     , DRTSImpl::Job::RUNNING
@@ -904,7 +918,7 @@ void DRTSImpl::start_connect ()
     {
       sdpa::events::WorkerRegistrationEvent::Ptr evt
         (new sdpa::events::WorkerRegistrationEvent ( m_my_name
-                                                   , m_backlog_size
+                                                   , m_pending_jobs.capacity()
                                                    , sdpa::capabilities_set_t()
                                                    , false
                                                    , fhg::util::hostname()
