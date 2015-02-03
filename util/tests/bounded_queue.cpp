@@ -82,23 +82,7 @@ BOOST_AUTO_TEST_CASE (thread_bounded_queue_test_expected_order_several_producer_
   }
 }
 
-struct fixture_multiple_producers
-{
-  void produce_one_item ( fhg::thread::bounded_queue<unsigned int>& items
-                        , unsigned int item
-                        , std::vector<unsigned int>& try_put_results
-                        )
-  {
-    if (items.try_put (item))
-    {
-      try_put_results[item] = 1;
-    }
-  }
-};
-
-BOOST_FIXTURE_TEST_CASE ( thread_bounded_queue_try_put_by_multiple_threads
-                        , fixture_multiple_producers
-                        )
+BOOST_AUTO_TEST_CASE (thread_bounded_queue_try_put_by_multiple_threads)
 {
   const std::size_t capacity (10);
   constexpr unsigned int num_producers = capacity + 1;
@@ -111,12 +95,13 @@ BOOST_FIXTURE_TEST_CASE ( thread_bounded_queue_try_put_by_multiple_threads
   for (unsigned int k = 0; k < num_producers; k++)
   {
     producers.create_thread
-      ( boost::bind ( &fixture_multiple_producers::produce_one_item
-                    , this
-                    , boost::ref (items)
-                    , k
-                    , boost::ref (try_put_results)
-                    )
+      ( [&items, &try_put_results, k]
+        {
+          if (items.try_put (k))
+          {
+            try_put_results[k] = 1;
+          }
+        }
       );
   }
 
