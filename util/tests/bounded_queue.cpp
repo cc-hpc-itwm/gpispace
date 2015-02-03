@@ -82,28 +82,7 @@ BOOST_AUTO_TEST_CASE (thread_bounded_queue_test_expected_order_several_producer_
   }
 }
 
-struct fixture_multiple_producers
-{
-  boost::mutex mtx;
-  std::vector<unsigned int> order;
-
-  void produce_one_item ( fhg::thread::bounded_queue<unsigned int>& items
-                        , unsigned int item
-                        , std::vector<unsigned int>& try_put_results
-                        )
-  {
-    boost::unique_lock<boost::mutex> _ (mtx);
-    if (items.try_put (item))
-    {
-      try_put_results[item] = 1;
-      order.push_back (item);
-    }
-  }
-};
-
-BOOST_FIXTURE_TEST_CASE ( thread_bounded_queue_try_put_by_multiple_threads
-                        , fixture_multiple_producers
-                        )
+BOOST_AUTO_TEST_CASE (thread_bounded_queue_try_put_by_multiple_threads)
 {
   const std::size_t capacity (10);
   constexpr unsigned int num_producers = capacity + 1;
@@ -111,20 +90,22 @@ BOOST_FIXTURE_TEST_CASE ( thread_bounded_queue_try_put_by_multiple_threads
 
   fhg::thread::bounded_queue<unsigned int> items (capacity);
 
-  std::vector<boost::thread> producers;
+  boost::thread_group producers;
+
   for (unsigned int k = 0; k < num_producers; k++)
   {
-    producers.emplace_back ( &fixture_multiple_producers::produce_one_item
-                           , this
-                           , boost::ref (items)
-                           , k
-                           , boost::ref (try_put_results)
-                           );
+    producers.create_thread
+      ( [&items, &try_put_results, k]
+        {
+          if (items.try_put (k))
+          {
+            try_put_results[k] = 1;
+          }
+        }
+      );
   }
 
-  std::for_each ( producers.begin(), producers.end(), [](boost::thread &t)
-                                                      {t.join();}
-                );
+  producers.join_all();
 
   BOOST_REQUIRE_EQUAL ( items.capacity()
                       , std::accumulate
@@ -134,18 +115,9 @@ BOOST_FIXTURE_TEST_CASE ( thread_bounded_queue_try_put_by_multiple_threads
                         )
                       );
 
-  bool is_first_item (true);
-  for (unsigned int item : order)
+  BOOST_REQUIRE (items.get().second);
+  for (std::size_t k (1); k < items.capacity(); ++k)
   {
-    std::pair<unsigned int, bool> head (items.get());
-    BOOST_REQUIRE_EQUAL (item, head.first);
-    if (is_first_item)
-    {
-      BOOST_REQUIRE ((is_first_item = false, head.second));
-    }
-    else
-    {
-      BOOST_REQUIRE (!head.second);
-    }
+    BOOST_REQUIRE (!items.get().second);
   }
 }
