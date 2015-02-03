@@ -567,6 +567,9 @@ void DRTSImpl::handleSubmitJobEvent
                    , "I am busy right now, please try again later!"
                    , *e->job_id()
                    ));
+
+      _masters_backlogfull_notified.emplace (source);
+
       return;
     }
     else
@@ -760,16 +763,15 @@ void DRTSImpl::job_execution_thread ()
 
     if (notify_can_take_jobs)
     {
-      for ( const master_network_info& master_info
-          : m_masters
-          | boost::adaptors::map_values
-          )
+      for (const fhg::com::p2p::address_t& master : _masters_backlogfull_notified)
       {
-       send_event
-         ( master_info.address.get()
-         , new sdpa::events::BacklogNoLongerFullEvent()
-         );
+        send_event
+          ( master
+          , new sdpa::events::BacklogNoLongerFullEvent()
+          );
       }
+
+      _masters_backlogfull_notified.clear();
     }
 
     if (DRTSImpl::Job::PENDING == job->cmp_and_swp_state( DRTSImpl::Job::PENDING
