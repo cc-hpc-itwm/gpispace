@@ -115,16 +115,9 @@ BOOST_AUTO_TEST_CASE (thread_bounded_queue_try_put_by_multiple_threads)
                         )
                       );
 
-  bool is_first_item (true);
-  for (unsigned int k=0; k<items.capacity(); k++)
+  BOOST_REQUIRE (items.get().second);
+  for (std::size_t k (1); k < items.capacity(); ++k)
   {
-    if (is_first_item)
-    {
-      BOOST_REQUIRE ((is_first_item = false, items.get().second));
-    }
-    else
-    {
-      BOOST_REQUIRE (!items.get().second);
-    }
+    BOOST_REQUIRE (!items.get().second);
   }
 }
