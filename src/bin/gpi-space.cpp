@@ -7,6 +7,7 @@
 #include <fhg/revision.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
+#include <fhg/util/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/print_exception.hpp>
@@ -100,7 +101,8 @@ try
     )
     ( option::socket
     , boost::program_options::value
-        <fhg::util::boost::program_options::nonexisting_path>()->required()
+        <fhg::util::boost::program_options::nonexisting_path_in_existing_directory>()
+        ->required()
     , "path to open communication socket"
     )
     ( option::startup_messages_pipe
@@ -124,7 +126,7 @@ try
 
   boost::filesystem::path const socket_path
     ( vm.at (option::socket)
-      .as<fhg::util::boost::program_options::nonexisting_path>()
+      .as<fhg::util::boost::program_options::nonexisting_path_in_existing_directory>()
     );
 
   boost::optional<boost::filesystem::path> const log_file
