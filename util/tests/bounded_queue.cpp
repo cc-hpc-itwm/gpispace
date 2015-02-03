@@ -106,20 +106,21 @@ BOOST_FIXTURE_TEST_CASE ( thread_bounded_queue_try_put_by_multiple_threads
 
   fhg::thread::bounded_queue<unsigned int> items (capacity);
 
-  std::vector<boost::thread> producers;
+  boost::thread_group producers;
+
   for (unsigned int k = 0; k < num_producers; k++)
   {
-    producers.emplace_back ( &fixture_multiple_producers::produce_one_item
-                           , this
-                           , boost::ref (items)
-                           , k
-                           , boost::ref (try_put_results)
-                           );
+    producers.create_thread
+      ( boost::bind ( &fixture_multiple_producers::produce_one_item
+                    , this
+                    , boost::ref (items)
+                    , k
+                    , boost::ref (try_put_results)
+                    )
+      );
   }
 
-  std::for_each ( producers.begin(), producers.end(), [](boost::thread &t)
-                                                      {t.join();}
-                );
+  producers.join_all();
 
   BOOST_REQUIRE_EQUAL ( items.capacity()
                       , std::accumulate
