@@ -530,6 +530,10 @@ namespace utils
         );
     }
 
+    sdpa::job_id_t job_id (std::string name)
+    {
+      return _jobs.at (name)._id;
+    }
 
     void add_job ( const std::string& name
                  , const sdpa::job_id_t& job_id
