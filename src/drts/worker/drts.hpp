@@ -312,6 +312,6 @@ private:
 
   fhg::thread::set _registration_threads;
 
-  boost::mutex const _guard_backlogfull_notified_masters;
+  mutable boost::mutex _guard_backlogfull_notified_masters;
   std::unordered_set<fhg::com::p2p::address_t> _masters_backlogfull_notified;
 };
