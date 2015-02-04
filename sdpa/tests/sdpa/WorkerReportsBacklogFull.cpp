@@ -119,8 +119,8 @@ BOOST_AUTO_TEST_CASE (one_worker_reports_backlog_full_the_other_two_receive_canc
   std::string const job_name_2 (job_submitted_2.wait());
   std::string const job_name_3 (job_submitted_3.wait());
 
-  sdpa::job_id_t job_id_2 (worker_2.job_id (job_name_2));
-  sdpa::job_id_t job_id_3 (worker_3.job_id (job_name_3));
+  sdpa::job_id_t const job_id_2 (worker_2.job_id (job_name_2));
+  sdpa::job_id_t const job_id_3 (worker_3.job_id (job_name_3));
 
   BOOST_REQUIRE_EQUAL (cancel_requested_2.wait(), job_id_2);
   BOOST_REQUIRE_EQUAL (cancel_requested_3.wait(), job_id_3);
