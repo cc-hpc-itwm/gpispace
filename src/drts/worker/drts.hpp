@@ -34,6 +34,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include <unordered_set>
 
 struct wfe_task_t
 {
@@ -310,4 +311,7 @@ private:
   fhg::thread::bounded_queue<boost::shared_ptr<DRTSImpl::Job>> m_pending_jobs;
 
   fhg::thread::set _registration_threads;
+
+  boost::mutex const _guard_backlogfull_notified_masters;
+  std::unordered_set<fhg::com::p2p::address_t> _masters_backlogfull_notified;
 };
