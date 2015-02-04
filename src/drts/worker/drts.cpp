@@ -568,6 +568,7 @@ void DRTSImpl::handleSubmitJobEvent
                    , *e->job_id()
                    ));
 
+      boost::unique_lock<boost::mutex> _ (_guard_backlogfull_notified_masters);
       _masters_backlogfull_notified.emplace (source);
 
       return;
@@ -763,6 +764,7 @@ void DRTSImpl::job_execution_thread ()
 
     if (notify_can_take_jobs)
     {
+      boost::unique_lock<boost::mutex> _ (_guard_backlogfull_notified_masters);
       for (const fhg::com::p2p::address_t& master : _masters_backlogfull_notified)
       {
         send_event
