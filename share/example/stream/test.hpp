@@ -113,9 +113,9 @@ namespace share_example_stream_test
       );
 
     gspc::stream::number_of_slots const num_slots
-      (vm[option_num_slots].as<validators::positive_integral<unsigned long>>());
+      (vm.at (option_num_slots).as<validators::positive_integral<unsigned long>>());
     gspc::stream::size_of_slot const size_slot
-      (vm[option_size_slot].as<validators::positive_integral<unsigned long>>());
+      (vm.at (option_size_slot).as<validators::positive_integral<unsigned long>>());
 
     unsigned long const size (num_slots * (size_slot + 1));
 

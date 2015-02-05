@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE (share_example_n_of_m)
         , {"parallel", 2L}
         , {"cmd"
           , boost::filesystem::path
-              (vm[option_command].as<validators::executable>()).string()
+              (vm.at (option_command).as<validators::executable>()).string()
           }
         }
       )

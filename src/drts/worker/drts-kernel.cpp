@@ -121,7 +121,7 @@ try
     ( vm.count (option_name::virtual_memory_socket)
       ? fhg::util::make_unique<gpi::pc::client::api_t>
         ((static_cast<boost::filesystem::path>
-            ( vm[option_name::virtual_memory_socket]
+            ( vm.at (option_name::virtual_memory_socket)
               .as<fhg::util::boost::program_options::existing_path>()
             )
          ).string()
@@ -135,12 +135,12 @@ try
   std::unique_ptr<gspc::scoped_allocation> const shared_memory
     ( ( virtual_memory_api
       && vm.count (option_name::shared_memory_size)
-      && vm[option_name::shared_memory_size].as<unsigned long>() > 0
+      && vm.at (option_name::shared_memory_size).as<unsigned long>() > 0
       )
       ? fhg::util::make_unique<gspc::scoped_allocation>
         ( virtual_memory_api
         , kernel_name + "-shared_memory"
-        , vm[option_name::shared_memory_size].as<unsigned long>()
+        , vm.at (option_name::shared_memory_size).as<unsigned long>()
         )
       : nullptr
     );
@@ -162,7 +162,7 @@ try
 
     {
       boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
-        startup_messages_pipe ( vm["startup-messages-pipe"].as<int>()
+        startup_messages_pipe ( vm.at ("startup-messages-pipe").as<int>()
                               , boost::iostreams::close_handle
                               );
       startup_messages_pipe << "OKAY\n";
@@ -182,7 +182,7 @@ try
                           );
     {
       boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
-        startup_messages_pipe ( vm["startup-messages-pipe"].as<int>()
+        startup_messages_pipe ( vm.at ("startup-messages-pipe").as<int>()
                               , boost::iostreams::close_handle
                               );
       startup_messages_pipe << "OKAY\n";

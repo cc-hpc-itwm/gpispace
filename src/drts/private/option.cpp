@@ -260,7 +260,7 @@ namespace gspc
   {                                                                     \
     if (vm.count (name::_name))                                         \
     {                                                                   \
-      return static_cast<_type> (vm[name::_name].as<_as>());            \
+      return static_cast<_type> (vm.at (name::_name).as<_as>());        \
     }                                                                   \
                                                                         \
     return boost::none;                                                 \
@@ -277,7 +277,7 @@ namespace gspc
   {                                                                     \
     if (vm.count (name::_name))                                         \
     {                                                                   \
-      return vm[name::_name].as<_as>();                                 \
+      return vm.at (name::_name).as<_as>();                             \
     }                                                                   \
                                                                         \
     throw std::logic_error                                              \

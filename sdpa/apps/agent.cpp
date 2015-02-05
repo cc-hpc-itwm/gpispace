@@ -85,7 +85,7 @@ try
 
   if (vm.count (option_name::vmem_socket))
   {
-    vmem_socket = bfs::path (vm[option_name::vmem_socket].as<validators::nonempty_string>());
+    vmem_socket = bfs::path (vm.at (option_name::vmem_socket).as<validators::nonempty_string>());
   }
 
   std::vector<std::tuple<std::string, fhg::com::host_t, fhg::com::port_t>> masters;
@@ -132,7 +132,7 @@ try
 
   {
     boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
-      startup_messages_pipe ( vm["startup-messages-pipe"].as<int>()
+      startup_messages_pipe ( vm.at ("startup-messages-pipe").as<int>()
                             , boost::iostreams::close_handle
                             );
     startup_messages_pipe << fhg::util::connectable_to_address_string
