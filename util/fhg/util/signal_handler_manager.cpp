@@ -26,10 +26,13 @@ namespace fhg
       void signal_handler (int sig_num, siginfo_t* info, void* context)
       {
         boost::mutex::scoped_lock const _ (GLOBAL_manager_mutex);
+        MLOG (ERROR, "SIGNAL: " << sig_num);
         if (GLOBAL_manager)
         {
           GLOBAL_manager->handle (sig_num, info, context);
+          MLOG (ERROR, "SIGNAL: " << sig_num << " handled");
         }
+        else MLOG (ERROR, "SIGNAL: " << sig_num << " UNhandled");
       }
     }
 

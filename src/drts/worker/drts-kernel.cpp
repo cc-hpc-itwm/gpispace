@@ -106,7 +106,12 @@ try
 
   fhg::util::thread::event<> stop_requested;
   const std::function<void()> request_stop
-    (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
+    ( [&stop_requested]
+      {
+        boost::strict_scoped_thread<boost::join_if_joinable>
+          ([&stop_requested] { stop_requested.notify(); } );
+      }
+    );
 
   fhg::util::signal_handler_manager signal_handlers;
   fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
@@ -169,6 +174,8 @@ try
     }
 
     stop_requested.wait();
+
+    LLOG (ERROR, logger, "stop requested");
   }
   else
   {
@@ -189,6 +196,8 @@ try
     }
 
     stop_requested.wait();
+
+    LLOG (ERROR, logger, "stop requested");
   }
 
   return 0;
