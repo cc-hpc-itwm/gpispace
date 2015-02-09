@@ -293,18 +293,6 @@ int DRTSImpl::wfe_execute ( std::string const &job_id
     : throw std::runtime_error ("bad task state");
 }
 
-void DRTSImpl::wfe_cancel (std::string const &job_id)
-{
-  boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
-  std::map<std::string, wfe_task_t *>::iterator task_it
-    (_currently_executed_tasks.find(job_id));
-  if (task_it != _currently_executed_tasks.end())
-  {
-    task_it->second->state = wfe_task_t::CANCELED;
-    task_it->second->context.module_call_do_cancel();
-  }
-}
-
 DRTSImpl::master_network_info::master_network_info
     (std::string const& host, std::string const& port)
   : host (host)
@@ -599,7 +587,14 @@ void DRTSImpl::handleCancelJobEvent
     else if (job_it->second->state() == DRTSImpl::Job::RUNNING)
     {
       LLOG (TRACE, _logger, "trying to cancel running job " << e->job_id());
-      wfe_cancel (e->job_id());
+      boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
+      std::map<std::string, wfe_task_t *>::iterator task_it
+        (_currently_executed_tasks.find(e->job_id()));
+      if (task_it != _currently_executed_tasks.end())
+      {
+        task_it->second->state = wfe_task_t::CANCELED;
+        task_it->second->context.module_call_do_cancel();
+      }
     }
     else if (job_it->second->state() == DRTSImpl::Job::FAILED)
     {

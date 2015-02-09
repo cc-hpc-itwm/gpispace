@@ -242,8 +242,6 @@ private:
               , std::list<std::string> const & worker_list
               );
 
-  void wfe_cancel (std::string const &job_id);
-
   boost::optional<numa_socket_setter> _numa_socket_setter;
 
   mutable boost::mutex _currently_executed_tasks_mutex;
