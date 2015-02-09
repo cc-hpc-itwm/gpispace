@@ -686,6 +686,7 @@ void DRTSImpl::job_execution_thread ()
             error_message = std::string ("Invalid job description: ") + ex.what();
 
             ec = DRTSImpl::Job::FAILED;
+            job->set_message (error_message);
             activity_was_fine = false;
           }
 
@@ -744,6 +745,7 @@ void DRTSImpl::job_execution_thread ()
             else // if (wfe_task_t::FAILED == task.state)
             {
               LLOG (ERROR, _logger, "task failed: " << task.id << ": " << task.error_message);
+              job->set_message (error_message);
             }
 
             emit_task (task);
@@ -767,11 +769,6 @@ void DRTSImpl::job_execution_thread ()
             );
 
         job->set_state (DRTSImpl::Job::state_t (ec));
-
-        if (ec == DRTSImpl::Job::FAILED)
-        {
-          job->set_message (error_message);
-        }
       }
       catch (std::exception const & ex)
       {
