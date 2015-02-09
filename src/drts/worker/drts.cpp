@@ -425,23 +425,13 @@ void DRTSImpl::handleCancelJobEvent
 
   if (job_it == m_jobs.end())
   {
-    send_event<sdpa::events::ErrorEvent>
-      ( source
-      , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
-      , "could not find job " + std::string(e->job_id())
-      );
+    throw std::runtime_error ("cancel_job for unknown job");
   }
-  else if (job_it->second->owner()->second != source)
+  if (job_it->second->owner()->second != source)
   {
-    send_event<sdpa::events::ErrorEvent>
-      ( source
-      , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
-      , "cancel_job for non-owned job"
-      );
-    return;
+    throw std::runtime_error ("cancel_job for non-owned job");
   }
-  else
-  {
+
     if (  DRTSImpl::Job::PENDING
        == job_it->second->cmp_and_swp_state( DRTSImpl::Job::PENDING
                                            , DRTSImpl::Job::CANCELED
@@ -479,7 +469,6 @@ void DRTSImpl::handleCancelJobEvent
           << "(" << e->job_id() << ")"
           );
     }
-  }
 }
 
 void DRTSImpl::handleJobFailedAckEvent
@@ -488,29 +477,14 @@ void DRTSImpl::handleJobFailedAckEvent
   // locate the job
   boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
   map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
+
   if (job_it == m_jobs.end())
   {
-    LLOG ( ERROR, _logger
-        , "could not acknowledge failed job: " << e->job_id() << ": not found"
-        );
-    send_event<sdpa::events::ErrorEvent>
-      ( source
-      , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
-      , "could not find job " + std::string(e->job_id())
-      );
-    return;
+    throw std::runtime_error ("job_failed_ack for unknown job");
   }
-  else if (job_it->second->owner()->second != source)
+  if (job_it->second->owner()->second != source)
   {
-    LLOG ( ERROR, _logger
-        , "could not acknowledge failed job: " << e->job_id() << ": not owner"
-        );
-    send_event<sdpa::events::ErrorEvent>
-      ( source
-      , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
-      , "job_failed_ack for non-owned job"
-      );
-    return;
+    throw std::runtime_error ("job_failed_ack for non-owned job");
   }
 
   m_jobs.erase (job_it);
@@ -522,31 +496,14 @@ void DRTSImpl::handleJobFinishedAckEvent
   // locate the job
   boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
   map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
+
   if (job_it == m_jobs.end())
   {
-    LLOG ( ERROR, _logger
-        , "could not acknowledge finished job: " << e->job_id()
-        << ": not found"
-        );
-    send_event<sdpa::events::ErrorEvent>
-      ( source
-      , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
-      , "could not find job " + std::string(e->job_id())
-      );
-    return;
+    throw std::runtime_error ("job_finished_ack for unknown job");
   }
-  else if (job_it->second->owner()->second != source)
+  if (job_it->second->owner()->second != source)
   {
-    LLOG ( ERROR, _logger
-        , "could not acknowledge finished job: " << e->job_id()
-        << ": not owner"
-        );
-    send_event<sdpa::events::ErrorEvent>
-      ( source
-      , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
-      , "job_finished_ack for non-owned job"
-      );
-    return;
+    throw std::runtime_error ("job_finished_ack for non-owned job");
   }
 
   m_jobs.erase (job_it);
@@ -582,7 +539,15 @@ void DRTSImpl::event_thread ()
   {
     std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr> event
       (m_event_queue.get());
-    event.second->handleBy (event.first, this);
+    try
+    {
+      event.second->handleBy (event.first, this);
+    }
+    catch (std::exception const& ex)
+    {
+      send_event<sdpa::events::ErrorEvent>
+        (event.first, sdpa::events::ErrorEvent::SDPA_EUNKNOWN, ex.what());
+    }
   }
 }
 
