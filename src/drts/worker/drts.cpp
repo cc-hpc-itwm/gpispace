@@ -396,10 +396,9 @@ void DRTSImpl::handleSubmitJobEvent
   boost::shared_ptr<DRTSImpl::Job> job (new DRTSImpl::Job( DRTSImpl::Job::ID(*e->job_id())
                                                  , DRTSImpl::Job::Description(e->description())
                                                  , master
+                                                         , e->worker_list()
                                                  )
                                    );
-
-  job->worker_list (e->worker_list ());
 
   {
     boost::mutex::scoped_lock job_map_lock(m_job_map_mutex);
@@ -1001,6 +1000,7 @@ void DRTSImpl::dispatch_event
 DRTSImpl::Job::Job( Job::ID const &jobid
                   , Job::Description const &description
                   , owner_type const& owner
+                  , std::list<std::string> const& worker_list
                   )
   : m_id (jobid.value)
   , m_input_description (description.value)
@@ -1008,6 +1008,7 @@ DRTSImpl::Job::Job( Job::ID const &jobid
   , m_state (Job::PENDING)
   , m_result ()
   , m_message ("")
+  , m_worker_list (worker_list)
 {}
 
 DRTSImpl::Job::state_t DRTSImpl::Job::cmp_and_swp_state( Job::state_t expected

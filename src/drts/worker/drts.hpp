@@ -115,6 +115,7 @@ public:
     Job( Job::ID const &jobid
        , Job::Description const &description
        , owner_type const&
+       , std::list<std::string> const& worker_list
        );
 
     inline state_t state () const { lock_type lck(m_mutex); return m_state; }
@@ -152,11 +153,6 @@ public:
       return m_worker_list;
     }
 
-    Job & worker_list (std::list<std::string> const &workers)
-    {
-      m_worker_list = workers;
-      return *this;
-    }
   private:
     inline void    state (state_t s) { lock_type lck(m_mutex); m_state = s; }
     mutable mutex_type m_mutex;
