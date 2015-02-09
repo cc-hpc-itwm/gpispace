@@ -194,6 +194,20 @@ DRTSImpl::master_network_info::master_network_info
   , address (boost::none)
 {}
 
+namespace
+{
+  std::set<sdpa::Capability> make_capabilities
+    (std::list<std::string> capabilities, std::string worker_name)
+  {
+    std::set<sdpa::Capability> result;
+    for (std::string const & cap : capabilities)
+    {
+      result.emplace (cap, worker_name);
+    }
+    return result;
+  }
+}
+
 DRTSImpl::DRTSImpl
     ( std::function<void()> request_stop
     , boost::asio::io_service& peer_io_service
@@ -225,6 +239,15 @@ DRTSImpl::DRTSImpl
   , _shared_memory (shared_memory)
   , m_max_reconnect_attempts (get<std::size_t> ("plugin.drts.max_reconnect_attempts", config_variables).get_value_or (0))
   , m_reconnect_counter (0)
+  , m_virtual_capabilities
+      ( make_capabilities
+          ( fhg::util::split<std::string, std::string>
+              ( get<std::string> ("plugin.drts.capabilities", config_variables).get_value_or ("")
+              , ','
+              )
+          , m_my_name
+          )
+      )
   , m_pending_jobs (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3))
 {
   //! \todo ctor parameters
@@ -232,22 +255,12 @@ DRTSImpl::DRTSImpl
     ( fhg::util::split<std::string, std::string>
       (get<std::string> ("plugin.drts.master", config_variables).get_value_or (""), ',')
     );
-  const std::list<std::string> capability_list
-    ( fhg::util::split<std::string, std::string>
-      (get<std::string> ("plugin.drts.capabilities", config_variables).get_value_or (""), ',')
-    );
   fhg::com::host_t host (get<std::string> ("plugin.drts.host", config_variables).get_value_or ("*"));
   fhg::com::port_t port (get<std::string> ("plugin.drts.port", config_variables).get_value_or ("0"));
 
   if (master_list.empty())
   {
     throw std::runtime_error ("no masters specified");
-  }
-
-  // parse virtual capabilities
-  for (std::string const & cap : capability_list)
-  {
-    m_virtual_capabilities.emplace (cap, m_my_name);
   }
 
   m_event_thread.reset
