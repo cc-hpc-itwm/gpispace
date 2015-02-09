@@ -435,8 +435,8 @@ void DRTSImpl::handleCancelJobEvent
   {
     send_event<sdpa::events::ErrorEvent>
       ( source
-      , sdpa::events::ErrorEvent::SDPA_EPERM
-      , "you are not the owner of job " + std::string(e->job_id())
+      , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+      , "cancel_job for non-owned job"
       );
     return;
   }
@@ -507,8 +507,8 @@ void DRTSImpl::handleJobFailedAckEvent
         );
     send_event<sdpa::events::ErrorEvent>
       ( source
-      , sdpa::events::ErrorEvent::SDPA_EPERM
-      , "you are not the owner of job " + std::string(e->job_id())
+      , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+      , "job_failed_ack for non-owned job"
       );
     return;
   }
@@ -543,8 +543,8 @@ void DRTSImpl::handleJobFinishedAckEvent
         );
     send_event<sdpa::events::ErrorEvent>
       ( source
-      , sdpa::events::ErrorEvent::SDPA_EPERM
-      , "you are not the owner of job " + std::string(e->job_id())
+      , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+      , "job_finished_ack for non-owned job"
       );
     return;
   }

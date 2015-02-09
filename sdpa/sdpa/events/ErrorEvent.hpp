@@ -21,7 +21,6 @@ namespace sdpa
           SDPA_EWORKERNOTREG,
           SDPA_ENODE_SHUTDOWN,
           SDPA_EUNKNOWN,
-          SDPA_EPERM,
           SDPA_ENETWORKFAILURE
         };
 
