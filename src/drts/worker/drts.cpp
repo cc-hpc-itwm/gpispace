@@ -665,8 +665,6 @@ void DRTSImpl::job_execution_thread ()
       {
         job->set_result (we::type::activity_t().to_string());
 
-        std::string error_message;
-        int ec;
         {
           wfe_task_t task (job->id(), m_my_name, job->worker_list());
 
@@ -679,11 +677,10 @@ void DRTSImpl::job_execution_thread ()
           {
             LLOG (ERROR, _logger, "could not parse activity: " << ex.what());
             task.state = wfe_task_t::FAILED;
-            error_message = std::string ("Invalid job description: ") + ex.what();
 
             job->set_state (DRTSImpl::Job::FAILED);
 
-            job->set_message (error_message);
+            job->set_message (std::string ("Invalid job description: ") + ex.what());
             activity_was_fine = false;
           }
 
@@ -716,14 +713,14 @@ void DRTSImpl::job_execution_thread ()
               {
                 task.state = wfe_task_t::FAILED;
                 task.error_message = std::string ("Module call failed: ") + ex.what();
-                error_message = task.error_message;
+                job->set_message (task.error_message);
               }
               catch (...)
               {
                 task.state = wfe_task_t::FAILED;
                 task.error_message =
                   "UNKNOWN REASON, exception not derived from std::exception";
-                error_message = task.error_message;
+                job->set_message (task.error_message);
               }
             }
 
@@ -742,7 +739,6 @@ void DRTSImpl::job_execution_thread ()
             else // if (wfe_task_t::FAILED == task.state)
             {
               LLOG (ERROR, _logger, "task failed: " << task.id << ": " << task.error_message);
-              job->set_message (error_message);
             }
 
             emit_task (task);
