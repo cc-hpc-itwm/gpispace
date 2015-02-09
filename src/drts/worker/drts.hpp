@@ -207,9 +207,6 @@ private:
                     , Args&&... args
                     );
 
-  void dispatch_event
-    (fhg::com::p2p::address_t const& source, sdpa::events::SDPAEvent::Ptr const &evt);
-
   fhg::log::Logger::ptr_t _logger;
 
   std::function<void()> _request_stop;

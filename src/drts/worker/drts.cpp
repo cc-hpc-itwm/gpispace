@@ -811,14 +811,13 @@ void DRTSImpl::handle_recv ( boost::system::error_code const & ec
     // convert m_message to event
     try
     {
-      dispatch_event
+      m_event_queue.put
         ( source.get()
         , sdpa::events::SDPAEvent::Ptr
-          (codec.decode (std::string ( m_message.data.begin()
-                                     , m_message.data.end()
-                                     )
-                        )
-          ));
+          ( codec.decode
+              (std::string (m_message.data.begin(), m_message.data.end()))
+          )
+        );
     }
     catch (std::exception const & ex)
     {
@@ -847,19 +846,6 @@ template<typename Event, typename... Args>
   static sdpa::events::Codec codec;
   Event const event (std::forward<Args> (args)...);
   m_peer->send (destination, codec.encode (&event));
-}
-
-void DRTSImpl::dispatch_event
-  (fhg::com::p2p::address_t const& source, sdpa::events::SDPAEvent::Ptr const &evt)
-{
-  if (evt)
-  {
-    m_event_queue.put (source, evt);
-  }
-  else
-  {
-    LLOG (WARN, _logger, "got invalid message from suspicious source");
-  }
 }
 
 DRTSImpl::Job::Job( Job::ID const &jobid
