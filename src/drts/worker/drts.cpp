@@ -230,15 +230,6 @@ DRTSImpl::DRTSImpl
                           )
   , _virtual_memory_api (virtual_memory_api)
   , _shared_memory (shared_memory)
-  , m_virtual_capabilities
-      ( make_capabilities
-          ( fhg::util::split<std::string, std::string>
-              ( get<std::string> ("plugin.drts.capabilities", config_variables).get_value_or ("")
-              , ','
-              )
-          , m_my_name
-          )
-      )
   , m_pending_jobs (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3))
   , m_event_thread (&DRTSImpl::event_thread, this)
 {
@@ -266,6 +257,16 @@ DRTSImpl::DRTSImpl
   m_peer->start();
 
   start_receiver();
+
+  std::set<sdpa::Capability> const capabilities
+    ( make_capabilities
+        ( fhg::util::split<std::string, std::string>
+            ( get<std::string> ("plugin.drts.capabilities", config_variables).get_value_or ("")
+            , ','
+            )
+        , m_my_name
+        )
+    );
 
   for (std::string const & master : master_list)
   {
@@ -298,7 +299,7 @@ DRTSImpl::DRTSImpl
           ).first->second
       , m_my_name
       , m_pending_jobs.capacity()
-      , sdpa::capabilities_set_t()
+      , capabilities
       , false
       , fhg::util::hostname()
       );
@@ -337,12 +338,6 @@ void DRTSImpl::handleWorkerRegistrationAckEvent
     );
   if (master_it != m_masters.cend())
   {
-    if (!m_virtual_capabilities.empty())
-    {
-      send_event<sdpa::events::CapabilitiesGainedEvent>
-        (source, m_virtual_capabilities);
-    }
-
     resend_outstanding_events (master_it);
   }
 }

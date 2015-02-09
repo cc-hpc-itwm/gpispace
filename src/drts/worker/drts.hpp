@@ -245,8 +245,6 @@ private:
 
   mutable boost::mutex m_job_map_mutex;
 
-  std::set<sdpa::Capability> m_virtual_capabilities;
-
   // jobs + their states
   map_of_jobs_t m_jobs;
 
