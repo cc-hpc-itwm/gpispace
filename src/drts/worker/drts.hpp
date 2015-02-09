@@ -202,8 +202,10 @@ private:
                    , boost::optional<fhg::com::p2p::address_t> source_name
                    );
 
-  void send_event (fhg::com::p2p::address_t const& destination, sdpa::events::SDPAEvent *e);
-  void send_event (fhg::com::p2p::address_t const& destination, sdpa::events::SDPAEvent::Ptr const & evt);
+  template<typename Event, typename... Args>
+    void send_event ( fhg::com::p2p::address_t const& destination
+                    , Args&&... args
+                    );
 
   void dispatch_event
     (fhg::com::p2p::address_t const& source, sdpa::events::SDPAEvent::Ptr const &evt);
