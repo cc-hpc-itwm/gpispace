@@ -663,11 +663,6 @@ void DRTSImpl::job_execution_thread ()
     {
       try
       {
-        const boost::posix_time::ptime started
-          (boost::posix_time::microsec_clock::universal_time());
-
-        LLOG (TRACE, _logger, "executing job " << job->id());
-
         job->set_result (we::type::activity_t().to_string());
 
         std::string error_message;
@@ -758,16 +753,6 @@ void DRTSImpl::job_execution_thread ()
               : throw std::runtime_error ("bad task state"));
           }
         }
-
-        const boost::posix_time::ptime completed
-          (boost::posix_time::microsec_clock::universal_time());
-
-        LLOG ( TRACE, _logger
-            , "job returned."
-            << " error-message := " << job->message()
-            << " total-time := " << (completed - started)
-            );
-
       }
       catch (std::exception const & ex)
       {
