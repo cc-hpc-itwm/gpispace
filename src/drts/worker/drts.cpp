@@ -667,24 +667,16 @@ void DRTSImpl::job_execution_thread ()
         {
           wfe_task_t task (job->id(), m_my_name, job->worker_list());
 
-          bool activity_was_fine (true);
           try
           {
             task.activity = we::type::activity_t (job->description());
           }
           catch (std::exception const & ex)
           {
-            LLOG (ERROR, _logger, "could not parse activity: " << ex.what());
-            task.state = wfe_task_t::FAILED;
-
-            job->set_state (DRTSImpl::Job::FAILED);
-
-            job->set_message (std::string ("Invalid job description: ") + ex.what());
-            activity_was_fine = false;
+            throw std::runtime_error
+              (std::string ("could not parse activity: ") + ex.what());
           }
 
-          if (activity_was_fine)
-          {
             {
               boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
               _currently_executed_tasks.emplace (job->id(), &task);
@@ -743,7 +735,6 @@ void DRTSImpl::job_execution_thread ()
               : task.state == wfe_task_t::CANCELED ? DRTSImpl::Job::CANCELED
               : task.state == wfe_task_t::FAILED ? DRTSImpl::Job::FAILED
               : throw std::runtime_error ("bad task state"));
-          }
         }
       }
       catch (std::exception const & ex)
