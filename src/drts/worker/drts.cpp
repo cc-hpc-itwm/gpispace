@@ -354,16 +354,12 @@ void DRTSImpl::handleWorkerRegistrationAckEvent
     );
   if (master_it != m_masters.cend())
   {
+    if (!m_virtual_capabilities.empty())
     {
-      boost::mutex::scoped_lock const _ (m_capabilities_mutex);
-
-      if (!m_virtual_capabilities.empty())
-      {
-        send_event ( source
-                   , new sdpa::events::CapabilitiesGainedEvent
-                       (m_virtual_capabilities)
-                   );
-      }
+      send_event ( source
+                 , new sdpa::events::CapabilitiesGainedEvent
+                     (m_virtual_capabilities)
+                 );
     }
 
     resend_outstanding_events (master_it);

@@ -274,7 +274,6 @@ private:
   mutable boost::mutex m_job_map_mutex;
   mutable boost::mutex m_reconnect_counter_mutex;
 
-  mutable boost::mutex m_capabilities_mutex;
   std::set<sdpa::Capability> m_virtual_capabilities;
 
   // jobs + their states
