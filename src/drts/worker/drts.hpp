@@ -76,7 +76,6 @@ public:
           , gpi::pc::client::api_t /*const*/* virtual_memory_api
           , gspc::scoped_allocation /*const*/* shared_memory
           );
-  ~WFEImpl();
 
 private:
   void emit_task (const wfe_task_t& task);
@@ -107,6 +106,15 @@ private:
 
   gpi::pc::client::api_t /*const*/* _virtual_memory_api;
   gspc::scoped_allocation /*const*/* _shared_memory;
+
+  struct mark_remaining_tasks_as_canceled_helper
+  {
+    ~mark_remaining_tasks_as_canceled_helper();
+
+    boost::mutex& _currently_executed_tasks_mutex;
+    std::map<std::string, wfe_task_t *>& _currently_executed_tasks;
+  } _mark_remaining_tasks_as_canceled_helper
+    = {_currently_executed_tasks_mutex, _currently_executed_tasks};
 };
 
 class DRTSImpl : public sdpa::events::EventHandler

@@ -211,18 +211,16 @@ WFEImpl::WFEImpl
   }
 }
 
-WFEImpl::~WFEImpl()
+WFEImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canceled_helper()
 {
+  boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
+  while (! _currently_executed_tasks.empty ())
   {
-    boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
-    while (! _currently_executed_tasks.empty ())
-    {
-      wfe_task_t *task = _currently_executed_tasks.begin ()->second;
-      task->state = wfe_task_t::CANCELED;
-      task->error_message = "plugin shutdown";
+    wfe_task_t *task = _currently_executed_tasks.begin ()->second;
+    task->state = wfe_task_t::CANCELED;
+    task->error_message = "plugin shutdown";
 
-      _currently_executed_tasks.erase (task->id);
-    }
+    _currently_executed_tasks.erase (task->id);
   }
 }
 
