@@ -685,7 +685,8 @@ void DRTSImpl::job_execution_thread ()
             task.state = wfe_task_t::FAILED;
             error_message = std::string ("Invalid job description: ") + ex.what();
 
-            ec = DRTSImpl::Job::FAILED;
+            job->set_state (DRTSImpl::Job::FAILED);
+
             job->set_message (error_message);
             activity_was_fine = false;
           }
@@ -750,10 +751,10 @@ void DRTSImpl::job_execution_thread ()
 
             emit_task (task);
 
-            ec = task.state == wfe_task_t::FINISHED ? DRTSImpl::Job::FINISHED
+            job->set_state (task.state == wfe_task_t::FINISHED ? DRTSImpl::Job::FINISHED
               : task.state == wfe_task_t::CANCELED ? DRTSImpl::Job::CANCELED
               : task.state == wfe_task_t::FAILED ? DRTSImpl::Job::FAILED
-              : throw std::runtime_error ("bad task state");
+              : throw std::runtime_error ("bad task state"));
           }
         }
 
@@ -768,7 +769,6 @@ void DRTSImpl::job_execution_thread ()
             << " total-time := " << (completed - started)
             );
 
-        job->set_state (DRTSImpl::Job::state_t (ec));
       }
       catch (std::exception const & ex)
       {
