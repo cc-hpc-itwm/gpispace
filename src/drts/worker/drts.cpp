@@ -187,13 +187,6 @@ DRTSImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canc
   }
 }
 
-DRTSImpl::master_network_info::master_network_info
-    (std::string const& host, std::string const& port)
-  : host (host)
-  , port (port)
-  , address (boost::none)
-{}
-
 namespace
 {
   std::set<sdpa::Capability> make_capabilities
@@ -237,8 +230,6 @@ DRTSImpl::DRTSImpl
                           )
   , _virtual_memory_api (virtual_memory_api)
   , _shared_memory (shared_memory)
-  , m_max_reconnect_attempts (get<std::size_t> ("plugin.drts.max_reconnect_attempts", config_variables).get_value_or (0))
-  , m_reconnect_counter (0)
   , m_virtual_capabilities
       ( make_capabilities
           ( fhg::util::split<std::string, std::string>
@@ -294,23 +285,31 @@ DRTSImpl::DRTSImpl
       throw std::runtime_error ("cannot be my own master!");
     }
 
-    if ( !m_masters.emplace ( parts[0]
-                            , master_network_info (parts[1], parts[2])
-                            ).second
-       )
+    if (m_masters.count (master))
     {
-      LLOG ( WARN, _logger
-          , "master already specified, ignoring new one: " << master
-          );
+      throw std::runtime_error ("master already specified: " + master);
     }
+
+    send_event ( m_masters.emplace
+                   ( parts[0]
+                   , m_peer->connect_to ( fhg::com::host_t (parts[1])
+                                        , fhg::com::port_t (parts[2])
+                                        )
+                   ).first->second
+               , new sdpa::events::WorkerRegistrationEvent
+                   ( m_my_name
+                   , m_pending_jobs.capacity()
+                   , sdpa::capabilities_set_t()
+                   , false
+                   , fhg::util::hostname()
+                   )
+               );
   }
 
   m_execution_thread.reset
     ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
       (&DRTSImpl::job_execution_thread, this)
     );
-
-  start_connect ();
 }
 
 DRTSImpl::peer_stopper::~peer_stopper()
@@ -334,7 +333,7 @@ void DRTSImpl::handleWorkerRegistrationAckEvent
     ( std::find_if ( m_masters.cbegin(), m_masters.cend()
                    , [&source] (map_of_masters_t::value_type const& master)
                      {
-                       return master.second.address == source;
+                       return master.second == source;
                      }
                    )
     );
@@ -349,11 +348,6 @@ void DRTSImpl::handleWorkerRegistrationAckEvent
     }
 
     resend_outstanding_events (master_it);
-
-    {
-      boost::mutex::scoped_lock lock_reconnect_counter (m_reconnect_counter_mutex);
-      m_reconnect_counter = 0;
-    }
   }
 }
 
@@ -365,7 +359,7 @@ void DRTSImpl::handleSubmitJobEvent
     ( std::find_if ( m_masters.cbegin(), m_masters.cend()
                    , [&source] (map_of_masters_t::value_type const& master)
                      {
-                       return master.second.address == source;
+                       return master.second == source;
                      }
                    )
     );
@@ -424,7 +418,7 @@ void DRTSImpl::handleSubmitJobEvent
     }
     else
     {
-      send_event ( *master->second.address
+      send_event ( master->second
                  , new sdpa::events::SubmitJobAckEvent (job->id())
                  );
       m_jobs.emplace (job->id(), job);
@@ -449,7 +443,7 @@ void DRTSImpl::handleCancelJobEvent
                 , "could not find job " + std::string(e->job_id())
                 ));
   }
-  else if (*job_it->second->owner()->second.address != source)
+  else if (job_it->second->owner()->second != source)
   {
     send_event ( source
                , new sdpa::events::ErrorEvent
@@ -468,7 +462,7 @@ void DRTSImpl::handleCancelJobEvent
     {
       LLOG (TRACE, _logger, "canceling pending job: " << e->job_id());
       send_event
-        ( *job_it->second->owner()->second.address
+        ( job_it->second->owner()->second
         , new sdpa::events::CancelJobAckEvent (job_it->second->id())
         );
     }
@@ -520,7 +514,7 @@ void DRTSImpl::handleJobFailedAckEvent
                  ));
     return;
   }
-  else if (*job_it->second->owner()->second.address != source)
+  else if (job_it->second->owner()->second != source)
   {
     LLOG ( ERROR, _logger
         , "could not acknowledge failed job: " << e->job_id() << ": not owner"
@@ -555,7 +549,7 @@ void DRTSImpl::handleJobFinishedAckEvent
                  ));
     return;
   }
-  else if (*job_it->second->owner()->second.address != source)
+  else if (job_it->second->owner()->second != source)
   {
     LLOG ( ERROR, _logger
         , "could not acknowledge finished job: " << e->job_id()
@@ -789,14 +783,14 @@ void DRTSImpl::send_job_result_to_master (boost::shared_ptr<DRTSImpl::Job> const
   switch (job->state())
   {
   case DRTSImpl::Job::FINISHED:
-    send_event ( *job->owner()->second.address
+    send_event ( job->owner()->second
                , new sdpa::events::JobFinishedEvent (job->id(), job->result())
                );
     break;
   case DRTSImpl::Job::FAILED:
     {
       send_event
-        ( *job->owner()->second.address
+        ( job->owner()->second
         , new sdpa::events::JobFailedEvent (job->id(), job->message())
         );
     }
@@ -804,106 +798,13 @@ void DRTSImpl::send_job_result_to_master (boost::shared_ptr<DRTSImpl::Job> const
   case DRTSImpl::Job::CANCELED:
     {
       send_event
-        ( *job->owner()->second.address
+        ( job->owner()->second
         , new sdpa::events::CancelJobAckEvent (job->id())
         );
     }
     break;
   default:
     throw std::runtime_error ("invalid job state in send_job_result_to_master");
-  }
-}
-
-void DRTSImpl::request_registration_soon()
-{
-  _registration_threads.start
-    (std::bind (&DRTSImpl::request_registration_after_sleep, this));
-}
-void DRTSImpl::request_registration_after_sleep()
-{
-  boost::this_thread::sleep (boost::posix_time::milliseconds (2500));
-  start_connect();
-}
-
-void DRTSImpl::start_connect ()
-{
-  bool at_least_one_disconnected = false;
-  bool not_connected_to_anyone = true;
-
-  for ( map_of_masters_t::iterator master_it (m_masters.begin())
-      ; master_it != m_masters.end()
-      ; ++master_it
-      )
-  {
-    if (! master_it->second.address)
-    {
-      sdpa::events::WorkerRegistrationEvent::Ptr evt
-        (new sdpa::events::WorkerRegistrationEvent ( m_my_name
-                                                   , m_pending_jobs.capacity()
-                                                   , sdpa::capabilities_set_t()
-                                                   , false
-                                                   , fhg::util::hostname()
-                                                   )
-        );
-
-      try
-      {
-        master_it->second.address = m_peer->connect_to
-          (master_it->second.host, master_it->second.port);
-        send_event(*master_it->second.address, evt);
-      }
-      catch (boost::system::system_error const& ex)
-      {
-        if (  ex.code() == boost::system::errc::no_such_process
-           || ex.code() == boost::asio::error::connection_refused
-           )
-        {
-          LLOG ( WARN, _logger
-               , "could not connect to master '" << master_it->first << "' := " << ex.what()
-               );
-        }
-        else
-        {
-          LLOG ( ERROR, _logger
-               , "could not connect to master '" << master_it->first << "' := " << ex.what()
-               );
-          throw;
-        }
-      }
-
-      at_least_one_disconnected = true;
-    }
-    else
-    {
-      not_connected_to_anyone = false;
-    }
-  }
-
-  if (not_connected_to_anyone)
-  {
-    if (m_max_reconnect_attempts)
-    {
-      boost::mutex::scoped_lock lock_reconnect_rounter (m_reconnect_counter_mutex);
-      if (m_reconnect_counter < m_max_reconnect_attempts)
-      {
-        ++m_reconnect_counter;
-      }
-      else
-      {
-        LLOG ( WARN, _logger
-            , "still not connected after " << m_reconnect_counter
-            << " trials: shutting down"
-            );
-        _request_stop();
-        return;
-      }
-    }
-  }
-
-
-  if (at_least_one_disconnected and not m_shutting_down)
-  {
-    request_registration_soon();
   }
 }
 
@@ -947,22 +848,7 @@ void DRTSImpl::handle_recv ( boost::system::error_code const & ec
   {
     if (m_message.header.src != m_peer->address() && !!source)
     {
-      map_of_masters_t::iterator master
-        ( std::find_if ( m_masters.begin(), m_masters.end()
-                       , [&source] (map_of_masters_t::value_type const& master)
-                         {
-                           return master.second.address == source;
-                         }
-                       )
-        );
-      if (master != m_masters.end())
-      {
-        master->second.address = boost::none;
-
-        request_registration_soon();
-      }
-
-      start_receiver();
+      _request_stop();
     }
     else
     {

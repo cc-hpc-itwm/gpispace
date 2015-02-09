@@ -66,14 +66,7 @@ private:
 
 class DRTSImpl : public sdpa::events::EventHandler
 {
-  struct master_network_info
-  {
-    master_network_info (std::string const& host, std::string const& port);
-    fhg::com::host_t host;
-    fhg::com::port_t port;
-    boost::optional<fhg::com::p2p::address_t> address;
-  };
-  typedef std::map<std::string, master_network_info> map_of_masters_t;
+  typedef std::map<std::string, fhg::com::p2p::address_t> map_of_masters_t;
 
 public:
   class Job
@@ -204,11 +197,6 @@ private:
 
   void send_job_result_to_master (boost::shared_ptr<DRTSImpl::Job> const & job);
 
-  void request_registration_soon();
-  void request_registration_after_sleep();
-
-  void start_connect ();
-
   void start_receiver();
   void handle_recv ( boost::system::error_code const & ec
                    , boost::optional<fhg::com::p2p::address_t> source_name
@@ -255,14 +243,11 @@ private:
   fhg::com::message_t m_message;
   //! \todo Two sets for connected and unconnected masters?
   map_of_masters_t m_masters;
-  std::size_t m_max_reconnect_attempts;
-  std::size_t m_reconnect_counter;
 
   fhg::thread::queue<std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr>>
     m_event_queue;
 
   mutable boost::mutex m_job_map_mutex;
-  mutable boost::mutex m_reconnect_counter_mutex;
 
   std::set<sdpa::Capability> m_virtual_capabilities;
 
@@ -270,8 +255,6 @@ private:
   map_of_jobs_t m_jobs;
 
   fhg::thread::bounded_queue<boost::shared_ptr<DRTSImpl::Job>> m_pending_jobs;
-
-  fhg::thread::set _registration_threads;
 
   mutable boost::mutex _guard_backlogfull_notified_masters;
   std::unordered_set<fhg::com::p2p::address_t> _masters_backlogfull_notified;

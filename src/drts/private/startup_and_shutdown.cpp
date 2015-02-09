@@ -248,8 +248,6 @@ namespace
                          (segment_info.master_name, segment_info.master_hostinfo)
                      );
                    add_plugin_option (arguments, "drts.backlog", 1);
-                   add_plugin_option
-                     (arguments, "drts.max_reconnect_attempts", 128);
                    add_plugin_option ( arguments
                                      , "drts.gui_url"
                                      , gui_host + ":" + std::to_string (gui_port)
