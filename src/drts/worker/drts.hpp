@@ -50,7 +50,6 @@ struct wfe_task_t
   state_t state;
   we::type::activity_t activity;
   drts::worker::context context;
-  std::string error_message;
 
   wfe_task_t (std::string id, std::string worker_name, std::list<std::string> workers);
 };

@@ -711,15 +711,12 @@ void DRTSImpl::job_execution_thread ()
               catch (std::exception const & ex)
               {
                 task.state = wfe_task_t::FAILED;
-                task.error_message = std::string ("Module call failed: ") + ex.what();
-                job->set_message (task.error_message);
+                job->set_message (std::string ("Module call failed: ") + ex.what());
               }
               catch (...)
               {
                 task.state = wfe_task_t::FAILED;
-                task.error_message =
-                  "UNKNOWN REASON, exception not derived from std::exception";
-                job->set_message (task.error_message);
+                job->set_message ("UNKNOWN REASON, exception not derived from std::exception");
               }
             }
 
@@ -737,7 +734,7 @@ void DRTSImpl::job_execution_thread ()
             }
             else // if (wfe_task_t::FAILED == task.state)
             {
-              LLOG (ERROR, _logger, "task failed: " << task.id << ": " << task.error_message);
+              LLOG (ERROR, _logger, "task failed: " << task.id << ": " << job->message());
             }
 
             emit_task (task);
