@@ -336,10 +336,13 @@ void DRTSImpl::handleWorkerRegistrationAckEvent
                      }
                    )
     );
-  if (master_it != m_masters.cend())
+
+  if (master_it == m_masters.cend())
   {
-    resend_outstanding_events (master_it);
+    throw std::runtime_error ("worker_registration_ack for unknown master");
   }
+
+  resend_outstanding_events (master_it);
 }
 
 void DRTSImpl::handleSubmitJobEvent
@@ -360,18 +363,16 @@ void DRTSImpl::handleSubmitJobEvent
     throw std::runtime_error ("got SubmitJob from unknown source");
   }
 
-  if (e->job_id())
-  {
-    map_of_jobs_t::iterator job_it (m_jobs.find(*e->job_id()));
-    if (job_it != m_jobs.end())
-    {
-      send_event<sdpa::events::SubmitJobAckEvent> (source, *e->job_id());
-      return;
-    }
-  }
-  else
+  if (!e->job_id())
   {
     throw std::runtime_error ("Received job with an unspecified job id");
+  }
+
+  map_of_jobs_t::iterator job_it (m_jobs.find(*e->job_id()));
+  if (job_it != m_jobs.end())
+  {
+    send_event<sdpa::events::SubmitJobAckEvent> (source, *e->job_id());
+    return;
   }
 
   boost::shared_ptr<DRTSImpl::Job> job (new DRTSImpl::Job( DRTSImpl::Job::ID(*e->job_id())
@@ -381,32 +382,28 @@ void DRTSImpl::handleSubmitJobEvent
                                                  )
                                    );
 
+  boost::mutex::scoped_lock job_map_lock(m_job_map_mutex);
+
+  if (!m_pending_jobs.try_put (job))
   {
-    boost::mutex::scoped_lock job_map_lock(m_job_map_mutex);
+    LLOG ( WARN, _logger
+         , "cannot accept new job (" << job->id() << "), backlog is full."
+         );
+    send_event<sdpa::events::ErrorEvent>
+      ( source
+      , sdpa::events::ErrorEvent::SDPA_EBACKLOGFULL
+      , "I am busy right now, please try again later!"
+      , *e->job_id()
+      );
 
-    if (!m_pending_jobs.try_put (job))
-    {
-      LLOG ( WARN, _logger
-          , "cannot accept new job (" << job->id() << "), backlog is full."
-          );
-      send_event<sdpa::events::ErrorEvent>
-        ( source
-        , sdpa::events::ErrorEvent::SDPA_EBACKLOGFULL
-        , "I am busy right now, please try again later!"
-        , *e->job_id()
-        );
+    boost::unique_lock<boost::mutex> _ (_guard_backlogfull_notified_masters);
+    _masters_backlogfull_notified.emplace (source);
 
-      boost::unique_lock<boost::mutex> _ (_guard_backlogfull_notified_masters);
-      _masters_backlogfull_notified.emplace (source);
-
-      return;
-    }
-    else
-    {
-      send_event<sdpa::events::SubmitJobAckEvent> (master->second, job->id());
-      m_jobs.emplace (job->id(), job);
-    }
+    return;
   }
+
+  send_event<sdpa::events::SubmitJobAckEvent> (master->second, job->id());
+  m_jobs.emplace (job->id(), job);
 }
 
 void DRTSImpl::handleCancelJobEvent
@@ -565,11 +562,21 @@ void DRTSImpl::job_execution_thread ()
       _masters_backlogfull_notified.clear();
     }
 
-    if (DRTSImpl::Job::PENDING == job->cmp_and_swp_state( DRTSImpl::Job::PENDING
+    if (DRTSImpl::Job::PENDING != job->cmp_and_swp_state( DRTSImpl::Job::PENDING
                                                     , DRTSImpl::Job::RUNNING
                                                     )
        )
     {
+      boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
+      map_of_jobs_t::iterator job_it (m_jobs.find(job->id()));
+      if (job_it != m_jobs.end())
+      {
+        m_jobs.erase(job_it);
+      }
+
+      continue;
+    }
+
       try
       {
         job->set_result (we::type::activity_t().to_string());
@@ -685,16 +692,6 @@ void DRTSImpl::job_execution_thread ()
 
       send_job_result_to_master (job);
     }
-    else
-    {
-      boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
-      map_of_jobs_t::iterator job_it (m_jobs.find(job->id()));
-      if (job_it != m_jobs.end())
-      {
-        m_jobs.erase(job_it);
-      }
-    }
-  }
 }
 
 void DRTSImpl::resend_outstanding_events
