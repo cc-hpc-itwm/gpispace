@@ -175,35 +175,7 @@ namespace
   };
 }
 
-WFEImpl::WFEImpl
-  ( fhg::log::Logger::ptr_t logger
-  , boost::optional<std::size_t> target_socket
-  , std::string search_path
-  , boost::optional<std::pair<std::string, boost::asio::io_service&>> gui_info
-  , std::string worker_name
-  , gpi::pc::client::api_t /*const*/* virtual_memory_api
-  , gspc::scoped_allocation /*const*/* shared_memory
-  )
-  : _logger (logger)
-  , _numa_socket_setter ( target_socket
-                        ? numa_socket_setter (*target_socket)
-                        : boost::optional<numa_socket_setter>()
-                        )
-  , _worker_name (worker_name)
-  , _currently_executed_tasks()
-  , m_loader ( fhg::util::split<std::string, boost::filesystem::path>
-               (search_path, ':')
-             )
-  , _notification_service ( gui_info
-                          ? sdpa::daemon::NotificationService
-                            (gui_info->first, gui_info->second)
-                          : boost::optional<sdpa::daemon::NotificationService>()
-                          )
-  , _virtual_memory_api (virtual_memory_api)
-  , _shared_memory (shared_memory)
-{}
-
-WFEImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canceled_helper()
+DRTSImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canceled_helper()
 {
   boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
   while (! _currently_executed_tasks.empty ())
@@ -216,14 +188,14 @@ WFEImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_cance
   }
 }
 
-void WFEImpl::emit_task (const wfe_task_t& task)
+void DRTSImpl::emit_task (const wfe_task_t& task)
 {
   if (_notification_service)
   {
     using sdpa::daemon::NotificationEvent;
     _notification_service->notify
       ( NotificationEvent
-        ( {_worker_name}
+        ( {m_my_name}
         , task.id
         , task.state == wfe_task_t::PENDING ? NotificationEvent::STATE_STARTED
         : task.state == wfe_task_t::FINISHED ? NotificationEvent::STATE_FINISHED
@@ -236,14 +208,14 @@ void WFEImpl::emit_task (const wfe_task_t& task)
   }
 }
 
-int WFEImpl::execute ( std::string const &job_id
+int DRTSImpl::wfe_execute ( std::string const &job_id
                      , std::string const &job_description
                      , we::type::activity_t & result
                      , std::string & error_message
                      , std::list<std::string> const & worker_list
                      )
 {
-  wfe_task_t task (job_id, _worker_name, worker_list);
+  wfe_task_t task (job_id, m_my_name, worker_list);
 
   try
   {
@@ -321,7 +293,7 @@ int WFEImpl::execute ( std::string const &job_id
     : throw std::runtime_error ("bad task state");
 }
 
-void WFEImpl::cancel (std::string const &job_id)
+void DRTSImpl::wfe_cancel (std::string const &job_id)
 {
   boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
   std::map<std::string, wfe_task_t *>::iterator task_it
@@ -353,14 +325,22 @@ DRTSImpl::DRTSImpl
   , _request_stop (request_stop)
   , m_shutting_down (false)
   , m_my_name (kernel_name)
-  , m_wfe ( _logger
-          , get<std::size_t> ("plugin.drts.socket", config_variables)
-          , get<std::string> ("plugin.drts.library_path", config_variables).get_value_or (fhg::util::getenv("PC_LIBRARY_PATH").get_value_or (""))
-          , gui_info
-          , m_my_name
-          , virtual_memory_api
-          , shared_memory
-          )
+  , _numa_socket_setter
+      ( get<std::size_t> ("plugin.drts.socket", config_variables)
+      ? numa_socket_setter (*get<std::size_t> ("plugin.drts.socket", config_variables))
+      : boost::optional<numa_socket_setter>()
+      )
+  , _currently_executed_tasks()
+  , m_loader ( fhg::util::split<std::string, boost::filesystem::path>
+               (get<std::string> ("plugin.drts.library_path", config_variables).get_value_or (fhg::util::getenv("PC_LIBRARY_PATH").get_value_or ("")), ':')
+             )
+  , _notification_service ( gui_info
+                          ? sdpa::daemon::NotificationService
+                            (gui_info->first, gui_info->second)
+                          : boost::optional<sdpa::daemon::NotificationService>()
+                          )
+  , _virtual_memory_api (virtual_memory_api)
+  , _shared_memory (shared_memory)
   , m_max_reconnect_attempts (get<std::size_t> ("plugin.drts.max_reconnect_attempts", config_variables).get_value_or (0))
   , m_reconnect_counter (0)
   , m_pending_jobs (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3))
@@ -619,7 +599,7 @@ void DRTSImpl::handleCancelJobEvent
     else if (job_it->second->state() == DRTSImpl::Job::RUNNING)
     {
       LLOG (TRACE, _logger, "trying to cancel running job " << e->job_id());
-      m_wfe.cancel (e->job_id());
+      wfe_cancel (e->job_id());
     }
     else if (job_it->second->state() == DRTSImpl::Job::FAILED)
     {
@@ -780,7 +760,7 @@ void DRTSImpl::job_execution_thread ()
 
         we::type::activity_t result;
         std::string error_message;
-        int ec = m_wfe.execute ( job->id()
+        int ec = wfe_execute ( job->id()
                                 , job->description()
                                 , result
                                 , error_message

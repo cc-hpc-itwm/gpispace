@@ -65,58 +65,6 @@ private:
   hwloc_topology_t m_topology;
 };
 
-class WFEImpl
-{
-public:
-  WFEImpl ( fhg::log::Logger::ptr_t
-          , boost::optional<std::size_t> target_socket
-          , std::string search_path
-          , boost::optional<std::pair<std::string, boost::asio::io_service&>> gui_info
-          , std::string worker_name
-          , gpi::pc::client::api_t /*const*/* virtual_memory_api
-          , gspc::scoped_allocation /*const*/* shared_memory
-          );
-
-private:
-  void emit_task (const wfe_task_t& task);
-
-public:
-  int execute ( std::string const &job_id
-              , std::string const &job_description
-              , we::type::activity_t & result
-              , std::string & error_message
-              , std::list<std::string> const & worker_list
-              );
-
-  void cancel (std::string const &job_id);
-
-private:
-  fhg::log::Logger::ptr_t _logger;
-
-  boost::optional<numa_socket_setter> _numa_socket_setter;
-
-  std::string _worker_name;
-
-  mutable boost::mutex _currently_executed_tasks_mutex;
-  std::map<std::string, wfe_task_t *> _currently_executed_tasks;
-
-  we::loader::loader m_loader;
-
-  boost::optional<sdpa::daemon::NotificationService> _notification_service;
-
-  gpi::pc::client::api_t /*const*/* _virtual_memory_api;
-  gspc::scoped_allocation /*const*/* _shared_memory;
-
-  struct mark_remaining_tasks_as_canceled_helper
-  {
-    ~mark_remaining_tasks_as_canceled_helper();
-
-    boost::mutex& _currently_executed_tasks_mutex;
-    std::map<std::string, wfe_task_t *>& _currently_executed_tasks;
-  } _mark_remaining_tasks_as_canceled_helper
-    = {_currently_executed_tasks_mutex, _currently_executed_tasks};
-};
-
 class DRTSImpl : public sdpa::events::EventHandler
 {
   struct master_network_info
@@ -285,7 +233,37 @@ private:
 
   std::string m_my_name;
 
-  WFEImpl m_wfe;
+  void emit_task (const wfe_task_t& task);
+
+  int wfe_execute ( std::string const &job_id
+              , std::string const &job_description
+              , we::type::activity_t & result
+              , std::string & error_message
+              , std::list<std::string> const & worker_list
+              );
+
+  void wfe_cancel (std::string const &job_id);
+
+  boost::optional<numa_socket_setter> _numa_socket_setter;
+
+  mutable boost::mutex _currently_executed_tasks_mutex;
+  std::map<std::string, wfe_task_t *> _currently_executed_tasks;
+
+  we::loader::loader m_loader;
+
+  boost::optional<sdpa::daemon::NotificationService> _notification_service;
+
+  gpi::pc::client::api_t /*const*/* _virtual_memory_api;
+  gspc::scoped_allocation /*const*/* _shared_memory;
+
+  struct mark_remaining_tasks_as_canceled_helper
+  {
+    ~mark_remaining_tasks_as_canceled_helper();
+
+    boost::mutex& _currently_executed_tasks_mutex;
+    std::map<std::string, wfe_task_t *>& _currently_executed_tasks;
+  } _mark_remaining_tasks_as_canceled_helper
+    = {_currently_executed_tasks_mutex, _currently_executed_tasks};
 
   boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
     m_peer_thread;
