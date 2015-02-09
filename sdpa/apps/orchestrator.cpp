@@ -83,7 +83,7 @@ try
 
   {
     boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
-      startup_messages_pipe ( vm["startup-messages-pipe"].as<int>()
+      startup_messages_pipe ( vm.at ("startup-messages-pipe").as<int>()
                             , boost::iostreams::close_handle
                             );
     startup_messages_pipe << fhg::util::connectable_to_address_string

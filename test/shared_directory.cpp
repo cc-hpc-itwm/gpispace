@@ -37,7 +37,7 @@ namespace test
   boost::filesystem::path shared_directory
     (boost::program_options::variables_map const& vm)
   {
-    return vm[options::name::shared_directory]
+    return vm.at (options::name::shared_directory)
       .as<validators::existing_directory>();
   }
 }

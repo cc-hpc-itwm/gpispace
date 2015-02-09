@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
 
   boost::filesystem::path const generator
     ( boost::filesystem::canonical
-      (vm[option_name_generator].as<validators::executable>())
+      (vm.at (option_name_generator).as<validators::executable>())
     );
 
   long const num_values (100 << 20);
