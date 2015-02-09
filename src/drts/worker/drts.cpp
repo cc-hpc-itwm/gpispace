@@ -182,7 +182,6 @@ DRTSImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canc
   {
     wfe_task_t *task = _currently_executed_tasks.begin ()->second;
     task->state = wfe_task_t::CANCELED;
-    task->error_message = "plugin shutdown";
 
     _currently_executed_tasks.erase (task->id);
   }
