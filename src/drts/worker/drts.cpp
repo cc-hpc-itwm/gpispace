@@ -201,15 +201,7 @@ WFEImpl::WFEImpl
                           )
   , _virtual_memory_api (virtual_memory_api)
   , _shared_memory (shared_memory)
-{
-  {
-    // TODO: figure out, why this doesn't work as it is supposed to
-    // adjust ld_library_path
-    std::string ld_library_path (fhg::util::getenv("LD_LIBRARY_PATH").get_value_or (""));
-    ld_library_path = search_path + ":" + ld_library_path;
-    setenv("LD_LIBRARY_PATH", ld_library_path.c_str(), true);
-  }
-}
+{}
 
 WFEImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canceled_helper()
 {
