@@ -235,13 +235,6 @@ private:
 
   void emit_task (const wfe_task_t& task);
 
-  int wfe_execute ( std::string const &job_id
-              , std::string const &job_description
-              , we::type::activity_t & result
-              , std::string & error_message
-              , std::list<std::string> const & worker_list
-              );
-
   boost::optional<numa_socket_setter> _numa_socket_setter;
 
   mutable boost::mutex _currently_executed_tasks_mutex;

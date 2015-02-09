@@ -208,91 +208,6 @@ void DRTSImpl::emit_task (const wfe_task_t& task)
   }
 }
 
-int DRTSImpl::wfe_execute ( std::string const &job_id
-                     , std::string const &job_description
-                     , we::type::activity_t & result
-                     , std::string & error_message
-                     , std::list<std::string> const & worker_list
-                     )
-{
-  wfe_task_t task (job_id, m_my_name, worker_list);
-
-  try
-  {
-    task.activity = we::type::activity_t (job_description);
-  }
-  catch (std::exception const & ex)
-  {
-    LLOG (ERROR, _logger, "could not parse activity: " << ex.what());
-    task.state = wfe_task_t::FAILED;
-    error_message = std::string ("Invalid job description: ") + ex.what();
-
-    return DRTSImpl::Job::FAILED;
-  }
-
-  {
-    boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
-    _currently_executed_tasks.emplace (job_id, &task);
-  }
-
-  emit_task (task);
-
-  if (task.state == wfe_task_t::PENDING)
-  {
-    try
-    {
-      wfe_exec_context ctxt
-        (m_loader, _virtual_memory_api, _shared_memory, task);
-
-      task.activity.execute (&ctxt);
-
-      //! \note failing or canceling overwrites
-      if (task.state == wfe_task_t::PENDING)
-      {
-        task.state = wfe_task_t::FINISHED;
-        result = task.activity;
-      }
-    }
-    catch (std::exception const & ex)
-    {
-      task.state = wfe_task_t::FAILED;
-      task.error_message = std::string ("Module call failed: ") + ex.what();
-      error_message = task.error_message;
-    }
-    catch (...)
-    {
-      task.state = wfe_task_t::FAILED;
-      task.error_message =
-        "UNKNOWN REASON, exception not derived from std::exception";
-      error_message = task.error_message;
-    }
-  }
-
-  {
-    boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
-    _currently_executed_tasks.erase (job_id);
-  }
-
-  if (wfe_task_t::FINISHED == task.state)
-  {
-    LLOG (TRACE, _logger, "task finished: " << task.id);
-  }
-  else if (wfe_task_t::CANCELED == task.state)
-  {
-  }
-  else // if (wfe_task_t::FAILED == task.state)
-  {
-    LLOG (ERROR, _logger, "task failed: " << task.id << ": " << task.error_message);
-  }
-
-  emit_task (task);
-
-  return task.state == wfe_task_t::FINISHED ? DRTSImpl::Job::FINISHED
-    : task.state == wfe_task_t::CANCELED ? DRTSImpl::Job::CANCELED
-    : task.state == wfe_task_t::FAILED ? DRTSImpl::Job::FAILED
-    : throw std::runtime_error ("bad task state");
-}
-
 DRTSImpl::master_network_info::master_network_info
     (std::string const& host, std::string const& port)
   : host (host)
@@ -755,12 +670,91 @@ void DRTSImpl::job_execution_thread ()
 
         we::type::activity_t result;
         std::string error_message;
-        int ec = wfe_execute ( job->id()
-                                , job->description()
-                                , result
-                                , error_message
-                                , job->worker_list ()
-                                );
+        int ec;
+        {
+          wfe_task_t task (job->id(), m_my_name, job->worker_list());
+
+          bool activity_was_fine (true);
+          try
+          {
+            task.activity = we::type::activity_t (job->description());
+          }
+          catch (std::exception const & ex)
+          {
+            LLOG (ERROR, _logger, "could not parse activity: " << ex.what());
+            task.state = wfe_task_t::FAILED;
+            error_message = std::string ("Invalid job description: ") + ex.what();
+
+            ec = DRTSImpl::Job::FAILED;
+            activity_was_fine = false;
+          }
+
+          if (activity_was_fine)
+          {
+            {
+              boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
+              _currently_executed_tasks.emplace (job->id(), &task);
+            }
+
+            emit_task (task);
+
+            if (task.state == wfe_task_t::PENDING)
+            {
+              try
+              {
+                wfe_exec_context ctxt
+                  (m_loader, _virtual_memory_api, _shared_memory, task);
+
+                task.activity.execute (&ctxt);
+
+                //! \note failing or canceling overwrites
+                if (task.state == wfe_task_t::PENDING)
+                {
+                  task.state = wfe_task_t::FINISHED;
+                  result = task.activity;
+                }
+              }
+              catch (std::exception const & ex)
+              {
+                task.state = wfe_task_t::FAILED;
+                task.error_message = std::string ("Module call failed: ") + ex.what();
+                error_message = task.error_message;
+              }
+              catch (...)
+              {
+                task.state = wfe_task_t::FAILED;
+                task.error_message =
+                  "UNKNOWN REASON, exception not derived from std::exception";
+                error_message = task.error_message;
+              }
+            }
+
+            {
+              boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
+              _currently_executed_tasks.erase (job->id());
+            }
+
+            if (wfe_task_t::FINISHED == task.state)
+            {
+              LLOG (TRACE, _logger, "task finished: " << task.id);
+            }
+            else if (wfe_task_t::CANCELED == task.state)
+            {
+            }
+            else // if (wfe_task_t::FAILED == task.state)
+            {
+              LLOG (ERROR, _logger, "task failed: " << task.id << ": " << task.error_message);
+            }
+
+            emit_task (task);
+
+            ec = task.state == wfe_task_t::FINISHED ? DRTSImpl::Job::FINISHED
+              : task.state == wfe_task_t::CANCELED ? DRTSImpl::Job::CANCELED
+              : task.state == wfe_task_t::FAILED ? DRTSImpl::Job::FAILED
+              : throw std::runtime_error ("bad task state");
+          }
+        }
+
         job->set_result (result.to_string());
 
         const boost::posix_time::ptime completed
