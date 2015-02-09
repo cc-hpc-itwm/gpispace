@@ -198,9 +198,6 @@ private:
   void send_job_result_to_master (boost::shared_ptr<DRTSImpl::Job> const & job);
 
   void start_receiver();
-  void handle_recv ( boost::system::error_code const & ec
-                   , boost::optional<fhg::com::p2p::address_t> source_name
-                   );
 
   template<typename Event, typename... Args>
     void send_event ( fhg::com::p2p::address_t const& destination

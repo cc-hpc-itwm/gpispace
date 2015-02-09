@@ -792,50 +792,46 @@ void DRTSImpl::send_job_result_to_master (boost::shared_ptr<DRTSImpl::Job> const
 
 void DRTSImpl::start_receiver()
 {
-  m_peer->async_recv(&m_message, std::bind( &DRTSImpl::handle_recv
-                                          , this
-                                          , std::placeholders::_1
-                                          , std::placeholders::_2
-                                          )
-                    );
-}
+  m_peer->async_recv
+    ( &m_message
+    , [this] ( boost::system::error_code const & ec
+             , boost::optional<fhg::com::p2p::address_t> source
+             )
+      {
+        static sdpa::events::Codec codec;
 
-void DRTSImpl::handle_recv ( boost::system::error_code const & ec
-                           , boost::optional<fhg::com::p2p::address_t> source
-                           )
-{
-  static sdpa::events::Codec codec;
-
-  if (! ec)
-  {
-    // convert m_message to event
-    try
-    {
-      m_event_queue.put
-        ( source.get()
-        , sdpa::events::SDPAEvent::Ptr
-          ( codec.decode
-              (std::string (m_message.data.begin(), m_message.data.end()))
-          )
-        );
-    }
-    catch (std::exception const & ex)
-    {
-      LLOG (WARN, _logger, "could not handle incoming message: " << ex.what());
-    }
-    start_receiver();
-  }
-  else if (! m_shutting_down)
-  {
-    if (m_message.header.src != m_peer->address() && !!source)
-    {
-      _request_stop();
-    }
-    else
-    {
-      LLOG (TRACE, _logger, m_my_name << " is shutting down");
-    }
-  }
+        if (! ec)
+        {
+          // convert m_message to event
+          try
+          {
+            m_event_queue.put
+              ( source.get()
+              , sdpa::events::SDPAEvent::Ptr
+                  ( codec.decode
+                      (std::string (m_message.data.begin(), m_message.data.end()))
+                  )
+              );
+          }
+          catch (std::exception const & ex)
+          {
+            LLOG (WARN, _logger, "could not handle incoming message: " << ex.what());
+          }
+          start_receiver();
+        }
+        else if (! m_shutting_down)
+        {
+          if (m_message.header.src != m_peer->address() && !!source)
+          {
+            _request_stop();
+          }
+          else
+          {
+            LLOG (TRACE, _logger, m_my_name << " is shutting down");
+          }
+        }
+      }
+    );
 }
 
 template<typename Event, typename... Args>
