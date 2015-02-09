@@ -668,7 +668,8 @@ void DRTSImpl::job_execution_thread ()
 
         LLOG (TRACE, _logger, "executing job " << job->id());
 
-        we::type::activity_t result;
+        job->set_result (we::type::activity_t().to_string());
+
         std::string error_message;
         int ec;
         {
@@ -713,7 +714,7 @@ void DRTSImpl::job_execution_thread ()
                 if (task.state == wfe_task_t::PENDING)
                 {
                   task.state = wfe_task_t::FINISHED;
-                  result = task.activity;
+                  job->set_result (task.activity.to_string());
                 }
               }
               catch (std::exception const & ex)
@@ -757,8 +758,6 @@ void DRTSImpl::job_execution_thread ()
               : throw std::runtime_error ("bad task state"));
           }
         }
-
-        job->set_result (result.to_string());
 
         const boost::posix_time::ptime completed
           (boost::posix_time::microsec_clock::universal_time());
