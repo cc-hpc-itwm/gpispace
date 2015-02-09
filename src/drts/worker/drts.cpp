@@ -362,17 +362,12 @@ void DRTSImpl::handleSubmitJobEvent
 
   if (e->job_id())
   {
-     map_of_jobs_t::iterator job_it (m_jobs.find(*e->job_id()));
-     if (job_it != m_jobs.end())
-     {
-       send_event<sdpa::events::ErrorEvent>
-         ( source
-         , sdpa::events::ErrorEvent::SDPA_EJOBEXISTS
-         , "The job already exists!"
-         , *e->job_id()
-         );
+    map_of_jobs_t::iterator job_it (m_jobs.find(*e->job_id()));
+    if (job_it != m_jobs.end())
+    {
+      send_event<sdpa::events::SubmitJobAckEvent> (source, *e->job_id());
       return;
-     }
+    }
   }
   else
   {
