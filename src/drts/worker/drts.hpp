@@ -232,8 +232,6 @@ private:
 
   std::string m_my_name;
 
-  void emit_task (const wfe_task_t& task);
-
   boost::optional<numa_socket_setter> _numa_socket_setter;
 
   mutable boost::mutex _currently_executed_tasks_mutex;

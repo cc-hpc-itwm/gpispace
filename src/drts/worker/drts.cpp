@@ -187,26 +187,6 @@ DRTSImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canc
   }
 }
 
-void DRTSImpl::emit_task (const wfe_task_t& task)
-{
-  if (_notification_service)
-  {
-    using sdpa::daemon::NotificationEvent;
-    _notification_service->notify
-      ( NotificationEvent
-        ( {m_my_name}
-        , task.id
-        , task.state == wfe_task_t::PENDING ? NotificationEvent::STATE_STARTED
-        : task.state == wfe_task_t::FINISHED ? NotificationEvent::STATE_FINISHED
-        : task.state == wfe_task_t::CANCELED ? NotificationEvent::STATE_CANCELED
-        : task.state == wfe_task_t::FAILED ? NotificationEvent::STATE_FAILED
-        : throw std::runtime_error ("bad enum value: task.state")
-        , task.activity
-        )
-      );
-  }
-}
-
 DRTSImpl::master_network_info::master_network_info
     (std::string const& host, std::string const& port)
   : host (host)
@@ -675,7 +655,18 @@ void DRTSImpl::job_execution_thread ()
               _currently_executed_tasks.emplace (job->id(), &task);
             }
 
-            emit_task (task);
+            if (_notification_service)
+            {
+              using sdpa::daemon::NotificationEvent;
+              _notification_service->notify
+                ( NotificationEvent
+                    ( {m_my_name}
+                    , task.id
+                    , NotificationEvent::STATE_STARTED
+                    , task.activity
+                    )
+                );
+            }
 
             if (task.state == wfe_task_t::PENDING)
             {
@@ -722,7 +713,21 @@ void DRTSImpl::job_execution_thread ()
               LLOG (ERROR, _logger, "task failed: " << task.id << ": " << job->message());
             }
 
-            emit_task (task);
+            if (_notification_service)
+            {
+              using sdpa::daemon::NotificationEvent;
+              _notification_service->notify
+                ( NotificationEvent
+                  ( {m_my_name}
+                  , task.id
+                  , task.state == wfe_task_t::FINISHED ? NotificationEvent::STATE_FINISHED
+                  : task.state == wfe_task_t::CANCELED ? NotificationEvent::STATE_CANCELED
+                  : task.state == wfe_task_t::FAILED ? NotificationEvent::STATE_FAILED
+                  : throw std::runtime_error ("bad enum value: task.state")
+                  , task.activity
+                  )
+                );
+            }
 
             job->set_state (task.state == wfe_task_t::FINISHED ? DRTSImpl::Job::FINISHED
               : task.state == wfe_task_t::CANCELED ? DRTSImpl::Job::CANCELED
