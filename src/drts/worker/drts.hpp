@@ -272,11 +272,7 @@ private:
     m_execution_thread;
 
   mutable boost::mutex m_job_map_mutex;
-  mutable boost::mutex m_job_computed_mutex;
-  boost::condition_variable     m_job_computed;
-  mutable boost::mutex m_job_arrived_mutex;
   mutable boost::mutex m_reconnect_counter_mutex;
-  boost::condition_variable     m_job_arrived;
 
   mutable boost::mutex m_capabilities_mutex;
   std::set<sdpa::Capability> m_virtual_capabilities;

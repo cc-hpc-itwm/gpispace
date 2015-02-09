@@ -453,9 +453,6 @@ void DRTSImpl::handleSubmitJobEvent
       m_jobs.emplace (job->id(), job);
     }
   }
-
-  //    boost::mutex::scoped_lock lock(m_job_arrived_mutex);
-  m_job_arrived.notify_all();
 }
 
 void DRTSImpl::handleCancelJobEvent
@@ -749,11 +746,6 @@ void DRTSImpl::job_execution_thread ()
       }
 
       send_job_result_to_master (job);
-
-      {
-        boost::mutex::scoped_lock lock(m_job_computed_mutex);
-        m_job_computed.notify_one();
-      }
     }
     else
     {
