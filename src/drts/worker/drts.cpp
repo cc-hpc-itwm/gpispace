@@ -374,10 +374,6 @@ void DRTSImpl::handleSubmitJobEvent
   {
     throw std::runtime_error ("got SubmitJob from unknown source");
   }
-  else if (! master->second.address)
-  {
-    throw std::runtime_error ("got SubmitJob from not yet connected master");
-  }
 
   if (e->job_id())
   {
