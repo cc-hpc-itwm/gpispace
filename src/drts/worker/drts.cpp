@@ -249,6 +249,7 @@ DRTSImpl::DRTSImpl
           )
       )
   , m_pending_jobs (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3))
+  , m_event_thread (&DRTSImpl::event_thread, this)
 {
   //! \todo ctor parameters
   const std::list<std::string> master_list
@@ -263,10 +264,6 @@ DRTSImpl::DRTSImpl
     throw std::runtime_error ("no masters specified");
   }
 
-  m_event_thread.reset
-    ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-      (&DRTSImpl::event_thread, this)
-    );
 
   // initialize peer
   m_peer.reset
@@ -316,20 +313,16 @@ DRTSImpl::DRTSImpl
   start_connect ();
 }
 
+DRTSImpl::peer_stopper::~peer_stopper()
+{
+  m_peer->stop();
+  m_peer_thread.reset();
+  m_peer.reset();
+}
+
 DRTSImpl::~DRTSImpl()
 {
   m_shutting_down = true;
-
-  m_execution_thread.reset();
-  m_event_thread.reset();
-
-  if (m_peer)
-  {
-    m_peer->stop();
-  }
-
-  m_peer_thread.reset();
-  m_peer.reset();
 }
 
   // event handler callbacks

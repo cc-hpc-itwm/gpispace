@@ -260,10 +260,6 @@ private:
 
   fhg::thread::queue<std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr>>
     m_event_queue;
-  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
-    m_event_thread;
-  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
-    m_execution_thread;
 
   mutable boost::mutex m_job_map_mutex;
   mutable boost::mutex m_reconnect_counter_mutex;
@@ -279,4 +275,17 @@ private:
 
   mutable boost::mutex _guard_backlogfull_notified_masters;
   std::unordered_set<fhg::com::p2p::address_t> _masters_backlogfull_notified;
+
+  struct peer_stopper
+  {
+    ~peer_stopper();
+    boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>&
+      m_peer_thread;
+    boost::shared_ptr<fhg::com::peer_t>& m_peer;
+  } _peer_stopper = {m_peer_thread, m_peer};
+
+  boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+    m_event_thread;
+  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
+    m_execution_thread;
 };
