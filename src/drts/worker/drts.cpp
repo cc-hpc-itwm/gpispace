@@ -208,6 +208,7 @@ DRTSImpl::DRTSImpl
     , std::vector<master_info> const& masters
     , std::list<std::string> const& capability_names
     , boost::optional<std::size_t> const& socket
+    , std::list<boost::filesystem::path> const& library_path
     )
   : _logger (fhg::log::Logger::get (kernel_name))
   , _request_stop (request_stop)
@@ -218,9 +219,7 @@ DRTSImpl::DRTSImpl
                         : boost::optional<numa_socket_setter>()
                         )
   , _currently_executed_tasks()
-  , m_loader ( fhg::util::split<std::string, boost::filesystem::path>
-                 (get<std::string> ("plugin.drts.library_path", config_variables).get(), ':')
-             )
+  , m_loader (library_path)
   , _notification_service ( gui_info
                           ? sdpa::daemon::NotificationService
                             (gui_info->first, gui_info->second)

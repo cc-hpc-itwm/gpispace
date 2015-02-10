@@ -135,6 +135,7 @@ public:
     , std::vector<master_info> const& masters
     , std::list<std::string> const& capability_names
     , boost::optional<std::size_t> const& socket
+    , std::list<boost::filesystem::path> const& library_path
     );
   ~DRTSImpl();
 

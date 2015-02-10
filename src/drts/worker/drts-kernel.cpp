@@ -191,6 +191,11 @@ try
     : boost::optional<std::size_t>()
     );
 
+  std::list<boost::filesystem::path> const library_path
+    ( fhg::util::split<std::string, boost::filesystem::path>
+        (config_variables.at ("plugin.drts.library_path"), ':')
+    );
+
   boost::asio::io_service peer_io_service;
   if (config_variables.count ("plugin.drts.gui_url"))
   {
@@ -207,6 +212,7 @@ try
       , master_info
       , capabilities
       , socket
+      , library_path
       );
 
     {
@@ -231,6 +237,7 @@ try
                           , master_info
                           , capabilities
                           , socket
+                          , library_path
                           );
     {
       boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
