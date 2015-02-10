@@ -205,7 +205,7 @@ DRTSImpl::DRTSImpl
     , std::string const& kernel_name
     , gpi::pc::client::api_t /*const*/* virtual_memory_api
     , gspc::scoped_allocation /*const*/* shared_memory
-    , std::list<std::string> const& masters
+    , std::vector<master_info> const& masters
     )
   : _logger (fhg::log::Logger::get (kernel_name))
   , _request_stop (request_stop)
@@ -249,34 +249,12 @@ DRTSImpl::DRTSImpl
         )
     );
 
-  for (std::string const& master : masters)
+  for (master_info const& master : masters)
   {
-    boost::tokenizer<boost::char_separator<char>> const tok
-      (master, boost::char_separator<char> ("%"));
-
-    std::vector<std::string> const parts (tok.begin(), tok.end());
-
-    if (parts.size() != 3)
-    {
-      throw std::runtime_error
-        ("invalid master information: has to be of format 'name%host%port'");
-    }
-
-    if (parts[0] == m_my_name)
-    {
-      throw std::runtime_error ("cannot be my own master!");
-    }
-
-    if (m_masters.count (master))
-    {
-      throw std::runtime_error ("master already specified: " + master);
-    }
-
     send_event<sdpa::events::WorkerRegistrationEvent>
       ( m_masters.emplace
-          ( parts[0]
-          , m_peer->connect_to
-              (fhg::com::host_t (parts[1]), fhg::com::port_t (parts[2]))
+          ( std::get<0> (master)
+          , m_peer->connect_to (std::get<1> (master), std::get<2> (master))
           ).first->second
       , m_my_name
       , m_pending_jobs.capacity()

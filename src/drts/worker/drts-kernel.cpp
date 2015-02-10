@@ -14,6 +14,7 @@
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/program_options.hpp>
+#include <boost/tokenizer.hpp>
 
 #include <fstream>
 #include <functional>
@@ -155,6 +156,30 @@ try
     throw std::runtime_error ("no masters specified");
   }
 
+  std::vector<DRTSImpl::master_info> master_info;
+  std::set<std::string> seen_master_names;
+  for (std::string const& master : masters)
+  {
+    boost::tokenizer<boost::char_separator<char>> const tok
+      (master, boost::char_separator<char> ("%"));
+
+    std::vector<std::string> const parts (tok.begin(), tok.end());
+
+    if (parts.size() != 3)
+    {
+      throw std::invalid_argument
+        ("invalid master information: has to be of format 'name%host%port'");
+    }
+
+    if (!seen_master_names.emplace (master).second)
+    {
+      throw std::invalid_argument ("master already specified: " + master);
+    }
+
+    master_info.emplace_back
+      (parts[0], fhg::com::host_t (parts[1]), fhg::com::port_t (parts[2]));
+  }
+
   boost::asio::io_service peer_io_service;
   if (config_variables.count ("plugin.drts.gui_url"))
   {
@@ -168,7 +193,7 @@ try
       , kernel_name
       , virtual_memory_api.get()
       , shared_memory.get()
-      , masters
+      , master_info
       );
 
     {
@@ -190,7 +215,7 @@ try
                           , kernel_name
                           , virtual_memory_api.get()
                           , shared_memory.get()
-                          , masters
+                          , master_info
                           );
     {
       boost::iostreams::stream<boost::iostreams::file_descriptor_sink>

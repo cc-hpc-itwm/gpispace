@@ -121,6 +121,9 @@ private:
   typedef std::map<std::string, std::shared_ptr<DRTSImpl::Job>> map_of_jobs_t;
 
 public:
+
+  using master_info = std::tuple<std::string, fhg::com::host_t, fhg::com::port_t>;
+
   DRTSImpl
     ( std::function<void()> request_stop
     , boost::asio::io_service& peer_io_service
@@ -129,7 +132,7 @@ public:
     , std::string const& kernel_name
     , gpi::pc::client::api_t /*const*/* virtual_memory_socket
     , gspc::scoped_allocation /*const*/* shared_memory
-    , std::list<std::string> const& masters
+    , std::vector<master_info> const& masters
     );
   ~DRTSImpl();
 
