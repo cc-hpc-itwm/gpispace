@@ -235,6 +235,7 @@ DRTSImpl::DRTSImpl
                   )
   , m_pending_jobs (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3))
   , m_event_thread (&DRTSImpl::event_thread, this)
+  , m_execution_thread (&DRTSImpl::job_execution_thread, this)
 {
   m_peer->start();
 
@@ -264,10 +265,6 @@ DRTSImpl::DRTSImpl
       , fhg::util::hostname()
       );
   }
-
-  m_execution_thread
-    = std::make_shared<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
-        (&DRTSImpl::job_execution_thread, this);
 }
 
 DRTSImpl::peer_stopper::~peer_stopper()

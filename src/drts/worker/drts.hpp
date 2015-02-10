@@ -220,6 +220,6 @@ private:
 
   boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
     m_event_thread;
-  std::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
+  boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
     m_execution_thread;
 };
