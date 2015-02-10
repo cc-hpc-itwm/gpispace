@@ -172,17 +172,6 @@ namespace
     add_plugin_option (arguments, name, std::to_string (value).c_str());
   }
 
-  std::vector<std::string> string_vector
-    (std::vector<boost::filesystem::path> const& container)
-  {
-    std::vector<std::string> result;
-    for (boost::filesystem::path const& elem : container)
-    {
-      result.emplace_back (elem.string());
-    }
-    return result;
-  }
-
   void start_workers_for
     ( segment_info_t const& segment_info
     , fhg::drts::worker_description const& description
@@ -254,11 +243,12 @@ namespace
                                      , "drts.gui_url"
                                      , gui_host + ":" + std::to_string (gui_port)
                                      );
-                   add_plugin_option
-                     ( arguments
-                     , "drts.library_path"
-                     , fhg::util::join (string_vector (app_path), ":")
-                     );
+
+                   for (boost::filesystem::path const& path : app_path)
+                   {
+                     arguments.emplace_back ("--library-search-path");
+                     arguments.emplace_back (path.string());
+                   }
 
                    std::vector<std::string> capabilities
                      (description.capabilities);

@@ -192,7 +192,7 @@ DRTSImpl::DRTSImpl
     , std::vector<master_info> const& masters
     , std::vector<std::string> const& capability_names
     , boost::optional<std::size_t> const& socket
-    , std::list<boost::filesystem::path> const& library_path
+    , std::vector<boost::filesystem::path> const& library_path
     , std::size_t backlog_length
     )
   : _logger (fhg::log::Logger::get (kernel_name))
@@ -204,7 +204,7 @@ DRTSImpl::DRTSImpl
                         : boost::optional<numa_socket_setter>()
                         )
   , _currently_executed_tasks()
-  , m_loader (library_path)
+  , m_loader ({library_path.begin(), library_path.end()})
   , _notification_service (gui_notification_service)
   , _virtual_memory_api (virtual_memory_api)
   , _shared_memory (shared_memory)

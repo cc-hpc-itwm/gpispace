@@ -32,6 +32,7 @@ namespace
       {"shared-memory-size"};
     constexpr char const* const capability {"capability"};
     constexpr char const* const backlog_length {"backlog-length"};
+    constexpr char const* const library_search_path {"library-search-path"};
   }
 }
 
@@ -75,6 +76,11 @@ try
     ( option_name::backlog_length
     , po::value<std::size_t>()->required()
     , "length of job backlog"
+    )
+    ( option_name::library_search_path
+    , po::value<std::vector<boost::filesystem::path>>()
+      ->default_value (std::vector<boost::filesystem::path>(), "{}")
+    , "paths to search for module call libraries"
     )
     ;
 
@@ -196,11 +202,6 @@ try
     : boost::optional<std::size_t>()
     );
 
-  std::list<boost::filesystem::path> const library_path
-    ( fhg::util::split<std::string, boost::filesystem::path>
-        (config_variables.at ("plugin.drts.library_path"), ':')
-    );
-
   boost::asio::io_service peer_io_service;
 
   boost::asio::io_service gui_io_service;
@@ -221,7 +222,8 @@ try
                         , vm.at (option_name::capability)
                           .as<std::vector<std::string>>()
                         , socket
-                        , library_path
+                        , vm.at (option_name::library_search_path)
+                          .as<std::vector<boost::filesystem::path>>()
                         , vm.at (option_name::backlog_length)
                           .as<std::size_t>()
                         );
