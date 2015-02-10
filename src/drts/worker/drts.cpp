@@ -209,6 +209,7 @@ DRTSImpl::DRTSImpl
     , std::list<std::string> const& capability_names
     , boost::optional<std::size_t> const& socket
     , std::list<boost::filesystem::path> const& library_path
+    , std::size_t backlog_length
     )
   : _logger (fhg::log::Logger::get (kernel_name))
   , _request_stop (request_stop)
@@ -233,7 +234,7 @@ DRTSImpl::DRTSImpl
   , m_peer_thread ( std::make_shared<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
                       (&fhg::com::peer_t::run, m_peer.get())
                   )
-  , m_pending_jobs (get<std::size_t> ("plugin.drts.backlog", config_variables).get())
+  , m_pending_jobs (backlog_length)
   , m_event_thread (&DRTSImpl::event_thread, this)
   , m_execution_thread (&DRTSImpl::job_execution_thread, this)
 {

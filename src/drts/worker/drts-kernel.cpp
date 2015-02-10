@@ -196,6 +196,9 @@ try
         (config_variables.at ("plugin.drts.library_path"), ':')
     );
 
+  std::size_t const backlog_length
+    (boost::lexical_cast<std::size_t> (config_variables.at ("plugin.drts.backlog")));
+
   boost::asio::io_service peer_io_service;
   if (config_variables.count ("plugin.drts.gui_url"))
   {
@@ -213,6 +216,7 @@ try
       , capabilities
       , socket
       , library_path
+      , backlog_length
       );
 
     {
@@ -238,6 +242,7 @@ try
                           , capabilities
                           , socket
                           , library_path
+                          , backlog_length
                           );
     {
       boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
