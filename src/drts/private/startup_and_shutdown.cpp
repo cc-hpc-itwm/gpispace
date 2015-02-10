@@ -272,10 +272,11 @@ namespace
                        (std::to_string (description.shm_size));
                    }
 
-                   add_plugin_option ( arguments
-                                     , "drts.capabilities"
-                                     , fhg::util::join (capabilities, ",")
-                                     );
+                   for (std::string const& capability : capabilities)
+                   {
+                     arguments.emplace_back ("--capability");
+                     arguments.emplace_back (capability);
+                   }
 
                    if (description.socket)
                    {

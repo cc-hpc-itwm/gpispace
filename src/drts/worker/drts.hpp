@@ -132,7 +132,7 @@ public:
     , gpi::pc::client::api_t /*const*/* virtual_memory_socket
     , gspc::scoped_allocation /*const*/* shared_memory
     , std::vector<master_info> const& masters
-    , std::list<std::string> const& capability_names
+    , std::vector<std::string> const& capability_names
     , boost::optional<std::size_t> const& socket
     , std::list<boost::filesystem::path> const& library_path
     , std::size_t backlog_length

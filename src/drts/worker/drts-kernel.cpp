@@ -30,6 +30,7 @@ namespace
       {"virtual-memory-socket"};
     constexpr char const* const shared_memory_size
       {"shared-memory-size"};
+    constexpr char const* const capability {"capability"};
   }
 }
 
@@ -64,6 +65,11 @@ try
     ( option_name::shared_memory_size
     , po::value<unsigned long>()
     , "size of shared memory associated with the kernel"
+    )
+    ( option_name::capability
+    , po::value<std::vector<std::string>>()
+      ->default_value (std::vector<std::string>(), "{}")
+    , "capabilities of worker"
     )
     ;
 
@@ -155,11 +161,6 @@ try
     throw std::runtime_error ("no masters specified");
   }
 
-  const std::list<std::string> capabilities
-    ( fhg::util::split<std::string, std::string>
-        (config_variables.at ("plugin.drts.capabilities"), ',')
-    );
-
   std::vector<DRTSImpl::master_info> master_info;
   std::set<std::string> seen_master_names;
   for (std::string const& master : masters)
@@ -215,7 +216,8 @@ try
                         , virtual_memory_api.get()
                         , shared_memory.get()
                         , master_info
-                        , capabilities
+                        , vm.at (option_name::capability)
+                          .as<std::vector<std::string>>()
                         , socket
                         , library_path
                         , backlog_length

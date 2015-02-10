@@ -171,7 +171,7 @@ DRTSImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canc
 namespace
 {
   std::set<sdpa::Capability> make_capabilities
-    (std::list<std::string> capabilities, std::string worker_name)
+    (std::vector<std::string> const& capabilities, std::string worker_name)
   {
     std::set<sdpa::Capability> result;
     for (std::string const& cap : capabilities)
@@ -190,7 +190,7 @@ DRTSImpl::DRTSImpl
     , gpi::pc::client::api_t /*const*/* virtual_memory_api
     , gspc::scoped_allocation /*const*/* shared_memory
     , std::vector<master_info> const& masters
-    , std::list<std::string> const& capability_names
+    , std::vector<std::string> const& capability_names
     , boost::optional<std::size_t> const& socket
     , std::list<boost::filesystem::path> const& library_path
     , std::size_t backlog_length
