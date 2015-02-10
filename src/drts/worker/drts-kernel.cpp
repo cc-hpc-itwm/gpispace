@@ -103,7 +103,6 @@ try
 
     config_variables.insert (kv);
   }
-  config_variables["kernel_name"] = kernel_name;
 
   fhg::util::thread::event<> stop_requested;
   const std::function<void()> request_stop
@@ -208,7 +207,6 @@ try
       , peer_io_service
       , std::pair<std::string, boost::asio::io_service&>
         (config_variables.at ("plugin.drts.gui_url"), gui_io_service)
-      , config_variables
       , kernel_name
       , virtual_memory_api.get()
       , shared_memory.get()
@@ -234,7 +232,6 @@ try
     DRTSImpl const plugin ( request_stop
                           , peer_io_service
                           , boost::none
-                          , config_variables
                           , kernel_name
                           , virtual_memory_api.get()
                           , shared_memory.get()

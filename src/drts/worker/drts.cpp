@@ -23,21 +23,6 @@
 #include <functional>
 #include <random>
 
-//! \note Temporary, while config_variables are passed in as map<>.
-#include <boost/optional.hpp>
-#include <boost/lexical_cast.hpp>
-
-template<typename T> boost::optional<T> get
-  (std::string key, std::map<std::string, std::string> const& vals)
-{
-  const std::map<std::string, std::string>::const_iterator it (vals.find (key));
-  if (it != vals.end())
-  {
-    return boost::lexical_cast<T> (it->second);
-  }
-  return boost::none;
-}
-
 numa_socket_setter::numa_socket_setter (size_t target_socket)
 {
   hwloc_topology_init (&m_topology);
@@ -201,7 +186,6 @@ DRTSImpl::DRTSImpl
     ( std::function<void()> request_stop
     , boost::asio::io_service& peer_io_service
     , boost::optional<std::pair<std::string, boost::asio::io_service&>> gui_info
-    , std::map<std::string, std::string> config_variables
     , std::string const& kernel_name
     , gpi::pc::client::api_t /*const*/* virtual_memory_api
     , gspc::scoped_allocation /*const*/* shared_memory
