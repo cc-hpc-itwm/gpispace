@@ -191,9 +191,9 @@ private:
   } _mark_remaining_tasks_as_canceled_helper
     = {_currently_executed_tasks_mutex, _currently_executed_tasks};
 
+  std::shared_ptr<fhg::com::peer_t> m_peer;
   std::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
     m_peer_thread;
-  std::shared_ptr<fhg::com::peer_t> m_peer;
   fhg::com::message_t m_message;
   //! \todo Two sets for connected and unconnected masters?
   map_of_masters_t m_masters;
