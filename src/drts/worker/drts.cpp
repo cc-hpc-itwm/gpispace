@@ -219,7 +219,7 @@ DRTSImpl::DRTSImpl
       )
   , _currently_executed_tasks()
   , m_loader ( fhg::util::split<std::string, boost::filesystem::path>
-               (get<std::string> ("plugin.drts.library_path", config_variables).get_value_or (fhg::util::getenv("PC_LIBRARY_PATH").get_value_or ("")), ':')
+               (get<std::string> ("plugin.drts.library_path", config_variables).get_value_or (""), ':')
              )
   , _notification_service ( gui_info
                           ? sdpa::daemon::NotificationService
