@@ -206,6 +206,7 @@ DRTSImpl::DRTSImpl
     , gpi::pc::client::api_t /*const*/* virtual_memory_api
     , gspc::scoped_allocation /*const*/* shared_memory
     , std::vector<master_info> const& masters
+    , std::list<std::string> const& capability_names
     )
   : _logger (fhg::log::Logger::get (kernel_name))
   , _request_stop (request_stop)
@@ -242,14 +243,7 @@ DRTSImpl::DRTSImpl
   start_receiver();
 
   std::set<sdpa::Capability> const capabilities
-    ( make_capabilities
-        ( fhg::util::split<std::string, std::string>
-            ( get<std::string> ("plugin.drts.capabilities", config_variables).get_value_or ("")
-            , ','
-            )
-        , m_my_name
-        )
-    );
+    (make_capabilities (capability_names, m_my_name));
 
   for (master_info const& master : masters)
   {

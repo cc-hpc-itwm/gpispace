@@ -156,6 +156,11 @@ try
     throw std::runtime_error ("no masters specified");
   }
 
+  const std::list<std::string> capabilities
+    ( fhg::util::split<std::string, std::string>
+        (config_variables.at ("plugin.drts.capabilities"), ',')
+    );
+
   std::vector<DRTSImpl::master_info> master_info;
   std::set<std::string> seen_master_names;
   for (std::string const& master : masters)
@@ -194,6 +199,7 @@ try
       , virtual_memory_api.get()
       , shared_memory.get()
       , master_info
+      , capabilities
       );
 
     {
@@ -216,6 +222,7 @@ try
                           , virtual_memory_api.get()
                           , shared_memory.get()
                           , master_info
+                          , capabilities
                           );
     {
       boost::iostreams::stream<boost::iostreams::file_descriptor_sink>

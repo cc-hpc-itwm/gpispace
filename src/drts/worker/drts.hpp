@@ -133,6 +133,7 @@ public:
     , gpi::pc::client::api_t /*const*/* virtual_memory_socket
     , gspc::scoped_allocation /*const*/* shared_memory
     , std::vector<master_info> const& masters
+    , std::list<std::string> const& capability_names
     );
   ~DRTSImpl();
 
