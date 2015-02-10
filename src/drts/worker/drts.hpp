@@ -98,79 +98,49 @@ public:
         , owner_type const& owner
         , std::list<std::string> const& worker_list
         )
-      : m_id (jobid)
-      , m_input_description (description)
-      , m_owner (owner)
-      , m_state (Job::PENDING)
-      , m_result()
-      , m_message ("")
-      , m_worker_list (worker_list)
+      : id (jobid)
+      , description (description)
+      , owner (owner)
+      , worker_list (worker_list)
+      , _state (Job::PENDING)
+      , result()
+      , message ("")
     {}
 
-    inline state_t state() const
-    {
-      std::unique_lock<std::mutex> const _ (m_mutex);
-      return m_state;
-    }
-    state_t cmp_and_swp_state (state_t expected, state_t newstate);
-    void set_state (state_t s)
-    {
-      std::unique_lock<std::mutex> const _ (m_mutex);
-      m_state = s;
-    }
-
-    std::string const& id() const
-    {
-      return m_id;
-    }
-    std::string const& description() const
-    {
-      return m_input_description;
-    }
-    owner_type const& owner() const
-    {
-      return m_owner;
-    }
-
-    std::string const& result() const
-    {
-      return m_result;
-    }
-    void set_result (std::string const& r)
-    {
-      m_result = r;
-    }
-
-    std::string const& message() const
-    {
-      return m_message;
-    }
-
-    void set_message (std::string const& s)
-    {
-      m_message = s;
-    }
-
-    std::list<std::string> const& worker_list() const
-    {
-      return m_worker_list;
-    }
+    std::string const id;
+    std::string const description;
+    owner_type const owner;
+    std::list<std::string> const worker_list;
 
   private:
-    inline void state (state_t s)
-    {
-      std::unique_lock<std::mutex> const _ (m_mutex);
-      m_state = s;
-    }
-    mutable std::mutex m_mutex;
+    mutable std::mutex _state_mutex;
+    state_t _state;
 
-    std::string m_id;
-    std::string m_input_description;
-    owner_type m_owner;
-    state_t m_state;
-    std::string m_result;
-    std::string m_message;
-    std::list<std::string> m_worker_list;
+  public:
+    state_t state() const
+    {
+      std::unique_lock<std::mutex> const _ (_state_mutex);
+      return _state;
+    }
+    state_t cmp_and_swp_state (state_t expected, state_t newstate)
+    {
+      std::unique_lock<std::mutex> const _ (_state_mutex);
+      state_t const old_state (_state);
+      if (old_state == expected)
+      {
+        _state = newstate;
+      }
+      return old_state;
+    }
+
+    void set_state (state_t s)
+    {
+      std::unique_lock<std::mutex> const _ (_state_mutex);
+      _state = s;
+    }
+
+    std::string result;
+    std::string message;
   };
 
 private:

@@ -376,7 +376,7 @@ void DRTSImpl::handleSubmitJobEvent
   if (!m_pending_jobs.try_put (job))
   {
     LLOG ( WARN, _logger
-         , "cannot accept new job (" << job->id() << "), backlog is full."
+         , "cannot accept new job (" << job->id << "), backlog is full."
          );
     send_event<sdpa::events::ErrorEvent>
       ( source
@@ -391,8 +391,8 @@ void DRTSImpl::handleSubmitJobEvent
     return;
   }
 
-  send_event<sdpa::events::SubmitJobAckEvent> (master->second, job->id());
-  m_jobs.emplace (job->id(), job);
+  send_event<sdpa::events::SubmitJobAckEvent> (master->second, job->id);
+  m_jobs.emplace (job->id, job);
 }
 
 void DRTSImpl::handleCancelJobEvent
@@ -407,7 +407,7 @@ void DRTSImpl::handleCancelJobEvent
   {
     throw std::runtime_error ("cancel_job for unknown job");
   }
-  if (job_it->second->owner()->second != source)
+  if (job_it->second->owner->second != source)
   {
     throw std::runtime_error ("cancel_job for non-owned job");
   }
@@ -418,7 +418,7 @@ void DRTSImpl::handleCancelJobEvent
   {
     LLOG (TRACE, _logger, "canceling pending job: " << e->job_id());
     send_event<sdpa::events::CancelJobAckEvent>
-      (job_it->second->owner()->second, job_it->second->id());
+      (job_it->second->owner->second, job_it->second->id);
   }
   else if (job_it->second->state() == DRTSImpl::Job::RUNNING)
   {
@@ -456,7 +456,7 @@ void DRTSImpl::handleJobFailedAckEvent
   {
     throw std::runtime_error ("job_failed_ack for unknown job");
   }
-  if (job_it->second->owner()->second != source)
+  if (job_it->second->owner->second != source)
   {
     throw std::runtime_error ("job_failed_ack for non-owned job");
   }
@@ -474,7 +474,7 @@ void DRTSImpl::handleJobFinishedAckEvent
   {
     throw std::runtime_error ("job_finished_ack for unknown job");
   }
-  if (job_it->second->owner()->second != source)
+  if (job_it->second->owner->second != source)
   {
     throw std::runtime_error ("job_finished_ack for non-owned job");
   }
@@ -547,20 +547,20 @@ void DRTSImpl::job_execution_thread()
        )
     {
       std::unique_lock<std::mutex> job_map_lock (m_job_map_mutex);
-      m_jobs.erase (job->id());
+      m_jobs.erase (job->id);
 
       continue;
     }
 
     try
     {
-      job->set_result (we::type::activity_t().to_string());
+      job->result = we::type::activity_t().to_string();
 
-      wfe_task_t task (job->id(), job->description(), m_my_name, job->worker_list());
+      wfe_task_t task (job->id, job->description, m_my_name, job->worker_list);
 
       {
         std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
-        _currently_executed_tasks.emplace (job->id(), &task);
+        _currently_executed_tasks.emplace (job->id, &task);
       }
 
       if (_notification_service)
@@ -589,24 +589,24 @@ void DRTSImpl::job_execution_thread()
           if (task.state == wfe_task_t::PENDING)
           {
             task.state = wfe_task_t::FINISHED;
-            job->set_result (task.activity.to_string());
+            job->result = task.activity.to_string();
           }
         }
         catch (std::exception const& ex)
         {
           task.state = wfe_task_t::FAILED;
-          job->set_message (std::string ("Module call failed: ") + ex.what());
+          job->message = std::string ("Module call failed: ") + ex.what();
         }
         catch (...)
         {
           task.state = wfe_task_t::FAILED;
-          job->set_message ("UNKNOWN REASON, exception not derived from std::exception");
+          job->message = "UNKNOWN REASON, exception not derived from std::exception";
         }
       }
 
       {
         std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
-        _currently_executed_tasks.erase (job->id());
+        _currently_executed_tasks.erase (job->id);
       }
 
       if (wfe_task_t::FINISHED == task.state)
@@ -618,7 +618,7 @@ void DRTSImpl::job_execution_thread()
       }
       else // if (wfe_task_t::FAILED == task.state)
       {
-        LLOG (ERROR, _logger, "task failed: " << task.id << ": " << job->message());
+        LLOG (ERROR, _logger, "task failed: " << task.id << ": " << job->message);
       }
 
       if (_notification_service)
@@ -651,8 +651,8 @@ void DRTSImpl::job_execution_thread()
            );
       job->set_state (DRTSImpl::Job::FAILED);
 
-      job->set_result (job->description());
-      job->set_message (ex.what());
+      job->result = job->description;
+      job->message = ex.what();
     }
 
     send_job_result_to_master (job);
@@ -672,12 +672,12 @@ void DRTSImpl::resend_outstanding_events
       | boost::adaptors::filtered
           ( [&master] (std::shared_ptr<DRTSImpl::Job> const& j)
             {
-              return j->owner() == master && j->state() >= DRTSImpl::Job::FINISHED;
+              return j->owner == master && j->state() >= DRTSImpl::Job::FINISHED;
             }
           )
       )
   {
-    LLOG (TRACE, _logger, "resending outcome of job " << job->id());
+    LLOG (TRACE, _logger, "resending outcome of job " << job->id);
     send_job_result_to_master (job);
   }
 }
@@ -688,17 +688,17 @@ void DRTSImpl::send_job_result_to_master (std::shared_ptr<DRTSImpl::Job> const& 
   {
   case DRTSImpl::Job::FINISHED:
     send_event<sdpa::events::JobFinishedEvent>
-      (job->owner()->second, job->id(), job->result());
+      (job->owner->second, job->id, job->result);
 
     break;
   case DRTSImpl::Job::FAILED:
     send_event<sdpa::events::JobFailedEvent>
-      (job->owner()->second, job->id(), job->message());
+      (job->owner->second, job->id, job->message);
 
     break;
   case DRTSImpl::Job::CANCELED:
     send_event<sdpa::events::CancelJobAckEvent>
-      (job->owner()->second, job->id());
+      (job->owner->second, job->id);
 
     break;
 
@@ -749,16 +749,4 @@ template<typename Event, typename... Args>
   static sdpa::events::Codec codec;
   Event const event (std::forward<Args> (args)...);
   m_peer->send (destination, codec.encode (&event));
-}
-
-DRTSImpl::Job::state_t DRTSImpl::Job::cmp_and_swp_state
-  (Job::state_t expected, Job::state_t newstate)
-{
-  std::unique_lock<std::mutex> const _ (m_mutex);
-  state_t const old_state (m_state);
-  if (old_state == expected)
-  {
-    m_state = newstate;
-  }
-  return old_state;
 }
