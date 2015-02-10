@@ -56,7 +56,6 @@ try
   std::string kernel_name;
 
   desc.add_options()
-    ("help,h", "this message")
     ("name,n", po::value<std::string>(&kernel_name), "give the kernel a name")
     ( "startup-messages-pipe"
     , po::value<int>()->required()
@@ -116,21 +115,12 @@ try
   catch (std::exception const &ex)
   {
     LLOG (ERROR, logger, "invalid command line: " << ex.what());
-    LLOG (ERROR, logger, "use " << av[0] << " --help to get a list of options");
     return EXIT_FAILURE;
   }
   po::notify (vm);
 
   fhg::util::boost::program_options::require_all_if_one
     (vm, {option_name::gui_host, option_name::gui_port});
-
-  if (vm.count("help"))
-  {
-    std::cout << av[0] << " [options]" << std::endl;
-    std::cout << std::endl;
-    std::cout << desc << std::endl;
-    return EXIT_SUCCESS;
-  }
 
   fhg::util::thread::event<> stop_requested;
   const std::function<void()> request_stop
