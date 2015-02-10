@@ -228,13 +228,10 @@ namespace
                      arguments.emplace_back (path.string());
                    }
 
-                   std::vector<std::string> capabilities
-                     (description.capabilities);
-
                    if (description.shm_size)
                    {
-                     capabilities.emplace_back ("GPI");
-
+                     arguments.emplace_back ("--capability");
+                     arguments.emplace_back ("GPI");
                      arguments.emplace_back ("--virtual-memory-socket");
                      arguments.emplace_back (gpi_socket.get().string());
                      arguments.emplace_back ("--shared-memory-size");
@@ -242,7 +239,7 @@ namespace
                        (std::to_string (description.shm_size));
                    }
 
-                   for (std::string const& capability : capabilities)
+                   for (std::string const& capability : description.capabilities)
                    {
                      arguments.emplace_back ("--capability");
                      arguments.emplace_back (capability);
