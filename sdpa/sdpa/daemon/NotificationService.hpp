@@ -23,6 +23,15 @@ namespace sdpa
                        )
       {}
 
+      NotificationService ( std::string const& host
+                          , unsigned short port
+                          , boost::asio::io_service& appender_io_service
+                          )
+        : destination_ (new fhg::log::remote::RemoteAppender
+                         (host, std::to_string (port), appender_io_service)
+                       )
+      {}
+
       void notify (const NotificationEvent evt) const
       {
         destination_->append (FHGLOG_MKEVENT_HERE (TRACE, evt.encoded()));
