@@ -53,13 +53,11 @@ try
 
   po::options_description desc("options");
 
-  std::vector<std::string> config_vars;
   std::string kernel_name;
 
   desc.add_options()
     ("help,h", "this message")
     ("name,n", po::value<std::string>(&kernel_name), "give the kernel a name")
-    ("set,s", po::value<std::vector<std::string>>(&config_vars), "set a parameter to a value key=value")
     ( "startup-messages-pipe"
     , po::value<int>()->required()
     , "pipe filedescriptor to use for communication during startup (ports used, ...)"
@@ -132,19 +130,6 @@ try
     std::cout << std::endl;
     std::cout << desc << std::endl;
     return EXIT_SUCCESS;
-  }
-
-  std::map<std::string, std::string> config_variables;
-  for (const std::string& p : config_vars)
-  {
-    const std::pair<std::string, std::string> kv (fhg::util::split_string (p, '='));
-    if (kv.first.empty())
-    {
-      LLOG (ERROR, logger, "invalid config variable: must not be empty");
-      throw std::runtime_error ("invalid config variable: must not be empty");
-    }
-
-    config_variables.insert (kv);
   }
 
   fhg::util::thread::event<> stop_requested;
