@@ -34,6 +34,7 @@ namespace
     constexpr char const* const backlog_length {"backlog-length"};
     constexpr char const* const library_search_path {"library-search-path"};
     constexpr char const* const socket {"socket"};
+    constexpr char const* const master {"master"};
   }
 }
 
@@ -86,6 +87,10 @@ try
     ( option_name::socket
     , po::value<std::size_t>()
     , "socket to pin worker on"
+    )
+    ( option_name::master
+    , po::value<std::vector<std::string>>()->required()
+    , "masters to connect to (unique_name%host%port)"
     )
     ;
 
@@ -167,19 +172,11 @@ try
       : nullptr
     );
 
-  const std::list<std::string> masters
-    ( fhg::util::split<std::string, std::string>
-        (config_variables.at ("plugin.drts.master"), ',')
-    );
-
-  if (masters.empty())
-  {
-    throw std::runtime_error ("no masters specified");
-  }
-
   std::vector<DRTSImpl::master_info> master_info;
   std::set<std::string> seen_master_names;
-  for (std::string const& master : masters)
+  for ( std::string const& master
+      : vm.at (option_name::master).as<std::vector<std::string>>()
+      )
   {
     boost::tokenizer<boost::char_separator<char>> const tok
       (master, boost::char_separator<char> ("%"));

@@ -223,10 +223,9 @@ namespace
                    std::vector<std::string> arguments;
                    std::unordered_map<std::string, std::string> environment;
 
-                   add_plugin_option
-                     ( arguments
-                     , "drts.master"
-                     , build_parent_with_hostinfo
+                   arguments.emplace_back ("--master");
+                   arguments.emplace_back
+                     ( build_parent_with_hostinfo
                          (segment_info.master_name, segment_info.master_hostinfo)
                      );
 
