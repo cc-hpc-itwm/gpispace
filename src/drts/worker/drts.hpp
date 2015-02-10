@@ -30,6 +30,7 @@
 #include <boost/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
+#include <atomic>
 #include <functional>
 #include <list>
 #include <map>
@@ -102,7 +103,7 @@ public:
       , description (description)
       , owner (owner)
       , worker_list (worker_list)
-      , _state (Job::PENDING)
+      , state (Job::PENDING)
       , result()
       , message ("")
     {}
@@ -111,34 +112,7 @@ public:
     std::string const description;
     owner_type const owner;
     std::list<std::string> const worker_list;
-
-  private:
-    mutable std::mutex _state_mutex;
-    state_t _state;
-
-  public:
-    state_t state() const
-    {
-      std::unique_lock<std::mutex> const _ (_state_mutex);
-      return _state;
-    }
-    state_t cmp_and_swp_state (state_t expected, state_t newstate)
-    {
-      std::unique_lock<std::mutex> const _ (_state_mutex);
-      state_t const old_state (_state);
-      if (old_state == expected)
-      {
-        _state = newstate;
-      }
-      return old_state;
-    }
-
-    void set_state (state_t s)
-    {
-      std::unique_lock<std::mutex> const _ (_state_mutex);
-      _state = s;
-    }
-
+    std::atomic<state_t> state;
     std::string result;
     std::string message;
   };

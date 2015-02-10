@@ -412,15 +412,14 @@ void DRTSImpl::handleCancelJobEvent
     throw std::runtime_error ("cancel_job for non-owned job");
   }
 
-  if ( job_it->second->cmp_and_swp_state (DRTSImpl::Job::PENDING, DRTSImpl::Job::CANCELED)
-     == DRTSImpl::Job::PENDING
-     )
+  Job::state_t job_state (Job::PENDING);
+  if (job_it->second->state.compare_exchange_strong (job_state, Job::CANCELED))
   {
     LLOG (TRACE, _logger, "canceling pending job: " << e->job_id());
     send_event<sdpa::events::CancelJobAckEvent>
       (job_it->second->owner->second, job_it->second->id);
   }
-  else if (job_it->second->state() == DRTSImpl::Job::RUNNING)
+  else if (job_state == DRTSImpl::Job::RUNNING)
   {
     LLOG (TRACE, _logger, "trying to cancel running job " << e->job_id());
     std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
@@ -432,15 +431,15 @@ void DRTSImpl::handleCancelJobEvent
       task_it->second->context.module_call_do_cancel();
     }
   }
-  else if (job_it->second->state() == DRTSImpl::Job::FAILED)
+  else if (job_state == DRTSImpl::Job::FAILED)
   {
     LLOG (TRACE, _logger, "cancel_job for failed job");
   }
-  else if (job_it->second->state() == DRTSImpl::Job::CANCELED)
+  else if (job_state == DRTSImpl::Job::CANCELED)
   {
     LLOG (TRACE, _logger, "cancel_job for canceled job");
   }
-  else // if (job_it->second->state() == DRTSImpl::Job::FINISHED)
+  else // if (job_state == DRTSImpl::Job::FINISHED)
   {
     LLOG (TRACE, _logger, "cancel_job for finished job");
   }
@@ -494,11 +493,11 @@ void DRTSImpl::handleDiscoverJobStatesEvent
     , sdpa::discovery_info_t
         ( event->job_id()
         , job_it == m_jobs.end() ? boost::optional<sdpa::status::code>()
-        : job_it->second->state() == DRTSImpl::Job::PENDING ? sdpa::status::PENDING
-        : job_it->second->state() == DRTSImpl::Job::RUNNING ? sdpa::status::RUNNING
-        : job_it->second->state() == DRTSImpl::Job::FINISHED ? sdpa::status::FINISHED
-        : job_it->second->state() == DRTSImpl::Job::FAILED ? sdpa::status::FAILED
-        : job_it->second->state() == DRTSImpl::Job::CANCELED ? sdpa::status::CANCELED
+        : job_it->second->state == DRTSImpl::Job::PENDING ? sdpa::status::PENDING
+        : job_it->second->state == DRTSImpl::Job::RUNNING ? sdpa::status::RUNNING
+        : job_it->second->state == DRTSImpl::Job::FINISHED ? sdpa::status::FINISHED
+        : job_it->second->state == DRTSImpl::Job::FAILED ? sdpa::status::FAILED
+        : job_it->second->state == DRTSImpl::Job::CANCELED ? sdpa::status::CANCELED
         : throw std::runtime_error ("invalid job state")
         , sdpa::discovery_info_set_t()
         )
@@ -542,10 +541,11 @@ void DRTSImpl::job_execution_thread()
       _masters_backlogfull_notified.clear();
     }
 
-    if ( job->cmp_and_swp_state (DRTSImpl::Job::PENDING, DRTSImpl::Job::RUNNING)
-       != DRTSImpl::Job::PENDING
-       )
+    Job::state_t expeceted_job_state (Job::PENDING);
+    if (!job->state.compare_exchange_strong (expeceted_job_state, Job::RUNNING))
     {
+      //! \note Can only be CANCELED, thus already sent a CancelJobAck
+      //! in handleCancelJob, and can just be removed.
       std::unique_lock<std::mutex> job_map_lock (m_job_map_mutex);
       m_jobs.erase (job->id);
 
@@ -637,11 +637,10 @@ void DRTSImpl::job_execution_thread()
             );
         }
 
-      job->set_state ( task.state == wfe_task_t::FINISHED ? DRTSImpl::Job::FINISHED
-                     : task.state == wfe_task_t::CANCELED ? DRTSImpl::Job::CANCELED
-                     : task.state == wfe_task_t::FAILED ? DRTSImpl::Job::FAILED
-                     : throw std::runtime_error ("bad task state")
-                     );
+      job->state = task.state == wfe_task_t::FINISHED ? DRTSImpl::Job::FINISHED
+                 : task.state == wfe_task_t::CANCELED ? DRTSImpl::Job::CANCELED
+                 : task.state == wfe_task_t::FAILED ? DRTSImpl::Job::FAILED
+                 : throw std::runtime_error ("bad task state");
 
     }
     catch (std::exception const& ex)
@@ -649,7 +648,7 @@ void DRTSImpl::job_execution_thread()
       LLOG ( ERROR, _logger
            , "unexpected exception during job execution: " << ex.what()
            );
-      job->set_state (DRTSImpl::Job::FAILED);
+      job->state = DRTSImpl::Job::FAILED;
 
       job->result = job->description;
       job->message = ex.what();
@@ -672,7 +671,7 @@ void DRTSImpl::resend_outstanding_events
       | boost::adaptors::filtered
           ( [&master] (std::shared_ptr<DRTSImpl::Job> const& j)
             {
-              return j->owner == master && j->state() >= DRTSImpl::Job::FINISHED;
+              return j->owner == master && j->state >= DRTSImpl::Job::FINISHED;
             }
           )
       )
@@ -684,7 +683,7 @@ void DRTSImpl::resend_outstanding_events
 
 void DRTSImpl::send_job_result_to_master (std::shared_ptr<DRTSImpl::Job> const& job)
 {
-  switch (job->state())
+  switch (job->state.load())
   {
   case DRTSImpl::Job::FINISHED:
     send_event<sdpa::events::JobFinishedEvent>
@@ -703,7 +702,7 @@ void DRTSImpl::send_job_result_to_master (std::shared_ptr<DRTSImpl::Job> const& 
     break;
 
   default:
-    INVALID_ENUM_VALUE (DRTSImpl::Job::state_t, job->state());
+    INVALID_ENUM_VALUE (DRTSImpl::Job::state_t, job->state);
   }
 }
 
