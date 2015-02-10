@@ -185,6 +185,12 @@ try
       (parts[0], fhg::com::host_t (parts[1]), fhg::com::port_t (parts[2]));
   }
 
+  boost::optional<std::size_t> const socket
+    ( config_variables.count ("plugin.drts.socket")
+    ? boost::lexical_cast<std::size_t> (config_variables.at ("plugin.drts.socket"))
+    : boost::optional<std::size_t>()
+    );
+
   boost::asio::io_service peer_io_service;
   if (config_variables.count ("plugin.drts.gui_url"))
   {
@@ -200,6 +206,7 @@ try
       , shared_memory.get()
       , master_info
       , capabilities
+      , socket
       );
 
     {
@@ -223,6 +230,7 @@ try
                           , shared_memory.get()
                           , master_info
                           , capabilities
+                          , socket
                           );
     {
       boost::iostreams::stream<boost::iostreams::file_descriptor_sink>

@@ -207,16 +207,16 @@ DRTSImpl::DRTSImpl
     , gspc::scoped_allocation /*const*/* shared_memory
     , std::vector<master_info> const& masters
     , std::list<std::string> const& capability_names
+    , boost::optional<std::size_t> const& socket
     )
   : _logger (fhg::log::Logger::get (kernel_name))
   , _request_stop (request_stop)
   , m_shutting_down (false)
   , m_my_name (kernel_name)
-  , _numa_socket_setter
-      ( get<std::size_t> ("plugin.drts.socket", config_variables)
-      ? numa_socket_setter (*get<std::size_t> ("plugin.drts.socket", config_variables))
-      : boost::optional<numa_socket_setter>()
-      )
+  , _numa_socket_setter ( socket
+                        ? numa_socket_setter (*socket)
+                        : boost::optional<numa_socket_setter>()
+                        )
   , _currently_executed_tasks()
   , m_loader ( fhg::util::split<std::string, boost::filesystem::path>
                  (get<std::string> ("plugin.drts.library_path", config_variables).get(), ':')

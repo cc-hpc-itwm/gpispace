@@ -134,6 +134,7 @@ public:
     , gspc::scoped_allocation /*const*/* shared_memory
     , std::vector<master_info> const& masters
     , std::list<std::string> const& capability_names
+    , boost::optional<std::size_t> const& socket
     );
   ~DRTSImpl();
 
