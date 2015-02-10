@@ -219,7 +219,7 @@ DRTSImpl::DRTSImpl
       )
   , _currently_executed_tasks()
   , m_loader ( fhg::util::split<std::string, boost::filesystem::path>
-               (get<std::string> ("plugin.drts.library_path", config_variables).get_value_or (""), ':')
+                 (get<std::string> ("plugin.drts.library_path", config_variables).get(), ':')
              )
   , _notification_service ( gui_info
                           ? sdpa::daemon::NotificationService
@@ -234,7 +234,7 @@ DRTSImpl::DRTSImpl
   , m_peer_thread ( std::make_shared<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
                       (&fhg::com::peer_t::run, m_peer.get())
                   )
-  , m_pending_jobs (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3))
+  , m_pending_jobs (get<std::size_t> ("plugin.drts.backlog", config_variables).get())
   , m_event_thread (&DRTSImpl::event_thread, this)
   , m_execution_thread (&DRTSImpl::job_execution_thread, this)
 {
