@@ -21,6 +21,7 @@
 #include <boost/range/adaptor/map.hpp>
 
 #include <functional>
+#include <random>
 
 //! \note Temporary, while config_variables are passed in as map<>.
 #include <boost/optional.hpp>
@@ -88,7 +89,7 @@ namespace
 {
   struct wfe_exec_context : public we::context
   {
-    boost::mt19937 _engine;
+    std::mt19937 _engine;
 
     wfe_exec_context
       ( we::loader::loader& module_loader
@@ -172,7 +173,7 @@ namespace
 
 DRTSImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canceled_helper()
 {
-  boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
+  std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
   while (!_currently_executed_tasks.empty())
   {
     wfe_task_t *task = _currently_executed_tasks.begin()->second;
@@ -241,10 +242,10 @@ DRTSImpl::DRTSImpl
     throw std::runtime_error ("no masters specified");
   }
 
-  m_peer = boost::make_shared<fhg::com::peer_t> (peer_io_service, host, port);
+  m_peer = std::make_shared<fhg::com::peer_t> (peer_io_service, host, port);
   m_peer_thread
-    = boost::make_shared<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
-        (&fhg::com::peer_t::run, m_peer);
+    = std::make_shared<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
+        (&fhg::com::peer_t::run, m_peer.get());
   m_peer->start();
 
   start_receiver();
@@ -297,7 +298,7 @@ DRTSImpl::DRTSImpl
   }
 
   m_execution_thread
-    = boost::make_shared<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
+    = std::make_shared<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
         (&DRTSImpl::job_execution_thread, this);
 }
 
@@ -362,8 +363,8 @@ void DRTSImpl::handleSubmitJobEvent
     return;
   }
 
-  boost::shared_ptr<DRTSImpl::Job> job
-    ( boost::make_shared<DRTSImpl::Job>
+  std::shared_ptr<DRTSImpl::Job> job
+    ( std::make_shared<DRTSImpl::Job>
         ( DRTSImpl::Job::ID (*e->job_id())
         , DRTSImpl::Job::Description (e->description())
         , master
@@ -371,7 +372,7 @@ void DRTSImpl::handleSubmitJobEvent
         )
     );
 
-  boost::mutex::scoped_lock job_map_lock(m_job_map_mutex);
+  std::unique_lock<std::mutex> job_map_lock(m_job_map_mutex);
 
   if (!m_pending_jobs.try_put (job))
   {
@@ -385,7 +386,7 @@ void DRTSImpl::handleSubmitJobEvent
       , *e->job_id()
       );
 
-    boost::unique_lock<boost::mutex> _ (_guard_backlogfull_notified_masters);
+    std::unique_lock<std::mutex> _ (_guard_backlogfull_notified_masters);
     _masters_backlogfull_notified.emplace (source);
 
     return;
@@ -398,7 +399,7 @@ void DRTSImpl::handleSubmitJobEvent
 void DRTSImpl::handleCancelJobEvent
   (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent *e)
 {
-  boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
+  std::unique_lock<std::mutex> job_map_lock (m_job_map_mutex);
   map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
 
   LLOG (TRACE, _logger, "got cancelation request for job: " << e->job_id());
@@ -423,7 +424,7 @@ void DRTSImpl::handleCancelJobEvent
   else if (job_it->second->state() == DRTSImpl::Job::RUNNING)
   {
     LLOG (TRACE, _logger, "trying to cancel running job " << e->job_id());
-    boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
+    std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
     std::map<std::string, wfe_task_t *>::iterator task_it
       (_currently_executed_tasks.find(e->job_id()));
     if (task_it != _currently_executed_tasks.end())
@@ -449,7 +450,7 @@ void DRTSImpl::handleCancelJobEvent
 void DRTSImpl::handleJobFailedAckEvent
   (fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedAckEvent *e)
 {
-  boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
+  std::unique_lock<std::mutex> job_map_lock (m_job_map_mutex);
   map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
 
   if (job_it == m_jobs.end())
@@ -467,7 +468,7 @@ void DRTSImpl::handleJobFailedAckEvent
 void DRTSImpl::handleJobFinishedAckEvent
   (fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedAckEvent *e)
 {
-  boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
+  std::unique_lock<std::mutex> job_map_lock (m_job_map_mutex);
   map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
 
   if (job_it == m_jobs.end())
@@ -485,7 +486,7 @@ void DRTSImpl::handleJobFinishedAckEvent
 void DRTSImpl::handleDiscoverJobStatesEvent
   (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent* event)
 {
-  boost::mutex::scoped_lock const _ (m_job_map_mutex);
+  std::unique_lock<std::mutex> const _ (m_job_map_mutex);
 
   const map_of_jobs_t::iterator job_it (m_jobs.find (event->job_id()));
   send_event<sdpa::events::DiscoverJobStatesReplyEvent>
@@ -527,13 +528,13 @@ void DRTSImpl::job_execution_thread()
 {
   for (;;)
   {
-    boost::shared_ptr<DRTSImpl::Job> job;
+    std::shared_ptr<DRTSImpl::Job> job;
     bool notify_can_take_jobs;
     std::tie (job, notify_can_take_jobs) = m_pending_jobs.get();
 
     if (notify_can_take_jobs)
     {
-      boost::unique_lock<boost::mutex> const _ (_guard_backlogfull_notified_masters);
+      std::unique_lock<std::mutex> const _ (_guard_backlogfull_notified_masters);
       for (const fhg::com::p2p::address_t& master : _masters_backlogfull_notified)
       {
         send_event<sdpa::events::BacklogNoLongerFullEvent> (master);
@@ -546,7 +547,7 @@ void DRTSImpl::job_execution_thread()
        != DRTSImpl::Job::PENDING
        )
     {
-      boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
+      std::unique_lock<std::mutex> job_map_lock (m_job_map_mutex);
       m_jobs.erase (job->id());
 
       continue;
@@ -559,7 +560,7 @@ void DRTSImpl::job_execution_thread()
       wfe_task_t task (job->id(), job->description(), m_my_name, job->worker_list());
 
       {
-        boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
+        std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
         _currently_executed_tasks.emplace (job->id(), &task);
       }
 
@@ -605,7 +606,7 @@ void DRTSImpl::job_execution_thread()
       }
 
       {
-        boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
+        std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
         _currently_executed_tasks.erase (job->id());
       }
 
@@ -664,13 +665,13 @@ void DRTSImpl::resend_outstanding_events
 {
   LLOG (TRACE, _logger, "resending outstanding notifications to " << master->first);
 
-  boost::mutex::scoped_lock const _ (m_job_map_mutex);
+  std::unique_lock<std::mutex> const _ (m_job_map_mutex);
 
-  for ( boost::shared_ptr<DRTSImpl::Job> const& job
+  for ( std::shared_ptr<DRTSImpl::Job> const& job
       : m_jobs
       | boost::adaptors::map_values
       | boost::adaptors::filtered
-          ( [&master] (boost::shared_ptr<DRTSImpl::Job> const& j)
+          ( [&master] (std::shared_ptr<DRTSImpl::Job> const& j)
             {
               return j->owner() == master && j->state() >= DRTSImpl::Job::FINISHED;
             }
@@ -682,7 +683,7 @@ void DRTSImpl::resend_outstanding_events
   }
 }
 
-void DRTSImpl::send_job_result_to_master (boost::shared_ptr<DRTSImpl::Job> const& job)
+void DRTSImpl::send_job_result_to_master (std::shared_ptr<DRTSImpl::Job> const& job)
 {
   switch (job->state())
   {
@@ -768,7 +769,7 @@ DRTSImpl::Job::Job ( Job::ID const& jobid
 DRTSImpl::Job::state_t DRTSImpl::Job::cmp_and_swp_state
   (Job::state_t expected, Job::state_t newstate)
 {
-  lock_type const _ (m_mutex);
+  std::unique_lock<std::mutex> const _ (m_mutex);
   state_t const old_state (m_state);
   if (old_state == expected)
   {

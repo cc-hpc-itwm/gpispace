@@ -33,6 +33,7 @@
 #include <functional>
 #include <list>
 #include <map>
+#include <mutex>
 #include <string>
 #include <unordered_set>
 
@@ -80,10 +81,6 @@ class DRTSImpl : public sdpa::events::EventHandler
 public:
   class Job
   {
-    typedef boost::mutex mutex_type;
-    typedef boost::condition_variable condition_type;
-    typedef boost::unique_lock<mutex_type> lock_type;
-
   public:
     enum state_t
     {
@@ -122,13 +119,13 @@ public:
 
     inline state_t state() const
     {
-      lock_type const _ (m_mutex);
+      std::unique_lock<std::mutex> const _ (m_mutex);
       return m_state;
     }
     state_t cmp_and_swp_state (state_t expected, state_t newstate);
     inline Job& set_state (state_t s)
     {
-      lock_type const _ (m_mutex);
+      std::unique_lock<std::mutex> const _ (m_mutex);
       m_state = s;
       return *this;
     }
@@ -175,10 +172,10 @@ public:
   private:
     inline void state (state_t s)
     {
-      lock_type const _ (m_mutex);
+      std::unique_lock<std::mutex> const _ (m_mutex);
       m_state = s;
     }
-    mutable mutex_type m_mutex;
+    mutable std::mutex m_mutex;
 
     std::string m_id;
     std::string m_input_description;
@@ -190,7 +187,7 @@ public:
   };
 
 private:
-  typedef std::map<std::string, boost::shared_ptr<DRTSImpl::Job>> map_of_jobs_t;
+  typedef std::map<std::string, std::shared_ptr<DRTSImpl::Job>> map_of_jobs_t;
 
 public:
   DRTSImpl
@@ -223,7 +220,7 @@ private:
 
   void resend_outstanding_events (map_of_masters_t::const_iterator const&);
 
-  void send_job_result_to_master (boost::shared_ptr<DRTSImpl::Job> const& job);
+  void send_job_result_to_master (std::shared_ptr<DRTSImpl::Job> const& job);
 
   void start_receiver();
 
@@ -240,7 +237,7 @@ private:
 
   boost::optional<numa_socket_setter> _numa_socket_setter;
 
-  mutable boost::mutex _currently_executed_tasks_mutex;
+  mutable std::mutex _currently_executed_tasks_mutex;
   std::map<std::string, wfe_task_t *> _currently_executed_tasks;
 
   we::loader::loader m_loader;
@@ -254,14 +251,14 @@ private:
   {
     ~mark_remaining_tasks_as_canceled_helper();
 
-    boost::mutex& _currently_executed_tasks_mutex;
+    std::mutex& _currently_executed_tasks_mutex;
     std::map<std::string, wfe_task_t *>& _currently_executed_tasks;
   } _mark_remaining_tasks_as_canceled_helper
     = {_currently_executed_tasks_mutex, _currently_executed_tasks};
 
-  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
+  std::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
     m_peer_thread;
-  boost::shared_ptr<fhg::com::peer_t> m_peer;
+  std::shared_ptr<fhg::com::peer_t> m_peer;
   fhg::com::message_t m_message;
   //! \todo Two sets for connected and unconnected masters?
   map_of_masters_t m_masters;
@@ -269,25 +266,25 @@ private:
   fhg::thread::queue<std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr>>
     m_event_queue;
 
-  mutable boost::mutex m_job_map_mutex;
+  mutable std::mutex m_job_map_mutex;
 
   map_of_jobs_t m_jobs;
 
-  fhg::thread::bounded_queue<boost::shared_ptr<DRTSImpl::Job>> m_pending_jobs;
+  fhg::thread::bounded_queue<std::shared_ptr<DRTSImpl::Job>> m_pending_jobs;
 
-  mutable boost::mutex _guard_backlogfull_notified_masters;
+  mutable std::mutex _guard_backlogfull_notified_masters;
   std::unordered_set<fhg::com::p2p::address_t> _masters_backlogfull_notified;
 
   struct peer_stopper
   {
     ~peer_stopper();
-    boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>&
+    std::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>&
       m_peer_thread;
-    boost::shared_ptr<fhg::com::peer_t>& m_peer;
+    std::shared_ptr<fhg::com::peer_t>& m_peer;
   } _peer_stopper = {m_peer_thread, m_peer};
 
   boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
     m_event_thread;
-  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
+  std::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
     m_execution_thread;
 };
