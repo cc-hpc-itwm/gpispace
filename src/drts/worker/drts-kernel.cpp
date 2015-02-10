@@ -199,58 +199,37 @@ try
     (boost::lexical_cast<std::size_t> (config_variables.at ("plugin.drts.backlog")));
 
   boost::asio::io_service peer_io_service;
+
+  boost::asio::io_service gui_io_service;
+  boost::optional<sdpa::daemon::NotificationService> gui_notification_service;
   if (config_variables.count ("plugin.drts.gui_url"))
   {
-    boost::asio::io_service gui_io_service;
-    DRTSImpl const plugin
-      ( request_stop
-      , peer_io_service
-      , std::pair<std::string, boost::asio::io_service&>
-        (config_variables.at ("plugin.drts.gui_url"), gui_io_service)
-      , kernel_name
-      , virtual_memory_api.get()
-      , shared_memory.get()
-      , master_info
-      , capabilities
-      , socket
-      , library_path
-      , backlog_length
-      );
-
-    {
-      boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
-        startup_messages_pipe ( vm.at ("startup-messages-pipe").as<int>()
-                              , boost::iostreams::close_handle
-                              );
-      startup_messages_pipe << "OKAY\n";
-    }
-
-    stop_requested.wait();
+    gui_notification_service = sdpa::daemon::NotificationService
+      (config_variables.at ("plugin.drts.gui_url"), gui_io_service);
   }
-  else
+
+  DRTSImpl const plugin ( request_stop
+                        , peer_io_service
+                        , gui_notification_service
+                        , kernel_name
+                        , virtual_memory_api.get()
+                        , shared_memory.get()
+                        , master_info
+                        , capabilities
+                        , socket
+                        , library_path
+                        , backlog_length
+                        );
+
   {
-    DRTSImpl const plugin ( request_stop
-                          , peer_io_service
-                          , boost::none
-                          , kernel_name
-                          , virtual_memory_api.get()
-                          , shared_memory.get()
-                          , master_info
-                          , capabilities
-                          , socket
-                          , library_path
-                          , backlog_length
-                          );
-    {
-      boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
-        startup_messages_pipe ( vm.at ("startup-messages-pipe").as<int>()
-                              , boost::iostreams::close_handle
-                              );
-      startup_messages_pipe << "OKAY\n";
-    }
-
-    stop_requested.wait();
+    boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
+      startup_messages_pipe ( vm.at ("startup-messages-pipe").as<int>()
+                            , boost::iostreams::close_handle
+                            );
+    startup_messages_pipe << "OKAY\n";
   }
+
+  stop_requested.wait();
 
   return 0;
 }

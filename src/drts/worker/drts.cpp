@@ -185,7 +185,7 @@ namespace
 DRTSImpl::DRTSImpl
     ( std::function<void()> request_stop
     , boost::asio::io_service& peer_io_service
-    , boost::optional<std::pair<std::string, boost::asio::io_service&>> gui_info
+    , boost::optional<sdpa::daemon::NotificationService> gui_notification_service
     , std::string const& kernel_name
     , gpi::pc::client::api_t /*const*/* virtual_memory_api
     , gspc::scoped_allocation /*const*/* shared_memory
@@ -205,11 +205,7 @@ DRTSImpl::DRTSImpl
                         )
   , _currently_executed_tasks()
   , m_loader (library_path)
-  , _notification_service ( gui_info
-                          ? sdpa::daemon::NotificationService
-                            (gui_info->first, gui_info->second)
-                          : boost::optional<sdpa::daemon::NotificationService>()
-                          )
+  , _notification_service (gui_notification_service)
   , _virtual_memory_api (virtual_memory_api)
   , _shared_memory (shared_memory)
   , m_peer ( std::make_shared<fhg::com::peer_t>
