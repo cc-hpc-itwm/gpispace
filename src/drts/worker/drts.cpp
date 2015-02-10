@@ -364,12 +364,11 @@ void DRTSImpl::handleSubmitJobEvent
   }
 
   std::shared_ptr<DRTSImpl::Job> job
-    ( std::make_shared<DRTSImpl::Job>
-        ( DRTSImpl::Job::ID (*e->job_id())
-        , DRTSImpl::Job::Description (e->description())
-        , master
-        , e->worker_list()
-        )
+    ( std::make_shared<DRTSImpl::Job> ( *e->job_id()
+                                      , e->description()
+                                      , master
+                                      , e->worker_list()
+                                      )
     );
 
   std::unique_lock<std::mutex> job_map_lock(m_job_map_mutex);
@@ -751,20 +750,6 @@ template<typename Event, typename... Args>
   Event const event (std::forward<Args> (args)...);
   m_peer->send (destination, codec.encode (&event));
 }
-
-DRTSImpl::Job::Job ( Job::ID const& jobid
-                   , Job::Description const& description
-                   , owner_type const& owner
-                   , std::list<std::string> const& worker_list
-                   )
-  : m_id (jobid.value)
-  , m_input_description (description.value)
-  , m_owner (owner)
-  , m_state (Job::PENDING)
-  , m_result()
-  , m_message ("")
-  , m_worker_list (worker_list)
-{}
 
 DRTSImpl::Job::state_t DRTSImpl::Job::cmp_and_swp_state
   (Job::state_t expected, Job::state_t newstate)
