@@ -145,6 +145,16 @@ try
       : nullptr
     );
 
+  const std::list<std::string> masters
+    ( fhg::util::split<std::string, std::string>
+        (config_variables.at ("plugin.drts.master"), ',')
+    );
+
+  if (masters.empty())
+  {
+    throw std::runtime_error ("no masters specified");
+  }
+
   boost::asio::io_service peer_io_service;
   if (config_variables.count ("plugin.drts.gui_url"))
   {
@@ -158,6 +168,7 @@ try
       , kernel_name
       , virtual_memory_api.get()
       , shared_memory.get()
+      , masters
       );
 
     {
@@ -179,6 +190,7 @@ try
                           , kernel_name
                           , virtual_memory_api.get()
                           , shared_memory.get()
+                          , masters
                           );
     {
       boost::iostreams::stream<boost::iostreams::file_descriptor_sink>

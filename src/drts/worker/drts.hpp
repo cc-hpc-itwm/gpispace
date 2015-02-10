@@ -129,6 +129,7 @@ public:
     , std::string const& kernel_name
     , gpi::pc::client::api_t /*const*/* virtual_memory_socket
     , gspc::scoped_allocation /*const*/* shared_memory
+    , std::list<std::string> const& masters
     );
   ~DRTSImpl();
 

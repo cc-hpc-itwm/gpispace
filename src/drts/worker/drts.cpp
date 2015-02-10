@@ -205,6 +205,7 @@ DRTSImpl::DRTSImpl
     , std::string const& kernel_name
     , gpi::pc::client::api_t /*const*/* virtual_memory_api
     , gspc::scoped_allocation /*const*/* shared_memory
+    , std::list<std::string> const& masters
     )
   : _logger (fhg::log::Logger::get (kernel_name))
   , _request_stop (request_stop)
@@ -229,17 +230,6 @@ DRTSImpl::DRTSImpl
   , m_pending_jobs (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3))
   , m_event_thread (&DRTSImpl::event_thread, this)
 {
-  //! \todo ctor parameters
-  const std::list<std::string> master_list
-    ( fhg::util::split<std::string, std::string>
-      (get<std::string> ("plugin.drts.master", config_variables).get_value_or (""), ',')
-    );
-
-  if (master_list.empty())
-  {
-    throw std::runtime_error ("no masters specified");
-  }
-
   m_peer = std::make_shared<fhg::com::peer_t>
     (peer_io_service, fhg::com::host_t ("*"), fhg::com::port_t ("0"));
   m_peer_thread
@@ -259,7 +249,7 @@ DRTSImpl::DRTSImpl
         )
     );
 
-  for (std::string const& master : master_list)
+  for (std::string const& master : masters)
   {
     boost::tokenizer<boost::char_separator<char>> const tok
       (master, boost::char_separator<char> ("%"));
