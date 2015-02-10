@@ -164,13 +164,6 @@ namespace
   {
     add_plugin_option (arguments, name, value.c_str());
   }
-  void add_plugin_option ( std::vector<std::string>& arguments
-                         , std::string name
-                         , unsigned long value
-                         )
-  {
-    add_plugin_option (arguments, name, std::to_string (value).c_str());
-  }
 
   void start_workers_for
     ( segment_info_t const& segment_info
@@ -272,8 +265,9 @@ namespace
 
                    if (description.socket)
                    {
-                     add_plugin_option
-                       (arguments, "drts.socket", description.socket.get());
+                     arguments.emplace_back ("--socket");
+                     arguments.emplace_back
+                       (std::to_string (description.socket.get()));
                    }
 
                    environment.emplace ("FHGLOG_level", verbose ? "TRACE" : "INFO");

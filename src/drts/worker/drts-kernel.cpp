@@ -33,6 +33,7 @@ namespace
     constexpr char const* const capability {"capability"};
     constexpr char const* const backlog_length {"backlog-length"};
     constexpr char const* const library_search_path {"library-search-path"};
+    constexpr char const* const socket {"socket"};
   }
 }
 
@@ -81,6 +82,10 @@ try
     , po::value<std::vector<boost::filesystem::path>>()
       ->default_value (std::vector<boost::filesystem::path>(), "{}")
     , "paths to search for module call libraries"
+    )
+    ( option_name::socket
+    , po::value<std::size_t>()
+    , "socket to pin worker on"
     )
     ;
 
@@ -196,12 +201,6 @@ try
       (parts[0], fhg::com::host_t (parts[1]), fhg::com::port_t (parts[2]));
   }
 
-  boost::optional<std::size_t> const socket
-    ( config_variables.count ("plugin.drts.socket")
-    ? boost::lexical_cast<std::size_t> (config_variables.at ("plugin.drts.socket"))
-    : boost::optional<std::size_t>()
-    );
-
   boost::asio::io_service peer_io_service;
 
   boost::asio::io_service gui_io_service;
@@ -221,7 +220,9 @@ try
                         , master_info
                         , vm.at (option_name::capability)
                           .as<std::vector<std::string>>()
-                        , socket
+                        , vm.count (option_name::socket)
+                        ? vm.at (option_name::socket).as<std::size_t>()
+                        : boost::optional<std::size_t>()
                         , vm.at (option_name::library_search_path)
                           .as<std::vector<boost::filesystem::path>>()
                         , vm.at (option_name::backlog_length)
