@@ -2,7 +2,9 @@
 
 #include <drts/worker/drts.hpp>
 
+#include <fhg/util/boost/program_options/require_all_if_one.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
+#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/print_exception.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
@@ -35,6 +37,8 @@ namespace
     constexpr char const* const library_search_path {"library-search-path"};
     constexpr char const* const socket {"socket"};
     constexpr char const* const master {"master"};
+    constexpr char const* const gui_host {"gui-host"};
+    constexpr char const* const gui_port {"gui-port"};
   }
 }
 
@@ -92,6 +96,15 @@ try
     , po::value<std::vector<std::string>>()->required()
     , "masters to connect to (unique_name%host%port)"
     )
+    ( option_name::gui_host
+    , po::value<std::string>()
+    , "host to send gui notifications to"
+    )
+    ( option_name::gui_port
+    , po::value
+        <fhg::util::boost::program_options::positive_integral<unsigned short>>()
+    , "port to send gui notifications to"
+    )
     ;
 
   po::variables_map vm;
@@ -109,6 +122,9 @@ try
     return EXIT_FAILURE;
   }
   po::notify (vm);
+
+  fhg::util::boost::program_options::require_all_if_one
+    (vm, {option_name::gui_host, option_name::gui_port});
 
   if (vm.count("help"))
   {
@@ -202,10 +218,14 @@ try
 
   boost::asio::io_service gui_io_service;
   boost::optional<sdpa::daemon::NotificationService> gui_notification_service;
-  if (config_variables.count ("plugin.drts.gui_url"))
+  if (vm.count (option_name::gui_host) || vm.count (option_name::gui_port))
   {
     gui_notification_service = sdpa::daemon::NotificationService
-      (config_variables.at ("plugin.drts.gui_url"), gui_io_service);
+      ( vm.at (option_name::gui_host).as<std::string>()
+      , vm.at (option_name::gui_port)
+        .as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
+      , gui_io_service
+      );
   }
 
   DRTSImpl const plugin ( request_stop

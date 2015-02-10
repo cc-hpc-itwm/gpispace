@@ -149,22 +149,6 @@ namespace
            };
   }
 
-  void add_plugin_option ( std::vector<std::string>& arguments
-                         , std::string name
-                         , const char* value
-                         )
-  {
-    arguments.emplace_back ("-s");
-    arguments.emplace_back ("plugin." + name + "=" + value);
-  }
-  void add_plugin_option ( std::vector<std::string>& arguments
-                         , std::string name
-                         , std::string value
-                         )
-  {
-    add_plugin_option (arguments, name, value.c_str());
-  }
-
   void start_workers_for
     ( segment_info_t const& segment_info
     , fhg::drts::worker_description const& description
@@ -231,10 +215,12 @@ namespace
 
                    arguments.emplace_back ("--backlog-length");
                    arguments.emplace_back ("1");
-                   add_plugin_option ( arguments
-                                     , "drts.gui_url"
-                                     , gui_host + ":" + std::to_string (gui_port)
-                                     );
+
+                   //! \todo gui is optional in worker
+                   arguments.emplace_back ("--gui-host");
+                   arguments.emplace_back (gui_host);
+                   arguments.emplace_back ("--gui-port");
+                   arguments.emplace_back (std::to_string (gui_port));
 
                    for (boost::filesystem::path const& path : app_path)
                    {
