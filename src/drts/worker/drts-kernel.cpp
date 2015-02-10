@@ -31,6 +31,7 @@ namespace
     constexpr char const* const shared_memory_size
       {"shared-memory-size"};
     constexpr char const* const capability {"capability"};
+    constexpr char const* const backlog_length {"backlog-length"};
   }
 }
 
@@ -70,6 +71,10 @@ try
     , po::value<std::vector<std::string>>()
       ->default_value (std::vector<std::string>(), "{}")
     , "capabilities of worker"
+    )
+    ( option_name::backlog_length
+    , po::value<std::size_t>()->required()
+    , "length of job backlog"
     )
     ;
 
@@ -196,9 +201,6 @@ try
         (config_variables.at ("plugin.drts.library_path"), ':')
     );
 
-  std::size_t const backlog_length
-    (boost::lexical_cast<std::size_t> (config_variables.at ("plugin.drts.backlog")));
-
   boost::asio::io_service peer_io_service;
 
   boost::asio::io_service gui_io_service;
@@ -220,7 +222,8 @@ try
                           .as<std::vector<std::string>>()
                         , socket
                         , library_path
-                        , backlog_length
+                        , vm.at (option_name::backlog_length)
+                          .as<std::size_t>()
                         );
 
   {

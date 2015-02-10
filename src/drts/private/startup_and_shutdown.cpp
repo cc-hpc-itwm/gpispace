@@ -247,7 +247,9 @@ namespace
                      , build_parent_with_hostinfo
                          (segment_info.master_name, segment_info.master_hostinfo)
                      );
-                   add_plugin_option (arguments, "drts.backlog", 1);
+
+                   arguments.emplace_back ("--backlog-length");
+                   arguments.emplace_back ("1");
                    add_plugin_option ( arguments
                                      , "drts.gui_url"
                                      , gui_host + ":" + std::to_string (gui_port)
