@@ -255,7 +255,7 @@ namespace
                    add_plugin_option
                      ( arguments
                      , "drts.library_path"
-                     , fhg::util::join (string_vector (app_path), ",")
+                     , fhg::util::join (string_vector (app_path), ":")
                      );
 
                    std::vector<std::string> capabilities
