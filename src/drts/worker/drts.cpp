@@ -16,6 +16,7 @@
 #include <we/type/net.hpp>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
 
@@ -35,12 +36,6 @@ template<typename T> boost::optional<T> get
   }
   return boost::none;
 }
-
-wfe_task_t::wfe_task_t (std::string id, std::string worker_name, std::list<std::string> workers)
-  : id (id)
-  , state (wfe_task_t::PENDING)
-  , context (worker_name, workers)
-{}
 
 numa_socket_setter::numa_socket_setter (size_t target_socket)
 {
@@ -139,7 +134,7 @@ namespace
                                 , mod
                                 );
       }
-      catch (std::exception const &ex)
+      catch (std::exception const& ex)
       {
         throw std::runtime_error
           ( "call to '" + mod.module() + "::" + mod.function() + "'"
@@ -178,9 +173,9 @@ namespace
 DRTSImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canceled_helper()
 {
   boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
-  while (! _currently_executed_tasks.empty ())
+  while (!_currently_executed_tasks.empty())
   {
-    wfe_task_t *task = _currently_executed_tasks.begin ()->second;
+    wfe_task_t *task = _currently_executed_tasks.begin()->second;
     task->state = wfe_task_t::CANCELED;
 
     _currently_executed_tasks.erase (task->id);
@@ -193,7 +188,7 @@ namespace
     (std::list<std::string> capabilities, std::string worker_name)
   {
     std::set<sdpa::Capability> result;
-    for (std::string const & cap : capabilities)
+    for (std::string const& cap : capabilities)
     {
       result.emplace (cap, worker_name);
     }
@@ -246,14 +241,10 @@ DRTSImpl::DRTSImpl
     throw std::runtime_error ("no masters specified");
   }
 
-
-  // initialize peer
-  m_peer.reset
-    (new fhg::com::peer_t (peer_io_service, host, port));
-  m_peer_thread.reset
-    ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-      (&fhg::com::peer_t::run, m_peer)
-    );
+  m_peer = boost::make_shared<fhg::com::peer_t> (peer_io_service, host, port);
+  m_peer_thread
+    = boost::make_shared<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
+        (&fhg::com::peer_t::run, m_peer);
   m_peer->start();
 
   start_receiver();
@@ -268,7 +259,7 @@ DRTSImpl::DRTSImpl
         )
     );
 
-  for (std::string const & master : master_list)
+  for (std::string const& master : master_list)
   {
     boost::tokenizer<boost::char_separator<char>> const tok
       (master, boost::char_separator<char> ("%"));
@@ -305,10 +296,9 @@ DRTSImpl::DRTSImpl
       );
   }
 
-  m_execution_thread.reset
-    ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-      (&DRTSImpl::job_execution_thread, this)
-    );
+  m_execution_thread
+    = boost::make_shared<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
+        (&DRTSImpl::job_execution_thread, this);
 }
 
 DRTSImpl::peer_stopper::~peer_stopper()
@@ -323,8 +313,6 @@ DRTSImpl::~DRTSImpl()
   m_shutting_down = true;
 }
 
-  // event handler callbacks
-  //    implemented events
 void DRTSImpl::handleWorkerRegistrationAckEvent
   (fhg::com::p2p::address_t const& source, const sdpa::events::WorkerRegistrationAckEvent*)
 {
@@ -348,7 +336,6 @@ void DRTSImpl::handleWorkerRegistrationAckEvent
 void DRTSImpl::handleSubmitJobEvent
   (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent *e)
 {
-  // check master
   map_of_masters_t::const_iterator master
     ( std::find_if ( m_masters.cbegin(), m_masters.cend()
                    , [&source] (map_of_masters_t::value_type const& master)
@@ -375,12 +362,14 @@ void DRTSImpl::handleSubmitJobEvent
     return;
   }
 
-  boost::shared_ptr<DRTSImpl::Job> job (new DRTSImpl::Job( DRTSImpl::Job::ID(*e->job_id())
-                                                 , DRTSImpl::Job::Description(e->description())
-                                                 , master
-                                                         , e->worker_list()
-                                                 )
-                                   );
+  boost::shared_ptr<DRTSImpl::Job> job
+    ( boost::make_shared<DRTSImpl::Job>
+        ( DRTSImpl::Job::ID (*e->job_id())
+        , DRTSImpl::Job::Description (e->description())
+        , master
+        , e->worker_list()
+        )
+    );
 
   boost::mutex::scoped_lock job_map_lock(m_job_map_mutex);
 
@@ -409,7 +398,6 @@ void DRTSImpl::handleSubmitJobEvent
 void DRTSImpl::handleCancelJobEvent
   (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent *e)
 {
-  // locate the job
   boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
   map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
 
@@ -424,49 +412,43 @@ void DRTSImpl::handleCancelJobEvent
     throw std::runtime_error ("cancel_job for non-owned job");
   }
 
-    if (  DRTSImpl::Job::PENDING
-       == job_it->second->cmp_and_swp_state( DRTSImpl::Job::PENDING
-                                           , DRTSImpl::Job::CANCELED
-                                           )
-       )
+  if ( job_it->second->cmp_and_swp_state (DRTSImpl::Job::PENDING, DRTSImpl::Job::CANCELED)
+     == DRTSImpl::Job::PENDING
+     )
+  {
+    LLOG (TRACE, _logger, "canceling pending job: " << e->job_id());
+    send_event<sdpa::events::CancelJobAckEvent>
+      (job_it->second->owner()->second, job_it->second->id());
+  }
+  else if (job_it->second->state() == DRTSImpl::Job::RUNNING)
+  {
+    LLOG (TRACE, _logger, "trying to cancel running job " << e->job_id());
+    boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
+    std::map<std::string, wfe_task_t *>::iterator task_it
+      (_currently_executed_tasks.find(e->job_id()));
+    if (task_it != _currently_executed_tasks.end())
     {
-      LLOG (TRACE, _logger, "canceling pending job: " << e->job_id());
-      send_event<sdpa::events::CancelJobAckEvent>
-        (job_it->second->owner()->second, job_it->second->id());
+      task_it->second->state = wfe_task_t::CANCELED;
+      task_it->second->context.module_call_do_cancel();
     }
-    else if (job_it->second->state() == DRTSImpl::Job::RUNNING)
-    {
-      LLOG (TRACE, _logger, "trying to cancel running job " << e->job_id());
-      boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
-      std::map<std::string, wfe_task_t *>::iterator task_it
-        (_currently_executed_tasks.find(e->job_id()));
-      if (task_it != _currently_executed_tasks.end())
-      {
-        task_it->second->state = wfe_task_t::CANCELED;
-        task_it->second->context.module_call_do_cancel();
-      }
-    }
-    else if (job_it->second->state() == DRTSImpl::Job::FAILED)
-    {
-      LLOG (TRACE, _logger, "canceling already failed job: " << e->job_id());
-    }
-    else if (job_it->second->state() == DRTSImpl::Job::CANCELED)
-    {
-      LLOG (TRACE, _logger, "canceling already canceled job: " << e->job_id());
-    }
-    else
-    {
-      LLOG ( WARN, _logger
-          , "what shall I do with an already computed job? "
-          << "(" << e->job_id() << ")"
-          );
-    }
+  }
+  else if (job_it->second->state() == DRTSImpl::Job::FAILED)
+  {
+    LLOG (TRACE, _logger, "cancel_job for failed job");
+  }
+  else if (job_it->second->state() == DRTSImpl::Job::CANCELED)
+  {
+    LLOG (TRACE, _logger, "cancel_job for canceled job");
+  }
+  else // if (job_it->second->state() == DRTSImpl::Job::FINISHED)
+  {
+    LLOG (TRACE, _logger, "cancel_job for finished job");
+  }
 }
 
 void DRTSImpl::handleJobFailedAckEvent
   (fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedAckEvent *e)
 {
-  // locate the job
   boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
   map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
 
@@ -485,7 +467,6 @@ void DRTSImpl::handleJobFailedAckEvent
 void DRTSImpl::handleJobFinishedAckEvent
   (fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedAckEvent *e)
 {
-  // locate the job
   boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
   map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
 
@@ -524,8 +505,7 @@ void DRTSImpl::handleDiscoverJobStatesEvent
     );
 }
 
-  // threads
-void DRTSImpl::event_thread ()
+void DRTSImpl::event_thread()
 {
   for (;;)
   {
@@ -543,7 +523,7 @@ void DRTSImpl::event_thread ()
   }
 }
 
-void DRTSImpl::job_execution_thread ()
+void DRTSImpl::job_execution_thread()
 {
   for (;;)
   {
@@ -553,7 +533,7 @@ void DRTSImpl::job_execution_thread ()
 
     if (notify_can_take_jobs)
     {
-      boost::unique_lock<boost::mutex> _ (_guard_backlogfull_notified_masters);
+      boost::unique_lock<boost::mutex> const _ (_guard_backlogfull_notified_masters);
       for (const fhg::com::p2p::address_t& master : _masters_backlogfull_notified)
       {
         send_event<sdpa::events::BacklogNoLongerFullEvent> (master);
@@ -562,136 +542,121 @@ void DRTSImpl::job_execution_thread ()
       _masters_backlogfull_notified.clear();
     }
 
-    if (DRTSImpl::Job::PENDING != job->cmp_and_swp_state( DRTSImpl::Job::PENDING
-                                                    , DRTSImpl::Job::RUNNING
-                                                    )
+    if ( job->cmp_and_swp_state (DRTSImpl::Job::PENDING, DRTSImpl::Job::RUNNING)
+       != DRTSImpl::Job::PENDING
        )
     {
       boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
-      map_of_jobs_t::iterator job_it (m_jobs.find(job->id()));
-      if (job_it != m_jobs.end())
-      {
-        m_jobs.erase(job_it);
-      }
+      m_jobs.erase (job->id());
 
       continue;
     }
 
-      try
+    try
+    {
+      job->set_result (we::type::activity_t().to_string());
+
+      wfe_task_t task (job->id(), job->description(), m_my_name, job->worker_list());
+
       {
-        job->set_result (we::type::activity_t().to_string());
+        boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
+        _currently_executed_tasks.emplace (job->id(), &task);
+      }
 
+      if (_notification_service)
+      {
+        using sdpa::daemon::NotificationEvent;
+        _notification_service->notify
+          ( NotificationEvent
+              ( {m_my_name}
+              , task.id
+              , NotificationEvent::STATE_STARTED
+              , task.activity
+              )
+          );
+      }
+
+      if (task.state == wfe_task_t::PENDING)
+      {
+        try
         {
-          wfe_task_t task (job->id(), m_my_name, job->worker_list());
+          wfe_exec_context ctxt
+            (m_loader, _virtual_memory_api, _shared_memory, task);
 
-          try
+          task.activity.execute (&ctxt);
+
+          //! \note failing or canceling overwrites
+          if (task.state == wfe_task_t::PENDING)
           {
-            task.activity = we::type::activity_t (job->description());
+            task.state = wfe_task_t::FINISHED;
+            job->set_result (task.activity.to_string());
           }
-          catch (std::exception const & ex)
-          {
-            throw std::runtime_error
-              (std::string ("could not parse activity: ") + ex.what());
-          }
-
-            {
-              boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
-              _currently_executed_tasks.emplace (job->id(), &task);
-            }
-
-            if (_notification_service)
-            {
-              using sdpa::daemon::NotificationEvent;
-              _notification_service->notify
-                ( NotificationEvent
-                    ( {m_my_name}
-                    , task.id
-                    , NotificationEvent::STATE_STARTED
-                    , task.activity
-                    )
-                );
-            }
-
-            if (task.state == wfe_task_t::PENDING)
-            {
-              try
-              {
-                wfe_exec_context ctxt
-                  (m_loader, _virtual_memory_api, _shared_memory, task);
-
-                task.activity.execute (&ctxt);
-
-                //! \note failing or canceling overwrites
-                if (task.state == wfe_task_t::PENDING)
-                {
-                  task.state = wfe_task_t::FINISHED;
-                  job->set_result (task.activity.to_string());
-                }
-              }
-              catch (std::exception const & ex)
-              {
-                task.state = wfe_task_t::FAILED;
-                job->set_message (std::string ("Module call failed: ") + ex.what());
-              }
-              catch (...)
-              {
-                task.state = wfe_task_t::FAILED;
-                job->set_message ("UNKNOWN REASON, exception not derived from std::exception");
-              }
-            }
-
-            {
-              boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
-              _currently_executed_tasks.erase (job->id());
-            }
-
-            if (wfe_task_t::FINISHED == task.state)
-            {
-              LLOG (TRACE, _logger, "task finished: " << task.id);
-            }
-            else if (wfe_task_t::CANCELED == task.state)
-            {
-            }
-            else // if (wfe_task_t::FAILED == task.state)
-            {
-              LLOG (ERROR, _logger, "task failed: " << task.id << ": " << job->message());
-            }
-
-            if (_notification_service)
-            {
-              using sdpa::daemon::NotificationEvent;
-              _notification_service->notify
-                ( NotificationEvent
-                  ( {m_my_name}
-                  , task.id
-                  , task.state == wfe_task_t::FINISHED ? NotificationEvent::STATE_FINISHED
-                  : task.state == wfe_task_t::CANCELED ? NotificationEvent::STATE_CANCELED
-                  : task.state == wfe_task_t::FAILED ? NotificationEvent::STATE_FAILED
-                  : throw std::runtime_error ("bad enum value: task.state")
-                  , task.activity
-                  )
-                );
-            }
-
-            job->set_state (task.state == wfe_task_t::FINISHED ? DRTSImpl::Job::FINISHED
-              : task.state == wfe_task_t::CANCELED ? DRTSImpl::Job::CANCELED
-              : task.state == wfe_task_t::FAILED ? DRTSImpl::Job::FAILED
-              : throw std::runtime_error ("bad task state"));
+        }
+        catch (std::exception const& ex)
+        {
+          task.state = wfe_task_t::FAILED;
+          job->set_message (std::string ("Module call failed: ") + ex.what());
+        }
+        catch (...)
+        {
+          task.state = wfe_task_t::FAILED;
+          job->set_message ("UNKNOWN REASON, exception not derived from std::exception");
         }
       }
-      catch (std::exception const & ex)
-      {
-        LLOG ( ERROR, _logger
-            , "unexpected exception during job execution: " << ex.what()
-            );
-        job->set_state (DRTSImpl::Job::FAILED);
 
-        job->set_result (job->description());
-        job->set_message (ex.what());
+      {
+        boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
+        _currently_executed_tasks.erase (job->id());
       }
 
-      send_job_result_to_master (job);
+      if (wfe_task_t::FINISHED == task.state)
+      {
+        LLOG (TRACE, _logger, "task finished: " << task.id);
+      }
+      else if (wfe_task_t::CANCELED == task.state)
+      {
+      }
+      else // if (wfe_task_t::FAILED == task.state)
+      {
+        LLOG (ERROR, _logger, "task failed: " << task.id << ": " << job->message());
+      }
+
+      if (_notification_service)
+      {
+        using sdpa::daemon::NotificationEvent;
+        _notification_service->notify
+          ( NotificationEvent
+              ( {m_my_name}
+              , task.id
+              , task.state == wfe_task_t::FINISHED ? NotificationEvent::STATE_FINISHED
+              : task.state == wfe_task_t::CANCELED ? NotificationEvent::STATE_CANCELED
+              : task.state == wfe_task_t::FAILED ? NotificationEvent::STATE_FAILED
+              : throw std::runtime_error ("bad enum value: task.state")
+              , task.activity
+              )
+            );
+        }
+
+      job->set_state ( task.state == wfe_task_t::FINISHED ? DRTSImpl::Job::FINISHED
+                     : task.state == wfe_task_t::CANCELED ? DRTSImpl::Job::CANCELED
+                     : task.state == wfe_task_t::FAILED ? DRTSImpl::Job::FAILED
+                     : throw std::runtime_error ("bad task state")
+                     );
+
     }
+    catch (std::exception const& ex)
+    {
+      LLOG ( ERROR, _logger
+           , "unexpected exception during job execution: " << ex.what()
+           );
+      job->set_state (DRTSImpl::Job::FAILED);
+
+      job->set_result (job->description());
+      job->set_message (ex.what());
+    }
+
+    send_job_result_to_master (job);
+  }
 }
 
 void DRTSImpl::resend_outstanding_events
@@ -717,28 +682,28 @@ void DRTSImpl::resend_outstanding_events
   }
 }
 
-void DRTSImpl::send_job_result_to_master (boost::shared_ptr<DRTSImpl::Job> const & job)
+void DRTSImpl::send_job_result_to_master (boost::shared_ptr<DRTSImpl::Job> const& job)
 {
   switch (job->state())
   {
   case DRTSImpl::Job::FINISHED:
     send_event<sdpa::events::JobFinishedEvent>
       (job->owner()->second, job->id(), job->result());
+
     break;
   case DRTSImpl::Job::FAILED:
-    {
-      send_event<sdpa::events::JobFailedEvent>
-        (job->owner()->second, job->id(), job->message());
-    }
+    send_event<sdpa::events::JobFailedEvent>
+      (job->owner()->second, job->id(), job->message());
+
     break;
   case DRTSImpl::Job::CANCELED:
-    {
-      send_event<sdpa::events::CancelJobAckEvent>
-        (job->owner()->second, job->id());
-    }
+    send_event<sdpa::events::CancelJobAckEvent>
+      (job->owner()->second, job->id());
+
     break;
+
   default:
-    throw std::runtime_error ("invalid job state in send_job_result_to_master");
+    INVALID_ENUM_VALUE (DRTSImpl::Job::state_t, job->state());
   }
 }
 
@@ -746,41 +711,31 @@ void DRTSImpl::start_receiver()
 {
   m_peer->async_recv
     ( &m_message
-    , [this] ( boost::system::error_code const & ec
+    , [this] ( boost::system::error_code const& ec
              , boost::optional<fhg::com::p2p::address_t> source
              )
       {
         static sdpa::events::Codec codec;
 
-        if (! ec)
+        if (!ec)
         {
-          // convert m_message to event
-          try
-          {
-            m_event_queue.put
-              ( source.get()
-              , sdpa::events::SDPAEvent::Ptr
-                  ( codec.decode
-                      (std::string (m_message.data.begin(), m_message.data.end()))
-                  )
-              );
-          }
-          catch (std::exception const & ex)
-          {
-            LLOG (WARN, _logger, "could not handle incoming message: " << ex.what());
-          }
+          m_event_queue.put
+            ( source.get()
+            , sdpa::events::SDPAEvent::Ptr
+                ( codec.decode
+                    (std::string (m_message.data.begin(), m_message.data.end()))
+                )
+            );
+
           start_receiver();
         }
-        else if (! m_shutting_down)
+        else if (!m_shutting_down)
         {
-          if (m_message.header.src != m_peer->address() && !!source)
-          {
-            _request_stop();
-          }
-          else
-          {
-            LLOG (TRACE, _logger, m_my_name << " is shutting down");
-          }
+          _request_stop();
+        }
+        else
+        {
+          LLOG (TRACE, _logger, m_my_name << " is shutting down");
         }
       }
     );
@@ -796,26 +751,25 @@ template<typename Event, typename... Args>
   m_peer->send (destination, codec.encode (&event));
 }
 
-DRTSImpl::Job::Job( Job::ID const &jobid
-                  , Job::Description const &description
-                  , owner_type const& owner
-                  , std::list<std::string> const& worker_list
-                  )
+DRTSImpl::Job::Job ( Job::ID const& jobid
+                   , Job::Description const& description
+                   , owner_type const& owner
+                   , std::list<std::string> const& worker_list
+                   )
   : m_id (jobid.value)
   , m_input_description (description.value)
   , m_owner (owner)
   , m_state (Job::PENDING)
-  , m_result ()
+  , m_result()
   , m_message ("")
   , m_worker_list (worker_list)
 {}
 
-DRTSImpl::Job::state_t DRTSImpl::Job::cmp_and_swp_state( Job::state_t expected
-                                                       , Job::state_t newstate
-                                                       )
+DRTSImpl::Job::state_t DRTSImpl::Job::cmp_and_swp_state
+  (Job::state_t expected, Job::state_t newstate)
 {
-  lock_type lock (m_mutex);
-  state_t old_state = m_state;
+  lock_type const _ (m_mutex);
+  state_t const old_state (m_state);
   if (old_state == expected)
   {
     m_state = newstate;

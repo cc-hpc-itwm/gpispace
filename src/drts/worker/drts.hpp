@@ -41,9 +41,9 @@ struct wfe_task_t
   enum state_t
   {
     PENDING
-    , CANCELED
-    , FINISHED
-    , FAILED
+  , CANCELED
+  , FINISHED
+  , FAILED
   };
 
   std::string id;
@@ -51,7 +51,16 @@ struct wfe_task_t
   we::type::activity_t activity;
   drts::worker::context context;
 
-  wfe_task_t (std::string id, std::string worker_name, std::list<std::string> workers);
+  wfe_task_t ( std::string id
+             , std::string const& description
+             , std::string worker_name
+             , std::list<std::string> workers
+             )
+    : id (id)
+    , state (PENDING)
+    , activity (description)
+    , context (worker_name, workers)
+  {}
 };
 
 class numa_socket_setter
@@ -74,20 +83,21 @@ public:
     typedef boost::mutex mutex_type;
     typedef boost::condition_variable condition_type;
     typedef boost::unique_lock<mutex_type> lock_type;
+
   public:
     enum state_t
-      {
-        PENDING = 0
-      , RUNNING
-      , FINISHED
-      , FAILED
-      , CANCELED
-      };
+    {
+      PENDING
+    , RUNNING
+    , FINISHED
+    , FAILED
+    , CANCELED
+    };
 
     struct ID
     {
-      explicit ID(std::string const &s)
-        : value(s)
+      explicit ID (std::string const& s)
+        : value (s)
       {}
 
       const std::string value;
@@ -95,8 +105,8 @@ public:
 
     struct Description
     {
-      explicit Description(std::string const &s)
-        : value(s)
+      explicit Description (std::string const& s)
+        : value (s)
       {}
 
       const std::string value;
@@ -104,65 +114,84 @@ public:
 
     using owner_type = map_of_masters_t::const_iterator;
 
-    explicit
-    Job( Job::ID const &jobid
-       , Job::Description const &description
-       , owner_type const&
-       , std::list<std::string> const& worker_list
-       );
+    Job ( Job::ID const& jobid
+        , Job::Description const& description
+        , owner_type const&
+        , std::list<std::string> const& worker_list
+        );
 
-    inline state_t state () const { lock_type lck(m_mutex); return m_state; }
-    state_t cmp_and_swp_state( state_t expected
-                             , state_t newstate
-                             );
-    inline Job& set_state (state_t s) {
-      lock_type    lck(m_mutex); m_state = s;
+    inline state_t state() const
+    {
+      lock_type const _ (m_mutex);
+      return m_state;
+    }
+    state_t cmp_and_swp_state (state_t expected, state_t newstate);
+    inline Job& set_state (state_t s)
+    {
+      lock_type const _ (m_mutex);
+      m_state = s;
       return *this;
     }
 
-    std::string const & id() const { return m_id; }
-    std::string const & description() const { return m_input_description; }
-    owner_type const& owner() const { return m_owner; }
-
-    std::string const & result() const {
-      lock_type lck(m_mutex); return m_result;
+    std::string const& id() const
+    {
+      return m_id;
     }
-    Job & set_result(std::string const &r) {
-      lock_type lck(m_mutex); m_result = r;
+    std::string const& description() const
+    {
+      return m_input_description;
+    }
+    owner_type const& owner() const
+    {
+      return m_owner;
+    }
+
+    std::string const& result() const
+    {
+      return m_result;
+    }
+    Job& set_result (std::string const& r)
+    {
+      m_result = r;
       return *this;
     }
 
-    std::string const & message() const {
-      lock_type lck(m_mutex); return m_message;
+    std::string const& message() const
+    {
+      return m_message;
     }
 
-    Job& set_message (std::string const &s) {
-      lock_type lck(m_mutex); m_message = s;
+    Job& set_message (std::string const& s)
+    {
+      m_message = s;
       return *this;
     }
 
-    std::list<std::string> const &worker_list () const
+    std::list<std::string> const& worker_list() const
     {
       return m_worker_list;
     }
 
   private:
-    inline void    state (state_t s) { lock_type lck(m_mutex); m_state = s; }
+    inline void state (state_t s)
+    {
+      lock_type const _ (m_mutex);
+      m_state = s;
+    }
     mutable mutex_type m_mutex;
 
     std::string m_id;
     std::string m_input_description;
     owner_type m_owner;
-    state_t     m_state;
+    state_t m_state;
     std::string m_result;
     std::string m_message;
     std::list<std::string> m_worker_list;
   };
 
 private:
-  typedef std::map< std::string
-                  , boost::shared_ptr<DRTSImpl::Job>
-                  > map_of_jobs_t;
+  typedef std::map<std::string, boost::shared_ptr<DRTSImpl::Job>> map_of_jobs_t;
+
 public:
   DRTSImpl
     ( std::function<void()> request_stop
@@ -189,20 +218,17 @@ public:
     (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent*) override;
 
 private:
-  // threads
-  void event_thread ();
-  void job_execution_thread ();
+  void event_thread();
+  void job_execution_thread();
 
   void resend_outstanding_events (map_of_masters_t::const_iterator const&);
 
-  void send_job_result_to_master (boost::shared_ptr<DRTSImpl::Job> const & job);
+  void send_job_result_to_master (boost::shared_ptr<DRTSImpl::Job> const& job);
 
   void start_receiver();
 
   template<typename Event, typename... Args>
-    void send_event ( fhg::com::p2p::address_t const& destination
-                    , Args&&... args
-                    );
+    void send_event (fhg::com::p2p::address_t const& destination, Args&&... args);
 
   fhg::log::Logger::ptr_t _logger;
 
@@ -245,7 +271,6 @@ private:
 
   mutable boost::mutex m_job_map_mutex;
 
-  // jobs + their states
   map_of_jobs_t m_jobs;
 
   fhg::thread::bounded_queue<boost::shared_ptr<DRTSImpl::Job>> m_pending_jobs;
