@@ -234,15 +234,14 @@ DRTSImpl::DRTSImpl
     ( fhg::util::split<std::string, std::string>
       (get<std::string> ("plugin.drts.master", config_variables).get_value_or (""), ',')
     );
-  fhg::com::host_t host (get<std::string> ("plugin.drts.host", config_variables).get_value_or ("*"));
-  fhg::com::port_t port (get<std::string> ("plugin.drts.port", config_variables).get_value_or ("0"));
 
   if (master_list.empty())
   {
     throw std::runtime_error ("no masters specified");
   }
 
-  m_peer = std::make_shared<fhg::com::peer_t> (peer_io_service, host, port);
+  m_peer = std::make_shared<fhg::com::peer_t>
+    (peer_io_service, fhg::com::host_t ("*"), fhg::com::port_t ("0"));
   m_peer_thread
     = std::make_shared<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
         (&fhg::com::peer_t::run, m_peer.get());
