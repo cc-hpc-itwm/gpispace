@@ -1,42 +1,35 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
 #include <drts/worker/context.hpp>
-#include <drts/private/scoped_allocation.hpp>
 
-#include <fhgcom/message.hpp>
-#include <fhgcom/peer.hpp>
+#include <drts/private/scoped_allocation.hpp>
 
 #include <fhg/util/thread/bounded_queue.hpp>
 #include <fhg/util/thread/queue.hpp>
-#include <fhg/util/thread/set.hpp>
+
+#include <fhgcom/peer.hpp>
+#include <fhglog/Logger.hpp>
 
 #include <gpi-space/pc/client/api.hpp>
 
-#include <sdpa/capability.hpp>
-#include <sdpa/daemon/NotificationEvent.hpp>
 #include <sdpa/daemon/NotificationService.hpp>
-#include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
+#include <sdpa/events/SDPAEvent.hpp>
 
-#include <we/context.hpp>
 #include <we/loader/loader.hpp>
 #include <we/type/activity.hpp>
 
-#include <hwloc.h>
-
-#include <boost/optional.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/system/error_code.hpp>
-#include <boost/thread.hpp>
+#include <boost/asio/io_service.hpp>
 #include <boost/thread/scoped_thread.hpp>
+
+#include <hwloc.h>
 
 #include <atomic>
 #include <functional>
-#include <list>
 #include <map>
 #include <mutex>
 #include <string>
-#include <unordered_set>
+#include <vector>
 
 struct wfe_task_t
 {

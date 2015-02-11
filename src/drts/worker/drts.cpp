@@ -1,27 +1,22 @@
 #include <drts/worker/drts.hpp>
 
-//! \todo remove when redoing ctor
-#include <fhg/util/getenv.hpp>
-#include <fhg/util/split.hpp>
 #include <fhg/util/hostname.hpp>
 
+#include <sdpa/capability.hpp>
+#include <sdpa/events/CancelJobAckEvent.hpp>
+#include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/Codec.hpp>
-#include <sdpa/events/events.hpp>
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
+#include <sdpa/events/ErrorEvent.hpp>
+#include <sdpa/events/JobFinishedAckEvent.hpp>
+#include <sdpa/events/SubmitJobEvent.hpp>
 
+#include <we/context.hpp>
 #include <we/loader/module_call.hpp>
-#include <we/type/expression.fwd.hpp>
-#include <we/type/module_call.hpp>
-#include <we/type/net.hpp>
 
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/make_shared.hpp>
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
-
-#include <functional>
-#include <random>
 
 numa_socket_setter::numa_socket_setter (size_t target_socket)
 {
