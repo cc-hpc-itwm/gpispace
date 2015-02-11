@@ -120,9 +120,7 @@ namespace
 
     std::pair<pid_t, std::vector<std::string>> const agent_startup_messages
       ( fhg::rif::client (rif_entry_point).execute_and_get_startup_messages
-          ( "--startup-messages-pipe"
-          , "OKAY"
-          , sdpa_home / "bin" / "agent"
+          ( sdpa_home / "bin" / "agent"
           , agent_startup_arguments
           , { {"FHGLOG_to_server", log_host + ":" + std::to_string (log_port)}
             , {"FHGLOG_level", verbose ? "TRACE" : "INFO"}
@@ -313,9 +311,7 @@ namespace
 
                    std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages
                      ( fhg::rif::client (entry_point).execute_and_get_startup_messages
-                       ( "--startup-messages-pipe"
-                       , "OKAY"
-                       , sdpa_home / "bin" / "drts-kernel"
+                       ( sdpa_home / "bin" / "drts-kernel"
                        , arguments
                        , environment
                        ).get()
@@ -529,9 +525,7 @@ namespace fhg
             ( [&]
               {
                 return rif::client (master).execute_and_get_startup_messages
-                  ( "--startup-messages-pipe"
-                  , "OKAY"
-                  , sdpa_home / "bin" / "orchestrator"
+                  ( sdpa_home / "bin" / "orchestrator"
                   , {"-u", "0", "-n", "orchestrator"}
                   , { {"FHGLOG_to_server", log_host + ":" + std::to_string (log_port)}
                     , {"FHGLOG_level", verbose ? "TRACE" : "INFO"}
@@ -609,9 +603,7 @@ namespace fhg
                         std::pair<pid_t, std::vector<std::string>> const
                           startup_messages
                           ( rif::client (entry_point).execute_and_get_startup_messages
-                              ( "--startup-messages-pipe"
-                              , "OKAY"
-                              , sdpa_home / "bin" / "gpi-space"
+                              ( sdpa_home / "bin" / "gpi-space"
                               , { "--log-host", log_host
                                 , "--log-port", std::to_string (log_port)
                                 , "--log-level", verbose ? "TRACE" : "INFO"

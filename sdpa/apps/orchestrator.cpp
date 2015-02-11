@@ -11,8 +11,8 @@
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/print_exception.hpp>
 
-#include <boost/iostreams/device/file_descriptor.hpp>
-#include <boost/iostreams/stream.hpp>
+#include <rif/startup_messages_pipe.hpp>
+
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <boost/filesystem/path.hpp>
@@ -40,10 +40,9 @@ try
        ("help,h", "Display this message")
        ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
        ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
-       ( "startup-messages-pipe"
-       , po::value<int>()->required()
-       , "pipe filedescriptor to use for communication during startup (ports used, ...)"
-       );
+      ;
+
+    desc.add (fhg::rif::startup_messages_pipe::program_options());
 
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
@@ -82,19 +81,13 @@ try
     (signal_handlers, SIGINT, std::bind (request_stop));
 
   {
-    boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
-      startup_messages_pipe ( vm.at ("startup-messages-pipe").as<int>()
-                            , boost::iostreams::close_handle
-                            );
+    fhg::rif::startup_messages_pipe startup_messages_pipe (vm);
     startup_messages_pipe << fhg::util::connectable_to_address_string
-                               (orchestrator.peer_local_endpoint().address())
-                          << "\n";
-    startup_messages_pipe << orchestrator.peer_local_endpoint().port() << "\n";
+                               (orchestrator.peer_local_endpoint().address());
+    startup_messages_pipe << orchestrator.peer_local_endpoint().port();
     startup_messages_pipe << fhg::util::connectable_to_address_string
-                               (orchestrator.rpc_local_endpoint().address())
-                          << "\n";
-    startup_messages_pipe << orchestrator.rpc_local_endpoint().port() << "\n";
-    startup_messages_pipe << "OKAY\n";
+                               (orchestrator.rpc_local_endpoint().address());
+    startup_messages_pipe << orchestrator.rpc_local_endpoint().port();
   }
 
   stop_requested.wait();

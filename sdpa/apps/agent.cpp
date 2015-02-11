@@ -10,8 +10,8 @@
 #include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/print_exception.hpp>
 
-#include <boost/iostreams/device/file_descriptor.hpp>
-#include <boost/iostreams/stream.hpp>
+#include <rif/startup_messages_pipe.hpp>
+
 #include <boost/program_options.hpp>
 
 #include <sdpa/daemon/agent/Agent.hpp>
@@ -63,11 +63,9 @@ try
     , boost::program_options::value<validators::nonempty_string>()
     , "socket file to communicate with the virtual memory manager"
     )
-    ( "startup-messages-pipe"
-    , po::value<int>()->required()
-    , "pipe filedescriptor to use for communication during startup (ports used, ...)"
-    )
     ;
+
+  desc.add (fhg::rif::startup_messages_pipe::program_options());
 
   po::variables_map vm;
   po::store( po::command_line_parser( argc, argv ).options(desc).run(), vm );
@@ -131,15 +129,10 @@ try
     (signal_handlers, SIGINT, std::bind (request_stop));
 
   {
-    boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
-      startup_messages_pipe ( vm.at ("startup-messages-pipe").as<int>()
-                            , boost::iostreams::close_handle
-                            );
+    fhg::rif::startup_messages_pipe startup_messages_pipe (vm);
     startup_messages_pipe << fhg::util::connectable_to_address_string
-                               (agent.peer_local_endpoint().address())
-                          << "\n";
-    startup_messages_pipe << agent.peer_local_endpoint().port() << "\n";
-    startup_messages_pipe << "OKAY\n";
+                               (agent.peer_local_endpoint().address());
+    startup_messages_pipe << agent.peer_local_endpoint().port();
   }
 
   stop_requested.wait();

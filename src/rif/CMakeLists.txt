@@ -10,6 +10,12 @@ fhg_add_runtime_executable ("gspc-rifd.cpp" "execute_and_get_startup_messages.cp
                  ${Boost_SYSTEM_LIBRARY}
 )
 
+add_library (rif-startup-messages-pipe "startup_messages_pipe.cpp")
+target_link_libraries (rif-startup-messages-pipe
+  ${Boost_IOSTREAMS_LIBRARY}
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+)
+
 add_library (rif-strategies "strategy/meta.cpp" "strategy/ssh.cpp")
 target_link_libraries (rif-strategies rpc net fhg-util)
 
