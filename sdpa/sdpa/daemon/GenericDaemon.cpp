@@ -352,11 +352,7 @@ void GenericDaemon::handleSubmitJobEvent
   // First, check if the job 'job_id' wasn't already submitted!
   if(e.job_id() && findJob(*e.job_id()))
   {
-    // The job already exists -> generate an error message that the job already exists
-
-        events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(events::ErrorEvent::SDPA_EJOBEXISTS, "The job already exists!", e.job_id()) );
-        sendEventToOther (source, pErrorEvt);
-
+    parent_proxy (this, source).submit_job_ack (*e.job_id());
     return;
   }
 
@@ -585,36 +581,6 @@ void GenericDaemon::handleErrorEvent
         }
       }
 
-      break;
-    }
-    case events::ErrorEvent::SDPA_EJOBEXISTS:
-    {
-      if (as_worker)
-      {
-        Job* ptrJob = findJob(*error.job_id());
-        if(ptrJob)
-        {
-          ptrJob->Dispatch();
-          scheduler().worker_manager().acknowledge_job_sent_to_worker ( *error.job_id()
-                                                                      , as_worker.get()->second
-                                                                      );
-        }
-        else
-        {
-          throw std::runtime_error
-            ( ( boost::format( "The worker %1% reported double submission for the unexisting job %2%!")
-              % as_worker.get()->second
-              % *error.job_id()
-              ).str()
-            );
-        }
-      }
-      else
-      {
-        throw std::runtime_error ( "Not-registered worker reported double submission of the job "
-                                 +  *error.job_id()
-                                 );
-      }
       break;
     }
     default:

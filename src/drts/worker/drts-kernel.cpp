@@ -2,21 +2,27 @@
 
 #include <drts/worker/drts.hpp>
 
+#include <fhg/util/boost/program_options/require_all_if_one.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
+#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/print_exception.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
-#include <fhg/util/split.hpp>
 #include <fhg/util/thread/event.hpp>
+
 #include <fhglog/Configuration.hpp>
 #include <fhglog/LogMacros.hpp>
 
+#include <boost/asio/io_service.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/program_options.hpp>
+#include <boost/tokenizer.hpp>
 
-#include <fstream>
 #include <functional>
+#include <memory>
+#include <set>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -29,6 +35,13 @@ namespace
       {"virtual-memory-socket"};
     constexpr char const* const shared_memory_size
       {"shared-memory-size"};
+    constexpr char const* const capability {"capability"};
+    constexpr char const* const backlog_length {"backlog-length"};
+    constexpr char const* const library_search_path {"library-search-path"};
+    constexpr char const* const socket {"socket"};
+    constexpr char const* const master {"master"};
+    constexpr char const* const gui_host {"gui-host"};
+    constexpr char const* const gui_port {"gui-port"};
   }
 }
 
@@ -43,13 +56,10 @@ try
 
   po::options_description desc("options");
 
-  std::vector<std::string> config_vars;
   std::string kernel_name;
 
   desc.add_options()
-    ("help,h", "this message")
     ("name,n", po::value<std::string>(&kernel_name), "give the kernel a name")
-    ("set,s", po::value<std::vector<std::string>>(&config_vars), "set a parameter to a value key=value")
     ( "startup-messages-pipe"
     , po::value<int>()->required()
     , "pipe filedescriptor to use for communication during startup (ports used, ...)"
@@ -64,6 +74,37 @@ try
     , po::value<unsigned long>()
     , "size of shared memory associated with the kernel"
     )
+    ( option_name::capability
+    , po::value<std::vector<std::string>>()
+      ->default_value (std::vector<std::string>(), "{}")
+    , "capabilities of worker"
+    )
+    ( option_name::backlog_length
+    , po::value<std::size_t>()->required()
+    , "length of job backlog"
+    )
+    ( option_name::library_search_path
+    , po::value<std::vector<boost::filesystem::path>>()
+      ->default_value (std::vector<boost::filesystem::path>(), "{}")
+    , "paths to search for module call libraries"
+    )
+    ( option_name::socket
+    , po::value<std::size_t>()
+    , "socket to pin worker on"
+    )
+    ( option_name::master
+    , po::value<std::vector<std::string>>()->required()
+    , "masters to connect to (unique_name%host%port)"
+    )
+    ( option_name::gui_host
+    , po::value<std::string>()
+    , "host to send gui notifications to"
+    )
+    ( option_name::gui_port
+    , po::value
+        <fhg::util::boost::program_options::positive_integral<unsigned short>>()
+    , "port to send gui notifications to"
+    )
     ;
 
   po::variables_map vm;
@@ -77,32 +118,12 @@ try
   catch (std::exception const &ex)
   {
     LLOG (ERROR, logger, "invalid command line: " << ex.what());
-    LLOG (ERROR, logger, "use " << av[0] << " --help to get a list of options");
     return EXIT_FAILURE;
   }
   po::notify (vm);
 
-  if (vm.count("help"))
-  {
-    std::cout << av[0] << " [options]" << std::endl;
-    std::cout << std::endl;
-    std::cout << desc << std::endl;
-    return EXIT_SUCCESS;
-  }
-
-  std::map<std::string, std::string> config_variables;
-  for (const std::string& p : config_vars)
-  {
-    const std::pair<std::string, std::string> kv (fhg::util::split_string (p, '='));
-    if (kv.first.empty())
-    {
-      LLOG (ERROR, logger, "invalid config variable: must not be empty");
-      throw std::runtime_error ("invalid config variable: must not be empty");
-    }
-
-    config_variables.insert (kv);
-  }
-  config_variables["kernel_name"] = kernel_name;
+  fhg::util::boost::program_options::require_all_if_one
+    (vm, {option_name::gui_host, option_name::gui_port});
 
   fhg::util::thread::event<> stop_requested;
   const std::function<void()> request_stop
@@ -145,51 +166,73 @@ try
       : nullptr
     );
 
+  std::vector<DRTSImpl::master_info> master_info;
+  std::set<std::string> seen_master_names;
+  for ( std::string const& master
+      : vm.at (option_name::master).as<std::vector<std::string>>()
+      )
+  {
+    boost::tokenizer<boost::char_separator<char>> const tok
+      (master, boost::char_separator<char> ("%"));
+
+    std::vector<std::string> const parts (tok.begin(), tok.end());
+
+    if (parts.size() != 3)
+    {
+      throw std::invalid_argument
+        ("invalid master information: has to be of format 'name%host%port'");
+    }
+
+    if (!seen_master_names.emplace (master).second)
+    {
+      throw std::invalid_argument ("master already specified: " + master);
+    }
+
+    master_info.emplace_back
+      (parts[0], fhg::com::host_t (parts[1]), fhg::com::port_t (parts[2]));
+  }
+
   boost::asio::io_service peer_io_service;
-  if (config_variables.count ("plugin.drts.gui_url"))
+
+  boost::asio::io_service gui_io_service;
+  boost::optional<sdpa::daemon::NotificationService> gui_notification_service;
+  if (vm.count (option_name::gui_host) || vm.count (option_name::gui_port))
   {
-    boost::asio::io_service gui_io_service;
-    DRTSImpl const plugin
-      ( request_stop
-      , peer_io_service
-      , std::pair<std::string, boost::asio::io_service&>
-        (config_variables.at ("plugin.drts.gui_url"), gui_io_service)
-      , config_variables
-      , kernel_name
-      , virtual_memory_api.get()
-      , shared_memory.get()
+    gui_notification_service = sdpa::daemon::NotificationService
+      ( vm.at (option_name::gui_host).as<std::string>()
+      , vm.at (option_name::gui_port)
+        .as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
+      , gui_io_service
       );
-
-    {
-      boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
-        startup_messages_pipe ( vm.at ("startup-messages-pipe").as<int>()
-                              , boost::iostreams::close_handle
-                              );
-      startup_messages_pipe << "OKAY\n";
-    }
-
-    stop_requested.wait();
   }
-  else
+
+  DRTSImpl const plugin ( request_stop
+                        , peer_io_service
+                        , gui_notification_service
+                        , kernel_name
+                        , virtual_memory_api.get()
+                        , shared_memory.get()
+                        , master_info
+                        , vm.at (option_name::capability)
+                          .as<std::vector<std::string>>()
+                        , vm.count (option_name::socket)
+                        ? vm.at (option_name::socket).as<std::size_t>()
+                        : boost::optional<std::size_t>()
+                        , vm.at (option_name::library_search_path)
+                          .as<std::vector<boost::filesystem::path>>()
+                        , vm.at (option_name::backlog_length)
+                          .as<std::size_t>()
+                        );
+
   {
-    DRTSImpl const plugin ( request_stop
-                          , peer_io_service
-                          , boost::none
-                          , config_variables
-                          , kernel_name
-                          , virtual_memory_api.get()
-                          , shared_memory.get()
-                          );
-    {
-      boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
-        startup_messages_pipe ( vm.at ("startup-messages-pipe").as<int>()
-                              , boost::iostreams::close_handle
-                              );
-      startup_messages_pipe << "OKAY\n";
-    }
-
-    stop_requested.wait();
+    boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
+      startup_messages_pipe ( vm.at ("startup-messages-pipe").as<int>()
+                            , boost::iostreams::close_handle
+                            );
+    startup_messages_pipe << "OKAY\n";
   }
+
+  stop_requested.wait();
 
   return 0;
 }

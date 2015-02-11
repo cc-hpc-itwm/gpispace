@@ -18,6 +18,10 @@ namespace fhg
       class RemoteAppender : public Appender
       {
       public:
+        RemoteAppender ( std::string const& host
+                       , std::string const& port
+                       , boost::asio::io_service& io_service
+                       );
         RemoteAppender (const std::string &location, boost::asio::io_service&);
         virtual ~RemoteAppender();
 
