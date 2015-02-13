@@ -111,10 +111,6 @@ namespace gspc
       boost::program_options::options_description drts ("Runtime system");
 
       drts.add_options()
-        ( name::nodefile
-        , boost::program_options::value<validators::existing_path>()->required()
-        , "nodefile"
-        )
         ( name::state_directory
         , boost::program_options::value<validators::is_directory_if_exists>()
         ->required()
@@ -152,6 +148,10 @@ namespace gspc
         ("Remote Interface Daemon (internally started)");
 
       drts.add_options()
+        ( name::nodefile
+        , boost::program_options::value<validators::existing_path>()->required()
+        , "nodefile"
+        )
         ( name::rif_strategy
         , boost::program_options::value<std::string>()->required()
         , ( "strategy used to bootstrap rifd (one of "
