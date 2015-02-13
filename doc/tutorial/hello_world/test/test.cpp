@@ -106,7 +106,11 @@ BOOST_AUTO_TEST_CASE (tutorial_hello_world)
 
   pnet::type::value::value_type const control {we::type::literal::control()};
 
-  gspc::scoped_rifd const rifd (vm, installation);
+  gspc::scoped_rifd const rifd ( gspc::rifd::strategy (vm)
+                               , gspc::rifd::hostnames (vm)
+                               , gspc::rifd::port (vm)
+                               , installation
+                               );
   gspc::scoped_runtime_system const drts
     (vm, installation, "work:4", rifd.entry_points());
 

@@ -18,17 +18,47 @@
 
 namespace gspc
 {
+  namespace rifd
+  {
+#define PIMPL(_name)                      \
+      private:                            \
+        friend class ::gspc::scoped_rifd; \
+        struct implementation;            \
+        implementation* _;                \
+      public:                             \
+        ~_name()
+
+    struct strategy
+    {
+      strategy (boost::program_options::variables_map const&);
+
+      PIMPL (strategy);
+    };
+
+    struct hostnames
+    {
+      hostnames (boost::program_options::variables_map const&);
+      hostnames (std::vector<std::string> const&);
+
+      PIMPL (hostnames);
+    };
+    struct port
+    {
+      port (boost::program_options::variables_map const&);
+
+      PIMPL (port);
+    };
+  }
+
   class scoped_rifd : boost::noncopyable
   {
   public:
-    scoped_rifd ( boost::program_options::variables_map const& vm
+    scoped_rifd ( rifd::strategy const&
+                , rifd::hostnames const&
+                , rifd::port const&
                 , installation const&
                 );
-    scoped_rifd ( std::string const& strategy
-                , std::vector<std::string> const& hostnames
-                , boost::optional<unsigned short> const& rifd_port
-                , boost::filesystem::path const& gspc_home
-                );
+
     ~scoped_rifd();
 
     rifd_entry_points entry_points() const;

@@ -12,6 +12,46 @@
 
 namespace gspc
 {
+  namespace rifd
+  {
+#define IMPLEMENTATION(_name, _type...)                                 \
+    struct _name::implementation                                        \
+    {                                                                   \
+      implementation (_type const& _name)                               \
+        : _ (_name)                                                     \
+      {}                                                                \
+                                                                        \
+      _type const _;                                                    \
+    };                                                                  \
+                                                                        \
+    _name::~_name()                                                     \
+    {                                                                   \
+      delete _;                                                         \
+      _ = nullptr;                                                      \
+    }
+
+    IMPLEMENTATION (strategy, std::string)
+    IMPLEMENTATION (hostnames, std::vector<std::string>)
+    IMPLEMENTATION (port, boost::optional<unsigned short>)
+
+#undef IMPLEMENTATION
+
+    strategy::strategy (boost::program_options::variables_map const& vm)
+      : _ (new implementation (require_rif_strategy (vm)))
+    {}
+
+    hostnames::hostnames (boost::program_options::variables_map const& vm)
+      : _ (new implementation (fhg::util::read_lines (require_nodefile (vm))))
+    {}
+    hostnames::hostnames (std::vector<std::string> const& hostnames)
+      : _ (new implementation (hostnames))
+    {}
+
+    port::port (boost::program_options::variables_map const& vm)
+      : _ (new implementation (get_rif_port (vm)))
+    {}
+  }
+
   struct scoped_rifd::implementation
   {
     implementation ( std::string const& strategy
@@ -40,24 +80,17 @@ namespace gspc
     std::vector<fhg::rif::entry_point> _entry_points;
   };
 
-  scoped_rifd::scoped_rifd ( boost::program_options::variables_map const& vm
+  scoped_rifd::scoped_rifd ( rifd::strategy const& strategy
+                           , rifd::hostnames const& hostnames
+                           , rifd::port const& port
                            , installation const& installation
                            )
-    : scoped_rifd
-        ( require_rif_strategy (vm)
-        , fhg::util::read_lines (require_nodefile (vm))
-        , get_rif_port (vm)
-        , installation.gspc_home()
+    : _ (new implementation ( strategy._->_
+                            , hostnames._->_
+                            , port._->_
+                            , installation.gspc_home()
+                            )
         )
-  {}
-
-
-  scoped_rifd::scoped_rifd ( std::string const& strategy
-                           , std::vector<std::string> const& hostnames
-                           , boost::optional<unsigned short> const& rifd_port
-                           , boost::filesystem::path const& gspc_home
-                           )
-    : _ (new implementation (strategy, hostnames, rifd_port, gspc_home))
   {}
 
   scoped_rifd::~scoped_rifd()
