@@ -22,8 +22,6 @@ BOOST_AUTO_TEST_CASE (peer_run_single)
                 );
 
   peer_1.start();
-
-  peer_1.stop();
 }
 
 namespace
@@ -67,9 +65,6 @@ BOOST_AUTO_TEST_CASE (peer_run_two)
   BOOST_CHECK_EQUAL (m.header.src, peer_1.address());
   BOOST_CHECK_EQUAL
     (std::string (m.data.begin(), m.data.end()), "hello world!");
-
-  peer_1.stop();
-  peer_2.stop();
 }
 
 BOOST_AUTO_TEST_CASE (resolve_peer_names)
@@ -88,9 +83,6 @@ BOOST_AUTO_TEST_CASE (resolve_peer_names)
 
   peer_1.start();
   peer_2.start();
-
-  peer_1.stop();
-  peer_2.stop();
 }
 
 BOOST_AUTO_TEST_CASE (peer_loopback)
@@ -113,8 +105,6 @@ BOOST_AUTO_TEST_CASE (peer_loopback)
     {
       peer_1.send(addr, "hello world!");
     }
-
-  peer_1.stop();
 }
 
 BOOST_AUTO_TEST_CASE (send_to_nonexisting_peer)
@@ -132,8 +122,6 @@ BOOST_AUTO_TEST_CASE (send_to_nonexisting_peer)
                         (host_t ("unknown host"), port_t ("unknown service"))
                     , std::exception
                     );
-
-  peer_1.stop();
 }
 
 BOOST_AUTO_TEST_CASE (send_large_data)
@@ -156,8 +144,6 @@ BOOST_AUTO_TEST_CASE (send_large_data)
     peer_1.recv(&r);
 
     BOOST_CHECK_EQUAL(2<<25, r.data.size());
-
-  peer_1.stop();
 }
 
 BOOST_AUTO_TEST_CASE (peers_with_fixed_ports)
@@ -182,9 +168,6 @@ BOOST_AUTO_TEST_CASE (peers_with_fixed_ports)
                                  )
              , "hello world!"
              );
-
-  peer_1.stop();
-  peer_2.stop();
 }
 
 BOOST_AUTO_TEST_CASE (peers_with_fixed_ports_reuse)
@@ -209,9 +192,6 @@ BOOST_AUTO_TEST_CASE (peers_with_fixed_ports_reuse)
                                   )
               , "hello world!"
               );
-
-  peer_1.stop();
-  peer_2.stop();
 }
 
 BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
@@ -272,26 +252,14 @@ BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
     }
     catch (boost::system::system_error const &se)
     {
-      using namespace boost::system;
-
       if (se.code ().value () != boost::asio::error::eof)
       {
-        peer_2.stop ();
-        BOOST_ERROR (se.what ());
+        throw;
       }
     }
-    catch (std::exception const & ex)
-    {
-      peer_2.stop ();
-      BOOST_ERROR ( ex.what() );
-    }
-
-    peer_2.stop ();
   }
 
   stop_request = true;
 
   sender.join ();
-
-  peer_1.stop();
 }
