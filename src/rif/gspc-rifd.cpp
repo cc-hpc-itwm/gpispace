@@ -103,9 +103,28 @@ try
         {
           try
           {
-            fhg::syscall::kill (pid, SIGTERM);
             int status;
-            fhg::syscall::waitpid (pid, &status, 0);
+
+            if (fhg::syscall::waitpid (pid, &status, WNOHANG) == pid)
+            {
+              if (WIFEXITED (status) && WEXITSTATUS (status))
+              {
+                throw std::runtime_error
+                  ("already returned " + std::to_string (WEXITSTATUS (status)));
+              }
+              else if (WIFSIGNALED (status))
+              {
+                throw std::runtime_error
+                  ("already signaled " + std::to_string (WTERMSIG (status)));
+              }
+            }
+
+            fhg::syscall::kill (pid, SIGTERM);
+
+            if (fhg::syscall::waitpid (pid, &status, 0) != pid)
+            {
+              throw std::logic_error ("waitpid returned for wrong child");
+            }
             if (WIFEXITED (status) && WEXITSTATUS (status))
             {
               throw std::runtime_error
