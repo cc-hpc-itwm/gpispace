@@ -213,7 +213,6 @@ namespace gpi
         if (not m_shutting_down && ec)
         {
           MLOG (ERROR, "failed sending a message: " << ec);
-          m_peer->stop ();
         }
       }
 
