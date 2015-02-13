@@ -143,7 +143,11 @@ BOOST_AUTO_TEST_CASE (share_example_map_log)
 
   topology_description << "worker:2," << (2 * size_block);
 
-  gspc::scoped_rifd const rifd (vm, installation);
+  gspc::scoped_rifd const rifd ( gspc::rifd::strategy (vm)
+                               , gspc::rifd::hostnames (vm)
+                               , gspc::rifd::port (vm)
+                               , installation
+                               );
   gspc::scoped_runtime_system const drts
     (vm, installation, topology_description.str(), rifd.entry_points());
 

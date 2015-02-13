@@ -119,7 +119,11 @@ namespace share_example_stream_test
 
     unsigned long const size (num_slots * (size_slot + 1));
 
-    gspc::scoped_rifd const rifd (vm, installation);
+    gspc::scoped_rifd const rifd ( gspc::rifd::strategy (vm)
+                                 , gspc::rifd::hostnames (vm)
+                                 , gspc::rifd::port (vm)
+                                 , installation
+                                 );
     gspc::scoped_runtime_system const drts
       (vm, installation, topology (size_slot), rifd.entry_points());
 
