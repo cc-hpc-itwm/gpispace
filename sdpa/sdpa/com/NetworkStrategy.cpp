@@ -38,8 +38,6 @@ namespace sdpa
     NetworkStrategy::~NetworkStrategy()
     {
       m_shutting_down = true;
-
-      _peer.stop();
     }
 
     fhg::com::p2p::address_t NetworkStrategy::connect_to
