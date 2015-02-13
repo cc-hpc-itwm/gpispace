@@ -24,7 +24,6 @@ namespace sdpa
       , m_shutting_down (false)
       , _peer (std::move (peer_io_service), host, port)
     {
-      _peer.start ();
       _peer.async_recv
         ( &m_message
         , std::bind ( &NetworkStrategy::handle_recv

@@ -20,8 +20,6 @@ BOOST_AUTO_TEST_CASE (peer_run_single)
                 , host_t("localhost")
                 , port_t("1235")
                 );
-
-  peer_1.start();
 }
 
 namespace
@@ -51,9 +49,6 @@ BOOST_AUTO_TEST_CASE (peer_run_two)
                 , port_t("0")
                 );
 
-  peer_1.start();
-  peer_2.start();
-
   peer_1.send ( peer_1.connect_to ( host (peer_2.local_endpoint())
                                   , port (peer_2.local_endpoint())
                                   )
@@ -80,9 +75,6 @@ BOOST_AUTO_TEST_CASE (resolve_peer_names)
                 , host_t("localhost")
                 , port_t("0")
                 );
-
-  peer_1.start();
-  peer_2.start();
 }
 
 BOOST_AUTO_TEST_CASE (peer_loopback)
@@ -93,8 +85,6 @@ BOOST_AUTO_TEST_CASE (peer_loopback)
                 , host_t("localhost")
                 , port_t("0")
                 );
-
-  peer_1.start();
 
   p2p::address_t const addr ( peer_1.connect_to ( host (peer_1.local_endpoint())
                                                 , port (peer_1.local_endpoint())
@@ -116,8 +106,6 @@ BOOST_AUTO_TEST_CASE (send_to_nonexisting_peer)
                 , port_t("0")
                 );
 
-  peer_1.start();
-
   BOOST_CHECK_THROW ( peer_1.connect_to
                         (host_t ("unknown host"), port_t ("unknown service"))
                     , std::exception
@@ -132,8 +120,6 @@ BOOST_AUTO_TEST_CASE (send_large_data)
                 , host_t("localhost")
                 , port_t("0")
                 );
-
-  peer_1.start();
 
   peer_1.send( peer_1.connect_to ( host (peer_1.local_endpoint())
                                  , port (peer_1.local_endpoint())
@@ -160,9 +146,6 @@ BOOST_AUTO_TEST_CASE (peers_with_fixed_ports)
                 , port_t("0")
                 );
 
-  peer_1.start();
-  peer_2.start();
-
   peer_1.send( peer_1.connect_to ( host (peer_2.local_endpoint())
                                  , port (peer_2.local_endpoint())
                                  )
@@ -184,9 +167,6 @@ BOOST_AUTO_TEST_CASE (peers_with_fixed_ports_reuse)
                 , port_t("0")
                 );
 
-  peer_1.start();
-  peer_2.start();
-
   peer_1.send ( peer_1.connect_to ( host (peer_2.local_endpoint())
                                   , port (peer_2.local_endpoint())
                                   )
@@ -202,8 +182,6 @@ BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
                 , host_t("localhost")
                 , port_t("0")
                 );
-
-  peer_1.start();
 
   bool stop_request (false);
 
@@ -243,7 +221,6 @@ BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
 
     try
     {
-      peer_2.start();
       peer_2.send ( peer_2.connect_to ( host (peer_1.local_endpoint())
                                       , port (peer_1.local_endpoint())
                                       )

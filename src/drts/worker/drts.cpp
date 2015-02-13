@@ -210,8 +210,6 @@ DRTSImpl::DRTSImpl
   , m_event_thread (&DRTSImpl::event_thread, this)
   , m_execution_thread (&DRTSImpl::job_execution_thread, this)
 {
-  _peer.start();
-
   start_receiver();
 
   std::set<sdpa::Capability> const capabilities

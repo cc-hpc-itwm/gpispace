@@ -188,8 +188,6 @@ try
         )
     );
 
-  topology_peer->start();
-
   std::unique_ptr<gpi::api::gpi_api_t> const gpi_api
     ( [&gpi_mem, &gpi_timeout, &port, &requested_api, &topology_peer]()
         -> std::unique_ptr<gpi::api::gpi_api_t>

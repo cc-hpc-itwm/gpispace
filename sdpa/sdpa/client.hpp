@@ -76,15 +76,6 @@ namespace sdpa
       fhg::com::message_t m_message;
       bool _stopping;
       fhg::com::peer_t m_peer;
-      struct peer_starter
-      {
-        peer_starter (fhg::com::peer_t& peer)
-          : _peer (peer)
-        {
-          _peer.start();
-        }
-        fhg::com::peer_t& _peer;
-      } _peer_starter = {m_peer};
       fhg::com::p2p::address_t _drts_entrypoint_address;
     };
   }
