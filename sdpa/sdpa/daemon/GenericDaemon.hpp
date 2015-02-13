@@ -92,7 +92,7 @@ namespace sdpa {
 
       GenericDaemon( const std::string name
                    , const std::string url
-                   , boost::asio::io_service& peer_io_service
+                   , std::unique_ptr<boost::asio::io_service> peer_io_service
                    , boost::optional<boost::filesystem::path> const& vmem_socket
                    , std::vector<name_host_port_tuple> const& masters
                    , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info = boost::none

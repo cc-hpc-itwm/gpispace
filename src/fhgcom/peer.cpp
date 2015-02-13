@@ -19,7 +19,7 @@ namespace fhg
 {
   namespace com
   {
-    peer_t::peer_t ( boost::asio::io_service& io_service
+    peer_t::peer_t ( std::unique_ptr<boost::asio::io_service> io_service
                    , host_t const & host
                    , port_t const & port
                    )
@@ -27,25 +27,17 @@ namespace fhg
       , stopping_ (false)
       , host_(host)
       , port_(port)
-      , io_service_ (io_service)
-      , io_service_work_(io_service_)
-      , acceptor_(io_service_)
+      , io_service_ (std::move (io_service))
+      , io_service_work_(*io_service_)
+      , acceptor_(*io_service_)
       , connections_()
+      , _io_thread ([this] { io_service_->run(); })
     {
     }
 
     peer_t::~peer_t()
     {
       stop();
-    }
-
-    void peer_t::run ()
-    {
-      if (m_peer_thread)
-        return;
-      m_peer_thread = boost::make_shared<boost::thread>
-        ([this] { io_service_.run(); });
-      m_peer_thread->join ();
     }
 
     void peer_t::start()
@@ -56,7 +48,7 @@ namespace fhg
         if (! stopped_)
           return;
 
-        boost::asio::ip::tcp::resolver resolver(io_service_);
+        boost::asio::ip::tcp::resolver resolver(*io_service_);
         boost::asio::ip::tcp::resolver::query query(host_, port_);
         boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
 
@@ -145,7 +137,7 @@ namespace fhg
 
       backlog_.clear ();
 
-      io_service_.stop();
+      io_service_->stop();
 
       stopping_ = false;
       stopped_ = true;
@@ -165,7 +157,7 @@ namespace fhg
 
       connection_data_t& cd (connections_[addr]);
       cd.connection = boost::make_shared<connection_t>
-        ( io_service_
+        ( *io_service_
         , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
         , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
         , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
@@ -176,7 +168,7 @@ namespace fhg
       boost::system::error_code ec;
       boost::asio::connect
         ( cd.connection->socket()
-        , boost::asio::ip::tcp::resolver (io_service_).resolve ({host, port})
+        , boost::asio::ip::tcp::resolver (*io_service_).resolve ({host, port})
         , ec
         );
 
@@ -205,7 +197,7 @@ namespace fhg
 
       connection_data_t& cd (connections_[addr]);
       cd.connection = boost::make_shared<connection_t>
-        ( io_service_
+        ( *io_service_
         , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
         , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
         , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
@@ -216,7 +208,7 @@ namespace fhg
       boost::system::error_code ec;
       boost::asio::connect
         ( cd.connection->socket()
-        , boost::asio::ip::tcp::resolver (io_service_).resolve ({host, port})
+        , boost::asio::ip::tcp::resolver (*io_service_).resolve ({host, port})
         , ec
         );
 
@@ -264,7 +256,7 @@ namespace fhg
         return;
       }
 
-      // TODO: io_service_.post (...);
+      // TODO: io_service_->post (...);
 
         connection_data_t & cd = connections_.at (addr);
         to_send_t to_send;
@@ -493,7 +485,7 @@ namespace fhg
     {
       listen_ = connection_t::ptr_t
         ( new connection_t
-          ( io_service_
+          ( *io_service_
           , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
           , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
           , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)

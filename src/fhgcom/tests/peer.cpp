@@ -7,6 +7,7 @@
 
 #include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <fhg/util/make_unique.hpp>
 #include <fhg/util/random_string.hpp>
 
 #include <boost/asio/io_service.hpp>
@@ -15,17 +16,14 @@
 BOOST_AUTO_TEST_CASE (peer_run_single)
 {
   using namespace fhg::com;
-  boost::asio::io_service peer_1_io_service;
-  peer_t peer_1 ( peer_1_io_service
+  peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("1235")
                 );
-  boost::thread thrd_1 (&peer_t::run, &peer_1);
 
   peer_1.start();
 
   peer_1.stop();
-  thrd_1.join ();
 }
 
 namespace
@@ -45,19 +43,15 @@ BOOST_AUTO_TEST_CASE (peer_run_two)
 {
   using namespace fhg::com;
 
-  boost::asio::io_service peer_1_io_service;
-  peer_t peer_1 ( peer_1_io_service
+  peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
-  boost::thread thrd_1 (&peer_t::run, &peer_1);
 
-  boost::asio::io_service peer_2_io_service;
-  peer_t peer_2 ( peer_2_io_service
+  peer_t peer_2 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
-  boost::thread thrd_2 (&peer_t::run, &peer_2);
 
   peer_1.start();
   peer_2.start();
@@ -76,49 +70,37 @@ BOOST_AUTO_TEST_CASE (peer_run_two)
 
   peer_1.stop();
   peer_2.stop();
-
-  thrd_1.join ();
-  thrd_2.join ();
 }
 
 BOOST_AUTO_TEST_CASE (resolve_peer_names)
 {
   using namespace fhg::com;
 
-  boost::asio::io_service peer_1_io_service;
-  peer_t peer_1 ( peer_1_io_service
+  peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
-  boost::thread thrd_1 (&peer_t::run, &peer_1);
 
-  boost::asio::io_service peer_2_io_service;
-  peer_t peer_2 ( peer_1_io_service
+  peer_t peer_2 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
-  boost::thread thrd_2 (&peer_t::run, &peer_2);
 
   peer_1.start();
   peer_2.start();
 
   peer_1.stop();
   peer_2.stop();
-
-  thrd_1.join ();
-  thrd_2.join ();
 }
 
 BOOST_AUTO_TEST_CASE (peer_loopback)
 {
   using namespace fhg::com;
 
-  boost::asio::io_service peer_1_io_service;
-  peer_t peer_1 ( peer_1_io_service
+  peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
-  boost::thread thrd_1 (&peer_t::run, &peer_1);
 
   peer_1.start();
 
@@ -133,19 +115,16 @@ BOOST_AUTO_TEST_CASE (peer_loopback)
     }
 
   peer_1.stop();
-  thrd_1.join ();
 }
 
 BOOST_AUTO_TEST_CASE (send_to_nonexisting_peer)
 {
   using namespace fhg::com;
 
-  boost::asio::io_service peer_1_io_service;
-  peer_t peer_1 ( peer_1_io_service
+  peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
-  boost::thread thrd_1 (&peer_t::run, &peer_1);
 
   peer_1.start();
 
@@ -155,19 +134,16 @@ BOOST_AUTO_TEST_CASE (send_to_nonexisting_peer)
                     );
 
   peer_1.stop();
-  thrd_1.join ();
 }
 
 BOOST_AUTO_TEST_CASE (send_large_data)
 {
   using namespace fhg::com;
 
-  boost::asio::io_service peer_1_io_service;
-  peer_t peer_1 ( peer_1_io_service
+  peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
-  boost::thread thrd_1 (&peer_t::run, &peer_1);
 
   peer_1.start();
 
@@ -182,26 +158,21 @@ BOOST_AUTO_TEST_CASE (send_large_data)
     BOOST_CHECK_EQUAL(2<<25, r.data.size());
 
   peer_1.stop();
-  thrd_1.join ();
 }
 
 BOOST_AUTO_TEST_CASE (peers_with_fixed_ports)
 {
   using namespace fhg::com;
 
-  boost::asio::io_service peer_1_io_service;
-  peer_t peer_1 ( peer_1_io_service
+  peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
-  boost::thread thrd_1 (&peer_t::run, &peer_1);
 
-  boost::asio::io_service peer_2_io_service;
-  peer_t peer_2 ( peer_1_io_service
+  peer_t peer_2 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
-  boost::thread thrd_2 (&peer_t::run, &peer_2);
 
   peer_1.start();
   peer_2.start();
@@ -213,29 +184,22 @@ BOOST_AUTO_TEST_CASE (peers_with_fixed_ports)
              );
 
   peer_1.stop();
-  thrd_1.join ();
-
   peer_2.stop();
-  thrd_2.join ();
 }
 
 BOOST_AUTO_TEST_CASE (peers_with_fixed_ports_reuse)
 {
   using namespace fhg::com;
 
-  boost::asio::io_service peer_1_io_service;
-  peer_t peer_1 ( peer_1_io_service
+  peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
-  boost::thread thrd_1 (&peer_t::run, &peer_1);
 
-  boost::asio::io_service peer_2_io_service;
-  peer_t peer_2 ( peer_1_io_service
+  peer_t peer_2 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
-  boost::thread thrd_2 (&peer_t::run, &peer_2);
 
   peer_1.start();
   peer_2.start();
@@ -247,22 +211,17 @@ BOOST_AUTO_TEST_CASE (peers_with_fixed_ports_reuse)
               );
 
   peer_1.stop();
-  thrd_1.join ();
-
   peer_2.stop();
-  thrd_2.join ();
 }
 
 BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
 {
   using namespace fhg::com;
 
-  boost::asio::io_service peer_1_io_service;
-  peer_t peer_1 ( peer_1_io_service
+  peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
-  boost::thread thrd_1 (&peer_t::run, &peer_1);
 
   peer_1.start();
 
@@ -297,10 +256,10 @@ BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
 
   for (std::size_t i (0); i < 100; ++i)
   {
-    boost::asio::io_service peer_2_io_service;
     peer_t peer_2
-      (peer_2_io_service, host (peer_2_endpoint), port (peer_2_endpoint));
-    boost::thread thrd_2 (&peer_t::run, &peer_2);
+      ( fhg::util::make_unique<boost::asio::io_service>()
+      , host (peer_2_endpoint), port (peer_2_endpoint)
+      );
 
     try
     {
@@ -328,7 +287,6 @@ BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
     }
 
     peer_2.stop ();
-    thrd_2.join ();
   }
 
   stop_request = true;
@@ -336,5 +294,4 @@ BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
   sender.join ();
 
   peer_1.stop();
-  thrd_1.join ();
 }

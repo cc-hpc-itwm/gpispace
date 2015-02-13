@@ -6,6 +6,8 @@
 #include <drts/information_to_reattach.hpp>
 #include <drts/private/information_to_reattach.hpp>
 
+#include <fhg/util/make_unique.hpp>
+
 #include <sdpa/client.hpp>
 
 #include <we/type/activity.hpp>
@@ -50,11 +52,10 @@ namespace gspc
     implementation (gspc::host_and_port_type const& orchestrator_endpoint)
       : _client ( fhg::com::host_t (orchestrator_endpoint.host)
                 , fhg::com::port_t (std::to_string (orchestrator_endpoint.port))
-                , _peer_io_service
+                , fhg::util::make_unique<boost::asio::io_service>()
                 )
     {}
 
-    boost::asio::io_service _peer_io_service;
     sdpa::client::Client _client;
   };
 

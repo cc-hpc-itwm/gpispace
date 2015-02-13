@@ -8,6 +8,7 @@
 
 #include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <fhg/util/make_unique.hpp>
 
 #include <boost/thread.hpp>
 
@@ -60,14 +61,13 @@ BOOST_AUTO_TEST_CASE (perform_test)
 {
   wait_for_n_events_strategy counter (1);
 
-  boost::asio::io_service peer_io_service;
   sdpa::com::NetworkStrategy net
     ( std::bind ( &wait_for_n_events_strategy::perform
                 , &counter
                 , std::placeholders::_1
                 , std::placeholders::_2
                 )
-    , peer_io_service
+    , fhg::util::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
     );

@@ -180,14 +180,13 @@ try
   boost::asio::io_service remote_log_io_service;
   fhg::log::configure (remote_log_io_service);
 
-  boost::asio::io_service topology_peer_io_service;
-  boost::shared_ptr<fhg::com::peer_t> topology_peer
-    ( boost::make_shared<fhg::com::peer_t>
-        (topology_peer_io_service, fhg::com::host_t ("*"), fhg::com::port_t ("0"))
+  std::unique_ptr<fhg::com::peer_t> topology_peer
+    ( fhg::util::make_unique<fhg::com::peer_t>
+        ( fhg::util::make_unique<boost::asio::io_service>()
+        , fhg::com::host_t ("*")
+        , fhg::com::port_t ("0")
+        )
     );
-
-  boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> const
-    topology_peer_thread (&fhg::com::peer_t::run, topology_peer);
 
   topology_peer->start();
 
@@ -215,7 +214,7 @@ try
     ( socket_path.string()
     , {"gpi://?buffer_size=4194304&buffers=8"}
     , *gpi_api
-    , topology_peer
+    , std::move (topology_peer)
     );
 
   fhg::util::thread::event<> stop_requested;

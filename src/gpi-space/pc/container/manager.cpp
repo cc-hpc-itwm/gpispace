@@ -250,7 +250,7 @@ namespace gpi
       manager_t::manager_t ( std::string const & p
                            , std::vector<std::string> const& default_memory_urls
                            , api::gpi_api_t& gpi_api
-                           , boost::shared_ptr<fhg::com::peer_t> const& topology_peer
+                           , std::unique_ptr<fhg::com::peer_t> topology_peer
                            )
         : m_path (p)
         , m_socket (-1)
@@ -258,7 +258,7 @@ namespace gpi
         , m_process_counter (0)
         , _gpi_api (gpi_api)
         , _memory_manager (gpi_api)
-        , _topology (_memory_manager, gpi_api, topology_peer)
+        , _topology (_memory_manager, gpi_api, std::move (topology_peer))
       {
         if ( default_memory_urls.size ()
            >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID
