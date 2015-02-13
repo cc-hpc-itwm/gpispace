@@ -24,10 +24,10 @@
 #include <gpi-space/gpi/gaspi.hpp>
 #include <gpi-space/pc/container/manager.hpp>
 
+#include <rif/startup_messages_pipe.hpp>
+
 #include <boost/asio/io_service.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/iostreams/device/file_descriptor.hpp>
-#include <boost/iostreams/stream.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
@@ -49,7 +49,6 @@ namespace
     constexpr const char* const log_level ("log-level");
     constexpr const char* const port ("port");
     constexpr const char* const socket ("socket");
-    constexpr const char* const startup_messages_pipe ("startup-messages-pipe");
   }
 }
 
@@ -105,11 +104,9 @@ try
         ->required()
     , "path to open communication socket"
     )
-    ( option::startup_messages_pipe
-    , boost::program_options::value<int>()->required()
-    , "pipe filedescriptor to use for communication during startup (ports used, ...)"
-    )
     ;
+
+  options_description.add (fhg::rif::startup_messages_pipe::program_options());
 
   boost::program_options::variables_map vm;
   boost::program_options::store
@@ -120,9 +117,6 @@ try
     );
 
   boost::program_options::notify (vm);
-
-  int const startup_messages_pipe_fd
-    (vm.at (option::startup_messages_pipe).as<int>());
 
   boost::filesystem::path const socket_path
     ( vm.at (option::socket)
@@ -235,11 +229,7 @@ try
     (signal_handler, SIGINT, std::bind (request_stop));
 
   {
-    boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
-      startup_messages_pipe ( startup_messages_pipe_fd
-                            , boost::iostreams::close_handle
-                            );
-    startup_messages_pipe << "OKAY\n";
+    fhg::rif::startup_messages_pipe startup_messages_pipe (vm);
   }
 
   stop_requested.wait();

@@ -2,6 +2,8 @@
 
 #include <rif/execute_and_get_startup_messages.hpp>
 
+#include <rif/startup_messages_pipe.hpp>
+
 #include <fhg/assert.hpp>
 #include <fhg/syscall.hpp>
 #include <fhg/util/temporary_file.hpp>
@@ -146,9 +148,7 @@ namespace fhg
     }
 
     std::pair<pid_t, std::vector<std::string>> execute_and_get_startup_messages
-      ( std::string startup_messages_pipe_option
-      , std::string end_sentinel_value
-      , boost::filesystem::path command
+      ( boost::filesystem::path command
       , std::vector<std::string> arguments
       , std::unordered_map<std::string, std::string> environment
       )
@@ -167,12 +167,14 @@ namespace fhg
 
         std::vector<std::string> messages;
         std::string line;
-        while (std::getline (pipe_read, line) && line != end_sentinel_value)
+        while ( std::getline (pipe_read, line)
+              && line != startup_messages_pipe::end_sentinel_value()
+              )
         {
           messages.emplace_back (std::move (line));
         }
 
-        if (line != end_sentinel_value)
+        if (line != startup_messages_pipe::end_sentinel_value())
         {
           int child_status (0);
           if (fhg::syscall::waitpid (pid, &child_status, WNOHANG) == pid)
@@ -232,7 +234,7 @@ namespace fhg
         std::vector<char*> const argv
           ( prepare_argv ( argv_buffer
                          , command
-                         , startup_messages_pipe_option
+                         , std::string ("--") + startup_messages_pipe::option_name()
                          , pipe_fds[1]
                          , arguments
                          )

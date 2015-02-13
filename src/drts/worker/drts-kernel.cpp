@@ -14,10 +14,10 @@
 #include <fhglog/LogMacros.hpp>
 
 #include <boost/asio/io_service.hpp>
-#include <boost/iostreams/device/file_descriptor.hpp>
-#include <boost/iostreams/stream.hpp>
 #include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
+
+#include <rif/startup_messages_pipe.hpp>
 
 #include <functional>
 #include <memory>
@@ -60,10 +60,6 @@ try
 
   desc.add_options()
     ("name,n", po::value<std::string>(&kernel_name), "give the kernel a name")
-    ( "startup-messages-pipe"
-    , po::value<int>()->required()
-    , "pipe filedescriptor to use for communication during startup (ports used, ...)"
-    )
     ( option_name::virtual_memory_socket
     , po::value<fhg::util::boost::program_options::existing_path>()
     , "socket file to communicate with the virtual memory manager"
@@ -106,6 +102,8 @@ try
     , "port to send gui notifications to"
     )
     ;
+
+  desc.add (fhg::rif::startup_messages_pipe::program_options());
 
   po::variables_map vm;
   try
@@ -225,11 +223,7 @@ try
                         );
 
   {
-    boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
-      startup_messages_pipe ( vm.at ("startup-messages-pipe").as<int>()
-                            , boost::iostreams::close_handle
-                            );
-    startup_messages_pipe << "OKAY\n";
+    fhg::rif::startup_messages_pipe startup_messages_pipe (vm);
   }
 
   stop_requested.wait();

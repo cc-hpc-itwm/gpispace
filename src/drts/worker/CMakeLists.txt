@@ -5,8 +5,8 @@ fhg_add_runtime_executable (drts-kernel.cpp drts.cpp
                  fhgcom
                  sdpa
                  we-dev
+                 rif-startup-messages-pipe
                  ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_IOSTREAMS_LIBRARY}
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
                  ${Boost_SERIALIZATION_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}

@@ -58,9 +58,7 @@ namespace fhg
     public:
       rpc::remote_function
         < std::pair<pid_t, std::vector<std::string>>
-            ( std::string startup_messages_pipe_option
-            , std::string end_sentinel_value
-            , boost::filesystem::path command
+            ( boost::filesystem::path command
             , std::vector<std::string> arguments
             , std::unordered_map<std::string, std::string> environment
             )
