@@ -1,7 +1,9 @@
 #include <fhg/util/wait_and_collect_exceptions.hpp>
 
 #include <fhg/util/join.hpp>
+#include <fhg/util/print_exception.hpp>
 
+#include <sstream>
 #include <stdexcept>
 #include <string>
 
@@ -19,9 +21,11 @@ namespace fhg
         {
           future.get();
         }
-        catch (std::exception const& ex)
+        catch (...)
         {
-          accumulated_whats.emplace_back (ex.what());
+          std::ostringstream oss;
+          fhg::util::print_current_exception (oss, "");
+          accumulated_whats.emplace_back (oss.str());
         }
       }
 
