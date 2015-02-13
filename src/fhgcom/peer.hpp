@@ -40,7 +40,6 @@ namespace fhg
       }
 
       void start ();
-      void stop ();
 
       p2p::address_t connect_to (host_t const&, port_t const&);
       p2p::address_t connect_to_or_use_existing_connection
@@ -116,7 +115,6 @@ namespace fhg
 
       mutable mutex_type mutex_;
 
-      bool stopped_;
       bool stopping_;
       std::string host_;
       std::string port_;

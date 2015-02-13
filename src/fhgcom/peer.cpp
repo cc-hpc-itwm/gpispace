@@ -23,8 +23,7 @@ namespace fhg
                    , host_t const & host
                    , port_t const & port
                    )
-      : stopped_(true)
-      , stopping_ (false)
+      : stopping_ (false)
       , host_(host)
       , port_(port)
       , io_service_ (std::move (io_service))
@@ -37,57 +36,7 @@ namespace fhg
 
     peer_t::~peer_t()
     {
-      stop();
-    }
-
-    void peer_t::start()
-    {
-      {
-        lock_type lock(mutex_);
-
-        if (! stopped_)
-          return;
-
-        boost::asio::ip::tcp::resolver resolver(*io_service_);
-        boost::asio::ip::tcp::resolver::query query(host_, port_);
-        boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
-
-        const bool prefer_ipv6 = false;
-
-        if (host_ == "*")
-        {
-          if (prefer_ipv6)
-          {
-            endpoint.address(boost::asio::ip::address_v6::any());
-          }
-          else
-          {
-            endpoint.address(boost::asio::ip::address_v4::any());
-          }
-        }
-
-        acceptor_.open(endpoint.protocol());
-        acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
-        acceptor_.set_option (boost::asio::ip::tcp::no_delay (true));
-        acceptor_.bind(endpoint);
-        acceptor_.listen();
-
-        my_addr_ = p2p::address_t
-          (fhg::util::hostname() + ":" + std::to_string (local_endpoint().port()));
-
-        accept_new ();
-      }
-
-      {
-        lock_type lock(mutex_);
-        stopped_ = false;
-        stopping_ = false;
-      }
-    }
-
-    void peer_t::stop()
-    {
-      lock_type lock(mutex_);
+      lock_type const _ (mutex_);
 
       stopping_ = true;
 
@@ -140,7 +89,42 @@ namespace fhg
       io_service_->stop();
 
       stopping_ = false;
-      stopped_ = true;
+    }
+
+    void peer_t::start()
+    {
+      {
+        lock_type lock(mutex_);
+
+        boost::asio::ip::tcp::resolver resolver(*io_service_);
+        boost::asio::ip::tcp::resolver::query query(host_, port_);
+        boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
+
+        const bool prefer_ipv6 = false;
+
+        if (host_ == "*")
+        {
+          if (prefer_ipv6)
+          {
+            endpoint.address(boost::asio::ip::address_v6::any());
+          }
+          else
+          {
+            endpoint.address(boost::asio::ip::address_v4::any());
+          }
+        }
+
+        acceptor_.open(endpoint.protocol());
+        acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+        acceptor_.set_option (boost::asio::ip::tcp::no_delay (true));
+        acceptor_.bind(endpoint);
+        acceptor_.listen();
+
+        my_addr_ = p2p::address_t
+          (fhg::util::hostname() + ":" + std::to_string (local_endpoint().port()));
+
+        accept_new ();
+      }
     }
 
     p2p::address_t peer_t::connect_to (host_t const& host, port_t const& port)
