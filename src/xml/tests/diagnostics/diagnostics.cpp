@@ -78,8 +78,8 @@ BOOST_AUTO_TEST_CASE (warning_struct_redefined)
     <xml::parse::warning::struct_redefined>
     ( [&input]()
       { xml::parse::state::type state;
-        state.Wstruct_redefined() = true;
-        state.Werror() = true;
+        state.warning_struct_redefined() = true;
+        state.warning_error() = true;
         std::istringstream input_stream (input);
         xml::parse::post_processing_passes
           (xml::parse::just_parse (state, input_stream), &state);
@@ -95,8 +95,8 @@ BOOST_FIXTURE_TEST_CASE (warning_duplicate_external_function, fixture)
 {
   parse ("diagnostics/warning_duplicate_external_function.xpnet");
 
-  state.Wduplicate_external_function() = true;
-  state.Werror() = true;
+  state.warning_duplicate_external_function() = true;
+  state.warning_error() = true;
 
   require_exception_from_generate_cpp
     <xml::parse::warning::duplicate_external_function>
