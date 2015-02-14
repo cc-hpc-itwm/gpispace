@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _WE_TYPE_NET_HPP
-#define _WE_TYPE_NET_HPP
+#pragma once
 
 #include <we/type/net.fwd.hpp>
 
@@ -316,5 +315,3 @@ namespace we
     };
   }
 }
-
-#endif

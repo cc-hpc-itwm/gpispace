@@ -1,5 +1,4 @@
-#ifndef FHG_UTIL_URL_HPP
-#define FHG_UTIL_URL_HPP
+#pragma once
 
 #include <string>
 #include <map>
@@ -54,5 +53,3 @@ namespace gpi
     };
   }
 }
-
-#endif

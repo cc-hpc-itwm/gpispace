@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _WE_TYPE_PROPERTY_HPP
-#define _WE_TYPE_PROPERTY_HPP
+#pragma once
 
 #include <we/type/property.fwd.hpp>
 
@@ -66,5 +65,3 @@ namespace we
     }
   }
 }
-
-#endif

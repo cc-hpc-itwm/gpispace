@@ -1,5 +1,4 @@
-#ifndef DRTS_PRIVATE_INFORMATION_TO_REATTACH_HPP
-#define DRTS_PRIVATE_INFORMATION_TO_REATTACH_HPP
+#pragma once
 
 #include <drts/information_to_reattach.hpp>
 #include <drts/private/host_and_port.hpp>
@@ -23,5 +22,3 @@ namespace gspc
     host_and_port_type _endpoint;
   };
 }
-
-#endif

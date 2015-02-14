@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_DRTS_PRIVATE_STARTUP_AND_SHUTDOWN_HPP
-#define FHG_DRTS_PRIVATE_STARTUP_AND_SHUTDOWN_HPP
+#pragma once
 
 #include <fhg/util/signal_handler_manager.hpp>
 
@@ -57,5 +56,3 @@ namespace fhg
                   );
   }
 }
-
-#endif

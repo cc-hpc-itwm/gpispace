@@ -1,5 +1,4 @@
-#ifndef _PNETE_UI_GRAPH_POPOVER_WIDGET_HPP
-#define _PNETE_UI_GRAPH_POPOVER_WIDGET_HPP 1
+#pragma once
 
 #include <QWidget>
 #include <QPropertyAnimation>
@@ -56,5 +55,3 @@ namespace fhg
     }
   }
 }
-
-#endif

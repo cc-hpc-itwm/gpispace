@@ -1,5 +1,4 @@
-#ifndef FHG_COM_SESSION_HPP
-#define FHG_COM_SESSION_HPP 1
+#pragma once
 
 #include <fhgcom/session_manager.hpp>
 
@@ -84,5 +83,3 @@ namespace fhg
     };
   }
 }
-
-#endif

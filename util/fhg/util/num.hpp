@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _FHG_UTIL_NUM_HPP
-#define _FHG_UTIL_NUM_HPP
+#pragma once
 
 #include <fhg/util/parse/position.hpp>
 
@@ -33,5 +32,3 @@ namespace fhg
     std::size_t read_size_t (std::string const&);
   }
 }
-
-#endif

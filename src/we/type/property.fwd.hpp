@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _WE_TYPE_PROPERTY_FWD_HPP
-#define _WE_TYPE_PROPERTY_FWD_HPP
+#pragma once
 
 #include <we/type/value.hpp>
 
@@ -25,5 +24,3 @@ namespace we
     }
   }
 }
-
-#endif

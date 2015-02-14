@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_REMOVE_PREFIX_HPP
-#define FHG_UTIL_REMOVE_PREFIX_HPP
+#pragma once
 
 #include <string>
 #include <stdexcept>
@@ -27,5 +26,3 @@ namespace fhg
                               );
   }
 }
-
-#endif

@@ -22,8 +22,7 @@
  * this software.
  */
 
-#ifndef FHG_UTIL_QT_BOOST_CONNECT_IMPL_HPP
-#define FHG_UTIL_QT_BOOST_CONNECT_IMPL_HPP
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QList>
@@ -94,5 +93,3 @@ namespace fhg
     }
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_UI_GRAPH_STYLE_CAP_HPP
-#define _FHG_PNETE_UI_GRAPH_STYLE_CAP_HPP 1
+#pragma once
 
 #include <QtGlobal>
 #include <QPoint>
@@ -42,5 +41,3 @@ namespace fhg
     }
   }
 }
-
-#endif

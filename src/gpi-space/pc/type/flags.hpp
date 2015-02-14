@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_TYPE_FLAGS_HPP
-#define GPI_SPACE_PC_TYPE_FLAGS_HPP
+#pragma once
 
 namespace gpi
 {
@@ -18,5 +17,3 @@ namespace gpi
       };
   }
 }
-
-#endif

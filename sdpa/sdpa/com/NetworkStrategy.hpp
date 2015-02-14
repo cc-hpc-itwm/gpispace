@@ -1,5 +1,4 @@
-#ifndef SDPA_COM_NETWORK_STRATEGY_HPP
-#define SDPA_COM_NETWORK_STRATEGY_HPP 1
+#pragma once
 
 #include <sdpa/events/SDPAEvent.hpp>
 
@@ -53,5 +52,3 @@ namespace sdpa
     };
   }
 }
-
-#endif

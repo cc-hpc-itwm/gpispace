@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_PHI_HPP
-#define FHG_UTIL_PHI_HPP
+#pragma once
 
 #include <cmath>
 
@@ -27,5 +26,3 @@ namespace fhg
     }
   }
 }
-
-#endif

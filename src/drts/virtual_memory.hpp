@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef DRTS_VIRTUAL_MEMORY_HPP
-#define DRTS_VIRTUAL_MEMORY_HPP
+#pragma once
 
 #include <drts/virtual_memory.fwd.hpp>
 #include <drts/drts.fwd.hpp>
@@ -54,5 +53,3 @@ namespace gspc
     std::unique_ptr<implementation> _;
   };
 }
-
-#endif

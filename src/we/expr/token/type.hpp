@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _EXPR_TOKEN_TYPE_HPP
-#define _EXPR_TOKEN_TYPE_HPP
+#pragma once
 
 #include <iosfwd>
 
@@ -64,5 +63,3 @@ namespace expr
     std::ostream& operator<< (std::ostream&, const show&);
   }
 }
-
-#endif

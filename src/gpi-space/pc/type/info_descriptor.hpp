@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_TYPE_INFO_DESCRIPTOR_HPP
-#define GPI_SPACE_PC_TYPE_INFO_DESCRIPTOR_HPP 1
+#pragma once
 
 #include <vector>
 
@@ -48,5 +47,3 @@ namespace gpi
     }
   }
 }
-
-#endif

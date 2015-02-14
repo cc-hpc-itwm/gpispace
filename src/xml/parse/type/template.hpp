@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_TYPE_TEMPLATE_HPP
-#define _XML_PARSE_TYPE_TEMPLATE_HPP 1
+#pragma once
 
 #include <xml/parse/id/generic.hpp>
 #include <xml/parse/type/function.hpp>
@@ -77,5 +76,3 @@ namespace xml
     }
   }
 }
-
-#endif

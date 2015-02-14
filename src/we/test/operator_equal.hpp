@@ -1,7 +1,6 @@
 // {rahn,loerwald}@itwm.fraunhofer.de
 
-#ifndef WE_TEST_OPERATOR_EQUAL_HPP
-#define WE_TEST_OPERATOR_EQUAL_HPP
+#pragma once
 
 #include <we/type/activity.hpp>
 
@@ -132,5 +131,3 @@ namespace sdpa
       && lhs.state() == rhs.state();
   }
 }
-
-#endif

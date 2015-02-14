@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef WE_EXPR_PARSE_SIMPLIFY_SIMPLIFY_HPP
-#define WE_EXPR_PARSE_SIMPLIFY_SIMPLIFY_HPP
+#pragma once
 
 #include <we/expr/parse/parser.hpp>
 
@@ -22,5 +21,3 @@ namespace expr
     }
   }
 }
-
-#endif

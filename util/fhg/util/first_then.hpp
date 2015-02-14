@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_FIRST_THEN_HPP
-#define FHG_UTIL_FIRST_THEN_HPP
+#pragma once
 
 #include <fhg/util/ostream_modifier.hpp>
 
@@ -40,5 +39,3 @@ namespace fhg
     };
   }
 }
-
-#endif

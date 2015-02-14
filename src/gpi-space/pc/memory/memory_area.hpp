@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_MEMORY_MEMORY_AREA_HPP
-#define GPI_SPACE_PC_MEMORY_MEMORY_AREA_HPP 1
+#pragma once
 
 #include <mmgr/dtmmgr.h>
 
@@ -245,5 +244,3 @@ namespace gpi
     }
   }
 }
-
-#endif

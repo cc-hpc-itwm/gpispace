@@ -1,5 +1,4 @@
-#ifndef WE_LOADER_MODULE_LOADER_HPP
-#define WE_LOADER_MODULE_LOADER_HPP 1
+#pragma once
 
 #include <we/loader/Module.hpp>
 
@@ -28,5 +27,3 @@ namespace we
     };
   }
 }
-
-#endif

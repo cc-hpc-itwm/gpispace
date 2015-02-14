@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_INDENTER_HPP
-#define FHG_UTIL_INDENTER_HPP
+#pragma once
 
 #include <fhg/util/ostream_modifier.hpp>
 
@@ -35,5 +34,3 @@ namespace fhg
     };
   }
 }
-
-#endif

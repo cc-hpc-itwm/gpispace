@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_PROTO_CONTROL_HPP
-#define GPI_SPACE_PC_PROTO_CONTROL_HPP 1
+#pragma once
 
 #include <ostream>
 
@@ -66,5 +65,3 @@ namespace gpi
     }
   }
 }
-
-#endif

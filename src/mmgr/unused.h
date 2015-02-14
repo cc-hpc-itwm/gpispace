@@ -1,6 +1,5 @@
 
-#ifndef UNUSED_H
-#define UNUSED_H
+#pragma once
 
 #ifdef __cplusplus
 # define UNUSED(x)
@@ -8,6 +7,4 @@
 # define UNUSED(x) __attribute__((unused)) x
 #else
 # define UNUSED(x) x
-#endif
-
 #endif

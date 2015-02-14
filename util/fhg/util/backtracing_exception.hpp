@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _FHG_UTIL_BACKTRACING_EXCEPTION_HPP
-#define _FHG_UTIL_BACKTRACING_EXCEPTION_HPP
+#pragma once
 
 #include <stdexcept>
 #include <string>
@@ -19,5 +18,3 @@ namespace fhg
     };
   }
 }
-
-#endif

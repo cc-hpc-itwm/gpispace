@@ -1,5 +1,4 @@
-#ifndef FHG_RIF_ENTRY_POINT_HPP
-#define FHG_RIF_ENTRY_POINT_HPP
+#pragma once
 
 #include <boost/serialization/split_free.hpp>
 
@@ -93,5 +92,3 @@ namespace boost
     }
   }
 }
-
-#endif

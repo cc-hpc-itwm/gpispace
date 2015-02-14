@@ -1,5 +1,4 @@
-#ifndef SDPA_DISCOVER_JOB_STATES_REPLY_EVENT_HPP
-#define SDPA_DISCOVER_JOB_STATES_REPLY_EVENT_HPP 1
+#pragma once
 
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sstream>
@@ -57,5 +56,3 @@ namespace sdpa
      }
   }
 }
-
-#endif

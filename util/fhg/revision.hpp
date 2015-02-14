@@ -1,7 +1,6 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_REVISION_HPP
-#define FHG_UTIL_REVISION_HPP 1
+#pragma once
 
 #include <string>
 
@@ -12,5 +11,3 @@ namespace fhg
 
   extern std::string project_info (const std::string&);
 }
-
-#endif

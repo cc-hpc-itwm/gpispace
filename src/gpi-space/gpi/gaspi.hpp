@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_GASPI_API_HPP
-#define GPI_SPACE_GASPI_API_HPP 1
+#pragma once
 
 #include <gpi-space/gpi/api.hpp>
 
@@ -66,5 +65,3 @@ namespace gpi
     };
   }
 }
-
-#endif

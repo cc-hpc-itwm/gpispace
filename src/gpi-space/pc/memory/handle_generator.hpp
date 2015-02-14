@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_MEMORY_HANDLE_GENERATOR_HPP
-#define GPI_SPACE_PC_MEMORY_HANDLE_GENERATOR_HPP 1
+#pragma once
 
 #include <vector>
 
@@ -56,5 +55,3 @@ namespace gpi
     }
   }
 }
-
-#endif

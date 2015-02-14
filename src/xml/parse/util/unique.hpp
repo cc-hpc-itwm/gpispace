@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_UTIL_UNIQUE_HPP
-#define _XML_PARSE_UTIL_UNIQUE_HPP
+#pragma once
 
 #include <string>
 #include <stdexcept>
@@ -198,5 +197,3 @@ namespace xml
     };
   }
 }
-
-#endif

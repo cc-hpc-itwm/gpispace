@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef DRTS_CLIENT_FWD_HPP
-#define DRTS_CLIENT_FWD_HPP
+#pragma once
 
 #include <string>
 
@@ -11,5 +10,3 @@ namespace gspc
 
   typedef std::string job_id_t;
 }
-
-#endif

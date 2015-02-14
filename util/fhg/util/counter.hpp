@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _FHG_UTIL_COUNTER_HPP
-#define _FHG_UTIL_COUNTER_HPP 1
+#pragma once
 
 #include <boost/noncopyable.hpp>
 
@@ -38,5 +37,3 @@ namespace fhg
     };
   }
 }
-
-#endif

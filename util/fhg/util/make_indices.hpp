@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_MAKE_INDICES_HPP
-#define FHG_UTIL_MAKE_INDICES_HPP
+#pragma once
 
 namespace fhg
 {
@@ -37,5 +36,3 @@ namespace fhg
       using make_indices = typename make_indices_t<Size>::type;
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef DRTS_CLIENT_HPP
-#define DRTS_CLIENT_HPP
+#pragma once
 
 #include <drts/client.fwd.hpp>
 #include <drts/drts.fwd.hpp>
@@ -68,5 +67,3 @@ namespace gspc
     implementation* _;
   };
 }
-
-#endif

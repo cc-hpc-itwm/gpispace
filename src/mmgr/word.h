@@ -1,6 +1,5 @@
 
-#ifndef WORD_H
-#define WORD_H
+#pragma once
 
 #include <inttypes.h>
 #include <mmgr/null.h>
@@ -24,6 +23,4 @@ extern "C"
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

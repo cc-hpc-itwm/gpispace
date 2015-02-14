@@ -1,5 +1,4 @@
-#ifndef FHG_UTIL_THREAD_BOUNDED_QUEUE_HPP
-#define FHG_UTIL_THREAD_BOUNDED_QUEUE_HPP
+#pragma once
 
 #include <boost/thread/condition_variable.hpp>
 #include <list>
@@ -53,5 +52,3 @@ namespace fhg
     };
   }
 }
-
-#endif

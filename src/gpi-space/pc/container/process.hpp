@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_CONTAINER_PROCESS_HPP
-#define GPI_SPACE_PC_CONTAINER_PROCESS_HPP 1
+#pragma once
 
 #include <boost/thread.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
@@ -73,5 +72,3 @@ namespace gpi
     }
   }
 }
-
-#endif

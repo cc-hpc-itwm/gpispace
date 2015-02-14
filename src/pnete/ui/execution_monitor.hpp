@@ -1,5 +1,4 @@
-#ifndef FHG_PNETE_UI_EXECUTION_MONITOR_HPP
-#define FHG_PNETE_UI_EXECUTION_MONITOR_HPP
+#pragma once
 
 #include <QSplitter>
 
@@ -19,5 +18,3 @@ namespace fhg
     }
   }
 }
-
-#endif

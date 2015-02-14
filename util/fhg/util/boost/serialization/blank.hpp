@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_BOOST_SERIALIZATION_BLANK_HPP
-#define FHG_UTIL_BOOST_SERIALIZATION_BLANK_HPP
+#pragma once
 
 #include <boost/blank.hpp>
 
@@ -15,5 +14,3 @@ namespace boost
     }
   }
 }
-
-#endif

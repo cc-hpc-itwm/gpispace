@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_MEMORY_TASK_HPP
-#define GPI_SPACE_PC_MEMORY_TASK_HPP
+#pragma once
 
 #include <boost/noncopyable.hpp>
 #include <boost/exception_ptr.hpp>
@@ -55,5 +54,3 @@ namespace gpi
     }
   }
 }
-
-#endif

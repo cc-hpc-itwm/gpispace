@@ -1,7 +1,6 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#ifndef DRTS_INFORMATION_TO_REATTACH_HPP
-#define DRTS_INFORMATION_TO_REATTACH_HPP
+#pragma once
 
 #include <drts/drts.fwd.hpp>
 
@@ -25,5 +24,3 @@ namespace gspc
     std::unique_ptr<implementation> _;
   };
 }
-
-#endif

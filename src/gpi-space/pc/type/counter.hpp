@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_TYPE_COUNTER_HPP
-#define GPI_SPACE_PC_TYPE_COUNTER_HPP 1
+#pragma once
 
 #include <boost/thread.hpp>
 #include <boost/noncopyable.hpp>
@@ -41,5 +40,3 @@ namespace gpi
     }
   }
 }
-
-#endif

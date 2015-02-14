@@ -1,7 +1,6 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#ifndef FHGLOG_REMOTE_APPENDER_HPP
-#define FHGLOG_REMOTE_APPENDER_HPP 1
+#pragma once
 
 #include <fhglog/Appender.hpp>
 
@@ -36,5 +35,3 @@ namespace fhg
     }
   }
 }
-
-#endif

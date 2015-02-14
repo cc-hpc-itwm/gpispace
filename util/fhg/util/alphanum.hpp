@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_ALPHANUM_HPP
-#define FHG_UTIL_ALPHANUM_HPP
+#pragma once
 
 #include <cctype>
 #include <cstdlib>
@@ -135,5 +134,3 @@ namespace fhg
     }
   }
 }
-
-#endif

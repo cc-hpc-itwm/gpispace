@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_GSPC_RIFD_ENTRY_POINTS_HPP
-#define FHG_GSPC_RIFD_ENTRY_POINTS_HPP
+#pragma once
 
 #include <drts/rifd_entry_points.fwd.hpp>
 
@@ -28,5 +27,3 @@ namespace gspc
     rifd_entry_points (implementation*);
   };
 }
-
-#endif

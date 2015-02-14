@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef FHG_PNETE_WEAVER_TV_HPP
-#define FHG_PNETE_WEAVER_TV_HPP
+#pragma once
 
 #include <pnete/data/handle/function.fwd.hpp>
 
@@ -20,5 +19,3 @@ namespace fhg
     }
   }
 }
-
-#endif

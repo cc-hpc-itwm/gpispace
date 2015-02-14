@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _WE_TYPE_CONNECTION_HPP
-#define _WE_TYPE_CONNECTION_HPP
+#pragma once
 
 #include <we/type/id.hpp>
 
@@ -20,5 +19,3 @@ namespace we
     std::string enum_to_string (const type&);
   }
 }
-
-#endif

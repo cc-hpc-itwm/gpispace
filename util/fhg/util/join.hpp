@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _FHG_UTIL_JOIN_HPP
-#define _FHG_UTIL_JOIN_HPP
+#pragma once
 
 #include <string>
 #include <sstream>
@@ -47,5 +46,3 @@ namespace fhg
     }
   }
 }
-
-#endif

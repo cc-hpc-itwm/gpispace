@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_PNETE_DATA_HANDLE_META_BASE_HPP
-#define FHG_PNETE_DATA_HANDLE_META_BASE_HPP
+#pragma once
 
 #include <pnete/data/handle/meta_base.fwd.hpp>
 
@@ -54,5 +53,3 @@ namespace fhg
     }
   }
 }
-
-#endif

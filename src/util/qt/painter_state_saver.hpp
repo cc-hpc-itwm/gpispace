@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_QT_PAINTER_STATE_SAVER_HPP
-#define FHG_UTIL_QT_PAINTER_STATE_SAVER_HPP
+#pragma once
 
 #include <QPainter>
 
@@ -29,5 +28,3 @@ namespace fhg
     }
   }
 }
-
-#endif

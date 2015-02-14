@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_NETWORK_SERVER_HPP
-#define FHG_NETWORK_SERVER_HPP
+#pragma once
 
 #include <network/connection.hpp>
 
@@ -97,5 +96,3 @@ namespace fhg
     };
   }
 }
-
-#endif

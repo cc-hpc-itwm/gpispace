@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_UTIL_MKFSTREAM_HPP
-#define _XML_PARSE_UTIL_MKFSTREAM_HPP 1
+#pragma once
 
 #include <fstream>
 #include <sstream>
@@ -43,5 +42,3 @@ namespace xml
     }
   }
 }
-
-#endif

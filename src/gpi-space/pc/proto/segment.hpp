@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_PROTO_SEGMENT_HPP
-#define GPI_SPACE_PC_PROTO_SEGMENT_HPP 1
+#pragma once
 
 #include <boost/variant.hpp>
 
@@ -174,5 +173,3 @@ namespace gpi
     }
   }
 }
-
-#endif

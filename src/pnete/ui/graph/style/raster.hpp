@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _PNETE_UI_GRAPH_STYLE_RASTER_HPP
-#define _PNETE_UI_GRAPH_STYLE_RASTER_HPP 1
+#pragma once
 
 #include <QPointF>
 
@@ -25,5 +24,3 @@ namespace fhg
     }
   }
 }
-
-#endif

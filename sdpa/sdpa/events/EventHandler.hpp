@@ -1,5 +1,4 @@
-#ifndef SDPA_EVENT_HANDLER_HPP
-#define SDPA_EVENT_HANDLER_HPP 1
+#pragma once
 
 #include <fhgcom/header.hpp>
 
@@ -94,5 +93,3 @@ namespace sdpa
     };
   }
 }
-
-#endif

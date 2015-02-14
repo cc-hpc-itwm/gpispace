@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_TYPE_MEMORY_TRANSFER_HPP
-#define _XML_PARSE_TYPE_MEMORY_TRANSFER_HPP
+#pragma once
 
 #include <xml/parse/type/with_position_of_definition.hpp>
 
@@ -102,5 +101,3 @@ namespace xml
     }
   }
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef FHGLOG_TEST_DUMP_EVENT_COMMON_HPP
-#define FHGLOG_TEST_DUMP_EVENT_COMMON_HPP
+#pragma once
 
 #include <fhglog/event.hpp>
 
@@ -18,5 +17,3 @@ namespace
     return evt;
   }
 }
-
-#endif

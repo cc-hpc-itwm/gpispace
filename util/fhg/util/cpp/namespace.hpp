@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_CPP_NAMESPACE_HPP
-#define FHG_UTIL_CPP_NAMESPACE_HPP
+#pragma once
 
 #include <fhg/util/indenter.hpp>
 #include <fhg/util/ostream_modifier.hpp>
@@ -46,5 +45,3 @@ namespace fhg
     }
   }
 }
-
-#endif

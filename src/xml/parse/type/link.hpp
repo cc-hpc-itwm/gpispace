@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_TYPE_LINK_HPP
-#define _XML_PARSE_TYPE_LINK_HPP
+#pragma once
 
 #include <xml/parse/type/link.fwd.hpp>
 
@@ -45,5 +44,3 @@ namespace xml
     }
   }
 }
-
-#endif

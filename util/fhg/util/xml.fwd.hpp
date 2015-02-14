@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _FHG_UTIL_XML_FWD_HPP
-#define _FHG_UTIL_XML_FWD_HPP
+#pragma once
 
 namespace fhg
 {
@@ -18,5 +17,3 @@ namespace fhg
     }
   }
 }
-
-#endif

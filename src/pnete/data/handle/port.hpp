@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_DATA_HANDLE_PORT_HPP
-#define _FHG_PNETE_DATA_HANDLE_PORT_HPP 1
+#pragma once
 
 #include <pnete/data/handle/port.fwd.hpp>
 
@@ -69,5 +68,3 @@ namespace fhg
     }
   }
 }
-
-#endif

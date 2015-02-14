@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fhg.de
 
-#ifndef WE_TYPE_EXPRESSION_FWD_HPP
-#define WE_TYPE_EXPRESSION_FWD_HPP
+#pragma once
 
 namespace we
 {
@@ -10,5 +9,3 @@ namespace we
     struct expression_t;
   }
 }
-
-#endif

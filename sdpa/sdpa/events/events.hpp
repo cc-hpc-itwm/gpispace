@@ -1,5 +1,4 @@
-#ifndef SDPA_EVENTS_EVENTS_HPP
-#define SDPA_EVENTS_EVENTS_HPP 1
+#pragma once
 
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
@@ -26,5 +25,3 @@
 #include <sdpa/events/SubscribeAckEvent.hpp>
 #include <sdpa/events/put_token.hpp>
 #include <sdpa/events/BacklogNoLongerFullEvent.hpp>
-
-#endif

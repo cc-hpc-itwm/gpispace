@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_XML_TESTS_PARSER_FIXTURE_HPP
-#define FHG_XML_TESTS_PARSER_FIXTURE_HPP
+#pragma once
 
 #include <xml/parse/parser.hpp>
 #include <xml/parse/state.hpp>
@@ -81,5 +80,3 @@ namespace
     boost::filesystem::path path_to_pnets;
   };
 }
-
-#endif

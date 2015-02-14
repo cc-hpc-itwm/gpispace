@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_UI_GRAPH_STYLE_STORE_HPP
-#define _FHG_PNETE_UI_GRAPH_STYLE_STORE_HPP 1
+#pragma once
 
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
@@ -113,5 +112,3 @@ namespace fhg
     }
   }
 }
-
-#endif

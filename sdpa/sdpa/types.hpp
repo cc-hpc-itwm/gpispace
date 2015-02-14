@@ -1,5 +1,4 @@
-#ifndef SDPA_TYPES_HPP
-#define SDPA_TYPES_HPP 1
+#pragma once
 
 #include <fhgcom/peer_info.hpp>
 
@@ -131,5 +130,3 @@ inline std::ostream& operator<<(std::ostream& os, const sdpa::worker_id_list_t& 
 
  return os;
 }
-
-#endif

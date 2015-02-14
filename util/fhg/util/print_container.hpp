@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_PRINT_CONTAINER_HPP
-#define FHG_UTIL_PRINT_CONTAINER_HPP
+#pragma once
 
 #include <fhg/util/first_then.hpp>
 
@@ -35,5 +34,3 @@ namespace fhg
     }
   }
 }
-
-#endif

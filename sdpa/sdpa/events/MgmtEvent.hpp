@@ -1,5 +1,4 @@
-#ifndef SDPA_MGMT_EVENT_HPP
-#define SDPA_MGMT_EVENT_HPP 1
+#pragma once
 
 #include <sdpa/events/SDPAEvent.hpp>
 
@@ -14,5 +13,3 @@ namespace sdpa
     };
   }
 }
-
-#endif

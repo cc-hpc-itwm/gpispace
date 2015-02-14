@@ -1,5 +1,4 @@
-#ifndef SDPA_RESULTS_REPLY_EVENT_HPP
-#define SDPA_RESULTS_REPLY_EVENT_HPP 1
+#pragma once
 
 #include <sdpa/events/JobEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
@@ -50,5 +49,3 @@ namespace sdpa
     }
   }
 }
-
-#endif

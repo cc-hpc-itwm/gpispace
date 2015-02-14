@@ -1,7 +1,6 @@
 // tiberiu.rotaru@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_BOOST_SERIALIZATION_UNORDERED_MAP_HPP
-#define FHG_UTIL_BOOST_SERIALIZATION_UNORDERED_MAP_HPP
+#pragma once
 
 #include <boost/config.hpp>
 #include <boost/serialization/collections_load_imp.hpp>
@@ -61,5 +60,3 @@ namespace boost
     }
   }
 }
-
-#endif

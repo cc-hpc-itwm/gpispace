@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_MEMORY_MEMORY_TRANSFER_T_HPP
-#define GPI_SPACE_PC_MEMORY_MEMORY_TRANSFER_T_HPP
+#pragma once
 
 #include <ostream>
 #include <boost/shared_ptr.hpp>
@@ -47,5 +46,3 @@ namespace gpi
     }
   }
 }
-
-#endif // GPI_SPACE_PC_MEMORY_MEMORY_TRANSFER_T_HP

@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _WE_TYPE_LITERAL_CONTROL_HPP
-#define _WE_TYPE_LITERAL_CONTROL_HPP
+#pragma once
 
 #include <iosfwd>
 
@@ -25,5 +24,3 @@ namespace we
 
 //! \todo REMOVE! This is deprecated but some clients still use it.
 typedef we::type::literal::control control;
-
-#endif

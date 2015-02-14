@@ -1,5 +1,4 @@
-#ifndef PNET_SRC_WE_TYPE_VALUE_UNWRAP_HPP
-#define PNET_SRC_WE_TYPE_VALUE_UNWRAP_HPP
+#pragma once
 
 #include <we/type/value.hpp>
 #include <we/type/value/from_value.hpp>
@@ -61,5 +60,3 @@ namespace pnet
     }
   }
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_CLIENT_API_HPP
-#define GPI_SPACE_PC_CLIENT_API_HPP 1
+#pragma once
 
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
@@ -96,5 +95,3 @@ namespace gpi
     }
   }
 }
-
-#endif

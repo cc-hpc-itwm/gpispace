@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_PNETE_UI_GRAPH_PENDING_CONNECTION_FWD_HPP
-#define FHG_PNETE_UI_GRAPH_PENDING_CONNECTION_FWD_HPP
+#pragma once
 
 namespace fhg
 {
@@ -16,5 +15,3 @@ namespace fhg
     }
   }
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef GSPC_DRTS_CONTEXT_FWD_HPP
-#define GSPC_DRTS_CONTEXT_FWD_HPP
+#pragma once
 
 namespace drts
 {
@@ -8,5 +7,3 @@ namespace drts
     class context;
   }
 }
-
-#endif

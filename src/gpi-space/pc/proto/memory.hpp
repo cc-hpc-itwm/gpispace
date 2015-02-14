@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_PROTO_MEMORY_HPP
-#define GPI_SPACE_PC_PROTO_MEMORY_HPP 1
+#pragma once
 
 #include <list>
 #include <map>
@@ -232,5 +231,3 @@ namespace gpi
     }
   }
 }
-
-#endif

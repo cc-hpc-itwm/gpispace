@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_QT_NO_UNDOREDO_LINEEDIT_HPP
-#define FHG_UTIL_QT_NO_UNDOREDO_LINEEDIT_HPP
+#pragma once
 
 #include <QLineEdit>
 
@@ -27,5 +26,3 @@ namespace fhg
     }
   }
 }
-
-#endif

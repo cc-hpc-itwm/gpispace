@@ -1,5 +1,4 @@
-#ifndef FHG_COM_PEER_HPP
-#define FHG_COM_PEER_HPP 1
+#pragma once
 
 #include <fhgcom/connection.hpp>
 #include <fhgcom/header.hpp>
@@ -140,5 +139,3 @@ namespace fhg
     };
   }
 }
-
-#endif

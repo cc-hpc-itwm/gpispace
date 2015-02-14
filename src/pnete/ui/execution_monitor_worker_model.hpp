@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_PNETE_UI_EXECUTION_MONITOR_WORKER_MODEL_HPP
-#define FHG_PNETE_UI_EXECUTION_MONITOR_WORKER_MODEL_HPP
+#pragma once
 
 #include <fhglog/event.hpp>
 #include <fhglog/remote/server.hpp>
@@ -115,5 +114,3 @@ namespace fhg
 Q_DECLARE_METATYPE (boost::optional<fhg::pnete::ui::worker_model::value_type>)
 //! \note range_getter_role
 Q_DECLARE_METATYPE (fhg::pnete::ui::worker_model::subrange_getter_type)
-
-#endif

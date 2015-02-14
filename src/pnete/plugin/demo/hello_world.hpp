@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef DEMO_HELLO_WORLD_HPP
-#define DEMO_HELLO_WORLD_HPP
+#pragma once
 
 #include <pnete/plugin/plugin_base.hpp>
 
@@ -30,5 +29,3 @@ namespace demo
     bool _detailed;
   };
 }
-
-#endif

@@ -5,8 +5,7 @@
  * @brief  Topology interface for global operations
  */
 
-#ifndef GPI_SPACE_GLOBAL_ITOPOLOGY_HPP
-#define GPI_SPACE_GLOBAL_ITOPOLOGY_HPP 1
+#pragma once
 
 #include <gpi-space/types.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
@@ -45,5 +44,3 @@ namespace gpi
     }
   }
 }
-
-#endif // GPI_SPACE_GLOBAL_ITOPOLOGY_HPP

@@ -1,5 +1,4 @@
-#ifndef SDPA_EVENT_HPP
-#define SDPA_EVENT_HPP 1
+#pragma once
 
 #include <sdpa/events/EventHandler.hpp>
 
@@ -36,5 +35,3 @@ namespace sdpa
 }
 
 #include <sdpa/events/Serialization.hpp>
-
-#endif

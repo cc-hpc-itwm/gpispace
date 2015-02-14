@@ -1,9 +1,6 @@
-#ifndef WE_LOADER_TEST_ORDER_STACK
-#define WE_LOADER_TEST_ORDER_STACK
+#pragma once
 
 #include <stack>
 #include <string>
 
 extern std::stack<std::string>& start();
-
-#endif

@@ -5,8 +5,7 @@
  *      Author: tiberiu rotaru
  */
 
-#ifndef _FHG_PNETE_UI_COMBO_ITEM_DELEGATE_HPP_
-#define _FHG_PNETE_UI_COMBO_ITEM_DELEGATE_HPP_ 1
+#pragma once
 
 #include <QStyledItemDelegate>
 #include <QComboBox>
@@ -45,5 +44,3 @@ namespace fhg
     }
   }
 }
-
-#endif

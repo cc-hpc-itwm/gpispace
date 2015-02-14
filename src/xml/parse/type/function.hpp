@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_TYPE_FUNCTION_HPP
-#define _XML_PARSE_TYPE_FUNCTION_HPP
+#pragma once
 
 #include <xml/parse/id/generic.hpp>
 #include <xml/parse/type/expression.hpp>
@@ -348,5 +347,3 @@ namespace std
     size_t operator()(xml::parse::type::fun_info_type const&) const;
   };
 }
-
-#endif

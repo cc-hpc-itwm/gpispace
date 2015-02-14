@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _FHG_UTIL_PARSE_FROM_STRING_HPP
-#define _FHG_UTIL_PARSE_FROM_STRING_HPP
+#pragma once
 
 #include <fhg/util/parse/position.hpp>
 
@@ -34,5 +33,3 @@ namespace fhg
     }
   }
 }
-
-#endif

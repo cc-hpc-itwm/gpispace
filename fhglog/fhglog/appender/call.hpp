@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef FHG_LOG_APPENDER_CALL_HPP
-#define FHG_LOG_APPENDER_CALL_HPP
+#pragma once
 
 #include <fhglog/Appender.hpp>
 
@@ -36,5 +35,3 @@ namespace fhg
    }
  }
 }
-
-#endif

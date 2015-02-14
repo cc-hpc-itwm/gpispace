@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _WE_TYPE_BYTEARRAY_HPP
-#define _WE_TYPE_BYTEARRAY_HPP
+#pragma once
 
 #include <boost/type_traits/is_pointer.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -72,5 +71,3 @@ namespace we
     };
   }
 }
-
-#endif

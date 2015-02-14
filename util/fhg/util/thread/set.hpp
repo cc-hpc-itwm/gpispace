@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_THREAD_SET_HPP
-#define FHG_UTIL_THREAD_SET_HPP
+#pragma once
 
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/thread.hpp>
@@ -64,5 +63,3 @@ namespace fhg
     };
   }
 }
-
-#endif

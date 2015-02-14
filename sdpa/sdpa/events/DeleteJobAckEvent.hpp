@@ -1,5 +1,4 @@
-#ifndef SDPA_DeleteJobAckEvent_HPP
-#define SDPA_DeleteJobAckEvent_HPP 1
+#pragma once
 
 #include <sdpa/events/JobEvent.hpp>
 
@@ -27,5 +26,3 @@ namespace sdpa
     CONSTRUCT_DATA_DEFS_FOR_EMPTY_JOBEVENT_OVERLOAD (DeleteJobAckEvent)
   }
 }
-
-#endif

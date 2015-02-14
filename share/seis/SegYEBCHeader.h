@@ -7,8 +7,7 @@
 ***************************************************************************/
 
 
-#ifndef SEGYEBCHEADER_H
-#define SEGYEBCHEADER_H
+#pragma once
 
 #include <algorithm>
 
@@ -19,5 +18,3 @@ struct SegYEBCHeader{	/* bhed - binary header */
     char desc[3200];
   ~SegYEBCHeader () { std::fill (desc, desc+3200, 0); }
 };
-#endif //SEGYEBCHEADER_H
-

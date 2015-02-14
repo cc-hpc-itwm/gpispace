@@ -16,8 +16,7 @@
  * =====================================================================================
  */
 
-#ifndef WE_TYPE_MODULE_CALL_HPP
-#define WE_TYPE_MODULE_CALL_HPP 1
+#pragma once
 
 #include <we/type/module_call.fwd.hpp>
 
@@ -97,5 +96,3 @@ namespace we { namespace type {
     return os << m.module() << "." << m.function();
   }
 }}
-
-#endif

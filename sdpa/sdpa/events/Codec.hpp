@@ -1,5 +1,4 @@
-#ifndef SDPA_EVENTS_CODEC_HPP
-#define SDPA_EVENTS_CODEC_HPP 1
+#pragma once
 
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
@@ -104,5 +103,3 @@ namespace sdpa
     };
   }
 }
-
-#endif

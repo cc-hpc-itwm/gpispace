@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_PNETE_DATA_HANDLE_META_BASE_FWD_HPP
-#define FHG_PNETE_DATA_HANDLE_META_BASE_FWD_HPP
+#pragma once
 
 namespace fhg
 {
@@ -17,5 +16,3 @@ namespace fhg
     }
   }
 }
-
-#endif

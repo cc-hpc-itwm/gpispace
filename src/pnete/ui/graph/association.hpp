@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef PNETE_UI_GRAPH_ASSOCIATION_HPP
-#define PNETE_UI_GRAPH_ASSOCIATION_HPP
+#pragma once
 
 #include <pnete/ui/graph/association.fwd.hpp>
 
@@ -69,5 +68,3 @@ namespace fhg
     }
   }
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef WE_TYPE_REQUIREMENT_HPP
-#define WE_TYPE_REQUIREMENT_HPP 1
+#pragma once
 
 #include <boost/functional/hash.hpp>
 #include <boost/serialization/nvp.hpp>
@@ -63,5 +62,3 @@ namespace we
     }
   }
 }
-
-#endif

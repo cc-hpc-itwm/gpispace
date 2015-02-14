@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_UI_GRAPH_MODE_HPP
-#define _FHG_PNETE_UI_GRAPH_MODE_HPP 1
+#pragma once
 
 namespace fhg
 {
@@ -41,5 +40,3 @@ namespace std
     }
   };
 };
-
-#endif

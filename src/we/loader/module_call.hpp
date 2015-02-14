@@ -1,5 +1,4 @@
-#ifndef SDPA_DAEMON_NRE_MODULE_CALL_HPP
-#define SDPA_DAEMON_NRE_MODULE_CALL_HPP 1
+#pragma once
 
 #include <we/expr/eval/context.hpp>
 #include <we/loader/loader.hpp>
@@ -22,5 +21,3 @@ namespace we
                      );
   }
 }
-
-#endif

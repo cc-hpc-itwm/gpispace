@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef PNET_SRC_WE_TYPE_VALUE_POKE_HPP
-#define PNET_SRC_WE_TYPE_VALUE_POKE_HPP
+#pragma once
 
 #include <we/type/value.hpp>
 
@@ -24,5 +23,3 @@ namespace pnet
     }
   }
 }
-
-#endif

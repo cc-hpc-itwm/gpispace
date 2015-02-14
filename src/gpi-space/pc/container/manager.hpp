@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_CONTAINER_MANAGER_HPP
-#define GPI_SPACE_PC_CONTAINER_MANAGER_HPP 1
+#pragma once
 
 #include <boost/thread.hpp>
 
@@ -73,5 +72,3 @@ namespace gpi
     }
   }
 }
-
-#endif

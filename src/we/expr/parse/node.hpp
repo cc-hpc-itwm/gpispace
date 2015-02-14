@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _EXPR_PARSE_NODE_HPP
-#define _EXPR_PARSE_NODE_HPP
+#pragma once
 
 #include <we/expr/token/type.hpp>
 #include <we/expr/token/tokenizer.hpp>
@@ -66,5 +65,3 @@ namespace expr
     }
   }
 }
-
-#endif

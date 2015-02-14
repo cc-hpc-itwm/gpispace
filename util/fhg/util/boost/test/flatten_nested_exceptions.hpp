@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_BOOST_TEST_FLATTEN_NESTED_EXCEPTIONS_HPP
-#define FHG_UTIL_BOOST_TEST_FLATTEN_NESTED_EXCEPTIONS_HPP
+#pragma once
 
 #include <fhg/util/print_exception.hpp>
 
@@ -63,5 +62,3 @@ namespace fhg
     }
   }
 }
-
-#endif

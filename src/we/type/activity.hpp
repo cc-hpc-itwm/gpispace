@@ -1,7 +1,6 @@
 // {petry,rahn}@itwm.fhg.de
 
-#ifndef WE_MGMT_TYPE_ACTIVITY_HPP
-#define WE_MGMT_TYPE_ACTIVITY_HPP 1
+#pragma once
 
 #include <we/type/activity.fwd.hpp>
 
@@ -139,5 +138,3 @@ namespace we
       };
     }
 }
-
-#endif

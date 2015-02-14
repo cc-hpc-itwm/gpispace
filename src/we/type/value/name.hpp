@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef PNET_SRC_WE_TYPE_VALUE_SIGNATURE_NAME_HPP
-#define PNET_SRC_WE_TYPE_VALUE_SIGNATURE_NAME_HPP
+#pragma once
 
 #include <iosfwd>
 #include <list>
@@ -39,5 +38,3 @@ namespace pnet
     }
   }
 }
-
-#endif

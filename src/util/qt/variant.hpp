@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_QT_VARIANT_HPP
-#define FHG_UTIL_QT_VARIANT_HPP
+#pragma once
 
 #include <fhg/util/backtracing_exception.hpp>
 
@@ -59,5 +58,3 @@ namespace fhg
     }
   }
 }
-
-#endif

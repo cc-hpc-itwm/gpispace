@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _PNETE_UI_TRANSITION_LIBRARY_MODEL_HPP
-#define _PNETE_UI_TRANSITION_LIBRARY_MODEL_HPP 1
+#pragma once
 
 #include <pnete/data/manager.fwd.hpp>
 
@@ -63,5 +62,3 @@ namespace fhg
     }
   }
 }
-
-#endif

@@ -5,8 +5,7 @@
    interface like in tmmgr, but each handle has to specify an arena
 */
 
-#ifndef DTMMGR_H
-#define DTMMGR_H
+#pragma once
 
 #include <mmgr/tmmgr.h>
 
@@ -59,6 +58,4 @@ extern "C"
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

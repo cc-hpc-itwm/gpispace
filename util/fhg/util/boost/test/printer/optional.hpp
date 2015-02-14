@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_BOOST_TEST_PRINTER_OPTIONAL_HPP
-#define FHG_UTIL_BOOST_TEST_PRINTER_OPTIONAL_HPP
+#pragma once
 
 #include <fhg/util/boost/test.hpp>
 
@@ -19,5 +18,3 @@ FHG_BOOST_TEST_TEMPLATED_LOG_VALUE_PRINTER
     os << "Nothing";
   }
 }
-
-#endif

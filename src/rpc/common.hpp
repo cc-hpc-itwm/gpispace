@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_RPC_COMMON_HPP
-#define FHG_RPC_COMMON_HPP
+#pragma once
 
 #include <boost/optional.hpp>
 
@@ -191,5 +190,3 @@ namespace fhg
     };
   }
 }
-
-#endif

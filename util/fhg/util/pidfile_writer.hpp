@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_PIDFILE_WRITER_HPP
-#define FHG_UTIL_PIDFILE_WRITER_HPP
+#pragma once
 
 #include <string>
 
@@ -22,5 +21,3 @@ namespace fhg
     };
   }
 }
-
-#endif

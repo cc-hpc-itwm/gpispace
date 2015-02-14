@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_HANDLE_BUFFER_HPP
-#define GPI_SPACE_PC_HANDLE_BUFFER_HPP
+#pragma once
 
 #include <unistd.h> // size_t
 
@@ -40,5 +39,3 @@ namespace gpi
     }
   }
 }
-
-#endif

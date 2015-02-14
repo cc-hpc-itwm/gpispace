@@ -1,5 +1,4 @@
-#ifndef SDPA_JOB_STATES_HPP
-#define SDPA_JOB_STATES_HPP
+#pragma once
 
 #include <fhg/util/macros.hpp>
 
@@ -50,5 +49,3 @@ namespace sdpa
     }
   };
 }
-
-#endif

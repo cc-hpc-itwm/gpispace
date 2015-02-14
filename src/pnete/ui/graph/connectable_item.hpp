@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef PNETE_UI_GRAPH_CONNECTABLE_ITEM_HPP
-#define PNETE_UI_GRAPH_CONNECTABLE_ITEM_HPP
+#pragma once
 
 #include <pnete/ui/graph/connectable_item.fwd.hpp>
 
@@ -54,5 +53,3 @@ namespace fhg
     }
   }
 }
-
-#endif

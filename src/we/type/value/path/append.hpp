@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef PNET_SRC_WE_TYPE_VALUE_PATH_APPEND_HPP
-#define PNET_SRC_WE_TYPE_VALUE_PATH_APPEND_HPP
+#pragma once
 
 #include <list>
 #include <string>
@@ -27,5 +26,3 @@ namespace pnet
     }
   }
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef FHG_COM_MESSAGE_HPP
-#define FHG_COM_MESSAGE_HPP 1
+#pragma once
 
 #include <fhgcom/header.hpp>
 
@@ -52,5 +51,3 @@ namespace fhg
     };
   }
 }
-
-#endif

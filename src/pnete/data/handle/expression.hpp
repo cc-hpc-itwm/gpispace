@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_PNETE_DATA_HANDLE_EXPRESSION_HPP
-#define FHG_PNETE_DATA_HANDLE_EXPRESSION_HPP
+#pragma once
 
 #include <pnete/data/handle/expression.fwd.hpp>
 
@@ -38,5 +37,3 @@ namespace fhg
     }
   }
 }
-
-#endif

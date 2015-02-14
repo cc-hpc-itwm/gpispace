@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_PNETE_PLUGIN_PLUGIN_BASE_HPP
-#define FHG_PNETE_PLUGIN_PLUGIN_BASE_HPP
+#pragma once
 
 #include <QAction>
 #include <QList>
@@ -31,5 +30,3 @@ namespace fhg
     }
   }
 }
-
-#endif

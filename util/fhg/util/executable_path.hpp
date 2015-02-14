@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_EXECUTABLE_PATH_HPP
-#define FHG_UTIL_EXECUTABLE_PATH_HPP
+#pragma once
 
 #include <boost/filesystem/path.hpp>
 
@@ -12,5 +11,3 @@ namespace fhg
     boost::filesystem::path executable_path();
   }
 }
-
-#endif

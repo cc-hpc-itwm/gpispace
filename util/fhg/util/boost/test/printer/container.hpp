@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fhg.de
 
-#ifndef FHG_UTIL_BOOST_TEST_PRINTER_CONTAINER_HPP
-#define FHG_UTIL_BOOST_TEST_PRINTER_CONTAINER_HPP
+#pragma once
 
 #include <fhg/util/boost/test.hpp>
 #include <fhg/util/print_container.hpp>
@@ -54,5 +53,3 @@ namespace fhg
     }
   }
 }
-
-#endif

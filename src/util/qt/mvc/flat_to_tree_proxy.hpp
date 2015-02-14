@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_QT_MVC_FLAT_TO_TREE_PROXY_HPP
-#define FHG_UTIL_QT_MVC_FLAT_TO_TREE_PROXY_HPP
+#pragma once
 
 #include <QAbstractItemModel>
 #include <QList>
@@ -113,5 +112,3 @@ namespace fhg
 
 Q_DECLARE_METATYPE
   (boost::shared_ptr<fhg::util::qt::mvc::transform_functions_model::transform_function>)
-
-#endif

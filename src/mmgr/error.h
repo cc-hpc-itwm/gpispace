@@ -1,6 +1,5 @@
 
-#ifndef ERROR_H
-#define ERROR_H
+#pragma once
 
 #ifndef GEN_ERROR_HANDLER
 #include <stdio.h>
@@ -12,6 +11,4 @@
         exit(EXIT_FAILURE);                                                   \
       }                                                                       \
     while (0)
-#endif
-
 #endif

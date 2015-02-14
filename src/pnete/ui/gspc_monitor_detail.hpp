@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_PNETE_UI_GSPC_MONITOR_DETAIL_HPP
-#define FHG_PNETE_UI_GSPC_MONITOR_DETAIL_HPP
+#pragma once
 
 #include <pnete/ui/gspc_monitor_client.hpp>
 
@@ -205,5 +204,3 @@ namespace fhg
     }
   }
 }
-
-#endif

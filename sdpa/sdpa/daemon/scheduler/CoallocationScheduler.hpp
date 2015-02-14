@@ -1,7 +1,6 @@
 // tiberiu.rotaru@itwm.fraunhofer.de
 
-#ifndef SDPA_COALLOCSCHED_HPP
-#define SDPA_COALLOCSCHED_HPP 1
+#pragma once
 
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/Worker.hpp>
@@ -155,5 +154,3 @@ namespace sdpa
     };
   }
 }
-
-#endif

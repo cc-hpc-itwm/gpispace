@@ -1,5 +1,4 @@
-#ifndef DRTS_PRIVATE_HOST_AND_PORT_HPP
-#define DRTS_PRIVATE_HOST_AND_PORT_HPP
+#pragma once
 
 #include <string>
 
@@ -16,5 +15,3 @@ namespace gspc
     unsigned short const port;
   };
 }
-
-#endif
