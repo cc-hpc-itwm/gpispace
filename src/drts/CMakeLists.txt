@@ -49,3 +49,4 @@ install (TARGETS
 
 add_subdirectory (test/parallel_running_workflows)
 add_subdirectory (test/put_token)
+add_subdirectory (test)
