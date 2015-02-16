@@ -86,9 +86,9 @@ BOOST_AUTO_TEST_CASE (share_example_n_of_m)
     , "net lib install"
     );
 
-  gspc::scoped_rifd const rifd ( gspc::rifd::strategy (vm)
-                               , gspc::rifd::hostnames (vm)
-                               , gspc::rifd::port (vm)
+  gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
+                               , gspc::rifd::hostnames {vm}
+                               , gspc::rifd::port {vm}
                                , installation
                                );
   gspc::scoped_runtime_system const drts

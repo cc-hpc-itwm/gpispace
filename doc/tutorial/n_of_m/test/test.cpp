@@ -78,9 +78,9 @@ namespace
     pnet::type::value::value_type config;
     pnet::type::value::poke ("description", config, std::string ("test"));
 
-    gspc::scoped_rifd const rifd ( gspc::rifd::strategy (vm)
-                                 , gspc::rifd::hostnames (vm)
-                                 , gspc::rifd::port (vm)
+    gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
+                                 , gspc::rifd::hostnames {vm}
+                                 , gspc::rifd::port {vm}
                                  , installation
                                  );
     gspc::scoped_runtime_system const drts ( vm

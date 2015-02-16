@@ -83,9 +83,9 @@ BOOST_AUTO_TEST_CASE (tutorial_parallel_inorder)
   pnet::type::value::poke ("description", config, std::string ("test"));
   pnet::type::value::poke ("output_file", config, output_file.string());
 
-  gspc::scoped_rifd const rifd ( gspc::rifd::strategy (vm)
-                               , gspc::rifd::hostnames (vm)
-                               , gspc::rifd::port (vm)
+  gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
+                               , gspc::rifd::hostnames {vm}
+                               , gspc::rifd::port {vm}
                                , installation
                                );
   gspc::scoped_runtime_system const drts
