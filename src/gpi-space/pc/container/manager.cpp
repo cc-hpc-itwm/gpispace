@@ -118,8 +118,6 @@ namespace gpi
             }
           }
 
-          try
-          {
             gpi::pc::type::process_id_t const id (m_process_counter.inc());
 
             {
@@ -146,12 +144,6 @@ namespace gpi
                 , "gpi.container"
                 , "process container " << id << " attached"
                 );
-          }
-          catch (std::exception const & ex)
-          {
-            LOG(ERROR, "could not handle new connection: " << ex.what());
-            close_socket (cfd);
-          }
         }
       }
 
