@@ -552,17 +552,17 @@ BOOST_FIXTURE_TEST_CASE
 
   we::layer::id_type const id (generate_id());
 
-  we::layer::id_type child_id_A;
-  we::layer::id_type child_id_B;
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
 
   {
-    expect_submit const _A (this, &child_id_A, activity_child);
-    expect_submit const _B (this, &child_id_B, activity_child);
+    expect_submit const _a (this, &child_id_a, activity_child);
+    expect_submit const _b (this, &child_id_b, activity_child);
 
     do_submit (id, activity_input);
   }
 
-  do_finished (child_id_A, activity_result);
+  do_finished (child_id_a, activity_result);
 
   {
     expect_finished const _ (this, id, activity_output);
@@ -572,7 +572,7 @@ BOOST_FIXTURE_TEST_CASE
     //! output activity: if it would finish before the second child
     //! finishing, there would be a token missing.
 
-    do_finished (child_id_B, activity_result);
+    do_finished (child_id_b, activity_result);
   }
 }
 
@@ -715,24 +715,24 @@ BOOST_FIXTURE_TEST_CASE
 
   we::layer::id_type const id (generate_id());
 
-  we::layer::id_type child_id_A;
-  we::layer::id_type child_id_B;
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
 
   {
-    expect_submit const _A (this, &child_id_A, activity_child);
-    expect_submit const _B (this, &child_id_B, activity_child);
+    expect_submit const _a (this, &child_id_a, activity_child);
+    expect_submit const _b (this, &child_id_b, activity_child);
 
     do_submit (id, activity_input);
   }
 
   {
-    expect_cancel const _A (this, child_id_A);
-    expect_cancel const _B (this, child_id_B);
+    expect_cancel const _a (this, child_id_a);
+    expect_cancel const _b (this, child_id_b);
 
     do_cancel (id);
   }
 
-  do_canceled (child_id_A);
+  do_canceled (child_id_a);
 
   {
     expect_canceled const _ (this, id);
@@ -740,7 +740,7 @@ BOOST_FIXTURE_TEST_CASE
     //! \todo There is an uncheckable(?) race here: rts_canceled may
     //! be called before do_canceled (second child)!
 
-    do_canceled (child_id_B);
+    do_canceled (child_id_b);
   }
 }
 
@@ -758,20 +758,20 @@ BOOST_FIXTURE_TEST_CASE
 
   we::layer::id_type const id (generate_id());
 
-  we::layer::id_type child_id_A;
-  we::layer::id_type child_id_B;
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
 
   {
-    expect_submit const _A (this, &child_id_A, activity_child);
-    expect_submit const _B (this, &child_id_B, activity_child);
+    expect_submit const _a (this, &child_id_a, activity_child);
+    expect_submit const _b (this, &child_id_b, activity_child);
 
     do_submit (id, activity_input);
   }
 
-  do_finished (child_id_A, activity_result);
+  do_finished (child_id_a, activity_result);
 
   {
-    expect_cancel const _ (this, child_id_B);
+    expect_cancel const _ (this, child_id_b);
 
     do_cancel (id);
   }
@@ -782,7 +782,7 @@ BOOST_FIXTURE_TEST_CASE
     //! \todo There is an uncheckable(?) race here: rts_canceled may
     //! be called before do_canceled (second child)!
 
-    do_canceled (child_id_B);
+    do_canceled (child_id_b);
   }
 }
 
@@ -825,12 +825,12 @@ BOOST_FIXTURE_TEST_CASE
 
   we::layer::id_type const id (generate_id());
 
-  we::layer::id_type child_id_A;
-  we::layer::id_type child_id_B;
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
 
   {
-    expect_submit const _A (this, &child_id_A, activity_child);
-    expect_submit const _B (this, &child_id_B, activity_child);
+    expect_submit const _a (this, &child_id_a, activity_child);
+    expect_submit const _b (this, &child_id_b, activity_child);
 
     do_submit (id, activity_input);
   }
@@ -838,9 +838,9 @@ BOOST_FIXTURE_TEST_CASE
   const std::string message (rand() % 0xFE + 1, rand() % 0xFE + 1);
 
   {
-    expect_cancel const _ (this, child_id_B);
+    expect_cancel const _ (this, child_id_b);
 
-    do_failed (child_id_A, message);
+    do_failed (child_id_a, message);
   }
 
   {
@@ -849,7 +849,7 @@ BOOST_FIXTURE_TEST_CASE
     //! \todo There is an uncheckable(?) race here: rts_failed may
     //! be called before do_canceled (second child)!
 
-    do_canceled (child_id_B);
+    do_canceled (child_id_b);
   }
 }
 
@@ -952,11 +952,11 @@ BOOST_FIXTURE_TEST_CASE
 
   we::layer::id_type const id (generate_id());
 
-  we::layer::id_type child_id_A;
-  we::layer::id_type child_id_B;
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
   {
-    expect_submit _A (this, &child_id_A, activity_child);
-    expect_submit _B (this, &child_id_B, activity_child);
+    expect_submit _a (this, &child_id_a, activity_child);
+    expect_submit _b (this, &child_id_b, activity_child);
 
     do_submit (id, activity_input);
   }
@@ -964,28 +964,28 @@ BOOST_FIXTURE_TEST_CASE
   const we::layer::id_type discover_id
     (std::string (rand() % 0xFE + 1, rand() % 0xFE + 1));
   {
-    expect_discover _A (this, discover_id, child_id_A);
-    expect_discover _B (this, discover_id, child_id_B);
+    expect_discover _a (this, discover_id, child_id_a);
+    expect_discover _b (this, discover_id, child_id_b);
 
     do_discover (discover_id, id);
   }
 
   using pnet::type::value::poke;
 
-  sdpa::discovery_info_t discover_result_child_A( child_id_A
+  sdpa::discovery_info_t discover_result_child_a( child_id_a
                                                   , sdpa::status::PENDING
                                                   , sdpa::discovery_info_set_t());
 
-  sdpa::discovery_info_t discover_result_child_B( child_id_B
+  sdpa::discovery_info_t discover_result_child_b( child_id_b
                                                   , sdpa::status::PENDING
                                                   , sdpa::discovery_info_set_t());
 
   sdpa::discovery_info_set_t child_disc_set;
-  child_disc_set.insert(discover_result_child_A);
-  child_disc_set.insert(discover_result_child_B);
+  child_disc_set.insert(discover_result_child_a);
+  child_disc_set.insert(discover_result_child_b);
   sdpa::discovery_info_t discover_result(id, boost::none, child_disc_set);
 
-  do_discovered (discover_id, discover_result_child_A);
+  do_discovered (discover_id, discover_result_child_a);
 
   {
     expect_discovered _ (this, discover_id, discover_result);
@@ -995,14 +995,14 @@ BOOST_FIXTURE_TEST_CASE
     //! result: if it would finish discovering before the second child
     //! was discovered, there would be a child entry missing.
 
-    do_discovered (discover_id, discover_result_child_B);
+    do_discovered (discover_id, discover_result_child_b);
   }
 
   {
     expect_finished const _ (this, id, activity_output);
 
-    do_finished (child_id_A, activity_result);
-    do_finished (child_id_B, activity_result);
+    do_finished (child_id_a, activity_result);
+    do_finished (child_id_b, activity_result);
   }
 }
 
@@ -1107,19 +1107,19 @@ namespace
   }
 
   we::type::activity_t net_with_two_childs_that_require_capabilities
-    ( we::type::requirement_t const& capability_A
-    , std::size_t num_worker_with_capability_A
-    , we::type::requirement_t const& capability_B
-    , std::size_t num_worker_with_capability_B
+    ( we::type::requirement_t const& capability_a
+    , std::size_t num_worker_with_capability_a
+    , we::type::requirement_t const& capability_b
+    , std::size_t num_worker_with_capability_b
     )
   {
     we::type::net_type net;
 
     {
       we::place_id_type const place_id
-        (add_transition_with_requirement_and_input_place (net, capability_A));
+        (add_transition_with_requirement_and_input_place (net, capability_a));
 
-      while (num_worker_with_capability_A --> 0)
+      while (num_worker_with_capability_a --> 0)
       {
         net.put_value (place_id, we::type::literal::control());
       }
@@ -1127,9 +1127,9 @@ namespace
 
     {
       we::place_id_type const place_id
-        (add_transition_with_requirement_and_input_place (net, capability_B));
+        (add_transition_with_requirement_and_input_place (net, capability_b));
 
-      while (num_worker_with_capability_B --> 0)
+      while (num_worker_with_capability_b --> 0)
       {
         net.put_value (place_id, we::type::literal::control());
       }
@@ -1226,16 +1226,16 @@ BOOST_AUTO_TEST_CASE (layer_properly_forwards_requirements)
 {
   wfe_and_counter_of_submitted_requirements helper (30);
 
-  const we::type::requirement_t req_A ("A", true);
-  const we::type::requirement_t req_B ("B", true);
+  const we::type::requirement_t req_a ("A", true);
+  const we::type::requirement_t req_b ("B", true);
 
   helper._layer.submit
     ( fhg::util::random_string()
-    , net_with_two_childs_that_require_capabilities (req_A, 20, req_B, 10)
+    , net_with_two_childs_that_require_capabilities (req_a, 20, req_b, 10)
     );
   helper.wait_all_submitted();
 
   BOOST_REQUIRE_EQUAL (helper._received_requirements.size(), 2);
-  BOOST_REQUIRE_EQUAL (helper._received_requirements.at (req_A), 20);
-  BOOST_REQUIRE_EQUAL (helper._received_requirements.at (req_B), 10);
+  BOOST_REQUIRE_EQUAL (helper._received_requirements.at (req_a), 20);
+  BOOST_REQUIRE_EQUAL (helper._received_requirements.at (req_b), 10);
 }
