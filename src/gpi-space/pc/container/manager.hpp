@@ -43,7 +43,6 @@ namespace gpi
         void listener_thread_main (const int fd);
 
         void close_socket (const int fd);
-        int open_socket(std::string const & path);
         int safe_unlink(std::string const & path);
 
         mutex_type m_mutex;

@@ -66,61 +66,6 @@ namespace gpi
         fhg::syscall::close (fd);
       }
 
-      int manager_t::open_socket (std::string const & path)
-      {
-        int sfd;
-        struct sockaddr_un my_addr;
-        const std::size_t backlog_size (16);
-
-        try
-        {
-          sfd = fhg::syscall::socket (AF_UNIX, SOCK_STREAM, 0);
-        }
-        catch (boost::system::system_error const& se)
-        {
-          LOG(ERROR, "could not create unix socket: " << se.what());
-          return -se.code().value();
-        }
-        {
-          const int on (1);
-          fhg::syscall::setsockopt (sfd, SOL_SOCKET, SO_PASSCRED, &on, sizeof (on));
-        }
-
-        memset (&my_addr, 0, sizeof(my_addr));
-        my_addr.sun_family = AF_UNIX;
-        strncpy ( my_addr.sun_path
-                , path.c_str()
-                , sizeof(my_addr.sun_path) - 1
-                );
-
-        try
-        {
-          fhg::syscall::bind
-            (sfd, (struct sockaddr *)&my_addr, sizeof (struct sockaddr_un));
-        }
-        catch (boost::system::system_error const& se)
-        {
-          LOG(ERROR, "could not bind to socket at path " << path << ": " << se.what());
-          fhg::syscall::close (sfd);
-          return -se.code().value();
-        }
-        fhg::syscall::chmod (path.c_str(), 0700);
-
-        try
-        {
-          fhg::syscall::listen (sfd, backlog_size);
-        }
-        catch (boost::system::system_error const& se)
-        {
-          LOG(ERROR, "could not listen on socket: " << se.what());
-          fhg::syscall::close (sfd);
-          fhg::syscall::unlink (path.c_str());
-          return -se.code().value();
-        }
-
-        return sfd;
-      }
-
       int manager_t::safe_unlink(std::string const & path)
       {
         struct stat st;
@@ -255,21 +200,62 @@ namespace gpi
           throw std::runtime_error ("could not unlink socket path");
         }
 
-        int fd (open_socket (m_path));
-        if (fd < 0)
+        struct sockaddr_un my_addr;
+        const std::size_t backlog_size (16);
+
+        try
         {
-          LOG(ERROR, "could not open socket: " << strerror(-fd));
+          m_socket = fhg::syscall::socket (AF_UNIX, SOCK_STREAM, 0);
+        }
+        catch (boost::system::system_error const& se)
+        {
+          LOG(ERROR, "could not create unix socket: " << se.what());
+          LOG(ERROR, "could not open socket: " << strerror(se.code().value()));
           throw std::runtime_error ("could not open socket");
         }
-        else
         {
-          m_socket = fd;
-
-          m_listener = thread_t
-            ( new boost::thread
-              (&manager_t::listener_thread_main, this, m_socket)
-            );
+          const int on (1);
+          fhg::syscall::setsockopt (m_socket, SOL_SOCKET, SO_PASSCRED, &on, sizeof (on));
         }
+
+        memset (&my_addr, 0, sizeof(my_addr));
+        my_addr.sun_family = AF_UNIX;
+        strncpy ( my_addr.sun_path
+                , m_path.c_str()
+                , sizeof(my_addr.sun_path) - 1
+                );
+
+        try
+        {
+          fhg::syscall::bind
+            (m_socket, (struct sockaddr *)&my_addr, sizeof (struct sockaddr_un));
+        }
+        catch (boost::system::system_error const& se)
+        {
+          LOG(ERROR, "could not bind to socket at path " << m_path << ": " << se.what());
+          fhg::syscall::close (m_socket);
+          LOG(ERROR, "could not open socket: " << strerror(se.code().value()));
+          throw std::runtime_error ("could not open socket");
+        }
+        fhg::syscall::chmod (m_path.c_str(), 0700);
+
+        try
+        {
+          fhg::syscall::listen (m_socket, backlog_size);
+        }
+        catch (boost::system::system_error const& se)
+        {
+          LOG(ERROR, "could not listen on socket: " << se.what());
+          fhg::syscall::close (m_socket);
+          fhg::syscall::unlink (m_path.c_str());
+          LOG(ERROR, "could not open socket: " << strerror(se.code().value()));
+          throw std::runtime_error ("could not open socket");
+        }
+
+        m_listener = thread_t
+          ( new boost::thread
+            (&manager_t::listener_thread_main, this, m_socket)
+          );
       }
 
       void manager_t::detach_process ( const gpi::pc::type::process_id_t id
