@@ -248,10 +248,6 @@ namespace gpi
 
         lock_type lock (m_mutex);
 
-        if (m_socket >= 0)
-          return;
-
-        m_stopping = false;
         int err = safe_unlink (m_path);
         if (err < 0)
         {
