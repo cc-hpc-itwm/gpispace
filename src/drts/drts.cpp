@@ -22,6 +22,7 @@
 #include <fhg/util/read_file.hpp>
 #include <fhg/util/read_lines.hpp>
 #include <fhg/util/split.hpp>
+#include <fhg/revision.hpp>
 #include <fhg/syscall.hpp>
 
 #include <boost/format.hpp>
@@ -73,7 +74,30 @@ namespace gspc
   installation::installation
     (boost::program_options::variables_map const& vm)
       : _gspc_home (boost::filesystem::canonical (require_gspc_home (vm)))
-  {}
+  {
+    boost::filesystem::path const path_revision (_gspc_home / "revision");
+
+    if (!boost::filesystem::exists (path_revision))
+    {
+      throw std::invalid_argument
+        ((boost::format ("File '%1%' does not exist.") % path_revision).str());
+    }
+
+    std::string const revision (fhg::util::read_file (path_revision));
+
+    if (revision != fhg::project_revision())
+    {
+      throw std::invalid_argument
+        (( boost::format ( "GSPC revision mismatch: Expected '%1%'"
+                         ", installation in '%2%' has version '%3%'"
+                         )
+         % fhg::project_revision()
+         % _gspc_home
+         % revision
+         ).str()
+        );
+    }
+  }
 
   scoped_runtime_system::scoped_runtime_system
       ( boost::program_options::variables_map const& vm

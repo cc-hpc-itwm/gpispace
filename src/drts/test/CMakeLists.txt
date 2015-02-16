@@ -1,10 +1,16 @@
 
-fhg_add_test (installation.cpp
+configure_file (installation.cpp.in
+  "${CMAKE_CURRENT_BINARY_DIR}/installation.cpp"
+  @ONLY
+)
+
+fhg_add_test ("${CMAKE_CURRENT_BINARY_DIR}/installation.cpp"
   PROJECT drts
   BOOST_UNIT_TEST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}"
   LINK_LIBRARIES gspc
                  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
+  REQUIRES_INSTALLATION
 )
 fhg_add_test (installation_from_command_line.cpp
   PROJECT drts
