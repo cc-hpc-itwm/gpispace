@@ -53,12 +53,3 @@ BOOST_AUTO_TEST_CASE (installation_set_gspc_home_to_directory_with_bad_revision)
       ).str()
     );
 }
-
-BOOST_AUTO_TEST_CASE (installation_set_gspc_home_to_install_prefix)
-{
-  boost::program_options::variables_map vm;
-  gspc::set_gspc_home ( vm
-                      , boost::filesystem::canonical ("@CMAKE_INSTALL_PREFIX@")
-                      );
-  gspc::installation const installation (vm);
-}

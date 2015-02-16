@@ -1,10 +1,5 @@
 
-configure_file (installation.cpp.in
-  "${CMAKE_CURRENT_BINARY_DIR}/installation.cpp"
-  @ONLY
-)
-
-fhg_add_test ("${CMAKE_CURRENT_BINARY_DIR}/installation.cpp"
+fhg_add_test (installation.cpp
   PROJECT drts
   BOOST_UNIT_TEST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}"
