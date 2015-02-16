@@ -12,6 +12,7 @@
 
 #include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/boost/test/printer/optional.hpp>
+#include <fhg/util/make_unique.hpp>
 #include <fhg/util/random_string.hpp>
 
 #include <fhglog/Configuration.hpp>
@@ -256,12 +257,11 @@ namespace utils
   {
     orchestrator()
       : _ ( random_peer_name(), "127.0.0.1"
-          , _peer_io_service
+          , fhg::util::make_unique<boost::asio::io_service>()
           , _rpc_io_service
           )
     {}
 
-    boost::asio::io_service _peer_io_service;
     boost::asio::io_service _rpc_io_service;
     sdpa::daemon::Orchestrator _;
     std::string name() const { return _.name(); }
@@ -285,7 +285,7 @@ namespace utils
     agent (const T& master_0, const U& master_1)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
-          , _peer_io_service
+          , fhg::util::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master_0), make_master_info_tuple (master_1)}
           , boost::none
@@ -295,7 +295,7 @@ namespace utils
     agent (const T& master)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
-          , _peer_io_service
+          , fhg::util::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master)}
           , boost::none
@@ -304,13 +304,12 @@ namespace utils
     agent (const agent& master)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
-          , _peer_io_service
+          , fhg::util::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master)}
           , boost::none
           )
     {}
-    boost::asio::io_service _peer_io_service;
     sdpa::daemon::Agent _;
     std::string name() const { return _.name(); }
     fhg::com::host_t host() const { return _.peer_host(); }
@@ -331,7 +330,7 @@ namespace utils
                    {
                      _event_queue.put (source, e);
                    }
-                 , _peer_io_service
+                 , fhg::util::make_unique<boost::asio::io_service>()
                  , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
                  )
       , _event_thread (&basic_drts_component::event_thread, this)
@@ -434,7 +433,6 @@ namespace utils
   private:
     fhg::thread::queue<std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr>>
       _event_queue;
-    boost::asio::io_service _peer_io_service;
 
   protected:
     sdpa::com::NetworkStrategy _network;
@@ -682,7 +680,9 @@ namespace utils
   struct client : boost::noncopyable
   {
     client (orchestrator const& orch)
-      : _ (orch.host(), orch.port(), _peer_io_service)
+      : _ ( orch.host(), orch.port()
+          , fhg::util::make_unique<boost::asio::io_service>()
+          )
     {}
 
     sdpa::job_id_t submit_job (std::string workflow)
@@ -747,7 +747,6 @@ namespace utils
       return _.cancelJob (id);
     }
 
-    boost::asio::io_service _peer_io_service;
     sdpa::client::Client _;
 
 

@@ -8,6 +8,7 @@
 #include <fhglog/LogMacros.hpp>
 
 #include <fhg/util/boost/asio/ip/address.hpp>
+#include <fhg/util/make_unique.hpp>
 #include <fhg/util/print_exception.hpp>
 
 #include <rif/startup_messages_pipe.hpp>
@@ -105,11 +106,10 @@ try
   }
 
   boost::asio::io_service gui_io_service;
-  boost::asio::io_service peer_io_service;
   const sdpa::daemon::Agent agent
     ( agentName
     , agentUrl
-    , peer_io_service
+    , fhg::util::make_unique<boost::asio::io_service>()
     , vmem_socket
     , masters
     , std::pair<std::string, boost::asio::io_service&> (appGuiUrl, gui_io_service)

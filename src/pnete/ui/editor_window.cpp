@@ -22,6 +22,7 @@
 #include <pnete/ui/transition_library_view.hpp>
 
 #include <fhg/util/dl.hpp>
+#include <fhg/util/make_unique.hpp>
 #include <fhg/util/temporary_path.hpp>
 
 #include <sdpa/client.hpp>
@@ -988,10 +989,9 @@ namespace fhg
         // loader.append_search_path (temporary_path / "pnetc" / "op");
 
         //! \todo Configurable host + port of orchestrator, non-static
-        static boost::asio::io_service peer_io_service;
         static sdpa::client::Client client ( fhg::com::host_t ("DUMMY")
                                            , fhg::com::port_t ("DUMMY")
-                                           , peer_io_service
+                                           , fhg::util::make_unique<boost::asio::io_service>()
                                            );
 
         const std::string job_id

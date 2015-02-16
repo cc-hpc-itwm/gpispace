@@ -179,7 +179,7 @@ namespace
 
 DRTSImpl::DRTSImpl
     ( std::function<void()> request_stop
-    , boost::asio::io_service& peer_io_service
+    , std::unique_ptr<boost::asio::io_service> peer_io_service
     , boost::optional<sdpa::daemon::NotificationService> gui_notification_service
     , std::string const& kernel_name
     , gpi::pc::client::api_t /*const*/* virtual_memory_api
@@ -203,18 +203,13 @@ DRTSImpl::DRTSImpl
   , _notification_service (gui_notification_service)
   , _virtual_memory_api (virtual_memory_api)
   , _shared_memory (shared_memory)
-  , m_peer ( std::make_shared<fhg::com::peer_t>
-               (peer_io_service, fhg::com::host_t ("*"), fhg::com::port_t ("0"))
-           )
-  , m_peer_thread ( std::make_shared<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
-                      (&fhg::com::peer_t::run, m_peer.get())
-                  )
   , m_pending_jobs (backlog_length)
+  , _peer ( std::move (peer_io_service)
+          , fhg::com::host_t ("*"), fhg::com::port_t ("0")
+          )
   , m_event_thread (&DRTSImpl::event_thread, this)
   , m_execution_thread (&DRTSImpl::job_execution_thread, this)
 {
-  m_peer->start();
-
   start_receiver();
 
   std::set<sdpa::Capability> const capabilities
@@ -225,7 +220,7 @@ DRTSImpl::DRTSImpl
     send_event<sdpa::events::WorkerRegistrationEvent>
       ( m_masters.emplace
           ( std::get<0> (master)
-          , m_peer->connect_to (std::get<1> (master), std::get<2> (master))
+          , _peer.connect_to (std::get<1> (master), std::get<2> (master))
           ).first->second
       , m_my_name
       , m_pending_jobs.capacity()
@@ -234,13 +229,6 @@ DRTSImpl::DRTSImpl
       , fhg::util::hostname()
       );
   }
-}
-
-DRTSImpl::peer_stopper::~peer_stopper()
-{
-  m_peer->stop();
-  m_peer_thread.reset();
-  m_peer.reset();
 }
 
 DRTSImpl::~DRTSImpl()
@@ -642,7 +630,7 @@ void DRTSImpl::send_job_result_to_master (std::shared_ptr<DRTSImpl::Job> const& 
 
 void DRTSImpl::start_receiver()
 {
-  m_peer->async_recv
+  _peer.async_recv
     ( &m_message
     , [this] ( boost::system::error_code const& ec
              , boost::optional<fhg::com::p2p::address_t> source
@@ -681,5 +669,5 @@ template<typename Event, typename... Args>
 {
   static sdpa::events::Codec codec;
   Event const event (std::forward<Args> (args)...);
-  m_peer->send (destination, codec.encode (&event));
+  _peer.send (destination, codec.encode (&event));
 }

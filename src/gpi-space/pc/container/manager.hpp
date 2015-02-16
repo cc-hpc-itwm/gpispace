@@ -30,7 +30,7 @@ namespace gpi
         manager_t ( std::string const & p
                     , std::vector<std::string> const& default_memory_urls
                   , api::gpi_api_t& gpi_api
-                  , boost::shared_ptr<fhg::com::peer_t> const& topology_peer
+                  , std::unique_ptr<fhg::com::peer_t> topology_peer
                     );
 
         ~manager_t ();

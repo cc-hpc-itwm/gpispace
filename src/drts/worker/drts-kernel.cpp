@@ -190,8 +190,6 @@ try
       (parts[0], fhg::com::host_t (parts[1]), fhg::com::port_t (parts[2]));
   }
 
-  boost::asio::io_service peer_io_service;
-
   boost::asio::io_service gui_io_service;
   boost::optional<sdpa::daemon::NotificationService> gui_notification_service;
   if (vm.count (option_name::gui_host) || vm.count (option_name::gui_port))
@@ -205,7 +203,7 @@ try
   }
 
   DRTSImpl const plugin ( request_stop
-                        , peer_io_service
+                        , fhg::util::make_unique<boost::asio::io_service>()
                         , gui_notification_service
                         , kernel_name
                         , virtual_memory_api.get()

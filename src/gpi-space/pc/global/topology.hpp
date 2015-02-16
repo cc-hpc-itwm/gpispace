@@ -40,7 +40,7 @@ namespace gpi
 
         topology_t ( memory::manager_t& memory_manager
                    , api::gpi_api_t&
-                   , boost::shared_ptr<fhg::com::peer_t> const&
+                   , std::unique_ptr<fhg::com::peer_t>
                    );
         ~topology_t ();
 
@@ -99,13 +99,13 @@ namespace gpi
         mutable std::condition_variable m_request_finished;
 
         bool m_shutting_down;
-        boost::shared_ptr<fhg::com::peer_t>  m_peer;
         std::unordered_set<fhg::com::p2p::address_t> m_children;
         fhg::com::message_t m_incoming_msg;
 
         std::vector<boost::optional<std::string>> m_current_results;
 
         api::gpi_api_t& _gpi_api;
+        std::unique_ptr<fhg::com::peer_t> m_peer;
       };
     }
   }

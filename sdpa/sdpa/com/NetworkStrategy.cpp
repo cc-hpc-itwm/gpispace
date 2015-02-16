@@ -15,23 +15,16 @@ namespace sdpa
   namespace com
   {
     NetworkStrategy::NetworkStrategy ( std::function<void (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr)> event_handler
-                                     , boost::asio::io_service& peer_io_service
+                                     , std::unique_ptr<boost::asio::io_service> peer_io_service
                                      , fhg::com::host_t const & host
                                      , fhg::com::port_t const & port
                                      )
       : _event_handler (event_handler)
-      , m_peer ( new fhg::com::peer_t
-                 ( peer_io_service
-                 , fhg::com::host_t (host)
-                 , fhg::com::port_t (port)
-                 )
-               )
       , m_message()
-      , m_thread (&fhg::com::peer_t::run, m_peer)
       , m_shutting_down (false)
+      , _peer (std::move (peer_io_service), host, port)
     {
-      m_peer->start ();
-      m_peer->async_recv
+      _peer.async_recv
         ( &m_message
         , std::bind ( &NetworkStrategy::handle_recv
                     , this
@@ -44,15 +37,12 @@ namespace sdpa
     NetworkStrategy::~NetworkStrategy()
     {
       m_shutting_down = true;
-
-      m_peer->stop();
-      m_thread.join();
     }
 
     fhg::com::p2p::address_t NetworkStrategy::connect_to
       (fhg::com::host_t const& host, fhg::com::port_t const& port)
     {
-      return m_peer->connect_to (host, port);
+      return _peer.connect_to (host, port);
     }
 
     void NetworkStrategy::perform
@@ -64,7 +54,7 @@ namespace sdpa
 
       try
       {
-        m_peer->async_send
+        _peer.async_send
           ( address
           , codec.encode (sdpa_event.get())
           , [address, this] (boost::system::error_code const& ec)
@@ -102,7 +92,7 @@ namespace sdpa
           (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
         _event_handler (source.get(), evt);
 
-        m_peer->async_recv
+        _peer.async_recv
           ( &m_message
           , std::bind ( &NetworkStrategy::handle_recv
                       , this
@@ -113,7 +103,7 @@ namespace sdpa
       }
       else if (! m_shutting_down)
       {
-        if (m_message.header.src != m_peer->address())
+        if (m_message.header.src != _peer.address())
         {
           sdpa::events::ErrorEvent::Ptr
             error(new sdpa::events::ErrorEvent ( (ec == boost::asio::error::eof) // Connection closed cleanly by peer
@@ -125,7 +115,7 @@ namespace sdpa
           _event_handler
             (source.get_value_or (fhg::com::p2p::address_t ("unknown")), error);
 
-          m_peer->async_recv
+          _peer.async_recv
            ( &m_message
            , std::bind ( &NetworkStrategy::handle_recv
                        , this

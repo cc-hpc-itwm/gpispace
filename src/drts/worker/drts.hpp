@@ -119,7 +119,7 @@ public:
 
   DRTSImpl
     ( std::function<void()> request_stop
-    , boost::asio::io_service& peer_io_service
+    , std::unique_ptr<boost::asio::io_service> peer_io_service
     , boost::optional<sdpa::daemon::NotificationService> gui_notification_service
     , std::string const& kernel_name
     , gpi::pc::client::api_t /*const*/* virtual_memory_socket
@@ -187,9 +187,6 @@ private:
   } _mark_remaining_tasks_as_canceled_helper
     = {_currently_executed_tasks_mutex, _currently_executed_tasks};
 
-  std::shared_ptr<fhg::com::peer_t> m_peer;
-  std::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
-    m_peer_thread;
   fhg::com::message_t m_message;
   //! \todo Two sets for connected and unconnected masters?
   map_of_masters_t m_masters;
@@ -206,13 +203,7 @@ private:
   mutable std::mutex _guard_backlogfull_notified_masters;
   std::unordered_set<fhg::com::p2p::address_t> _masters_backlogfull_notified;
 
-  struct peer_stopper
-  {
-    ~peer_stopper();
-    std::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>&
-      m_peer_thread;
-    std::shared_ptr<fhg::com::peer_t>& m_peer;
-  } _peer_stopper = {m_peer_thread, m_peer};
+  fhg::com::peer_t _peer;
 
   boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
     m_event_thread;

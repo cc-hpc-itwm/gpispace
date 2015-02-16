@@ -18,7 +18,7 @@ namespace sdpa
     {
     public:
       NetworkStrategy ( std::function<void (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr)> event_handler
-                      , boost::asio::io_service& peer_io_service
+                      , std::unique_ptr<boost::asio::io_service> peer_io_service
                       , fhg::com::host_t const & host
                       , fhg::com::port_t const & port
                       );
@@ -33,7 +33,7 @@ namespace sdpa
 
       boost::asio::ip::tcp::endpoint local_endpoint() const
       {
-        return m_peer->local_endpoint();
+        return _peer.local_endpoint();
       }
 
     private:
@@ -43,13 +43,10 @@ namespace sdpa
 
       std::function<void (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr)> _event_handler;
 
-      const std::string m_port;
-
-      boost::shared_ptr<fhg::com::peer_t> m_peer;
       fhg::com::message_t m_message;
-      boost::thread m_thread;
-
       bool m_shutting_down;
+
+      fhg::com::peer_t _peer;
     };
   }
 }

@@ -9,6 +9,7 @@
 
 #include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
+#include <fhg/util/make_unique.hpp>
 #include <fhg/util/print_exception.hpp>
 
 #include <rif/startup_messages_pipe.hpp>
@@ -58,12 +59,11 @@ try
 
     po::notify(vm);
 
-  boost::asio::io_service peer_io_service;
   boost::asio::io_service rpc_io_service;
   const sdpa::daemon::Orchestrator orchestrator
     ( orchName
     , orchUrl
-    , peer_io_service
+    , fhg::util::make_unique<boost::asio::io_service>()
     , rpc_io_service
     );
 
