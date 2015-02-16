@@ -36,8 +36,6 @@ namespace gpi
         ~manager_t ();
 
       private:
-        void start ();
-        void stop ();
         typedef boost::shared_ptr<boost::thread> thread_t;
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;

@@ -31,7 +31,21 @@ namespace gpi
       {
         try
         {
-          stop ();
+          lock_type lock (m_mutex);
+          if (m_socket >= 0)
+          {
+            m_stopping = true;
+
+            safe_unlink (m_path);
+            close_socket (m_socket);
+            fhg_assert (m_listener);
+            if (boost::this_thread::get_id() != m_listener->get_id())
+            {
+              m_listener->join ();
+              m_listener.reset ();
+            }
+            m_socket = -1;
+          }
         }
         catch (std::exception const & ex)
         {
@@ -44,57 +58,6 @@ namespace gpi
           }
 
         _memory_manager.clear();
-      }
-
-      void manager_t::start ()
-      {
-        lock_type lock (m_mutex);
-
-        if (m_socket >= 0)
-          return;
-
-        m_stopping = false;
-        int err = safe_unlink (m_path);
-        if (err < 0)
-        {
-          LOG(ERROR, "could not unlink path " << m_path << ": " <<  strerror(-err));
-          throw std::runtime_error ("could not unlink socket path");
-        }
-
-        int fd (open_socket (m_path));
-        if (fd < 0)
-        {
-          LOG(ERROR, "could not open socket: " << strerror(-fd));
-          throw std::runtime_error ("could not open socket");
-        }
-        else
-        {
-          m_socket = fd;
-
-          m_listener = thread_t
-            ( new boost::thread
-              (&manager_t::listener_thread_main, this, m_socket)
-            );
-        }
-      }
-
-      void manager_t::stop ()
-      {
-        lock_type lock (m_mutex);
-        if (m_socket >= 0)
-        {
-          m_stopping = true;
-
-          safe_unlink (m_path);
-          close_socket (m_socket);
-          fhg_assert (m_listener);
-          if (boost::this_thread::get_id() != m_listener->get_id())
-          {
-            m_listener->join ();
-            m_listener.reset ();
-          }
-          m_socket = -1;
-        }
       }
 
       void manager_t::close_socket (const int fd)
@@ -282,7 +245,35 @@ namespace gpi
           }
         }
 
-          start ();
+
+        lock_type lock (m_mutex);
+
+        if (m_socket >= 0)
+          return;
+
+        m_stopping = false;
+        int err = safe_unlink (m_path);
+        if (err < 0)
+        {
+          LOG(ERROR, "could not unlink path " << m_path << ": " <<  strerror(-err));
+          throw std::runtime_error ("could not unlink socket path");
+        }
+
+        int fd (open_socket (m_path));
+        if (fd < 0)
+        {
+          LOG(ERROR, "could not open socket: " << strerror(-fd));
+          throw std::runtime_error ("could not open socket");
+        }
+        else
+        {
+          m_socket = fd;
+
+          m_listener = thread_t
+            ( new boost::thread
+              (&manager_t::listener_thread_main, this, m_socket)
+            );
+        }
       }
 
       void manager_t::detach_process ( const gpi::pc::type::process_id_t id
