@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE (installation_set_gspc_home_to_directory_without_revision)
       gspc::set_gspc_home (vm, path);
       gspc::installation const installation (vm);
     }
-    , ( boost::format ("File '%1%' does not exist.")
+    , ( boost::format ("GSPC revision mismatch: File '%1%' does not exist.")
       % (boost::filesystem::canonical (path) / "revision")
       ).str()
     );

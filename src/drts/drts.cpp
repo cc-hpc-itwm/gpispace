@@ -80,7 +80,9 @@ namespace gspc
     if (!boost::filesystem::exists (path_revision))
     {
       throw std::invalid_argument
-        ((boost::format ("File '%1%' does not exist.") % path_revision).str());
+        (( boost::format ("GSPC revision mismatch: File '%1%' does not exist.")
+         % path_revision
+         ).str());
     }
 
     std::string const revision (fhg::util::read_file (path_revision));
