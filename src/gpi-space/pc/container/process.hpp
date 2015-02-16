@@ -36,29 +36,10 @@ namespace gpi
           , _gpi_api (gpi_api)
           , m_reader (&process_t::reader_thread_main, this)
         {}
-        ~process_t()
-        {
-          close_socket();
-
-          if (boost::this_thread::get_id() != m_reader.get_id())
-          {
-            if (m_reader.joinable())
-            {
-              m_reader.join ();
-            }
-          }
-        }
+        ~process_t();
 
       private:
         void reader_thread_main();
-
-        int receive ( gpi::pc::proto::message_t & msg
-                     , const size_t max_size = (1 << 20)
-                     );
-        int send (gpi::pc::proto::message_t const & msg);
-
-        int close_socket();
-        int checked_read (void *buf, const size_t len);
 
         std::function <void (gpi::pc::type::process_id_t const&, int)> m_handle_process_error;
         const gpi::pc::type::process_id_t m_id;

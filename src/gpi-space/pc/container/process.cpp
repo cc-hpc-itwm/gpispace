@@ -15,6 +15,7 @@
 
 #include <fhglog/LogMacros.hpp>
 #include <fhg/syscall.hpp>
+#include <fhg/util/nest_exceptions.hpp>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -309,140 +310,111 @@ namespace gpi
         }
       }
 
-      int process_t::close_socket()
-      try
+      process_t::~process_t()
       {
-        fhg::syscall::shutdown (m_socket, SHUT_RDWR);
+        try
+        {
+          fhg::syscall::shutdown (m_socket, SHUT_RDWR);
+        }
+        catch (boost::system::system_error const& se)
+        {
+          if (se.code() != boost::system::errc::not_connected)
+          {
+            //! \note ignored: already disconnected = fine, we terminate
+            throw;
+          }
+        }
         fhg::syscall::close (m_socket);
-        return 0;
-      }
-      catch (boost::system::system_error const& se)
-      {
-        return -se.code().value();
-      }
 
-      int process_t::receive ( gpi::pc::proto::message_t & msg
-                             , const size_t max_size
-                             )
-      {
-        gpi::pc::proto::header_t header;
-
+        if (boost::this_thread::get_id() != m_reader.get_id())
         {
-          int const err (checked_read (&header, sizeof(header)));
-          if (err <= 0)
+          if (m_reader.joinable())
           {
-            return err;
+            m_reader.join ();
           }
         }
-
-        if (header.length > max_size)
-        {
-          LOG(ERROR, "message is larger than maximum allowed size (" << header.length << "), closing connection");
-          close_socket();
-          m_handle_process_error (m_id, EMSGSIZE);
-          return -EMSGSIZE;
-        }
-
-        std::vector<char> buffer;
-
-        try
-        {
-          buffer.resize (header.length);
-        }
-        catch (std::exception const &)
-        {
-          LOG(ERROR, "cannot accept new message: out of memory");
-          m_handle_process_error (m_id, ENOMEM);
-          return -ENOMEM;
-        }
-
-        {
-          int const err (checked_read (&buffer[0], header.length));
-          if (err <= 0)
-          {
-            return err;
-          }
-        }
-
-        try
-        {
-          std::stringstream sstr (std::string (&buffer[0], header.length));
-          boost::archive::binary_iarchive ia (sstr);
-          ia & msg;
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "could not decode message: " << ex.what());
-          m_handle_process_error (m_id, EINVAL);
-          return -EINVAL;
-        }
-
-        return 1;
       }
 
-      int process_t::send (gpi::pc::proto::message_t const & m)
+      namespace
       {
-        std::string data;
-        gpi::pc::proto::header_t header;
-
+        void read_exact (int fd, void* buffer, ssize_t size)
         {
-          std::stringstream sstr;
-          boost::archive::text_oarchive oa (sstr);
-          oa & m;
-          data = sstr.str();
-        }
-        header.length = data.size();
-        try
-        {
-          if (fhg::syscall::write (m_socket, &header, sizeof(header)) == 0)
+          if (fhg::syscall::read (fd, buffer, size) != size)
           {
-            const int err (errno);
-            m_handle_process_error (m_id, err);
-            return -err;
+            throw std::runtime_error
+              ("unable to read " + std::to_string (size) + " bytes");
           }
         }
-        catch (boost::system::system_error const& se)
+        void write_exact (int fd, void const* buffer, ssize_t size)
         {
-          m_handle_process_error (m_id, se.code().value());
-          return -se.code().value();
-        }
-
-        try
-        {
-          if (fhg::syscall::write (m_socket, data.c_str(), header.length) == 0)
+          if (fhg::syscall::write (fd, buffer, size) != size)
           {
-            const int err (errno);
-            m_handle_process_error (m_id, err);
-            return -err;
+            throw std::runtime_error
+              ("unable to write " + std::to_string (size) + " bytes");
           }
         }
-        catch (boost::system::system_error const& se)
-        {
-          m_handle_process_error (m_id, se.code().value());
-          return -se.code().value();
-        }
-
-        return 1;
       }
 
       void process_t::reader_thread_main()
       {
         LOG(TRACE, "process container (" << m_id << ") started on socket " << m_socket);
+
         for (;;)
         {
           try
           {
             gpi::pc::proto::message_t request;
 
-            if (receive (request) <= 0)
-            {
-              break;
-            }
+            fhg::util::nest_exceptions<std::runtime_error>
+              ( [&]
+                {
+                  gpi::pc::proto::header_t header;
+                  read_exact (m_socket, &header, sizeof (header));
 
-            if (send (handle_message (m_id, request, _memory_manager, _topology, _gpi_api)) <= 0)
-            {
-              break;
-            }
+                  std::vector<char> buffer (header.length);
+                  read_exact (m_socket, buffer.data(), buffer.size());
+
+                  fhg::util::nest_exceptions<std::runtime_error>
+                    ( [&]
+                      {
+                        std::stringstream sstr
+                          (std::string (buffer.data(), buffer.size()));
+                        boost::archive::binary_iarchive ia (sstr);
+                        ia & request;
+                      }
+                    , "could not decode message"
+                    );
+                }
+              , "could not receive message"
+              );
+
+            gpi::pc::proto::message_t const reply
+              (handle_message (m_id, request, _memory_manager, _topology, _gpi_api));
+
+            fhg::util::nest_exceptions<std::runtime_error>
+              ( [&]
+                {
+                  std::string data;
+                  gpi::pc::proto::header_t header;
+
+                  fhg::util::nest_exceptions<std::runtime_error>
+                    ( [&]
+                      {
+                        std::stringstream sstr;
+                        boost::archive::text_oarchive oa (sstr);
+                        oa & reply;
+                        data = sstr.str();
+                      }
+                    , "could not encode message"
+                    );
+
+                  header.length = data.size();
+
+                  write_exact (m_socket, &header, sizeof (header));
+                  write_exact (m_socket, data.data(), data.size());
+                }
+              , "could not send message"
+              );
           }
           catch (std::exception const & ex)
           {
@@ -453,26 +425,6 @@ namespace gpi
         }
 
         LOG(TRACE, "process container (" << m_id << ") terminated");
-      }
-
-      int process_t::checked_read (void * buf, const size_t len)
-      {
-        try
-        {
-          const ssize_t bytes_read (fhg::syscall::read (m_socket, buf, len));
-          if (bytes_read == 0)
-          {
-            close_socket();
-            m_handle_process_error (m_id, bytes_read);
-          }
-          return bytes_read;
-        }
-        catch (boost::system::system_error const& se)
-        {
-          LOG(ERROR, "could not read " << len << " bytes from client: " << se.what());
-          m_handle_process_error (m_id, se.code().value());
-          return -se.code().value();
-        }
       }
     }
   }
