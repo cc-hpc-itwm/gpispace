@@ -90,7 +90,7 @@ namespace gpi
         }
       }
 
-      void manager_t::listener_thread_main(const int fd)
+      void manager_t::listener_thread_main()
       {
         int cfd;
         struct sockaddr_un peer_addr;
@@ -101,7 +101,7 @@ namespace gpi
           peer_addr_size = sizeof(struct sockaddr_un);
           try
           {
-            cfd = fhg::syscall::accept ( fd
+            cfd = fhg::syscall::accept ( m_socket
                                        , (struct sockaddr*)&peer_addr
                                        , &peer_addr_size
                                        );
@@ -260,7 +260,7 @@ namespace gpi
 
         m_listener = thread_t
           ( new boost::thread
-            (&manager_t::listener_thread_main, this, m_socket)
+            (&manager_t::listener_thread_main, this)
           );
 
         delete_socket_file_on_error._committed = true;

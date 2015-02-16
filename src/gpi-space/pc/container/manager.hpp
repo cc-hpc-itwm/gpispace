@@ -38,7 +38,7 @@ namespace gpi
       private:
         typedef boost::shared_ptr<boost::thread> thread_t;
 
-        void listener_thread_main (const int fd);
+        void listener_thread_main();
 
         void close_socket (const int fd);
         int safe_unlink(std::string const & path);
