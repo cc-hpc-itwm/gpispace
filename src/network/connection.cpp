@@ -2,9 +2,6 @@
 
 #include <network/connection.hpp>
 
-#include <fhg/util/num.hpp>
-#include <fhg/util/parse/position.hpp>
-
 #include <boost/asio/write.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/system/system_error.hpp>
