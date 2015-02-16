@@ -309,11 +309,11 @@ namespace gpi
         }
       }
 
-      int process_t::close_socket (const int fd)
+      int process_t::close_socket()
       try
       {
-        fhg::syscall::shutdown (fd, SHUT_RDWR);
-        fhg::syscall::close (fd);
+        fhg::syscall::shutdown (m_socket, SHUT_RDWR);
+        fhg::syscall::close (m_socket);
         return 0;
       }
       catch (boost::system::system_error const& se)
@@ -321,15 +321,14 @@ namespace gpi
         return -se.code().value();
       }
 
-      int process_t::receive ( const int fd
-                             , gpi::pc::proto::message_t & msg
+      int process_t::receive ( gpi::pc::proto::message_t & msg
                              , const size_t max_size
                              )
       {
         gpi::pc::proto::header_t header;
 
         {
-          int const err (checked_read (fd, &header, sizeof(header)));
+          int const err (checked_read (&header, sizeof(header)));
           if (err <= 0)
           {
             return err;
@@ -339,7 +338,7 @@ namespace gpi
         if (header.length > max_size)
         {
           LOG(ERROR, "message is larger than maximum allowed size (" << header.length << "), closing connection");
-          close_socket (fd);
+          close_socket();
           m_handle_process_error (m_id, EMSGSIZE);
           return -EMSGSIZE;
         }
@@ -358,7 +357,7 @@ namespace gpi
         }
 
         {
-          int const err (checked_read (fd, &buffer[0], header.length));
+          int const err (checked_read (&buffer[0], header.length));
           if (err <= 0)
           {
             return err;
@@ -381,7 +380,7 @@ namespace gpi
         return 1;
       }
 
-      int process_t::send (const int fd, gpi::pc::proto::message_t const & m)
+      int process_t::send (gpi::pc::proto::message_t const & m)
       {
         std::string data;
         gpi::pc::proto::header_t header;
@@ -395,7 +394,7 @@ namespace gpi
         header.length = data.size();
         try
         {
-          if (fhg::syscall::write (fd, &header, sizeof(header)) == 0)
+          if (fhg::syscall::write (m_socket, &header, sizeof(header)) == 0)
           {
             const int err (errno);
             m_handle_process_error (m_id, err);
@@ -410,7 +409,7 @@ namespace gpi
 
         try
         {
-          if (fhg::syscall::write (fd, data.c_str(), header.length) == 0)
+          if (fhg::syscall::write (m_socket, data.c_str(), header.length) == 0)
           {
             const int err (errno);
             m_handle_process_error (m_id, err);
@@ -426,21 +425,21 @@ namespace gpi
         return 1;
       }
 
-      void process_t::reader_thread_main(const int fd)
+      void process_t::reader_thread_main()
       {
-        LOG(TRACE, "process container (" << m_id << ") started on fd " << fd);
+        LOG(TRACE, "process container (" << m_id << ") started on socket " << m_socket);
         for (;;)
         {
           try
           {
             gpi::pc::proto::message_t request;
 
-            if (receive (fd, request) <= 0)
+            if (receive (request) <= 0)
             {
               break;
             }
 
-            if (send (fd, handle_message (m_id, request, _memory_manager, _topology, _gpi_api)) <= 0)
+            if (send (handle_message (m_id, request, _memory_manager, _topology, _gpi_api)) <= 0)
             {
               break;
             }
@@ -456,14 +455,14 @@ namespace gpi
         LOG(TRACE, "process container (" << m_id << ") terminated");
       }
 
-      int process_t::checked_read (const int fd, void * buf, const size_t len)
+      int process_t::checked_read (void * buf, const size_t len)
       {
         try
         {
-          const ssize_t bytes_read (fhg::syscall::read (fd, buf, len));
+          const ssize_t bytes_read (fhg::syscall::read (m_socket, buf, len));
           if (bytes_read == 0)
           {
-            close_socket (fd);
+            close_socket();
             m_handle_process_error (m_id, bytes_read);
           }
           return bytes_read;

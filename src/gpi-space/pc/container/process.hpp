@@ -34,12 +34,11 @@ namespace gpi
           , _memory_manager (memory_manager)
           , _topology (topology)
           , _gpi_api (gpi_api)
-          , m_reader
-            (std::bind (&process_t::reader_thread_main, this, m_socket))
+          , m_reader (&process_t::reader_thread_main, this)
         {}
         ~process_t()
         {
-          close_socket (m_socket);
+          close_socket();
 
           if (boost::this_thread::get_id() != m_reader.get_id())
           {
@@ -51,16 +50,15 @@ namespace gpi
         }
 
       private:
-        void reader_thread_main (const int fd);
+        void reader_thread_main();
 
-        int receive ( const int fd
-                     , gpi::pc::proto::message_t & msg
+        int receive ( gpi::pc::proto::message_t & msg
                      , const size_t max_size = (1 << 20)
                      );
-        int send (const int fd, gpi::pc::proto::message_t const & msg);
+        int send (gpi::pc::proto::message_t const & msg);
 
-        int close_socket (const int fd);
-        int checked_read (const int fd, void *buf, const size_t len);
+        int close_socket();
+        int checked_read (void *buf, const size_t len);
 
         std::function <void (gpi::pc::type::process_id_t const&, int)> m_handle_process_error;
         const gpi::pc::type::process_id_t m_id;
