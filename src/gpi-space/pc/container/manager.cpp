@@ -8,6 +8,7 @@
 #include <fhg/assert.hpp>
 #include <fhg/syscall.hpp>
 #include <fhg/util/make_unique.hpp>
+#include <fhg/util/nest_exceptions.hpp>
 #include <fhglog/LogMacros.hpp>
 
 #include <functional>
@@ -196,24 +197,33 @@ namespace gpi
           throw std::runtime_error ("could not unlink socket path");
         }
 
-        struct sockaddr_un my_addr;
-        const std::size_t backlog_size (16);
+        fhg::util::nest_exceptions<std::runtime_error>
+          ( [&]
+            {
+              m_socket = fhg::syscall::socket (AF_UNIX, SOCK_STREAM, 0);
+            }
+          , "could not create process-container communication socket"
+          );
 
-        try
+        struct close_socket_on_error
         {
-          m_socket = fhg::syscall::socket (AF_UNIX, SOCK_STREAM, 0);
-        }
-        catch (boost::system::system_error const& se)
-        {
-          LOG(ERROR, "could not create unix socket: " << se.what());
-          LOG(ERROR, "could not open socket: " << strerror(se.code().value()));
-          throw std::runtime_error ("could not open socket");
-        }
+          ~close_socket_on_error()
+          {
+            if (!_committed)
+            {
+              fhg::syscall::close (_socket);
+            }
+          }
+          bool _committed;
+          int& _socket;
+        } close_socket_on_error = {false, m_socket};
+
         {
           const int on (1);
           fhg::syscall::setsockopt (m_socket, SOL_SOCKET, SO_PASSCRED, &on, sizeof (on));
         }
 
+        struct sockaddr_un my_addr;
         memset (&my_addr, 0, sizeof(my_addr));
         my_addr.sun_family = AF_UNIX;
         strncpy ( my_addr.sun_path
@@ -221,37 +231,40 @@ namespace gpi
                 , sizeof(my_addr.sun_path) - 1
                 );
 
-        try
+        fhg::util::nest_exceptions<std::runtime_error>
+          ( [&]
+            {
+              fhg::syscall::bind
+                (m_socket, (struct sockaddr *)&my_addr, sizeof (struct sockaddr_un));
+            }
+          , "could not bind process-container communication socket to path " + m_path
+          );
+
+        struct delete_socket_file_on_error
         {
-          fhg::syscall::bind
-            (m_socket, (struct sockaddr *)&my_addr, sizeof (struct sockaddr_un));
-        }
-        catch (boost::system::system_error const& se)
-        {
-          LOG(ERROR, "could not bind to socket at path " << m_path << ": " << se.what());
-          fhg::syscall::close (m_socket);
-          LOG(ERROR, "could not open socket: " << strerror(se.code().value()));
-          throw std::runtime_error ("could not open socket");
-        }
+          ~delete_socket_file_on_error()
+          {
+            if (!_committed)
+            {
+              fhg::syscall::unlink (_path.string().c_str());
+            }
+          }
+          bool _committed;
+          boost::filesystem::path _path;
+        } delete_socket_file_on_error = {false, m_path};
+
         fhg::syscall::chmod (m_path.c_str(), 0700);
 
-        try
-        {
-          fhg::syscall::listen (m_socket, backlog_size);
-        }
-        catch (boost::system::system_error const& se)
-        {
-          LOG(ERROR, "could not listen on socket: " << se.what());
-          fhg::syscall::close (m_socket);
-          fhg::syscall::unlink (m_path.c_str());
-          LOG(ERROR, "could not open socket: " << strerror(se.code().value()));
-          throw std::runtime_error ("could not open socket");
-        }
+        const std::size_t backlog_size (16);
+        fhg::syscall::listen (m_socket, backlog_size);
 
         m_listener = thread_t
           ( new boost::thread
             (&manager_t::listener_thread_main, this, m_socket)
           );
+
+        delete_socket_file_on_error._committed = true;
+        close_socket_on_error._committed = true;
       }
 
       void manager_t::detach_process ( const gpi::pc::type::process_id_t id
