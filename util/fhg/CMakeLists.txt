@@ -10,6 +10,7 @@ execute_process(
 )
 if (revision_cpp_needs_update)
   file(RENAME ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp.new ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp)
+  file (WRITE "${CMAKE_BINARY_DIR}/revision" "${PROJECT_REVISION}")
 endif()
 
 add_library (fhg-revision ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp)
@@ -25,3 +26,5 @@ install (FILES
   util/dl.hpp
   DESTINATION include/fhg/util
 )
+
+install (FILES "${CMAKE_BINARY_DIR}/revision" DESTINATION .)

@@ -5,6 +5,7 @@ fhg_add_test (installation.cpp
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}"
   LINK_LIBRARIES gspc
                  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
+  REQUIRES_INSTALLATION
 )
 fhg_add_test (installation_from_command_line.cpp
   PROJECT drts
