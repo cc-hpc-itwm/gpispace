@@ -31,7 +31,6 @@ namespace gpi
       {
         try
         {
-          lock_type lock (m_mutex);
           if (m_socket >= 0)
           {
             m_stopping = true;
@@ -189,9 +188,6 @@ namespace gpi
             ++id;
           }
         }
-
-
-        lock_type lock (m_mutex);
 
         int err = safe_unlink (m_path);
         if (err < 0)

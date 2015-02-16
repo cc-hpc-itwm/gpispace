@@ -37,15 +37,12 @@ namespace gpi
 
       private:
         typedef boost::shared_ptr<boost::thread> thread_t;
-        typedef boost::recursive_mutex mutex_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
 
         void listener_thread_main (const int fd);
 
         void close_socket (const int fd);
         int safe_unlink(std::string const & path);
 
-        mutex_type m_mutex;
         std::string m_path;
         thread_t m_listener;
         int m_socket;
