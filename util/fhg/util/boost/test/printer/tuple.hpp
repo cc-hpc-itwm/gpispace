@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_BOOST_TEST_PRINTER_TUPLE_HPP
-#define FHG_UTIL_BOOST_TEST_PRINTER_TUPLE_HPP
+#pragma once
 
 #include <fhg/util/boost/test.hpp>
 
@@ -59,5 +58,3 @@ FHG_BOOST_TEST_TEMPLATED_LOG_VALUE_PRINTER
   fhg::util::boost::test::printer::printer_impl<std::tuple<Args...>>::apply
     (os, t);
 }
-
-#endif

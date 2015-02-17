@@ -6,8 +6,7 @@
  * @brief  Topology between GPI nodes based on fhgcom
  */
 
-#ifndef GPI_SPACE_GLOBAL_TOPOLOGY_HPP
-#define GPI_SPACE_GLOBAL_TOPOLOGY_HPP 1
+#pragma once
 
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
@@ -110,5 +109,3 @@ namespace gpi
     }
   }
 }
-
-#endif // GPI_SPACE_GLOBAL_TOPOLOGY_HPP

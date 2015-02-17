@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_QT_SCOPED_DISCONNECT_HPP
-#define FHG_UTIL_QT_SCOPED_DISCONNECT_HPP
+#pragma once
 
 class QObject;
 
@@ -30,5 +29,3 @@ namespace fhg
     }
   }
 }
-
-#endif

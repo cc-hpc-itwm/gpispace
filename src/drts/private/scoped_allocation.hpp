@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef DRTS_PRIVATE_SCOPED_ALLOCATION_HPP
-#define DRTS_PRIVATE_SCOPED_ALLOCATION_HPP
+#pragma once
 
 #include <gpi-space/pc/client/api.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
@@ -83,5 +82,3 @@ namespace gspc
     unsigned long const _size;
   };
 }
-
-#endif

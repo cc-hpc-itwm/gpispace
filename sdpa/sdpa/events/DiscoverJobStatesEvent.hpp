@@ -1,5 +1,4 @@
-#ifndef SDPA_DISCOVER_JOB_STATES_EVENT_HPP
-#define SDPA_DISCOVER_JOB_STATES_EVENT_HPP 1
+#pragma once
 
 #include <sdpa/events/JobEvent.hpp>
 
@@ -48,5 +47,3 @@ namespace sdpa
     }
   }
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef SDPA_SubmitJobEvent_HPP
-#define SDPA_SubmitJobEvent_HPP
+#pragma once
 
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
@@ -69,5 +68,3 @@ namespace sdpa
     }
   }
 }
-
-#endif

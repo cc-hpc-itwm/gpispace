@@ -1,8 +1,7 @@
 
 /* mapping Key_t to Value_t */
 
-#ifndef TRIE_H
-#define TRIE_H
+#pragma once
 
 #include <mmgr/bool.h>
 #include <mmgr/null.h>
@@ -52,6 +51,4 @@ extern "C"
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

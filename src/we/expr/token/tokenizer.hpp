@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _EXPR_TOKEN_TOKENIZER_HPP
-#define _EXPR_TOKEN_TOKENIZER_HPP
+#pragma once
 
 #include <we/expr/token/type.hpp>
 
@@ -50,5 +49,3 @@ namespace expr
     };
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_QT_MVC_MULTIPLICATED_COLUMN_PROXY_HPP
-#define FHG_UTIL_QT_MVC_MULTIPLICATED_COLUMN_PROXY_HPP
+#pragma once
 
 #include <util/qt/mvc/fixed_proxy_models.hpp>
 
@@ -37,5 +36,3 @@ namespace fhg
     }
   }
 }
-
-#endif

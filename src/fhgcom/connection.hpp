@@ -1,5 +1,4 @@
-#ifndef FHGCOM_CONNECTION_HPP
-#define FHGCOM_CONNECTION_HPP 1
+#pragma once
 
 #include <fhgcom/header.hpp>
 #include <fhgcom/message.hpp>
@@ -128,5 +127,3 @@ namespace fhg
     };
   }
 }
-
-#endif

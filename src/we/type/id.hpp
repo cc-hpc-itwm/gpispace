@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _TYPE_ID_HPP
-#define _TYPE_ID_HPP
+#pragma once
 
 #include <boost/cstdint.hpp>
 
@@ -144,5 +143,3 @@ namespace we
   INHERIT_ID_TYPE (priority_type, boost::int16_t)
 
 #undef INHERIT_ID_TYPE
-
-#endif

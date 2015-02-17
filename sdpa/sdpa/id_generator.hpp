@@ -1,7 +1,6 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#ifndef SDPA_ID_GENERATOR_HPP
-#define SDPA_ID_GENERATOR_HPP 1
+#pragma once
 
 #include <fhg/util/hostname.hpp>
 #include <sys/types.h> // pid_t
@@ -40,5 +39,3 @@ namespace sdpa {
     std::string _prefix;
   };
 }
-
-#endif

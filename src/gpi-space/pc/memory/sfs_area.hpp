@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_MEMORY_SFS_AREA_HPP
-#define GPI_SPACE_PC_MEMORY_SFS_AREA_HPP
+#pragma once
 
 #include <boost/filesystem.hpp>
 
@@ -105,5 +104,3 @@ namespace gpi
     }
   }
 }
-
-#endif // GPI_SPACE_PC_MEMORY_AREA_HPP

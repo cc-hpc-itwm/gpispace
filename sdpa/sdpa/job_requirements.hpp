@@ -1,7 +1,6 @@
 // tiberiu.rotaru@itwm.fraunhofer.de
 
-#ifndef SDPA_JOB_REQUIREMENTS_HPP
-#define SDPA_JOB_REQUIREMENTS_HPP
+#pragma once
 
 #include <we/type/requirement.hpp>
 #include <we/type/schedule_data.hpp>
@@ -36,6 +35,3 @@ private:
   std::function<double (std::string const&)> _transfer_cost;
   double _estimated_computational_cost;
 };
-
-#endif
-

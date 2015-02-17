@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fhg.de
 
-#ifndef WE_TYPE_MODULE_CALL_FWD_HPP
-#define WE_TYPE_MODULE_CALL_FWD_HPP 1
+#pragma once
 
 namespace we
 {
@@ -10,5 +9,3 @@ namespace we
     struct module_call_t;
   }
 }
-
-#endif

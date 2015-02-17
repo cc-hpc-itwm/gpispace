@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_VALID_PREFIX
-#define _XML_PARSE_VALID_PREFIX
+#pragma once
 
 #include <boost/filesystem/path.hpp>
 
@@ -15,5 +14,3 @@ namespace xml
                                 );
   }
 }
-
-#endif

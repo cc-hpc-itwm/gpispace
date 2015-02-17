@@ -1,5 +1,4 @@
-#ifndef SDPA_WORKER_REGISTRATION_EVENT_HPP
-#define SDPA_WORKER_REGISTRATION_EVENT_HPP 1
+#pragma once
 
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/capability.hpp>
@@ -90,5 +89,3 @@ namespace sdpa
     }
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef PNET_SRC_WE_TYPE_VALUE_WRAP_HPP
-#define PNET_SRC_WE_TYPE_VALUE_WRAP_HPP
+#pragma once
 
 #include <we/type/value.hpp>
 #include <we/type/value/to_value.hpp>
@@ -92,5 +91,3 @@ namespace pnet
     }
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // alexander.petry@itwm.fraunhofer.de, bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef SDPA_DAEMON_NOTIFICATION_EVENT_HPP
-#define SDPA_DAEMON_NOTIFICATION_EVENT_HPP
+#pragma once
 
 #include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
 #include <we/type/activity.hpp>
@@ -72,5 +71,3 @@ namespace sdpa
     };
   }
 }
-
-#endif

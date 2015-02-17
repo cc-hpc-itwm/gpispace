@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_GPI_API_HPP
-#define GPI_SPACE_GPI_API_HPP 1
+#pragma once
 
 #include <gpi-space/types.hpp>
 #include <gpi-space/exception.hpp>
@@ -86,5 +85,3 @@ namespace gpi
     };
   }
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef SDPA_ERROREVENT_HPP
-#define SDPA_ERROREVENT_HPP 1
+#pragma once
 
 #include <sdpa/events/Serialization.hpp>
 #include <sdpa/events/MgmtEvent.hpp>
@@ -79,5 +78,3 @@ namespace sdpa
     }
   }
 }
-
-#endif

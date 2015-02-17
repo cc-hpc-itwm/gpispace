@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_BOOST_TEST_PRINTER_OPTIONAL_HPP
-#define FHG_UTIL_BOOST_TEST_PRINTER_OPTIONAL_HPP
+#pragma once
 
 #include <fhg/util/boost/test.hpp>
 
@@ -31,5 +30,3 @@ FHG_BOOST_TEST_LOG_VALUE_PRINTER (std::chrono::hours, os, duration)
 {
   os << FHG_BOOST_TEST_PRINT_LOG_VALUE_HELPER (duration.count()) << " hr";
 }
-
-#endif

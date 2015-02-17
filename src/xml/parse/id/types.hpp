@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef XML_PARSE_ID_TYPES_HPP
-#define XML_PARSE_ID_TYPES_HPP
+#pragma once
 
 #include <xml/parse/id/types.fwd.hpp>
 
@@ -128,5 +127,3 @@ namespace xml
 #include <xml/parse/id/helper.lst>
 
 #undef ITEM
-
-#endif

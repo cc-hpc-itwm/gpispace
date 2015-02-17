@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_TYPES_HPP
-#define GPI_SPACE_TYPES_HPP 1
+#pragma once
 
 #include <inttypes.h>
 
@@ -15,5 +14,3 @@ namespace gpi
   typedef unsigned short port_t;
   typedef boost::dynamic_bitset<> error_vector_t;
 }
-
-#endif

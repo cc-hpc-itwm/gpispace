@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_GSPC_SCOPED_RIFD_HPP
-#define FHG_GSPC_SCOPED_RIFD_HPP
+#pragma once
 
 #include <drts/scoped_rifd.fwd.hpp>
 
@@ -68,5 +67,3 @@ namespace gspc
     implementation* _;
   };
 }
-
-#endif

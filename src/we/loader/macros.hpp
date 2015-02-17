@@ -1,7 +1,6 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#ifndef WE_LOADER_MACROS_HPP
-#define WE_LOADER_MACROS_HPP 1
+#pragma once
 
 #include <we/loader/IModule.hpp>
 
@@ -43,5 +42,3 @@
 #define WE_MOD_INITIALIZE_END(modname)\
     }\
   }
-
-#endif

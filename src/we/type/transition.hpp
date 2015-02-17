@@ -1,7 +1,6 @@
 // {petry, rahn}@itwm.fhg.de
 
-#ifndef WE_TYPE_TRANSITION_HPP
-#define WE_TYPE_TRANSITION_HPP 1
+#pragma once
 
 #include <we/expr/eval/context.hpp>
 #include <we/type/expression.hpp>
@@ -182,5 +181,3 @@ namespace we { namespace type {
     };
   }
 }
-
-#endif

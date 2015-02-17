@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_QT_DELEGATING_HEADER_VIEW_HPP
-#define FHG_UTIL_QT_DELEGATING_HEADER_VIEW_HPP
+#pragma once
 
 #include <util/qt/mini_button.fwd.hpp>
 #include <util/qt/mvc/header_delegate.fwd.hpp>
@@ -69,5 +68,3 @@ namespace fhg
     }
   }
 }
-
-#endif

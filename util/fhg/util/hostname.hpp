@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_HOSTNAME
-#define FHG_UTIL_HOSTNAME
+#pragma once
 
 #include <string>
 
@@ -12,5 +11,3 @@ namespace fhg
     std::string const& hostname();
   }
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_MEMORY_TRANSFER_QUEUE_HPP
-#define GPI_SPACE_PC_MEMORY_TRANSFER_QUEUE_HPP
+#pragma once
 
 #include <set>
 
@@ -61,5 +60,3 @@ namespace gpi
     }
   }
 }
-
-#endif

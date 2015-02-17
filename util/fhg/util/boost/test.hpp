@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_BOOST_TEST_HPP
-#define FHG_UTIL_BOOST_TEST_HPP
+#pragma once
 
 #include <boost/test/test_tools.hpp>
 
@@ -43,5 +42,3 @@
 
 #define FHG_BOOST_TEST_PRINT_LOG_VALUE_HELPER(VALUE)  \
   ::boost::test_tools::tt_detail::print_helper (VALUE)
-
-#endif

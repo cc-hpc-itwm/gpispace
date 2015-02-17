@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_DAEMONIZE_HPP
-#define FHG_UTIL_DAEMONIZE_HPP
+#pragma once
 
 #include <boost/optional.hpp>
 
@@ -26,5 +25,3 @@ namespace fhg
     boost::optional<pid_t> fork_and_daemonize_child();
   }
 }
-
-#endif

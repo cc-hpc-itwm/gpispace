@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef TEST_SCOPED_STATE_DIRECTORY_HPP
-#define TEST_SCOPED_STATE_DIRECTORY_HPP
+#pragma once
 
 #include <fhg/util/temporary_path.hpp>
 
@@ -22,5 +21,3 @@ namespace test
     fhg::util::temporary_path const _temporary_path;
   };
 }
-
-#endif

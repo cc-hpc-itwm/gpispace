@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_RIF_STARTUP_MESSAGES_PIPE_HPP
-#define FHG_RIF_STARTUP_MESSAGES_PIPE_HPP
+#pragma once
 
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
@@ -37,5 +36,3 @@ namespace fhg
     }
   }
 }
-
-#endif

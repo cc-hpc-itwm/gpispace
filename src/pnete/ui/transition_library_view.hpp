@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_UI_TRANSITION_LIBRARY_VIEW_HPP
-#define _FHG_PNETE_UI_TRANSITION_LIBRARY_VIEW_HPP 1
+#pragma once
 
 #include <QTreeView>
 
@@ -29,5 +28,3 @@ namespace fhg
     }
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _PNETE_DATA_CHANGE_MANAGER_HPP
-#define _PNETE_DATA_CHANGE_MANAGER_HPP 1
+#pragma once
 
 #include <pnete/data/change_manager.fwd.hpp>
 
@@ -257,5 +256,3 @@ namespace fhg
     }
   }
 }
-
-#endif

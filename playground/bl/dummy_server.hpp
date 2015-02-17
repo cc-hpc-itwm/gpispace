@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef PREFIX_DUMMY_SERVER_HPP
-#define PREFIX_DUMMY_SERVER_HPP
+#pragma once
 
 #include <fhg/util/parse/position.hpp>
 
@@ -54,5 +53,3 @@ private:
   mutable QMutex _pending_status_updates_mutex;
   QStringList _pending_status_updates;
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef _DO_LOAD_HPP
-#define _DO_LOAD_HPP 1
+#pragma once
 
 #include <string>
 
@@ -19,6 +18,4 @@ void do_load ( const std::string & filename
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

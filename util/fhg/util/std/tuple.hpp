@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_STD_TUPLE_HPP
-#define FHG_UTIL_STD_TUPLE_HPP
+#pragma once
 
 #include <boost/functional/hash.hpp>
 
@@ -45,5 +44,3 @@ namespace std
     }
   };
 }
-
-#endif

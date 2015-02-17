@@ -1,5 +1,4 @@
-#ifndef WE_LOADER_API_GUARD_HPP
-#define WE_LOADER_API_GUARD_HPP
+#pragma once
 
 #include <boost/version.hpp>
 
@@ -18,6 +17,4 @@ extern "C" {
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

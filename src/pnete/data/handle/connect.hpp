@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_DATA_HANDLE_CONNECT_HPP
-#define _FHG_PNETE_DATA_HANDLE_CONNECT_HPP 1
+#pragma once
 
 #include <pnete/data/handle/connect.fwd.hpp>
 
@@ -51,5 +50,3 @@ namespace fhg
     }
   }
 }
-
-#endif

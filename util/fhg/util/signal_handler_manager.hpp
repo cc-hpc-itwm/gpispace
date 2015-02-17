@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_SIGNAL_HANDLER_MANAGER_HPP
-#define FHG_UTIL_SIGNAL_HANDLER_MANAGER_HPP
+#pragma once
 
 #include <fhglog/Logger.hpp>
 
@@ -60,5 +59,3 @@ namespace fhg
     };
   }
 }
-
-#endif

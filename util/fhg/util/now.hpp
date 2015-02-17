@@ -1,5 +1,4 @@
-#ifndef FHG_UTIL_NOW_HPP
-#define FHG_UTIL_NOW_HPP
+#pragma once
 
 namespace fhg
 {
@@ -8,5 +7,3 @@ namespace fhg
     double now ();
   }
 }
-
-#endif

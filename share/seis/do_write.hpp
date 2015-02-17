@@ -1,5 +1,4 @@
-#ifndef _DO_WRITE_HPP
-#define _DO_WRITE_HPP 1
+#pragma once
 
 #include <string>
 
@@ -19,6 +18,4 @@ void do_write ( const std::string & filename
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

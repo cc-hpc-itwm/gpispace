@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_TYPE_HANDLE_HPP
-#define GPI_SPACE_PC_TYPE_HANDLE_HPP 1
+#pragma once
 
 #include <iostream>
 #include <stdexcept>
@@ -146,5 +145,3 @@ namespace std
     }
   };
 }
-
-#endif

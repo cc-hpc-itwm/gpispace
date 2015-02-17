@@ -15,8 +15,7 @@
  *
  * =====================================================================================
  */
-#ifndef SDPA_ORCHESTRATORTOR_HPP
-#define SDPA_ORCHESTRATORTOR_HPP 1
+#pragma once
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 
@@ -58,5 +57,3 @@ namespace sdpa {
     };
   }
 }
-
-#endif //SDPA_ORCHESTRATORTOR_HPP

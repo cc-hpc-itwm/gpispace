@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_TESTS_DUMMY_TOPOLOGY_HPP
-#define GPI_SPACE_TESTS_DUMMY_TOPOLOGY_HPP 1
+#pragma once
 
 #include <gpi-space/pc/global/itopology.hpp>
 
@@ -37,5 +36,3 @@ namespace gpi
     };
   }
 }
-
-#endif

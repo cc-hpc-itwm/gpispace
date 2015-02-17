@@ -1,5 +1,4 @@
-#ifndef WE_TEST_LAYER_COMMON_HPP
-#define WE_TEST_LAYER_COMMON_HPP
+#pragma once
 
 #include <we/layer.hpp>
 #include <we/type/activity.hpp>
@@ -131,5 +130,3 @@ namespace
       (activity_input, activity_output, activity_child, activity_result);
   }
 }
-
-#endif

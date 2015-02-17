@@ -1,5 +1,4 @@
-#ifndef SDPA_JOB_HPP
-#define SDPA_JOB_HPP 1
+#pragma once
 
 #include <sdpa/job_states.hpp>
 #include <sdpa/types.hpp>
@@ -134,5 +133,3 @@ namespace sdpa
       job_result_t result_;
     };
 }}
-
-#endif

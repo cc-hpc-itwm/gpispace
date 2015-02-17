@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_QT_RESTRICTED_TREE_COLUMN_SORTER_HPP
-#define FHG_UTIL_QT_RESTRICTED_TREE_COLUMN_SORTER_HPP
+#pragma once
 
 #include <QObject>
 #include <QSet>
@@ -40,5 +39,3 @@ namespace fhg
     }
   }
 }
-
-#endif

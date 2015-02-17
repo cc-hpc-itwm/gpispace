@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef FHG_PNETE_UI_GRAPH_TRANSITION_HPP
-#define FHG_PNETE_UI_GRAPH_TRANSITION_HPP
+#pragma once
 
 #include <pnete/ui/graph/transition.fwd.hpp>
 
@@ -79,5 +78,3 @@ namespace fhg
     }
   }
 }
-
-#endif

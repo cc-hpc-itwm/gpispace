@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef UTIL_QT_CAST_HPP
-#define UTIL_QT_CAST_HPP
+#pragma once
 
 #include <QWidget>
 #include <QObject>
@@ -51,5 +50,3 @@ namespace fhg
     }
   }
 }
-
-#endif

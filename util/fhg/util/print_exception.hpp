@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_PRINT_EXCEPTION_HPP
-#define FHG_UTIL_PRINT_EXCEPTION_HPP
+#pragma once
 
 #include <exception>
 #include <ostream>
@@ -27,5 +26,3 @@ namespace fhg
                                  );
   }
 }
-
-#endif

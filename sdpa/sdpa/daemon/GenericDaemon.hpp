@@ -15,8 +15,7 @@
  *
  * =====================================================================================
  */
-#ifndef SDPA_DAEMON_GENERIC_DAEMON_HPP
-#define SDPA_DAEMON_GENERIC_DAEMON_HPP 1
+#pragma once
 
 #include <sdpa/capability.hpp>
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
@@ -379,5 +378,3 @@ namespace sdpa {
     };
   }
 }
-
-#endif

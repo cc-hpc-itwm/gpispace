@@ -1,5 +1,4 @@
-#ifndef FHG_UTIL_READ_FILE_HPP
-#define FHG_UTIL_READ_FILE_HPP
+#pragma once
 
 #include <boost/filesystem.hpp>
 
@@ -12,5 +11,3 @@ namespace fhg
     std::string read_file (boost::filesystem::path const&);
   }
 }
-
-#endif

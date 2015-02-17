@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_MEMORY_BUFFER_HPP
-#define GPI_SPACE_PC_MEMORY_BUFFER_HPP
+#pragma once
 
 #include <boost/utility.hpp>
 
@@ -28,5 +27,3 @@ namespace gpi
     }
   }
 }
-
-#endif

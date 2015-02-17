@@ -1,7 +1,6 @@
 // alexander.petry@itwm.fraunhofer.de, bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef SDPA_UTIL_NOTIFICATION_SERVICE_HPP
-#define SDPA_UTIL_NOTIFICATION_SERVICE_HPP
+#pragma once
 
 #include <fhglog/remote/appender.hpp>
 #include <fhglog/LogMacros.hpp>
@@ -42,5 +41,3 @@ namespace sdpa
     };
   }
 }
-
-#endif

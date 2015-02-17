@@ -1,5 +1,4 @@
-#ifndef FHG_UTIL_GETENV_HPP
-#define FHG_UTIL_GETENV_HPP 1
+#pragma once
 
 #include <boost/optional.hpp>
 
@@ -23,5 +22,3 @@ namespace fhg
     }
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_RANDOM_STRING_HPP
-#define FHG_UTIL_RANDOM_STRING_HPP
+#pragma once
 
 #include <string>
 
@@ -33,5 +32,3 @@ namespace fhg
     std::string random_string_without_zero();
   }
 }
-
-#endif

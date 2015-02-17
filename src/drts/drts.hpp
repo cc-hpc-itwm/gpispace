@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef DRTS_DRTS_HPP
-#define DRTS_DRTS_HPP
+#pragma once
 
 #include <drts/drts.fwd.hpp>
 
@@ -135,5 +134,3 @@ namespace gspc
                      , boost::filesystem::path const&
                      );
 }
-
-#endif

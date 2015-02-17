@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_TYPE_STRUCT_HPP
-#define _XML_PARSE_TYPE_STRUCT_HPP
+#pragma once
 
 #include <xml/parse/id/generic.hpp>
 #include <xml/parse/state.fwd.hpp>
@@ -87,5 +86,3 @@ namespace xml
     }
   }
 }
-
-#endif

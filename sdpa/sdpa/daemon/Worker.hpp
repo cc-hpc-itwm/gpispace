@@ -1,5 +1,4 @@
-#ifndef SDPA_WORKER_HPP
-#define SDPA_WORKER_HPP 1
+#pragma once
 
 #include <list>
 #include <string>
@@ -90,5 +89,3 @@ namespace sdpa
     };
   }
 }
-
-#endif

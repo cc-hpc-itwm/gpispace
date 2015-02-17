@@ -1,5 +1,4 @@
-#ifndef FHG_UTIL_MEASURE_AVERAGE_TIME_HPP
-#define FHG_UTIL_MEASURE_AVERAGE_TIME_HPP
+#pragma once
 
 #include <chrono>
 #include <stdexcept>
@@ -29,5 +28,3 @@ namespace fhg
     }
   }
 }
-
-#endif

@@ -1,6 +1,5 @@
 
-#ifndef HEAP_H
-#define HEAP_H
+#pragma once
 
 #include <mmgr/word.h>
 
@@ -37,6 +36,4 @@ extern "C"
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

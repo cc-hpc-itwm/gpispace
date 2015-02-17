@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_QT_DUAL_LIST_SELECTOR_HPP
-#define FHG_UTIL_QT_DUAL_LIST_SELECTOR_HPP
+#pragma once
 
 #include <util/qt/mvc/fixed_proxy_models.hpp>
 
@@ -85,5 +84,3 @@ namespace fhg
     }
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // {alexander.petry,bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef WE_TYPE_PORT_HPP
-#define WE_TYPE_PORT_HPP 1
+#pragma once
 
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
@@ -95,5 +94,3 @@ namespace we
     };
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _PNETE_DATA_MANAGER_HPP
-#define _PNETE_DATA_MANAGER_HPP 1
+#pragma once
 
 //! \note boost/multi_index/ordered_index.hpp uses a namespace
 //! 'foreach' which gets defined to 'Q_FOREACH' in QObject (included
@@ -47,5 +46,3 @@ namespace fhg
     }
   }
 }
-
-#endif

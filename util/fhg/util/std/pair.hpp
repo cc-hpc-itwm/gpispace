@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_STD_PAIR_HPP
-#define FHG_UTIL_STD_PAIR_HPP
+#pragma once
 
 #include <boost/functional/hash.hpp>
 
@@ -22,5 +21,3 @@ namespace std
     }
   };
 }
-
-#endif

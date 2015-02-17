@@ -1,7 +1,6 @@
 // {mirko.rahn,bernd.loerwald}@itwm.fraunhofer.de
 
-#ifndef WE_MGMT_LAYER_HPP
-#define WE_MGMT_LAYER_HPP 1
+#pragma once
 
 #include <we/type/activity.hpp>
 #include <we/type/id.hpp>
@@ -188,5 +187,3 @@ namespace we
         _extract_from_nets_thread;
     };
 }
-
-#endif

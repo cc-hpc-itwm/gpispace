@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _EXPR_PARSE_PARSER_HPP
-#define _EXPR_PARSE_PARSER_HPP
+#pragma once
 
 #include <we/expr/parse/node.hpp>
 
@@ -122,5 +121,3 @@ namespace expr
                              );
   }
 }
-
-#endif

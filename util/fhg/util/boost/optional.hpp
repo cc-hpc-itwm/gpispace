@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_BOOST_OPTIONAL_HPP
-#define FHG_UTIL_BOOST_OPTIONAL_HPP
+#pragma once
 
 #include <boost/optional.hpp>
 
@@ -47,5 +46,3 @@ namespace boost
     return x ? (s << "Just " << *x) : (s << "Nothing");
   }
 }
-
-#endif

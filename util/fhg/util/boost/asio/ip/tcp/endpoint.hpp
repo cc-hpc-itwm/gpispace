@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_BOOST_ASIO_IP_TCP_ENDPOINT_HPP
-#define FHG_UTIL_BOOST_ASIO_IP_TCP_ENDPOINT_HPP
+#pragma once
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/functional/hash.hpp>
@@ -60,5 +59,3 @@ namespace std
     }
   };
 }
-
-#endif

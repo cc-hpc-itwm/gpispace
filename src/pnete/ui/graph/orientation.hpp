@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _PNETE_UI_GRAPH_ORIENTATION_HPP
-#define _PNETE_UI_GRAPH_ORIENTATION_HPP 1
+#pragma once
 
 #include <string>
 
@@ -33,5 +32,3 @@ namespace fhg
     }
   }
 }
-
-#endif

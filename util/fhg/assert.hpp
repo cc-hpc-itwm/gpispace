@@ -1,5 +1,4 @@
-#ifndef FHG_ASSERT_HPP
-#define FHG_ASSERT_HPP
+#pragma once
 
 /**
    - fhg_assert is a macro that provides a better mechanism than the
@@ -57,6 +56,4 @@
 
 #else
 #  error invalid FHG_ASSERT_MODE
-#endif
-
 #endif

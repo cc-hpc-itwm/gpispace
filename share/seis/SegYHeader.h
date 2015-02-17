@@ -7,8 +7,7 @@
 ***************************************************************************/
 
 
-#ifndef SEGYHEADER_H
-#define SEGYHEADER_H
+#pragma once
 
 /**
  *@author Dirk Merten
@@ -58,9 +57,9 @@ struct SegYHeader
                    12 = Multicomponent seismic sensor
                    - Vertical component
                    13 = Multicomponent seismic sensor
-                   - Cross-line component 
+                   - Cross-line component
                    14 = Multicomponent seismic sensor
-                   - in-line component 
+                   - in-line component
                    15 = Rotated multicomponent seismic sensor
                    - Vertical component
                    16 = Rotated multicomponent seismic sensor
@@ -72,7 +71,7 @@ struct SegYHeader
                    20 = Vibrator estimated ground force
                    21 = Vibrator reference
                    22 = Time-velocity pairs
-                   23 ... N = optional use 
+                   23 ... N = optional use
                    (maximum N = 32,767)
 
                    Following are CWP id flags:
@@ -107,17 +106,17 @@ struct SegYHeader
                    124 = Phase of the complex time trace
                    125 = Frequency of the complex time trace
                    130 = Depth-Range (z-x) traces
-                   143 = Seismic Data, Vertical Component 
-                   144 = Seismic Data, Horizontal Component 1 
-                   145 = Seismic Data, Horizontal Component 2 
+                   143 = Seismic Data, Vertical Component
+                   144 = Seismic Data, Horizontal Component 1
+                   145 = Seismic Data, Horizontal Component 2
                    146 = Seismic Data, Radial Component
-                   147 = Seismic Data, Transverse Component  
+                   147 = Seismic Data, Transverse Component
                    201 = Seismic data packed to bytes (by supack1)
                    202 = Seismic data packed to 2 bytes (by supack2)
                 */
 
   short nvs;	/* Number of vertically summed traces yielding
-                   this trace. (1 is one trace, 
+                   this trace. (1 is one trace,
                    2 is two summed traces, etc.)
                 */
 
@@ -131,14 +130,14 @@ struct SegYHeader
                    2 = Test
                 */
 
-  int offset;	/* Distance from the center of the source point 
-                   to the center of the receiver group 
-                   (negative if opposite to direction in which 
+  int offset;	/* Distance from the center of the source point
+                   to the center of the receiver group
+                   (negative if opposite to direction in which
                    the line was shot).
                 */
 
   int gelev;	/* Receiver group elevation from sea level
-                   (all elevations above the Vertical datum are 
+                   (all elevations above the Vertical datum are
                    positive and below are negative).
                 */
 
@@ -155,14 +154,14 @@ struct SegYHeader
   int gwdep;	/* Water depth at receiver group. */
 
   short scalel;	/* Scalar to be applied to the previous 7 entries
-                   to give the real value. 
+                   to give the real value.
                    Scalar = 1, +10, +100, +1000, +10000.
                    If positive, scalar is used as a multiplier,
                    if negative, scalar is used as a divisor.
                 */
 
   short scalco;	/* Scalar to be applied to the next 4 entries
-                   to give the real value. 
+                   to give the real value.
                    Scalar = 1, +10, +100, +1000, +10000.
                    If positive, scalar is used as a multiplier,
                    if negative, scalar is used as a divisor.
@@ -183,7 +182,7 @@ struct SegYHeader
                    3 = Decimal degrees
                    4 = Degrees, minutes, seconds (DMS)
 
-                   In case 2, the X values are longitude and 
+                   In case 2, the X values are longitude and
                    the Y values are latitude, a positive value designates
                    the number of seconds east of Greenwich
                    or north of the equator
@@ -191,7 +190,7 @@ struct SegYHeader
                    In case 4, to encode +-DDDMMSS
                    counit = +-DDD*10^4 + MM*10^2 + SS,
                    with scalco = 1. To encode +-DDDMMSS.ss
-                   counit = +-DDD*10^6 + MM*10^4 + SS*10^2 
+                   counit = +-DDD*10^6 + MM*10^4 + SS*10^2
                    with scalco = -100.
                 */
 
@@ -317,7 +316,7 @@ struct SegYHeader
                    1 = down (or behind)
                    2 = up (or ahead) */
 
-  /* UNOCAL local assignments end */ 
+  /* UNOCAL local assignments end */
 
   short unass[30];	/* unassigned */
 /*   int Trl;                       --> tracl */
@@ -331,5 +330,3 @@ struct SegYHeader
 /*   char dummy3[122]; */
 
 };
-#endif //SEGYHEADER_H
-  

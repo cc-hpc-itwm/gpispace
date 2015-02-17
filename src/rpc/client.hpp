@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_RPC_CLIENT_HPP
-#define FHG_RPC_CLIENT_HPP
+#pragma once
 
 #include <rpc/common.hpp>
 #include <rpc/exception_serialization.hpp>
@@ -232,5 +231,3 @@ namespace fhg
     };
   }
 }
-
-#endif

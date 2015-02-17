@@ -7,8 +7,7 @@
 ***************************************************************************/
 
 
-#ifndef SEGYBHEADER_H
-#define SEGYBHEADER_H
+#pragma once
 
 #include <string.h>
 
@@ -43,7 +42,7 @@ struct SegYBHeader{	/* bhed - binary header */
 
 	short fold;	/* CDP fold expected per CDP ensemble */
 
-	short tsort;	/* trace sorting code: 
+	short tsort;	/* trace sorting code:
 				1 = as recorded (no sorting)
 				2 = CDP ensemble
 				3 = single fold continuous profile
@@ -128,5 +127,3 @@ struct SegYBHeader{	/* bhed - binary header */
       format = 1;
   };
 };
-#endif //SEGYBHEADER_H
-  

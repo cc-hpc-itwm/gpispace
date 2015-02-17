@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_RIF_CLIENT_HPP
-#define FHG_RIF_CLIENT_HPP
+#pragma once
 
 #include <rif/entry_point.hpp>
 
@@ -67,5 +66,3 @@ namespace fhg
     };
   }
 }
-
-#endif

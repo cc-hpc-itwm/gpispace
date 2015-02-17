@@ -1,5 +1,4 @@
-#ifndef SDPA_EVENTS_SERIALIZATION_HPP
-#define SDPA_EVENTS_SERIALIZATION_HPP 1
+#pragma once
 
 #define SAVE_TO_ARCHIVE(WHAT)                   \
   _archive << WHAT
@@ -75,5 +74,3 @@
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/optional.hpp>
 #include <boost/serialization/set.hpp>
-
-#endif

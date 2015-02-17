@@ -1,5 +1,4 @@
-#ifndef FHG_UTIL_NEST_EXCEPTIONS_HPP
-#define FHG_UTIL_NEST_EXCEPTIONS_HPP
+#pragma once
 
 #include <exception>
 #include <type_traits>
@@ -24,5 +23,3 @@ namespace fhg
     }
   }
 }
-
-#endif

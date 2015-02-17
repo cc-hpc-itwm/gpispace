@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef RPC_TEST_HELPERS_HPP
-#define RPC_TEST_HELPERS_HPP
+#pragma once
 
 #include <rpc/server.hpp>
 
@@ -78,5 +77,3 @@ namespace
     fhg::network::continous_acceptor<boost::asio::ip::tcp> acceptor;
   };
 }
-
-#endif

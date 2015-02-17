@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef XML_PARSE_VALID_NAME_HPP
-#define XML_PARSE_VALID_NAME_HPP
+#pragma once
 
 #include <fhg/util/parse/position.hpp>
 
@@ -23,5 +22,3 @@ namespace xml
                               );
   }
 }
-
-#endif

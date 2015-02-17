@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_TYPE_DEFINITIONS_HPP
-#define GPI_SPACE_PC_TYPE_DEFINITIONS_HPP 1
+#pragma once
 
 #include <inttypes.h>
 #include <limits.h>
@@ -59,5 +58,3 @@ namespace gpi
     }
   }
 }
-
-#endif

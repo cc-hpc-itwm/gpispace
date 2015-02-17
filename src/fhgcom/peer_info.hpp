@@ -1,5 +1,4 @@
-#ifndef FHG_COM_PEER_INFO_HPP
-#define FHG_COM_PEER_INFO_HPP 1
+#pragma once
 
 #include <string>
 
@@ -34,5 +33,3 @@ namespace fhg
     };
   }
 }
-
-#endif

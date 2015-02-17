@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _REWRITE_VALID_PREFIX_HPP
-#define _REWRITE_VALID_PREFIX_HPP 1
+#pragma once
 
 #include <fhg/util/starts_with.hpp>
 
@@ -19,5 +18,3 @@ namespace rewrite
     return magic_prefix + name + magic_prefix;
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef PNETE_UI_DOCUMENT_VIEW_HPP
-#define PNETE_UI_DOCUMENT_VIEW_HPP
+#pragma once
 
 #include <pnete/ui/document_view.fwd.hpp>
 
@@ -55,5 +54,3 @@ namespace fhg
     }
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _EXPR_ASSOC_HPP
-#define _EXPR_ASSOC_HPP
+#pragma once
 
 #include <we/expr/token/type.hpp>
 
@@ -14,5 +13,3 @@ namespace expr
     type associativity (const token::type&);
   }
 }
-
-#endif

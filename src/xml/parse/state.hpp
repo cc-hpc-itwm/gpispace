@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_STATE_HPP
-#define _XML_PARSE_STATE_HPP
+#pragma once
 
 #include <xml/parse/state.fwd.hpp>
 
@@ -362,5 +361,3 @@ namespace xml
     }
   }
 }
-
-#endif

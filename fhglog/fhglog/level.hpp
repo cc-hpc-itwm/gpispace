@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef FHG_LOG_LOGLEVEL_INC
-#define FHG_LOG_LOGLEVEL_INC
+#pragma once
 
 #include <string>
 
@@ -19,5 +18,3 @@ namespace fhg
     const std::string& string (Level);
   }
 }
-
-#endif

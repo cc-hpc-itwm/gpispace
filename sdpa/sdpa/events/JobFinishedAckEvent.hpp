@@ -1,5 +1,4 @@
-#ifndef SDPA_JOB_FINISHED_ACK_EVENT_HPP
-#define SDPA_JOB_FINISHED_ACK_EVENT_HPP 1
+#pragma once
 
 #include <sdpa/events/JobEvent.hpp>
 
@@ -24,5 +23,3 @@ namespace sdpa
     CONSTRUCT_DATA_DEFS_FOR_EMPTY_JOBEVENT_OVERLOAD (JobFinishedAckEvent)
   }
 }
-
-#endif

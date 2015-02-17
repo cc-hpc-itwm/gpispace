@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _FHG_UTIL_PARSE_ERROR_HPP
-#define _FHG_UTIL_PARSE_ERROR_HPP
+#pragma once
 
 #include <stdexcept>
 
@@ -65,5 +64,3 @@ namespace fhg
     }
   }
 }
-
-#endif

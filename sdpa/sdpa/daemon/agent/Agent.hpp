@@ -1,7 +1,6 @@
 // tiberiu.rotaru@itwm.fraunhofer.de
 
-#ifndef SDPA_AGENT_HPP
-#define SDPA_AGENT_HPP 1
+#pragma once
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 
@@ -38,5 +37,3 @@ namespace sdpa
     };
   }
 }
-
-#endif

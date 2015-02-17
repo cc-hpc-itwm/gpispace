@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef SDPA_EVENTS_PUT_TOKEN_HPP
-#define SDPA_EVENTS_PUT_TOKEN_HPP
+#pragma once
 
 #include <sdpa/events/JobEvent.hpp>
 #include <sdpa/events/Serialization.hpp>
@@ -118,5 +117,3 @@ namespace sdpa
     }
   }
 }
-
-#endif

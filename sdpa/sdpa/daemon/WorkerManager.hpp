@@ -1,7 +1,6 @@
 //tiberiu.rotaru@itwm.fraunhofer.de
 
-#ifndef SDPA_DAEMON_WORKER_MANAGER_HPP
-#define SDPA_DAEMON_WORKER_MANAGER_HPP 1
+#pragma once
 
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/job_requirements.hpp>
@@ -85,4 +84,3 @@ namespace sdpa
     };
   }
 }
-#endif

@@ -1,5 +1,4 @@
-#ifndef SDPA_CLIENT_HPP
-#define SDPA_CLIENT_HPP
+#pragma once
 
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/job_states.hpp>
@@ -80,5 +79,3 @@ namespace sdpa
     };
   }
 }
-
-#endif

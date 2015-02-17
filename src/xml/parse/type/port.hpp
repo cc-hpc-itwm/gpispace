@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_TYPE_PORT_HPP
-#define _XML_PARSE_TYPE_PORT_HPP
+#pragma once
 
 #include <xml/parse/error.hpp>
 #include <xml/parse/id/generic.hpp>
@@ -109,5 +108,3 @@ namespace xml
     }
   }
 }
-
-#endif

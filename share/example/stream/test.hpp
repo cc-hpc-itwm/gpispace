@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef SHARE_EXAMPLE_STREAM_TEST_HPP
-#define SHARE_EXAMPLE_STREAM_TEST_HPP
+#pragma once
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
@@ -213,5 +212,3 @@ namespace share_example_stream_test
     BOOST_REQUIRE_EQUAL (expected_output, output);
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef PREFIX_PARSE_HPP
-#define PREFIX_PARSE_HPP
+#pragma once
 
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
@@ -64,5 +63,3 @@ namespace prefix
     }
   }
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef FHG_COM_HEADER_HPP
-#define FHG_COM_HEADER_HPP 1
+#pragma once
 
 #include <cstring> // memset
 #include <inttypes.h>
@@ -57,5 +56,3 @@ namespace std
     size_t operator()(fhg::com::p2p::address_t const&) const;
   };
 }
-
-#endif

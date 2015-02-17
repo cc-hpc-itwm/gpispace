@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef SDPA_TEST_UTILS_HPP
-#define SDPA_TEST_UTILS_HPP
+#pragma once
 
 #include <sdpa/client.hpp>
 #include <sdpa/daemon/agent/Agent.hpp>
@@ -792,5 +791,3 @@ namespace utils
     };
   };
 }
-
-#endif

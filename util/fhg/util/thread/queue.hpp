@@ -1,5 +1,4 @@
-#ifndef FHG_UTIL_THREAD_QUEUE_HPP
-#define FHG_UTIL_THREAD_QUEUE_HPP
+#pragma once
 
 #include <boost/thread/condition_variable.hpp>
 #include <boost/thread/recursive_mutex.hpp>
@@ -75,5 +74,3 @@ namespace fhg
     };
   }
 }
-
-#endif

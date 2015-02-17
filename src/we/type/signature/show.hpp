@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef PNET_SRC_WE_TYPE_SIGNATURE_SHOW_HPP
-#define PNET_SRC_WE_TYPE_SIGNATURE_SHOW_HPP
+#pragma once
 
 #include <we/type/signature.hpp>
 
@@ -26,5 +25,3 @@ namespace pnet
     }
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef SHARE_EXAMPLE_STREAM_STATISTIC_HPP
-#define SHARE_EXAMPLE_STREAM_STATISTIC_HPP
+#pragma once
 
 #include <chrono>
 #include <limits>
@@ -73,5 +72,3 @@ namespace fhg
     };
   }
 }
-
-#endif

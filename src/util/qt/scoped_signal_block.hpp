@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef UTIL_QT_SCOPED_SIGNAL_BLOCK_HPP
-#define UTIL_QT_SCOPED_SIGNAL_BLOCK_HPP
+#pragma once
 
 #include <QObject>
 
@@ -29,5 +28,3 @@ namespace fhg
     }
   }
 }
-
-#endif

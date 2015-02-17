@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_MACROS_HPP
-#define FHG_UTIL_MACROS_HPP
+#pragma once
 
 #ifndef NDEBUG
 #define IFNDEF_NDEBUG(x...) x
@@ -25,5 +24,3 @@
 //! \todo more than just gcc?
 #define UNREACHABLE()                           \
   __builtin_unreachable()
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef SDPA_JOB_EVENT_HPP
-#define SDPA_JOB_EVENT_HPP 1
+#pragma once
 
 #include <string>
 
@@ -28,5 +27,3 @@ namespace sdpa
     };
   }
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef SDPA_CAPABILITY_HPP_
-#define SDPA_CAPABILITY_HPP_ 1
+#pragma once
 
 #include <string>
 #include <set>
@@ -54,5 +53,3 @@ namespace sdpa
 
   typedef std::set<capability_t> capabilities_set_t;
 }
-
-#endif

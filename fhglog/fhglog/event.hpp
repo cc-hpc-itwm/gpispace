@@ -1,5 +1,4 @@
-#ifndef FHG_LOG_LOGEVENT_HPP
-#define FHG_LOG_LOGEVENT_HPP 1
+#pragma once
 
 #include <fhglog/level.hpp>
 
@@ -79,5 +78,3 @@ namespace fhg
 }
 
 std::ostream& operator<< (std::ostream&, fhg::log::LogEvent const&);
-
-#endif

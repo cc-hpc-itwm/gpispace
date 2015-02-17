@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_QT_FILE_LINE_EDIT_HPP
-#define FHG_UTIL_QT_FILE_LINE_EDIT_HPP
+#pragma once
 
 #include <QFileDialog>
 #include <QLineEdit>
@@ -35,5 +34,3 @@ namespace fhg
     }
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _WE_TYPE_PLACE_HPP
-#define _WE_TYPE_PLACE_HPP
+#pragma once
 
 #include <we/type/signature.hpp>
 #include <we/type/property.hpp>
@@ -48,5 +47,3 @@ namespace place
     }
   };
 }
-
-#endif

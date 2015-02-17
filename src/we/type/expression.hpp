@@ -1,7 +1,6 @@
 // {rahn,petry}@itwm.fhg.de
 
-#ifndef WE_TYPE_EXPRESSION_HPP
-#define WE_TYPE_EXPRESSION_HPP
+#pragma once
 
 #include <we/type/expression.fwd.hpp>
 
@@ -58,5 +57,3 @@ namespace we
     std::ostream& operator<< (std::ostream&, const expression_t&);
   }
 }
-
-#endif

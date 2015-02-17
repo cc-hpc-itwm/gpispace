@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef FHG_PNET_WE_TYPE_SCHEDULE_DATA_HPP
-#define FHG_PNET_WE_TYPE_SCHEDULE_DATA_HPP
+#pragma once
 
 #include <boost/optional.hpp>
 
@@ -22,5 +21,3 @@ namespace we
     };
   }
 }
-
-#endif

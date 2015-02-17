@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_DATA_HANDLE_TRANSITION_HPP
-#define _FHG_PNETE_DATA_HANDLE_TRANSITION_HPP 1
+#pragma once
 
 #include <pnete/data/handle/transition.fwd.hpp>
 
@@ -56,5 +55,3 @@ namespace fhg
     }
   }
 }
-
-#endif

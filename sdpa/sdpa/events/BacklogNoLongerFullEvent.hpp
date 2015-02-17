@@ -1,5 +1,4 @@
-#ifndef SDPA_EVENTS_BACKLOG_NO_LONGER_FULL_EVENT_HPP
-#define SDPA_EVENTS_BACKLOG_NO_LONGER_FULL_EVENT_HPP
+#pragma once
 
 #include <sdpa/events/MgmtEvent.hpp>
 
@@ -24,5 +23,3 @@ namespace sdpa
     CONSTRUCT_DATA_DEFS_FOR_EMPTY_MGMTEVENT_OVERLOAD (BacklogNoLongerFullEvent);
   }
 }
-
-#endif

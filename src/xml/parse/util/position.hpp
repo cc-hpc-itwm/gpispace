@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_UTIL_POSITION_HPP
-#define _XML_PARSE_UTIL_POSITION_HPP
+#pragma once
 
 #include <xml/parse/util/position.fwd.hpp>
 
@@ -41,5 +40,3 @@ namespace xml
     }
   }
 }
-
-#endif

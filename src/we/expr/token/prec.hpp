@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _EXPR_PREC_HPP
-#define _EXPR_PREC_HPP
+#pragma once
 
 #include <we/expr/token/type.hpp>
 
@@ -12,5 +11,3 @@ namespace expr
     int prec (const token::type&);
   }
 }
-
-#endif
