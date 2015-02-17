@@ -1,20 +1,27 @@
-#include <gpi-space/gpi/api.hpp>
-#include <gpi-space/pc/container/manager.hpp>
-#include <gpi-space/pc/container/process.hpp>
-#include <gpi-space/pc/global/topology.hpp>
-#include <gpi-space/pc/memory/manager.hpp>
-#include <gpi-space/pc/segment/segment.hpp>
 
-#include <fhg/assert.hpp>
+#include <gpi-space/pc/container/manager.hpp>
+
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/variant/static_visitor.hpp>
+
 #include <fhg/syscall.hpp>
-#include <fhg/util/make_unique.hpp>
+#include <fhg/util/nest_exceptions.hpp>
+
 #include <fhglog/LogMacros.hpp>
 
-#include <functional>
+#include <gpi-space/gpi/api.hpp>
+#include <gpi-space/pc/memory/shm_area.hpp>
+#include <gpi-space/pc/proto/message.hpp>
+#include <gpi-space/pc/url.hpp>
+#include <gpi-space/pc/url_io.hpp>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <functional>
+#include <stdexcept>
+
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -31,131 +38,43 @@ namespace gpi
       {
         try
         {
-          stop ();
+          if (m_socket >= 0)
+          {
+            m_stopping = true;
+
+            safe_unlink (m_path);
+            close_socket (m_socket);
+
+            _listener_thread.join();
+
+            m_socket = -1;
+          }
         }
         catch (std::exception const & ex)
         {
           LOG(ERROR, "error within ~manager_t: " << ex.what());
         }
 
-          while (! m_processes.empty())
-          {
-            detach_process (m_processes.begin()->first, true);
-          }
+        std::unique_lock<std::mutex> const _ (_mutex_processes);
+        for ( std::pair<gpi::pc::type::process_id_t const, std::thread>& process
+            : m_processes
+            )
+        {
+          process.second.join();
+
+          CLOG( INFO
+              , "gpi.container"
+              , "process container " << process.first << " detached"
+              );
+        }
 
         _memory_manager.clear();
-      }
-
-      void manager_t::start ()
-      {
-        lock_type lock (m_mutex);
-
-        if (m_socket >= 0)
-          return;
-
-        m_stopping = false;
-        int err = safe_unlink (m_path);
-        if (err < 0)
-        {
-          LOG(ERROR, "could not unlink path " << m_path << ": " <<  strerror(-err));
-          throw std::runtime_error ("could not unlink socket path");
-        }
-
-        int fd (open_socket (m_path));
-        if (fd < 0)
-        {
-          LOG(ERROR, "could not open socket: " << strerror(-fd));
-          throw std::runtime_error ("could not open socket");
-        }
-        else
-        {
-          m_socket = fd;
-
-          m_listener = thread_t
-            ( new boost::thread
-              (&manager_t::listener_thread_main, this, m_socket)
-            );
-        }
-      }
-
-      void manager_t::stop ()
-      {
-        lock_type lock (m_mutex);
-        if (m_socket >= 0)
-        {
-          m_stopping = true;
-
-          safe_unlink (m_path);
-          close_socket (m_socket);
-          fhg_assert (m_listener);
-          if (boost::this_thread::get_id() != m_listener->get_id())
-          {
-            m_listener->join ();
-            m_listener.reset ();
-          }
-          m_socket = -1;
-        }
       }
 
       void manager_t::close_socket (const int fd)
       {
         fhg::syscall::shutdown (fd, SHUT_RDWR);
         fhg::syscall::close (fd);
-      }
-
-      int manager_t::open_socket (std::string const & path)
-      {
-        int sfd;
-        struct sockaddr_un my_addr;
-        const std::size_t backlog_size (16);
-
-        try
-        {
-          sfd = fhg::syscall::socket (AF_UNIX, SOCK_STREAM, 0);
-        }
-        catch (boost::system::system_error const& se)
-        {
-          LOG(ERROR, "could not create unix socket: " << se.what());
-          return -se.code().value();
-        }
-        {
-          const int on (1);
-          fhg::syscall::setsockopt (sfd, SOL_SOCKET, SO_PASSCRED, &on, sizeof (on));
-        }
-
-        memset (&my_addr, 0, sizeof(my_addr));
-        my_addr.sun_family = AF_UNIX;
-        strncpy ( my_addr.sun_path
-                , path.c_str()
-                , sizeof(my_addr.sun_path) - 1
-                );
-
-        try
-        {
-          fhg::syscall::bind
-            (sfd, (struct sockaddr *)&my_addr, sizeof (struct sockaddr_un));
-        }
-        catch (boost::system::system_error const& se)
-        {
-          LOG(ERROR, "could not bind to socket at path " << path << ": " << se.what());
-          fhg::syscall::close (sfd);
-          return -se.code().value();
-        }
-        fhg::syscall::chmod (path.c_str(), 0700);
-
-        try
-        {
-          fhg::syscall::listen (sfd, backlog_size);
-        }
-        catch (boost::system::system_error const& se)
-        {
-          LOG(ERROR, "could not listen on socket: " << se.what());
-          fhg::syscall::close (sfd);
-          fhg::syscall::unlink (path.c_str());
-          return -se.code().value();
-        }
-
-        return sfd;
       }
 
       int manager_t::safe_unlink(std::string const & path)
@@ -182,7 +101,7 @@ namespace gpi
         }
       }
 
-      void manager_t::listener_thread_main(const int fd)
+      void manager_t::listener_thread_main()
       {
         int cfd;
         struct sockaddr_un peer_addr;
@@ -193,7 +112,7 @@ namespace gpi
           peer_addr_size = sizeof(struct sockaddr_un);
           try
           {
-            cfd = fhg::syscall::accept ( fd
+            cfd = fhg::syscall::accept ( m_socket
                                        , (struct sockaddr*)&peer_addr
                                        , &peer_addr_size
                                        );
@@ -210,27 +129,15 @@ namespace gpi
             }
           }
 
-          try
-          {
             gpi::pc::type::process_id_t const id (m_process_counter.inc());
 
             {
-              boost::mutex::scoped_lock const _ (_mutex_processes);
+              std::unique_lock<std::mutex> const _ (_mutex_processes);
 
               m_processes.emplace
                 ( id
-                , fhg::util::make_unique<process_t>
-                  ( std::bind ( &manager_t::handle_process_error
-                              , this
-                              , std::placeholders::_1
-                              , std::placeholders::_2
-                              )
-                  , id
-                  , cfd
-                  , _memory_manager
-                  , _topology
-                  , _gpi_api
-                  )
+                , std::thread
+                    (&manager_t::process_communication_thread, this, id, cfd)
                 );
             }
 
@@ -238,14 +145,398 @@ namespace gpi
                 , "gpi.container"
                 , "process container " << id << " attached"
                 );
-          }
-          catch (std::exception const & ex)
+        }
+      }
+
+      namespace
+      {
+        struct handle_message_t : public boost::static_visitor<gpi::pc::proto::message_t>
+        {
+          handle_message_t ( gpi::pc::type::process_id_t const& proc_id
+                           , memory::manager_t& memory_manager
+                           , global::topology_t& topology
+                           , gpi::api::gpi_api_t& gpi_api
+                           )
+            : m_proc_id (proc_id)
+            , _memory_manager (memory_manager)
+            , _topology (topology)
+            , _gpi_api (gpi_api)
+          {}
+
+          /**********************************************/
+          /***     M E M O R Y   R E L A T E D        ***/
+          /**********************************************/
+
+          gpi::pc::proto::message_t
+            operator () (const gpi::pc::proto::memory::alloc_t & alloc) const
           {
-            LOG(ERROR, "could not handle new connection: " << ex.what());
-            close_socket (cfd);
+            gpi::pc::proto::memory::alloc_reply_t rpl;
+            rpl.handle = _memory_manager.alloc
+              ( m_proc_id
+              , alloc.segment, alloc.size, alloc.name, alloc.flags
+              );
+            return gpi::pc::proto::memory::message_t (rpl);
+          }
+
+          gpi::pc::proto::message_t
+            operator () (const gpi::pc::proto::memory::free_t & free) const
+          {
+            _memory_manager.free (free.handle);
+            return gpi::pc::proto::error::error_t
+              (gpi::pc::proto::error::success, "success");
+          }
+
+          gpi::pc::proto::message_t
+            operator () (const gpi::pc::proto::memory::memcpy_t & cpy) const
+          {
+            gpi::pc::type::validate (cpy.dst.handle);
+            gpi::pc::type::validate (cpy.src.handle);
+            gpi::pc::proto::memory::memcpy_reply_t rpl;
+            rpl.queue = _memory_manager.memcpy
+              (cpy.dst, cpy.src, cpy.size, cpy.queue);
+            return gpi::pc::proto::memory::message_t (rpl);
+          }
+
+          gpi::pc::proto::message_t
+            operator () (const gpi::pc::proto::memory::wait_t & w) const
+          {
+            gpi::pc::proto::memory::wait_reply_t rpl;
+            // this is not that easy to implement
+            //    do we want to put the process container to sleep? - no
+            //    we basically want to delay the answer
+            //    the client should also be able to release the lock so that other threads can still interact with the pc
+            //
+            // TODO:
+            //   client:
+            //     attach a unique sequence number to the wait message
+            //     enqueue the request
+            //     send the message
+            //     unlock communication lock
+            //     wait for the request to "return"
+            //
+            //   server:
+            //     enqueue the "wait" request into some queue that is handled by a seperate thread (each queue one thread)
+            //     "reply" to the enqueued wait request via this process using the same sequence number waking up the client thread
+            //
+            //   implementation:
+            //     processes' message visitor has to be rewritten to be "asynchronous" in some way
+            //        -> idea: visitor's return value is a boost::optional
+            //                 if set: reply immediately
+            //                   else: somebody else will reply later
+            //           messages need unique sequence numbers or message-ids
+            rpl.count = _memory_manager.wait_on_queue
+              (m_proc_id, w.queue);
+            return gpi::pc::proto::memory::message_t (rpl);
+          }
+
+          gpi::pc::proto::message_t
+            operator () (const gpi::pc::proto::memory::list_t & list) const
+          {
+            gpi::pc::proto::memory::list_reply_t rpl;
+            if (list.segment == gpi::pc::type::segment::SEG_INVAL)
+            {
+              _memory_manager.list_allocations(m_proc_id, rpl.list);
+            }
+            else
+            {
+              _memory_manager.list_allocations (m_proc_id, list.segment, rpl.list);
+            }
+            return gpi::pc::proto::memory::message_t (rpl);
+          }
+
+          gpi::pc::proto::message_t
+            operator () (const gpi::pc::proto::memory::info_t & info) const
+          {
+            gpi::pc::proto::memory::info_reply_t rpl;
+            rpl.descriptor = _memory_manager.info (info.handle);
+            return gpi::pc::proto::memory::message_t (rpl);
+          }
+
+          gpi::pc::proto::message_t
+            operator() (const gpi::pc::proto::memory::get_transfer_costs_t& request) const
+          {
+            return gpi::pc::proto::memory::message_t
+              (gpi::pc::proto::memory::transfer_costs_t (_memory_manager.get_transfer_costs (request.transfers)));
+          }
+
+          /**********************************************/
+          /***     S E G M E N T   R E L A T E D      ***/
+          /**********************************************/
+
+          gpi::pc::proto::message_t
+            operator () (const gpi::pc::proto::segment::register_t & register_segment) const
+          {
+            url_t url ("shm", register_segment.name);
+            url.set ("size", boost::lexical_cast<std::string>(register_segment.size));
+            if (register_segment.flags & F_PERSISTENT)
+              url.set ("persistent", "true");
+            if (register_segment.flags & F_EXCLUSIVE)
+              url.set ("exclusive", "true");
+
+            memory::area_ptr_t area (memory::shm_area_t::create (boost::lexical_cast<std::string>(url), _memory_manager.handle_generator()));
+            area->set_owner (m_proc_id);
+
+            gpi::pc::proto::segment::register_reply_t rpl;
+            rpl.id =
+              _memory_manager.register_memory (m_proc_id, area);
+
+            return gpi::pc::proto::segment::message_t (rpl);
+          }
+
+          gpi::pc::proto::message_t
+            operator () (const gpi::pc::proto::segment::unregister_t & unregister_segment) const
+          {
+            _memory_manager.unregister_memory
+              (m_proc_id, unregister_segment.id);
+            return gpi::pc::proto::error::error_t
+              (gpi::pc::proto::error::success, "success");
+          }
+
+          gpi::pc::proto::message_t
+            operator () (const gpi::pc::proto::segment::attach_t & attach_segment) const
+          {
+            _memory_manager.attach_process
+              (m_proc_id, attach_segment.id);
+            return gpi::pc::proto::error::error_t
+              (gpi::pc::proto::error::success, "success");
+          }
+
+          gpi::pc::proto::message_t
+            operator () (const gpi::pc::proto::segment::detach_t & detach_segment) const
+          {
+            _memory_manager.detach_process
+              (m_proc_id, detach_segment.id);
+            return gpi::pc::proto::error::error_t
+              (gpi::pc::proto::error::success, "success");
+          }
+
+          gpi::pc::proto::message_t
+            operator () (const gpi::pc::proto::segment::list_t & list) const
+          {
+            gpi::pc::proto::segment::list_reply_t rpl;
+            if (list.id == gpi::pc::type::segment::SEG_INVAL)
+              _memory_manager.list_memory (rpl.list);
+            else
+            {
+              LOG(WARN, "list of particular segment not implemented");
+              _memory_manager.list_memory (rpl.list);
+            }
+            return gpi::pc::proto::segment::message_t (rpl);
+          }
+
+          gpi::pc::proto::message_t
+            operator () (const gpi::pc::proto::segment::add_memory_t & add_mem) const
+          {
+            gpi::pc::type::segment_id_t id =
+              _memory_manager.add_memory (m_proc_id, add_mem.url, 0, _topology);
+            gpi::pc::proto::segment::register_reply_t rpl;
+            rpl.id = id;
+            return gpi::pc::proto::segment::message_t (rpl);
+          }
+
+          gpi::pc::proto::message_t
+            operator () (const gpi::pc::proto::segment::del_memory_t & del_mem) const
+          {
+            _memory_manager.del_memory (m_proc_id, del_mem.id, _topology);
+            return
+              gpi::pc::proto::error::error_t (gpi::pc::proto::error::success);
+          }
+
+          /**********************************************/
+          /***     C O N T R O L   R E L A T E D      ***/
+          /**********************************************/
+
+          gpi::pc::proto::message_t
+            operator () (const gpi::pc::proto::control::ping_t &) const
+          {
+            gpi::pc::proto::control::pong_t pong;
+            return gpi::pc::proto::control::message_t (pong);
+          }
+
+          gpi::pc::proto::message_t
+            operator () (const gpi::pc::proto::control::info_t &) const
+          {
+            gpi::pc::proto::control::info_reply_t rpl;
+            rpl.info.rank = _gpi_api.rank();
+            rpl.info.nodes = _gpi_api.number_of_nodes();
+            rpl.info.queues = _gpi_api.number_of_queues();
+            rpl.info.queue_depth = _gpi_api.queue_depth();
+            return gpi::pc::proto::control::message_t (rpl);
+          }
+
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::segment::message_t & m) const
+          {
+            return boost::apply_visitor (*this, m);
+          }
+
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::memory::message_t & m) const
+          {
+            return boost::apply_visitor (*this, m);
+          }
+
+          gpi::pc::proto::message_t
+          operator () (const gpi::pc::proto::control::message_t & m) const
+          {
+            return boost::apply_visitor (*this, m);
+          }
+
+          /*** Catch all other messages ***/
+
+          template <typename T>
+            gpi::pc::proto::message_t
+            operator () (T const &) const
+          {
+            return gpi::pc::proto::error::error_t
+              (gpi::pc::proto::error::bad_request,  "invalid input message");
+          }
+
+        private:
+          gpi::pc::type::process_id_t const& m_proc_id;
+          memory::manager_t& _memory_manager;
+          global::topology_t& _topology;
+          gpi::api::gpi_api_t& _gpi_api;
+        };
+
+        gpi::pc::proto::message_t handle_message
+          ( gpi::pc::type::process_id_t const& id
+          , gpi::pc::proto::message_t const& request
+          , gpi::pc::memory::manager_t& memory_manager
+          , global::topology_t& topology
+          , gpi::api::gpi_api_t& gpi_api
+          )
+        {
+          try
+          {
+            return boost::apply_visitor
+              (handle_message_t (id, memory_manager, topology, gpi_api), request);
+          }
+          catch (std::exception const& ex)
+          {
+            return gpi::pc::proto::error::error_t
+              (gpi::pc::proto::error::bad_request, ex.what());
+          }
+        }
+
+        void read_exact (int fd, void* buffer, ssize_t size)
+        {
+          if (fhg::syscall::read (fd, buffer, size) != size)
+          {
+            throw std::runtime_error
+              ("unable to read " + std::to_string (size) + " bytes");
+          }
+        }
+        void write_exact (int fd, void const* buffer, ssize_t size)
+        {
+          if (fhg::syscall::write (fd, buffer, size) != size)
+          {
+            throw std::runtime_error
+              ("unable to write " + std::to_string (size) + " bytes");
           }
         }
       }
+
+      void manager_t::process_communication_thread
+        (gpi::pc::type::process_id_t process_id, int socket)
+      {
+        LOG(TRACE, "process container (" << process_id << ") started on socket " << socket);
+
+        for (;;)
+        {
+          try
+          {
+            gpi::pc::proto::message_t request;
+
+            fhg::util::nest_exceptions<std::runtime_error>
+              ( [&]
+                {
+                  gpi::pc::proto::header_t header;
+                  read_exact (socket, &header, sizeof (header));
+
+                  std::vector<char> buffer (header.length);
+                  read_exact (socket, buffer.data(), buffer.size());
+
+                  fhg::util::nest_exceptions<std::runtime_error>
+                    ( [&]
+                      {
+                        std::stringstream sstr
+                          (std::string (buffer.data(), buffer.size()));
+                        boost::archive::binary_iarchive ia (sstr);
+                        ia & request;
+                      }
+                    , "could not decode message"
+                    );
+                }
+              , "could not receive message"
+              );
+
+            gpi::pc::proto::message_t const reply
+              (handle_message (process_id, request, _memory_manager, _topology, _gpi_api));
+
+            fhg::util::nest_exceptions<std::runtime_error>
+              ( [&]
+                {
+                  std::string data;
+                  gpi::pc::proto::header_t header;
+
+                  fhg::util::nest_exceptions<std::runtime_error>
+                    ( [&]
+                      {
+                        std::stringstream sstr;
+                        boost::archive::text_oarchive oa (sstr);
+                        oa & reply;
+                        data = sstr.str();
+                      }
+                    , "could not encode message"
+                    );
+
+                  header.length = data.size();
+
+                  write_exact (socket, &header, sizeof (header));
+                  write_exact (socket, data.data(), data.size());
+                }
+              , "could not send message"
+              );
+          }
+          catch (std::exception const & ex)
+          {
+            LOG(ERROR, "process container " << process_id << " crashed: " << ex.what());
+            break;
+          }
+        }
+
+        try
+        {
+          fhg::syscall::shutdown (socket, SHUT_RDWR);
+        }
+        catch (boost::system::system_error const& se)
+        {
+          if (se.code() != boost::system::errc::not_connected)
+          {
+            //! \note ignored: already disconnected = fine, we terminate
+            throw;
+          }
+        }
+
+        fhg::syscall::close (socket);
+
+        _memory_manager.garbage_collect (process_id);
+
+        LOG(TRACE, "process container (" << process_id << ") terminated");
+
+        //! \note this detaches _this_ thread from everything
+        //! left. Nothing shall be done in here that accesses `this`
+        //! after the erase, or does anything! Let this thing die!
+
+        if (!m_stopping)
+        {
+          std::unique_lock<std::mutex> const _ (_mutex_processes);
+          m_processes.at (process_id).detach();
+          m_processes.erase (process_id);
+        }
+      }
+
 
       manager_t::manager_t ( std::string const & p
                            , std::vector<std::string> const& default_memory_urls
@@ -282,48 +573,78 @@ namespace gpi
           }
         }
 
-          start ();
-      }
-
-      void manager_t::detach_process ( const gpi::pc::type::process_id_t id
-                                     , bool called_from_dtor
-                                     )
-      {
-        if (m_stopping && !called_from_dtor)
+        int err = safe_unlink (m_path);
+        if (err < 0)
         {
-          return;
+          LOG(ERROR, "could not unlink path " << m_path << ": " <<  strerror(-err));
+          throw std::runtime_error ("could not unlink socket path");
         }
 
-        boost::mutex::scoped_lock const _ (_mutex_processes);
+        fhg::util::nest_exceptions<std::runtime_error>
+          ( [&]
+            {
+              m_socket = fhg::syscall::socket (AF_UNIX, SOCK_STREAM, 0);
+            }
+          , "could not create process-container communication socket"
+          );
 
-        if (m_processes.find (id) == m_processes.end())
+        struct close_socket_on_error
         {
-          CLOG( ERROR
-              , "gpi.container"
-              , "process id already detached!"
-              );
-          throw std::runtime_error ("no such process");
+          ~close_socket_on_error()
+          {
+            if (!_committed)
+            {
+              fhg::syscall::close (_socket);
+            }
+          }
+          bool _committed;
+          int& _socket;
+        } close_socket_on_error = {false, m_socket};
+
+        {
+          const int on (1);
+          fhg::syscall::setsockopt (m_socket, SOL_SOCKET, SO_PASSCRED, &on, sizeof (on));
         }
 
-        m_processes.erase (id);
+        struct sockaddr_un my_addr;
+        memset (&my_addr, 0, sizeof(my_addr));
+        my_addr.sun_family = AF_UNIX;
+        strncpy ( my_addr.sun_path
+                , m_path.c_str()
+                , sizeof(my_addr.sun_path) - 1
+                );
 
-        _memory_manager.garbage_collect (id);
+        fhg::util::nest_exceptions<std::runtime_error>
+          ( [&]
+            {
+              fhg::syscall::bind
+                (m_socket, (struct sockaddr *)&my_addr, sizeof (struct sockaddr_un));
+            }
+          , "could not bind process-container communication socket to path " + m_path
+          );
 
-        CLOG( INFO
-            , "gpi.container"
-            , "process container " << id << " detached"
-            );
-      }
+        struct delete_socket_file_on_error
+        {
+          ~delete_socket_file_on_error()
+          {
+            if (!_committed)
+            {
+              fhg::syscall::unlink (_path.string().c_str());
+            }
+          }
+          bool _committed;
+          boost::filesystem::path _path;
+        } delete_socket_file_on_error = {false, m_path};
 
-      void manager_t::handle_process_error( const gpi::pc::type::process_id_t proc_id
-                                          , int error
-                                          )
-      {
-          LOG_IF ( ERROR
-                 , error != 0
-                 , "process container " << proc_id << " died: " << strerror (error)
-                 );
-          detach_process (proc_id);
+        fhg::syscall::chmod (m_path.c_str(), 0700);
+
+        const std::size_t backlog_size (16);
+        fhg::syscall::listen (m_socket, backlog_size);
+
+        _listener_thread = std::thread (&manager_t::listener_thread_main, this);
+
+        delete_socket_file_on_error._committed = true;
+        close_socket_on_error._committed = true;
       }
     }
   }
