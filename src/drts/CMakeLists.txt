@@ -18,6 +18,7 @@ install (FILES
   information_to_reattach.hpp
   virtual_memory.fwd.hpp
   virtual_memory.hpp
+  workflow_response.hpp
   DESTINATION include/drts/
 )
 
@@ -31,6 +32,7 @@ add_library (gspc SHARED
   scoped_rifd.cpp
   stream.cpp
   virtual_memory.cpp
+  workflow_response.cpp
 )
 target_link_libraries (gspc
   sdpa
@@ -51,4 +53,5 @@ install (TARGETS
 
 add_subdirectory (test/parallel_running_workflows)
 add_subdirectory (test/put_token)
+add_subdirectory (test/workflow_response)
 add_subdirectory (test)

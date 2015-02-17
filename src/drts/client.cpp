@@ -7,7 +7,17 @@
 #include <drts/private/pimpl.hpp>
 #include <drts/private/information_to_reattach.hpp>
 
+#include <we/type/value.hpp>
+#include <we/type/value/poke.hpp>
+#include <we/type/value/serialize.hpp>
+
+#include <network/server.hpp>
+
+#include <rpc/server.hpp>
+
 #include <fhg/util/make_unique.hpp>
+#include <fhg/util/thread/event.hpp>
+#include <fhg/util/boost/asio/ip/address.hpp>
 
 #include <sdpa/client.hpp>
 
@@ -139,5 +149,89 @@ namespace gspc
     }
 
     return result;
+  }
+
+  pnet::type::value::value_type client::synchronous_workflow_response
+    ( job_id_t job_id
+    , std::string place_name
+    , pnet::type::value::value_type value
+    )
+  {
+    fhg::rpc::service_dispatcher service_dispatcher
+      {fhg::rpc::exception::serialization_functions()};
+
+    fhg::util::thread::event<pnet::type::value::value_type> result;
+
+    fhg::rpc::service_handler<void (pnet::type::value::value_type)>
+      const service_handler_set_result
+        ( service_dispatcher
+        , "set_result"
+        , [&result] (pnet::type::value::value_type value)
+          {
+            result.notify (value);
+          }
+        );
+
+    boost::asio::io_service io_service;
+    std::unique_ptr<fhg::network::connection_type> connection;
+    fhg::util::thread::event<void> disconnected;
+
+    fhg::network::continous_acceptor<boost::asio::ip::tcp> acceptor
+      ( boost::asio::ip::tcp::endpoint()
+      , io_service
+      , [] (fhg::network::buffer_type buf) { return buf; }
+      , [] (fhg::network::buffer_type buf) { return buf; }
+      , [&service_dispatcher] ( fhg::network::connection_type* connection
+                              , fhg::network::buffer_type message
+                              )
+        {
+          service_dispatcher.dispatch (connection, message);
+        }
+      , [&connection, &disconnected] (fhg::network::connection_type*)
+        {
+          connection.reset();
+          disconnected.notify();
+        }
+      , [&connection] (std::unique_ptr<fhg::network::connection_type> c)
+        {
+          if (!!connection)
+          {
+            throw std::logic_error
+              ("workflow_response: got a second connection");
+          }
+          std::swap (connection, c);
+        }
+      );
+
+    const boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+      io_service_thread ([&io_service]() { io_service.run(); });
+
+    struct stop_io_service_on_scope_exit
+    {
+      ~stop_io_service_on_scope_exit()
+      {
+        _io_service.stop();
+      }
+      boost::asio::io_service& _io_service;
+    } stop_io_service_on_scope_exit {io_service};
+
+    pnet::type::value::value_type value_and_endpoint;
+    pnet::type::value::poke ("value", value_and_endpoint, value);
+    pnet::type::value::poke ( "address"
+                            , value_and_endpoint
+                            , fhg::util::connectable_to_address_string
+                              (acceptor.local_endpoint().address())
+                            );
+    pnet::type::value::poke
+      ( "port"
+      , value_and_endpoint
+      , static_cast<unsigned int> (acceptor.local_endpoint().port())
+      );
+
+    put_token (job_id, place_name, value_and_endpoint);
+
+    disconnected.wait();
+
+    return result.wait();
   }
 }
