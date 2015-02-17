@@ -11,7 +11,6 @@
 #include <fhg/revision.hpp>
 #include <fhg/util/indenter.hpp>
 #include <fhg/util/print_exception.hpp>
-#include <fhg/util/read_bool.hpp>
 #include <fhg/util/starts_with.hpp>
 
 #include <boost/lexical_cast.hpp>

@@ -8,8 +8,6 @@
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
 
-#include <fhg/util/read_bool.hpp>
-
 #include <QString>
 
 namespace fhg
