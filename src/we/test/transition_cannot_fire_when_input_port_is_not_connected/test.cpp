@@ -65,9 +65,9 @@ BOOST_AUTO_TEST_CASE
     , "net"
     );
 
-  gspc::scoped_rifd const rifd ( gspc::rifd::strategy (vm)
-                               , gspc::rifd::hostnames (vm)
-                               , gspc::rifd::port (vm)
+  gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
+                               , gspc::rifd::hostnames {vm}
+                               , gspc::rifd::port {vm}
                                , installation
                                );
   gspc::scoped_runtime_system const drts
