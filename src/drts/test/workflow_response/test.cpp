@@ -17,6 +17,7 @@
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <fhg/util/boost/test/require_exception.hpp>
 #include <fhg/util/temporary_path.hpp>
 
 #include <boost/filesystem.hpp>
@@ -102,6 +103,43 @@ BOOST_AUTO_TEST_CASE (workflow_response)
 
     value += i;
   }
+
+  //! \todo specific exception
+  fhg::util::boost::test::require_exception<std::runtime_error>
+    ([&client, &job_id]()
+     {
+       client.synchronous_workflow_response
+         ("JOB-NOT-EXISTENT", "get_and_update_state", 12UL);
+     }
+    , "Error: reason := unable to put token: JOB-NOT-EXISTENT unknown or not running code := 3"
+    );
+
+
+  //! \note BUG: Hangs, GenericDaemon: unhandled error (3)
+#if 0
+  //! \todo specific exception
+  fhg::util::boost::test::require_exception<std::runtime_error>
+    ([&client, &job_id]()
+     {
+       client.synchronous_workflow_response
+         (job_id, "get_and_update_state", std::string ("WRONG TYPE"));
+     }
+    , "Error: reason := unable to put token: type mismatch for field 'get_and_update_state': expected type 'unsigned long', value '\"WRONG TYPE\"' has type 'string'"
+    );
+#endif
+
+  //! \note BUG: Hangs, GenericDaemon: unhandled error (3)
+#if 0
+  //! \todo specific exception
+  fhg::util::boost::test::require_exception<std::runtime_error>
+    ([&client, &job_id]()
+     {
+       client.synchronous_workflow_response
+         (job_id, "PLACE-NOT-EXISTENT", 12UL);
+     }
+    , "Error: reason := unable to put token: unknown place PLACE-NOT-EXISTENT"
+    );
+#endif
 
   client.put_token (job_id, "done", we::type::literal::control());
 
