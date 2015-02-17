@@ -4,6 +4,7 @@
 
 #include <boost/type_traits/is_pointer.hpp>
 #include <boost/utility/enable_if.hpp>
+#include <boost/serialization/vector.hpp>
 
 #include <algorithm>
 #include <vector>
@@ -64,6 +65,12 @@ namespace we
           );
 
         return *this;
+      }
+
+      template<typename Archive>
+        void serialize (Archive& ar, unsigned int)
+      {
+        ar & _v;
       }
 
     private:

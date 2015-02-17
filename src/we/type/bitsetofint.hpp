@@ -6,6 +6,7 @@
 
 #include <boost/optional.hpp>
 #include <boost/function.hpp>
+#include <boost/serialization/vector.hpp>
 
 #include <iosfwd>
 
@@ -39,6 +40,12 @@ namespace bitsetofint
     friend std::string to_hex (const type&);
 
     friend bool operator< (const type&, const type&);
+
+    template<typename Archive>
+      void serialize (Archive& ar, unsigned int)
+    {
+      ar & _container;
+    }
 
   private:
     std::vector<uint64_t> _container;
