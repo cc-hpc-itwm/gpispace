@@ -131,6 +131,24 @@ namespace gspc
   }
 
 
+  namespace
+  {
+    std::vector<fhg::drts::worker_description> parse_worker_descriptions
+      (std::string const& description)
+    {
+      std::vector<fhg::drts::worker_description> worker_descriptions;
+      for ( std::string const& description
+          : fhg::util::split<std::string, std::string> (description, ' ')
+          )
+      {
+        //! \todo configurable: default number of processes
+        worker_descriptions.emplace_back
+          (fhg::drts::parse_capability (1, description));
+      }
+      return worker_descriptions;
+    }
+  }
+
   scoped_runtime_system::implementation::implementation
     ( boost::program_options::variables_map const& vm
     , installation const& installation
@@ -161,16 +179,6 @@ namespace gspc
       ((65535 - 30000 + fhg::syscall::getuid() * 2) % 65535 + 1024);
     unsigned short const default_gui_port (default_log_port + 1);
 
-    std::vector<fhg::drts::worker_description> worker_descriptions;
-    for ( std::string const& description
-        : fhg::util::split<std::string, std::string> (topology_description, ' ')
-        )
-    {
-      //! \todo configurable: default number of processes
-      worker_descriptions.emplace_back
-        (fhg::drts::parse_capability (1, description));
-    }
-
     fhg::util::signal_handler_manager signal_handler_manager;
 
     std::tie (_orchestrator_host, _orchestrator_port) = fhg::drts::startup
@@ -194,7 +202,7 @@ namespace gspc
       , signal_handler_manager
       , _virtual_memory_per_node
       , _virtual_memory_startup_timeout
-      , worker_descriptions
+      , parse_worker_descriptions (topology_description)
       , get_virtual_memory_port (vm)
       , _rif_entry_points._->_entry_points
       );
