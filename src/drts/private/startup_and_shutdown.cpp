@@ -86,6 +86,42 @@ namespace
     {}
   };
 
+  std::unordered_map<std::string, std::string> logging_environment
+    ( boost::optional<std::string> const& log_host
+    , boost::optional<unsigned short> const& log_port
+    , boost::optional<boost::filesystem::path> const& log_dir
+    , bool verbose
+    , std::string name
+    )
+  {
+    std::unordered_map<std::string, std::string> environment;
+    environment.emplace ("FHGLOG_level", verbose ? "TRACE" : "INFO");
+    if (log_host && log_port)
+    {
+      environment.emplace
+        ("FHGLOG_to_server", *log_host + ":" + std::to_string (*log_port));
+    }
+    if (log_dir)
+    {
+      environment.emplace
+        ("FHGLOG_to_file", (*log_dir / (name + ".log")).string());
+    }
+    return environment;
+  }
+
+  //! \note rhs preferred
+  std::unordered_map<std::string, std::string> merge
+    ( std::unordered_map<std::string, std::string> const& lhs
+    , std::unordered_map<std::string, std::string> rhs
+    )
+  {
+    for (std::pair<std::string, std::string> const& entry : lhs)
+    {
+      rhs.emplace (entry);
+    }
+    return rhs;
+  }
+
   fhg::drts::hostinfo_type start_agent
     ( fhg::rif::entry_point const& rif_entry_point
     , std::string const& name
@@ -93,12 +129,12 @@ namespace
     , fhg::drts::hostinfo_type const& parent_hostinfo
     , std::string const& gui_host
     , unsigned short gui_port
-    , std::string const& log_host
-    , unsigned short log_port
+    , boost::optional<std::string> const& log_host
+    , boost::optional<unsigned short> const& log_port
     , boost::optional<boost::filesystem::path> const& gpi_socket
     , bool verbose
     , boost::filesystem::path const& sdpa_home
-    , boost::filesystem::path const& log_dir
+    , boost::optional<boost::filesystem::path> const& log_dir
     , boost::filesystem::path const& processes_dir
     )
   {
@@ -122,10 +158,7 @@ namespace
       ( fhg::rif::client (rif_entry_point).execute_and_get_startup_messages
           ( sdpa_home / "bin" / "agent"
           , agent_startup_arguments
-          , { {"FHGLOG_to_server", log_host + ":" + std::to_string (log_port)}
-            , {"FHGLOG_level", verbose ? "TRACE" : "INFO"}
-            , {"FHGLOG_to_file", (log_dir / (name + ".log")).string()}
-            }
+          , logging_environment (log_host, log_port, log_dir, verbose, name)
           ).get()
       );
 
@@ -153,10 +186,10 @@ namespace
     , bool verbose
     , std::string const& gui_host
     , unsigned short gui_port
-    , std::string const& log_host
-    , unsigned short log_port
+    , boost::optional<std::string> const& log_host
+    , boost::optional<unsigned short> const& log_port
     , boost::filesystem::path const& processes_dir
-    , boost::filesystem::path const& log_dir
+    , boost::optional<boost::filesystem::path> const& log_dir
     , boost::optional<boost::filesystem::path> const& gpi_socket
     , std::vector<boost::filesystem::path> const& app_path
     , boost::filesystem::path const& sdpa_home
@@ -203,7 +236,6 @@ namespace
                , [&, entry_point, identity]
                  {
                    std::vector<std::string> arguments;
-                   std::unordered_map<std::string, std::string> environment;
 
                    arguments.emplace_back ("--master");
                    arguments.emplace_back
@@ -250,17 +282,6 @@ namespace
                        (std::to_string (description.socket.get()));
                    }
 
-                   environment.emplace ("FHGLOG_level", verbose ? "TRACE" : "INFO");
-
-                   environment.emplace ( "LD_LIBRARY_PATH"
-                                       , (sdpa_home / "lib").string() + ":"
-                                       + (sdpa_home / "libexec" / "sdpa").string()
-                                       );
-
-                   environment.emplace ( "FHGLOG_to_server"
-                                       , log_host + ":" + std::to_string (log_port)
-                                       );
-
                    std::string const name
                      ( name_prefix + "-" + entry_point.hostname
                      + "-" + std::to_string (identity + 1)
@@ -273,14 +294,17 @@ namespace
                    arguments.emplace_back ("-n");
                    arguments.emplace_back (name);
 
-                   environment.emplace
-                     ("FHGLOG_to_file", (log_dir / (name + ".log")).string());
-
                    std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages
                      ( fhg::rif::client (entry_point).execute_and_get_startup_messages
                        ( sdpa_home / "bin" / "drts-kernel"
                        , arguments
-                       , environment
+                       , merge ( {{ "LD_LIBRARY_PATH"
+                                  , (sdpa_home / "lib").string() + ":"
+                                  + (sdpa_home / "libexec" / "sdpa").string()
+                                 }}
+                               , logging_environment
+                                   (log_host, log_port, log_dir, verbose, name)
+                               )
                        ).get()
                      );
 
@@ -369,8 +393,8 @@ namespace fhg
     hostinfo_type startup
       ( std::string gui_host
       , unsigned short gui_port
-      , std::string log_host
-      , unsigned short log_port
+      , boost::optional<std::string> const& log_host
+      , boost::optional<unsigned short> const& log_port
       , bool gpi_enabled
       , bool verbose
       , boost::optional<boost::filesystem::path> gpi_socket
@@ -432,7 +456,7 @@ namespace fhg
           );
       }
 
-      boost::filesystem::path const log_dir (state_dir / "log");
+      boost::optional<boost::filesystem::path> const log_dir (state_dir / "log");
       boost::filesystem::path const processes_dir (state_dir / "processes");
 
       boost::filesystem::create_directories (processes_dir);
@@ -447,11 +471,14 @@ namespace fhg
         throw std::runtime_error ("state directory is not clean");
       }
 
-      if (delete_logfiles)
+      if (log_dir)
       {
-        boost::filesystem::remove_all (log_dir);
+        if (delete_logfiles)
+        {
+          boost::filesystem::remove_all (*log_dir);
+        }
+        boost::filesystem::create_directories (*log_dir);
       }
-      boost::filesystem::create_directories (log_dir);
 
       struct stop_drts_on_failure
       {
@@ -481,10 +508,13 @@ namespace fhg
         );
 
       std::cout << "I: using nodefile: " << nodefile << "\n"
-                << "starting base sdpa components on " << master.hostname << "...\n"
-                << "I: sending log events to: "
-                << log_host << ":" << log_port << "\n"
-                << "I: sending execution events to: "
+                << "starting base sdpa components on " << master.hostname << "...\n";
+      if (log_host && log_port)
+      {
+        std::cout << "I: sending log events to: "
+                  << *log_host << ":" << *log_port << "\n";
+      }
+      std::cout << "I: sending execution events to: "
                 << gui_host << ":" << gui_port << "\n";
 
       std::pair<pid_t, std::vector<std::string>> const orchestrator_startup_messages
@@ -494,10 +524,8 @@ namespace fhg
                 return rif::client (master).execute_and_get_startup_messages
                   ( sdpa_home / "bin" / "orchestrator"
                   , {"-u", "0", "-n", "orchestrator"}
-                  , { {"FHGLOG_to_server", log_host + ":" + std::to_string (log_port)}
-                    , {"FHGLOG_level", verbose ? "TRACE" : "INFO"}
-                    , {"FHGLOG_to_file", (state_dir / "log" / "orchestrator.log").string()}
-                    }
+                  , logging_environment
+                      (log_host, log_port, log_dir, verbose, "orchestrator")
                   ).get();
               }
               , "could not start orchestrator"
@@ -567,21 +595,36 @@ namespace fhg
                       ( std::launch::async
                       , [&, entry_point]
                       {
+                        std::vector<std::string> arguments
+                          { "--log-level", verbose ? "TRACE" : "INFO"
+                          , "--gpi-mem", std::to_string (gpi_mem.get())
+                          , "--socket", gpi_socket.get().string()
+                          , "--port", std::to_string (vmem_port.get())
+                          , "--gpi-api"
+                          , rif_entry_points.size() > 1 ? "gaspi" : "fake"
+                          , "--gpi-timeout", std::to_string (vmem_startup_timeout.get().count())
+                          };
+                        if (log_host)
+                        {
+                          arguments.emplace_back ("--log-host");
+                          arguments.emplace_back (*log_host);
+                        }
+                        if (log_port)
+                        {
+                          arguments.emplace_back ("--log-port");
+                          arguments.emplace_back (std::to_string (*log_port));
+                        }
+                        if (log_dir)
+                        {
+                          arguments.emplace_back ("--log-file");
+                          arguments.emplace_back
+                            ((*log_dir / ("vmem-" + entry_point.hostname + ".log")).string());
+                        }
                         std::pair<pid_t, std::vector<std::string>> const
                           startup_messages
                           ( rif::client (entry_point).execute_and_get_startup_messages
                               ( sdpa_home / "bin" / "gpi-space"
-                              , { "--log-host", log_host
-                                , "--log-port", std::to_string (log_port)
-                                , "--log-level", verbose ? "TRACE" : "INFO"
-                                , "--log-file", (log_dir / ("vmem-" + entry_point.hostname + ".log")).string()
-                                , "--gpi-mem", std::to_string (gpi_mem.get())
-                                , "--socket", gpi_socket.get().string()
-                                , "--port", std::to_string (vmem_port.get())
-                                , "--gpi-api"
-                                , rif_entry_points.size() > 1 ? "gaspi" : "fake"
-                                , "--gpi-timeout", std::to_string (vmem_startup_timeout.get().count())
-                                }
+                              , arguments
                               , { {"GASPI_MFILE", nodefile.string()}
                                 , {"GASPI_MASTER", master.hostname}
                                 , {"GASPI_SOCKET", "0"}

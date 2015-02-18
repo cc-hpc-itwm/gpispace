@@ -33,8 +33,8 @@ namespace fhg
     hostinfo_type startup
       ( std::string gui_host
       , unsigned short gui_port
-      , std::string log_host
-      , unsigned short log_port
+      , boost::optional<std::string> const& log_host
+      , boost::optional<unsigned short> const& log_port
       , bool gpi_enabled
       , bool verbose
       , boost::optional<boost::filesystem::path> gpi_socket
