@@ -1566,7 +1566,7 @@ namespace fhg
         {
           const boost::optional<std::string> place_name
             ( util::boost::get_or_none<std::string>
-                (port.get().properties().get ({"fhg", "pnete", "auto-connect"}))
+                (port.get().properties().get ({"fhg", "pnete", "auto_connect"}))
             );
           if (place_name)
           {
