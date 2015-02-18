@@ -85,7 +85,6 @@ namespace gspc
 
     unsigned long virtual_memory_total() const;
     unsigned long number_of_unique_nodes() const;
-    std::unique_ptr<gpi::pc::client::api_t> const& virtual_memory_api() const;
 
     stream create_stream ( std::string const& name
                          , gspc::vmem_allocation const& buffer
@@ -99,8 +98,11 @@ namespace gspc
     scoped_runtime_system& operator= (scoped_runtime_system&&) = delete;
 
   private:
+    std::unique_ptr<gpi::pc::client::api_t> const& virtual_memory_api() const;
+
     friend class vmem_allocation;
     friend class information_to_reattach;
+    friend class stream;
 
     installation const _installation;
     boost::filesystem::path const _state_directory;
