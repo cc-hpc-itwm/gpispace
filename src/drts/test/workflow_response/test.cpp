@@ -142,9 +142,19 @@ BOOST_AUTO_TEST_CASE (workflow_response)
 #endif
 
   client.put_token (job_id, "done", we::type::literal::control());
+  client.wait (job_id);
+
+  fhg::util::boost::test::require_exception<std::runtime_error>
+    ([&client, &job_id]()
+     {
+       client.synchronous_workflow_response
+         (job_id, "get_and_update_state", 0UL);
+     }
+    , "Error: reason := unable to put token: " + job_id + " unknown or not running code := 3"
+    );
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    (client.wait_and_extract (job_id));
+    (client.extract_result_and_forget_job (job_id));
 
   std::string const port_done ("done");
   std::string const port_state ("state");
