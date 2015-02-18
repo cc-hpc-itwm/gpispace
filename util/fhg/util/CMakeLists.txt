@@ -41,11 +41,6 @@ set (srcs
 )
 
 add_library (fhg-util ${srcs})
-add_library (fhg-util-shared SHARED ${srcs})
-set_target_properties(fhg-util-shared
-  PROPERTIES OUTPUT_NAME fhg-util
-             VERSION     1
-)
 
 target_link_libraries (fhg-util
   ${Boost_THREAD_LIBRARY}
@@ -53,17 +48,9 @@ target_link_libraries (fhg-util
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_RANDOM_LIBRARY}
 )
-target_link_libraries (fhg-util-shared
-  ${Boost_THREAD_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}
-  ${Boost_RANDOM_LIBRARY}
-  )
 
 install (TARGETS fhg-util
   ARCHIVE DESTINATION lib
-)
-install (TARGETS fhg-util-shared
-  LIBRARY DESTINATION lib
 )
 
   add_subdirectory(test)
