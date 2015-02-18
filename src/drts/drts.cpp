@@ -217,4 +217,20 @@ namespace gspc
   {
     return stream (*this, name, buffer, size_of_slot, on_slot_filled);
   }
+
+  unsigned long scoped_runtime_system::virtual_memory_total() const
+  {
+      return number_of_unique_nodes()
+        * (*_virtual_memory_per_node - 32UL * (1UL << 20UL));
+  }
+
+  unsigned long scoped_runtime_system::number_of_unique_nodes() const
+  {
+    return _nodes_and_number_of_unique_nodes.second;
+  }
+
+  std::unique_ptr<gpi::pc::client::api_t> const& scoped_runtime_system::virtual_memory_api() const
+  {
+    return _virtual_memory_api;
+  }
 }
