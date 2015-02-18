@@ -1,6 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <drts/drts.hpp>
+#include <drts/private/drts_impl.hpp>
 #include <drts/private/option.hpp>
 #include <drts/private/rifd_entry_points_impl.hpp>
 #include <drts/private/startup_and_shutdown.hpp>
@@ -120,6 +121,22 @@ namespace gspc
     , std::string const& topology_description
     , rifd_entry_points const& entry_points
     )
+      : _ (new implementation (vm, installation, topology_description, entry_points))
+  {}
+
+  scoped_runtime_system::~scoped_runtime_system()
+  {
+    delete _;
+    _ = nullptr;
+  }
+
+
+  scoped_runtime_system::implementation::implementation
+    ( boost::program_options::variables_map const& vm
+    , installation const& installation
+    , std::string const& topology_description
+    , rifd_entry_points const& entry_points
+    )
       : _installation (installation)
       , _state_directory (require_state_directory (vm))
       , _virtual_memory_per_node (get_virtual_memory_per_node (vm))
@@ -188,7 +205,7 @@ namespace gspc
     }
   }
 
-  scoped_runtime_system::~scoped_runtime_system()
+  scoped_runtime_system::implementation::~implementation()
   {
     _virtual_memory_api.reset();
 
@@ -221,16 +238,11 @@ namespace gspc
   unsigned long scoped_runtime_system::virtual_memory_total() const
   {
       return number_of_unique_nodes()
-        * (*_virtual_memory_per_node - 32UL * (1UL << 20UL));
+        * (*_->_virtual_memory_per_node - 32UL * (1UL << 20UL));
   }
 
   unsigned long scoped_runtime_system::number_of_unique_nodes() const
   {
-    return _nodes_and_number_of_unique_nodes.second;
-  }
-
-  std::unique_ptr<gpi::pc::client::api_t> const& scoped_runtime_system::virtual_memory_api() const
-  {
-    return _virtual_memory_api;
+    return _->_nodes_and_number_of_unique_nodes.second;
   }
 }

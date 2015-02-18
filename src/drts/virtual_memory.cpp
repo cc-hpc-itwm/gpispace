@@ -3,6 +3,7 @@
 #include <drts/drts.hpp>
 #include <drts/virtual_memory.hpp>
 
+#include <drts/private/drts_impl.hpp>
 #include <drts/private/scoped_allocation.hpp>
 
 #include <we/type/value/poke.hpp>
@@ -91,7 +92,7 @@ namespace gspc
                                    , std::string const& description
                                    )
     : _ ( fhg::util::make_unique<vmem_allocation::implementation>
-          (drts->_virtual_memory_api, size, description)
+          (drts->_->_virtual_memory_api, size, description)
         )
   {}
   vmem_allocation::vmem_allocation ( scoped_runtime_system const* const drts
@@ -102,14 +103,14 @@ namespace gspc
     : vmem_allocation (drts, size, description)
   {
     scoped_allocation const buffer
-      (drts->_virtual_memory_api, "vmem_allocation_buffer", size);
+      (drts->_->_virtual_memory_api, "vmem_allocation_buffer", size);
 
     char* const content
-      (static_cast<char* const> (drts->_virtual_memory_api->ptr (buffer)));
+      (static_cast<char* const> (drts->_->_virtual_memory_api->ptr (buffer)));
     std::copy (data, data + size, content);
 
-    drts->_virtual_memory_api->wait
-      ( drts->_virtual_memory_api->memcpy
+    drts->_->_virtual_memory_api->wait
+      ( drts->_->_virtual_memory_api->memcpy
         ( {_->_handle_id, 0}
         , {buffer, 0}
         , size
