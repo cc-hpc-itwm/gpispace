@@ -852,6 +852,14 @@ namespace fhg
         agent = 1 << 3,
         worker = 1 << 4,
       };
+      constexpr const char* to_string (components_type const& component)
+      {
+        return component == worker ? "drts-kernel"
+          : component == agent ? "agent"
+          : component == orchestrator ? "orchestrator"
+          : component == vmem ? "vmem"
+          : throw std::logic_error ("invalid enum value");
+      }
     }
 
     void shutdown ( boost::filesystem::path const& state_dir
@@ -867,23 +875,19 @@ namespace fhg
           );
       }
 
-      if (components.get() & components_type::worker)
+      for ( components_type component
+          : { components_type::worker
+            , components_type::agent
+            , components_type::vmem
+            , components_type::orchestrator
+            }
+          )
       {
-        terminate_all_processes_of_a_kind
-          (state_dir, "drts-kernel", rif_entry_points);
-      }
-      if (components.get() & components_type::agent)
-      {
-        terminate_all_processes_of_a_kind (state_dir, "agent", rif_entry_points);
-      }
-      if (components.get() & components_type::vmem)
-      {
-        terminate_all_processes_of_a_kind (state_dir, "vmem", rif_entry_points);
-      }
-      if (components.get() & components_type::orchestrator)
-      {
-        terminate_all_processes_of_a_kind
-          (state_dir, "orchestrator", rif_entry_points);
+        if (components.get() & component)
+        {
+          terminate_all_processes_of_a_kind
+            (state_dir, to_string (component), rif_entry_points);
+        }
       }
 
       for ( boost::filesystem::directory_entry const& entry
