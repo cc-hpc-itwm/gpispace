@@ -31,6 +31,15 @@ namespace fhg
       throw_collected_exceptions (exceptions);
     }
 
+    //! \note Helper for overload resolution
+    template<typename Element, typename Operation>
+      void apply_for_each_and_collect_exceptions
+        (std::initializer_list<Element>&& collection, Operation&& operation)
+    {
+      apply_for_each_and_collect_exceptions<std::initializer_list<Element>>
+        (std::move (collection), std::forward<Operation> (operation));
+    }
+
     void wait_and_collect_exceptions (std::vector<std::future<void>>&);
   }
 }

@@ -875,20 +875,22 @@ namespace fhg
           );
       }
 
-      for ( components_type component
-          : { components_type::worker
-            , components_type::agent
-            , components_type::vmem
-            , components_type::orchestrator
+      util::apply_for_each_and_collect_exceptions
+        ( { components_type::worker
+          , components_type::agent
+          , components_type::vmem
+          , components_type::orchestrator
+          }
+        , [&components, &state_dir, &rif_entry_points]
+            (components_type::components_type component)
+          {
+            if (components.get() & component)
+            {
+              terminate_all_processes_of_a_kind
+                (state_dir, to_string (component), rif_entry_points);
             }
-          )
-      {
-        if (components.get() & component)
-        {
-          terminate_all_processes_of_a_kind
-            (state_dir, to_string (component), rif_entry_points);
-        }
-      }
+          }
+        );
 
       for ( boost::filesystem::directory_entry const& entry
           : directory_range (state_dir / "processes")
