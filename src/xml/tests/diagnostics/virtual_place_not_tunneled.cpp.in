@@ -13,8 +13,8 @@ BOOST_AUTO_TEST_CASE (virtual_place_not_tunneled)
 {
   xml::parse::state::type state;
 
-  state.Werror() = true;
-  state.Wvirtual_place_not_tunneled() = true;
+  state.warning_error() = true;
+  state.warning_virtual_place_not_tunneled() = true;
 
   std::string const filename
     ("@XML_PARSE_TEST_XPNETS_DIR@/"

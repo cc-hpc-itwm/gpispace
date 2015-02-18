@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_QT_SECTION_INDEX_HPP
-#define FHG_UTIL_QT_SECTION_INDEX_HPP
+#pragma once
 
 #include <QHeaderView>
 
@@ -41,5 +40,3 @@ namespace fhg
 }
 
 Q_DECLARE_METATYPE (fhg::util::qt::mvc::section_index)
-
-#endif

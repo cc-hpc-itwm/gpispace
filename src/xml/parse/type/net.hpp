@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_TYPE_NET_HPP
-#define _XML_PARSE_TYPE_NET_HPP
+#pragma once
 
 #include <xml/parse/type/net.fwd.hpp>
 
@@ -177,5 +176,3 @@ namespace xml
     }
   }
 }
-
-#endif

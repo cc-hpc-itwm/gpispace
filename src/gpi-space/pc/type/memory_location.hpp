@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_TYPE_MEMORY_LOCATION_HPP
-#define GPI_SPACE_PC_TYPE_MEMORY_LOCATION_HPP 1
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -147,5 +146,3 @@ namespace gpi
     }
   }
 }
-
-#endif

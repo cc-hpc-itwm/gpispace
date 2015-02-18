@@ -15,8 +15,7 @@
  *
  * =====================================================================================
  */
-#ifndef SDPA_DAEMON_GENERIC_DAEMON_HPP
-#define SDPA_DAEMON_GENERIC_DAEMON_HPP 1
+#pragma once
 
 #include <sdpa/capability.hpp>
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
@@ -92,7 +91,7 @@ namespace sdpa {
 
       GenericDaemon( const std::string name
                    , const std::string url
-                   , boost::asio::io_service& peer_io_service
+                   , std::unique_ptr<boost::asio::io_service> peer_io_service
                    , boost::optional<boost::filesystem::path> const& vmem_socket
                    , std::vector<name_host_port_tuple> const& masters
                    , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info = boost::none
@@ -174,6 +173,7 @@ namespace sdpa {
       virtual void handleWorkerRegistrationEvent(fhg::com::p2p::address_t const& source, const sdpa::events::WorkerRegistrationEvent* ) override;
       virtual void handleQueryJobStatusEvent(fhg::com::p2p::address_t const& source, const sdpa::events::QueryJobStatusEvent* ) override;
       virtual void handleRetrieveJobResultsEvent(fhg::com::p2p::address_t const& source, const sdpa::events::RetrieveJobResultsEvent* ) override;
+      virtual void handleBacklogNoLongerFullEvent (fhg::com::p2p::address_t const& source, const events::BacklogNoLongerFullEvent*) override;
 
       virtual void handleDiscoverJobStatesReplyEvent
         (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesReplyEvent*) override;
@@ -378,5 +378,3 @@ namespace sdpa {
     };
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_TYPE_DUMPS_HPP
-#define _XML_PARSE_TYPE_DUMPS_HPP
+#pragma once
 
 //! \note To prevent including nearly everything, it is required to
 //! include dumps.hpp AFTER including types used when calling dumps().
@@ -67,5 +66,3 @@ namespace xml
     }
   }
 }
-
-#endif

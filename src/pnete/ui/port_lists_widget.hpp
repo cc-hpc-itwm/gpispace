@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_UI_PORT_LISTS_WIDGET_HPP
-#define _FHG_PNETE_UI_PORT_LISTS_WIDGET_HPP 1
+#pragma once
 
 #include <pnete/data/handle/function.hpp>
 #include <pnete/data/handle/port.hpp>
@@ -67,5 +66,3 @@ namespace fhg
     }
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef PNET_SRC_WE_TYPE_SIGNATURE_HPP
-#define PNET_SRC_WE_TYPE_SIGNATURE_HPP
+#pragma once
 
 #include <boost/variant.hpp>
 
@@ -34,5 +33,3 @@ namespace pnet
     }
   }
 }
-
-#endif

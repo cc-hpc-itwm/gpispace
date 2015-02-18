@@ -1,5 +1,4 @@
-#ifndef SDPA_JOB_FAILED_EVENT_HPP
-#define SDPA_JOB_FAILED_EVENT_HPP 1
+#pragma once
 
 #include <sdpa/events/JobEvent.hpp>
 
@@ -49,5 +48,3 @@ namespace sdpa
     }
   }
 }
-
-#endif

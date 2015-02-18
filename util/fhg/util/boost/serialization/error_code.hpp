@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_BOOST_SERIALIZATION_ERROR_CODE_HPP
-#define FHG_UTIL_BOOST_SERIALIZATION_ERROR_CODE_HPP
+#pragma once
 
 #include <boost/serialization/split_free.hpp>
 
@@ -60,5 +59,3 @@ namespace boost
     }
   }
 }
-
-#endif

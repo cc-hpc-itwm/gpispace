@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_TEMPORARY_FILE_HPP
-#define FHG_UTIL_TEMPORARY_FILE_HPP
+#pragma once
 
 #include <boost/filesystem.hpp>
 
@@ -31,5 +30,3 @@ namespace fhg
     };
   }
 }
-
-#endif

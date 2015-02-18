@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _PNETE_UI_DOCK_WIDGET_HPP
-#define _PNETE_UI_DOCK_WIDGET_HPP 1
+#pragma once
 
 #include <pnete/ui/dock_widget.fwd.hpp>
 
@@ -27,5 +26,3 @@ namespace fhg
     }
   }
 }
-
-#endif

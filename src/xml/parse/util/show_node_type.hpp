@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_UTIL_SHOW_NODE_TYPE_HPP
-#define _XML_PARSE_UTIL_SHOW_NODE_TYPE_HPP
+#pragma once
 
 #include <string>
 
@@ -15,5 +14,3 @@ namespace xml
     }
   }
 }
-
-#endif

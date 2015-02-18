@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_UTIL_CDATA_HPP
-#define _XML_PARSE_UTIL_CDATA_HPP
+#pragma once
 
 #include <xml/parse/rapidxml/types.hpp>
 #include <xml/parse/state.hpp>
@@ -18,5 +17,3 @@ namespace xml
                                        );
   }
 }
-
-#endif

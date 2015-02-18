@@ -1,5 +1,4 @@
-#ifndef FHG_COM_PEER_HPP
-#define FHG_COM_PEER_HPP 1
+#pragma once
 
 #include <fhgcom/connection.hpp>
 #include <fhgcom/header.hpp>
@@ -9,7 +8,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
-#include <boost/thread.hpp>
+#include <boost/thread/scoped_thread.hpp>
 
 #include <deque>
 #include <list>
@@ -29,7 +28,7 @@ namespace fhg
     public:
       typedef std::function <void (boost::system::error_code const &)> handler_t;
 
-      peer_t (boost::asio::io_service&, host_t const& host, port_t const& port);
+      peer_t (std::unique_ptr<boost::asio::io_service>, host_t const& host, port_t const& port);
 
       virtual ~peer_t ();
 
@@ -38,10 +37,6 @@ namespace fhg
       {
         return acceptor_.local_endpoint();
       }
-
-      void start ();
-      void stop ();
-      void run ();
 
       p2p::address_t connect_to (host_t const&, port_t const&);
       p2p::address_t connect_to_or_use_existing_connection
@@ -117,17 +112,14 @@ namespace fhg
 
       mutable mutex_type mutex_;
 
-      bool stopped_;
       bool stopping_;
       std::string host_;
       std::string port_;
       boost::optional<p2p::address_t> my_addr_;
 
-      boost::asio::io_service& io_service_;
+      std::unique_ptr<boost::asio::io_service> io_service_;
       boost::asio::io_service::work io_service_work_;
       boost::asio::ip::tcp::acceptor acceptor_;
-
-      boost::shared_ptr<boost::thread> m_peer_thread;
 
       std::unordered_map<p2p::address_t, connection_data_t> connections_;
 
@@ -137,8 +129,8 @@ namespace fhg
 
       std::list<to_recv_t> m_to_recv;
       std::list<const message_t *> m_pending;
+
+      boost::strict_scoped_thread<boost::join_if_joinable> _io_thread;
     };
   }
 }
-
-#endif

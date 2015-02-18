@@ -1,7 +1,6 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#ifndef FHGLOG_REMOTE_LOG_SERVER_HPP
-#define FHGLOG_REMOTE_LOG_SERVER_HPP 1
+#pragma once
 
 #include <fhglog/Logger.hpp>
 
@@ -33,5 +32,3 @@ namespace fhg
     }
   }
 }
-
-#endif

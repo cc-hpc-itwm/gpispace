@@ -1,5 +1,4 @@
-#ifndef _DETERMINE_SIZE_HPP
-#define _DETERMINE_SIZE_HPP 1
+#pragma once
 
 #include <string>
 
@@ -16,6 +15,4 @@ void determine_size ( const std::string & filename
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

@@ -1,5 +1,4 @@
-#ifndef WE_MGMT_CONTEXT_HPP
-#define WE_MGMT_CONTEXT_HPP 1
+#pragma once
 
 #include <we/type/net.fwd.hpp>
 #include <we/type/module_call.fwd.hpp>
@@ -57,5 +56,3 @@ namespace we
       virtual ~context() = default;
     };
 }
-
-#endif

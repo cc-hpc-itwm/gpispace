@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_BOOST_SERIALIZATION_TUPLE_HPP
-#define FHG_UTIL_BOOST_SERIALIZATION_TUPLE_HPP
+#pragma once
 
 #include <tuple>
 
@@ -53,5 +52,3 @@ namespace boost
     }
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _EXPR_EVAL_EVAL_HPP
-#define _EXPR_EVAL_EVAL_HPP
+#pragma once
 
 #include <we/expr/eval/context.hpp>
 #include <we/expr/parse/node.hpp>
@@ -13,5 +12,3 @@ namespace expr
     pnet::type::value::value_type eval (context&, const expr::parse::node::type&);
   }
 }
-
-#endif

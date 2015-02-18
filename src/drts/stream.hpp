@@ -1,7 +1,6 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#ifndef DRTS_STREAM_HPP
-#define DRTS_STREAM_HPP
+#pragma once
 
 #include <drts/drts.fwd.hpp>
 #include <drts/virtual_memory.fwd.hpp>
@@ -74,5 +73,3 @@ namespace gspc
     std::unique_ptr<implementation> _;
   };
 }
-
-#endif

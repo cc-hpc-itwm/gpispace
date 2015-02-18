@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_TYPE_STRUCT_FWD_HPP
-#define _XML_PARSE_TYPE_STRUCT_FWD_HPP
+#pragma once
 
 namespace xml
 {
@@ -18,5 +17,3 @@ namespace xml
     }
   }
 }
-
-#endif

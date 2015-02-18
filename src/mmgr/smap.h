@@ -3,8 +3,7 @@
    tree, can degenerate to a sequential list
 */
 
-#ifndef SMAP_H
-#define SMAP_H
+#pragma once
 
 #include <mmgr/bool.h>
 #include <mmgr/word.h>
@@ -59,7 +58,4 @@ extern "C"
 
 #ifdef __cplusplus
 }
-#endif
-
-
 #endif

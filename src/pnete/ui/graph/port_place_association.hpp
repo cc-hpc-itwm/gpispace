@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_PNETE_UI_GRAPH_PORT_PLACE_ASSOCIATION_HPP
-#define FHG_PNETE_UI_GRAPH_PORT_PLACE_ASSOCIATION_HPP
+#pragma once
 
 #include <pnete/ui/graph/port_place_association.fwd.hpp>
 
@@ -56,5 +55,3 @@ namespace fhg
     }
   }
 }
-
-#endif

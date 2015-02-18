@@ -125,25 +125,29 @@ BOOST_AUTO_TEST_CASE (share_example_map_log)
 
   boost::filesystem::path const implementation
     ( boost::filesystem::canonical
-      (vm[option_implementation].as<validators::executable>())
+      (vm.at (option_implementation).as<validators::executable>())
     );
   unsigned long const size_input
-    (vm[option_size_input].as<validators::positive_integral<unsigned long>>());
+    (vm.at (option_size_input).as<validators::positive_integral<unsigned long>>());
   unsigned long const size_output
-    (vm[option_size_output].as<validators::positive_integral<unsigned long>>());
+    (vm.at (option_size_output).as<validators::positive_integral<unsigned long>>());
   unsigned long const size_block
-    (vm[option_size_block].as<validators::positive_integral<unsigned long>>());
+    (vm.at (option_size_block).as<validators::positive_integral<unsigned long>>());
   unsigned long const num_block
-    (vm[option_num_block].as<validators::positive_integral<unsigned long>>());
+    (vm.at (option_num_block).as<validators::positive_integral<unsigned long>>());
 
   std::string const user_data
-    (vm[option_user_data].as<validators::nonempty_string>());
+    (vm.at (option_user_data).as<validators::nonempty_string>());
 
   std::ostringstream topology_description;
 
   topology_description << "worker:2," << (2 * size_block);
 
-  gspc::scoped_rifd const rifd (vm, installation);
+  gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
+                               , gspc::rifd::hostnames {vm}
+                               , gspc::rifd::port {vm}
+                               , installation
+                               );
   gspc::scoped_runtime_system const drts
     (vm, installation, topology_description.str(), rifd.entry_points());
 

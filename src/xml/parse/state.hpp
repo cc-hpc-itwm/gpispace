@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_STATE_HPP
-#define _XML_PARSE_STATE_HPP
+#pragma once
 
 #include <xml/parse/state.fwd.hpp>
 
@@ -105,35 +104,35 @@ namespace xml
 
         ACCESS (ignore_properties)
 
-        ACCESS (Werror)
-        ACCESS (Wall)
-        ACCESS (Woverwrite_function_name_as)
-        ACCESS (Woverwrite_template_name_as)
-        ACCESS (Wshadow_struct)
-        ACCESS (Wshadow_function)
-        ACCESS (Wshadow_template)
-        ACCESS (Wshadow_specialize)
-        ACCESS (Wdefault_construction)
-        ACCESS (Wunused_field)
-        ACCESS (Wport_not_connected)
-        ACCESS (Wunexpected_element)
-        ACCESS (Woverwrite_function_name_trans)
-        ACCESS (Woverwrite_function_internal_trans)
-        ACCESS (Wproperty_overwritten)
-        ACCESS (Wtype_map_duplicate)
-        ACCESS (Wtype_get_duplicate)
-        ACCESS (Windependent_place)
-        ACCESS (Windependent_transition)
-        ACCESS (Wconflicting_port_types)
-        ACCESS (Woverwrite_file)
-        ACCESS (Wbackup_file)
-        ACCESS (Wduplicate_external_function)
-        ACCESS (Wproperty_unknown)
-        ACCESS (Winline_many_output_ports)
-        ACCESS (Wvirtual_place_not_tunneled)
-        ACCESS (Wduplicate_template_parameter)
-        ACCESS (Wsynthesize_anonymous_function)
-        ACCESS (Wstruct_redefined)
+        ACCESS (warning_error)
+        ACCESS (warning_all)
+        ACCESS (warning_overwrite_function_name_as)
+        ACCESS (warning_overwrite_template_name_as)
+        ACCESS (warning_shadow_struct)
+        ACCESS (warning_shadow_function)
+        ACCESS (warning_shadow_template)
+        ACCESS (warning_shadow_specialize)
+        ACCESS (warning_default_construction)
+        ACCESS (warning_unused_field)
+        ACCESS (warning_port_not_connected)
+        ACCESS (warning_unexpected_element)
+        ACCESS (warning_overwrite_function_name_trans)
+        ACCESS (warning_overwrite_function_internal_trans)
+        ACCESS (warning_property_overwritten)
+        ACCESS (warning_type_map_duplicate)
+        ACCESS (warning_type_get_duplicate)
+        ACCESS (warning_independent_place)
+        ACCESS (warning_independent_transition)
+        ACCESS (warning_conflicting_port_types)
+        ACCESS (warning_overwrite_file)
+        ACCESS (warning_backup_file)
+        ACCESS (warning_duplicate_external_function)
+        ACCESS (warning_property_unknown)
+        ACCESS (warning_inline_many_output_ports)
+        ACCESS (warning_virtual_place_not_tunneled)
+        ACCESS (warning_duplicate_template_parameter)
+        ACCESS (warning_synthesize_anonymous_function)
+        ACCESS (warning_struct_redefined)
 
         ACCESS (no_inline)
         ACCESS (synthesize_virtual_places)
@@ -203,6 +202,10 @@ namespace xml
           _in_progress.push_back (path);
 
           std::ifstream stream (path.string().c_str());
+          if (!stream)
+          {
+            throw std::runtime_error ("unable to open file " + path.string());
+          }
 
           const T x (generic_parse<T> (parse, stream));
 
@@ -242,35 +245,35 @@ namespace xml
         std::set<boost::filesystem::path> _dependencies;
         we::type::property::path_type _prop_path;
         bool _ignore_properties;
-        bool _Werror;
-        bool _Wall;
-        bool _Woverwrite_function_name_as;
-        bool _Woverwrite_template_name_as;
-        bool _Wshadow_struct;
-        bool _Wshadow_function;
-        bool _Wshadow_template;
-        bool _Wshadow_specialize;
-        bool _Wdefault_construction;
-        bool _Wunused_field;
-        bool _Wport_not_connected;
-        bool _Wunexpected_element;
-        bool _Woverwrite_function_name_trans;
-        bool _Woverwrite_function_internal_trans;
-        bool _Wproperty_overwritten;
-        bool _Wtype_map_duplicate;
-        bool _Wtype_get_duplicate;
-        bool _Windependent_place;
-        bool _Windependent_transition;
-        bool _Wconflicting_port_types;
-        bool _Woverwrite_file;
-        bool _Wbackup_file;
-        bool _Wduplicate_external_function;
-        bool _Wproperty_unknown;
-        bool _Winline_many_output_ports;
-        bool _Wvirtual_place_not_tunneled;
-        bool _Wduplicate_template_parameter;
-        bool _Wsynthesize_anonymous_function;
-        bool _Wstruct_redefined;
+        bool _warning_error;
+        bool _warning_all;
+        bool _warning_overwrite_function_name_as;
+        bool _warning_overwrite_template_name_as;
+        bool _warning_shadow_struct;
+        bool _warning_shadow_function;
+        bool _warning_shadow_template;
+        bool _warning_shadow_specialize;
+        bool _warning_default_construction;
+        bool _warning_unused_field;
+        bool _warning_port_not_connected;
+        bool _warning_unexpected_element;
+        bool _warning_overwrite_function_name_trans;
+        bool _warning_overwrite_function_internal_trans;
+        bool _warning_property_overwritten;
+        bool _warning_type_map_duplicate;
+        bool _warning_type_get_duplicate;
+        bool _warning_independent_place;
+        bool _warning_independent_transition;
+        bool _warning_conflicting_port_types;
+        bool _warning_overwrite_file;
+        bool _warning_backup_file;
+        bool _warning_duplicate_external_function;
+        bool _warning_property_unknown;
+        bool _warning_inline_many_output_ports;
+        bool _warning_virtual_place_not_tunneled;
+        bool _warning_duplicate_template_parameter;
+        bool _warning_synthesize_anonymous_function;
+        bool _warning_struct_redefined;
 
         std::string _dump_xml_file;
         std::string _dump_dependencies;
@@ -294,55 +297,55 @@ namespace xml
                                   > _link_prefix_by_key;
         mutable bool _link_prefix_parsed;
 
-        std::string _Osearch_path;
-        std::string _Ogen_ldflags;
-        std::string _Ogen_cxxflags;
-        std::string _Oignore_properties;
-        std::string _OWerror;
-        std::string _OWall;
-        std::string _OWoverwrite_function_name_as;
-        std::string _OWoverwrite_template_name_as;
-        std::string _OWshadow_struct;
-        std::string _OWshadow_function;
-        std::string _OWshadow_template;
-        std::string _OWshadow_specialize;
-        std::string _OWdefault_construction;
-        std::string _OWunused_field;
-        std::string _OWport_not_connected;
-        std::string _OWunexpected_element;
-        std::string _OWoverwrite_function_name_trans;
-        std::string _OWoverwrite_function_internal_trans;
-        std::string _OWproperty_overwritten;
-        std::string _OWtype_map_duplicate;
-        std::string _OWtype_get_duplicate;
-        std::string _OWindependent_place;
-        std::string _OWindependent_transition;
-        std::string _OWconflicting_port_types;
-        std::string _OWoverwrite_file;
-        std::string _OWbackup_file;
-        std::string _OWduplicate_external_function;
-        std::string _OWproperty_unknown;
-        std::string _OWinline_many_output_ports;
-        std::string _OWvirtual_place_not_tunneled;
-        std::string _OWduplicate_template_parameter;
-        std::string _OWsynthesize_anonymous_function;
-        std::string _OWstruct_redefined;
+        std::string _option_search_path;
+        std::string _option_gen_ldflags;
+        std::string _option_gen_cxxflags;
+        std::string _option_ignore_properties;
+        std::string _option_Werror;
+        std::string _option_Wall;
+        std::string _option_Woverwrite_function_name_as;
+        std::string _option_Woverwrite_template_name_as;
+        std::string _option_Wshadow_struct;
+        std::string _option_Wshadow_function;
+        std::string _option_Wshadow_template;
+        std::string _option_Wshadow_specialize;
+        std::string _option_Wdefault_construction;
+        std::string _option_Wunused_field;
+        std::string _option_Wport_not_connected;
+        std::string _option_Wunexpected_element;
+        std::string _option_Woverwrite_function_name_trans;
+        std::string _option_Woverwrite_function_internal_trans;
+        std::string _option_Wproperty_overwritten;
+        std::string _option_Wtype_map_duplicate;
+        std::string _option_Wtype_get_duplicate;
+        std::string _option_Windependent_place;
+        std::string _option_Windependent_transition;
+        std::string _option_Wconflicting_port_types;
+        std::string _option_Woverwrite_file;
+        std::string _option_Wbackup_file;
+        std::string _option_Wduplicate_external_function;
+        std::string _option_Wproperty_unknown;
+        std::string _option_Winline_many_output_ports;
+        std::string _option_Wvirtual_place_not_tunneled;
+        std::string _option_Wduplicate_template_parameter;
+        std::string _option_Wsynthesize_anonymous_function;
+        std::string _option_Wstruct_redefined;
 
-        std::string _Odump_xml_file;
-        std::string _Odump_dependencies;
-        std::string _Olist_dependencies;
-        std::string _Odump_dependenciesD;
-        std::string _Odependencies_target;
-        std::string _Odependencies_target_quoted;
-        std::string _Odependencies_add_phony_targets;
-        std::string _Ono_inline;
-        std::string _Osynthesize_virtual_places;
-        std::string _Oforce_overwrite_file;
-        std::string _Obackup_extension;
-        std::string _Odo_file_backup;
+        std::string _option_dump_xml_file;
+        std::string _option_dump_dependencies;
+        std::string _option_list_dependencies;
+        std::string _option_dump_dependenciesD;
+        std::string _option_dependencies_target;
+        std::string _option_dependencies_target_quoted;
+        std::string _option_dependencies_add_phony_targets;
+        std::string _option_no_inline;
+        std::string _option_synthesize_virtual_places;
+        std::string _option_force_overwrite_file;
+        std::string _option_backup_extension;
+        std::string _option_do_file_backup;
 
-        std::string _Opath_to_cpp;
-        std::string _Olink_prefix;
+        std::string _option_path_to_cpp;
+        std::string _option_link_prefix;
 
         id::mapper _id_mapper;
 
@@ -359,5 +362,3 @@ namespace xml
     }
   }
 }
-
-#endif

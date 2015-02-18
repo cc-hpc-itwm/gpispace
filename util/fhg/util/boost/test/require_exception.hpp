@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_BOOST_TEST_REQUIRE_EXCEPTION_HPP
-#define FHG_UTIL_BOOST_TEST_REQUIRE_EXCEPTION_HPP
+#pragma once
 
 #include <boost/format.hpp>
 #include <boost/test/unit_test.hpp>
@@ -78,5 +77,3 @@ namespace fhg
     }
   }
 }
-
-#endif

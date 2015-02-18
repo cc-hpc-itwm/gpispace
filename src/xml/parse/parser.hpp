@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_PARSER_HPP
-#define _XML_PARSE_PARSER_HPP
+#pragma once
 
 #include <xml/parse/id/types.fwd.hpp>
 #include <xml/parse/state.fwd.hpp>
@@ -32,5 +31,3 @@ namespace xml
       );
   }
 }
-
-#endif

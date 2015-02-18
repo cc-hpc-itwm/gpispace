@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef TEST_MAKE_HPP
-#define TEST_MAKE_HPP
+#pragma once
 
 #include <drts/drts.hpp>
 
@@ -40,5 +39,3 @@ namespace test
     fhg::util::temporary_path const _build_directory;
   };
 }
-
-#endif

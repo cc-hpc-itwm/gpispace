@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _EXPR_EVAL_REFNODE_HPP
-#define _EXPR_EVAL_REFNODE_HPP
+#pragma once
 
 #include <we/expr/parse/node.hpp>
 #include <we/expr/eval/context.hpp>
@@ -19,5 +18,3 @@ namespace expr
     parse::node::type refnode_name (const std::list<std::string>&);
   }
 }
-
-#endif

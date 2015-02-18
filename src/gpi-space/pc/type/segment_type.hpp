@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_TYPE_SEGMENT_TYPE_HPP
-#define GPI_SPACE_PC_TYPE_SEGMENT_TYPE_HPP 1
+#pragma once
 
 namespace gpi
 {
@@ -22,5 +21,3 @@ namespace gpi
     }
   }
 }
-
-#endif

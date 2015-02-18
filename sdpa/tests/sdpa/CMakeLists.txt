@@ -99,3 +99,11 @@ fhg_add_test (WorkerManager.cpp
   LINK_LIBRARIES sdpa
                  fhglog
 )
+
+fhg_add_test (WorkerReportsBacklogFull.cpp
+  PROJECT sdpa_test
+  BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  LINK_LIBRARIES sdpa
+                 fhglog
+)

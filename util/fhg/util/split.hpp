@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _FHG_UTIL_SPLIT_HPP
-#define _FHG_UTIL_SPLIT_HPP
+#pragma once
 
 #include <iterator>
 #include <utility> // std::pair
@@ -58,5 +57,3 @@ namespace fhg
     }
   }
 }
-
-#endif

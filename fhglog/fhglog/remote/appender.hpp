@@ -1,7 +1,6 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#ifndef FHGLOG_REMOTE_APPENDER_HPP
-#define FHGLOG_REMOTE_APPENDER_HPP 1
+#pragma once
 
 #include <fhglog/Appender.hpp>
 
@@ -18,6 +17,10 @@ namespace fhg
       class RemoteAppender : public Appender
       {
       public:
+        RemoteAppender ( std::string const& host
+                       , std::string const& port
+                       , boost::asio::io_service& io_service
+                       );
         RemoteAppender (const std::string &location, boost::asio::io_service&);
         virtual ~RemoteAppender();
 
@@ -32,5 +35,3 @@ namespace fhg
     }
   }
 }
-
-#endif

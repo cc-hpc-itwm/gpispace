@@ -1,5 +1,4 @@
-#ifndef FHG_UTIL_THREAD_EVENT_HPP
-#define FHG_UTIL_THREAD_EVENT_HPP
+#pragma once
 
 #include <boost/thread.hpp>
 
@@ -68,5 +67,3 @@ namespace fhg
     }
   }
 }
-
-#endif

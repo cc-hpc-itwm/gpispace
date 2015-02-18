@@ -1,5 +1,4 @@
-#ifndef _PNETE_UI_GRAPH_COGWHEEL_BUTTON_HPP
-#define _PNETE_UI_GRAPH_COGWHEEL_BUTTON_HPP 1
+#pragma once
 
 #include <QRectF>
 
@@ -36,5 +35,3 @@ namespace fhg
     }
   }
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef APPLICATION_EXEC_HPP
-#define APPLICATION_EXEC_HPP 1
+#pragma once
 
 #include <string>
 #include <iostream>
@@ -131,5 +130,3 @@ namespace process
                    ).bytes_read_stdout;
   }
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef WE_LOADER_EXCEPTIONS_HPP
-#define WE_LOADER_EXCEPTIONS_HPP 1
+#pragma once
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
@@ -98,5 +97,3 @@ namespace we
 #undef MEMBER
   }
 }
-
-#endif

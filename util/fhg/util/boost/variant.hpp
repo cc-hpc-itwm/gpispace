@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_BOOST_VARIANT_HPP
-#define FHG_UTIL_BOOST_VARIANT_HPP
+#pragma once
 
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
@@ -76,5 +75,3 @@ namespace fhg
     }
   }
 }
-
-#endif

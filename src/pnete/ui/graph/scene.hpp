@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_UI_GRAPH_SCENE_HPP
-#define _FHG_PNETE_UI_GRAPH_SCENE_HPP 1
+#pragma once
 
 #include <pnete/ui/graph/scene.fwd.hpp>
 
@@ -126,5 +125,3 @@ namespace fhg
     }
   }
 }
-
-#endif

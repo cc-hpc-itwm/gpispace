@@ -72,7 +72,11 @@ BOOST_AUTO_TEST_CASE (we_input_is_copied_to_output_in_module_calls)
 
   pnet::type::value::value_type const p {we::type::literal::control()};
 
-  gspc::scoped_rifd const rifd (vm, installation);
+  gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
+                               , gspc::rifd::hostnames {vm}
+                               , gspc::rifd::port {vm}
+                               , installation
+                               );
   gspc::scoped_runtime_system const drts
     (vm, installation, "work:1", rifd.entry_points());
 

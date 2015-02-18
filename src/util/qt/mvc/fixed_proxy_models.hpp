@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_QT_MVC_FIXED_PROXY_MODELS_HPP
-#define FHG_UTIL_QT_MVC_FIXED_PROXY_MODELS_HPP
+#pragma once
 
 //! \note Qt provides an API for mapping indices, thus changing
 //! columns in proxy models. There is no way at all, to do the same
@@ -118,5 +117,3 @@ namespace fhg
     }
   }
 }
-
-#endif

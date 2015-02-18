@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef PNET_SRC_WE_TYPE_VALUE_PATH_SPLIT_HPP
-#define PNET_SRC_WE_TYPE_VALUE_PATH_SPLIT_HPP
+#pragma once
 
 #include <list>
 #include <string>
@@ -19,5 +18,3 @@ namespace pnet
     }
   }
 }
-
-#endif

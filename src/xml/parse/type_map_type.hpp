@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_TYPE_MAP_TYPE_HPP
-#define _XML_PARSE_TYPE_MAP_TYPE_HPP
+#pragma once
 
 #include <unordered_map>
 #include <unordered_set>
@@ -17,5 +16,3 @@ namespace xml
     }
   }
 }
-
-#endif

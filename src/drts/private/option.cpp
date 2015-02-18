@@ -9,6 +9,7 @@
 #include <fhg/util/boost/program_options/validators/nonempty_file.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
+#include <fhg/util/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/join.hpp>
 
@@ -110,10 +111,6 @@ namespace gspc
       boost::program_options::options_description drts ("Runtime system");
 
       drts.add_options()
-        ( name::nodefile
-        , boost::program_options::value<validators::existing_path>()->required()
-        , "nodefile"
-        )
         ( name::state_directory
         , boost::program_options::value<validators::is_directory_if_exists>()
         ->required()
@@ -151,6 +148,10 @@ namespace gspc
         ("Remote Interface Daemon (internally started)");
 
       drts.add_options()
+        ( name::nodefile
+        , boost::program_options::value<validators::existing_path>()->required()
+        , "nodefile"
+        )
         ( name::rif_strategy
         , boost::program_options::value<std::string>()->required()
         , ( "strategy used to bootstrap rifd (one of "
@@ -179,8 +180,8 @@ namespace gspc
         , "virtual memory per node in bytes"
         )
         ( name::virtual_memory_socket
-        , boost::program_options::value<validators::nonexisting_path>()
-        ->required()
+        , boost::program_options::value
+            <validators::nonexisting_path_in_existing_directory>()->required()
         , "socket file to communicate with the virtual memory manager"
         )
         ( name::virtual_memory_port
@@ -259,7 +260,7 @@ namespace gspc
   {                                                                     \
     if (vm.count (name::_name))                                         \
     {                                                                   \
-      return static_cast<_type> (vm[name::_name].as<_as>());            \
+      return static_cast<_type> (vm.at (name::_name).as<_as>());        \
     }                                                                   \
                                                                         \
     return boost::none;                                                 \
@@ -276,7 +277,7 @@ namespace gspc
   {                                                                     \
     if (vm.count (name::_name))                                         \
     {                                                                   \
-      return vm[name::_name].as<_as>();                                 \
+      return vm.at (name::_name).as<_as>();                             \
     }                                                                   \
                                                                         \
     throw std::logic_error                                              \
@@ -319,7 +320,9 @@ namespace gspc
   ACCESS_PATH (application_search_path, validators::existing_directory);
 
   ACCESS_POSITIVE_INTEGRAL (virtual_memory_per_node, unsigned long);
-  ACCESS_PATH (virtual_memory_socket, validators::nonexisting_path);
+  ACCESS_PATH ( virtual_memory_socket
+              , validators::nonexisting_path_in_existing_directory
+              );
   ACCESS_POSITIVE_INTEGRAL (virtual_memory_port, unsigned short);
   ACCESS_POSITIVE_INTEGRAL (virtual_memory_startup_timeout, unsigned long);
 

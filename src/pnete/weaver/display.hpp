@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef FHG_PNETE_WEAVER_DISPLAY_HPP
-#define FHG_PNETE_WEAVER_DISPLAY_HPP
+#pragma once
 
 #include <pnete/data/handle/connect.fwd.hpp>
 #include <pnete/data/handle/function.fwd.hpp>
@@ -37,5 +36,3 @@ namespace fhg
     }
   }
 }
-
-#endif

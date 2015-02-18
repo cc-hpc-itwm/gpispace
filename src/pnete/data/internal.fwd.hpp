@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _PNETE_DATA_INTERNAL_FWD_HPP
-#define _PNETE_DATA_INTERNAL_FWD_HPP
+#pragma once
 
 namespace fhg
 {
@@ -13,5 +12,3 @@ namespace fhg
     }
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_QT_HEADER_DELEGATE_HPP
-#define FHG_UTIL_QT_HEADER_DELEGATE_HPP
+#pragma once
 
 #include <util/qt/mvc/header_delegate.fwd.hpp>
 
@@ -35,5 +34,3 @@ namespace fhg
     }
   }
 }
-
-#endif

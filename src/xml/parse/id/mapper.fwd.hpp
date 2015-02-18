@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef XML_PARSE_ID_MAPPER_FWD_HPP
-#define XML_PARSE_ID_MAPPER_FWD_HPP
+#pragma once
 
 namespace xml
 {
@@ -13,5 +12,3 @@ namespace xml
     }
   }
 }
-
-#endif

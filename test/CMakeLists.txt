@@ -1,4 +1,4 @@
-add_library (test-utilities SHARED
+add_library (test-utilities
   make.cpp
   scoped_nodefile_from_environment.cpp
   scoped_state_directory.cpp

@@ -15,8 +15,7 @@
  *
  * =====================================================================================
  */
-#ifndef SDPA_ORCHESTRATORTOR_HPP
-#define SDPA_ORCHESTRATORTOR_HPP 1
+#pragma once
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 
@@ -33,7 +32,7 @@ namespace sdpa {
       public:
       Orchestrator ( const std::string &name
                    , const std::string& url
-                   , boost::asio::io_service& peer_io_service
+                   , std::unique_ptr<boost::asio::io_service> peer_io_service
                    , boost::asio::io_service& rpc_io_service
                    );
 
@@ -58,5 +57,3 @@ namespace sdpa {
     };
   }
 }
-
-#endif //SDPA_ORCHESTRATORTOR_HPP

@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_UTIL_EXPECT_HPP
-#define _XML_PARSE_UTIL_EXPECT_HPP
+#pragma once
 
 #include <xml/parse/rapidxml/types.hpp>
 #include <xml/parse/state.fwd.hpp>
@@ -21,5 +20,3 @@ namespace xml
                         );
   }
 }
-
-#endif

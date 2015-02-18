@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_DL_HPP
-#define FHG_UTIL_DL_HPP
+#pragma once
 
 #include <cstdio>
 #include <cstdlib>
@@ -84,5 +83,3 @@ namespace fhg
     };
   }
 }
-
-#endif

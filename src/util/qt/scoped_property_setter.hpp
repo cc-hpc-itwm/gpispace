@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef UTIL_QT_SCOPED_PROPERTY_SETTER_HPP
-#define UTIL_QT_SCOPED_PROPERTY_SETTER_HPP
+#pragma once
 
 #include <QObject>
 #include <QVariant>
@@ -39,5 +38,3 @@ namespace fhg
     }
   }
 }
-
-#endif

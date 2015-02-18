@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_TYPE_WITH_POSITION_OF_DEFINITION_HPP
-#define _XML_PARSE_TYPE_WITH_POSITION_OF_DEFINITION_HPP
+#pragma once
 
 #include <xml/parse/util/position.hpp>
 
@@ -21,5 +20,3 @@ namespace xml
     };
   }
 }
-
-#endif

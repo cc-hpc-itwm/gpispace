@@ -1,5 +1,4 @@
-#ifndef SDPA_CAPABILITIES_GAINED_EVENT
-#define SDPA_CAPABILITIES_GAINED_EVENT 1
+#pragma once
 
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/capability.hpp>
@@ -56,5 +55,3 @@ namespace sdpa
     }
   }
 }
-
-#endif

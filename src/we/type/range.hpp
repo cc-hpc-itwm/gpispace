@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef WE_TYPE_RANGE_HPP
-#define WE_TYPE_RANGE_HPP
+#pragma once
 
 #include <we/field.hpp>
 #include <we/type/value.hpp>
@@ -138,5 +137,3 @@ namespace we
     };
   }
 }
-
-#endif

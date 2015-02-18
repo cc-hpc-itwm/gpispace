@@ -70,11 +70,11 @@ namespace gpi
 
       topology_t::topology_t ( memory::manager_t& memory_manager
                              , api::gpi_api_t& gpi_api
-                             , boost::shared_ptr<fhg::com::peer_t> const& peer
+                             , std::unique_ptr<fhg::com::peer_t> peer
                              )
         : m_shutting_down (false)
-        , m_peer (peer)
         , _gpi_api (gpi_api)
+        , m_peer (std::move (peer))
       {
         std::unique_lock<std::mutex> const _ (m_mutex);
 
@@ -213,7 +213,6 @@ namespace gpi
         if (not m_shutting_down && ec)
         {
           MLOG (ERROR, "failed sending a message: " << ec);
-          m_peer->stop ();
         }
       }
 

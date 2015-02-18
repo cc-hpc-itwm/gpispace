@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_MAKE_UNIQUE_HPP
-#define FHG_UTIL_MAKE_UNIQUE_HPP
+#pragma once
 
 #include <memory>
 
@@ -17,5 +16,3 @@ namespace fhg
     }
   }
 }
-
-#endif

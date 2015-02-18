@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_ERROR_HPP
-#define _XML_PARSE_ERROR_HPP
+#pragma once
 
 #include <string>
 #include <sstream>
@@ -1020,5 +1019,3 @@ namespace xml
     }
   }
 }
-
-#endif

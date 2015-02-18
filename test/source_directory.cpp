@@ -37,7 +37,7 @@ namespace test
   boost::filesystem::path source_directory
     (boost::program_options::variables_map const& vm)
   {
-    return vm[options::name::source_directory]
+    return vm.at (options::name::source_directory)
       .as<validators::existing_directory>();
   }
 }

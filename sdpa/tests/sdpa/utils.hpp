@@ -1,16 +1,17 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef SDPA_TEST_UTILS_HPP
-#define SDPA_TEST_UTILS_HPP
+#pragma once
 
 #include <sdpa/client.hpp>
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
+#include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
 #include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/boost/test/printer/optional.hpp>
+#include <fhg/util/make_unique.hpp>
 #include <fhg/util/random_string.hpp>
 
 #include <fhglog/Configuration.hpp>
@@ -163,16 +164,103 @@ namespace utils
       );
   }
 
+  we::type::activity_t net_with_two_children_requiring_n_workers (unsigned long n)
+  {
+    we::type::property::type props;
+    props.set ({"fhg", "drts", "schedule", "num_worker"}, std::to_string (n) + "UL");
+    we::type::transition_t transition_0
+      ( fhg::util::random_string()
+      , we::type::module_call_t ( fhg::util::random_string()
+                                , fhg::util::random_string()
+                                , std::unordered_map<std::string, std::string>()
+                                , std::list<we::type::memory_transfer>()
+                                , std::list<we::type::memory_transfer>()
+                                )
+      , boost::none
+      , true
+      , props
+      , we::priority_type()
+      );
+    we::type::transition_t transition_1
+      ( fhg::util::random_string()
+      , we::type::module_call_t ( fhg::util::random_string()
+                                , fhg::util::random_string()
+                                , std::unordered_map<std::string, std::string>()
+                                , std::list<we::type::memory_transfer>()
+                                , std::list<we::type::memory_transfer>()
+                                )
+      , boost::none
+      , true
+      , props
+      , we::priority_type()
+      );
+    const std::string port_name (fhg::util::random_string());
+    we::port_id_type const port_id_in_0
+      ( transition_0.add_port ( we::type::port_t ( port_name
+                                                 , we::type::PORT_IN
+                                                 , std::string ("string")
+                                                 , we::type::property::type()
+                                                 )
+                              )
+      );
+    we::port_id_type const port_id_in_1
+      ( transition_1.add_port ( we::type::port_t ( port_name
+                                                 , we::type::PORT_IN
+                                                 , std::string ("string")
+                                                 , we::type::property::type()
+                                                 )
+                              )
+      );
+
+    we::type::net_type net;
+
+    we::place_id_type const place_id_in_0
+      (net.add_place (place::type (port_name + "1", std::string ("string"))));
+    we::place_id_type const place_id_in_1
+      (net.add_place (place::type (port_name + "2", std::string ("string"))));
+
+    net.put_value (place_id_in_0, fhg::util::random_string_without ("\\\""));
+    net.put_value (place_id_in_1, fhg::util::random_string_without ("\\\""));
+
+    we::transition_id_type const transition_id_0
+      (net.add_transition (transition_0));
+    we::transition_id_type const transition_id_1
+      (net.add_transition (transition_1));
+
+    net.add_connection ( we::edge::PT
+                       , transition_id_0
+                       , place_id_in_0
+                       , port_id_in_0
+                       , we::type::property::type()
+                       );
+    net.add_connection ( we::edge::PT
+                       , transition_id_1
+                       , place_id_in_1
+                       , port_id_in_1
+                       , we::type::property::type()
+                       );
+
+    return we::type::activity_t
+      ( we::type::transition_t ( fhg::util::random_string()
+                               , net
+                               , boost::none
+                               , true
+                               , we::type::property::type()
+                               , we::priority_type()
+                               )
+      , boost::none
+      );
+  }
+
   struct orchestrator : boost::noncopyable
   {
     orchestrator()
       : _ ( random_peer_name(), "127.0.0.1"
-          , _peer_io_service
+          , fhg::util::make_unique<boost::asio::io_service>()
           , _rpc_io_service
           )
     {}
 
-    boost::asio::io_service _peer_io_service;
     boost::asio::io_service _rpc_io_service;
     sdpa::daemon::Orchestrator _;
     std::string name() const { return _.name(); }
@@ -196,7 +284,7 @@ namespace utils
     agent (const T& master_0, const U& master_1)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
-          , _peer_io_service
+          , fhg::util::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master_0), make_master_info_tuple (master_1)}
           , boost::none
@@ -206,7 +294,7 @@ namespace utils
     agent (const T& master)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
-          , _peer_io_service
+          , fhg::util::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master)}
           , boost::none
@@ -215,13 +303,12 @@ namespace utils
     agent (const agent& master)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
-          , _peer_io_service
+          , fhg::util::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master)}
           , boost::none
           )
     {}
-    boost::asio::io_service _peer_io_service;
     sdpa::daemon::Agent _;
     std::string name() const { return _.name(); }
     fhg::com::host_t host() const { return _.peer_host(); }
@@ -242,7 +329,7 @@ namespace utils
                    {
                      _event_queue.put (source, e);
                    }
-                 , _peer_io_service
+                 , fhg::util::make_unique<boost::asio::io_service>()
                  , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
                  )
       , _event_thread (&basic_drts_component::event_thread, this)
@@ -345,7 +432,6 @@ namespace utils
   private:
     fhg::thread::queue<std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr>>
       _event_queue;
-    boost::asio::io_service _peer_io_service;
 
   protected:
     sdpa::com::NetworkStrategy _network;
@@ -411,7 +497,7 @@ namespace utils
       const std::string name
         (we::type::activity_t (e->description()).transition().name());
 
-      _jobs.emplace (name, job_t (*e->job_id(), source));
+      add_job (name, *e->job_id(), source);
 
       _network.perform
         ( source
@@ -419,7 +505,7 @@ namespace utils
           (new sdpa::events::SubmitJobAckEvent (*e->job_id()))
         );
 
-      _announce_job (name);
+      announce_job (name);
     }
     virtual void handleJobFinishedAckEvent
       (fhg::com::p2p::address_t const&, const sdpa::events::JobFinishedAckEvent*) override
@@ -439,6 +525,24 @@ namespace utils
             (job._id, we::type::activity_t().to_string())
           )
         );
+    }
+
+    sdpa::job_id_t job_id (std::string name)
+    {
+      return _jobs.at (name)._id;
+    }
+
+    void add_job ( const std::string& name
+                 , const sdpa::job_id_t& job_id
+                 , const fhg::com::p2p::address_t& owner
+                 )
+    {
+      _jobs.emplace (name, job_t (job_id, owner));
+    }
+
+    void announce_job (const std::string& name)
+    {
+      _announce_job (name);
     }
 
   protected:
@@ -523,10 +627,61 @@ namespace utils
     fhg::util::thread::event<std::string> _finished_ack;
   };
 
+  class fake_drts_worker_notifying_cancel
+    : public utils::fake_drts_worker_waiting_for_finished_ack
+  {
+  public:
+    fake_drts_worker_notifying_cancel
+      ( std::function<void (std::string)> announce_job
+      , std::function<void (std::string)> announce_cancel
+      , const utils::agent& master_agent
+      )
+      : utils::fake_drts_worker_waiting_for_finished_ack
+          (announce_job, master_agent)
+      , _announce_cancel (announce_cancel)
+    {}
+    ~fake_drts_worker_notifying_cancel()
+    {
+      BOOST_REQUIRE (_cancels.empty());
+    }
+
+    void handleCancelJobEvent
+      ( fhg::com::p2p::address_t const& source
+      , const sdpa::events::CancelJobEvent* pEvt
+      ) override
+    {
+      boost::mutex::scoped_lock const _ (_cancels_mutex);
+
+      _cancels.emplace (pEvt->job_id(), source);
+      _announce_cancel (pEvt->job_id());
+    }
+
+    void canceled (std::string job_id)
+    {
+      boost::mutex::scoped_lock const _ (_cancels_mutex);
+
+      const fhg::com::p2p::address_t master (_cancels.at (job_id));
+      _cancels.erase (job_id);
+
+      _network.perform
+        ( master
+        , sdpa::events::SDPAEvent::Ptr
+            (new sdpa::events::CancelJobAckEvent (job_id))
+        );
+    }
+
+  private:
+    std::function<void (std::string)> _announce_cancel;
+    mutable boost::mutex _cancels_mutex;
+    std::map<std::string, fhg::com::p2p::address_t> _cancels;
+  };
+
   struct client : boost::noncopyable
   {
     client (orchestrator const& orch)
-      : _ (orch.host(), orch.port(), _peer_io_service)
+      : _ ( orch.host(), orch.port()
+          , fhg::util::make_unique<boost::asio::io_service>()
+          )
     {}
 
     sdpa::job_id_t submit_job (std::string workflow)
@@ -591,7 +746,6 @@ namespace utils
       return _.cancelJob (id);
     }
 
-    boost::asio::io_service _peer_io_service;
     sdpa::client::Client _;
 
 
@@ -637,5 +791,3 @@ namespace utils
     };
   };
 }
-
-#endif

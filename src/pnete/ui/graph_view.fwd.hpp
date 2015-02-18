@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_PNETE_UI_GRAPH_VIEW_FWD_HPP
-#define FHG_PNETE_UI_GRAPH_VIEW_FWD_HPP
+#pragma once
 
 namespace fhg
 {
@@ -13,5 +12,3 @@ namespace fhg
     }
   }
 }
-
-#endif

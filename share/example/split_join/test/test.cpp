@@ -80,23 +80,27 @@ BOOST_AUTO_TEST_CASE (share_example_split_join)
 
   gspc::installation const installation (vm);
 
-  std::string const main (vm[option_main].as<validators::nonempty_string>());
+  std::string const main (vm.at (option_main).as<validators::nonempty_string>());
 
   test::make const make
     ( installation
-    , vm[option_main].as<validators::nonempty_string>()
+    , vm.at (option_main).as<validators::nonempty_string>()
     , test::source_directory (vm)
     , std::unordered_map<std::string, std::string>()
     , "net"
     );
 
-  gspc::scoped_rifd const rifd (vm, installation);
+  gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
+                               , gspc::rifd::hostnames {vm}
+                               , gspc::rifd::port {vm}
+                               , installation
+                               );
   gspc::scoped_runtime_system const drts
     (vm, installation, "work:4", rifd.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> input;
 
-  for (long i : vm[option_input].as<std::vector<long>>())
+  for (long i : vm.at (option_input).as<std::vector<long>>())
   {
     input.emplace ("I", i);
   }
@@ -109,7 +113,7 @@ BOOST_AUTO_TEST_CASE (share_example_split_join)
     );
 
   std::vector<long> const expected_output
-    (vm[option_expected_output].as<std::vector<long>>());
+    (vm.at (option_expected_output).as<std::vector<long>>());
 
   BOOST_REQUIRE_EQUAL (result.size(), expected_output.size());
 

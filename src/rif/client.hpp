@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_RIF_CLIENT_HPP
-#define FHG_RIF_CLIENT_HPP
+#pragma once
 
 #include <rif/entry_point.hpp>
 
@@ -58,9 +57,7 @@ namespace fhg
     public:
       rpc::remote_function
         < std::pair<pid_t, std::vector<std::string>>
-            ( std::string startup_messages_pipe_option
-            , std::string end_sentinel_value
-            , boost::filesystem::path command
+            ( boost::filesystem::path command
             , std::vector<std::string> arguments
             , std::unordered_map<std::string, std::string> environment
             )
@@ -69,5 +66,3 @@ namespace fhg
     };
   }
 }
-
-#endif

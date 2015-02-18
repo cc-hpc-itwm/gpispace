@@ -1,35 +1,34 @@
-#ifndef SDPA_EVENTS_SERIALIZATION_HPP
-#define SDPA_EVENTS_SERIALIZATION_HPP 1
+#pragma once
 
 #define SAVE_TO_ARCHIVE(WHAT)                   \
-  _ARCHIVE << WHAT
+  _archive << WHAT
 
 //! \note Archive<<(int) e.g. is broken and can't handle values
 //! returned from a function call, thus needs a temporary.
 #define SAVE_TO_ARCHIVE_WITH_TEMPORARY(T, WHAT) \
   {                                             \
     const T temp (WHAT);                        \
-    _ARCHIVE << temp;                           \
+    _archive << temp;                           \
   }
 
 #define LOAD_FROM_ARCHIVE(TYPE, VARIABLE_NAME)  \
-  TYPE VARIABLE_NAME; _ARCHIVE >> VARIABLE_NAME
+  TYPE VARIABLE_NAME; _archive >> VARIABLE_NAME
 
 
 #define SAVE_CONSTRUCT_DATA_DEF(TYPE, VARIABLE_NAME)                    \
   template<class Archive> inline void save_construct_data               \
-    (Archive& _ARCHIVE, const TYPE* VARIABLE_NAME, const unsigned int)
+    (Archive& _archive, const TYPE* VARIABLE_NAME, const unsigned int)
 
 #define LOAD_CONSTRUCT_DATA_DEF(TYPE, VARIABLE_NAME)              \
   template<class Archive> inline void load_construct_data         \
-    (Archive& _ARCHIVE, TYPE* VARIABLE_NAME, const unsigned int)
+    (Archive& _archive, TYPE* VARIABLE_NAME, const unsigned int)
 
 
 #define SAVE_SDPAEVENT_CONSTRUCT_DATA(EVENT_VARIABLE) \
-  (void) _ARCHIVE;                                    \
+  (void) _archive;                                    \
   (void) EVENT_VARIABLE
 #define LOAD_SDPAEVENT_CONSTRUCT_DATA()         \
-  (void) _ARCHIVE
+  (void) _archive
 
 
 #define SAVE_JOBEVENT_CONSTRUCT_DATA(EVENT_VARIABLE)    \
@@ -75,5 +74,3 @@
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/optional.hpp>
 #include <boost/serialization/set.hpp>
-
-#endif

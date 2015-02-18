@@ -1,6 +1,5 @@
 
-#ifndef TMMGR_H
-#define TMMGR_H
+#pragma once
 
 #include <mmgr/word.h>
 #include <mmgr/bool.h>
@@ -89,6 +88,4 @@ extern "C"
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

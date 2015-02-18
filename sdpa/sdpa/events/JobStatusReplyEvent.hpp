@@ -1,5 +1,4 @@
-#ifndef SDPA_ReplyJobStatusEvent_HPP
-#define SDPA_ReplyJobStatusEvent_HPP
+#pragma once
 
 #include <sdpa/events/JobEvent.hpp>
 #include <sdpa/types.hpp>
@@ -60,5 +59,3 @@ namespace sdpa
     }
   }
 }
-
-#endif

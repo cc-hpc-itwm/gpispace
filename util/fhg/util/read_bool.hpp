@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _FHG_UTIL_READ_BOOL_HPP
-#define _FHG_UTIL_READ_BOOL_HPP 1
+#pragma once
 
 #include <string>
 
@@ -13,5 +12,3 @@ namespace fhg
     bool read_bool (const std::string&);
   }
 }
-
-#endif

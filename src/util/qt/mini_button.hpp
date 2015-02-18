@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_QT_MINI_BUTTON_HPP
-#define FHG_UTIL_QT_MINI_BUTTON_HPP
+#pragma once
 
 #include <util/qt/mini_button.fwd.hpp>
 
@@ -28,5 +27,3 @@ namespace fhg
     }
   }
 }
-
-#endif

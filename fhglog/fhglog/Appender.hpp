@@ -1,7 +1,6 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#ifndef FHG_LOG_APPENDER_HPP
-#define FHG_LOG_APPENDER_HPP 1
+#pragma once
 
 #include <fhglog/event.hpp>
 
@@ -23,5 +22,3 @@ namespace fhg
     };
   }
 }
-
-#endif

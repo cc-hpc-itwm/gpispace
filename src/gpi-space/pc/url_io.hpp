@@ -1,5 +1,4 @@
-#ifndef FHG_UTIL_URL_IO_HPP
-#define FHG_UTIL_URL_IO_HPP
+#pragma once
 
 #include <string>
 #include <ostream>
@@ -26,5 +25,3 @@ namespace gpi
     }
   }
 }
-
-#endif

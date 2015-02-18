@@ -3,8 +3,7 @@
    search tree, can degenerate to a sequential list
 */
 
-#ifndef FSEG_H
-#define FSEG_H
+#pragma once
 
 #include <mmgr/smap.h>
 
@@ -39,7 +38,4 @@ extern "C"
 
 #ifdef __cplusplus
 }
-#endif
-
-
 #endif

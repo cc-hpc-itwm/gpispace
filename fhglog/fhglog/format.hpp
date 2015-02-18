@@ -1,5 +1,4 @@
-#ifndef FHG_LOG_FORMAT_HPP
-#define FHG_LOG_FORMAT_HPP 1
+#pragma once
 
 #include <fhglog/event.hpp>
 
@@ -135,5 +134,3 @@ namespace fhg
     };
   }
 }
-
-#endif

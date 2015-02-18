@@ -1,8 +1,7 @@
 
 /* mapping from Key_t to (Offset_t, Size_t) */
 
-#ifndef OSTAB_H
-#define OSTAB_H
+#pragma once
 
 #include <mmgr/word.h>
 
@@ -44,6 +43,4 @@ extern "C"
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

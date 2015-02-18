@@ -22,8 +22,7 @@
  * this software.
  */
 
-#ifndef FHG_UTIL_QT_BOOST_CONNECT_HPP
-#define FHG_UTIL_QT_BOOST_CONNECT_HPP
+#pragma once
 
 #include <fhg/util/make_indices.hpp>
 
@@ -162,5 +161,3 @@ namespace fhg
     }
   }
 }
-
-#endif

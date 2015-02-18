@@ -1,5 +1,4 @@
-#ifndef FHG_LOG_LOGMACROS_INC
-#define FHG_LOG_LOGMACROS_INC
+#pragma once
 
 #include <fhglog/Logger.hpp>
 
@@ -80,5 +79,3 @@ namespace fhg
 #define LOG(level, msg) LLOG (level, ::fhg::log::Logger::get(), msg)
   }
 }
-
-#endif

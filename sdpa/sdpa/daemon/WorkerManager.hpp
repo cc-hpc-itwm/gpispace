@@ -1,7 +1,6 @@
 //tiberiu.rotaru@itwm.fraunhofer.de
 
-#ifndef SDPA_DAEMON_WORKER_MANAGER_HPP
-#define SDPA_DAEMON_WORKER_MANAGER_HPP 1
+#pragma once
 
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/job_requirements.hpp>
@@ -64,6 +63,7 @@ namespace sdpa
     const std::set<job_id_t> get_worker_jobs_and_clean_queues (const worker_id_t&) const;
     bool add_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
     bool remove_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
+    void set_worker_backlog_full (const worker_id_t&, bool);
 
     using worker_connections_t
       = boost::bimap < boost::bimaps::unordered_set_of<std::string>
@@ -84,4 +84,3 @@ namespace sdpa
     };
   }
 }
-#endif

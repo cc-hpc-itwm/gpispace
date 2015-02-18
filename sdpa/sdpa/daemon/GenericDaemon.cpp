@@ -141,7 +141,7 @@ namespace
 
 GenericDaemon::GenericDaemon( const std::string name
                             , const std::string url
-                            , boost::asio::io_service& peer_io_service
+                            , std::unique_ptr<boost::asio::io_service> peer_io_service
                             , boost::optional<boost::filesystem::path> const& vmem_socket
                             , std::vector<name_host_port_tuple> const& masters
                             , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
@@ -180,7 +180,7 @@ GenericDaemon::GenericDaemon( const std::string name
                       {
                         _event_queue.put (source, e);
                       }
-                      , peer_io_service
+                      , std::move (peer_io_service)
                       , host_from_url (url)
                       , port_from_url (url)
                       )
@@ -352,11 +352,7 @@ void GenericDaemon::handleSubmitJobEvent
   // First, check if the job 'job_id' wasn't already submitted!
   if(e.job_id() && findJob(*e.job_id()))
   {
-    // The job already exists -> generate an error message that the job already exists
-
-        events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(events::ErrorEvent::SDPA_EJOBEXISTS, "The job already exists!", e.job_id()) );
-        sendEventToOther (source, pErrorEvt);
-
+    parent_proxy (this, source).submit_job_ack (*e.job_id());
     return;
   }
 
@@ -473,20 +469,47 @@ void GenericDaemon::handleErrorEvent
   {
     // this  should  better go  into  a  distinct  event, since  the  ErrorEvent
     // 'reason' should not be reused for important information
-    case events::ErrorEvent::SDPA_EJOBREJECTED:
+    case events::ErrorEvent::SDPA_EBACKLOGFULL:
     {
       sdpa::job_id_t jobId(*error.job_id());
-
       Job* pJob (findJob (jobId));
       if (!pJob)
       {
-        throw std::runtime_error ("EJOBREJECTED for unknown job");
+        throw std::runtime_error ("Got SDPA_EBACKLOGFULL error related to unknown job!");
       }
-      scheduler().releaseReservation (jobId);
-      pJob->Reschedule(); // put the job back into the pending state
-      scheduler().enqueueJob (jobId);
 
-      request_scheduling();
+      if (!as_worker)
+      {
+        throw std::runtime_error ("Unknown entity (unregister worker) rejected the job " + jobId);
+      }
+
+      scheduler().worker_manager().set_worker_backlog_full (as_worker.get()->second, true);
+
+      if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
+      {
+        scheduler().workerCanceled (as_worker.get()->second, jobId);
+        pJob->Reschedule();
+
+        if (!scheduler().cancelNotTerminatedWorkerJobs
+             ( [this, &jobId](const sdpa::worker_id_t& wid)
+               {
+                 child_proxy (this, scheduler().worker_manager().address_by_worker (wid).get()->second)
+                   .cancel_job (jobId);
+               }
+             , jobId
+             )
+           )
+        {
+          scheduler().releaseReservation (jobId);
+          scheduler().enqueueJob (jobId);
+          scheduler().assignJobsToWorkers();
+        }
+      }
+      else
+      {
+        throw std::runtime_error ("Got SDPA_EBACKLOGFULL error for an already terminated job!");
+      }
+
       break;
     }
     case events::ErrorEvent::SDPA_EWORKERNOTREG:
@@ -558,36 +581,6 @@ void GenericDaemon::handleErrorEvent
         }
       }
 
-      break;
-    }
-    case events::ErrorEvent::SDPA_EJOBEXISTS:
-    {
-      if (as_worker)
-      {
-        Job* ptrJob = findJob(*error.job_id());
-        if(ptrJob)
-        {
-          ptrJob->Dispatch();
-          scheduler().worker_manager().acknowledge_job_sent_to_worker ( *error.job_id()
-                                                                      , as_worker.get()->second
-                                                                      );
-        }
-        else
-        {
-          throw std::runtime_error
-            ( ( boost::format( "The worker %1% reported double submission for the unexisting job %2%!")
-              % as_worker.get()->second
-              % *error.job_id()
-              ).str()
-            );
-        }
-      }
-      else
-      {
-        throw std::runtime_error ( "Not-registered worker reported double submission of the job "
-                                 +  *error.job_id()
-                                 );
-      }
       break;
     }
     default:
@@ -1273,6 +1266,16 @@ void GenericDaemon::handleJobFailedAckEvent
 
         _discover_sources.erase (source);
       }
+    }
+
+    void GenericDaemon::handleBacklogNoLongerFullEvent
+      (fhg::com::p2p::address_t const& source, const events::BacklogNoLongerFullEvent*)
+    {
+      boost::optional<WorkerManager::worker_connections_t::right_map::iterator> const as_worker
+          (scheduler().worker_manager().worker_by_address (source));
+
+      scheduler().worker_manager().set_worker_backlog_full (as_worker.get()->second, false);
+      request_scheduling ();
     }
 
     namespace

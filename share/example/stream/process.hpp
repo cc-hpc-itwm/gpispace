@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef SHARE_EXAMPLE_STREAM_PROCESS_HPP
-#define SHARE_EXAMPLE_STREAM_PROCESS_HPP
+#pragma once
 
 #include <statistic.hpp>
 
@@ -35,5 +34,3 @@ namespace share_example_stream
     return {id, produced};
   }
 }
-
-#endif

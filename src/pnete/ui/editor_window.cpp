@@ -23,6 +23,7 @@
 
 #include <fhg/util/boost/variant.hpp>
 #include <fhg/util/dl.hpp>
+#include <fhg/util/make_unique.hpp>
 #include <fhg/util/num.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/temporary_path.hpp>
@@ -1544,10 +1545,13 @@ namespace fhg
         // loader.append_search_path (temporary_path / "pnetc" / "op");
 
         _action_execute_current_file_remote_via_prompt->setEnabled (false);
-        static boost::asio::io_service peer_io_service;
         remote_job_waiting* waiter
           ( new remote_job_waiting
-            (activity_and_fun, orchestrator_host, orchestrator_port, peer_io_service)
+            ( activity_and_fun
+            , orchestrator_host
+            , orchestrator_port
+            , fhg::util::make_unique<boost::asio::io_service>()
+            )
           );
         connect ( waiter
                 , SIGNAL (remote_job_failed (sdpa::client::Client*,QString))

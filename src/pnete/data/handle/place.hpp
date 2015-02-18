@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_DATA_HANDLE_PLACE_HPP
-#define _FHG_PNETE_DATA_HANDLE_PLACE_HPP 1
+#pragma once
 
 #include <pnete/data/handle/place.fwd.hpp>
 
@@ -62,5 +61,3 @@ namespace fhg
     }
   }
 }
-
-#endif

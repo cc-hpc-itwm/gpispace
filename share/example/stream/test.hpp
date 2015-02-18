@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef SHARE_EXAMPLE_STREAM_TEST_HPP
-#define SHARE_EXAMPLE_STREAM_TEST_HPP
+#pragma once
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
@@ -113,13 +112,17 @@ namespace share_example_stream_test
       );
 
     gspc::stream::number_of_slots const num_slots
-      (vm[option_num_slots].as<validators::positive_integral<unsigned long>>());
+      (vm.at (option_num_slots).as<validators::positive_integral<unsigned long>>());
     gspc::stream::size_of_slot const size_slot
-      (vm[option_size_slot].as<validators::positive_integral<unsigned long>>());
+      (vm.at (option_size_slot).as<validators::positive_integral<unsigned long>>());
 
     unsigned long const size (num_slots * (size_slot + 1));
 
-    gspc::scoped_rifd const rifd (vm, installation);
+    gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
+                                 , gspc::rifd::hostnames {vm}
+                                 , gspc::rifd::port {vm}
+                                 , installation
+                                 );
     gspc::scoped_runtime_system const drts
       (vm, installation, topology (size_slot), rifd.entry_points());
 
@@ -209,5 +212,3 @@ namespace share_example_stream_test
     BOOST_REQUIRE_EQUAL (expected_output, output);
   }
 }
-
-#endif

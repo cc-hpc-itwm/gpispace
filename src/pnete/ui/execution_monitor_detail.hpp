@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_PNETE_UI_EXECUTION_MONITOR_DETAIL_HPP
-#define FHG_PNETE_UI_EXECUTION_MONITOR_DETAIL_HPP
+#pragma once
 
 #include <pnete/ui/execution_monitor_worker_model.hpp>
 
@@ -185,5 +184,3 @@ namespace fhg
 Q_DECLARE_METATYPE (fhg::pnete::ui::execution_monitor_proxy::visible_range_type)
 //! \note column_type_role
 Q_DECLARE_METATYPE (fhg::pnete::ui::execution_monitor_proxy::column_type)
-
-#endif

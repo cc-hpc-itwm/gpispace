@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_PNETE_UI_GRAPH_STYLE_ASSOCIATION_HPP
-#define FHG_PNETE_UI_GRAPH_STYLE_ASSOCIATION_HPP
+#pragma once
 
 #include <QList>
 
@@ -28,5 +27,3 @@ namespace fhg
     }
   }
 }
-
-#endif

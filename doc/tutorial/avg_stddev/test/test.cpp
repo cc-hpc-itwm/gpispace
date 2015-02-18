@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
 
   boost::filesystem::path const generator
     ( boost::filesystem::canonical
-      (vm[option_name_generator].as<validators::executable>())
+      (vm.at (option_name_generator).as<validators::executable>())
     );
 
   long const num_values (100 << 20);
@@ -123,7 +123,11 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
     , "Could not generate data"
     );
 
-  gspc::scoped_rifd const rifd (vm, installation);
+  gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
+                               , gspc::rifd::hostnames {vm}
+                               , gspc::rifd::port {vm}
+                               , installation
+                               );
   gspc::scoped_runtime_system const drts
     (vm, installation, "worker:4", rifd.entry_points());
 

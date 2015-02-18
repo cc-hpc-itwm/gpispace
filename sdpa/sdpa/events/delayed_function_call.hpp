@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef SDPA_EVENTS_DELAYED_FUNCTION_CALL_HPP
-#define SDPA_EVENTS_DELAYED_FUNCTION_CALL_HPP
+#pragma once
 
 #include <sdpa/events/SDPAEvent.hpp>
 
@@ -32,5 +31,3 @@ namespace sdpa
     //! \note No serialization: Shall only be used within daemon, not over net
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef PNETE_UI_NET_WIDGET_HPP
-#define PNETE_UI_NET_WIDGET_HPP
+#pragma once
 
 #include <pnete/data/handle/function.hpp>
 #include <pnete/data/handle/net.fwd.hpp>
@@ -43,5 +42,3 @@ namespace fhg
     }
   }
 }
-
-#endif

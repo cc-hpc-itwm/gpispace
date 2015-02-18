@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fhg.de
 
-#ifndef XML_PARSE_ID_GENERIC_HPP
-#define XML_PARSE_ID_GENERIC_HPP
+#pragma once
 
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/id/mapper.fwd.hpp>
@@ -45,5 +44,3 @@
 
 #define PARENT_INITIALIZE()                     \
   _parent (parent)
-
-#endif

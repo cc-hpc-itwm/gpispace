@@ -1,11 +1,8 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef DRTS_VMEM_FWD_HPP
-#define DRTS_VMEM_FWD_HPP
+#pragma once
 
 namespace gspc
 {
   class vmem_allocation;
 }
-
-#endif

@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef PNET_SRC_WE_TYPE_SIGNATURE_COMPLETE_HPP
-#define PNET_SRC_WE_TYPE_SIGNATURE_COMPLETE_HPP
+#pragma once
 
 #include <iosfwd>
 #include <string>
@@ -24,5 +23,3 @@ namespace pnet
     }
   }
 }
-
-#endif

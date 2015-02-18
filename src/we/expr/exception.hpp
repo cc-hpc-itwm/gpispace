@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _WE_EXPR_EXCEPTION_HPP
-#define _WE_EXPR_EXCEPTION_HPP
+#pragma once
 
 #include <boost/format.hpp>
 
@@ -106,5 +105,3 @@ namespace expr
     }
   }
 }
-
-#endif

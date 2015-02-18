@@ -1,5 +1,4 @@
-#ifndef FHGLOG_CONFIGURATION_HPP
-#define FHGLOG_CONFIGURATION_HPP 1
+#pragma once
 
 namespace boost
 {
@@ -27,5 +26,3 @@ namespace fhg
     void configure (boost::asio::io_service& remote_log_io_service);
   }
 }
-
-#endif

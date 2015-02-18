@@ -1,7 +1,6 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#ifndef WE_LOADER_IMODULE_HPP
-#define WE_LOADER_IMODULE_HPP 1
+#pragma once
 
 #include <we/expr/eval/context.hpp>
 #include <we/loader/api-guard.hpp>
@@ -30,5 +29,3 @@ namespace we
     };
   }
 }
-
-#endif

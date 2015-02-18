@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_TYPE_CONNECT_HPP
-#define _XML_PARSE_TYPE_CONNECT_HPP
+#pragma once
 
 #include <xml/parse/type/connect.fwd.hpp>
 
@@ -94,5 +93,3 @@ namespace xml
     }
   }
 }
-
-#endif

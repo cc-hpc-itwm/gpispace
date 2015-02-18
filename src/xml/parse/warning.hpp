@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_WARNING_HPP
-#define _XML_PARSE_WARNING_HPP
+#pragma once
 
 #include <stdexcept>
 #include <string>
@@ -642,5 +641,3 @@ namespace xml
     }
   }
 }
-
-#endif

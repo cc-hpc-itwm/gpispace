@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_UTIL_REQUIRED_HPP
-#define _XML_PARSE_UTIL_REQUIRED_HPP
+#pragma once
 
 #include <xml/parse/rapidxml/types.hpp>
 #include <xml/parse/state.fwd.hpp>
@@ -16,5 +15,3 @@ namespace xml
       (const std::string&, const xml_node_type*, const Ch*, const state::type&);
   }
 }
-
-#endif

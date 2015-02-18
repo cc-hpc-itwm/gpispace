@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_TYPE_TIMESTAMP_HPP
-#define GPI_SPACE_PC_TYPE_TIMESTAMP_HPP 1
+#pragma once
 
 #include <time.h>
 #include <sys/time.h>
@@ -87,5 +86,3 @@ namespace gpi
     }
   }
 }
-
-#endif

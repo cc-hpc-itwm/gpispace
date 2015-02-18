@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_EXCEPTION_HPP
-#define GPI_SPACE_EXCEPTION_HPP 1
+#pragma once
 
 #include <stdexcept>
 #include <boost/lexical_cast.hpp>
@@ -99,5 +98,3 @@ namespace gpi
     };
   }
 }
-
-#endif

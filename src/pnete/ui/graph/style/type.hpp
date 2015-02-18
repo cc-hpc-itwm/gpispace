@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_UI_GRAPH_STYLE_HPP
-#define _FHG_PNETE_UI_GRAPH_STYLE_HPP 1
+#pragma once
 
 #include <pnete/ui/graph/style/type.fwd.hpp>
 #include <pnete/ui/graph/style/fallback.hpp>
@@ -235,5 +234,3 @@ namespace fhg
     }
   }
 }
-
-#endif

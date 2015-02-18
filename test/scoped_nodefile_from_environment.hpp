@@ -1,7 +1,6 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#ifndef TEST_SCOPED_NODEFILE_FROM_ENVIRONMENT_HPP
-#define TEST_SCOPED_NODEFILE_FROM_ENVIRONMENT_HPP
+#pragma once
 
 #include <fhg/util/temporary_file.hpp>
 
@@ -22,5 +21,3 @@ namespace test
     fhg::util::temporary_file const _temporary_file;
   };
 }
-
-#endif

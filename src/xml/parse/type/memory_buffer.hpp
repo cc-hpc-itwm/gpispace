@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_TYPE_MEMORY_BUFFER_HPP
-#define _XML_PARSE_TYPE_MEMORY_BUFFER_HPP
+#pragma once
 
 #include <xml/parse/id/generic.hpp>
 #include <xml/parse/type/function.fwd.hpp>
@@ -65,5 +64,3 @@ namespace xml
     }
   }
 }
-
-#endif

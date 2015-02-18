@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_OSTREAM_MODIFIER_HPP
-#define FHG_UTIL_OSTREAM_MODIFIER_HPP
+#pragma once
 
 #include <iosfwd>
 
@@ -21,5 +20,3 @@ namespace fhg
     }
   }
 }
-
-#endif

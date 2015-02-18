@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef TEST_SOURCE_DIRECTORY_HPP
-#define TEST_SOURCE_DIRECTORY_HPP
+#pragma once
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -16,5 +15,3 @@ namespace test
   boost::filesystem::path source_directory
     (boost::program_options::variables_map const&);
 }
-
-#endif

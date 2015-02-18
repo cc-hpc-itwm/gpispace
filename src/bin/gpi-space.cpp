@@ -7,6 +7,7 @@
 #include <fhg/revision.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
+#include <fhg/util/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/print_exception.hpp>
@@ -23,10 +24,10 @@
 #include <gpi-space/gpi/gaspi.hpp>
 #include <gpi-space/pc/container/manager.hpp>
 
+#include <rif/startup_messages_pipe.hpp>
+
 #include <boost/asio/io_service.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/iostreams/device/file_descriptor.hpp>
-#include <boost/iostreams/stream.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
@@ -48,7 +49,6 @@ namespace
     constexpr const char* const log_level ("log-level");
     constexpr const char* const port ("port");
     constexpr const char* const socket ("socket");
-    constexpr const char* const startup_messages_pipe ("startup-messages-pipe");
   }
 }
 
@@ -100,14 +100,13 @@ try
     )
     ( option::socket
     , boost::program_options::value
-        <fhg::util::boost::program_options::nonexisting_path>()->required()
+        <fhg::util::boost::program_options::nonexisting_path_in_existing_directory>()
+        ->required()
     , "path to open communication socket"
     )
-    ( option::startup_messages_pipe
-    , boost::program_options::value<int>()->required()
-    , "pipe filedescriptor to use for communication during startup (ports used, ...)"
-    )
     ;
+
+  options_description.add (fhg::rif::startup_messages_pipe::program_options());
 
   boost::program_options::variables_map vm;
   boost::program_options::store
@@ -119,12 +118,9 @@ try
 
   boost::program_options::notify (vm);
 
-  int const startup_messages_pipe_fd
-    (vm.at (option::startup_messages_pipe).as<int>());
-
   boost::filesystem::path const socket_path
     ( vm.at (option::socket)
-      .as<fhg::util::boost::program_options::nonexisting_path>()
+      .as<fhg::util::boost::program_options::nonexisting_path_in_existing_directory>()
     );
 
   boost::optional<boost::filesystem::path> const log_file
@@ -184,16 +180,17 @@ try
   boost::asio::io_service remote_log_io_service;
   fhg::log::configure (remote_log_io_service);
 
-  boost::asio::io_service topology_peer_io_service;
-  boost::shared_ptr<fhg::com::peer_t> topology_peer
-    ( boost::make_shared<fhg::com::peer_t>
-        (topology_peer_io_service, fhg::com::host_t ("*"), fhg::com::port_t ("0"))
+  fhg::util::signal_handler_manager signal_handler;
+  fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
+    crit_error_handler (signal_handler, fhg::log::Logger::get());
+
+  std::unique_ptr<fhg::com::peer_t> topology_peer
+    ( fhg::util::make_unique<fhg::com::peer_t>
+        ( fhg::util::make_unique<boost::asio::io_service>()
+        , fhg::com::host_t ("*")
+        , fhg::com::port_t ("0")
+        )
     );
-
-  boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> const
-    topology_peer_thread (&fhg::com::peer_t::run, topology_peer);
-
-  topology_peer->start();
 
   std::unique_ptr<gpi::api::gpi_api_t> const gpi_api
     ( [&gpi_mem, &gpi_timeout, &port, &requested_api, &topology_peer]()
@@ -219,25 +216,20 @@ try
     ( socket_path.string()
     , {"gpi://?buffer_size=4194304&buffers=8"}
     , *gpi_api
-    , topology_peer
+    , std::move (topology_peer)
     );
 
   fhg::util::thread::event<> stop_requested;
   const std::function<void()> request_stop
     (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
 
-  fhg::util::signal_handler_manager signal_handler;
   fhg::util::scoped_signal_handler const SIGTERM_handler
     (signal_handler, SIGTERM, std::bind (request_stop));
   fhg::util::scoped_signal_handler const SIGINT_handler
     (signal_handler, SIGINT, std::bind (request_stop));
 
   {
-    boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
-      startup_messages_pipe ( startup_messages_pipe_fd
-                            , boost::iostreams::close_handle
-                            );
-    startup_messages_pipe << "OKAY\n";
+    fhg::rif::startup_messages_pipe startup_messages_pipe (vm);
   }
 
   stop_requested.wait();

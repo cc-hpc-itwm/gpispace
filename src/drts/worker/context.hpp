@@ -1,5 +1,4 @@
-#ifndef GSPC_DRTS_CONTEXT_HPP
-#define GSPC_DRTS_CONTEXT_HPP
+#pragma once
 
 #include <drts/worker/context_fwd.hpp>
 #include <list>
@@ -50,5 +49,3 @@ namespace drts
     };
   }
 }
-
-#endif

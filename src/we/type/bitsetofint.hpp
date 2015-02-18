@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _BITSETOFINT_HPP
-#define _BITSETOFINT_HPP
+#pragma once
 
 #include <vector>
 
@@ -62,5 +61,3 @@ namespace bitsetofint
                                  , const std::string::const_iterator& end
                                  );
 }
-
-#endif

@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _FHG_UTIL_CPP_INCLUDE_GUARD
-#define _FHG_UTIL_CPP_INCLUDE_GUARD 1
+#pragma once
 
 #include <fhg/util/ostream_modifier.hpp>
 
@@ -34,5 +33,3 @@ namespace fhg
     }
   }
 }
-
-#endif

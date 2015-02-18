@@ -6,6 +6,8 @@
 #include <drts/information_to_reattach.hpp>
 #include <drts/private/information_to_reattach.hpp>
 
+#include <fhg/util/make_unique.hpp>
+
 #include <sdpa/client.hpp>
 
 #include <we/type/activity.hpp>
@@ -50,11 +52,10 @@ namespace gspc
     implementation (gspc::host_and_port_type const& orchestrator_endpoint)
       : _client ( fhg::com::host_t (orchestrator_endpoint.host)
                 , fhg::com::port_t (std::to_string (orchestrator_endpoint.port))
-                , _peer_io_service
+                , fhg::util::make_unique<boost::asio::io_service>()
                 )
     {}
 
-    boost::asio::io_service _peer_io_service;
     sdpa::client::Client _client;
   };
 
@@ -101,8 +102,7 @@ namespace gspc
     _->_client.put_token (job_id, place_name, value);
   }
 
-  std::multimap<std::string, pnet::type::value::value_type>
-    client::wait_and_extract (job_id_t job_id)
+  void client::wait (job_id_t job_id) const
   {
     std::cerr << "waiting for job " << job_id << std::endl;
 
@@ -121,7 +121,11 @@ namespace gspc
          ).str()
         );
     }
+  }
 
+  std::multimap<std::string, pnet::type::value::value_type>
+    client::extract_result_and_forget_job (job_id_t job_id)
+  {
     we::type::activity_t const result_activity
       (_->_client.retrieveResults (job_id));
 

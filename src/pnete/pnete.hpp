@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef _PENTE_HPP
-#define _PENTE_HPP 1
+#pragma once
 
 #include <pnete/data/manager.hpp>
 
@@ -53,5 +52,3 @@ namespace fhg
     };
   }
 }
-
-#endif

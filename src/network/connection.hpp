@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_NETWORK_CONNECTION_HPP
-#define FHG_NETWORK_CONNECTION_HPP
+#pragma once
 
 #include <boost/asio/generic/stream_protocol.hpp>
 #include <boost/asio/strand.hpp>
@@ -65,5 +64,3 @@ namespace fhg
     };
   }
 }
-
-#endif

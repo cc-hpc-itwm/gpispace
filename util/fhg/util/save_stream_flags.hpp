@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_SAVE_STREAM_FLAGS_HPP
-#define FHG_UTIL_SAVE_STREAM_FLAGS_HPP
+#pragma once
 
 #include <boost/utility.hpp>
 
@@ -30,5 +29,3 @@ namespace fhg
     };
   }
 }
-
-#endif

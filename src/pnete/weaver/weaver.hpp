@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _PNETE_TRAVERSE_WEAVER_HPP
-#define _PNETE_TRAVERSE_WEAVER_HPP 1
+#pragma once
 
 #include <xml/parse/type/connect.hpp>
 #include <xml/parse/type/expression.hpp>
@@ -680,5 +679,3 @@ namespace fhg
     } // namespace weaver
   }
 }
-
-#endif

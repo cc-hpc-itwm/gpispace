@@ -1,7 +1,6 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#ifndef STREAM_APPENDER_INC
-#define STREAM_APPENDER_INC
+#pragma once
 
 #include <fhglog/Appender.hpp>
 
@@ -27,5 +26,3 @@ namespace fhg
     };
   }
 }
-
-#endif

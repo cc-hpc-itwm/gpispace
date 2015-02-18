@@ -90,20 +90,3 @@ BOOST_AUTO_TEST_CASE (thread_queue_put_by_multiple_threads)
     delete threads [i]; threads [i] = nullptr;
   }
 }
-
-BOOST_AUTO_TEST_CASE (thread_queue_INDICATES_A_RACE_clear)
-{
-  static const int NUM_ITEMS_TO_PUT = 10000;
-
-  items_t items;
-
-  fill_items (items, NUM_ITEMS_TO_PUT);
-
-  BOOST_REQUIRE_EQUAL ( items.INDICATES_A_RACE_size ()
-                      , static_cast<items_t::size_type>(NUM_ITEMS_TO_PUT)
-                      );
-
-  items.INDICATES_A_RACE_clear ();
-
-  BOOST_REQUIRE_EQUAL (items.INDICATES_A_RACE_size (), 0u);
-}

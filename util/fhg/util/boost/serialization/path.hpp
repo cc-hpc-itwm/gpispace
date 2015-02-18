@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_BOOST_SERIALIZATION_PATH_HPP
-#define FHG_UTIL_BOOST_SERIALIZATION_PATH_HPP
+#pragma once
 
 #include <boost/filesystem/path.hpp>
 #include <boost/serialization/split_free.hpp>
@@ -31,5 +30,3 @@ namespace boost
     }
   }
 }
-
-#endif

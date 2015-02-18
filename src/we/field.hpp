@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef PNET_SRC_WE_FIELD_HPP
-#define PNET_SRC_WE_FIELD_HPP
+#pragma once
 
 #include <we/exception.hpp>
 #include <we/type/signature.hpp>
@@ -38,5 +37,3 @@ namespace pnet
     return *x;
   }
 }
-
-#endif

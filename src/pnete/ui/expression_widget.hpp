@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _PNETE_UI_EXPRESSION_WIDGET_HPP
-#define _PNETE_UI_EXPRESSION_WIDGET_HPP 1
+#pragma once
 
 #include <pnete/data/handle/expression.hpp>
 #include <pnete/data/handle/function.hpp>
@@ -65,5 +64,3 @@ namespace fhg
     }
   }
 }
-
-#endif

@@ -9,7 +9,6 @@
 #include <gpi-space/pc/global/topology.hpp>
 
 #include <gpi-space/pc/url.hpp>
-#include <fhg/util/read_bool.hpp>
 
 #include <we/type/range.hpp>
 

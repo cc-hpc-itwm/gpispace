@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef _PNETE_DATA_INTERNAL_HPP
-#define _PNETE_DATA_INTERNAL_HPP 1
+#pragma once
 
 #include <pnete/data/internal.fwd.hpp>
 
@@ -37,5 +36,3 @@ namespace fhg
     }
   }
 }
-
-#endif

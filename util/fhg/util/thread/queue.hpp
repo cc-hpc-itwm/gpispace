@@ -1,5 +1,4 @@
-#ifndef FHG_UTIL_THREAD_QUEUE_HPP
-#define FHG_UTIL_THREAD_QUEUE_HPP
+#pragma once
 
 #include <boost/thread/condition_variable.hpp>
 #include <boost/thread/recursive_mutex.hpp>
@@ -32,12 +31,6 @@ namespace fhg
         boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
         m_container.emplace_back (std::forward<Args> (args)...);
         m_get_cond.notify_one();
-      }
-
-      size_type INDICATES_A_RACE_size() const
-      {
-        boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
-        return m_container.size();
       }
 
       void INDICATES_A_RACE_clear()
@@ -81,5 +74,3 @@ namespace fhg
     };
   }
 }
-
-#endif

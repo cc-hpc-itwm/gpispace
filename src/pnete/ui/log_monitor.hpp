@@ -1,5 +1,4 @@
-#ifndef FHG_PNETE_UI_LOG_MONITOR_HPP
-#define FHG_PNETE_UI_LOG_MONITOR_HPP
+#pragma once
 
 #include <fhglog/LogMacros.hpp>
 #include <fhglog/remote/server.hpp>
@@ -97,5 +96,3 @@ private:
   fhg::log::remote::LogServer _log_server;
   boost::thread _io_thread;
 };
-
-#endif

@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _EXPR_TOKEN_PROP_HPP
-#define _EXPR_TOKEN_PROP_HPP
+#pragma once
 
 #include <we/expr/token/type.hpp>
 
@@ -17,5 +16,3 @@ namespace expr
     bool is_and_boolean (const type&);
   }
 }
-
-#endif

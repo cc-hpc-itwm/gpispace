@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef PNETE_UI_GRAPH_ITEM_HPP
-#define PNETE_UI_GRAPH_ITEM_HPP
+#pragma once
 
 #include <pnete/ui/graph/base_item.fwd.hpp>
 
@@ -106,5 +105,3 @@ namespace fhg
     }
   }
 }
-
-#endif

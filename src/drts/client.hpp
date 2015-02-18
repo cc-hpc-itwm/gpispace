@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef DRTS_CLIENT_HPP
-#define DRTS_CLIENT_HPP
+#pragma once
 
 #include <drts/client.fwd.hpp>
 #include <drts/drts.fwd.hpp>
@@ -44,8 +43,16 @@ namespace gspc
                      , pnet::type::value::value_type
                      > const& values_on_ports
       );
+    void wait (job_id_t) const;
     std::multimap<std::string, pnet::type::value::value_type>
-      wait_and_extract (job_id_t);
+      extract_result_and_forget_job (job_id_t);
+    std::multimap<std::string, pnet::type::value::value_type>
+      wait_and_extract (job_id_t job_id)
+    {
+      wait (job_id);
+
+      return extract_result_and_forget_job (job_id);
+    }
 
     std::multimap<std::string, pnet::type::value::value_type>
       put_and_run
@@ -68,5 +75,3 @@ namespace gspc
     implementation* _;
   };
 }
-
-#endif

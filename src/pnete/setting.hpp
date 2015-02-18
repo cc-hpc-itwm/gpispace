@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _FHG_PNETE_SETTING_HPP
-#define _FHG_PNETE_SETTING_HPP 1
+#pragma once
 
 #include <QString>
 
@@ -45,5 +44,3 @@ namespace fhg
     }
   }
 }
-
-#endif

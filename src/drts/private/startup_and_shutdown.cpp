@@ -120,9 +120,7 @@ namespace
 
     std::pair<pid_t, std::vector<std::string>> const agent_startup_messages
       ( fhg::rif::client (rif_entry_point).execute_and_get_startup_messages
-          ( "--startup-messages-pipe"
-          , "OKAY"
-          , sdpa_home / "bin" / "agent"
+          ( sdpa_home / "bin" / "agent"
           , agent_startup_arguments
           , { {"FHGLOG_to_server", log_host + ":" + std::to_string (log_port)}
             , {"FHGLOG_level", verbose ? "TRACE" : "INFO"}
@@ -147,40 +145,6 @@ namespace
     return { agent_startup_messages.second[0]
            , boost::lexical_cast<unsigned short> (agent_startup_messages.second[1])
            };
-  }
-
-  void add_plugin_option ( std::vector<std::string>& arguments
-                         , std::string name
-                         , const char* value
-                         )
-  {
-    arguments.emplace_back ("-s");
-    arguments.emplace_back ("plugin." + name + "=" + value);
-  }
-  void add_plugin_option ( std::vector<std::string>& arguments
-                         , std::string name
-                         , std::string value
-                         )
-  {
-    add_plugin_option (arguments, name, value.c_str());
-  }
-  void add_plugin_option ( std::vector<std::string>& arguments
-                         , std::string name
-                         , unsigned long value
-                         )
-  {
-    add_plugin_option (arguments, name, std::to_string (value).c_str());
-  }
-
-  std::vector<std::string> string_vector
-    (std::vector<boost::filesystem::path> const& container)
-  {
-    std::vector<std::string> result;
-    for (boost::filesystem::path const& elem : container)
-    {
-      result.emplace_back (elem.string());
-    }
-    return result;
   }
 
   void start_workers_for
@@ -241,32 +205,31 @@ namespace
                    std::vector<std::string> arguments;
                    std::unordered_map<std::string, std::string> environment;
 
-                   add_plugin_option
-                     ( arguments
-                     , "drts.master"
-                     , build_parent_with_hostinfo
+                   arguments.emplace_back ("--master");
+                   arguments.emplace_back
+                     ( build_parent_with_hostinfo
                          (segment_info.master_name, segment_info.master_hostinfo)
                      );
-                   add_plugin_option (arguments, "drts.backlog", 1);
-                   add_plugin_option
-                     (arguments, "drts.max_reconnect_attempts", 128);
-                   add_plugin_option ( arguments
-                                     , "drts.gui_url"
-                                     , gui_host + ":" + std::to_string (gui_port)
-                                     );
-                   add_plugin_option
-                     ( arguments
-                     , "drts.library_path"
-                     , fhg::util::join (string_vector (app_path), ",")
-                     );
 
-                   std::vector<std::string> capabilities
-                     (description.capabilities);
+                   arguments.emplace_back ("--backlog-length");
+                   arguments.emplace_back ("1");
+
+                   //! \todo gui is optional in worker
+                   arguments.emplace_back ("--gui-host");
+                   arguments.emplace_back (gui_host);
+                   arguments.emplace_back ("--gui-port");
+                   arguments.emplace_back (std::to_string (gui_port));
+
+                   for (boost::filesystem::path const& path : app_path)
+                   {
+                     arguments.emplace_back ("--library-search-path");
+                     arguments.emplace_back (path.string());
+                   }
 
                    if (description.shm_size)
                    {
-                     capabilities.emplace_back ("GPI");
-
+                     arguments.emplace_back ("--capability");
+                     arguments.emplace_back ("GPI");
                      arguments.emplace_back ("--virtual-memory-socket");
                      arguments.emplace_back (gpi_socket.get().string());
                      arguments.emplace_back ("--shared-memory-size");
@@ -274,15 +237,17 @@ namespace
                        (std::to_string (description.shm_size));
                    }
 
-                   add_plugin_option ( arguments
-                                     , "drts.capabilities"
-                                     , fhg::util::join (capabilities, ",")
-                                     );
+                   for (std::string const& capability : description.capabilities)
+                   {
+                     arguments.emplace_back ("--capability");
+                     arguments.emplace_back (capability);
+                   }
 
                    if (description.socket)
                    {
-                     add_plugin_option
-                       (arguments, "drts.socket", description.socket.get());
+                     arguments.emplace_back ("--socket");
+                     arguments.emplace_back
+                       (std::to_string (description.socket.get()));
                    }
 
                    environment.emplace ("FHGLOG_level", verbose ? "TRACE" : "INFO");
@@ -313,9 +278,7 @@ namespace
 
                    std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages
                      ( fhg::rif::client (entry_point).execute_and_get_startup_messages
-                       ( "--startup-messages-pipe"
-                       , "OKAY"
-                       , sdpa_home / "bin" / "drts-kernel"
+                       ( sdpa_home / "bin" / "drts-kernel"
                        , arguments
                        , environment
                        ).get()
@@ -529,9 +492,7 @@ namespace fhg
             ( [&]
               {
                 return rif::client (master).execute_and_get_startup_messages
-                  ( "--startup-messages-pipe"
-                  , "OKAY"
-                  , sdpa_home / "bin" / "orchestrator"
+                  ( sdpa_home / "bin" / "orchestrator"
                   , {"-u", "0", "-n", "orchestrator"}
                   , { {"FHGLOG_to_server", log_host + ":" + std::to_string (log_port)}
                     , {"FHGLOG_level", verbose ? "TRACE" : "INFO"}
@@ -609,9 +570,7 @@ namespace fhg
                         std::pair<pid_t, std::vector<std::string>> const
                           startup_messages
                           ( rif::client (entry_point).execute_and_get_startup_messages
-                              ( "--startup-messages-pipe"
-                              , "OKAY"
-                              , sdpa_home / "bin" / "gpi-space"
+                              ( sdpa_home / "bin" / "gpi-space"
                               , { "--log-host", log_host
                                 , "--log-port", std::to_string (log_port)
                                 , "--log-level", verbose ? "TRACE" : "INFO"

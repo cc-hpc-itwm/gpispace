@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _FHG_UTIL_STARTS_WITH_HPP
-#define _FHG_UTIL_STARTS_WITH_HPP 1
+#pragma once
 
 #include <string>
 
@@ -61,5 +60,3 @@ namespace fhg
     }
   }
 }
-
-#endif

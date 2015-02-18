@@ -1,5 +1,4 @@
-#ifndef SDPA_RETRIEVEJOBRESULTSEVENT_HPP
-#define SDPA_RETRIEVEJOBRESULTSEVENT_HPP 1
+#pragma once
 
 #include <sdpa/events/JobEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
@@ -25,5 +24,3 @@ namespace sdpa
     CONSTRUCT_DATA_DEFS_FOR_EMPTY_JOBEVENT_OVERLOAD (RetrieveJobResultsEvent)
   }
 }
-
-#endif

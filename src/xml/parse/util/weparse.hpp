@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _XML_PARSE_UTIL_WEPARSE_HPP
-#define _XML_PARSE_UTIL_WEPARSE_HPP
+#pragma once
 
 #include <we/expr/parse/parser.hpp>
 
@@ -27,5 +26,3 @@ namespace xml
    }
   }
 }
-
-#endif

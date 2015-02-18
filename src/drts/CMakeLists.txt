@@ -37,6 +37,7 @@ target_link_libraries (gspc
   rif-strategies
   gpi-space-pc-client-static
   gpi-space-pc-segment
+  fhg-revision
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_REGEX_LIBRARY}
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
@@ -49,3 +50,4 @@ install (TARGETS
 
 add_subdirectory (test/parallel_running_workflows)
 add_subdirectory (test/put_token)
+add_subdirectory (test)

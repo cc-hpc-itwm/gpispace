@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_MEMORY_TRANSFER_MANAGER_HPP
-#define GPI_SPACE_PC_MEMORY_TRANSFER_MANAGER_HPP 1
+#pragma once
 
 #include <boost/thread/thread.hpp>
 
@@ -152,5 +151,3 @@ namespace gpi
     }
   }
 }
-
-#endif // GPI_SPACE_PC_MEMORY_TRANSFER_MANAGER_HPP

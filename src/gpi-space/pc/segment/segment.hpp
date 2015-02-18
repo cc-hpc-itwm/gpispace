@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_SEGMENT_SEGMENT_HPP
-#define GPI_SPACE_PC_SEGMENT_SEGMENT_HPP 1
+#pragma once
 
 #include <string>
 #include <boost/noncopyable.hpp>
@@ -47,5 +46,3 @@ namespace gpi
     }
   }
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef SDPA_ERROREVENT_HPP
-#define SDPA_ERROREVENT_HPP 1
+#pragma once
 
 #include <sdpa/events/Serialization.hpp>
 #include <sdpa/events/MgmtEvent.hpp>
@@ -16,12 +15,10 @@ namespace sdpa
 
       enum error_code_t
         {
-          SDPA_EJOBEXISTS,
-          SDPA_EJOBREJECTED,
+          SDPA_EBACKLOGFULL,
           SDPA_EWORKERNOTREG,
           SDPA_ENODE_SHUTDOWN,
           SDPA_EUNKNOWN,
-          SDPA_EPERM,
           SDPA_ENETWORKFAILURE
         };
 
@@ -81,5 +78,3 @@ namespace sdpa
     }
   }
 }
-
-#endif

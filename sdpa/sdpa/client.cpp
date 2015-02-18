@@ -32,14 +32,13 @@ namespace sdpa
   {
     Client::Client ( fhg::com::host_t const& orchestrator_host
                    , fhg::com::port_t const& orchestrator_port
-                   , boost::asio::io_service& peer_io_service
+                   , std::unique_ptr<boost::asio::io_service> peer_io_service
                    )
-      : m_peer ( peer_io_service
+      : _stopping (false)
+      , m_peer ( std::move (peer_io_service)
                , fhg::com::host_t ("*")
                , fhg::com::port_t ("0")
                )
-      , _peer_thread (&fhg::com::peer_t::run, &m_peer)
-      , _stopping (false)
       , _drts_entrypoint_address
           (m_peer.connect_to (orchestrator_host, orchestrator_port))
     {

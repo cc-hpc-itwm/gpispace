@@ -15,15 +15,21 @@ namespace fhg
       RemoteAppender::RemoteAppender ( const std::string& location
                                      , boost::asio::io_service& io_service
                                      )
+        : RemoteAppender ( fhg::util::split_string (location, ':').first
+                         , fhg::util::split_string (location, ':').second
+                         , io_service
+                         )
+      {}
+
+      RemoteAppender::RemoteAppender ( std::string const& host
+                                     , std::string const& port
+                                     , boost::asio::io_service& io_service
+                                     )
         : io_service_ (io_service)
         , logserver_ (*udp::resolver (io_service_)
                      . resolve
                        ( udp::resolver::query
-                         ( udp::v4()
-                         , fhg::util::split_string (location, ':').first
-                         , fhg::util::split_string (location, ':').second
-                         , udp::resolver::query::flags()
-                         )
+                           (udp::v4(), host, port, udp::resolver::query::flags())
                        )
                      )
         , socket_ (new udp::socket (io_service_, udp::v4()))

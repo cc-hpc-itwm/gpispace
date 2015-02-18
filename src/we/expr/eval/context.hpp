@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef _EXPR_EVAL_CONTEXT_HPP
-#define _EXPR_EVAL_CONTEXT_HPP
+#pragma once
 
 #include <we/type/value.hpp>
 
@@ -55,5 +54,3 @@ namespace expr
     std::ostream& operator<< (std::ostream&, const context&);
   }
 }
-
-#endif

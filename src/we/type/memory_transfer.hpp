@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#ifndef WE_TYPE_MEMORY_TRANSFER_HPP
-#define WE_TYPE_MEMORY_TRANSFER_HPP
+#pragma once
 
 #include <boost/serialization/nvp.hpp>
 
@@ -77,5 +76,3 @@ namespace boost
     }
   }
 }
-
-#endif

@@ -1,7 +1,6 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
-#ifndef FHG_UTIL_GRAPHVIZ_GRAPHVIZ_HPP
-#define FHG_UTIL_GRAPHVIZ_GRAPHVIZ_HPP
+#pragma once
 
 class QSizeF;
 class QGraphicsItem;
@@ -90,5 +89,3 @@ namespace fhg
     }
   }
 }
-
-#endif

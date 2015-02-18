@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_MEMORY_SHM_AREA_HPP
-#define GPI_SPACE_PC_MEMORY_SHM_AREA_HPP
+#pragma once
 
 #include <gpi-space/pc/type/segment_type.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
@@ -64,5 +63,3 @@ namespace gpi
     }
   }
 }
-
-#endif // GPI_SPACE_PC_MEMORY_SHM_AREA_HPP

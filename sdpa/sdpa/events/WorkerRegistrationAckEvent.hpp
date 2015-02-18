@@ -1,5 +1,4 @@
-#ifndef SDPA_WORKER_REGISTRATION_ACK_EVENT_HPP
-#define SDPA_WORKER_REGISTRATION_ACK_EVENT_HPP 1
+#pragma once
 
 #include <sdpa/events/MgmtEvent.hpp>
 
@@ -24,5 +23,3 @@ namespace sdpa
     CONSTRUCT_DATA_DEFS_FOR_EMPTY_MGMTEVENT_OVERLOAD (WorkerRegistrationAckEvent)
   }
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef SDPA_SUBSCRIBE_ACK_EVENT_HPP
-#define SDPA_SUBSCRIBE_ACK_EVENT_HPP 1
+#pragma once
 
 #include <sdpa/events/MgmtEvent.hpp>
 
@@ -47,5 +46,3 @@ namespace sdpa
     }
   }
 }
-
-#endif

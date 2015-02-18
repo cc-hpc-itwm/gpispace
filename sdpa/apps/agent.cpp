@@ -8,10 +8,11 @@
 #include <fhglog/LogMacros.hpp>
 
 #include <fhg/util/boost/asio/ip/address.hpp>
+#include <fhg/util/make_unique.hpp>
 #include <fhg/util/print_exception.hpp>
 
-#include <boost/iostreams/device/file_descriptor.hpp>
-#include <boost/iostreams/stream.hpp>
+#include <rif/startup_messages_pipe.hpp>
+
 #include <boost/program_options.hpp>
 
 #include <sdpa/daemon/agent/Agent.hpp>
@@ -19,7 +20,6 @@
 #include <boost/filesystem/path.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
-#include <fhg/util/read_bool.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 
@@ -63,11 +63,9 @@ try
     , boost::program_options::value<validators::nonempty_string>()
     , "socket file to communicate with the virtual memory manager"
     )
-    ( "startup-messages-pipe"
-    , po::value<int>()->required()
-    , "pipe filedescriptor to use for communication during startup (ports used, ...)"
-    )
     ;
+
+  desc.add (fhg::rif::startup_messages_pipe::program_options());
 
   po::variables_map vm;
   po::store( po::command_line_parser( argc, argv ).options(desc).run(), vm );
@@ -85,7 +83,7 @@ try
 
   if (vm.count (option_name::vmem_socket))
   {
-    vmem_socket = bfs::path (vm[option_name::vmem_socket].as<validators::nonempty_string>());
+    vmem_socket = bfs::path (vm.at (option_name::vmem_socket).as<validators::nonempty_string>());
   }
 
   std::vector<std::tuple<std::string, fhg::com::host_t, fhg::com::port_t>> masters;
@@ -107,11 +105,10 @@ try
   }
 
   boost::asio::io_service gui_io_service;
-  boost::asio::io_service peer_io_service;
   const sdpa::daemon::Agent agent
     ( agentName
     , agentUrl
-    , peer_io_service
+    , fhg::util::make_unique<boost::asio::io_service>()
     , vmem_socket
     , masters
     , std::pair<std::string, boost::asio::io_service&> (appGuiUrl, gui_io_service)
@@ -131,15 +128,10 @@ try
     (signal_handlers, SIGINT, std::bind (request_stop));
 
   {
-    boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
-      startup_messages_pipe ( vm["startup-messages-pipe"].as<int>()
-                            , boost::iostreams::close_handle
-                            );
+    fhg::rif::startup_messages_pipe startup_messages_pipe (vm);
     startup_messages_pipe << fhg::util::connectable_to_address_string
-                               (agent.peer_local_endpoint().address())
-                          << "\n";
-    startup_messages_pipe << agent.peer_local_endpoint().port() << "\n";
-    startup_messages_pipe << "OKAY\n";
+                               (agent.peer_local_endpoint().address());
+    startup_messages_pipe << agent.peer_local_endpoint().port();
   }
 
   stop_requested.wait();

@@ -1,5 +1,4 @@
-#ifndef GPI_SPACE_PC_MEMORY_MANAGER_HPP
-#define GPI_SPACE_PC_MEMORY_MANAGER_HPP 1
+#pragma once
 
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
@@ -152,5 +151,3 @@ namespace gpi
     }
   }
 }
-
-#endif

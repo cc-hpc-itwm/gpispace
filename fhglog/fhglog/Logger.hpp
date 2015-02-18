@@ -1,5 +1,4 @@
-#ifndef FHG_LOG_LOGGER_HPP
-#define FHG_LOG_LOGGER_HPP 1
+#pragma once
 
 #include <list>
 #include <string>
@@ -52,5 +51,3 @@ namespace fhg
     };
   }
 }
-
-#endif

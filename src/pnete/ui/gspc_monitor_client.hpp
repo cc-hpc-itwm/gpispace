@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_PNETE_UI_MONITOR_CLIENT_HPP
-#define FHG_PNETE_UI_MONITOR_CLIENT_HPP
+#pragma once
 
 #include <fhg/util/parse/position.hpp>
 
@@ -123,5 +122,3 @@ namespace fhg
     }
   }
 }
-
-#endif

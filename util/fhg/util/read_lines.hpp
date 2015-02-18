@@ -1,5 +1,4 @@
-#ifndef FHG_UTIL_READ_LINES_HPP
-#define FHG_UTIL_READ_LINES_HPP
+#pragma once
 
 #include <boost/filesystem/path.hpp>
 
@@ -13,5 +12,3 @@ namespace fhg
     std::vector<std::string> read_lines (boost::filesystem::path const&);
   }
 }
-
-#endif

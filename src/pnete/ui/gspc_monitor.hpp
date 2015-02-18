@@ -1,7 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#ifndef FHG_PNETE_UI_GSPC_MONITOR_HPP
-#define FHG_PNETE_UI_GSPC_MONITOR_HPP
+#pragma once
 
 #include <QSplitter>
 #include <QString>
@@ -22,5 +21,3 @@ namespace fhg
     }
   }
 }
-
-#endif
