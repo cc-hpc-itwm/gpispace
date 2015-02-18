@@ -63,12 +63,11 @@ namespace gspc
       logging.add_options()
         ( name::log_host
         , boost::program_options::value<validators::nonempty_string>()
-        ->required()
         , "name of log host"
         )
         ( name::log_port
         , boost::program_options::value
-          <validators::positive_integral<unsigned short>>()->required()
+          <validators::positive_integral<unsigned short>>()
         , "port on log-host to log to"
         )
         ( name::log_level
@@ -77,12 +76,11 @@ namespace gspc
         )
         ( name::gui_host
         , boost::program_options::value<validators::nonempty_string>()
-          ->required()
         , "name of gui host"
         )
         ( name::gui_port
         , boost::program_options::value
-          <validators::positive_integral<unsigned short>>()->required()
+          <validators::positive_integral<unsigned short>>()
         , "port on gui-host to send to"
         )
         ;
