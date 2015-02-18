@@ -102,8 +102,7 @@ namespace gspc
     _->_client.put_token (job_id, place_name, value);
   }
 
-  std::multimap<std::string, pnet::type::value::value_type>
-    client::wait_and_extract (job_id_t job_id)
+  void client::wait (job_id_t job_id) const
   {
     std::cerr << "waiting for job " << job_id << std::endl;
 
@@ -122,7 +121,11 @@ namespace gspc
          ).str()
         );
     }
+  }
 
+  std::multimap<std::string, pnet::type::value::value_type>
+    client::extract_and_forget (job_id_t job_id)
+  {
     we::type::activity_t const result_activity
       (_->_client.retrieveResults (job_id));
 

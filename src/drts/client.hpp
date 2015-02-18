@@ -43,8 +43,16 @@ namespace gspc
                      , pnet::type::value::value_type
                      > const& values_on_ports
       );
+    void wait (job_id_t) const;
     std::multimap<std::string, pnet::type::value::value_type>
-      wait_and_extract (job_id_t);
+      extract_and_forget (job_id_t);
+    std::multimap<std::string, pnet::type::value::value_type>
+      wait_and_extract (job_id_t job_id)
+    {
+      wait (job_id);
+
+      return extract_and_forget (job_id);
+    }
 
     std::multimap<std::string, pnet::type::value::value_type>
       put_and_run
