@@ -47,7 +47,7 @@ namespace fhg
           ( std::pair<we::type::activity_t, xml::parse::id::ref::function>
           , std::string orchestrator_host
           , std::string orchestrator_port
-          , boost::asio::io_service& io_service
+          , std::unique_ptr<boost::asio::io_service> io_service
           );
 
       protected:

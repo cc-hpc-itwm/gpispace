@@ -1337,11 +1337,11 @@ namespace fhg
         ( std::pair<we::type::activity_t, xml::parse::id::ref::function> act_fun
         , std::string orchestrator_host
         , std::string orchestrator_port
-        , boost::asio::io_service& io_service
+        , std::unique_ptr<boost::asio::io_service> io_service
         )
           : _client ( fhg::com::host_t (orchestrator_host)
                     , fhg::com::port_t (orchestrator_port)
-                    , io_service
+                    , std::move (io_service)
                     )
           , _job_id (_client.submitJob (act_fun.first.to_string()))
           , _function (act_fun.second)
