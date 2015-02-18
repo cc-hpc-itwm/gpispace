@@ -175,14 +175,11 @@ namespace gspc
         )
       , _rif_entry_points (entry_points)
   {
-    unsigned short const default_gui_port
-      ((65535 - 30000 + fhg::syscall::getuid() * 2) % 65535 + 1024 + 1);
-
     fhg::util::signal_handler_manager signal_handler_manager;
 
     std::tie (_orchestrator_host, _orchestrator_port) = fhg::drts::startup
-      ( get_gui_host (vm).get_value_or (fhg::util::hostname())
-      , get_gui_port (vm).get_value_or (default_gui_port)
+      ( get_gui_host (vm)
+      , get_gui_port (vm)
       , get_log_host (vm)
       , get_log_port (vm)
       , _virtual_memory_per_node

@@ -31,8 +31,8 @@ namespace fhg
     using hostinfo_type = std::pair<std::string, unsigned short>;
 
     hostinfo_type startup
-      ( std::string gui_host
-      , unsigned short gui_port
+      ( boost::optional<std::string> const& gui_host
+      , boost::optional<unsigned short> const& gui_port
       , boost::optional<std::string> const& log_host
       , boost::optional<unsigned short> const& log_port
       , bool gpi_enabled

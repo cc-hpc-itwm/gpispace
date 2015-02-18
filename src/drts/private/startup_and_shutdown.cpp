@@ -127,8 +127,8 @@ namespace
     , std::string const& name
     , std::string const& parent_name
     , fhg::drts::hostinfo_type const& parent_hostinfo
-    , std::string const& gui_host
-    , unsigned short gui_port
+    , boost::optional<std::string> const& gui_host
+    , boost::optional<unsigned short> const& gui_port
     , boost::optional<std::string> const& log_host
     , boost::optional<unsigned short> const& log_port
     , boost::optional<boost::filesystem::path> const& gpi_socket
@@ -146,8 +146,13 @@ namespace
       { "-u", "0"
       , "-n", name
       , "-m", build_parent_with_hostinfo (parent_name, parent_hostinfo)
-      , "-a", gui_host + ":" + std::to_string (gui_port)
       };
+    if (gui_host && gui_port)
+    {
+      agent_startup_arguments.emplace_back ("-a");
+      agent_startup_arguments.emplace_back
+        (*gui_host + ":" + std::to_string (*gui_port));
+    }
     if (gpi_socket)
     {
       agent_startup_arguments.emplace_back ("--vmem-socket");
@@ -184,8 +189,8 @@ namespace
     ( segment_info_t const& segment_info
     , fhg::drts::worker_description const& description
     , bool verbose
-    , std::string const& gui_host
-    , unsigned short gui_port
+    , boost::optional<std::string> const& gui_host
+    , boost::optional<unsigned short> const& gui_port
     , boost::optional<std::string> const& log_host
     , boost::optional<unsigned short> const& log_port
     , boost::filesystem::path const& processes_dir
@@ -247,10 +252,13 @@ namespace
                    arguments.emplace_back ("1");
 
                    //! \todo gui is optional in worker
-                   arguments.emplace_back ("--gui-host");
-                   arguments.emplace_back (gui_host);
-                   arguments.emplace_back ("--gui-port");
-                   arguments.emplace_back (std::to_string (gui_port));
+                   if (gui_host && gui_port)
+                   {
+                     arguments.emplace_back ("--gui-host");
+                     arguments.emplace_back (*gui_host);
+                     arguments.emplace_back ("--gui-port");
+                     arguments.emplace_back (std::to_string (*gui_port));
+                   }
 
                    for (boost::filesystem::path const& path : app_path)
                    {
@@ -391,8 +399,8 @@ namespace fhg
     }
 
     hostinfo_type startup
-      ( std::string gui_host
-      , unsigned short gui_port
+      ( boost::optional<std::string> const& gui_host
+      , boost::optional<unsigned short> const& gui_port
       , boost::optional<std::string> const& log_host
       , boost::optional<unsigned short> const& log_port
       , bool gpi_enabled
@@ -514,8 +522,11 @@ namespace fhg
         std::cout << "I: sending log events to: "
                   << *log_host << ":" << *log_port << "\n";
       }
-      std::cout << "I: sending execution events to: "
-                << gui_host << ":" << gui_port << "\n";
+      if (gui_host && gui_port)
+      {
+        std::cout << "I: sending execution events to: "
+                  << *gui_host << ":" << *gui_port << "\n";
+      }
 
       std::pair<pid_t, std::vector<std::string>> const orchestrator_startup_messages
         ( fhg::util::nest_exceptions<std::runtime_error>
