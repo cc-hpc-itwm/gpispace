@@ -180,6 +180,10 @@ try
   boost::asio::io_service remote_log_io_service;
   fhg::log::configure (remote_log_io_service);
 
+  fhg::util::signal_handler_manager signal_handler;
+  fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
+    crit_error_handler (signal_handler, fhg::log::Logger::get());
+
   std::unique_ptr<fhg::com::peer_t> topology_peer
     ( fhg::util::make_unique<fhg::com::peer_t>
         ( fhg::util::make_unique<boost::asio::io_service>()
@@ -219,7 +223,6 @@ try
   const std::function<void()> request_stop
     (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
 
-  fhg::util::signal_handler_manager signal_handler;
   fhg::util::scoped_signal_handler const SIGTERM_handler
     (signal_handler, SIGTERM, std::bind (request_stop));
   fhg::util::scoped_signal_handler const SIGINT_handler
