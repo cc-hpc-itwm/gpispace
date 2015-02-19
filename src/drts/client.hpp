@@ -5,6 +5,7 @@
 #include <drts/client.fwd.hpp>
 #include <drts/drts.fwd.hpp>
 #include <drts/information_to_reattach.fwd.hpp>
+#include <drts/pimpl.hpp>
 
 #include <we/type/value.hpp>
 
@@ -20,14 +21,13 @@ namespace gspc
   {
   public:
     workflow (boost::filesystem::path workflow);
-    ~workflow();
 
     void set_wait_for_output();
 
   private:
-    struct implementation;
-    friend class client;
-    implementation* _;
+    friend class ::gspc::client;
+
+    PIMPL (workflow);
   };
 
   class client : boost::noncopyable
@@ -35,7 +35,6 @@ namespace gspc
   public:
     client (scoped_runtime_system const&);
     explicit client (information_to_reattach const&);
-    ~client();
 
     job_id_t submit
       ( workflow const&
@@ -70,8 +69,6 @@ namespace gspc
                    , pnet::type::value::value_type
                    );
 
-  private:
-    struct implementation;
-    implementation* _;
+    PIMPL (client);
   };
 }

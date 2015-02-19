@@ -3,12 +3,12 @@
 #pragma once
 
 #include <drts/drts.fwd.hpp>
+#include <drts/pimpl.hpp>
 #include <drts/virtual_memory.fwd.hpp>
 
 #include <we/type/value.hpp>
 
 #include <functional>
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -55,8 +55,6 @@ namespace gspc
                on_slot_filled
            );
   public:
-    ~stream();
-
     void write (std::string const&);
 
     static void mark_free ( const char old_flag_value
@@ -68,8 +66,7 @@ namespace gspc
 
     stream (stream&&);
     stream& operator= (stream&&) = delete;
-  private:
-    struct implementation;
-    std::unique_ptr<implementation> _;
+
+    PIMPL (stream);
   };
 }

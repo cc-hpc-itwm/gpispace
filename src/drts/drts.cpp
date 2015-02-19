@@ -3,6 +3,7 @@
 #include <drts/drts.hpp>
 #include <drts/private/drts_impl.hpp>
 #include <drts/private/option.hpp>
+#include <drts/private/pimpl.hpp>
 #include <drts/private/rifd_entry_points_impl.hpp>
 #include <drts/private/startup_and_shutdown.hpp>
 
@@ -124,11 +125,7 @@ namespace gspc
       : _ (new implementation (vm, installation, topology_description, entry_points))
   {}
 
-  scoped_runtime_system::~scoped_runtime_system()
-  {
-    delete _;
-    _ = nullptr;
-  }
+  PIMPL_DTOR (scoped_runtime_system)
 
 
   namespace
