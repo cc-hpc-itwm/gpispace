@@ -252,11 +252,6 @@ namespace gspc
     }
   }
 
-  scoped_runtime_system::implementation::~implementation()
-  {
-    _virtual_memory_api.reset();
-  }
-
   vmem_allocation scoped_runtime_system::alloc
     (unsigned long size, std::string const& description) const
   {

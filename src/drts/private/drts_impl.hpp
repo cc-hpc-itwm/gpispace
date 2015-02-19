@@ -23,8 +23,6 @@ namespace gspc
                    , rifd_entry_points const& entry_points
                    );
 
-    ~implementation();
-
     boost::optional<unsigned long> _virtual_memory_per_node;
     boost::optional<boost::filesystem::path> _virtual_memory_socket;
     boost::optional<std::chrono::seconds> _virtual_memory_startup_timeout;
