@@ -192,6 +192,7 @@ namespace gspc
       , worker_descriptions
       , vmem_port
       , _rif_entry_points
+      , state_dir / "log"
       );
   }
 

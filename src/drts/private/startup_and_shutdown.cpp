@@ -407,6 +407,7 @@ namespace fhg
       , std::vector<worker_description> worker_descriptions
       , boost::optional<unsigned short> vmem_port
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
+      , boost::optional<boost::filesystem::path> const& log_dir
       )
     {
       boost::filesystem::create_directories (state_dir);
@@ -454,7 +455,6 @@ namespace fhg
           );
       }
 
-      boost::optional<boost::filesystem::path> const log_dir (state_dir / "log");
       boost::filesystem::path const processes_dir (state_dir / "processes");
 
       boost::filesystem::create_directories (processes_dir);

@@ -49,6 +49,7 @@ namespace fhg
       , std::vector<worker_description> worker_descriptions
       , boost::optional<unsigned short> vmem_port
       , std::vector<fhg::rif::entry_point> const&
+      , boost::optional<boost::filesystem::path> const& log_dir
       );
 
     void shutdown ( boost::filesystem::path const& state_dir
