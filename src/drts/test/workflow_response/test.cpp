@@ -24,6 +24,7 @@
 #include <boost/program_options.hpp>
 
 #include <map>
+#include <future>
 
 #include <iostream>
 
@@ -103,6 +104,21 @@ BOOST_AUTO_TEST_CASE (workflow_response)
 
     value += i;
   }
+
+  std::future<pnet::type::value::value_type> asynchronous_response
+    ( std::async
+      ( std::launch::async
+      , [&drts, &job_id]()
+        {
+          return gspc::client (drts).synchronous_workflow_response
+            (job_id, "get_and_update_state", 0UL);
+        }
+      )
+    );
+
+  BOOST_REQUIRE_EQUAL ( pnet::type::value::value_type (value)
+                      , asynchronous_response.get()
+                      );
 
   //! \todo specific exception
   fhg::util::boost::test::require_exception<std::runtime_error>
