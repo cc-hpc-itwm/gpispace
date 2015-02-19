@@ -11,6 +11,7 @@
 
 #include <chrono>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace fhg
@@ -29,6 +30,16 @@ namespace fhg
       (std::size_t def_num_proc, std::string const& cap_spec);
 
     using hostinfo_type = std::pair<std::string, unsigned short>;
+
+    struct processes_storage
+    {
+      std::unordered_map < fhg::rif::entry_point
+                         , std::unordered_map<std::string /*name*/, pid_t>
+                         > _;
+
+      void store (fhg::rif::entry_point const&, std::string const& name, pid_t);
+      void garbage_collect();
+    };
 
     hostinfo_type startup
       ( boost::optional<std::string> const& gui_host
@@ -50,10 +61,12 @@ namespace fhg
       , boost::optional<unsigned short> vmem_port
       , std::vector<fhg::rif::entry_point> const&
       , boost::optional<boost::filesystem::path> const& log_dir
+      , processes_storage&
       );
 
     void shutdown ( boost::filesystem::path const& state_dir
                   , std::vector<fhg::rif::entry_point> const&
+                  , processes_storage&
                   );
   }
 }

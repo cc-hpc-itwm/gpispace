@@ -193,12 +193,13 @@ namespace gspc
       , vmem_port
       , _rif_entry_points
       , state_dir / "log"
+      , _processes_storage
       );
   }
 
   scoped_runtime_system::implementation::started_runtime_system::~started_runtime_system()
   {
-    fhg::drts::shutdown (_state_directory, _rif_entry_points);
+    fhg::drts::shutdown (_state_directory, _rif_entry_points, _processes_storage);
   }
 
   scoped_runtime_system::implementation::implementation

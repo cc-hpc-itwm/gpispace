@@ -54,6 +54,8 @@ namespace gspc
       boost::filesystem::path _state_directory;
       std::vector<fhg::rif::entry_point> _rif_entry_points;
 
+      fhg::drts::processes_storage _processes_storage;
+
       std::string _orchestrator_host;
       unsigned short _orchestrator_port;
     } _started_runtime_system;

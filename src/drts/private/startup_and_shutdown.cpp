@@ -1,5 +1,7 @@
 #include <drts/private/startup_and_shutdown.hpp>
 
+#include <drts/private/drts_impl.hpp>
+
 #include <fhg/util/boost/serialization/path.hpp>
 #include <fhg/util/boost/serialization/unordered_map.hpp>
 #include <fhg/util/join.hpp>
@@ -32,25 +34,30 @@
 #include <utility>
 #include <vector>
 
-namespace
+namespace fhg
 {
-  void write_pidfile ( boost::filesystem::path const& processes_dir
-                     , fhg::rif::entry_point const& entry_point
-                     , std::string const& name
-                     , pid_t pid
-                     )
+  namespace drts
   {
-    boost::filesystem::path const output_dir
-      (processes_dir / entry_point.to_string());
-    boost::filesystem::create_directories (output_dir);
-    std::ofstream stream ((output_dir / (name + ".pid")).string());
-    if (!stream || !(stream << pid))
+    void processes_storage::store ( fhg::rif::entry_point const& entry_point
+                                  , std::string const& name
+                                  , pid_t pid
+                                  )
     {
-      throw std::runtime_error
-        ("unable to write pidfile for " + name + " on " + entry_point.hostname);
+      if (!_[entry_point].emplace (name, pid).second)
+      {
+        throw std::logic_error
+          ( "process with name '" + name + "' on entry point '"
+          + entry_point.to_string() + "' already exists with pid "
+          + std::to_string (_.at (entry_point).at (name))
+          + ", new pid " + std::to_string (pid)
+          );
+      }
     }
   }
+}
 
+namespace
+{
   std::string build_parent_with_hostinfo
     (std::string const& name, fhg::drts::hostinfo_type const& hostinfo)
   {
@@ -122,7 +129,7 @@ namespace
     , bool verbose
     , boost::filesystem::path const& sdpa_home
     , boost::optional<boost::filesystem::path> const& log_dir
-    , boost::filesystem::path const& processes_dir
+    , fhg::drts::processes_storage& processes
     )
   {
     std::cout << "I: starting agent: " << name << " on host "
@@ -161,11 +168,7 @@ namespace
                              );
     }
 
-    write_pidfile ( processes_dir
-                  , rif_entry_point
-                  , name
-                  , agent_startup_messages.first
-                  );
+    processes.store (rif_entry_point, name, agent_startup_messages.first);
 
     return { agent_startup_messages.second[0]
            , boost::lexical_cast<unsigned short> (agent_startup_messages.second[1])
@@ -180,7 +183,7 @@ namespace
     , boost::optional<unsigned short> const& gui_port
     , boost::optional<std::string> const& log_host
     , boost::optional<unsigned short> const& log_port
-    , boost::filesystem::path const& processes_dir
+    , fhg::drts::processes_storage& processes
     , boost::optional<boost::filesystem::path> const& log_dir
     , boost::optional<boost::filesystem::path> const& gpi_socket
     , std::vector<boost::filesystem::path> const& app_path
@@ -312,11 +315,10 @@ namespace
                        ("could not start " + name + ": expected no startup messages");
                    }
 
-                   write_pidfile ( processes_dir
-                                 , entry_point
-                                 , "drts-kernel-" + name
-                                 , pid_and_startup_messages.first
-                                 );
+                   processes.store ( entry_point
+                                   , "drts-kernel-" + name
+                                   , pid_and_startup_messages.first
+                                   );
                  }
                )
            );
@@ -408,6 +410,7 @@ namespace fhg
       , boost::optional<unsigned short> vmem_port
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
       , boost::optional<boost::filesystem::path> const& log_dir
+      , fhg::drts::processes_storage& processes
       )
     {
       boost::filesystem::create_directories (state_dir);
@@ -455,20 +458,6 @@ namespace fhg
           );
       }
 
-      boost::filesystem::path const processes_dir (state_dir / "processes");
-
-      boost::filesystem::create_directories (processes_dir);
-
-      if (!boost::filesystem::is_empty (processes_dir))
-      {
-        std::cout << "W: there are still pid files in " << processes_dir
-                  << ", please make sure that the previous drts is stopped.\n"
-                  << "I: to stop the old one: run "
-                  << (sdpa_home / "bin" / "sdpa")
-                  << " stop -s " << state_dir << "\n";
-        throw std::runtime_error ("state directory is not clean");
-      }
-
       if (log_dir)
       {
         if (delete_logfiles)
@@ -484,7 +473,7 @@ namespace fhg
         {
           if (!_successful)
           {
-            shutdown (_state_dir, _rif_entry_points);
+            shutdown (_state_dir, _rif_entry_points, _processes);
           }
         }
         void startup_successful()
@@ -493,8 +482,9 @@ namespace fhg
         }
         boost::filesystem::path const& _state_dir;
         std::vector<fhg::rif::entry_point> const& _rif_entry_points;
+        processes_storage& _processes;
         bool _successful;
-      } stop_drts_on_failure = {state_dir, rif_entry_points, false};
+      } stop_drts_on_failure = {state_dir, rif_entry_points, processes, false};
 
       fhg::util::scoped_signal_handler interrupt_signal_handler
         ( signal_handler_manager
@@ -539,11 +529,8 @@ namespace fhg
           ("could not start orchestrator: expected 4 lines of startup messages");
       }
 
-      write_pidfile ( processes_dir
-                    , master
-                    , "orchestrator"
-                    , orchestrator_startup_messages.first
-                    );
+      processes.store
+        (master, "orchestrator", orchestrator_startup_messages.first);
 
       hostinfo_type const orchestrator_hostinfo
         ( orchestrator_startup_messages.second[0]
@@ -647,11 +634,8 @@ namespace fhg
                             );
                         }
 
-                        write_pidfile ( processes_dir
-                                      , entry_point
-                                      , "vmem"
-                                      , startup_messages.first
-                                      );
+                        processes.store
+                          (entry_point, "vmem", startup_messages.first);
                       }
                     )
                 );
@@ -714,7 +698,7 @@ namespace fhg
                             , verbose
                             , sdpa_home
                             , log_dir
-                            , processes_dir
+                            , processes
                             )
               );
 
@@ -744,7 +728,7 @@ namespace fhg
                                                 , verbose
                                                 , sdpa_home
                                                 , log_dir
-                                                , processes_dir
+                                                , processes
                                                 );
                                             }
                                           )
@@ -770,7 +754,7 @@ namespace fhg
                                   , gui_port
                                   , log_host
                                   , log_port
-                                  , processes_dir
+                                  , processes
                                   , log_dir
                                   , gpi_socket
                                   , app_path
@@ -789,97 +773,69 @@ namespace fhg
 
     namespace
     {
-      boost::iterator_range<boost::filesystem::directory_iterator>
-        directory_range (boost::filesystem::path const& path)
-      {
-        return { boost::filesystem::directory_iterator (path)
-               , boost::filesystem::directory_iterator()
-               };
-      }
-
-
-      void terminate_processes_on_host ( std::string const& name
-                                       , fhg::rif::entry_point const& entry_point
-                                       , std::vector<pid_t> const& pids
-                                       )
-      {
-        if (!pids.empty())
-        {
-          std::cout << "terminating " << name << " on " << entry_point.hostname
-                    << ": " << fhg::util::join (pids, " ") << "\n";
-          fhg::util::nest_exceptions<std::runtime_error>
-            ( [&entry_point, &pids]
-              {
-                rif::client (entry_point).kill (pids).get();
-              }
-            , ( boost::format ("Could not terminate %1% on %2%")
-              % name
-              % entry_point.hostname
-              ).str()
-            );
-        }
-      }
-
       void terminate_all_processes_of_a_kind
-        ( boost::filesystem::path const& state_dir
+        ( processes_storage& processes
         , std::string const& kind
         , std::vector<fhg::rif::entry_point> const& rif_entry_points
         )
       {
-        boost::filesystem::path const processes_dir (state_dir / "processes");
-
         std::vector<std::future<void>> terminates;
 
         for (fhg::rif::entry_point const& entry_point : rif_entry_points)
         {
           //! \todo revert HACK: actually remember where stuff is
           //! running and only try to kill stuff there
-          boost::filesystem::path const entry_point_dir
-            (processes_dir / entry_point.to_string());
-          if (!boost::filesystem::exists (entry_point_dir))
+          decltype (processes._)::iterator entry_point_processes
+            (processes._.find (entry_point));
+          if (entry_point_processes == processes._.end())
           {
             continue;
           }
 
-          std::set<boost::filesystem::path> pidfiles;
-
-          for ( boost::filesystem::directory_entry const& entry
-              : directory_range (entry_point_dir)
-              | boost::adaptors::filtered
-                  ( [&kind] (boost::filesystem::directory_entry const& entry)
-                    {
-                      return entry.path().extension() == ".pid"
-                        && entry.status().type() == boost::filesystem::regular_file
-                        && fhg::util::starts_with
-                             (kind, entry.path().stem().string())
-                        ;
-                    }
-                  )
+          using process_iter = decltype (processes._)::mapped_type::iterator;
+          std::vector<pid_t> pids;
+          std::vector<process_iter> to_erase;
+          for ( process_iter it (entry_point_processes->second.begin())
+              ; it != entry_point_processes->second.end()
+              ; ++it
               )
           {
-            pidfiles.emplace (entry.path());
+            if (fhg::util::starts_with (kind, it->first))
+            {
+              to_erase.emplace_back (it);
+              pids.emplace_back (it->second);
+            }
           }
 
-          terminates.emplace_back
-            ( std::async
-                ( std::launch::async
-                , [kind, entry_point, pidfiles]
-                  {
-                    std::vector<int> pids;
-                    for (boost::filesystem::path const& pidfile : pidfiles)
+          if (!pids.empty())
+          {
+            terminates.emplace_back
+              ( std::async
+                  ( std::launch::async
+                  , [&kind, entry_point, pids, to_erase, &entry_point_processes]
                     {
-                      pids.emplace_back ( boost::lexical_cast<pid_t>
-                                            (fhg::util::read_file (pidfile))
-                                        );
+                      std::cout << "terminating " << kind << " on " << entry_point.hostname
+                                << ": " << fhg::util::join (pids, " ") << "\n";
+
+                      fhg::util::nest_exceptions<std::runtime_error>
+                        ( [&entry_point, &pids]
+                          {
+                            rif::client (entry_point).kill (pids).get();
+                          }
+                        , ( boost::format ("Could not terminate %1% on %2%")
+                          % kind
+                          % entry_point.hostname
+                          ).str()
+                        );
+
+                      for (process_iter const& iter : to_erase)
+                      {
+                        entry_point_processes->second.erase (iter);
+                      }
                     }
-                    terminate_processes_on_host (kind, entry_point, pids);
-                    for (boost::filesystem::path const& pidfile : pidfiles)
-                    {
-                      boost::filesystem::remove (pidfile);
-                    }
-                  }
-                )
-            );
+                  )
+              );
+          }
         }
 
         fhg::util::wait_and_collect_exceptions (terminates);
@@ -898,7 +854,7 @@ namespace fhg
       };
     }
 
-    void shutdown ( boost::filesystem::path const& state_dir
+    void shutdown ( processes_storage& processes
                   , boost::optional<components_type::components_type> components
                   , std::vector<fhg::rif::entry_point> const& rif_entry_points
                   )
@@ -914,43 +870,43 @@ namespace fhg
       if (components.get() & components_type::worker)
       {
         terminate_all_processes_of_a_kind
-          (state_dir, "drts-kernel", rif_entry_points);
+          (processes, "drts-kernel", rif_entry_points);
       }
       if (components.get() & components_type::agent)
       {
-        terminate_all_processes_of_a_kind (state_dir, "agent", rif_entry_points);
+        terminate_all_processes_of_a_kind (processes, "agent", rif_entry_points);
       }
       if (components.get() & components_type::vmem)
       {
-        terminate_all_processes_of_a_kind (state_dir, "vmem", rif_entry_points);
+        terminate_all_processes_of_a_kind (processes, "vmem", rif_entry_points);
       }
       if (components.get() & components_type::orchestrator)
       {
         terminate_all_processes_of_a_kind
-          (state_dir, "orchestrator", rif_entry_points);
+          (processes, "orchestrator", rif_entry_points);
       }
 
-      for ( boost::filesystem::directory_entry const& entry
-          : directory_range (state_dir / "processes")
-          | boost::adaptors::filtered
-              ( [] (boost::filesystem::directory_entry const& entry)
-                {
-                  return boost::filesystem::is_empty (entry.path());
-                }
-              )
-          )
+      processes.garbage_collect();
+    }
+
+    processes_storage::garbage_collect()
+    {
+      for (decltype (_)::iterator it (_.begin()); it != _.end(); ++it)
       {
-        boost::filesystem::remove (entry.path());
+        if (it->second.empty())
+        {
+          _.erase (it);
+        }
       }
     }
 
     void shutdown ( boost::filesystem::path const& state_dir
                   , std::vector<fhg::rif::entry_point> const& rif_entry_points
+                  , processes_storage& processes
                   )
     {
-      shutdown (state_dir, boost::none, rif_entry_points);
+      shutdown (processes, boost::none, rif_entry_points);
 
-      boost::filesystem::remove (state_dir / "processes");
       boost::filesystem::remove (state_dir / "nodefile");
     }
   }
