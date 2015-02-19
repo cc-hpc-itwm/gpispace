@@ -891,11 +891,15 @@ namespace fhg
 
     void processes_storage::garbage_collect()
     {
-      for (decltype (_)::iterator it (_.begin()); it != _.end(); ++it)
+      for (decltype (_)::iterator it (_.begin()); it != _.end();)
       {
         if (it->second.empty())
         {
-          _.erase (it);
+          it = _.erase (it);
+        }
+        else
+        {
+          ++it;
         }
       }
     }
