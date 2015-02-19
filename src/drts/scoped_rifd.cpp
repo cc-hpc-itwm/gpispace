@@ -3,6 +3,7 @@
 #include <drts/scoped_rifd.hpp>
 
 #include <drts/drts.hpp>
+#include <drts/private/pimpl.hpp>
 #include <drts/private/option.hpp>
 #include <drts/private/rifd_entry_points_impl.hpp>
 
@@ -14,27 +15,9 @@ namespace gspc
 {
   namespace rifd
   {
-#define IMPLEMENTATION(_name, _type...)                                 \
-    struct _name::implementation                                        \
-    {                                                                   \
-      implementation (_type const& _name)                               \
-        : _ (_name)                                                     \
-      {}                                                                \
-                                                                        \
-      _type const _;                                                    \
-    };                                                                  \
-                                                                        \
-    _name::~_name()                                                     \
-    {                                                                   \
-      delete _;                                                         \
-      _ = nullptr;                                                      \
-    }
-
-    IMPLEMENTATION (strategy, std::string)
-    IMPLEMENTATION (hostnames, std::vector<std::string>)
-    IMPLEMENTATION (port, boost::optional<unsigned short>)
-
-#undef IMPLEMENTATION
+    PIMPL_IMPLEMENTATION (strategy, std::string)
+    PIMPL_IMPLEMENTATION (hostnames, std::vector<std::string>)
+    PIMPL_IMPLEMENTATION (port, boost::optional<unsigned short>)
 
     strategy::strategy (boost::program_options::variables_map const& vm)
       : _ (new implementation (require_rif_strategy (vm)))
@@ -93,11 +76,7 @@ namespace gspc
         )
   {}
 
-  scoped_rifd::~scoped_rifd()
-  {
-    delete _;
-    _ = nullptr;
-  }
+  PIMPL_DTOR (scoped_rifd)
 
   rifd_entry_points scoped_rifd::entry_points() const
   {

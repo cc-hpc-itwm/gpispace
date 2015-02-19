@@ -4,6 +4,7 @@
 #include <drts/drts.hpp>
 
 #include <drts/information_to_reattach.hpp>
+#include <drts/private/pimpl.hpp>
 #include <drts/private/information_to_reattach.hpp>
 
 #include <fhg/util/make_unique.hpp>
@@ -32,11 +33,7 @@ namespace gspc
   workflow::workflow (boost::filesystem::path workflow)
     : _ (new implementation (we::type::activity_t (workflow)))
   {}
-  workflow::~workflow()
-  {
-    delete _;
-    _ = nullptr;
-  }
+  PIMPL_DTOR (workflow)
 
   void workflow::set_wait_for_output()
   {
@@ -65,11 +62,7 @@ namespace gspc
   client::client (information_to_reattach const& drts_info)
     : _ (new implementation (drts_info._->endpoint()))
   {}
-  client::~client()
-  {
-    delete _;
-    _ = nullptr;
-  }
+  PIMPL_DTOR (client)
 
   job_id_t client::submit
     ( class workflow const& workflow

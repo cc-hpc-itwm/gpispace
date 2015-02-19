@@ -6,14 +6,13 @@
 #include <drts/client.fwd.hpp>
 #include <drts/drts.fwd.hpp>
 #include <drts/private/drts_impl.hpp>
+#include <drts/private/pimpl.hpp>
 #include <drts/virtual_memory.hpp>
 
 #include <drts/private/scoped_allocation.hpp>
 
 #include <gpi-space/pc/client/api.hpp>
 #include <gpi-space/pc/type/handle.hpp>
-
-#include <fhg/util/make_unique.hpp>
 
 #include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
@@ -189,12 +188,12 @@ namespace gspc
                  , std::function<void (pnet::type::value::value_type const&)>
                      on_slot_filled
                  )
-    : _ (fhg::util::make_unique<implementation> ( drts
-                                                , name
-                                                , buffer
-                                                , size_of_slot
-                                                , on_slot_filled
-                                                )
+    : _ (new implementation ( drts
+                            , name
+                            , buffer
+                            , size_of_slot
+                            , on_slot_filled
+                            )
         )
   {}
 
@@ -202,8 +201,7 @@ namespace gspc
     : _ (std::move (other._))
   {}
 
-  stream::~stream()
-  {}
+  PIMPL_DTOR (stream)
 
   void stream::write (std::string const& data)
   {

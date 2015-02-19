@@ -4,11 +4,10 @@
 #include <drts/virtual_memory.hpp>
 
 #include <drts/private/drts_impl.hpp>
+#include <drts/private/pimpl.hpp>
 #include <drts/private/scoped_allocation.hpp>
 
 #include <we/type/value/poke.hpp>
-
-#include <fhg/util/make_unique.hpp>
 
 #include <gpi-space/pc/client/api.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
@@ -91,7 +90,7 @@ namespace gspc
                                    , unsigned long size
                                    , std::string const& description
                                    )
-    : _ ( fhg::util::make_unique<vmem_allocation::implementation>
+    : _ ( new vmem_allocation::implementation
           (drts->_->_virtual_memory_api, size, description)
         )
   {}
@@ -118,8 +117,8 @@ namespace gspc
         )
       );
   }
-  vmem_allocation::~vmem_allocation()
-  {}
+  PIMPL_DTOR (vmem_allocation)
+
   std::string const vmem_allocation::handle() const
   {
     // taken from gpi-space/pc/type/handle.hpp

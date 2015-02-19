@@ -7,6 +7,8 @@
 #include <drts/drts.fwd.hpp>
 #include <drts/rifd_entry_points.hpp>
 
+#include <drts/pimpl.hpp>
+
 #include <boost/filesystem/path.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
@@ -19,17 +21,12 @@ namespace gspc
 {
   namespace rifd
   {
-#define PIMPL(_name)                      \
-      private:                            \
-        friend class ::gspc::scoped_rifd; \
-        struct implementation;            \
-        implementation* _;                \
-      public:                             \
-        ~_name()
-
     struct strategy
     {
       strategy (boost::program_options::variables_map const&);
+
+    private:
+      friend class ::gspc::scoped_rifd;
 
       PIMPL (strategy);
     };
@@ -39,11 +36,17 @@ namespace gspc
       hostnames (boost::program_options::variables_map const&);
       hostnames (std::vector<std::string> const&);
 
+    private:
+      friend class ::gspc::scoped_rifd;
+
       PIMPL (hostnames);
     };
     struct port
     {
       port (boost::program_options::variables_map const&);
+
+    private:
+      friend class ::gspc::scoped_rifd;
 
       PIMPL (port);
     };
@@ -58,12 +61,8 @@ namespace gspc
                 , installation const&
                 );
 
-    ~scoped_rifd();
-
     rifd_entry_points entry_points() const;
 
-  private:
-    struct implementation;
-    implementation* _;
+    PIMPL (scoped_rifd);
   };
 }

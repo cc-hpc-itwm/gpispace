@@ -2,6 +2,7 @@
 
 #include <drts/rifd_entry_points.hpp>
 
+#include <drts/private/pimpl.hpp>
 #include <drts/private/rifd_entry_points_impl.hpp>
 
 #include <fhg/util/read_lines.hpp>
@@ -25,11 +26,7 @@ namespace gspc
   rifd_entry_points::rifd_entry_points (implementation* impl)
     : _ (impl)
   {}
-  rifd_entry_points::~rifd_entry_points()
-  {
-    delete _;
-    _ = nullptr;
-  }
+  PIMPL_DTOR (rifd_entry_points)
 
   rifd_entry_points::rifd_entry_points (rifd_entry_points const& other)
     : _ (new implementation (*other._))
