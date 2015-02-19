@@ -107,9 +107,7 @@ namespace
 
     GenericDaemon::virtual_memory_api::virtual_memory_api (boost::filesystem::path const& socket)
       : _ (socket.string())
-    {
-      _.start();
-    }
+    {}
 
     GenericDaemon::master_network_info::master_network_info
         (std::string const& host, std::string const& port)

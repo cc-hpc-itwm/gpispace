@@ -245,12 +245,7 @@ namespace gspc
           (_virtual_memory_socket->string())
         : nullptr
         )
-  {
-    if (_virtual_memory_per_node)
-    {
-      _virtual_memory_api->start();
-    }
-  }
+  {}
 
   vmem_allocation scoped_runtime_system::alloc
     (unsigned long size, std::string const& description) const

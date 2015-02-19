@@ -53,20 +53,12 @@ namespace gpi
     namespace client
     {
       api_t::api_t (std::string const & path)
-        : m_path (path)
-        , m_socket (-1)
+        : m_socket (open_socket (path))
       {}
 
       api_t::~api_t ()
       {
           stop ();
-      }
-
-      void api_t::start ()
-      {
-        lock_type lock (m_mutex);
-
-        m_socket = open_socket (m_path);
       }
 
       void api_t::stop ()
