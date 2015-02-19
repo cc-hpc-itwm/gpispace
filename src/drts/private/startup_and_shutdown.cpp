@@ -109,19 +109,6 @@ namespace
     return environment;
   }
 
-  //! \note rhs preferred
-  std::unordered_map<std::string, std::string> merge
-    ( std::unordered_map<std::string, std::string> const& lhs
-    , std::unordered_map<std::string, std::string> rhs
-    )
-  {
-    for (std::pair<std::string, std::string> const& entry : lhs)
-    {
-      rhs.emplace (entry);
-    }
-    return rhs;
-  }
-
   fhg::drts::hostinfo_type start_agent
     ( fhg::rif::entry_point const& rif_entry_point
     , std::string const& name
@@ -302,17 +289,20 @@ namespace
                    arguments.emplace_back ("-n");
                    arguments.emplace_back (name);
 
+                   std::unordered_map<std::string, std::string> environment
+                     ( logging_environment
+                         (log_host, log_port, log_dir, verbose, name)
+                     );
+                   environment.emplace ( "LD_LIBRARY_PATH"
+                                       , (sdpa_home / "lib").string() + ":"
+                                       + (sdpa_home / "libexec" / "sdpa").string()
+                                       );
+
                    std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages
                      ( fhg::rif::client (entry_point).execute_and_get_startup_messages
                        ( sdpa_home / "bin" / "drts-kernel"
                        , arguments
-                       , merge ( {{ "LD_LIBRARY_PATH"
-                                  , (sdpa_home / "lib").string() + ":"
-                                  + (sdpa_home / "libexec" / "sdpa").string()
-                                 }}
-                               , logging_environment
-                                   (log_host, log_port, log_dir, verbose, name)
-                               )
+                       , environment
                        ).get()
                      );
 
