@@ -889,7 +889,7 @@ namespace fhg
       processes.garbage_collect();
     }
 
-    processes_storage::garbage_collect()
+    void processes_storage::garbage_collect()
     {
       for (decltype (_)::iterator it (_.begin()); it != _.end(); ++it)
       {
