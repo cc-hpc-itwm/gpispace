@@ -727,6 +727,21 @@ namespace fhg
             (processes._.find (entry_point));
           if (entry_point_processes == processes._.end())
           {
+            terminates.emplace_back
+              ( std::async
+                ( std::launch::async
+                , [&entry_point]()
+                  {
+                    throw std::invalid_argument
+                      (( boost::format
+                         ("Terminate on unknown entry point '%1%'")
+                       % entry_point.to_string()
+                       ).str()
+                      );
+                  }
+                )
+              );
+
             continue;
           }
 
