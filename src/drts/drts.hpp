@@ -75,6 +75,8 @@ namespace gspc
 
     ~scoped_runtime_system();
 
+    void remove_worker (rifd_entry_points const&);
+
     vmem_allocation alloc
       (unsigned long size, std::string const& description) const;
     vmem_allocation alloc_and_fill

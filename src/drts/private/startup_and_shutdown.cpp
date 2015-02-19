@@ -780,26 +780,6 @@ namespace fhg
       }
     }
 
-    //! \todo learn enum class
-    namespace components_type
-    {
-      enum components_type
-      {
-        vmem = 1 << 1,
-        orchestrator = 1 << 2,
-        agent = 1 << 3,
-        worker = 1 << 4,
-      };
-      constexpr const char* to_string (components_type const& component)
-      {
-        return component == worker ? "drts-kernel"
-          : component == agent ? "agent"
-          : component == orchestrator ? "orchestrator"
-          : component == vmem ? "vmem"
-          : throw std::logic_error ("invalid enum value");
-      }
-    }
-
     void shutdown ( processes_storage& processes
                   , boost::optional<components_type::components_type> components
                   , std::vector<fhg::rif::entry_point> const& rif_entry_points
