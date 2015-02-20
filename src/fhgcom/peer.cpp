@@ -204,6 +204,8 @@ namespace fhg
                       , const std::string & data
                       )
     {
+      boost::this_thread::disable_interruption const interuption_disabler;
+
       typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
       async_op_t send_finished;
       async_send
@@ -251,6 +253,8 @@ namespace fhg
     void peer_t::recv (message_t *m)
     {
       fhg_assert (m);
+
+      boost::this_thread::disable_interruption const interuption_disabler;
 
       typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
       async_op_t recv_finished;
