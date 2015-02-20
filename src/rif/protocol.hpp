@@ -47,7 +47,7 @@ namespace fhg
                 , std::string vmem_implementation
                 , boost::optional<std::pair<std::string, unsigned short>> log_server
                 , boost::optional<boost::filesystem::path> log_file
-                , boost::filesystem::path nodefile
+                , std::vector<std::string> nodes
                 , std::string gaspi_master
                 , bool is_master
                 )

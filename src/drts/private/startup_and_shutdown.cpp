@@ -415,38 +415,6 @@ namespace fhg
     {
       boost::filesystem::create_directories (state_dir);
 
-      boost::filesystem::path const nodefile (state_dir / "nodefile");
-      {
-        std::ofstream nodefile_stream (nodefile.string());
-
-        if (!nodefile_stream)
-        {
-          throw std::runtime_error
-            ( ( boost::format ("Could not create nodefile %1%: %2%")
-              % nodefile
-              % strerror (errno)
-              )
-            . str()
-            );
-        }
-
-        for (fhg::rif::entry_point const& entry_point : rif_entry_points)
-        {
-          nodefile_stream << entry_point.hostname << "\n";
-        }
-
-        if (!nodefile_stream)
-        {
-          throw std::runtime_error
-            ( ( boost::format ("Could not write to nodefile %1%: %2%")
-              % nodefile
-              % strerror (errno)
-              )
-            . str()
-            );
-        }
-      }
-
       fhg::rif::entry_point const& master (rif_entry_points.front());
 
       if (number_of_groups > rif_entry_points.size())
@@ -495,8 +463,7 @@ namespace fhg
           }
         );
 
-      std::cout << "I: using nodefile: " << nodefile << "\n"
-                << "starting base sdpa components on " << master.hostname << "...\n";
+      std::cout << "I: starting base sdpa components on " << master.hostname << "...\n";
       if (log_host && log_port)
       {
         std::cout << "I: sending log events to: "
@@ -571,6 +538,12 @@ namespace fhg
                   << " with a timeout of " << vmem_startup_timeout.get().count()
                   << " seconds\n";
 
+        std::vector<std::string> nodes;
+        for (fhg::rif::entry_point const& entry_point : rif_entry_points)
+        {
+          nodes.emplace_back (entry_point.hostname);
+        }
+
         fhg::util::nest_exceptions<std::runtime_error>
           ( [&]
             {
@@ -598,7 +571,7 @@ namespace fhg
                               , log_dir
                               ? *log_dir / ("vmem-" + entry_point.hostname + ".log")
                               : boost::optional<boost::filesystem::path>()
-                              , nodefile
+                              , nodes
                               , master.hostname
                               , entry_point == master
                               ).get()
@@ -879,8 +852,6 @@ namespace fhg
                   )
     {
       shutdown (processes, boost::none, rif_entry_points);
-
-      boost::filesystem::remove (state_dir / "nodefile");
     }
   }
 }

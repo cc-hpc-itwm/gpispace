@@ -9,6 +9,7 @@
 #include <fhg/util/boost/serialization/unordered_map.hpp>
 #include <fhg/util/join.hpp>
 #include <fhg/util/print_exception.hpp>
+#include <fhg/util/temporary_file.hpp>
 
 #include <network/server.hpp>
 
@@ -23,6 +24,8 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/thread/scoped_thread.hpp>
+
+#include <fstream>
 
 namespace
 {
@@ -160,7 +163,7 @@ try
            , std::string vmem_implementation
            , boost::optional<std::pair<std::string, unsigned short>> log_server
            , boost::optional<boost::filesystem::path> log_file
-           , boost::filesystem::path nodefile
+           , std::vector<std::string> nodes
            , std::string gaspi_master
            , bool is_master
            ) -> pid_t
@@ -185,6 +188,44 @@ try
             arguments.emplace_back ("--log-file");
             arguments.emplace_back (log_file->string());
           }
+
+          //! \todo allow to specify folder to put temporary file in
+          boost::filesystem::path const nodefile
+            ( boost::filesystem::unique_path
+                ("GPISPACE-VMEM-NODEFILE-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+            );
+          fhg::util::temporary_file nodefile_temporary (nodefile);
+          {
+            std::ofstream nodefile_stream (nodefile.string());
+
+            if (!nodefile_stream)
+            {
+              throw std::runtime_error
+                ( ( boost::format ("Could not create nodefile %1%: %2%")
+                  % nodefile
+                  % strerror (errno)
+                  )
+                . str()
+                );
+            }
+
+            for (std::string const& node : nodes)
+            {
+              nodefile_stream << node << "\n";
+            }
+
+            if (!nodefile_stream)
+            {
+              throw std::runtime_error
+                ( ( boost::format ("Could not write to nodefile %1%: %2%")
+                  % nodefile
+                  % strerror (errno)
+                  )
+                . str()
+                );
+            }
+          }
+
           std::pair<pid_t, std::vector<std::string>> const
             startup_messages
             ( fhg::rif::execute_and_get_startup_messages
