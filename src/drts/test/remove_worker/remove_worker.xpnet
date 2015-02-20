@@ -1,0 +1,40 @@
+<defun name="test_remove_worker">
+  <in name="address" type="string"/>
+  <in name="port" type="unsigned int"/>
+  <out name="done" type="control"/>
+  <module name="test_remove_worker"
+          function="done connect_and_wait (address, port)"
+          pass_context="true">
+    <cinclude href="boost/asio/connect.hpp"/>
+    <cinclude href="boost/asio/io_service.hpp"/>
+    <cinclude href="boost/asio/ip/tcp.hpp"/>
+    <cinclude href="condition_variable"/>
+    <cinclude href="mutex"/>
+    <cxx flag="--std=c++11"/>
+    <code><![CDATA[
+    std::condition_variable cancel_received;
+
+    _pnetc_context->set_module_call_do_cancel
+      (std::bind (&std::condition_variable::notify_all, &cancel_received));
+
+    boost::asio::io_service io_service;
+    boost::asio::ip::tcp::socket socket (io_service);
+
+    boost::asio::connect
+      ( socket
+      , boost::asio::ip::tcp::resolver (io_service)
+      . resolve ({ address
+                 , std::to_string (port)
+                 , boost::asio::ip::tcp::resolver::query::flags()
+                 }
+                )
+      );
+
+    std::mutex mutex;
+    std::unique_lock<std::mutex> lock (mutex);
+    cancel_received.wait (lock);
+
+    return we::type::literal::control();
+    ]]></code>
+  </module>
+</defun>
