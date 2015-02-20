@@ -178,15 +178,6 @@ private:
   gpi::pc::client::api_t /*const*/* _virtual_memory_api;
   gspc::scoped_allocation /*const*/* _shared_memory;
 
-  struct mark_remaining_tasks_as_canceled_helper
-  {
-    ~mark_remaining_tasks_as_canceled_helper();
-
-    std::mutex& _currently_executed_tasks_mutex;
-    std::map<std::string, wfe_task_t *>& _currently_executed_tasks;
-  } _mark_remaining_tasks_as_canceled_helper
-    = {_currently_executed_tasks_mutex, _currently_executed_tasks};
-
   fhg::com::message_t m_message;
   //! \todo Two sets for connected and unconnected masters?
   map_of_masters_t m_masters;
@@ -209,4 +200,13 @@ private:
     m_event_thread;
   boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
     m_execution_thread;
+
+  struct mark_remaining_tasks_as_canceled_helper
+  {
+    ~mark_remaining_tasks_as_canceled_helper();
+
+    std::mutex& _currently_executed_tasks_mutex;
+    std::map<std::string, wfe_task_t *>& _currently_executed_tasks;
+  } _mark_remaining_tasks_as_canceled_helper
+    = {_currently_executed_tasks_mutex, _currently_executed_tasks};
 };
