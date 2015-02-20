@@ -36,8 +36,8 @@ namespace fhg
         (network::connection_type* connection, network::buffer_type packet) const;
 
     private:
-      template<typename> friend struct service_handler;
-      template<typename> friend struct aggregated_service_handler;
+      template<typename, typename> friend struct service_handler;
+      template<typename, typename> friend struct aggregated_service_handler;
 
       std::unordered_map
         < std::string
@@ -52,9 +52,9 @@ namespace fhg
     template<typename> struct thunk;
 
     //! \note helper to register service scoped
-    template<typename> struct service_handler;
+    template<typename, typename = void> struct service_handler;
     template<typename R, typename... Args>
-      struct service_handler<R (Args...)> : boost::noncopyable
+      struct service_handler<R (Args...), void> : boost::noncopyable
     {
     public:
       template<typename Func>
@@ -70,6 +70,17 @@ namespace fhg
     private:
       util::unique_scoped_map_insert<decltype (service_dispatcher::_handlers)>
         _handler_registration;
+    };
+
+    template<typename Description>
+      struct service_handler<Description, is_function_description<Description>>
+        : service_handler<typename Description::signature>
+    {
+      template<typename Func>
+        service_handler (service_dispatcher& manager, Func handler)
+          : service_handler<typename Description::signature>
+              (manager, Description::name, std::move (handler))
+      {}
     };
 
     namespace
@@ -93,9 +104,9 @@ namespace fhg
       }
     }
 
-    template<typename> struct aggregated_service_handler;
+    template<typename, typename = void> struct aggregated_service_handler;
     template<typename R, typename... Args>
-      struct aggregated_service_handler<R (Args...)> : boost::noncopyable
+      struct aggregated_service_handler<R (Args...), void> : boost::noncopyable
     {
     public:
       template<typename Func>
@@ -191,6 +202,31 @@ namespace fhg
         _aggregated_serialization_functions;
       util::unique_scoped_map_insert<decltype (service_dispatcher::_handlers)>
         _handler_registration;
+    };
+
+    template<typename Description>
+      struct aggregated_service_handler<Description, is_function_description<Description>>
+        : aggregated_service_handler<typename Description::signature>
+    {
+      template<typename Func>
+        aggregated_service_handler
+          ( service_dispatcher& manager
+          , Func impl
+          //! \todo Shall be determined by rpc, not user
+          , std::function<bool (endpoint_type)> is_endpoint
+          , std::function<std::list<endpoints_type> (endpoints_type)> split
+          , std::function<endpoint_type (endpoints_type const&)> select
+          //! \note must be able to handle a request while handling
+          //! this request, thus needs to have two threads or has to
+          //! be different from the one the io_service used to process
+          //! this request as services are not handled deferred
+          , std::function<boost::asio::io_service&()> io_service
+          )
+        : aggregated_service_handler<typename Description::signature>
+            ( manager, Description::name, std::move (impl)
+            , is_endpoint, split, select, io_service
+            )
+      {}
     };
 
     namespace

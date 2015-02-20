@@ -4,6 +4,7 @@
 
 #include <rpc/common.hpp>
 #include <rpc/exception_serialization.hpp>
+#include <rpc/function_description.hpp>
 
 #include <fhg/assert.hpp>
 #include <fhg/util/boost/serialization/tuple.hpp>
@@ -49,8 +50,8 @@ namespace fhg
         send_and_receive (network::buffer_type buffer);
 
     private:
-      template<typename> friend struct remote_function;
-      template<typename> friend struct aggregated_remote_function;
+      template<typename, typename> friend struct remote_function;
+      template<typename, typename> friend struct aggregated_remote_function;
 
       exception::serialization_functions _serialization_functions;
       exception::aggregated_serialization_functions
@@ -96,9 +97,9 @@ namespace fhg
     //! std::terminate() it does not inherit from a std::* exception
     //! class. If it does, it will be downcasted automatically. On the
     //! API to implement, see src/rpc/exception_serialization.hpp.
-    template<typename> struct remote_function;
+    template<typename, typename = void> struct remote_function;
     template<typename R, typename... Args>
-      struct remote_function<R (Args...)>
+      struct remote_function<R (Args...), void>
     {
     public:
       remote_function (remote_endpoint& endpoint, std::string function)
@@ -158,9 +159,19 @@ namespace fhg
       std::string _function;
     };
 
-    template<typename> struct sync_remote_function;
+    template<typename Description>
+      struct remote_function<Description, is_function_description<Description>>
+        : remote_function<typename Description::signature>
+    {
+      remote_function (remote_endpoint& endpoint)
+        : remote_function<typename Description::signature>
+            (endpoint, Description::name)
+      {}
+    };
+
+    template<typename, typename = void> struct sync_remote_function;
     template<typename R, typename... Args>
-      struct sync_remote_function<R (Args...)>
+      struct sync_remote_function<R (Args...), void>
     {
     public:
       sync_remote_function (remote_endpoint& endpoint, std::string function)
@@ -176,9 +187,19 @@ namespace fhg
       remote_function<R (Args...)> _function;
     };
 
-    template<typename> struct aggregated_remote_function;
+    template<typename Description>
+      struct sync_remote_function<Description, is_function_description<Description>>
+        : sync_remote_function<typename Description::signature>
+    {
+      sync_remote_function (remote_endpoint& endpoint)
+        : sync_remote_function<typename Description::signature>
+            (endpoint, Description::name)
+      {}
+    };
+
+    template<typename, typename = void> struct aggregated_remote_function;
     template<typename R, typename... Args>
-      struct aggregated_remote_function<R (Args...)>
+      struct aggregated_remote_function<R (Args...), void>
     {
     public:
       aggregated_remote_function
@@ -211,9 +232,19 @@ namespace fhg
       remote_function<aggregated_results<R> (endpoints_type, Args...)> _function;
     };
 
-    template<typename> struct sync_aggregated_remote_function;
+    template<typename Description>
+      struct aggregated_remote_function<Description, is_function_description<Description>>
+        : aggregated_remote_function<typename Description::signature>
+    {
+      aggregated_remote_function (remote_endpoint& endpoint)
+        : aggregated_remote_function<typename Description::signature>
+            (endpoint, Description::name)
+      {}
+    };
+
+    template<typename, typename = void> struct sync_aggregated_remote_function;
     template<typename R, typename... Args>
-      struct sync_aggregated_remote_function<R (Args...)>
+      struct sync_aggregated_remote_function<R (Args...), void>
     {
     public:
       sync_aggregated_remote_function
@@ -228,6 +259,16 @@ namespace fhg
 
     private:
       aggregated_remote_function<R (Args...)> _function;
+    };
+
+    template<typename Description>
+      struct sync_aggregated_remote_function<Description, is_function_description<Description>>
+        : sync_aggregated_remote_function<typename Description::signature>
+    {
+      sync_aggregated_remote_function (remote_endpoint& endpoint)
+        : sync_aggregated_remote_function<typename Description::signature>
+            (endpoint, Description::name)
+      {}
     };
   }
 }
