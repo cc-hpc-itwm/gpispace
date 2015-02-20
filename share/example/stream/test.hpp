@@ -10,7 +10,6 @@
 
 #include <test/make.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
-#include <test/scoped_state_directory.hpp>
 #include <test/shared_directory.hpp>
 #include <test/source_directory.hpp>
 #include <test/virtual_memory_socket_name_for_localhost.hpp>
@@ -86,7 +85,6 @@ namespace share_example_stream_test
     fhg::util::temporary_path const shared_directory
       (test::shared_directory (vm) / ("share_example_stream" + workflow_name));
 
-    test::scoped_state_directory const state_directory (shared_directory, vm);
     test::scoped_nodefile_from_environment const nodefile_from_environment
       (shared_directory, vm);
 

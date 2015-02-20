@@ -230,7 +230,7 @@ namespace gspc
                                 , installation.gspc_home()
                                 //! \todo configurable: number of segments
                                 , 1
-                                , require_state_directory (vm) / "log"
+                                , get_log_directory (vm)
                                 // !\todo configurable: delete logfiles
                                 , true
                                 , _virtual_memory_per_node

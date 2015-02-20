@@ -1,7 +1,6 @@
 add_library (test-utilities
   make.cpp
   scoped_nodefile_from_environment.cpp
-  scoped_state_directory.cpp
   shared_directory.cpp
   source_directory.cpp
   virtual_memory_socket_name_for_localhost.cpp

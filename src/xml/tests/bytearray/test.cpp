@@ -9,7 +9,6 @@
 
 #include <test/make.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
-#include <test/scoped_state_directory.hpp>
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
 
@@ -47,7 +46,6 @@ BOOST_AUTO_TEST_CASE (xml_transport_bytearray)
   fhg::util::temporary_path const shared_directory
     (test::shared_directory (vm) / "xml_transport_bytearray");
 
-  test::scoped_state_directory const state_directory (shared_directory, vm);
   test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
 

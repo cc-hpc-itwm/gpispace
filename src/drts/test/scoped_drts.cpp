@@ -8,7 +8,6 @@
 #include <boost/program_options.hpp>
 
 #include <test/scoped_nodefile_from_environment.hpp>
-#include <test/scoped_state_directory.hpp>
 
 #include <test/shared_directory.hpp>
 
@@ -34,7 +33,6 @@ BOOST_AUTO_TEST_CASE (scoped_drts_empty_topology)
   fhg::util::temporary_path const shared_directory
     (test::shared_directory (vm) / "drts_drts");
 
-  test::scoped_state_directory const state_directory (shared_directory, vm);
   test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
 
