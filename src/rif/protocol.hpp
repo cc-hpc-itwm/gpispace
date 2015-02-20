@@ -2,10 +2,16 @@
 
 #pragma once
 
+#include <fhglog/level.hpp>
 #include <rpc/function_description.hpp>
+#include <fhg/util/boost/serialization/chrono.hpp>
+#include <fhg/util/boost/serialization/optional.hpp>
+#include <fhg/util/boost/serialization/path.hpp>
 
 #include <boost/filesystem/path.hpp>
+#include <boost/optional.hpp>
 
+#include <chrono>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -29,6 +35,23 @@ namespace fhg
         );
 
       FHG_RPC_FUNCTION_DESCRIPTION (kill, void (std::vector<pid_t> pids));
+
+      FHG_RPC_FUNCTION_DESCRIPTION
+        ( start_vmem
+        , pid_t ( boost::filesystem::path command
+                , fhg::log::Level log_level
+                , std::size_t memory_in_bytes
+                , boost::filesystem::path socket
+                , unsigned short gaspi_port
+                , std::chrono::seconds proc_init_timeout
+                , std::string vmem_implementation
+                , boost::optional<std::pair<std::string, unsigned short>> log_server
+                , boost::optional<boost::filesystem::path> log_file
+                , boost::filesystem::path nodefile
+                , std::string gaspi_master
+                , bool is_master
+                )
+        );
     }
   }
 }

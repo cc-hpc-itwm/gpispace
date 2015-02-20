@@ -583,59 +583,28 @@ namespace fhg
                       ( std::launch::async
                       , [&, entry_point]
                       {
-                        std::vector<std::string> arguments
-                          { "--log-level", verbose ? "TRACE" : "INFO"
-                          , "--gpi-mem", std::to_string (gpi_mem.get())
-                          , "--socket", gpi_socket.get().string()
-                          , "--port", std::to_string (vmem_port.get())
-                          , "--gpi-api"
-                          , rif_entry_points.size() > 1 ? "gaspi" : "fake"
-                          , "--gpi-timeout", std::to_string (vmem_startup_timeout.get().count())
-                          };
-                        if (log_host)
-                        {
-                          arguments.emplace_back ("--log-host");
-                          arguments.emplace_back (*log_host);
-                        }
-                        if (log_port)
-                        {
-                          arguments.emplace_back ("--log-port");
-                          arguments.emplace_back (std::to_string (*log_port));
-                        }
-                        if (log_dir)
-                        {
-                          arguments.emplace_back ("--log-file");
-                          arguments.emplace_back
-                            ((*log_dir / ("vmem-" + entry_point.hostname + ".log")).string());
-                        }
-                        std::pair<pid_t, std::vector<std::string>> const
-                          startup_messages
-                          ( rif::client (entry_point).execute_and_get_startup_messages
+                        pid_t const pid
+                          ( rif::client (entry_point).start_vmem
                               ( sdpa_home / "bin" / "gpi-space"
-                              , arguments
-                              , { {"GASPI_MFILE", nodefile.string()}
-                                , {"GASPI_MASTER", master.hostname}
-                                , {"GASPI_SOCKET", "0"}
-                                , { "GASPI_TYPE"
-                                  , entry_point == master
-                                  ? "GASPI_MASTER"
-                                  : "GASPI_WORKER"
-                                  }
-                                , {"GASPI_SET_NUMA_SOCKET", "0"}
-                                }
+                              , verbose ? fhg::log::TRACE : fhg::log::INFO
+                              , gpi_mem.get()
+                              , gpi_socket.get()
+                              , vmem_port.get()
+                              , vmem_startup_timeout.get()
+                              , rif_entry_points.size() > 1 ? "gaspi" : "fake"
+                              , log_host && log_port
+                              ? std::make_pair (log_host.get(), log_port.get())
+                              : boost::optional<std::pair<std::string, unsigned short>>()
+                              , log_dir
+                              ? *log_dir / ("vmem-" + entry_point.hostname + ".log")
+                              : boost::optional<boost::filesystem::path>()
+                              , nodefile
+                              , master.hostname
+                              , entry_point == master
                               ).get()
                           );
 
-                        if (!startup_messages.second.empty())
-                        {
-                          throw std::logic_error
-                            ( entry_point.hostname
-                            + ": expected no startup messages"
-                            );
-                        }
-
-                        processes.store
-                          (entry_point, "vmem", startup_messages.first);
+                        processes.store (entry_point, "vmem", pid);
                       }
                     )
                 );

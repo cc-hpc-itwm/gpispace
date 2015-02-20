@@ -148,6 +148,66 @@ try
       }
     );
 
+  fhg::rpc::service_handler<fhg::rif::protocol::start_vmem>
+    start_vmem_service
+      ( service_dispatcher
+      , [] ( boost::filesystem::path command
+           , fhg::log::Level log_level
+           , std::size_t memory_in_bytes
+           , boost::filesystem::path socket
+           , unsigned short gaspi_port
+           , std::chrono::seconds proc_init_timeout
+           , std::string vmem_implementation
+           , boost::optional<std::pair<std::string, unsigned short>> log_server
+           , boost::optional<boost::filesystem::path> log_file
+           , boost::filesystem::path nodefile
+           , std::string gaspi_master
+           , bool is_master
+           ) -> pid_t
+        {
+          std::vector<std::string> arguments
+            { "--log-level", fhg::log::string (log_level)
+            , "--gpi-mem", std::to_string (memory_in_bytes)
+            , "--socket", socket.string()
+            , "--port", std::to_string (gaspi_port)
+            , "--gpi-api", vmem_implementation
+            , "--gpi-timeout", std::to_string (proc_init_timeout.count())
+            };
+          if (log_server)
+          {
+            arguments.emplace_back ("--log-host");
+            arguments.emplace_back (log_server->first);
+            arguments.emplace_back ("--log-port");
+            arguments.emplace_back (std::to_string (log_server->second));
+          }
+          if (log_file)
+          {
+            arguments.emplace_back ("--log-file");
+            arguments.emplace_back (log_file->string());
+          }
+          std::pair<pid_t, std::vector<std::string>> const
+            startup_messages
+            ( fhg::rif::execute_and_get_startup_messages
+                ( command
+                , arguments
+                , { {"GASPI_MFILE", nodefile.string()}
+                  , {"GASPI_MASTER", gaspi_master}
+                  , {"GASPI_SOCKET", "0"}
+                  , {"GASPI_TYPE", is_master ? "GASPI_MASTER" : "GASPI_WORKER"}
+                  , {"GASPI_SET_NUMA_SOCKET", "0"}
+                  }
+                )
+            );
+
+          if (!startup_messages.second.empty())
+          {
+            throw std::logic_error ("expected no startup messages");
+          }
+
+          return startup_messages.first;
+        }
+      );
+
   std::vector<std::unique_ptr<fhg::network::connection_type>> connections;
 
   fhg::network::continous_acceptor<boost::asio::ip::tcp> acceptor

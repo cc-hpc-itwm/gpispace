@@ -35,6 +35,7 @@ namespace fhg
                     )
         , execute_and_get_startup_messages (_endpoint)
         , kill (_endpoint)
+        , start_vmem (_endpoint)
       {}
 
     private:
@@ -58,6 +59,7 @@ namespace fhg
       rpc::remote_function<protocol::execute_and_get_startup_messages>
         execute_and_get_startup_messages;
       rpc::remote_function<protocol::kill> kill;
+      rpc::remote_function<protocol::start_vmem> start_vmem;
     };
   }
 }
