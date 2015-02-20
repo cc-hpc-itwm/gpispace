@@ -401,7 +401,6 @@ namespace fhg
       , std::vector<boost::filesystem::path> app_path
       , boost::filesystem::path sdpa_home
       , std::size_t number_of_groups
-      , boost::filesystem::path state_dir
       , bool delete_logfiles
       , fhg::util::signal_handler_manager& signal_handler_manager
       , boost::optional<std::size_t> gpi_mem
@@ -413,8 +412,6 @@ namespace fhg
       , fhg::drts::processes_storage& processes
       )
     {
-      boost::filesystem::create_directories (state_dir);
-
       fhg::rif::entry_point const& master (rif_entry_points.front());
 
       if (number_of_groups > rif_entry_points.size())
@@ -441,18 +438,17 @@ namespace fhg
         {
           if (!_successful)
           {
-            shutdown (_state_dir, _rif_entry_points, _processes);
+            shutdown (_rif_entry_points, _processes);
           }
         }
         void startup_successful()
         {
           _successful = true;
         }
-        boost::filesystem::path const& _state_dir;
         std::vector<fhg::rif::entry_point> const& _rif_entry_points;
         processes_storage& _processes;
         bool _successful;
-      } stop_drts_on_failure = {state_dir, rif_entry_points, processes, false};
+      } stop_drts_on_failure = {rif_entry_points, processes, false};
 
       fhg::util::scoped_signal_handler interrupt_signal_handler
         ( signal_handler_manager
@@ -846,8 +842,7 @@ namespace fhg
       }
     }
 
-    void shutdown ( boost::filesystem::path const& state_dir
-                  , std::vector<fhg::rif::entry_point> const& rif_entry_points
+    void shutdown ( std::vector<fhg::rif::entry_point> const& rif_entry_points
                   , processes_storage& processes
                   )
     {

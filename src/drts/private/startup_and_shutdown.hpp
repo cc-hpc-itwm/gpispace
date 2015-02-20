@@ -52,7 +52,6 @@ namespace fhg
       , std::vector<boost::filesystem::path> app_path
       , boost::filesystem::path sdpa_home
       , std::size_t number_of_groups
-      , boost::filesystem::path state_dir
       , bool delete_logfiles
       , fhg::util::signal_handler_manager& signal_handler_manager
       , boost::optional<std::size_t> gpi_mem
@@ -64,8 +63,7 @@ namespace fhg
       , processes_storage&
       );
 
-    void shutdown ( boost::filesystem::path const& state_dir
-                  , std::vector<fhg::rif::entry_point> const&
+    void shutdown ( std::vector<fhg::rif::entry_point> const&
                   , processes_storage&
                   );
   }

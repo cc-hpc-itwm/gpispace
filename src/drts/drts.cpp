@@ -160,7 +160,7 @@ namespace gspc
       , std::vector<boost::filesystem::path> app_path
       , boost::filesystem::path sdpa_home
       , std::size_t number_of_groups
-      , boost::filesystem::path state_dir
+      , boost::optional<boost::filesystem::path> const& log_dir
       , bool delete_logfiles
       , boost::optional<std::size_t> gpi_mem
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
@@ -168,8 +168,7 @@ namespace gspc
       , boost::optional<unsigned short> vmem_port
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
       )
-    : _state_directory (state_dir)
-    , _rif_entry_points (rif_entry_points)
+    : _rif_entry_points (rif_entry_points)
   {
     fhg::util::signal_handler_manager signal_handler_manager;
 
@@ -184,7 +183,6 @@ namespace gspc
       , app_path
       , sdpa_home
       , number_of_groups
-      , _state_directory
       , delete_logfiles
       , signal_handler_manager
       , gpi_mem
@@ -192,14 +190,14 @@ namespace gspc
       , worker_descriptions
       , vmem_port
       , _rif_entry_points
-      , state_dir / "log"
+      , log_dir
       , _processes_storage
       );
   }
 
   scoped_runtime_system::implementation::started_runtime_system::~started_runtime_system()
   {
-    fhg::drts::shutdown (_state_directory, _rif_entry_points, _processes_storage);
+    fhg::drts::shutdown (_rif_entry_points, _processes_storage);
   }
 
   scoped_runtime_system::implementation::implementation
@@ -232,7 +230,7 @@ namespace gspc
                                 , installation.gspc_home()
                                 //! \todo configurable: number of segments
                                 , 1
-                                , require_state_directory (vm)
+                                , require_state_directory (vm) / "log"
                                 // !\todo configurable: delete logfiles
                                 , true
                                 , _virtual_memory_per_node

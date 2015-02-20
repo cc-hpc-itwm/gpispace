@@ -41,7 +41,7 @@ namespace gspc
                              , std::vector<boost::filesystem::path> app_path
                              , boost::filesystem::path sdpa_home
                              , std::size_t number_of_groups
-                             , boost::filesystem::path state_dir
+                             , boost::optional<boost::filesystem::path> const& log_dir
                              , bool delete_logfiles
                              , boost::optional<std::size_t> gpi_mem
                              , boost::optional<std::chrono::seconds> vmem_startup_timeout
@@ -51,7 +51,6 @@ namespace gspc
                              );
       ~started_runtime_system();
 
-      boost::filesystem::path _state_directory;
       std::vector<fhg::rif::entry_point> _rif_entry_points;
 
       fhg::drts::processes_storage _processes_storage;
