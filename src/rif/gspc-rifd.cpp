@@ -13,6 +13,7 @@
 #include <network/server.hpp>
 
 #include <rif/execute_and_get_startup_messages.hpp>
+#include <rif/protocol.hpp>
 
 #include <rpc/server.hpp>
 
@@ -86,16 +87,12 @@ try
   fhg::rpc::service_dispatcher service_dispatcher
     {fhg::rpc::exception::serialization_functions()};
 
-  fhg::rpc::service_handler<decltype (fhg::rif::execute_and_get_startup_messages)>
+  fhg::rpc::service_handler<fhg::rif::protocol::execute_and_get_startup_messages>
     execute_and_get_startup_messages_service
-      ( service_dispatcher
-      , "execute_and_get_startup_messages"
-      , &fhg::rif::execute_and_get_startup_messages
-      );
+      (service_dispatcher, &fhg::rif::execute_and_get_startup_messages);
 
-  fhg::rpc::service_handler<void (std::vector<pid_t>)> kill_service
+  fhg::rpc::service_handler<fhg::rif::protocol::kill> kill_service
     ( service_dispatcher
-    , "kill"
     , [] (std::vector<pid_t> const& pids)
       {
         std::vector<std::string> failed_statuses;
