@@ -157,7 +157,7 @@ DRTSImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canc
   while (!_currently_executed_tasks.empty())
   {
     wfe_task_t *task = _currently_executed_tasks.begin()->second;
-    task->state = wfe_task_t::CANCELED;
+    task->state = wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN;
     task->context.module_call_do_cancel();
 
     _currently_executed_tasks.erase (task->id);
@@ -421,6 +421,7 @@ void DRTSImpl::handleDiscoverJobStatesEvent
         : job_it->second->state == DRTSImpl::Job::FINISHED ? sdpa::status::FINISHED
         : job_it->second->state == DRTSImpl::Job::FAILED ? sdpa::status::FAILED
         : job_it->second->state == DRTSImpl::Job::CANCELED ? sdpa::status::CANCELED
+        : job_it->second->state == DRTSImpl::Job::CANCELED_DUE_TO_WORKER_SHUTDOWN ? sdpa::status::FAILED
         : throw std::runtime_error ("invalid job state")
         , sdpa::discovery_info_set_t()
         )
@@ -550,6 +551,7 @@ void DRTSImpl::job_execution_thread()
               , task.id
               , task.state == wfe_task_t::FINISHED ? NotificationEvent::STATE_FINISHED
               : task.state == wfe_task_t::CANCELED ? NotificationEvent::STATE_CANCELED
+              : task.state == wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN ? NotificationEvent::STATE_FAILED
               : task.state == wfe_task_t::FAILED ? NotificationEvent::STATE_FAILED
               : throw std::runtime_error ("bad enum value: task.state")
               , task.activity
@@ -559,6 +561,7 @@ void DRTSImpl::job_execution_thread()
 
       job->state = task.state == wfe_task_t::FINISHED ? DRTSImpl::Job::FINISHED
                  : task.state == wfe_task_t::CANCELED ? DRTSImpl::Job::CANCELED
+                 : task.state == wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN ? DRTSImpl::Job::CANCELED_DUE_TO_WORKER_SHUTDOWN
                  : task.state == wfe_task_t::FAILED ? DRTSImpl::Job::FAILED
                  : throw std::runtime_error ("bad task state");
 
@@ -618,6 +621,12 @@ void DRTSImpl::send_job_result_to_master (std::shared_ptr<DRTSImpl::Job> const& 
   case DRTSImpl::Job::CANCELED:
     send_event<sdpa::events::CancelJobAckEvent>
       (job->owner->second, job->id);
+
+    break;
+
+  case DRTSImpl::Job::CANCELED_DUE_TO_WORKER_SHUTDOWN:
+    //! \note Do _not_ send anything: will be rescheduled by worker
+    //! failure-handling.
 
     break;
 
