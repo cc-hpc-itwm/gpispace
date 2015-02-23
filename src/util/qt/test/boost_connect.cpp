@@ -179,3 +179,41 @@ BOOST_FIXTURE_TEST_CASE (binary, boost_connect_fixture)
 
   BOOST_REQUIRE_EQUAL (is_equal, true);
 }
+
+BOOST_FIXTURE_TEST_CASE (multiple_slots_with_one_signal, boost_connect_fixture)
+{
+  std::size_t v (0);
+  std::size_t a (0);
+  std::size_t b (0);
+
+  BOOST_REQUIRE ( fhg::util::qt::boost_connect<void()>
+                    (this, SIGNAL (signal1()), this, [&a, &v] { a = v++; })
+                );
+  BOOST_REQUIRE ( fhg::util::qt::boost_connect<void()>
+                    (this, SIGNAL (signal1()), this, [&b, &v] { b = v++; })
+                );
+
+  emit signal1();
+
+  BOOST_REQUIRE_EQUAL (v, 2);
+  BOOST_REQUIRE_EQUAL (a, 0);
+  BOOST_REQUIRE_EQUAL (b, 1);
+}
+
+BOOST_FIXTURE_TEST_CASE (multiple_signals_calling_same_slot, boost_connect_fixture)
+{
+  std::size_t calls (0);
+  std::function<void()> slot ([&calls] { ++calls; });
+
+  BOOST_REQUIRE ( fhg::util::qt::boost_connect<void()>
+                    (this, SIGNAL (signal1()), this, slot)
+                );
+  BOOST_REQUIRE ( fhg::util::qt::boost_connect<void()>
+                    (this, SIGNAL (signal6()), this, slot)
+                );
+
+  emit signal1();
+  emit signal6();
+
+  BOOST_REQUIRE_EQUAL (calls, 2);
+}

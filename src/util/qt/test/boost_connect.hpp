@@ -35,6 +35,7 @@ signals:
   void signal3 (const QByteArray&);
   void signal4 (unsigned int, unsigned int);
   void signal5 (const custom_type&);
+  void signal6();
 
 protected:
   bool _called;
