@@ -114,6 +114,24 @@ namespace fhg
           };
           invoke_impl<fhg::util::make_indices<sizeof... (T)>> _invoke_impl;
         };
+        template<>
+          class connection_adapter<void()> : public abstract_connection_adapter
+        {
+        public:
+          explicit connection_adapter (std::function<void()> const& f)
+            : _function (f)
+          {}
+          static QByteArray build_signature()
+          {
+            return "fake()";
+          }
+          virtual void invoke (void**) override
+          {
+            _function();
+          }
+        private:
+          std::function<void()> _function;
+        };
 
         bool connect_impl ( QObject* sender
                           , const char* signal
