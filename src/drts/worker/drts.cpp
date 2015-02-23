@@ -536,10 +536,7 @@ void DRTSImpl::job_execution_thread()
       {
         LLOG (TRACE, _logger, "task finished: " << task.id);
       }
-      else if (wfe_task_t::CANCELED == task.state)
-      {
-      }
-      else // if (wfe_task_t::FAILED == task.state)
+      else if (wfe_task_t::FAILED == task.state)
       {
         LLOG (ERROR, _logger, "task failed: " << task.id << ": " << job->message);
       }
