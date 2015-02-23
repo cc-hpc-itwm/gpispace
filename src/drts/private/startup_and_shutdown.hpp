@@ -11,6 +11,7 @@
 
 #include <chrono>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace fhg
@@ -30,18 +31,27 @@ namespace fhg
 
     using hostinfo_type = std::pair<std::string, unsigned short>;
 
+    struct processes_storage
+    {
+      std::unordered_map < fhg::rif::entry_point
+                         , std::unordered_map<std::string /*name*/, pid_t>
+                         > _;
+
+      void store (fhg::rif::entry_point const&, std::string const& name, pid_t);
+      void garbage_collect();
+    };
+
     hostinfo_type startup
-      ( std::string gui_host
-      , unsigned short gui_port
-      , std::string log_host
-      , unsigned short log_port
+      ( boost::optional<std::string> const& gui_host
+      , boost::optional<unsigned short> const& gui_port
+      , boost::optional<std::string> const& log_host
+      , boost::optional<unsigned short> const& log_port
       , bool gpi_enabled
       , bool verbose
       , boost::optional<boost::filesystem::path> gpi_socket
       , std::vector<boost::filesystem::path> app_path
       , boost::filesystem::path sdpa_home
       , std::size_t number_of_groups
-      , boost::filesystem::path state_dir
       , bool delete_logfiles
       , fhg::util::signal_handler_manager& signal_handler_manager
       , boost::optional<std::size_t> gpi_mem
@@ -49,10 +59,12 @@ namespace fhg
       , std::vector<worker_description> worker_descriptions
       , boost::optional<unsigned short> vmem_port
       , std::vector<fhg::rif::entry_point> const&
+      , boost::optional<boost::filesystem::path> const& log_dir
+      , processes_storage&
       );
 
-    void shutdown ( boost::filesystem::path const& state_dir
-                  , std::vector<fhg::rif::entry_point> const&
+    void shutdown ( std::vector<fhg::rif::entry_point> const&
+                  , processes_storage&
                   );
   }
 }

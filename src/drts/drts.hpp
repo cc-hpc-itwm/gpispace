@@ -83,19 +83,8 @@ namespace gspc
       , char const* const data
       ) const;
 
-    unsigned long virtual_memory_total() const
-    {
-      return number_of_unique_nodes()
-        * (*_virtual_memory_per_node - 32UL * (1UL << 20UL));
-    }
-    unsigned long number_of_unique_nodes() const
-    {
-      return _nodes_and_number_of_unique_nodes.second;
-    }
-    std::unique_ptr<gpi::pc::client::api_t> const& virtual_memory_api() const
-    {
-      return _virtual_memory_api;
-    }
+    unsigned long virtual_memory_total() const;
+    unsigned long number_of_unique_nodes() const;
 
     stream create_stream ( std::string const& name
                          , gspc::vmem_allocation const& buffer
@@ -111,20 +100,10 @@ namespace gspc
   private:
     friend class vmem_allocation;
     friend class information_to_reattach;
+    friend class stream;
 
-    installation const _installation;
-    boost::filesystem::path const _state_directory;
-    boost::optional<unsigned long> _virtual_memory_per_node;
-    boost::optional<boost::filesystem::path> _virtual_memory_socket;
-    boost::optional<std::chrono::seconds> _virtual_memory_startup_timeout;
-    std::pair<std::list<std::string>, unsigned long> const
-      _nodes_and_number_of_unique_nodes;
-    std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
-
-    rifd_entry_points _rif_entry_points;
-
-    std::string _orchestrator_host;
-    unsigned short _orchestrator_port;
+    struct implementation;
+    implementation* _;
   };
 
   void set_application_search_path ( boost::program_options::variables_map&

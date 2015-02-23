@@ -34,8 +34,6 @@ namespace gpi
 
         ~api_t ();
 
-        void start ();
-
         //! \todo add const (do not call stop()) in memcpy, ptr, wait
         //! and replace /*const*/ in
         //!   src/drts/worker/drts-kernel.cpp
@@ -88,7 +86,6 @@ namespace gpi
         gpi::pc::proto::message_t communicate (gpi::pc::proto::message_t const &);
 
         mutable mutex_type m_mutex;
-        std::string m_path;
         int m_socket;
         segment_map_t m_segments;
       };

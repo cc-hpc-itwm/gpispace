@@ -3,6 +3,7 @@
 #pragma once
 
 #include <rif/entry_point.hpp>
+#include <rif/protocol.hpp>
 
 #include <rpc/client.hpp>
 
@@ -32,9 +33,9 @@ namespace fhg
                     , entry_point.hostname, entry_point.port
                     , fhg::rpc::exception::serialization_functions()
                     )
-        , execute_and_get_startup_messages
-            (_endpoint, "execute_and_get_startup_messages")
-        , kill (_endpoint, "kill")
+        , execute_and_get_startup_messages (_endpoint)
+        , kill (_endpoint)
+        , start_vmem (_endpoint)
       {}
 
     private:
@@ -55,14 +56,10 @@ namespace fhg
       } _stop_io_service_on_scope_exit {_io_service};
 
     public:
-      rpc::remote_function
-        < std::pair<pid_t, std::vector<std::string>>
-            ( boost::filesystem::path command
-            , std::vector<std::string> arguments
-            , std::unordered_map<std::string, std::string> environment
-            )
-        > execute_and_get_startup_messages;
-      rpc::remote_function<void (std::vector<pid_t> pids)> kill;
+      rpc::remote_function<protocol::execute_and_get_startup_messages>
+        execute_and_get_startup_messages;
+      rpc::remote_function<protocol::kill> kill;
+      rpc::remote_function<protocol::start_vmem> start_vmem;
     };
   }
 }

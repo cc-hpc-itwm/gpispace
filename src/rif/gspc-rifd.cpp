@@ -9,10 +9,12 @@
 #include <fhg/util/boost/serialization/unordered_map.hpp>
 #include <fhg/util/join.hpp>
 #include <fhg/util/print_exception.hpp>
+#include <fhg/util/temporary_file.hpp>
 
 #include <network/server.hpp>
 
 #include <rif/execute_and_get_startup_messages.hpp>
+#include <rif/protocol.hpp>
 
 #include <rpc/server.hpp>
 
@@ -22,6 +24,8 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/thread/scoped_thread.hpp>
+
+#include <fstream>
 
 namespace
 {
@@ -86,16 +90,12 @@ try
   fhg::rpc::service_dispatcher service_dispatcher
     {fhg::rpc::exception::serialization_functions()};
 
-  fhg::rpc::service_handler<decltype (fhg::rif::execute_and_get_startup_messages)>
+  fhg::rpc::service_handler<fhg::rif::protocol::execute_and_get_startup_messages>
     execute_and_get_startup_messages_service
-      ( service_dispatcher
-      , "execute_and_get_startup_messages"
-      , &fhg::rif::execute_and_get_startup_messages
-      );
+      (service_dispatcher, &fhg::rif::execute_and_get_startup_messages);
 
-  fhg::rpc::service_handler<void (std::vector<pid_t>)> kill_service
+  fhg::rpc::service_handler<fhg::rif::protocol::kill> kill_service
     ( service_dispatcher
-    , "kill"
     , [] (std::vector<pid_t> const& pids)
       {
         std::vector<std::string> failed_statuses;
@@ -150,6 +150,104 @@ try
         }
       }
     );
+
+  fhg::rpc::service_handler<fhg::rif::protocol::start_vmem>
+    start_vmem_service
+      ( service_dispatcher
+      , [] ( boost::filesystem::path command
+           , fhg::log::Level log_level
+           , std::size_t memory_in_bytes
+           , boost::filesystem::path socket
+           , unsigned short gaspi_port
+           , std::chrono::seconds proc_init_timeout
+           , std::string vmem_implementation
+           , boost::optional<std::pair<std::string, unsigned short>> log_server
+           , boost::optional<boost::filesystem::path> log_file
+           , std::vector<std::string> nodes
+           , std::string gaspi_master
+           , bool is_master
+           ) -> pid_t
+        {
+          std::vector<std::string> arguments
+            { "--log-level", fhg::log::string (log_level)
+            , "--gpi-mem", std::to_string (memory_in_bytes)
+            , "--socket", socket.string()
+            , "--port", std::to_string (gaspi_port)
+            , "--gpi-api", vmem_implementation
+            , "--gpi-timeout", std::to_string (proc_init_timeout.count())
+            };
+          if (log_server)
+          {
+            arguments.emplace_back ("--log-host");
+            arguments.emplace_back (log_server->first);
+            arguments.emplace_back ("--log-port");
+            arguments.emplace_back (std::to_string (log_server->second));
+          }
+          if (log_file)
+          {
+            arguments.emplace_back ("--log-file");
+            arguments.emplace_back (log_file->string());
+          }
+
+          //! \todo allow to specify folder to put temporary file in
+          boost::filesystem::path const nodefile
+            ( boost::filesystem::unique_path
+                ("GPISPACE-VMEM-NODEFILE-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+            );
+          fhg::util::temporary_file nodefile_temporary (nodefile);
+          {
+            std::ofstream nodefile_stream (nodefile.string());
+
+            if (!nodefile_stream)
+            {
+              throw std::runtime_error
+                ( ( boost::format ("Could not create nodefile %1%: %2%")
+                  % nodefile
+                  % strerror (errno)
+                  )
+                . str()
+                );
+            }
+
+            for (std::string const& node : nodes)
+            {
+              nodefile_stream << node << "\n";
+            }
+
+            if (!nodefile_stream)
+            {
+              throw std::runtime_error
+                ( ( boost::format ("Could not write to nodefile %1%: %2%")
+                  % nodefile
+                  % strerror (errno)
+                  )
+                . str()
+                );
+            }
+          }
+
+          std::pair<pid_t, std::vector<std::string>> const
+            startup_messages
+            ( fhg::rif::execute_and_get_startup_messages
+                ( command
+                , arguments
+                , { {"GASPI_MFILE", nodefile.string()}
+                  , {"GASPI_MASTER", gaspi_master}
+                  , {"GASPI_SOCKET", "0"}
+                  , {"GASPI_TYPE", is_master ? "GASPI_MASTER" : "GASPI_WORKER"}
+                  , {"GASPI_SET_NUMA_SOCKET", "0"}
+                  }
+                )
+            );
+
+          if (!startup_messages.second.empty())
+          {
+            throw std::logic_error ("expected no startup messages");
+          }
+
+          return startup_messages.first;
+        }
+      );
 
   std::vector<std::unique_ptr<fhg::network::connection_type>> connections;
 

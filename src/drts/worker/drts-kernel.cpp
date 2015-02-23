@@ -147,10 +147,6 @@ try
         )
       : nullptr
     );
-  if (virtual_memory_api)
-  {
-    virtual_memory_api->start();
-  }
   std::unique_ptr<gspc::scoped_allocation> const shared_memory
     ( ( virtual_memory_api
       && vm.count (option_name::shared_memory_size)

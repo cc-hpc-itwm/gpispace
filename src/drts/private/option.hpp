@@ -24,7 +24,7 @@ namespace gspc
   ACCESS (gui_host, std::string);
   ACCESS (gui_port, unsigned short);
 
-  ACCESS (state_directory, boost::filesystem::path);
+  ACCESS (log_directory, boost::filesystem::path);
   GET (gspc_home, boost::filesystem::path);
   REQUIRE (gspc_home, boost::filesystem::path);
   ACCESS (nodefile, boost::filesystem::path);

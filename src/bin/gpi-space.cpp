@@ -5,6 +5,7 @@
  */
 
 #include <fhg/revision.hpp>
+#include <fhg/util/boost/program_options/require_all_if_one.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
 #include <fhg/util/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
@@ -63,13 +64,12 @@ try
     )
     ( option::log_host
     , boost::program_options::value
-        <fhg::util::boost::program_options::nonempty_string>()->required()
+        <fhg::util::boost::program_options::nonempty_string>()
     , "name of log host"
     )
     ( option::log_port
     , boost::program_options::value
         <fhg::util::boost::program_options::positive_integral<unsigned short>>()
-        ->required()
     , "port on log-host to log to"
     )
     ( option::log_level
@@ -130,13 +130,24 @@ try
     : boost::none
     );
 
-  std::string const log_host
-    ( vm.at (option::log_host)
-      .as<fhg::util::boost::program_options::nonempty_string>()
+  fhg::util::boost::program_options::require_all_if_one
+    (vm, {option::log_host, option::log_port});
+
+  boost::optional<std::string> const log_host
+    ( vm.count (option::log_host)
+    ? boost::optional<std::string>
+        ( vm.at (option::log_host)
+          .as<fhg::util::boost::program_options::nonempty_string>()
+        )
+    : boost::none
     );
-  unsigned short const log_port
-    ( vm.at (option::log_port)
-      .as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
+  boost::optional<unsigned short> const log_port
+    ( vm.count (option::log_port)
+    ? boost::optional<unsigned short>
+        ( vm.at (option::log_port)
+          .as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
+        )
+    : boost::none
     );
 
   std::string const log_level
@@ -167,8 +178,11 @@ try
       .as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
     );
 
-  std::string const server_url (log_host + ":" + std::to_string (log_port));
-  setenv ("FHGLOG_to_server", server_url.c_str(), true);
+  if (log_host || log_port)
+  {
+    std::string const server_url (*log_host + ":" + std::to_string (*log_port));
+    setenv ("FHGLOG_to_server", server_url.c_str(), true);
+  }
   setenv ("FHGLOG_level", log_level.c_str(), true);
   setenv ("FHGLOG_to_console", "stderr", true);
 

@@ -3,6 +3,7 @@
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/private/drts_impl.hpp>
 
 #include <we/type/value.hpp>
 #include <we/type/value/peek.hpp>
@@ -90,8 +91,10 @@ namespace gspc
 
   information_to_reattach::information_to_reattach (scoped_runtime_system const& drts)
     : _ (fhg::util::make_unique<implementation>
-          (gspc::host_and_port_type
-            {drts._orchestrator_host, drts._orchestrator_port}
+          ( gspc::host_and_port_type
+              { drts._->_started_runtime_system._orchestrator_host
+              , drts._->_started_runtime_system._orchestrator_port
+              }
           )
         )
   {}

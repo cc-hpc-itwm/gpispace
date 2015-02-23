@@ -31,7 +31,7 @@ namespace gspc
       constexpr char const* const gui_host {"gui-host"};
       constexpr char const* const gui_port {"gui-port"};
 
-      constexpr char const* const state_directory {"state-directory"};
+      constexpr char const* const log_directory {"log-directory"};
       constexpr char const* const gspc_home {"gspc-home"};
       constexpr char const* const nodefile {"nodefile"};
       constexpr char const* const application_search_path
@@ -63,26 +63,28 @@ namespace gspc
       logging.add_options()
         ( name::log_host
         , boost::program_options::value<validators::nonempty_string>()
-        ->required()
         , "name of log host"
         )
         ( name::log_port
         , boost::program_options::value
-          <validators::positive_integral<unsigned short>>()->required()
+          <validators::positive_integral<unsigned short>>()
         , "port on log-host to log to"
         )
         ( name::log_level
         , boost::program_options::value<std::string>()->default_value ("INFO")
         , "log level to use"
         )
+        ( name::log_directory
+        , boost::program_options::value<validators::is_directory_if_exists>()
+        , "directory where to store drts runtime log information"
+        )
         ( name::gui_host
         , boost::program_options::value<validators::nonempty_string>()
-          ->required()
         , "name of gui host"
         )
         ( name::gui_port
         , boost::program_options::value
-          <validators::positive_integral<unsigned short>>()->required()
+          <validators::positive_integral<unsigned short>>()
         , "port on gui-host to send to"
         )
         ;
@@ -111,11 +113,6 @@ namespace gspc
       boost::program_options::options_description drts ("Runtime system");
 
       drts.add_options()
-        ( name::state_directory
-        , boost::program_options::value<validators::is_directory_if_exists>()
-        ->required()
-        , "directory where to store drts runtime state information"
-        )
         //! \todo let it be a list of existing_directories
         ( name::application_search_path
         , boost::program_options::value<validators::existing_directory>()
@@ -314,7 +311,7 @@ namespace gspc
   ACCESS_STRING (gui_host, validators::nonempty_string);
   ACCESS_POSITIVE_INTEGRAL (gui_port, unsigned short);
 
-  ACCESS_PATH (state_directory, validators::is_directory_if_exists);
+  ACCESS_PATH (log_directory, validators::is_directory_if_exists);
   ACCESS_PATH (gspc_home, validators::existing_directory);
   ACCESS_PATH (nodefile, validators::existing_path);
   ACCESS_PATH (application_search_path, validators::existing_directory);

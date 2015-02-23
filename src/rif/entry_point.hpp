@@ -53,6 +53,18 @@ namespace fhg
   }
 }
 
+namespace std
+{
+  template<>
+    struct hash<fhg::rif::entry_point>
+  {
+    std::size_t operator() (const fhg::rif::entry_point& ep) const
+    {
+      return std::hash<std::string>() (ep.to_string());
+    }
+  };
+}
+
 namespace boost
 {
   namespace serialization

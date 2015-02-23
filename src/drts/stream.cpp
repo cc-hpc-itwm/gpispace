@@ -5,6 +5,7 @@
 
 #include <drts/client.fwd.hpp>
 #include <drts/drts.fwd.hpp>
+#include <drts/private/drts_impl.hpp>
 #include <drts/virtual_memory.hpp>
 
 #include <drts/private/scoped_allocation.hpp>
@@ -48,7 +49,7 @@ namespace gspc
                    , std::function<void (pnet::type::value::value_type const&)>
                        on_slot_filled
                    )
-      : _virtual_memory (drts.virtual_memory_api())
+      : _virtual_memory (drts._->_virtual_memory_api)
       , _on_slot_filled (on_slot_filled)
       , _buffer (buffer)
       , _size_of_slot (size_of_slot)
