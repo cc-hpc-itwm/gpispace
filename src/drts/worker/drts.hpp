@@ -37,6 +37,7 @@ struct wfe_task_t
   {
     PENDING
   , CANCELED
+  , CANCELED_DUE_TO_WORKER_SHUTDOWN
   , FINISHED
   , FAILED
   };
@@ -83,6 +84,7 @@ public:
     , FINISHED
     , FAILED
     , CANCELED
+    , CANCELED_DUE_TO_WORKER_SHUTDOWN
     };
 
     using owner_type = map_of_masters_t::const_iterator;
