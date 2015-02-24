@@ -80,19 +80,6 @@ namespace
     return boost::none;
   }
 
-  struct segment_info_t
-  {
-    std::vector<fhg::rif::entry_point> entry_points;
-    std::string master_name;
-    fhg::drts::hostinfo_type master_hostinfo;
-    segment_info_t ( std::vector<fhg::rif::entry_point> const& entry_points
-                   , std::string const& master_name
-                   )
-      : entry_points (entry_points)
-      , master_name (master_name)
-    {}
-  };
-
   std::unordered_map<std::string, std::string> logging_environment
     ( boost::optional<std::string> const& log_host
     , boost::optional<unsigned short> const& log_port
@@ -176,7 +163,9 @@ namespace
   }
 
   void start_workers_for
-    ( segment_info_t const& segment_info
+    ( std::vector<fhg::rif::entry_point> const& entry_points
+    , std::string master_name
+    , fhg::drts::hostinfo_type master_hostinfo
     , fhg::drts::worker_description const& description
     , bool verbose
     , boost::optional<std::string> const& gui_host
@@ -194,17 +183,17 @@ namespace
      std::replace_if
        (name_prefix.begin(), name_prefix.end(), boost::is_any_of ("+#.-"), '_');
 
-     std::cout << "I: starting " << name_prefix << " workers (segment "
-               << segment_info.master_name << ", "
+     std::cout << "I: starting " << name_prefix << " workers (master "
+               << master_name << ", "
                << description.num_per_node << "/host, "
                << ( description.max_nodes == 0 ? "unlimited"
                   : description.max_nodes == 1 ? "unique"
                   : "global max: " + std::to_string (description.max_nodes)
                   )
                << ", " << description.shm_size << " SHM) with parent "
-               << segment_info.master_name << " on host "
+               << master_name << " on host "
                << fhg::util::join
-                    ( segment_info.entry_points
+                    ( entry_points
                     | boost::adaptors::transformed
                         ( [] (fhg::rif::entry_point const& entry_point)
                           {
@@ -218,7 +207,7 @@ namespace
      std::vector<std::future<void>> startups;
 
      std::size_t num_nodes (0);
-     for (fhg::rif::entry_point const& entry_point : segment_info.entry_points)
+     for (fhg::rif::entry_point const& entry_point : entry_points)
      {
        for ( unsigned long identity (0)
            ; identity < description.num_per_node
@@ -235,7 +224,7 @@ namespace
                    arguments.emplace_back ("--master");
                    arguments.emplace_back
                      ( build_parent_with_hostinfo
-                         (segment_info.master_name, segment_info.master_hostinfo)
+                         (master_name, master_hostinfo)
                      );
 
                    arguments.emplace_back ("--backlog-length");
@@ -580,34 +569,23 @@ namespace fhg
           );
       }
 
-      segment_info_t segment_info
-        {rif_entry_points, "agent-" + master.hostname + "-0"};
+      std::string const master_agent_name ("agent-" + master.hostname + "-0");
 
-      fhg::util::nest_exceptions<std::runtime_error>
-        ( [&]
-          {
-            std::string const master_agent_name
-              ("agent-" + master.hostname + "-0");
-            hostinfo_type const master_agent_hostinfo
-              ( start_agent ( master
-                            , master_agent_name
-                            , "orchestrator"
-                            , orchestrator_hostinfo
-                            , gui_host
-                            , gui_port
-                            , log_host
-                            , log_port
-                            , gpi_socket
-                            , verbose
-                            , sdpa_home
-                            , log_dir
-                            , processes
-                            )
-              );
-
-            segment_info.master_hostinfo = master_agent_hostinfo;
-          }
-        , "at least one agent could not be started!"
+      hostinfo_type const master_agent_hostinfo
+        (start_agent ( master
+                     , master_agent_name
+                     , "orchestrator"
+                     , orchestrator_hostinfo
+                     , gui_host
+                     , gui_port
+                     , log_host
+                     , log_port
+                     , gpi_socket
+                     , verbose
+                     , sdpa_home
+                     , log_dir
+                     , processes
+                     )
         );
 
       fhg::util::nest_exceptions<std::runtime_error>
@@ -615,7 +593,9 @@ namespace fhg
           {
             for (worker_description const& description : worker_descriptions)
             {
-              start_workers_for ( segment_info
+              start_workers_for ( rif_entry_points
+                                , master_agent_name
+                                , master_agent_hostinfo
                                 , description
                                 , verbose
                                 , gui_host
