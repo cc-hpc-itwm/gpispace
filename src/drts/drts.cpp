@@ -134,11 +134,11 @@ namespace gspc
   namespace
   {
     std::vector<fhg::drts::worker_description> parse_worker_descriptions
-      (std::string const& description)
+      (std::string const& descriptions)
     {
       std::vector<fhg::drts::worker_description> worker_descriptions;
       for ( std::string const& description
-          : fhg::util::split<std::string, std::string> (description, ' ')
+          : fhg::util::split<std::string, std::string> (descriptions, ' ')
           )
       {
         //! \todo configurable: default number of processes
