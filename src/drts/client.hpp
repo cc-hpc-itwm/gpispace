@@ -69,6 +69,9 @@ namespace gspc
                    , pnet::type::value::value_type
                    );
 
+    pnet::type::value::value_type synchronous_workflow_response
+      (job_id_t, std::string place_name, pnet::type::value::value_type);
+
     PIMPL (client);
   };
 }
