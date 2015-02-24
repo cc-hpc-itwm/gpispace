@@ -107,7 +107,7 @@ try
 
             if (fhg::syscall::waitpid (pid, &status, WNOHANG) == pid)
             {
-              if (WIFEXITED (status) && WEXITSTATUS (status))
+              if (WIFEXITED (status))
               {
                 throw std::runtime_error
                   ("already returned " + std::to_string (WEXITSTATUS (status)));
