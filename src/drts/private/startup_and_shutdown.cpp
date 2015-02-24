@@ -400,7 +400,6 @@ namespace fhg
       , boost::optional<boost::filesystem::path> gpi_socket
       , std::vector<boost::filesystem::path> app_path
       , boost::filesystem::path sdpa_home
-      , std::size_t number_of_groups
       , bool delete_logfiles
       , fhg::util::signal_handler_manager& signal_handler_manager
       , boost::optional<std::size_t> gpi_mem
@@ -412,16 +411,12 @@ namespace fhg
       , fhg::drts::processes_storage& processes
       )
     {
-      fhg::rif::entry_point const& master (rif_entry_points.front());
-
-      if (number_of_groups > rif_entry_points.size())
+      if (rif_entry_points.empty())
       {
-        throw std::invalid_argument
-          ( "number of groups must not be larger than number of rif entry points: "
-          + std::to_string (number_of_groups) + " > "
-          + std::to_string (rif_entry_points.size())
-          );
+        throw std::invalid_argument ("rif_entry_points empty");
       }
+
+      fhg::rif::entry_point const& master (rif_entry_points.front());
 
       if (log_dir)
       {
@@ -585,38 +580,8 @@ namespace fhg
           );
       }
 
-      std::vector<segment_info_t> segment_info;
-      {
-        if (number_of_groups == 1)
-        {
-          segment_info.emplace_back
-            (rif_entry_points, "agent-" + master.hostname + "-0");
-        }
-        else
-        {
-          std::size_t const hosts_per_group
-            (rif_entry_points.size() / number_of_groups);
-          std::size_t const remaining_hosts
-            (rif_entry_points.size() % number_of_groups);
-
-          for (std::size_t i (0); i < number_of_groups; i += hosts_per_group)
-          {
-            segment_info.emplace_back
-              ( std::vector<fhg::rif::entry_point>
-                  ( rif_entry_points.begin() + i
-                  , rif_entry_points.begin() + i + hosts_per_group
-                  )
-              , "agent-" + rif_entry_points[i].hostname + "-1"
-              );
-          }
-
-          segment_info.back().entry_points.insert
-            ( segment_info.back().entry_points.end()
-            , segment_info.back().entry_points.rbegin() + remaining_hosts
-            , segment_info.back().entry_points.rbegin()
-            );
-        }
-      }
+      segment_info_t segment_info
+        {rif_entry_points, "agent-" + master.hostname + "-0"};
 
       fhg::util::nest_exceptions<std::runtime_error>
         ( [&]
@@ -640,69 +605,33 @@ namespace fhg
                             )
               );
 
-            if (segment_info.size() == 1)
-            {
-              segment_info.front().master_hostinfo = master_agent_hostinfo;
-            }
-            else
-            {
-              std::vector<std::future<void>> startups;
-              for (segment_info_t& info : segment_info)
-              {
-                startups.emplace_back ( std::async
-                                          ( std::launch::async
-                                          , [&]
-                                            {
-                                              info.master_hostinfo = start_agent
-                                                ( info.entry_points.front()
-                                                , info.master_name
-                                                , master_agent_name
-                                                , master_agent_hostinfo
-                                                , gui_host
-                                                , gui_port
-                                                , log_host
-                                                , log_port
-                                                , gpi_socket
-                                                , verbose
-                                                , sdpa_home
-                                                , log_dir
-                                                , processes
-                                                );
-                                            }
-                                          )
-                                      );
-              }
-              fhg::util::wait_and_collect_exceptions (startups);
-            }
+            segment_info.master_hostinfo = master_agent_hostinfo;
           }
-          , "at least one agent could not be started!"
-          );
+        , "at least one agent could not be started!"
+        );
 
       fhg::util::nest_exceptions<std::runtime_error>
         ( [&]
           {
-            for (segment_info_t const& info : segment_info)
+            for (worker_description const& description : worker_descriptions)
             {
-              for (worker_description const& description : worker_descriptions)
-              {
-                start_workers_for ( info
-                                  , description
-                                  , verbose
-                                  , gui_host
-                                  , gui_port
-                                  , log_host
-                                  , log_port
-                                  , processes
-                                  , log_dir
-                                  , gpi_socket
-                                  , app_path
-                                  , sdpa_home
-                                  );
-              }
+              start_workers_for ( segment_info
+                                , description
+                                , verbose
+                                , gui_host
+                                , gui_port
+                                , log_host
+                                , log_port
+                                , processes
+                                , log_dir
+                                , gpi_socket
+                                , app_path
+                                , sdpa_home
+                                );
             }
           }
-          , "at least one worker could not be started!"
-          );
+        , "at least one worker could not be started!"
+        );
 
       stop_drts_on_failure.startup_successful();
 

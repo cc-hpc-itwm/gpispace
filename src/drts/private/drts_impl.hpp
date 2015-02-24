@@ -42,7 +42,6 @@ namespace gspc
                              , boost::optional<boost::filesystem::path> gpi_socket
                              , std::vector<boost::filesystem::path> app_path
                              , boost::filesystem::path sdpa_home
-                             , std::size_t number_of_groups
                              , boost::optional<boost::filesystem::path> const& log_dir
                              , bool delete_logfiles
                              , boost::optional<std::size_t> gpi_mem

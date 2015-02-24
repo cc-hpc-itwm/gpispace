@@ -156,7 +156,6 @@ namespace gspc
       , boost::optional<boost::filesystem::path> gpi_socket
       , std::vector<boost::filesystem::path> app_path
       , boost::filesystem::path sdpa_home
-      , std::size_t number_of_groups
       , boost::optional<boost::filesystem::path> const& log_dir
       , bool delete_logfiles
       , boost::optional<std::size_t> gpi_mem
@@ -179,7 +178,6 @@ namespace gspc
       , gpi_socket
       , app_path
       , sdpa_home
-      , number_of_groups
       , delete_logfiles
       , signal_handler_manager
       , gpi_mem
@@ -234,8 +232,6 @@ namespace gspc
                                 ? std::vector<boost::filesystem::path> ({boost::filesystem::canonical (get_application_search_path (vm).get())})
                                 : std::vector<boost::filesystem::path>()
                                 , installation.gspc_home()
-                                //! \todo configurable: number of segments
-                                , 1
                                 , get_log_directory (vm)
                                 // !\todo configurable: delete logfiles
                                 , true
