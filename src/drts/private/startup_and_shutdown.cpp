@@ -161,7 +161,12 @@ namespace
            , boost::lexical_cast<unsigned short> (agent_startup_messages.second[1])
            };
   }
+}
 
+namespace fhg
+{
+  namespace drts
+  {
   void start_workers_for
     ( std::vector<fhg::rif::entry_point> const& entry_points
     , std::string master_name
@@ -323,12 +328,7 @@ namespace
 
      fhg::util::wait_and_collect_exceptions (startups);
   }
-}
 
-namespace fhg
-{
-  namespace drts
-  {
     worker_description parse_capability
       (std::size_t def_num_proc, std::string const& cap_spec)
     {
@@ -387,17 +387,17 @@ namespace fhg
       , bool gpi_enabled
       , bool verbose
       , boost::optional<boost::filesystem::path> gpi_socket
-      , std::vector<boost::filesystem::path> app_path
       , boost::filesystem::path sdpa_home
       , bool delete_logfiles
       , fhg::util::signal_handler_manager& signal_handler_manager
       , boost::optional<std::size_t> gpi_mem
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
-      , std::vector<worker_description> worker_descriptions
       , boost::optional<unsigned short> vmem_port
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
       , boost::optional<boost::filesystem::path> const& log_dir
       , fhg::drts::processes_storage& processes
+      , std::string& master_agent_name
+      , fhg::drts::hostinfo_type& master_agent_hostinfo
       )
     {
       if (rif_entry_points.empty())
@@ -569,49 +569,22 @@ namespace fhg
           );
       }
 
-      std::string const master_agent_name ("agent-" + master.hostname + "-0");
+      master_agent_name = "agent-" + master.hostname + "-0";
 
-      hostinfo_type const master_agent_hostinfo
-        (start_agent ( master
-                     , master_agent_name
-                     , "orchestrator"
-                     , orchestrator_hostinfo
-                     , gui_host
-                     , gui_port
-                     , log_host
-                     , log_port
-                     , gpi_socket
-                     , verbose
-                     , sdpa_home
-                     , log_dir
-                     , processes
-                     )
-        );
-
-      fhg::util::nest_exceptions<std::runtime_error>
-        ( [&]
-          {
-            for (worker_description const& description : worker_descriptions)
-            {
-              start_workers_for ( rif_entry_points
-                                , master_agent_name
-                                , master_agent_hostinfo
-                                , description
-                                , verbose
-                                , gui_host
-                                , gui_port
-                                , log_host
-                                , log_port
-                                , processes
-                                , log_dir
-                                , gpi_socket
-                                , app_path
-                                , sdpa_home
-                                );
-            }
-          }
-        , "at least one worker could not be started!"
-        );
+      master_agent_hostinfo = start_agent ( master
+                                          , master_agent_name
+                                          , "orchestrator"
+                                          , orchestrator_hostinfo
+                                          , gui_host
+                                          , gui_port
+                                          , log_host
+                                          , log_port
+                                          , gpi_socket
+                                          , verbose
+                                          , sdpa_home
+                                          , log_dir
+                                          , processes
+                                          );
 
       stop_drts_on_failure.startup_successful();
 

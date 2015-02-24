@@ -74,6 +74,7 @@ namespace gspc
                           , rifd_entry_points const& entry_points
                           );
 
+    void add_worker (rifd_entry_points const&);
     void remove_worker (rifd_entry_points const&);
 
     vmem_allocation alloc
