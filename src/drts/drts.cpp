@@ -191,11 +191,11 @@ namespace gspc
   }
 
   void scoped_runtime_system::implementation::started_runtime_system::remove_worker
-    (rifd_entry_points const& rifd_entry_points)
+    (std::vector<fhg::rif::entry_point> const& entry_points)
   {
     fhg::drts::shutdown ( _processes_storage
                         , fhg::drts::components_type::worker
-                        , rifd_entry_points._->_entry_points
+                        , entry_points
                         );
   }
 
@@ -251,7 +251,7 @@ namespace gspc
   void scoped_runtime_system::implementation::remove_worker
     (rifd_entry_points const& rifd_entry_points)
   {
-    _started_runtime_system.remove_worker (rifd_entry_points);
+    _started_runtime_system.remove_worker (rifd_entry_points._->_entry_points);
   }
 
   vmem_allocation scoped_runtime_system::alloc

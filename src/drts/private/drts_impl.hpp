@@ -52,7 +52,7 @@ namespace gspc
                              );
       ~started_runtime_system();
 
-      void remove_worker (rifd_entry_points const&);
+      void remove_worker (std::vector<fhg::rif::entry_point> const&);
 
       std::vector<fhg::rif::entry_point> _rif_entry_points;
 
