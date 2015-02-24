@@ -51,7 +51,6 @@ namespace fhg
       , boost::optional<boost::filesystem::path> gpi_socket
       , std::vector<boost::filesystem::path> app_path
       , boost::filesystem::path sdpa_home
-      , std::size_t number_of_groups
       , bool delete_logfiles
       , fhg::util::signal_handler_manager& signal_handler_manager
       , boost::optional<std::size_t> gpi_mem

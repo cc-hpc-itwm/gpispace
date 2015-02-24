@@ -80,19 +80,6 @@ namespace
     return boost::none;
   }
 
-  struct segment_info_t
-  {
-    std::vector<fhg::rif::entry_point> entry_points;
-    std::string master_name;
-    fhg::drts::hostinfo_type master_hostinfo;
-    segment_info_t ( std::vector<fhg::rif::entry_point> const& entry_points
-                   , std::string const& master_name
-                   )
-      : entry_points (entry_points)
-      , master_name (master_name)
-    {}
-  };
-
   std::unordered_map<std::string, std::string> logging_environment
     ( boost::optional<std::string> const& log_host
     , boost::optional<unsigned short> const& log_port
@@ -176,7 +163,9 @@ namespace
   }
 
   void start_workers_for
-    ( segment_info_t const& segment_info
+    ( std::vector<fhg::rif::entry_point> const& entry_points
+    , std::string master_name
+    , fhg::drts::hostinfo_type master_hostinfo
     , fhg::drts::worker_description const& description
     , bool verbose
     , boost::optional<std::string> const& gui_host
@@ -194,17 +183,17 @@ namespace
      std::replace_if
        (name_prefix.begin(), name_prefix.end(), boost::is_any_of ("+#.-"), '_');
 
-     std::cout << "I: starting " << name_prefix << " workers (segment "
-               << segment_info.master_name << ", "
+     std::cout << "I: starting " << name_prefix << " workers (master "
+               << master_name << ", "
                << description.num_per_node << "/host, "
                << ( description.max_nodes == 0 ? "unlimited"
                   : description.max_nodes == 1 ? "unique"
                   : "global max: " + std::to_string (description.max_nodes)
                   )
                << ", " << description.shm_size << " SHM) with parent "
-               << segment_info.master_name << " on host "
+               << master_name << " on host "
                << fhg::util::join
-                    ( segment_info.entry_points
+                    ( entry_points
                     | boost::adaptors::transformed
                         ( [] (fhg::rif::entry_point const& entry_point)
                           {
@@ -218,7 +207,7 @@ namespace
      std::vector<std::future<void>> startups;
 
      std::size_t num_nodes (0);
-     for (fhg::rif::entry_point const& entry_point : segment_info.entry_points)
+     for (fhg::rif::entry_point const& entry_point : entry_points)
      {
        for ( unsigned long identity (0)
            ; identity < description.num_per_node
@@ -235,7 +224,7 @@ namespace
                    arguments.emplace_back ("--master");
                    arguments.emplace_back
                      ( build_parent_with_hostinfo
-                         (segment_info.master_name, segment_info.master_hostinfo)
+                         (master_name, master_hostinfo)
                      );
 
                    arguments.emplace_back ("--backlog-length");
@@ -400,7 +389,6 @@ namespace fhg
       , boost::optional<boost::filesystem::path> gpi_socket
       , std::vector<boost::filesystem::path> app_path
       , boost::filesystem::path sdpa_home
-      , std::size_t number_of_groups
       , bool delete_logfiles
       , fhg::util::signal_handler_manager& signal_handler_manager
       , boost::optional<std::size_t> gpi_mem
@@ -412,16 +400,12 @@ namespace fhg
       , fhg::drts::processes_storage& processes
       )
     {
-      fhg::rif::entry_point const& master (rif_entry_points.front());
-
-      if (number_of_groups > rif_entry_points.size())
+      if (rif_entry_points.empty())
       {
-        throw std::invalid_argument
-          ( "number of groups must not be larger than number of rif entry points: "
-          + std::to_string (number_of_groups) + " > "
-          + std::to_string (rif_entry_points.size())
-          );
+        throw std::invalid_argument ("rif_entry_points empty");
       }
+
+      fhg::rif::entry_point const& master (rif_entry_points.front());
 
       if (log_dir)
       {
@@ -585,124 +569,49 @@ namespace fhg
           );
       }
 
-      std::vector<segment_info_t> segment_info;
-      {
-        if (number_of_groups == 1)
-        {
-          segment_info.emplace_back
-            (rif_entry_points, "agent-" + master.hostname + "-0");
-        }
-        else
-        {
-          std::size_t const hosts_per_group
-            (rif_entry_points.size() / number_of_groups);
-          std::size_t const remaining_hosts
-            (rif_entry_points.size() % number_of_groups);
+      std::string const master_agent_name ("agent-" + master.hostname + "-0");
 
-          for (std::size_t i (0); i < number_of_groups; i += hosts_per_group)
-          {
-            segment_info.emplace_back
-              ( std::vector<fhg::rif::entry_point>
-                  ( rif_entry_points.begin() + i
-                  , rif_entry_points.begin() + i + hosts_per_group
-                  )
-              , "agent-" + rif_entry_points[i].hostname + "-1"
-              );
-          }
-
-          segment_info.back().entry_points.insert
-            ( segment_info.back().entry_points.end()
-            , segment_info.back().entry_points.rbegin() + remaining_hosts
-            , segment_info.back().entry_points.rbegin()
-            );
-        }
-      }
+      hostinfo_type const master_agent_hostinfo
+        (start_agent ( master
+                     , master_agent_name
+                     , "orchestrator"
+                     , orchestrator_hostinfo
+                     , gui_host
+                     , gui_port
+                     , log_host
+                     , log_port
+                     , gpi_socket
+                     , verbose
+                     , sdpa_home
+                     , log_dir
+                     , processes
+                     )
+        );
 
       fhg::util::nest_exceptions<std::runtime_error>
         ( [&]
           {
-            std::string const master_agent_name
-              ("agent-" + master.hostname + "-0");
-            hostinfo_type const master_agent_hostinfo
-              ( start_agent ( master
-                            , master_agent_name
-                            , "orchestrator"
-                            , orchestrator_hostinfo
-                            , gui_host
-                            , gui_port
-                            , log_host
-                            , log_port
-                            , gpi_socket
-                            , verbose
-                            , sdpa_home
-                            , log_dir
-                            , processes
-                            )
-              );
-
-            if (segment_info.size() == 1)
+            for (worker_description const& description : worker_descriptions)
             {
-              segment_info.front().master_hostinfo = master_agent_hostinfo;
-            }
-            else
-            {
-              std::vector<std::future<void>> startups;
-              for (segment_info_t& info : segment_info)
-              {
-                startups.emplace_back ( std::async
-                                          ( std::launch::async
-                                          , [&]
-                                            {
-                                              info.master_hostinfo = start_agent
-                                                ( info.entry_points.front()
-                                                , info.master_name
-                                                , master_agent_name
-                                                , master_agent_hostinfo
-                                                , gui_host
-                                                , gui_port
-                                                , log_host
-                                                , log_port
-                                                , gpi_socket
-                                                , verbose
-                                                , sdpa_home
-                                                , log_dir
-                                                , processes
-                                                );
-                                            }
-                                          )
-                                      );
-              }
-              fhg::util::wait_and_collect_exceptions (startups);
+              start_workers_for ( rif_entry_points
+                                , master_agent_name
+                                , master_agent_hostinfo
+                                , description
+                                , verbose
+                                , gui_host
+                                , gui_port
+                                , log_host
+                                , log_port
+                                , processes
+                                , log_dir
+                                , gpi_socket
+                                , app_path
+                                , sdpa_home
+                                );
             }
           }
-          , "at least one agent could not be started!"
-          );
-
-      fhg::util::nest_exceptions<std::runtime_error>
-        ( [&]
-          {
-            for (segment_info_t const& info : segment_info)
-            {
-              for (worker_description const& description : worker_descriptions)
-              {
-                start_workers_for ( info
-                                  , description
-                                  , verbose
-                                  , gui_host
-                                  , gui_port
-                                  , log_host
-                                  , log_port
-                                  , processes
-                                  , log_dir
-                                  , gpi_socket
-                                  , app_path
-                                  , sdpa_home
-                                  );
-              }
-            }
-          }
-          , "at least one worker could not be started!"
-          );
+        , "at least one worker could not be started!"
+        );
 
       stop_drts_on_failure.startup_successful();
 
