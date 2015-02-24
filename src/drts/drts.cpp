@@ -195,6 +195,15 @@ namespace gspc
       );
   }
 
+  void scoped_runtime_system::implementation::started_runtime_system::remove_worker
+    (rifd_entry_points const& rifd_entry_points)
+  {
+    fhg::drts::shutdown ( _processes_storage
+                        , fhg::drts::components_type::worker
+                        , rifd_entry_points._->_entry_points
+                        );
+  }
+
   scoped_runtime_system::implementation::started_runtime_system::~started_runtime_system()
   {
     fhg::drts::shutdown (_rif_entry_points, _processes_storage);
@@ -246,6 +255,11 @@ namespace gspc
         : nullptr
         )
   {}
+  void scoped_runtime_system::implementation::remove_worker
+    (rifd_entry_points const& rifd_entry_points)
+  {
+    _started_runtime_system.remove_worker (rifd_entry_points);
+  }
 
   vmem_allocation scoped_runtime_system::alloc
     (unsigned long size, std::string const& description) const
@@ -279,5 +293,11 @@ namespace gspc
   unsigned long scoped_runtime_system::number_of_unique_nodes() const
   {
     return _->_nodes_and_number_of_unique_nodes.second;
+  }
+
+  void scoped_runtime_system::remove_worker
+    (rifd_entry_points const& rifd_entry_points)
+  {
+    _->remove_worker (rifd_entry_points);
   }
 }
