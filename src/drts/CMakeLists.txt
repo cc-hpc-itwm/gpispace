@@ -7,6 +7,7 @@ install (FILES
   client.hpp
   drts.fwd.hpp
   drts.hpp
+  pimpl.hpp
   rifd_entry_points.fwd.hpp
   rifd_entry_points.hpp
   scoped_rifd.fwd.hpp

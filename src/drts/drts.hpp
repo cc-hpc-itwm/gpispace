@@ -5,6 +5,7 @@
 #include <drts/drts.fwd.hpp>
 
 #include <drts/information_to_reattach.fwd.hpp>
+#include <drts/pimpl.hpp>
 #include <drts/rifd_entry_points.hpp>
 #include <drts/stream.hpp>
 #include <drts/virtual_memory.fwd.hpp>
@@ -73,8 +74,6 @@ namespace gspc
                           , rifd_entry_points const& entry_points
                           );
 
-    ~scoped_runtime_system();
-
     void remove_worker (rifd_entry_points const&);
 
     vmem_allocation alloc
@@ -104,8 +103,7 @@ namespace gspc
     friend class information_to_reattach;
     friend class stream;
 
-    struct implementation;
-    implementation* _;
+    PIMPL (scoped_runtime_system);
   };
 
   void set_application_search_path ( boost::program_options::variables_map&

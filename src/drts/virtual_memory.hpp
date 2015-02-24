@@ -3,6 +3,7 @@
 #pragma once
 
 #include <drts/virtual_memory.fwd.hpp>
+#include <drts/pimpl.hpp>
 #include <drts/drts.fwd.hpp>
 
 #include <we/type/value.hpp>
@@ -30,9 +31,6 @@ namespace gspc
                     );
 
   public:
-    //! \note default, but implementation::~implementation() only known in .cpp
-    ~vmem_allocation();
-
     std::string const handle() const;
     std::size_t size() const;
 
@@ -47,9 +45,6 @@ namespace gspc
     vmem_allocation (vmem_allocation&&);
     vmem_allocation& operator= (vmem_allocation&&) = delete;
 
-  private:
-    struct implementation;
-
-    std::unique_ptr<implementation> _;
+    PIMPL (vmem_allocation);
   };
 }

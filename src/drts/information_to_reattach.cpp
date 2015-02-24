@@ -4,6 +4,7 @@
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
 #include <drts/private/drts_impl.hpp>
+#include <drts/private/pimpl.hpp>
 
 #include <we/type/value.hpp>
 #include <we/type/value/peek.hpp>
@@ -12,7 +13,6 @@
 #include <we/type/value/show.hpp>
 
 #include <fhg/util/join.hpp>
-#include <fhg/util/make_unique.hpp>
 
 #include <boost/lexical_cast.hpp>
 
@@ -90,7 +90,7 @@ namespace gspc
   }
 
   information_to_reattach::information_to_reattach (scoped_runtime_system const& drts)
-    : _ (fhg::util::make_unique<implementation>
+    : _ (new implementation
           ( gspc::host_and_port_type
               { drts._->_started_runtime_system._orchestrator_host
               , drts._->_started_runtime_system._orchestrator_port
@@ -99,10 +99,9 @@ namespace gspc
         )
   {}
   information_to_reattach::information_to_reattach (std::string const& drts_info)
-    : _ (fhg::util::make_unique<implementation> (drts_info))
+    : _ (new implementation (drts_info))
   {}
-  information_to_reattach::~information_to_reattach()
-  {}
+  PIMPL_DTOR (information_to_reattach)
   std::string information_to_reattach::to_string () const
   {
     return _->to_string();
