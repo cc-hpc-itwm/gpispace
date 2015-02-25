@@ -124,8 +124,3 @@ BOOST_AUTO_TEST_CASE (hundred_threads)
 {
   run_n_and_verify (100);
 }
-
-BOOST_AUTO_TEST_CASE (thousand_threads)
-{
-  run_n_and_verify (1000);
-}
