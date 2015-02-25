@@ -76,8 +76,7 @@ namespace fhg
           template<typename Append, typename Flush>
           static fhg::log::Logger::ptr_t create (Append append, Flush flush)
           {
-            fhg::log::Logger::ptr_t l
-              (fhg::log::Logger::get ("execution_monitor"));
+            fhg::log::Logger::ptr_t l (fhg::log::Logger::get());
 
             l->addAppender
               (ptr_t (new delegating_fhglog_appender (append, flush)));

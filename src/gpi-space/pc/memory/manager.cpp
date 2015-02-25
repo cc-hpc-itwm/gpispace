@@ -62,7 +62,7 @@ namespace gpi
         catch (std::exception const & ex)
         {
           LLOG( ERROR
-              , ::fhg::log::Logger::get ("gpi.memory")
+              , ::fhg::log::Logger::get()
               , "could not clear memory manager: " << ex.what()
               );
         }

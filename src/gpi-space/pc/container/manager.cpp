@@ -63,7 +63,7 @@ namespace gpi
           process.second.join();
 
           LLOG( INFO
-              , ::fhg::log::Logger::get ("gpi.container")
+              , ::fhg::log::Logger::get()
               , "process container " << process.first << " detached"
               );
         }
@@ -142,7 +142,7 @@ namespace gpi
             }
 
             LLOG( INFO
-                , ::fhg::log::Logger::get ("gpi.container")
+                , ::fhg::log::Logger::get()
                 , "process container " << id << " attached"
                 );
         }

@@ -12,10 +12,9 @@
 /**
    Common logging framework.
 
-   Logger root_logger(Logger::get());
-   Logger my_logger(Logger::get("module"));
+   Logger logger(Logger::get());
 
-   my_logger.log(LogEvent(...));
+   logger.log(LogEvent(...));
 */
 namespace fhg
 {
@@ -27,7 +26,6 @@ namespace fhg
       typedef boost::shared_ptr<Logger> ptr_t;
 
       static Logger::ptr_t get();
-      static Logger::ptr_t get (const std::string&name);
 
       explicit Logger (const std::string &name);
       Logger (const std::string& name, const Logger& inherit_from);
@@ -48,6 +46,8 @@ namespace fhg
       Level lvl_;
 
       std::list<Appender::ptr_t> appenders_;
+
+      static Logger::ptr_t get (const std::string&name);
     };
   }
 }

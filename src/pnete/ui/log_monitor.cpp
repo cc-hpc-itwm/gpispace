@@ -56,7 +56,7 @@ namespace
     , T* that
     )
   {
-    fhg::log::Logger::ptr_t l (fhg::log::Logger::get ("log_monitor"));
+    fhg::log::Logger::ptr_t l (fhg::log::Logger::get());
 
     l->addAppender
       ( fhg::log::Appender::ptr_t

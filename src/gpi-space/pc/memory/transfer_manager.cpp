@@ -41,7 +41,7 @@ namespace gpi
         if (t.queue >= m_queues.size())
         {
           LLOG( ERROR
-              , ::fhg::log::Logger::get ("gpi.memory")
+              , ::fhg::log::Logger::get()
               , "cannot enqueue request: no such queue: " << t.queue
               );
           throw std::invalid_argument ("no such queue");
@@ -67,7 +67,7 @@ namespace gpi
         if (queue >= m_queues.size())
         {
           LLOG( ERROR
-              , ::fhg::log::Logger::get ("gpi.memory")
+              , ::fhg::log::Logger::get()
               , "cannot wait on queue: no such queue: " << queue
               );
           throw std::invalid_argument ("no such queue");
