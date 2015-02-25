@@ -106,7 +106,7 @@ namespace gpi
           }
           catch (std::exception const & ex)
           {
-            MLOG ( ERROR
+            LOG ( ERROR
                  , "marking queue " << queue << " permanently as failed!"
                  );
             m_queues [queue]->disable ();

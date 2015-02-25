@@ -729,7 +729,7 @@ namespace gpi
                                                       );
               if (0 == num_read)
               {
-                MLOG ( ERROR
+                LOG ( ERROR
                      , "could not read " << buffer->size () << " bytes"
                      << " from " << m_src_loc
                      << " remaining " << remaining
@@ -984,7 +984,7 @@ namespace gpi
           }
           else
           {
-            MLOG ( ERROR
+            LOG ( ERROR
                  , "unsupported memory transfer: both regions are remote:"
                  << " src := [" << src << "]"
                  << " dst := [" << dst << "]"

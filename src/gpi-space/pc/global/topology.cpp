@@ -212,7 +212,7 @@ namespace gpi
       {
         if (not m_shutting_down && ec)
         {
-          MLOG (ERROR, "failed sending a message: " << ec);
+          LOG (ERROR, "failed sending a message: " << ec);
         }
       }
 
@@ -355,7 +355,7 @@ namespace gpi
         {
           std::ostringstream sstr;
           fhg::util::print_current_exception (sstr, "");
-          MLOG (ERROR, "handling command '" + msg + "' failed: " << sstr.str());
+          LOG (ERROR, "handling command '" + msg + "' failed: " << sstr.str());
           cast (source, detail::command_t ("+RES") << 1 << sstr.str());
         }
       }

@@ -80,7 +80,7 @@ namespace gpi
           }
           catch (std::exception const & ex)
           {
-            MLOG (WARN, "could not allocate communication buffer "
+            LOG (WARN, "could not allocate communication buffer "
                  << (num_buffers_allocated+1)
                  << ": " << ex.what ()
                  );
@@ -98,7 +98,7 @@ namespace gpi
         }
         else
         {
-          MLOG_IF ( WARN, descriptor ().avail == 0
+          LOG_IF ( WARN, descriptor ().avail == 0
                   ,  "communication buffers consumed all your precious memory,"
                   << " this might not be what you wanted!"
                   );
@@ -304,7 +304,7 @@ namespace gpi
 
             if (0 == read_bytes)
             {
-              MLOG ( WARN
+              LOG ( WARN
                    , "could not read from src area - premature end-of-file?"
                    );
               break;
@@ -365,7 +365,7 @@ namespace gpi
 
             if (written_bytes != buf.used ())
             {
-              MLOG ( WARN
+              LOG ( WARN
                    , "could not write to dst area - premature end-of-file?"
                    );
               break;

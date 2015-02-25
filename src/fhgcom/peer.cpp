@@ -376,10 +376,10 @@ namespace fhg
       connection_data_t & cd = connections_.at (a);
       if (cd.o_queue.empty ())
       {
-        MLOG_IF ( WARN
-                , cd.send_in_progress
-                , "inconsistent output queue: " << ec << " msg: " << ec.message ()
-                );
+        LOG_IF ( WARN
+               , cd.send_in_progress
+               , "inconsistent output queue: " << ec << " msg: " << ec.message ()
+               );
         return;
       }
 

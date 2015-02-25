@@ -63,11 +63,11 @@
           <cinclude href="limits"/>
           <cinclude href="sstream"/>
           <code><![CDATA[
-            MLOG (INFO, "run (" << id << ", " << i << ")");
+            LOG (INFO, "run (" << id << ", " << i << ")");
 
             unsigned long const num_long (memory.size / sizeof (long));
 
-            MLOG (INFO, "verifiying " << num_long << " values with seed " << config.seed);
+            LOG (INFO, "verifiying " << num_long << " values with seed " << config.seed);
 
             long* a (static_cast<long*> (data));
 

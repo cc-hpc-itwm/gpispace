@@ -52,22 +52,6 @@ namespace fhg
     }                                           \
     while (0)
 
-    // log to a logger with the name of the filename the statement is in
-#define MLOG(level, msg)                                          \
-    LLOG ( level                                                  \
-         , ::fhg::log::Logger::get                                \
-           (::boost::filesystem::path (__FILE__).stem().string()) \
-         , msg                                                    \
-         )
-
-#define MLOG_IF(level, condition, msg)                                    \
-    LLOG_IF ( level                                                       \
-            , ::fhg::log::Logger::get                                     \
-              (::boost::filesystem::path (__FILE__).stem().string())      \
-            , condition                                                   \
-            , msg                                                         \
-            )
-
     // just log
 #define LOG(level, msg) LLOG (level, ::fhg::log::Logger::get(), msg)
   }
