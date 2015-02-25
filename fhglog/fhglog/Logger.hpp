@@ -9,13 +9,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-/**
-   Common logging framework.
-
-   Logger logger(Logger::get());
-
-   logger.log(LogEvent(...));
-*/
 namespace fhg
 {
   namespace log
