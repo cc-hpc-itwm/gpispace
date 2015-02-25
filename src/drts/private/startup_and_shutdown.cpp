@@ -416,24 +416,6 @@ namespace fhg
         boost::filesystem::create_directories (*log_dir);
       }
 
-      struct stop_drts_on_failure
-      {
-        ~stop_drts_on_failure()
-        {
-          if (!_successful)
-          {
-            shutdown (_rif_entry_points, _processes);
-          }
-        }
-        void startup_successful()
-        {
-          _successful = true;
-        }
-        std::vector<fhg::rif::entry_point> const& _rif_entry_points;
-        processes_storage& _processes;
-        bool _successful;
-      } stop_drts_on_failure = {rif_entry_points, processes, false};
-
       fhg::util::scoped_signal_handler interrupt_signal_handler
         ( signal_handler_manager
         ,  SIGINT
@@ -613,48 +595,29 @@ namespace fhg
         , "at least one worker could not be started!"
         );
 
-      stop_drts_on_failure.startup_successful();
-
       return orchestrator_hostinfo;
     }
 
     namespace
     {
-      void terminate_all_processes_of_a_kind
-        ( processes_storage& processes
-        , std::string const& kind
-        , std::vector<fhg::rif::entry_point> const& rif_entry_points
-        )
+      template<typename It>
+        void terminate_all_processes_of_a_kind
+          (std::vector<It> const& entry_point_procs, component_type component)
       {
+        std::string const kind
+          ( component == component_type::worker ? "drts-kernel"
+          : component == component_type::agent ? "agent"
+          : component == component_type::orchestrator ? "orchestrator"
+          : component == component_type::vmem ? "vmem"
+          : throw std::logic_error ("invalid enum value")
+          );
+
         std::vector<std::future<void>> terminates;
 
-        for (fhg::rif::entry_point const& entry_point : rif_entry_points)
+        for (It const& entry_point_processes : entry_point_procs)
         {
-          //! \todo revert HACK: actually remember where stuff is
-          //! running and only try to kill stuff there
-          decltype (processes._)::iterator entry_point_processes
-            (processes._.find (entry_point));
-          if (entry_point_processes == processes._.end())
-          {
-            terminates.emplace_back
-              ( std::async
-                ( std::launch::async
-                , [&entry_point]()
-                  {
-                    throw std::invalid_argument
-                      (( boost::format
-                         ("Terminate on unknown entry point '%1%'")
-                       % entry_point.to_string()
-                       ).str()
-                      );
-                  }
-                )
-              );
-
-            continue;
-          }
-
-          using process_iter = decltype (processes._)::mapped_type::iterator;
+          using process_iter
+            = typename decltype (entry_point_processes->second)::iterator;
           std::vector<pid_t> pids;
           std::vector<process_iter> to_erase;
           for ( process_iter it (entry_point_processes->second.begin())
@@ -674,19 +637,21 @@ namespace fhg
             terminates.emplace_back
               ( std::async
                   ( std::launch::async
-                  , [&kind, entry_point, pids, to_erase, &entry_point_processes]
+                  , [&kind, pids, to_erase, entry_point_processes]
                     {
-                      std::cout << "terminating " << kind << " on " << entry_point.hostname
+                      std::cout << "terminating " << kind << " on "
+                                << entry_point_processes->first.hostname
                                 << ": " << fhg::util::join (pids, " ") << "\n";
 
                       fhg::util::nest_exceptions<std::runtime_error>
-                        ( [&entry_point, &pids]
+                        ( [&entry_point_processes, &pids]
                           {
-                            rif::client (entry_point).kill (pids).get();
+                            rif::client (entry_point_processes->first)
+                              .kill (pids).get();
                           }
                         , ( boost::format ("Could not terminate %1% on %2%")
                           % kind
-                          % entry_point.hostname
+                          % entry_point_processes->first.hostname
                           ).str()
                         );
 
@@ -704,59 +669,59 @@ namespace fhg
       }
     }
 
-    void shutdown ( processes_storage& processes
-                  , boost::optional<components_type::components_type> components
-                  , std::vector<fhg::rif::entry_point> const& rif_entry_points
-                  )
+    void processes_storage::shutdown
+      ( component_type component
+      , std::vector<fhg::rif::entry_point> const& rif_entry_points
+      )
     {
-      if (!components)
+      std::vector<decltype (_)::iterator> iterators;
+      for (fhg::rif::entry_point const& entry_point : rif_entry_points)
       {
-        components = components_type::components_type
-          ( components_type::vmem | components_type::orchestrator
-          | components_type::agent | components_type::worker
-          );
+        decltype (_)::iterator const pos (_.find (entry_point));
+        if (pos == _.end())
+        {
+          throw std::invalid_argument ("shutdown for unknown entry_point");
+        }
+        //! \todo detect if there are any components on this entry_point
+        iterators.emplace_back (pos);
       }
 
-      util::apply_for_each_and_collect_exceptions
-        ( { components_type::worker
-          , components_type::agent
-          , components_type::vmem
-          , components_type::orchestrator
-          }
-        , [&components, &processes, &rif_entry_points]
-            (components_type::components_type component)
-          {
-            if (components.get() & component)
-            {
-              terminate_all_processes_of_a_kind
-                (processes, to_string (component), rif_entry_points);
-            }
-          }
-        );
+      terminate_all_processes_of_a_kind (iterators, component);
 
-      processes.garbage_collect();
-    }
-
-    void processes_storage::garbage_collect()
-    {
-      for (decltype (_)::iterator it (_.begin()); it != _.end();)
+      for (decltype (_)::iterator const& it : iterators)
       {
         if (it->second.empty())
         {
-          it = _.erase (it);
-        }
-        else
-        {
-          ++it;
+          _.erase (it);
         }
       }
     }
 
-    void shutdown ( std::vector<fhg::rif::entry_point> const& rif_entry_points
-                  , processes_storage& processes
-                  )
+    namespace
     {
-      shutdown (processes, boost::none, rif_entry_points);
+      template<typename It>
+        std::vector<It> iterators (It begin, It end)
+      {
+        std::vector<It> res (std::distance (begin, end));
+        std::iota (res.begin(), res.end(), begin);
+        return res;
+      }
+    }
+
+    processes_storage::~processes_storage()
+    {
+      util::apply_for_each_and_collect_exceptions
+        ( { component_type::worker
+          , component_type::agent
+          , component_type::vmem
+          , component_type::orchestrator
+          }
+        , [this] (component_type component)
+          {
+            terminate_all_processes_of_a_kind
+              (iterators (_.begin(), _.end()), component);
+          }
+        );
     }
   }
 }

@@ -193,15 +193,9 @@ namespace gspc
   void scoped_runtime_system::implementation::started_runtime_system::remove_worker
     (rifd_entry_points const& rifd_entry_points)
   {
-    fhg::drts::shutdown ( _processes_storage
-                        , fhg::drts::components_type::worker
-                        , rifd_entry_points._->_entry_points
-                        );
-  }
-
-  scoped_runtime_system::implementation::started_runtime_system::~started_runtime_system()
-  {
-    fhg::drts::shutdown (_rif_entry_points, _processes_storage);
+    _processes_storage.shutdown ( fhg::drts::component_type::worker
+                                , rifd_entry_points._->_entry_points
+                                );
   }
 
   scoped_runtime_system::implementation::implementation
