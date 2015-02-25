@@ -65,6 +65,7 @@
           <cinclude href="sstream"/>
           <cinclude href="process/process.hpp"/>
           <cinclude href="fhglog/LogMacros.hpp"/>
+          <cxx flag="-std=c++11"/>
           <ld flag="-lprocess"/>
           <code><![CDATA[
             std::ostringstream cmdline;

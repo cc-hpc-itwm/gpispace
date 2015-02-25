@@ -117,6 +117,7 @@
           <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="reader.hpp"/>
           <cinclude href="boost/thread.hpp"/>
+          <cxx flag="-std=c++11"/>
           <code><![CDATA[
             LOG (INFO, "work on range [" << range_file.begin
                     << ".." << range_file.end << ")"

@@ -58,10 +58,8 @@ namespace
   {
     fhg::log::Logger::ptr_t l (fhg::log::GLOBAL_logger());
 
-    l->addAppender
-      ( fhg::log::Appender::ptr_t
-        (new fhg::log::appender::call (std::bind (function, that, std::placeholders::_1)))
-      );
+    l->addAppender<fhg::log::appender::call>
+      (std::bind (function, that, std::placeholders::_1));
 
     return *l;
   }

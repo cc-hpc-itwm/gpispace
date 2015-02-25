@@ -78,8 +78,7 @@ namespace fhg
           {
             fhg::log::Logger::ptr_t l (fhg::log::GLOBAL_logger());
 
-            l->addAppender
-              (ptr_t (new delegating_fhglog_appender (append, flush)));
+            l->addAppender<delegating_fhglog_appender> (append, flush);
 
             l->setLevel (fhg::log::TRACE);
 

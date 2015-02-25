@@ -9,6 +9,8 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <memory>
+
 namespace fhg
 {
   namespace log
@@ -29,12 +31,16 @@ namespace fhg
       void log (const LogEvent &event);
       void flush();
 
-      void addAppender(Appender::ptr_t);
+      template<class A, class... Args>
+      void addAppender (Args&&... args)
+      {
+        appenders_.emplace_back (new A (std::forward<Args> (args)...));
+      }
 
     private:
       Level lvl_;
 
-      std::list<Appender::ptr_t> appenders_;
+      std::list<std::unique_ptr<Appender>> appenders_;
     };
 
     Logger::ptr_t GLOBAL_logger();

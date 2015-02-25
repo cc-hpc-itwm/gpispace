@@ -19,6 +19,7 @@
           <in name="config" type="T"/>
           <module name="work" function="work (v, n, config)">
             <cinclude href="fhglog/LogMacros.hpp"/>
+            <cxx flag="-std=c++11"/>
             <code><![CDATA[
             LOG (INFO, "### work " << v.id << " of [0.." << n << ")"
                     << " credit " << v.credit

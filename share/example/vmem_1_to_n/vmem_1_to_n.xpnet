@@ -68,6 +68,7 @@
           <cinclude href="boost/random.hpp"/>
           <cinclude href="limits"/>
           <cinclude href="stdexcept"/>
+          <cxx flag="-std=c++11"/>
           <code><![CDATA[
           unsigned long const num_long (memory.size / sizeof (long));
 

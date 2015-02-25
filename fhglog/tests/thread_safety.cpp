@@ -81,12 +81,9 @@ BOOST_AUTO_TEST_CASE (different_loggers)
   fhg::log::Logger l0;
   fhg::log::Logger l1;
   fhg::log::Logger l2;
-  l0.addAppender
-    (fhg::log::Appender::ptr_t (new pushback_appender (&output_0)));
-  l1.addAppender
-    (fhg::log::Appender::ptr_t (new pushback_appender (&output_1)));
-  l2.addAppender
-    (fhg::log::Appender::ptr_t (new pushback_appender (&output_2)));
+  l0.addAppender<pushback_appender> (&output_0);
+  l1.addAppender<pushback_appender> (&output_1);
+  l2.addAppender<pushback_appender> (&output_2);
 
   {
     const boost::strict_scoped_thread<> t0 (&thread_function, &l0);
@@ -112,10 +109,8 @@ BOOST_AUTO_TEST_CASE (same_logger)
 
   std::vector<std::string> output;
 
-  fhg::log::Appender::ptr_t sync_appender
-    (fhg::log::Appender::ptr_t (new pushback_appender_synchronized (&output)));
   fhg::log::Logger l;
-  l.addAppender (sync_appender);
+  l.addAppender<pushback_appender_synchronized> (&output);
 
   {
     const boost::strict_scoped_thread<> t0 (&thread_function, &l);

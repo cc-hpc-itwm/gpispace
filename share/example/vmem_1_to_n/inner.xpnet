@@ -62,6 +62,7 @@
           <cinclude href="boost/random.hpp"/>
           <cinclude href="limits"/>
           <cinclude href="sstream"/>
+          <cxx flag="-std=c++11"/>
           <code><![CDATA[
             LOG (INFO, "run (" << id << ", " << i << ")");
 

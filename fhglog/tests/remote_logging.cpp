@@ -49,16 +49,11 @@ BOOST_AUTO_TEST_CASE (log_to_fake_remote_stream)
   std::ostringstream logstream;
   boost::asio::io_service io_service;
 
-  boost::shared_ptr<TestAppender>
-    test_appender
-    ( new TestAppender
+  fhg::log::Logger logger;
+  logger.addAppender<TestAppender>
       ( io_service
       , fhg::log::Appender::ptr_t (new fhg::log::StreamAppender (logstream, "%m"))
-      )
-    );
-
-  fhg::log::Logger logger;
-  logger.addAppender (test_appender);
+      );
 
   fhg::log::remote::LogServer logd (logger, io_service, 2438);
 

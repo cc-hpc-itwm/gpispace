@@ -66,16 +66,12 @@ try
 
   const std::string format_string (vm.at (option::format).as<std::string>());
 
-  logger.addAppender
-    ( fhg::log::Appender::ptr_t
-      ( new fhg::log::StreamAppender
+  logger.addAppender<fhg::log::StreamAppender>
         ( std::cout
         , format_string == "long" ? fhg::log::default_format::LONG()
         : format_string == "short" ? fhg::log::default_format::SHORT()
         : fhg::log::check_format (format_string)
-        )
-      )
-    );
+        );
 
   std::cin.unsetf (std::ios_base::skipws);
   fhg::util::parse::position_istream pos (std::cin);

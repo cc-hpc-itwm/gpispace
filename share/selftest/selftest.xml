@@ -6,6 +6,7 @@
 				             , response
                                           )">
     <cinclude href="fhglog/LogMacros.hpp"/>
+    <cxx flag="-std=c++11"/>
     <code><![CDATA[
         LOG (INFO, "SDPA selftest");
 

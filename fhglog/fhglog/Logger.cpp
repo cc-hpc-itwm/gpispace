@@ -24,7 +24,7 @@ namespace fhg
     {
       if (isLevelEnabled (event.severity()))
       {
-        for (Appender::ptr_t const& appender : appenders_)
+        for (std::unique_ptr<Appender> const& appender : appenders_)
         {
           appender->append(event);
         }
@@ -33,15 +33,10 @@ namespace fhg
 
     void Logger::flush()
     {
-      for (Appender::ptr_t const& appender : appenders_)
+      for (std::unique_ptr<Appender> const& appender : appenders_)
       {
         appender->flush();
       }
-    }
-
-    void Logger::addAppender (Appender::ptr_t appender)
-    {
-      appenders_.push_back(appender);
     }
   }
 }

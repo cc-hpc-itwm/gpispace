@@ -187,6 +187,7 @@
               <module name="pi" function="job get_key (seed, points)">
                 <cinclude href="fhglog/LogMacros.hpp"/>
                 <cinclude href="sstream"/>
+                <cxx flag="-std=c++11"/>
                 <code><![CDATA[
                   LOG (INFO, "GET_KEY for seed " << seed);
 
@@ -276,6 +277,7 @@
                 <cinclude href="boost/random/mersenne_twister.hpp"/>
                 <cinclude href="boost/random/uniform_real.hpp"/>
                 <cinclude href="boost/random/variate_generator.hpp"/>
+                <cxx flag="-std=c++11"/>
                 <code><![CDATA[
                   LOG (INFO, "RUN"
                       << ", points " << job.points
@@ -366,6 +368,7 @@
         <out name="ratio" type="ratio"/>
         <module name="pi" function="finalize (ratio)">
           <cinclude href="fhglog/LogMacros.hpp"/>
+          <cxx flag="-std=c++11"/>
           <code><![CDATA[
             LOG (INFO, "FINALIZE"
                 << ", ratio " << ratio.in << " % " << ratio.total
