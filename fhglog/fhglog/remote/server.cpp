@@ -10,7 +10,7 @@ namespace fhg
   {
     namespace remote
     {
-      LogServer::LogServer ( const fhg::log::Logger::ptr_t& log
+      LogServer::LogServer ( fhg::log::Logger& log
                            , boost::asio::io_service& io_service
                            , unsigned short port
                            )
@@ -59,7 +59,7 @@ namespace fhg
                 ostr << sender_endpoint_;
                 evt.trace (ostr.str());
               }
-              _log->log (evt);
+              _log.log (evt);
             }
 
             async_receive();

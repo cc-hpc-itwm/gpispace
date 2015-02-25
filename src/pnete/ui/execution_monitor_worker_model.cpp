@@ -74,7 +74,7 @@ namespace fhg
         struct delegating_fhglog_appender : public log::Appender
         {
           template<typename Append, typename Flush>
-          static fhg::log::Logger::ptr_t create (Append append, Flush flush)
+          static fhg::log::Logger& create (Append append, Flush flush)
           {
             fhg::log::Logger::ptr_t l (fhg::log::Logger::get());
 
@@ -83,7 +83,7 @@ namespace fhg
 
             l->setLevel (fhg::log::TRACE);
 
-            return l;
+            return *l;
           }
 
           template<typename Append, typename Flush>

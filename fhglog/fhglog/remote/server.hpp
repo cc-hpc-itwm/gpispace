@@ -15,13 +15,13 @@ namespace fhg
       class LogServer
       {
       public:
-        LogServer ( const fhg::log::Logger::ptr_t&
+        LogServer ( fhg::log::Logger&
                   , boost::asio::io_service&
                   , unsigned short port
                   );
 
       private:
-        fhg::log::Logger::ptr_t _log;
+        fhg::log::Logger& _log;
         boost::asio::ip::udp::socket socket_;
         boost::asio::ip::udp::endpoint sender_endpoint_;
 

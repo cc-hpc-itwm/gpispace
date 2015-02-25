@@ -51,7 +51,7 @@
 namespace
 {
   template<typename T>
-    fhg::log::Logger::ptr_t logger_with
+    fhg::log::Logger& logger_with
     ( void (T::* function)(const fhg::log::LogEvent&)
     , T* that
     )
@@ -63,7 +63,7 @@ namespace
         (new fhg::log::appender::call (std::bind (function, that, std::placeholders::_1)))
       );
 
-    return l;
+    return *l;
   }
 
   QColor severityToColor (const fhg::log::Level lvl)
