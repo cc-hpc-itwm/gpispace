@@ -6,14 +6,13 @@ namespace fhg
   {
     Logger::ptr_t Logger::get()
     {
-      static Logger::ptr_t l (new Logger ("default"));
+      static Logger::ptr_t l (new Logger());
 
       return l;
     }
 
-    Logger::Logger (const std::string& name)
-      : name_ (name)
-      , lvl_ (INFO)
+    Logger::Logger()
+      : lvl_ (INFO)
     {}
 
     void Logger::setLevel (const Level& level)

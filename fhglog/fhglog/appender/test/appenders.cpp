@@ -12,7 +12,7 @@
 
 BOOST_AUTO_TEST_CASE (stream_appender)
 {
-  fhg::log::Logger logger ("logger-stream_appender");
+  fhg::log::Logger logger;
   logger.setLevel (fhg::log::TRACE);
 
   std::ostringstream logstream;
@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE (stream_appender)
 
 BOOST_AUTO_TEST_CASE (two_stream_appenders)
 {
-  fhg::log::Logger logger ("logger-two_stream_appenders");
+  fhg::log::Logger logger;
   logger.setLevel (fhg::log::TRACE);
 
   std::ostringstream logstream_0;

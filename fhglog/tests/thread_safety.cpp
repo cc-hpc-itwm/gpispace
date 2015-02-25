@@ -78,9 +78,9 @@ BOOST_AUTO_TEST_CASE (different_loggers)
   std::vector<std::string> output_1;
   std::vector<std::string> output_2;
 
-  fhg::log::Logger l0 ("l0");
-  fhg::log::Logger l1 ("l1");
-  fhg::log::Logger l2 ("l2");
+  fhg::log::Logger l0;
+  fhg::log::Logger l1;
+  fhg::log::Logger l2;
   l0.addAppender
     (fhg::log::Appender::ptr_t (new pushback_appender (&output_0)));
   l1.addAppender
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE (same_logger)
 
   fhg::log::Appender::ptr_t sync_appender
     (fhg::log::Appender::ptr_t (new pushback_appender_synchronized (&output)));
-  fhg::log::Logger l ("log");
+  fhg::log::Logger l;
   l.addAppender (sync_appender);
 
   {

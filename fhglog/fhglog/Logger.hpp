@@ -27,7 +27,7 @@ namespace fhg
 
       static Logger::ptr_t get();
 
-      explicit Logger (const std::string &name);
+      Logger();
 
       void setLevel (const Level& level);
       bool isLevelEnabled (const Level& level) const
@@ -41,7 +41,6 @@ namespace fhg
       void addAppender(Appender::ptr_t);
 
     private:
-      std::string name_;
       Level lvl_;
 
       std::list<Appender::ptr_t> appenders_;

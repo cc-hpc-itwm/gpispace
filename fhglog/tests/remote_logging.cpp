@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE (log_to_fake_remote_stream)
       )
     );
 
-  fhg::log::Logger logger ("log");
+  fhg::log::Logger logger;
   logger.addAppender (test_appender);
 
   fhg::log::remote::LogServer logd (logger, io_service, 2438);

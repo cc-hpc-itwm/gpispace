@@ -60,7 +60,7 @@ try
     return EXIT_SUCCESS;
   }
 
-  fhg::log::Logger logger ("dump");
+  fhg::log::Logger logger;
   logger.setLevel
     (fhg::log::from_string (vm.at (option::level).as<std::string>()));
 
