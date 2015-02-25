@@ -50,7 +50,7 @@ try
 {
   boost::asio::io_service remote_log_io_service;
   fhg::log::configure (remote_log_io_service);
-  fhg::log::Logger::ptr_t logger (fhg::log::Logger::get());
+  fhg::log::Logger::ptr_t logger (fhg::log::GLOBAL_logger());
 
   namespace po = boost::program_options;
 

@@ -18,8 +18,6 @@ namespace fhg
     public:
       typedef boost::shared_ptr<Logger> ptr_t;
 
-      static Logger::ptr_t get();
-
       Logger();
 
       void setLevel (const Level& level);
@@ -38,5 +36,7 @@ namespace fhg
 
       std::list<Appender::ptr_t> appenders_;
     };
+
+    Logger::ptr_t GLOBAL_logger();
   }
 }

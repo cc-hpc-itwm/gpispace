@@ -53,6 +53,6 @@ namespace fhg
     while (0)
 
     // just log
-#define LOG(level, msg) LLOG (level, ::fhg::log::Logger::get(), msg)
+#define LOG(level, msg) LLOG (level, ::fhg::log::GLOBAL_logger(), msg)
   }
 }

@@ -56,7 +56,7 @@ namespace
     , T* that
     )
   {
-    fhg::log::Logger::ptr_t l (fhg::log::Logger::get());
+    fhg::log::Logger::ptr_t l (fhg::log::GLOBAL_logger());
 
     l->addAppender
       ( fhg::log::Appender::ptr_t

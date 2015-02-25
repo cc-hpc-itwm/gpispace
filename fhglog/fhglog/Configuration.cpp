@@ -124,7 +124,7 @@ namespace fhg
             throw std::runtime_error ("unknown console " + to_console_);
           }
 
-          Logger::get()->addAppender
+          GLOBAL_logger()->addAppender
             ( Appender::ptr_t ( new StreamAppender
                                 ( "stdout" == to_console_ ? std::cout
                                 : "stdlog" == to_console_ ? std::clog
@@ -138,21 +138,21 @@ namespace fhg
 
         if (to_file_.size())
         {
-          Logger::get()->addAppender
+          GLOBAL_logger()->addAppender
             (Appender::ptr_t (new FileAppender (to_file_, fmt_string_)));
         }
 
         if (to_server_.size())
         {
           // TODO: split to_remote_ into host and port
-          Logger::get()->addAppender ( Appender::ptr_t
-                                       ( new remote::RemoteAppender
-                                         (to_server_, remote_log_io_service)
-                                       )
-                                     );
+          GLOBAL_logger()->addAppender ( Appender::ptr_t
+                                         ( new remote::RemoteAppender
+                                           (to_server_, remote_log_io_service)
+                                         )
+                                       );
         }
 
-        Logger::get()->setLevel (level_);
+        GLOBAL_logger()->setLevel (level_);
       }
     }
 

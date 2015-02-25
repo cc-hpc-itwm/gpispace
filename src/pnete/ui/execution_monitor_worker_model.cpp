@@ -76,7 +76,7 @@ namespace fhg
           template<typename Append, typename Flush>
           static fhg::log::Logger& create (Append append, Flush flush)
           {
-            fhg::log::Logger::ptr_t l (fhg::log::Logger::get());
+            fhg::log::Logger::ptr_t l (fhg::log::GLOBAL_logger());
 
             l->addAppender
               (ptr_t (new delegating_fhglog_appender (append, flush)));

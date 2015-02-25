@@ -145,7 +145,7 @@ GenericDaemon::GenericDaemon( const std::string name
                             , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
                             , bool create_wfe
                             )
-  : _logger (fhg::log::Logger::get())
+  : _logger (fhg::log::GLOBAL_logger())
   , _name (name)
   , _master_info (make_master_info_map<master_info_t> (masters))
   , _subscriptions()

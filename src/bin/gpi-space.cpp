@@ -196,7 +196,7 @@ try
 
   fhg::util::signal_handler_manager signal_handler;
   fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
-    crit_error_handler (signal_handler, fhg::log::Logger::get());
+    crit_error_handler (signal_handler, fhg::log::GLOBAL_logger());
 
   std::unique_ptr<fhg::com::peer_t> topology_peer
     ( fhg::util::make_unique<fhg::com::peer_t>
