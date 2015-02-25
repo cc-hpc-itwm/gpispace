@@ -68,13 +68,6 @@ namespace fhg
             , msg                                                         \
             )
 
-    // log to a named logger (component)
-#define CLOG(level, component, msg)             \
-    LLOG ( level                                \
-         , ::fhg::log::Logger::get (component)    \
-         , msg                                  \
-         )
-
     // just log
 #define LOG(level, msg) LLOG (level, ::fhg::log::Logger::get(), msg)
   }
