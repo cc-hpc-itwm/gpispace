@@ -57,10 +57,11 @@ BOOST_AUTO_TEST_CASE (log_to_fake_remote_stream)
       )
     );
 
-  fhg::log::Logger::get ("log")->addAppender (test_appender);
+  fhg::log::Logger::ptr_t logger (new fhg::log::Logger ("log"));
+  logger->addAppender (test_appender);
 
   boost::shared_ptr<fhg::log::remote::LogServer> logd
-    (new fhg::log::remote::LogServer ( fhg::log::Logger::get ("log")
+    (new fhg::log::remote::LogServer ( logger
                                      , io_service
                                      , 2438
                                      )
