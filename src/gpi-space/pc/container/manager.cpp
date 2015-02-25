@@ -62,10 +62,9 @@ namespace gpi
         {
           process.second.join();
 
-          LLOG( INFO
-              , ::fhg::log::Logger::get()
-              , "process container " << process.first << " detached"
-              );
+          LOG( INFO
+             , "process container " << process.first << " detached"
+             );
         }
 
         _memory_manager.clear();
@@ -141,10 +140,9 @@ namespace gpi
                 );
             }
 
-            LLOG( INFO
-                , ::fhg::log::Logger::get()
-                , "process container " << id << " attached"
-                );
+            LOG( INFO
+               , "process container " << id << " attached"
+               );
         }
       }
 
