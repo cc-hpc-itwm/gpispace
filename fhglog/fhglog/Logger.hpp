@@ -46,8 +46,6 @@ namespace fhg
       Level lvl_;
 
       std::list<Appender::ptr_t> appenders_;
-
-      static Logger::ptr_t get (const std::string&name);
     };
   }
 }
