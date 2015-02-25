@@ -25,8 +25,6 @@ namespace fhg
     {
       if (isLevelEnabled (event.severity()))
       {
-        event.trace (name_);
-
         for (Appender::ptr_t const& appender : appenders_)
         {
           appender->append(event);

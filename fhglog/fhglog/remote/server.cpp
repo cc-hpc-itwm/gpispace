@@ -52,14 +52,7 @@ namespace fhg
                 return;
               }
 
-              LogEvent evt (LogEvent::from_string (msg));
-
-              {
-                std::ostringstream ostr;
-                ostr << sender_endpoint_;
-                evt.trace (ostr.str());
-              }
-              _log.log (evt);
+              _log.log (LogEvent::from_string (msg));
             }
 
             async_receive();

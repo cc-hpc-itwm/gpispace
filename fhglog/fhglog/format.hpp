@@ -2,7 +2,6 @@
 
 #include <fhglog/event.hpp>
 
-#include <fhg/util/first_then.hpp>
 #include <fhg/util/save_stream_flags.hpp>
 #include <fhg/util/parse/position.hpp>
 
@@ -81,16 +80,6 @@ namespace fhg
               os << std::hex << evt.tid();
             }
             break;
-          case 'l':
-            {
-              fhg::util::first_then<std::string> sep ("", "->");
-
-              for (std::string const& t : evt.trace())
-              {
-                os << sep << t;
-              }
-            }
-            break;
           default:
             throw std::runtime_error
               ((boost::format ("format code not defined: %1%") % *pos).str());
@@ -123,12 +112,12 @@ namespace fhg
     {
       static std::string const & SHORT()
       {
-        static std::string f("[%t] %s: %l %p:%L - %m%n");
+        static std::string f("[%t] %s: %p:%L - %m%n");
         return f;
       }
       static std::string const & LONG()
       {
-        static std::string f("%t %S %l pid:%R thread:%T %p:%L (%F) - %m%n");
+        static std::string f("%t %S pid:%R thread:%T %p:%L (%F) - %m%n");
         return f;
       }
     };

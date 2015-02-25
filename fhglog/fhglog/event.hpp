@@ -52,13 +52,7 @@ namespace fhg
       const double& tstamp() const { return tstamp_; }
       const pid_t& pid() const { return pid_; }
       const pid_t& tid() const { return tid_; }
-      const std::vector<std::string>& trace() const { return trace_; }
       const std::string& host() const { return host_; }
-
-      void trace (const std::string& name) const
-      {
-        trace_.push_back (name);
-      }
 
       std::string encoded() const;
 
@@ -72,7 +66,6 @@ namespace fhg
       pid_t pid_;
       pid_t tid_;
       std::string host_;
-      mutable std::vector<std::string> trace_;
     };
   }
 }
