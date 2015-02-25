@@ -16,14 +16,6 @@ namespace fhg
       , lvl_ (INFO)
     {}
 
-    Logger::Logger ( const std::string& name
-                   , const Logger& inherit_from
-                   )
-      : name_ (name)
-      , lvl_ (inherit_from.lvl_)
-      , appenders_ (inherit_from.appenders_)
-    {}
-
     void Logger::setLevel (const Level& level)
     {
       lvl_ = level;
