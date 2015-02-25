@@ -51,7 +51,6 @@ namespace gspc
                              , boost::optional<unsigned short> vmem_port
                              , std::vector<fhg::rif::entry_point> const& rif_entry_points
                              );
-      ~started_runtime_system();
 
       void add_worker (std::vector<fhg::rif::entry_point> const&);
       void remove_worker (std::vector<fhg::rif::entry_point> const&);
