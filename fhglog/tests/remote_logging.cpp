@@ -10,10 +10,12 @@
 #include <fhglog/remote/server.hpp>
 
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <fhg/util/make_unique.hpp>
 
 #include <boost/thread/scoped_thread.hpp>
 
 #include <functional>
+#include <memory>
 
 namespace
 {
@@ -21,9 +23,9 @@ namespace
   {
   public:
     TestAppender ( boost::asio::io_service& s
-                 , fhg::log::Appender::ptr_t appender
+                 , std::unique_ptr<fhg::log::Appender> appender
                  )
-      : _appender (appender)
+      : _appender (std::move (appender))
       , service_ (s)
     {}
 
@@ -39,7 +41,7 @@ namespace
     }
 
   private:
-    fhg::log::Appender::ptr_t _appender;
+    std::unique_ptr<fhg::log::Appender> _appender;
     boost::asio::io_service& service_;
   };
 }
@@ -52,7 +54,7 @@ BOOST_AUTO_TEST_CASE (log_to_fake_remote_stream)
   fhg::log::Logger logger;
   logger.addAppender<TestAppender>
       ( io_service
-      , fhg::log::Appender::ptr_t (new fhg::log::StreamAppender (logstream, "%m"))
+      , fhg::util::make_unique<fhg::log::StreamAppender> (logstream, "%m")
       );
 
   fhg::log::remote::LogServer logd (logger, io_service, 2438);

@@ -181,7 +181,7 @@ namespace
 DRTSImpl::DRTSImpl
     ( std::function<void()> request_stop
     , std::unique_ptr<boost::asio::io_service> peer_io_service
-    , boost::optional<sdpa::daemon::NotificationService> gui_notification_service
+    , std::unique_ptr<sdpa::daemon::NotificationService> gui_notification_service
     , std::string const& kernel_name
     , gpi::pc::client::api_t /*const*/* virtual_memory_api
     , gspc::scoped_allocation /*const*/* shared_memory
@@ -201,7 +201,7 @@ DRTSImpl::DRTSImpl
                         )
   , _currently_executed_tasks()
   , m_loader ({library_path.begin(), library_path.end()})
-  , _notification_service (gui_notification_service)
+  , _notification_service (std::move (gui_notification_service))
   , _virtual_memory_api (virtual_memory_api)
   , _shared_memory (shared_memory)
   , m_pending_jobs (backlog_length)

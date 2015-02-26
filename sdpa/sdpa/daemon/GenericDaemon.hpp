@@ -275,7 +275,7 @@ namespace sdpa {
       sdpa::capabilities_set_t m_capabilities;
 
     protected:
-      boost::optional<NotificationService> m_guiService;
+      std::unique_ptr<NotificationService> m_guiService;
 
     private:
       boost::posix_time::time_duration _registration_timeout;

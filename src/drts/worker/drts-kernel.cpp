@@ -187,34 +187,32 @@ try
   }
 
   boost::asio::io_service gui_io_service;
-  boost::optional<sdpa::daemon::NotificationService> gui_notification_service;
-  if (vm.count (option_name::gui_host) || vm.count (option_name::gui_port))
-  {
-    gui_notification_service = sdpa::daemon::NotificationService
-      ( vm.at (option_name::gui_host).as<std::string>()
-      , vm.at (option_name::gui_port)
-        .as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
-      , gui_io_service
-      );
-  }
 
-  DRTSImpl const plugin ( request_stop
-                        , fhg::util::make_unique<boost::asio::io_service>()
-                        , gui_notification_service
-                        , kernel_name
-                        , virtual_memory_api.get()
-                        , shared_memory.get()
-                        , master_info
-                        , vm.at (option_name::capability)
-                          .as<std::vector<std::string>>()
-                        , vm.count (option_name::socket)
-                        ? vm.at (option_name::socket).as<std::size_t>()
-                        : boost::optional<std::size_t>()
-                        , vm.at (option_name::library_search_path)
-                          .as<std::vector<boost::filesystem::path>>()
-                        , vm.at (option_name::backlog_length)
-                          .as<std::size_t>()
-                        );
+  DRTSImpl const plugin
+    ( request_stop
+    , fhg::util::make_unique<boost::asio::io_service>()
+    , (vm.count (option_name::gui_host) || vm.count (option_name::gui_port))
+      ? fhg::util::make_unique<sdpa::daemon::NotificationService>
+        ( vm.at (option_name::gui_host).as<std::string>()
+        , vm.at (option_name::gui_port)
+          .as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
+        , gui_io_service
+        )
+      : nullptr
+    , kernel_name
+    , virtual_memory_api.get()
+    , shared_memory.get()
+    , master_info
+    , vm.at (option_name::capability)
+    .as<std::vector<std::string>>()
+    , vm.count (option_name::socket)
+    ? vm.at (option_name::socket).as<std::size_t>()
+    : boost::optional<std::size_t>()
+    , vm.at (option_name::library_search_path)
+    .as<std::vector<boost::filesystem::path>>()
+    , vm.at (option_name::backlog_length)
+    .as<std::size_t>()
+    );
 
   {
     fhg::rif::startup_messages_pipe startup_messages_pipe (vm);

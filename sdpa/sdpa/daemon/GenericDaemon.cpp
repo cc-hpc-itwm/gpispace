@@ -166,9 +166,9 @@ GenericDaemon::GenericDaemon( const std::string name
   , mtx_cpb_()
   , m_capabilities()
   , m_guiService ( gui_info && !gui_info->first.empty()
-                 ? boost::optional<NotificationService>
-                   (NotificationService (gui_info->first, gui_info->second))
-                 : boost::none
+                 ? fhg::util::make_unique<NotificationService>
+                   (gui_info->first, gui_info->second)
+                 : nullptr
                  )
   , _registration_timeout (boost::posix_time::seconds (1))
   , _event_queue()

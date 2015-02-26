@@ -122,7 +122,7 @@ public:
   DRTSImpl
     ( std::function<void()> request_stop
     , std::unique_ptr<boost::asio::io_service> peer_io_service
-    , boost::optional<sdpa::daemon::NotificationService> gui_notification_service
+    , std::unique_ptr<sdpa::daemon::NotificationService> gui_notification_service
     , std::string const& kernel_name
     , gpi::pc::client::api_t /*const*/* virtual_memory_socket
     , gspc::scoped_allocation /*const*/* shared_memory
@@ -175,7 +175,7 @@ private:
 
   we::loader::loader m_loader;
 
-  boost::optional<sdpa::daemon::NotificationService> _notification_service;
+  std::unique_ptr<sdpa::daemon::NotificationService> _notification_service;
 
   gpi::pc::client::api_t /*const*/* _virtual_memory_api;
   gspc::scoped_allocation /*const*/* _shared_memory;
