@@ -14,8 +14,6 @@
 #include <gpi-space/pc/memory/sfs_area.hpp>
 #include <gpi-space/pc/memory/shm_area.hpp>
 
-#include <boost/shared_ptr.hpp>
-
 #include <string>
 
 namespace gpi

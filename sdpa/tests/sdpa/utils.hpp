@@ -18,7 +18,6 @@
 
 #include <boost/asio/io_service.hpp>
 #include <boost/ref.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>

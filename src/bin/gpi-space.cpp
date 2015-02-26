@@ -31,7 +31,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/program_options.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
 #include <chrono>

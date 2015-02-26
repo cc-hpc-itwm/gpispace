@@ -3,7 +3,6 @@
 #include <gpi-space/types.hpp>
 #include <gpi-space/exception.hpp>
 
-#include <boost/shared_ptr.hpp>
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
 

@@ -6,7 +6,6 @@
 
 #include <fhg/util/thread/event.hpp>
 
-#include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
