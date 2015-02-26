@@ -23,11 +23,11 @@ namespace fhg
 #define LLOG(level, logger, msg)                                \
     do                                                          \
     {                                                           \
-      if (logger->isLevelEnabled (::fhg::log::level))           \
+      if (logger.isLevelEnabled (::fhg::log::level))            \
       {                                                         \
         std::ostringstream msg_;                                \
         msg_ << msg;                                            \
-        logger->log (FHGLOG_MKEVENT_HERE (level, msg_.str()));  \
+        logger.log (FHGLOG_MKEVENT_HERE (level, msg_.str()));   \
       }                                                         \
     } while (0)
 

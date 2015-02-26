@@ -48,7 +48,7 @@ try
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
 
-    fhg::log::Logger::ptr_t logger (fhg::log::GLOBAL_logger());
+    fhg::log::Logger& logger (fhg::log::GLOBAL_logger());
 
     if (vm.count("help"))
     {

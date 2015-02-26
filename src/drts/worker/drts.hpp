@@ -160,7 +160,7 @@ private:
   template<typename Event, typename... Args>
     void send_event (fhg::com::p2p::address_t const& destination, Args&&... args);
 
-  fhg::log::Logger::ptr_t _logger;
+  fhg::log::Logger& _logger;
 
   std::function<void()> _request_stop;
 

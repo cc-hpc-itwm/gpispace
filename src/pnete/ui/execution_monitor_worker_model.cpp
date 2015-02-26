@@ -76,13 +76,13 @@ namespace fhg
           template<typename Append, typename Flush>
           static fhg::log::Logger& create (Append append, Flush flush)
           {
-            fhg::log::Logger::ptr_t l (fhg::log::GLOBAL_logger());
+            fhg::log::Logger& l (fhg::log::GLOBAL_logger());
 
-            l->addAppender<delegating_fhglog_appender> (append, flush);
+            l.addAppender<delegating_fhglog_appender> (append, flush);
 
-            l->setLevel (fhg::log::TRACE);
+            l.setLevel (fhg::log::TRACE);
 
-            return *l;
+            return l;
           }
 
           template<typename Append, typename Flush>

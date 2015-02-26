@@ -48,7 +48,7 @@ namespace fhg
     struct scoped_log_backtrace_and_exit_for_critical_errors
     {
       scoped_log_backtrace_and_exit_for_critical_errors
-        (signal_handler_manager&, fhg::log::Logger::ptr_t);
+        (signal_handler_manager&, fhg::log::Logger&);
 
     private:
       boost::function<void (int, siginfo_t*, void*)> const _handler;

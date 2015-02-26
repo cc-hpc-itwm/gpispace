@@ -7,8 +7,6 @@
 #include <fhglog/event.hpp>
 #include <fhglog/Appender.hpp>
 
-#include <boost/shared_ptr.hpp>
-
 #include <memory>
 
 namespace fhg
@@ -18,8 +16,6 @@ namespace fhg
     class Logger
     {
     public:
-      typedef boost::shared_ptr<Logger> ptr_t;
-
       Logger();
 
       void setLevel (const Level& level);
@@ -43,6 +39,6 @@ namespace fhg
       std::list<std::unique_ptr<Appender>> appenders_;
     };
 
-    Logger::ptr_t GLOBAL_logger();
+    Logger& GLOBAL_logger();
   }
 }

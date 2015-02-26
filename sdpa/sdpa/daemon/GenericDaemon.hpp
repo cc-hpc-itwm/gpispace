@@ -225,7 +225,7 @@ namespace sdpa {
 
       // data members
     protected:
-      fhg::log::Logger::ptr_t _logger;
+      fhg::log::Logger& _logger;
 
       std::string _name;
 

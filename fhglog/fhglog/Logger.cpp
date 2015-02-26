@@ -4,9 +4,9 @@ namespace fhg
 {
   namespace log
   {
-    Logger::ptr_t GLOBAL_logger()
+    Logger& GLOBAL_logger()
     {
-      static Logger::ptr_t l (new Logger());
+      static Logger l;
 
       return l;
     }

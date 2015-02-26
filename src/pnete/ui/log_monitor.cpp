@@ -56,12 +56,12 @@ namespace
     , T* that
     )
   {
-    fhg::log::Logger::ptr_t l (fhg::log::GLOBAL_logger());
+    fhg::log::Logger& l (fhg::log::GLOBAL_logger());
 
-    l->addAppender<fhg::log::appender::call>
+    l.addAppender<fhg::log::appender::call>
       (std::bind (function, that, std::placeholders::_1));
 
-    return *l;
+    return l;
   }
 
   QColor severityToColor (const fhg::log::Level lvl)
