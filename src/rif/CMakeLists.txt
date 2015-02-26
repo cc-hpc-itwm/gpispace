@@ -17,7 +17,11 @@ target_link_libraries (rif-startup-messages-pipe
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
 )
 
-add_library (rif-strategies "strategy/meta.cpp" "strategy/ssh.cpp")
+add_library (rif-strategies
+  "strategy/meta.cpp"
+  "strategy/poe.cpp"
+  "strategy/ssh.cpp"
+)
 target_link_libraries (rif-strategies rpc net fhg-util)
 
 fhg_add_runtime_executable ("gspc-bootstrap-rifd.cpp"

@@ -8,6 +8,7 @@
 
 #include <network/server.hpp>
 
+#include <rif/strategy/poe.hpp>
 #include <rif/strategy/ssh.hpp>
 
 #include <rpc/server.hpp>
@@ -48,7 +49,9 @@ namespace fhg
                                  )
                           >
                       >
-          > const strategies {{"ssh", {ssh::bootstrap, ssh::teardown}}};
+          > const strategies { {"ssh", {ssh::bootstrap, ssh::teardown}}
+                             , {"poe", {poe::bootstrap, poe::teardown}}
+                             };
 
         void validate_strategy (std::string const& strategy)
         {
