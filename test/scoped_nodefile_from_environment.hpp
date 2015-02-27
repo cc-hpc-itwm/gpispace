@@ -17,6 +17,11 @@ namespace test
       , boost::program_options::variables_map&
       );
 
+    boost::filesystem::path path() const
+    {
+      return _temporary_file;
+    }
+
   private:
     fhg::util::temporary_file const _temporary_file;
   };
