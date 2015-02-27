@@ -275,7 +275,7 @@ namespace fhg
                    }
 
                    std::string const name
-                     ( name_prefix + "-" + entry_point.hostname
+                     ( name_prefix + "-" + entry_point.to_string()
                      + "-" + std::to_string (identity + 1)
                      + ( description.socket
                        ? ("." + std::to_string (description.socket.get()))
