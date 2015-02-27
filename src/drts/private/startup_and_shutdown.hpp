@@ -7,6 +7,7 @@
 #include <rif/entry_point.hpp>
 
 #include <boost/filesystem/path.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 
 #include <chrono>
@@ -33,7 +34,7 @@ namespace fhg
 
     enum class component_type {vmem, orchestrator, agent, worker};
 
-    struct processes_storage
+    struct processes_storage : boost::noncopyable
     {
       std::unordered_map < fhg::rif::entry_point
                          , std::unordered_map<std::string /*name*/, pid_t>
