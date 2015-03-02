@@ -12,8 +12,6 @@
 
 #include <functional>
 
-BOOST_GLOBAL_FIXTURE (setup_logging)
-
 namespace
 {
   class fake_drts_worker_notifying_submission_and_cancel
@@ -65,9 +63,9 @@ namespace
   };
 }
 
-BOOST_AUTO_TEST_CASE (cancel_no_agent)
+BOOST_FIXTURE_TEST_CASE (cancel_no_agent, setup_logging)
 {
-  const utils::orchestrator orchestrator;
+  const utils::orchestrator orchestrator (_logger);
 
   utils::client client (orchestrator);
 
@@ -79,9 +77,9 @@ BOOST_AUTO_TEST_CASE (cancel_no_agent)
     (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
 }
 
-BOOST_AUTO_TEST_CASE (cancel_with_agent)
+BOOST_FIXTURE_TEST_CASE (cancel_with_agent, setup_logging)
 {
-  const utils::orchestrator orchestrator;
+  const utils::orchestrator orchestrator (_logger);
   const utils::agent agent (orchestrator);
 
   fhg::util::thread::event<> job_submitted;
@@ -106,9 +104,9 @@ BOOST_AUTO_TEST_CASE (cancel_with_agent)
     (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
 }
 
-BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
+BOOST_FIXTURE_TEST_CASE (call_cancel_twice_orch, setup_logging)
 {
-  const utils::orchestrator orchestrator;
+  const utils::orchestrator orchestrator (_logger);
 
   utils::client client (orchestrator);
 
@@ -122,9 +120,9 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
   BOOST_REQUIRE_THROW (client.cancel_job (job_id), std::runtime_error);
 }
 
-BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
+BOOST_FIXTURE_TEST_CASE (call_cancel_twice_agent, setup_logging)
 {
-  const utils::orchestrator orchestrator;
+  const utils::orchestrator orchestrator (_logger);
   const utils::agent agent (orchestrator);
 
   fhg::util::thread::event<> job_submitted;

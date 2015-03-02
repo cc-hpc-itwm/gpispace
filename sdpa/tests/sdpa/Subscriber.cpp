@@ -6,11 +6,9 @@
 
 #include <boost/test/unit_test.hpp>
 
-BOOST_GLOBAL_FIXTURE (setup_logging)
-
-BOOST_AUTO_TEST_CASE (execute_workflow_with_subscribed_client)
+BOOST_FIXTURE_TEST_CASE (execute_workflow_with_subscribed_client, setup_logging)
 {
-  const utils::orchestrator orchestrator;
+  const utils::orchestrator orchestrator (_logger);
   const utils::agent agent (orchestrator);
   const utils::fake_drts_worker_directly_finishing_jobs worker (agent);
 
@@ -21,9 +19,9 @@ BOOST_AUTO_TEST_CASE (execute_workflow_with_subscribed_client)
     );
 }
 
-BOOST_AUTO_TEST_CASE (execute_workflow_and_subscribe_with_second_client)
+BOOST_FIXTURE_TEST_CASE (execute_workflow_and_subscribe_with_second_client, setup_logging)
 {
-  const utils::orchestrator orchestrator;
+  const utils::orchestrator orchestrator (_logger);
   const utils::agent agent (orchestrator);
   const utils::fake_drts_worker_directly_finishing_jobs worker (agent);
 

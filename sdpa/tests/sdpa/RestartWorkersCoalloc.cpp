@@ -8,8 +8,6 @@
 
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 
-BOOST_GLOBAL_FIXTURE (setup_logging)
-
 namespace
 {
   class fake_drts_worker_waiting_for_cancel
@@ -57,9 +55,9 @@ namespace
   };
 }
 
-BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_running)
+BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_running, setup_logging)
 {
-  const utils::orchestrator orchestrator;
+  const utils::orchestrator orchestrator (_logger);
   const utils::agent agent (orchestrator);
 
   utils::client client (orchestrator);
@@ -95,9 +93,9 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnin
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_AUTO_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is_missing)
+BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is_missing, setup_logging)
 {
-  const utils::orchestrator orchestrator;
+  const utils::orchestrator orchestrator (_logger);
   const utils::agent agent (orchestrator);
 
   utils::client client (orchestrator);

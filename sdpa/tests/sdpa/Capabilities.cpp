@@ -9,15 +9,13 @@
 
 #include <boost/test/unit_test.hpp>
 
-BOOST_GLOBAL_FIXTURE (setup_logging)
-
 namespace
 {
   class drts_component_observing_capabilities : public utils::basic_drts_component
   {
   public:
-    drts_component_observing_capabilities()
-      : utils::basic_drts_component (utils::random_peer_name(), true)
+    drts_component_observing_capabilities (fhg::log::Logger& logger)
+      : utils::basic_drts_component (utils::random_peer_name(), true, logger)
     {}
 
     virtual void handleCapabilitiesGainedEvent
@@ -67,9 +65,9 @@ namespace
   }
 }
 
-BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
+BOOST_FIXTURE_TEST_CASE (acquire_capabilities_from_workers, setup_logging)
 {
-  drts_component_observing_capabilities observer;
+  drts_component_observing_capabilities observer (_logger);
 
   const utils::agent agent (observer);
 
@@ -89,9 +87,9 @@ BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
   }
 }
 
-BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
+BOOST_FIXTURE_TEST_CASE (lose_capabilities_after_worker_dies, setup_logging)
 {
-  drts_component_observing_capabilities observer;
+  drts_component_observing_capabilities observer (_logger);
 
   const utils::agent agent (observer);
 

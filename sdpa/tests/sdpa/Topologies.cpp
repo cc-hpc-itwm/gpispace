@@ -6,11 +6,9 @@
 
 #include <boost/test/unit_test.hpp>
 
-BOOST_GLOBAL_FIXTURE (setup_logging)
-
-BOOST_AUTO_TEST_CASE (orchestrator_agent_worker)
+BOOST_FIXTURE_TEST_CASE (orchestrator_agent_worker, setup_logging)
 {
-  const utils::orchestrator orchestrator;
+  const utils::orchestrator orchestrator (_logger);
 
   const utils::agent agent (orchestrator);
 
@@ -22,9 +20,9 @@ BOOST_AUTO_TEST_CASE (orchestrator_agent_worker)
                       );
 }
 
-BOOST_AUTO_TEST_CASE (chained_agents)
+BOOST_FIXTURE_TEST_CASE (chained_agents, setup_logging)
 {
-  const utils::orchestrator orchestrator;
+  const utils::orchestrator orchestrator (_logger);
 
   //! \note "variable agents #" was hardcoded to 1 when this test got
   //! rewritten. Probably should be more, so got bumped to 2.
@@ -39,9 +37,9 @@ BOOST_AUTO_TEST_CASE (chained_agents)
                       );
 }
 
-BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
+BOOST_FIXTURE_TEST_CASE (two_workers_with_seperate_master_agent, setup_logging)
 {
-  const utils::orchestrator orchestrator;
+  const utils::orchestrator orchestrator (_logger);
 
   const utils::agent agent_0 (orchestrator);
   const utils::agent agent_1 (agent_0);
@@ -56,9 +54,9 @@ BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
                       );
 }
 
-BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
+BOOST_FIXTURE_TEST_CASE (agent_with_multiple_master_agents, setup_logging)
 {
-  const utils::orchestrator orchestrator;
+  const utils::orchestrator orchestrator (_logger);
 
   const utils::agent agent_0 (orchestrator);
   const utils::agent agent_1 (orchestrator);
