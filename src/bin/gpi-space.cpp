@@ -253,7 +253,10 @@ catch (...)
 {
   std::ostringstream ss;
   fhg::util::print_current_exception (ss, "");
-  LOG (ERROR, "GPI could not be started: " << ss.str());
+  boost::asio::io_service remote_log_io_service;
+  fhg::log::Logger logger;
+  fhg::log::configure (remote_log_io_service, logger);
+  LLOG (ERROR, logger, "GPI could not be started: " << ss.str());
 
   return EXIT_FAILURE;
 }
