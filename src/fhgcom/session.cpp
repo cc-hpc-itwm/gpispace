@@ -96,7 +96,10 @@ void session::handle_read_header ( const boost::system::error_code & error
   }
   else
   {
-    LOG_IF(WARN, error.value() != 2, "session failed: " << error.message() << ": " << error);
+    if (error.value() != 2)
+    {
+      LOG(WARN, "session failed: " << error.message() << ": " << error);
+    }
     close ();
   }
 }

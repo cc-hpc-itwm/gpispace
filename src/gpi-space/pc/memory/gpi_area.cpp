@@ -96,12 +96,12 @@ namespace gpi
             + " mem-size := " + boost::lexical_cast<std::string>(descriptor ().local_size)
             );
         }
-        else
+        else if (descriptor().avail == 0)
         {
-          LOG_IF ( WARN, descriptor ().avail == 0
-                  ,  "communication buffers consumed all your precious memory,"
-                  << " this might not be what you wanted!"
-                  );
+          LOG ( WARN
+              ,  "communication buffers consumed all your precious memory,"
+              << " this might not be what you wanted!"
+              );
         }
       }
 

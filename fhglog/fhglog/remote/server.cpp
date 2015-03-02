@@ -26,10 +26,13 @@ namespace fhg
                              , ec
                              );
 
-          LOG_IF ( WARN, ec
-                 , "could not set resuse address option: "
-                 << ec << ": " << ec.message()
-                 );
+          if (ec)
+          {
+            LOG ( WARN
+                , "could not set resuse address option: "
+                << ec << ": " << ec.message()
+                );
+          }
 
           async_receive();
         }

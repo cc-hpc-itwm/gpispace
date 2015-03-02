@@ -31,27 +31,6 @@ namespace fhg
       }                                                         \
     } while (0)
 
-#define LLOG_IF(level, logger, condition, msg)  \
-    do                                          \
-    {                                           \
-      if (condition)                            \
-      {                                         \
-        LLOG (level, logger, msg);              \
-      }                                         \
-    }                                           \
-    while (0)
-
-    // log if some condition is true
-#define LOG_IF(level, condition, msg)           \
-    do                                          \
-    {                                           \
-      if (condition)                            \
-      {                                         \
-        LOG (level, msg);                       \
-      }                                         \
-    }                                           \
-    while (0)
-
     // just log
 #define LOG(level, msg) LLOG (level, ::fhg::log::GLOBAL_logger(), msg)
   }

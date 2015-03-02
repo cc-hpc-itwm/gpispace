@@ -364,29 +364,36 @@ namespace fhg
 
       if (connections_.find (a) == connections_.end())
       {
-        LOG_IF( WARN
-              , ec
+        if (ec)
+        {
+          LOG ( WARN
               , "could not send message to " << p2p::to_string (a)
               << " connection already closed: "
               << ec << " msg: " << ec.message ()
               );
+        }
         return;
       }
 
       connection_data_t & cd = connections_.at (a);
       if (cd.o_queue.empty ())
       {
-        LOG_IF ( WARN
-               , cd.send_in_progress
+        if (cd.send_in_progress)
+        {
+          LOG ( WARN
                , "inconsistent output queue: " << ec << " msg: " << ec.message ()
                );
+        }
         return;
       }
 
       cd.o_queue.front().handler (ec);
       cd.o_queue.pop_front();
 
-      LOG_IF(WARN, ec, "message delivery to " << p2p::to_string (a) << " failed: " << ec);
+      if (ec)
+      {
+        LOG(WARN, "message delivery to " << p2p::to_string (a) << " failed: " << ec);
+      }
 
       if (! ec)
       {
