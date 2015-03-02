@@ -7,11 +7,6 @@
 
 #include <sstream>
 
-namespace fhg
-{
-  namespace log
-  {
-
 #define FHGLOG_MKEVENT_HERE(level, message)             \
     ::fhg::log::LogEvent ( ::fhg::log::level            \
                          , __FILE__                     \
@@ -30,5 +25,3 @@ namespace fhg
         logger.log (FHGLOG_MKEVENT_HERE (level, msg_.str()));   \
       }                                                         \
     } while (0)
-  }
-}
