@@ -2418,7 +2418,8 @@ namespace xml
                        << "#line "
                        << mod.position_of_definition_of_code()->line()
                        << " "
-                       << mod.position_of_definition_of_code()->path()
+                       << state.strip_path_prefix
+                          (mod.position_of_definition_of_code()->path())
                        << std::endl;
                 stream << *mod.code();
               }

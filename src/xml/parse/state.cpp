@@ -181,6 +181,7 @@ namespace xml
 
         , _option_path_to_cpp ("path-to-cpp,g")
         , _option_link_prefix("link-prefix")
+        , _option_path_prefixes_to_strip ("path-prefix-to-strip")
 
         , _id_mapper()
       {}
@@ -707,6 +708,10 @@ namespace xml
           , boost::program_options::value<link_prefix_type>(&_link_prefix)
           , "prefix for linking, key=value"
           )
+          ( _option_path_prefixes_to_strip.c_str()
+          , STRINGVECVAL (path_prefixes_to_strip)
+          , "path prefix to strip in #line pragmas"
+          )
           ;
 
         boost::program_options::options_description xml ("XML mirroring");
@@ -810,6 +815,64 @@ namespace xml
       id::mapper* type::id_mapper()
       {
         return &_id_mapper;
+      }
+
+      boost::filesystem::path type::strip_path_prefix
+        (boost::filesystem::path const& path) const
+      {
+        auto const try_strip
+          ([&path] (boost::filesystem::path const& to_strip)
+           -> boost::optional<boost::filesystem::path>
+           {
+             boost::filesystem::path::const_iterator
+               pos_path (path.begin());
+             boost::filesystem::path::const_iterator
+               pos_to_strip (to_strip.begin());
+
+             while (  pos_path != path.end()
+                   && pos_to_strip != to_strip.end()
+                   && (  *pos_to_strip == "."
+                      || *pos_path == *pos_to_strip
+                      )
+                   )
+             {
+               if (*pos_to_strip != ".")
+               {
+                 ++pos_path;
+               }
+               ++pos_to_strip;
+             }
+
+             if (pos_to_strip == to_strip.end())
+             {
+               //! \note return boost::filesystem::path {pos_path,
+               //! path.end()} does not compile, \todo why?
+               boost::filesystem::path stripped;
+
+               for (; pos_path != path.end(); ++pos_path)
+               {
+                 stripped /= *pos_path;
+               }
+
+               return stripped;
+             }
+
+             return boost::none;
+           }
+          );
+
+        for (boost::filesystem::path const& to_strip : _path_prefixes_to_strip)
+        {
+          boost::optional<boost::filesystem::path> const stripped
+            (try_strip (to_strip));
+
+          if (!!stripped)
+          {
+            return stripped.get();
+          }
+        }
+
+        return path;
       }
 
       namespace
