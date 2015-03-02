@@ -81,7 +81,7 @@ namespace fhg
           void mode_pop();
 
           virtual QLinkedList<base_item*> childs() const;
-          virtual QPainterPath shape() const = 0;
+          virtual QPainterPath shape() const override = 0;
           virtual QRectF boundingRect() const override;
 
           virtual void handle_property_change
