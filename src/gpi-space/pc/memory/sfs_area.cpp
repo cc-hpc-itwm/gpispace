@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <cstring> // strerror
 
-#include <fhglog/LogMacros.hpp>
+#include <fhglog/log_to_GLOBAL_logger.hpp>
 #include <gpi-space/pc/url.hpp>
 #include <fhg/util/hostname.hpp>
 #include <fhg/util/read_bool.hpp>

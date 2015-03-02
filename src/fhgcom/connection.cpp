@@ -1,7 +1,7 @@
 
 #include <fhgcom/connection.hpp>
 
-#include <fhglog/LogMacros.hpp>
+#include <fhglog/log_to_GLOBAL_logger.hpp>
 
 #include <fhg/assert.hpp>
 

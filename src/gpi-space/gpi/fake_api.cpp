@@ -1,6 +1,6 @@
 #include <gpi-space/gpi/fake_api.hpp>
 
-#include <fhglog/LogMacros.hpp>
+#include <fhglog/log_to_GLOBAL_logger.hpp>
 
 #include <gpi-space/exception.hpp>
 

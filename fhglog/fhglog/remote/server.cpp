@@ -1,6 +1,6 @@
 #include <fhglog/remote/server.hpp>
 
-#include <fhglog/LogMacros.hpp>
+#include <fhglog/log_to_GLOBAL_logger.hpp>
 
 #include <functional>
 

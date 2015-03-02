@@ -30,8 +30,5 @@ namespace fhg
         logger.log (FHGLOG_MKEVENT_HERE (level, msg_.str()));   \
       }                                                         \
     } while (0)
-
-    // just log
-#define LOG(level, msg) LLOG (level, ::fhg::log::GLOBAL_logger(), msg)
   }
 }

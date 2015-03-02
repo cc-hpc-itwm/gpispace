@@ -3,7 +3,7 @@
 #include <utility>
 
 #include <fhg/assert.hpp>
-#include <fhglog/LogMacros.hpp>
+#include <fhglog/log_to_GLOBAL_logger.hpp>
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/global/topology.hpp>
