@@ -3,6 +3,7 @@
 #include <pnete/ui/execution_monitor_worker_model.hpp>
 
 #include <fhg/assert.hpp>
+#include <fhglog/Configuration.hpp>
 
 #include <QTimer>
 
@@ -74,15 +75,20 @@ namespace fhg
         struct delegating_fhglog_appender : public log::Appender
         {
           template<typename Append, typename Flush>
-          static fhg::log::Logger& create (Append append, Flush flush)
+          static fhg::log::Logger& create
+            ( Append append
+            , Flush flush
+            , fhg::log::Logger& logger
+            , boost::asio::io_service& io_service
+            )
           {
-            fhg::log::Logger& l (fhg::log::GLOBAL_logger());
+            fhg::log::configure (io_service, logger);
 
-            l.addAppender<delegating_fhglog_appender> (append, flush);
+            logger.addAppender<delegating_fhglog_appender> (append, flush);
 
-            l.setLevel (fhg::log::TRACE);
+            logger.setLevel (fhg::log::TRACE);
 
-            return l;
+            return logger;
           }
 
           template<typename Append, typename Flush>
@@ -114,9 +120,13 @@ namespace fhg
         , _base_time (QDateTime::currentDateTime())
         , _event_queue()
         , _queued_events()
+        , _io_service()
+        , _logger()
         , _log_server ( delegating_fhglog_appender::create
                         ( std::bind (&worker_model::append_event, this, std::placeholders::_1)
                         , std::bind (&worker_model::handle_events, this)
+                        , _logger
+                        , _io_service
                         )
                       , _io_service
                       , port
