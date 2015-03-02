@@ -142,10 +142,11 @@ GenericDaemon::GenericDaemon( const std::string name
                             , std::unique_ptr<boost::asio::io_service> peer_io_service
                             , boost::optional<boost::filesystem::path> const& vmem_socket
                             , std::vector<name_host_port_tuple> const& masters
+                            , fhg::log::Logger& logger
                             , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
                             , bool create_wfe
                             )
-  : _logger (fhg::log::GLOBAL_logger())
+  : _logger (logger)
   , _name (name)
   , _master_info (make_master_info_map<master_info_t> (masters))
   , _subscriptions()

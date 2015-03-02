@@ -117,6 +117,7 @@ BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
     , "localhost"
     , fhg::util::make_unique<boost::asio::io_service>()
     , rpc_io_service
+    , fhg::log::GLOBAL_logger()
     );
 
   network_strategy child;

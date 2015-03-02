@@ -112,6 +112,7 @@ try
     , vmem_socket
     , masters
     , std::pair<std::string, boost::asio::io_service&> (appGuiUrl, gui_io_service)
+    , logger
     );
 
   fhg::util::thread::event<> stop_requested;

@@ -65,6 +65,7 @@ try
     , orchUrl
     , fhg::util::make_unique<boost::asio::io_service>()
     , rpc_io_service
+    , logger
     );
 
   fhg::util::thread::event<> stop_requested;

@@ -94,6 +94,7 @@ namespace sdpa {
                    , std::unique_ptr<boost::asio::io_service> peer_io_service
                    , boost::optional<boost::filesystem::path> const& vmem_socket
                    , std::vector<name_host_port_tuple> const& masters
+                   , fhg::log::Logger& logger
                    , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info = boost::none
                    , bool create_wfe = false
                    );

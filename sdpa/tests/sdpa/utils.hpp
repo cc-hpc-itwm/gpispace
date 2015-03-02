@@ -257,6 +257,7 @@ namespace utils
       : _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::make_unique<boost::asio::io_service>()
           , _rpc_io_service
+          , fhg::log::GLOBAL_logger()
           )
     {}
 
@@ -287,6 +288,7 @@ namespace utils
           , boost::none
           , {make_master_info_tuple (master_0), make_master_info_tuple (master_1)}
           , boost::none
+          , fhg::log::GLOBAL_logger()
           )
     {}
     template <typename T>
@@ -297,6 +299,7 @@ namespace utils
           , boost::none
           , {make_master_info_tuple (master)}
           , boost::none
+          , fhg::log::GLOBAL_logger()
           )
     {}
     agent (const agent& master)
@@ -306,6 +309,7 @@ namespace utils
           , boost::none
           , {make_master_info_tuple (master)}
           , boost::none
+          , fhg::log::GLOBAL_logger()
           )
     {}
     sdpa::daemon::Agent _;

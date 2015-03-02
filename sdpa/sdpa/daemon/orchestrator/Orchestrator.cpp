@@ -16,12 +16,14 @@ namespace sdpa
                                , const std::string& url
                                , std::unique_ptr<boost::asio::io_service> peer_io_service
                                , boost::asio::io_service& rpc_io_service
+                               , fhg::log::Logger& logger
                                )
       : GenericDaemon ( name
                       , url
                       , std::move (peer_io_service)
                       , boost::none
                       , {}
+                      , logger
                       )
       , _rpc_connections()
       , _rpc_dispatcher (fhg::rpc::exception::serialization_functions())
