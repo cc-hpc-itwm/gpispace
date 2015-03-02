@@ -119,8 +119,8 @@ namespace
     , fhg::drts::processes_storage& processes
     )
   {
-    std::cout << "I: starting agent: " << name << " on host "
-              << rif_entry_point.hostname
+    std::cout << "I: starting agent: " << name << " on rif entry point "
+              << rif_entry_point.to_string()
               << " with parent " << parent_name << "\n";
 
     std::vector<std::string> agent_startup_arguments
@@ -196,13 +196,13 @@ namespace fhg
                   : "global max: " + std::to_string (description.max_nodes)
                   )
                << ", " << description.shm_size << " SHM) with parent "
-               << master_name << " on host "
+               << master_name << " on rif entry point "
                << fhg::util::join
                     ( entry_points
                     | boost::adaptors::transformed
                         ( [] (fhg::rif::entry_point const& entry_point)
                           {
-                            return entry_point.hostname;
+                            return entry_point.to_string();
                           }
                         )
                     , ", "
@@ -425,7 +425,7 @@ namespace fhg
           }
         );
 
-      std::cout << "I: starting base sdpa components on " << master.hostname << "...\n";
+      std::cout << "I: starting base sdpa components on " << master.to_string() << "...\n";
       if (log_host && log_port)
       {
         std::cout << "I: sending log events to: "
@@ -531,10 +531,10 @@ namespace fhg
                               ? std::make_pair (log_host.get(), log_port.get())
                               : boost::optional<std::pair<std::string, unsigned short>>()
                               , log_dir
-                              ? *log_dir / ("vmem-" + entry_point.hostname + ".log")
+                              ? *log_dir / ("vmem-" + entry_point.to_string() + ".log")
                               : boost::optional<boost::filesystem::path>()
                               , nodes
-                              , master.hostname
+                              , master.to_string()
                               , entry_point == master
                               ).get()
                           );
@@ -551,7 +551,7 @@ namespace fhg
           );
       }
 
-      master_agent_name = "agent-" + master.hostname + "-0";
+      master_agent_name = "agent-" + master.to_string() + "-0";
 
       master_agent_hostinfo = start_agent ( master
                                           , master_agent_name
@@ -613,7 +613,7 @@ namespace fhg
                   , [&kind, pids, to_erase, entry_point_processes]
                     {
                       std::cout << "terminating " << kind << " on "
-                                << entry_point_processes->first.hostname
+                                << entry_point_processes->first.to_string()
                                 << ": " << fhg::util::join (pids, " ") << "\n";
 
                       fhg::util::nest_exceptions<std::runtime_error>
@@ -624,7 +624,7 @@ namespace fhg
                           }
                         , ( boost::format ("Could not terminate %1% on %2%")
                           % kind
-                          % entry_point_processes->first.hostname
+                          % entry_point_processes->first.to_string()
                           ).str()
                         );
 

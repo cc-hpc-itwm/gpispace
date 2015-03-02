@@ -70,7 +70,12 @@ namespace gpi
 
       bool is_end_of_hostname (fhg::util::parse::position const& pos)
       {
-        return ! (isalnum (*pos) || *pos == '.' || *pos == '-' || *pos == '_');
+        return ! (  isalnum (*pos)
+                 || *pos == ' '
+                 || *pos == '.'
+                 || *pos == '-'
+                 || *pos == '_'
+                 );
       }
 
       bool is_end_of_path (fhg::util::parse::position const &pos)
@@ -83,7 +88,7 @@ namespace gpi
         if (pos.end() || ! (isalnum (*pos) || *pos == '*'))
         {
           throw fhg::util::parse::error::expected
-            ("host {identifier_with_dot|ip}", pos);
+            ("host {identifier_with_dot_and_space|ip}", pos);
         }
 
         return *pos == '*' ? (++pos, "*")

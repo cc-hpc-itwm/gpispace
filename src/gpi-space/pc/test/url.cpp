@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE (ampersand_not_allowed_in_path)
 {
   fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://&"); }
-    , "PARSE ERROR [12]: expected 'host {identifier_with_dot|ip}'\n"
+    , "PARSE ERROR [12]: expected 'host {identifier_with_dot_and_space|ip}'\n"
       "protocoll:// &\n"
       "            ^\n"
     );
@@ -266,7 +266,7 @@ BOOST_AUTO_TEST_CASE (port_without_host)
 {
   fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://:*"); }
-    , "PARSE ERROR [12]: expected 'host {identifier_with_dot|ip}'\n"
+    , "PARSE ERROR [12]: expected 'host {identifier_with_dot_and_space|ip}'\n"
       "protocoll:// :*\n"
       "            ^\n"
     );
