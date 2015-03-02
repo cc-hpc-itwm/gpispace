@@ -12,9 +12,12 @@
 
 #include <drts/worker/context.hpp>
 
+#include <fhglog/Configuration.hpp>
+#include <fhglog/Logger.hpp>
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/require_exception.hpp>
 
+#include <boost/asio/io_service.hpp>
 #include <boost/format.hpp>
 #include <boost/version.hpp>
 
@@ -63,7 +66,10 @@ BOOST_AUTO_TEST_CASE (call_not_found)
 {
   we::loader::Module m ("./libempty.so");
 
-  drts::worker::context context ("noname", (std::list<std::string>()));
+  boost::asio::io_service io_service;
+  fhg::log::Logger logger;
+  fhg::log::configure (io_service, logger);
+  drts::worker::context context ("noname", (std::list<std::string>()), logger);
   expr::eval::context input;
   expr::eval::context output;
 
@@ -97,7 +103,10 @@ BOOST_AUTO_TEST_CASE (call_local)
   we::loader::Module m ("./libempty.so");
   m.add_function ("f", &inc);
 
-  drts::worker::context context ("noname", (std::list<std::string>()));
+  boost::asio::io_service io_service;
+  fhg::log::Logger logger;
+  fhg::log::configure (io_service, logger);
+  drts::worker::context context ("noname", (std::list<std::string>()), logger);
   expr::eval::context input;
   expr::eval::context output;
 
@@ -112,7 +121,10 @@ BOOST_AUTO_TEST_CASE (call_lib)
 {
   we::loader::Module m ("./libanswer.so");
 
-  drts::worker::context context ("noname", (std::list<std::string>()));
+  boost::asio::io_service io_service;
+  fhg::log::Logger logger;
+  fhg::log::configure (io_service, logger);
+  drts::worker::context context ("noname", (std::list<std::string>()), logger);
   expr::eval::context input;
   expr::eval::context output;
 

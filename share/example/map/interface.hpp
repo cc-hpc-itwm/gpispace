@@ -2,6 +2,8 @@
 
 #include <we/type/bytearray.hpp>
 
+#include <fhglog/Logger.hpp>
+
 #include <utility>
 
 namespace map
@@ -17,15 +19,18 @@ extern "C"
   void map_produce ( map::user_data_type const&
                    , map::memory_buffer_type
                    , unsigned long id
+                   , fhg::log::Logger&
                    );
 
   void map_process ( map::user_data_type const&
                    , map::const_memory_buffer_type
                    , map::memory_buffer_type
+                   , fhg::log::Logger&
                    );
 
   void map_consume ( map::user_data_type const&
                    , map::const_memory_buffer_type
                    , unsigned long id
+                   , fhg::log::Logger&
                    );
 }

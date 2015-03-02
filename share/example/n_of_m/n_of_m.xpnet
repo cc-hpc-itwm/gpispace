@@ -61,7 +61,7 @@
         <in name="n" type="long"/>
         <in name="m" type="long"/>
         <out name="n" type="long"/>
-        <module name="n_of_m" function="run (cmd, n, m)">
+        <module name="n_of_m" function="run (cmd, n, m)" pass_context="true">
           <cinclude href="sstream"/>
           <cinclude href="process/process.hpp"/>
           <cinclude href="fhglog/LogMacros.hpp"/>
@@ -72,7 +72,7 @@
 
             cmdline << cmd << " " << n << " " << m;
 
-            LOG (INFO, "RUNNING " << cmdline.str());
+            LLOG (INFO, _pnetc_context->logger(), "RUNNING " << cmdline.str());
 
             const std::size_t bufsize (1 << 10);
             char buf[bufsize];
@@ -84,7 +84,9 @@
                                  )
               );
 
-            LOG (INFO, "OUTPUT " << std::string (buf, buf + bytes_written));
+            LLOG (INFO, _pnetc_context->logger()
+                 , "OUTPUT " << std::string (buf, buf + bytes_written)
+                 );
           ]]>
           </code>
         </module>

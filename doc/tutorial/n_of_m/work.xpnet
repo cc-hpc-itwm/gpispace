@@ -17,11 +17,13 @@
           <inout name="v" type="long_with_credit"/>
           <in name="n" type="long"/>
           <in name="config" type="T"/>
-          <module name="work" function="work (v, n, config)">
+          <module name="work" function="work (v, n, config)"
+                  pass_context="true">
             <cinclude href="fhglog/LogMacros.hpp"/>
             <cxx flag="-std=c++11"/>
             <code><![CDATA[
-            LOG (INFO, "### work " << v.id << " of [0.." << n << ")"
+            LLOG (INFO, _pnetc_context->logger()
+                 , "### work " << v.id << " of [0.." << n << ")"
                     << " credit " << v.credit
                     << " config " << config
             );

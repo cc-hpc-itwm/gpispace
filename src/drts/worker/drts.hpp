@@ -51,11 +51,12 @@ struct wfe_task_t
              , std::string const& description
              , std::string worker_name
              , std::list<std::string> workers
+             , fhg::log::Logger& logger
              )
     : id (id)
     , state (PENDING)
     , activity (description)
-    , context (worker_name, workers)
+    , context (worker_name, workers, logger)
   {}
 };
 

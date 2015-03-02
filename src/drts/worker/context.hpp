@@ -1,6 +1,9 @@
 #pragma once
 
 #include <drts/worker/context_fwd.hpp>
+
+#include <fhglog/Logger.hpp>
+
 #include <list>
 #include <string>
 
@@ -16,10 +19,14 @@ namespace drts
       static void nop() {}
 
     public:
-      context (std::string const &worker_name, std::list<std::string> const &worker_list)
+      context ( std::string const &worker_name
+              , std::list<std::string> const &worker_list
+              , fhg::log::Logger& logger
+              )
         : m_worker_name (worker_name)
         , m_worker_list (worker_list)
         , _module_call_do_cancel (nop)
+        , _logger (logger)
       {}
 
       const std::string &worker_name () const { return m_worker_name; }
@@ -42,10 +49,16 @@ namespace drts
         _module_call_do_cancel();
       }
 
+      fhg::log::Logger& logger() const
+      {
+        return _logger;
+      }
+
     private:
       std::string m_worker_name;
       std::list<std::string> m_worker_list;
       boost::function<void()> _module_call_do_cancel;
+      fhg::log::Logger& _logger;
     };
   }
 }

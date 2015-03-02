@@ -63,7 +63,8 @@
                                                         , config
                                                         , data
                                                         , memory
-                                                        )">
+                                                        )"
+                pass_context="true">
           <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="boost/random.hpp"/>
           <cinclude href="limits"/>
@@ -72,7 +73,7 @@
           <code><![CDATA[
           unsigned long const num_long (memory.size / sizeof (long));
 
-          LOG (INFO, "generating " << num_long << " values with seed " << seed);
+          LLOG (INFO, _pnetc_context->logger(), "generating " << num_long << " values with seed " << seed);
           long *a (static_cast<long*>(data));
 
           boost::uniform_int<long> rand ( std::numeric_limits<long>::min()
@@ -88,7 +89,7 @@
 
           config.seed = seed;
 
-          LOG (INFO, "initialize: config " << config);
+          LLOG (INFO, _pnetc_context->logger(), "initialize: config " << config);
           ]]></code>
         </module>
       </defun>

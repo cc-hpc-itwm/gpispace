@@ -11,6 +11,7 @@
 void map_produce ( map::user_data_type const& user_data
                  , map::memory_buffer_type buffer
                  , unsigned long id
+                 , fhg::log::Logger& logger
                  )
 {
   transform_file::parameter const parameter
@@ -18,7 +19,7 @@ void map_produce ( map::user_data_type const& user_data
   std::string const input {parameter.input().string()};
   unsigned long const size {parameter.size()};
 
-  LOG (INFO, "read " << input << "[" << id << "]");
+  LLOG (INFO, logger, "read " << input << "[" << id << "]");
 
   std::ifstream stream (input, std::ifstream::binary);
 
@@ -52,9 +53,10 @@ void map_process
   ( map::user_data_type const&
   , map::const_memory_buffer_type input
   , map::memory_buffer_type output
+  , fhg::log::Logger& logger
   )
 {
-  LOG (INFO, "transform");
+  LLOG (INFO, logger, "transform");
 
   if (input.second != output.second)
   {
@@ -78,6 +80,7 @@ void map_process
 void map_consume ( map::user_data_type const& user_data
                  , map::const_memory_buffer_type buffer
                  , unsigned long id
+                 , fhg::log::Logger& logger
                  )
 {
   transform_file::parameter const parameter
@@ -85,7 +88,7 @@ void map_consume ( map::user_data_type const& user_data
   std::string const output {parameter.output().string()};
   unsigned long const size {parameter.size()};
 
-  LOG (INFO, "write " << output << "[" << id << "]");
+  LLOG (INFO, logger, "write " << output << "[" << id << "]");
 
   std::fstream stream
     (output, std::fstream::binary | std::fstream::out | std::fstream::in);

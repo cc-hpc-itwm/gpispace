@@ -43,7 +43,8 @@
         <in name="cache" type="cache_type"/>
         <inout name="slot" type="long"/>
         <out name="id" type="long"/>
-        <module name="demo" function="id work (cache, slot)">
+        <module name="demo" function="id work (cache, slot)"
+                pass_context="true">
           <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="stdlib.h"/>
           <cxx flag="-std=c++11"/>
@@ -52,7 +53,7 @@
             srand (time(NULL) * id * slot);
             const int t (rand() % 4);
 
-            LOG (INFO, "WORK on id " << id
+            LLOG (INFO, _pnetc_context->logger(), "WORK on id " << id
                     << " in slot " << slot
                     << ", sleep for " << t << " secs"
                 );

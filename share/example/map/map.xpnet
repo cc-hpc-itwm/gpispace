@@ -262,6 +262,7 @@
                                              , block_with_slot
                                              , data
                                              )"
+                pass_context="true"
         >
           <cinclude href="interface.hpp"/>
           <cinclude href="fhg/util/dl.hpp"/>
@@ -271,6 +272,7 @@
                 ( user_data
                 , std::make_pair (data, block_with_slot.slot.size)
                 , block_with_slot.block
+                , _pnetc_context->logger()
                 );
           ]]></code>
         </module>
@@ -350,6 +352,7 @@
                                              , input
                                              , output
                                              )"
+                pass_context="true"
         >
           <cinclude href="interface.hpp"/>
           <cinclude href="fhg/util/dl.hpp"/>
@@ -359,6 +362,7 @@
                 ( user_data
                 , std::make_pair (input, package.slot_input.size)
                 , std::make_pair (output, package.slot_output.size)
+                , _pnetc_context->logger()
                 );
           ]]></code>
         </module>
@@ -415,6 +419,7 @@
                                              , block_with_slot
                                              , data
                                              )"
+                pass_context="true"
         >
           <cinclude href="interface.hpp"/>
           <cinclude href="fhg/util/dl.hpp"/>
@@ -424,6 +429,7 @@
                 ( user_data
                 , std::make_pair (data, block_with_slot.slot.size)
                 , block_with_slot.block
+                , _pnetc_context->logger()
                 );
           ]]></code>
         </module>

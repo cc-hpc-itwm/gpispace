@@ -55,6 +55,7 @@
         </memory-get>
         <module name="vmem_1_to_n"
                 function="done run (config, id, i, data, memory)"
+                pass_context="true"
         >
           <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="stdexcept"/>
@@ -64,11 +65,11 @@
           <cinclude href="sstream"/>
           <cxx flag="-std=c++11"/>
           <code><![CDATA[
-            LOG (INFO, "run (" << id << ", " << i << ")");
+            LLOG (INFO, _pnetc_context->logger(), "run (" << id << ", " << i << ")");
 
             unsigned long const num_long (memory.size / sizeof (long));
 
-            LOG (INFO, "verifiying " << num_long << " values with seed " << config.seed);
+            LLOG (INFO, _pnetc_context->logger(), "verifiying " << num_long << " values with seed " << config.seed);
 
             long* a (static_cast<long*> (data));
 

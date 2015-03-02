@@ -100,7 +100,8 @@
                 <in name="ping" type="Ping"/>
                 <inout name="statistics" type="Statistics"/>
                 <out name="seq" type="unsigned long"/>
-                <module name="ping_pong" function="seq pong (ping, statistics)">
+                <module name="ping_pong" function="seq pong (ping, statistics)"
+                        pass_context="true">
                     <cinclude href="fhglog/LogMacros.hpp"/>
                     <cinclude href="chrono"/>
                     <cxx flag="--std=c++11"/>
@@ -128,7 +129,7 @@
                       statistics.sum += rtt;
                       statistics.sqsum += rtt * rtt;
 
-                      LOG (INFO, "accounted ping := " << ping << " -> " << statistics);
+                      LLOG (INFO, _pnetc_context->logger(), "accounted ping := " << ping << " -> " << statistics);
 
                       return ping.seq;
                     ]]></code>
@@ -144,7 +145,8 @@
                 <in name="count" type="unsigned long"/>
                 <in name="seq" type="unsigned long"/>
                 <inout name="statistics" type="Statistics"/>
-                <module name="ping_pong" function="finalize (statistics)">
+                <module name="ping_pong" function="finalize (statistics)"
+                        pass_context="true">
                     <cinclude href="chrono"/>
                     <cinclude href="fhglog/LogMacros.hpp"/>
                     <cxx flag="--std=c++11"/>
@@ -155,7 +157,7 @@
 
                       double const avg (statistics.sum / statistics.count);
                       double const dev (std::sqrt ((statistics.sqsum / statistics.count) - (avg * avg)));
-                      LOG ( INFO, "timings in milliseconds after " << statistics.count << " iterations:"
+                      LLOG ( INFO, _pnetc_context->logger(), "timings in milliseconds after " << statistics.count << " iterations:"
                           << " min " << statistics.min
                           << " max " << statistics.max
                           << " avg " << avg

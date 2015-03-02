@@ -4,17 +4,18 @@
 
   <module name="selftest" function="selftest ( challenge
 				             , response
-                                          )">
+                                             )"
+          pass_context="true">
     <cinclude href="fhglog/LogMacros.hpp"/>
     <cxx flag="-std=c++11"/>
     <code><![CDATA[
-        LOG (INFO, "SDPA selftest");
+        LLOG (INFO, _pnetc_context->logger(), "SDPA selftest");
 
-        LOG (INFO, "===> challenge := " << challenge);
+        LLOG (INFO, _pnetc_context->logger(), "===> challenge := " << challenge);
 
         response = "sdpa.response." + challenge;
 
-        LOG (INFO, "===> response := " << response);
+        LLOG (INFO, _pnetc_context->logger(), "===> response := " << response);
     ]]></code>
   </module>
 </defun>
