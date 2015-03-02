@@ -212,6 +212,7 @@ try
     .as<std::vector<boost::filesystem::path>>()
     , vm.at (option_name::backlog_length)
     .as<std::size_t>()
+    , logger
     );
 
   {

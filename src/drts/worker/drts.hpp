@@ -131,6 +131,7 @@ public:
     , boost::optional<std::size_t> const& socket
     , std::vector<boost::filesystem::path> const& library_path
     , std::size_t backlog_length
+    , fhg::log::Logger&
     );
   ~DRTSImpl();
 

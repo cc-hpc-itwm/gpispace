@@ -190,8 +190,9 @@ DRTSImpl::DRTSImpl
     , boost::optional<std::size_t> const& socket
     , std::vector<boost::filesystem::path> const& library_path
     , std::size_t backlog_length
+    , fhg::log::Logger& logger
     )
-  : _logger (fhg::log::GLOBAL_logger())
+  : _logger (logger)
   , _request_stop (request_stop)
   , m_shutting_down (false)
   , m_my_name (kernel_name)
