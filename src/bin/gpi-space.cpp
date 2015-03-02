@@ -191,7 +191,7 @@ try
   }
 
   boost::asio::io_service remote_log_io_service;
-  fhg::log::configure (remote_log_io_service);
+  fhg::log::configure (remote_log_io_service, fhg::log::GLOBAL_logger());
 
   fhg::util::signal_handler_manager signal_handler;
   fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const

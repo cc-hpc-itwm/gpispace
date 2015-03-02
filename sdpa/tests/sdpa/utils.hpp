@@ -34,7 +34,7 @@ struct setup_logging
   setup_logging()
   {
     setenv ("FHGLOG_level", "TRACE", true);
-    fhg::log::configure (io_service);
+    fhg::log::configure (io_service, fhg::log::GLOBAL_logger());
   }
 };
 

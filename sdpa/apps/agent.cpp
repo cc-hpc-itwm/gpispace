@@ -50,7 +50,7 @@ try
   boost::optional<bfs::path> vmem_socket;
 
   boost::asio::io_service remote_log_io_service;
-  fhg::log::configure (remote_log_io_service);
+  fhg::log::configure (remote_log_io_service, fhg::log::GLOBAL_logger());
 
   po::options_description desc("Allowed options");
   desc.add_options()

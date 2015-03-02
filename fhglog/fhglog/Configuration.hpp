@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fhglog/Logger.hpp>
+
 namespace boost
 {
   namespace asio
@@ -23,6 +25,6 @@ namespace fhg
      *  FHGLOG_disabled={anything}       disable logging if defined
      */
 
-    void configure (boost::asio::io_service& remote_log_io_service);
+    void configure (boost::asio::io_service& remote_log_io_service, Logger&);
   }
 }
