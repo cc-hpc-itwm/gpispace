@@ -3,7 +3,6 @@
 #include <fhglog/Logger.hpp>
 
 #include <boost/current_function.hpp>
-#include <boost/filesystem.hpp>
 
 #include <sstream>
 

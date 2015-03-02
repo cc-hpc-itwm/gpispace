@@ -3,6 +3,7 @@
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/variant/static_visitor.hpp>
 
 #include <fhg/syscall.hpp>

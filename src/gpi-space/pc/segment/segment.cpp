@@ -14,6 +14,8 @@
 
 #include <gpi-space/pc/type/flags.hpp>
 
+#include <boost/system/system_error.hpp>
+
 namespace gpi
 {
   namespace pc
