@@ -119,8 +119,8 @@ namespace
     , fhg::drts::processes_storage& processes
     )
   {
-    std::cout << "I: starting agent: " << name << " on host "
-              << rif_entry_point.hostname
+    std::cout << "I: starting agent: " << name << " on rif entry point "
+              << rif_entry_point.to_string()
               << " with parent " << parent_name << "\n";
 
     std::vector<std::string> agent_startup_arguments
@@ -161,7 +161,12 @@ namespace
            , boost::lexical_cast<unsigned short> (agent_startup_messages.second[1])
            };
   }
+}
 
+namespace fhg
+{
+  namespace drts
+  {
   void start_workers_for
     ( std::vector<fhg::rif::entry_point> const& entry_points
     , std::string master_name
@@ -191,13 +196,13 @@ namespace
                   : "global max: " + std::to_string (description.max_nodes)
                   )
                << ", " << description.shm_size << " SHM) with parent "
-               << master_name << " on host "
+               << master_name << " on rif entry point "
                << fhg::util::join
                     ( entry_points
                     | boost::adaptors::transformed
                         ( [] (fhg::rif::entry_point const& entry_point)
                           {
-                            return entry_point.hostname;
+                            return entry_point.to_string();
                           }
                         )
                     , ", "
@@ -270,7 +275,7 @@ namespace
                    }
 
                    std::string const name
-                     ( name_prefix + "-" + entry_point.hostname
+                     ( name_prefix + "-" + entry_point.to_string()
                      + "-" + std::to_string (identity + 1)
                      + ( description.socket
                        ? ("." + std::to_string (description.socket.get()))
@@ -323,12 +328,7 @@ namespace
 
      fhg::util::wait_and_collect_exceptions (startups);
   }
-}
 
-namespace fhg
-{
-  namespace drts
-  {
     worker_description parse_capability
       (std::size_t def_num_proc, std::string const& cap_spec)
     {
@@ -387,17 +387,17 @@ namespace fhg
       , bool gpi_enabled
       , bool verbose
       , boost::optional<boost::filesystem::path> gpi_socket
-      , std::vector<boost::filesystem::path> app_path
       , boost::filesystem::path sdpa_home
       , bool delete_logfiles
       , fhg::util::signal_handler_manager& signal_handler_manager
       , boost::optional<std::size_t> gpi_mem
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
-      , std::vector<worker_description> worker_descriptions
       , boost::optional<unsigned short> vmem_port
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
       , boost::optional<boost::filesystem::path> const& log_dir
       , fhg::drts::processes_storage& processes
+      , std::string& master_agent_name
+      , fhg::drts::hostinfo_type& master_agent_hostinfo
       )
     {
       if (rif_entry_points.empty())
@@ -425,7 +425,7 @@ namespace fhg
           }
         );
 
-      std::cout << "I: starting base sdpa components on " << master.hostname << "...\n";
+      std::cout << "I: starting base sdpa components on " << master.to_string() << "...\n";
       if (log_host && log_port)
       {
         std::cout << "I: sending log events to: "
@@ -531,10 +531,10 @@ namespace fhg
                               ? std::make_pair (log_host.get(), log_port.get())
                               : boost::optional<std::pair<std::string, unsigned short>>()
                               , log_dir
-                              ? *log_dir / ("vmem-" + entry_point.hostname + ".log")
+                              ? *log_dir / ("vmem-" + entry_point.to_string() + ".log")
                               : boost::optional<boost::filesystem::path>()
                               , nodes
-                              , master.hostname
+                              , master.to_string()
                               , entry_point == master
                               ).get()
                           );
@@ -551,49 +551,22 @@ namespace fhg
           );
       }
 
-      std::string const master_agent_name ("agent-" + master.hostname + "-0");
+      master_agent_name = "agent-" + master.to_string() + "-0";
 
-      hostinfo_type const master_agent_hostinfo
-        (start_agent ( master
-                     , master_agent_name
-                     , "orchestrator"
-                     , orchestrator_hostinfo
-                     , gui_host
-                     , gui_port
-                     , log_host
-                     , log_port
-                     , gpi_socket
-                     , verbose
-                     , sdpa_home
-                     , log_dir
-                     , processes
-                     )
-        );
-
-      fhg::util::nest_exceptions<std::runtime_error>
-        ( [&]
-          {
-            for (worker_description const& description : worker_descriptions)
-            {
-              start_workers_for ( rif_entry_points
-                                , master_agent_name
-                                , master_agent_hostinfo
-                                , description
-                                , verbose
-                                , gui_host
-                                , gui_port
-                                , log_host
-                                , log_port
-                                , processes
-                                , log_dir
-                                , gpi_socket
-                                , app_path
-                                , sdpa_home
-                                );
-            }
-          }
-        , "at least one worker could not be started!"
-        );
+      master_agent_hostinfo = start_agent ( master
+                                          , master_agent_name
+                                          , "orchestrator"
+                                          , orchestrator_hostinfo
+                                          , gui_host
+                                          , gui_port
+                                          , log_host
+                                          , log_port
+                                          , gpi_socket
+                                          , verbose
+                                          , sdpa_home
+                                          , log_dir
+                                          , processes
+                                          );
 
       return orchestrator_hostinfo;
     }
@@ -640,7 +613,7 @@ namespace fhg
                   , [&kind, pids, to_erase, entry_point_processes]
                     {
                       std::cout << "terminating " << kind << " on "
-                                << entry_point_processes->first.hostname
+                                << entry_point_processes->first.to_string()
                                 << ": " << fhg::util::join (pids, " ") << "\n";
 
                       fhg::util::nest_exceptions<std::runtime_error>
@@ -651,7 +624,7 @@ namespace fhg
                           }
                         , ( boost::format ("Could not terminate %1% on %2%")
                           % kind
-                          % entry_point_processes->first.hostname
+                          % entry_point_processes->first.to_string()
                           ).str()
                         );
 

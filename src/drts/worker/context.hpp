@@ -28,7 +28,7 @@ namespace drts
       std::string worker_to_hostname (std::string const &w) const
       {
         const std::string::size_type host_start = w.find ('-') + 1;
-        const std::string::size_type host_end = w.rfind ('-');
+        const std::string::size_type host_end = w.find (' ', host_start);
 
         return w.substr (host_start, host_end-host_start);
       }

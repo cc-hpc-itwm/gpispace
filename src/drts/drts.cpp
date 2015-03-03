@@ -21,6 +21,7 @@
 
 #include <fhg/util/hostname.hpp>
 #include <fhg/util/make_unique.hpp>
+#include <fhg/util/nest_exceptions.hpp>
 #include <fhg/util/read_file.hpp>
 #include <fhg/util/read_lines.hpp>
 #include <fhg/util/split.hpp>
@@ -164,37 +165,92 @@ namespace gspc
       , boost::optional<unsigned short> vmem_port
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
       )
-    : _rif_entry_points (rif_entry_points)
+    : _rif_entry_points (rif_entry_points) //! \note vmem started in startup
+    , _gui_host (gui_host)
+    , _gui_port (gui_port)
+    , _log_host (log_host)
+    , _log_port (log_port)
+    , _verbose (verbose)
+    , _gpi_socket (gpi_socket)
+    , _app_path (app_path)
+    , _sdpa_home (sdpa_home)
+    , _log_dir (log_dir)
+    , _worker_descriptions (worker_descriptions)
   {
     fhg::util::signal_handler_manager signal_handler_manager;
 
     std::tie (_orchestrator_host, _orchestrator_port) = fhg::drts::startup
-      ( gui_host
-      , gui_port
-      , log_host
-      , log_port
+      ( _gui_host
+      , _gui_port
+      , _log_host
+      , _log_port
       , gpi_enabled
-      , verbose
-      , gpi_socket
-      , app_path
-      , sdpa_home
+      , _verbose
+      , _gpi_socket
+      , _sdpa_home
       , delete_logfiles
       , signal_handler_manager
       , gpi_mem
       , vmem_startup_timeout
-      , worker_descriptions
       , vmem_port
-      , _rif_entry_points
-      , log_dir
+      , rif_entry_points
+      , _log_dir
       , _processes_storage
+      , _master_agent_name
+      , _master_agent_hostinfo
+      );
+
+    add_worker_impl (_rif_entry_points);
+  }
+
+
+  void scoped_runtime_system::implementation::started_runtime_system::add_worker
+    (std::vector<fhg::rif::entry_point> const& entry_points)
+  {
+    if (_gpi_socket)
+    {
+      throw std::logic_error ("add_worker while vmem is in use");
+    }
+
+    add_worker_impl (entry_points);
+  }
+
+  void scoped_runtime_system::implementation::started_runtime_system::add_worker_impl
+    (std::vector<fhg::rif::entry_point> const& entry_points)
+  {
+    fhg::util::nest_exceptions<std::runtime_error>
+      ( [&]
+        {
+          for ( fhg::drts::worker_description const& description
+              : _worker_descriptions
+              )
+          {
+            start_workers_for ( entry_points
+                              , _master_agent_name
+                              , _master_agent_hostinfo
+                              , description
+                              , _verbose
+                              , _gui_host
+                              , _gui_port
+                              , _log_host
+                              , _log_port
+                              , _processes_storage
+                              , _log_dir
+                              , _gpi_socket
+                              , _app_path
+                              , _sdpa_home
+                              );
+          }
+        }
+      , "at least one worker could not be started!"
       );
   }
 
   void scoped_runtime_system::implementation::started_runtime_system::remove_worker
-    (rifd_entry_points const& rifd_entry_points)
+    (std::vector<fhg::rif::entry_point> const& entry_points)
   {
     _processes_storage.shutdown ( fhg::drts::component_type::worker
-                                , rifd_entry_points._->_entry_points
+                                , entry_points
                                 );
   }
 
@@ -242,10 +298,15 @@ namespace gspc
         : nullptr
         )
   {}
+  void scoped_runtime_system::implementation::add_worker
+    (rifd_entry_points const& rifd_entry_points)
+  {
+    _started_runtime_system.add_worker (rifd_entry_points._->_entry_points);
+  }
   void scoped_runtime_system::implementation::remove_worker
     (rifd_entry_points const& rifd_entry_points)
   {
-    _started_runtime_system.remove_worker (rifd_entry_points);
+    _started_runtime_system.remove_worker (rifd_entry_points._->_entry_points);
   }
 
   vmem_allocation scoped_runtime_system::alloc
@@ -282,6 +343,11 @@ namespace gspc
     return _->_nodes_and_number_of_unique_nodes.second;
   }
 
+  void scoped_runtime_system::add_worker
+    (rifd_entry_points const& rifd_entry_points)
+  {
+    _->add_worker (rifd_entry_points);
+  }
   void scoped_runtime_system::remove_worker
     (rifd_entry_points const& rifd_entry_points)
   {
