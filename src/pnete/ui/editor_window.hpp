@@ -10,10 +10,14 @@
 
 #include <fhg/util/dl.hpp>
 
+#include <fhglog/Logger.hpp>
+
 #include <QMainWindow>
 #include <QObject>
 #include <QStack>
 #include <QThread>
+
+#include <boost/asio/io_service.hpp>
 
 #include <list>
 
@@ -106,6 +110,8 @@ namespace fhg
         virtual void closeEvent (QCloseEvent*) override;
 
       private:
+        boost::asio::io_service _log_io_service;
+        fhg::log::Logger _logger;
         data::manager& _data_manager;
 
         transition_library_view* _transition_library;

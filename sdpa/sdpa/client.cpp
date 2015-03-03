@@ -33,11 +33,13 @@ namespace sdpa
     Client::Client ( fhg::com::host_t const& orchestrator_host
                    , fhg::com::port_t const& orchestrator_port
                    , std::unique_ptr<boost::asio::io_service> peer_io_service
+                   , fhg::log::Logger& peer_logger
                    )
       : _stopping (false)
       , m_peer ( std::move (peer_io_service)
                , fhg::com::host_t ("*")
                , fhg::com::port_t ("0")
+               , peer_logger
                )
       , _drts_entrypoint_address
           (m_peer.connect_to (orchestrator_host, orchestrator_port))

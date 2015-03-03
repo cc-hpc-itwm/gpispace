@@ -1,7 +1,7 @@
 
 #include <fhgcom/connection.hpp>
 
-#include <fhglog/log_to_GLOBAL_logger.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <fhg/assert.hpp>
 
@@ -18,8 +18,10 @@ namespace fhg
       , std::function<void (ptr_t connection, const message_t*)> handle_hello_message
       , std::function<void (ptr_t connection, const message_t*)> handle_user_data
       , std::function<void (ptr_t connection, const boost::system::error_code&)> handle_error
+      , fhg::log::Logger& logger
       )
-      : strand_(io_service)
+      : _logger (logger)
+      , strand_(io_service)
       , socket_(io_service)
       , _handle_hello_message (handle_hello_message)
       , _handle_user_data (handle_user_data)
@@ -35,7 +37,7 @@ namespace fhg
       }
       catch (std::exception const & ex)
       {
-        LOG(ERROR, "exception during connection destructor: " << ex.what());
+        LLOG(ERROR, _logger, "exception during connection destructor: " << ex.what());
       }
 
       if (in_message_)
@@ -189,7 +191,7 @@ namespace fhg
           }
           catch (std::exception const & ex)
           {
-            LOG(ERROR, "completion handler failed: " << ex.what());
+            LLOG(ERROR, _logger, "completion handler failed: " << ex.what());
           }
         }
 

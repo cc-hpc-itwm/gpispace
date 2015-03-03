@@ -70,7 +70,8 @@ class log_monitor : public QWidget
   Q_OBJECT;
 
 public:
-  explicit log_monitor (unsigned short port, QWidget* parent = nullptr);
+  explicit log_monitor
+    (unsigned short port, fhg::log::Logger&, QWidget* parent = nullptr);
   ~log_monitor();
 
 public slots:
@@ -93,7 +94,6 @@ private:
   QString _last_saved_filename;
 
   boost::asio::io_service _io_service;
-  fhg::log::Logger _logger;
   fhg::log::remote::LogServer _log_server;
   boost::thread _io_thread;
 };

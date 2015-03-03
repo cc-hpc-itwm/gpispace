@@ -1,6 +1,6 @@
 #include <fhgcom/peer.hpp>
 
-#include <fhglog/log_to_GLOBAL_logger.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <fhg/assert.hpp>
 #include <fhg/util/hostname.hpp>
@@ -22,8 +22,10 @@ namespace fhg
     peer_t::peer_t ( std::unique_ptr<boost::asio::io_service> io_service
                    , host_t const & host
                    , port_t const & port
+                   , fhg::log::Logger& logger
                    )
-      : stopping_ (false)
+      : _logger (logger)
+      , stopping_ (false)
       , host_(host)
       , port_(port)
       , io_service_ (std::move (io_service))
@@ -139,6 +141,7 @@ namespace fhg
         , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
         , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
         , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
+        , _logger
         );
       cd.connection->local_address (my_addr_.get());
       cd.connection->remote_address (addr);
@@ -179,6 +182,7 @@ namespace fhg
         , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
         , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
         , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
+        , _logger
         );
       cd.connection->local_address (my_addr_.get());
       cd.connection->remote_address (addr);
@@ -323,7 +327,7 @@ namespace fhg
       {
         connection_data_t & cd = connections_.find (a)->second;
 
-        LOG( TRACE
+        LLOG( TRACE, _logger
              , p2p::to_string (my_addr_.get())
              << " connected to "
              << p2p::to_string (a)
@@ -366,7 +370,7 @@ namespace fhg
       {
         if (ec)
         {
-          LOG ( WARN
+          LLOG ( WARN, _logger
               , "could not send message to " << p2p::to_string (a)
               << " connection already closed: "
               << ec << " msg: " << ec.message ()
@@ -380,7 +384,7 @@ namespace fhg
       {
         if (cd.send_in_progress)
         {
-          LOG ( WARN
+          LLOG ( WARN, _logger
                , "inconsistent output queue: " << ec << " msg: " << ec.message ()
                );
         }
@@ -392,7 +396,7 @@ namespace fhg
 
       if (ec)
       {
-        LOG(WARN, "message delivery to " << p2p::to_string (a) << " failed: " << ec);
+        LLOG(WARN, _logger, "message delivery to " << p2p::to_string (a) << " failed: " << ec);
       }
 
       if (! ec)
@@ -447,7 +451,7 @@ namespace fhg
       }
       catch (std::exception const & ex)
       {
-        LOG (ERROR, "could not start sender to " << p2p::to_string (a) << ": " << ex.what ());
+        LLOG (ERROR, _logger, "could not start sender to " << p2p::to_string (a) << ": " << ex.what ());
       }
     }
 
@@ -478,6 +482,7 @@ namespace fhg
           , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
           , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
           , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
+          , _logger
           )
         );
       listen_->local_address(my_addr_.get());
@@ -495,14 +500,14 @@ namespace fhg
 
         if (backlog_.find (c) == backlog_.end())
         {
-          LOG(ERROR, "protocol error between " << p2p::to_string (my_addr_.get()) << " and " << p2p::to_string (m->header.src) << " closing connection");
+          LLOG(ERROR, _logger, "protocol error between " << p2p::to_string (my_addr_.get()) << " and " << p2p::to_string (m->header.src) << " closing connection");
           try
           {
             c->stop();
           }
           catch (std::exception const & ex)
           {
-            LOG(WARN, "could not stop connection: " << ex.what());
+            LLOG(WARN, _logger, "could not stop connection: " << ex.what());
           }
         }
         else

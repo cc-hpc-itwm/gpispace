@@ -202,6 +202,7 @@ try
         ( fhg::util::make_unique<boost::asio::io_service>()
         , fhg::com::host_t ("*")
         , fhg::com::port_t ("0")
+        , fhg::log::GLOBAL_logger()
         )
     );
 

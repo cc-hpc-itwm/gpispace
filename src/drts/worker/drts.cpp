@@ -208,6 +208,7 @@ DRTSImpl::DRTSImpl
   , m_pending_jobs (backlog_length)
   , _peer ( std::move (peer_io_service)
           , fhg::com::host_t ("*"), fhg::com::port_t ("0")
+          , logger
           )
   , m_event_thread (&DRTSImpl::event_thread, this)
   , m_execution_thread (&DRTSImpl::job_execution_thread, this)

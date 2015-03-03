@@ -8,6 +8,8 @@
 
 #include <fhgcom/peer.hpp>
 
+#include <fhglog/Logger.hpp>
+
 #include <we/type/value.hpp>
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
@@ -31,6 +33,7 @@ namespace sdpa
       Client ( fhg::com::host_t const& orchestrator_host
              , fhg::com::port_t const& orchestrator_port
              , std::unique_ptr<boost::asio::io_service> peer_io_service
+             , fhg::log::Logger& peer_logger
              );
       ~Client();
 

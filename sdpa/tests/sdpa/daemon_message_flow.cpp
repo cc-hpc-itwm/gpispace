@@ -14,7 +14,7 @@ namespace
 {
   struct network_strategy
   {
-    network_strategy()
+    network_strategy (fhg::log::Logger& logger)
       : _event_received()
       , _network
         ( [this] (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr e)
@@ -23,6 +23,7 @@ namespace
           }
         , fhg::util::make_unique<boost::asio::io_service>()
         , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
+        , logger
         )
     {}
 
@@ -120,7 +121,7 @@ BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
     , fhg::log::GLOBAL_logger()
     );
 
-  network_strategy child;
+  network_strategy child (fhg::log::GLOBAL_logger());
 
   child.send ( child.connect_to
                  ( fhg::com::host_t

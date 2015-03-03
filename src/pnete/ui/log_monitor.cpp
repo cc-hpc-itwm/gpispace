@@ -56,11 +56,8 @@ namespace
     ( void (T::* function)(const fhg::log::LogEvent&)
     , T* that
     , fhg::log::Logger& logger
-    , boost::asio::io_service& io_service
     )
   {
-    fhg::log::configure (io_service, logger);
-
     logger.addAppender<fhg::log::appender::call>
       (std::bind (function, that, std::placeholders::_1));
 
@@ -286,7 +283,8 @@ namespace detail
 }
 
 
-log_monitor::log_monitor (unsigned short port, QWidget* parent)
+log_monitor::log_monitor
+  (unsigned short port, fhg::log::Logger& logger, QWidget* parent)
   : QWidget (parent)
   , _drop_filtered (false)
   , _filter_level (1)
@@ -296,10 +294,8 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   //! \todo Do updates in separate thread again?
   // , _log_model_update_thread (new QThread (this))
   , _log_model_update_timer (new QTimer (this))
-  , _io_service()
-  , _logger()
   , _log_server
-    ( logger_with (&log_monitor::append_log_event, this, _logger, _io_service)
+    ( logger_with (&log_monitor::append_log_event, this, logger)
     , _io_service
     , port
     )
