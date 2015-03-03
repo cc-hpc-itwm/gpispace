@@ -17,8 +17,8 @@
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
-#include <fhg/util/hostname.hpp>
 #include <fhg/util/read_lines.hpp>
+#include <fhg/util/temporary_file.hpp>
 #include <fhg/util/temporary_path.hpp>
 
 #include <boost/filesystem.hpp>
@@ -35,7 +35,7 @@ namespace
                 , boost::program_options::variables_map const& vm
                 , gspc::installation const& installation
                 , test::make const& make
-                , std::set<std::string> const& hostnames
+                , boost::filesystem::path const& shared_directory
                 )
   {
     gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
@@ -68,16 +68,23 @@ namespace
 
     //! \todo needs to be a function on the drts topology
     //! or the topology has to answer 'is_worker_valid (worker))'
+    fhg::util::temporary_file const _entry_points
+      (shared_directory / boost::filesystem::unique_path());
+    //! \note the only usage of write_to_file
+    rifd.entry_points().write_to_file (_entry_points);
+    std::vector<std::string> const entry_points
+      (fhg::util::read_lines (_entry_points));
+
     std::set<std::string> const worker_names
-      ([&hostnames, &num_worker] () -> std::set<std::string>
+      ([&entry_points, &num_worker] () -> std::set<std::string>
         {
           std::set<std::string> workers;
-          for (std::string const& hostname : hostnames)
+          for (std::string const& entry_point : entry_points)
           {
             for (unsigned long i (0); i < num_worker; ++i)
             {
               workers.emplace ( ( boost::format ("worker-%1%-%2%")
-                                % hostname
+                                % entry_point
                                 % (i + 1)
                                 ).str()
                               );
@@ -85,6 +92,21 @@ namespace
           }
           return workers;
         } ()
+      );
+
+    //! \note exploits internal knowledge
+    std::set<std::string> const hostnames
+      ([&entry_points]
+       {
+         std::set<std::string> hostnames;
+
+         for (std::string const& entry_point : entry_points)
+         {
+           hostnames.emplace (entry_point.substr (0, entry_point.find (' ')));
+         }
+
+         return hostnames;
+       }()
       );
 
     for ( std::pair< pnet::type::value::value_type
@@ -148,15 +170,6 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
 
   vm.notify();
 
-  std::set<std::string> const hostnames
-    ([&vm] () -> std::set<std::string>
-      {
-        std::vector<std::string> const hosts
-          (fhg::util::read_lines (gspc::require_nodefile (vm)));
-        return std::set<std::string> (hosts.begin(), hosts.end());
-      } ()
-    );
-
   gspc::installation const installation (vm);
 
   test::make const make
@@ -169,7 +182,7 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
     , "net lib install"
     );
 
-  run_test (1, vm, installation, make, hostnames);
-  run_test (2, vm, installation, make, hostnames);
-  run_test (5, vm, installation, make, hostnames);
+  run_test (1, vm, installation, make, shared_directory);
+  run_test (2, vm, installation, make, shared_directory);
+  run_test (5, vm, installation, make, shared_directory);
 }

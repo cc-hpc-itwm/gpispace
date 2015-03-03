@@ -23,6 +23,7 @@ namespace gspc
                    , rifd_entry_points const& entry_points
                    );
 
+    void add_worker (rifd_entry_points const&);
     void remove_worker (rifd_entry_points const&);
 
     boost::optional<unsigned long> _virtual_memory_per_node;
@@ -51,11 +52,26 @@ namespace gspc
                              , std::vector<fhg::rif::entry_point> const& rif_entry_points
                              );
 
-      void remove_worker (rifd_entry_points const&);
+      void add_worker_impl (std::vector<fhg::rif::entry_point> const&);
+      void add_worker (std::vector<fhg::rif::entry_point> const&);
+      void remove_worker (std::vector<fhg::rif::entry_point> const&);
 
       std::vector<fhg::rif::entry_point> _rif_entry_points;
+      boost::optional<std::string> _gui_host;
+      boost::optional<unsigned short> _gui_port;
+      boost::optional<std::string> _log_host;
+      boost::optional<unsigned short> _log_port;
+      bool _verbose;
+      boost::optional<boost::filesystem::path> _gpi_socket;
+      std::vector<boost::filesystem::path> _app_path;
+      boost::filesystem::path _sdpa_home;
+      boost::optional<boost::filesystem::path> _log_dir;
+      std::vector<fhg::drts::worker_description> _worker_descriptions;
 
       fhg::drts::processes_storage _processes_storage;
+
+      std::string _master_agent_name;
+      fhg::drts::hostinfo_type _master_agent_hostinfo;
 
       std::string _orchestrator_host;
       unsigned short _orchestrator_port;

@@ -10,6 +10,8 @@
 
 #include <boost/thread/scoped_thread.hpp>
 
+#include <future>
+
 namespace
 {
   struct thread_data_type
@@ -54,37 +56,49 @@ namespace
     std::string file_out;
   };
 
-  void thread
-    (const std::size_t thread_id, std::string command, thread_data_type& data)
+  void thread ( std::size_t const thread_id
+              , std::string command
+              , std::promise<thread_data_type>& promise
+              )
   {
-    constexpr std::size_t buffer_size (1024);
-    std::array<char, buffer_size> buffer_stdout;
-    std::vector<char> buffer_stderr;
-    std::array<char, buffer_size> buffer_file_out;
+    try
+    {
+      thread_data_type data (thread_id);
+      constexpr std::size_t buffer_size (1024);
+      std::array<char, buffer_size> buffer_stdout;
+      std::vector<char> buffer_stderr;
+      std::array<char, buffer_size> buffer_file_out;
 
-    data.result =
-      ( process::execute
-        ( command + " " + std::to_string (thread_id) + " %FILE_IN% %FILE_OUT%"
-        , {data.stdin.c_str(), data.stdin.size()}
-        , {buffer_stdout.data(), buffer_stdout.size()}
-        , buffer_stderr
-        , {{data.file_in.c_str(), data.file_in.size(), "%FILE_IN%"}}
-        , {{buffer_file_out.data(), buffer_file_out.size(), "%FILE_OUT%"}}
-        )
-      );
+      data.result =
+        ( process::execute
+            ( command + " " + std::to_string (thread_id) + " %FILE_IN% %FILE_OUT%"
+            , {data.stdin.c_str(), data.stdin.size()}
+            , {buffer_stdout.data(), buffer_stdout.size()}
+            , buffer_stderr
+            , {{data.file_in.c_str(), data.file_in.size(), "%FILE_IN%"}}
+            , {{buffer_file_out.data(), buffer_file_out.size(), "%FILE_OUT%"}}
+            )
+        );
 
-    data.stdout = std::string
-      ( buffer_stdout.begin()
-      , buffer_stdout.begin() + data.result.bytes_read_stdout
-      );
-    data.stderr = std::string
-      ( buffer_stderr.begin()
-      , buffer_stderr.begin() + data.result.bytes_read_stderr
-      );
-    data.file_out = std::string
-      ( buffer_file_out.begin()
-      , buffer_file_out.begin() + data.result.bytes_read_files_output[0]
-      );
+      data.stdout = std::string
+        ( buffer_stdout.begin()
+        , buffer_stdout.begin() + data.result.bytes_read_stdout
+        );
+      data.stderr = std::string
+        ( buffer_stderr.begin()
+        , buffer_stderr.begin() + data.result.bytes_read_stderr
+        );
+      data.file_out = std::string
+        ( buffer_file_out.begin()
+        , buffer_file_out.begin() + data.result.bytes_read_files_output[0]
+        );
+
+      promise.set_value (data);
+    }
+    catch (...)
+    {
+      promise.set_exception (std::current_exception());
+    }
   }
 
   void run_n_and_verify (const std::size_t count)
@@ -93,19 +107,19 @@ namespace
     const std::string command
       (boost::unit_test::framework::master_test_suite().argv[1]);
 
-    std::list<thread_data_type> thread_data;
+    std::list<std::promise<thread_data_type>> thread_data;
     {
       std::list<boost::strict_scoped_thread<boost::join_if_joinable>> threads;
       for (std::size_t thread_id (0); thread_id < count; ++thread_id)
       {
-        thread_data.emplace_back (thread_id);
+        thread_data.emplace_back();
         threads.emplace_back
           (&thread, thread_id, command, std::ref (thread_data.back()));
       }
     }
-    for (thread_data_type& data : thread_data)
+    for (std::promise<thread_data_type>& data : thread_data)
     {
-      data.verify();
+      data.get_future().get().verify();
     }
   }
 }
@@ -123,9 +137,4 @@ BOOST_AUTO_TEST_CASE (ten_threads)
 BOOST_AUTO_TEST_CASE (hundred_threads)
 {
   run_n_and_verify (100);
-}
-
-BOOST_AUTO_TEST_CASE (thousand_threads)
-{
-  run_n_and_verify (1000);
 }

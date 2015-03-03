@@ -7,6 +7,7 @@
 #include <rif/entry_point.hpp>
 
 #include <boost/filesystem/path.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 
 #include <chrono>
@@ -33,7 +34,7 @@ namespace fhg
 
     enum class component_type {vmem, orchestrator, agent, worker};
 
-    struct processes_storage
+    struct processes_storage : boost::noncopyable
     {
       std::unordered_map < fhg::rif::entry_point
                          , std::unordered_map<std::string /*name*/, pid_t>
@@ -45,6 +46,23 @@ namespace fhg
       void store (fhg::rif::entry_point const&, std::string const& name, pid_t);
     };
 
+    void start_workers_for
+      ( std::vector<fhg::rif::entry_point> const& entry_points
+      , std::string master_name
+      , fhg::drts::hostinfo_type master_hostinfo
+      , fhg::drts::worker_description const& description
+      , bool verbose
+      , boost::optional<std::string> const& gui_host
+      , boost::optional<unsigned short> const& gui_port
+      , boost::optional<std::string> const& log_host
+      , boost::optional<unsigned short> const& log_port
+      , fhg::drts::processes_storage& processes
+      , boost::optional<boost::filesystem::path> const& log_dir
+      , boost::optional<boost::filesystem::path> const& gpi_socket
+      , std::vector<boost::filesystem::path> const& app_path
+      , boost::filesystem::path const& sdpa_home
+      );
+
     hostinfo_type startup
       ( boost::optional<std::string> const& gui_host
       , boost::optional<unsigned short> const& gui_port
@@ -53,17 +71,17 @@ namespace fhg
       , bool gpi_enabled
       , bool verbose
       , boost::optional<boost::filesystem::path> gpi_socket
-      , std::vector<boost::filesystem::path> app_path
       , boost::filesystem::path sdpa_home
       , bool delete_logfiles
       , fhg::util::signal_handler_manager& signal_handler_manager
       , boost::optional<std::size_t> gpi_mem
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
-      , std::vector<worker_description> worker_descriptions
       , boost::optional<unsigned short> vmem_port
       , std::vector<fhg::rif::entry_point> const&
       , boost::optional<boost::filesystem::path> const& log_dir
       , processes_storage&
+      , std::string& master_agent_name
+      , fhg::drts::hostinfo_type& master_agent_hostinfo
       );
   }
 }
