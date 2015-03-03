@@ -1,6 +1,6 @@
 #include <fhglog/remote/server.hpp>
 
-#include <fhglog/log_to_GLOBAL_logger.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <functional>
 
@@ -28,10 +28,10 @@ namespace fhg
 
           if (ec)
           {
-            LOG ( WARN
-                , "could not set resuse address option: "
-                << ec << ": " << ec.message()
-                );
+            LLOG ( WARN, _log
+                 , "could not set resuse address option: "
+                 << ec << ": " << ec.message()
+                 );
           }
 
           async_receive();
