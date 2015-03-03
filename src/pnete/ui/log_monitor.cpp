@@ -6,7 +6,6 @@
 #include <we/type/activity.hpp>
 
 #include <fhglog/appender/call.hpp>
-#include <fhglog/Configuration.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/function.hpp>
@@ -56,11 +55,8 @@ namespace
     ( void (T::* function)(const fhg::log::LogEvent&)
     , T* that
     , fhg::log::Logger& logger
-    , boost::asio::io_service& io_service
     )
   {
-    fhg::log::configure (io_service, logger);
-
     logger.addAppender<fhg::log::appender::call>
       (std::bind (function, that, std::placeholders::_1));
 
@@ -299,7 +295,7 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   , _io_service()
   , _logger()
   , _log_server
-    ( logger_with (&log_monitor::append_log_event, this, _logger, _io_service)
+    ( logger_with (&log_monitor::append_log_event, this, _logger)
     , _io_service
     , port
     )

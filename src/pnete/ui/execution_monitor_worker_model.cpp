@@ -3,7 +3,6 @@
 #include <pnete/ui/execution_monitor_worker_model.hpp>
 
 #include <fhg/assert.hpp>
-#include <fhglog/Configuration.hpp>
 
 #include <QTimer>
 
@@ -79,11 +78,8 @@ namespace fhg
             ( Append append
             , Flush flush
             , fhg::log::Logger& logger
-            , boost::asio::io_service& io_service
             )
           {
-            fhg::log::configure (io_service, logger);
-
             logger.addAppender<delegating_fhglog_appender> (append, flush);
 
             logger.setLevel (fhg::log::TRACE);
@@ -126,7 +122,6 @@ namespace fhg
                         ( std::bind (&worker_model::append_event, this, std::placeholders::_1)
                         , std::bind (&worker_model::handle_events, this)
                         , _logger
-                        , _io_service
                         )
                       , _io_service
                       , port
