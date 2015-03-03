@@ -80,7 +80,7 @@ BOOST_FIXTURE_TEST_CASE (cancel_no_agent, setup_logging)
 BOOST_FIXTURE_TEST_CASE (cancel_with_agent, setup_logging)
 {
   const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator);
+  const utils::agent agent (orchestrator, _logger);
 
   fhg::util::thread::event<> job_submitted;
   fhg::util::thread::event<std::string> cancel_requested;
@@ -123,7 +123,7 @@ BOOST_FIXTURE_TEST_CASE (call_cancel_twice_orch, setup_logging)
 BOOST_FIXTURE_TEST_CASE (call_cancel_twice_agent, setup_logging)
 {
   const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator);
+  const utils::agent agent (orchestrator, _logger);
 
   fhg::util::thread::event<> job_submitted;
   fhg::util::thread::event<std::string> cancel_requested;

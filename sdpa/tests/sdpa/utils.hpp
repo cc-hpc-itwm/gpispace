@@ -261,12 +261,10 @@ namespace utils
           , _rpc_io_service
           , logger
           )
-      , _logger (logger)
     {}
 
     boost::asio::io_service _rpc_io_service;
     sdpa::daemon::Orchestrator _;
-    fhg::log::Logger& _logger;
     std::string name() const { return _.name(); }
     fhg::com::host_t host() const { return _.peer_host(); }
     fhg::com::port_t port() const { return _.peer_port(); }
@@ -285,42 +283,38 @@ namespace utils
   struct agent : boost::noncopyable
   {
     template <typename T, typename U>
-    agent (const T& master_0, const U& master_1)
+      agent (const T& master_0, const U& master_1, fhg::log::Logger& logger)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master_0), make_master_info_tuple (master_1)}
           , boost::none
-          , master_0._logger
+          , logger
           )
-      , _logger (master_0._logger)
     {}
     template <typename T>
-    agent (const T& master)
+      agent (const T& master, fhg::log::Logger& logger)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master)}
           , boost::none
-          , master._logger
+          , logger
           )
-      , _logger (master._logger)
     {}
-    agent (const agent& master)
+    agent (const agent& master, fhg::log::Logger& logger)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master)}
           , boost::none
-          , master._logger
+          , logger
           )
-      , _logger (master._logger)
     {}
     sdpa::daemon::Agent _;
-    fhg::log::Logger& _logger;
     std::string name() const { return _.name(); }
     fhg::com::host_t host() const { return _.peer_host(); }
     fhg::com::port_t port() const { return _.peer_port(); }
@@ -330,11 +324,10 @@ namespace utils
   {
   public:
     basic_drts_component
-      (std::string name, bool accept_workers, fhg::log::Logger& logger)
+      (std::string name, bool accept_workers)
       : _name (name)
       , _master (boost::none)
       , _accept_workers (accept_workers)
-      , _logger (logger)
       , _event_queue()
       , _network ( [this] ( fhg::com::p2p::address_t const& source
                           , sdpa::events::SDPAEvent::Ptr e
@@ -352,9 +345,8 @@ namespace utils
                          , utils::agent const& master
                          , sdpa::capabilities_set_t capabilities
                          , bool accept_workers
-                         , fhg::log::Logger& logger
                          )
-      : basic_drts_component (name, accept_workers, logger)
+      : basic_drts_component (name, accept_workers)
     {
       _master = _network.connect_to (master.host(), master.port());
 
@@ -442,8 +434,6 @@ namespace utils
     boost::optional<fhg::com::p2p::address_t> _master;
     bool _accept_workers;
     std::unordered_set<fhg::com::p2p::address_t> _accepted_workers;
-  public:
-    fhg::log::Logger& _logger;
 
   private:
     fhg::thread::queue<std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr>>
@@ -474,20 +464,18 @@ namespace utils
   public:
     basic_drts_worker (utils::agent const& master)
       : basic_drts_component
-        ( random_peer_name(), master, sdpa::capabilities_set_t(), false
-        , master._logger
-        )
+        (random_peer_name(), master, sdpa::capabilities_set_t(), false)
     {}
-    basic_drts_worker (std::string name, utils::agent const& master)
+    basic_drts_worker
+      (std::string name, utils::agent const& master)
       : basic_drts_component
-        (name, master, sdpa::capabilities_set_t(), false, master._logger)
+        (name, master, sdpa::capabilities_set_t(), false)
     {}
     basic_drts_worker ( std::string name
                       , utils::agent const& master
                       , sdpa::capabilities_set_t capabilities
                       )
-      : basic_drts_component
-        (name, master, capabilities, false, master._logger)
+      : basic_drts_component (name, master, capabilities, false)
     {}
   };
 

@@ -9,7 +9,7 @@
 BOOST_FIXTURE_TEST_CASE (restart_worker_with_dummy_workflow, setup_logging)
 {
   const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator);
+  const utils::agent agent (orchestrator, _logger);
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id (client.submit_job (utils::module_call()));

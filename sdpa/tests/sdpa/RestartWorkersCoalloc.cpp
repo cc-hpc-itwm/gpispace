@@ -58,7 +58,7 @@ namespace
 BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_running, setup_logging)
 {
   const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator);
+  const utils::agent agent (orchestrator, _logger);
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
@@ -96,7 +96,7 @@ BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_run
 BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is_missing, setup_logging)
 {
   const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator);
+  const utils::agent agent (orchestrator, _logger);
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id

@@ -12,7 +12,7 @@
 BOOST_FIXTURE_TEST_CASE (testCoallocationWorkflow, setup_logging)
 {
   const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator);
+  const utils::agent agent (orchestrator, _logger);
 
   const utils::fake_drts_worker_directly_finishing_jobs worker_0 (agent);
   const utils::fake_drts_worker_directly_finishing_jobs worker_1 (agent);
@@ -30,7 +30,7 @@ BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_part_of_coallo
 
   // 0. setup environment orch -> agent.
   const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator);
+  const utils::agent agent (orchestrator, _logger);
 
   // 1. start worker 1
   fhg::util::thread::event<std::string> job_submitted_1;
@@ -108,7 +108,7 @@ BOOST_FIXTURE_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are
   //! \note related to issue #374
 
   const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator);
+  const utils::agent agent (orchestrator, _logger);
 
   fhg::util::thread::event<std::string> job_submitted_1;
   utils::fake_drts_worker_waiting_for_finished_ack worker_1
@@ -164,7 +164,7 @@ BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_wo
   //! \note related to issue #374
 
   const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator);
+  const utils::agent agent (orchestrator, _logger);
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id

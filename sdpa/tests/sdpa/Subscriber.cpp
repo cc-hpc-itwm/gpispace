@@ -9,7 +9,7 @@
 BOOST_FIXTURE_TEST_CASE (execute_workflow_with_subscribed_client, setup_logging)
 {
   const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator);
+  const utils::agent agent (orchestrator, _logger);
   const utils::fake_drts_worker_directly_finishing_jobs worker (agent);
 
   BOOST_REQUIRE_EQUAL
@@ -22,7 +22,7 @@ BOOST_FIXTURE_TEST_CASE (execute_workflow_with_subscribed_client, setup_logging)
 BOOST_FIXTURE_TEST_CASE (execute_workflow_and_subscribe_with_second_client, setup_logging)
 {
   const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator);
+  const utils::agent agent (orchestrator, _logger);
   const utils::fake_drts_worker_directly_finishing_jobs worker (agent);
 
   sdpa::job_id_t job_id_user;

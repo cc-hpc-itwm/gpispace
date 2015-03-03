@@ -9,7 +9,7 @@
 BOOST_FIXTURE_TEST_CASE (testInvalidNumberOfWorkersRequired, setup_logging)
 {
   const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator);
+  const utils::agent agent (orchestrator, _logger);
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber

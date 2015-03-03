@@ -14,8 +14,8 @@ namespace
   class drts_component_observing_capabilities : public utils::basic_drts_component
   {
   public:
-    drts_component_observing_capabilities (fhg::log::Logger& logger)
-      : utils::basic_drts_component (utils::random_peer_name(), true, logger)
+    drts_component_observing_capabilities()
+      : utils::basic_drts_component (utils::random_peer_name(), true)
     {}
 
     virtual void handleCapabilitiesGainedEvent
@@ -67,9 +67,9 @@ namespace
 
 BOOST_FIXTURE_TEST_CASE (acquire_capabilities_from_workers, setup_logging)
 {
-  drts_component_observing_capabilities observer (_logger);
+  drts_component_observing_capabilities observer;
 
-  const utils::agent agent (observer);
+  const utils::agent agent (observer, _logger);
 
   const std::string name_0 (utils::random_peer_name());
   const std::string name_1 (utils::random_peer_name());
@@ -89,9 +89,9 @@ BOOST_FIXTURE_TEST_CASE (acquire_capabilities_from_workers, setup_logging)
 
 BOOST_FIXTURE_TEST_CASE (lose_capabilities_after_worker_dies, setup_logging)
 {
-  drts_component_observing_capabilities observer (_logger);
+  drts_component_observing_capabilities observer;
 
-  const utils::agent agent (observer);
+  const utils::agent agent (observer, _logger);
 
   const std::string name_0 (utils::random_peer_name());
   const std::string name_1 (utils::random_peer_name());

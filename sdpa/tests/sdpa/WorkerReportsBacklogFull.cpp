@@ -82,7 +82,7 @@ namespace
 BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_other_two_receive_cancellation_requests, setup_logging)
 {
   const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator);
+  const utils::agent agent (orchestrator, _logger);
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
@@ -130,7 +130,7 @@ BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_other_two_receive_c
 BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled, setup_logging)
 {
   const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator);
+  const utils::agent agent (orchestrator, _logger);
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
@@ -184,7 +184,7 @@ BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_2_siblings_are_canc
 BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled, setup_logging)
 {
   const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator);
+  const utils::agent agent (orchestrator, _logger);
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
@@ -239,7 +239,7 @@ BOOST_FIXTURE_TEST_CASE
   (one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled, setup_logging)
 {
   const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator);
+  const utils::agent agent (orchestrator, _logger);
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id

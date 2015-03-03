@@ -129,7 +129,7 @@ namespace
     void check_discover_worker_job_status (fhg::log::Logger& logger)
   {
     const utils::orchestrator orchestrator (logger);
-    const utils::agent agent (orchestrator);
+    const utils::agent agent (orchestrator, logger);
 
     fhg::util::thread::event<std::string> job_submitted;
 
@@ -191,7 +191,7 @@ BOOST_FIXTURE_TEST_CASE (discover_one_orchestrator_no_agent, setup_logging)
 BOOST_FIXTURE_TEST_CASE (discover_one_orchestrator_one_agent, setup_logging)
 {
   const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator);
+  const utils::agent agent (orchestrator, _logger);
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id (client.submit_job (utils::module_call()));
@@ -233,11 +233,11 @@ namespace
   {
     const utils::orchestrator orchestrator (logger);
     boost::ptr_list<utils::agent> agents;
-    agents.push_back (new utils::agent (orchestrator));
+    agents.push_back (new utils::agent (orchestrator, logger));
 
     for (std::size_t counter (1); counter < num_agents; ++counter)
     {
-      agents.push_back (new utils::agent (agents.back()));
+      agents.push_back (new utils::agent (agents.back(), logger));
     }
 
     fhg::util::thread::event<std::string> job_submitted;
