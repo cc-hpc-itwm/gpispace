@@ -234,6 +234,9 @@ namespace xml
         const id::mapper* id_mapper() const;
         id::mapper* id_mapper();
 
+        boost::filesystem::path strip_path_prefix
+          (boost::filesystem::path const&) const;
+
       private:
         ::xml::parse::type::requirements_type _requirements;
         search_path_type _search_path;
@@ -295,6 +298,7 @@ namespace xml
                                   , std::string
                                   > _link_prefix_by_key;
         mutable bool _link_prefix_parsed;
+        std::vector<std::string> _path_prefixes_to_strip;
 
         std::string _option_search_path;
         std::string _option_gen_ldflags;
@@ -345,6 +349,7 @@ namespace xml
 
         std::string _option_path_to_cpp;
         std::string _option_link_prefix;
+        std::string _option_path_prefixes_to_strip;
 
         id::mapper _id_mapper;
 

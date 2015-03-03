@@ -2414,8 +2414,12 @@ namespace xml
                     ("STRANGE: There is code without a position of definition");
                 }
 
-                stream << indent << "// defined at "
-                       << *mod.position_of_definition_of_code()
+                stream << std::endl
+                       << "#line "
+                       << mod.position_of_definition_of_code()->line()
+                       << " "
+                       << state.strip_path_prefix
+                          (mod.position_of_definition_of_code()->path())
                        << std::endl;
                 stream << *mod.code();
               }
