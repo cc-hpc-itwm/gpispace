@@ -3,8 +3,6 @@
 #include <fhgcom/header.hpp>
 #include <fhgcom/message.hpp>
 
-#include <fhglog/Logger.hpp>
-
 #include <fhg/assert.hpp>
 
 #include <boost/array.hpp>
@@ -39,7 +37,6 @@ namespace fhg
         , std::function<void (ptr_t connection, const message_t*)> handle_hello_message
         , std::function<void (ptr_t connection, const message_t*)> handle_user_data
         , std::function<void (ptr_t connection, const boost::system::error_code&)> handle_error
-        , fhg::log::Logger&
         );
 
       ~connection_t ();
@@ -66,8 +63,6 @@ namespace fhg
         m_remote_addr = a;
       }
     private:
-      fhg::log::Logger& _logger;
-
       struct to_send_t
       {
         to_send_t (const message_t * msg, completion_handler_t hdl)

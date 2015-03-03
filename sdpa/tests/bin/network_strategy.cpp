@@ -70,7 +70,6 @@ BOOST_AUTO_TEST_CASE (perform_test)
     , fhg::util::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
-    , fhg::log::GLOBAL_logger()
     );
 
   net.perform ( net.connect_to

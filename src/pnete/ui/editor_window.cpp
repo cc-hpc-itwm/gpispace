@@ -25,8 +25,6 @@
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/temporary_path.hpp>
 
-#include <fhglog/Configuration.hpp>
-
 #include <sdpa/client.hpp>
 
 #include <util/qt/parent.hpp>
@@ -77,8 +75,6 @@ namespace fhg
                                    , QWidget* parent
                                    )
         : QMainWindow (parent)
-        , _log_io_service()
-        , _logger()
         , _data_manager (data_manager)
         , _transition_library (new transition_library_view (20, 5, this))
         , _transition_library_dock
@@ -99,8 +95,6 @@ namespace fhg
         , _action_execute_current_file_locally_from_file (nullptr)
         , _action_execute_current_file_remote_via_prompt (nullptr)
       {
-        fhg::log::configure (_log_io_service, _logger);
-
         setWindowTitle (tr ("editor_window_title"));
 
         setDocumentMode (true);
@@ -443,7 +437,7 @@ namespace fhg
         {
           dock_widget* widget
             ( new dock_widget ( tr ("log_monitor_for_%1").arg (port)
-                              , new log_monitor (port, _logger, this)
+                              , new log_monitor (port, this)
                               )
             );
           widget->show();
@@ -998,7 +992,6 @@ namespace fhg
         static sdpa::client::Client client ( fhg::com::host_t ("DUMMY")
                                            , fhg::com::port_t ("DUMMY")
                                            , fhg::util::make_unique<boost::asio::io_service>()
-                                           , _logger
                                            );
 
         const std::string job_id

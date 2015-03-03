@@ -4,14 +4,9 @@
 #include <fhg/revision.hpp>
 #include <fhg/util/print_exception.hpp>
 
-#include <fhglog/Logger.hpp>
-#include <fhglog/Configuration.hpp>
-
 #include <QApplication>
 #include <QTabWidget>
 #include <QtCore/QString>
-
-#include <boost/asio/io_service.hpp>
 
 #include <iostream>
 
@@ -34,18 +29,13 @@ try
   QApplication::setOrganizationDomain ("itwm.fraunhofer.de");
   QApplication::setOrganizationName ("Fraunhofer ITWM");
 
-  boost::asio::io_service log_io_service;
-  fhg::log::Logger logger;
-  fhg::log::configure (log_io_service, logger);
-
   QTabWidget window;
   window.addTab ( new fhg::pnete::ui::execution_monitor (QString (av[1]).toUShort())
                 , QObject::tr ("Execution Monitor")
                 );
-  window.addTab
-    ( new log_monitor (ac > 2 ? QString (av[2]).toUShort() : 2438, logger)
-    , QObject::tr ("Logging")
-    );
+  window.addTab ( new log_monitor (ac > 2 ? QString (av[2]).toUShort() : 2438)
+                , QObject::tr ("Logging")
+                );
   window.show();
 
   return a.exec();

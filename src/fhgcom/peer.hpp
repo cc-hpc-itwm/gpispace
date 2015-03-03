@@ -4,8 +4,6 @@
 #include <fhgcom/header.hpp>
 #include <fhgcom/peer_info.hpp>
 
-#include <fhglog/Logger.hpp>
-
 #include <fhg/util/thread/event.hpp>
 
 #include <boost/system/error_code.hpp>
@@ -29,11 +27,7 @@ namespace fhg
     public:
       typedef std::function <void (boost::system::error_code const &)> handler_t;
 
-      peer_t ( std::unique_ptr<boost::asio::io_service>
-             , host_t const& host
-             , port_t const& port
-             , fhg::log::Logger&
-             );
+      peer_t (std::unique_ptr<boost::asio::io_service>, host_t const& host, port_t const& port);
 
       virtual ~peer_t ();
 
@@ -70,8 +64,6 @@ namespace fhg
       void handle_error       (connection_t::ptr_t, const boost::system::error_code & error);
 
     private:
-      fhg::log::Logger& _logger;
-
       struct to_send_t
       {
         to_send_t ()

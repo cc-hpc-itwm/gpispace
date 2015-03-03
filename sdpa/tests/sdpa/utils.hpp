@@ -344,7 +344,6 @@ namespace utils
                    }
                  , fhg::util::make_unique<boost::asio::io_service>()
                  , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
-                 , logger
                  )
       , _event_thread (&basic_drts_component::event_thread, this)
     {}
@@ -702,7 +701,6 @@ namespace utils
     client (orchestrator const& orch)
       : _ ( orch.host(), orch.port()
           , fhg::util::make_unique<boost::asio::io_service>()
-          , orch._logger
           )
     {}
 

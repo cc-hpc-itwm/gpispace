@@ -25,8 +25,6 @@
 //! \todo eliminate this include (that completes type transition_t::data)
 #include <we/type/net.hpp>
 
-#include <fhglog/Logger.hpp>
-
 #include <boost/format.hpp>
 
 #include <iostream>
@@ -62,7 +60,6 @@ namespace gspc
       : _client ( fhg::com::host_t (orchestrator_endpoint.host)
                 , fhg::com::port_t (std::to_string (orchestrator_endpoint.port))
                 , fhg::util::make_unique<boost::asio::io_service>()
-                , fhg::log::GLOBAL_logger()
                 )
     {}
 

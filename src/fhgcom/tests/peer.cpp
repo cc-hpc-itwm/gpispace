@@ -5,8 +5,6 @@
 #include <fhgcom/peer_info.hpp>
 #include <fhgcom/tests/address_printer.hpp>
 
-#include <fhglog/Configuration.hpp>
-
 #include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/make_unique.hpp>
@@ -15,24 +13,12 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/thread.hpp>
 
-struct setup_logging
-{
-  boost::asio::io_service io_service;
-  setup_logging()
-    : _logger()
-  {
-    fhg::log::configure (io_service, _logger);
-  }
-  fhg::log::Logger _logger;
-};
-
-BOOST_FIXTURE_TEST_CASE (peer_run_single, setup_logging)
+BOOST_AUTO_TEST_CASE (peer_run_single)
 {
   using namespace fhg::com;
   peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("1235")
-                , _logger
                 );
 }
 
@@ -49,20 +35,18 @@ namespace
   }
 }
 
-BOOST_FIXTURE_TEST_CASE (peer_run_two, setup_logging)
+BOOST_AUTO_TEST_CASE (peer_run_two)
 {
   using namespace fhg::com;
 
   peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
-                , _logger
                 );
 
   peer_t peer_2 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
-                , _logger
                 );
 
   peer_1.send ( peer_1.connect_to ( host (peer_2.local_endpoint())
@@ -78,31 +62,28 @@ BOOST_FIXTURE_TEST_CASE (peer_run_two, setup_logging)
     (std::string (m.data.begin(), m.data.end()), "hello world!");
 }
 
-BOOST_FIXTURE_TEST_CASE (resolve_peer_names, setup_logging)
+BOOST_AUTO_TEST_CASE (resolve_peer_names)
 {
   using namespace fhg::com;
 
   peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
-                , _logger
                 );
 
   peer_t peer_2 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
-                , _logger
                 );
 }
 
-BOOST_FIXTURE_TEST_CASE (peer_loopback, setup_logging)
+BOOST_AUTO_TEST_CASE (peer_loopback)
 {
   using namespace fhg::com;
 
   peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
-                , _logger
                 );
 
   p2p::address_t const addr ( peer_1.connect_to ( host (peer_1.local_endpoint())
@@ -116,14 +97,13 @@ BOOST_FIXTURE_TEST_CASE (peer_loopback, setup_logging)
     }
 }
 
-BOOST_FIXTURE_TEST_CASE (send_to_nonexisting_peer, setup_logging)
+BOOST_AUTO_TEST_CASE (send_to_nonexisting_peer)
 {
   using namespace fhg::com;
 
   peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
-                , _logger
                 );
 
   BOOST_CHECK_THROW ( peer_1.connect_to
@@ -132,14 +112,13 @@ BOOST_FIXTURE_TEST_CASE (send_to_nonexisting_peer, setup_logging)
                     );
 }
 
-BOOST_FIXTURE_TEST_CASE (send_large_data, setup_logging)
+BOOST_AUTO_TEST_CASE (send_large_data)
 {
   using namespace fhg::com;
 
   peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
-                , _logger
                 );
 
   peer_1.send( peer_1.connect_to ( host (peer_1.local_endpoint())
@@ -153,20 +132,18 @@ BOOST_FIXTURE_TEST_CASE (send_large_data, setup_logging)
     BOOST_CHECK_EQUAL(2<<25, r.data.size());
 }
 
-BOOST_FIXTURE_TEST_CASE (peers_with_fixed_ports, setup_logging)
+BOOST_AUTO_TEST_CASE (peers_with_fixed_ports)
 {
   using namespace fhg::com;
 
   peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
-                , _logger
                 );
 
   peer_t peer_2 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
-                , _logger
                 );
 
   peer_1.send( peer_1.connect_to ( host (peer_2.local_endpoint())
@@ -176,20 +153,18 @@ BOOST_FIXTURE_TEST_CASE (peers_with_fixed_ports, setup_logging)
              );
 }
 
-BOOST_FIXTURE_TEST_CASE (peers_with_fixed_ports_reuse, setup_logging)
+BOOST_AUTO_TEST_CASE (peers_with_fixed_ports_reuse)
 {
   using namespace fhg::com;
 
   peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
-                , _logger
                 );
 
   peer_t peer_2 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
-                , _logger
                 );
 
   peer_1.send ( peer_1.connect_to ( host (peer_2.local_endpoint())
@@ -199,14 +174,13 @@ BOOST_FIXTURE_TEST_CASE (peers_with_fixed_ports_reuse, setup_logging)
               );
 }
 
-BOOST_FIXTURE_TEST_CASE (two_peers_one_restarts_repeatedly, setup_logging)
+BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
 {
   using namespace fhg::com;
 
   peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
-                , _logger
                 );
 
   bool stop_request (false);
@@ -243,7 +217,6 @@ BOOST_FIXTURE_TEST_CASE (two_peers_one_restarts_repeatedly, setup_logging)
     peer_t peer_2
       ( fhg::util::make_unique<boost::asio::io_service>()
       , host (peer_2_endpoint), port (peer_2_endpoint)
-      , _logger
       );
 
     try

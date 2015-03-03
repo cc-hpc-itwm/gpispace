@@ -182,7 +182,6 @@ GenericDaemon::GenericDaemon( const std::string name
                       , std::move (peer_io_service)
                       , host_from_url (url)
                       , port_from_url (url)
-                      , _logger
                       )
   , ptr_workflow_engine_ ( create_wfe
                          ? new we::layer

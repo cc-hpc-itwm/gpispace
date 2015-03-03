@@ -1,7 +1,5 @@
 #include <fhgcom/peer.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 #include <fhg/assert.hpp>
 #include <fhg/util/hostname.hpp>
 #include <fhg/util/thread/event.hpp>
@@ -22,10 +20,8 @@ namespace fhg
     peer_t::peer_t ( std::unique_ptr<boost::asio::io_service> io_service
                    , host_t const & host
                    , port_t const & port
-                   , fhg::log::Logger& logger
                    )
-      : _logger (logger)
-      , stopping_ (false)
+      : stopping_ (false)
       , host_(host)
       , port_(port)
       , io_service_ (std::move (io_service))
@@ -141,7 +137,6 @@ namespace fhg
         , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
         , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
         , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
-        , _logger
         );
       cd.connection->local_address (my_addr_.get());
       cd.connection->remote_address (addr);
@@ -182,7 +177,6 @@ namespace fhg
         , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
         , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
         , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
-        , _logger
         );
       cd.connection->local_address (my_addr_.get());
       cd.connection->remote_address (addr);
@@ -327,13 +321,6 @@ namespace fhg
       {
         connection_data_t & cd = connections_.find (a)->second;
 
-        LLOG( TRACE, _logger
-             , p2p::to_string (my_addr_.get())
-             << " connected to "
-             << p2p::to_string (a)
-             << " @ " << cd.connection->socket().remote_endpoint();
-             );
-
         {
           boost::asio::socket_base::keep_alive o(true);
           cd.connection->set_option (o);
@@ -370,11 +357,7 @@ namespace fhg
       {
         if (ec)
         {
-          LLOG ( WARN, _logger
-              , "could not send message to " << p2p::to_string (a)
-              << " connection already closed: "
-              << ec << " msg: " << ec.message ()
-              );
+          throw boost::system::system_error (ec);
         }
         return;
       }
@@ -384,9 +367,8 @@ namespace fhg
       {
         if (cd.send_in_progress)
         {
-          LLOG ( WARN, _logger
-               , "inconsistent output queue: " << ec << " msg: " << ec.message ()
-               );
+          throw std::logic_error
+            ("inconsistent output queue: " + ec.message());
         }
         return;
       }
@@ -396,7 +378,7 @@ namespace fhg
 
       if (ec)
       {
-        LLOG(WARN, _logger, "message delivery to " << p2p::to_string (a) << " failed: " << ec);
+        throw boost::system::system_error (ec);
       }
 
       if (! ec)
@@ -449,10 +431,6 @@ namespace fhg
       {
         // ignore, connection has been closed before we could start it
       }
-      catch (std::exception const & ex)
-      {
-        LLOG (ERROR, _logger, "could not start sender to " << p2p::to_string (a) << ": " << ex.what ());
-      }
     }
 
     void peer_t::handle_accept (const boost::system::error_code & ec)
@@ -482,7 +460,6 @@ namespace fhg
           , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
           , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
           , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
-          , _logger
           )
         );
       listen_->local_address(my_addr_.get());
@@ -500,15 +477,11 @@ namespace fhg
 
         if (backlog_.find (c) == backlog_.end())
         {
-          LLOG(ERROR, _logger, "protocol error between " << p2p::to_string (my_addr_.get()) << " and " << p2p::to_string (m->header.src) << " closing connection");
-          try
-          {
-            c->stop();
-          }
-          catch (std::exception const & ex)
-          {
-            LLOG(WARN, _logger, "could not stop connection: " << ex.what());
-          }
+          c->stop();
+          throw std::logic_error
+            ( "protocol error between " + p2p::to_string (my_addr_.get())
+            + " and " + p2p::to_string (m->header.src) + ", closed connection"
+            );
         }
         else
         {
