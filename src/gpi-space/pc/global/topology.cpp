@@ -7,7 +7,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
 
-#include <fhglog/log_to_GLOBAL_logger.hpp>
+#include <gpi-space/log_to_GLOBAL_logger.hpp>
 #include <fhg/assert.hpp>
 #include <fhg/util/join.hpp>
 #include <fhg/util/print_exception.hpp>

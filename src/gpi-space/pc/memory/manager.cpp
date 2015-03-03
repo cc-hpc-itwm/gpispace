@@ -2,7 +2,7 @@
 #include <gpi-space/pc/url.hpp>
 #include <gpi-space/pc/url_io.hpp>
 
-#include <fhglog/log_to_GLOBAL_logger.hpp>
+#include <gpi-space/log_to_GLOBAL_logger.hpp>
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/global/topology.hpp>

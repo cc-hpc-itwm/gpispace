@@ -9,7 +9,7 @@
 #include <fhg/syscall.hpp>
 #include <fhg/util/nest_exceptions.hpp>
 
-#include <fhglog/log_to_GLOBAL_logger.hpp>
+#include <gpi-space/log_to_GLOBAL_logger.hpp>
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/memory/shm_area.hpp>

@@ -2,7 +2,7 @@
 
 #include <stack>
 
-#include <fhglog/log_to_GLOBAL_logger.hpp>
+#include <gpi-space/log_to_GLOBAL_logger.hpp>
 #include <fhg/assert.hpp>
 
 #include <boost/format.hpp>

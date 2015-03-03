@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <fhglog/log_to_GLOBAL_logger.hpp>
+#include <gpi-space/log_to_GLOBAL_logger.hpp>
 #include <gpi-space/pc/url.hpp>
 #include <fhg/util/read_bool.hpp>
 

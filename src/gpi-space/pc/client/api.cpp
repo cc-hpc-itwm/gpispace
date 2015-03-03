@@ -5,7 +5,7 @@
 
 #include <fhg/assert.hpp>
 #include <fhg/syscall.hpp>
-#include <fhglog/log_to_GLOBAL_logger.hpp>
+#include <gpi-space/log_to_GLOBAL_logger.hpp>
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>

@@ -1,6 +1,6 @@
 #include <gpi-space/pc/memory/transfer_manager.hpp>
 
-#include <fhglog/log_to_GLOBAL_logger.hpp>
+#include <gpi-space/log_to_GLOBAL_logger.hpp>
 
 #include <fhg/util/make_unique.hpp>
 
