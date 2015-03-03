@@ -200,10 +200,22 @@ namespace gspc
       , _master_agent_hostinfo
       );
 
-    add_worker (_rif_entry_points);
+    add_worker_impl (_rif_entry_points);
   }
 
+
   void scoped_runtime_system::implementation::started_runtime_system::add_worker
+    (std::vector<fhg::rif::entry_point> const& entry_points)
+  {
+    if (_gpi_socket)
+    {
+      throw std::logic_error ("add_worker while vmem is in use");
+    }
+
+    add_worker_impl (entry_points);
+  }
+
+  void scoped_runtime_system::implementation::started_runtime_system::add_worker_impl
     (std::vector<fhg::rif::entry_point> const& entry_points)
   {
     fhg::util::nest_exceptions<std::runtime_error>

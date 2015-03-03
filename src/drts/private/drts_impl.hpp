@@ -52,6 +52,7 @@ namespace gspc
                              , std::vector<fhg::rif::entry_point> const& rif_entry_points
                              );
 
+      void add_worker_impl (std::vector<fhg::rif::entry_point> const&);
       void add_worker (std::vector<fhg::rif::entry_point> const&);
       void remove_worker (std::vector<fhg::rif::entry_point> const&);
 
