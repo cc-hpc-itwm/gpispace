@@ -6,16 +6,14 @@
 				             , response
                                              )"
           pass_context="true">
-    <cinclude href="fhglog/LogMacros.hpp"/>
-    <cxx flag="-std=c++11"/>
     <code><![CDATA[
-        LLOG (INFO, _pnetc_context->logger(), "SDPA selftest");
+        GSPC_LOG (INFO, "SDPA selftest");
 
-        LLOG (INFO, _pnetc_context->logger(), "===> challenge := " << challenge);
+        GSPC_LOG (INFO, "===> challenge := " << challenge);
 
         response = "sdpa.response." + challenge;
 
-        LLOG (INFO, _pnetc_context->logger(), "===> response := " << response);
+        GSPC_LOG (INFO, "===> response := " << response);
     ]]></code>
   </module>
 </defun>

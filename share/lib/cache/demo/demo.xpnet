@@ -45,18 +45,16 @@
         <out name="id" type="long"/>
         <module name="demo" function="id work (cache, slot)"
                 pass_context="true">
-          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="stdlib.h"/>
-          <cxx flag="-std=c++11"/>
           <code><![CDATA[
             const long id (boost::get<long const> (cache.by_slot.id.at (slot)));
             srand (time(NULL) * id * slot);
             const int t (rand() % 4);
 
-            LLOG (INFO, _pnetc_context->logger(), "WORK on id " << id
-                    << " in slot " << slot
-                    << ", sleep for " << t << " secs"
-                );
+            GSPC_LOG (INFO, "WORK on id " << id
+                     << " in slot " << slot
+                     << ", sleep for " << t << " secs"
+                     );
 
             sleep (t);
 

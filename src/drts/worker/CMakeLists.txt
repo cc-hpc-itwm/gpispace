@@ -22,6 +22,7 @@ install (FILES context_fwd.hpp context.hpp
 )
 
 add_library (drts-context SHARED context.cpp)
+target_link_libraries (drts-context fhglog)
 
 install (TARGETS drts-context
   LIBRARY DESTINATION lib

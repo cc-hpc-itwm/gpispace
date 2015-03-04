@@ -1336,10 +1336,6 @@ namespace xml
           ldflags.emplace_back ("-ldrts-context");
         }
         std::list<std::string> cxxflags;
-        if (pass_context)
-        {
-          cxxflags.emplace_back ("--std=c++11");
-        }
         std::list<type::link_type> links;
 
         for ( xml_node_type* child (node->first_node())

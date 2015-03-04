@@ -115,15 +115,12 @@
                 function="sum work (configuration, range_file)"
                 pass_context="true"
         >
-          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="reader.hpp"/>
           <cinclude href="boost/thread.hpp"/>
-          <cxx flag="-std=c++11"/>
           <code><![CDATA[
-           LLOG (INFO, _pnetc_context->logger()
-                , "work on range [" << range_file.begin
+           GSPC_LOG (INFO, "work on range [" << range_file.begin
                     << ".." << range_file.end << ")"
-                );
+                    );
 
             ::pnetc::type::sums::sums sum;
 

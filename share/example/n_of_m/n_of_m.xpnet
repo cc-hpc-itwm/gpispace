@@ -64,15 +64,13 @@
         <module name="n_of_m" function="run (cmd, n, m)" pass_context="true">
           <cinclude href="sstream"/>
           <cinclude href="process/process.hpp"/>
-          <cinclude href="fhglog/LogMacros.hpp"/>
-          <cxx flag="-std=c++11"/>
           <ld flag="-lprocess"/>
           <code><![CDATA[
             std::ostringstream cmdline;
 
             cmdline << cmd << " " << n << " " << m;
 
-            LLOG (INFO, _pnetc_context->logger(), "RUNNING " << cmdline.str());
+            GSPC_LOG (INFO, "RUNNING " << cmdline.str());
 
             const std::size_t bufsize (1 << 10);
             char buf[bufsize];
@@ -84,9 +82,8 @@
                                  )
               );
 
-            LLOG (INFO, _pnetc_context->logger()
-                 , "OUTPUT " << std::string (buf, buf + bytes_written)
-                 );
+            GSPC_LOG
+              (INFO, "OUTPUT " << std::string (buf, buf + bytes_written));
           ]]>
           </code>
         </module>

@@ -39,7 +39,12 @@ namespace drts
       void set_module_call_do_cancel (boost::function<void()> fun);
       void module_call_do_cancel() const;
 
-      fhg::log::Logger& logger() const;
+      void log ( fhg::log::Level const& severity
+               , std::string const& file
+               , std::string const& function
+               , std::size_t const& line
+               , std::string const& message
+               ) const;
 
     private:
       std::string _worker_name;

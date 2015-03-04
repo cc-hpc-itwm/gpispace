@@ -2,7 +2,7 @@
 
 #include <drts/worker/context_fwd.hpp>
 
-#include <fhglog/Logger.hpp>
+#include <fhglog/level.hpp>
 
 #include <list>
 #include <string>
@@ -34,7 +34,28 @@ namespace drts
       void set_module_call_do_cancel (boost::function<void()>);
       void module_call_do_cancel() const;
 
-      fhg::log::Logger& logger() const;
+      void log ( fhg::log::Level const& severity
+               , std::string const& file
+               , std::string const& function
+               , std::size_t const& line
+               , std::string const& message
+               ) const;
     };
   }
 }
+
+#include <boost/current_function.hpp>
+#include <sstream>
+
+#define GSPC_LOG(_severity, _message)                   \
+  do                                                    \
+  {                                                     \
+    std::ostringstream message;                         \
+    message << _message;                                \
+    _pnetc_context->log ( fhg::log::_severity           \
+                        , __FILE__                      \
+                        , BOOST_CURRENT_FUNCTION        \
+                        , __LINE__                      \
+                        , message.str()                 \
+                        );                              \
+  } while (0)

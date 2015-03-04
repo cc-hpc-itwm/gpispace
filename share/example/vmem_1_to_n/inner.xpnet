@@ -57,19 +57,17 @@
                 function="done run (config, id, i, data, memory)"
                 pass_context="true"
         >
-          <cinclude href="fhglog/LogMacros.hpp"/>
           <cinclude href="stdexcept"/>
           <cinclude href="string.h"/>
           <cinclude href="boost/random.hpp"/>
           <cinclude href="limits"/>
           <cinclude href="sstream"/>
-          <cxx flag="-std=c++11"/>
           <code><![CDATA[
-            LLOG (INFO, _pnetc_context->logger(), "run (" << id << ", " << i << ")");
+            GSPC_LOG (INFO, "run (" << id << ", " << i << ")");
 
             unsigned long const num_long (memory.size / sizeof (long));
 
-            LLOG (INFO, _pnetc_context->logger(), "verifiying " << num_long << " values with seed " << config.seed);
+            GSPC_LOG (INFO, "verifiying " << num_long << " values with seed " << config.seed);
 
             long* a (static_cast<long*> (data));
 

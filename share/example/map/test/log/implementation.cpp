@@ -1,7 +1,5 @@
 #include <map/interface.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 #include <boost/format.hpp>
 
 #include <stdexcept>
@@ -9,14 +7,14 @@
 void map_produce ( map::user_data_type const& user_data
                  , map::memory_buffer_type buffer
                  , unsigned long id
-                 , fhg::log::Logger& logger
+                 , map::logger_type logger
                  )
 {
-  LLOG ( INFO, logger,"produce"
-       << ": user_data = " << user_data
-       << ", buffer_size = " << buffer.second
-       << ", id = " << id
-       );
+  MAP_LOG ( "produce"
+          << ": user_data = " << user_data
+          << ", buffer_size = " << buffer.second
+          << ", id = " << id
+          );
 
   unsigned long* const mem (static_cast<unsigned long*> (buffer.first));
 
@@ -27,14 +25,14 @@ void map_process
   ( map::user_data_type const& user_data
   , map::const_memory_buffer_type input
   , map::memory_buffer_type output
-  , fhg::log::Logger& logger
+  , map::logger_type logger
   )
 {
-  LLOG ( INFO, logger, "process"
-       << ": user_data = " << user_data
-       << ", input_buffer_size = " << input.second
-       << ", output_buffer_size = " << output.second
-       );
+  MAP_LOG ( "process"
+          << ": user_data = " << user_data
+          << ", input_buffer_size = " << input.second
+          << ", output_buffer_size = " << output.second
+          );
 
   if (input.second != output.second)
   {
@@ -60,14 +58,14 @@ void map_process
 void map_consume ( map::user_data_type const& user_data
                  , map::const_memory_buffer_type buffer
                  , unsigned long id
-                 , fhg::log::Logger& logger
+                 , map::logger_type logger
                  )
 {
-  LLOG ( INFO, logger, "consume"
-      << ": user_data = " << user_data
-      << ", buffer_size = " << buffer.second
-      << ", id = " << id
-      );
+  MAP_LOG ( "consume"
+          << ": user_data = " << user_data
+          << ", buffer_size = " << buffer.second
+          << ", id = " << id
+          );
 
   unsigned long const* const mem
     (static_cast<unsigned long const* const> (buffer.first));

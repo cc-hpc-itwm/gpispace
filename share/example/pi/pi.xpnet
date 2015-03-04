@@ -186,11 +186,9 @@
               <out name="job" type="job"/>
               <module name="pi" function="job get_key (seed, points)"
                       pass_context="true">
-                <cinclude href="fhglog/LogMacros.hpp"/>
                 <cinclude href="sstream"/>
-                <cxx flag="-std=c++11"/>
                 <code><![CDATA[
-                  LLOG (INFO, _pnetc_context->logger(), "GET_KEY for seed " << seed);
+                  GSPC_LOG (INFO, "GET_KEY for seed " << seed);
 
                   std::ostringstream os;
 
@@ -275,17 +273,15 @@
               <out name="ratio" type="ratio"/>
               <module name="pi" function="ratio run (job)"
                       pass_context="true">
-                <cinclude href="fhglog/LogMacros.hpp"/>
                 <cinclude href="boost/random/mersenne_twister.hpp"/>
                 <cinclude href="boost/random/uniform_real.hpp"/>
                 <cinclude href="boost/random/variate_generator.hpp"/>
-                <cxx flag="-std=c++11"/>
                 <code><![CDATA[
-                  LLOG (INFO, _pnetc_context->logger(), "RUN"
-                      << ", points " << job.points
-                      << ", seed " << job.seed
-                      << ", key " << job.key
-                      );
+                  GSPC_LOG (INFO, "RUN"
+                           << ", points " << job.points
+                           << ", seed " << job.seed
+                           << ", key " << job.key
+                           );
 
                   boost::mt19937 gen (job.seed);
                   boost::uniform_real<double> dist (-1, 1);
@@ -309,10 +305,9 @@
                         }
                     }
 
-                    LLOG (INFO, _pnetc_context->logger()
-                         , "RES = " << r.in << " of " << r.total
-                      << " (seed " << job.seed << ")"
-                      );
+                    GSPC_LOG (INFO, "RES = " << r.in << " of " << r.total
+                             << " (seed " << job.seed << ")"
+                             );
 
                   return r;
                 ]]></code>
@@ -371,12 +366,10 @@
         <out name="ratio" type="ratio"/>
         <module name="pi" function="finalize (ratio)"
                 pass_context="true">
-          <cinclude href="fhglog/LogMacros.hpp"/>
-          <cxx flag="-std=c++11"/>
           <code><![CDATA[
-            LLOG (INFO, _pnetc_context->logger(), "FINALIZE"
-                << ", ratio " << ratio.in << " % " << ratio.total
-                );
+            GSPC_LOG (INFO, "FINALIZE"
+                     << ", ratio " << ratio.in << " % " << ratio.total
+                     );
 
             long gcd (ratio.total);
             long rem (ratio.in);
@@ -393,7 +386,7 @@
 
             const double res (4.0 * double(ratio.in) / double (ratio.total));
 
-            LLOG (INFO, _pnetc_context->logger(), "gcd " << gcd << " => "
+            GSPC_LOG (INFO, "gcd " << gcd << " => "
                 << " ratio " << ratio.in << " % " << ratio.total
                 << " res " << res
                 << " err " << res - 3.1415926535897932384626433832795028841968
