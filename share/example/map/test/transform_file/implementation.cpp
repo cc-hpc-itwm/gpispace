@@ -9,7 +9,7 @@
 void map_produce ( map::user_data_type const& user_data
                  , map::memory_buffer_type buffer
                  , unsigned long id
-                 , map::logger_type logger
+                 , drts::worker::logger_type logger
                  )
 {
   transform_file::parameter const parameter
@@ -51,7 +51,7 @@ void map_process
   ( map::user_data_type const&
   , map::const_memory_buffer_type input
   , map::memory_buffer_type output
-  , map::logger_type logger
+  , drts::worker::logger_type logger
   )
 {
   MAP_LOG ("transform");
@@ -78,7 +78,7 @@ void map_process
 void map_consume ( map::user_data_type const& user_data
                  , map::const_memory_buffer_type buffer
                  , unsigned long id
-                 , map::logger_type logger
+                 , drts::worker::logger_type logger
                  )
 {
   transform_file::parameter const parameter

@@ -265,7 +265,6 @@
                 pass_context="true"
         >
           <cinclude href="interface.hpp"/>
-          <cinclude href="boost/bind.hpp"/>
           <cinclude href="fhg/util/dl.hpp"/>
           <code><![CDATA[
             fhg::util::scoped_dlhandle (implementation)
@@ -273,9 +272,7 @@
                 ( user_data
                 , std::make_pair (data, block_with_slot.slot.size)
                 , block_with_slot.block
-                , boost::bind ( &drts::worker::context::log
-                              , _pnetc_context, _1, _2, _3, _4, _5
-                              )
+                , GSPC_LOGGER()
                 );
           ]]></code>
         </module>
@@ -358,7 +355,6 @@
                 pass_context="true"
         >
           <cinclude href="interface.hpp"/>
-          <cinclude href="boost/bind.hpp"/>
           <cinclude href="fhg/util/dl.hpp"/>
           <code><![CDATA[
             fhg::util::scoped_dlhandle (implementation)
@@ -366,9 +362,7 @@
                 ( user_data
                 , std::make_pair (input, package.slot_input.size)
                 , std::make_pair (output, package.slot_output.size)
-                , boost::bind ( &drts::worker::context::log
-                              , _pnetc_context, _1, _2, _3, _4, _5
-                              )
+                , GSPC_LOGGER()
                 );
           ]]></code>
         </module>
@@ -428,7 +422,6 @@
                 pass_context="true"
         >
           <cinclude href="interface.hpp"/>
-          <cinclude href="boost/bind.hpp"/>
           <cinclude href="fhg/util/dl.hpp"/>
           <code><![CDATA[
             fhg::util::scoped_dlhandle (implementation)
@@ -436,9 +429,7 @@
                 ( user_data
                 , std::make_pair (data, block_with_slot.slot.size)
                 , block_with_slot.block
-                , boost::bind ( &drts::worker::context::log
-                              , _pnetc_context, _1, _2, _3, _4, _5
-                              )
+                , GSPC_LOGGER()
                 );
           ]]></code>
         </module>

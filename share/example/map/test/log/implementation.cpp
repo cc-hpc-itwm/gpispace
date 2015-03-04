@@ -7,7 +7,7 @@
 void map_produce ( map::user_data_type const& user_data
                  , map::memory_buffer_type buffer
                  , unsigned long id
-                 , map::logger_type logger
+                 , drts::worker::logger_type logger
                  )
 {
   MAP_LOG ( "produce"
@@ -25,7 +25,7 @@ void map_process
   ( map::user_data_type const& user_data
   , map::const_memory_buffer_type input
   , map::memory_buffer_type output
-  , map::logger_type logger
+  , drts::worker::logger_type logger
   )
 {
   MAP_LOG ( "process"
@@ -58,7 +58,7 @@ void map_process
 void map_consume ( map::user_data_type const& user_data
                  , map::const_memory_buffer_type buffer
                  , unsigned long id
-                 , map::logger_type logger
+                 , drts::worker::logger_type logger
                  )
 {
   MAP_LOG ( "consume"

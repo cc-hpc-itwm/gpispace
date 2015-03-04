@@ -41,21 +41,43 @@ namespace drts
                , std::string const& message
                ) const;
     };
+
+    typedef boost::function<void ( fhg::log::Level const& severity
+                                 , std::string const& file
+                                 , std::string const& function
+                                 , std::size_t const& line
+                                 , std::string const& message
+                                 )> logger_type;
   }
 }
 
 #include <boost/current_function.hpp>
 #include <sstream>
 
-#define GSPC_LOG(_severity, _message)                   \
+#define GSPC_LLOG(_severity, _message, _logger)         \
   do                                                    \
   {                                                     \
     std::ostringstream message;                         \
     message << _message;                                \
-    _pnetc_context->log ( fhg::log::_severity           \
-                        , __FILE__                      \
-                        , BOOST_CURRENT_FUNCTION        \
-                        , __LINE__                      \
-                        , message.str()                 \
-                        );                              \
+    _logger ( fhg::log::_severity                       \
+            , __FILE__                                  \
+            , BOOST_CURRENT_FUNCTION                    \
+            , __LINE__                                  \
+            , message.str()                             \
+            );                                          \
   } while (0)
+
+#include <boost/bind.hpp>
+
+#define GSPC_LOGGER()                           \
+  boost::bind ( &drts::worker::context::log     \
+              , _pnetc_context                  \
+              , _1                              \
+              , _2                              \
+              , _3                              \
+              , _4                              \
+              , _5                              \
+              )                                 \
+
+#define GSPC_LOG(_severity, _message)                   \
+  GSPC_LLOG (_severity, _message, GSPC_LOGGER())
