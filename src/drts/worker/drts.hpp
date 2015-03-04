@@ -1,6 +1,7 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
 #include <drts/worker/context.hpp>
+#include <drts/worker/context_impl.hpp>
 
 #include <drts/private/scoped_allocation.hpp>
 
@@ -56,7 +57,8 @@ struct wfe_task_t
     : id (id)
     , state (PENDING)
     , activity (description)
-    , context (worker_name, workers, logger)
+    , context
+      (drts::worker::context_constructor (worker_name, workers, logger))
   {}
 };
 

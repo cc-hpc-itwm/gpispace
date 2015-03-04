@@ -13,29 +13,28 @@ namespace drts
 {
   namespace worker
   {
+    class context_constructor;
+
     class context
     {
+    private:
+      friend class context_constructor;
+      class implementation;
+      implementation* _;
+
     public:
-      context ( std::string const& worker_name
-              , std::list<std::string> const& worker_list
-              , fhg::log::Logger& logger
-              );
+      context (context_constructor);
+      ~context();
 
       std::string const& worker_name() const;
 
-      std::list<std::string> const& worker_list () const;
+      std::list<std::string> const& worker_list() const;
       std::string worker_to_hostname (std::string const&) const;
 
-      void set_module_call_do_cancel (boost::function<void()> fun);
-      void module_call_do_cancel();
+      void set_module_call_do_cancel (boost::function<void()>);
+      void module_call_do_cancel() const;
 
       fhg::log::Logger& logger() const;
-
-    private:
-      std::string m_worker_name;
-      std::list<std::string> m_worker_list;
-      boost::function<void()> _module_call_do_cancel;
-      fhg::log::Logger& _logger;
     };
   }
 }

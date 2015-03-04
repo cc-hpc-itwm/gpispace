@@ -11,6 +11,7 @@
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <drts/worker/context.hpp>
+#include <drts/worker/context_impl.hpp>
 
 #include <fhglog/Configuration.hpp>
 #include <fhglog/Logger.hpp>
@@ -69,7 +70,10 @@ BOOST_AUTO_TEST_CASE (call_not_found)
   boost::asio::io_service io_service;
   fhg::log::Logger logger;
   fhg::log::configure (io_service, logger);
-  drts::worker::context context ("noname", (std::list<std::string>()), logger);
+  drts::worker::context context
+    (drts::worker::context_constructor
+      ("noname", (std::list<std::string>()), logger)
+    );
   expr::eval::context input;
   expr::eval::context output;
 
@@ -106,7 +110,10 @@ BOOST_AUTO_TEST_CASE (call_local)
   boost::asio::io_service io_service;
   fhg::log::Logger logger;
   fhg::log::configure (io_service, logger);
-  drts::worker::context context ("noname", (std::list<std::string>()), logger);
+  drts::worker::context context
+    (drts::worker::context_constructor
+      ("noname", (std::list<std::string>()), logger)
+    );
   expr::eval::context input;
   expr::eval::context output;
 
@@ -124,7 +131,10 @@ BOOST_AUTO_TEST_CASE (call_lib)
   boost::asio::io_service io_service;
   fhg::log::Logger logger;
   fhg::log::configure (io_service, logger);
-  drts::worker::context context ("noname", (std::list<std::string>()), logger);
+  drts::worker::context context
+    (drts::worker::context_constructor
+      ("noname", (std::list<std::string>()), logger)
+    );
   expr::eval::context input;
   expr::eval::context output;
 
