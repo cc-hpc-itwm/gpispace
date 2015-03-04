@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fhglog/event.hpp>
+#include <fhglog/level_io.hpp>
 
 #include <fhg/util/save_stream_flags.hpp>
 #include <fhg/util/parse/position.hpp>

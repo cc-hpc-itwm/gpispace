@@ -11,6 +11,8 @@
 #include <fhg/util/print_exception.hpp>
 #include <fhg/util/temporary_file.hpp>
 
+#include <fhglog/level_io.hpp>
+
 #include <network/server.hpp>
 
 #include <rif/execute_and_get_startup_messages.hpp>
