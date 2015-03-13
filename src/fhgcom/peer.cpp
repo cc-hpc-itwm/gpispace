@@ -477,11 +477,7 @@ namespace fhg
 
         if (backlog_.find (c) == backlog_.end())
         {
-          c->stop();
-          throw std::logic_error
-            ( "protocol error between " + p2p::to_string (my_addr_.get())
-            + " and " + p2p::to_string (m->header.src) + ", closed connection"
-            );
+          handle_error (c, boost::system::errc::make_error_code (boost::system::errc::connection_reset));
         }
         else
         {
