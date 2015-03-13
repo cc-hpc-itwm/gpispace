@@ -1,7 +1,5 @@
 #include <fhgcom/peer.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 #include <fhg/assert.hpp>
 #include <fhg/util/hostname.hpp>
 #include <fhg/util/thread/event.hpp>
@@ -323,13 +321,6 @@ namespace fhg
       {
         connection_data_t & cd = connections_.find (a)->second;
 
-        LOG( TRACE
-             , p2p::to_string (my_addr_.get())
-             << " connected to "
-             << p2p::to_string (a)
-             << " @ " << cd.connection->socket().remote_endpoint();
-             );
-
         {
           boost::asio::socket_base::keep_alive o(true);
           cd.connection->set_option (o);
@@ -364,29 +355,31 @@ namespace fhg
 
       if (connections_.find (a) == connections_.end())
       {
-        LOG_IF( WARN
-              , ec
-              , "could not send message to " << p2p::to_string (a)
-              << " connection already closed: "
-              << ec << " msg: " << ec.message ()
-              );
+        if (ec)
+        {
+          throw boost::system::system_error (ec);
+        }
         return;
       }
 
       connection_data_t & cd = connections_.at (a);
       if (cd.o_queue.empty ())
       {
-        MLOG_IF ( WARN
-                , cd.send_in_progress
-                , "inconsistent output queue: " << ec << " msg: " << ec.message ()
-                );
+        if (cd.send_in_progress)
+        {
+          throw std::logic_error
+            ("inconsistent output queue: " + ec.message());
+        }
         return;
       }
 
       cd.o_queue.front().handler (ec);
       cd.o_queue.pop_front();
 
-      LOG_IF(WARN, ec, "message delivery to " << p2p::to_string (a) << " failed: " << ec);
+      if (ec)
+      {
+        throw boost::system::system_error (ec);
+      }
 
       if (! ec)
       {
@@ -438,10 +431,6 @@ namespace fhg
       {
         // ignore, connection has been closed before we could start it
       }
-      catch (std::exception const & ex)
-      {
-        LOG (ERROR, "could not start sender to " << p2p::to_string (a) << ": " << ex.what ());
-      }
     }
 
     void peer_t::handle_accept (const boost::system::error_code & ec)
@@ -488,15 +477,7 @@ namespace fhg
 
         if (backlog_.find (c) == backlog_.end())
         {
-          LOG(ERROR, "protocol error between " << p2p::to_string (my_addr_.get()) << " and " << p2p::to_string (m->header.src) << " closing connection");
-          try
-          {
-            c->stop();
-          }
-          catch (std::exception const & ex)
-          {
-            LOG(WARN, "could not stop connection: " << ex.what());
-          }
+          handle_error (c, boost::system::errc::make_error_code (boost::system::errc::connection_reset));
         }
         else
         {

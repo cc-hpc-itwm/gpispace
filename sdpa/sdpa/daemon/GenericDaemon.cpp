@@ -142,10 +142,11 @@ GenericDaemon::GenericDaemon( const std::string name
                             , std::unique_ptr<boost::asio::io_service> peer_io_service
                             , boost::optional<boost::filesystem::path> const& vmem_socket
                             , std::vector<name_host_port_tuple> const& masters
+                            , fhg::log::Logger& logger
                             , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
                             , bool create_wfe
                             )
-  : _logger (fhg::log::Logger::get (name))
+  : _logger (logger)
   , _name (name)
   , _master_info (make_master_info_map<master_info_t> (masters))
   , _subscriptions()
@@ -166,9 +167,9 @@ GenericDaemon::GenericDaemon( const std::string name
   , mtx_cpb_()
   , m_capabilities()
   , m_guiService ( gui_info && !gui_info->first.empty()
-                 ? boost::optional<NotificationService>
-                   (NotificationService (gui_info->first, gui_info->second))
-                 : boost::none
+                 ? fhg::util::make_unique<NotificationService>
+                   (gui_info->first, gui_info->second)
+                 : nullptr
                  )
   , _registration_timeout (boost::posix_time::seconds (1))
   , _event_queue()

@@ -181,7 +181,7 @@ namespace
 DRTSImpl::DRTSImpl
     ( std::function<void()> request_stop
     , std::unique_ptr<boost::asio::io_service> peer_io_service
-    , boost::optional<sdpa::daemon::NotificationService> gui_notification_service
+    , std::unique_ptr<sdpa::daemon::NotificationService> gui_notification_service
     , std::string const& kernel_name
     , gpi::pc::client::api_t /*const*/* virtual_memory_api
     , gspc::scoped_allocation /*const*/* shared_memory
@@ -190,8 +190,9 @@ DRTSImpl::DRTSImpl
     , boost::optional<std::size_t> const& socket
     , std::vector<boost::filesystem::path> const& library_path
     , std::size_t backlog_length
+    , fhg::log::Logger& logger
     )
-  : _logger (fhg::log::Logger::get (kernel_name))
+  : _logger (logger)
   , _request_stop (request_stop)
   , m_shutting_down (false)
   , m_my_name (kernel_name)
@@ -201,7 +202,7 @@ DRTSImpl::DRTSImpl
                         )
   , _currently_executed_tasks()
   , m_loader ({library_path.begin(), library_path.end()})
-  , _notification_service (gui_notification_service)
+  , _notification_service (std::move (gui_notification_service))
   , _virtual_memory_api (virtual_memory_api)
   , _shared_memory (shared_memory)
   , m_pending_jobs (backlog_length)
@@ -480,7 +481,8 @@ void DRTSImpl::job_execution_thread()
     {
       job->result = we::type::activity_t().to_string();
 
-      wfe_task_t task (job->id, job->description, m_my_name, job->worker_list);
+      wfe_task_t task
+        (job->id, job->description, m_my_name, job->worker_list, _logger);
 
       {
         std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);

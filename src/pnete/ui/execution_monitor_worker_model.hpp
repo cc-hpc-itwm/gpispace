@@ -103,6 +103,7 @@ namespace fhg
         void append_event (const log::LogEvent&);
 
         boost::asio::io_service _io_service;
+        fhg::log::Logger _logger;
         log::remote::LogServer _log_server;
         boost::thread _io_thread;
       };

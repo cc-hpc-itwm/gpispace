@@ -2,7 +2,7 @@
 #include <gpi-space/pc/url.hpp>
 #include <gpi-space/pc/url_io.hpp>
 
-#include <fhglog/LogMacros.hpp>
+#include <gpi-space/log_to_GLOBAL_logger.hpp>
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/global/topology.hpp>
@@ -13,8 +13,6 @@
 #include <gpi-space/pc/memory/memory_transfer_t.hpp>
 #include <gpi-space/pc/memory/sfs_area.hpp>
 #include <gpi-space/pc/memory/shm_area.hpp>
-
-#include <boost/shared_ptr.hpp>
 
 #include <string>
 
@@ -61,10 +59,9 @@ namespace gpi
         }
         catch (std::exception const & ex)
         {
-          CLOG( ERROR
-              , "gpi.memory"
-              , "could not clear memory manager: " << ex.what()
-              );
+          LOG( ERROR
+             , "could not clear memory manager: " << ex.what()
+             );
         }
       }
 

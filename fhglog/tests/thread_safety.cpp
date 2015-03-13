@@ -17,13 +17,13 @@ namespace
 {
   const std::size_t loop_count (10000);
 
-  void thread_function (std::string logger_name)
+  void thread_function (fhg::log::Logger* logger)
   {
     boost::this_thread::yield();
 
     for (std::size_t i (0); i < loop_count; ++i)
     {
-      fhg::log::Logger::get (logger_name)->log
+      logger->log
         (FHGLOG_MKEVENT_HERE (ERROR, boost::lexical_cast<std::string> (i)));
     }
   }
@@ -78,17 +78,17 @@ BOOST_AUTO_TEST_CASE (different_loggers)
   std::vector<std::string> output_1;
   std::vector<std::string> output_2;
 
-  fhg::log::Logger::get ("0")->addAppender
-    (fhg::log::Appender::ptr_t (new pushback_appender (&output_0)));
-  fhg::log::Logger::get ("1")->addAppender
-    (fhg::log::Appender::ptr_t (new pushback_appender (&output_1)));
-  fhg::log::Logger::get ("2")->addAppender
-    (fhg::log::Appender::ptr_t (new pushback_appender (&output_2)));
+  fhg::log::Logger l0;
+  fhg::log::Logger l1;
+  fhg::log::Logger l2;
+  l0.addAppender<pushback_appender> (&output_0);
+  l1.addAppender<pushback_appender> (&output_1);
+  l2.addAppender<pushback_appender> (&output_2);
 
   {
-    const boost::strict_scoped_thread<> t0 (&thread_function, "0");
-    const boost::strict_scoped_thread<> t1 (&thread_function, "1");
-    const boost::strict_scoped_thread<> t2 (&thread_function, "2");
+    const boost::strict_scoped_thread<> t0 (&thread_function, &l0);
+    const boost::strict_scoped_thread<> t1 (&thread_function, &l1);
+    const boost::strict_scoped_thread<> t2 (&thread_function, &l2);
   }
 
   BOOST_REQUIRE_EQUAL_COLLECTIONS
@@ -109,14 +109,13 @@ BOOST_AUTO_TEST_CASE (same_logger)
 
   std::vector<std::string> output;
 
-  fhg::log::Appender::ptr_t sync_appender
-    (fhg::log::Appender::ptr_t (new pushback_appender_synchronized (&output)));
-  fhg::log::Logger::get ("log")->addAppender (sync_appender);
+  fhg::log::Logger l;
+  l.addAppender<pushback_appender_synchronized> (&output);
 
   {
-    const boost::strict_scoped_thread<> t0 (&thread_function, "log");
-    const boost::strict_scoped_thread<> t1 (&thread_function, "log");
-    const boost::strict_scoped_thread<> t2 (&thread_function, "log");
+    const boost::strict_scoped_thread<> t0 (&thread_function, &l);
+    const boost::strict_scoped_thread<> t1 (&thread_function, &l);
+    const boost::strict_scoped_thread<> t2 (&thread_function, &l);
   }
 
   std::sort (output.begin(), output.end());

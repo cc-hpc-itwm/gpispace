@@ -4,6 +4,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <fhglog/level.hpp>
+#include <fhglog/level_io.hpp>
 
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>

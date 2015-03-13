@@ -2,7 +2,6 @@ ADD_LIBRARY(fhgcom
   connection.cpp
   header.cpp
   peer.cpp
-  session.cpp
 )
 target_link_libraries (fhgcom fhglog)
 

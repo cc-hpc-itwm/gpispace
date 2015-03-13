@@ -34,7 +34,6 @@ namespace fhg
       , pid_(getpid())
       , tid_(syscall (SYS_gettid))
       , host_ (fhg::util::hostname())
-      , trace_ ()
     {}
 
     LogEvent::LogEvent()
@@ -47,7 +46,6 @@ namespace fhg
       , pid_()
       , tid_()
       , host_ ()
-      , trace_ ()
     {
     }
 
@@ -88,17 +86,6 @@ namespace fhg
         }
         return accum;
       }
-      std::vector<std::string> read_vec (fhg::util::parse::position& pos)
-      {
-        std::vector<std::string> ret;
-
-        while (!pos.end() && *pos != ',')
-        {
-          ret.push_back (read_string (pos));
-        }
-
-        return ret;
-      }
       Level read_loglevel (fhg::util::parse::position& pos)
       {
         switch (*pos)
@@ -123,7 +110,6 @@ namespace fhg
       , pid_ ((++pos, read_integral<pid_t> (pos)))
       , tid_ ((++pos, read_integral<pid_t> (pos)))
       , host_ ((++pos, read_string (pos)))
-      , trace_ ((++pos, read_vec (pos)))
     {}
 
     LogEvent LogEvent::from_string (const std::string& str)
@@ -207,11 +193,6 @@ std::ostream& operator<< (std::ostream& os, const fhg::log::LogEvent& event)
   os << ',' << event.pid();
   os << ',' << event.tid();
   os << ',' << encode::string (event.host());
-  os << ',';
-  for (std::string const& t : event.trace())
-  {
-    os << encode::string (t);
-  }
 
   return os;
 }

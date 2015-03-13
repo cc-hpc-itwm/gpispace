@@ -107,7 +107,6 @@ BOOST_AUTO_TEST_CASE (logger)
                                  , "tests/test_formatter.cpp"
                                  , "main", 1002, "hello"
                                  );
-  BOOST_REQUIRE_EQUAL (fhg::log::format ("%l", event), "");
 }
 
 BOOST_AUTO_TEST_CASE (newline)

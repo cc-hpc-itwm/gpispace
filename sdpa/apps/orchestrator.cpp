@@ -34,7 +34,7 @@ try
     std::string orchUrl;
 
   boost::asio::io_service remote_log_io_service;
-  fhg::log::configure (remote_log_io_service);
+  fhg::log::configure (remote_log_io_service, fhg::log::GLOBAL_logger());
 
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -48,7 +48,7 @@ try
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
 
-    fhg::log::Logger::ptr_t logger (fhg::log::Logger::get (orchName));
+    fhg::log::Logger& logger (fhg::log::GLOBAL_logger());
 
     if (vm.count("help"))
     {
@@ -65,6 +65,7 @@ try
     , orchUrl
     , fhg::util::make_unique<boost::asio::io_service>()
     , rpc_io_service
+    , logger
     );
 
   fhg::util::thread::event<> stop_requested;

@@ -9,8 +9,6 @@
 
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 
-BOOST_GLOBAL_FIXTURE (setup_logging)
-
 namespace
 {
   class fake_drts_worker_reporting_backlog_full
@@ -81,10 +79,10 @@ namespace
   };
 }
 
-BOOST_AUTO_TEST_CASE (one_worker_reports_backlog_full_the_other_two_receive_cancellation_requests)
+BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_other_two_receive_cancellation_requests, setup_logging)
 {
-  const utils::orchestrator orchestrator;
-  const utils::agent agent (orchestrator);
+  const utils::orchestrator orchestrator (_logger);
+  const utils::agent agent (orchestrator, _logger);
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
@@ -129,10 +127,10 @@ BOOST_AUTO_TEST_CASE (one_worker_reports_backlog_full_the_other_two_receive_canc
   worker_3.canceled (job_id_3);
 }
 
-BOOST_AUTO_TEST_CASE (one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled)
+BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled, setup_logging)
 {
-  const utils::orchestrator orchestrator;
-  const utils::agent agent (orchestrator);
+  const utils::orchestrator orchestrator (_logger);
+  const utils::agent agent (orchestrator, _logger);
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
@@ -183,10 +181,10 @@ BOOST_AUTO_TEST_CASE (one_worker_reports_backlog_full_the_2_siblings_are_cancell
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_AUTO_TEST_CASE (one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled)
+BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled, setup_logging)
 {
-  const utils::orchestrator orchestrator;
-  const utils::agent agent (orchestrator);
+  const utils::orchestrator orchestrator (_logger);
+  const utils::agent agent (orchestrator, _logger);
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
@@ -237,11 +235,11 @@ BOOST_AUTO_TEST_CASE (one_worker_reports_backlog_full_the_still_running_sibling_
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_AUTO_TEST_CASE
-  (one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled)
+BOOST_FIXTURE_TEST_CASE
+  (one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled, setup_logging)
 {
-  const utils::orchestrator orchestrator;
-  const utils::agent agent (orchestrator);
+  const utils::orchestrator orchestrator (_logger);
+  const utils::agent agent (orchestrator, _logger);
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id

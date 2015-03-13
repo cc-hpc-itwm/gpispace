@@ -1,6 +1,6 @@
 #include <gpi-space/pc/memory/transfer_manager.hpp>
 
-#include <fhglog/LogMacros.hpp>
+#include <gpi-space/log_to_GLOBAL_logger.hpp>
 
 #include <fhg/util/make_unique.hpp>
 
@@ -40,10 +40,9 @@ namespace gpi
       {
         if (t.queue >= m_queues.size())
         {
-          CLOG( ERROR
-              , "gpi.memory"
-              , "cannot enqueue request: no such queue: " << t.queue
-              );
+          LOG( ERROR
+             , "cannot enqueue request: no such queue: " << t.queue
+             );
           throw std::invalid_argument ("no such queue");
         }
 
@@ -66,10 +65,9 @@ namespace gpi
       {
         if (queue >= m_queues.size())
         {
-          CLOG( ERROR
-              , "gpi.memory"
-              , "cannot wait on queue: no such queue: " << queue
-              );
+          LOG( ERROR
+             , "cannot wait on queue: no such queue: " << queue
+             );
           throw std::invalid_argument ("no such queue");
         }
         else
@@ -106,7 +104,7 @@ namespace gpi
           }
           catch (std::exception const & ex)
           {
-            MLOG ( ERROR
+            LOG ( ERROR
                  , "marking queue " << queue << " permanently as failed!"
                  );
             m_queues [queue]->disable ();

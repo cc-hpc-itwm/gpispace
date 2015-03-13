@@ -5,7 +5,11 @@
 #include <fhglog/remote/appender.hpp>
 #include <fhglog/LogMacros.hpp>
 
+#include <fhg/util/make_unique.hpp>
+
 #include <sdpa/daemon/NotificationEvent.hpp>
+
+#include <memory>
 
 namespace sdpa
 {
@@ -17,7 +21,7 @@ namespace sdpa
       NotificationService ( const std::string& destination_location
                           , boost::asio::io_service& appender_io_service
                           )
-        : destination_ (new fhg::log::remote::RemoteAppender
+        : destination_ (fhg::util::make_unique<fhg::log::remote::RemoteAppender>
                          (destination_location, appender_io_service)
                        )
       {}
@@ -26,7 +30,7 @@ namespace sdpa
                           , unsigned short port
                           , boost::asio::io_service& appender_io_service
                           )
-        : destination_ (new fhg::log::remote::RemoteAppender
+        : destination_ (fhg::util::make_unique<fhg::log::remote::RemoteAppender>
                          (host, std::to_string (port), appender_io_service)
                        )
       {}
@@ -37,7 +41,7 @@ namespace sdpa
       }
 
     private:
-      fhg::log::Appender::ptr_t destination_;
+      std::unique_ptr<fhg::log::Appender> destination_;
     };
   }
 }

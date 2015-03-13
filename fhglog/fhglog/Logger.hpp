@@ -7,16 +7,8 @@
 #include <fhglog/event.hpp>
 #include <fhglog/Appender.hpp>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
-/**
-   Common logging framework.
-
-   Logger root_logger(Logger::get());
-   Logger my_logger(Logger::get("module"));
-
-   my_logger.log(LogEvent(...));
-*/
 namespace fhg
 {
   namespace log
@@ -24,13 +16,7 @@ namespace fhg
     class Logger
     {
     public:
-      typedef boost::shared_ptr<Logger> ptr_t;
-
-      static Logger::ptr_t get();
-      static Logger::ptr_t get (const std::string&name);
-
-      explicit Logger (const std::string &name);
-      Logger (const std::string& name, const Logger& inherit_from);
+      Logger();
 
       void setLevel (const Level& level);
       bool isLevelEnabled (const Level& level) const
@@ -41,13 +27,18 @@ namespace fhg
       void log (const LogEvent &event);
       void flush();
 
-      void addAppender(Appender::ptr_t);
+      template<class A, class... Args>
+      void addAppender (Args&&... args)
+      {
+        appenders_.emplace_back (new A (std::forward<Args> (args)...));
+      }
 
     private:
-      std::string name_;
       Level lvl_;
 
-      std::list<Appender::ptr_t> appenders_;
+      std::list<std::unique_ptr<Appender>> appenders_;
     };
+
+    Logger& GLOBAL_logger();
   }
 }

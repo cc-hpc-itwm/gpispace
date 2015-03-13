@@ -12,31 +12,29 @@
 
 BOOST_AUTO_TEST_CASE (stream_appender)
 {
-  fhg::log::Logger::ptr_t log
-    (fhg::log::Logger::get ("logger-stream_appender"));
-  log->setLevel (fhg::log::TRACE);
+  fhg::log::Logger logger;
+  logger.setLevel (fhg::log::TRACE);
 
   std::ostringstream logstream;
-  log->addAppender (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender (logstream, "%m")));
+  logger.addAppender<fhg::log::StreamAppender> (logstream, "%m");
 
-  log->log (FHGLOG_MKEVENT_HERE (TRACE, "hello world!"));
+  logger.log (FHGLOG_MKEVENT_HERE (TRACE, "hello world!"));
 
   BOOST_REQUIRE_EQUAL (logstream.str(), "hello world!");
 }
 
 BOOST_AUTO_TEST_CASE (two_stream_appenders)
 {
-  fhg::log::Logger::ptr_t log
-    (fhg::log::Logger::get ("logger-two_stream_appenders"));
-  log->setLevel (fhg::log::TRACE);
+  fhg::log::Logger logger;
+  logger.setLevel (fhg::log::TRACE);
 
   std::ostringstream logstream_0;
   std::ostringstream logstream_1;
 
-  log->addAppender (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender (logstream_0, "%m")));
-  log->addAppender (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender (logstream_1, "%m")));
+  logger.addAppender<fhg::log::StreamAppender> (logstream_0, "%m");
+  logger.addAppender<fhg::log::StreamAppender> (logstream_1, "%m");
 
-  log->log (FHGLOG_MKEVENT_HERE (TRACE, "hello world!"));
+  logger.log (FHGLOG_MKEVENT_HERE (TRACE, "hello world!"));
 
   BOOST_REQUIRE_EQUAL (logstream_0.str(), "hello world!");
   BOOST_REQUIRE_EQUAL (logstream_1.str(), "hello world!");

@@ -9,12 +9,10 @@
 
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 
-BOOST_GLOBAL_FIXTURE (setup_logging)
-
-BOOST_AUTO_TEST_CASE (testCoallocationWorkflow)
+BOOST_FIXTURE_TEST_CASE (testCoallocationWorkflow, setup_logging)
 {
-  const utils::orchestrator orchestrator;
-  const utils::agent agent (orchestrator);
+  const utils::orchestrator orchestrator (_logger);
+  const utils::agent agent (orchestrator, _logger);
 
   const utils::fake_drts_worker_directly_finishing_jobs worker_0 (agent);
   const utils::fake_drts_worker_directly_finishing_jobs worker_1 (agent);
@@ -26,13 +24,13 @@ BOOST_AUTO_TEST_CASE (testCoallocationWorkflow)
     );
 }
 
-BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done)
+BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done, setup_logging)
 {
   //! \note issue #374
 
   // 0. setup environment orch -> agent.
-  const utils::orchestrator orchestrator;
-  const utils::agent agent (orchestrator);
+  const utils::orchestrator orchestrator (_logger);
+  const utils::agent agent (orchestrator, _logger);
 
   // 1. start worker 1
   fhg::util::thread::event<std::string> job_submitted_1;
@@ -105,12 +103,12 @@ BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_part_of_coallocat
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_AUTO_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available)
+BOOST_FIXTURE_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available, setup_logging)
 {
   //! \note related to issue #374
 
-  const utils::orchestrator orchestrator;
-  const utils::agent agent (orchestrator);
+  const utils::orchestrator orchestrator (_logger);
+  const utils::agent agent (orchestrator, _logger);
 
   fhg::util::thread::event<std::string> job_submitted_1;
   utils::fake_drts_worker_waiting_for_finished_ack worker_1
@@ -161,12 +159,12 @@ BOOST_AUTO_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are_av
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_AUTO_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated)
+BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated, setup_logging)
 {
   //! \note related to issue #374
 
-  const utils::orchestrator orchestrator;
-  const utils::agent agent (orchestrator);
+  const utils::orchestrator orchestrator (_logger);
+  const utils::agent agent (orchestrator, _logger);
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id

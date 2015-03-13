@@ -77,7 +77,6 @@
                 <in name="seq" type="unsigned long"/>
                 <out name="ping" type="Ping"/>
                 <module name="ping_pong" function="ping (seq, ping)">
-                    <cinclude href="fhglog/LogMacros.hpp"/>
                     <cinclude href="chrono"/>
                     <cxx flag="--std=c++11"/>
                     <code><![CDATA[
@@ -100,8 +99,8 @@
                 <in name="ping" type="Ping"/>
                 <inout name="statistics" type="Statistics"/>
                 <out name="seq" type="unsigned long"/>
-                <module name="ping_pong" function="seq pong (ping, statistics)">
-                    <cinclude href="fhglog/LogMacros.hpp"/>
+                <module name="ping_pong" function="seq pong (ping, statistics)"
+                        pass_context="true">
                     <cinclude href="chrono"/>
                     <cxx flag="--std=c++11"/>
                     <code><![CDATA[
@@ -128,7 +127,7 @@
                       statistics.sum += rtt;
                       statistics.sqsum += rtt * rtt;
 
-                      LOG (INFO, "accounted ping := " << ping << " -> " << statistics);
+                      GSPC_LOG (INFO, "accounted ping := " << ping << " -> " << statistics);
 
                       return ping.seq;
                     ]]></code>
@@ -144,9 +143,9 @@
                 <in name="count" type="unsigned long"/>
                 <in name="seq" type="unsigned long"/>
                 <inout name="statistics" type="Statistics"/>
-                <module name="ping_pong" function="finalize (statistics)">
+                <module name="ping_pong" function="finalize (statistics)"
+                        pass_context="true">
                     <cinclude href="chrono"/>
-                    <cinclude href="fhglog/LogMacros.hpp"/>
                     <cxx flag="--std=c++11"/>
                     <code><![CDATA[
                       statistics.end =
@@ -155,7 +154,7 @@
 
                       double const avg (statistics.sum / statistics.count);
                       double const dev (std::sqrt ((statistics.sqsum / statistics.count) - (avg * avg)));
-                      LOG ( INFO, "timings in milliseconds after " << statistics.count << " iterations:"
+                      GSPC_LOG (INFO, "timings in milliseconds after " << statistics.count << " iterations:"
                           << " min " << statistics.min
                           << " max " << statistics.max
                           << " avg " << avg

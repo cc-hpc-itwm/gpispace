@@ -1,6 +1,7 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
 #include <drts/worker/context.hpp>
+#include <drts/worker/context_impl.hpp>
 
 #include <drts/private/scoped_allocation.hpp>
 
@@ -51,11 +52,13 @@ struct wfe_task_t
              , std::string const& description
              , std::string worker_name
              , std::list<std::string> workers
+             , fhg::log::Logger& logger
              )
     : id (id)
     , state (PENDING)
     , activity (description)
-    , context (worker_name, workers)
+    , context
+      (drts::worker::context_constructor (worker_name, workers, logger))
   {}
 };
 
@@ -122,7 +125,7 @@ public:
   DRTSImpl
     ( std::function<void()> request_stop
     , std::unique_ptr<boost::asio::io_service> peer_io_service
-    , boost::optional<sdpa::daemon::NotificationService> gui_notification_service
+    , std::unique_ptr<sdpa::daemon::NotificationService> gui_notification_service
     , std::string const& kernel_name
     , gpi::pc::client::api_t /*const*/* virtual_memory_socket
     , gspc::scoped_allocation /*const*/* shared_memory
@@ -131,6 +134,7 @@ public:
     , boost::optional<std::size_t> const& socket
     , std::vector<boost::filesystem::path> const& library_path
     , std::size_t backlog_length
+    , fhg::log::Logger&
     );
   ~DRTSImpl();
 
@@ -160,7 +164,7 @@ private:
   template<typename Event, typename... Args>
     void send_event (fhg::com::p2p::address_t const& destination, Args&&... args);
 
-  fhg::log::Logger::ptr_t _logger;
+  fhg::log::Logger& _logger;
 
   std::function<void()> _request_stop;
 
@@ -175,7 +179,7 @@ private:
 
   we::loader::loader m_loader;
 
-  boost::optional<sdpa::daemon::NotificationService> _notification_service;
+  std::unique_ptr<sdpa::daemon::NotificationService> _notification_service;
 
   gpi::pc::client::api_t /*const*/* _virtual_memory_api;
   gspc::scoped_allocation /*const*/* _shared_memory;

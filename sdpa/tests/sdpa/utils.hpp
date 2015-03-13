@@ -18,7 +18,6 @@
 
 #include <boost/asio/io_service.hpp>
 #include <boost/ref.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>
@@ -33,10 +32,12 @@ struct setup_logging
 {
   boost::asio::io_service io_service;
   setup_logging()
+    : _logger()
   {
     setenv ("FHGLOG_level", "TRACE", true);
-    fhg::log::configure (io_service);
+    fhg::log::configure (io_service, _logger);
   }
+  fhg::log::Logger _logger;
 };
 
 FHG_BOOST_TEST_LOG_VALUE_PRINTER (fhg::com::p2p::address_t, os, address)
@@ -254,10 +255,11 @@ namespace utils
 
   struct orchestrator : boost::noncopyable
   {
-    orchestrator()
+    orchestrator (fhg::log::Logger& logger)
       : _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::make_unique<boost::asio::io_service>()
           , _rpc_io_service
+          , logger
           )
     {}
 
@@ -281,32 +283,35 @@ namespace utils
   struct agent : boost::noncopyable
   {
     template <typename T, typename U>
-    agent (const T& master_0, const U& master_1)
+      agent (const T& master_0, const U& master_1, fhg::log::Logger& logger)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master_0), make_master_info_tuple (master_1)}
           , boost::none
+          , logger
           )
     {}
     template <typename T>
-    agent (const T& master)
+      agent (const T& master, fhg::log::Logger& logger)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master)}
           , boost::none
+          , logger
           )
     {}
-    agent (const agent& master)
+    agent (const agent& master, fhg::log::Logger& logger)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master)}
           , boost::none
+          , logger
           )
     {}
     sdpa::daemon::Agent _;
@@ -318,7 +323,8 @@ namespace utils
   class basic_drts_component : sdpa::events::EventHandler
   {
   public:
-    basic_drts_component (std::string name, bool accept_workers)
+    basic_drts_component
+      (std::string name, bool accept_workers)
       : _name (name)
       , _master (boost::none)
       , _accept_workers (accept_workers)
@@ -460,8 +466,10 @@ namespace utils
       : basic_drts_component
         (random_peer_name(), master, sdpa::capabilities_set_t(), false)
     {}
-    basic_drts_worker (std::string name, utils::agent const& master)
-      : basic_drts_component (name, master, sdpa::capabilities_set_t(), false)
+    basic_drts_worker
+      (std::string name, utils::agent const& master)
+      : basic_drts_component
+        (name, master, sdpa::capabilities_set_t(), false)
     {}
     basic_drts_worker ( std::string name
                       , utils::agent const& master

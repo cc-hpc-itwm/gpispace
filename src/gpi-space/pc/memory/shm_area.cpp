@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <fhglog/LogMacros.hpp>
+#include <gpi-space/log_to_GLOBAL_logger.hpp>
 #include <gpi-space/pc/url.hpp>
 #include <fhg/util/read_bool.hpp>
 
@@ -144,7 +144,7 @@ namespace gpi
 
         if (not gpi::flag::is_set (flags, gpi::pc::F_NOCREATE))
         {
-          MLOG (INFO, "setting open_flags to O_CREAT + O_EXCL");
+          LOG (INFO, "setting open_flags to O_CREAT + O_EXCL");
           open_flags |= O_CREAT | O_EXCL;
         }
 

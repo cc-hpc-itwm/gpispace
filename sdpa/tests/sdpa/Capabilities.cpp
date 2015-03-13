@@ -9,8 +9,6 @@
 
 #include <boost/test/unit_test.hpp>
 
-BOOST_GLOBAL_FIXTURE (setup_logging)
-
 namespace
 {
   class drts_component_observing_capabilities : public utils::basic_drts_component
@@ -67,11 +65,11 @@ namespace
   }
 }
 
-BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
+BOOST_FIXTURE_TEST_CASE (acquire_capabilities_from_workers, setup_logging)
 {
   drts_component_observing_capabilities observer;
 
-  const utils::agent agent (observer);
+  const utils::agent agent (observer, _logger);
 
   const std::string name_0 (utils::random_peer_name());
   const std::string name_1 (utils::random_peer_name());
@@ -89,11 +87,11 @@ BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
   }
 }
 
-BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
+BOOST_FIXTURE_TEST_CASE (lose_capabilities_after_worker_dies, setup_logging)
 {
   drts_component_observing_capabilities observer;
 
-  const utils::agent agent (observer);
+  const utils::agent agent (observer, _logger);
 
   const std::string name_0 (utils::random_peer_name());
   const std::string name_1 (utils::random_peer_name());

@@ -17,12 +17,14 @@ namespace sdpa
                  , boost::optional<boost::filesystem::path> const& virtual_memory_socket
                  , std::vector<name_host_port_tuple> const& masters
                  , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
+                 , fhg::log::Logger& logger
                  )
       : GenericDaemon ( name
                       , url
                       , std::move (peer_io_service)
                       , virtual_memory_socket
                       , masters
+                      , logger
                       , gui_info
                       , true
                       )

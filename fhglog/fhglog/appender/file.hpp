@@ -7,8 +7,6 @@
 
 #include <fhglog/Appender.hpp>
 
-#include <boost/shared_ptr.hpp>
-
 namespace fhg
 {
  namespace log
@@ -16,8 +14,6 @@ namespace fhg
    class FileAppender : public Appender
    {
    public:
-     typedef boost::shared_ptr<FileAppender> ptr_t;
-
      FileAppender ( const std::string& path
                   , const std::string& format
                   );

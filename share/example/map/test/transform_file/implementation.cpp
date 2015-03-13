@@ -1,8 +1,6 @@
 #include <map/interface.hpp>
 #include <map/test/transform_file/type.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 #include <boost/format.hpp>
 
 #include <fstream>
@@ -11,6 +9,7 @@
 void map_produce ( map::user_data_type const& user_data
                  , map::memory_buffer_type buffer
                  , unsigned long id
+                 , drts::worker::logger_type logger
                  )
 {
   transform_file::parameter const parameter
@@ -18,7 +17,7 @@ void map_produce ( map::user_data_type const& user_data
   std::string const input {parameter.input().string()};
   unsigned long const size {parameter.size()};
 
-  LOG (INFO, "read " << input << "[" << id << "]");
+  MAP_LOG ("read " << input << "[" << id << "]");
 
   std::ifstream stream (input, std::ifstream::binary);
 
@@ -52,9 +51,10 @@ void map_process
   ( map::user_data_type const&
   , map::const_memory_buffer_type input
   , map::memory_buffer_type output
+  , drts::worker::logger_type logger
   )
 {
-  LOG (INFO, "transform");
+  MAP_LOG ("transform");
 
   if (input.second != output.second)
   {
@@ -78,6 +78,7 @@ void map_process
 void map_consume ( map::user_data_type const& user_data
                  , map::const_memory_buffer_type buffer
                  , unsigned long id
+                 , drts::worker::logger_type logger
                  )
 {
   transform_file::parameter const parameter
@@ -85,7 +86,7 @@ void map_consume ( map::user_data_type const& user_data
   std::string const output {parameter.output().string()};
   unsigned long const size {parameter.size()};
 
-  LOG (INFO, "write " << output << "[" << id << "]");
+  MAP_LOG ("write " << output << "[" << id << "]");
 
   std::fstream stream
     (output, std::fstream::binary | std::fstream::out | std::fstream::in);

@@ -1,6 +1,9 @@
 #pragma once
 
 #include <drts/worker/context_fwd.hpp>
+
+#include <fhglog/level.hpp>
+
 #include <list>
 #include <string>
 
@@ -10,42 +13,71 @@ namespace drts
 {
   namespace worker
   {
+    class context_constructor;
+
     class context
     {
     private:
-      static void nop() {}
+      friend class context_constructor;
+      class implementation;
+      implementation* _;
 
     public:
-      context (std::string const &worker_name, std::list<std::string> const &worker_list)
-        : m_worker_name (worker_name)
-        , m_worker_list (worker_list)
-        , _module_call_do_cancel (nop)
-      {}
+      context (context_constructor);
+      ~context();
 
-      const std::string &worker_name () const { return m_worker_name; }
+      std::string const& worker_name() const;
 
-      const std::list<std::string> &worker_list () const { return m_worker_list; }
-      std::string worker_to_hostname (std::string const &w) const
-      {
-        const std::string::size_type host_start = w.find ('-') + 1;
-        const std::string::size_type host_end = w.find (' ', host_start);
+      std::list<std::string> const& worker_list() const;
+      std::string worker_to_hostname (std::string const&) const;
 
-        return w.substr (host_start, host_end-host_start);
-      }
+      void set_module_call_do_cancel (boost::function<void()>);
+      void module_call_do_cancel() const;
 
-      void set_module_call_do_cancel (boost::function<void()> fun)
-      {
-        _module_call_do_cancel = fun;
-      }
-      void module_call_do_cancel()
-      {
-        _module_call_do_cancel();
-      }
-
-    private:
-      std::string m_worker_name;
-      std::list<std::string> m_worker_list;
-      boost::function<void()> _module_call_do_cancel;
+      void log ( fhg::log::Level const& severity
+               , std::string const& file
+               , std::string const& function
+               , std::size_t const& line
+               , std::string const& message
+               ) const;
     };
+
+    typedef boost::function<void ( fhg::log::Level const& severity
+                                 , std::string const& file
+                                 , std::string const& function
+                                 , std::size_t const& line
+                                 , std::string const& message
+                                 )> logger_type;
   }
 }
+
+#include <boost/current_function.hpp>
+#include <sstream>
+
+#define GSPC_LLOG(_severity, _message, _logger)         \
+  do                                                    \
+  {                                                     \
+    std::ostringstream message;                         \
+    message << _message;                                \
+    _logger ( fhg::log::_severity                       \
+            , __FILE__                                  \
+            , BOOST_CURRENT_FUNCTION                    \
+            , __LINE__                                  \
+            , message.str()                             \
+            );                                          \
+  } while (0)
+
+#include <boost/bind.hpp>
+
+#define GSPC_LOGGER()                           \
+  boost::bind ( &drts::worker::context::log     \
+              , _pnetc_context                  \
+              , _1                              \
+              , _2                              \
+              , _3                              \
+              , _4                              \
+              , _5                              \
+              )                                 \
+
+#define GSPC_LOG(_severity, _message)                   \
+  GSPC_LLOG (_severity, _message, GSPC_LOGGER())

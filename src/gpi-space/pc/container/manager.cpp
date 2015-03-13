@@ -3,12 +3,13 @@
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/variant/static_visitor.hpp>
 
 #include <fhg/syscall.hpp>
 #include <fhg/util/nest_exceptions.hpp>
 
-#include <fhglog/LogMacros.hpp>
+#include <gpi-space/log_to_GLOBAL_logger.hpp>
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/memory/shm_area.hpp>
@@ -62,10 +63,9 @@ namespace gpi
         {
           process.second.join();
 
-          CLOG( INFO
-              , "gpi.container"
-              , "process container " << process.first << " detached"
-              );
+          LOG( INFO
+             , "process container " << process.first << " detached"
+             );
         }
 
         _memory_manager.clear();
@@ -141,10 +141,9 @@ namespace gpi
                 );
             }
 
-            CLOG( INFO
-                , "gpi.container"
-                , "process container " << id << " attached"
-                );
+            LOG( INFO
+               , "process container " << id << " attached"
+               );
         }
       }
 

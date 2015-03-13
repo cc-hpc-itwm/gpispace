@@ -50,7 +50,7 @@ try
   boost::optional<bfs::path> vmem_socket;
 
   boost::asio::io_service remote_log_io_service;
-  fhg::log::configure (remote_log_io_service);
+  fhg::log::configure (remote_log_io_service, fhg::log::GLOBAL_logger());
 
   po::options_description desc("Allowed options");
   desc.add_options()
@@ -70,7 +70,7 @@ try
   po::variables_map vm;
   po::store( po::command_line_parser( argc, argv ).options(desc).run(), vm );
 
-  fhg::log::Logger::ptr_t logger (fhg::log::Logger::get (agentName));
+  fhg::log::Logger& logger (fhg::log::GLOBAL_logger());
 
   if (vm.count ("help"))
   {
@@ -112,6 +112,7 @@ try
     , vmem_socket
     , masters
     , std::pair<std::string, boost::asio::io_service&> (appGuiUrl, gui_io_service)
+    , logger
     );
 
   fhg::util::thread::event<> stop_requested;

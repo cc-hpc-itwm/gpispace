@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <string>
-
 namespace fhg
 {
   namespace log
@@ -13,8 +11,5 @@ namespace fhg
                , WARN
                , ERROR
                };
-
-    Level from_string (std::string const&);
-    const std::string& string (Level);
   }
 }

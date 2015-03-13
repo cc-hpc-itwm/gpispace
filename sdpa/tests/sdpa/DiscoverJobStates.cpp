@@ -126,10 +126,10 @@ namespace
   };
 
   template<sdpa::status::code reply>
-  void check_discover_worker_job_status()
+    void check_discover_worker_job_status (fhg::log::Logger& logger)
   {
-    const utils::orchestrator orchestrator;
-    const utils::agent agent (orchestrator);
+    const utils::orchestrator orchestrator (logger);
+    const utils::agent agent (orchestrator, logger);
 
     fhg::util::thread::event<std::string> job_submitted;
 
@@ -155,21 +155,19 @@ namespace
   }
 }
 
-BOOST_GLOBAL_FIXTURE (setup_logging)
-
-BOOST_AUTO_TEST_CASE (discover_worker_job_status)
+BOOST_FIXTURE_TEST_CASE (discover_worker_job_status, setup_logging)
 {
-  check_discover_worker_job_status<sdpa::status::FINISHED>();
-  check_discover_worker_job_status<sdpa::status::FAILED>();
-  check_discover_worker_job_status<sdpa::status::CANCELED>();
-  check_discover_worker_job_status<sdpa::status::PENDING>();
-  check_discover_worker_job_status<sdpa::status::RUNNING>();
-  check_discover_worker_job_status<sdpa::status::CANCELING>();
+  check_discover_worker_job_status<sdpa::status::FINISHED> (_logger);
+  check_discover_worker_job_status<sdpa::status::FAILED> (_logger);
+  check_discover_worker_job_status<sdpa::status::CANCELED> (_logger);
+  check_discover_worker_job_status<sdpa::status::PENDING> (_logger);
+  check_discover_worker_job_status<sdpa::status::RUNNING> (_logger);
+  check_discover_worker_job_status<sdpa::status::CANCELING> (_logger);
 }
 
-BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
+BOOST_FIXTURE_TEST_CASE (discover_discover_inexistent_job, setup_logging)
 {
-  const utils::orchestrator orchestrator;
+  const utils::orchestrator orchestrator (_logger);
 
   BOOST_REQUIRE_EQUAL
     ( utils::client (orchestrator)
@@ -178,9 +176,9 @@ BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
     );
 }
 
-BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
+BOOST_FIXTURE_TEST_CASE (discover_one_orchestrator_no_agent, setup_logging)
 {
-  const utils::orchestrator orchestrator;
+  const utils::orchestrator orchestrator (_logger);
 
   utils::client client (orchestrator);
 
@@ -190,10 +188,10 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
     );
 }
 
-BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
+BOOST_FIXTURE_TEST_CASE (discover_one_orchestrator_one_agent, setup_logging)
 {
-  const utils::orchestrator orchestrator;
-  const utils::agent agent (orchestrator);
+  const utils::orchestrator orchestrator (_logger);
+  const utils::agent agent (orchestrator, _logger);
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id (client.submit_job (utils::module_call()));
@@ -230,15 +228,16 @@ namespace
     return i.state();
   }
 
-  void verify_child_count_in_agent_chain (const std::size_t num_agents)
+  void verify_child_count_in_agent_chain
+    (const std::size_t num_agents, fhg::log::Logger& logger)
   {
-    const utils::orchestrator orchestrator;
+    const utils::orchestrator orchestrator (logger);
     boost::ptr_list<utils::agent> agents;
-    agents.push_back (new utils::agent (orchestrator));
+    agents.push_back (new utils::agent (orchestrator, logger));
 
     for (std::size_t counter (1); counter < num_agents; ++counter)
     {
-      agents.push_back (new utils::agent (agents.back()));
+      agents.push_back (new utils::agent (agents.back(), logger));
     }
 
     fhg::util::thread::event<std::string> job_submitted;
@@ -263,23 +262,23 @@ namespace
   }
 }
 
-BOOST_AUTO_TEST_CASE (agent_chain_1)
+BOOST_FIXTURE_TEST_CASE (agent_chain_1, setup_logging)
 {
-  verify_child_count_in_agent_chain (1);
+  verify_child_count_in_agent_chain (1, _logger);
 }
-BOOST_AUTO_TEST_CASE (agent_chain_2)
+BOOST_FIXTURE_TEST_CASE (agent_chain_2, setup_logging)
 {
-  verify_child_count_in_agent_chain (2);
+  verify_child_count_in_agent_chain (2, _logger);
 }
-BOOST_AUTO_TEST_CASE (agent_chain_3_to_9)
+BOOST_FIXTURE_TEST_CASE (agent_chain_3_to_9, setup_logging)
 {
   for (std::size_t n (3); n < 10; ++n)
   {
-    verify_child_count_in_agent_chain (n);
+    verify_child_count_in_agent_chain (n, _logger);
   }
 }
 //! \note number of open files is the limiting factor
-BOOST_AUTO_TEST_CASE (agent_chain_89)
+BOOST_FIXTURE_TEST_CASE (agent_chain_89, setup_logging)
 {
-  verify_child_count_in_agent_chain (89);
+  verify_child_count_in_agent_chain (89, _logger);
 }

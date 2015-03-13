@@ -34,6 +34,7 @@ namespace sdpa {
                    , const std::string& url
                    , std::unique_ptr<boost::asio::io_service> peer_io_service
                    , boost::asio::io_service& rpc_io_service
+                   , fhg::log::Logger&
                    );
 
       virtual void handleJobFinishedEvent

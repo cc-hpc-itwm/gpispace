@@ -74,17 +74,17 @@ namespace fhg
         struct delegating_fhglog_appender : public log::Appender
         {
           template<typename Append, typename Flush>
-          static fhg::log::Logger::ptr_t create (Append append, Flush flush)
+          static fhg::log::Logger& create
+            ( Append append
+            , Flush flush
+            , fhg::log::Logger& logger
+            )
           {
-            fhg::log::Logger::ptr_t l
-              (fhg::log::Logger::get ("execution_monitor"));
+            logger.addAppender<delegating_fhglog_appender> (append, flush);
 
-            l->addAppender
-              (ptr_t (new delegating_fhglog_appender (append, flush)));
+            logger.setLevel (fhg::log::TRACE);
 
-            l->setLevel (fhg::log::TRACE);
-
-            return l;
+            return logger;
           }
 
           template<typename Append, typename Flush>
@@ -116,9 +116,12 @@ namespace fhg
         , _base_time (QDateTime::currentDateTime())
         , _event_queue()
         , _queued_events()
+        , _io_service()
+        , _logger()
         , _log_server ( delegating_fhglog_appender::create
                         ( std::bind (&worker_model::append_event, this, std::placeholders::_1)
                         , std::bind (&worker_model::handle_events, this)
+                        , _logger
                         )
                       , _io_service
                       , port

@@ -43,7 +43,7 @@ namespace fhg
         void parse_environment();
         void parse_key_value (const std::string& key, const std::string& val);
 
-        void configure (boost::asio::io_service&) const;
+        void configure (boost::asio::io_service&, Logger&) const;
 
         fhg::log::Level level_;
         std::string to_console_;
@@ -112,7 +112,9 @@ namespace fhg
       }
 
       void DefaultConfiguration::configure
-        (boost::asio::io_service& remote_log_io_service) const
+        ( boost::asio::io_service& remote_log_io_service
+        , Logger& logger
+        ) const
       {
         if (to_console_.size())
         {
@@ -124,39 +126,33 @@ namespace fhg
             throw std::runtime_error ("unknown console " + to_console_);
           }
 
-          Logger::get()->addAppender
-            ( Appender::ptr_t ( new StreamAppender
+          logger.addAppender<StreamAppender>
                                 ( "stdout" == to_console_ ? std::cout
                                 : "stdlog" == to_console_ ? std::clog
                                 : std::cerr
                                 , fmt_string_
-                                )
-                            )
-            );
+                                );
 
         }
 
         if (to_file_.size())
         {
-          Logger::get()->addAppender
-            (Appender::ptr_t (new FileAppender (to_file_, fmt_string_)));
+          logger.addAppender<FileAppender> (to_file_, fmt_string_);
         }
 
         if (to_server_.size())
         {
           // TODO: split to_remote_ into host and port
-          Logger::get()->addAppender ( Appender::ptr_t
-                                       ( new remote::RemoteAppender
-                                         (to_server_, remote_log_io_service)
-                                       )
-                                     );
+          logger.addAppender<remote::RemoteAppender>
+            (to_server_, remote_log_io_service);
         }
 
-        Logger::get()->setLevel (level_);
+        logger.setLevel (level_);
       }
     }
 
-    void configure (boost::asio::io_service& remote_log_io_service)
+    void configure
+      (boost::asio::io_service& remote_log_io_service, Logger& logger)
     {
       DefaultConfiguration conf;
 
@@ -172,7 +168,7 @@ namespace fhg
         conf.to_console_ = "stderr";
       }
 
-      conf.configure (remote_log_io_service);
+      conf.configure (remote_log_io_service, logger);
     }
   }
 }

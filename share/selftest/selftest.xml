@@ -4,16 +4,16 @@
 
   <module name="selftest" function="selftest ( challenge
 				             , response
-                                          )">
-    <cinclude href="fhglog/LogMacros.hpp"/>
+                                             )"
+          pass_context="true">
     <code><![CDATA[
-        LOG (INFO, "SDPA selftest");
+        GSPC_LOG (INFO, "SDPA selftest");
 
-        LOG (INFO, "===> challenge := " << challenge);
+        GSPC_LOG (INFO, "===> challenge := " << challenge);
 
         response = "sdpa.response." + challenge;
 
-        LOG (INFO, "===> response := " << response);
+        GSPC_LOG (INFO, "===> response := " << response);
     ]]></code>
   </module>
 </defun>

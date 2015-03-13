@@ -20,3 +20,10 @@ target_include_directories (drts-kernel
 install (FILES context_fwd.hpp context.hpp
   DESTINATION include/drts/worker
 )
+
+add_library (drts-context SHARED context.cpp)
+target_link_libraries (drts-context fhglog)
+
+install (TARGETS drts-context
+  LIBRARY DESTINATION lib
+)

@@ -16,6 +16,7 @@ fhg_add_test (module.cpp
   BOOST_UNIT_TEST
   PROJECT we_loader
   LINK_LIBRARIES pnet
+                 fhglog
                  ${CMAKE_DL_LIBS}
   DEPENDS initialize_throws
           empty_not_linked_with_pnet

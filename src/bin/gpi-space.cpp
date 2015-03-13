@@ -31,7 +31,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/program_options.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
 #include <chrono>
@@ -192,11 +191,11 @@ try
   }
 
   boost::asio::io_service remote_log_io_service;
-  fhg::log::configure (remote_log_io_service);
+  fhg::log::configure (remote_log_io_service, fhg::log::GLOBAL_logger());
 
   fhg::util::signal_handler_manager signal_handler;
   fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
-    crit_error_handler (signal_handler, fhg::log::Logger::get());
+    crit_error_handler (signal_handler, fhg::log::GLOBAL_logger());
 
   std::unique_ptr<fhg::com::peer_t> topology_peer
     ( fhg::util::make_unique<fhg::com::peer_t>
@@ -254,7 +253,10 @@ catch (...)
 {
   std::ostringstream ss;
   fhg::util::print_current_exception (ss, "");
-  LOG (ERROR, "GPI could not be started: " << ss.str());
+  boost::asio::io_service remote_log_io_service;
+  fhg::log::Logger logger;
+  fhg::log::configure (remote_log_io_service, logger);
+  LLOG (ERROR, logger, "GPI could not be started: " << ss.str());
 
   return EXIT_FAILURE;
 }

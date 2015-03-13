@@ -17,6 +17,7 @@ namespace sdpa
             , boost::optional<boost::filesystem::path> const& vmem_socket
             , std::vector<name_host_port_tuple> const&
             , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
+            , fhg::log::Logger&
             );
 
     protected:

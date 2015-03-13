@@ -1,6 +1,6 @@
 #include <gpi-space/gpi/gaspi.hpp>
 
-#include <fhglog/LogMacros.hpp>
+#include <gpi-space/log_to_GLOBAL_logger.hpp>
 #include <fhg/assert.hpp>
 
 #include <gpi-space/exception.hpp>

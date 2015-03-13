@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE (scoped_drts_empty_topology)
     );
 
   fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "drts_drts");
+    (test::shared_directory (vm) / "drts_scoped_drts");
 
   test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);

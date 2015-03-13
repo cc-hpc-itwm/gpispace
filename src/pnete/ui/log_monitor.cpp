@@ -51,19 +51,16 @@
 namespace
 {
   template<typename T>
-    fhg::log::Logger::ptr_t logger_with
+    fhg::log::Logger& logger_with
     ( void (T::* function)(const fhg::log::LogEvent&)
     , T* that
+    , fhg::log::Logger& logger
     )
   {
-    fhg::log::Logger::ptr_t l (fhg::log::Logger::get ("log_monitor"));
+    logger.addAppender<fhg::log::appender::call>
+      (std::bind (function, that, std::placeholders::_1));
 
-    l->addAppender
-      ( fhg::log::Appender::ptr_t
-        (new fhg::log::appender::call (std::bind (function, that, std::placeholders::_1)))
-      );
-
-    return l;
+    return logger;
   }
 
   QColor severityToColor (const fhg::log::Level lvl)
@@ -296,8 +293,12 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   // , _log_model_update_thread (new QThread (this))
   , _log_model_update_timer (new QTimer (this))
   , _io_service()
+  , _logger()
   , _log_server
-    (logger_with (&log_monitor::append_log_event, this), _io_service, port)
+    ( logger_with (&log_monitor::append_log_event, this, _logger)
+    , _io_service
+    , port
+    )
   , _io_thread ([this] { _io_service.run(); })
 {
   // _log_model->moveToThread (_log_model_update_thread);

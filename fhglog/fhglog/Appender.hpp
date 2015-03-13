@@ -4,8 +4,6 @@
 
 #include <fhglog/event.hpp>
 
-#include <boost/shared_ptr.hpp>
-
 namespace fhg
 {
   namespace log
@@ -13,8 +11,6 @@ namespace fhg
     class Appender
     {
     public:
-      typedef boost::shared_ptr<Appender> ptr_t;
-
       virtual ~Appender() {}
 
       virtual void append (const LogEvent&) = 0;

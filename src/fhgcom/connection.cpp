@@ -1,8 +1,6 @@
 
 #include <fhgcom/connection.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 #include <fhg/assert.hpp>
 
 #include <boost/system/error_code.hpp>
@@ -29,14 +27,7 @@ namespace fhg
 
     connection_t::~connection_t ()
     {
-      try
-      {
         stop();
-      }
-      catch (std::exception const & ex)
-      {
-        LOG(ERROR, "exception during connection destructor: " << ex.what());
-      }
 
       if (in_message_)
       {
@@ -183,14 +174,7 @@ namespace fhg
 
         if (d.handler)
         {
-          try
-          {
             d.handler (ec);
-          }
-          catch (std::exception const & ex)
-          {
-            LOG(ERROR, "completion handler failed: " << ex.what());
-          }
         }
 
         if (! to_send_.empty())

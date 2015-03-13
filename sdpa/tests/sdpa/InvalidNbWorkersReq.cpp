@@ -6,12 +6,10 @@
 
 #include <boost/test/unit_test.hpp>
 
-BOOST_GLOBAL_FIXTURE (setup_logging)
-
-BOOST_AUTO_TEST_CASE (testInvalidNumberOfWorkersRequired)
+BOOST_FIXTURE_TEST_CASE (testInvalidNumberOfWorkersRequired, setup_logging)
 {
-  const utils::orchestrator orchestrator;
-  const utils::agent agent (orchestrator);
+  const utils::orchestrator orchestrator (_logger);
+  const utils::agent agent (orchestrator, _logger);
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber

@@ -10,7 +10,7 @@ namespace fhg
   {
     namespace remote
     {
-      LogServer::LogServer ( const fhg::log::Logger::ptr_t& log
+      LogServer::LogServer ( fhg::log::Logger& log
                            , boost::asio::io_service& io_service
                            , unsigned short port
                            )
@@ -26,10 +26,13 @@ namespace fhg
                              , ec
                              );
 
-          LOG_IF ( WARN, ec
+          if (ec)
+          {
+            LLOG ( WARN, _log
                  , "could not set resuse address option: "
                  << ec << ": " << ec.message()
                  );
+          }
 
           async_receive();
         }
@@ -52,14 +55,7 @@ namespace fhg
                 return;
               }
 
-              LogEvent evt (LogEvent::from_string (msg));
-
-              {
-                std::ostringstream ostr;
-                ostr << sender_endpoint_;
-                evt.trace (ostr.str());
-              }
-              _log->log (evt);
+              _log.log (LogEvent::from_string (msg));
             }
 
             async_receive();

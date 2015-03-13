@@ -98,7 +98,7 @@ namespace fhg
     namespace
     {
       void crit_err_hdlr ( int sig_num, siginfo_t* info, void* context
-                         , fhg::log::Logger::ptr_t logger
+                         , fhg::log::Logger& logger
                          )
       {
         sigcontext* mcontext (static_cast<sigcontext*> (static_cast<void*>
@@ -134,12 +134,12 @@ namespace fhg
 
     scoped_log_backtrace_and_exit_for_critical_errors::
       scoped_log_backtrace_and_exit_for_critical_errors
-        (signal_handler_manager& manager, fhg::log::Logger::ptr_t logger)
+        (signal_handler_manager& manager, fhg::log::Logger& logger)
       : _handler ( std::bind ( &crit_err_hdlr
                              , std::placeholders::_1
                              , std::placeholders::_2
                              , std::placeholders::_3
-                             , logger
+                             , std::ref (logger)
                              )
                  )
       , _segv (manager, SIGSEGV, _handler)

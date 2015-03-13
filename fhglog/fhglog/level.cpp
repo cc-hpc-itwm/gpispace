@@ -1,6 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <fhglog/level.hpp>
+#include <fhglog/level_io.hpp>
 
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/parse/from_string.hpp>
