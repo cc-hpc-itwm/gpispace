@@ -124,6 +124,8 @@ namespace sdpa
     template<typename Expected, typename Sent>
       Expected Client::send_and_wait_for_reply (Sent event)
     {
+      std::unique_lock<std::mutex> const _ (_make_client_thread_safe);
+
       m_incoming_events.INDICATES_A_RACE_clear();
 
       static sdpa::events::Codec codec;

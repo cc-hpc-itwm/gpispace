@@ -106,9 +106,9 @@ BOOST_AUTO_TEST_CASE (workflow_response)
   std::future<pnet::type::value::value_type> asynchronous_response
     ( std::async
       ( std::launch::async
-      , [&drts, &job_id]()
+      , [&client, &job_id]()
         {
-          return gspc::client (drts).synchronous_workflow_response
+          return client.synchronous_workflow_response
             (job_id, "get_and_update_state", 0UL);
         }
       )
