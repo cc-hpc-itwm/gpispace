@@ -15,6 +15,8 @@
 #include <boost/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
+#include <mutex>
+
 namespace sdpa
 {
   namespace client
@@ -48,6 +50,8 @@ namespace sdpa
       sdpa::status::code wait_for_terminal_state_polling (job_id_t, job_info_t&);
 
     private:
+      std::mutex _make_client_thread_safe;
+
       fhg::thread::queue<sdpa::events::SDPAEvent::Ptr> m_incoming_events;
 
       template<typename Expected, typename Sent>
