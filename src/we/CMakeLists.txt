@@ -55,6 +55,7 @@ install (FILES
   type/value/peek.hpp
   type/value/poke.hpp
   type/value/read.hpp
+  type/value/serialize.hpp
   type/value/show.hpp
   type/value/to_value.hpp
   type/value/from_value.hpp
