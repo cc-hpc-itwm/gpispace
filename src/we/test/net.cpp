@@ -10,8 +10,8 @@
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
-#include <boost/random/random_device.hpp>
 
+#include <random>
 #include <sstream>
 
 BOOST_AUTO_TEST_CASE (transition_without_input_port_can_not_fire)
@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE (transition_without_input_port_can_not_fire)
                        )
                      );
 
-  boost::random::random_device random_engine;
+  std::random_device random_engine;
 
   BOOST_REQUIRE
     (!net.fire_expressions_and_extract_activity_random (random_engine));
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE (deserialized_transition_without_input_port_can_not_fire)
   we::type::net_type net;
   iar >> net;
 
-  boost::random::random_device random_engine;
+  std::random_device random_engine;
 
   BOOST_REQUIRE
     (!net.fire_expressions_and_extract_activity_random (random_engine));
