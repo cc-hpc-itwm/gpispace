@@ -1,6 +1,4 @@
 set (srcs
-  ../syscall.cpp
-
   boost/asio/ip/address.cpp
 
   backtracing_exception.cpp
@@ -42,6 +40,7 @@ set (srcs
 add_library (fhg-util ${srcs})
 
 target_link_libraries (fhg-util
+  Util::Generic
   ${Boost_THREAD_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}
   ${Boost_FILESYSTEM_LIBRARY}

@@ -5,7 +5,7 @@
 #include <rif/startup_messages_pipe.hpp>
 
 #include <fhg/assert.hpp>
-#include <fhg/syscall.hpp>
+#include <util-generic/syscall.hpp>
 #include <fhg/util/temporary_file.hpp>
 
 #include <boost/iostreams/device/file_descriptor.hpp>
@@ -30,7 +30,7 @@ namespace fhg
       {
         try
         {
-          fhg::syscall::close (fd);
+          util::syscall::close (fd);
         }
         catch (boost::system::system_error const& err)
         {
@@ -154,13 +154,13 @@ namespace fhg
       )
     {
       int pipe_fds[2];
-      fhg::syscall::pipe (pipe_fds);
+      util::syscall::pipe (pipe_fds);
 
-      pid_t const pid (fhg::syscall::fork());
+      pid_t const pid (util::syscall::fork());
 
       if (pid)
       {
-        fhg::syscall::close (pipe_fds[1]);
+        util::syscall::close (pipe_fds[1]);
 
         boost::iostreams::stream<boost::iostreams::file_descriptor_source>
           pipe_read (pipe_fds[0], boost::iostreams::close_handle);
@@ -177,7 +177,7 @@ namespace fhg
         if (line != startup_messages_pipe::end_sentinel_value())
         {
           int child_status (0);
-          if (fhg::syscall::waitpid (pid, &child_status, WNOHANG) == pid)
+          if (util::syscall::waitpid (pid, &child_status, WNOHANG) == pid)
           {
             if (WIFSIGNALED (child_status))
             {
@@ -228,7 +228,7 @@ namespace fhg
       }
       else
       {
-        fhg::syscall::close (pipe_fds[0]);
+        util::syscall::close (pipe_fds[0]);
 
         std::vector<char> argv_buffer;
         std::vector<char*> const argv
@@ -243,7 +243,7 @@ namespace fhg
         std::vector<char> envp_buffer;
         std::vector<char*> const envp (prepare_envp (envp_buffer, environment));
 
-        long const maximum_open_files (fhg::syscall::sysconf (_SC_OPEN_MAX));
+        long const maximum_open_files (util::syscall::sysconf (_SC_OPEN_MAX));
         for (int fd (0); fd < maximum_open_files; ++fd)
         {
           if (fd == pipe_fds[1])
@@ -255,7 +255,7 @@ namespace fhg
 
         try
         {
-          fhg::syscall::execve (command.string().c_str(), argv.data(), envp.data());
+          util::syscall::execve (command.string().c_str(), argv.data(), envp.data());
         }
         catch (boost::system::system_error const& err)
         {

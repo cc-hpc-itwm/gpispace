@@ -24,6 +24,7 @@ add_executable (rif_server rif_server.cpp)
 target_link_libraries (rif_server
   RPC
   fhg-util
+  Util::Generic
   Boost::system
   Boost::thread
 )

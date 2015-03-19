@@ -4,7 +4,7 @@
 #include <gpi-space/pc/type/flags.hpp>
 
 #include <fhg/assert.hpp>
-#include <fhg/syscall.hpp>
+#include <util-generic/syscall.hpp>
 #include <gpi-space/log_to_GLOBAL_logger.hpp>
 
 #include <boost/archive/binary_oarchive.hpp>
@@ -18,13 +18,13 @@ namespace
 {
 void close_socket (const int fd)
 {
-  fhg::syscall::shutdown (fd, SHUT_RDWR);
-  fhg::syscall::close (fd);
+  fhg::util::syscall::shutdown (fd, SHUT_RDWR);
+  fhg::util::syscall::close (fd);
 }
 
 int open_socket (std::string const & path)
 {
-  int const sfd = fhg::syscall::socket (AF_UNIX, SOCK_STREAM, 0);
+  int const sfd = fhg::util::syscall::socket (AF_UNIX, SOCK_STREAM, 0);
 
   struct sockaddr_un addr;
 
@@ -34,7 +34,7 @@ int open_socket (std::string const & path)
 
   try
   {
-    fhg::syscall::connect (sfd, (struct sockaddr*)&addr, sizeof(struct sockaddr_un));
+    fhg::util::syscall::connect (sfd, (struct sockaddr*)&addr, sizeof(struct sockaddr_un));
   }
   catch (boost::system::system_error const& se)
   {
@@ -97,8 +97,8 @@ namespace gpi
         ::memset (&header, 0, sizeof(header));
         header.length = data.size();
 
-        if ( (fhg::syscall::write (m_socket, &header, sizeof(header)) <= 0)
-           || (fhg::syscall::write (m_socket, data.c_str(), data.size()) <= 0)
+        if ( (fhg::util::syscall::write (m_socket, &header, sizeof(header)) <= 0)
+           || (fhg::util::syscall::write (m_socket, data.c_str(), data.size()) <= 0)
            )
         {
           stop ();
@@ -106,14 +106,14 @@ namespace gpi
         }
 
         // receive
-        if (fhg::syscall::read (m_socket, &header, sizeof (header)) <= 0)
+        if (fhg::util::syscall::read (m_socket, &header, sizeof (header)) <= 0)
         {
           stop ();
           throw std::runtime_error ("could not receive data header");
         }
 
         std::vector<char> buffer (header.length);
-        if (fhg::syscall::read (m_socket, &buffer[0], header.length) <= 0)
+        if (fhg::util::syscall::read (m_socket, &buffer[0], header.length) <= 0)
         {
           stop ();
           throw std::runtime_error ("could not receive data");

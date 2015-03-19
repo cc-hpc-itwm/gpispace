@@ -6,7 +6,7 @@
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/read_lines.hpp>
 
-#include <fhg/syscall.hpp>
+#include <util-generic/syscall.hpp>
 #include <fhg/util/temporary_file.hpp>
 #include <fhg/util/temporary_path.hpp>
 #include <fhg/util/boost/test/printer/vector.hpp>
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE (read_lines_check_throw_on_permission_denied)
   fhg::util::temporary_file const tmpfile (_);
   {
     std::ofstream (_.string());
-    fhg::syscall::chmod (_.string().c_str(), 0);
+    fhg::util::syscall::chmod (_.string().c_str(), 0);
   }
   BOOST_REQUIRE (boost::filesystem::exists (_));
 

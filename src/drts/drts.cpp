@@ -26,7 +26,7 @@
 #include <fhg/util/read_lines.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/revision.hpp>
-#include <fhg/syscall.hpp>
+#include <util-generic/syscall.hpp>
 
 #include <boost/format.hpp>
 

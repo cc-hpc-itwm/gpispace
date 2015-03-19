@@ -2,7 +2,7 @@
 
 #include <rif/entry_point.hpp>
 
-#include <fhg/syscall.hpp>
+#include <util-generic/syscall.hpp>
 #include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/join.hpp>
@@ -108,7 +108,7 @@ try
           {
             int status;
 
-            if (fhg::syscall::waitpid (pid, &status, WNOHANG) == pid)
+            if (fhg::util::syscall::waitpid (pid, &status, WNOHANG) == pid)
             {
               if (WIFEXITED (status))
               {
@@ -122,9 +122,9 @@ try
               }
             }
 
-            fhg::syscall::kill (pid, SIGTERM);
+            fhg::util::syscall::kill (pid, SIGTERM);
 
-            if (fhg::syscall::waitpid (pid, &status, 0) != pid)
+            if (fhg::util::syscall::waitpid (pid, &status, 0) != pid)
             {
               throw std::logic_error ("waitpid returned for wrong child");
             }
@@ -286,7 +286,7 @@ try
     );
 
   io_service.notify_fork (boost::asio::io_service::fork_prepare);
-  if (pid_t child = fhg::syscall::fork())
+  if (pid_t child = fhg::util::syscall::fork())
   {
     io_service.notify_fork (boost::asio::io_service::fork_parent);
 
@@ -325,9 +325,9 @@ try
     return 0;
   }
 
-  fhg::syscall::close (0);
-  fhg::syscall::close (1);
-  fhg::syscall::close (2);
+  fhg::util::syscall::close (0);
+  fhg::util::syscall::close (1);
+  fhg::util::syscall::close (2);
 
   io_service.notify_fork (boost::asio::io_service::fork_child);
 

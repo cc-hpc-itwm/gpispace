@@ -1,6 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <fhg/syscall.hpp>
+#include <util-generic/syscall.hpp>
 #include <fhg/util/print_exception.hpp>
 
 #include <network/server.hpp>
@@ -67,7 +67,7 @@ private:
   pid_t start (std::string filename, std::vector<std::string> arguments)
   {
     std::this_thread::sleep_for (std::chrono::seconds (1));
-    pid_t pid (fhg::syscall::fork());
+    pid_t pid (fhg::util::syscall::fork());
     if (pid)
     {
       return pid;
@@ -97,7 +97,7 @@ private:
 
       try
       {
-        fhg::syscall::execve (argv[0], argv.data(), nullptr);
+        fhg::util::syscall::execve (argv[0], argv.data(), nullptr);
       }
       catch (boost::system::system_error const&)
       {
@@ -107,7 +107,7 @@ private:
   }
   void stop (pid_t pid)
   {
-    fhg::syscall::kill (pid, 9);
+    fhg::util::syscall::kill (pid, 9);
   }
 
   fhg::rpc::service_dispatcher _service_dispatcher;

@@ -6,7 +6,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/variant/static_visitor.hpp>
 
-#include <fhg/syscall.hpp>
+#include <util-generic/syscall.hpp>
 #include <fhg/util/nest_exceptions.hpp>
 
 #include <gpi-space/log_to_GLOBAL_logger.hpp>
@@ -73,8 +73,8 @@ namespace gpi
 
       void manager_t::close_socket (const int fd)
       {
-        fhg::syscall::shutdown (fd, SHUT_RDWR);
-        fhg::syscall::close (fd);
+        fhg::util::syscall::shutdown (fd, SHUT_RDWR);
+        fhg::util::syscall::close (fd);
       }
 
       int manager_t::safe_unlink(std::string const & path)
@@ -83,7 +83,7 @@ namespace gpi
 
         try
         {
-          fhg::syscall::stat (path.c_str(), &st);
+          fhg::util::syscall::stat (path.c_str(), &st);
         }
         catch (boost::system::system_error const&)
         {
@@ -92,7 +92,7 @@ namespace gpi
 
         if (S_ISSOCK(st.st_mode))
         {
-          fhg::syscall::unlink (path.c_str());
+          fhg::util::syscall::unlink (path.c_str());
           return 0;
         }
         else
@@ -112,10 +112,10 @@ namespace gpi
           peer_addr_size = sizeof(struct sockaddr_un);
           try
           {
-            cfd = fhg::syscall::accept ( m_socket
-                                       , (struct sockaddr*)&peer_addr
-                                       , &peer_addr_size
-                                       );
+            cfd = fhg::util::syscall::accept ( m_socket
+                                             , (struct sockaddr*)&peer_addr
+                                             , &peer_addr_size
+                                             );
           }
           catch (boost::system::system_error const& se)
           {
@@ -420,7 +420,7 @@ namespace gpi
 
         void read_exact (int fd, void* buffer, ssize_t size)
         {
-          if (fhg::syscall::read (fd, buffer, size) != size)
+          if (fhg::util::syscall::read (fd, buffer, size) != size)
           {
             throw std::runtime_error
               ("unable to read " + std::to_string (size) + " bytes");
@@ -428,7 +428,7 @@ namespace gpi
         }
         void write_exact (int fd, void const* buffer, ssize_t size)
         {
-          if (fhg::syscall::write (fd, buffer, size) != size)
+          if (fhg::util::syscall::write (fd, buffer, size) != size)
           {
             throw std::runtime_error
               ("unable to write " + std::to_string (size) + " bytes");
@@ -507,7 +507,7 @@ namespace gpi
 
         try
         {
-          fhg::syscall::shutdown (socket, SHUT_RDWR);
+          fhg::util::syscall::shutdown (socket, SHUT_RDWR);
         }
         catch (boost::system::system_error const& se)
         {
@@ -518,7 +518,7 @@ namespace gpi
           }
         }
 
-        fhg::syscall::close (socket);
+        fhg::util::syscall::close (socket);
 
         _memory_manager.garbage_collect (process_id);
 
@@ -582,7 +582,7 @@ namespace gpi
         fhg::util::nest_exceptions<std::runtime_error>
           ( [&]
             {
-              m_socket = fhg::syscall::socket (AF_UNIX, SOCK_STREAM, 0);
+              m_socket = fhg::util::syscall::socket (AF_UNIX, SOCK_STREAM, 0);
             }
           , "could not create process-container communication socket"
           );
@@ -593,7 +593,7 @@ namespace gpi
           {
             if (!_committed)
             {
-              fhg::syscall::close (_socket);
+              fhg::util::syscall::close (_socket);
             }
           }
           bool _committed;
@@ -602,7 +602,7 @@ namespace gpi
 
         {
           const int on (1);
-          fhg::syscall::setsockopt (m_socket, SOL_SOCKET, SO_PASSCRED, &on, sizeof (on));
+          fhg::util::syscall::setsockopt (m_socket, SOL_SOCKET, SO_PASSCRED, &on, sizeof (on));
         }
 
         struct sockaddr_un my_addr;
@@ -616,7 +616,7 @@ namespace gpi
         fhg::util::nest_exceptions<std::runtime_error>
           ( [&]
             {
-              fhg::syscall::bind
+              fhg::util::syscall::bind
                 (m_socket, (struct sockaddr *)&my_addr, sizeof (struct sockaddr_un));
             }
           , "could not bind process-container communication socket to path " + m_path
@@ -628,17 +628,17 @@ namespace gpi
           {
             if (!_committed)
             {
-              fhg::syscall::unlink (_path.string().c_str());
+              fhg::util::syscall::unlink (_path.string().c_str());
             }
           }
           bool _committed;
           boost::filesystem::path _path;
         } delete_socket_file_on_error = {false, m_path};
 
-        fhg::syscall::chmod (m_path.c_str(), 0700);
+        fhg::util::syscall::chmod (m_path.c_str(), 0700);
 
         const std::size_t backlog_size (16);
-        fhg::syscall::listen (m_socket, backlog_size);
+        fhg::util::syscall::listen (m_socket, backlog_size);
 
         _listener_thread = std::thread (&manager_t::listener_thread_main, this);
 

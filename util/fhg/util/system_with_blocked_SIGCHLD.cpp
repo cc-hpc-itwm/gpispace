@@ -2,7 +2,7 @@
 
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
-#include <fhg/syscall.hpp>
+#include <util-generic/syscall.hpp>
 
 #include <boost/format.hpp>
 
@@ -20,14 +20,14 @@ namespace fhg
         scoped_SIGCHLD_block()
         {
           sigset_t signals_to_block;
-          fhg::syscall::sigemptyset (&signals_to_block);
-          fhg::syscall::sigaddset (&signals_to_block, SIGCHLD);
-          fhg::syscall::pthread_sigmask
+          util::syscall::sigemptyset (&signals_to_block);
+          util::syscall::sigaddset (&signals_to_block, SIGCHLD);
+          util::syscall::pthread_sigmask
             (SIG_BLOCK, &signals_to_block, &_signals_to_restore);
         }
         ~scoped_SIGCHLD_block()
         {
-          fhg::syscall::pthread_sigmask
+          util::syscall::pthread_sigmask
             (SIG_UNBLOCK, &_signals_to_restore, nullptr);
         }
         sigset_t _signals_to_restore;
