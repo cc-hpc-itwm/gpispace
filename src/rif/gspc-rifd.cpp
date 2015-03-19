@@ -7,7 +7,7 @@
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/join.hpp>
 #include <util-generic/print_exception.hpp>
-#include <fhg/util/temporary_file.hpp>
+#include <util-generic/temporary_file.hpp>
 
 #include <util-generic/serialization/boost/filesystem/path.hpp>
 #include <util-generic/serialization/std/unordered_map.hpp>

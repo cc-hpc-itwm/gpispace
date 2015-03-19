@@ -19,7 +19,7 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/program_options/validators/executable.hpp>
 
-#include <fhg/util/temporary_path.hpp>
+#include <util-generic/temporary_path.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>

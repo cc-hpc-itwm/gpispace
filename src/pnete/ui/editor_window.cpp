@@ -23,7 +23,7 @@
 
 #include <fhg/util/dl.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
-#include <fhg/util/temporary_path.hpp>
+#include <util-generic/temporary_path.hpp>
 
 #include <sdpa/client.hpp>
 

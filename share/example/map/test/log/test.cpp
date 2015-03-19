@@ -25,7 +25,7 @@
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 
-#include <fhg/util/temporary_path.hpp>
+#include <util-generic/temporary_path.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>

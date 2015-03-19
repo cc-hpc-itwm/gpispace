@@ -5,7 +5,7 @@
 #include <drts/private/pimpl.hpp>
 #include <drts/private/rifd_entry_points_impl.hpp>
 
-#include <fhg/util/read_lines.hpp>
+#include <util-generic/read_lines.hpp>
 
 #include <fstream>
 

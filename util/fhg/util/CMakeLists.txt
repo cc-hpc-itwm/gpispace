@@ -23,7 +23,6 @@ set (srcs
 
   xml.cpp
   read_file.cpp
-  read_lines.cpp
 
   system_with_blocked_SIGCHLD.cpp
   wait_and_collect_exceptions.cpp

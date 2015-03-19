@@ -7,7 +7,7 @@
 #include <drts/private/option.hpp>
 #include <drts/private/rifd_entry_points_impl.hpp>
 
-#include <fhg/util/read_lines.hpp>
+#include <util-generic/read_lines.hpp>
 
 #include <rif/strategy/meta.hpp>
 

@@ -6,7 +6,7 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/read_file.hpp>
 
-#include <fhg/util/temporary_file.hpp>
+#include <util-generic/temporary_file.hpp>
 
 #include <fstream>
 

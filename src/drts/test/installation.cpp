@@ -4,7 +4,7 @@
 
 #include <drts/drts.hpp>
 
-#include <fhg/util/temporary_path.hpp>
+#include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/require_exception.hpp>
 #include <fhg/revision.hpp>
 

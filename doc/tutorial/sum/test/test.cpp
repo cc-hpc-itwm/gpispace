@@ -18,7 +18,7 @@
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/nest_exceptions.hpp>
-#include <fhg/util/temporary_path.hpp>
+#include <util-generic/temporary_path.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
 #include <boost/format.hpp>

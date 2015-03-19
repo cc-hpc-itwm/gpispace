@@ -4,7 +4,7 @@
 
 #include <drts/drts.hpp>
 
-#include <fhg/util/temporary_path.hpp>
+#include <util-generic/temporary_path.hpp>
 
 #include <boost/filesystem.hpp>
 

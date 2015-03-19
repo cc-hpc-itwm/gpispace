@@ -6,7 +6,7 @@
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/join.hpp>
 #include <util-generic/print_exception.hpp>
-#include <fhg/util/read_lines.hpp>
+#include <util-generic/read_lines.hpp>
 
 #include <rif/strategy/meta.hpp>
 

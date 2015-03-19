@@ -6,7 +6,7 @@
 
 #include <fhg/assert.hpp>
 #include <util-generic/syscall.hpp>
-#include <fhg/util/temporary_file.hpp>
+#include <util-generic/temporary_file.hpp>
 
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
