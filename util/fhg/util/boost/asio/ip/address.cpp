@@ -2,7 +2,7 @@
 
 #include <fhg/util/boost/asio/ip/address.hpp>
 
-#include <fhg/util/hostname.hpp>
+#include <util-generic/hostname.hpp>
 
 namespace fhg
 {

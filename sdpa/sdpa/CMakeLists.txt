@@ -21,4 +21,6 @@ target_link_libraries (sdpa
   fhgcom
   ${Boost_THREAD_LIBRARY}
   fhg-util
-  pnet)
+  pnet
+  Util::Generic
+)

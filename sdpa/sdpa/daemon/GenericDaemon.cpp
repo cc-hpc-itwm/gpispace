@@ -35,7 +35,7 @@
 #include <sdpa/id_generator.hpp>
 
 #include <fhg/util/boost/optional.hpp>
-#include <fhg/util/hostname.hpp>
+#include <util-generic/hostname.hpp>
 #include <fhg/util/macros.hpp>
 #include <fhg/util/make_unique.hpp>
 

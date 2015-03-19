@@ -1,7 +1,7 @@
 #include <fhgcom/peer.hpp>
 
 #include <fhg/assert.hpp>
-#include <fhg/util/hostname.hpp>
+#include <util-generic/hostname.hpp>
 #include <fhg/util/thread/event.hpp>
 
 #include <boost/date_time/posix_time/posix_time.hpp>

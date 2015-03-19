@@ -19,7 +19,7 @@
 
 #include <sdpa/client.hpp>
 
-#include <fhg/util/hostname.hpp>
+#include <util-generic/hostname.hpp>
 #include <fhg/util/make_unique.hpp>
 #include <fhg/util/nest_exceptions.hpp>
 #include <fhg/util/read_file.hpp>

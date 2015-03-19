@@ -10,7 +10,7 @@
 
 #include <gpi-space/log_to_GLOBAL_logger.hpp>
 #include <gpi-space/pc/url.hpp>
-#include <fhg/util/hostname.hpp>
+#include <util-generic/hostname.hpp>
 #include <fhg/util/read_bool.hpp>
 
 #include <boost/lexical_cast.hpp>
