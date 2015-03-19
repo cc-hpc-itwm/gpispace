@@ -2,7 +2,7 @@
 
 #include <fhg/util/print_exception.hpp>
 
-#include <fhg/util/macros.hpp>
+#include <util-generic/ndebug.hpp>
 
 #include <typeinfo>
 
