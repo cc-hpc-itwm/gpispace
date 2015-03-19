@@ -11,7 +11,7 @@
 #include <fhglog/appender/stream.hpp>
 #include <fhglog/remote/appender.hpp>
 
-#include <fhg/util/split.hpp>
+#include <util-generic/split.hpp>
 
 #include <algorithm> // std::transform
 #include <cctype>    // std::tolower

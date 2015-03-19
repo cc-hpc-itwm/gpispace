@@ -24,7 +24,7 @@
 #include <fhg/util/nest_exceptions.hpp>
 #include <fhg/util/read_file.hpp>
 #include <fhg/util/read_lines.hpp>
-#include <fhg/util/split.hpp>
+#include <util-generic/split.hpp>
 #include <fhg/revision.hpp>
 #include <util-generic/syscall.hpp>
 

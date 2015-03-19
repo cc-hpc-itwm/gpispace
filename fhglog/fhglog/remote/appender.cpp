@@ -2,7 +2,7 @@
 
 #include <fhglog/remote/appender.hpp>
 
-#include <fhg/util/split.hpp>
+#include <util-generic/split.hpp>
 
 namespace fhg
 {

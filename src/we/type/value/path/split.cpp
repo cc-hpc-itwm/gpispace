@@ -2,7 +2,7 @@
 
 #include <we/type/value/path/split.hpp>
 
-#include <fhg/util/split.hpp>
+#include <util-generic/split.hpp>
 
 namespace pnet
 {

@@ -18,12 +18,6 @@ fhg_add_test (remove_prefix.cpp
   LINK_LIBRARIES fhg-util
 )
 
-fhg_add_test (split.cpp
-  BOOST_UNIT_TEST
-  PROJECT fhg_util
-  LINK_LIBRARIES fhg-util
-)
-
 fhg_add_test (xml_stream.cpp
   BOOST_UNIT_TEST
   PROJECT fhg_util

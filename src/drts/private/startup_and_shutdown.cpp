@@ -6,7 +6,7 @@
 #include <fhg/util/nest_exceptions.hpp>
 #include <fhg/util/read_file.hpp>
 #include <fhg/util/read_lines.hpp>
-#include <fhg/util/split.hpp>
+#include <util-generic/split.hpp>
 #include <fhg/util/starts_with.hpp>
 #include <fhg/util/wait_and_collect_exceptions.hpp>
 
