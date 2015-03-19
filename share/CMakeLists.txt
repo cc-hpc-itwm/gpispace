@@ -1,5 +1,8 @@
 # mirko.rahn@itwm.fraunhofer.de
 
+set (PROCESS_LIBRARY_INSTALL_DESTINATION "libexec/sdpa")
+set (PROCESS_PUBLIC_HEADER_INSTALL_DESTINATION "include/process")
+
 add_subdirectory (example)
 add_subdirectory (lib)
 add_subdirectory (make)

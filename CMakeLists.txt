@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
+cmake_minimum_required (VERSION 3.1 FATAL_ERROR)
 set (CMAKE_SKIP_BUILD_RPATH FALSE)
 set (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set (CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
@@ -10,6 +10,9 @@ set (CMAKE_MODULE_PATH
   "${CMAKE_SOURCE_DIR}/modules"
   "$ENV{CMAKE_MODULE_PATH}"
 )
+
+include ("cmake/add_macros.cmake")
+include ("cmake/beautify_find_boost.cmake")
 
 set (PROJECT_VERSION "14.03")
 set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
@@ -74,7 +77,7 @@ add_definitions (-DBOOST_THREAD_THROW_IF_PRECONDITION_NOT_SATISFIED)
 add_definitions ("-DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS")
 add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
 
-find_package (Boost 1.55 REQUIRED QUIET COMPONENTS
+find_boost (1.55 REQUIRED QUIET COMPONENTS
   date_time
   filesystem
   iostreams
@@ -137,8 +140,9 @@ endmacro()
 
 include_directories ("${CMAKE_SOURCE_DIR}/fhglog")
 include_directories ("${CMAKE_SOURCE_DIR}/sdpa")
-include_directories ("${CMAKE_SOURCE_DIR}/util")
+include_directories ("${CMAKE_SOURCE_DIR}/share")
 include_directories ("${CMAKE_SOURCE_DIR}/src")
+include_directories ("${CMAKE_SOURCE_DIR}/util")
 include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 
 # TODO : Remove again?
