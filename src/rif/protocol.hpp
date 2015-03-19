@@ -4,9 +4,9 @@
 
 #include <fhglog/level.hpp>
 #include <rpc/function_description.hpp>
-#include <fhg/util/boost/serialization/chrono.hpp>
 
 #include <util-generic/serialization/boost/filesystem/path.hpp>
+#include <util-generic/serialization/std/chrono.hpp>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
