@@ -12,7 +12,7 @@
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/random_string.hpp>
-#include <fhg/util/boost/test/require_exception.hpp>
+#include <util-generic/testing/require_exception.hpp>
 
 #include <boost/format.hpp>
 
@@ -219,7 +219,7 @@ namespace
 
     xml::parse::state::type state;
 
-    fhg::util::boost::test::require_exception
+    fhg::util::testing::require_exception
       <xml::parse::error::memory_transfer_for_non_module>
       ( [&state, &input]()
       { std::istringstream input_stream (input);
@@ -259,7 +259,7 @@ namespace
 
     xml::parse::state::type state;
 
-    fhg::util::boost::test::require_exception
+    fhg::util::testing::require_exception
       <xml::parse::error::memory_transfer_for_non_module>
       ( [&state, &input]()
       { std::istringstream input_stream (input);

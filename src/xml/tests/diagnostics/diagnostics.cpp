@@ -8,7 +8,7 @@
 #include <parser_fixture.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/require_exception.hpp>
+#include <util-generic/testing/require_exception.hpp>
 #include <fhg/util/random_string.hpp>
 #include <fhg/util/temporary_path.hpp>
 
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE (warning_struct_redefined)
       ).str()
     );
 
-  fhg::util::boost::test::require_exception
+  fhg::util::testing::require_exception
     <xml::parse::warning::struct_redefined>
     ( [&input]()
       { xml::parse::state::type state;

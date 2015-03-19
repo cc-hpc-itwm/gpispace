@@ -4,7 +4,7 @@
 #include <sdpa/id_generator.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/require_exception.hpp>
+#include <util-generic/testing/require_exception.hpp>
 #include <fhg/util/random_string.hpp>
 
 #include <boost/format.hpp>
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE (threaded_unique_set_of_id_throws_on_duplicate)
 
   BOOST_REQUIRE_EQUAL (id, ids.insert (id));
 
-  fhg::util::boost::test::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception<std::runtime_error>
     ( [&id, &ids] { ids.insert (id); }
     , (boost::format ("duplicate id '%1%'") % id).str()
     );

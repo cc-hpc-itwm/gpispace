@@ -10,7 +10,7 @@
 #include <fhg/util/temporary_file.hpp>
 #include <fhg/util/temporary_path.hpp>
 #include <fhg/util/boost/test/printer/vector.hpp>
-#include <fhg/util/boost/test/require_exception.hpp>
+#include <util-generic/testing/require_exception.hpp>
 
 #include <test/shared_directory.hpp>
 
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE (read_lines_check_throw_on_no_such_file_or_directory)
     (boost::filesystem::unique_path ("non-existing-path-%%%%-%%%%-%%%%-%%%%"));
   BOOST_REQUIRE (!boost::filesystem::exists (_));
 
-  fhg::util::boost::test::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception<std::runtime_error>
     ( std::bind (fhg::util::read_lines, _)
     , boost::format ("could not open file '%1%' for reading: %2%")
       % _.string()
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE (read_lines_check_throw_on_permission_denied)
   }
   BOOST_REQUIRE (boost::filesystem::exists (_));
 
-  fhg::util::boost::test::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception<std::runtime_error>
     ( std::bind (fhg::util::read_lines, _)
     , boost::format ("could not open file '%1%' for reading: %2%")
     % _.string()

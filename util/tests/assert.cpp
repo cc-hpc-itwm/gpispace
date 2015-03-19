@@ -4,7 +4,7 @@
 #include <fhg/assert.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/require_exception.hpp>
+#include <util-generic/testing/require_exception.hpp>
 
 BOOST_AUTO_TEST_CASE(assert_true)
 {
@@ -13,7 +13,7 @@ BOOST_AUTO_TEST_CASE(assert_true)
 
 BOOST_AUTO_TEST_CASE (assert_false)
 {
-  fhg::util::boost::test::require_exception<std::logic_error>
+  fhg::util::testing::require_exception<std::logic_error>
     ( []() { fhg_assert (1 == 0, "util_assert_false"); }
     , boost::format ("[%1%:%2%] assertion '%3%' failed%4%%5%.")
     % __FILE__
@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(assert_true_empty_message)
 
 BOOST_AUTO_TEST_CASE (assert_false_empty_message)
 {
-  fhg::util::boost::test::require_exception<std::logic_error>
+  fhg::util::testing::require_exception<std::logic_error>
     ( []() { fhg_assert (1 == 0); }
     , boost::format ("[%1%:%2%] assertion '%3%' failed%4%%5%.")
     % __FILE__

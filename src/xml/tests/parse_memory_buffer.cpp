@@ -12,7 +12,7 @@
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/random_string.hpp>
-#include <fhg/util/boost/test/require_exception.hpp>
+#include <util-generic/testing/require_exception.hpp>
 #include <fhg/util/boost/variant.hpp>
 
 #include <boost/format.hpp>
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_without_size_throws)
 
     xml::parse::state::type state;
 
-    fhg::util::boost::test::require_exception
+    fhg::util::testing::require_exception
       <xml::parse::error::memory_buffer_without_size>
       ( [&state, &input]()
       { std::istringstream input_stream (input);
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE (duplicate_memory_buffer_throws)
 
     xml::parse::state::type state;
 
-    fhg::util::boost::test::require_exception
+    fhg::util::testing::require_exception
       <xml::parse::error::duplicate_memory_buffer>
       ( [&state, &input]()
       { std::istringstream input_stream (input);
@@ -176,7 +176,7 @@ namespace
 
     xml::parse::state::type state;
 
-    fhg::util::boost::test::require_exception
+    fhg::util::testing::require_exception
       <xml::parse::error::memory_buffer_for_non_module>
       ( [&state, &input]()
       { std::istringstream input_stream (input);
@@ -215,7 +215,7 @@ namespace
 
     xml::parse::state::type state;
 
-    fhg::util::boost::test::require_exception
+    fhg::util::testing::require_exception
       <xml::parse::error::memory_buffer_for_non_module>
       ( [&state, &input]()
       { std::istringstream input_stream (input);
@@ -268,7 +268,7 @@ namespace
 
     xml::parse::state::type state;
 
-    fhg::util::boost::test::require_exception
+    fhg::util::testing::require_exception
       <xml::parse::error::memory_buffer_with_same_name_as_port>
       ( [&state, &input]()
       { std::istringstream input_stream (input);
@@ -316,7 +316,7 @@ namespace
 
     xml::parse::state::type state;
 
-    fhg::util::boost::test::require_exception
+    fhg::util::testing::require_exception
       <xml::parse::error::memory_buffer_with_same_name_as_port>
       ( [&state, &input]()
       { std::istringstream input_stream (input);

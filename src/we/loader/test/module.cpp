@@ -16,7 +16,7 @@
 #include <fhglog/Configuration.hpp>
 #include <fhglog/Logger.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/require_exception.hpp>
+#include <util-generic/testing/require_exception.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/format.hpp>
@@ -24,7 +24,7 @@
 
 BOOST_AUTO_TEST_CASE (ctor_load_failed)
 {
-  fhg::util::boost::test::require_exception<we::loader::module_load_failed>
+  fhg::util::testing::require_exception<we::loader::module_load_failed>
     ( [] { we::loader::Module ("<path>"); }
     , "could not load module '<path>': <path>:"
       " cannot open shared object file: No such file or directory"
@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE (ctor_load_failed)
 
 BOOST_AUTO_TEST_CASE (ctor_failed_exception_from_we_mod_initialize)
 {
-  fhg::util::boost::test::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception<std::runtime_error>
     ( [] { we::loader::Module ("./libinitialize_throws.so"); }
     , "initialize_throws"
     );
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE (ctor_failed_bad_boost_version)
 {
 #define XSTR(x) STR(x)
 #define STR(x) #x
-  fhg::util::boost::test::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception<std::runtime_error>
     ( [] { we::loader::Module ("./libempty_not_linked_with_pnet.so"); }
     , ( boost::format
         ( "could not load module './libempty_not_linked_with_pnet.so':"
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE (call_not_found)
   expr::eval::context input;
   expr::eval::context output;
 
-  fhg::util::boost::test::require_exception<we::loader::function_not_found>
+  fhg::util::testing::require_exception<we::loader::function_not_found>
     ( [&m, &context, &input, &output]
     {
       m.call ( "<name>", &context, input, output
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE (duplicate_function)
   we::loader::Module m ("./libempty.so");
   m.add_function ("f", &inc);
 
-  fhg::util::boost::test::require_exception<we::loader::duplicate_function>
+  fhg::util::testing::require_exception<we::loader::duplicate_function>
     ( [&m] { m.add_function ("f", &inc); }
     , "duplicate function \"./libempty.so\"::f"
     );

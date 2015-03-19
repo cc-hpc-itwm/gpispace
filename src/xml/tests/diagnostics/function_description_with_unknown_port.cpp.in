@@ -7,7 +7,7 @@
 #include <xml/parse/error.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/require_exception.hpp>
+#include <util-generic/testing/require_exception.hpp>
 
 BOOST_AUTO_TEST_CASE (function_description_with_unknown_return_port)
 {
@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE (function_description_with_unknown_return_port)
      "diagnostics/function_description_with_unknown_return_port.xpnet"
     );
 
-  fhg::util::boost::test::require_exception
+  fhg::util::testing::require_exception
     <xml::parse::error::function_description_with_unknown_port>
   ( [&state, &filename] { xml::parse::just_parse (state, filename); }
   , boost::format ("ERROR: unknown %1% port %2%"
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE (function_description_with_unknown_argument_port)
      "diagnostics/function_description_with_unknown_argument_port.xpnet"
     );
 
-  fhg::util::boost::test::require_exception
+  fhg::util::testing::require_exception
     <xml::parse::error::function_description_with_unknown_port>
   ( [&state, &filename] { xml::parse::just_parse (state, filename); }
   , boost::format ("ERROR: unknown %1% port %2%"

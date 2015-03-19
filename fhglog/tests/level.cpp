@@ -8,7 +8,7 @@
 
 #include <fhg/util/parse/error.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/require_exception.hpp>
+#include <util-generic/testing/require_exception.hpp>
 
 BOOST_AUTO_TEST_CASE (from_string)
 {
@@ -22,25 +22,25 @@ BOOST_AUTO_TEST_CASE (from_string)
 
 #undef OKAY
 
-  fhg::util::boost::test::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception<std::runtime_error>
     ( [] { fhg::log::from_string ("TRACEmore"); }
     , "PARSE ERROR [5]: additional input\n"
       "TRACE more\n"
       "     ^\n"
     );
-  fhg::util::boost::test::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception<std::runtime_error>
     ( [] { fhg::log::from_string ("INFOmore"); }
     , "PARSE ERROR [4]: additional input\n"
       "INFO more\n"
       "    ^\n"
     );
-  fhg::util::boost::test::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception<std::runtime_error>
     ( [] { fhg::log::from_string ("WARNmore"); }
     , "PARSE ERROR [4]: additional input\n"
       "WARN more\n"
       "    ^\n"
     );
-  fhg::util::boost::test::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception<std::runtime_error>
     ( [] { fhg::log::from_string ("ERRORmore"); }
     , "PARSE ERROR [5]: additional input\n"
       "ERROR more\n"

@@ -10,7 +10,7 @@
 #include <we/type/value/show.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/require_exception.hpp>
+#include <util-generic/testing/require_exception.hpp>
 #include <fhg/util/random_string.hpp>
 
 #include <functional>
@@ -200,7 +200,7 @@ BOOST_AUTO_TEST_CASE (token_or_integral)
 
 BOOST_AUTO_TEST_CASE (token_or_short_circuit)
 {
-  fhg::util::boost::test::require_exception<pnet::exception::missing_binding>
+  fhg::util::testing::require_exception<pnet::exception::missing_binding>
     ( [] { require_evaluating_to ("true || (${a} := true)", true).value ("a"); }
     , "missing binding for: ${a}"
     );
@@ -261,7 +261,7 @@ BOOST_AUTO_TEST_CASE (token_and_integral)
 
 BOOST_AUTO_TEST_CASE (token_and_short_circuit)
 {
-  fhg::util::boost::test::require_exception<pnet::exception::missing_binding>
+  fhg::util::testing::require_exception<pnet::exception::missing_binding>
     ( [] { require_evaluating_to ("false && (${a} := false)", false).value ("a"); }
     , "missing binding for: ${a}"
     );
@@ -320,7 +320,7 @@ namespace
     void require_ctor_exception
     (std::string const& input, std::string const& message)
   {
-    fhg::util::boost::test::require_exception<T>
+    fhg::util::testing::require_exception<T>
       ([&input]() { (void)expr::parse::parser (input); }, message);
   }
 }
@@ -1062,12 +1062,12 @@ BOOST_AUTO_TEST_CASE (token_pow)
 
 BOOST_AUTO_TEST_CASE (token_pow_int_signed_negative_exponent_throws)
 {
-  fhg::util::boost::test::require_exception
+  fhg::util::testing::require_exception
     <expr::exception::eval::negative_exponent>
     ( [] { require_evaluating_to ("0 ^ (-1)", 0); }
     , "negative exponent"
     );
-  fhg::util::boost::test::require_exception
+  fhg::util::testing::require_exception
     <expr::exception::eval::negative_exponent>
     ( [] { require_evaluating_to ("0L ^ (-1L)", 0L); }
     , "negative exponent"
