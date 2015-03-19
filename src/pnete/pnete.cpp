@@ -13,7 +13,7 @@
 
 #include <pnete/ui/editor_window.hpp>
 
-#include <fhg/util/print_exception.hpp>
+#include <util-generic/print_exception.hpp>
 
 #include <boost/program_options.hpp>
 

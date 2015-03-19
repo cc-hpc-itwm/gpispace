@@ -9,7 +9,7 @@
 
 #include <fhg/revision.hpp>
 #include <util-generic/first_then.hpp>
-#include <fhg/util/print_exception.hpp>
+#include <util-generic/print_exception.hpp>
 
 enum {
     EXIT_INVALID_ARGUMENTS = EXIT_FAILURE,

@@ -6,7 +6,7 @@
 #include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/join.hpp>
-#include <fhg/util/print_exception.hpp>
+#include <util-generic/print_exception.hpp>
 #include <fhg/util/temporary_file.hpp>
 
 #include <util-generic/serialization/boost/filesystem/path.hpp>

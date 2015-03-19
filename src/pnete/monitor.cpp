@@ -2,7 +2,7 @@
 #include <pnete/ui/log_monitor.hpp>
 
 #include <fhg/revision.hpp>
-#include <fhg/util/print_exception.hpp>
+#include <util-generic/print_exception.hpp>
 
 #include <QApplication>
 #include <QTabWidget>

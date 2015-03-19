@@ -2,7 +2,7 @@
 
 #include <rpc/client.hpp>
 
-#include <fhg/util/print_exception.hpp>
+#include <util-generic/print_exception.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/serialization/vector.hpp>

@@ -1,6 +1,6 @@
 #include <fhg/util/wait_and_collect_exceptions.hpp>
 
-#include <fhg/util/print_exception.hpp>
+#include <util-generic/print_exception.hpp>
 
 #include <functional>
 #include <sstream>

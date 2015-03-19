@@ -10,7 +10,7 @@
 #include <gpi-space/log_to_GLOBAL_logger.hpp>
 #include <fhg/assert.hpp>
 #include <fhg/util/join.hpp>
-#include <fhg/util/print_exception.hpp>
+#include <util-generic/print_exception.hpp>
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/memory/manager.hpp>

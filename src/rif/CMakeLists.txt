@@ -25,6 +25,7 @@ target_link_libraries (rif-strategies RPC Network fhg-util)
 fhg_add_runtime_executable ("gspc-bootstrap-rifd.cpp"
   LINK_LIBRARIES rif-strategies
                  fhg-util
+                 Util::Generic
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
@@ -32,6 +33,7 @@ fhg_add_runtime_executable ("gspc-bootstrap-rifd.cpp"
 fhg_add_runtime_executable ("gspc-teardown-rifd.cpp"
   LINK_LIBRARIES rif-strategies
                  fhg-util
+                 Util::Generic
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}

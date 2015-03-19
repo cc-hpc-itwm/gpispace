@@ -5,7 +5,7 @@ target_include_directories (gen.bin
   PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../include"
 )
 target_link_libraries (gen.bin
-  fhg-util
+  Util::Generic
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${Boost_THREAD_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}

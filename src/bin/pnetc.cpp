@@ -9,7 +9,7 @@
 #include <xml/parse/type/function.hpp>
 
 #include <fhg/revision.hpp>
-#include <fhg/util/print_exception.hpp>
+#include <util-generic/print_exception.hpp>
 
 #include <we/type/activity.hpp>
 

@@ -4,4 +4,5 @@ target_include_directories (gpi-space-pc-global
 )
 target_link_libraries(gpi-space-pc-global
   fhgcom
+  Util::Generic
 )

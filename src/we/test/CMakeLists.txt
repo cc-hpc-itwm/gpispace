@@ -45,7 +45,7 @@ fhg_add_test (activity.cpp
 
 fhg_add_test (execute_activity.cpp
   PROJECT we
-  LINK_LIBRARIES pnet
+  LINK_LIBRARIES pnet Util::Generic
 )
 
 fhg_add_test (net.cpp

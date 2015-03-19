@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <fhg/util/print_exception.hpp>
+#include <util-generic/print_exception.hpp>
 
 #include <boost/test/unit_test_monitor.hpp>
 #include <boost/test/unit_test_suite.hpp>
