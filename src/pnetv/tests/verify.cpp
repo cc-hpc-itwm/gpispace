@@ -7,7 +7,7 @@
 #include <pnetv/jpna/PetriNet.h>
 #include <pnetv/jpna/Verification.h>
 
-#include <fhg/util/boost/test.hpp>
+#include <util-generic/testing/printer/generic.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random_string.hpp>
 

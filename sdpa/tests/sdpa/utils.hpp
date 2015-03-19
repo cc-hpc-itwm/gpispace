@@ -10,7 +10,7 @@
 #include <sdpa/events/ErrorEvent.hpp>
 
 #include <network/connectable_to_address_string.hpp>
-#include <fhg/util/boost/test/printer/optional.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/random_string.hpp>
 

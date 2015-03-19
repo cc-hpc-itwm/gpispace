@@ -25,10 +25,10 @@
 #include <fhg/util/indenter.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/printer/list.hpp>
-#include <fhg/util/boost/test/printer/optional.hpp>
-#include <fhg/util/boost/test/printer/set.hpp>
-#include <fhg/util/boost/test/printer/map.hpp>
+#include <util-generic/testing/printer/list.hpp>
+#include <util-generic/testing/printer/optional.hpp>
+#include <util-generic/testing/printer/set.hpp>
+#include <util-generic/testing/printer/map.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
 #include <fhg/util/xml.hpp>

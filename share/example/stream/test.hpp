@@ -19,7 +19,7 @@
 
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/printer/set.hpp>
+#include <util-generic/testing/printer/set.hpp>
 #include <fhg/util/read_file.hpp>
 #include <fhg/util/temporary_path.hpp>
 

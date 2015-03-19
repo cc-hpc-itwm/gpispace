@@ -13,7 +13,7 @@
 #include <we/signature_of.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/printer/list.hpp>
+#include <util-generic/testing/printer/list.hpp>
 
 namespace
 {

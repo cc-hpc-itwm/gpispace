@@ -8,7 +8,7 @@
 #include <we/type/activity.hpp>
 #include <we/test/operator_equal.hpp>
 
-#include <fhg/util/boost/test.hpp>
+#include <util-generic/testing/printer/generic.hpp>
 #include <fhg/util/read_file.hpp>
 
 #include <boost/filesystem.hpp>

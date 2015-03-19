@@ -5,7 +5,7 @@
 #include <tests/dump_event.common.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/printer/chrono.hpp>
+#include <util-generic/testing/printer/chrono.hpp>
 #include <fhg/util/measure_average_time.hpp>
 
 BOOST_AUTO_TEST_CASE (encode_with_time_constraint)

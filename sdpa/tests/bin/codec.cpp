@@ -5,11 +5,11 @@
 #include <we/test/operator_equal.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/printer/optional.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random_string.hpp>
-#include <fhg/util/boost/test.hpp>
-#include <fhg/util/boost/test/printer/list.hpp>
-#include <fhg/util/boost/test/printer/set.hpp>
+#include <util-generic/testing/printer/generic.hpp>
+#include <util-generic/testing/printer/list.hpp>
+#include <util-generic/testing/printer/set.hpp>
 
 FHG_BOOST_TEST_LOG_VALUE_PRINTER (sdpa::Capability, os, capability)
 {

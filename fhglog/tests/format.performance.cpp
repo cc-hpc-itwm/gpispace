@@ -6,7 +6,7 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhglog/format.hpp>
 
-#include <fhg/util/boost/test/printer/chrono.hpp>
+#include <util-generic/testing/printer/chrono.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/measure_average_time.hpp>
 

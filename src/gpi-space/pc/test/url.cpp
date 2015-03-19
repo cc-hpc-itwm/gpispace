@@ -7,7 +7,7 @@
 #include <fhg/util/parse/error.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/printer/optional.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
 #include <iterator>

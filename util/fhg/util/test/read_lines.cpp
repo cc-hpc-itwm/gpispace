@@ -9,7 +9,7 @@
 #include <util-generic/syscall.hpp>
 #include <fhg/util/temporary_file.hpp>
 #include <fhg/util/temporary_path.hpp>
-#include <fhg/util/boost/test/printer/vector.hpp>
+#include <util-generic/testing/printer/vector.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
 #include <test/shared_directory.hpp>

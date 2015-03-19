@@ -4,8 +4,8 @@
 
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/printer/set.hpp>
-#include <fhg/util/boost/test.hpp>
+#include <util-generic/testing/printer/set.hpp>
+#include <util-generic/testing/printer/generic.hpp>
 #include <util-generic/testing/random_string.hpp>
 
 #include <boost/iterator/transform_iterator.hpp>
