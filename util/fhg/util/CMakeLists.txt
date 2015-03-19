@@ -10,8 +10,6 @@ set (srcs
   read_bool.cpp
   now.cpp
 
-  ostream_modifier.cpp
-
   parse/position.cpp
   parse/error.cpp
   parse/require.cpp

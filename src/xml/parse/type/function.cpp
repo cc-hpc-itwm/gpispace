@@ -24,7 +24,7 @@
 #include <fhg/util/cpp/include.hpp>
 #include <fhg/util/cpp/include_guard.hpp>
 #include <fhg/util/indenter.hpp>
-#include <fhg/util/ostream_modifier.hpp>
+#include <util-generic/ostream_modifier.hpp>
 
 #include <we/type/module_call.fwd.hpp>
 #include <we/type/expression.fwd.hpp>

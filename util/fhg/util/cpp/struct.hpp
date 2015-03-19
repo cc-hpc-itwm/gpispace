@@ -3,7 +3,7 @@
 #pragma once
 
 #include <fhg/util/indenter.hpp>
-#include <fhg/util/ostream_modifier.hpp>
+#include <util-generic/ostream_modifier.hpp>
 
 #include <boost/optional.hpp>
 
