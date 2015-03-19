@@ -10,6 +10,7 @@
 #include <we/type/value/show.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/require_maximum_running_time.hpp>
 
 #include <functional>
 #include <limits>
@@ -17,11 +18,10 @@
 #include <string>
 #include <stack>
 
-#include <fhg/util/now.hpp>
-
 BOOST_AUTO_TEST_CASE (performance_parse_once_eval_often)
 {
-  double const t (-fhg::util::now());
+  fhg::util::testing::require_maximum_running_time<std::chrono::seconds>
+    const maximum_running_time (1);
 
   const long round (750);
   const long max (2000);
@@ -43,13 +43,12 @@ BOOST_AUTO_TEST_CASE (performance_parse_once_eval_often)
     }
     while (parser.eval_front_bool (context));
   }
-
-  BOOST_REQUIRE_LT (t + fhg::util::now(), 1.0);
 }
 
 BOOST_AUTO_TEST_CASE (performance_often_parse_and_eval)
 {
-  double const t (-fhg::util::now());
+  fhg::util::testing::require_maximum_running_time<std::chrono::seconds>
+    const maximum_running_time (1);
 
   const long round (75);
   const long max (2000);
@@ -69,6 +68,4 @@ BOOST_AUTO_TEST_CASE (performance_often_parse_and_eval)
     }
     while (expr::parse::parser (input, context).get_front_bool());
   }
-
-  BOOST_REQUIRE_LT (t + fhg::util::now(), 1.0);
 }
