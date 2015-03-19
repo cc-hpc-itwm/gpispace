@@ -8,7 +8,7 @@
 
 #include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
-#include <fhg/util/make_unique.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 
 #include <boost/thread.hpp>
 
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE (perform_test)
                 , std::placeholders::_1
                 , std::placeholders::_2
                 )
-    , fhg::util::make_unique<boost::asio::io_service>()
+    , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
     );

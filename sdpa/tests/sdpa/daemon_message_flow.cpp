@@ -6,7 +6,7 @@
 
 #include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
-#include <fhg/util/make_unique.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 
 #include <boost/test/unit_test.hpp>
 
@@ -21,7 +21,7 @@ namespace
           {
             _event_received.notify (e);
           }
-        , fhg::util::make_unique<boost::asio::io_service>()
+        , fhg::util::cxx14::make_unique<boost::asio::io_service>()
         , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
         )
     {}
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
   const sdpa::daemon::Orchestrator orchestrator
     ( orchestrator_name
     , "localhost"
-    , fhg::util::make_unique<boost::asio::io_service>()
+    , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , rpc_io_service
     , fhg::log::GLOBAL_logger()
     );

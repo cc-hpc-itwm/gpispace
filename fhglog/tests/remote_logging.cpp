@@ -10,7 +10,7 @@
 #include <fhglog/remote/server.hpp>
 
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
-#include <fhg/util/make_unique.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 
 #include <boost/thread/scoped_thread.hpp>
 
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE (log_to_fake_remote_stream)
   fhg::log::Logger logger;
   logger.addAppender<TestAppender>
       ( io_service
-      , fhg::util::make_unique<fhg::log::StreamAppender> (logstream, "%m")
+      , fhg::util::cxx14::make_unique<fhg::log::StreamAppender> (logstream, "%m")
       );
 
   fhg::log::remote::LogServer logd (logger, io_service, 2438);

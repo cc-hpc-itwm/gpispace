@@ -9,7 +9,7 @@
 
 #include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
-#include <fhg/util/make_unique.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/print_exception.hpp>
 
 #include <rif/startup_messages_pipe.hpp>
@@ -63,7 +63,7 @@ try
   const sdpa::daemon::Orchestrator orchestrator
     ( orchName
     , orchUrl
-    , fhg::util::make_unique<boost::asio::io_service>()
+    , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , rpc_io_service
     , logger
     );

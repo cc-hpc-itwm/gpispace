@@ -11,7 +11,7 @@
 
 #include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/boost/test/printer/optional.hpp>
-#include <fhg/util/make_unique.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 #include <fhg/util/random_string.hpp>
 
 #include <fhglog/Configuration.hpp>
@@ -257,7 +257,7 @@ namespace utils
   {
     orchestrator (fhg::log::Logger& logger)
       : _ ( random_peer_name(), "127.0.0.1"
-          , fhg::util::make_unique<boost::asio::io_service>()
+          , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , _rpc_io_service
           , logger
           )
@@ -286,7 +286,7 @@ namespace utils
       agent (const T& master_0, const U& master_1, fhg::log::Logger& logger)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
-          , fhg::util::make_unique<boost::asio::io_service>()
+          , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master_0), make_master_info_tuple (master_1)}
           , boost::none
@@ -297,7 +297,7 @@ namespace utils
       agent (const T& master, fhg::log::Logger& logger)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
-          , fhg::util::make_unique<boost::asio::io_service>()
+          , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master)}
           , boost::none
@@ -307,7 +307,7 @@ namespace utils
     agent (const agent& master, fhg::log::Logger& logger)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
-          , fhg::util::make_unique<boost::asio::io_service>()
+          , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master)}
           , boost::none
@@ -335,7 +335,7 @@ namespace utils
                    {
                      _event_queue.put (source, e);
                    }
-                 , fhg::util::make_unique<boost::asio::io_service>()
+                 , fhg::util::cxx14::make_unique<boost::asio::io_service>()
                  , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
                  )
       , _event_thread (&basic_drts_component::event_thread, this)
@@ -688,7 +688,7 @@ namespace utils
   {
     client (orchestrator const& orch)
       : _ ( orch.host(), orch.port()
-          , fhg::util::make_unique<boost::asio::io_service>()
+          , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           )
     {}
 

@@ -15,7 +15,7 @@
 
 #include <rpc/server.hpp>
 
-#include <fhg/util/make_unique.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/boost/asio/ip/address.hpp>
 
@@ -59,7 +59,7 @@ namespace gspc
     implementation (gspc::host_and_port_type const& orchestrator_endpoint)
       : _client ( fhg::com::host_t (orchestrator_endpoint.host)
                 , fhg::com::port_t (std::to_string (orchestrator_endpoint.port))
-                , fhg::util::make_unique<boost::asio::io_service>()
+                , fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 )
     {}
 

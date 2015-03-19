@@ -7,7 +7,7 @@
 
 #include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
-#include <fhg/util/make_unique.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 #include <fhg/util/random_string.hpp>
 
 #include <boost/asio/io_service.hpp>
@@ -16,7 +16,7 @@
 BOOST_AUTO_TEST_CASE (peer_run_single)
 {
   using namespace fhg::com;
-  peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
+  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("1235")
                 );
@@ -39,12 +39,12 @@ BOOST_AUTO_TEST_CASE (peer_run_two)
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
+  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
 
-  peer_t peer_2 ( fhg::util::make_unique<boost::asio::io_service>()
+  peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
@@ -66,12 +66,12 @@ BOOST_AUTO_TEST_CASE (resolve_peer_names)
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
+  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
 
-  peer_t peer_2 ( fhg::util::make_unique<boost::asio::io_service>()
+  peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE (peer_loopback)
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
+  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE (send_to_nonexisting_peer)
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
+  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE (send_large_data)
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
+  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
@@ -136,12 +136,12 @@ BOOST_AUTO_TEST_CASE (peers_with_fixed_ports)
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
+  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
 
-  peer_t peer_2 ( fhg::util::make_unique<boost::asio::io_service>()
+  peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
@@ -157,12 +157,12 @@ BOOST_AUTO_TEST_CASE (peers_with_fixed_ports_reuse)
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
+  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
 
-  peer_t peer_2 ( fhg::util::make_unique<boost::asio::io_service>()
+  peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ( fhg::util::make_unique<boost::asio::io_service>()
+  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
                 );
@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
   for (std::size_t i (0); i < 100; ++i)
   {
     peer_t peer_2
-      ( fhg::util::make_unique<boost::asio::io_service>()
+      ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
       , host (peer_2_endpoint), port (peer_2_endpoint)
       );
 
