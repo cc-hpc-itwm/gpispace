@@ -2,7 +2,7 @@
 
 #include <pnete/ui/gspc_monitor_detail.hpp>
 
-#include <util/qt/boost_connect.hpp>
+#include <util-qt/connect.hpp>
 #include <util/qt/file_line_edit.hpp>
 
 #include <fhg/assert.hpp>
@@ -340,7 +340,7 @@ namespace fhg
         QTimer* timer (QObject* parent, int timeout, std::function<void()> fun)
         {
           QTimer* timer (new QTimer (parent));
-          fhg::util::qt::boost_connect<void()>
+          fhg::util::qt::connect<void()>
             (timer, SIGNAL (timeout()), parent, fun);
           timer->start (timeout);
           return timer;
@@ -1187,7 +1187,7 @@ namespace fhg
                    && action_name_intersection.contains (action_name)
                    )
                 {
-                  fhg::util::qt::boost_connect<void (void)>
+                  fhg::util::qt::connect<void (void)>
                     ( action
                     , SIGNAL (triggered())
                     , this
@@ -1219,7 +1219,7 @@ namespace fhg
                    && action_name_intersection.contains (action_name)
                    )
                 {
-                  fhg::util::qt::boost_connect<void (void)>
+                  fhg::util::qt::connect<void (void)>
                     ( action
                     , SIGNAL (triggered())
                     , this
@@ -1261,14 +1261,14 @@ namespace fhg
                   action->setChecked (all);
                   for (const int index : nodes)
                   {
-                    fhg::util::qt::boost_connect<void (bool)>
+                    fhg::util::qt::connect<void (bool)>
                       ( action
                       , SIGNAL (toggled (bool))
                       , _monitor_client
                       , std::bind (&node_type::watched, &(node (index)), !all)
                       );
 
-                    fhg::util::qt::boost_connect<void (void)>
+                    fhg::util::qt::connect<void (void)>
                       ( action
                       , SIGNAL (triggered())
                       , this
@@ -1285,26 +1285,26 @@ namespace fhg
 
                   for (const int index : nodes)
                   {
-                    fhg::util::qt::boost_connect<void (void)>
+                    fhg::util::qt::connect<void (void)>
                       ( unwatch_all
                       , SIGNAL (triggered())
                       , _monitor_client
                       , std::bind (&node_type::watched, &(node (index)), false)
                       );
-                    fhg::util::qt::boost_connect<void (void)>
+                    fhg::util::qt::connect<void (void)>
                       ( watch_all
                       , SIGNAL (triggered())
                       , _monitor_client
                       , std::bind (&node_type::watched, &(node (index)), true)
                       );
 
-                    fhg::util::qt::boost_connect<void (void)>
+                    fhg::util::qt::connect<void (void)>
                       ( unwatch_all
                       , SIGNAL (triggered())
                       , this
                       , std::bind (&node_state_widget::update_node, this, index)
                       );
-                    fhg::util::qt::boost_connect<void (void)>
+                    fhg::util::qt::connect<void (void)>
                       ( watch_all
                       , SIGNAL (triggered())
                       , this

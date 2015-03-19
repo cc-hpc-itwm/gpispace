@@ -2,7 +2,7 @@
 
 #include <pnete/ui/execution_monitor_detail.hpp>
 
-#include <util/qt/boost_connect.hpp>
+#include <util-qt/connect.hpp>
 #include <util/qt/cast.hpp>
 #include <util/qt/mvc/delegating_header_view.hpp>
 #include <util/qt/painter_state_saver.hpp>
@@ -71,12 +71,12 @@ namespace fhg
         if (sourceModel())
         {
           fhg_assert (sourceModel()->columnCount() == 1, "source model shall only have one column");
-          util::qt::boost_connect<void ()>
+          util::qt::connect<void ()>
             ( sourceModel()
             , SIGNAL (columnsAboutToBeInserted (const QModelIndex&, int, int))
             , &abort_on_column_change
             );
-          util::qt::boost_connect<void ()>
+          util::qt::connect<void ()>
             ( sourceModel()
             , SIGNAL (columnsAboutToBeRemoved (const QModelIndex&, int, int))
             , &abort_on_column_change
@@ -794,12 +794,12 @@ namespace fhg
         update();
 
 
-        util::qt::boost_connect<void (int)>
+        util::qt::connect<void (int)>
           ( _scrollbar, SIGNAL (valueChanged (int))
           , _automove, std::bind (&QCheckBox::setChecked, _automove, false)
           );
 
-        util::qt::boost_connect<void (bool)>
+        util::qt::connect<void (bool)>
           ( _automove, SIGNAL (toggled (bool))
           , delegate
           , [this] (bool value)
@@ -808,7 +808,7 @@ namespace fhg
           }
           );
 
-        util::qt::boost_connect<void (int)>
+        util::qt::connect<void (int)>
           ( _visible_range_length, SIGNAL (valueChanged (int))
           , delegate
           , [this] (int value)
@@ -817,7 +817,7 @@ namespace fhg
           }
           );
 
-        util::qt::boost_connect<void (int)>
+        util::qt::connect<void (int)>
           ( _scrollbar, SIGNAL (valueChanged (int))
           , delegate
           , [this] (int value)
@@ -897,7 +897,7 @@ namespace fhg
         case execution_monitor_proxy::name_column:
           {
             QLineEdit* line_edit (new QLineEdit (_get_filter(), parent));
-            util::qt::boost_connect<void (QString)>
+            util::qt::connect<void (QString)>
               (line_edit, SIGNAL (textChanged (QString)), _set_filter);
             return line_edit;
           }
@@ -1080,7 +1080,7 @@ namespace fhg
                                 )
                             )
           );
-        fhg::util::qt::boost_connect<void()>
+        fhg::util::qt::connect<void()>
           ( toggle_column_type
           , SIGNAL (triggered())
           , index._model
@@ -1097,7 +1097,7 @@ namespace fhg
         menu->addSeparator();
 
         QAction* remove (menu->addAction (tr ("remove_column_action")));
-        fhg::util::qt::boost_connect<void()>
+        fhg::util::qt::connect<void()>
           ( remove
           , SIGNAL (triggered())
           , index._model

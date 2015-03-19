@@ -2,7 +2,7 @@
 
 #include <util/qt/dual_list_selector.hpp>
 
-#include <util/qt/boost_connect.hpp>
+#include <util-qt/connect.hpp>
 
 #include <fhg/assert.hpp>
 
@@ -290,28 +290,28 @@ namespace fhg
         _selected_view->allowed_drop_sources
           (QSet<QWidget*>() << _available_view << _selected_view);
 
-        fhg::util::qt::boost_connect<void()>
+        qt::connect<void()>
           ( _deselect, SIGNAL (triggered())
           , std::bind (move_selected_entries, _selected_view, _available_view)
           );
-        fhg::util::qt::boost_connect<void()>
+        qt::connect<void()>
           ( _select, SIGNAL (triggered())
           , std::bind (move_selected_entries, _available_view, _selected_view)
           );
-        fhg::util::qt::boost_connect<void()>
+        qt::connect<void()>
           ( _move_up, SIGNAL (triggered())
           , std::bind (move_selected<-1>, _selected_view, _selected)
           );
-        fhg::util::qt::boost_connect<void()>
+        qt::connect<void()>
           ( _move_down, SIGNAL (triggered())
           ,  std::bind (move_selected<1>, _selected_view, _selected)
           );
 
-        boost_connect<void (QModelIndex)>
+        qt::connect<void (QModelIndex)>
           ( _selected_view, SIGNAL (doubleClicked (QModelIndex))
           , std::bind (move_entry, _selected_view, _available_view, std::placeholders::_1)
           );
-        boost_connect<void (QModelIndex)>
+        qt::connect<void (QModelIndex)>
           ( _available_view, SIGNAL (doubleClicked (QModelIndex))
           , std::bind (move_entry, _available_view, _selected_view, std::placeholders::_1)
           );

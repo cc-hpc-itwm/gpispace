@@ -146,6 +146,7 @@ qt4_wrap_cpp (plugin_wrapped_cpps ${plugin_tomoc})
                    fhg-revision
                    fhg-util
                    Util::Generic
+                   Util::Qt
                    ${Boost_FILESYSTEM_LIBRARY}
                    ${Boost_PROGRAM_OPTIONS_LIBRARY}
                    ${Boost_THREAD_LIBRARY}
@@ -177,6 +178,7 @@ install (FILES "plugin/plugin_api.hpp" "plugin/plugin_base.hpp"
                    fhg-revision
                    fhglog
                    Util::Generic
+                   Util::Qt
                    ${Boost_THREAD_LIBRARY}
                    ${QT_LIBRARIES}
   )
@@ -187,6 +189,7 @@ install (FILES "plugin/plugin_api.hpp" "plugin/plugin_base.hpp"
                    fhg-util
                    fhglog
                    Util::Generic
+                   Util::Qt
                    ${Boost_THREAD_LIBRARY}
                    ${QT_LIBRARIES}
   )

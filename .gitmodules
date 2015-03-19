@@ -16,3 +16,6 @@
 [submodule "src/rpc"]
 	path = src/rpc
 	url = git@gitlab.hpc.devnet.itwm.fhg.de:shared/rpc.git
+[submodule "src/util-qt"]
+	path = src/util-qt
+	url = git@gitlab.hpc.devnet.itwm.fhg.de:shared/util-qt.git

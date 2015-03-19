@@ -6,7 +6,7 @@
 #include <pnete/ui/size.hpp>
 
 #include <util/phi.hpp>
-#include <util/qt/boost_connect.hpp>
+#include <util-qt/connect.hpp>
 
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
@@ -79,7 +79,7 @@ namespace fhg
         setFocusPolicy (Qt::WheelFocus);
 
         QAction* zoom_in (new QAction (tr ("zoom_in"), this));
-        fhg::util::qt::boost_connect<void()>
+        fhg::util::qt::connect<void()>
           ( zoom_in
           , SIGNAL (triggered())
           , this
@@ -93,7 +93,7 @@ namespace fhg
         addAction (zoom_in);
 
         QAction* zoom_out (new QAction (tr ("zoom_out"), this));
-        fhg::util::qt::boost_connect<void()>
+        fhg::util::qt::connect<void()>
           ( zoom_out
           , SIGNAL (triggered())
           , this
@@ -107,7 +107,7 @@ namespace fhg
         addAction (zoom_out);
 
         QAction* zoom_default (new QAction (tr ("zoom_default"), this));
-        fhg::util::qt::boost_connect<void()>
+        fhg::util::qt::connect<void()>
           ( zoom_default
           , SIGNAL (triggered())
           , this

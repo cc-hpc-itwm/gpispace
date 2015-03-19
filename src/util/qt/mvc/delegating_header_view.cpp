@@ -2,7 +2,7 @@
 
 #include <util/qt/mvc/delegating_header_view.hpp>
 
-#include <util/qt/boost_connect.hpp>
+#include <util-qt/connect.hpp>
 #include <util/qt/mini_button.hpp>
 #include <util/qt/mvc/header_delegate.hpp>
 #include <util/qt/painter_state_saver.hpp>

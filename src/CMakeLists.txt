@@ -136,3 +136,4 @@ add_subdirectory (rpc)
 
 add_subdirectory (rif)
 add_subdirectory (util-generic)
+add_subdirectory (util-qt)

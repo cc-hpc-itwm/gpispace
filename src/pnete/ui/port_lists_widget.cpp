@@ -4,7 +4,7 @@
 
 #include <pnete/ui/ComboItemDelegate.hpp>
 
-#include <util/qt/boost_connect.hpp>
+#include <util-qt/connect.hpp>
 
 #include <xml/parse/type/function.hpp>
 
@@ -230,7 +230,7 @@ namespace fhg
 
         QToolBar* bar (new QToolBar (QObject::tr ("dummy"), this));
 
-        fhg::util::qt::boost_connect<void()>
+        fhg::util::qt::connect<void()>
           ( bar->addAction (QObject::tr ("add_in_port"))
           , SIGNAL (triggered())
           , this
@@ -241,7 +241,7 @@ namespace fhg
                       )
           );
 
-        fhg::util::qt::boost_connect<void()>
+        fhg::util::qt::connect<void()>
           ( bar->addAction (QObject::tr ("add_out_port"))
           , SIGNAL (triggered())
           , this
@@ -254,7 +254,7 @@ namespace fhg
 
         if (function.content_is_net())
         {
-          fhg::util::qt::boost_connect<void()>
+          fhg::util::qt::connect<void()>
             ( bar->addAction (QObject::tr ("add_tunnel_port"))
             , SIGNAL (triggered())
             , this
