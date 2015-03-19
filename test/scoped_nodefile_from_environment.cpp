@@ -5,7 +5,7 @@
 #include <drts/drts.hpp>
 #include <drts/private/option.hpp>
 
-#include <fhg/util/getenv.hpp>
+#include <util-generic/getenv.hpp>
 
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
