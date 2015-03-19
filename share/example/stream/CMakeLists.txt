@@ -23,7 +23,7 @@ fhg_add_test (stream.two_module_calls.cpp
                  test-utilities
                  fhg-util
                  Boost::program_options
-                 Boost::program_options
+                 Boost::filesystem
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY
   START_SCOPED_RIF
@@ -44,7 +44,7 @@ fhg_add_test (stream.one_module_call.cpp
                  test-utilities
                  fhg-util
                  Boost::program_options
-                 Boost::program_options
+                 Boost::filesystem
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY
   START_SCOPED_RIF

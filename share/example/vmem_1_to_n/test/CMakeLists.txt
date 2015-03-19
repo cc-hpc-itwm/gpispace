@@ -20,7 +20,7 @@ fhg_add_test (test.cpp
                  transform_file_type
                  fhg-util
                  Boost::program_options
-                 Boost::program_options
+                 Boost::filesystem
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY
   START_SCOPED_RIF

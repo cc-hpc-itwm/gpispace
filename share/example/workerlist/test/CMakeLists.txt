@@ -11,7 +11,7 @@ fhg_add_test (test.cpp
                  test-utilities
                  fhg-util
                  Boost::program_options
-                 Boost::program_options
+                 Boost::filesystem
   REQUIRES_INSTALLATION
   START_SCOPED_RIF
 )

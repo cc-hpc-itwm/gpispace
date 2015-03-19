@@ -19,7 +19,7 @@ foreach (SPLIT_VERSION ${SPLIT_JOIN_SPLIT_VERSIONS})
                    test-utilities
                    fhg-util
                    Boost::program_options
-                   Boost::program_options
+                   Boost::filesystem
     REQUIRES_INSTALLATION
     START_SCOPED_RIF
   )
@@ -46,7 +46,7 @@ foreach (SPLIT_VERSION ${SPLIT_JOIN_SPLIT_VERSIONS})
                    test-utilities
                    fhg-util
                    Boost::program_options
-                   Boost::program_options
+                   Boost::filesystem
     REQUIRES_INSTALLATION
     START_SCOPED_RIF
   )

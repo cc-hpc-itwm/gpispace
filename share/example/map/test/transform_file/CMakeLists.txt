@@ -51,7 +51,7 @@ fhg_add_test (test.cpp
                  transform_file_type
                  fhg-util
                  Boost::program_options
-                 Boost::program_options
+                 Boost::filesystem
   DEPENDS transform_file_map-impl
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY
