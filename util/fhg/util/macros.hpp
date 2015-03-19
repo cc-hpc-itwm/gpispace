@@ -12,7 +12,3 @@
       % __FILE__ % __LINE__ % BOOST_CURRENT_FUNCTION % #type % value \
       ).str() \
      );
-
-//! \todo more than just gcc?
-#define UNREACHABLE()                           \
-  __builtin_unreachable()
