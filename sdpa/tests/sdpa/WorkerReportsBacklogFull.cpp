@@ -7,7 +7,7 @@
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 #include <sdpa/events/BacklogNoLongerFullEvent.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 namespace
 {

@@ -5,7 +5,7 @@
 
 #include <mmgr/tmmgr.h>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -5,7 +5,7 @@
 
 #include <xml/parse/type/memory_transfer.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/join.hpp>
 #include <fhg/util/random_string.hpp>
 #include <fhg/util/xml.hpp>

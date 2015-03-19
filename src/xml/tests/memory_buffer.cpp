@@ -6,7 +6,7 @@
 #include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/memory_buffer.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/printer/optional.hpp>
 #include <fhg/util/random_string.hpp>
 #include <fhg/util/xml.hpp>

@@ -9,7 +9,7 @@
 #include <we/type/value/boost/test/printer.hpp>
 #include <we/type/value/show.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/require_exception.hpp>
 #include <fhg/util/random_string.hpp>
 

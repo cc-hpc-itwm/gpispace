@@ -7,7 +7,7 @@
 #include <xml/parse/type/place.hpp>
 #include <xml/parse/util/position.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/xml.hpp>
 #include <fhg/util/random_string.hpp>
 

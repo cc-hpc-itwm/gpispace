@@ -8,7 +8,7 @@
 #include <pnetv/jpna/Verification.h>
 
 #include <fhg/util/boost/test.hpp>
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/random_string.hpp>
 
 FHG_BOOST_TEST_LOG_VALUE_PRINTER (jpna::VerificationResult::Result, os, result)

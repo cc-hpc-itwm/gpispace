@@ -3,7 +3,7 @@
 
 #include <fhg/assert.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/require_exception.hpp>
 
 BOOST_AUTO_TEST_CASE(assert_true)

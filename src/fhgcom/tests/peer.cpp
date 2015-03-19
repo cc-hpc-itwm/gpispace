@@ -6,7 +6,7 @@
 #include <fhgcom/tests/address_printer.hpp>
 
 #include <network/connectable_to_address_string.hpp>
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <fhg/util/random_string.hpp>
 

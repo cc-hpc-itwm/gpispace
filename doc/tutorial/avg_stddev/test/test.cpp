@@ -15,7 +15,7 @@
 #include <we/type/value.hpp>
 
 #include <fhg/util/boost/program_options/validators/executable.hpp>
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/nest_exceptions.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 #include <fhg/util/temporary_file.hpp>

@@ -3,7 +3,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/printer/set.hpp>
 #include <fhg/util/boost/test.hpp>
 #include <fhg/util/random_string.hpp>

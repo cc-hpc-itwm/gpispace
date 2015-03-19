@@ -9,7 +9,7 @@
 //! \todo: eliminate this include that just completes the type
 #include <we/type/net.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/random_string.hpp>
 
 namespace

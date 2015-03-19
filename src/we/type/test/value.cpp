@@ -24,7 +24,7 @@
 #include <fhg/util/num.hpp>
 #include <fhg/util/indenter.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/printer/list.hpp>
 #include <fhg/util/boost/test/printer/optional.hpp>
 #include <fhg/util/boost/test/printer/set.hpp>

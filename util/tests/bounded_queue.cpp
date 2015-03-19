@@ -5,7 +5,7 @@
 #include <boost/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/thread/bounded_queue.hpp>
 
 #include <functional>

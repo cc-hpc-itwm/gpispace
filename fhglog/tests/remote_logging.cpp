@@ -9,7 +9,7 @@
 #include <fhglog/remote/appender.hpp>
 #include <fhglog/remote/server.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 
 #include <boost/thread/scoped_thread.hpp>

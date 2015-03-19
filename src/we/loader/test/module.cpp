@@ -15,7 +15,7 @@
 
 #include <fhglog/Configuration.hpp>
 #include <fhglog/Logger.hpp>
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/require_exception.hpp>
 
 #include <boost/asio/io_service.hpp>

@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE WeTypeBytearrayTest
 #include <boost/test/unit_test.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/printer/tuple.hpp>
 #include <fhg/util/boost/test.hpp>
 

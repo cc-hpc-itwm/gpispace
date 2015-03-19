@@ -4,7 +4,7 @@
 #include <fhglog/event.hpp>
 #include <fhglog/level.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 //! \todo This should test way more
 BOOST_AUTO_TEST_CASE (event_ctor_should_regard_severity)
