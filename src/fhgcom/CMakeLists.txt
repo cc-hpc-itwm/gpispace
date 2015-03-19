@@ -3,6 +3,6 @@ ADD_LIBRARY(fhgcom
   header.cpp
   peer.cpp
 )
-target_link_libraries (fhgcom fhglog Util::Generic)
+target_link_libraries (fhgcom fhglog Util::Generic Network)
 
   add_subdirectory (tests)

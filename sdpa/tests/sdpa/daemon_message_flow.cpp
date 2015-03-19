@@ -4,7 +4,7 @@
 
 #include <utils.hpp>
 
-#include <fhg/util/boost/asio/ip/address.hpp>
+#include <network/connectable_to_address_string.hpp>
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
 
   child.send ( child.connect_to
                  ( fhg::com::host_t
-                     ( fhg::util::connectable_to_address_string
+                     ( fhg::network::connectable_to_address_string
                          (orchestrator.peer_local_endpoint().address())
                      )
                  , fhg::com::port_t

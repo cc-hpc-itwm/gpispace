@@ -12,7 +12,7 @@
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
 
-#include <fhg/util/boost/asio/ip/address.hpp>
+#include <network/connectable_to_address_string.hpp>
 #include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/require_exception.hpp>
 #include <fhg/util/read_lines.hpp>
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
     ( client.submit
         ( workflow
         , { {"trigger", we::type::literal::control()}
-          , {"address", fhg::util::connectable_to_address_string
+          , {"address", fhg::network::connectable_to_address_string
                           (acceptor.local_endpoint().address())
             }
           , {"port", static_cast<unsigned int>

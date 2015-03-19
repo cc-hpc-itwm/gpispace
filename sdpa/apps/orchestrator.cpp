@@ -7,7 +7,7 @@
 #include <fhglog/Configuration.hpp>
 #include <fhglog/LogMacros.hpp>
 
-#include <fhg/util/boost/asio/ip/address.hpp>
+#include <network/connectable_to_address_string.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/print_exception.hpp>
@@ -83,10 +83,10 @@ try
 
   {
     fhg::rif::startup_messages_pipe startup_messages_pipe (vm);
-    startup_messages_pipe << fhg::util::connectable_to_address_string
+    startup_messages_pipe << fhg::network::connectable_to_address_string
                                (orchestrator.peer_local_endpoint().address());
     startup_messages_pipe << orchestrator.peer_local_endpoint().port();
-    startup_messages_pipe << fhg::util::connectable_to_address_string
+    startup_messages_pipe << fhg::network::connectable_to_address_string
                                (orchestrator.rpc_local_endpoint().address());
     startup_messages_pipe << orchestrator.rpc_local_endpoint().port();
   }

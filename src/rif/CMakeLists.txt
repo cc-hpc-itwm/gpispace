@@ -34,6 +34,7 @@ fhg_add_runtime_executable ("gspc-teardown-rifd.cpp"
   LINK_LIBRARIES rif-strategies
                  fhg-util
                  Util::Generic
+                 Network
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}

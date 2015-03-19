@@ -3,7 +3,7 @@
 #include <rif/entry_point.hpp>
 
 #include <util-generic/syscall.hpp>
-#include <fhg/util/boost/asio/ip/address.hpp>
+#include <network/connectable_to_address_string.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/join.hpp>
 #include <util-generic/print_exception.hpp>
@@ -316,7 +316,7 @@ try
     fhg::rpc::sync_remote_function<void (fhg::rif::entry_point)>
       (endpoint, "register")
       ( fhg::rif::entry_point
-          ( fhg::util::connectable_to_address_string (local_endpoint.address())
+          ( fhg::network::connectable_to_address_string (local_endpoint.address())
           , local_endpoint.port()
           , child
           )

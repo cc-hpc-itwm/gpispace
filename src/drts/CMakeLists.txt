@@ -42,6 +42,7 @@ target_link_libraries (gspc
   gpi-space-pc-segment
   fhg-revision
   Util::Generic
+  Network
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_REGEX_LIBRARY}
   ${Boost_PROGRAM_OPTIONS_LIBRARY}

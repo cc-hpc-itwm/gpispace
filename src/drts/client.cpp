@@ -17,7 +17,7 @@
 
 #include <util-generic/cxx14/make_unique.hpp>
 #include <fhg/util/thread/event.hpp>
-#include <fhg/util/boost/asio/ip/address.hpp>
+#include <network/connectable_to_address_string.hpp>
 
 #include <sdpa/client.hpp>
 
@@ -219,7 +219,7 @@ namespace gspc
     pnet::type::value::poke ("value", value_and_endpoint, value);
     pnet::type::value::poke ( "address"
                             , value_and_endpoint
-                            , fhg::util::connectable_to_address_string
+                            , fhg::network::connectable_to_address_string
                               (acceptor.local_endpoint().address())
                             );
     pnet::type::value::poke

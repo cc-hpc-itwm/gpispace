@@ -9,7 +9,7 @@
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
-#include <fhg/util/boost/asio/ip/address.hpp>
+#include <network/connectable_to_address_string.hpp>
 #include <fhg/util/boost/test/printer/optional.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <fhg/util/random_string.hpp>
@@ -420,7 +420,7 @@ namespace utils
     std::string name() const { return _name; }
     fhg::com::host_t host() const
     {
-      return fhg::com::host_t ( fhg::util::connectable_to_address_string
+      return fhg::com::host_t ( fhg::network::connectable_to_address_string
                                  (_network.local_endpoint().address())
                               );
     }

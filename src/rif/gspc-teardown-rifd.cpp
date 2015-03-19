@@ -1,7 +1,7 @@
 
 #include <rif/entry_point.hpp>
 
-#include <fhg/util/boost/asio/ip/address.hpp>
+#include <network/connectable_to_address_string.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/join.hpp>
 #include <util-generic/print_exception.hpp>

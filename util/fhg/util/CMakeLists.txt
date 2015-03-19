@@ -1,6 +1,4 @@
 set (srcs
-  boost/asio/ip/address.cpp
-
   backtracing_exception.cpp
   executable_path.cpp
   signal_handler_manager.cpp

@@ -9,6 +9,7 @@ fhg_add_test (network_strategy.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES sdpa we-dev
                  fhgcom fhglog ${Boost_FILESYSTEM_LIBRARY}
+                 Network
 )
 
 fhg_add_test (job_states.cpp

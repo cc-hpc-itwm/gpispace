@@ -10,6 +10,7 @@ fhg_add_test (test.cpp
   LINK_LIBRARIES gspc
                  test-utilities
                  fhg-util
+                 Network
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
                  ${Boost_FILESYSTEM_LIBRARY}
   REQUIRES_INSTALLATION
