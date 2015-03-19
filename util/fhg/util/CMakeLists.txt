@@ -4,7 +4,6 @@ set (srcs
   boost/asio/ip/address.cpp
 
   backtracing_exception.cpp
-  daemonize.cpp
   executable_path.cpp
   signal_handler_manager.cpp
   pidfile_writer.cpp
