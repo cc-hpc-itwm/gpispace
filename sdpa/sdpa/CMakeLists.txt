@@ -14,8 +14,8 @@ ADD_LIBRARY(sdpa
 target_link_libraries (sdpa
   gpi-space-pc-client-static
   gpi-space-pc-segment
-  net
-  rpc
+  Network
+  RPC
   ${Boost_SERIALIZATION_LIBRARY}
   ${Boost_DATE_TIME_LIBRARY}
   fhgcom

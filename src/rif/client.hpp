@@ -31,7 +31,7 @@ namespace fhg
         , _io_service_thread ([this] { _io_service.run(); })
         , _endpoint ( _io_service
                     , entry_point.hostname, entry_point.port
-                    , fhg::rpc::exception::serialization_functions()
+                    , fhg::util::serialization::exception::serialization_functions()
                     )
         , execute_and_get_startup_messages (_endpoint)
         , kill (_endpoint)

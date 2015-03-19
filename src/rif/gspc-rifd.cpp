@@ -5,11 +5,12 @@
 #include <fhg/syscall.hpp>
 #include <fhg/util/boost/asio/ip/address.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
-#include <fhg/util/boost/serialization/path.hpp>
-#include <fhg/util/boost/serialization/unordered_map.hpp>
 #include <fhg/util/join.hpp>
 #include <fhg/util/print_exception.hpp>
 #include <fhg/util/temporary_file.hpp>
+
+#include <util-generic/serialization/boost/filesystem/path.hpp>
+#include <util-generic/serialization/std/unordered_map.hpp>
 
 #include <fhglog/level_io.hpp>
 
@@ -90,7 +91,7 @@ try
   boost::asio::io_service io_service;
 
   fhg::rpc::service_dispatcher service_dispatcher
-    {fhg::rpc::exception::serialization_functions()};
+    {fhg::util::serialization::exception::serialization_functions()};
 
   fhg::rpc::service_handler<fhg::rif::protocol::execute_and_get_startup_messages>
     execute_and_get_startup_messages_service
@@ -297,7 +298,7 @@ try
     fhg::rpc::remote_endpoint endpoint
       ( io_service
       , register_host, register_port
-      , fhg::rpc::exception::serialization_functions()
+      , fhg::util::serialization::exception::serialization_functions()
       );
 
     struct stop_io_service_on_scope_exit

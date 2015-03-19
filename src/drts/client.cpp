@@ -158,7 +158,7 @@ namespace gspc
     )
   {
     fhg::rpc::service_dispatcher service_dispatcher
-      {fhg::rpc::exception::serialization_functions()};
+      {fhg::util::serialization::exception::serialization_functions()};
 
     fhg::util::thread::event<pnet::type::value::value_type> result;
 

@@ -16,16 +16,14 @@ include_directories (${CMAKE_SOURCE_DIR}/src)
 
 add_executable (rif_client rif_client.cpp)
 target_link_libraries (rif_client
-  rpc
-  ${Boost_SERIALIZATION_LIBRARY}
-  ${Boost_THREAD_LIBRARY}
+  RPC
+  Boost::thread
 )
 
 add_executable (rif_server rif_server.cpp)
 target_link_libraries (rif_server
-  rpc
+  RPC
   fhg-util
-  ${Boost_SERIALIZATION_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}
-  ${Boost_THREAD_LIBRARY}
+  Boost::system
+  Boost::thread
 )
