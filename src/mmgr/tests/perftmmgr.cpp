@@ -6,8 +6,9 @@
 #include <mmgr/tmmgr.h>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/now.hpp>
+#include <util-generic/testing/require_maximum_running_time.hpp>
 
+#include <chrono>
 #include <set>
 
 namespace
@@ -46,27 +47,32 @@ namespace
 
     tmmgr_init (&tmmgr, num_handles, 1);
 
-    double t_alloc (-fhg::util::now());
+    std::chrono::steady_clock::time_point const start
+      (std::chrono::steady_clock::now());
 
-    for (Handle_t const& handle : handles)
     {
-      BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, handle, 1), ALLOC_SUCCESS);
+      fhg::util::testing::require_maximum_running_time<std::chrono::seconds>
+        const max_time_for_alloc (1);
+
+      for (Handle_t const& handle : handles)
+      {
+        BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, handle, 1), ALLOC_SUCCESS);
+      }
     }
 
-    t_alloc += fhg::util::now();
-
-    BOOST_REQUIRE_LT (t_alloc, 1.);
-
-    double t_free (-fhg::util::now());
-
-    for (Handle_t const& handle : handles)
     {
-      BOOST_REQUIRE_EQUAL (tmmgr_free (&tmmgr, handle), RET_SUCCESS);
+      fhg::util::testing::require_maximum_running_time
+        <std::chrono::milliseconds>
+          const max_time_for_free
+            (std::chrono::duration_cast<std::chrono::milliseconds>
+              (std::chrono::steady_clock::now() - start)
+            );
+
+      for (Handle_t const& handle : handles)
+      {
+        BOOST_REQUIRE_EQUAL (tmmgr_free (&tmmgr, handle), RET_SUCCESS);
+      }
     }
-
-    t_free += fhg::util::now();
-
-    BOOST_REQUIRE_LT (t_free, t_alloc);
   }
 }
 
