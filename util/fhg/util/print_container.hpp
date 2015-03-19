@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <fhg/util/first_then.hpp>
+#include <util-generic/first_then.hpp>
 
 #include <functional>
 

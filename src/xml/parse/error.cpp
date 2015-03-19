@@ -14,7 +14,7 @@
 
 #include <we/type/signature/show.hpp>
 
-#include <fhg/util/first_then.hpp>
+#include <util-generic/first_then.hpp>
 #include <fhg/util/print_container.hpp>
 
 #include <boost/format.hpp>

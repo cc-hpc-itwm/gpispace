@@ -17,7 +17,7 @@
 #include <xml/parse/type/dumps.hpp>
 
 #include <fhg/util/boost/variant.hpp>
-#include <fhg/util/first_then.hpp>
+#include <util-generic/first_then.hpp>
 
 #include <fhg/util/cpp/block.hpp>
 #include <fhg/util/cpp/namespace.hpp>

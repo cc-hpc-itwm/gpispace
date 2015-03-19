@@ -4,7 +4,7 @@
 #include <ostream>
 
 #include <gpi-space/pc/url.hpp>
-#include <fhg/util/first_then.hpp>
+#include <util-generic/first_then.hpp>
 
 namespace gpi
 {
