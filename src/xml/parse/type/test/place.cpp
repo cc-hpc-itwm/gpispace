@@ -9,7 +9,7 @@
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/xml.hpp>
-#include <fhg/util/random_string.hpp>
+#include <util-generic/testing/random_string.hpp>
 
 #include <boost/format.hpp>
 
@@ -17,8 +17,8 @@
 
 BOOST_AUTO_TEST_CASE (dump_no_virtual)
 {
-  std::string const name (fhg::util::random_identifier());
-  std::string const type (fhg::util::random_identifier());
+  std::string const name (fhg::util::testing::random_identifier());
+  std::string const type (fhg::util::testing::random_identifier());
 
   xml::parse::id::mapper mapper;
 
@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE (dump_no_virtual)
       , &mapper
       , boost::none
       , xml::parse::util::position_type
-        (nullptr, nullptr, fhg::util::random_string())
+        (nullptr, nullptr, fhg::util::testing::random_string())
       , name
       , type
       , false
@@ -51,8 +51,8 @@ BOOST_AUTO_TEST_CASE (dump_no_virtual)
 
 BOOST_AUTO_TEST_CASE (dump_virtual)
 {
-  std::string const name (fhg::util::random_identifier());
-  std::string const type (fhg::util::random_identifier());
+  std::string const name (fhg::util::testing::random_identifier());
+  std::string const type (fhg::util::testing::random_identifier());
 
   xml::parse::id::mapper mapper;
 
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE (dump_virtual)
       , &mapper
       , boost::none
       , xml::parse::util::position_type
-        (nullptr, nullptr, fhg::util::random_string())
+        (nullptr, nullptr, fhg::util::testing::random_string())
       , name
       , type
       , true
@@ -85,8 +85,8 @@ BOOST_AUTO_TEST_CASE (dump_virtual)
 
 BOOST_AUTO_TEST_CASE (dump_token)
 {
-  std::string const name (fhg::util::random_identifier());
-  std::string const type (fhg::util::random_identifier());
+  std::string const name (fhg::util::testing::random_identifier());
+  std::string const type (fhg::util::testing::random_identifier());
 
   xml::parse::id::mapper mapper;
 
@@ -98,13 +98,13 @@ BOOST_AUTO_TEST_CASE (dump_token)
     , &mapper
     , boost::none
     , xml::parse::util::position_type
-      (nullptr, nullptr, fhg::util::random_string())
+      (nullptr, nullptr, fhg::util::testing::random_string())
     , name
     , type
     , true
     );
 
-  std::string const token (fhg::util::random_content_string());
+  std::string const token (fhg::util::testing::random_content_string());
 
   place.push_token (token);
 
@@ -127,8 +127,8 @@ BOOST_AUTO_TEST_CASE (dump_token)
 
 BOOST_AUTO_TEST_CASE (dump_tokens)
 {
-  std::string const name (fhg::util::random_identifier());
-  std::string const type (fhg::util::random_identifier());
+  std::string const name (fhg::util::testing::random_identifier());
+  std::string const type (fhg::util::testing::random_identifier());
 
   xml::parse::id::mapper mapper;
 
@@ -140,14 +140,14 @@ BOOST_AUTO_TEST_CASE (dump_tokens)
     , &mapper
     , boost::none
     , xml::parse::util::position_type
-      (nullptr, nullptr, fhg::util::random_string())
+      (nullptr, nullptr, fhg::util::testing::random_string())
     , name
     , type
     , true
     );
 
   std::list<std::string> const tokens
-    {fhg::util::random_content_string(), fhg::util::random_content_string()};
+    {fhg::util::testing::random_content_string(), fhg::util::testing::random_content_string()};
 
   for (std::string const& token : tokens)
   {

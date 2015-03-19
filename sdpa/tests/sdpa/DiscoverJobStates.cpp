@@ -10,7 +10,7 @@
 #include <we/layer.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/random_string.hpp>
+#include <util-generic/testing/random_string.hpp>
 
 #include <boost/ptr_container/ptr_list.hpp>
 
@@ -138,7 +138,7 @@ namespace
       , agent
       );
 
-    const std::string activity_name (fhg::util::random_string());
+    const std::string activity_name (fhg::util::testing::random_string());
 
     utils::client::submitted_job submitted_job
       (utils::module_call (activity_name), orchestrator);
@@ -171,7 +171,7 @@ BOOST_FIXTURE_TEST_CASE (discover_discover_inexistent_job, setup_logging)
 
   BOOST_REQUIRE_EQUAL
     ( utils::client (orchestrator)
-    . discover (fhg::util::random_string()).state()
+    . discover (fhg::util::testing::random_string()).state()
     , boost::none
     );
 }
@@ -247,7 +247,7 @@ namespace
       , agents.back()
       );
 
-    const std::string activity_name (fhg::util::random_string());
+    const std::string activity_name (fhg::util::testing::random_string());
 
     utils::client::submitted_job submitted_job
       (utils::module_call (activity_name), orchestrator);

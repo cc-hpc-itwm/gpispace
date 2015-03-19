@@ -16,7 +16,7 @@
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/random_string.hpp>
+#include <util-generic/testing/random_string.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE (sdpa_test_drts_should_handle_multiple_workflows_being_subm
   gspc::scoped_runtime_system const drts
     (vm, installation, "work:1", rifd.entry_points());
 
-    std::string const challenge (fhg::util::random_string_without ("\"\\"));
+    std::string const challenge (fhg::util::testing::random_string_without ("\"\\"));
 
     for (int i (0); i < 2; ++i)
     {

@@ -11,7 +11,7 @@
 #include <we/type/net.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/random_string.hpp>
+#include <util-generic/testing/random_string.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
 #include <boost/format.hpp>
@@ -20,8 +20,8 @@
 
 BOOST_AUTO_TEST_CASE (memory_get_is_stored_in_function)
 {
-  std::string const global (fhg::util::random_content_string());
-  std::string const local (fhg::util::random_content_string());
+  std::string const global (fhg::util::testing::random_content_string());
+  std::string const local (fhg::util::testing::random_content_string());
 
   std::string const input
     ( ( boost::format (R"EOS(
@@ -62,8 +62,8 @@ namespace
   void check_memory_put_is_stored_in_function
     (boost::optional<bool> not_modified_in_module_call)
   {
-    std::string const global (fhg::util::random_content_string());
-    std::string const local (fhg::util::random_content_string());
+    std::string const global (fhg::util::testing::random_content_string());
+    std::string const local (fhg::util::testing::random_content_string());
 
     std::string const input
       ( ( boost::format (R"EOS(
@@ -106,8 +106,8 @@ namespace
   void check_memory_getput_is_stored_in_function
     (boost::optional<bool> not_modified_in_module_call)
   {
-    std::string const global (fhg::util::random_content_string());
-    std::string const local (fhg::util::random_content_string());
+    std::string const global (fhg::util::testing::random_content_string());
+    std::string const local (fhg::util::testing::random_content_string());
 
     std::string const input
       ( ( boost::format (R"EOS(
@@ -204,7 +204,7 @@ namespace
   void test_memory_transfer_for_non_module_call_throws
     (std::string const& tag)
   {
-    std::string const name_function (fhg::util::random_identifier());
+    std::string const name_function (fhg::util::testing::random_identifier());
 
     std::string const input
       ( ( boost::format (R"EOS(
@@ -241,7 +241,7 @@ namespace
   void test_memory_transfers_for_non_module_call_throws
     (std::string const& tag)
   {
-    std::string const name_function (fhg::util::random_identifier());
+    std::string const name_function (fhg::util::testing::random_identifier());
 
     std::string const input
       ( ( boost::format (R"EOS(

@@ -6,7 +6,7 @@
 #include <we/type/transition.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/random_string.hpp>
+#include <util-generic/testing/random_string.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE (transition_without_input_port_can_not_fire)
 {
   we::type::net_type net;
   net.add_transition ( we::type::transition_t
-                       ( fhg::util::random_string()
+                       ( fhg::util::testing::random_string()
                        , we::type::expression_t()
                        , boost::none
                        , true
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE (deserialized_transition_without_input_port_can_not_fire)
   {
     we::type::net_type net;
     net.add_transition ( we::type::transition_t
-                         ( fhg::util::random_string()
+                         ( fhg::util::testing::random_string()
                          , we::type::expression_t()
                          , boost::none
                          , true

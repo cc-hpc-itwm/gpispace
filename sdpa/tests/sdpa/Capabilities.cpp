@@ -3,7 +3,7 @@
 #include <utils.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/random_string.hpp>
+#include <util-generic/testing/random_string.hpp>
 
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
 

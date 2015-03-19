@@ -11,7 +11,7 @@
 #include <we/type/net.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/random_string.hpp>
+#include <util-generic/testing/random_string.hpp>
 #include <util-generic/testing/require_exception.hpp>
 #include <fhg/util/boost/variant.hpp>
 
@@ -24,10 +24,10 @@ namespace
   std::string random_identifier_with_valid_prefix()
   {
     return
-      fhg::util::random_char_of
+      fhg::util::testing::random_char_of
       ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
       +
-      fhg::util::random_string_of
+      fhg::util::testing::random_string_of
       ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789");
   }
 }
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE (duplicate_memory_buffer_throws)
 BOOST_AUTO_TEST_CASE (memory_buffer_is_stored_in_function)
 {
   std::string const name (random_identifier_with_valid_prefix());
-  std::string const size (fhg::util::random_content_string());
+  std::string const size (fhg::util::testing::random_content_string());
 
   std::string const input
     ( ( boost::format (R"EOS(
@@ -123,9 +123,9 @@ BOOST_AUTO_TEST_CASE (memory_buffer_is_stored_in_function)
 BOOST_AUTO_TEST_CASE (memory_buffers_are_stored_in_function)
 {
   std::string const name_1 (random_identifier_with_valid_prefix());
-  std::string const size_1 (fhg::util::random_content_string());
+  std::string const size_1 (fhg::util::testing::random_content_string());
   std::string const name_2 (random_identifier_with_valid_prefix());
-  std::string const size_2 (fhg::util::random_content_string());
+  std::string const size_2 (fhg::util::testing::random_content_string());
 
   std::string const input
     ( ( boost::format (R"EOS(
@@ -160,7 +160,7 @@ namespace
   void test_memory_buffer_for_non_module_call_throws
     (std::string const& tag)
   {
-    std::string const name_function (fhg::util::random_identifier());
+    std::string const name_function (fhg::util::testing::random_identifier());
 
     std::string const input
       ( ( boost::format (R"EOS(
@@ -197,7 +197,7 @@ namespace
 
   void test_memory_buffers_for_non_module_call_throws (std::string const& tag)
   {
-    std::string const name_function (fhg::util::random_identifier());
+    std::string const name_function (fhg::util::testing::random_identifier());
 
     std::string const input
       ( ( boost::format (R"EOS(
@@ -392,7 +392,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_arguments_in_function_signature)
 </defun>)EOS")
       % name_memory_buffer_A
       % name_memory_buffer_B
-      % fhg::util::random_identifier()
+      % fhg::util::testing::random_identifier()
       ).str()
     );
 
@@ -436,7 +436,7 @@ BOOST_AUTO_TEST_CASE
 </defun>)EOS")
       % name_port
       % name_memory_buffer
-      % fhg::util::random_identifier()
+      % fhg::util::testing::random_identifier()
       ).str()
     );
 
@@ -474,7 +474,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_return_in_function_signature)
   <module name="" function="%1% %2% ()"/>
 </defun>)EOS")
       % name_memory_buffer
-      % fhg::util::random_identifier()
+      % fhg::util::testing::random_identifier()
       ).str()
     );
 
@@ -509,7 +509,7 @@ BOOST_AUTO_TEST_CASE
   <module name="" function="%1% %2% (%1%)"/>
 </defun>)EOS")
       % name_memory_buffer
-      % fhg::util::random_identifier()
+      % fhg::util::testing::random_identifier()
       ).str()
     );
 

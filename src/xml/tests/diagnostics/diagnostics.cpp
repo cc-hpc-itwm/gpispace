@@ -9,7 +9,7 @@
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/require_exception.hpp>
-#include <fhg/util/random_string.hpp>
+#include <util-generic/testing/random_string.hpp>
 #include <fhg/util/temporary_path.hpp>
 
 namespace
@@ -59,7 +59,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE (warning_struct_redefined)
 {
-  std::string const name_struct (fhg::util::random_identifier());
+  std::string const name_struct (fhg::util::testing::random_identifier());
 
   std::string const input
     ( ( boost::format (R"EOS(
@@ -67,10 +67,10 @@ BOOST_AUTO_TEST_CASE (warning_struct_redefined)
   <struct name="%2%"><field name="%3%" type="%4%"/></struct>
   <struct name="%2%"><field name="%3%" type="%4%"/></struct>
 </defun>)EOS")
-      % fhg::util::random_identifier()
+      % fhg::util::testing::random_identifier()
       % name_struct
-      % fhg::util::random_identifier()
-      % fhg::util::random_identifier()
+      % fhg::util::testing::random_identifier()
+      % fhg::util::testing::random_identifier()
       ).str()
     );
 

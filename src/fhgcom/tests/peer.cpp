@@ -8,7 +8,7 @@
 #include <network/connectable_to_address_string.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
-#include <fhg/util/random_string.hpp>
+#include <util-generic/testing/random_string.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/thread.hpp>

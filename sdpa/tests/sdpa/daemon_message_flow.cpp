@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
                  , fhg::com::port_t
                      (std::to_string (orchestrator.peer_local_endpoint().port()))
                  )
-             , new sdpa::events::JobFinishedAckEvent (fhg::util::random_string())
+             , new sdpa::events::JobFinishedAckEvent (fhg::util::testing::random_string())
              );
 
   sdpa::events::ErrorEvent::Ptr event

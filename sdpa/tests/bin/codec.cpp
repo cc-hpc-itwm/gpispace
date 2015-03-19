@@ -6,7 +6,7 @@
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/test/printer/optional.hpp>
-#include <fhg/util/random_string.hpp>
+#include <util-generic/testing/random_string.hpp>
 #include <fhg/util/boost/test.hpp>
 #include <fhg/util/boost/test/printer/list.hpp>
 #include <fhg/util/boost/test/printer/set.hpp>
@@ -67,8 +67,8 @@ BOOST_AUTO_TEST_CASE (CancelJob)
 BOOST_AUTO_TEST_CASE (CapabilitiesGained)
 {
   sdpa::capabilities_set_t set;
-  set.insert (sdpa::Capability ("foo", fhg::util::random_string()));
-  set.insert (sdpa::Capability ("bar", fhg::util::random_string()));
+  set.insert (sdpa::Capability ("foo", fhg::util::testing::random_string()));
+  set.insert (sdpa::Capability ("bar", fhg::util::testing::random_string()));
 
   CapabilitiesGainedEvent e (set);
   CapabilitiesGainedEvent* r (encode_decode_mgmt_event (e));
@@ -79,8 +79,8 @@ BOOST_AUTO_TEST_CASE (CapabilitiesGained)
 BOOST_AUTO_TEST_CASE (CapabilitiesLost)
 {
   sdpa::capabilities_set_t set;
-  set.insert (sdpa::Capability ("foo", fhg::util::random_string()));
-  set.insert (sdpa::Capability ("bar", fhg::util::random_string()));
+  set.insert (sdpa::Capability ("foo", fhg::util::testing::random_string()));
+  set.insert (sdpa::Capability ("bar", fhg::util::testing::random_string()));
 
   CapabilitiesLostEvent e (set);
   CapabilitiesLostEvent* r (encode_decode_mgmt_event (e));
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE (SubmitJob)
 
 BOOST_AUTO_TEST_CASE (SubscribeAck)
 {
-  SubscribeAckEvent e (fhg::util::random_string());
+  SubscribeAckEvent e (fhg::util::testing::random_string());
   SubscribeAckEvent* r (encode_decode_mgmt_event (e));
 
   BOOST_REQUIRE_EQUAL (r->job_id(), e.job_id());
@@ -197,7 +197,7 @@ BOOST_AUTO_TEST_CASE (SubscribeAck)
 
 BOOST_AUTO_TEST_CASE (Subscribe)
 {
-  SubscribeEvent e (fhg::util::random_string());
+  SubscribeEvent e (fhg::util::testing::random_string());
   SubscribeEvent* r (encode_decode_mgmt_event (e));
 
   BOOST_REQUIRE_EQUAL (r->job_id(), e.job_id());
@@ -212,11 +212,11 @@ BOOST_AUTO_TEST_CASE (WorkerRegistrationAck)
 BOOST_AUTO_TEST_CASE (WorkerRegistration)
 {
   sdpa::capabilities_set_t caps;
-  caps.insert (sdpa::Capability ("foo", fhg::util::random_string()));
-  caps.insert (sdpa::Capability ("bar", fhg::util::random_string()));
+  caps.insert (sdpa::Capability ("foo", fhg::util::testing::random_string()));
+  caps.insert (sdpa::Capability ("bar", fhg::util::testing::random_string()));
 
   WorkerRegistrationEvent e
-    (fhg::util::random_string(), 10, caps, true, fhg::util::random_string());
+    (fhg::util::testing::random_string(), 10, caps, true, fhg::util::testing::random_string());
   WorkerRegistrationEvent* r (encode_decode_mgmt_event (e));
 
   BOOST_REQUIRE_EQUAL (r->name(), e.name());
