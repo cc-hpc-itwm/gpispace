@@ -18,8 +18,8 @@ fhg_add_test (peer.cpp
   LINK_LIBRARIES fhgcom
                  fhg-util
                  fhglog
-                 ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_SERIALIZATION_LIBRARY}
-                 ${Boost_DATE_TIME_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
+                 Boost::filesystem
+                 Boost::serialization
+                 Boost::date_time
+                 Boost::thread
 )

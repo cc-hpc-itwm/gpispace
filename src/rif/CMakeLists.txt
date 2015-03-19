@@ -15,8 +15,8 @@ fhg_add_runtime_executable ("gspc-rifd.cpp" "execute_and_get_startup_messages.cp
 
 add_library (rif-startup-messages-pipe "startup_messages_pipe.cpp")
 target_link_libraries (rif-startup-messages-pipe
-  ${Boost_IOSTREAMS_LIBRARY}
-  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  Boost::iostreams
+  Boost::program_options
 )
 
 add_library (rif-strategies "strategy/meta.cpp" "strategy/ssh.cpp")
@@ -26,16 +26,16 @@ fhg_add_runtime_executable ("gspc-bootstrap-rifd.cpp"
   LINK_LIBRARIES rif-strategies
                  fhg-util
                  Util::Generic
-                 ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
+                 Boost::filesystem
+                 Boost::program_options
+                 Boost::system
 )
 fhg_add_runtime_executable ("gspc-teardown-rifd.cpp"
   LINK_LIBRARIES rif-strategies
                  fhg-util
                  Util::Generic
                  Network
-                 ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
+                 Boost::filesystem
+                 Boost::program_options
+                 Boost::system
 )

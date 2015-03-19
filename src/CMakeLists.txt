@@ -116,8 +116,8 @@ target_link_libraries (pnet
   fhg-util
   drts-context
   Util::Generic
-  ${Boost_SERIALIZATION_LIBRARY}
-  ${Boost_DATE_TIME_LIBRARY}
+  Boost::serialization
+  Boost::date_time
   ${CMAKE_DL_LIBS}
 )
 

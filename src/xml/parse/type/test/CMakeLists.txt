@@ -9,5 +9,5 @@ fhg_add_test (link.cpp
 fhg_add_test (place.cpp
   PROJECT xml_parse_type
   BOOST_UNIT_TEST
-  LINK_LIBRARIES pnet fhg-util ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  LINK_LIBRARIES pnet fhg-util Boost::program_options
 )

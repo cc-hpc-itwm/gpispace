@@ -32,9 +32,9 @@ add_library (fhg-util ${srcs})
 
 target_link_libraries (fhg-util
   Util::Generic
-  ${Boost_THREAD_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}
-  ${Boost_FILESYSTEM_LIBRARY}
+  Boost::thread
+  Boost::system
+  Boost::filesystem
 )
 
 install (TARGETS fhg-util

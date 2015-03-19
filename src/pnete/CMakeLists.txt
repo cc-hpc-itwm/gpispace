@@ -147,9 +147,9 @@ qt4_wrap_cpp (plugin_wrapped_cpps ${plugin_tomoc})
                    fhg-util
                    Util::Generic
                    Util::Qt
-                   ${Boost_FILESYSTEM_LIBRARY}
-                   ${Boost_PROGRAM_OPTIONS_LIBRARY}
-                   ${Boost_THREAD_LIBRARY}
+                   Boost::filesystem
+                   Boost::program_options
+                   Boost::thread
                    ${QT_LIBRARIES}
   )
 
@@ -179,7 +179,7 @@ install (FILES "plugin/plugin_api.hpp" "plugin/plugin_base.hpp"
                    fhglog
                    Util::Generic
                    Util::Qt
-                   ${Boost_THREAD_LIBRARY}
+                   Boost::thread
                    ${QT_LIBRARIES}
   )
   fhg_add_runtime_executable (gspcmonc.cpp
@@ -190,7 +190,7 @@ install (FILES "plugin/plugin_api.hpp" "plugin/plugin_base.hpp"
                    fhglog
                    Util::Generic
                    Util::Qt
-                   ${Boost_THREAD_LIBRARY}
+                   Boost::thread
                    ${QT_LIBRARIES}
   )
 

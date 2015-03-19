@@ -8,6 +8,6 @@ add_library (test-utilities
 target_include_directories (test-utilities PRIVATE "${CMAKE_SOURCE_DIR}")
 target_link_libraries (test-utilities
   fhg-util
-  ${Boost_PROGRAM_OPTIONS_LIBRARY}
-  ${Boost_FILESYSTEM_LIBRARY}
+  Boost::program_options
+  Boost::filesystem
 )

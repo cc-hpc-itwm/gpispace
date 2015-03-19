@@ -7,11 +7,11 @@ fhg_add_runtime_executable (drts-kernel.cpp drts.cpp
                  we-dev
                  rif-startup-messages-pipe
                  Util::Generic
-                 ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
-                 ${Boost_SERIALIZATION_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
+                 Boost::filesystem
+                 Boost::program_options
+                 Boost::serialization
+                 Boost::system
+                 Boost::thread
                  ${HWLOC_SHARED_LIBRARY}
 )
 target_include_directories (drts-kernel

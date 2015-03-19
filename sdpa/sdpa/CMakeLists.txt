@@ -16,10 +16,10 @@ target_link_libraries (sdpa
   gpi-space-pc-segment
   Network
   RPC
-  ${Boost_SERIALIZATION_LIBRARY}
-  ${Boost_DATE_TIME_LIBRARY}
+  Boost::serialization
+  Boost::date_time
   fhgcom
-  ${Boost_THREAD_LIBRARY}
+  Boost::thread
   fhg-util
   pnet
   Util::Generic

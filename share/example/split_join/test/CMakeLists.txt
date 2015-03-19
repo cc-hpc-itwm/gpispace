@@ -18,8 +18,8 @@ foreach (SPLIT_VERSION ${SPLIT_JOIN_SPLIT_VERSIONS})
     LINK_LIBRARIES gspc
                    test-utilities
                    fhg-util
-                   ${Boost_PROGRAM_OPTIONS_LIBRARIES}
-                   ${Boost_FILESYSTEM_LIBRARIES}
+                   Boost::program_options
+                   Boost::program_options
     REQUIRES_INSTALLATION
     START_SCOPED_RIF
   )
@@ -45,8 +45,8 @@ foreach (SPLIT_VERSION ${SPLIT_JOIN_SPLIT_VERSIONS})
     LINK_LIBRARIES gspc
                    test-utilities
                    fhg-util
-                   ${Boost_PROGRAM_OPTIONS_LIBRARIES}
-                   ${Boost_FILESYSTEM_LIBRARIES}
+                   Boost::program_options
+                   Boost::program_options
     REQUIRES_INSTALLATION
     START_SCOPED_RIF
   )

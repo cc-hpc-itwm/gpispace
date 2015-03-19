@@ -43,9 +43,9 @@ target_link_libraries (gspc
   fhg-revision
   Util::Generic
   Network
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_REGEX_LIBRARY}
-  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  Boost::filesystem
+  Boost::regex
+  Boost::program_options
 )
 
 install (TARGETS

@@ -42,7 +42,7 @@ fhg_add_test (sfs_area.cpp
                  gpi-space-pc-memory
                  fhgcom
                  fhglog
-                 ${Boost_FILESYSTEM_LIBRARY}
+                 Boost::filesystem
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )

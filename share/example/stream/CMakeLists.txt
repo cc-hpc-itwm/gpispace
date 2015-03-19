@@ -22,8 +22,8 @@ fhg_add_test (stream.two_module_calls.cpp
   LINK_LIBRARIES gspc
                  test-utilities
                  fhg-util
-                 ${Boost_PROGRAM_OPTIONS_LIBRARIES}
-                 ${Boost_FILESYSTEM_LIBRARIES}
+                 Boost::program_options
+                 Boost::program_options
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY
   START_SCOPED_RIF
@@ -43,8 +43,8 @@ fhg_add_test (stream.one_module_call.cpp
   LINK_LIBRARIES gspc
                  test-utilities
                  fhg-util
-                 ${Boost_PROGRAM_OPTIONS_LIBRARIES}
-                 ${Boost_FILESYSTEM_LIBRARIES}
+                 Boost::program_options
+                 Boost::program_options
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY
   START_SCOPED_RIF
