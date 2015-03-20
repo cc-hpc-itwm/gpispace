@@ -2,6 +2,7 @@
 
 #include <drts/private/option.hpp>
 #include <drts/drts.hpp>
+#include <drts/scoped_rifd.hpp>
 
 #include <fhg/util/boost/program_options/validators/existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
@@ -139,29 +140,39 @@ namespace gspc
       return drts;
     }
 
-    boost::program_options::options_description scoped_rifd()
+    boost::program_options::options_description scoped_rifd (int options)
     {
       boost::program_options::options_description drts
         ("Remote Interface Daemon (internally started)");
 
-      drts.add_options()
+      if (options & rifd::nodefile)
+      {
+        drts.add_options()
         ( name::nodefile
         , boost::program_options::value<validators::existing_path>()->required()
         , "nodefile"
-        )
+        );
+      }
+      if (options & rifd::rif_strategy)
+      {
+        drts.add_options()
         ( name::rif_strategy
         , boost::program_options::value<std::string>()->required()
         , ( "strategy used to bootstrap rifd (one of "
           + fhg::util::join (fhg::rif::strategy::available_strategies(), ", ")
           + ")"
           ).c_str()
-        )
+        );
+      }
+      if (options & rifd::rif_port)
+      {
+        drts.add_options()
         ( name::rif_port
         , boost::program_options::value
-            <fhg::util::boost::program_options::positive_integral<unsigned short>>()
+          <fhg::util::boost::program_options::positive_integral<unsigned short>>()
         , "port for rifd to listen on"
-        )
-        ;
+        );
+      }
 
       return drts;
     }
