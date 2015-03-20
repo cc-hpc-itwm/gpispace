@@ -19,6 +19,17 @@
 
 namespace gspc
 {
+  namespace options
+  {
+    enum rifd : int { nodefile = 1 << 0
+                    , rif_strategy = 1 << 1
+                    , rif_port = 1 << 2
+                    };
+
+    boost::program_options::options_description scoped_rifd
+      (int = rifd::nodefile | rifd::rif_strategy | rifd::rif_port);
+  }
+
   namespace rifd
   {
     struct strategy
