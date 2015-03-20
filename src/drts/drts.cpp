@@ -23,7 +23,6 @@
 #include <util-generic/cxx14/make_unique.hpp>
 #include <fhg/util/nest_exceptions.hpp>
 #include <fhg/util/read_file.hpp>
-#include <util-generic/read_lines.hpp>
 #include <util-generic/split.hpp>
 #include <fhg/revision.hpp>
 #include <util-generic/syscall.hpp>
@@ -31,49 +30,13 @@
 #include <boost/format.hpp>
 
 #include <chrono>
-#include <fstream>
 #include <iostream>
-#include <list>
 #include <sstream>
 #include <stdexcept>
 #include <thread>
-#include <unordered_set>
 
 namespace gspc
 {
-  namespace
-  {
-    std::pair<std::list<std::string>, unsigned long>
-      read_nodes (boost::filesystem::path const& nodefile)
-    {
-      std::unordered_set<std::string> unique_nodes;
-      std::list<std::string> nodes;
-
-      {
-        std::ifstream stream (nodefile.string());
-
-        std::string node;
-
-        while (std::getline (stream, node))
-        {
-          unique_nodes.insert (node);
-          nodes.emplace_back (node);
-        }
-      }
-
-      if (unique_nodes.empty())
-      {
-        throw std::runtime_error
-          (( boost::format ("nodefile %1% does not contain nodes")
-           % nodefile
-           ).str()
-          );
-      }
-
-      return std::make_pair (nodes, unique_nodes.size());
-    }
-  }
-
   installation::installation
     (boost::program_options::variables_map const& vm)
       : _gspc_home (boost::filesystem::canonical (require_gspc_home (vm)))
@@ -269,7 +232,7 @@ namespace gspc
         : boost::none
         )
       , _nodes_and_number_of_unique_nodes
-          (read_nodes (boost::filesystem::canonical (require_nodefile (vm))))
+          (entry_points._->nodes_and_number_of_unique_nodes())
       , _started_runtime_system ( get_gui_host (vm)
                                 , get_gui_port (vm)
                                 , get_log_host (vm)
