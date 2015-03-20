@@ -5,7 +5,7 @@
 #include <xml/parse/error.hpp>
 #include <parser_fixture.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 BOOST_FIXTURE_TEST_CASE (different_directions, parser_fixture)
 {

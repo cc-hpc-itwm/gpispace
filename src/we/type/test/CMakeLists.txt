@@ -26,7 +26,7 @@ fhg_add_test (bitsetofint.cpp
 )
 
 add_executable (mk_cpp mk_cpp.cpp)
-target_link_libraries (mk_cpp pnet ${Boost_PROGRAM_OPTIONS_LIBRARY})
+target_link_libraries (mk_cpp pnet Boost::program_options Util::Generic)
 
 add_custom_command (
   OUTPUT sig_struct.hpp sig_op.hpp sig_op.cpp

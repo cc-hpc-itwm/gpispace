@@ -10,8 +10,8 @@ fhg_add_test (test.cpp
   LINK_LIBRARIES gspc
                  test-utilities
                  fhg-util
-                 ${Boost_PROGRAM_OPTIONS_LIBRARIES}
-                 ${Boost_FILESYSTEM_LIBRARIES}
+                 Boost::program_options
+                 Boost::filesystem
   REQUIRES_INSTALLATION
   START_SCOPED_RIF
 )

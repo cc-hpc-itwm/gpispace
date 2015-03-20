@@ -13,7 +13,7 @@
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
 
-#include <fhg/util/boost/serialization/unordered_map.hpp>
+#include <util-generic/serialization/std/unordered_map.hpp>
 
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>

@@ -9,7 +9,6 @@
 
 #include <fhg/util/indenter.hpp>
 #include <fhg/util/join.hpp>
-#include <fhg/util/first_then.hpp>
 #include <fhg/util/cpp/block.hpp>
 #include <fhg/util/cpp/namespace.hpp>
 #include <fhg/util/cpp/struct.hpp>

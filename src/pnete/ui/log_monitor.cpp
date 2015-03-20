@@ -1,6 +1,6 @@
 #include <pnete/ui/log_monitor.hpp>
 
-#include <util/qt/boost_connect.hpp>
+#include <util-qt/connect.hpp>
 
 #include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
 #include <we/type/activity.hpp>
@@ -338,11 +338,11 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
                                        << tr ("Error")
                                        );
 
-  fhg::util::qt::boost_connect<void (int)>
+  fhg::util::qt::connect<void (int)>
     ( filter_level_combobox, SIGNAL (currentIndexChanged(int))
     , this, boost::lambda::var (_filter_level) = boost::lambda::_1
     );
-  fhg::util::qt::boost_connect<void (int)>
+  fhg::util::qt::connect<void (int)>
     ( filter_level_combobox
     , SIGNAL (currentIndexChanged(int))
     , _log_filter
@@ -362,7 +362,7 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   drop_filtered_box->setChecked (_drop_filtered);
   drop_filtered_box->setToolTip
     (tr ("Drop filtered events instead of keeping them"));
-  fhg::util::qt::boost_connect<void (bool)>
+  fhg::util::qt::connect<void (bool)>
     ( drop_filtered_box, SIGNAL (toggled (bool))
     , this, boost::lambda::var (_drop_filtered) = boost::lambda::_1
     );
@@ -372,7 +372,7 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
 
   QPushButton* clear_log_button (new QPushButton (tr ("Clear"), this));
   clear_log_button->setToolTip (tr ("Clear all events"));
-  fhg::util::qt::boost_connect<void()>
+  fhg::util::qt::connect<void()>
     ( clear_log_button, SIGNAL (clicked())
     , _log_model, std::bind (&detail::log_table_model::clear, _log_model)
     );

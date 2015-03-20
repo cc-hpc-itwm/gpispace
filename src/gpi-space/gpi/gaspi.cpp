@@ -6,7 +6,7 @@
 #include <gpi-space/exception.hpp>
 #include <gpi-space/gpi/system.hpp>
 
-#include <fhg/util/hostname.hpp>
+#include <util-generic/hostname.hpp>
 
 #include <GASPI.h>
 

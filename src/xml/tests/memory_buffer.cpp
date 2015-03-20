@@ -6,16 +6,16 @@
 #include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/memory_buffer.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/printer/optional.hpp>
-#include <fhg/util/random_string.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
+#include <util-generic/testing/random_string.hpp>
 #include <fhg/util/xml.hpp>
 
 #include <boost/format.hpp>
 
 BOOST_AUTO_TEST_CASE (name_is_stored)
 {
-  std::string const name (fhg::util::random_string());
+  std::string const name (fhg::util::testing::random_string());
 
   xml::parse::id::mapper mapper;
 
@@ -26,9 +26,9 @@ BOOST_AUTO_TEST_CASE (name_is_stored)
       , &mapper
       , boost::none
       , xml::parse::util::position_type
-        (nullptr, nullptr, fhg::util::random_string())
+        (nullptr, nullptr, fhg::util::testing::random_string())
       , name
-      , fhg::util::random_string()
+      , fhg::util::testing::random_string()
       , boost::none
       , we::type::property::type()
       ).name()
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE (name_is_stored)
 
 BOOST_AUTO_TEST_CASE (size_is_stored)
 {
-  std::string const size (fhg::util::random_string());
+  std::string const size (fhg::util::testing::random_string());
 
   xml::parse::id::mapper mapper;
 
@@ -48,8 +48,8 @@ BOOST_AUTO_TEST_CASE (size_is_stored)
       , &mapper
       , boost::none
       , xml::parse::util::position_type
-        (nullptr, nullptr, fhg::util::random_string())
-      , fhg::util::random_string()
+        (nullptr, nullptr, fhg::util::testing::random_string())
+      , fhg::util::testing::random_string()
       , size
       , boost::none
       , we::type::property::type()
@@ -70,9 +70,9 @@ namespace
         , &mapper
         , boost::none
         , xml::parse::util::position_type
-          (nullptr, nullptr, fhg::util::random_string())
-        , fhg::util::random_string()
-        , fhg::util::random_string()
+          (nullptr, nullptr, fhg::util::testing::random_string())
+        , fhg::util::testing::random_string()
+        , fhg::util::testing::random_string()
         , read_only
         , we::type::property::type()
         ).read_only()
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE (read_only_is_stored)
 
 BOOST_AUTO_TEST_CASE (name_is_unique_key)
 {
-  std::string const name (fhg::util::random_string());
+  std::string const name (fhg::util::testing::random_string());
 
   xml::parse::id::mapper mapper;
 
@@ -100,9 +100,9 @@ BOOST_AUTO_TEST_CASE (name_is_unique_key)
       , &mapper
       , boost::none
       , xml::parse::util::position_type
-        (nullptr, nullptr, fhg::util::random_string())
+        (nullptr, nullptr, fhg::util::testing::random_string())
       , name
-      , fhg::util::random_string()
+      , fhg::util::testing::random_string()
       , boost::none
       , we::type::property::type()
       ).unique_key()
@@ -113,8 +113,8 @@ namespace
 {
   void check_dump (boost::optional<bool> read_only)
   {
-    std::string const name (fhg::util::random_identifier());
-    std::string const size (fhg::util::random_string_without_zero());
+    std::string const name (fhg::util::testing::random_identifier());
+    std::string const size (fhg::util::testing::random_string_without_zero());
 
     xml::parse::id::mapper mapper;
 
@@ -123,7 +123,7 @@ namespace
       , &mapper
       , boost::none
       , xml::parse::util::position_type
-      (nullptr, nullptr, fhg::util::random_string())
+      (nullptr, nullptr, fhg::util::testing::random_string())
       , name
       , size
       , read_only

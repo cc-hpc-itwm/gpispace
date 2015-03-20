@@ -22,7 +22,7 @@
 #include <pnete/weaver/display.hpp>
 
 #include <util/graphviz/graphviz.hpp>
-#include <util/qt/boost_connect.hpp>
+#include <util-qt/connect.hpp>
 #include <util/qt/cast.hpp>
 #include <util/qt/parent.hpp>
 
@@ -70,7 +70,7 @@ namespace fhg
         template<typename FUN_TYPE>
         QAction* scene_type::connect_action (QAction* action, FUN_TYPE fun)
         {
-          fhg::util::qt::boost_connect<void()>
+          fhg::util::qt::connect<void()>
             (action, SIGNAL (triggered()), this, fun);
           return action;
         }
@@ -314,7 +314,7 @@ namespace fhg
                   (item_below_cursor)->handle()
                 );
 
-              fhg::util::qt::boost_connect<void()>
+              fhg::util::qt::connect<void()>
                 ( menu->addAction(tr ("port_set_name"))
                 , SIGNAL (triggered())
                 , item_below_cursor
@@ -328,7 +328,7 @@ namespace fhg
                             )
                 );
 
-              fhg::util::qt::boost_connect<void()>
+              fhg::util::qt::connect<void()>
                 ( menu->addAction(tr ("port_set_type"))
                 , SIGNAL (triggered())
                 , item_below_cursor
@@ -344,7 +344,7 @@ namespace fhg
 
               menu->addSeparator();
 
-              fhg::util::qt::boost_connect<void()>
+              fhg::util::qt::connect<void()>
                 ( menu->addAction (tr ("port_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
@@ -360,7 +360,7 @@ namespace fhg
                   (item_below_cursor)->handle()
                 );
 
-              fhg::util::qt::boost_connect<void()>
+              fhg::util::qt::connect<void()>
                 ( menu->addAction(tr ("port_set_type"))
                 , SIGNAL (triggered())
                 , item_below_cursor
@@ -383,7 +383,7 @@ namespace fhg
                   (item_below_cursor)->handle()
                 );
 
-              fhg::util::qt::boost_connect<void()>
+              fhg::util::qt::connect<void()>
                 ( menu->addAction (tr ("new_port_in"))
                 , SIGNAL (triggered())
                 , this
@@ -394,7 +394,7 @@ namespace fhg
                             )
                 );
 
-              fhg::util::qt::boost_connect<void()>
+              fhg::util::qt::connect<void()>
                 ( menu->addAction (tr ("new_port_out"))
                 , SIGNAL (triggered())
                 , this
@@ -407,7 +407,7 @@ namespace fhg
 
               if (handle.function().content_is_net())
               {
-                fhg::util::qt::boost_connect<void()>
+                fhg::util::qt::connect<void()>
                   ( menu->addAction (tr ("new_port_tunnel"))
                   , SIGNAL (triggered())
                   , this
@@ -421,7 +421,7 @@ namespace fhg
 
               menu->addSeparator();
 
-              fhg::util::qt::boost_connect<void()>
+              fhg::util::qt::connect<void()>
                 ( menu->addAction(tr ("transition_set_name"))
                 , SIGNAL (triggered())
                 , item_below_cursor
@@ -437,7 +437,7 @@ namespace fhg
 
               menu->addSeparator();
 
-              fhg::util::qt::boost_connect<void()>
+              fhg::util::qt::connect<void()>
                 ( menu->addAction (tr ("transition_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
@@ -446,7 +446,7 @@ namespace fhg
 
               menu->addSeparator();
 
-              fhg::util::qt::boost_connect<void()>
+              fhg::util::qt::connect<void()>
                 ( menu->addAction (tr ("dive_into_transition"))
                 , SIGNAL (triggered())
                 , item_below_cursor
@@ -464,7 +464,7 @@ namespace fhg
 
               if (handle.is_implicit())
               {
-                fhg::util::qt::boost_connect<void()>
+                fhg::util::qt::connect<void()>
                   ( menu->addAction (tr ("place_make_explicit"))
                   , SIGNAL (triggered())
                   , item_below_cursor
@@ -473,7 +473,7 @@ namespace fhg
               }
               else
               {
-                fhg::util::qt::boost_connect<void()>
+                fhg::util::qt::connect<void()>
                   ( menu->addAction(tr ("place_set_name"))
                   , SIGNAL (triggered())
                   , item_below_cursor
@@ -487,7 +487,7 @@ namespace fhg
                               )
                   );
 
-                fhg::util::qt::boost_connect<void()>
+                fhg::util::qt::connect<void()>
                   ( menu->addAction(tr ("place_set_type"))
                   , SIGNAL (triggered())
                   , item_below_cursor
@@ -503,7 +503,7 @@ namespace fhg
 
                 if (handle.is_virtual())
                 {
-                  fhg::util::qt::boost_connect<void()>
+                  fhg::util::qt::connect<void()>
                     ( menu->addAction (tr ("place_make_real"))
                     , SIGNAL (triggered())
                     , item_below_cursor
@@ -512,7 +512,7 @@ namespace fhg
                 }
                 else
                 {
-                  fhg::util::qt::boost_connect<void()>
+                  fhg::util::qt::connect<void()>
                     ( menu->addAction (tr ("place_make_virtual"))
                     , SIGNAL (triggered())
                     , item_below_cursor
@@ -523,7 +523,7 @@ namespace fhg
 
               menu->addSeparator();
 
-              fhg::util::qt::boost_connect<void()>
+              fhg::util::qt::connect<void()>
                 ( menu->addAction (tr ("place_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
@@ -545,7 +545,7 @@ namespace fhg
                 action_read->setCheckable (true);
                 action_read->setChecked (handle.is_read());
 
-                fhg::util::qt::boost_connect<void (bool)>
+                fhg::util::qt::connect<void (bool)>
                   ( action_read
                   , SIGNAL (toggled (bool))
                   , item_below_cursor
@@ -555,7 +555,7 @@ namespace fhg
                 menu->addSeparator();
               }
 
-              fhg::util::qt::boost_connect<void()>
+              fhg::util::qt::connect<void()>
                 ( menu->addAction (tr ("connection_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
@@ -571,7 +571,7 @@ namespace fhg
                   <port_place_association*> (item_below_cursor)->handle()
                 );
 
-              fhg::util::qt::boost_connect<void()>
+              fhg::util::qt::connect<void()>
                 ( menu->addAction (tr ("port_place_assoc_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
@@ -589,7 +589,7 @@ namespace fhg
                   (item_below_cursor)->handle()
                 );
 
-              fhg::util::qt::boost_connect<void()>
+              fhg::util::qt::connect<void()>
                 ( menu->addAction (tr ("place_map_delete"))
                 , SIGNAL (triggered())
                 , item_below_cursor
@@ -610,7 +610,7 @@ namespace fhg
             {
               QMenu* menu_new (menu->addMenu ("menu_new_element"));
 
-              fhg::util::qt::boost_connect<void()>
+              fhg::util::qt::connect<void()>
                 ( menu_new->addAction (tr ("new_transition"))
                 , SIGNAL (triggered())
                 , this
@@ -618,7 +618,7 @@ namespace fhg
                   (&data::handle::net::add_empty_transition, net(), event->scenePos())
                 );
 
-              fhg::util::qt::boost_connect<void()>
+              fhg::util::qt::connect<void()>
                 ( menu_new->addAction (tr ("new_place"))
                 , SIGNAL (triggered())
                 , this
@@ -626,7 +626,7 @@ namespace fhg
                   (&data::handle::net::add_place, net(), event->scenePos())
                 );
 
-              fhg::util::qt::boost_connect<void()>
+              fhg::util::qt::connect<void()>
                 ( menu_new->addAction (tr ("new_top_level_port_in"))
                 , SIGNAL (triggered())
                 , this
@@ -637,7 +637,7 @@ namespace fhg
                             )
                 );
 
-              fhg::util::qt::boost_connect<void()>
+              fhg::util::qt::connect<void()>
                 ( menu_new->addAction (tr ("new_top_level_port_out"))
                 , SIGNAL (triggered())
                 , this
@@ -648,7 +648,7 @@ namespace fhg
                             )
                 );
 
-              fhg::util::qt::boost_connect<void()>
+              fhg::util::qt::connect<void()>
                 ( menu_new->addAction (tr ("new_top_level_port_tunnel"))
                 , SIGNAL (triggered())
                 , this
@@ -662,7 +662,7 @@ namespace fhg
               menu_new->addSeparator();
 
               //! \todo Is this really needed?
-              fhg::util::qt::boost_connect<void()>
+              fhg::util::qt::connect<void()>
                 ( menu_new->addAction (tr ("new_struct"))
                 , SIGNAL (triggered())
                 , this
@@ -676,7 +676,7 @@ namespace fhg
 
             menu->addSeparator();
 
-            fhg::util::qt::boost_connect<void()>
+            fhg::util::qt::connect<void()>
               ( menu->addAction (tr ("set_function_name"))
               , SIGNAL (triggered())
               , this

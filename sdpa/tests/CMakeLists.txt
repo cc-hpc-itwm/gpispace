@@ -11,8 +11,8 @@ fhg_add_test (drts_should_handle_multiple_workflows_being_submitted_during_lifet
   LINK_LIBRARIES gspc
                  test-utilities
                  fhg-util
-                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
-                 ${Boost_FILESYSTEM_LIBRARY}
+                 Boost::program_options
+                 Boost::filesystem
   REQUIRES_INSTALLATION
   START_SCOPED_RIF
 )

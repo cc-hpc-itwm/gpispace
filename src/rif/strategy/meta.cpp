@@ -2,7 +2,7 @@
 
 #include <rif/strategy/meta.hpp>
 
-#include <fhg/util/boost/asio/ip/address.hpp>
+#include <network/connectable_to_address_string.hpp>
 #include <fhg/util/join.hpp>
 #include <fhg/util/nest_exceptions.hpp>
 
@@ -103,7 +103,7 @@ namespace fhg
         boost::asio::io_service io_service;
 
         fhg::rpc::service_dispatcher service_dispatcher
-          {fhg::rpc::exception::serialization_functions()};
+          {fhg::util::serialization::exception::serialization_functions()};
 
         fhg::rpc::service_handler<void (fhg::rif::entry_point)>
           const register_service
@@ -173,7 +173,7 @@ namespace fhg
               strategies.at (strategy).first
                 ( hostnames
                 , port
-                , fhg::util::connectable_to_address_string (local_endpoint.address())
+                , fhg::network::connectable_to_address_string (local_endpoint.address())
                 , local_endpoint.port()
                 , gspc_home / "bin" / "gspc-rifd"
                 );

@@ -14,11 +14,13 @@ ADD_LIBRARY(sdpa
 target_link_libraries (sdpa
   gpi-space-pc-client-static
   gpi-space-pc-segment
-  net
-  rpc
-  ${Boost_SERIALIZATION_LIBRARY}
-  ${Boost_DATE_TIME_LIBRARY}
+  Network
+  RPC
+  Boost::serialization
+  Boost::date_time
   fhgcom
-  ${Boost_THREAD_LIBRARY}
+  Boost::thread
   fhg-util
-  pnet)
+  pnet
+  Util::Generic
+)

@@ -1,13 +1,13 @@
 fhg_add_test(event.cpp
   BOOST_UNIT_TEST
   PROJECT util
-  LINK_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} fhg-util
+  LINK_LIBRARIES Boost::thread Boost::system fhg-util
 )
 
 fhg_add_test(queue.cpp
   BOOST_UNIT_TEST
   PROJECT util
-  LINK_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} fhg-util
+  LINK_LIBRARIES Boost::thread Boost::system fhg-util
 )
 
 fhg_add_test(assert.cpp
@@ -26,5 +26,5 @@ fhg_add_test(counter.cpp
 fhg_add_test(bounded_queue.cpp
   BOOST_UNIT_TEST
   PROJECT util
-  LINK_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} fhg-util
+  LINK_LIBRARIES Boost::thread Boost::system fhg-util
 )

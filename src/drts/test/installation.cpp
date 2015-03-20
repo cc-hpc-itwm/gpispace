@@ -4,8 +4,8 @@
 
 #include <drts/drts.hpp>
 
-#include <fhg/util/temporary_path.hpp>
-#include <fhg/util/boost/test/require_exception.hpp>
+#include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/require_exception.hpp>
 #include <fhg/revision.hpp>
 
 #include <boost/program_options.hpp>
@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_CASE (installation_set_gspc_home_to_directory_without_revision)
   fhg::util::temporary_path const temporary_path;
   boost::filesystem::path const path (temporary_path);
 
-  fhg::util::boost::test::require_exception<std::invalid_argument>
+  fhg::util::testing::require_exception<std::invalid_argument>
     ([&path]()
     {
       boost::program_options::variables_map vm;
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE (installation_set_gspc_home_to_directory_with_bad_revision)
 
   std::ofstream ((path / "revision").string()) << "-";
 
-  fhg::util::boost::test::require_exception<std::invalid_argument>
+  fhg::util::testing::require_exception<std::invalid_argument>
     ([&path]()
     {
       boost::program_options::variables_map vm;

@@ -1,6 +1,6 @@
 #include <drts/worker/drts.hpp>
 
-#include <fhg/util/hostname.hpp>
+#include <util-generic/hostname.hpp>
 
 #include <sdpa/capability.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>

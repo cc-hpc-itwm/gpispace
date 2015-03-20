@@ -3,7 +3,7 @@
 #include <fhglog/format.hpp>
 
 #include <fhg/util/parse/position.hpp>
-#include <fhg/util/print_exception.hpp>
+#include <util-generic/print_exception.hpp>
 
 #include <boost/program_options.hpp>
 

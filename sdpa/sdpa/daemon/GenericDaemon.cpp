@@ -35,9 +35,9 @@
 #include <sdpa/id_generator.hpp>
 
 #include <fhg/util/boost/optional.hpp>
-#include <fhg/util/hostname.hpp>
+#include <util-generic/hostname.hpp>
 #include <fhg/util/macros.hpp>
-#include <fhg/util/make_unique.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 
 #include <boost/tokenizer.hpp>
 #include <boost/range/adaptor/filtered.hpp>
@@ -167,7 +167,7 @@ GenericDaemon::GenericDaemon( const std::string name
   , mtx_cpb_()
   , m_capabilities()
   , m_guiService ( gui_info && !gui_info->first.empty()
-                 ? fhg::util::make_unique<NotificationService>
+                 ? fhg::util::cxx14::make_unique<NotificationService>
                    (gui_info->first, gui_info->second)
                  : nullptr
                  )
@@ -203,7 +203,7 @@ GenericDaemon::GenericDaemon( const std::string name
   , _event_handler_thread (&GenericDaemon::handle_events, this)
   , _virtual_memory_api
     ( vmem_socket
-    ? fhg::util::make_unique<virtual_memory_api> (*vmem_socket)
+    ? fhg::util::cxx14::make_unique<virtual_memory_api> (*vmem_socket)
     : nullptr
     )
 {

@@ -9,10 +9,10 @@
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
-#include <fhg/util/boost/asio/ip/address.hpp>
-#include <fhg/util/boost/test/printer/optional.hpp>
-#include <fhg/util/make_unique.hpp>
-#include <fhg/util/random_string.hpp>
+#include <network/connectable_to_address_string.hpp>
+#include <util-generic/testing/printer/optional.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/testing/random_string.hpp>
 
 #include <fhglog/Configuration.hpp>
 
@@ -65,7 +65,7 @@ namespace utils
     return boost::lexical_cast<std::string> (i++)
 #define TEST_NO_HUMAN_READABLE_PEER_NAMES
 #ifdef TEST_NO_HUMAN_READABLE_PEER_NAMES
-    + fhg::util::random_string()
+    + fhg::util::testing::random_string()
 #endif
       ;
   }
@@ -75,8 +75,8 @@ namespace utils
   {
     we::type::transition_t transition
       ( name
-      , we::type::module_call_t ( fhg::util::random_string()
-                                , fhg::util::random_string()
+      , we::type::module_call_t ( fhg::util::testing::random_string()
+                                , fhg::util::testing::random_string()
                                 , std::unordered_map<std::string, std::string>()
                                 , std::list<we::type::memory_transfer>()
                                 , std::list<we::type::memory_transfer>()
@@ -86,7 +86,7 @@ namespace utils
       , we::type::property::type()
       , we::priority_type()
       );
-    const std::string port_name (fhg::util::random_string());
+    const std::string port_name (fhg::util::testing::random_string());
     transition.add_port ( we::type::port_t ( port_name
                                            , we::type::PORT_IN
                                            , std::string ("string")
@@ -97,14 +97,14 @@ namespace utils
     act.add_input ( transition.input_port_by_name (port_name)
                   //! \todo Investigate why we can't take a random
                   //! string with \\ or \": parse error on deserialization
-                  , fhg::util::random_string_without ("\\\"")
+                  , fhg::util::testing::random_string_without ("\\\"")
                   );
     return act;
   }
 
   std::string module_call()
   {
-    return module_call (fhg::util::random_string()).to_string();
+    return module_call (fhg::util::testing::random_string()).to_string();
   }
 
   we::type::activity_t net_with_one_child_requiring_workers (unsigned long count)
@@ -114,9 +114,9 @@ namespace utils
               , boost::lexical_cast<std::string> (count) + "UL"
               );
     we::type::transition_t transition
-      ( fhg::util::random_string()
-      , we::type::module_call_t ( fhg::util::random_string()
-                                , fhg::util::random_string()
+      ( fhg::util::testing::random_string()
+      , we::type::module_call_t ( fhg::util::testing::random_string()
+                                , fhg::util::testing::random_string()
                                 , std::unordered_map<std::string, std::string>()
                                 , std::list<we::type::memory_transfer>()
                                 , std::list<we::type::memory_transfer>()
@@ -126,7 +126,7 @@ namespace utils
       , props
       , we::priority_type()
       );
-    const std::string port_name (fhg::util::random_string());
+    const std::string port_name (fhg::util::testing::random_string());
     we::port_id_type const port_id_in
       ( transition.add_port ( we::type::port_t ( port_name
                                                , we::type::PORT_IN
@@ -141,7 +141,7 @@ namespace utils
     we::place_id_type const place_id_in
       (net.add_place (place::type (port_name, std::string ("string"))));
 
-    net.put_value (place_id_in, fhg::util::random_string_without ("\\\""));
+    net.put_value (place_id_in, fhg::util::testing::random_string_without ("\\\""));
 
     we::transition_id_type const transition_id
       (net.add_transition (transition));
@@ -154,7 +154,7 @@ namespace utils
                        );
 
     return we::type::activity_t
-      ( we::type::transition_t ( fhg::util::random_string()
+      ( we::type::transition_t ( fhg::util::testing::random_string()
                                , net
                                , boost::none
                                , true
@@ -170,9 +170,9 @@ namespace utils
     we::type::property::type props;
     props.set ({"fhg", "drts", "schedule", "num_worker"}, std::to_string (n) + "UL");
     we::type::transition_t transition_0
-      ( fhg::util::random_string()
-      , we::type::module_call_t ( fhg::util::random_string()
-                                , fhg::util::random_string()
+      ( fhg::util::testing::random_string()
+      , we::type::module_call_t ( fhg::util::testing::random_string()
+                                , fhg::util::testing::random_string()
                                 , std::unordered_map<std::string, std::string>()
                                 , std::list<we::type::memory_transfer>()
                                 , std::list<we::type::memory_transfer>()
@@ -183,9 +183,9 @@ namespace utils
       , we::priority_type()
       );
     we::type::transition_t transition_1
-      ( fhg::util::random_string()
-      , we::type::module_call_t ( fhg::util::random_string()
-                                , fhg::util::random_string()
+      ( fhg::util::testing::random_string()
+      , we::type::module_call_t ( fhg::util::testing::random_string()
+                                , fhg::util::testing::random_string()
                                 , std::unordered_map<std::string, std::string>()
                                 , std::list<we::type::memory_transfer>()
                                 , std::list<we::type::memory_transfer>()
@@ -195,7 +195,7 @@ namespace utils
       , props
       , we::priority_type()
       );
-    const std::string port_name (fhg::util::random_string());
+    const std::string port_name (fhg::util::testing::random_string());
     we::port_id_type const port_id_in_0
       ( transition_0.add_port ( we::type::port_t ( port_name
                                                  , we::type::PORT_IN
@@ -220,8 +220,8 @@ namespace utils
     we::place_id_type const place_id_in_1
       (net.add_place (place::type (port_name + "2", std::string ("string"))));
 
-    net.put_value (place_id_in_0, fhg::util::random_string_without ("\\\""));
-    net.put_value (place_id_in_1, fhg::util::random_string_without ("\\\""));
+    net.put_value (place_id_in_0, fhg::util::testing::random_string_without ("\\\""));
+    net.put_value (place_id_in_1, fhg::util::testing::random_string_without ("\\\""));
 
     we::transition_id_type const transition_id_0
       (net.add_transition (transition_0));
@@ -242,7 +242,7 @@ namespace utils
                        );
 
     return we::type::activity_t
-      ( we::type::transition_t ( fhg::util::random_string()
+      ( we::type::transition_t ( fhg::util::testing::random_string()
                                , net
                                , boost::none
                                , true
@@ -257,7 +257,7 @@ namespace utils
   {
     orchestrator (fhg::log::Logger& logger)
       : _ ( random_peer_name(), "127.0.0.1"
-          , fhg::util::make_unique<boost::asio::io_service>()
+          , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , _rpc_io_service
           , logger
           )
@@ -286,7 +286,7 @@ namespace utils
       agent (const T& master_0, const U& master_1, fhg::log::Logger& logger)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
-          , fhg::util::make_unique<boost::asio::io_service>()
+          , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master_0), make_master_info_tuple (master_1)}
           , boost::none
@@ -297,7 +297,7 @@ namespace utils
       agent (const T& master, fhg::log::Logger& logger)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
-          , fhg::util::make_unique<boost::asio::io_service>()
+          , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master)}
           , boost::none
@@ -307,7 +307,7 @@ namespace utils
     agent (const agent& master, fhg::log::Logger& logger)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
-          , fhg::util::make_unique<boost::asio::io_service>()
+          , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master)}
           , boost::none
@@ -335,7 +335,7 @@ namespace utils
                    {
                      _event_queue.put (source, e);
                    }
-                 , fhg::util::make_unique<boost::asio::io_service>()
+                 , fhg::util::cxx14::make_unique<boost::asio::io_service>()
                  , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
                  )
       , _event_thread (&basic_drts_component::event_thread, this)
@@ -358,7 +358,7 @@ namespace utils
             , 1
             , capabilities
             , accept_workers
-            , fhg::util::random_string()
+            , fhg::util::testing::random_string()
             )
           )
         );
@@ -420,7 +420,7 @@ namespace utils
     std::string name() const { return _name; }
     fhg::com::host_t host() const
     {
-      return fhg::com::host_t ( fhg::util::connectable_to_address_string
+      return fhg::com::host_t ( fhg::network::connectable_to_address_string
                                  (_network.local_endpoint().address())
                               );
     }
@@ -688,7 +688,7 @@ namespace utils
   {
     client (orchestrator const& orch)
       : _ ( orch.host(), orch.port()
-          , fhg::util::make_unique<boost::asio::io_service>()
+          , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           )
     {}
 
@@ -735,7 +735,7 @@ namespace utils
     {
       static std::size_t i (0);
       const std::string discover_id
-        ((boost::format ("%1%%2%") % fhg::util::random_string() % i++).str());
+        ((boost::format ("%1%%2%") % fhg::util::testing::random_string() % i++).str());
       return _.discoverJobStates (discover_id, id);
     }
 

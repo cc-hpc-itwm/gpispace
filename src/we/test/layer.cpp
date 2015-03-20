@@ -13,8 +13,8 @@
 
 #include <we/test/layer.common.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
-#include <fhg/util/random_string.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/random_string.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/range/algorithm.hpp>
@@ -1029,7 +1029,7 @@ BOOST_FIXTURE_TEST_CASE (layer_properly_puts_token, daemon)
   }
 
   {
-    std::string const put_token_id (fhg::util::random_string());
+    std::string const put_token_id (fhg::util::testing::random_string());
     expect_token_put const token_put (this, put_token_id);
     //! \note Race: can't ensure that child_id_b is triggered by putting token
     expect_submit const submitted (this, &child_id_b, activity_child);
@@ -1066,9 +1066,9 @@ namespace
     (we::type::net_type& net, we::type::requirement_t const& requirement)
   {
     we::type::transition_t transition
-      ( fhg::util::random_string()
-      , we::type::module_call_t ( fhg::util::random_string()
-                                , fhg::util::random_string()
+      ( fhg::util::testing::random_string()
+      , we::type::module_call_t ( fhg::util::testing::random_string()
+                                , fhg::util::testing::random_string()
                                 , std::unordered_map<std::string, std::string>()
                                 , std::list<we::type::memory_transfer>()
                                 , std::list<we::type::memory_transfer>()
@@ -1080,7 +1080,7 @@ namespace
       );
     transition.add_requirement (requirement);
 
-    const std::string port_name (fhg::util::random_string());
+    const std::string port_name (fhg::util::testing::random_string());
     we::port_id_type const port_id
       ( transition.add_port ( we::type::port_t ( port_name
                                                , we::type::PORT_IN
@@ -1136,7 +1136,7 @@ namespace
     }
 
     return we::type::activity_t
-      ( we::type::transition_t ( fhg::util::random_string()
+      ( we::type::transition_t ( fhg::util::testing::random_string()
                                , net
                                , boost::none
                                , true
@@ -1230,7 +1230,7 @@ BOOST_AUTO_TEST_CASE (layer_properly_forwards_requirements)
   const we::type::requirement_t req_b ("B", true);
 
   helper._layer.submit
-    ( fhg::util::random_string()
+    ( fhg::util::testing::random_string()
     , net_with_two_childs_that_require_capabilities (req_a, 20, req_b, 10)
     );
   helper.wait_all_submitted();

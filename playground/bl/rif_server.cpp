@@ -1,7 +1,7 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <fhg/syscall.hpp>
-#include <fhg/util/print_exception.hpp>
+#include <util-generic/syscall.hpp>
+#include <util-generic/print_exception.hpp>
 
 #include <network/server.hpp>
 
@@ -25,7 +25,7 @@ public:
   rif ( boost::asio::ip::tcp::endpoint endpoint
       , boost::asio::io_service& io_service
       )
-    : _service_dispatcher (fhg::rpc::exception::serialization_functions())
+    : _service_dispatcher (fhg::util::serialization::exception::serialization_functions())
     , _start_service ( _service_dispatcher
                      , "start"
                      , std::bind (&rif::start, this, std::placeholders::_1, std::placeholders::_2)
@@ -67,7 +67,7 @@ private:
   pid_t start (std::string filename, std::vector<std::string> arguments)
   {
     std::this_thread::sleep_for (std::chrono::seconds (1));
-    pid_t pid (fhg::syscall::fork());
+    pid_t pid (fhg::util::syscall::fork());
     if (pid)
     {
       return pid;
@@ -97,7 +97,7 @@ private:
 
       try
       {
-        fhg::syscall::execve (argv[0], argv.data(), nullptr);
+        fhg::util::syscall::execve (argv[0], argv.data(), nullptr);
       }
       catch (boost::system::system_error const&)
       {
@@ -107,7 +107,7 @@ private:
   }
   void stop (pid_t pid)
   {
-    fhg::syscall::kill (pid, 9);
+    fhg::util::syscall::kill (pid, 9);
   }
 
   fhg::rpc::service_dispatcher _service_dispatcher;

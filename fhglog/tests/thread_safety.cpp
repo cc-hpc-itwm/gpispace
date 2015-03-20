@@ -7,7 +7,7 @@
 #include <fhglog/format.hpp>
 #include <fhglog/appender/stream.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>

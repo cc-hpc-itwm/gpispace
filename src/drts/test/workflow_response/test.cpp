@@ -15,9 +15,9 @@
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/require_exception.hpp>
-#include <fhg/util/temporary_path.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/require_exception.hpp>
+#include <util-generic/temporary_path.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE (workflow_response)
                       );
 
   //! \todo specific exception
-  fhg::util::boost::test::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception<std::runtime_error>
     ([&client, &job_id]()
      {
        client.synchronous_workflow_response
@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE (workflow_response)
   //! \note BUG: Hangs, GenericDaemon: unhandled error (3)
 #if 0
   //! \todo specific exception
-  fhg::util::boost::test::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception<std::runtime_error>
     ([&client, &job_id]()
      {
        client.synchronous_workflow_response
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE (workflow_response)
   //! \note BUG: Hangs, GenericDaemon: unhandled error (3)
 #if 0
   //! \todo specific exception
-  fhg::util::boost::test::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception<std::runtime_error>
     ([&client, &job_id]()
      {
        client.synchronous_workflow_response
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE (workflow_response)
   client.put_token (job_id, "done", we::type::literal::control());
   client.wait (job_id);
 
-  fhg::util::boost::test::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception<std::runtime_error>
     ([&client, &job_id]()
      {
        client.synchronous_workflow_response

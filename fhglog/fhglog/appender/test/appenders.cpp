@@ -3,7 +3,7 @@
 #define BOOST_TEST_MODULE append
 #include <boost/test/unit_test.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 #include <fhglog/LogMacros.hpp>
 #include <fhglog/appender/stream.hpp>

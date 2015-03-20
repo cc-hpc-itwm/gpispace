@@ -24,12 +24,12 @@
 #include <fhg/util/num.hpp>
 #include <fhg/util/indenter.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/printer/list.hpp>
-#include <fhg/util/boost/test/printer/optional.hpp>
-#include <fhg/util/boost/test/printer/set.hpp>
-#include <fhg/util/boost/test/printer/map.hpp>
-#include <fhg/util/boost/test/require_exception.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/list.hpp>
+#include <util-generic/testing/printer/optional.hpp>
+#include <util-generic/testing/printer/set.hpp>
+#include <util-generic/testing/printer/map.hpp>
+#include <util-generic/testing/require_exception.hpp>
 
 #include <fhg/util/xml.hpp>
 
@@ -916,7 +916,7 @@ namespace
 
     pnet::type::value::value_type const value (pnet::type::value::read (v));
 
-    fhg::util::boost::test::require_exception<std::runtime_error>
+    fhg::util::testing::require_exception<std::runtime_error>
       ( [&os, &value] { pnet::type::value::dump (os, value); }
       , ( boost::format ("cannot dump the plain value '%1%'")
         % pnet::type::value::show (value)
@@ -932,7 +932,7 @@ namespace
     std::ostringstream oss;
     fhg::util::xml::xmlstream os (oss);
 
-    fhg::util::boost::test::require_exception<std::runtime_error>
+    fhg::util::testing::require_exception<std::runtime_error>
       ( [&os, &v] { pnet::type::value::dump (os, pnet::type::value::read (v)); }
       , ( boost::format ("cannot dump the single level property"
                         " with key '%1%' and value '%2%'"

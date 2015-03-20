@@ -5,13 +5,8 @@ if (${CMAKE_BUILD_TYPE} MATCHES "Release")
   add_definitions ("-DNDEBUG")
 endif()
 
-check_cxx_compiler_flag ("-std=c++11" COMPILER_SUPPORTS_CXX11)
-
-if (COMPILER_SUPPORTS_CXX11)
-	set (CXX_FLAGS "${CXX_FLAGS} -std=c++11")
-else()
-  message (FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support.")
-endif()
+set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD_REQUIRED on)
 
 macro (CHECK_AND_ADD_COMPILER_FLAG _VAR _FLAG)
   STRING(REGEX REPLACE "-" _ __flag_literal ${_FLAG})

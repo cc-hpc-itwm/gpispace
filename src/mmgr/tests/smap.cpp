@@ -5,8 +5,8 @@
 
 #include <mmgr/smap.h>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
-#include <fhg/util/first_then.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/first_then.hpp>
 
 #include <iostream>
 #include <sstream>

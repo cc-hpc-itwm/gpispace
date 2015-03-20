@@ -22,8 +22,8 @@
 #include <pnete/ui/transition_library_view.hpp>
 
 #include <fhg/util/dl.hpp>
-#include <fhg/util/make_unique.hpp>
-#include <fhg/util/temporary_path.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/temporary_path.hpp>
 
 #include <sdpa/client.hpp>
 
@@ -991,7 +991,7 @@ namespace fhg
         //! \todo Configurable host + port of orchestrator, non-static
         static sdpa::client::Client client ( fhg::com::host_t ("DUMMY")
                                            , fhg::com::port_t ("DUMMY")
-                                           , fhg::util::make_unique<boost::asio::io_service>()
+                                           , fhg::util::cxx14::make_unique<boost::asio::io_service>()
                                            );
 
         const std::string job_id

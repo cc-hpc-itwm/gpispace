@@ -9,7 +9,7 @@ fhg_add_test (file.cpp
   PROJECT fhglog_appender
   LINK_LIBRARIES fhglog
                  fhg-util
-                 ${Boost_FILESYSTEM_LIBRARY}
+                 Boost::filesystem
 )
 
 fhg_add_test (call.cpp

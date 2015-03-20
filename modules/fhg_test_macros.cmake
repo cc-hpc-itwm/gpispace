@@ -70,7 +70,7 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libdetermine_size.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libdo_load.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libdo_write.so"
-  "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libprocess.so"
+  "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libprocess.a"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/make/common.mk"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/4.xml"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/5.xml"
@@ -123,8 +123,8 @@ macro(FHG_ADD_TEST)
   CDR(TEST_ADDITIONAL_SOURCES ${TEST_DEFAULT_ARGS})
 
     if (TEST_BOOST_UNIT_TEST)
-      set (TEST_LINK_LIBRARIES ${TEST_LINK_LIBRARIES} ${Boost_TEST_EXEC_MONITOR_LIBRARY})
-      set (TEST_LINK_LIBRARIES ${TEST_LINK_LIBRARIES} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+      set (TEST_LINK_LIBRARIES ${TEST_LINK_LIBRARIES} Boost::test_exec_monitor)
+      set (TEST_LINK_LIBRARIES ${TEST_LINK_LIBRARIES} Boost::unit_test_framework)
     endif()
 
     set (TEST_PREFIX "")

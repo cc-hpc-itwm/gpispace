@@ -4,7 +4,7 @@
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
-#include <fhg/util/hostname.hpp>
+#include <util-generic/hostname.hpp>
 #include <fhg/util/now.hpp>
 
 #include <iostream>

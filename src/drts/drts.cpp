@@ -19,14 +19,14 @@
 
 #include <sdpa/client.hpp>
 
-#include <fhg/util/hostname.hpp>
-#include <fhg/util/make_unique.hpp>
+#include <util-generic/hostname.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 #include <fhg/util/nest_exceptions.hpp>
 #include <fhg/util/read_file.hpp>
-#include <fhg/util/read_lines.hpp>
-#include <fhg/util/split.hpp>
+#include <util-generic/read_lines.hpp>
+#include <util-generic/split.hpp>
 #include <fhg/revision.hpp>
-#include <fhg/syscall.hpp>
+#include <util-generic/syscall.hpp>
 
 #include <boost/format.hpp>
 
@@ -293,7 +293,7 @@ namespace gspc
                                 )
       , _virtual_memory_api
         ( _virtual_memory_socket
-        ? fhg::util::make_unique<gpi::pc::client::api_t>
+        ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
           (_virtual_memory_socket->string())
         : nullptr
         )

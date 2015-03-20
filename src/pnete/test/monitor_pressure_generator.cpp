@@ -2,7 +2,7 @@
 //! \note This "test" does not test anything, but is a pressure-generator for sdpa-gui only.
 
 #include <fhglog/LogMacros.hpp>
-#include <fhg/util/print_exception.hpp>
+#include <util-generic/print_exception.hpp>
 #include <cstdlib>
 #include <boost/format.hpp>
 #include <boost/optional.hpp>

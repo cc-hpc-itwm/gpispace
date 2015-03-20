@@ -2,15 +2,16 @@
 
 #include <drts/private/drts_impl.hpp>
 
-#include <fhg/util/boost/serialization/path.hpp>
-#include <fhg/util/boost/serialization/unordered_map.hpp>
 #include <fhg/util/join.hpp>
 #include <fhg/util/nest_exceptions.hpp>
 #include <fhg/util/read_file.hpp>
-#include <fhg/util/read_lines.hpp>
-#include <fhg/util/split.hpp>
+#include <util-generic/read_lines.hpp>
+#include <util-generic/split.hpp>
 #include <fhg/util/starts_with.hpp>
 #include <fhg/util/wait_and_collect_exceptions.hpp>
+
+#include <util-generic/serialization/boost/filesystem/path.hpp>
+#include <util-generic/serialization/std/unordered_map.hpp>
 
 #include <rif/client.hpp>
 

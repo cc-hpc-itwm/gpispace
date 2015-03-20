@@ -2,7 +2,7 @@
 
 #include <fhg/util/executable_path.hpp>
 
-#include <fhg/syscall.hpp>
+#include <util-generic/syscall.hpp>
 
 #include <boost/filesystem/operations.hpp>
 

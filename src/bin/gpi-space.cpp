@@ -10,8 +10,8 @@
 #include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
 #include <fhg/util/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
-#include <fhg/util/make_unique.hpp>
-#include <fhg/util/print_exception.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/print_exception.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 
@@ -198,8 +198,8 @@ try
     crit_error_handler (signal_handler, fhg::log::GLOBAL_logger());
 
   std::unique_ptr<fhg::com::peer_t> topology_peer
-    ( fhg::util::make_unique<fhg::com::peer_t>
-        ( fhg::util::make_unique<boost::asio::io_service>()
+    ( fhg::util::cxx14::make_unique<fhg::com::peer_t>
+        ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
         , fhg::com::host_t ("*")
         , fhg::com::port_t ("0")
         )
@@ -211,12 +211,12 @@ try
       {
         if (requested_api == API_gaspi)
         {
-          return fhg::util::make_unique <gpi::api::gaspi_t>
+          return fhg::util::cxx14::make_unique <gpi::api::gaspi_t>
             (gpi_mem, port, gpi_timeout, topology_peer->local_endpoint().port());
         }
         else
         {
-          return fhg::util::make_unique <gpi::api::fake_gpi_api_t>
+          return fhg::util::cxx14::make_unique <gpi::api::fake_gpi_api_t>
             (gpi_mem, gpi_timeout, topology_peer->local_endpoint().port());
         }
       }()

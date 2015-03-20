@@ -5,7 +5,7 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/type/value/show.hpp>
 
-#include <fhg/util/print_exception.hpp>
+#include <util-generic/print_exception.hpp>
 
 #include <readline/history.h>
 #include <readline/readline.h>

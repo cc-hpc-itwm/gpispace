@@ -115,8 +115,9 @@ add_library (pnet
 target_link_libraries (pnet
   fhg-util
   drts-context
-  ${Boost_SERIALIZATION_LIBRARY}
-  ${Boost_DATE_TIME_LIBRARY}
+  Util::Generic
+  Boost::serialization
+  Boost::date_time
   ${CMAKE_DL_LIBS}
 )
 
@@ -134,3 +135,5 @@ add_subdirectory (network)
 add_subdirectory (rpc)
 
 add_subdirectory (rif)
+add_subdirectory (util-generic)
+add_subdirectory (util-qt)

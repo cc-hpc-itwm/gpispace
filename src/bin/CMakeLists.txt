@@ -12,12 +12,13 @@ fhg_add_runtime_executable (gpi-space.cpp
                  fhgcom
                  fhglog
                  rif-startup-messages-pipe
+                 Util::Generic
                  ${CMAKE_THREAD_LIBS_INIT}
-                 ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
-                 ${Boost_SERIALIZATION_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
+                 Boost::filesystem
+                 Boost::program_options
+                 Boost::serialization
+                 Boost::thread
+                 Boost::system
 )
 
 set_target_properties (gpi-space
@@ -34,19 +35,21 @@ fhg_add_runtime_executable (
   pnet2dot.cpp
   LINK_LIBRARIES fhg-revision
                  pnet
-                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
-                 ${Boost_SERIALIZATION_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
+                 Util::Generic
+                 Boost::program_options
+                 Boost::serialization
+                 Boost::system
 )
 
 fhg_add_runtime_executable (
   pnetc.cpp
   LINK_LIBRARIES fhg-revision
                  pnet
-                 ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
-                 ${Boost_SERIALIZATION_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
+                 Util::Generic
+                 Boost::filesystem
+                 Boost::program_options
+                 Boost::serialization
+                 Boost::system
 )
 
 fhg_add_runtime_executable (
@@ -55,5 +58,6 @@ fhg_add_runtime_executable (
                  pnetv-jpna
                  pnetv-jpn
                  pnet
-                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                 Util::Generic
+                 Boost::program_options
 )

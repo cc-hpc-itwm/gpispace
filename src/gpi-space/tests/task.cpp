@@ -4,7 +4,7 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 #include <gpi-space/pc/memory/task.hpp>
 

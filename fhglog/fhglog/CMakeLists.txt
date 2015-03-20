@@ -11,7 +11,7 @@ set (srcs
 
 ADD_LIBRARY (fhglog ${srcs})
 
-target_link_libraries (fhglog fhg-util ${Boost_FILESYSTEM_LIBRARY})
+target_link_libraries (fhglog fhg-util Boost::filesystem Util::Generic)
 
 install (FILES
   level.hpp

@@ -16,7 +16,6 @@ qt4_wrap_cpp (moc_util_qt
   OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
 
 add_library (fhg_util_qt
-  boost_connect_impl.cpp
   dual_list_selector.cpp
   file_line_edit.cpp
   mini_button.cpp
@@ -33,6 +32,4 @@ add_library (fhg_util_qt
   treeview_with_delete.cpp
   ${moc_util_qt})
 
-target_link_libraries (fhg_util_qt ${QT_LIBRARIES})
-
-add_subdirectory (test)
+target_link_libraries (fhg_util_qt ${QT_LIBRARIES} Util::Qt)

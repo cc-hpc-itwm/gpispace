@@ -10,7 +10,7 @@
 
 #include <iostream>
 
-#include <fhg/util/split.hpp>
+#include <util-generic/split.hpp>
 
 namespace expr
 {

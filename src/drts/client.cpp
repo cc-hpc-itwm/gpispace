@@ -15,9 +15,9 @@
 
 #include <rpc/server.hpp>
 
-#include <fhg/util/make_unique.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 #include <fhg/util/thread/event.hpp>
-#include <fhg/util/boost/asio/ip/address.hpp>
+#include <network/connectable_to_address_string.hpp>
 
 #include <sdpa/client.hpp>
 
@@ -59,7 +59,7 @@ namespace gspc
     implementation (gspc::host_and_port_type const& orchestrator_endpoint)
       : _client ( fhg::com::host_t (orchestrator_endpoint.host)
                 , fhg::com::port_t (std::to_string (orchestrator_endpoint.port))
-                , fhg::util::make_unique<boost::asio::io_service>()
+                , fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 )
     {}
 
@@ -158,7 +158,7 @@ namespace gspc
     )
   {
     fhg::rpc::service_dispatcher service_dispatcher
-      {fhg::rpc::exception::serialization_functions()};
+      {fhg::util::serialization::exception::serialization_functions()};
 
     fhg::util::thread::event<pnet::type::value::value_type> result;
 
@@ -219,7 +219,7 @@ namespace gspc
     pnet::type::value::poke ("value", value_and_endpoint, value);
     pnet::type::value::poke ( "address"
                             , value_and_endpoint
-                            , fhg::util::connectable_to_address_string
+                            , fhg::network::connectable_to_address_string
                               (acceptor.local_endpoint().address())
                             );
     pnet::type::value::poke

@@ -2,7 +2,7 @@
 
 #include <gpi-space/log_to_GLOBAL_logger.hpp>
 
-#include <fhg/util/make_unique.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 
 #include <boost/make_shared.hpp>
 
@@ -31,7 +31,7 @@ namespace gpi
           constexpr size_t DEF_BUFFER_SIZE (4194304);
 
           m_memory_buffer_pool.put
-            (fhg::util::make_unique<buffer_t> (DEF_BUFFER_SIZE));
+            (fhg::util::cxx14::make_unique<buffer_t> (DEF_BUFFER_SIZE));
         }
       }
 

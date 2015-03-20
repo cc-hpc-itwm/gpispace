@@ -10,7 +10,7 @@
 #include <string.h>
 
 #include <gpi-space/log_to_GLOBAL_logger.hpp>
-#include <fhg/syscall.hpp>
+#include <util-generic/syscall.hpp>
 
 #include <gpi-space/pc/type/flags.hpp>
 
@@ -51,7 +51,7 @@ namespace gpi
 
         try
         {
-          fd = fhg::syscall::shm_open (name().c_str(), O_RDWR | O_CREAT | O_EXCL, mode);
+          fd = fhg::util::syscall::shm_open (name().c_str(), O_RDWR | O_CREAT | O_EXCL, mode);
         }
         catch (boost::system::system_error const& se)
         {
@@ -61,7 +61,7 @@ namespace gpi
 
         try
         {
-          fhg::syscall::ftruncate (fd, size());
+          fhg::util::syscall::ftruncate (fd, size());
         }
         catch (boost::system::system_error const& se)
         {
@@ -70,29 +70,29 @@ namespace gpi
              << " could not be truncated to size: " << size()
              << ": " << se.what()
              );
-          fhg::syscall::close (fd);
+          fhg::util::syscall::close (fd);
           throw std::runtime_error
             ("shared memory segment could not be truncated");
         }
 
         try
         {
-          m_ptr = fhg::syscall::mmap ( nullptr
-                                     , size()
-                                     , PROT_READ | PROT_WRITE
-                                     , MAP_SHARED
-                                     , fd
-                                     , 0
-                                     );
+          m_ptr = fhg::util::syscall::mmap ( nullptr
+                                           , size()
+                                           , PROT_READ | PROT_WRITE
+                                           , MAP_SHARED
+                                           , fd
+                                           , 0
+                                           );
         }
         catch (boost::system::system_error const& se)
         {
           LOG(ERROR, "shared memory segment: " << name() << " could not be attached: " << se.what());
-          fhg::syscall::close (fd);
+          fhg::util::syscall::close (fd);
           throw std::runtime_error ("shared memory segment could not be attached");
         }
 
-        fhg::syscall::close (fd);
+        fhg::util::syscall::close (fd);
       }
 
       void segment_t::open ()
@@ -101,7 +101,7 @@ namespace gpi
 
         try
         {
-          fd = fhg::syscall::shm_open (name().c_str(), O_RDWR, 0);
+          fd = fhg::util::syscall::shm_open (name().c_str(), O_RDWR, 0);
         }
         catch (boost::system::system_error const& se)
         {
@@ -111,36 +111,36 @@ namespace gpi
 
         try
         {
-          m_ptr = fhg::syscall::mmap ( nullptr
-                                     , size()
-                                     , PROT_READ | PROT_WRITE
-                                     , MAP_SHARED
-                                     , fd
-                                     , 0
-                                     );
+          m_ptr = fhg::util::syscall::mmap ( nullptr
+                                           , size()
+                                           , PROT_READ | PROT_WRITE
+                                           , MAP_SHARED
+                                           , fd
+                                           , 0
+                                           );
         }
         catch (boost::system::system_error const& se)
         {
           LOG(ERROR, "shared memory segment: " << name() << " could not be attached: " << se.what());
-          fhg::syscall::close (fd);
+          fhg::util::syscall::close (fd);
           throw std::runtime_error ("shared memory segment could not be attached");
         }
 
-        fhg::syscall::close (fd);
+        fhg::util::syscall::close (fd);
       }
 
       void segment_t::close ()
       {
         if (m_ptr)
         {
-          fhg::syscall::munmap (m_ptr, size());
+          fhg::util::syscall::munmap (m_ptr, size());
           m_ptr = nullptr;
         }
       }
 
       void segment_t::unlink ()
       {
-        fhg::syscall::shm_unlink(name().c_str());
+        fhg::util::syscall::shm_unlink(name().c_str());
       }
 
       void *segment_t::ptr ()

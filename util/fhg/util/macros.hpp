@@ -2,14 +2,6 @@
 
 #pragma once
 
-#ifndef NDEBUG
-#define IFNDEF_NDEBUG(x...) x
-#define IFDEF_NDEBUG(x...)
-#else
-#define IFNDEF_NDEBUG(x...)
-#define IFDEF_NDEBUG(x...) x
-#endif
-
 #include <stdexcept>
 #include <boost/format.hpp>
 #include <boost/current_function.hpp>
@@ -20,7 +12,3 @@
       % __FILE__ % __LINE__ % BOOST_CURRENT_FUNCTION % #type % value \
       ).str() \
      );
-
-//! \todo more than just gcc?
-#define UNREACHABLE()                           \
-  __builtin_unreachable()

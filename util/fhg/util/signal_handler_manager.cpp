@@ -3,7 +3,7 @@
 #include <fhg/util/signal_handler_manager.hpp>
 
 #include <fhg/assert.hpp>
-#include <fhg/syscall.hpp>
+#include <util-generic/syscall.hpp>
 #include <fhg/util/backtracing_exception.hpp>
 
 #include <fhglog/LogMacros.hpp>
@@ -48,7 +48,7 @@ namespace fhg
 
       for (decltype (_handlers)::value_type const& handler : _handlers)
       {
-        fhg::syscall::sigaction (handler.first, &handler.second.first, nullptr);
+        util::syscall::sigaction (handler.first, &handler.second.first, nullptr);
       }
     }
 
@@ -81,7 +81,7 @@ namespace fhg
         sigact.sa_sigaction = signal_handler;
         sigact.sa_flags = SA_RESTART | SA_SIGINFO;
 
-        fhg::syscall::sigaction
+        util::syscall::sigaction
           (_sig_num, &sigact, &_manager._handlers[_sig_num].first);
       }
 

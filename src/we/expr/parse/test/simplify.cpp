@@ -6,7 +6,7 @@
 #include <we/expr/parse/simplify/simplify.hpp>
 #include <we/expr/parse/simplify/util.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>

@@ -9,7 +9,7 @@
 
 #include <test/shared_directory.hpp>
 
-#include <fhg/util/temporary_path.hpp>
+#include <util-generic/temporary_path.hpp>
 
 BOOST_AUTO_TEST_CASE (installation_from_command_line)
 {

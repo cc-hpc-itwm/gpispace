@@ -2,7 +2,7 @@
 
 #include <util/qt/restricted_tree_column_sorter.hpp>
 
-#include <util/qt/boost_connect.hpp>
+#include <util-qt/connect.hpp>
 
 #include <QHeaderView>
 #include <QTreeView>
@@ -24,7 +24,7 @@ namespace fhg
           , _last_column (-1)
       {
         _tree->header()->setClickable (true);
-        util::qt::boost_connect<void (int)>
+        util::qt::connect<void (int)>
           ( _tree->header(), SIGNAL (sectionClicked (int))
           , std::bind (&restricted_tree_column_sorter::next, this, std::placeholders::_1)
           );

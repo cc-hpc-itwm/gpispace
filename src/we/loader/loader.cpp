@@ -3,7 +3,7 @@
 #include <we/loader/exceptions.hpp>
 
 #include <fhg/util/join.hpp>
-#include <fhg/util/make_unique.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 
 const int WE_GUARD_SYMBOL = 0xDEADBEEF;
 
@@ -35,7 +35,7 @@ namespace we
         {
           return *_module_table
             .emplace ( module
-                     , fhg::util::make_unique<Module> ((p / file_name).string())
+                     , fhg::util::cxx14::make_unique<Module> ((p / file_name).string())
                      )
             .first->second;
         }

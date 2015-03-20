@@ -1,13 +1,13 @@
 #define BOOST_TEST_MODULE WeTypeBytearrayTest
 #include <boost/test/unit_test.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/printer/tuple.hpp>
-#include <fhg/util/boost/test.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/tuple.hpp>
+#include <util-generic/testing/printer/generic.hpp>
 
 #include <we/type/bytearray.hpp>
 
-#include <fhg/util/random_string.hpp>
+#include <util-generic/testing/random_string.hpp>
 
 #include <inttypes.h>
 
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE (ba_convert)
 
 BOOST_AUTO_TEST_CASE (ba_to_string_after_ctor_string_is_id)
 {
-  std::string const s (fhg::util::random_string());
+  std::string const s (fhg::util::testing::random_string());
 
   BOOST_REQUIRE_EQUAL (we::type::bytearray (s).to_string(), s);
 }

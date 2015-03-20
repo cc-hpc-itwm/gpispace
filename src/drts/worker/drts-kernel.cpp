@@ -5,8 +5,8 @@
 #include <fhg/util/boost/program_options/require_all_if_one.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
-#include <fhg/util/make_unique.hpp>
-#include <fhg/util/print_exception.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/print_exception.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 
@@ -138,7 +138,7 @@ try
 
   std::unique_ptr<gpi::pc::client::api_t> const virtual_memory_api
     ( vm.count (option_name::virtual_memory_socket)
-      ? fhg::util::make_unique<gpi::pc::client::api_t>
+      ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
         ((static_cast<boost::filesystem::path>
             ( vm.at (option_name::virtual_memory_socket)
               .as<fhg::util::boost::program_options::existing_path>()
@@ -152,7 +152,7 @@ try
       && vm.count (option_name::shared_memory_size)
       && vm.at (option_name::shared_memory_size).as<unsigned long>() > 0
       )
-      ? fhg::util::make_unique<gspc::scoped_allocation>
+      ? fhg::util::cxx14::make_unique<gspc::scoped_allocation>
         ( virtual_memory_api
         , kernel_name + "-shared_memory"
         , vm.at (option_name::shared_memory_size).as<unsigned long>()
@@ -190,9 +190,9 @@ try
 
   DRTSImpl const plugin
     ( request_stop
-    , fhg::util::make_unique<boost::asio::io_service>()
+    , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , (vm.count (option_name::gui_host) || vm.count (option_name::gui_port))
-      ? fhg::util::make_unique<sdpa::daemon::NotificationService>
+      ? fhg::util::cxx14::make_unique<sdpa::daemon::NotificationService>
         ( vm.at (option_name::gui_host).as<std::string>()
         , vm.at (option_name::gui_port)
           .as<fhg::util::boost::program_options::positive_integral<unsigned short>>()

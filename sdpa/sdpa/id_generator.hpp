@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <fhg/util/hostname.hpp>
+#include <util-generic/hostname.hpp>
 #include <sys/types.h> // pid_t
 #include <unistd.h> // getpid
 #include <time.h>   // time

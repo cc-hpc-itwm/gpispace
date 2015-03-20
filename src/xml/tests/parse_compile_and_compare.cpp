@@ -4,7 +4,7 @@
 
 #include <parser_fixture.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 BOOST_FIXTURE_TEST_CASE (simple_pipe_elimination, parser_fixture)
 {

@@ -9,8 +9,8 @@
 //! \todo: eliminate this include that just completes the type
 #include <we/type/net.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
-#include <fhg/util/random_string.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/random_string.hpp>
 
 namespace
 {
@@ -23,7 +23,7 @@ namespace
 BOOST_AUTO_TEST_CASE (get_schedule_data_not_set)
 {
   we::type::transition_t const transition
-    ( fhg::util::random_string()
+    ( fhg::util::testing::random_string()
     , we::type::expression_t()
     , boost::none
     , bool()
@@ -35,20 +35,20 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_not_set)
                   (input_t(), "num_worker")
                 );
   BOOST_REQUIRE (!transition.get_schedule_data<unsigned long>
-                  (input_t(), fhg::util::random_string())
+                  (input_t(), fhg::util::testing::random_string())
                 );
 }
 
 BOOST_AUTO_TEST_CASE (get_schedule_data_constant_string)
 {
-  std::string const key (fhg::util::random_string());
-  std::string const value (fhg::util::random_string_without ("\\\""));
+  std::string const key (fhg::util::testing::random_string());
+  std::string const value (fhg::util::testing::random_string_without ("\\\""));
 
   we::type::property::type properties;
   properties.set ({"fhg", "drts", "schedule", key}, "\"" + value + "\"");
 
   we::type::transition_t const transition
-    ( fhg::util::random_string()
+    ( fhg::util::testing::random_string()
     , we::type::expression_t()
     , boost::none
     , bool()
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_constant_string)
 
 BOOST_AUTO_TEST_CASE (get_schedule_data_constant_long)
 {
-  std::string const key (fhg::util::random_string());
+  std::string const key (fhg::util::testing::random_string());
   unsigned long const value (rand());
 
   we::type::property::type properties;
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_constant_long)
                  );
 
   we::type::transition_t const transition
-    ( fhg::util::random_string()
+    ( fhg::util::testing::random_string()
     , we::type::expression_t()
     , boost::none
     , bool()
@@ -89,15 +89,15 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_constant_long)
 
 BOOST_AUTO_TEST_CASE (get_schedule_data_expression_simple)
 {
-  std::string const key (fhg::util::random_string());
-  std::string const port_name (fhg::util::random_identifier());
+  std::string const key (fhg::util::testing::random_string());
+  std::string const port_name (fhg::util::testing::random_identifier());
   unsigned long const value (rand());
 
   we::type::property::type properties;
   properties.set ({"fhg", "drts", "schedule", key}, "${" + port_name + "}");
 
   we::type::transition_t transition
-    ( fhg::util::random_string()
+    ( fhg::util::testing::random_string()
     , we::type::expression_t()
     , boost::none
     , bool()
@@ -127,9 +127,9 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_simple)
 
 BOOST_AUTO_TEST_CASE (get_schedule_data_expression_sum)
 {
-  std::string const key (fhg::util::random_string());
-  std::string const port_name1 (fhg::util::random_identifier());
-  std::string const port_name2 (fhg::util::random_identifier());
+  std::string const key (fhg::util::testing::random_string());
+  std::string const port_name1 (fhg::util::testing::random_identifier());
+  std::string const port_name2 (fhg::util::testing::random_identifier());
   unsigned long const value1 (rand());
   unsigned long const value2 (rand());
 
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_sum)
                  );
 
   we::type::transition_t transition
-    ( fhg::util::random_string()
+    ( fhg::util::testing::random_string()
     , we::type::expression_t()
     , boost::none
     , bool()

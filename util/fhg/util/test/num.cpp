@@ -3,7 +3,7 @@
 #define BOOST_TEST_MODULE num
 #include <boost/test/unit_test.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/num.hpp>
 #include <fhg/util/num/show.hpp>
 #include <fhg/util/parse/error.hpp>

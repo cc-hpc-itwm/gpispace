@@ -7,9 +7,9 @@
 #include <pnetv/jpna/PetriNet.h>
 #include <pnetv/jpna/Verification.h>
 
-#include <fhg/util/boost/test.hpp>
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
-#include <fhg/util/random_string.hpp>
+#include <util-generic/testing/printer/generic.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/random_string.hpp>
 
 FHG_BOOST_TEST_LOG_VALUE_PRINTER (jpna::VerificationResult::Result, os, result)
 {
@@ -24,7 +24,7 @@ FHG_BOOST_TEST_LOG_VALUE_PRINTER (jpna::VerificationResult::Result, os, result)
 BOOST_AUTO_TEST_CASE (isolated_transition_terminates)
 {
   we::type::transition_t transition
-    ( fhg::util::random_string()
+    ( fhg::util::testing::random_string()
     , we::type::expression_t()
     , boost::none
     , true
@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE (isolated_transition_terminates)
     );
   we::type::activity_t activity (transition, boost::none);
   boost::ptr_vector<jpna::PetriNet> nets;
-  jpna::parse (fhg::util::random_string().c_str(), activity, nets);
+  jpna::parse (fhg::util::testing::random_string().c_str(), activity, nets);
   BOOST_REQUIRE_EQUAL (nets.size(), 1);
   BOOST_REQUIRE_EQUAL ( jpna::verify (nets.front()).result()
                       , jpna::VerificationResult::TERMINATES

@@ -2,14 +2,15 @@
 
 #include <rif/entry_point.hpp>
 
-#include <fhg/syscall.hpp>
-#include <fhg/util/boost/asio/ip/address.hpp>
+#include <util-generic/syscall.hpp>
+#include <network/connectable_to_address_string.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
-#include <fhg/util/boost/serialization/path.hpp>
-#include <fhg/util/boost/serialization/unordered_map.hpp>
 #include <fhg/util/join.hpp>
-#include <fhg/util/print_exception.hpp>
-#include <fhg/util/temporary_file.hpp>
+#include <util-generic/print_exception.hpp>
+#include <util-generic/temporary_file.hpp>
+
+#include <util-generic/serialization/boost/filesystem/path.hpp>
+#include <util-generic/serialization/std/unordered_map.hpp>
 
 #include <fhglog/level_io.hpp>
 
@@ -90,7 +91,7 @@ try
   boost::asio::io_service io_service;
 
   fhg::rpc::service_dispatcher service_dispatcher
-    {fhg::rpc::exception::serialization_functions()};
+    {fhg::util::serialization::exception::serialization_functions()};
 
   fhg::rpc::service_handler<fhg::rif::protocol::execute_and_get_startup_messages>
     execute_and_get_startup_messages_service
@@ -107,7 +108,7 @@ try
           {
             int status;
 
-            if (fhg::syscall::waitpid (pid, &status, WNOHANG) == pid)
+            if (fhg::util::syscall::waitpid (pid, &status, WNOHANG) == pid)
             {
               if (WIFEXITED (status))
               {
@@ -121,9 +122,9 @@ try
               }
             }
 
-            fhg::syscall::kill (pid, SIGTERM);
+            fhg::util::syscall::kill (pid, SIGTERM);
 
-            if (fhg::syscall::waitpid (pid, &status, 0) != pid)
+            if (fhg::util::syscall::waitpid (pid, &status, 0) != pid)
             {
               throw std::logic_error ("waitpid returned for wrong child");
             }
@@ -285,7 +286,7 @@ try
     );
 
   io_service.notify_fork (boost::asio::io_service::fork_prepare);
-  if (pid_t child = fhg::syscall::fork())
+  if (pid_t child = fhg::util::syscall::fork())
   {
     io_service.notify_fork (boost::asio::io_service::fork_parent);
 
@@ -297,7 +298,7 @@ try
     fhg::rpc::remote_endpoint endpoint
       ( io_service
       , register_host, register_port
-      , fhg::rpc::exception::serialization_functions()
+      , fhg::util::serialization::exception::serialization_functions()
       );
 
     struct stop_io_service_on_scope_exit
@@ -315,7 +316,7 @@ try
     fhg::rpc::sync_remote_function<void (fhg::rif::entry_point)>
       (endpoint, "register")
       ( fhg::rif::entry_point
-          ( fhg::util::connectable_to_address_string (local_endpoint.address())
+          ( fhg::network::connectable_to_address_string (local_endpoint.address())
           , local_endpoint.port()
           , child
           )
@@ -324,9 +325,9 @@ try
     return 0;
   }
 
-  fhg::syscall::close (0);
-  fhg::syscall::close (1);
-  fhg::syscall::close (2);
+  fhg::util::syscall::close (0);
+  fhg::util::syscall::close (1);
+  fhg::util::syscall::close (2);
 
   io_service.notify_fork (boost::asio::io_service::fork_child);
 

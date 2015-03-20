@@ -3,7 +3,7 @@
 #define BOOST_TEST_MODULE context
 #include <boost/test/unit_test.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 #include <we/expr/eval/context.hpp>
 

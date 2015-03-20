@@ -2,7 +2,7 @@
 
 #include <rpc/client.hpp>
 
-#include <fhg/util/print_exception.hpp>
+#include <util-generic/print_exception.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/serialization/vector.hpp>
@@ -33,7 +33,7 @@ try
   fhg::rpc::remote_endpoint endpoint
     ( io_service
     , argv[1], std::stoi (argv[2])
-    , fhg::rpc::exception::serialization_functions()
+    , fhg::util::serialization::exception::serialization_functions()
     );
 
   fhg::rpc::remote_function<pid_t (std::string, std::vector<std::string>)> start

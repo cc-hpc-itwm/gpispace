@@ -5,9 +5,9 @@
 
 #include <xml/parse/type/memory_transfer.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/join.hpp>
-#include <fhg/util/random_string.hpp>
+#include <util-generic/testing/random_string.hpp>
 #include <fhg/util/xml.hpp>
 
 #include <boost/format.hpp>
@@ -31,14 +31,14 @@ namespace
 
     while (num_expressions_global --> 0)
     {
-      expressions_global.push_back (fhg::util::random_string_without_zero());
+      expressions_global.push_back (fhg::util::testing::random_string_without_zero());
     }
 
     std::list<std::string> expressions_local;
 
     while (num_expressions_local --> 0)
     {
-      expressions_local.push_back (fhg::util::random_string_without_zero());
+      expressions_local.push_back (fhg::util::testing::random_string_without_zero());
     }
 
     std::ostringstream oss;
@@ -84,7 +84,7 @@ namespace
           )
       { return xml::parse::type::memory_get
           ( xml::parse::util::position_type
-            (nullptr, nullptr, fhg::util::random_string())
+            (nullptr, nullptr, fhg::util::testing::random_string())
           , expressions_global
           , expressions_local
           , we::type::property::type()
@@ -109,7 +109,7 @@ namespace
           )
       { return xml::parse::type::memory_put
           ( xml::parse::util::position_type
-            (nullptr, nullptr, fhg::util::random_string())
+            (nullptr, nullptr, fhg::util::testing::random_string())
           , expressions_global
           , expressions_local
           , we::type::property::type()
@@ -135,7 +135,7 @@ namespace
           )
       { return xml::parse::type::memory_getput
           ( xml::parse::util::position_type
-            (nullptr, nullptr, fhg::util::random_string())
+            (nullptr, nullptr, fhg::util::testing::random_string())
           , expressions_global
           , expressions_local
           , we::type::property::type()

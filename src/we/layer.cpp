@@ -3,8 +3,8 @@
 #include <we/layer.hpp>
 
 #include <fhg/assert.hpp>
-#include <fhg/util/make_unique.hpp>
-#include <fhg/util/print_exception.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/print_exception.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/starts_with.hpp>
 
@@ -155,7 +155,7 @@ namespace we
     {
       _nets_to_extract_from.put
         ( activity_data_type ( id
-                             , fhg::util::make_unique<type::activity_t>
+                             , fhg::util::cxx14::make_unique<type::activity_t>
                                  (act.transition().net() ? act : wrap (act))
                              )
         , true

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <fhg/util/temporary_file.hpp>
+#include <util-generic/temporary_file.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>

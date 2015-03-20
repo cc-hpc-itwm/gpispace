@@ -8,7 +8,7 @@ target_include_directories (transform_file_type
 )
 target_link_libraries (transform_file_type
   we-dev
-  ${Boost_FILESYSTEM_LIBRARY}
+  Boost::filesystem
 )
 
 add_library (transform_file_map-impl SHARED
@@ -50,8 +50,8 @@ fhg_add_test (test.cpp
                  test-utilities
                  transform_file_type
                  fhg-util
-                 ${Boost_PROGRAM_OPTIONS_LIBRARIES}
-                 ${Boost_FILESYSTEM_LIBRARIES}
+                 Boost::program_options
+                 Boost::filesystem
   DEPENDS transform_file_map-impl
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY

@@ -4,7 +4,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <fhg/util/alphanum.hpp>
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 #include <set>
 #include <string>

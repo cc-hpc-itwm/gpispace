@@ -10,8 +10,8 @@
 
 #include <we/type/value/boost/test/printer.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/require_exception.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/require_exception.hpp>
 
 BOOST_AUTO_TEST_CASE (answer_question)
 {
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE (bracket_not_found_empty_search_path)
 {
   we::loader::loader loader ({});
 
-  fhg::util::boost::test::require_exception<we::loader::module_not_found>
+  fhg::util::testing::require_exception<we::loader::module_not_found>
     ( [&loader] { loader["name"]; }
     , "module 'libname.so' not found in ''"
     );
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE (bracket_not_found_nonempty_search_path)
 {
   we::loader::loader loader ({"<p>","<q>"});
 
-  fhg::util::boost::test::require_exception<we::loader::module_not_found>
+  fhg::util::testing::require_exception<we::loader::module_not_found>
     ( [&loader] { loader["name"]; }
     , "module 'libname.so' not found in '\"<p>\":\"<q>\"'"
     );

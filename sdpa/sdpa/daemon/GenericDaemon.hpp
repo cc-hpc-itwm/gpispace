@@ -56,7 +56,7 @@
 
 #include <gpi-space/pc/client/api.hpp>
 
-#include <fhg/util/boost/asio/ip/address.hpp>
+#include <network/connectable_to_address_string.hpp>
 #include <fhg/util/std/pair.hpp>
 #include <fhg/util/thread/set.hpp>
 #include <fhg/util/thread/queue.hpp>
@@ -104,7 +104,7 @@ namespace sdpa {
       boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
       fhg::com::host_t peer_host() const
       {
-        return fhg::com::host_t ( fhg::util::connectable_to_address_string
+        return fhg::com::host_t ( fhg::network::connectable_to_address_string
                                     (peer_local_endpoint().address())
                                 );
 

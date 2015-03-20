@@ -38,7 +38,7 @@ namespace gspc
       ( io_service_client.service
       , trigger_address
       , trigger_port
-      , fhg::rpc::exception::serialization_functions()
+      , fhg::util::serialization::exception::serialization_functions()
       );
 
     fhg::rpc::sync_remote_function<void (pnet::type::value::value_type)>

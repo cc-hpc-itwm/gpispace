@@ -4,7 +4,7 @@
 
 #include <we/type/signature.hpp>
 
-#include <fhg/util/ostream_modifier.hpp>
+#include <util-generic/ostream_modifier.hpp>
 
 #include <iosfwd>
 

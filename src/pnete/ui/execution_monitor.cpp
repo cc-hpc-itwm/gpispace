@@ -3,7 +3,7 @@
 #include <pnete/ui/execution_monitor_worker_model.hpp>
 #include <pnete/ui/execution_monitor_detail.hpp>
 
-#include <util/qt/boost_connect.hpp>
+#include <util-qt/connect.hpp>
 #include <util/qt/dual_list_selector.hpp>
 #include <util/qt/mini_button.hpp>
 #include <util/qt/mvc/alphanum_sort_proxy.hpp>
@@ -345,24 +345,24 @@ namespace fhg
         QAction* add_column (new QAction (tr ("add_column_action"), next));
         QAction* remove_column (new QAction (tr ("remove_column_action"), next));
 
-        util::qt::boost_connect<void()>
+        util::qt::connect<void()>
           (add_column, SIGNAL (triggered()), std::bind (&add_columns, 1, next));
-        util::qt::boost_connect<void()>
+        util::qt::connect<void()>
           (remove_column, SIGNAL (triggered()), std::bind (&add_columns, -1, next));
 
-        util::qt::boost_connect<void()>
+        util::qt::connect<void()>
           ( next, SIGNAL (columnsInserted (QModelIndex, int, int))
           , std::bind (&disable_if_column_adding_not_possible, add_column, 1, next)
           );
-        util::qt::boost_connect<void()>
+        util::qt::connect<void()>
           ( next, SIGNAL (columnsRemoved (QModelIndex, int, int))
           , std::bind (&disable_if_column_adding_not_possible, add_column, 1, next)
           );
-        util::qt::boost_connect<void()>
+        util::qt::connect<void()>
           ( next, SIGNAL (columnsInserted (QModelIndex, int, int))
           , std::bind (&disable_if_column_adding_not_possible, remove_column, -1, next)
           );
-        util::qt::boost_connect<void()>
+        util::qt::connect<void()>
           ( next, SIGNAL (columnsRemoved (QModelIndex, int, int))
           , std::bind (&disable_if_column_adding_not_possible, remove_column, -1, next)
           );
@@ -386,7 +386,7 @@ namespace fhg
         QAction* clear_model (new QAction (tr ("clear_action"), base));
         clear_model->setIcon (QIcon::fromTheme ("edit-clear"));
 
-        util::qt::boost_connect<void()>
+        util::qt::connect<void()>
           ( clear_model, SIGNAL (triggered())
           , this, std::bind (&worker_model::clear, base)
           );
@@ -421,14 +421,14 @@ namespace fhg
             style_button (label, delegate->color_for_state (state));
             legend_box_layout->addWidget (label);
 
-            util::qt::boost_connect<void()>
+            util::qt::connect<void()>
               ( label
               , SIGNAL (clicked())
               , this
               , std::bind (&change_gantt_color, delegate, label, state, this)
               );
 
-            util::qt::boost_connect<void (worker_model::state_type, QColor)>
+            util::qt::connect<void (worker_model::state_type, QColor)>
               ( delegate
               , SIGNAL (color_for_state_changed (worker_model::state_type, QColor))
               , this

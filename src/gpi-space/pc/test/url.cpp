@@ -6,9 +6,9 @@
 
 #include <fhg/util/parse/error.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/printer/optional.hpp>
-#include <fhg/util/boost/test/require_exception.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
+#include <util-generic/testing/require_exception.hpp>
 
 #include <iterator>
 
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE (test_url_ctor)
 
 BOOST_AUTO_TEST_CASE (test_invalid_type)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("://foo"); }
     , "PARSE ERROR [0]: expected 'identifier [a-zA-Z_][a-zA-Z_0-9]*'\n"
       " ://foo\n"
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE (test_invalid_type)
 
 BOOST_AUTO_TEST_CASE (test_empty_param)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("file://bar?=baz"); }
     , "PARSE ERROR [11]: expected 'identifier [a-zA-Z_][a-zA-Z_0-9]*'\n"
       "file://bar? =baz\n"
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE (test_empty_param)
 
 BOOST_AUTO_TEST_CASE (ampersand_not_allowed_in_path)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://&"); }
     , "PARSE ERROR [12]: expected 'host {identifier_with_dot_and_space|ip}'\n"
       "protocoll:// &\n"
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE (ampersand_not_allowed_in_path)
 
 BOOST_AUTO_TEST_CASE (ampersand_not_allowed_in_non_empty_path)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://path&"); }
     , "PARSE ERROR [16]: expected '?'\n"
       "protocoll://path &\n"
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE (ampersand_not_allowed_in_non_empty_path)
 
 BOOST_AUTO_TEST_CASE (ampersand_not_allowed_in_longer_path)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://longer/path&"); }
     , "PARSE ERROR [23]: expected '?'\n"
       "protocoll://longer/path &\n"
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE (simple_type)
 
 BOOST_AUTO_TEST_CASE (type_with_colon)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("pr:tocoll://"); }
     , "PARSE ERROR [3]: expected '//'\n"
       "pr: tocoll://\n"
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE (type_with_colon)
 
 BOOST_AUTO_TEST_CASE (type_with_colon_slash)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("pr:/ocoll://"); }
     , "PARSE ERROR [4]: expected '/'\n"
       "pr:/ ocoll://\n"
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE (no_path_required)
 
 BOOST_AUTO_TEST_CASE (empty_parameter_list)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://p/ath?"); }
     , "PARSE ERROR [18]: expected 'identifier [a-zA-Z_][a-zA-Z_0-9]*'\n"
       "protocoll://p/ath? \n"
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE (parameter_list_single)
 
 BOOST_AUTO_TEST_CASE (key_contains_colon)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://p/ath?:=v"); }
     , "PARSE ERROR [18]: expected 'identifier [a-zA-Z_][a-zA-Z_0-9]*'\n"
       "protocoll://p/ath? :=v\n"
@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE (key_contains_colon)
 
 BOOST_AUTO_TEST_CASE (key_contains_colon_and_slashes)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://p/ath?://=v"); }
     , "PARSE ERROR [18]: expected 'identifier [a-zA-Z_][a-zA-Z_0-9]*'\n"
       "protocoll://p/ath? ://=v\n"
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE (key_contains_colon_and_slashes)
 
 BOOST_AUTO_TEST_CASE (value_contains_colon_and_slashes)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://p/ath?k=://"); }
     , "PARSE ERROR [20]: expected 'value [a-zA-Z_0-9]+'\n"
       "protocoll://p/ath?k= ://\n"
@@ -197,7 +197,7 @@ BOOST_AUTO_TEST_CASE (parameter_list_many)
 
 BOOST_AUTO_TEST_CASE (key_contains_questionmark)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://p/ath?k1=a&k?=b"); }
     , "PARSE ERROR [24]: expected '='\n"
       "protocoll://p/ath?k1=a&k ?=b\n"
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE (key_contains_questionmark)
 
 BOOST_AUTO_TEST_CASE (value_contains_questionmark)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://p/ath?k1=a&k2=?"); }
     , "PARSE ERROR [26]: expected 'value [a-zA-Z_0-9]+'\n"
       "protocoll://p/ath?k1=a&k2= ?\n"
@@ -217,7 +217,7 @@ BOOST_AUTO_TEST_CASE (value_contains_questionmark)
 
 BOOST_AUTO_TEST_CASE (parameter_list_last_duplicate_throws)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::generic>
+  fhg::util::testing::require_exception<fhg::util::parse::error::generic>
     ( [] { gpi::pc::url_t ("protocoll://p/ath?k=a&k=b"); }
     , "PARSE ERROR [25]: duplicate key 'k'\n"
       "protocoll://p/ath?k=a&k=b \n"
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE (parameter_list_last_duplicate_throws)
 
 BOOST_AUTO_TEST_CASE (empty_value)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://path?key="); }
     , "PARSE ERROR [21]: expected 'value [a-zA-Z_0-9]+'\n"
       "protocoll://path?key= \n"
@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE (empty_value)
 
 BOOST_AUTO_TEST_CASE (many_empty_value)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://path?k1=&k2="); }
     , "PARSE ERROR [20]: expected 'value [a-zA-Z_0-9]+'\n"
       "protocoll://path?k1= &k2=\n"
@@ -254,7 +254,7 @@ BOOST_AUTO_TEST_CASE (port_number)
 
 BOOST_AUTO_TEST_CASE (port_missing)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://host:"); }
     , "PARSE ERROR [17]: expected 'port {UINT16|*}'\n"
       "protocoll://host: \n"
@@ -264,7 +264,7 @@ BOOST_AUTO_TEST_CASE (port_missing)
 
 BOOST_AUTO_TEST_CASE (port_without_host)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://:*"); }
     , "PARSE ERROR [12]: expected 'host {identifier_with_dot_and_space|ip}'\n"
       "protocoll:// :*\n"
@@ -274,7 +274,7 @@ BOOST_AUTO_TEST_CASE (port_without_host)
 
 BOOST_AUTO_TEST_CASE (port_to_large)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://host:65536"); }
     , "PARSE ERROR [22]: expected 'number in [0,65536)'\n"
       "protocoll://host:65536 \n"
@@ -354,7 +354,7 @@ BOOST_AUTO_TEST_CASE (host_ip_port_star)
 
 BOOST_AUTO_TEST_CASE (host_ip_number_to_large)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://256"); }
     , "PARSE ERROR [15]: expected 'number in [0,256)'\n"
       "protocoll://256 \n"
@@ -364,14 +364,14 @@ BOOST_AUTO_TEST_CASE (host_ip_number_to_large)
 
 BOOST_AUTO_TEST_CASE (host_ip_missing_first_dot)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://255"); }
     , "PARSE ERROR [15]: expected '.'\n"
       "protocoll://255 \n"
       "               ^\n"
     );
 
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://255:255"); }
     , "PARSE ERROR [15]: expected '.'\n"
       "protocoll://255 :255\n"
@@ -381,7 +381,7 @@ BOOST_AUTO_TEST_CASE (host_ip_missing_first_dot)
 
 BOOST_AUTO_TEST_CASE (host_ip_missing_second_dot)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://255.255"); }
     , "PARSE ERROR [19]: expected '.'\n"
       "protocoll://255.255 \n"
@@ -391,7 +391,7 @@ BOOST_AUTO_TEST_CASE (host_ip_missing_second_dot)
 
 BOOST_AUTO_TEST_CASE (host_ip_missing_third_dot)
 {
-  fhg::util::boost::test::require_exception<fhg::util::parse::error::expected>
+  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
     ( [] { gpi::pc::url_t ("protocoll://255.255.255"); }
     , "PARSE ERROR [23]: expected '.'\n"
       "protocoll://255.255.255 \n"

@@ -6,9 +6,9 @@
 #include <sdpa/com/NetworkStrategy.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
-#include <fhg/util/boost/asio/ip/address.hpp>
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
-#include <fhg/util/make_unique.hpp>
+#include <network/connectable_to_address_string.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 
 #include <boost/thread.hpp>
 
@@ -67,13 +67,13 @@ BOOST_AUTO_TEST_CASE (perform_test)
                 , std::placeholders::_1
                 , std::placeholders::_2
                 )
-    , fhg::util::make_unique<boost::asio::io_service>()
+    , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
     );
 
   net.perform ( net.connect_to
-                  ( fhg::com::host_t ( fhg::util::connectable_to_address_string
+                  ( fhg::com::host_t ( fhg::network::connectable_to_address_string
                                          (net.local_endpoint().address())
                                      )
                   , fhg::com::port_t (std::to_string (net.local_endpoint().port()))

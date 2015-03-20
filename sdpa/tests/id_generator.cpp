@@ -3,9 +3,9 @@
 
 #include <sdpa/id_generator.hpp>
 
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/require_exception.hpp>
-#include <fhg/util/random_string.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/require_exception.hpp>
+#include <util-generic/testing/random_string.hpp>
 
 #include <boost/format.hpp>
 #include <boost/thread.hpp>
@@ -43,11 +43,11 @@ BOOST_AUTO_TEST_CASE (threaded_unique_set_of_id_throws_on_duplicate)
 {
   threaded_unique_set_of_id ids;
 
-  std::string const id (fhg::util::random_string_without_zero());
+  std::string const id (fhg::util::testing::random_string_without_zero());
 
   BOOST_REQUIRE_EQUAL (id, ids.insert (id));
 
-  fhg::util::boost::test::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception<std::runtime_error>
     ( [&id, &ids] { ids.insert (id); }
     , (boost::format ("duplicate id '%1%'") % id).str()
     );
@@ -77,7 +77,7 @@ namespace
 
     boost::uniform_int<std::size_t> random (100, 1000);
 
-    sdpa::id_generator id_generator (fhg::util::random_string_without_zero());
+    sdpa::id_generator id_generator (fhg::util::testing::random_string_without_zero());
     threaded_unique_set_of_id ids;
 
     while (num_threads --> 0)

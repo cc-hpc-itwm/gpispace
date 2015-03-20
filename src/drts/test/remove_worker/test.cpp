@@ -12,10 +12,10 @@
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
 
-#include <fhg/util/boost/asio/ip/address.hpp>
-#include <fhg/util/boost/test/flatten_nested_exceptions.hpp>
-#include <fhg/util/boost/test/require_exception.hpp>
-#include <fhg/util/temporary_path.hpp>
+#include <network/connectable_to_address_string.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/require_exception.hpp>
+#include <util-generic/temporary_path.hpp>
 #include <fhg/util/thread/event.hpp>
 
 #include <boost/asio/ip/tcp.hpp>
@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE (remove_worker)
   gspc::job_id_t const job_id
     ( gspc::client (drts).submit
         ( workflow
-        , { {"address", fhg::util::connectable_to_address_string
+        , { {"address", fhg::network::connectable_to_address_string
                           (acceptor.local_endpoint().address())
             }
           , {"port", static_cast<unsigned int>

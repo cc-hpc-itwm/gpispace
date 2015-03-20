@@ -18,7 +18,7 @@
 #include <we/type/expression.fwd.hpp>
 #include <we/type/net.fwd.hpp>
 
-#include <fhg/util/print_exception.hpp>
+#include <util-generic/print_exception.hpp>
 
 using we::edge::PT;
 using we::edge::PT_READ;
