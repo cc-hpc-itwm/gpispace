@@ -43,7 +43,6 @@ namespace gspc
     boost::program_options::options_description installation();
     boost::program_options::options_description drts();
     boost::program_options::options_description external_rifd();
-    boost::program_options::options_description scoped_rifd();
     boost::program_options::options_description virtual_memory();
   }
 

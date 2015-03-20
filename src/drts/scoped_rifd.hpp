@@ -19,6 +19,11 @@
 
 namespace gspc
 {
+  namespace options
+  {
+    boost::program_options::options_description scoped_rifd();
+  }
+
   namespace rifd
   {
     struct strategy
