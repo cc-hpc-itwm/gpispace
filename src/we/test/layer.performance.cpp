@@ -7,7 +7,7 @@
 #include <we/test/layer.common.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/now.hpp>
+#include <util-generic/testing/require_maximum_running_time.hpp>
 
 #include <functional>
 #include <list>
@@ -81,7 +81,8 @@ BOOST_AUTO_TEST_CASE
     , _random_engine
     );
 
-  double t (-fhg::util::now());
+  fhg::util::testing::require_maximum_running_time<std::chrono::seconds>
+    const maxmimum_running_time (1);
 
   for (std::size_t i (0); i < num_activities; ++i)
   {
@@ -104,8 +105,4 @@ BOOST_AUTO_TEST_CASE
   {
     boost::this_thread::yield();
   }
-
-  t += fhg::util::now();
-
-  BOOST_REQUIRE_LT (t, 1.0);
 }
