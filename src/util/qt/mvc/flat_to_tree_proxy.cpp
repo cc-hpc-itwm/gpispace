@@ -2,7 +2,7 @@
 
 #include <util/qt/mvc/flat_to_tree_proxy.hpp>
 
-#include <util/qt/variant.hpp>
+#include <util-qt/variant.hpp>
 
 #include <fhg/assert.hpp>
 

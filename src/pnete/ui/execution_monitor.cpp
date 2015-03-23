@@ -12,7 +12,7 @@
 #include <util/qt/mvc/flat_to_tree_proxy.hpp>
 #include <util/qt/restricted_tree_column_sorter.hpp>
 #include <util/qt/treeview_with_delete.hpp>
-#include <util/qt/variant.hpp>
+#include <util-qt/variant.hpp>
 
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/shared_ptr.hpp>
