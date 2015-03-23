@@ -8,7 +8,7 @@
 #include <util/qt/painter_state_saver.hpp>
 #include <util/qt/scoped_disconnect.hpp>
 #include <util/qt/scoped_signal_block.hpp>
-#include <util/qt/variant.hpp>
+#include <util-qt/variant.hpp>
 
 #include <fhg/assert.hpp>
 #include <fhg/util/backtracing_exception.hpp>
