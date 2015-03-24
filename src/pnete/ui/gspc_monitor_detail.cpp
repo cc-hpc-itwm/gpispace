@@ -3,7 +3,7 @@
 #include <pnete/ui/gspc_monitor_detail.hpp>
 
 #include <util-qt/connect.hpp>
-#include <util/qt/file_line_edit.hpp>
+#include <util-qt/widget/file_line_edit.hpp>
 
 #include <fhg/assert.hpp>
 #include <fhg/util/alphanum.hpp>
@@ -912,12 +912,12 @@ namespace fhg
 
           case monitor_client::action_argument_data::directory:
             {
-              fhg::util::qt::file_line_edit* edit
-                ( new fhg::util::qt::file_line_edit
+              fhg::util::qt::widget::file_line_edit* edit
+                ( new fhg::util::qt::widget::file_line_edit
                 (QFileDialog::Directory, item._default.get_value_or (""))
                 );
               return std::pair<QWidget*, std::function<QString()>>
-                (edit, std::bind (&fhg::util::qt::file_line_edit::text, edit));
+                (edit, std::bind (&fhg::util::qt::widget::file_line_edit::text, edit));
             }
 
           case monitor_client::action_argument_data::duration:
@@ -933,12 +933,12 @@ namespace fhg
 
           case monitor_client::action_argument_data::filename:
             {
-              fhg::util::qt::file_line_edit* edit
-                ( new fhg::util::qt::file_line_edit
+              fhg::util::qt::widget::file_line_edit* edit
+                ( new fhg::util::qt::widget::file_line_edit
                 (QFileDialog::AnyFile, item._default.get_value_or (""))
                 );
               return std::pair<QWidget*, std::function<QString()>>
-                (edit, std::bind (&fhg::util::qt::file_line_edit::text, edit));
+                (edit, std::bind (&fhg::util::qt::widget::file_line_edit::text, edit));
             }
 
           case monitor_client::action_argument_data::integer:
