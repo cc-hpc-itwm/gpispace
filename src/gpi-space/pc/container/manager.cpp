@@ -418,7 +418,7 @@ namespace gpi
           }
         }
 
-        void read_exact (int fd, void* buffer, ssize_t size)
+        void read_exact (int fd, void* buffer, size_t size)
         {
           if (fhg::util::syscall::read (fd, buffer, size) != size)
           {
@@ -426,7 +426,7 @@ namespace gpi
               ("unable to read " + std::to_string (size) + " bytes");
           }
         }
-        void write_exact (int fd, void const* buffer, ssize_t size)
+        void write_exact (int fd, void const* buffer, size_t size)
         {
           if (fhg::util::syscall::write (fd, buffer, size) != size)
           {
