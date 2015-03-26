@@ -698,13 +698,13 @@ namespace xml
         }
 
         if (  not trans.priority // WORK HERE: make it work with prio
+           && fun.is_net()
            && (
                (  !state.synthesize_virtual_places()
                && !trans.place_map().empty()
                )
                || (  !state.no_inline()
                   && trans.finline.get_value_or(false)
-                  && fun.is_net()
                   )
               )
            )
