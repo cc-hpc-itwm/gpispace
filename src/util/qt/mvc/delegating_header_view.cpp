@@ -5,7 +5,7 @@
 #include <util-qt/connect.hpp>
 #include <util/qt/mini_button.hpp>
 #include <util/qt/mvc/header_delegate.hpp>
-#include <util/qt/painter_state_saver.hpp>
+#include <util-qt/painter_state_saver.hpp>
 
 #include <QContextMenuEvent>
 #include <QKeyEvent>

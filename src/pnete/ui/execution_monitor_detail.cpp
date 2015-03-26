@@ -5,7 +5,7 @@
 #include <util-qt/connect.hpp>
 #include <util/qt/cast.hpp>
 #include <util/qt/mvc/delegating_header_view.hpp>
-#include <util/qt/painter_state_saver.hpp>
+#include <util-qt/painter_state_saver.hpp>
 #include <util/qt/scoped_disconnect.hpp>
 #include <util/qt/scoped_signal_block.hpp>
 #include <util-qt/variant.hpp>
