@@ -1,6 +1,5 @@
 set (srcs
   backtracing_exception.cpp
-  executable_path.cpp
   signal_handler_manager.cpp
   pidfile_writer.cpp
   remove_prefix.cpp
