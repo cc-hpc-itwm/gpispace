@@ -74,6 +74,28 @@ namespace gspc
   {}
   PIMPL_DTOR (client)
 
+  namespace
+  {
+    void put ( we::type::activity_t& activity
+             , std::multimap< std::string
+                            , pnet::type::value::value_type
+                            > const& values_on_ports
+             )
+    {
+      for ( std::pair< std::string
+                     , pnet::type::value::value_type
+                     > const& value_on_port
+          : values_on_ports
+          )
+      {
+        activity.add_input
+          ( activity.transition().input_port_by_name (value_on_port.first)
+          , value_on_port.second
+          );
+      }
+    }
+  }
+
   job_id_t client::submit
     ( class workflow const& workflow
     , std::multimap< std::string
@@ -81,18 +103,7 @@ namespace gspc
                    > const& values_on_ports
     )
   {
-    for ( std::pair< std::string
-                   , pnet::type::value::value_type
-                   > const& value_on_port
-        : values_on_ports
-        )
-    {
-      workflow._->_activity.add_input
-        ( workflow._->_activity.transition()
-        . input_port_by_name (value_on_port.first)
-        , value_on_port.second
-        );
-    }
+    put (workflow._->_activity, values_on_ports);
 
     return _->_client.submitJob (workflow._->_activity.to_string());
   }
