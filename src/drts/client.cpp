@@ -116,34 +116,53 @@ namespace gspc
     _->_client.put_token (job_id, place_name, value);
   }
 
+  namespace
+  {
+    void wait_for_terminal_state (job_id_t job_id, sdpa::client::Client& client)
+    {
+      std::cerr << "waiting for job " << job_id << std::endl;
+
+      sdpa::client::job_info_t job_info;
+
+      sdpa::status::code const status
+        (client.wait_for_terminal_state (job_id, job_info));
+
+      if (sdpa::status::FAILED == status)
+      {
+        //! \todo decorate the exception with the most progressed activity
+        throw std::runtime_error
+          (( boost::format ("Job %1%: failed: error-message := %2%")
+           % job_id
+           % job_info.error_message
+           ).str()
+          );
+      }
+    }
+
+    we::type::activity_t wait_and_delete_job
+      (job_id_t job_id, sdpa::client::Client& client)
+    {
+      wait_for_terminal_state (job_id, client);
+
+      we::type::activity_t const result_activity
+        (client.retrieveResults (job_id));
+
+      client.deleteJob (job_id);
+
+      return result_activity;
+    }
+  }
+
   void client::wait (job_id_t job_id) const
   {
-    std::cerr << "waiting for job " << job_id << std::endl;
-
-    sdpa::client::job_info_t job_info;
-
-    sdpa::status::code const status
-      (_->_client.wait_for_terminal_state (job_id, job_info));
-
-    if (sdpa::status::FAILED == status)
-    {
-      //! \todo decorate the exception with the most progressed activity
-      throw std::runtime_error
-        (( boost::format ("Job %1%: failed: error-message := %2%")
-         % job_id
-         % job_info.error_message
-         ).str()
-        );
-    }
+    wait_for_terminal_state (job_id, _->_client);
   }
 
   std::multimap<std::string, pnet::type::value::value_type>
     client::extract_result_and_forget_job (job_id_t job_id)
   {
     we::type::activity_t const result_activity
-      (_->_client.retrieveResults (job_id));
-
-    _->_client.deleteJob (job_id);
+      (wait_and_delete_job (job_id, _->_client));
 
     std::multimap<std::string, pnet::type::value::value_type> result;
 
