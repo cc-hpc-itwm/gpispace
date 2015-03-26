@@ -1,7 +1,6 @@
 set (srcs
   backtracing_exception.cpp
   signal_handler_manager.cpp
-  pidfile_writer.cpp
   remove_prefix.cpp
   read_bool.cpp
   now.cpp
