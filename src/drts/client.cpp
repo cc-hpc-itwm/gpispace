@@ -22,6 +22,7 @@
 #include <sdpa/client.hpp>
 
 #include <we/type/activity.hpp>
+#include <we/type/copy.hpp>
 //! \todo eliminate this include (that completes type transition_t::data)
 #include <we/type/net.hpp>
 
@@ -158,10 +159,46 @@ namespace gspc
       we::type::activity_t const result_activity
         (client.retrieveResults (job_id));
 
+      std::cerr << "result retrieved" << std::endl;
+
       client.deleteJob (job_id);
 
       return result_activity;
     }
+  }
+
+  void client::step (class workflow& workflow, unsigned long number_of_steps)
+  {
+    workflow._->_activity =
+      copy (workflow._->_activity, std::string ("_STEP"), boost::none);
+
+    for (unsigned long i (0); i < number_of_steps; i++)
+    {
+      put (workflow._->_activity, {{"_STEP", we::type::literal::control()}});
+    }
+
+    job_id_t const job_id (submit (workflow, {}));
+
+    workflow._->_activity =
+      copy_rev ( wait_and_delete_job (job_id, _->_client)
+               , std::string ("_STEP")
+               );
+  }
+
+  void client::break_after
+    (class workflow& workflow, std::vector<std::string> transition_names)
+  {
+    workflow._->_activity =
+      copy (workflow._->_activity, std::string ("_CONTROL"), transition_names);
+
+    put (workflow._->_activity, {{"_CONTROL", we::type::literal::control()}});
+
+    job_id_t const job_id (submit (workflow, {}));
+
+    workflow._->_activity =
+      copy_rev ( wait_and_delete_job (job_id, _->_client)
+               , std::string ("_CONTROL")
+               );
   }
 
   void client::wait (job_id_t job_id) const
