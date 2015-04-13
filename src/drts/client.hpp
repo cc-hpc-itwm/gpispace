@@ -14,6 +14,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 namespace gspc
 {
@@ -23,6 +24,12 @@ namespace gspc
     workflow (boost::filesystem::path workflow);
 
     void set_wait_for_output();
+
+    void add_input ( std::string const& port
+                   , pnet::type::value::value_type const& value
+                   );
+
+    std::string to_string() const;
 
   private:
     friend class ::gspc::client;
@@ -63,6 +70,11 @@ namespace gspc
     {
       return wait_and_extract (submit (workflow, values_on_ports));
     }
+
+    void step (class workflow& workflow, unsigned long number_of_steps);
+    void break_after ( class workflow& workflow
+                     , std::vector<std::string> transition_names
+                     );
 
     void put_token ( job_id_t
                    , std::string place_name

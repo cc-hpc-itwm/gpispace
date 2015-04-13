@@ -22,6 +22,7 @@
 #include <sdpa/client.hpp>
 
 #include <we/type/activity.hpp>
+#include <we/type/copy.hpp>
 //! \todo eliminate this include (that completes type transition_t::data)
 #include <we/type/net.hpp>
 
@@ -49,6 +50,17 @@ namespace gspc
   {
     _->_activity.transition().set_property ({"drts", "wait_for_output"}, true);
   }
+  std::string workflow::to_string() const
+  {
+    return _->_activity.to_string();
+  }
+  void workflow::add_input ( std::string const& port
+                           , pnet::type::value::value_type const& value
+                           )
+  {
+    _->_activity.add_input
+      (_->_activity.transition().input_port_by_name (port), value);
+  }
 
   static_assert ( std::is_same<job_id_t, sdpa::job_id_t>::value
                 , "drts::job_id_t != sdpa::job_id_t"
@@ -74,6 +86,28 @@ namespace gspc
   {}
   PIMPL_DTOR (client)
 
+  namespace
+  {
+    void put ( we::type::activity_t& activity
+             , std::multimap< std::string
+                            , pnet::type::value::value_type
+                            > const& values_on_ports
+             )
+    {
+      for ( std::pair< std::string
+                     , pnet::type::value::value_type
+                     > const& value_on_port
+          : values_on_ports
+          )
+      {
+        activity.add_input
+          ( activity.transition().input_port_by_name (value_on_port.first)
+          , value_on_port.second
+          );
+      }
+    }
+  }
+
   job_id_t client::submit
     ( class workflow const& workflow
     , std::multimap< std::string
@@ -81,18 +115,7 @@ namespace gspc
                    > const& values_on_ports
     )
   {
-    for ( std::pair< std::string
-                   , pnet::type::value::value_type
-                   > const& value_on_port
-        : values_on_ports
-        )
-    {
-      workflow._->_activity.add_input
-        ( workflow._->_activity.transition()
-        . input_port_by_name (value_on_port.first)
-        , value_on_port.second
-        );
-    }
+    put (workflow._->_activity, values_on_ports);
 
     return _->_client.submitJob (workflow._->_activity.to_string());
   }
@@ -105,34 +128,89 @@ namespace gspc
     _->_client.put_token (job_id, place_name, value);
   }
 
+  namespace
+  {
+    void wait_for_terminal_state (job_id_t job_id, sdpa::client::Client& client)
+    {
+      std::cerr << "waiting for job " << job_id << std::endl;
+
+      sdpa::client::job_info_t job_info;
+
+      sdpa::status::code const status
+        (client.wait_for_terminal_state (job_id, job_info));
+
+      if (sdpa::status::FAILED == status)
+      {
+        //! \todo decorate the exception with the most progressed activity
+        throw std::runtime_error
+          (( boost::format ("Job %1%: failed: error-message := %2%")
+           % job_id
+           % job_info.error_message
+           ).str()
+          );
+      }
+    }
+
+    we::type::activity_t wait_and_delete_job
+      (job_id_t job_id, sdpa::client::Client& client)
+    {
+      wait_for_terminal_state (job_id, client);
+
+      we::type::activity_t const result_activity
+        (client.retrieveResults (job_id));
+
+      std::cerr << "result retrieved" << std::endl;
+
+      client.deleteJob (job_id);
+
+      return result_activity;
+    }
+  }
+
+  void client::step (class workflow& workflow, unsigned long number_of_steps)
+  {
+    workflow._->_activity =
+      copy (workflow._->_activity, std::string ("_STEP"), boost::none);
+
+    for (unsigned long i (0); i < number_of_steps; i++)
+    {
+      put (workflow._->_activity, {{"_STEP", we::type::literal::control()}});
+    }
+
+    job_id_t const job_id (submit (workflow, {}));
+
+    workflow._->_activity =
+      copy_rev ( wait_and_delete_job (job_id, _->_client)
+               , std::string ("_STEP")
+               );
+  }
+
+  void client::break_after
+    (class workflow& workflow, std::vector<std::string> transition_names)
+  {
+    workflow._->_activity =
+      copy (workflow._->_activity, std::string ("_CONTROL"), transition_names);
+
+    put (workflow._->_activity, {{"_CONTROL", we::type::literal::control()}});
+
+    job_id_t const job_id (submit (workflow, {}));
+
+    workflow._->_activity =
+      copy_rev ( wait_and_delete_job (job_id, _->_client)
+               , std::string ("_CONTROL")
+               );
+  }
+
   void client::wait (job_id_t job_id) const
   {
-    std::cerr << "waiting for job " << job_id << std::endl;
-
-    sdpa::client::job_info_t job_info;
-
-    sdpa::status::code const status
-      (_->_client.wait_for_terminal_state (job_id, job_info));
-
-    if (sdpa::status::FAILED == status)
-    {
-      //! \todo decorate the exception with the most progressed activity
-      throw std::runtime_error
-        (( boost::format ("Job %1%: failed: error-message := %2%")
-         % job_id
-         % job_info.error_message
-         ).str()
-        );
-    }
+    wait_for_terminal_state (job_id, _->_client);
   }
 
   std::multimap<std::string, pnet::type::value::value_type>
     client::extract_result_and_forget_job (job_id_t job_id)
   {
     we::type::activity_t const result_activity
-      (_->_client.retrieveResults (job_id));
-
-    _->_client.deleteJob (job_id);
+      (wait_and_delete_job (job_id, _->_client));
 
     std::multimap<std::string, pnet::type::value::value_type> result;
 

@@ -61,3 +61,13 @@ fhg_add_runtime_executable (
                  Util::Generic
                  Boost::program_options
 )
+
+fhg_add_runtime_executable (
+  pnetd.cpp
+  LINK_LIBRARIES fhg-revision
+                 pnet
+                 gspc
+                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                 ${Boost_SERIALIZATION_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
+)

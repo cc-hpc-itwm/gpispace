@@ -40,6 +40,7 @@ add_library (pnet
   we/type/bitsetofint.cpp
   we/type/bytearray.cpp
   we/type/connection.cpp
+  we/type/copy.cpp
   we/type/expression.cpp
   we/type/literal/control.cpp
   we/type/net.cpp
