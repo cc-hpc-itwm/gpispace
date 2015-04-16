@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <util/qt/mini_button.fwd.hpp>
+#include <util-qt/widget/mini_button.fwd.hpp>
 #include <util/qt/mvc/header_delegate.fwd.hpp>
 
 #include <boost/optional.hpp>
@@ -58,7 +58,7 @@ namespace fhg
           {
             boost::optional<int> section;
             QWidget* widget;
-            mini_button* close_button;
+            widget::mini_button* close_button;
             _editor_type() : section (boost::none), widget (nullptr), close_button (nullptr) {}
           } _editor;
 

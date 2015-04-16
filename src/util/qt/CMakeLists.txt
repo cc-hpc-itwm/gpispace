@@ -3,7 +3,6 @@
 qt4_wrap_cpp (moc_util_qt
   dual_list_selector.hpp
   file_line_edit.hpp
-  mini_button.hpp
   mvc/alphanum_sort_proxy.hpp
   mvc/delegating_header_view.hpp
   mvc/filter_ignoring_branch_nodes_proxy.hpp
@@ -18,7 +17,6 @@ qt4_wrap_cpp (moc_util_qt
 add_library (fhg_util_qt
   dual_list_selector.cpp
   file_line_edit.cpp
-  mini_button.cpp
   mvc/alphanum_sort_proxy.cpp
   mvc/delegating_header_view.cpp
   mvc/filter_ignoring_branch_nodes_proxy.cpp
