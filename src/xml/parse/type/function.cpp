@@ -24,7 +24,9 @@
 #include <fhg/util/cpp/include.hpp>
 #include <fhg/util/cpp/include_guard.hpp>
 #include <fhg/util/indenter.hpp>
+#include <fhg/util/starts_with.hpp>
 #include <util-generic/ostream_modifier.hpp>
+#include <util-generic/split.hpp>
 
 #include <we/type/module_call.fwd.hpp>
 #include <we/type/expression.fwd.hpp>
@@ -2361,7 +2363,38 @@ namespace xml
 
               const path_t file (path / file_cpp);
 
-              util::check_no_change_fstream stream (state, file);
+              util::check_no_change_fstream stream
+                ( state
+                , file
+                , [] (std::string const& l, std::string const& r)
+                  {
+                    std::list<std::string> const
+                      ls (fhg::util::split<std::string, std::string> (l, '\n'));
+                    std::list<std::string> const
+                      rs (fhg::util::split<std::string, std::string> (r, '\n'));
+
+                    std::list<std::string>::const_iterator pos_l (ls.begin());
+                    std::list<std::string>::const_iterator pos_r (rs.begin());
+
+                    while (pos_l != ls.end() && pos_r != rs.end())
+                    {
+                      if (! ((  fhg::util::starts_with ("#line", *pos_l)
+                             && fhg::util::starts_with ("#line", *pos_r)
+                             )
+                            || *pos_l == *pos_r
+                            )
+                         )
+                      {
+                        return false;
+                      }
+
+                      ++pos_l;
+                      ++pos_r;
+                    }
+
+                    return pos_l == ls.end() && pos_r == rs.end();
+                  }
+                );
 
               stream << cpp_util::include
                 ("pnetc/op/" + mod.name() + "/" + file_hpp);
