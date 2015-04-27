@@ -69,6 +69,18 @@ namespace
            ).str();
   }
 
+
+  std::string replace_whitespace (std::string s)
+  {
+    std::transform ( s.begin(), s.end(), s.begin()
+                   , [] (char c)
+                     {
+                       return std::isspace (c) ? '_' : c;
+                     }
+                   );
+    return s;
+  }
+
   template<typename Res, typename Enum, typename Match>
     boost::optional<Res> get_match (Match& match, Enum part)
   {
@@ -99,7 +111,9 @@ namespace
     if (log_dir)
     {
       environment.emplace
-        ("FHGLOG_to_file", (*log_dir / (name + ".log")).string());
+        ( "FHGLOG_to_file"
+        , (*log_dir / (replace_whitespace (name) + ".log")).string()
+        );
     }
     return environment;
   }
@@ -532,7 +546,7 @@ namespace fhg
                               ? std::make_pair (log_host.get(), log_port.get())
                               : boost::optional<std::pair<std::string, unsigned short>>()
                               , log_dir
-                              ? *log_dir / ("vmem-" + entry_point.to_string() + ".log")
+                              ? *log_dir / ("vmem-" + replace_whitespace (entry_point.to_string()) + ".log")
                               : boost::optional<boost::filesystem::path>()
                               , nodes
                               , master.to_string()
