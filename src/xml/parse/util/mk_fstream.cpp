@@ -15,9 +15,11 @@ namespace xml
       check_no_change_fstream::check_no_change_fstream
       ( const state::type& state
       , const boost::filesystem::path& file
+      , std::function<bool (std::string const&, std::string const&)> equal
       )
         : _state (state)
         , _file (file)
+        , _equal (equal)
         , _oss ()
       {}
       check_no_change_fstream::~check_no_change_fstream()
@@ -43,7 +45,7 @@ namespace xml
             std::stringstream sstr;
             ifs >> std::noskipws >> sstr.rdbuf();
 
-            if (_oss.str() == sstr.str())
+            if (_equal (_oss.str(), sstr.str()))
               {
                 return;
               }
