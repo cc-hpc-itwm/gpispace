@@ -2,7 +2,7 @@
 
 #include <rif/strategy/ssh.hpp>
 
-#include <fhg/util/nest_exceptions.hpp>
+#include <util-generic/nest_exceptions.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 #include <fhg/util/wait_and_collect_exceptions.hpp>
 

@@ -7,7 +7,7 @@
 #include <boost/variant/static_visitor.hpp>
 
 #include <util-generic/syscall.hpp>
-#include <fhg/util/nest_exceptions.hpp>
+#include <util-generic/nest_exceptions.hpp>
 
 #include <gpi-space/log_to_GLOBAL_logger.hpp>
 
