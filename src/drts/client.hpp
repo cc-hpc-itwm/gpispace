@@ -31,6 +31,8 @@ namespace gspc
 
     std::string to_string() const;
 
+    workflow (workflow&&);
+
   private:
     friend class ::gspc::client;
 
