@@ -8,7 +8,7 @@
 #include <test/source_directory.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/read_file.hpp>
+#include <util-generic/read_file.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 #include <util-generic/temporary_path.hpp>
 

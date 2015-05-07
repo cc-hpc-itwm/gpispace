@@ -20,7 +20,6 @@ set (srcs
   cpp/struct.cpp
 
   xml.cpp
-  read_file.cpp
 
   system_with_blocked_SIGCHLD.cpp
   wait_and_collect_exceptions.cpp
