@@ -21,7 +21,7 @@
 
 #include <util-generic/hostname.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
-#include <fhg/util/nest_exceptions.hpp>
+#include <util-generic/nest_exceptions.hpp>
 #include <fhg/util/read_file.hpp>
 #include <util-generic/split.hpp>
 #include <fhg/revision.hpp>

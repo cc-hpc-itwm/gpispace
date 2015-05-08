@@ -4,7 +4,7 @@
 
 #include <network/connectable_to_address_string.hpp>
 #include <fhg/util/join.hpp>
-#include <fhg/util/nest_exceptions.hpp>
+#include <util-generic/nest_exceptions.hpp>
 
 #include <network/server.hpp>
 
