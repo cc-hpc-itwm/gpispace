@@ -46,6 +46,12 @@ namespace gspc
   {}
   PIMPL_DTOR (workflow)
 
+  workflow::workflow (workflow&& other)
+    : _ (other._)
+  {
+    other._ = nullptr;
+  }
+
   void workflow::set_wait_for_output()
   {
     _->_activity.transition().set_property ({"drts", "wait_for_output"}, true);
