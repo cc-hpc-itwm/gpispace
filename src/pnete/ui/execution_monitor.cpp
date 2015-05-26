@@ -428,9 +428,9 @@ namespace fhg
               , std::bind (&change_gantt_color, delegate, label, state, this)
               );
 
-            util::qt::connect<void (worker_model::state_type, QColor)>
+            util::qt::connect<void (sdpa::daemon::NotificationEvent::state_t, QColor)>
               ( delegate
-              , SIGNAL (color_for_state_changed (worker_model::state_type, QColor))
+              , SIGNAL (color_for_state_changed (sdpa::daemon::NotificationEvent::state_t, QColor))
               , this
               , std::bind (&maybe_style_button, label, state, std::placeholders::_1, std::placeholders::_2)
               );
