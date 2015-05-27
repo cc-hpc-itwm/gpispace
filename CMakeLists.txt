@@ -1,8 +1,5 @@
 cmake_minimum_required (VERSION 3.1 FATAL_ERROR)
-set (CMAKE_SKIP_BUILD_RPATH FALSE)
-set (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set (CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-set (CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../external/boost/lib:\$ORIGIN/../../../lib/:\$ORIGIN/../../../external/boost/lib")
+
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
 set (CMAKE_MODULE_PATH

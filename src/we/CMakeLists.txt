@@ -1,32 +1,29 @@
 # {mirko.rahn,bernd.loerwald}@itwm.fraunhofer.de
 
-add_library (we-dev SHARED
-  exception.cpp
-  expr/token/type.cpp
-  field.cpp
-  signature_of.cpp
-  type/bitsetofint.cpp
-  type/bytearray.cpp
-  type/literal/control.cpp
-  type/signature/show.cpp
-  type/value/name.cpp
-  type/value/name_of.cpp
-  type/value/path/append.cpp
-  type/value/path/join.cpp
-  type/value/path/split.cpp
-  type/value/peek.cpp
-  type/value/poke.cpp
-  type/value/show.cpp
-  type/value/read.cpp
+extended_add_library (NAME we-dev
+  TYPE SHARED
+  SOURCES "exception.cpp"
+          "expr/token/type.cpp"
+          "field.cpp"
+          "signature_of.cpp"
+          "type/bitsetofint.cpp"
+          "type/bytearray.cpp"
+          "type/literal/control.cpp"
+          "type/signature/show.cpp"
+          "type/value/name.cpp"
+          "type/value/name_of.cpp"
+          "type/value/path/append.cpp"
+          "type/value/path/join.cpp"
+          "type/value/path/split.cpp"
+          "type/value/peek.cpp"
+          "type/value/poke.cpp"
+          "type/value/show.cpp"
+          "type/value/read.cpp"
 
-  loader/Module.cpp
-)
-
-target_link_libraries(we-dev fhg-util ${CMAKE_DL_LIBS})
-set_target_properties (we-dev PROPERTIES OUTPUT_NAME we-dev VERSION 1)
-
-install (TARGETS we-dev
-  LIBRARY DESTINATION lib
+          "loader/Module.cpp"
+  LIBRARIES fhg-util
+            ${CMAKE_DL_LIBS}
+  INSTALL
 )
 
 install (FILES

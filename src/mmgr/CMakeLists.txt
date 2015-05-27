@@ -10,6 +10,6 @@ set (sources
   trie.c
 )
 
-add_library (mmgr ${sources})
+extended_add_library (NAME mmgr SOURCES ${sources})
 
 add_subdirectory (tests)

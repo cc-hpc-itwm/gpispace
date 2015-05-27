@@ -34,8 +34,10 @@ add_custom_command (
   DEPENDS mk_cpp
 )
 
-add_library (sig_op ${CMAKE_CURRENT_BINARY_DIR}/sig_op.cpp)
-target_include_directories (sig_op PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+extended_add_library (NAME sig_op
+  SOURCES "${CMAKE_CURRENT_BINARY_DIR}/sig_op.cpp"
+  INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}"
+)
 
 fhg_add_test (sig.cpp
   BOOST_UNIT_TEST

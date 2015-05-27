@@ -21,16 +21,6 @@ fhg_add_runtime_executable (gpi-space.cpp
                  Boost::system
 )
 
-set_target_properties (gpi-space
-  PROPERTIES
-  INSTALL_RPATH "${CMAKE_INSTALL_RPATH}"
-)
-
-install (TARGETS gpi-space
-  RUNTIME
-  DESTINATION bin
-)
-
 fhg_add_runtime_executable (
   pnet2dot.cpp
   LINK_LIBRARIES fhg-revision

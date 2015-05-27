@@ -153,10 +153,10 @@ qt4_wrap_cpp (plugin_wrapped_cpps ${plugin_tomoc})
                    ${QT_LIBRARIES}
   )
 
-qt4_wrap_cpp (hello_world-plugion_wrapped "plugin/demo/hello_world.hpp")
-
-add_library (hello_world-plugin MODULE
-  "plugin/demo/hello_world.cpp" ${hello_world-plugion_wrapped}
+extended_add_library (NAME hello_world-plugin
+  TYPE MODULE
+  SOURCES "plugin/demo/hello_world.cpp"
+  MOC "plugin/demo/hello_world.hpp"
 )
 
 target_link_libraries (hello_world-plugin ${QT_LIBRARIES})

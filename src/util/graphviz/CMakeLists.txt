@@ -1,7 +1,10 @@
 #bernd.loerwald@itwm.fraunhofer.de
 
-add_library ("${LIB_PREFIX}graphviz-wrapper" graphviz.cpp)
+extended_add_library (NAME "${LIB_PREFIX}graphviz-wrapper"
+  SOURCES "graphviz.cpp"
+  LIBRARIES ${GRAPHVIZ_LIBRARIES}
+)
+#!\todo move into extended_add_library
 target_include_directories ("${LIB_PREFIX}graphviz-wrapper"
   PRIVATE SYSTEM "${GRAPHVIZ_INCLUDE_DIR}"
 )
-target_link_libraries ("${LIB_PREFIX}graphviz-wrapper" ${GRAPHVIZ_LIBRARIES})

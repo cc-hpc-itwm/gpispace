@@ -6,5 +6,4 @@ add_subdirectory (global)
 
 add_subdirectory (test)
 
-add_library (gpi-space_url url.cpp)
-target_link_libraries (gpi-space_url fhg-util)
+extended_add_library (NAME gpi-space_url SOURCES "url.cpp" LIBRARIES fhg-util)
