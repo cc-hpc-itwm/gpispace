@@ -1,42 +1,34 @@
-set (srcs
-  backtracing_exception.cpp
-  signal_handler_manager.cpp
-  remove_prefix.cpp
-  read_bool.cpp
-  now.cpp
+extended_add_library (NAME fhg-util
+  SOURCES "backtracing_exception.cpp"
+          "signal_handler_manager.cpp"
+          "remove_prefix.cpp"
+          "read_bool.cpp"
+          "now.cpp"
 
-  parse/position.cpp
-  parse/error.cpp
-  parse/require.cpp
-  parse/until.cpp
+          "parse/position.cpp"
+          "parse/error.cpp"
+          "parse/require.cpp"
+          "parse/until.cpp"
 
-  num.cpp
-  num/show.cpp
-  indenter.cpp
-  cpp/block.cpp
-  cpp/include.cpp
-  cpp/include_guard.cpp
-  cpp/namespace.cpp
-  cpp/struct.cpp
+          "num.cpp"
+          "num/show.cpp"
+          "indenter.cpp"
+          "cpp/block.cpp"
+          "cpp/include.cpp"
+          "cpp/include_guard.cpp"
+          "cpp/namespace.cpp"
+          "cpp/struct.cpp"
 
-  xml.cpp
-  read_file.cpp
+          "xml.cpp"
+          "read_file.cpp"
 
-  system_with_blocked_SIGCHLD.cpp
-  wait_and_collect_exceptions.cpp
-)
-
-add_library (fhg-util ${srcs})
-
-target_link_libraries (fhg-util
-  Util::Generic
-  Boost::thread
-  Boost::system
-  Boost::filesystem
-)
-
-install (TARGETS fhg-util
-  ARCHIVE DESTINATION lib
+          "system_with_blocked_SIGCHLD.cpp"
+          "wait_and_collect_exceptions.cpp"
+  LIBRARIES Util::Generic
+            Boost::thread
+            Boost::system
+            Boost::filesystem
+  INSTALL
 )
 
   add_subdirectory(test)

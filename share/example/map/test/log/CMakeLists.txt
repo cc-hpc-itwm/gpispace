@@ -1,10 +1,9 @@
 # mirko.rahn@itwm.fraunhofer.de
 
-add_library (log_map-impl SHARED
-  implementation.cpp
-)
-target_include_directories (log_map-impl
-  PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
+extended_add_library (NAME log_map-impl
+  TYPE MODULE
+  SOURCES "implementation.cpp"
+  INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/share/example"
 )
 
 math (EXPR size_communication_buffer "8 * 4 << 20")

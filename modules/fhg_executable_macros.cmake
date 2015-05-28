@@ -12,27 +12,10 @@ macro (FHG_ADD_RUNTIME_EXECUTABLE)
     string (REGEX REPLACE "(.*)\\.c.*" "\\1" exe_name ${EXECUTABLE_SOURCE})
   endif()
 
-  add_executable (
-    ${exe_name}
-    ${EXECUTABLE_SOURCE} ${EXECUTABLE_ADDITIONAL_SOURCES}
-  )
-
-  target_link_libraries (${exe_name} ${EXECUTABLE_LINK_LIBRARIES})
-
-  install (TARGETS ${exe_name} RUNTIME DESTINATION bin)
-
-  add_custom_command (OUTPUT "${CMAKE_BINARY_DIR}/bundle-${exe_name}"
-    COMMAND "${CMAKE_SOURCE_DIR}/bundle/bundle.sh"
-    ARGS "${CMAKE_BINARY_DIR}/bundle-${exe_name}"
-         $<TARGET_FILE:${exe_name}>
-    DEPENDS ${exe_name} "${CMAKE_SOURCE_DIR}/bundle/bundle.sh"
-  )
-  add_custom_target (${exe_name}-bundled-libraries ALL
-    DEPENDS "${CMAKE_BINARY_DIR}/bundle-${exe_name}"
-  )
-
-  install (DIRECTORY "${CMAKE_BINARY_DIR}/bundle-${exe_name}/"
-    DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
-    USE_SOURCE_PERMISSIONS
+  extended_add_executable (NAME "${exe_name}"
+    SOURCES ${EXECUTABLE_SOURCE} ${EXECUTABLE_ADDITIONAL_SOURCES}
+    LIBRARIES ${EXECUTABLE_LINK_LIBRARIES}
+    DONT_APPEND_EXE_SUFFIX
+    INSTALL
   )
 endmacro()

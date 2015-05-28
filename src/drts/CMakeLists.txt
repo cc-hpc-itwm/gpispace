@@ -22,35 +22,30 @@ install (FILES
   DESTINATION include/drts/
 )
 
-add_library (gspc SHARED
-  client.cpp
-  drts.cpp
-  information_to_reattach.cpp
-  private/option.cpp
-  private/startup_and_shutdown.cpp
-  rifd_entry_points.cpp
-  scoped_rifd.cpp
-  stream.cpp
-  virtual_memory.cpp
-  workflow_response.cpp
-)
-target_link_libraries (gspc
-  sdpa
-  pnet
-  rif-strategies
-  gpi-space-pc-client-static
-  gpi-space-pc-segment
-  fhg-revision
-  Util::Generic
-  Network
-  Boost::filesystem
-  Boost::regex
-  Boost::program_options
-)
-
-install (TARGETS
-  gspc
-  DESTINATION lib/
+extended_add_library (NAME gspc
+  TYPE SHARED
+  SOURCES "client.cpp"
+          "drts.cpp"
+          "information_to_reattach.cpp"
+          "private/option.cpp"
+          "private/startup_and_shutdown.cpp"
+          "rifd_entry_points.cpp"
+          "scoped_rifd.cpp"
+          "stream.cpp"
+          "virtual_memory.cpp"
+          "workflow_response.cpp"
+  LIBRARIES sdpa
+            pnet
+            rif-strategies
+            gpi-space-pc-client-static
+            gpi-space-pc-segment
+            fhg-revision
+            Util::Generic
+            Network
+            Boost::filesystem
+            Boost::regex
+            Boost::program_options
+  INSTALL
 )
 
 add_subdirectory (test/add_worker)
