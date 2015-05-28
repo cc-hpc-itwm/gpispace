@@ -23,23 +23,11 @@ fhg_add_test (module.cpp
           empty
 )
 
-add_library (answer SHARED question_answer/answer.cpp)
-add_library (question SHARED question_answer/question.cpp)
-target_link_libraries (question answer)
-target_link_libraries (answer pnet)
-
-add_library (order_stack SHARED order/stack.cpp)
-add_library (order_a SHARED order/a.cpp)
-add_library (order_b SHARED order/b.cpp)
-target_link_libraries (order_a order_stack pnet)
-target_link_libraries (order_b order_stack pnet)
-
-add_library (initialize_throws SHARED module/initialize_throws.cpp)
-target_link_libraries (initialize_throws pnet)
-
-add_library (empty_not_linked_with_pnet
-  SHARED module/empty_not_linked_with_pnet.cpp
-)
-
-add_library (empty SHARED module/empty)
-target_link_libraries (empty pnet)
+extended_add_library (NAME answer TYPE SHARED SOURCES "question_answer/answer.cpp" LIBRARIES pnet)
+extended_add_library (NAME question TYPE SHARED SOURCES "question_answer/question.cpp" LIBRARIES answer)
+extended_add_library (NAME order_stack TYPE SHARED SOURCES "order/stack.cpp")
+extended_add_library (NAME order_a TYPE SHARED SOURCES "order/a.cpp" LIBRARIES order_stack pnet)
+extended_add_library (NAME order_b TYPE SHARED SOURCES "order/b.cpp" LIBRARIES order_stack pnet)
+extended_add_library (NAME initialize_throws TYPE SHARED SOURCES "module/initialize_throws.cpp" LIBRARIES pnet)
+extended_add_library (NAME empty_not_linked_with_pnet TYPE SHARED SOURCES "module/empty_not_linked_with_pnet.cpp")
+extended_add_library (NAME empty TYPE SHARED SOURCES "module/empty" LIBRARIES pnet)

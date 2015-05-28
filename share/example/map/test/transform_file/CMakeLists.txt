@@ -1,24 +1,17 @@
 # mirko.rahn@itwm.fraunhofer.de
 
-add_library (transform_file_type
-  type.cpp
-)
-target_include_directories (transform_file_type
-  PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
-)
-target_link_libraries (transform_file_type
-  we-dev
-  Boost::filesystem
+extended_add_library (NAME transform_file_type
+  SOURCES "type.cpp"
+  INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/share/example"
+  LIBRARIES we-dev
+            Boost::filesystem
 )
 
-add_library (transform_file_map-impl SHARED
-  implementation.cpp
-)
-target_link_libraries (transform_file_map-impl
-  transform_file_type
-)
-target_include_directories (transform_file_map-impl
-  PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
+extended_add_library (NAME transform_file_map-impl
+  TYPE MODULE
+  SOURCES "implementation.cpp"
+  LIBRARIES transform_file_type
+  INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/share/example"
 )
 
 math (EXPR size_communication_buffer "8 * 4 << 20")

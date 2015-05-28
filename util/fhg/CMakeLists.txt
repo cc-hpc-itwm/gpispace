@@ -13,7 +13,9 @@ if (revision_cpp_needs_update)
   file (WRITE "${CMAKE_BINARY_DIR}/revision" "${PROJECT_REVISION}")
 endif()
 
-add_library (fhg-revision ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp)
+extended_add_library (NAME fhg-revision
+  SOURCES "${CMAKE_CURRENT_BINARY_DIR}/revision.cpp"
+)
 
 install (FILES
   util/parse/position.hpp

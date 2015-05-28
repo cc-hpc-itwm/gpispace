@@ -1,10 +1,7 @@
-set (srcs
-  api.cpp
-  )
-
-add_library(gpi-space-pc-client-static ${srcs})
+extended_add_library (NAME gpi-space-pc-client-static SOURCES "api.cpp"
+  LIBRARIES Util::Generic
+)
+#! \todo move into extendend_add_library
 target_include_directories (gpi-space-pc-client-static
   PRIVATE SYSTEM "${LIBRT_INCLUDE_DIR}"
 )
-target_link_libraries (gpi-space-pc-client-static Util::Generic)
-set_target_properties(gpi-space-pc-client-static PROPERTIES OUTPUT_NAME gpi-space-pc-client)

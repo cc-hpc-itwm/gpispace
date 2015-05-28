@@ -1,18 +1,29 @@
 
-add_library (determine_size SHARED determine_size.cpp swap_bytes.cpp)
-add_library (do_load SHARED do_load.cpp swap_bytes.cpp)
-add_library (do_write SHARED do_write.cpp swap_bytes.cpp)
-
-target_include_directories (determine_size
-  PRIVATE "${CMAKE_SOURCE_DIR}/share/seis"
+extended_add_library (NAME determine_size
+  TYPE SHARED
+  SOURCES "determine_size.cpp"
+          "swap_bytes.cpp"
+  INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/share/seis"
+  INSTALL
+  INSTALL_DESTINATION "libexec/sdpa"
 )
-target_include_directories (do_load PRIVATE "${CMAKE_SOURCE_DIR}/share/seis")
-target_include_directories (do_write PRIVATE "${CMAKE_SOURCE_DIR}/share/seis")
+extended_add_library (NAME do_load
+  TYPE SHARED
+  SOURCES "do_load.cpp"
+          "swap_bytes.cpp"
+  INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/share/seis"
+  INSTALL
+  INSTALL_DESTINATION "libexec/sdpa"
+)
+extended_add_library (NAME do_write
+  TYPE SHARED
+  SOURCES "do_write.cpp"
+          "swap_bytes.cpp"
+  INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/share/seis"
+  INSTALL
+  INSTALL_DESTINATION "libexec/sdpa"
+)
 
 install (FILES do_load.hpp determine_size.hpp do_write.hpp
   DESTINATION include/seis
-)
-
-install (TARGETS determine_size do_load do_write
-  LIBRARY DESTINATION libexec/sdpa
 )
