@@ -19,9 +19,7 @@
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 
-#include <network/server.hpp>
-
-#include <rpc/server.hpp>
+#include <rpc/server_with_multiple_clients.hpp>
 
 #include <boost/asio/ip/tcp.hpp>
 
@@ -33,7 +31,6 @@ namespace sdpa {
       Orchestrator ( const std::string &name
                    , const std::string& url
                    , std::unique_ptr<boost::asio::io_service> peer_io_service
-                   , boost::asio::io_service& rpc_io_service
                    , fhg::log::Logger&
                    );
 
@@ -52,9 +49,7 @@ namespace sdpa {
       boost::asio::ip::tcp::endpoint rpc_local_endpoint() const;
 
     private:
-      std::vector<std::unique_ptr<fhg::network::connection_type>> _rpc_connections;
-      fhg::rpc::service_dispatcher _rpc_dispatcher;
-      fhg::network::continous_acceptor<boost::asio::ip::tcp> _rpc_acceptor;
+      fhg::rpc::server_with_multiple_clients _rpc_server;
     };
   }
 }
