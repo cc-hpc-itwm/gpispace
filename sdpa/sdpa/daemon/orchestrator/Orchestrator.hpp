@@ -49,6 +49,7 @@ namespace sdpa {
       boost::asio::ip::tcp::endpoint rpc_local_endpoint() const;
 
     private:
+      fhg::rpc::service_dispatcher _rpc_dispatcher;
       fhg::rpc::server_with_multiple_clients _rpc_server;
     };
   }

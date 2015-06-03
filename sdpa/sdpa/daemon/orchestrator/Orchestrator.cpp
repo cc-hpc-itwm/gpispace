@@ -24,8 +24,9 @@ namespace sdpa
                       , {}
                       , logger
                       )
-      , _rpc_server
-        (fhg::rpc::service_dispatcher (fhg::util::serialization::exception::serialization_functions()))
+      , _rpc_dispatcher
+          (fhg::util::serialization::exception::serialization_functions())
+      , _rpc_server (_rpc_dispatcher)
     {}
 
     boost::asio::ip::tcp::endpoint Orchestrator::rpc_local_endpoint() const

@@ -118,8 +118,7 @@ namespace fhg
               }
             );
 
-        fhg::rpc::server_with_multiple_clients rpc_server
-          (std::move (service_dispatcher));
+        fhg::rpc::server_with_multiple_clients rpc_server (service_dispatcher);
 
         boost::asio::ip::tcp::endpoint const local_endpoint
           (rpc_server.local_endpoint());
