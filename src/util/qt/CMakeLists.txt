@@ -2,7 +2,6 @@
 
 extended_add_library (NAME fhg_util_qt
   SOURCES "dual_list_selector.cpp"
-          "mini_button.cpp"
           "mvc/alphanum_sort_proxy.cpp"
           "mvc/delegating_header_view.cpp"
           "mvc/filter_ignoring_branch_nodes_proxy.cpp"
@@ -15,7 +14,6 @@ extended_add_library (NAME fhg_util_qt
           "scoped_disconnect.cpp"
           "treeview_with_delete.cpp"
   MOC "dual_list_selector.hpp"
-      "mini_button.hpp"
       "mvc/alphanum_sort_proxy.hpp"
       "mvc/delegating_header_view.hpp"
       "mvc/filter_ignoring_branch_nodes_proxy.hpp"

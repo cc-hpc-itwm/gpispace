@@ -3,7 +3,7 @@
 #include <util/qt/mvc/delegating_header_view.hpp>
 
 #include <util-qt/connect.hpp>
-#include <util/qt/mini_button.hpp>
+#include <util-qt/widget/mini_button.hpp>
 #include <util/qt/mvc/header_delegate.hpp>
 #include <util-qt/painter_state_saver.hpp>
 
@@ -212,7 +212,7 @@ namespace fhg
             _editor.section = section;
 
             _editor.close_button
-              = new mini_button (QStyle::SP_TitleBarCloseButton, this);
+              = new widget::mini_button (QStyle::SP_TitleBarCloseButton, this);
             _editor.close_button->show();
             connect (_editor.close_button, SIGNAL (clicked()), SLOT (close_editor()));
 

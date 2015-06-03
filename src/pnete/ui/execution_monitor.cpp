@@ -5,7 +5,7 @@
 
 #include <util-qt/connect.hpp>
 #include <util/qt/dual_list_selector.hpp>
-#include <util/qt/mini_button.hpp>
+#include <util-qt/widget/mini_button.hpp>
 #include <util/qt/mvc/alphanum_sort_proxy.hpp>
 #include <util/qt/mvc/delegating_header_view.hpp>
 #include <util/qt/mvc/filter_ignoring_branch_nodes_proxy.hpp>
@@ -377,10 +377,10 @@ namespace fhg
         add_column->setIcon (QIcon::fromTheme ("list-add"));
         remove_column->setIcon (QIcon::fromTheme ("list-remove"));
 
-        util::qt::mini_button* add_column_button
-          (new util::qt::mini_button (add_column, this));
-        util::qt::mini_button* remove_column_button
-          (new util::qt::mini_button (remove_column, this));
+        util::qt::widget::mini_button* add_column_button
+          (new util::qt::widget::mini_button (add_column, this));
+        util::qt::widget::mini_button* remove_column_button
+          (new util::qt::widget::mini_button (remove_column, this));
 
 
         QAction* clear_model (new QAction (tr ("clear_action"), base));
@@ -391,8 +391,8 @@ namespace fhg
           , this, std::bind (&worker_model::clear, base)
           );
 
-        util::qt::mini_button* clear_button
-          (new util::qt::mini_button (clear_model, this));
+        util::qt::widget::mini_button* clear_button
+          (new util::qt::widget::mini_button (clear_model, this));
 
 
         util::qt::dual_list_selector* list_builder
