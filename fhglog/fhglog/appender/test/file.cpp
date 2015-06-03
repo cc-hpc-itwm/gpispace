@@ -8,7 +8,7 @@
 #include <fhglog/format.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/read_file.hpp>
+#include <util-generic/read_file.hpp>
 #include <util-generic/temporary_file.hpp>
 
 BOOST_AUTO_TEST_CASE (throw_on_unwritable_file)
