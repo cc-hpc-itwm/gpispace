@@ -1,5 +1,3 @@
-// alexander.petry@itwm.fraunhofer.de
-
 #define BOOST_TEST_MODULE share_example_ping_pong
 #include <boost/test/unit_test.hpp>
 
