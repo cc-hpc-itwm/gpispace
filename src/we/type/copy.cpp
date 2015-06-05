@@ -80,6 +80,7 @@ namespace we
         control_place_id =
           new_net.add_place (place::type ( *control
                                          , std::string ("control")
+                                         , boost::none
                                          , transformation_properties
                                          )
                             );

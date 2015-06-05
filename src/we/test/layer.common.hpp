@@ -63,9 +63,9 @@ namespace
     we::type::net_type net;
 
     we::place_id_type const place_id_in
-      (net.add_place (place::type ("in", signature::CONTROL)));
+      (net.add_place (place::type ("in", signature::CONTROL, true)));
     we::place_id_type const place_id_out
-      (net.add_place (place::type ("out", signature::CONTROL)));
+      (net.add_place (place::type ("out", signature::CONTROL, boost::none)));
 
     for (std::size_t i (0); i < token_count; ++i)
     {

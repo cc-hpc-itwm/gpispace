@@ -5,7 +5,7 @@
   <in name="wait" type="unsigned int" place="wait"/>
   <out name="done" type="control" place="done"/>
   <net>
-    <place name="trigger" type="control"/>
+    <place name="trigger" type="control" put_token="true"/>
     <place name="address" type="string"/>
     <place name="port" type="unsigned int"/>
     <place name="wait" type="unsigned int"/>

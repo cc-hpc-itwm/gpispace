@@ -33,10 +33,17 @@ namespace place
 
   type::type ( const std::string& name
 	     , const pnet::type::signature::signature_type& signature
+             , boost::optional<bool> put_token
 	     , const we::type::property::type& prop
 	     )
     : _name (name)
     , _signature (signature)
+    , _put_token (put_token)
     , _prop (prop)
   {}
+
+  bool type::is_marked_for_put_token() const
+  {
+    return !!_put_token && _put_token.get();
+  }
 }

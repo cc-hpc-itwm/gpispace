@@ -237,7 +237,7 @@ namespace we
       do_update (do_put_value (pid, value));
     }
 
-    void net_type::put_value ( std::string place_name
+    void net_type::put_token ( std::string place_name
                              , pnet::type::value::value_type const& value
                              )
     {
@@ -247,7 +247,21 @@ namespace we
       if (pid == _place_id_by_name.end())
       {
         throw std::invalid_argument
-          ( ( boost::format ("put_value (\"%1%\", %2%): not found")
+          ( ( boost::format ("put_token (\"%1%\", %2%): not found")
+            % place_name
+            % pnet::type::value::show (value)
+            ).str()
+          );
+      }
+
+      place::type const& place (_pmap.at (pid->second));
+
+      if (!place.is_marked_for_put_token())
+      {
+        throw std::invalid_argument
+          ( ( boost::format (R"EOS(
+put_token ("%1%", %2%): place not marked with attribute put_token="true"
+)EOS")
             % place_name
             % pnet::type::value::show (value)
             ).str()

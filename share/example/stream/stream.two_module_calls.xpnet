@@ -21,7 +21,7 @@
     <place name="packages" type="string"/>
     <place name="rounds" type="unsigned long"/>
 
-    <place name="stop" type="control"/>
+    <place name="stop" type="control" put_token="true"/>
 
     <transition name="done">
       <defun>
@@ -51,7 +51,7 @@
       <connect-in port="statistic" place="statistic"/>
     </transition>
 
-    <place name="work_package" type="work_package"/>
+    <place name="work_package" type="work_package" put_token="true"/>
 
     <transition name="process">
       <defun>

@@ -10,7 +10,7 @@
     </struct>
 
     <place name="state" type="unsigned long"/>
-    <place name="get_and_update_state_trigger" type="value_and_endpoint"/>
+    <place name="get_and_update_state_trigger" type="value_and_endpoint" put_token="true"/>
 
     <transition name="get_and_update_state">
       <defun>
@@ -69,7 +69,7 @@
 
     <place name="done" type="control"/>
 
-    <place name="check_done_trigger" type="value_and_endpoint"/>
+    <place name="check_done_trigger" type="value_and_endpoint" put_token="true"/>
 
     <transition name="check_done">
       <defun>
@@ -88,6 +88,6 @@
       <connect-in port="trigger" place="check_done_trigger"/>
     </transition>
 
-    <place name="done_done" type="control"/>
+    <place name="done_done" type="control" put_token="true"/>
   </net>
 </defun>

@@ -139,7 +139,7 @@ namespace utils
     we::type::net_type net;
 
     we::place_id_type const place_id_in
-      (net.add_place (place::type (port_name, std::string ("string"))));
+      (net.add_place (place::type (port_name, std::string ("string"), boost::none)));
 
     net.put_value (place_id_in, fhg::util::testing::random_string_without ("\\\""));
 
@@ -216,9 +216,9 @@ namespace utils
     we::type::net_type net;
 
     we::place_id_type const place_id_in_0
-      (net.add_place (place::type (port_name + "1", std::string ("string"))));
+      (net.add_place (place::type (port_name + "1", std::string ("string"), boost::none)));
     we::place_id_type const place_id_in_1
-      (net.add_place (place::type (port_name + "2", std::string ("string"))));
+      (net.add_place (place::type (port_name + "2", std::string ("string"), boost::none)));
 
     net.put_value (place_id_in_0, fhg::util::testing::random_string_without ("\\\""));
     net.put_value (place_id_in_1, fhg::util::testing::random_string_without ("\\\""));
