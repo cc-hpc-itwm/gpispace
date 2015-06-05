@@ -21,8 +21,6 @@
 #include <boost/program_options.hpp>
 #include <boost/range/adaptor/map.hpp>
 
-#include <iomanip>
-#include <iostream>
 #include <map>
 
 namespace
@@ -107,29 +105,10 @@ BOOST_AUTO_TEST_CASE (share_example_ping_pong)
 
   BOOST_REQUIRE_EQUAL (count, n);
 
-  double const min
-    (boost::get<double> (*pnet::type::value::peek ("min", statistics)));
-  double const max
-    (boost::get<double> (*pnet::type::value::peek ("max", statistics)));
   double const sum
     (boost::get<double> (*pnet::type::value::peek ("sum", statistics)));
-  double const sqsum
-    (boost::get<double> (*pnet::type::value::peek ("sqsum", statistics)));
 
   double const avg (sum / count);
-  double const sdev (std::sqrt ((sqsum / count) - (avg * avg)));
-
-  unsigned long const duration
-    ( ( boost::get<unsigned long> (*pnet::type::value::peek ("end", statistics))
-      - boost::get<unsigned long> (*pnet::type::value::peek ("start", statistics))
-      ) / 1000
-    );
-
-  std::cout << count << " pings sent and received, time " << duration << " ms" << std::endl
-            << std::fixed << std::setprecision (4)
-            << "rtt min/avg/max/sdev " << min << "/" << avg << "/" << max << "/" << sdev << " ms"
-            << std::endl
-    ;
 
   BOOST_REQUIRE_LT (avg, 3.0);
 }
