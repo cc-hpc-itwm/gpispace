@@ -3,50 +3,29 @@
     <field name="count" type="unsigned long"/>
   </struct>
 
-  <struct name="Ping">
-    <field name="seq" type="unsigned long"/>
-  </struct>
-
   <in name="n" type="unsigned long" place="n"/>
   <out name="statistics" type="Statistics" place="final_statistics"/>
   <net>
     <place name="n" type="unsigned long"/>
     <place name="final_statistics" type="Statistics"/>
-    <place name="statistics" type="Statistics"/>
-
-    <transition name="init">
-      <defun>
-        <inout name="n" type="unsigned long"/>
-        <out name="statistics" type="Statistics"/>
-        <out name="seq" type="unsigned long"/>
-        <expression>
-          ${statistics.count} := 0UL;
-          ${seq} := 0UL;
-        </expression>
-      </defun>
-      <connect-in port="n" place="n"/>
-      <connect-out port="n" place="count"/>
-      <connect-out port="statistics" place="statistics"/>
-      <connect-out port="seq" place="seq"/>
-    </transition>
-
-    <place name="count" type="unsigned long"/>
-    <place name="seq" type="unsigned long"/>
+    <place name="statistics" type="Statistics">
+      <token>
+        <value>
+          Struct [ count := 0UL ]
+        </value>
+      </token>
+    </place>
 
     <transition name="generate_next_sequence_number">
       <defun>
-        <inout name="seq" type="unsigned long"/>
-        <in name="count" type="unsigned long"/>
-        <expression>
-          ${seq} := ${seq} + 1UL;
-        </expression>
+        <inout name="n" type="unsigned long"/>
+        <expression/>
         <condition>
-          ${seq} :ne: ${count}
+          ${n} :gt: 0UL
         </condition>
       </defun>
-      <connect-read port="count" place="count"/>
-      <connect-in port="seq" place="seq"/>
-      <connect-out port="seq" place="next_seq"/>
+      <connect-in port="n" place="n"/>
+      <connect-out port="n" place="next_seq"/>
     </transition>
 
     <place name="next_seq" type="unsigned long"/>
@@ -54,51 +33,46 @@
     <transition name="ping">
       <defun>
         <require key="ping" mandatory="true"/>
-        <in name="seq" type="unsigned long"/>
-        <out name="ping" type="Ping"/>
-        <module name="ping_pong" function="ping (seq, ping)">
+        <inout name="seq" type="unsigned long"/>
+        <module name="ping_pong" function="ping (seq)">
           <code><![CDATA[
-          ping.seq = seq;
+          //! \note empty module call to measure scheduling overhead
           ]]></code>
         </module>
       </defun>
       <connect-in port="seq" place="next_seq"/>
-      <connect-out port="ping" place="ping"/>
+      <connect-out port="seq" place="ping"/>
     </transition>
 
-    <place name="ping" type="Ping"/>
+    <place name="ping" type="unsigned long"/>
 
     <transition name="pong">
       <defun>
         <require key="pong" mandatory="true"/>
-        <in name="ping" type="Ping"/>
         <inout name="statistics" type="Statistics"/>
-        <out name="seq" type="unsigned long"/>
-        <module name="ping_pong" function="seq pong (ping, statistics)">
+        <inout name="seq" type="unsigned long"/>
+        <module name="ping_pong" function="pong (seq, statistics)">
           <code><![CDATA[
           ++statistics.count;
-
-          return ping.seq;
+          --seq;
           ]]></code>
         </module>
       </defun>
-      <connect-in port="ping" place="ping"/>
-      <connect-out port="seq" place="seq"/>
+      <connect-in port="seq" place="ping"/>
+      <connect-out port="seq" place="n"/>
       <connect-inout port="statistics" place="statistics"/>
     </transition>
 
     <transition name="finalize">
       <defun>
-        <in name="count" type="unsigned long"/>
-        <in name="seq" type="unsigned long"/>
+        <in name="n" type="unsigned long"/>
         <inout name="statistics" type="Statistics"/>
         <expression/>
       </defun>
       <condition>
-        ${seq} :eq: ${count}
+        ${n} :eq: 0UL
       </condition>
-      <connect-in port="count" place="count"/>
-      <connect-in port="seq" place="seq"/>
+      <connect-in port="n" place="n"/>
       <connect-in port="statistics" place="statistics"/>
       <connect-out port="statistics" place="final_statistics"/>
     </transition>
