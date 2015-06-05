@@ -19,13 +19,10 @@
         <inout name="n" type="unsigned long"/>
         <out name="statistics" type="Statistics"/>
         <out name="seq" type="unsigned long"/>
-        <module name="ping_pong" function="seq init (n, statistics)">
-          <code><![CDATA[
-          statistics.count = 0;
-
-          return 0;
-          ]]></code>
-        </module>
+        <expression>
+          ${statistics.count} := 0UL;
+          ${seq} := 0UL;
+        </expression>
       </defun>
       <connect-in port="n" place="n"/>
       <connect-out port="n" place="count"/>
@@ -95,10 +92,7 @@
         <in name="count" type="unsigned long"/>
         <in name="seq" type="unsigned long"/>
         <inout name="statistics" type="Statistics"/>
-        <module name="ping_pong" function="finalize (statistics)">
-          <code><![CDATA[
-          ]]></code>
-        </module>
+        <expression/>
       </defun>
       <condition>
         ${seq} :eq: ${count}
