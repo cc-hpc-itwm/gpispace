@@ -6,11 +6,9 @@
 #include <fhg/util/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
 
-#include <network/server.hpp>
-
 #include <rif/strategy/ssh.hpp>
 
-#include <rpc/server.hpp>
+#include <rpc/server_with_multiple_clients.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -120,52 +118,10 @@ namespace fhg
               }
             );
 
-        std::vector<std::unique_ptr<fhg::network::connection_type>> connections;
-
-        fhg::network::continous_acceptor<boost::asio::ip::tcp> acceptor
-          ( boost::asio::ip::tcp::endpoint()
-          , io_service
-          , [] (fhg::network::buffer_type buf) { return buf; }
-          , [] (fhg::network::buffer_type buf) { return buf; }
-          , [&service_dispatcher]
-              (fhg::network::connection_type* connection, fhg::network::buffer_type message)
-          {
-            service_dispatcher.dispatch (connection, message);
-          }
-          , [&connections] (fhg::network::connection_type* connection)
-          {
-            connections.erase
-              ( std::find_if
-                ( connections.begin()
-                , connections.end()
-                , [&connection]
-                    (std::unique_ptr<fhg::network::connection_type> const& other)
-                  {
-                    return other.get() == connection;
-                  }
-                )
-              );
-          }
-          , [&connections] (std::unique_ptr<fhg::network::connection_type> connection)
-            {
-              connections.emplace_back (std::move (connection));
-            }
-          );
-
-        const boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-          io_service_thread ([&io_service]() { io_service.run(); });
-
-        struct stop_io_service_on_scope_exit
-        {
-          ~stop_io_service_on_scope_exit()
-          {
-            _io_service.stop();
-          }
-          boost::asio::io_service& _io_service;
-        } stop_io_service_on_scope_exit {io_service};
+        fhg::rpc::server_with_multiple_clients rpc_server (service_dispatcher);
 
         boost::asio::ip::tcp::endpoint const local_endpoint
-          (acceptor.local_endpoint());
+          (rpc_server.local_endpoint());
 
         fhg::util::nest_exceptions<std::runtime_error>
           ( [&]

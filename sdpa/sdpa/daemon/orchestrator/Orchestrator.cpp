@@ -15,7 +15,6 @@ namespace sdpa
     Orchestrator::Orchestrator ( const std::string& name
                                , const std::string& url
                                , std::unique_ptr<boost::asio::io_service> peer_io_service
-                               , boost::asio::io_service& rpc_io_service
                                , fhg::log::Logger& logger
                                )
       : GenericDaemon ( name
@@ -25,43 +24,14 @@ namespace sdpa
                       , {}
                       , logger
                       )
-      , _rpc_connections()
       , _rpc_dispatcher
           (fhg::util::serialization::exception::serialization_functions())
-      , _rpc_acceptor
-          ( boost::asio::ip::tcp::endpoint()
-          , rpc_io_service
-          , [] (fhg::network::buffer_type b) { return b; }
-          , [] (fhg::network::buffer_type b) { return b; }
-          , [this] ( fhg::network::connection_type* connection
-                   , fhg::network::buffer_type buffer
-                   )
-          {
-              _rpc_dispatcher.dispatch (connection, buffer);
-            }
-          , [this] (fhg::network::connection_type* connection)
-            {
-              _rpc_connections.erase
-                ( std::find_if
-                    ( _rpc_connections.begin()
-                    , _rpc_connections.end()
-                    , [&connection] (std::unique_ptr<fhg::network::connection_type> const& other)
-                      {
-                        return other.get() == connection;
-                      }
-                    )
-                );
-            }
-          , [this] (std::unique_ptr<fhg::network::connection_type> connection)
-            {
-              _rpc_connections.emplace_back (std::move (connection));
-            }
-          )
+      , _rpc_server (_rpc_dispatcher)
     {}
 
     boost::asio::ip::tcp::endpoint Orchestrator::rpc_local_endpoint() const
     {
-      return _rpc_acceptor.local_endpoint();
+      return _rpc_server.local_endpoint();
     }
 
     void Orchestrator::handleJobFinishedEvent

@@ -258,12 +258,10 @@ namespace utils
     orchestrator (fhg::log::Logger& logger)
       : _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::cxx14::make_unique<boost::asio::io_service>()
-          , _rpc_io_service
           , logger
           )
     {}
 
-    boost::asio::io_service _rpc_io_service;
     sdpa::daemon::Orchestrator _;
     std::string name() const { return _.name(); }
     fhg::com::host_t host() const { return _.peer_host(); }

@@ -59,12 +59,10 @@ try
 
     po::notify(vm);
 
-  boost::asio::io_service rpc_io_service;
   const sdpa::daemon::Orchestrator orchestrator
     ( orchName
     , orchUrl
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
-    , rpc_io_service
     , logger
     );
 

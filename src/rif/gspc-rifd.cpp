@@ -252,7 +252,9 @@ try
         }
       );
 
+  std::mutex connections_guard;
   std::vector<std::unique_ptr<fhg::network::connection_type>> connections;
+  std::list<std::unique_ptr<fhg::network::connection_type>> connections_to_delete;
 
   fhg::network::continous_acceptor<boost::asio::ip::tcp> acceptor
     ( boost::asio::ip::tcp::endpoint
@@ -265,9 +267,12 @@ try
       {
         service_dispatcher.dispatch (connection, message);
       }
-    , [&connections] (fhg::network::connection_type* connection)
+    , [&connections, &connections_to_delete, &connections_guard]
+        (fhg::network::connection_type* connection)
       {
-        connections.erase
+        std::unique_lock<std::mutex> const _ (connections_guard);
+
+        decltype (connections)::iterator pos
           ( std::find_if
               ( connections.begin()
               , connections.end()
@@ -278,9 +283,19 @@ try
                 }
               )
           );
+
+        if (pos == connections.end())
+        {
+          throw std::logic_error ("disconnect for unknown connection");
+        }
+
+        connections_to_delete.emplace_back (std::move (*pos));
+        connections.erase (pos);
       }
-    , [&connections] (std::unique_ptr<fhg::network::connection_type> connection)
+    , [&connections, &connections_guard]
+        (std::unique_ptr<fhg::network::connection_type> connection)
       {
+        std::unique_lock<std::mutex> const _ (connections_guard);
         connections.emplace_back (std::move (connection));
       }
     );
@@ -293,7 +308,16 @@ try
     boost::asio::io_service io_service;
     boost::asio::io_service::work const io_service_work (io_service);
     boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> const
-      io_service_thread ([&io_service] { io_service.run(); });
+      io_service_thread
+        ( [&io_service, &connections_guard, &connections_to_delete]
+          {
+            while (io_service.run_one())
+            {
+              std::unique_lock<std::mutex> const _ (connections_guard);
+              connections_to_delete.clear();
+            }
+          }
+        );
 
     fhg::rpc::remote_endpoint endpoint
       ( io_service

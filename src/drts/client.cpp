@@ -271,9 +271,8 @@ namespace gspc
         {
           service_dispatcher.dispatch (connection, message);
         }
-      , [&connection, &disconnected] (fhg::network::connection_type*)
+      , [&disconnected] (fhg::network::connection_type*)
         {
-          connection.reset();
           disconnected.notify();
         }
       , [&connection] (std::unique_ptr<fhg::network::connection_type> c)
@@ -315,6 +314,7 @@ namespace gspc
     put_token (job_id, place_name, value_and_endpoint);
 
     disconnected.wait();
+    connection.reset();
 
     return result.wait();
   }

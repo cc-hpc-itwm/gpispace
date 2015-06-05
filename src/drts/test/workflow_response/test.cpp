@@ -15,6 +15,7 @@
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
+#include <fhg/util/wait_and_collect_exceptions.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/require_exception.hpp>
 #include <util-generic/temporary_path.hpp>
@@ -181,5 +182,162 @@ BOOST_AUTO_TEST_CASE (workflow_response)
   BOOST_REQUIRE_EQUAL (result.count (port_state), 1);
   BOOST_REQUIRE_EQUAL ( result.find (port_state)->second
                       , pnet::type::value::value_type (value)
+                      );
+}
+
+BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
+{
+  boost::program_options::options_description options_description;
+
+  options_description.add (test::options::source_directory());
+  options_description.add (test::options::shared_directory());
+  options_description.add (gspc::options::installation());
+  options_description.add (gspc::options::drts());
+  options_description.add (gspc::options::scoped_rifd());
+
+  boost::program_options::variables_map vm;
+  boost::program_options::store
+    ( boost::program_options::command_line_parser
+      ( boost::unit_test::framework::master_test_suite().argc
+      , boost::unit_test::framework::master_test_suite().argv
+      )
+    . options (options_description).run()
+    , vm
+    );
+
+  fhg::util::temporary_path const shared_directory
+    ( test::shared_directory (vm)
+    / "workflow_response_one_response_waits_while_others_are_made"
+    );
+
+  test::scoped_nodefile_from_environment const nodefile_from_environment
+    (shared_directory, vm);
+
+  fhg::util::temporary_path const _installation_dir
+    (shared_directory / boost::filesystem::unique_path());
+  boost::filesystem::path const installation_dir (_installation_dir);
+
+  gspc::set_application_search_path (vm, installation_dir);
+
+  vm.notify();
+
+  gspc::installation const installation (vm);
+
+  test::make const make
+    ( installation
+    , "workflow_response_one_response_waits_while_others_are_made"
+    , test::source_directory (vm)
+    , {{"LIB_DESTDIR", installation_dir.string()}}
+    , "net lib install"
+    );
+
+  gspc::scoped_rifd const rifd { gspc::rifd::strategy (vm)
+                               , gspc::rifd::hostnames (vm)
+                               , gspc::rifd::port (vm)
+                               , installation
+                               };
+
+  gspc::scoped_runtime_system const drts
+    (vm, installation, "work:2 management:1", rifd.entry_points());
+
+  gspc::client client (drts);
+
+  gspc::workflow workflow
+    ( make.build_directory()
+    / "workflow_response_one_response_waits_while_others_are_made.pnet"
+    );
+
+  workflow.set_wait_for_output();
+
+  unsigned long const initial_state (0);
+  std::atomic<unsigned long> status_updates (0);
+  unsigned long const threads (2);
+
+  std::mt19937_64 eng (std::random_device{}());
+  std::uniform_int_distribution<unsigned long> dist (20, 50);
+
+  gspc::job_id_t const job_id
+    ( client.submit ( workflow
+                    , { {"state", initial_state}
+                      , {"random_module_calls", dist (eng)}
+                      }
+                    )
+    );
+
+  std::mutex no_longer_do_status_update_guard;
+  bool no_longer_do_status_update (false);
+
+  std::future<void> done_check
+    ( std::async ( std::launch::async
+                 , [ &client, &job_id, &no_longer_do_status_update
+                   , &no_longer_do_status_update_guard
+                   ]
+                   {
+                     client.synchronous_workflow_response
+                       (job_id, "check_done_trigger", 0UL);
+
+                     no_longer_do_status_update = true;
+                     {
+                       std::unique_lock<std::mutex> const _
+                         (no_longer_do_status_update_guard);
+
+                       client.put_token
+                         (job_id, "done_done", we::type::literal::control());
+                     }
+
+                     client.wait (job_id);
+                   }
+                 )
+    );
+
+  auto&& thread_function
+    ( [ &status_updates, &job_id, &drts, &no_longer_do_status_update
+      , &no_longer_do_status_update_guard, &eng
+      ]
+      {
+        unsigned long updates (0);
+        while (true)
+        {
+          std::unique_lock<std::mutex> const _ (no_longer_do_status_update_guard);
+          if (no_longer_do_status_update)
+          {
+            break;
+          }
+
+          gspc::client (drts).synchronous_workflow_response
+            (job_id, "get_and_update_state_trigger", 1UL);
+          ++updates;
+        }
+        status_updates += updates;
+      }
+    );
+
+  {
+    std::vector<std::future<void>> results;
+    for (unsigned long i (0); i < threads; ++i)
+    {
+      results.emplace_back (std::async (std::launch::async, thread_function));
+    }
+
+    fhg::util::wait_and_collect_exceptions (results);
+  }
+
+  done_check.get();
+
+  std::multimap<std::string, pnet::type::value::value_type> const result
+    (client.extract_result_and_forget_job (job_id));
+
+  std::string const port_done ("done");
+  std::string const port_state ("state");
+
+  BOOST_REQUIRE_EQUAL (result.count (port_done), 1);
+  BOOST_REQUIRE_EQUAL
+    ( result.find (port_done)->second
+    , pnet::type::value::value_type (we::type::literal::control())
+    );
+  BOOST_REQUIRE_EQUAL (result.count (port_state), 1);
+  BOOST_REQUIRE_EQUAL ( result.find (port_state)->second
+                      , pnet::type::value::value_type
+                          (initial_state + status_updates)
                       );
 }
