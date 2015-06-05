@@ -1,14 +1,10 @@
 <defun name="ping_pong">
   <struct name="Statistics">
-    <field name="start" type="unsigned long"/>
-    <field name="end" type="unsigned long"/>
     <field name="count" type="unsigned long"/>
-    <field name="sum" type="double"/>
   </struct>
 
   <struct name="Ping">
     <field name="seq" type="unsigned long"/>
-    <field name="microseconds" type="unsigned long"/>
   </struct>
 
   <in name="n" type="unsigned long" place="n"/>
@@ -24,15 +20,9 @@
         <out name="statistics" type="Statistics"/>
         <out name="seq" type="unsigned long"/>
         <module name="ping_pong" function="seq init (n, statistics)">
-          <cinclude href="chrono"/>
-          <cxx flag="--std=c++11"/>
           <code><![CDATA[
           statistics.count = 0;
-          statistics.sum = 0;
 
-          statistics.start =
-          std::chrono::duration_cast<std::chrono::microseconds>
-          (std::chrono::system_clock::now().time_since_epoch()).count();
           return 0;
           ]]></code>
         </module>
@@ -70,12 +60,7 @@
         <in name="seq" type="unsigned long"/>
         <out name="ping" type="Ping"/>
         <module name="ping_pong" function="ping (seq, ping)">
-          <cinclude href="chrono"/>
-          <cxx flag="--std=c++11"/>
           <code><![CDATA[
-          ping.microseconds =
-          std::chrono::duration_cast<std::chrono::microseconds>
-          (std::chrono::system_clock::now().time_since_epoch()).count();
           ping.seq = seq;
           ]]></code>
         </module>
@@ -93,21 +78,8 @@
         <inout name="statistics" type="Statistics"/>
         <out name="seq" type="unsigned long"/>
         <module name="ping_pong" function="seq pong (ping, statistics)">
-          <cinclude href="chrono"/>
-          <cxx flag="--std=c++11"/>
           <code><![CDATA[
-          double const rtt
-          (static_cast<double>
-          ( std::chrono::duration_cast<std::chrono::microseconds>
-          (std::chrono::system_clock::now().time_since_epoch()).count()
-          -
-          ping.microseconds
-          )
-          / 1000.0
-          );
-
           ++statistics.count;
-          statistics.sum += rtt;
 
           return ping.seq;
           ]]></code>
@@ -124,12 +96,7 @@
         <in name="seq" type="unsigned long"/>
         <inout name="statistics" type="Statistics"/>
         <module name="ping_pong" function="finalize (statistics)">
-          <cinclude href="chrono"/>
-          <cxx flag="--std=c++11"/>
           <code><![CDATA[
-          statistics.end =
-          std::chrono::duration_cast<std::chrono::microseconds>
-          (std::chrono::system_clock::now().time_since_epoch()).count();
           ]]></code>
         </module>
       </defun>

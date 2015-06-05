@@ -16,9 +16,12 @@
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/chrono.hpp>
 #include <util-generic/temporary_path.hpp>
 
 #include <boost/program_options.hpp>
+
+#include <chrono>
 
 BOOST_AUTO_TEST_CASE (share_example_ping_pong)
 {
@@ -78,9 +81,18 @@ BOOST_AUTO_TEST_CASE (share_example_ping_pong)
 
   BOOST_REQUIRE_GT (n, 0u);
 
+  std::chrono::steady_clock::time_point const start
+    (std::chrono::steady_clock::now());
+
   std::multimap<std::string, pnet::type::value::value_type> const result
     (gspc::client (drts).put_and_run
       (gspc::workflow (make.build_directory() / (main + ".pnet")), {{"n", n}})
+    );
+
+  BOOST_REQUIRE_LT
+    ( std::chrono::duration_cast<std::chrono::milliseconds>
+        (std::chrono::steady_clock::now() - start)
+    , std::chrono::milliseconds (3 * n)
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 1u);
@@ -94,11 +106,4 @@ BOOST_AUTO_TEST_CASE (share_example_ping_pong)
     (boost::get<unsigned long> (*pnet::type::value::peek ("count", statistics)));
 
   BOOST_REQUIRE_EQUAL (count, n);
-
-  double const sum
-    (boost::get<double> (*pnet::type::value::peek ("sum", statistics)));
-
-  double const avg (sum / count);
-
-  BOOST_REQUIRE_LT (avg, 3.0);
 }
