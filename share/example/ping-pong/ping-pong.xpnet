@@ -1,22 +1,17 @@
 <defun name="ping_pong">
-  <struct name="Statistics">
-    <field name="count" type="unsigned long"/>
-  </struct>
-
   <in name="n" type="unsigned long" place="n"/>
-  <out name="statistics" type="Statistics" place="final_statistics"/>
+  <out name="count" type="unsigned long" place="count"/>
   <net>
     <place name="n" type="unsigned long"/>
-    <place name="final_statistics" type="Statistics"/>
-    <place name="statistics" type="Statistics">
+    <place name="count" type="unsigned long">
       <token>
         <value>
-          Struct [ count := 0UL ]
+          0UL
         </value>
       </token>
     </place>
 
-    <transition name="generate_next_sequence_number">
+    <transition name="step">
       <defun>
         <inout name="n" type="unsigned long"/>
         <expression/>
@@ -25,10 +20,10 @@
         </condition>
       </defun>
       <connect-in port="n" place="n"/>
-      <connect-out port="n" place="next_seq"/>
+      <connect-out port="n" place="seq"/>
     </transition>
 
-    <place name="next_seq" type="unsigned long"/>
+    <place name="seq" type="unsigned long"/>
 
     <transition name="ping">
       <defun>
@@ -40,7 +35,7 @@
           ]]></code>
         </module>
       </defun>
-      <connect-in port="seq" place="next_seq"/>
+      <connect-in port="seq" place="seq"/>
       <connect-out port="seq" place="ping"/>
     </transition>
 
@@ -49,32 +44,42 @@
     <transition name="pong">
       <defun>
         <require key="pong" mandatory="true"/>
-        <inout name="statistics" type="Statistics"/>
         <inout name="seq" type="unsigned long"/>
-        <module name="ping_pong" function="pong (seq, statistics)">
+        <module name="ping_pong" function="pong (seq)">
           <code><![CDATA[
-          ++statistics.count;
-          --seq;
+          //! \note empty module call to measure scheduling overhead
           ]]></code>
         </module>
       </defun>
       <connect-in port="seq" place="ping"/>
-      <connect-out port="seq" place="n"/>
-      <connect-inout port="statistics" place="statistics"/>
+      <connect-out port="seq" place="pong"/>
     </transition>
 
-    <transition name="finalize">
+    <place name="pong" type="unsigned long"/>
+
+    <transition name="finalize_step">
+      <defun>
+        <inout name="count" type="unsigned long"/>
+        <inout name="n" type="unsigned long"/>
+        <expression>
+          ${count} := ${count} + 1UL;
+          ${n} := ${n} - 1UL;
+        </expression>
+      </defun>
+      <connect-inout port="count" place="count"/>
+      <connect-in port="n" place="pong"/>
+      <connect-out port="n" place="n"/>
+    </transition>
+
+    <transition name="stop">
       <defun>
         <in name="n" type="unsigned long"/>
-        <inout name="statistics" type="Statistics"/>
         <expression/>
       </defun>
       <condition>
         ${n} :eq: 0UL
       </condition>
       <connect-in port="n" place="n"/>
-      <connect-in port="statistics" place="statistics"/>
-      <connect-out port="statistics" place="final_statistics"/>
     </transition>
   </net>
 </defun>

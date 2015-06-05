@@ -10,9 +10,6 @@
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
 
-#include <we/type/value.hpp>
-#include <we/type/value/peek.hpp>
-#include <we/type/value/show.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
@@ -97,13 +94,9 @@ BOOST_AUTO_TEST_CASE (share_example_ping_pong)
 
   BOOST_REQUIRE_EQUAL (result.size(), 1u);
 
-  std::string const port_statistics ("statistics");
+  std::string const port_count ("count");
 
-  BOOST_REQUIRE_EQUAL (result.count (port_statistics), result.size());
-
-  pnet::type::value::value_type const statistics (result.find (port_statistics)->second);
-  unsigned long const count
-    (boost::get<unsigned long> (*pnet::type::value::peek ("count", statistics)));
-
-  BOOST_REQUIRE_EQUAL (count, n);
+  BOOST_REQUIRE_EQUAL (result.count (port_count), result.size());
+  BOOST_REQUIRE_EQUAL
+    (boost::get<unsigned long> (result.find (port_count)->second), n);
 }
