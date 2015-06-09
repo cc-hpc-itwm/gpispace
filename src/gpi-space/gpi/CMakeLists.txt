@@ -2,8 +2,7 @@ extended_add_library (NAME gpi-space-gpiapi
   SOURCES "system.cpp"
           "fake_api.cpp"
           "gaspi.cpp"
-  LIBRARIES ${GASPI_LIBRARY}
-            ${IBverbs_LIBRARY}
+  LIBRARIES GASPI::all
             Util::Generic
 )
 #! \todo move into extended_add_library
