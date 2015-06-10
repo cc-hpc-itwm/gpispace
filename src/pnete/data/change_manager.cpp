@@ -1230,6 +1230,7 @@ namespace fhg
             , unique_name_for_place (net, "implicit")
             , port_a.get().type()
             , boost::none
+            , boost::none
             ).make_reference_id()
           );
 
@@ -1510,6 +1511,7 @@ namespace fhg
             , unique_name_for_place (net)
             //! \todo: default type to something useful?
             , ""
+            , boost::none
             , boost::none
             ).make_reference_id()
           );
@@ -1835,6 +1837,7 @@ namespace fhg
               , name
               , type
               , true
+              , boost::none
               ).make_reference_id()
             );
 

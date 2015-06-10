@@ -3,7 +3,7 @@
   <out name="good" type="string" place="good"/>
   <out name="bad" type="string" place="bad"/>
   <net>
-    <place name="in" type="string"/>
+    <place name="in" type="string" put_token="true"/>
     <place name="good" type="string"/>
     <place name="bad" type="string"/>
 

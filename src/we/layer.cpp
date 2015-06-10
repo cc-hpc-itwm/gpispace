@@ -68,7 +68,12 @@ namespace we
             )
         {
           we::place_id_type const place_id
-            (net.add_place (place::type (wrapped_name (p.second), p.second.signature())));
+            (net.add_place (place::type ( wrapped_name (p.second)
+                                        , p.second.signature()
+                                        , boost::none
+                                        )
+                           )
+            );
 
           net.add_connection ( we::edge::PT
                              , transition_id
@@ -84,7 +89,12 @@ namespace we
             )
         {
           we::place_id_type const place_id
-            (net.add_place (place::type (wrapped_name (p.second), p.second.signature())));
+            (net.add_place (place::type ( wrapped_name (p.second)
+                                        , p.second.signature()
+                                        , boost::none
+                                        )
+                           )
+            );
 
           net.add_connection ( we::edge::TP
                              , transition_id
@@ -315,7 +325,7 @@ namespace we
         {
           boost::get<we::type::net_type&>
             (activity_data._activity->transition().data())
-            .put_value (place_name, value);
+            .put_token (place_name, value);
 
           _rts_token_put (put_token_id);
         }

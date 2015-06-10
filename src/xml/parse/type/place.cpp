@@ -24,11 +24,13 @@ namespace xml
                              , const std::string & name
                              , const std::string & type
                              , const boost::optional<bool> is_virtual
+                             , boost::optional<bool> put_token
                              )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _is_virtual (is_virtual)
+        , _put_token (put_token)
         , _name (name)
         , _type (type)
       {
@@ -39,6 +41,7 @@ namespace xml
                              , PARENT_CONS_PARAM(net)
                              , const util::position_type& pod
                              , const boost::optional<bool>& is_virtual
+                             , boost::optional<bool> put_token
                              , const std::string& name
                              , const std::string& type
                              , const std::list<token_type>& tokens
@@ -48,6 +51,7 @@ namespace xml
         , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _is_virtual (is_virtual)
+        , _put_token (put_token)
         , _name (name)
         , _type (type)
         , tokens (tokens)
@@ -169,6 +173,7 @@ namespace xml
           , parent
           , _position_of_definition
           , _is_virtual
+          , _put_token
           , _name
           , _type
           , tokens
@@ -184,6 +189,7 @@ namespace xml
           s.attr ("name", p.name());
           s.attr ("type", p.type());
           s.attr ("virtual", p.get_is_virtual());
+          s.attr ("put_token", p.put_token());
 
           ::we::type::property::dump::dump (s, p.properties());
 

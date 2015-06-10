@@ -36,6 +36,7 @@ BOOST_AUTO_TEST_CASE (dump_no_virtual)
       , name
       , type
       , false
+      , boost::none
       )
     );
 
@@ -70,6 +71,7 @@ BOOST_AUTO_TEST_CASE (dump_virtual)
       , name
       , type
       , true
+      , boost::none
       )
     );
 
@@ -102,6 +104,7 @@ BOOST_AUTO_TEST_CASE (dump_token)
     , name
     , type
     , true
+    , boost::none
     );
 
   std::string const token (fhg::util::testing::random_content_string());
@@ -144,6 +147,7 @@ BOOST_AUTO_TEST_CASE (dump_tokens)
     , name
     , type
     , true
+    , boost::none
     );
 
   std::list<std::string> const tokens

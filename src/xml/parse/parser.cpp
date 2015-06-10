@@ -1472,6 +1472,8 @@ namespace xml
             , required ("place_type", node, "type", state)
             , fhg::util::boost::fmap<std::string, bool>
               (fhg::util::read_bool, optional (node, "virtual"))
+            , fhg::util::boost::fmap<std::string, bool>
+              (fhg::util::read_bool, optional (node, "put_token"))
             ).make_reference_id()
           );
 

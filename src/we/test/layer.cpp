@@ -1094,7 +1094,7 @@ namespace
       (net.add_transition (transition));
 
     we::place_id_type const place_id
-      (net.add_place (place::type (port_name, std::string ("control"))));
+      (net.add_place (place::type (port_name, std::string ("control"), boost::none)));
 
     net.add_connection ( we::edge::PT
                        , transition_id

@@ -682,6 +682,7 @@ namespace xml
               ( we_net.add_place ( place::type
                                    ( place.name()
                                    , place.signature_or_throw()
+                                   , place.put_token()
                                    , prop
                                    )
                                  )

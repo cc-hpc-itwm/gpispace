@@ -156,6 +156,19 @@ BOOST_AUTO_TEST_CASE (workflow_response)
     );
 #endif
 
+  //! \note BUG: Hangs, GenericDaemon: unhandled error (3)
+#if 0
+  //! \todo specific exception
+  fhg::util::testing::require_exception<std::runtime_error>
+    ([&client, &job_id]()
+     {
+       client.synchronous_workflow_response
+         (job_id, "state", 12UL);
+     }
+    , "Error: reason := unable to put token: place not marked with attribute put_token=\"true\""
+    );
+#endif
+
   client.put_token (job_id, "done", we::type::literal::control());
   client.wait (job_id);
 

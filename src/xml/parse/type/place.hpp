@@ -42,12 +42,14 @@ namespace xml
                    , const std::string & name
                    , const std::string & type
                    , const boost::optional<bool> is_virtual
+                   , boost::optional<bool> put_token
                    );
 
         place_type ( ID_CONS_PARAM(place)
                    , PARENT_CONS_PARAM(net)
                    , const util::position_type&
                    , const boost::optional<bool>& _is_virtual
+                   , boost::optional<bool> put_token
                    , const std::string& name
                    , const std::string& type
                    , const std::list<token_type>& tokens
@@ -77,6 +79,10 @@ namespace xml
         const boost::optional<bool>& get_is_virtual (void) const;
         bool is_virtual (void) const;
         void set_virtual (bool);
+        boost::optional<bool> const& put_token() const
+        {
+          return _put_token;
+        }
 
         const we::type::property::type& properties() const;
         we::type::property::type& properties();
@@ -90,6 +96,7 @@ namespace xml
 
       private:
         boost::optional<bool> _is_virtual;
+        boost::optional<bool> _put_token;
 
         std::string _name;
         std::string _type;
