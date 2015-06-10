@@ -5,6 +5,7 @@ cmake_minimum_required (VERSION 3.1 FATAL_ERROR)
 set (CMAKE_MODULE_PATH
   "${CMAKE_MODULE_PATH}"
   "${CMAKE_SOURCE_DIR}/modules"
+  "${CMAKE_SOURCE_DIR}/cmake/modules"
   "$ENV{CMAKE_MODULE_PATH}"
 )
 
@@ -91,7 +92,6 @@ find_boost (1.55 REQUIRED QUIET COMPONENTS
 find_package (GASPI 1.1.0 REQUIRED QUIET)
 find_package (Graphviz COMPONENTS cdt gvc graph pathplan REQUIRED QUIET)
 find_package (HWLOC REQUIRED QUIET)
-find_package (IBVerbs REQUIRED QUIET)
 find_package (LibRT REQUIRED QUIET)
 find_package (LibReadline REQUIRED QUIET)
 find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
