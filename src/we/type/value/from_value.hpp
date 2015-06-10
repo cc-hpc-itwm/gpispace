@@ -15,6 +15,12 @@ namespace pnet
       {
         return boost::get<T> (v);
       }
+
+      template<>
+        inline value_type from_value<> (value_type const& v)
+      {
+        return v;
+      }
     }
   }
 }
