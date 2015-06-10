@@ -66,8 +66,11 @@ namespace we { namespace type {
         : name_ (name)
         , data_ (typ)
         , internal_ (intern)
-          //! \todo check is_const_true, better check user input earlier
-        , condition_ (_condition)
+          //! \todo better check user input earlier!?
+        , condition_
+          ( (!_condition || _condition.get().ast().is_const_true())
+          ? boost::none : _condition
+          )
         , _ports_input()
         , _ports_output()
         , _ports_tunnel()
