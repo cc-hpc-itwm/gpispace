@@ -1,5 +1,3 @@
-// alexander.petry@itwm.fraunhofer.de
-
 #pragma once
 
 #include <we/loader/IModule.hpp>

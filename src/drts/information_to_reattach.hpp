@@ -1,5 +1,3 @@
-// alexander.petry@itwm.fraunhofer.de
-
 #pragma once
 
 #include <drts/client.fwd.hpp>
