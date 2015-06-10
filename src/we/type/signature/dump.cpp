@@ -3,7 +3,6 @@
 #include <we/type/signature/dump.hpp>
 #include <we/type/signature/traverse.hpp>
 
-#include <util-generic/print_container.hpp>
 #include <fhg/util/xml.hpp>
 
 namespace pnet
