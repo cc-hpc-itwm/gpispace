@@ -1,177 +1,85 @@
 <defun name="ping_pong">
-    <struct name="Statistics">
-        <field name="start" type="unsigned long"/>
-        <field name="end" type="unsigned long"/>
-        <field name="count" type="unsigned long"/>
-        <field name="min" type="double"/>
-        <field name="max" type="double"/>
-        <field name="sum" type="double"/>
-        <field name="sqsum" type="double"/>
-    </struct>
+  <in name="n" type="unsigned long" place="n"/>
+  <out name="count" type="unsigned long" place="count"/>
+  <net>
+    <place name="n" type="unsigned long"/>
+    <place name="count" type="unsigned long">
+      <token>
+        <value>
+          0UL
+        </value>
+      </token>
+    </place>
 
-    <struct name="Ping">
-        <field name="seq" type="unsigned long"/>
-        <field name="microseconds" type="unsigned long"/>
-    </struct>
+    <transition name="step">
+      <defun>
+        <inout name="n" type="unsigned long"/>
+        <expression/>
+        <condition>
+          ${n} :gt: 0UL
+        </condition>
+      </defun>
+      <connect-in port="n" place="n"/>
+      <connect-out port="n" place="seq"/>
+    </transition>
 
-    <in name="n" type="unsigned long" place="n"/>
-    <out name="statistics" type="Statistics" place="final_statistics"/>
-    <net>
-        <place name="n" type="unsigned long"/>
-        <place name="final_statistics" type="Statistics"/>
-        <place name="statistics" type="Statistics"/>
+    <place name="seq" type="unsigned long"/>
 
-        <transition name="init">
-            <defun>
-                <inout name="n" type="unsigned long"/>
-                <out name="statistics" type="Statistics"/>
-                <out name="seq" type="unsigned long"/>
-                <module name="ping_pong" function="seq init (n, statistics)">
-                    <cinclude href="chrono"/>
-                    <cinclude href="limits"/>
-                    <cxx flag="--std=c++11"/>
-                    <code><![CDATA[
-                      statistics.count = 0;
-                      statistics.min =  std::numeric_limits<double>::max();
-                      statistics.max =  0;
-                      statistics.sum = 0;
-                      statistics.sqsum = 0;
+    <transition name="ping">
+      <defun>
+        <require key="ping" mandatory="true"/>
+        <inout name="seq" type="unsigned long"/>
+        <module name="ping_pong" function="ping (seq)">
+          <code><![CDATA[
+          //! \note empty module call to measure scheduling overhead
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="seq" place="seq"/>
+      <connect-out port="seq" place="ping"/>
+    </transition>
 
-                      statistics.start =
-                        std::chrono::duration_cast<std::chrono::microseconds>
-                          (std::chrono::system_clock::now().time_since_epoch()).count();
-                      return 0;
-                    ]]></code>
-                </module>
-            </defun>
-            <connect-in port="n" place="n"/>
-            <connect-out port="n" place="count"/>
-            <connect-out port="statistics" place="statistics"/>
-            <connect-out port="seq" place="seq"/>
-        </transition>
+    <place name="ping" type="unsigned long"/>
 
-        <place name="count" type="unsigned long"/>
-        <place name="seq" type="unsigned long"/>
+    <transition name="pong">
+      <defun>
+        <require key="pong" mandatory="true"/>
+        <inout name="seq" type="unsigned long"/>
+        <module name="ping_pong" function="pong (seq)">
+          <code><![CDATA[
+          //! \note empty module call to measure scheduling overhead
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="seq" place="ping"/>
+      <connect-out port="seq" place="pong"/>
+    </transition>
 
-        <transition name="generate_next_sequence_number">
-            <defun>
-                <inout name="seq" type="unsigned long"/>
-                <in name="count" type="unsigned long"/>
-                <expression>
-                    ${seq} := ${seq} + 1UL;
-                </expression>
-                <condition>
-                    ${seq} :ne: ${count}
-                </condition>
-            </defun>
-            <connect-read port="count" place="count"/>
-            <connect-in port="seq" place="seq"/>
-            <connect-out port="seq" place="next_seq"/>
-        </transition>
+    <place name="pong" type="unsigned long"/>
 
-        <place name="next_seq" type="unsigned long"/>
+    <transition name="finalize_step">
+      <defun>
+        <inout name="count" type="unsigned long"/>
+        <inout name="n" type="unsigned long"/>
+        <expression>
+          ${count} := ${count} + 1UL;
+          ${n} := ${n} - 1UL;
+        </expression>
+      </defun>
+      <connect-inout port="count" place="count"/>
+      <connect-in port="n" place="pong"/>
+      <connect-out port="n" place="n"/>
+    </transition>
 
-        <transition name="ping">
-            <defun>
-                <require key="ping" mandatory="true"/>
-                <in name="seq" type="unsigned long"/>
-                <out name="ping" type="Ping"/>
-                <module name="ping_pong" function="ping (seq, ping)">
-                    <cinclude href="chrono"/>
-                    <cxx flag="--std=c++11"/>
-                    <code><![CDATA[
-                       ping.microseconds =
-                         std::chrono::duration_cast<std::chrono::microseconds>
-                           (std::chrono::system_clock::now().time_since_epoch()).count();
-                       ping.seq = seq;
-                    ]]></code>
-                </module>
-            </defun>
-            <connect-in port="seq" place="next_seq"/>
-            <connect-out port="ping" place="ping"/>
-        </transition>
-
-        <place name="ping" type="Ping"/>
-
-        <transition name="pong">
-            <defun>
-                <require key="pong" mandatory="true"/>
-                <in name="ping" type="Ping"/>
-                <inout name="statistics" type="Statistics"/>
-                <out name="seq" type="unsigned long"/>
-                <module name="ping_pong" function="seq pong (ping, statistics)"
-                        pass_context="true">
-                    <cinclude href="chrono"/>
-                    <cxx flag="--std=c++11"/>
-                    <code><![CDATA[
-                      double const rtt
-                        (static_cast<double>
-                          ( std::chrono::duration_cast<std::chrono::microseconds>
-                              (std::chrono::system_clock::now().time_since_epoch()).count()
-                          -
-                            ping.microseconds
-                          )
-                         / 1000.0
-                         );
-
-                      ++statistics.count;
-                      if (rtt < statistics.min)
-                      {
-                        statistics.min = rtt;
-                      }
-                      if (rtt > statistics.max)
-                      {
-                        statistics.max = rtt;
-                      }
-
-                      statistics.sum += rtt;
-                      statistics.sqsum += rtt * rtt;
-
-                      GSPC_LOG (INFO, "accounted ping := " << ping << " -> " << statistics);
-
-                      return ping.seq;
-                    ]]></code>
-                </module>
-            </defun>
-            <connect-in port="ping" place="ping"/>
-            <connect-out port="seq" place="seq"/>
-            <connect-inout port="statistics" place="statistics"/>
-        </transition>
-
-        <transition name="finalize">
-            <defun>
-                <in name="count" type="unsigned long"/>
-                <in name="seq" type="unsigned long"/>
-                <inout name="statistics" type="Statistics"/>
-                <module name="ping_pong" function="finalize (statistics)"
-                        pass_context="true">
-                    <cinclude href="chrono"/>
-                    <cxx flag="--std=c++11"/>
-                    <code><![CDATA[
-                      statistics.end =
-                        std::chrono::duration_cast<std::chrono::microseconds>
-                          (std::chrono::system_clock::now().time_since_epoch()).count();
-
-                      double const avg (statistics.sum / statistics.count);
-                      double const dev (std::sqrt ((statistics.sqsum / statistics.count) - (avg * avg)));
-                      GSPC_LOG (INFO, "timings in milliseconds after " << statistics.count << " iterations:"
-                          << " min " << statistics.min
-                          << " max " << statistics.max
-                          << " avg " << avg
-                          << " sum " << statistics.sum
-                          << " sqsum " << statistics.sqsum
-                          << " stddev " << dev
-                          );
-                    ]]></code>
-                </module>
-            </defun>
-            <condition>
-                ${seq} :eq: ${count}
-            </condition>
-            <connect-in port="count" place="count"/>
-            <connect-in port="seq" place="seq"/>
-            <connect-in port="statistics" place="statistics"/>
-            <connect-out port="statistics" place="final_statistics"/>
-        </transition>
-    </net>
+    <transition name="stop">
+      <defun>
+        <in name="n" type="unsigned long"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${n} :eq: 0UL
+      </condition>
+      <connect-in port="n" place="n"/>
+    </transition>
+  </net>
 </defun>
