@@ -108,6 +108,8 @@ namespace expr
       pnet::type::value::value_type eval_all() const;
       bool eval_all_bool() const;
 
+      bool is_const_true() const;
+
       void rename (const std::string& from, const std::string& to);
 
       std::string string (void) const;

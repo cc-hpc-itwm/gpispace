@@ -1,5 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
+#include <we/exception.hpp>
+
 #include <we/expr/parse/parser.hpp>
 
 #include <we/expr/parse/action.hpp>
@@ -117,6 +119,20 @@ namespace expr
 
       return eval_all_bool (c);
     }
+
+    bool parser::is_const_true() const
+    {
+      //! \todo more intelligent check, e.g. identify ${a} == ${a}
+      try
+      {
+        return eval_all_bool();
+      }
+      catch (pnet::exception::missing_binding const&)
+      {
+        return false;
+      }
+    }
+
 
       void parser::rename (const std::string& from, const std::string& to)
     {
