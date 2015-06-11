@@ -12,10 +12,7 @@ fhg_add_runtime_executable (drts-kernel.cpp drts.cpp
                  Boost::serialization
                  Boost::system
                  Boost::thread
-                 ${HWLOC_SHARED_LIBRARY}
-)
-target_include_directories (drts-kernel
-  PRIVATE "${HWLOC_INCLUDE_DIR}"
+                 HWLOC::static
 )
 
 install (FILES context_fwd.hpp context.hpp
