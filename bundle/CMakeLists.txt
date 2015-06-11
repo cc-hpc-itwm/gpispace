@@ -1,11 +1,6 @@
 # bundle up
 
-get_filename_component (BOOST_ROOT "${Boost_INCLUDE_DIR}" PATH)
-
-install (DIRECTORY "${BOOST_ROOT}/"
-  DESTINATION "${CMAKE_INSTALL_PREFIX}/external/boost"
-  USE_SOURCE_PERMISSIONS
-)
+bundle_boost (DESTINATION "external/boost")
 
 install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/graphviz/config6"
   DESTINATION "${CMAKE_INSTALL_PREFIX}/libexec/bundle/lib/graphviz"
