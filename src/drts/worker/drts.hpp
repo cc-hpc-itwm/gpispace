@@ -23,8 +23,6 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
-#include <hwloc.h>
-
 #include <atomic>
 #include <functional>
 #include <map>
@@ -60,16 +58,6 @@ struct wfe_task_t
     , context
       (drts::worker::context_constructor (worker_name, workers, logger))
   {}
-};
-
-class numa_socket_setter
-{
-public:
-  numa_socket_setter (size_t target_socket);
-  ~numa_socket_setter();
-
-private:
-  hwloc_topology_t m_topology;
 };
 
 class DRTSImpl : public sdpa::events::EventHandler
@@ -131,7 +119,6 @@ public:
     , gspc::scoped_allocation /*const*/* shared_memory
     , std::vector<master_info> const& masters
     , std::vector<std::string> const& capability_names
-    , boost::optional<std::size_t> const& socket
     , std::vector<boost::filesystem::path> const& library_path
     , std::size_t backlog_length
     , fhg::log::Logger&
@@ -171,8 +158,6 @@ private:
   bool m_shutting_down;
 
   std::string m_my_name;
-
-  boost::optional<numa_socket_setter> _numa_socket_setter;
 
   mutable std::mutex _currently_executed_tasks_mutex;
   std::map<std::string, wfe_task_t *> _currently_executed_tasks;

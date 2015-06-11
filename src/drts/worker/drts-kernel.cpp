@@ -19,6 +19,8 @@
 
 #include <rif/startup_messages_pipe.hpp>
 
+#include <hwloc.h>
+
 #include <functional>
 #include <memory>
 #include <set>
@@ -42,6 +44,72 @@ namespace
     constexpr char const* const master {"master"};
     constexpr char const* const gui_host {"gui-host"};
     constexpr char const* const gui_port {"gui-port"};
+  }
+
+  void set_numa_socket (std::size_t target_socket)
+  {
+    hwloc_topology_t topology;
+
+    if (hwloc_topology_init (&topology) != 0)
+    {
+      throw std::runtime_error ("hwloc_topology_init failed");
+    }
+    if (hwloc_topology_load (topology) != 0)
+    {
+      throw std::runtime_error ("hwloc_topology_load failed");
+    }
+
+    const int depth (hwloc_get_type_depth (topology, HWLOC_OBJ_SOCKET));
+    if (depth == HWLOC_TYPE_DEPTH_UNKNOWN)
+    {
+      throw std::runtime_error ("could not get number of sockets");
+    }
+
+    const size_t available_sockets (hwloc_get_nbobjs_by_depth (topology, depth));
+
+    if (target_socket >= available_sockets)
+    {
+      throw std::runtime_error
+        ( boost::str ( boost::format ("socket out of range: %1%/%2%")
+                     % target_socket
+                     % (available_sockets-1)
+                     )
+        );
+    }
+
+    const hwloc_obj_t obj
+      (hwloc_get_obj_by_depth (topology, depth, target_socket));
+
+    if (obj == nullptr)
+    {
+      throw std::runtime_error ("hwloc_get_obj_by_depth failed");
+    }
+
+    if (hwloc_set_cpubind (topology, obj->cpuset, HWLOC_CPUBIND_PROCESS) != 0)
+    {
+      std::vector<char> cpuset_string (256);
+      while (static_cast<std::size_t>
+            (hwloc_bitmap_snprintf ( cpuset_string.data()
+                                   , cpuset_string.size()
+                                   , obj->cpuset
+                                   )
+            ) >= cpuset_string.size()
+            )
+      {
+        cpuset_string.resize (2 * cpuset_string.size());
+      }
+
+      throw std::runtime_error
+        ( boost::str
+        ( boost::format ("could not bind to socket #%1% with cpuset %2%: %3%")
+        % target_socket
+        % cpuset_string.data()
+        % strerror (errno)
+        )
+        );
+    }
+
+    hwloc_topology_destroy (topology);
   }
 }
 
@@ -188,6 +256,11 @@ try
 
   boost::asio::io_service gui_io_service;
 
+  if (vm.count (option_name::socket))
+  {
+    set_numa_socket (vm.at (option_name::socket).as<std::size_t>());
+  }
+
   DRTSImpl const plugin
     ( request_stop
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
@@ -205,9 +278,6 @@ try
     , master_info
     , vm.at (option_name::capability)
     .as<std::vector<std::string>>()
-    , vm.count (option_name::socket)
-    ? vm.at (option_name::socket).as<std::size_t>()
-    : boost::optional<std::size_t>()
     , vm.at (option_name::library_search_path)
     .as<std::vector<boost::filesystem::path>>()
     , vm.at (option_name::backlog_length)

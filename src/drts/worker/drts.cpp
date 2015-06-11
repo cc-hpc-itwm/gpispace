@@ -18,53 +18,6 @@
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
 
-numa_socket_setter::numa_socket_setter (size_t target_socket)
-{
-  hwloc_topology_init (&m_topology);
-  hwloc_topology_load (m_topology);
-
-  const int depth (hwloc_get_type_depth (m_topology, HWLOC_OBJ_SOCKET));
-  if (depth == HWLOC_TYPE_DEPTH_UNKNOWN)
-  {
-    throw std::runtime_error ("could not get number of sockets");
-  }
-
-  const size_t available_sockets (hwloc_get_nbobjs_by_depth (m_topology, depth));
-
-  if (target_socket >= available_sockets)
-  {
-    throw std::runtime_error
-      ( boost::str ( boost::format ("socket out of range: %1%/%2%")
-                   % target_socket
-                   % (available_sockets-1)
-                   )
-      );
-  }
-
-  const hwloc_obj_t obj
-    (hwloc_get_obj_by_type (m_topology, HWLOC_OBJ_SOCKET, target_socket));
-
-  char cpuset_string [256];
-  hwloc_bitmap_snprintf (cpuset_string, sizeof(cpuset_string), obj->cpuset);
-
-  if (hwloc_set_cpubind (m_topology, obj->cpuset, HWLOC_CPUBIND_PROCESS) < 0)
-  {
-    throw std::runtime_error
-      ( boost::str
-        ( boost::format ("could not bind to socket #%1% with cpuset %2%: %3%")
-        % target_socket
-        % cpuset_string
-        % strerror (errno)
-        )
-      );
-  }
-}
-
-numa_socket_setter::~numa_socket_setter()
-{
-  hwloc_topology_destroy (m_topology);
-}
-
 namespace
 {
   struct wfe_exec_context : public we::context
@@ -187,7 +140,6 @@ DRTSImpl::DRTSImpl
     , gspc::scoped_allocation /*const*/* shared_memory
     , std::vector<master_info> const& masters
     , std::vector<std::string> const& capability_names
-    , boost::optional<std::size_t> const& socket
     , std::vector<boost::filesystem::path> const& library_path
     , std::size_t backlog_length
     , fhg::log::Logger& logger
@@ -196,10 +148,6 @@ DRTSImpl::DRTSImpl
   , _request_stop (request_stop)
   , m_shutting_down (false)
   , m_my_name (kernel_name)
-  , _numa_socket_setter ( socket
-                        ? numa_socket_setter (*socket)
-                        : boost::optional<numa_socket_setter>()
-                        )
   , _currently_executed_tasks()
   , m_loader ({library_path.begin(), library_path.end()})
   , _notification_service (std::move (gui_notification_service))
