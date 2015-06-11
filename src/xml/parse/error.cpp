@@ -314,7 +314,7 @@ namespace xml
 
           fhg::util::print_container
             <std::unordered_set<id::ref::memory_buffer>>
-            ( oss, "", "{", ",", "}"
+            ( oss, "", "{", ", ", "}"
             , ids
             , [&oss](id::ref::memory_buffer const& id)
             {
@@ -361,7 +361,7 @@ namespace xml
 
             fhg::util::print_container
               <std::list<xml::parse::type::memory_get>>
-              ( oss, "get: ", "(", ",", ")"
+              ( oss, "get: ", "(", ", ", ")"
               , function.get_ref().memory_gets()
               , [&oss](xml::parse::type::memory_get const& mg)
               {
@@ -376,7 +376,7 @@ namespace xml
 
             fhg::util::print_container
               <std::list<xml::parse::type::memory_put>>
-              ( oss, "put: ", "(", ",", ")"
+              ( oss, "put: ", "(", ", ", ")"
               , function.get_ref().memory_puts()
               , [&oss](xml::parse::type::memory_put const& mp)
               {
@@ -391,7 +391,7 @@ namespace xml
 
             fhg::util::print_container
               <std::list<xml::parse::type::memory_getput>>
-              ( oss, "getput: ", "(", ",", ")"
+              ( oss, "getput: ", "(", ", ", ")"
               , function.get_ref().memory_getputs()
               , [&oss](xml::parse::type::memory_getput const& mgp)
               {
