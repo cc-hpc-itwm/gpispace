@@ -131,26 +131,34 @@ qt4_wrap_cpp (plugin_wrapped_cpps ${plugin_tomoc})
   qt4_add_resources (editor_ui_resource_cpps ${editor_ui_resources})
   qt4_wrap_cpp (monitor_ui_wrapped_cpps ${monitor_ui_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
 
-  fhg_add_runtime_executable (pnete.cpp
-    setting.cpp ${base_sources} ${base_wrapped_cpps}
-    ${base_ui_sources} ${base_ui_wrapped_cpps} ${editor_ui_sources}
-    ${editor_ui_wrapped_cpps} ${editor_ui_wrapped_uis} ${editor_ui_resource_cpps}
-    ${monitor_ui_sources} ${monitor_ui_wrapped_cpps}
-    ${plugin_wrapped_cpps}
-    LINK_LIBRARIES "${LIB_PREFIX}graphviz-wrapper"
-                   "fhg_util_qt"
-                   pnet
-                   fhg-util
-                   sdpa
-                   fhglog
-                   fhg-revision
-                   fhg-util
-                   Util::Generic
-                   Util::Qt
-                   Boost::filesystem
-                   Boost::program_options
-                   Boost::thread
-                   ${QT_LIBRARIES}
+  fhg_add_runtime_executable (NAME pnete
+    SOURCES "pnete.cpp"
+            "setting.cpp"
+            ${base_sources}
+            ${base_wrapped_cpps}
+            ${base_ui_sources}
+            ${base_ui_wrapped_cpps}
+            ${editor_ui_sources}
+            ${editor_ui_wrapped_cpps}
+            ${editor_ui_wrapped_uis}
+            ${editor_ui_resource_cpps}
+            ${monitor_ui_sources}
+            ${monitor_ui_wrapped_cpps}
+            ${plugin_wrapped_cpps}
+    LIBRARIES "${LIB_PREFIX}graphviz-wrapper"
+              "fhg_util_qt"
+              pnet
+              fhg-util
+              sdpa
+              fhglog
+              fhg-revision
+              fhg-util
+              Util::Generic
+              Util::Qt
+              Boost::filesystem
+              Boost::program_options
+              Boost::thread
+              ${QT_LIBRARIES}
   )
 
 extended_add_library (NAME hello_world-plugin
@@ -170,28 +178,31 @@ install (FILES "plugin/plugin_api.hpp" "plugin/plugin_base.hpp"
   qt4_wrap_cpp (monitor_ui_wrapped_cpps ${monitor_ui_tomoc}
     OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
 
-  fhg_add_runtime_executable (monitor.cpp
-    ${monitor_ui_sources} ${monitor_ui_wrapped_cpps}
-    NAME sdpa-gui
-    LINK_LIBRARIES pnet
-                   "fhg_util_qt"
-                   fhg-revision
-                   fhglog
-                   Util::Generic
-                   Util::Qt
-                   Boost::thread
-                   ${QT_LIBRARIES}
+  fhg_add_runtime_executable (NAME sdpa-gui
+    SOURCES "monitor.cpp"
+            ${monitor_ui_sources}
+            ${monitor_ui_wrapped_cpps}
+    LIBRARIES pnet
+              "fhg_util_qt"
+              fhg-revision
+              fhglog
+              Util::Generic
+              Util::Qt
+              Boost::thread
+              ${QT_LIBRARIES}
   )
-  fhg_add_runtime_executable (gspcmonc.cpp
-    ${monitor_ui_sources} ${monitor_ui_wrapped_cpps}
-    LINK_LIBRARIES pnet
-                   "fhg_util_qt"
-                   fhg-util
-                   fhglog
-                   Util::Generic
-                   Util::Qt
-                   Boost::thread
-                   ${QT_LIBRARIES}
+  fhg_add_runtime_executable (NAME gspcmonc
+    SOURCES "gspcmonc.cpp"
+            ${monitor_ui_sources}
+            ${monitor_ui_wrapped_cpps}
+    LIBRARIES pnet
+              "fhg_util_qt"
+              fhg-util
+              fhglog
+              Util::Generic
+              Util::Qt
+              Boost::thread
+              ${QT_LIBRARIES}
   )
 
   add_subdirectory (test)

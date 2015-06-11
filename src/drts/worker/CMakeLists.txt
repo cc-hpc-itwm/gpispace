@@ -1,18 +1,20 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-fhg_add_runtime_executable (drts-kernel.cpp drts.cpp
-  LINK_LIBRARIES fhg-util
-                 fhgcom
-                 sdpa
-                 we-dev
-                 rif-startup-messages-pipe
-                 Util::Generic
-                 Boost::filesystem
-                 Boost::program_options
-                 Boost::serialization
-                 Boost::system
-                 Boost::thread
-                 ${HWLOC_SHARED_LIBRARY}
+fhg_add_runtime_executable (NAME drts-kernel
+  SOURCES "drts-kernel.cpp"
+          "drts.cpp"
+  LIBRARIES fhg-util
+            fhgcom
+            sdpa
+            we-dev
+            rif-startup-messages-pipe
+            Util::Generic
+            Boost::filesystem
+            Boost::program_options
+            Boost::serialization
+            Boost::system
+            Boost::thread
+            ${HWLOC_SHARED_LIBRARY}
 )
 target_include_directories (drts-kernel
   PRIVATE "${HWLOC_INCLUDE_DIR}"

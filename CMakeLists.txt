@@ -105,8 +105,11 @@ include (CompilerFlags)
 include (InstallRequiredSystemLibraries)
 include (car_cdr_macros)
 include (cmake_parse_arguments)
-include (fhg_executable_macros)
 include (fhg_test_macros)
+
+macro (fhg_add_runtime_executable)
+  extended_add_executable (DONT_APPEND_EXE_SUFFIX INSTALL ${ARGN})
+endmacro()
 
 macro (ADD_ASCIIDOC)
   parse_arguments (DOC
