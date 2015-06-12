@@ -6,7 +6,6 @@
 
 #include <we/type/value.hpp>
 
-#include <memory>
 #include <string>
 
 namespace gspc
