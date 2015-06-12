@@ -9,6 +9,7 @@ set (CMAKE_MODULE_PATH
   "$ENV{CMAKE_MODULE_PATH}"
 )
 
+include ("cmake/parse_arguments.cmake")
 include ("cmake/add_macros.cmake")
 include ("cmake/beautify_find_boost.cmake")
 
@@ -104,17 +105,19 @@ include (CTest)
 include (CompilerFlags)
 include (InstallRequiredSystemLibraries)
 include (car_cdr_macros)
-include (cmake_parse_arguments)
-include (fhg_executable_macros)
 include (fhg_test_macros)
 
+macro (fhg_add_runtime_executable)
+  extended_add_executable (DONT_APPEND_EXE_SUFFIX INSTALL ${ARGN})
+endmacro()
+
 macro (ADD_ASCIIDOC)
-  parse_arguments (DOC
-    "INPUT;OUTPUT;BACKEND"
-    ""
-    ${ARGN}
-    )
-  car (DOC_TARGET ${DOC_DEFAULT_ARGS})
+  set (options)
+  set (one_value_options INPUT OUTPUT BACKEND)
+  set (multi_value_options)
+  set (required_options INPUT OUTPUT BACKEND)
+  parse_arguments_with_unknown (DOC "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
+  set (DOC_TARGET ${DOC_UNPARSED_ARGUMENTS})
 
   if (ASCIIDOC_FOUND AND SOURCE_HIGHLITE_FOUND)
     add_custom_command (

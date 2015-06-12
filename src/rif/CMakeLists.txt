@@ -1,16 +1,18 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-fhg_add_runtime_executable ("gspc-rifd.cpp" "execute_and_get_startup_messages.cpp"
-  LINK_LIBRARIES RPC
-                 Network
-                 fhg-util
-                 fhglog
-                 Util::Generic
-                 Boost::filesystem
-                 Boost::iostreams
-                 Boost::program_options
-                 Boost::system
-                 Boost::thread
+fhg_add_runtime_executable (NAME gspc-rifd
+  SOURCES "gspc-rifd.cpp"
+          "execute_and_get_startup_messages.cpp"
+  LIBRARIES RPC
+            Network
+            fhg-util
+            fhglog
+            Util::Generic
+            Boost::filesystem
+            Boost::iostreams
+            Boost::program_options
+            Boost::system
+            Boost::thread
 )
 
 extended_add_library (NAME rif-startup-messages-pipe
@@ -27,20 +29,22 @@ extended_add_library (NAME rif-strategies
             fhg-util
 )
 
-fhg_add_runtime_executable ("gspc-bootstrap-rifd.cpp"
-  LINK_LIBRARIES rif-strategies
-                 fhg-util
-                 Util::Generic
-                 Boost::filesystem
-                 Boost::program_options
-                 Boost::system
+fhg_add_runtime_executable (NAME gspc-bootstrap-rifd
+  SOURCES "gspc-bootstrap-rifd.cpp"
+  LIBRARIES rif-strategies
+            fhg-util
+            Util::Generic
+            Boost::filesystem
+            Boost::program_options
+            Boost::system
 )
-fhg_add_runtime_executable ("gspc-teardown-rifd.cpp"
-  LINK_LIBRARIES rif-strategies
-                 fhg-util
-                 Util::Generic
-                 Network
-                 Boost::filesystem
-                 Boost::program_options
-                 Boost::system
+fhg_add_runtime_executable (NAME gspc-teardown-rifd
+  SOURCES "gspc-teardown-rifd.cpp"
+  LIBRARIES rif-strategies
+            fhg-util
+            Util::Generic
+            Network
+            Boost::filesystem
+            Boost::program_options
+            Boost::system
 )
