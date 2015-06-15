@@ -1102,7 +1102,8 @@ void GenericDaemon::handleSubmitJobAckEvent
                         << " not found!"
                         );
 
-    throw std::runtime_error ("Could not acknowledge job");
+    throw std::runtime_error
+      ("Could not acknowledge job: " + pEvent->job_id() + " not found");
   }
 
   if(ptrJob->getStatus() == sdpa:: status::CANCELING)
