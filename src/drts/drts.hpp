@@ -14,13 +14,8 @@
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
 
-#include <chrono>
 #include <functional>
-#include <list>
-#include <map>
-#include <memory>
 #include <string>
-#include <unordered_map>
 
 namespace gpi
 {
