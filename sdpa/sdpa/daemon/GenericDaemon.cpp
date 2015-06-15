@@ -38,6 +38,7 @@
 #include <util-generic/hostname.hpp>
 #include <fhg/util/macros.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/print_exception.hpp>
 
 #include <boost/tokenizer.hpp>
 #include <boost/range/adaptor/filtered.hpp>
@@ -395,11 +396,12 @@ void GenericDaemon::handleSubmitJobEvent
         m_guiService->notify (evt);
       }
     }
-    catch(const std::exception& ex)
+    catch (...)
     {
-      LLOG (ERROR, _logger, "Exception occurred: " << ex.what() << ". Failed to submit the job "<<job_id<<" to the workflow engine!");
+      std::string const error (fhg::util::current_exception_as_string());
+      LLOG (ERROR, _logger, "Exception occurred: " << error << ". Failed to submit the job "<<job_id<<" to the workflow engine!");
 
-      failed (job_id, ex.what());
+      failed (job_id, error);
     }
   }
   else {
@@ -618,9 +620,10 @@ try
   scheduler().enqueueJob (job_id);
   request_scheduling();
 }
-catch (std::exception const& ex)
+catch (...)
 {
-  workflowEngine()->failed (job_id, ex.what());
+  workflowEngine()->failed
+    (job_id, fhg::util::current_exception_as_string());
 }
 
 void GenericDaemon::cancel (const we::layer::id_type& job_id)
@@ -909,13 +912,15 @@ void GenericDaemon::handle_events()
     {
       event.second->handleBy (event.first, this);
     }
-    catch (std::exception const& ex)
+    catch (...)
     {
       sendEventToOther
         ( event.first
         , events::ErrorEvent::Ptr
           ( new events::ErrorEvent
-            (events::ErrorEvent::SDPA_EUNKNOWN, ex.what())
+              ( events::ErrorEvent::SDPA_EUNKNOWN
+              , fhg::util::current_exception_as_string()
+              )
           )
         );
     }
