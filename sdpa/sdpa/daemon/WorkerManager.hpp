@@ -25,8 +25,8 @@ namespace sdpa
 
       std::string host (const sdpa::worker_id_t& worker) const;
 
-      //! returns whether worker was actually added (i.e. false when already there)
-      bool addWorker ( const worker_id_t& workerId
+      //! throws if workerId was not unique
+      void addWorker ( const worker_id_t& workerId
                      , boost::optional<unsigned int> capacity
                      , const capabilities_set_t& cpbset
                      , const bool children_allowed

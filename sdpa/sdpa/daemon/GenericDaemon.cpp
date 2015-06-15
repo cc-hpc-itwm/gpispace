@@ -410,6 +410,7 @@ void GenericDaemon::handleSubmitJobEvent
 
 void GenericDaemon::handleWorkerRegistrationEvent
   (fhg::com::p2p::address_t const& source, const events::WorkerRegistrationEvent* event)
+try
 {
   // check if the worker source has already registered!
   // delete inherited capabilities that are owned by the current agent
@@ -428,27 +429,35 @@ void GenericDaemon::handleWorkerRegistrationEvent
     }
   }
 
-  const bool was_new_worker
-    (scheduler().worker_manager().addWorker (event->name(), event->capacity(), workerCpbSet, event->children_allowed(), event->hostname(), source));
+  scheduler().worker_manager().addWorker
+    ( event->name()
+    , event->capacity()
+    , workerCpbSet
+    , event->children_allowed()
+    , event->hostname(), source
+    );
 
-  child_proxy (this, source).worker_registration_response (boost::none);
+  scheduler().reschedule_pending_jobs_matching_worker (event->name());
 
-  if (was_new_worker)
+  request_scheduling();
+
+  // send to the masters my new set of capabilities
+  for (master_info_t::value_type const& info : _master_info)
   {
-    scheduler().reschedule_pending_jobs_matching_worker (event->name());
-
-    request_scheduling();
-
-    // send to the masters my new set of capabilities
-    for (master_info_t::value_type const& info : _master_info)
+    if (info.second.address)
     {
-      if (info.second.address)
-      {
-        parent_proxy (this, *info.second.address)
-          .capabilities_gained (workerCpbSet);
-      }
+      parent_proxy (this, *info.second.address)
+        .capabilities_gained (workerCpbSet);
     }
   }
+
+  child_proxy (this, source)
+    .worker_registration_response (boost::none);
+}
+catch (...)
+{
+  child_proxy (this, source)
+    .worker_registration_response (std::current_exception());
 }
 
 void GenericDaemon::handleErrorEvent

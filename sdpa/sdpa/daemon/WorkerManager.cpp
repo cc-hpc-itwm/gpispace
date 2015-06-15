@@ -63,7 +63,7 @@ namespace sdpa
       return boost::none;
     }
 
-    bool WorkerManager::addWorker ( const worker_id_t& workerId
+    void WorkerManager::addWorker ( const worker_id_t& workerId
                                   , boost::optional<unsigned int> capacity
                                   , const capabilities_set_t& cpbSet
                                   , const bool children_allowed
@@ -75,13 +75,11 @@ namespace sdpa
 
       if (worker_map_.count (workerId) != 0)
       {
-        return false;
+        throw std::runtime_error ("worker '" + workerId + "' already exists");
       }
       worker_connections_.left.insert ({workerId, address});
       Worker::ptr_t pWorker( new Worker( workerId, capacity, cpbSet,  children_allowed, hostname, address) );
       worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
-
-      return true;
     }
 
 
