@@ -1,6 +1,7 @@
 #include <drts/worker/drts.hpp>
 
 #include <util-generic/hostname.hpp>
+#include <util-generic/nest_exceptions.hpp>
 
 #include <sdpa/capability.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
@@ -58,23 +59,19 @@ namespace
 
     virtual void handle_internally (we::type::activity_t& act, mod_t const& mod) override
     {
-      try
-      {
-        we::loader::module_call ( loader
-                                , _virtual_memory_api
-                                , _shared_memory
-                                , &task.context
-                                , act
-                                , mod
-                                );
-      }
-      catch (std::exception const& ex)
-      {
-        throw std::runtime_error
-          ( "call to '" + mod.module() + "::" + mod.function() + "'"
-          + " failed: " + ex.what()
-          );
-      }
+      fhg::util::nest_exceptions<std::runtime_error>
+        ( [&]
+          {
+            we::loader::module_call ( loader
+                                    , _virtual_memory_api
+                                    , _shared_memory
+                                    , &task.context
+                                    , act
+                                    , mod
+                                    );
+          }
+        , "call to '" + mod.module() + "::" + mod.function() + "' failed"
+        );
     }
 
     virtual void handle_internally (we::type::activity_t&, expr_t const&) override
