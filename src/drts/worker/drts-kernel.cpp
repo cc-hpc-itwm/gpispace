@@ -174,18 +174,8 @@ try
   desc.add (fhg::rif::startup_messages_pipe::program_options());
 
   po::variables_map vm;
-  try
-  {
-    po::store( po::command_line_parser(ac, av)
-             . options(desc).run()
-             , vm
-             );
-  }
-  catch (std::exception const &ex)
-  {
-    LLOG (ERROR, logger, "invalid command line: " << ex.what());
-    return EXIT_FAILURE;
-  }
+
+  po::store (po::command_line_parser (ac, av).options(desc).run(), vm);
   po::notify (vm);
 
   fhg::util::boost::program_options::require_all_if_one
