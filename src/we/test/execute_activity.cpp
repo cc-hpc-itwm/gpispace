@@ -112,11 +112,6 @@ struct exec_context : public we::context
     }
   }
 
-  virtual void handle_internally (activity_t&, mod_t const&) override
-  {
-    throw std::runtime_error ("cannot handle module calls internally");
-  }
-
   virtual void handle_externally (activity_t& act, net_t const& n) override
   {
     handle_internally (act, n);

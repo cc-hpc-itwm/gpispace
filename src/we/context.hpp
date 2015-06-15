@@ -36,7 +36,6 @@ namespace we
 
     public:
       virtual void handle_internally (activity_t&, net_t const&) = 0;
-      virtual void handle_internally (activity_t&, mod_t const&) = 0;
       virtual void handle_externally (activity_t&, net_t const&) = 0;
       virtual void handle_externally (activity_t&, mod_t const&) = 0;
 

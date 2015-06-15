@@ -56,7 +56,12 @@ namespace
       }
     }
 
-    virtual void handle_internally (we::type::activity_t& act, mod_t const& mod) override
+    virtual void handle_externally (we::type::activity_t& act, net_t const& n) override
+    {
+      handle_internally (act, n);
+    }
+
+    virtual void handle_externally (we::type::activity_t& act, mod_t const& mod) override
     {
       try
       {
@@ -75,16 +80,6 @@ namespace
           + " failed: " + ex.what()
           );
       }
-    }
-
-    virtual void handle_externally (we::type::activity_t& act, net_t const& n) override
-    {
-      handle_internally (act, n);
-    }
-
-    virtual void handle_externally (we::type::activity_t& act, mod_t const& module_call) override
-    {
-      handle_internally (act, module_call);
     }
 
   private:
