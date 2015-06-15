@@ -3,6 +3,7 @@
 #include <util-generic/hostname.hpp>
 #include <fhg/util/macros.hpp>
 #include <util-generic/nest_exceptions.hpp>
+#include <util-generic/print_exception.hpp>
 
 #include <sdpa/capability.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
@@ -388,7 +389,10 @@ void DRTSImpl::event_thread()
     catch (std::exception const& ex)
     {
       send_event<sdpa::events::ErrorEvent>
-        (event.first, sdpa::events::ErrorEvent::SDPA_EUNKNOWN, ex.what());
+        ( event.first
+        , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+        , fhg::util::current_exception_as_string()
+        );
     }
   }
 }
@@ -464,15 +468,11 @@ void DRTSImpl::job_execution_thread()
             job->result = task.activity.to_string();
           }
         }
-        catch (std::exception const& ex)
-        {
-          task.state = wfe_task_t::FAILED;
-          job->message = std::string ("Module call failed: ") + ex.what();
-        }
         catch (...)
         {
           task.state = wfe_task_t::FAILED;
-          job->message = "UNKNOWN REASON, exception not derived from std::exception";
+          job->message = fhg::util::current_exception_as_string
+            ("Module call failed: ");
         }
       }
 
@@ -514,15 +514,16 @@ void DRTSImpl::job_execution_thread()
                  : INVALID_ENUM_VALUE (wfe_task_t::state_t, task.state);
 
     }
-    catch (std::exception const& ex)
+    catch (...)
     {
       LLOG ( ERROR, _logger
-           , "unexpected exception during job execution: " << ex.what()
+           , fhg::util::current_exception_as_string
+               ("unexpected exception during job execution: ")
            );
       job->state = DRTSImpl::Job::FAILED;
 
       job->result = job->description;
-      job->message = ex.what();
+      job->message = fhg::util::current_exception_as_string();
     }
 
     send_job_result_to_master (job);
