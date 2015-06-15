@@ -40,10 +40,17 @@ namespace fhg
                          , std::unordered_map<std::string /*name*/, pid_t>
                          > _;
 
+      processes_storage (std::ostream& info_output)
+        : _info_output (info_output)
+      {}
+
       ~processes_storage();
       void shutdown (component_type, std::vector<fhg::rif::entry_point> const&);
 
       void store (fhg::rif::entry_point const&, std::string const& name, pid_t);
+
+    private:
+      std::ostream& _info_output;
     };
 
     void start_workers_for
@@ -61,6 +68,7 @@ namespace fhg
       , boost::optional<boost::filesystem::path> const& gpi_socket
       , std::vector<boost::filesystem::path> const& app_path
       , boost::filesystem::path const& sdpa_home
+      , std::ostream& info_output
       );
 
     hostinfo_type startup
@@ -82,6 +90,7 @@ namespace fhg
       , processes_storage&
       , std::string& master_agent_name
       , fhg::drts::hostinfo_type& master_agent_hostinfo
+      , std::ostream& info_output
       );
   }
 }
