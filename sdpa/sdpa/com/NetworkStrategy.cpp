@@ -2,6 +2,8 @@
 
 #include <csignal>
 
+#include <util-generic/print_exception.hpp>
+
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
@@ -70,11 +72,13 @@ namespace sdpa
             }
           );
       }
-      catch (std::exception const& ex)
+      catch (...)
       {
         _event_handler ( address
                        , boost::make_shared<events::ErrorEvent>
-                           (events::ErrorEvent::SDPA_ENETWORKFAILURE, ex.what())
+                           ( events::ErrorEvent::SDPA_ENETWORKFAILURE
+                           , fhg::util::current_exception_as_string()
+                           )
                        );
       }
     }
