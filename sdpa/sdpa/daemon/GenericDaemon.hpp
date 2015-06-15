@@ -33,7 +33,7 @@
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/SubscribeEvent.hpp>
-#include <sdpa/events/WorkerRegistrationAckEvent.hpp>
+#include <sdpa/events/worker_registration_response.hpp>
 #include <sdpa/events/WorkerRegistrationEvent.hpp>
 
 #include <sdpa/types.hpp>
@@ -170,7 +170,7 @@ namespace sdpa {
       virtual void handleSubmitJobAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobAckEvent* ) override;
       virtual void handleSubmitJobEvent(fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent* ) override;
       //virtual void handleSubscribeAckEvent (fhg::com::p2p::address_t const& source, const sdpa::events::SubscribeAckEvent*) ?!
-      virtual void handleWorkerRegistrationAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::WorkerRegistrationAckEvent*) override;
+      virtual void handle_worker_registration_response(fhg::com::p2p::address_t const& source, const sdpa::events::worker_registration_response*) override;
       virtual void handleWorkerRegistrationEvent(fhg::com::p2p::address_t const& source, const sdpa::events::WorkerRegistrationEvent* ) override;
       virtual void handleQueryJobStatusEvent(fhg::com::p2p::address_t const& source, const sdpa::events::QueryJobStatusEvent* ) override;
       virtual void handleRetrieveJobResultsEvent(fhg::com::p2p::address_t const& source, const sdpa::events::RetrieveJobResultsEvent* ) override;
@@ -317,7 +317,8 @@ namespace sdpa {
       {
         child_proxy (GenericDaemon*, fhg::com::p2p::address_t const&);
 
-        void worker_registration_ack() const;
+        void worker_registration_response
+          (boost::optional<std::exception_ptr>) const;
 
         void submit_job
           (boost::optional<job_id_t>, job_desc_t, sdpa::worker_id_list_t) const;

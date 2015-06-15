@@ -125,8 +125,8 @@ public:
     );
   ~DRTSImpl();
 
-  virtual void handleWorkerRegistrationAckEvent
-    (fhg::com::p2p::address_t const& source, const sdpa::events::WorkerRegistrationAckEvent *e) override;
+  virtual void handle_worker_registration_response
+    (fhg::com::p2p::address_t const& source, const sdpa::events::worker_registration_response *e) override;
   virtual void handleSubmitJobEvent
     (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent *e) override;
   virtual void handleCancelJobEvent

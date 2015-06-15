@@ -431,7 +431,7 @@ void GenericDaemon::handleWorkerRegistrationEvent
   const bool was_new_worker
     (scheduler().worker_manager().addWorker (event->name(), event->capacity(), workerCpbSet, event->children_allowed(), event->hostname(), source));
 
-  child_proxy (this, source).worker_registration_ack();
+  child_proxy (this, source).worker_registration_response (boost::none);
 
   if (was_new_worker)
   {
@@ -756,8 +756,10 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
       return boost::make_optional (it != _master_info.end(), it);
     }
 
-void GenericDaemon::handleWorkerRegistrationAckEvent
-  (fhg::com::p2p::address_t const& source, const sdpa::events::WorkerRegistrationAckEvent*)
+void GenericDaemon::handle_worker_registration_response
+  ( fhg::com::p2p::address_t const& source
+  , sdpa::events::worker_registration_response const* response
+  )
 {
   master_info_t::iterator const master_it
     ( fhg::util::boost::get_or_throw<std::runtime_error>
@@ -765,6 +767,8 @@ void GenericDaemon::handleWorkerRegistrationAckEvent
        , "workerRegistrationAckEvent from source not in list of masters"
        )
     );
+
+  response->get();
 
   {
     boost::mutex::scoped_lock const _ (_job_map_mutex);
@@ -1422,12 +1426,13 @@ namespace sdpa
       , _address (address)
     {}
 
-    void GenericDaemon::child_proxy::worker_registration_ack() const
+    void GenericDaemon::child_proxy::worker_registration_response
+      (boost::optional<std::exception_ptr> error) const
     {
       _that->sendEventToOther
         ( _address
-        , events::WorkerRegistrationAckEvent::Ptr
-          (new events::WorkerRegistrationAckEvent())
+        , events::SDPAEvent::Ptr
+            (new events::worker_registration_response (std::move (error)))
         );
     }
 

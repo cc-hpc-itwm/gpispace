@@ -17,7 +17,7 @@
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
-#include <sdpa/events/WorkerRegistrationAckEvent.hpp>
+#include <sdpa/events/worker_registration_response.hpp>
 #include <sdpa/events/WorkerRegistrationEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/CapabilitiesLostEvent.hpp>

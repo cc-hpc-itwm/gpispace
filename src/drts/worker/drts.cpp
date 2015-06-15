@@ -186,8 +186,10 @@ DRTSImpl::~DRTSImpl()
   m_shutting_down = true;
 }
 
-void DRTSImpl::handleWorkerRegistrationAckEvent
-  (fhg::com::p2p::address_t const& source, const sdpa::events::WorkerRegistrationAckEvent*)
+void DRTSImpl::handle_worker_registration_response
+  ( fhg::com::p2p::address_t const& source
+  , sdpa::events::worker_registration_response const* response
+  )
 {
   map_of_masters_t::const_iterator master_it
     ( std::find_if ( m_masters.cbegin(), m_masters.cend()
@@ -200,8 +202,10 @@ void DRTSImpl::handleWorkerRegistrationAckEvent
 
   if (master_it == m_masters.cend())
   {
-    throw std::runtime_error ("worker_registration_ack for unknown master");
+    throw std::runtime_error ("worker_registration_response for unknown master");
   }
+
+  response->get();
 
   resend_outstanding_events (master_it);
 }
