@@ -1,6 +1,7 @@
 #include <drts/worker/drts.hpp>
 
 #include <util-generic/hostname.hpp>
+#include <fhg/util/macros.hpp>
 #include <util-generic/nest_exceptions.hpp>
 
 #include <sdpa/capability.hpp>
@@ -368,7 +369,7 @@ void DRTSImpl::handleDiscoverJobStatesEvent
         : job_it->second->state == DRTSImpl::Job::FAILED ? sdpa::status::FAILED
         : job_it->second->state == DRTSImpl::Job::CANCELED ? sdpa::status::CANCELED
         : job_it->second->state == DRTSImpl::Job::CANCELED_DUE_TO_WORKER_SHUTDOWN ? sdpa::status::FAILED
-        : throw std::runtime_error ("invalid job state")
+        : INVALID_ENUM_VALUE (DRTSImpl::Job::state_t, job_it->second->state)
         , sdpa::discovery_info_set_t()
         )
     );
@@ -500,7 +501,7 @@ void DRTSImpl::job_execution_thread()
               : task.state == wfe_task_t::CANCELED ? NotificationEvent::STATE_CANCELED
               : task.state == wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN ? NotificationEvent::STATE_FAILED
               : task.state == wfe_task_t::FAILED ? NotificationEvent::STATE_FAILED
-              : throw std::runtime_error ("bad enum value: task.state")
+              : INVALID_ENUM_VALUE (wfe_task_t::state_t, task.state)
               , task.activity
               )
             );
@@ -510,7 +511,7 @@ void DRTSImpl::job_execution_thread()
                  : task.state == wfe_task_t::CANCELED ? DRTSImpl::Job::CANCELED
                  : task.state == wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN ? DRTSImpl::Job::CANCELED_DUE_TO_WORKER_SHUTDOWN
                  : task.state == wfe_task_t::FAILED ? DRTSImpl::Job::FAILED
-                 : throw std::runtime_error ("bad task state");
+                 : INVALID_ENUM_VALUE (wfe_task_t::state_t, task.state);
 
     }
     catch (std::exception const& ex)
