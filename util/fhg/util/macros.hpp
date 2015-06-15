@@ -11,4 +11,4 @@
       ("%1%:%2%: %3%: value of enum '%4%' expected: got non-enummed-value %5%") \
       % __FILE__ % __LINE__ % BOOST_CURRENT_FUNCTION % #type % value \
       ).str() \
-     );
+     )
