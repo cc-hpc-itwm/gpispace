@@ -77,10 +77,6 @@ namespace
       }
     }
 
-    virtual void handle_internally (we::type::activity_t&, expr_t const&) override
-    {
-    }
-
     virtual void handle_externally (we::type::activity_t& act, net_t const& n) override
     {
       handle_internally (act, n);
@@ -89,11 +85,6 @@ namespace
     virtual void handle_externally (we::type::activity_t& act, mod_t const& module_call) override
     {
       handle_internally (act, module_call);
-    }
-
-    virtual void handle_externally (we::type::activity_t& act, expr_t const& e) override
-    {
-      handle_internally (act, e);
     }
 
   private:

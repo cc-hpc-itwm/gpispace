@@ -14,10 +14,8 @@ namespace
   {
     virtual void handle_internally (we::type::activity_t&, net_t const&) override {}
     virtual void handle_internally (we::type::activity_t&, mod_t const&) override {}
-    virtual void handle_internally (we::type::activity_t&, expr_t const&) override {}
     virtual void handle_externally (we::type::activity_t&, net_t const&) override {}
     virtual void handle_externally (we::type::activity_t&, mod_t const&) override {}
-    virtual void handle_externally (we::type::activity_t&, expr_t const&) override {}
   };
 }
 

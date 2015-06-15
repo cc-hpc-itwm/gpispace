@@ -20,7 +20,6 @@ namespace we
 
        expr:
        evaluate expression
-       ctxt.handle_internally (act, expr)
        -> injector
 
        mod:
@@ -32,7 +31,6 @@ namespace we
        ========
 
        ctxt.handle_externally (act, net)
-       ctxt.handle_externally (act, expr)
        ctxt.handle_externally (act, mod)
 
     */
@@ -48,10 +46,8 @@ namespace we
     public:
       virtual void handle_internally (activity_t&, net_t const&) = 0;
       virtual void handle_internally (activity_t&, mod_t const&) = 0;
-      virtual void handle_internally (activity_t&, expr_t const&) = 0;
       virtual void handle_externally (activity_t&, net_t const&) = 0;
       virtual void handle_externally (activity_t&, mod_t const&) = 0;
-      virtual void handle_externally (activity_t&, expr_t const&) = 0;
 
       virtual ~context() = default;
     };

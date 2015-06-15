@@ -188,8 +188,6 @@ namespace we
             {
                 _activity.add_output (p.first, context.value (p.second.name()));
             }
-
-            return _ctxt->handle_internally (_activity, expr);
           }
         };
       }

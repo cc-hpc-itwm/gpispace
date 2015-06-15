@@ -673,10 +673,6 @@ namespace fhg
               (loader, nullptr, nullptr, nullptr, act, mod);
           }
 
-          virtual void handle_internally (we::type::activity_t& , expr_t const&) override
-          {
-          }
-
           virtual void handle_externally (we::type::activity_t& act, net_t const& n) override
           {
             handle_internally (act, n);
@@ -685,11 +681,6 @@ namespace fhg
           virtual void handle_externally (we::type::activity_t& act, mod_t const& mod) override
           {
             handle_internally (act, mod);
-          }
-
-          virtual void handle_externally (we::type::activity_t& act, expr_t const& e) override
-          {
-            handle_internally (act, e);
           }
 
         private:
