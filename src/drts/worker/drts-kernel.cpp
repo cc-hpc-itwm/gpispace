@@ -117,7 +117,7 @@ int main(int ac, char **av)
 try
 {
   boost::asio::io_service remote_log_io_service;
-  fhg::log::Logger& logger (fhg::log::GLOBAL_logger());
+  fhg::log::Logger logger;
   fhg::log::configure (remote_log_io_service, logger);
 
   namespace po = boost::program_options;

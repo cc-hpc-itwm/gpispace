@@ -4,13 +4,6 @@ namespace fhg
 {
   namespace log
   {
-    Logger& GLOBAL_logger()
-    {
-      static Logger l;
-
-      return l;
-    }
-
     Logger::Logger()
       : lvl_ (INFO)
     {}

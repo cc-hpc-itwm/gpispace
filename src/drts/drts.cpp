@@ -257,10 +257,11 @@ namespace gspc
                                 , get_virtual_memory_port (vm)
                                 , entry_points._->_entry_points
                                 )
+      , _logger()
       , _virtual_memory_api
         ( _virtual_memory_socket
         ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
-            (fhg::log::GLOBAL_logger(), _virtual_memory_socket->string())
+            (_logger, _virtual_memory_socket->string())
         : nullptr
         )
   {}

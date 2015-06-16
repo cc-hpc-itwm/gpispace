@@ -191,7 +191,7 @@ try
   }
 
   boost::asio::io_service remote_log_io_service;
-  fhg::log::Logger& logger (fhg::log::GLOBAL_logger());
+  fhg::log::Logger logger;
   fhg::log::configure (remote_log_io_service, logger);
 
   fhg::util::signal_handler_manager signal_handler;
