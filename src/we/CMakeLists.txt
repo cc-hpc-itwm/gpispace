@@ -50,6 +50,7 @@ install (FILES
 )
 install (FILES
   type/value/peek.hpp
+  type/value/peek_or_die.hpp
   type/value/poke.hpp
   type/value/read.hpp
   type/value/serialize.hpp
@@ -62,6 +63,7 @@ install (FILES
 )
 install (FILES
   type/value/path/append.hpp
+  type/value/path/join.hpp
   DESTINATION include/we/type/value/path
 )
 install (FILES
