@@ -25,7 +25,7 @@ namespace sdpa
     class RetrieveJobResultsEvent;
     class SubmitJobAckEvent;
     class SubmitJobEvent;
-    class WorkerRegistrationAckEvent;
+    class worker_registration_response;
     class WorkerRegistrationEvent;
     class CapabilitiesGainedEvent;
     class CapabilitiesLostEvent;
@@ -68,7 +68,7 @@ namespace sdpa
       { throw std::runtime_error ("UNHANDLED EVENT: SubmitJobAck"); }
       virtual void handleSubmitJobEvent (fhg::com::p2p::address_t const&, const SubmitJobEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: SubmitJob"); }
-      virtual void handleWorkerRegistrationAckEvent (fhg::com::p2p::address_t const&, const WorkerRegistrationAckEvent*)
+      virtual void handle_worker_registration_response (fhg::com::p2p::address_t const&, const worker_registration_response*)
       { throw std::runtime_error ("UNHANDLED EVENT: WorkerRegistrationAck"); }
       virtual void handleWorkerRegistrationEvent (fhg::com::p2p::address_t const&, const WorkerRegistrationEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: WorkerRegistration"); }

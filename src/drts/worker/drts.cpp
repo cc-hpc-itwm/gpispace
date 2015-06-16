@@ -1,6 +1,7 @@
 #include <drts/worker/drts.hpp>
 
 #include <util-generic/hostname.hpp>
+#include <fhg/util/wait_and_collect_exceptions.hpp>
 
 #include <sdpa/capability.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
@@ -165,13 +166,24 @@ DRTSImpl::DRTSImpl
   std::set<sdpa::Capability> const capabilities
     (make_capabilities (capability_names, m_my_name));
 
+  std::vector<std::future<void>> registration_futures;
+
   for (master_info const& master : masters)
   {
-    send_event<sdpa::events::WorkerRegistrationEvent>
+    fhg::com::p2p::address_t const master_address
       ( m_masters.emplace
           ( std::get<0> (master)
           , _peer.connect_to (std::get<1> (master), std::get<2> (master))
           ).first->second
+      );
+
+    registration_futures.emplace_back
+      ( _registration_responses.emplace
+          (master_address, std::promise<void>()).first->second.get_future()
+      );
+
+    send_event<sdpa::events::WorkerRegistrationEvent>
+      ( master_address
       , m_my_name
       , m_pending_jobs.capacity()
       , capabilities
@@ -179,6 +191,10 @@ DRTSImpl::DRTSImpl
       , fhg::util::hostname()
       );
   }
+
+  fhg::util::wait_and_collect_exceptions (registration_futures);
+
+  _registration_responses.clear();
 }
 
 DRTSImpl::~DRTSImpl()
@@ -186,8 +202,10 @@ DRTSImpl::~DRTSImpl()
   m_shutting_down = true;
 }
 
-void DRTSImpl::handleWorkerRegistrationAckEvent
-  (fhg::com::p2p::address_t const& source, const sdpa::events::WorkerRegistrationAckEvent*)
+void DRTSImpl::handle_worker_registration_response
+  ( fhg::com::p2p::address_t const& source
+  , sdpa::events::worker_registration_response const* response
+  )
 {
   map_of_masters_t::const_iterator master_it
     ( std::find_if ( m_masters.cbegin(), m_masters.cend()
@@ -200,10 +218,21 @@ void DRTSImpl::handleWorkerRegistrationAckEvent
 
   if (master_it == m_masters.cend())
   {
-    throw std::runtime_error ("worker_registration_ack for unknown master");
+    throw std::runtime_error ("worker_registration_response for unknown master");
   }
 
-  resend_outstanding_events (master_it);
+  try
+  {
+    response->get();
+
+    resend_outstanding_events (master_it);
+
+    _registration_responses.at (source).set_value();
+  }
+  catch (...)
+  {
+    _registration_responses.at (source).set_exception (std::current_exception());
+  }
 }
 
 void DRTSImpl::handleSubmitJobEvent
@@ -609,7 +638,20 @@ void DRTSImpl::start_receiver()
         }
         else if (!m_shutting_down)
         {
-          _request_stop();
+          if (!_registration_responses.empty())
+          {
+            _registration_responses.at (source.get())
+              .set_exception
+                ( std::make_exception_ptr
+                    ( std::system_error
+                        (std::make_error_code (std::errc::connection_aborted))
+                    )
+                );
+          }
+          else
+          {
+            _request_stop();
+          }
         }
         else
         {

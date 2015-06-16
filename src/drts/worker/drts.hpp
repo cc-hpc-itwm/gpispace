@@ -25,6 +25,7 @@
 
 #include <atomic>
 #include <functional>
+#include <future>
 #include <map>
 #include <mutex>
 #include <string>
@@ -125,8 +126,8 @@ public:
     );
   ~DRTSImpl();
 
-  virtual void handleWorkerRegistrationAckEvent
-    (fhg::com::p2p::address_t const& source, const sdpa::events::WorkerRegistrationAckEvent *e) override;
+  virtual void handle_worker_registration_response
+    (fhg::com::p2p::address_t const& source, const sdpa::events::worker_registration_response *e) override;
   virtual void handleSubmitJobEvent
     (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent *e) override;
   virtual void handleCancelJobEvent
@@ -191,6 +192,9 @@ private:
     m_event_thread;
   boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
     m_execution_thread;
+
+  std::unordered_map<fhg::com::p2p::address_t, std::promise<void>>
+    _registration_responses;
 
   struct mark_remaining_tasks_as_canceled_helper
   {

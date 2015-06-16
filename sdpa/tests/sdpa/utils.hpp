@@ -367,13 +367,15 @@ namespace utils
       wait_for_workers_to_shutdown();
     }
 
-    virtual void handleWorkerRegistrationAckEvent
+    virtual void handle_worker_registration_response
       ( fhg::com::p2p::address_t const& source
-      , const sdpa::events::WorkerRegistrationAckEvent*
+      , sdpa::events::worker_registration_response const* response
       ) override
     {
       BOOST_REQUIRE (_master);
       BOOST_REQUIRE_EQUAL (source, _master.get());
+
+      response->get();
     }
 
     virtual void handleWorkerRegistrationEvent
@@ -387,7 +389,7 @@ namespace utils
       _network.perform
         ( source
         , sdpa::events::SDPAEvent::Ptr
-          (new sdpa::events::WorkerRegistrationAckEvent())
+            (new sdpa::events::worker_registration_response (boost::none))
         );
     }
 

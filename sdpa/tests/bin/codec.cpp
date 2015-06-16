@@ -5,11 +5,12 @@
 #include <we/test/operator_equal.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/printer/optional.hpp>
-#include <util-generic/testing/random_string.hpp>
 #include <util-generic/testing/printer/generic.hpp>
 #include <util-generic/testing/printer/list.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/printer/set.hpp>
+#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/require_exception.hpp>
 
 FHG_BOOST_TEST_LOG_VALUE_PRINTER (sdpa::Capability, os, capability)
 {
@@ -203,10 +204,22 @@ BOOST_AUTO_TEST_CASE (Subscribe)
   BOOST_REQUIRE_EQUAL (r->job_id(), e.job_id());
 }
 
-BOOST_AUTO_TEST_CASE (WorkerRegistrationAck)
+BOOST_AUTO_TEST_CASE (worker_registration_response_)
 {
-  WorkerRegistrationAckEvent e;
-  encode_decode_mgmt_event (e);
+  {
+    worker_registration_response e (boost::none);
+    worker_registration_response* r (encode_decode_mgmt_event (e));
+    r->get();
+  }
+
+  {
+    std::string const error (fhg::util::testing::random_string_without_zero());
+    worker_registration_response e
+      (std::make_exception_ptr (std::runtime_error (error)));
+    worker_registration_response* r (encode_decode_mgmt_event (e));
+    fhg::util::testing::require_exception<std::runtime_error>
+      ([r] { r->get(); }, error);
+  }
 }
 
 BOOST_AUTO_TEST_CASE (WorkerRegistration)

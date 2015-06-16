@@ -22,7 +22,7 @@
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
 #include <sdpa/events/SubscribeEvent.hpp>
-#include <sdpa/events/WorkerRegistrationAckEvent.hpp>
+#include <sdpa/events/worker_registration_response.hpp>
 #include <sdpa/events/WorkerRegistrationEvent.hpp>
 #include <sdpa/events/put_token.hpp>
 #include <sdpa/events/BacklogNoLongerFullEvent.hpp>
@@ -91,7 +91,7 @@ namespace sdpa
         REGISTER (SubmitJobEvent, SDPAEvent);
         REGISTER (SubscribeAckEvent, MgmtEvent);
         REGISTER (SubscribeEvent, MgmtEvent);
-        REGISTER (WorkerRegistrationAckEvent, MgmtEvent);
+        REGISTER (worker_registration_response, MgmtEvent);
         REGISTER (WorkerRegistrationEvent, MgmtEvent);
         REGISTER (put_token, JobEvent);
         REGISTER (put_token_ack, MgmtEvent);
