@@ -3,8 +3,6 @@
 #include <string>
 #include <boost/noncopyable.hpp>
 
-#include <fhglog/Logger.hpp>
-
 #include <gpi-space/pc/type/segment_descriptor.hpp>
 
 namespace gpi
@@ -16,8 +14,7 @@ namespace gpi
       class segment_t : boost::noncopyable
       {
       public:
-        segment_t ( fhg::log::Logger& logger
-                  , std::string const & name
+        segment_t ( std::string const & name
                   , const type::size_t sz
                   , const type::segment_id_t id = type::segment::SEG_INVAL
                   );
@@ -43,7 +40,6 @@ namespace gpi
         void *ptr ();
         const void *ptr () const;
       private:
-        fhg::log::Logger& _logger;
         gpi::pc::type::segment::descriptor_t m_descriptor;
         void *m_ptr;
       };

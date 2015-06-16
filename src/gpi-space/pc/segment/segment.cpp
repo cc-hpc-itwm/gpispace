@@ -27,13 +27,11 @@ namespace gpi
           close ();
       }
 
-      segment_t::segment_t ( fhg::log::Logger& logger
-                           , std::string const & name
+      segment_t::segment_t ( std::string const & name
                            , const type::size_t sz
                            , const type::segment_id_t id
                            )
-        : _logger (logger)
-        , m_ptr (nullptr)
+        : m_ptr (nullptr)
       {
         if (name.empty())
           throw std::runtime_error ("invalid name argument to segment_t(): name must not be empty");
@@ -55,27 +53,28 @@ namespace gpi
         {
           fd = fhg::util::syscall::shm_open (name().c_str(), O_RDWR | O_CREAT | O_EXCL, mode);
         }
-        catch (boost::system::system_error const& se)
+        catch (boost::system::system_error const&)
         {
-          LLOG(ERROR, _logger, "shared memory segment: " << name() << " could not be created: " << se.what());
-          throw std::runtime_error ("shared memory segment could not be created");
+          std::throw_with_nested
+            ( std::runtime_error
+                ("shared memory segment '" + name() + "' could not be created")
+            );
         }
 
         try
         {
           fhg::util::syscall::ftruncate (fd, size());
         }
-        catch (boost::system::system_error const& se)
+        catch (boost::system::system_error const&)
         {
-          LLOG( ERROR
-              , _logger
-             , "shared memory segment: " << name()
-             << " could not be truncated to size: " << size()
-             << ": " << se.what()
-             );
           fhg::util::syscall::close (fd);
-          throw std::runtime_error
-            ("shared memory segment could not be truncated");
+
+          std::throw_with_nested
+            ( std::runtime_error
+                ( "shared memory segment '" + name()
+                + "' could not be truncated to size " + std::to_string (size())
+                )
+            );
         }
 
         try
@@ -88,11 +87,14 @@ namespace gpi
                                            , 0
                                            );
         }
-        catch (boost::system::system_error const& se)
+        catch (boost::system::system_error const&)
         {
-          LLOG(ERROR, _logger, "shared memory segment: " << name() << " could not be attached: " << se.what());
           fhg::util::syscall::close (fd);
-          throw std::runtime_error ("shared memory segment could not be attached");
+
+          std::throw_with_nested
+            ( std::runtime_error
+                ("shared memory segment '" + name() + "' could not be attached")
+            );
         }
 
         fhg::util::syscall::close (fd);
@@ -108,8 +110,10 @@ namespace gpi
         }
         catch (boost::system::system_error const& se)
         {
-          LLOG(ERROR, _logger, "shared memory segment: " << name() << " could not be opened: " << se.what());
-          throw std::runtime_error ("shared memory segment could not be opened");
+          std::throw_with_nested
+            ( std::runtime_error
+                ("shared memory segment '" + name() + "' could not be opened")
+            );
         }
 
         try
@@ -124,9 +128,12 @@ namespace gpi
         }
         catch (boost::system::system_error const& se)
         {
-          LLOG(ERROR, _logger, "shared memory segment: " << name() << " could not be attached: " << se.what());
           fhg::util::syscall::close (fd);
-          throw std::runtime_error ("shared memory segment could not be attached");
+
+          std::throw_with_nested
+            ( std::runtime_error
+                ("shared memory segment '" + name() + "' could not be attached")
+            );
         }
 
         fhg::util::syscall::close (fd);

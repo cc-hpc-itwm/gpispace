@@ -348,7 +348,7 @@ namespace gpi
                              , const gpi::pc::type::flags_t flags
                              )
       {
-        segment_ptr seg (new gpi::pc::segment::segment_t(_logger, name, sz));
+        segment_ptr seg (new gpi::pc::segment::segment_t(name, sz));
           if (flags & gpi::pc::F_NOCREATE)
           {
             seg->open();

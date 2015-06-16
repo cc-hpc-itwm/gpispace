@@ -9,8 +9,7 @@
 BOOST_AUTO_TEST_CASE (sequence_of_create_close_unlink_does_not_throw)
 {
   gpi::pc::segment::segment_t seg
-    ( fhg::log::GLOBAL_logger()
-    , "seg-test-" + boost::lexical_cast<std::string>(getpid())
+    ( "seg-test-" + boost::lexical_cast<std::string>(getpid())
     , 1024
     );
   try

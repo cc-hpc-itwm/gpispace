@@ -15,8 +15,7 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
 {
   gpi::pc::memory::handle_generator_t handle_generator (42);
 
-  gpi::pc::segment::segment_t segm ( fhg::log::GLOBAL_logger()
-                                   , "memory_area_alloc_free_test"
+  gpi::pc::segment::segment_t segm ( "memory_area_alloc_free_test"
                                    , 2048
                                    );
   segm.create ();
