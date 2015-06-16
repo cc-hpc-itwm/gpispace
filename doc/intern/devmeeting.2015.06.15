@@ -1,0 +1,137 @@
+EU Projects starting end of year
+- Intertwine (Scheduler, GASPI + OmpSS)
+- ExaNest (BeePFS)
+
+---------------------------------------------------------------
+BmBF projects submitted (-> Scheduler, Energy efficiency)
+- ENAUTO (SPLOTCH)
+- SKASSOP (GPI-Space)
+
+Ongoing, no real spec: (RSI is interested)
+- ALOMA (Azimuthal, difference?)
+  -> Workflowgenerator, memory management (execution path computation)
+  -> Editor -> requires spec, at least discussion
+  -> PDL erweitern ->  what? cleanup
+  -> Viewer support -> GPI-Space memory management
+  -> Zylinderplot, VRTM, Zertifizierungstool -> Standalone!? Task list
+
+Ongoing, to be extended:
+- RTM -> explanation to Repsol contractor
+  * finish test (2 days basis, 2 additional days per error)
+- RTM-qsub monitor (12-15 days)
+  * test current status
+  * re-implement
+- Interface extension
+  * discuss (4-5 days)
+  * implement
+
+Outdated, demand high, Webexsession with RSI in June
+- Course -> test status wrt to current status, Goetz, Krueger
+  * Goetz fährt zu RSI
+
+Ongoing, demand unclear, potential without days
+- Map&Reduce
+  * adoption to gspc-rifd
+  * make it compile, self-test
+
+- ISC15:
+  * SPLOTCH-demo (wie auf SC)
+  * Aloma? Parallel-SU? Superbin? Adaptive Stacking? RTM?
+  * Janis(?)
+  * für IT-Menschen: Einfache Integration in existierenden Workflow (Kurs)?
+
+---------------------------------------------------------------
+BUGS and USAGE
+- network SEGFAULT
+  * close door for 4 days (bernd, mirko)
+
+- Fehlerpropagation und Benennung der Ursache, Interruption
+  Goals:
+
+  * Alle Fehler (unhandled exception, unexpected worker shutdown, any
+    kind of component crashes), die irgendwo im System auftauchen
+    werden an den User berichtet.
+
+  * Gründe für Fehler oder Fehlversuche sollen möglichst detailliert
+    dargelegt werden.
+
+  * Users of the drts-interface:
+
+    - get an exception in case of errors that prevent from reaching the
+      post condition of the current call(s)
+
+    - can adjust behavior by submitting policies (e.g. stall_is_error)
+
+    - optional: use provided information channel that contains system information
+
+    - optional: use provided logging infrastructure -> separation
+
+    - (RIF as net proxy might come out of this)
+
+  * zero: let _all_ exceptions bubble up (to the interface), ->
+    nothing gets lost, 0.5: test
+  * one: wrap and nest to get error path, 1.5: test
+  * two: typed exceptions, no more text messages in lower level,
+    exception pointer replace '.what()''
+  * three: handle _all_ possible error situations, e.g. _all_ possible
+    executions path 3.5: test
+
+  TIME: Several weeks to some months, includes much work, important
+  design changes, testing
+
+  * static type check -> less runtime error (4 weeks)
+
+  * RPC replaces event might be required for that, at least would
+    simplify the task or the implicit outcome
+
+Virtual memory:
+- ZERO-th step: Understand current implementation, clean up (2-3 weeks)
+- add/remove node while virtual memory is used
+  * when only nodes without virtual memory are affected -> new nodes do
+    not have workers with capability VIRTUAL_MEMORY_GPI
+  * otherwise -> learn about GASPI and/or improve GASPI, also: think
+    about (runtime) implications into workflow, first step: ADDITION
+    ONLY, Removal is much more complex
+- grow/shrink virtual memory
+  * add/remove segment
+- constant, shared, dynamic local memory
+  * first step: extended state in drts-kernel with maximum memory -> constant
+  * second: concept of shared domain (e.g. node) and management within
+  * third: interaction with Scheduler for overcommitment,
+    e.g. calc:12GiB, io:8GiB, man:1GiB on a node that has 16GiB
+- memory iterators (use case ufbmig)
+- intrinsics for memory management
+  * identify expensive operations and move down into the workflow
+    engine, memory manager, ...
+
+Topologies: (several weeks to some months)
+- support for (complex) topologies
+  * define application topology and match machine topology, start with
+    simple and known patterns
+  * investigate whether or not existing tools can be used (zookeeper)
+  * instantiate and keep online while the machine changes
+- support for >128 nodes -> what is the problem, account on ESSL
+
+Scheduler: (several weeks to some months)
+- work stealing implementation
+- support for different optimization functions (time to solution,
+energy to solution)
+  * Extend expressiveness of capabilites, e.g. RAM 8GiB, NUMA 2socks
+  * Take into account a performance model
+    - allow user to specify a performance model, e.g. a function from
+      resource, task -> cost (zero: exception in user code crashs agent)
+    - use machine information, e.g. idle costs
+  * define scenarios
+    - pure (one cost function): minimal time to solution or minimal energy
+    - mixed with more than one cost function: minimal energy where time to
+      solution <= 1 day
+- possible: re-design of architecture
+
+Sandbox (agent runs user provided cost function, worker shall never
+crash)
+
+Disk less operation
+  * specify concrete scenario, get access to ESSL
+
+---------------------------------------------------------------
+definition of scenario (including target platforms)
