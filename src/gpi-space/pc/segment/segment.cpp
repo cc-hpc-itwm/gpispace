@@ -61,14 +61,21 @@ namespace gpi
             );
         }
 
+        struct close_on_scope_exit
+        {
+          ~close_on_scope_exit()
+          {
+            fhg::util::syscall::close (_fd);
+          }
+          int _fd;
+        } _ = {fd};
+
         try
         {
           fhg::util::syscall::ftruncate (fd, size());
         }
         catch (boost::system::system_error const&)
         {
-          fhg::util::syscall::close (fd);
-
           std::throw_with_nested
             ( std::runtime_error
                 ( "shared memory segment '" + name()
@@ -89,15 +96,11 @@ namespace gpi
         }
         catch (boost::system::system_error const&)
         {
-          fhg::util::syscall::close (fd);
-
           std::throw_with_nested
             ( std::runtime_error
                 ("shared memory segment '" + name() + "' could not be attached")
             );
         }
-
-        fhg::util::syscall::close (fd);
       }
 
       void segment_t::open ()
@@ -116,6 +119,15 @@ namespace gpi
             );
         }
 
+        struct close_on_scope_exit
+        {
+          ~close_on_scope_exit()
+          {
+            fhg::util::syscall::close (_fd);
+          }
+          int _fd;
+        } _ = {fd};
+
         try
         {
           m_ptr = fhg::util::syscall::mmap ( nullptr
@@ -128,15 +140,11 @@ namespace gpi
         }
         catch (boost::system::system_error const& se)
         {
-          fhg::util::syscall::close (fd);
-
           std::throw_with_nested
             ( std::runtime_error
                 ("shared memory segment '" + name() + "' could not be attached")
             );
         }
-
-        fhg::util::syscall::close (fd);
       }
 
       void segment_t::close ()
