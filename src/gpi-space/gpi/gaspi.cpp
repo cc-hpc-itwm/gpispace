@@ -57,14 +57,11 @@ namespace gpi
 
       if (sys::get_total_memory_size() < m_mem_size)
       {
-        LLOG( ERROR
-            , _logger
-           , "requested memory size (" << m_mem_size << ")"
-           <<" exceeds total memory size (" << sys::get_total_memory_size() << ")"
-           );
         throw gpi::exception::gpi_error
           ( gpi::error::startup_failed()
-          , "not enough memory"
+          , "not enough memory: requested memory size ("
+          + std::to_string (m_mem_size) + ") exceeds total memory size ("
+          + std::to_string (sys::get_total_memory_size()) + ")"
           );
       }
       else if (sys::get_avail_memory_size() < m_mem_size)
