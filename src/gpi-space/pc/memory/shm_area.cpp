@@ -245,16 +245,12 @@ namespace gpi
                                               , task_list_t &
                                               )
       {
-        LLOG ( ERROR
-             , _logger
-            , "specific transfer not implemented: "
-            << amount << " bytes: "
-            << dst
-            << " <- "
-            << src
-            );
         throw std::runtime_error
-          ("get_specific_transfer_tasks not implemented on shm_area");
+          ( "get_specific_transfer_tasks not implemented on shm_area: "
+          + std::to_string (amount) + " bytes: "
+          + boost::lexical_cast<std::string> (dst) + " <- "
+          + boost::lexical_cast<std::string> (src)
+          );
       }
 
       double shm_area_t::get_transfer_costs ( const gpi::pc::type::memory_region_t&
