@@ -12,7 +12,7 @@ fhg_add_runtime_executable (NAME gpi-space
             mmgr
             fhgcom
             fhglog
-            rif-startup-messages-pipe
+            rif-started_process_promise
             Util::Generic
             ${CMAKE_THREAD_LIBS_INIT}
             Boost::filesystem

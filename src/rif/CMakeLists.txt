@@ -15,8 +15,8 @@ fhg_add_runtime_executable (NAME gspc-rifd
             Boost::thread
 )
 
-extended_add_library (NAME rif-startup-messages-pipe
-  SOURCES "startup_messages_pipe.cpp"
+extended_add_library (NAME rif-started_process_promise
+  SOURCES "started_process_promise.cpp"
   LIBRARIES Boost::iostreams
             Boost::program_options
 )

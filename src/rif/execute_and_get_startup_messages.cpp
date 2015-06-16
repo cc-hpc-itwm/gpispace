@@ -2,15 +2,19 @@
 
 #include <rif/execute_and_get_startup_messages.hpp>
 
-#include <rif/startup_messages_pipe.hpp>
+#include <rif/started_process_promise.hpp>
 
 #include <fhg/assert.hpp>
+#include <util-generic/serialization/exception.hpp>
 #include <util-generic/syscall.hpp>
 #include <util-generic/temporary_file.hpp>
 
+#include <boost/archive/text_iarchive.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/optional.hpp>
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/vector.hpp>
 #include <boost/system/system_error.hpp>
 
 #include <algorithm>
@@ -18,6 +22,7 @@
 #include <functional>
 #include <future>
 #include <mutex>
+#include <sstream>
 #include <system_error>
 
 namespace fhg
@@ -59,7 +64,6 @@ namespace fhg
       std::vector<char*> prepare_argv
         ( std::vector<char>& argv_buffer
         , boost::filesystem::path const& command
-        , std::string const& startup_messages_pipe_option
         , int pipe_fd
         , std::vector<std::string> const& arguments
         )
@@ -68,7 +72,6 @@ namespace fhg
 
         argv_buffer.resize
           ( command.string().size() + 1
-          + startup_messages_pipe_option.size() + 1
           + pipe_fd_string.size() + 1
           + std::accumulate
               ( arguments.begin()
@@ -84,14 +87,10 @@ namespace fhg
         std::size_t argv_pos (0);
 
         std::vector<char*> argv;
-        argv.reserve (arguments.size() + 3 + 1);
+        argv.reserve (arguments.size() + 2 + 1);
 
         argv.push_back (argv_buffer.data() + argv_pos);
         argv_pos = append (argv_buffer, command.string(), argv_pos);
-        argv_pos = append (argv_buffer, '\0', argv_pos);
-
-        argv.push_back (argv_buffer.data() + argv_pos);
-        argv_pos = append (argv_buffer, startup_messages_pipe_option, argv_pos);
         argv_pos = append (argv_buffer, '\0', argv_pos);
 
         argv.push_back (argv_buffer.data() + argv_pos);
@@ -165,16 +164,25 @@ namespace fhg
         boost::iostreams::stream<boost::iostreams::file_descriptor_source>
           pipe_read (pipe_fds[0], boost::iostreams::close_handle);
 
-        std::vector<std::string> messages;
-        std::string line;
-        while ( std::getline (pipe_read, line)
-              && line != startup_messages_pipe::end_sentinel_value()
-              )
-        {
-          messages.emplace_back (std::move (line));
-        }
+        pipe_read >> std::noskipws;
 
-        if (line != startup_messages_pipe::end_sentinel_value())
+        std::string const message_data
+          { std::istream_iterator<char> (pipe_read)
+          , std::istream_iterator<char>()
+          };
+
+        std::string const expected_end
+          (started_process_promise::end_sentinel_value());
+
+        bool const is_complete
+          ( message_data.size() >= expected_end.size()
+          && std::equal ( expected_end.rbegin()
+                        , expected_end.rend()
+                        , message_data.rbegin()
+                        )
+          );
+
+        if (!is_complete)
         {
           int child_status (0);
           if (util::syscall::waitpid (pid, &child_status, WNOHANG) == pid)
@@ -224,6 +232,28 @@ namespace fhg
           throw std::runtime_error ("pipe closed before end-sentinel-value read");
         }
 
+        std::istringstream stream (message_data);
+        boost::archive::text_iarchive archive (stream);
+        bool result;
+        archive & result;
+
+        if (!result)
+        {
+          std::string data;
+          archive & data;
+
+          std::rethrow_exception
+            ( fhg::util::serialization::exception::deserialize
+                ( data
+                , fhg::util::serialization::exception::serialization_functions()
+                , fhg::util::serialization::exception::aggregated_serialization_functions()
+                )
+            );
+        }
+
+        //! \todo types from startup_data
+        std::vector<std::string> messages;
+        archive & messages;
         return {pid, std::move (messages)};
       }
       else
@@ -234,7 +264,6 @@ namespace fhg
         std::vector<char*> const argv
           ( prepare_argv ( argv_buffer
                          , command
-                         , std::string ("--") + startup_messages_pipe::option_name()
                          , pipe_fds[1]
                          , arguments
                          )
