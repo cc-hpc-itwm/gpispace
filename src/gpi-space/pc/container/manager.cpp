@@ -78,7 +78,7 @@ namespace gpi
         fhg::util::syscall::close (fd);
       }
 
-      int manager_t::safe_unlink(std::string const & path)
+      void manager_t::safe_unlink(std::string const & path)
       {
         struct stat st;
 
@@ -88,18 +88,15 @@ namespace gpi
         }
         catch (boost::system::system_error const&)
         {
-          return 0;
+          return;
         }
 
-        if (S_ISSOCK(st.st_mode))
+        if (!S_ISSOCK(st.st_mode))
         {
-          fhg::util::syscall::unlink (path.c_str());
-          return 0;
+          throw std::runtime_error ("not a socket");
         }
-        else
-        {
-          return -EINVAL;
-        }
+
+        fhg::util::syscall::unlink (path.c_str());
       }
 
       void manager_t::listener_thread_main()
@@ -580,12 +577,13 @@ namespace gpi
           }
         }
 
-        int err = safe_unlink (m_path);
-        if (err < 0)
-        {
-          LLOG(ERROR, _logger, "could not unlink path " << m_path << ": " <<  strerror(-err));
-          throw std::runtime_error ("could not unlink socket path");
-        }
+        fhg::util::nest_exceptions<std::runtime_error>
+          ( [&]
+            {
+              safe_unlink (m_path);
+            }
+          , "could not unlink path '" + m_path + "'"
+          );
 
         fhg::util::nest_exceptions<std::runtime_error>
           ( [&]

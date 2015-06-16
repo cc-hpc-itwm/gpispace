@@ -39,7 +39,7 @@ namespace gpi
         void process_communication_thread (gpi::pc::type::process_id_t, int socket);
 
         void close_socket (const int fd);
-        int safe_unlink(std::string const & path);
+        void safe_unlink(std::string const & path);
 
         fhg::log::Logger& _logger;
         std::string m_path;
