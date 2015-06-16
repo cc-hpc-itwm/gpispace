@@ -7,6 +7,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/signals2.hpp>
 
+#include <fhglog/Logger.hpp>
+
 #include <gpi-space/types.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/type/handle.hpp>
@@ -149,7 +151,8 @@ namespace gpi
                                           , const gpi::rank_t
                                           ) const = 0;
       protected:
-        area_t ( const gpi::pc::type::segment::segment_type type
+        area_t ( fhg::log::Logger&
+               , const gpi::pc::type::segment::segment_type type
                , const gpi::pc::type::process_id_t creator
                , const std::string & name
                , const gpi::pc::type::size_t size
@@ -231,6 +234,10 @@ namespace gpi
 
         void internal_alloc (gpi::pc::type::handle::descriptor_t &);
 
+      protected:
+        fhg::log::Logger& _logger;
+
+      private:
         mutable mutex_type m_mutex;
         gpi::pc::type::segment::descriptor_t m_descriptor;
         DTmmgr_t m_mmgr;

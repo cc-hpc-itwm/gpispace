@@ -1,6 +1,6 @@
 #include <gpi-space/gpi/gaspi.hpp>
 
-#include <gpi-space/log_to_GLOBAL_logger.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
 #include <gpi-space/exception.hpp>
@@ -39,12 +39,14 @@ namespace gpi
       fail_on_non_zero(#F, F, Args)
     }
 
-    gaspi_t::gaspi_t ( const unsigned long long memory_size
+    gaspi_t::gaspi_t ( fhg::log::Logger& logger
+                     , const unsigned long long memory_size
                      , const unsigned short port
                      , const std::chrono::seconds& timeout
                      , unsigned short communication_port
                      )
-      : m_mem_size (memory_size)
+      : _logger (logger)
+      , m_mem_size (memory_size)
       , m_dma (nullptr)
       , m_replacement_gpi_segment (0)
     {
@@ -55,7 +57,8 @@ namespace gpi
 
       if (sys::get_total_memory_size() < m_mem_size)
       {
-        LOG( ERROR
+        LLOG( ERROR
+            , _logger
            , "requested memory size (" << m_mem_size << ")"
            <<" exceeds total memory size (" << sys::get_total_memory_size() << ")"
            );
@@ -66,7 +69,8 @@ namespace gpi
       }
       else if (sys::get_avail_memory_size() < m_mem_size)
       {
-        LOG( WARN
+        LLOG( WARN
+            , _logger
            , "requested memory size (" << m_mem_size << ")"
            <<" exceeds available memory size (" << sys::get_avail_memory_size() << ")"
            );

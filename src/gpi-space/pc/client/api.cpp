@@ -5,7 +5,7 @@
 
 #include <fhg/assert.hpp>
 #include <util-generic/syscall.hpp>
-#include <gpi-space/log_to_GLOBAL_logger.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -52,8 +52,11 @@ namespace gpi
   {
     namespace client
     {
-      api_t::api_t (std::string const & path)
-        : m_socket (open_socket (path))
+      api_t::api_t ( fhg::log::Logger& logger
+                   , std::string const & path
+                   )
+        : _logger (logger)
+        , m_socket (open_socket (path))
       {}
 
       api_t::~api_t ()
@@ -345,7 +348,7 @@ namespace gpi
                              , const gpi::pc::type::flags_t flags
                              )
       {
-        segment_ptr seg (new gpi::pc::segment::segment_t(name, sz));
+        segment_ptr seg (new gpi::pc::segment::segment_t(_logger, name, sz));
           if (flags & gpi::pc::F_NOCREATE)
           {
             seg->open();
@@ -412,9 +415,9 @@ namespace gpi
 
         if (m_segments.find (seg->id()) != m_segments.end())
         {
-          LOG(WARN, "There is already a segment attached with id " << seg->id());
-          LOG(WARN, "DANGER, this looks like an inconsistency!");
-          LOG(WARN, "moving my one into the trash");
+          LLOG(WARN, _logger, "There is already a segment attached with id " << seg->id());
+          LLOG(WARN, _logger, "DANGER, this looks like an inconsistency!");
+          LLOG(WARN, _logger, "moving my one into the trash");
 
           m_segments.erase(seg->id());
         }
@@ -444,7 +447,8 @@ namespace gpi
             (boost::get<proto::error::error_t>(rply));
           if (result.code != proto::error::success)
           {
-            LOG( ERROR
+            LLOG( ERROR
+                , _logger
                , "could not unregister segment " << id << ": "
                << result.code << ": " << result.detail
                );
@@ -452,7 +456,7 @@ namespace gpi
         }
         catch (std::exception const & ex)
         {
-          LOG(ERROR, "unregister failed: " << ex.what());
+          LLOG(ERROR, _logger, "unregister failed: " << ex.what());
         }
 
         // remove local

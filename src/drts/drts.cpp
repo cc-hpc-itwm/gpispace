@@ -260,7 +260,7 @@ namespace gspc
       , _virtual_memory_api
         ( _virtual_memory_socket
         ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
-          (_virtual_memory_socket->string())
+            (fhg::log::GLOBAL_logger(), _virtual_memory_socket->string())
         : nullptr
         )
   {}

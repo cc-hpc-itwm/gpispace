@@ -304,8 +304,8 @@ namespace sdpa {
 
       struct virtual_memory_api
       {
-        explicit
-        virtual_memory_api (boost::filesystem::path const& socket);
+        virtual_memory_api
+          (fhg::log::Logger&, boost::filesystem::path const& socket);
         std::function<double (std::string const&)>
           transfer_costs (const we::type::activity_t& activity);
       private:

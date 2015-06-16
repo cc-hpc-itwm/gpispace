@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fhglog/Logger.hpp>
+
 #include <gpi-space/pc/global/topology.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
 #include <gpi-space/pc/type/counter.hpp>
@@ -23,8 +25,9 @@ namespace gpi
       class manager_t : boost::noncopyable
       {
       public:
-        manager_t ( std::string const & p
-                    , std::vector<std::string> const& default_memory_urls
+        manager_t ( fhg::log::Logger&
+                  , std::string const & p
+                  , std::vector<std::string> const& default_memory_urls
                   , api::gpi_api_t& gpi_api
                   , std::unique_ptr<fhg::com::peer_t> topology_peer
                     );
@@ -38,6 +41,7 @@ namespace gpi
         void close_socket (const int fd);
         int safe_unlink(std::string const & path);
 
+        fhg::log::Logger& _logger;
         std::string m_path;
         int m_socket;
         bool m_stopping;

@@ -207,12 +207,13 @@ try
   std::unique_ptr<gpi::pc::client::api_t> const virtual_memory_api
     ( vm.count (option_name::virtual_memory_socket)
       ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
-        ((static_cast<boost::filesystem::path>
-            ( vm.at (option_name::virtual_memory_socket)
+          ( logger
+          , (static_cast<boost::filesystem::path>
+              ( vm.at (option_name::virtual_memory_socket)
               .as<fhg::util::boost::program_options::existing_path>()
-            )
-         ).string()
-        )
+              )
+            ).string()
+          )
       : nullptr
     );
   std::unique_ptr<gspc::scoped_allocation> const shared_memory

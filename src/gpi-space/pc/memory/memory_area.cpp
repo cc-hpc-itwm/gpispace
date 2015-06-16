@@ -2,7 +2,7 @@
 
 #include <stack>
 
-#include <gpi-space/log_to_GLOBAL_logger.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
 #include <boost/format.hpp>
@@ -22,14 +22,16 @@ namespace gpi
       /*                   area_t                        */
       /***************************************************/
 
-      area_t::area_t ( const gpi::pc::type::segment::segment_type type
+      area_t::area_t ( fhg::log::Logger& logger
+                     , const gpi::pc::type::segment::segment_type type
                      , const gpi::pc::type::process_id_t creator
                      , const std::string & name
                      , const gpi::pc::type::size_t size
                      , const gpi::pc::type::flags_t flags
                      , handle_generator_t& handle_generator
                      )
-        : m_descriptor ( GPI_PC_INVAL
+        : _logger (logger)
+        , m_descriptor ( GPI_PC_INVAL
                        , type
                        , creator
                        , name
@@ -248,7 +250,8 @@ namespace gpi
 
         if (hdl.offset != offset)
         {
-          LOG ( ERROR
+          LLOG ( ERROR
+               , _logger
               , "remote_alloc failed: expected-offset = " << offset
               << " actual-offset = " << hdl.offset
               );
@@ -314,7 +317,8 @@ namespace gpi
       {
         if (m_descriptor.avail < hdl.local_size)
         {
-          LOG( ERROR
+          LLOG( ERROR
+              , _logger
              , "not enough memory:"
              << " total size = " << hdl.size
              << " local size = " << hdl.local_size
@@ -347,14 +351,15 @@ namespace gpi
             }
             catch (std::exception const & ex)
             {
-              LOG(ERROR, "alloc_hook failed: " << ex.what());
+              LLOG(ERROR, _logger, "alloc_hook failed: " << ex.what());
               dtmmgr_free (&m_mmgr, hdl.id, arena);
               throw;
             }
           }
           break;
         case ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY:
-          LOG( WARN
+          LLOG( WARN
+              , _logger
              , "not enough contiguous memory available:"
              << " requested_size = " << hdl.local_size
              << " segment = " << m_descriptor.id
@@ -372,7 +377,8 @@ namespace gpi
               ("not enough contiguous memory");
           break;
         case ALLOC_INSUFFICIENT_MEMORY:
-          LOG( ERROR
+          LLOG( ERROR
+              , _logger
              , "not enough memory:"
              << " requested_size=" << hdl.local_size
              << " segment=" << m_descriptor.id
@@ -381,7 +387,8 @@ namespace gpi
           throw std::runtime_error ("out of memory");
           break;
         case ALLOC_DUPLICATE_HANDLE:
-          LOG( ERROR
+          LLOG( ERROR
+              , _logger
              ,  "duplicate handle:"
              << " handle = " << hdl.id
              << " segment " << m_descriptor.id
@@ -389,7 +396,8 @@ namespace gpi
           throw std::runtime_error ("duplicate handle");
           break;
         case ALLOC_FAILURE:
-          LOG( ERROR
+          LLOG( ERROR
+              , _logger
              , "internal error during allocation:"
              << " requested_size = " << hdl.local_size
              << " handle = " << hdl.id
@@ -398,7 +406,8 @@ namespace gpi
           throw std::runtime_error ("allocation failed");
           break;
         default:
-          LOG( ERROR
+          LLOG( ERROR
+              , _logger
              ,  "unexpected error during allocation:"
              << " requested_size = " << hdl.local_size
              << " handle = " << hdl.id
@@ -416,7 +425,8 @@ namespace gpi
 
         if (m_handles.find(hdl) == m_handles.end())
         {
-          LOG( ERROR
+          LLOG( ERROR
+              , _logger
              , "no such handle: "
              << " handle = " << hdl
              << " segment = " << m_descriptor.id
@@ -427,7 +437,8 @@ namespace gpi
         const gpi::pc::type::handle::descriptor_t desc (m_handles.at(hdl));
         if (desc.nref)
         {
-          LOG( WARN
+          LLOG( WARN
+              , _logger
              , "handle still in use:"
              << " handle = " << hdl
              << " nref = " << desc.nref
@@ -452,7 +463,7 @@ namespace gpi
           }
           catch (std::exception const & ex)
           {
-            LOG(ERROR, "free_hook failed: " << ex.what());
+            LLOG(ERROR, _logger, "free_hook failed: " << ex.what());
             throw;
           }
           break;
@@ -471,7 +482,8 @@ namespace gpi
 
         if (m_handles.find(hdl) == m_handles.end())
         {
-          LOG( ERROR
+          LLOG( ERROR
+              , _logger
              , "no such handle: "
              << " handle = " << hdl
              << " segment = " << m_descriptor.id
@@ -482,7 +494,8 @@ namespace gpi
         const gpi::pc::type::handle::descriptor_t desc (m_handles.at(hdl));
         if (desc.nref)
         {
-          LOG( WARN
+          LLOG( WARN
+              , _logger
              , "handle still in use:"
              << " handle = " << hdl
              << " nref = " << desc.nref
@@ -535,7 +548,7 @@ namespace gpi
         }
         else
         {
-          LOG(ERROR, "cannot find descriptor for handle " << hdl);
+          LLOG(ERROR, _logger, "cannot find descriptor for handle " << hdl);
           throw std::runtime_error ("no such handle");
         }
       }
@@ -698,14 +711,16 @@ namespace gpi
 
         struct copy
         {
-          copy ( area_t & src
+          copy ( fhg::log::Logger& logger
+               , area_t & src
                , area_t & dst
                , gpi::pc::type::memory_location_t src_loc
                , gpi::pc::type::memory_location_t dst_loc
                , gpi::pc::type::size_t amount
                , area_t::memory_pool_t & buffer_pool
                )
-            : m_src (src)
+            : _logger (logger)
+            , m_src (src)
             , m_dst (dst)
             , m_src_loc (src_loc)
             , m_dst_loc (dst_loc)
@@ -729,7 +744,8 @@ namespace gpi
                                                       );
               if (0 == num_read)
               {
-                LOG ( ERROR
+                LLOG ( ERROR
+                     , _logger
                      , "could not read " << buffer->size () << " bytes"
                      << " from " << m_src_loc
                      << " remaining " << remaining
@@ -753,6 +769,7 @@ namespace gpi
             }
           }
         private:
+          fhg::log::Logger& _logger;
           area_t & m_src;
           area_t & m_dst;
           gpi::pc::type::memory_location_t m_src_loc;
@@ -930,7 +947,8 @@ namespace gpi
               + " "
               + boost::lexical_cast<std::string> (amount)
 
-              , detail::copy ( *this
+              , detail::copy ( _logger
+                             , *this
                              , dst_area
                              , src
                              , dst
@@ -984,7 +1002,8 @@ namespace gpi
           }
           else
           {
-            LOG ( ERROR
+            LLOG ( ERROR
+                 , _logger
                  , "unsupported memory transfer: both regions are remote:"
                  << " src := [" << src << "]"
                  << " dst := [" << dst << "]"

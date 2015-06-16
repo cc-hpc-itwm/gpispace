@@ -9,7 +9,7 @@
 #include <util-generic/syscall.hpp>
 #include <util-generic/nest_exceptions.hpp>
 
-#include <gpi-space/log_to_GLOBAL_logger.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/memory/shm_area.hpp>
@@ -53,7 +53,7 @@ namespace gpi
         }
         catch (std::exception const & ex)
         {
-          LOG(ERROR, "error within ~manager_t: " << ex.what());
+          LLOG(ERROR, _logger, "error within ~manager_t: " << ex.what());
         }
 
         std::unique_lock<std::mutex> const _ (_mutex_processes);
@@ -63,7 +63,8 @@ namespace gpi
         {
           process.second.join();
 
-          LOG( INFO
+          LLOG( INFO
+              , _logger
              , "process container " << process.first << " detached"
              );
         }
@@ -141,7 +142,8 @@ namespace gpi
                 );
             }
 
-            LOG( INFO
+            LLOG( INFO
+                , _logger
                , "process container " << id << " attached"
                );
         }
@@ -151,12 +153,14 @@ namespace gpi
       {
         struct handle_message_t : public boost::static_visitor<gpi::pc::proto::message_t>
         {
-          handle_message_t ( gpi::pc::type::process_id_t const& proc_id
+          handle_message_t ( fhg::log::Logger& logger
+                           , gpi::pc::type::process_id_t const& proc_id
                            , memory::manager_t& memory_manager
                            , global::topology_t& topology
                            , gpi::api::gpi_api_t& gpi_api
                            )
-            : m_proc_id (proc_id)
+            : _logger (logger)
+            , m_proc_id (proc_id)
             , _memory_manager (memory_manager)
             , _topology (topology)
             , _gpi_api (gpi_api)
@@ -272,7 +276,7 @@ namespace gpi
             if (register_segment.flags & F_EXCLUSIVE)
               url.set ("exclusive", "true");
 
-            memory::area_ptr_t area (memory::shm_area_t::create (boost::lexical_cast<std::string>(url), _memory_manager.handle_generator()));
+            memory::area_ptr_t area (memory::shm_area_t::create (_logger, boost::lexical_cast<std::string>(url), _memory_manager.handle_generator()));
             area->set_owner (m_proc_id);
 
             gpi::pc::proto::segment::register_reply_t rpl;
@@ -317,7 +321,7 @@ namespace gpi
               _memory_manager.list_memory (rpl.list);
             else
             {
-              LOG(WARN, "list of particular segment not implemented");
+              LLOG(WARN, _logger, "list of particular segment not implemented");
               _memory_manager.list_memory (rpl.list);
             }
             return gpi::pc::proto::segment::message_t (rpl);
@@ -392,6 +396,7 @@ namespace gpi
           }
 
         private:
+          fhg::log::Logger& _logger;
           gpi::pc::type::process_id_t const& m_proc_id;
           memory::manager_t& _memory_manager;
           global::topology_t& _topology;
@@ -399,7 +404,8 @@ namespace gpi
         };
 
         gpi::pc::proto::message_t handle_message
-          ( gpi::pc::type::process_id_t const& id
+          ( fhg::log::Logger& logger
+          , gpi::pc::type::process_id_t const& id
           , gpi::pc::proto::message_t const& request
           , gpi::pc::memory::manager_t& memory_manager
           , global::topology_t& topology
@@ -409,7 +415,7 @@ namespace gpi
           try
           {
             return boost::apply_visitor
-              (handle_message_t (id, memory_manager, topology, gpi_api), request);
+              (handle_message_t (logger, id, memory_manager, topology, gpi_api), request);
           }
           catch (std::exception const& ex)
           {
@@ -439,7 +445,7 @@ namespace gpi
       void manager_t::process_communication_thread
         (gpi::pc::type::process_id_t process_id, int socket)
       {
-        LOG(TRACE, "process container (" << process_id << ") started on socket " << socket);
+        LLOG(TRACE, _logger, "process container (" << process_id << ") started on socket " << socket);
 
         for (;;)
         {
@@ -471,7 +477,7 @@ namespace gpi
               );
 
             gpi::pc::proto::message_t const reply
-              (handle_message (process_id, request, _memory_manager, _topology, _gpi_api));
+              (handle_message (_logger, process_id, request, _memory_manager, _topology, _gpi_api));
 
             fhg::util::nest_exceptions<std::runtime_error>
               ( [&]
@@ -500,7 +506,7 @@ namespace gpi
           }
           catch (std::exception const & ex)
           {
-            LOG(ERROR, "process container " << process_id << " crashed: " << ex.what());
+            LLOG(ERROR, _logger, "process container " << process_id << " crashed: " << ex.what());
             break;
           }
         }
@@ -522,7 +528,7 @@ namespace gpi
 
         _memory_manager.garbage_collect (process_id);
 
-        LOG(TRACE, "process container (" << process_id << ") terminated");
+        LLOG(TRACE, _logger, "process container (" << process_id << ") terminated");
 
         //! \note this detaches _this_ thread from everything
         //! left. Nothing shall be done in here that accesses `this`
@@ -537,18 +543,20 @@ namespace gpi
       }
 
 
-      manager_t::manager_t ( std::string const & p
+      manager_t::manager_t ( fhg::log::Logger& logger
+                           , std::string const & p
                            , std::vector<std::string> const& default_memory_urls
                            , api::gpi_api_t& gpi_api
                            , std::unique_ptr<fhg::com::peer_t> topology_peer
                            )
-        : m_path (p)
+        : _logger (logger)
+        , m_path (p)
         , m_socket (-1)
         , m_stopping (false)
         , m_process_counter (0)
         , _gpi_api (gpi_api)
-        , _memory_manager (gpi_api)
-        , _topology (_memory_manager, gpi_api, std::move (topology_peer))
+        , _memory_manager (_logger, gpi_api)
+        , _topology (_logger, _memory_manager, gpi_api, std::move (topology_peer))
       {
         if ( default_memory_urls.size ()
            >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID
@@ -575,7 +583,7 @@ namespace gpi
         int err = safe_unlink (m_path);
         if (err < 0)
         {
-          LOG(ERROR, "could not unlink path " << m_path << ": " <<  strerror(-err));
+          LLOG(ERROR, _logger, "could not unlink path " << m_path << ": " <<  strerror(-err));
           throw std::runtime_error ("could not unlink socket path");
         }
 
