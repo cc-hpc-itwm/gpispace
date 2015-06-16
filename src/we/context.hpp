@@ -10,30 +10,19 @@ namespace we
 {
     /* context requirements
 
-       internal
-       ========
-
        net:
        inject tokens into net
-       ctxt.handle_internally (act, net)
+       ctxt.handle_internally (act, net) or handle_externally depending on is_internal
        -> extractor
 
        expr:
        evaluate expression
-       ctxt.handle_internally (act, expr)
        -> injector
 
        mod:
        prepare input
        [(token-on-place)], { place <-> name }
-       ctxt.handle_internally (act, mod_call_t)
-
-       external
-       ========
-
-       ctxt.handle_externally (act, net)
-       ctxt.handle_externally (act, expr)
-       ctxt.handle_externally (act, mod)
+       ctxt.handle_externally (act, mod_call_t)
 
     */
 
@@ -47,11 +36,8 @@ namespace we
 
     public:
       virtual void handle_internally (activity_t&, net_t const&) = 0;
-      virtual void handle_internally (activity_t&, mod_t const&) = 0;
-      virtual void handle_internally (activity_t&, expr_t const&) = 0;
       virtual void handle_externally (activity_t&, net_t const&) = 0;
       virtual void handle_externally (activity_t&, mod_t const&) = 0;
-      virtual void handle_externally (activity_t&, expr_t const&) = 0;
 
       virtual ~context() = default;
     };
