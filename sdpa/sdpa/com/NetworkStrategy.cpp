@@ -77,7 +77,7 @@ namespace sdpa
         _event_handler ( address
                        , boost::make_shared<events::ErrorEvent>
                            ( events::ErrorEvent::SDPA_ENETWORKFAILURE
-                           , fhg::util::current_exception_as_string()
+                           , fhg::util::current_exception_as_string (": ")
                            )
                        );
       }

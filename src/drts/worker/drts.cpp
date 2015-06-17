@@ -391,7 +391,7 @@ void DRTSImpl::event_thread()
       send_event<sdpa::events::ErrorEvent>
         ( event.first
         , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
-        , fhg::util::current_exception_as_string()
+        , fhg::util::current_exception_as_string (": ")
         );
     }
   }
@@ -471,8 +471,8 @@ void DRTSImpl::job_execution_thread()
         catch (...)
         {
           task.state = wfe_task_t::FAILED;
-          job->message = fhg::util::current_exception_as_string
-            ("Module call failed: ");
+          job->message = "Module call failed: "
+            + fhg::util::current_exception_as_string (": ");
         }
       }
 
@@ -516,14 +516,15 @@ void DRTSImpl::job_execution_thread()
     }
     catch (...)
     {
-      LLOG ( ERROR, _logger
-           , fhg::util::current_exception_as_string
-               ("unexpected exception during job execution: ")
-           );
+      std::string const error
+        ( "unexpected exception during job execution: "
+        + fhg::util::current_exception_as_string (": ")
+        );
+      LLOG (ERROR, _logger, error);
       job->state = DRTSImpl::Job::FAILED;
 
       job->result = job->description;
-      job->message = fhg::util::current_exception_as_string();
+      job->message = error;
     }
 
     send_job_result_to_master (job);

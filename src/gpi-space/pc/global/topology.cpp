@@ -353,10 +353,11 @@ namespace gpi
         }
         catch (...)
         {
-          std::ostringstream sstr;
-          fhg::util::print_current_exception (sstr, "");
-          LOG (ERROR, "handling command '" + msg + "' failed: " << sstr.str());
-          cast (source, detail::command_t ("+RES") << 1 << sstr.str());
+          LOG ( ERROR
+              , "handling command '" + msg + "' failed: "
+              << fhg::util::current_exception_printer (": ")
+              );
+          cast (source, detail::command_t ("+RES") << 1 << fhg::util::current_exception_as_string (": "));
         }
       }
     }

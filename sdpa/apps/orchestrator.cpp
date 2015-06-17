@@ -93,6 +93,6 @@ try
 }
 catch (...)
 {
-  fhg::util::print_current_exception (std::cerr, "EXCEPTION: ");
+  std::cerr << "EX: " << fhg::util::current_exception_printer() << '\n';
   return 1;
 }

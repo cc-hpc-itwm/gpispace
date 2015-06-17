@@ -6,6 +6,7 @@
 #include <network/connectable_to_address_string.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/join.hpp>
+#include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/temporary_file.hpp>
 
@@ -106,45 +107,49 @@ try
         {
           try
           {
-            int status;
+            fhg::util::nest_exceptions<std::runtime_error>
+              ( [&]
+                {
+                  int status;
 
-            if (fhg::util::syscall::waitpid (pid, &status, WNOHANG) == pid)
-            {
-              if (WIFEXITED (status))
-              {
-                throw std::runtime_error
-                  ("already returned " + std::to_string (WEXITSTATUS (status)));
-              }
-              else if (WIFSIGNALED (status))
-              {
-                throw std::runtime_error
-                  ("already signaled " + std::to_string (WTERMSIG (status)));
-              }
-            }
+                  if (fhg::util::syscall::waitpid (pid, &status, WNOHANG) == pid)
+                  {
+                    if (WIFEXITED (status))
+                    {
+                      throw std::runtime_error
+                        ("already returned " + std::to_string (WEXITSTATUS (status)));
+                    }
+                    else if (WIFSIGNALED (status))
+                    {
+                      throw std::runtime_error
+                        ("already signaled " + std::to_string (WTERMSIG (status)));
+                    }
+                  }
 
-            fhg::util::syscall::kill (pid, SIGTERM);
+                  fhg::util::syscall::kill (pid, SIGTERM);
 
-            if (fhg::util::syscall::waitpid (pid, &status, 0) != pid)
-            {
-              throw std::logic_error ("waitpid returned for wrong child");
-            }
-            if (WIFEXITED (status) && WEXITSTATUS (status))
-            {
-              throw std::runtime_error
-                ("returned " + std::to_string (WEXITSTATUS (status)));
-            }
-            else if (WIFSIGNALED (status))
-            {
-              throw std::runtime_error
-                ("signaled " + std::to_string (WTERMSIG (status)));
-            }
+                  if (fhg::util::syscall::waitpid (pid, &status, 0) != pid)
+                  {
+                    throw std::logic_error ("waitpid returned for wrong child");
+                  }
+                  if (WIFEXITED (status) && WEXITSTATUS (status))
+                  {
+                    throw std::runtime_error
+                      ("returned " + std::to_string (WEXITSTATUS (status)));
+                  }
+                  else if (WIFSIGNALED (status))
+                  {
+                    throw std::runtime_error
+                      ("signaled " + std::to_string (WTERMSIG (status)));
+                  }
+                }
+              , std::to_string (pid)
+              );
           }
           catch (...)
           {
-            std::ostringstream oss;
-            fhg::util::print_current_exception
-              (oss, std::to_string (pid) + ": ");
-            failed_statuses.emplace_back (oss.str());
+            failed_statuses.emplace_back
+              (fhg::util::current_exception_as_string (": "));
           }
         }
         if (!failed_statuses.empty())
@@ -362,7 +367,7 @@ try
 }
 catch (...)
 {
-  fhg::util::print_current_exception (std::cerr, "EX: ");
+  std::cerr << "EX: " << fhg::util::current_exception_printer() << '\n';
 
   return 1;
 }

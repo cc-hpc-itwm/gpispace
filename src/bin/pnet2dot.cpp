@@ -721,7 +721,7 @@ try
 }
 catch (...)
 {
-  fhg::util::print_current_exception (std::cerr, "");
+  std::cerr << "EX: " << fhg::util::current_exception_printer() << '\n';
 
   return EXIT_FAILURE;
 }
