@@ -11,7 +11,6 @@
 #include <fhg/util/thread/event.hpp>
 
 #include <fhglog/Configuration.hpp>
-#include <fhglog/LogMacros.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/program_options.hpp>
