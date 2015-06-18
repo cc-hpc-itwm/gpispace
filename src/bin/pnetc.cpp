@@ -315,6 +315,6 @@ try
 }
 catch (...)
 {
-  fhg::util::print_current_exception (std::cerr, "pnetc: failed: ");
+  std::cerr << "pnetc: failed: " << fhg::util::current_exception_printer() << '\n';
   return EXIT_FAILURE;
 }

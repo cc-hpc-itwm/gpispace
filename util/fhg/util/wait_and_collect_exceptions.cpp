@@ -21,7 +21,7 @@ namespace fhg
       std::ostringstream oss;
       for (std::exception_ptr const& exception : exceptions)
       {
-        fhg::util::print_exception (oss, "", exception);
+        oss << fhg::util::exception_printer (exception, ": ") << '\n';
       }
       throw std::runtime_error (oss.str());
     }
