@@ -1,9 +1,13 @@
 #define BOOST_TEST_MODULE TestWorkerManager
 
 #include <sdpa/daemon/WorkerManager.hpp>
+
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random_string.hpp>
+
+#include <boost/optional/optional_io.hpp>
 #include <boost/test/unit_test.hpp>
+
 #include <random>
 
 namespace
