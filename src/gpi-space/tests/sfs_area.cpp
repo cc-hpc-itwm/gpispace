@@ -33,6 +33,8 @@ struct setup_and_cleanup_shared_file
   }
 
   boost::filesystem::path path_to_shared_file;
+
+  fhg::log::Logger _logger;
 };
 
 BOOST_FIXTURE_TEST_CASE (create_sfs_segment, setup_and_cleanup_shared_file)
@@ -47,7 +49,8 @@ BOOST_FIXTURE_TEST_CASE (create_sfs_segment, setup_and_cleanup_shared_file)
   const gpi::pc::type::size_t size = 4096;
   const char *text = "hello world!\n";
 
-  sfs_area_t area ( 0
+  sfs_area_t area ( _logger
+                  , 0
                   , path_to_shared_file
                   , size
                   , gpi::pc::F_PERSISTENT
@@ -95,7 +98,8 @@ BOOST_FIXTURE_TEST_CASE (old_segment_version, setup_and_cleanup_shared_file)
   const gpi::pc::type::size_t size = 4096;
 
   {
-    sfs_area_t area ( 0
+    sfs_area_t area ( _logger
+                    , 0
                     , path_to_shared_file
                     , size
                     , gpi::pc::F_PERSISTENT
@@ -112,7 +116,8 @@ BOOST_FIXTURE_TEST_CASE (old_segment_version, setup_and_cleanup_shared_file)
 
   try
   {
-    sfs_area_t area ( 0
+    sfs_area_t area ( _logger
+                    , 0
                     , path_to_shared_file
                     , size
                     , gpi::pc::F_PERSISTENT
@@ -138,7 +143,8 @@ BOOST_FIXTURE_TEST_CASE (too_new_segment_version, setup_and_cleanup_shared_file)
   const gpi::pc::type::size_t size = 4096;
 
   {
-    sfs_area_t area ( 0
+    sfs_area_t area ( _logger
+                    , 0
                     , path_to_shared_file
                     , size
                     , gpi::pc::F_PERSISTENT
@@ -152,7 +158,8 @@ BOOST_FIXTURE_TEST_CASE (too_new_segment_version, setup_and_cleanup_shared_file)
     ofs << "SFS version " << (sfs_area_t::SFS_VERSION + 1) << std::endl;
   }
 
-  BOOST_REQUIRE_THROW ( sfs_area_t ( 0
+  BOOST_REQUIRE_THROW ( sfs_area_t ( _logger
+                                   , 0
                                    , path_to_shared_file
                                    , size
                                    , gpi::pc::F_PERSISTENT
@@ -174,7 +181,8 @@ BOOST_FIXTURE_TEST_CASE (garbage_segment_version, setup_and_cleanup_shared_file)
   const gpi::pc::type::size_t size = 4096;
 
   {
-    sfs_area_t area ( 0
+    sfs_area_t area ( _logger
+                    , 0
                     , path_to_shared_file
                     , size
                     , gpi::pc::F_PERSISTENT
@@ -188,7 +196,8 @@ BOOST_FIXTURE_TEST_CASE (garbage_segment_version, setup_and_cleanup_shared_file)
     ofs << "garbage" << std::endl;
   }
 
-  BOOST_REQUIRE_THROW ( sfs_area_t ( 0
+  BOOST_REQUIRE_THROW ( sfs_area_t ( _logger
+                                   , 0
                                    , path_to_shared_file
                                    , size
                                    , gpi::pc::F_PERSISTENT
@@ -212,7 +221,8 @@ BOOST_FIXTURE_TEST_CASE (reopen_sfs_segment, setup_and_cleanup_shared_file)
   const char *text = "hello world!\n";
 
   {
-    sfs_area_t area ( 0
+    sfs_area_t area ( _logger
+                    , 0
                     , path_to_shared_file
                     , size
                     , gpi::pc::F_PERSISTENT
@@ -235,7 +245,8 @@ BOOST_FIXTURE_TEST_CASE (reopen_sfs_segment, setup_and_cleanup_shared_file)
   }
 
   {
-    sfs_area_t area ( 0
+    sfs_area_t area ( _logger
+                    , 0
                     , path_to_shared_file
                     , size
                     , gpi::pc::F_PERSISTENT
@@ -272,7 +283,8 @@ BOOST_FIXTURE_TEST_CASE (create_big_sfs_segment, setup_and_cleanup_shared_file)
 
   try
   {
-    sfs_area_t area ( 0
+    sfs_area_t area ( _logger
+                    , 0
                     , path_to_shared_file
                     , size
                     , gpi::pc::F_NONE
@@ -303,7 +315,8 @@ BOOST_FIXTURE_TEST_CASE (create_huge_sfs_segment_mmap, setup_and_cleanup_shared_
 
   try
   {
-    sfs_area_t area ( 0
+    sfs_area_t area ( _logger
+                    , 0
                     , path_to_shared_file
                     , size
                     , gpi::pc::F_NONE
@@ -334,7 +347,8 @@ BOOST_FIXTURE_TEST_CASE (create_huge_sfs_segment_no_mmap, setup_and_cleanup_shar
 
   try
   {
-    sfs_area_t area ( 0
+    sfs_area_t area ( _logger
+                    , 0
                     , path_to_shared_file
                     , size
                     , gpi::pc::F_NOMMAP
@@ -366,7 +380,8 @@ BOOST_FIXTURE_TEST_CASE (test_read, setup_and_cleanup_shared_file)
 
   try
   {
-    sfs_area_t area ( 0
+    sfs_area_t area ( _logger
+                    , 0
                     , path_to_shared_file
                     , size
                     , gpi::pc::F_PERSISTENT
@@ -414,7 +429,8 @@ BOOST_FIXTURE_TEST_CASE (test_already_open, setup_and_cleanup_shared_file)
 
   const gpi::pc::type::size_t size = (1L << 20); // 1 MB
 
-  sfs_area_t area ( 0
+  sfs_area_t area ( _logger
+                    , 0
                   , path_to_shared_file
                   , size
                   , gpi::pc::F_PERSISTENT
@@ -425,7 +441,8 @@ BOOST_FIXTURE_TEST_CASE (test_already_open, setup_and_cleanup_shared_file)
   BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
   area.set_id (2);
 
-  BOOST_REQUIRE_THROW ( sfs_area_t ( 0
+  BOOST_REQUIRE_THROW ( sfs_area_t ( _logger
+                                   , 0
                                    , path_to_shared_file
                                    , size
                                    , gpi::pc::F_PERSISTENT

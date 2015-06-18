@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fhglog/Logger.hpp>
+
 #include <gpi-space/gpi/api.hpp>
 
 #include <boost/utility.hpp>
@@ -14,7 +16,8 @@ namespace gpi
     class fake_gpi_api_t : public gpi_api_t
     {
     public:
-      fake_gpi_api_t ( const unsigned long long memory_size
+      fake_gpi_api_t ( fhg::log::Logger&
+                     , const unsigned long long memory_size
                      , const std::chrono::seconds& timeout
                      , unsigned short communication_port
                      );
@@ -56,6 +59,7 @@ namespace gpi
     private:
       static constexpr const std::size_t NUMBER_OF_SIMULATED_QUEUES {8};
 
+      fhg::log::Logger& _logger;
       rank_t m_rank;
       size_t m_mem_size;
       void *m_dma;

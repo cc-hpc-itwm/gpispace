@@ -19,7 +19,9 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
                                    , 2048
                                    );
   segm.create ();
-  gpi::pc::memory::shm_area_t area ( 0
+  fhg::log::Logger logger;
+  gpi::pc::memory::shm_area_t area ( logger
+                                   , 0
                                    , "memory_area_alloc_free_test"
                                    , 2048
                                    , gpi::pc::F_NOCREATE

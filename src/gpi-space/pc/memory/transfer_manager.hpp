@@ -2,6 +2,8 @@
 
 #include <boost/thread/thread.hpp>
 
+#include <fhglog/Logger.hpp>
+
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/memory/memory_transfer_t.hpp>
 #include <gpi-space/pc/memory/transfer_queue.hpp>
@@ -132,7 +134,7 @@ namespace gpi
       class transfer_manager_t
       {
       public:
-        transfer_manager_t (api::gpi_api_t&);
+        transfer_manager_t (fhg::log::Logger&, api::gpi_api_t&);
 
         void transfer (memory_transfer_t const &);
         std::size_t wait_on_queue (const std::size_t queue);
@@ -143,6 +145,7 @@ namespace gpi
         typedef std::vector<queue_ptr> transfer_queues_t;
         typedef boost::shared_ptr<task_t> task_ptr;
 
+        fhg::log::Logger& _logger;
         api::gpi_api_t& _gpi_api;
 
         transfer_queues_t m_queues;

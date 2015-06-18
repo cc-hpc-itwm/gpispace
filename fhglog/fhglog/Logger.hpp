@@ -38,7 +38,5 @@ namespace fhg
 
       std::list<std::unique_ptr<Appender>> appenders_;
     };
-
-    Logger& GLOBAL_logger();
   }
 }

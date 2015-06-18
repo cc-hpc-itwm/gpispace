@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <gpi-space/log_to_GLOBAL_logger.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <gpi-space/pc/url.hpp>
 #include <fhg/util/read_bool.hpp>
 
@@ -113,13 +113,15 @@ namespace gpi
         }
       }
 
-      shm_area_t::shm_area_t ( const gpi::pc::type::process_id_t creator
+      shm_area_t::shm_area_t ( fhg::log::Logger& logger
+                             , const gpi::pc::type::process_id_t creator
                              , const std::string & name
                              , const gpi::pc::type::size_t user_size
                              , const gpi::pc::type::flags_t flags
                              , handle_generator_t& handle_generator
                              )
-        : area_t ( shm_area_t::area_type
+        : area_t ( logger
+                 , shm_area_t::area_type
                  , creator
                  , name
                  , user_size
@@ -144,7 +146,7 @@ namespace gpi
 
         if (not gpi::flag::is_set (flags, gpi::pc::F_NOCREATE))
         {
-          LOG (INFO, "setting open_flags to O_CREAT + O_EXCL");
+          LLOG (INFO, _logger, "setting open_flags to O_CREAT + O_EXCL");
           open_flags |= O_CREAT | O_EXCL;
         }
 
@@ -178,7 +180,8 @@ namespace gpi
         }
         catch (std::exception const & ex)
         {
-          LOG( ERROR
+          LLOG( ERROR
+              , _logger
              , "error in ~shm_area_t:"
              << " id = " << descriptor().id
              << " ptr = " << m_ptr
@@ -242,15 +245,12 @@ namespace gpi
                                               , task_list_t &
                                               )
       {
-        LOG ( ERROR
-            , "specific transfer not implemented: "
-            << amount << " bytes: "
-            << dst
-            << " <- "
-            << src
-            );
         throw std::runtime_error
-          ("get_specific_transfer_tasks not implemented on shm_area");
+          ( "get_specific_transfer_tasks not implemented on shm_area: "
+          + std::to_string (amount) + " bytes: "
+          + boost::lexical_cast<std::string> (dst) + " <- "
+          + boost::lexical_cast<std::string> (src)
+          );
       }
 
       double shm_area_t::get_transfer_costs ( const gpi::pc::type::memory_region_t&
@@ -260,8 +260,10 @@ namespace gpi
         return 0.0;
       }
 
-      area_ptr_t shm_area_t::create
-        (std::string const &url_s, handle_generator_t& handle_generator)
+      area_ptr_t shm_area_t::create ( fhg::log::Logger& logger
+                                    , std::string const &url_s
+                                    , handle_generator_t& handle_generator
+                                    )
       {
         url_t url (url_s);
         gpi::pc::type::flags_t flags = F_NONE;
@@ -290,7 +292,8 @@ namespace gpi
         gpi::pc::type::size_t size =
           boost::lexical_cast<gpi::pc::type::size_t>(url.get ("size").get_value_or ("0"));
 
-        area_ptr_t area (new shm_area_t ( GPI_PC_INVAL
+        area_ptr_t area (new shm_area_t ( logger
+                                        , GPI_PC_INVAL
                                         , url.path ()
                                         , size
                                         , flags

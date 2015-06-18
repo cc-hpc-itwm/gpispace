@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fhglog/Logger.hpp>
+
 #include <gpi-space/gpi/api.hpp>
 
 #include <boost/utility.hpp>
@@ -15,7 +17,8 @@ namespace gpi
     class gaspi_t : public gpi_api_t
     {
     public:
-      gaspi_t ( const unsigned long long memory_size
+      gaspi_t ( fhg::log::Logger&
+              , const unsigned long long memory_size
               , const unsigned short port
               , const std::chrono::seconds& timeout
               , unsigned short communication_port
@@ -57,6 +60,7 @@ namespace gpi
                      ) override;
       virtual void wait_dma (const queue_desc_t queue) override;
     private:
+      fhg::log::Logger& _logger;
       size_t m_mem_size;
       void *m_dma;
       size_t m_replacement_gpi_segment;

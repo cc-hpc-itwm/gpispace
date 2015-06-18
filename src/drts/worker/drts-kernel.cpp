@@ -11,7 +11,6 @@
 #include <fhg/util/thread/event.hpp>
 
 #include <fhglog/Configuration.hpp>
-#include <fhglog/LogMacros.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/program_options.hpp>
@@ -117,7 +116,7 @@ int main(int ac, char **av)
 try
 {
   boost::asio::io_service remote_log_io_service;
-  fhg::log::Logger& logger (fhg::log::GLOBAL_logger());
+  fhg::log::Logger logger;
   fhg::log::configure (remote_log_io_service, logger);
 
   namespace po = boost::program_options;
@@ -174,18 +173,8 @@ try
   desc.add (fhg::rif::startup_messages_pipe::program_options());
 
   po::variables_map vm;
-  try
-  {
-    po::store( po::command_line_parser(ac, av)
-             . options(desc).run()
-             , vm
-             );
-  }
-  catch (std::exception const &ex)
-  {
-    LLOG (ERROR, logger, "invalid command line: " << ex.what());
-    return EXIT_FAILURE;
-  }
+
+  po::store (po::command_line_parser (ac, av).options(desc).run(), vm);
   po::notify (vm);
 
   fhg::util::boost::program_options::require_all_if_one
@@ -207,12 +196,13 @@ try
   std::unique_ptr<gpi::pc::client::api_t> const virtual_memory_api
     ( vm.count (option_name::virtual_memory_socket)
       ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
-        ((static_cast<boost::filesystem::path>
-            ( vm.at (option_name::virtual_memory_socket)
+          ( logger
+          , (static_cast<boost::filesystem::path>
+              ( vm.at (option_name::virtual_memory_socket)
               .as<fhg::util::boost::program_options::existing_path>()
-            )
-         ).string()
-        )
+              )
+            ).string()
+          )
       : nullptr
     );
   std::unique_ptr<gspc::scoped_allocation> const shared_memory
@@ -295,6 +285,6 @@ try
 }
 catch (...)
 {
-  fhg::util::print_current_exception (std::cerr, "EX: ");
+  std::cerr << "EX: " << fhg::util::current_exception_printer() << '\n';
   return 1;
 }

@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <cstring> // strerror
 
-#include <gpi-space/log_to_GLOBAL_logger.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <gpi-space/pc/url.hpp>
 #include <util-generic/hostname.hpp>
 #include <fhg/util/read_bool.hpp>
@@ -58,14 +58,16 @@ namespace gpi
         }
       }
 
-      sfs_area_t::sfs_area_t ( const gpi::pc::type::process_id_t creator
+      sfs_area_t::sfs_area_t ( fhg::log::Logger& logger
+                             , const gpi::pc::type::process_id_t creator
                              , const sfs_area_t::path_t & path
                              , const gpi::pc::type::size_t size        // total
                              , const gpi::pc::type::flags_t flags
                              , gpi::pc::global::itopology_t & topology
                              , handle_generator_t& handle_generator
                              )
-        : area_t ( sfs_area_t::area_type
+        : area_t ( logger
+                 , sfs_area_t::area_type
                  , creator
                  , path.string ()
                  , size
@@ -159,14 +161,15 @@ namespace gpi
           if (rc != 1)
           {
             ec.assign (EIO, boost::system::system_category ());
-            LOG (ERROR, "could not read version information");
+            LLOG (ERROR, _logger, "could not read version information");
             fclose (vers_file);
             return -1;
           }
 
           if (version > SFS_VERSION)
           {
-            LOG ( ERROR
+            LLOG ( ERROR
+                 , _logger
                  , "the file segment was created by a newer version:"
                  << " found: " << version
                  << " wanted: " << SFS_VERSION
@@ -177,7 +180,8 @@ namespace gpi
           else if (version < SFS_VERSION)
           {
             m_version = version;
-            LOG ( WARN
+            LLOG ( WARN
+                 , _logger
                  , "the file segment was created by an older version:"
                  << " found: " << version
                  << " wanted: " << SFS_VERSION
@@ -226,7 +230,7 @@ namespace gpi
               // compare lock info
               if (my_lock_info == buf)
               {
-                LOG (WARN, "I already have this segment open: " << m_path);
+                LLOG (WARN, _logger, "I already have this segment open: " << m_path);
                 ec.assign (EADDRINUSE, boost::system::system_category ());
                 return -1;
               }
@@ -246,7 +250,8 @@ namespace gpi
                   if (lockf (m_lock_fd, F_TLOCK, 0) < 0)
                   {
                     ::close (m_lock_fd); m_lock_fd = -1;
-                    LOG ( ERROR
+                    LLOG ( ERROR
+                         , _logger
                          , "sfs segment in: " << m_path
                          << " still actively in use by another process: '" << buf << "'"
                          );
@@ -255,7 +260,7 @@ namespace gpi
                   }
                   else
                   {
-                    LOG (WARN, "cleaning stale lock file: " << lock_file);
+                    LLOG (WARN, _logger, "cleaning stale lock file: " << lock_file);
 
                     if (write ( m_lock_fd
                               , my_lock_info.c_str (), my_lock_info.size ()
@@ -263,19 +268,20 @@ namespace gpi
                        <= 0
                        )
                     {
-                      LOG (ERROR, "could not write to lock file");
+                      LLOG (ERROR, _logger, "could not write to lock file");
                     }
 
                     if (write (m_lock_fd, "\n", 1) <= 0)
                     {
-                      LOG (ERROR, "could not write to lock file");
+                      LLOG (ERROR, _logger, "could not write to lock file");
                     }
                     fdatasync (m_lock_fd);
                   }
                 }
                 else
                 {
-                  LOG ( ERROR
+                  LLOG ( ERROR
+                       , _logger
                        , "sfs segment in: " << m_path
                        << " may still be in use by: '" << buf << "'"
                        << ", if this is wrong, please remove: " << lock_file
@@ -291,7 +297,7 @@ namespace gpi
               {
                 ec.assign (errno, boost::system::system_category ());
                 ::close (m_lock_fd); m_lock_fd = -1;
-                LOG (ERROR, "STRANGE: I was able to open & create exclusively the lock file but not to lock it");
+                LLOG (ERROR, _logger, "STRANGE: I was able to open & create exclusively the lock file but not to lock it");
                 return -1;
               }
 
@@ -301,11 +307,11 @@ namespace gpi
                  <= 0
                  )
               {
-                LOG (ERROR, "could not write to lock file");
+                LLOG (ERROR, _logger, "could not write to lock file");
               }
               if (write (m_lock_fd, "\n", 1) <= 0)
               {
-                LOG (ERROR, "could not write to lock file");
+                LLOG (ERROR, _logger, "could not write to lock file");
               }
               fdatasync (m_lock_fd);
             }
@@ -326,7 +332,7 @@ namespace gpi
           if (file_size < 0)
           {
             ec.assign (errno, boost::system::system_category ());
-            LOG (ERROR, "could not seek: " << strerror (errno));
+            LLOG (ERROR, _logger, "could not seek: " << strerror (errno));
             ::close (fd); fd = -1;
             return -1;
           }
@@ -336,7 +342,8 @@ namespace gpi
           {
             if (m_size != (gpi::pc::type::size_t)file_size)
             {
-              LOG ( WARN
+              LLOG ( WARN
+                   , _logger
                    , "segment has size: " << file_size
                    << " but tried to open it with size: " << m_size
                    << ", adjusting..."
@@ -385,12 +392,13 @@ namespace gpi
                           );
           if (fd >= 0)
           {
-            LOG (TRACE, "ignoring recovery information: not yet implemented");
+            LLOG (TRACE, _logger, "ignoring recovery information: not yet implemented");
             ::close (fd); fd = -1;
           }
         }
 
-        LOG ( TRACE
+        LLOG ( TRACE
+             , _logger
              , "SFS memory created:"
              << " path: " << m_path
              << " size: " << m_size
@@ -441,7 +449,7 @@ namespace gpi
           {
             if (0 != lockf (m_lock_fd, F_ULOCK, 0))
             {
-              LOG (WARN, "could not unlock sfs area: " << m_path);
+              LLOG (WARN, _logger, "could not unlock sfs area: " << m_path);
             }
             ::close (m_lock_fd); m_lock_fd = -1;
 
@@ -632,7 +640,8 @@ namespace gpi
         return (gpi::pc::type::size_t)(write_rc);
       }
 
-      area_ptr_t sfs_area_t::create ( std::string const &url_s
+      area_ptr_t sfs_area_t::create ( fhg::log::Logger& logger
+                                    , std::string const &url_s
                                     , gpi::pc::global::itopology_t & topology
                                     , handle_generator_t& handle_generator
                                     )
@@ -664,7 +673,8 @@ namespace gpi
         gpi::pc::type::size_t size =
           boost::lexical_cast<gpi::pc::type::size_t>(url.get ("size").get_value_or ("0"));
 
-        area_ptr_t area (new sfs_area_t ( GPI_PC_INVAL
+        area_ptr_t area (new sfs_area_t ( logger
+                                        , GPI_PC_INVAL
                                         , url.path ()
                                         , size
                                         , flags | F_GLOBAL
