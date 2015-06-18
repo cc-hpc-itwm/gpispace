@@ -183,7 +183,6 @@ try
     setenv ("FHGLOG_to_server", server_url.c_str(), true);
   }
   setenv ("FHGLOG_level", log_level.c_str(), true);
-  setenv ("FHGLOG_to_console", "stderr", true);
 
   if (log_file)
   {
