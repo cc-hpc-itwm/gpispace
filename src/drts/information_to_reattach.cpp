@@ -32,7 +32,7 @@ namespace gspc
       {
         try
         {
-          return boost::get<T const&> (*v);
+          return boost::get<T> (*v);
         }
         catch (boost::bad_get const& ex)
         {

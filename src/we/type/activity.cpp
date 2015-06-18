@@ -89,7 +89,7 @@ namespace we
       void activity_t::inject (const activity_t& child)
       {
         we::type::net_type& net
-          (boost::get<we::type::net_type&> (_transition.data()));
+          (boost::get<we::type::net_type> (_transition.data()));
 
         for (const activity_t::token_on_port_t& top : child.output())
         {
@@ -111,7 +111,7 @@ namespace we
           //! \todo is the conditional neccessary? isn't is ensured already?
           if (_transition.ports_input().at (port_id).associated_place())
           {
-            boost::get<we::type::net_type&>(_transition.data()).put_value
+            boost::get<we::type::net_type>(_transition.data()).put_value
               ( *_transition.ports_input().at (port_id).associated_place()
               , value
               );

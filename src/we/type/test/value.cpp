@@ -218,16 +218,19 @@ BOOST_AUTO_TEST_CASE (peek)
   const value_type s (std::string ("s"));
 
   BOOST_CHECK_EQUAL (boost::get<std::string> (s), "s");
-  BOOST_CHECK_EQUAL (boost::get<const std::string&> (s), "s");
-  BOOST_CHECK_THROW (boost::get<std::string&> (s), boost::bad_get);
+  static_assert ( std::is_same < std::string const&
+                               , decltype (boost::get<std::string> (s))
+                               >::value
+                , "getting from const value_type returns const&"
+                );
 
   value_type i (int (0));
 
-  BOOST_CHECK_EQUAL (boost::get<const int&> (i), 0);
+  BOOST_CHECK_EQUAL (boost::get<int> (i), 0);
 
-  boost::get<int&> (i) = 1;
+  boost::get<int> (i) = 1;
 
-  BOOST_CHECK_EQUAL (boost::get<const int&> (i), 1);
+  BOOST_CHECK_EQUAL (boost::get<int> (i), 1);
 
   value_type l1;
   {
@@ -239,9 +242,9 @@ BOOST_AUTO_TEST_CASE (peek)
   }
 
   value_type m1 = structured_type();
-  boost::get<structured_type&> (m1).push_back (std::make_pair ("i", i));
-  boost::get<structured_type&> (m1).push_back (std::make_pair ("s", s));
-  boost::get<structured_type&> (m1).push_back (std::make_pair ("l1", l1));
+  boost::get<structured_type> (m1).push_back (std::make_pair ("i", i));
+  boost::get<structured_type> (m1).push_back (std::make_pair ("s", s));
+  boost::get<structured_type> (m1).push_back (std::make_pair ("l1", l1));
 
   std::list<value_type> _l2;
   _l2.push_back (l1);
@@ -292,7 +295,7 @@ BOOST_AUTO_TEST_CASE (peek_ref)
 
   {
     const std::list<value_type>& g
-      (boost::get<const std::list<value_type>&> (peek ("l", m).get()));
+      (boost::get<std::list<value_type>> (peek ("l", m).get()));
 
     BOOST_CHECK (g.empty());
   }
@@ -301,7 +304,7 @@ BOOST_AUTO_TEST_CASE (peek_ref)
 
   {
     std::list<value_type>& r
-      (boost::get<std::list<value_type>&> (peek ("l", m).get()));
+      (boost::get<std::list<value_type>> (peek ("l", m).get()));
 
     BOOST_CHECK (r.empty());
 
@@ -310,7 +313,7 @@ BOOST_AUTO_TEST_CASE (peek_ref)
 
   {
     const std::list<value_type>& g
-      (boost::get<const std::list<value_type>&> (peek ("l", m).get()));
+      (boost::get<std::list<value_type>> (peek ("l", m).get()));
 
     BOOST_CHECK_EQUAL (g.size(), 1U);
     BOOST_CHECK_EQUAL (*g.begin(), value_type (19));
