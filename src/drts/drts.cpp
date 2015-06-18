@@ -240,7 +240,7 @@ namespace gspc
                                 , get_gui_port (vm)
                                 , get_log_host (vm)
                                 , get_log_port (vm)
-                                , _virtual_memory_per_node
+                                , !!_virtual_memory_per_node
                                 //! \todo configurable: verbose logging
                                 , false
                                 , _virtual_memory_socket
