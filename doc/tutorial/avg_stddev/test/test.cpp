@@ -149,8 +149,15 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
   BOOST_REQUIRE_EQUAL (result.count (port_avg), 1);
   BOOST_REQUIRE_EQUAL (result.count (port_stddev), 1);
 
+#if BOOST_VERSION == 105500
   BOOST_CHECK_CLOSE
     (boost::get<double> (result.find (port_avg)->second), 0.000193708, 1e-8);
   BOOST_CHECK_CLOSE
     (boost::get<double> (result.find (port_stddev)->second), 0.999908, 1e-8);
+#else // if BOOST_VERSION == 105700
+  BOOST_CHECK_CLOSE
+    (boost::get<double> (result.find (port_avg)->second), -0.000106197, 1e-8);
+  BOOST_CHECK_CLOSE
+    (boost::get<double> (result.find (port_stddev)->second), 1.0, 1e-8);
+#endif
 }
