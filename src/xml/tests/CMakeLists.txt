@@ -1,13 +1,6 @@
 #bernd.loerwald@itwm.fraunhofer.de
 
-if (${Boost_VERSION} EQUAL 105500)
-  set (XML_PARSE_TEST_PNETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/pnets/1_55")
-else()
-  message (FATAL_ERROR
-    "missing XML_PARSE_TEST_PNETS_DIR for BOOST version ${Boost_VERSION}"
-  )
-endif()
-
+set (XML_PARSE_TEST_PNETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/pnets")
 set (XML_PARSE_TEST_XPNETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/xpnets")
 
 configure_file (parser_fixture.hpp.in parser_fixture.hpp @ONLY)
