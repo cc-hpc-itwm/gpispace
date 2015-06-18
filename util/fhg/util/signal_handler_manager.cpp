@@ -115,11 +115,6 @@ namespace fhg
 #endif
 #endif
 
-        fprintf ( stderr
-                , "signal %d (%s), address is %p from %p\n"
-                , sig_num, strsignal(sig_num), info->si_addr, (void*)caller_address
-                );
-
         std::ostringstream log_message;
         log_message << "received signal "
                     << sig_num << " (" << strsignal(sig_num) << "),"
