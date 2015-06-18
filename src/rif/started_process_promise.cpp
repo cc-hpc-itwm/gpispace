@@ -29,19 +29,30 @@ namespace fhg
            );
     }
 
-    //! \todo This is horrible. Better hard code a specific file
+    //! \todo This is not too nice. Better hard code a specific file
     //! descriptor and ensure that one is used?
     started_process_promise::started_process_promise
         (int& argc, char**& argv)
-      : _startup_pipe_fd
+      : _original_argv (argv)
+      , _argc (argc)
+      , _argv (argv)
+      , _replacement_argv (argv, argv + argc)
+      , _startup_pipe_fd
           ( argc >= 2
           ? std::stoi (argv[1])
           : throw std::runtime_error
               ("command line requires at least 'exe pipefd'")
           )
     {
-      ++argv;
-      --argc;
+      _replacement_argv.erase (std::next (_replacement_argv.begin()));
+      _argv = _replacement_argv.data();
+      --_argc;
+    }
+
+    started_process_promise::~started_process_promise()
+    {
+      _argv = _original_argv;
+      ++_argc;
     }
 
     template<typename T>
