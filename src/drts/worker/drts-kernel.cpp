@@ -117,7 +117,7 @@ int main(int ac, char **av)
 try
 {
   boost::asio::io_service remote_log_io_service;
-  fhg::log::Logger& logger (fhg::log::GLOBAL_logger());
+  fhg::log::Logger logger;
   fhg::log::configure (remote_log_io_service, logger);
 
   namespace po = boost::program_options;
@@ -207,12 +207,13 @@ try
   std::unique_ptr<gpi::pc::client::api_t> const virtual_memory_api
     ( vm.count (option_name::virtual_memory_socket)
       ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
-        ((static_cast<boost::filesystem::path>
-            ( vm.at (option_name::virtual_memory_socket)
+          ( logger
+          , (static_cast<boost::filesystem::path>
+              ( vm.at (option_name::virtual_memory_socket)
               .as<fhg::util::boost::program_options::existing_path>()
-            )
-         ).string()
-        )
+              )
+            ).string()
+          )
       : nullptr
     );
   std::unique_ptr<gspc::scoped_allocation> const shared_memory

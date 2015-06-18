@@ -5,6 +5,8 @@
 #include <boost/thread/locks.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 
+#include <fhglog/Logger.hpp>
+
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
 #include <gpi-space/pc/memory/transfer_manager.hpp>
@@ -29,7 +31,7 @@ namespace gpi
 
         static const gpi::pc::type::segment_id_t MAX_PREALLOCATED_SEGMENT_ID=16;
 
-        manager_t (api::gpi_api_t& gpi_api);
+        manager_t (fhg::log::Logger&, api::gpi_api_t& gpi_api);
         ~manager_t ();
 
         void clear ();
@@ -141,6 +143,7 @@ namespace gpi
         void del_handle (const gpi::pc::type::handle_t);
         void unregister_memory (const gpi::pc::type::segment_id_t);
 
+        fhg::log::Logger& _logger;
         mutable mutex_type m_mutex;
         area_map_t m_areas;
         handle_to_segment_t m_handle_to_segment;

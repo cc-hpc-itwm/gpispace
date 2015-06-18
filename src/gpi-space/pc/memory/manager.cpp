@@ -2,7 +2,7 @@
 #include <gpi-space/pc/url.hpp>
 #include <gpi-space/pc/url_io.hpp>
 
-#include <gpi-space/log_to_GLOBAL_logger.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/global/topology.hpp>
@@ -24,7 +24,8 @@ namespace gpi
     {
       namespace
       {
-        area_ptr_t create_area ( std::string const &url_s
+        area_ptr_t create_area ( fhg::log::Logger& logger
+                               , std::string const &url_s
                                , global::topology_t& topology
                                , handle_generator_t& handle_generator
                                , api::gpi_api_t& gpi_api
@@ -33,18 +34,19 @@ namespace gpi
         url_t url (url_s);
 
         return
-          ( url.type() == "gpi" ? gpi_area_t::create (url_s, topology, handle_generator, gpi_api)
-          : url.type() == "sfs" ? sfs_area_t::create (url_s, topology, handle_generator)
-          : url.type() == "shm" ? shm_area_t::create (url_s, handle_generator)
+          ( url.type() == "gpi" ? gpi_area_t::create (logger, url_s, topology, handle_generator, gpi_api)
+          : url.type() == "sfs" ? sfs_area_t::create (logger, url_s, topology, handle_generator)
+          : url.type() == "shm" ? shm_area_t::create (logger, url_s, handle_generator)
           : throw std::runtime_error
               ("no memory type registered with: '" + url_s + "'")
           );
       }
       }
 
-      manager_t::manager_t (api::gpi_api_t& gpi_api)
-        : _gpi_api (gpi_api)
-        , m_transfer_mgr (gpi_api)
+      manager_t::manager_t (fhg::log::Logger& logger, api::gpi_api_t& gpi_api)
+        : _logger (logger)
+        , _gpi_api (gpi_api)
+        , m_transfer_mgr (_logger, gpi_api)
         , _handle_generator (gpi_api.rank())
       {
         _handle_generator.initialize_counter
@@ -59,7 +61,8 @@ namespace gpi
         }
         catch (std::exception const & ex)
         {
-          LOG( ERROR
+          LLOG( ERROR
+              , _logger
              , "could not clear memory manager: " << ex.what()
              );
         }
@@ -146,7 +149,7 @@ namespace gpi
           area->garbage_collect ();
           m_areas.erase (area_it);
 
-          LOG(TRACE, "memory removed: " << mem_id);
+          LLOG(TRACE, _logger, "memory removed: " << mem_id);
         }
       }
 
@@ -476,7 +479,7 @@ namespace gpi
                                    , global::topology_t& topology
                                    )
       {
-        area_ptr_t area (create_area (url, topology, _handle_generator, _gpi_api));
+        area_ptr_t area (create_area (_logger, url, topology, _handle_generator, _gpi_api));
         area->set_owner (0);
         area->set_id (seg_id);
         add_area (area);
@@ -490,7 +493,7 @@ namespace gpi
                             , global::topology_t& topology
                             )
       {
-        area_ptr_t area (create_area (url_s, topology, _handle_generator, _gpi_api));
+        area_ptr_t area (create_area (_logger, url_s, topology, _handle_generator, _gpi_api));
         area->set_owner (proc_id);
         if (seg_id > 0)
           area->set_id (seg_id);

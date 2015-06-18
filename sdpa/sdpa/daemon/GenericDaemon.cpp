@@ -105,8 +105,11 @@ namespace
   }
 }
 
-    GenericDaemon::virtual_memory_api::virtual_memory_api (boost::filesystem::path const& socket)
-      : _ (socket.string())
+    GenericDaemon::virtual_memory_api::virtual_memory_api
+        ( fhg::log::Logger& logger
+        , boost::filesystem::path const& socket
+        )
+      : _ (logger, socket.string())
     {}
 
     GenericDaemon::master_network_info::master_network_info
@@ -203,7 +206,8 @@ GenericDaemon::GenericDaemon( const std::string name
   , _event_handler_thread (&GenericDaemon::handle_events, this)
   , _virtual_memory_api
     ( vmem_socket
-    ? fhg::util::cxx14::make_unique<virtual_memory_api> (*vmem_socket)
+    ? fhg::util::cxx14::make_unique<virtual_memory_api>
+        (_logger, *vmem_socket)
     : nullptr
     )
 {

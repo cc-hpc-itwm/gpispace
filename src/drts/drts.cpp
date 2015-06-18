@@ -139,6 +139,7 @@ namespace gspc
     , _sdpa_home (sdpa_home)
     , _log_dir (log_dir)
     , _worker_descriptions (worker_descriptions)
+    , _processes_storage (std::cout)
   {
     fhg::util::signal_handler_manager signal_handler_manager;
 
@@ -161,6 +162,7 @@ namespace gspc
       , _processes_storage
       , _master_agent_name
       , _master_agent_hostinfo
+      , std::cout
       );
 
     add_worker_impl (_rif_entry_points);
@@ -202,6 +204,7 @@ namespace gspc
                               , _gpi_socket
                               , _app_path
                               , _sdpa_home
+                              , std::cout
                               );
           }
         }
@@ -254,10 +257,11 @@ namespace gspc
                                 , get_virtual_memory_port (vm)
                                 , entry_points._->_entry_points
                                 )
+      , _logger()
       , _virtual_memory_api
         ( _virtual_memory_socket
         ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
-          (_virtual_memory_socket->string())
+            (_logger, _virtual_memory_socket->string())
         : nullptr
         )
   {}

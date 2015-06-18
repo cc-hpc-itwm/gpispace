@@ -21,7 +21,8 @@ namespace gpi
         static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_SFS;
         static const int SFS_VERSION = 0x0001;
 
-        static area_ptr_t create ( std::string const &url
+        static area_ptr_t create ( fhg::log::Logger&
+                                 , std::string const &url
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
                                  );
@@ -29,7 +30,8 @@ namespace gpi
         // cleanup a file segment
         static void cleanup (path_t const & path);
 
-        sfs_area_t ( const gpi::pc::type::process_id_t creator
+        sfs_area_t ( fhg::log::Logger&
+                   , const gpi::pc::type::process_id_t creator
                    , const path_t & path
                    , const gpi::pc::type::size_t size        // total
                    , const gpi::pc::type::flags_t flags

@@ -138,8 +138,6 @@ namespace gspc
   {
     void wait_for_terminal_state (job_id_t job_id, sdpa::client::Client& client)
     {
-      std::cerr << "waiting for job " << job_id << std::endl;
-
       sdpa::client::job_info_t job_info;
 
       sdpa::status::code const status
@@ -164,8 +162,6 @@ namespace gspc
 
       we::type::activity_t const result_activity
         (client.retrieveResults (job_id));
-
-      std::cerr << "result retrieved" << std::endl;
 
       client.deleteJob (job_id);
 

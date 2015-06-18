@@ -15,13 +15,11 @@ BOOST_AUTO_TEST_CASE ( test_generate )
   BOOST_CHECK_EQUAL (globl.type, gpi::pc::type::segment::SEG_GPI);
   BOOST_CHECK_EQUAL (globl.gpi.ident, 42U);
   BOOST_CHECK_EQUAL (globl.gpi.cntr, 1U);
-  std::cerr << "gpi=" << globl << std::endl;
 
   gpi::pc::type::handle_t local
       (handle_generator.next (gpi::pc::type::segment::SEG_SHM));
   BOOST_CHECK_EQUAL (local.type, gpi::pc::type::segment::SEG_SHM);
   BOOST_CHECK_EQUAL (local.shm.cntr, 1U);
-  std::cerr << "shm=" << local << std::endl;
 
   gpi::pc::type::handle_id_t id = local;
   BOOST_CHECK_EQUAL (local, id);

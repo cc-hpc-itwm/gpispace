@@ -2,7 +2,7 @@
 
 #include <stack>
 
-#include <gpi-space/log_to_GLOBAL_logger.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
 #include <boost/format.hpp>
@@ -22,14 +22,16 @@ namespace gpi
       /*                   area_t                        */
       /***************************************************/
 
-      area_t::area_t ( const gpi::pc::type::segment::segment_type type
+      area_t::area_t ( fhg::log::Logger& logger
+                     , const gpi::pc::type::segment::segment_type type
                      , const gpi::pc::type::process_id_t creator
                      , const std::string & name
                      , const gpi::pc::type::size_t size
                      , const gpi::pc::type::flags_t flags
                      , handle_generator_t& handle_generator
                      )
-        : m_descriptor ( GPI_PC_INVAL
+        : _logger (logger)
+        , m_descriptor ( GPI_PC_INVAL
                        , type
                        , creator
                        , name
@@ -248,15 +250,16 @@ namespace gpi
 
         if (hdl.offset != offset)
         {
-          LOG ( ERROR
-              , "remote_alloc failed: expected-offset = " << offset
-              << " actual-offset = " << hdl.offset
-              );
           dtmmgr_free ( &m_mmgr
                       , hdl.id
                       , grow_direction (hdl.flags)
                       );
-          throw std::runtime_error("offset mismatch");
+
+          throw std::runtime_error
+            ( "remote_alloc failed: offset mismatch: expected = "
+            + std::to_string (offset) + " actual = "
+            + std::to_string (hdl.offset)
+            );
         }
         else
         {
@@ -314,14 +317,12 @@ namespace gpi
       {
         if (m_descriptor.avail < hdl.local_size)
         {
-          LOG( ERROR
-             , "not enough memory:"
-             << " total size = " << hdl.size
-             << " local size = " << hdl.local_size
-             << " segment = " << m_descriptor.id
-             << " avail = " << m_descriptor.avail
-             );
-          throw std::runtime_error ("out of memory");
+          throw std::runtime_error
+            ( "out of memory: total size = " + std::to_string (hdl.size)
+            + " local size = " + std::to_string (hdl.local_size)
+            + " segment = " + std::to_string (m_descriptor.id)
+            + " avail = " + std::to_string (m_descriptor.avail)
+            );
         }
 
         Arena_t arena = grow_direction(hdl.flags);
@@ -347,19 +348,12 @@ namespace gpi
             }
             catch (std::exception const & ex)
             {
-              LOG(ERROR, "alloc_hook failed: " << ex.what());
               dtmmgr_free (&m_mmgr, hdl.id, arena);
-              throw;
+              std::throw_with_nested (std::runtime_error ("alloc_hook failed"));
             }
           }
           break;
         case ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY:
-          LOG( WARN
-             , "not enough contiguous memory available:"
-             << " requested_size = " << hdl.local_size
-             << " segment = " << m_descriptor.id
-             << " avail = " << m_descriptor.avail
-             );
           // TODO:
           //    defrag (local_size);
           //        release locks (? how)
@@ -369,43 +363,42 @@ namespace gpi
           //          real_defrag
           //        reacquire locks
           throw std::runtime_error
-              ("not enough contiguous memory");
+            ( "not enough contiguous memory available: requested_size = "
+            + std::to_string (hdl.local_size)
+            + " segment = " + std::to_string (m_descriptor.id)
+            + " avail = " + std::to_string (m_descriptor.avail)
+            );
           break;
         case ALLOC_INSUFFICIENT_MEMORY:
-          LOG( ERROR
-             , "not enough memory:"
-             << " requested_size=" << hdl.local_size
-             << " segment=" << m_descriptor.id
-             << " avail=" << m_descriptor.avail
-             );
-          throw std::runtime_error ("out of memory");
+          throw std::runtime_error
+            ( "not enough memory: requested_size = "
+            + std::to_string (hdl.local_size)
+            + " segment = " + std::to_string (m_descriptor.id)
+            + " avail = " + std::to_string (m_descriptor.avail)
+            );
           break;
         case ALLOC_DUPLICATE_HANDLE:
-          LOG( ERROR
-             ,  "duplicate handle:"
-             << " handle = " << hdl.id
-             << " segment " << m_descriptor.id
-             );
-          throw std::runtime_error ("duplicate handle");
+          throw std::runtime_error
+            ( "duplicate handle: handle = " + std::to_string (hdl.id)
+            + " segment " + std::to_string (m_descriptor.id)
+            );
           break;
         case ALLOC_FAILURE:
-          LOG( ERROR
-             , "internal error during allocation:"
-             << " requested_size = " << hdl.local_size
-             << " handle = " << hdl.id
-             << " segment = " << m_descriptor.id
-             );
-          throw std::runtime_error ("allocation failed");
+          throw std::runtime_error
+            ( "internal error during allocation: requested_size = "
+            + std::to_string (hdl.local_size)
+            + " handle = " + std::to_string (hdl.id)
+            + " segment = " + std::to_string (m_descriptor.id)
+            );
           break;
         default:
-          LOG( ERROR
-             ,  "unexpected error during allocation:"
-             << " requested_size = " << hdl.local_size
-             << " handle = " << hdl.id
-             << " segment = " << m_descriptor.id
-             << " error = " << alloc_return
-             );
-          throw std::runtime_error ("unexpected return code");
+          throw std::runtime_error
+            ( "unexpected error during allocation: requested_size = "
+            + std::to_string (hdl.local_size)
+            + " handle = " + std::to_string (hdl.id)
+            + " segment = " + std::to_string (m_descriptor.id)
+            + " error = " + std::to_string (alloc_return)
+            );
           break;
         }
       }
@@ -416,23 +409,19 @@ namespace gpi
 
         if (m_handles.find(hdl) == m_handles.end())
         {
-          LOG( ERROR
-             , "no such handle: "
-             << " handle = " << hdl
-             << " segment = " << m_descriptor.id
-             );
-          throw std::runtime_error ("no such handle");
+          throw std::runtime_error
+            ( "no such handle: handle = " + std::to_string (hdl)
+            + " segment = " + std::to_string (m_descriptor.id)
+            );
         }
 
         const gpi::pc::type::handle::descriptor_t desc (m_handles.at(hdl));
         if (desc.nref)
         {
-          LOG( WARN
-             , "handle still in use:"
-             << " handle = " << hdl
-             << " nref = " << desc.nref
-             );
-          throw std::runtime_error ("handle still in use");
+          throw std::runtime_error
+            ( "handle still in use: handle = " + std::to_string (hdl)
+            + " nref = " + std::to_string (desc.nref)
+            );
         }
 
         Arena_t arena (grow_direction(desc.flags));
@@ -452,8 +441,7 @@ namespace gpi
           }
           catch (std::exception const & ex)
           {
-            LOG(ERROR, "free_hook failed: " << ex.what());
-            throw;
+            std::throw_with_nested (std::runtime_error ("free_hook failed"));
           }
           break;
         case RET_HANDLE_UNKNOWN:
@@ -471,18 +459,17 @@ namespace gpi
 
         if (m_handles.find(hdl) == m_handles.end())
         {
-          LOG( ERROR
-             , "no such handle: "
-             << " handle = " << hdl
-             << " segment = " << m_descriptor.id
-             );
-          throw std::runtime_error ("no such handle");
+          throw std::runtime_error
+            ( "no such handle: handle = " + std::to_string (hdl)
+            + " segment = " + std::to_string (m_descriptor.id)
+            );
         }
 
         const gpi::pc::type::handle::descriptor_t desc (m_handles.at(hdl));
         if (desc.nref)
         {
-          LOG( WARN
+          LLOG( WARN
+              , _logger
              , "handle still in use:"
              << " handle = " << hdl
              << " nref = " << desc.nref
@@ -535,8 +522,8 @@ namespace gpi
         }
         else
         {
-          LOG(ERROR, "cannot find descriptor for handle " << hdl);
-          throw std::runtime_error ("no such handle");
+          throw std::runtime_error
+            ("cannot find descriptor for handle " + std::to_string (hdl));
         }
       }
 
@@ -729,13 +716,11 @@ namespace gpi
                                                       );
               if (0 == num_read)
               {
-                LOG ( ERROR
-                     , "could not read " << buffer->size () << " bytes"
-                     << " from " << m_src_loc
-                     << " remaining " << remaining
-                     );
-
-                throw std::runtime_error ("could not read");
+                throw std::runtime_error
+                  ( "could not read " + std::to_string (buffer->size())
+                  + " bytes from " + boost::lexical_cast<std::string> (m_src_loc)
+                  + " remaining " + std::to_string (remaining)
+                  );
               }
 
               buffer->used (num_read);
@@ -984,13 +969,11 @@ namespace gpi
           }
           else
           {
-            LOG ( ERROR
-                 , "unsupported memory transfer: both regions are remote:"
-                 << " src := [" << src << "]"
-                 << " dst := [" << dst << "]"
-                 );
             throw std::runtime_error
-              ("unsupported memory transfer: both regions are remote");
+              ( "unsupported memory transfer: both regions are remote: src := ["
+              + boost::lexical_cast<std::string> (src) + "] dst := ["
+              + boost::lexical_cast<std::string> (dst) + "]"
+              );
           }
         }
 
