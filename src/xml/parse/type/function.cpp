@@ -1871,10 +1871,12 @@ namespace xml
           mk_get ( fhg::util::indenter& indent
                  , const port_with_type& port
                  , const std::string& modif = ""
+                 , const std::string& amper = ""
                  )
             : _indent (indent)
             , _port (port)
             , _modif (modif)
+            , _amper (amper)
           {}
           virtual std::ostream& operator() (std::ostream& os) const override
           {
@@ -2039,7 +2041,7 @@ namespace xml
 
           for (const port_with_type& port : ports_const)
           {
-            s << mk_get (indent, port, "const ");
+            s << mk_get (indent, port, "const ", "& ");
           }
 
           for (const port_with_type& port : ports_mutable)
