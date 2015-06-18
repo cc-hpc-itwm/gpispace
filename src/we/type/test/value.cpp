@@ -34,6 +34,7 @@
 #include <fhg/util/xml.hpp>
 
 #include <boost/format.hpp>
+#include <boost/optional/optional_io.hpp>
 
 #include <sstream>
 
