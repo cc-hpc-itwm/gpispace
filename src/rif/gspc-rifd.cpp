@@ -310,34 +310,25 @@ try
   {
     io_service.notify_fork (boost::asio::io_service::fork_parent);
 
-    boost::asio::io_service io_service;
-    boost::asio::io_service::work const io_service_work (io_service);
+    boost::asio::io_service io_service_client;
+    boost::asio::io_service::work const io_service_client_work (io_service_client);
     boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> const
-      io_service_thread
-        ( [&io_service, &connections_guard, &connections_to_delete]
-          {
-            while (io_service.run_one())
-            {
-              std::unique_lock<std::mutex> const _ (connections_guard);
-              connections_to_delete.clear();
-            }
-          }
-        );
+      io_service_client_thread ([&io_service_client] { io_service_client.run(); });
 
     fhg::rpc::remote_endpoint endpoint
-      ( io_service
+      ( io_service_client
       , register_host, register_port
       , fhg::util::serialization::exception::serialization_functions()
       );
 
-    struct stop_io_service_on_scope_exit
+    struct stop_io_service_client_on_scope_exit
     {
-      ~stop_io_service_on_scope_exit()
+      ~stop_io_service_client_on_scope_exit()
       {
-        _io_service.stop();
+        _io_service_client.stop();
       }
-      boost::asio::io_service& _io_service;
-    } stop_io_service_on_scope_exit {io_service};
+      boost::asio::io_service& _io_service_client;
+    } stop_io_service_client_on_scope_exit {io_service_client};
 
     boost::asio::ip::tcp::endpoint const local_endpoint
       (acceptor.local_endpoint());
@@ -361,7 +352,16 @@ try
   io_service.notify_fork (boost::asio::io_service::fork_child);
 
   const boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-    io_service_thread ([&io_service]() { io_service.run(); });
+    io_service_thread
+      ( [&io_service, &connections_guard, &connections_to_delete]
+        {
+          while (io_service.run_one())
+          {
+            std::unique_lock<std::mutex> const _ (connections_guard);
+            connections_to_delete.clear();
+          }
+        }
+      );
 
   return 0;
 }
