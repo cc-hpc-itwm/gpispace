@@ -21,6 +21,7 @@
 #include <rif/protocol.hpp>
 
 #include <rpc/server.hpp>
+#include <rpc/simple_client.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -310,31 +311,13 @@ try
   {
     io_service.notify_fork (boost::asio::io_service::fork_parent);
 
-    boost::asio::io_service io_service_client;
-    boost::asio::io_service::work const io_service_client_work (io_service_client);
-    boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> const
-      io_service_client_thread ([&io_service_client] { io_service_client.run(); });
-
-    fhg::rpc::remote_endpoint endpoint
-      ( io_service_client
-      , register_host, register_port
-      , fhg::util::serialization::exception::serialization_functions()
-      );
-
-    struct stop_io_service_client_on_scope_exit
-    {
-      ~stop_io_service_client_on_scope_exit()
-      {
-        _io_service_client.stop();
-      }
-      boost::asio::io_service& _io_service_client;
-    } stop_io_service_client_on_scope_exit {io_service_client};
+    fhg::rpc::simple_client client (register_host, register_port);
 
     boost::asio::ip::tcp::endpoint const local_endpoint
       (acceptor.local_endpoint());
 
     fhg::rpc::sync_remote_function<void (fhg::rif::entry_point)>
-      (endpoint, "register")
+      (client, "register")
       ( fhg::rif::entry_point
           ( fhg::network::connectable_to_address_string (local_endpoint.address())
           , local_endpoint.port()
