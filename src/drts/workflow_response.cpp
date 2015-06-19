@@ -2,7 +2,7 @@
 
 #include <drts/workflow_response.hpp>
 
-#include <rpc/simple_client.hpp>
+#include <rpc/client.hpp>
 
 #include <we/type/value/serialize.hpp>
 
@@ -15,7 +15,7 @@ namespace gspc
                          , pnet::type::value::value_type const& value
                          )
   {
-    fhg::rpc::simple_client remote_client (trigger_address, trigger_port);
+    fhg::rpc::remote_endpoint remote_client (trigger_address, trigger_port);
     fhg::rpc::sync_remote_function<void (pnet::type::value::value_type)>
       (remote_client, "set_result") (value);
   }

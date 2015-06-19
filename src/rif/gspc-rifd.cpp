@@ -20,8 +20,8 @@
 #include <rif/execute_and_get_startup_messages.hpp>
 #include <rif/protocol.hpp>
 
+#include <rpc/client.hpp>
 #include <rpc/server.hpp>
-#include <rpc/simple_client.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -311,13 +311,13 @@ try
   {
     io_service.notify_fork (boost::asio::io_service::fork_parent);
 
-    fhg::rpc::simple_client client (register_host, register_port);
+    fhg::rpc::remote_endpoint endpoint (register_host, register_port);
 
     boost::asio::ip::tcp::endpoint const local_endpoint
       (acceptor.local_endpoint());
 
     fhg::rpc::sync_remote_function<void (fhg::rif::entry_point)>
-      (client, "register")
+      (endpoint, "register")
       ( fhg::rif::entry_point
           ( fhg::network::connectable_to_address_string (local_endpoint.address())
           , local_endpoint.port()

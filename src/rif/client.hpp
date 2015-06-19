@@ -3,7 +3,7 @@
 #include <rif/entry_point.hpp>
 #include <rif/protocol.hpp>
 
-#include <rpc/simple_client.hpp>
+#include <rpc/client.hpp>
 
 namespace fhg
 {
@@ -13,14 +13,14 @@ namespace fhg
     {
     public:
       client (fhg::rif::entry_point const& entry_point)
-        : _impl (entry_point.hostname, entry_point.port)
-        , execute_and_get_startup_messages (_impl)
-        , kill (_impl)
-        , start_vmem (_impl)
+        : _endpoint (entry_point.hostname, entry_point.port)
+        , execute_and_get_startup_messages (_endpoint)
+        , kill (_endpoint)
+        , start_vmem (_endpoint)
       {}
 
     private:
-      fhg::rpc::simple_client _impl;
+      fhg::rpc::remote_endpoint _endpoint;
 
     public:
       rpc::remote_function<protocol::execute_and_get_startup_messages>
