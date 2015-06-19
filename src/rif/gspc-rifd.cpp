@@ -20,6 +20,7 @@
 #include <rif/execute_and_get_startup_messages.hpp>
 #include <rif/protocol.hpp>
 
+#include <rpc/client.hpp>
 #include <rpc/server.hpp>
 
 #include <boost/asio/io_service.hpp>
@@ -310,34 +311,7 @@ try
   {
     io_service.notify_fork (boost::asio::io_service::fork_parent);
 
-    boost::asio::io_service io_service;
-    boost::asio::io_service::work const io_service_work (io_service);
-    boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> const
-      io_service_thread
-        ( [&io_service, &connections_guard, &connections_to_delete]
-          {
-            while (io_service.run_one())
-            {
-              std::unique_lock<std::mutex> const _ (connections_guard);
-              connections_to_delete.clear();
-            }
-          }
-        );
-
-    fhg::rpc::remote_endpoint endpoint
-      ( io_service
-      , register_host, register_port
-      , fhg::util::serialization::exception::serialization_functions()
-      );
-
-    struct stop_io_service_on_scope_exit
-    {
-      ~stop_io_service_on_scope_exit()
-      {
-        _io_service.stop();
-      }
-      boost::asio::io_service& _io_service;
-    } stop_io_service_on_scope_exit {io_service};
+    fhg::rpc::remote_endpoint endpoint (register_host, register_port);
 
     boost::asio::ip::tcp::endpoint const local_endpoint
       (acceptor.local_endpoint());
@@ -361,7 +335,16 @@ try
   io_service.notify_fork (boost::asio::io_service::fork_child);
 
   const boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-    io_service_thread ([&io_service]() { io_service.run(); });
+    io_service_thread
+      ( [&io_service, &connections_guard, &connections_to_delete]
+        {
+          while (io_service.run_one())
+          {
+            std::unique_lock<std::mutex> const _ (connections_guard);
+            connections_to_delete.clear();
+          }
+        }
+      );
 
   return 0;
 }
