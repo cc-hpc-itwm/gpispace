@@ -45,6 +45,12 @@ namespace xml
         generic (const std::string & msg, const std::string & pre)
           : generic (pre + ": " + msg)
         { }
+
+        generic ( boost::format const& format
+                , boost::filesystem::path const& path
+                )
+          : generic (boost::format ("%1% in %2%") % format % path)
+        {}
       };
 
       // ******************************************************************* //
@@ -213,8 +219,8 @@ namespace xml
         struct_field_redefined ( const std::string& name
                                , const boost::filesystem::path& path
                                )
-          : generic ( boost::format ("struct field '%1%' redefined in %2%")
-                    % name % path
+          : generic ( boost::format ("struct field '%1%' redefined")
+                    % name , path
                     )
         {}
       };
@@ -521,13 +527,13 @@ namespace xml
           : generic
             ( boost::format
               ( "type error: virtual place %1% of type %2%"
-              " identified with real place %3% of type %4% in %5%"
+              " identified with real place %3% of type %4%"
               )
             % name_virtual
             % pnet::type::signature::show (sig_virtual)
             % name_real
             % pnet::type::signature::show (sig_real)
-            % path
+            , path
             )
         {}
       };
@@ -991,9 +997,8 @@ namespace xml
         template_without_function ( const boost::optional<std::string>& name
                                   , const boost::filesystem::path& path
                                   )
-          : generic ( boost::format
-                      ("template %1% without a function in %2%") % name % path
-                    )
+          : generic
+            (boost::format ("template %1% without a function") % name, path)
         {}
       };
 
