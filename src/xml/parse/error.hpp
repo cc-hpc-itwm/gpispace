@@ -165,28 +165,11 @@ namespace xml
       template<typename IT>
       class include_loop : public generic
       {
-      private:
-        std::string nice (IT pos, const IT & end) const
-        {
-          std::ostringstream ss;
-
-          IT loop (pos);
-
-          for  (; pos != end; ++pos)
-            {
-              ss << *pos << " -> ";
-            }
-
-          ss << *loop;
-
-          return ss.str();
-        }
-
       public:
         include_loop ( const std::string & pre
                      , IT pos, const IT & end
                      )
-          : generic (pre, "include loop: " + nice (pos, end))
+          : generic (pre, "include loop: " + fhg::util::join (pos, end, " -> "))
         {}
       };
 
