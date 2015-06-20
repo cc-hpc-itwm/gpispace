@@ -39,11 +39,11 @@ namespace xml
         { }
 
         generic (const boost::format& bf)
-          : std::runtime_error ("ERROR: " + bf.str())
+          : generic (bf.str())
         { }
 
         generic (const std::string & msg, const std::string & pre)
-          : std::runtime_error ("ERROR: " + pre + ": " + msg)
+          : generic (pre + ": " + msg)
         { }
       };
 
@@ -955,7 +955,7 @@ namespace xml
 
       public:
         could_not_open_file (const boost::filesystem::path & file)
-          : generic (nice (file.string()))
+          : could_not_open_file (file.string())
         {}
 
         could_not_open_file (const std::string & file)
