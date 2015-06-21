@@ -4,7 +4,7 @@
 
 #include <xml/parse/id/mapper.hpp>
 
-#include <fhg/util/join.hpp>
+#include <util-generic/join.hpp>
 #include <fhg/util/xml.hpp>
 
 #include <stdexcept>
@@ -88,10 +88,7 @@ namespace xml
 
       std::string expression_type::expression (const std::string& sep) const
       {
-        return fhg::util::join ( expressions().begin()
-                               , expressions().end()
-                               , ";" + sep
-                               );
+        return fhg::util::join (expressions(), ";" + sep);
       }
 
       const expressions_type& expression_type::expressions (void) const

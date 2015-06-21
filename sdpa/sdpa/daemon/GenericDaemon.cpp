@@ -400,10 +400,10 @@ void GenericDaemon::handleSubmitJobEvent
     }
     catch (...)
     {
-      std::string const error (fhg::util::current_exception_as_string (": "));
+      fhg::util::current_exception_printer const error (": ");
       LLOG (ERROR, _logger, "Exception occurred: " << error << ". Failed to submit the job "<<job_id<<" to the workflow engine!");
 
-      failed (job_id, error);
+      failed (job_id, error.string());
     }
   }
   else {
@@ -633,7 +633,7 @@ try
 catch (...)
 {
   workflowEngine()->failed
-    (job_id, fhg::util::current_exception_as_string (": "));
+    (job_id, fhg::util::current_exception_printer (": ").string());
 }
 
 void GenericDaemon::cancel (const we::layer::id_type& job_id)
@@ -933,7 +933,7 @@ void GenericDaemon::handle_events()
         , events::ErrorEvent::Ptr
           ( new events::ErrorEvent
               ( events::ErrorEvent::SDPA_EUNKNOWN
-              , fhg::util::current_exception_as_string (": ")
+              , fhg::util::current_exception_printer (": ").string()
               )
           )
         );

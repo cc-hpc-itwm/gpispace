@@ -14,7 +14,7 @@
 #include <we/type/signature/show.hpp>
 
 #include <fhg/util/boost/optional.hpp>
-#include <fhg/util/join.hpp>
+#include <util-generic/join.hpp>
 
 #include <xml/parse/rapidxml/1.13/rapidxml.hpp>
 
@@ -603,7 +603,7 @@ namespace xml
           : generic
             ( boost::format ("%1% for property %2%")
             % msg
-            % fhg::util::join (key, ".")
+            % fhg::util::join (key, '.')
             , path
             )
         {}

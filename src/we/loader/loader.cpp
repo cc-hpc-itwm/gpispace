@@ -2,7 +2,7 @@
 
 #include <we/loader/exceptions.hpp>
 
-#include <fhg/util/join.hpp>
+#include <util-generic/join.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 
 const int WE_GUARD_SYMBOL = 0xDEADBEEF;
@@ -42,9 +42,7 @@ namespace we
       }
 
       throw module_not_found
-        ( file_name.string()
-        , fhg::util::join (_search_path.begin(), _search_path.end(), ":")
-        );
+        (file_name.string(), fhg::util::join (_search_path, ':'));
     }
   }
 }

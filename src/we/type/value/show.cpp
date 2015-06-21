@@ -24,35 +24,39 @@ namespace pnet
 
           std::ostream& operator() (const std::list<value_type>& l) const
           {
-            return fhg::util::print_container<std::list<value_type>>
-              ( _os, "List ", "(", ", ", ")", std::ref (l)
-              , std::bind
-                (&visitor_show::print_value, this, std::placeholders::_1)
+            return _os << fhg::util::print_container<std::list<value_type>>
+              ( "List (", ", ", ")", std::ref (l)
+              , std::bind ( &visitor_show::print_value, this
+                          , std::placeholders::_1, std::placeholders::_2
+                          )
               );
           }
           std::ostream&
           operator() (const std::map<value_type, value_type>& m) const
           {
-            return fhg::util::print_container<std::map<value_type, value_type>>
-              ( _os, "Map ", "[", ", ", "]", std::ref (m)
-              , std::bind
-                (&visitor_show::print_map_item, this, std::placeholders::_1)
+            return _os << fhg::util::print_container<std::map<value_type, value_type>>
+              ( "Map [", ", ", "]", std::ref (m)
+              , std::bind ( &visitor_show::print_map_item, this
+                          , std::placeholders::_1, std::placeholders::_2
+                          )
               );
           }
           std::ostream& operator() (const std::set<value_type>& s) const
           {
-            return fhg::util::print_container<std::set<value_type>>
-              ( _os, "Set ", "{", ", ", "}", std::ref (s)
-              , std::bind
-                (&visitor_show::print_value, this, std::placeholders::_1)
+            return _os << fhg::util::print_container<std::set<value_type>>
+              ( "Set {", ", ", "}", std::ref (s)
+              , std::bind ( &visitor_show::print_value, this
+                          , std::placeholders::_1, std::placeholders::_2
+                          )
               );
           }
           std::ostream& operator() (const structured_type& m) const
           {
-            return fhg::util::print_container<structured_type>
-              ( _os, "Struct ", "[", ", ", "]", std::ref (m)
-              , std::bind
-                (&visitor_show::print_struct_item, this, std::placeholders::_1)
+            return _os << fhg::util::print_container<structured_type>
+              ( "Struct [", ", ", "]", std::ref (m)
+              , std::bind ( &visitor_show::print_struct_item, this
+                          , std::placeholders::_1, std::placeholders::_2
+                          )
               );
           }
           std::ostream& operator() (const control& c) const
@@ -107,21 +111,24 @@ namespace pnet
         private:
           std::ostream& _os;
 
-          void print_value (const value_type& x) const
+          std::ostream& print_value (std::ostream& os, const value_type& x) const
           {
             boost::apply_visitor (*this, x);
+            return os;
           }
-          void print_map_item (const std::pair<value_type, value_type>& x) const
+          std::ostream& print_map_item (std::ostream& os, const std::pair<value_type, value_type>& x) const
           {
             boost::apply_visitor (*this, x.first);
-            _os << " -> ";
+            os << " -> ";
             boost::apply_visitor (*this, x.second);
+            return os;
           }
-          void print_struct_item
-          (const std::pair<std::string, value_type>& x) const
+          std::ostream& print_struct_item
+          (std::ostream& os, const std::pair<std::string, value_type>& x) const
           {
-            _os << x.first << " := ";
+            os << x.first << " := ";
             boost::apply_visitor (*this, x.second);
+            return os;
           }
         };
       }

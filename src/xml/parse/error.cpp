@@ -310,19 +310,17 @@ namespace xml
         std::string print_memory_buffer_positions_of_definition
           (std::unordered_set<id::ref::memory_buffer> const& ids)
         {
-          std::ostringstream oss;
-
-          fhg::util::print_container
-            <std::unordered_set<id::ref::memory_buffer>>
-            ( oss, "", "{", ", ", "}"
-            , ids
-            , [&oss](id::ref::memory_buffer const& id)
-            {
-              oss << id.get().position_of_definition();
-            }
-            );
-
-          return oss.str();
+          return fhg::util::print_container<decltype (ids)>
+            ( "{", ", ", "}", ids
+            , fhg::util::ostream::callback::generic< id::ref::memory_buffer
+                                                   , util::position_type
+                                                   >
+              ([] (id::ref::memory_buffer const& id)
+               {
+                 return id.get().position_of_definition();
+               }
+              )
+            ).string();
         }
       }
 
@@ -348,6 +346,18 @@ namespace xml
 
       namespace
       {
+        template<typename T>
+        struct print_positions : public fhg::util::print_container<std::list<T>>
+        {
+          print_positions (std::string const& prefix, std::list<T> const& list)
+            : fhg::util::print_container<std::list<T>>
+              ( prefix + ": (", ", ", ")", list
+              , fhg::util::ostream::callback::select<T, util::position_type>
+                  (&T::position_of_definition)
+              )
+          {}
+        };
+
         std::string print_memory_transfer_positions_of_definition
           (id::ref::function const& function)
         {
@@ -357,47 +367,23 @@ namespace xml
 
           if (!function.get_ref().memory_gets().empty())
           {
-            oss << sep;
-
-            fhg::util::print_container
-              <std::list<xml::parse::type::memory_get>>
-              ( oss, "get: ", "(", ", ", ")"
-              , function.get_ref().memory_gets()
-              , [&oss](xml::parse::type::memory_get const& mg)
-              {
-                oss << mg.position_of_definition();
-              }
-              );
+            oss << sep << print_positions<xml::parse::type::memory_get>
+                            ("get", function.get_ref().memory_gets())
+              ;
           }
 
           if (!function.get_ref().memory_puts().empty())
           {
-            oss << sep;
-
-            fhg::util::print_container
-              <std::list<xml::parse::type::memory_put>>
-              ( oss, "put: ", "(", ", ", ")"
-              , function.get_ref().memory_puts()
-              , [&oss](xml::parse::type::memory_put const& mp)
-              {
-                oss << mp.position_of_definition();
-              }
-              );
+            oss << sep << print_positions<xml::parse::type::memory_put>
+                            ("put", function.get_ref().memory_puts())
+              ;
           }
 
           if (!function.get_ref().memory_getputs().empty())
           {
-            oss << sep;
-
-            fhg::util::print_container
-              <std::list<xml::parse::type::memory_getput>>
-              ( oss, "getput: ", "(", ", ", ")"
-              , function.get_ref().memory_getputs()
-              , [&oss](xml::parse::type::memory_getput const& mgp)
-              {
-                oss << mgp.position_of_definition();
-              }
-              );
+            oss << sep << print_positions<xml::parse::type::memory_getput>
+                            ("getput", function.get_ref().memory_getputs())
+              ;
           }
 
           return oss.str();
