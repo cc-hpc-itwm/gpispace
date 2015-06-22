@@ -21,7 +21,7 @@
 #include <rif/protocol.hpp>
 
 #include <rpc/client.hpp>
-#include <rpc/server.hpp>
+#include <rpc/server_with_multiple_clients.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -258,63 +258,17 @@ try
         }
       );
 
-  std::mutex connections_guard;
-  std::vector<std::unique_ptr<fhg::network::connection_type>> connections;
-  std::list<std::unique_ptr<fhg::network::connection_type>> connections_to_delete;
+  fhg::rpc::server_with_multiple_clients_and_deferred_startup server
+    (service_dispatcher);
 
-  fhg::network::continous_acceptor<boost::asio::ip::tcp> acceptor
-    ( boost::asio::ip::tcp::endpoint
-        (boost::asio::ip::address(), port.get_value_or (0))
-    , io_service
-    , [] (fhg::network::buffer_type buf) { return buf; }
-    , [] (fhg::network::buffer_type buf) { return buf; }
-    , [&service_dispatcher]
-        (fhg::network::connection_type* connection, fhg::network::buffer_type message)
-      {
-        service_dispatcher.dispatch (connection, message);
-      }
-    , [&connections, &connections_to_delete, &connections_guard]
-        (fhg::network::connection_type* connection)
-      {
-        std::unique_lock<std::mutex> const _ (connections_guard);
-
-        decltype (connections)::iterator pos
-          ( std::find_if
-              ( connections.begin()
-              , connections.end()
-              , [&connection]
-                  (std::unique_ptr<fhg::network::connection_type> const& other)
-                {
-                  return other.get() == connection;
-                }
-              )
-          );
-
-        if (pos == connections.end())
-        {
-          throw std::logic_error ("disconnect for unknown connection");
-        }
-
-        connections_to_delete.emplace_back (std::move (*pos));
-        connections.erase (pos);
-      }
-    , [&connections, &connections_guard]
-        (std::unique_ptr<fhg::network::connection_type> connection)
-      {
-        std::unique_lock<std::mutex> const _ (connections_guard);
-        connections.emplace_back (std::move (connection));
-      }
-    );
-
-  io_service.notify_fork (boost::asio::io_service::fork_prepare);
   if (pid_t child = fhg::util::syscall::fork())
   {
-    io_service.notify_fork (boost::asio::io_service::fork_parent);
+    server.post_fork_parent();
 
     fhg::rpc::remote_endpoint endpoint (register_host, register_port);
 
     boost::asio::ip::tcp::endpoint const local_endpoint
-      (acceptor.local_endpoint());
+      (server.local_endpoint());
 
     fhg::rpc::sync_remote_function<void (fhg::rif::entry_point)>
       (endpoint, "register")
@@ -332,19 +286,8 @@ try
   fhg::util::syscall::close (1);
   fhg::util::syscall::close (2);
 
-  io_service.notify_fork (boost::asio::io_service::fork_child);
-
-  const boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-    io_service_thread
-      ( [&io_service, &connections_guard, &connections_to_delete]
-        {
-          while (io_service.run_one())
-          {
-            std::unique_lock<std::mutex> const _ (connections_guard);
-            connections_to_delete.clear();
-          }
-        }
-      );
+  server.post_fork_child();
+  server.run_sync();
 
   return 0;
 }
