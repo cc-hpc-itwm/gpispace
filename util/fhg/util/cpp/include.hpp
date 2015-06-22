@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <util-generic/ostream_modifier.hpp>
+#include <util-generic/ostream/modifier.hpp>
 
 #include <boost/filesystem.hpp>
 

@@ -24,8 +24,8 @@ namespace pnet
           {}
           void _struct (const std::pair<std::string, structure_type>& s) const
           {
-            _os << fhg::util::print_container<structure_type>
-              ( s.first + " :: [", ", ", "]", std::ref (s.second)
+            _os << fhg::util::print_container
+              ( s.first + " :: [", ", ", "]", s.second
               , [this] (std::ostream& os, const field_type& f) -> std::ostream&
                 {
                   traverse (*this, f);

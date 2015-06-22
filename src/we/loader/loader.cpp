@@ -42,7 +42,7 @@ namespace we
       }
 
       throw module_not_found
-        (file_name.string(), fhg::util::join (_search_path, ':'));
+        (file_name.string(), fhg::util::join (_search_path, ':').string());
     }
   }
 }

@@ -14,7 +14,7 @@ namespace pnet
       {
         std::string join (const std::list<std::string>& path)
         {
-          return fhg::util::join (path, '.');
+          return fhg::util::join (path, '.').string();
         }
       }
     }

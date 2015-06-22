@@ -24,8 +24,8 @@ namespace pnet
 
           std::ostream& operator() (const std::list<value_type>& l) const
           {
-            return _os << fhg::util::print_container<std::list<value_type>>
-              ( "List (", ", ", ")", std::ref (l)
+            return _os << fhg::util::print_container
+              ( "List (", ", ", ")", l
               , std::bind ( &visitor_show::print_value, this
                           , std::placeholders::_1, std::placeholders::_2
                           )
@@ -34,8 +34,8 @@ namespace pnet
           std::ostream&
           operator() (const std::map<value_type, value_type>& m) const
           {
-            return _os << fhg::util::print_container<std::map<value_type, value_type>>
-              ( "Map [", ", ", "]", std::ref (m)
+            return _os << fhg::util::print_container
+              ( "Map [", ", ", "]", m
               , std::bind ( &visitor_show::print_map_item, this
                           , std::placeholders::_1, std::placeholders::_2
                           )
@@ -43,8 +43,8 @@ namespace pnet
           }
           std::ostream& operator() (const std::set<value_type>& s) const
           {
-            return _os << fhg::util::print_container<std::set<value_type>>
-              ( "Set {", ", ", "}", std::ref (s)
+            return _os << fhg::util::print_container
+              ( "Set {", ", ", "}", s
               , std::bind ( &visitor_show::print_value, this
                           , std::placeholders::_1, std::placeholders::_2
                           )
@@ -52,8 +52,8 @@ namespace pnet
           }
           std::ostream& operator() (const structured_type& m) const
           {
-            return _os << fhg::util::print_container<structured_type>
-              ( "Struct [", ", ", "]", std::ref (m)
+            return _os << fhg::util::print_container
+              ( "Struct [", ", ", "]", m
               , std::bind ( &visitor_show::print_struct_item, this
                           , std::placeholders::_1, std::placeholders::_2
                           )

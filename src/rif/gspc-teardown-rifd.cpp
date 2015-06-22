@@ -38,7 +38,7 @@ try
     )
     ( option::strategy
     , boost::program_options::value<std::string>()->required()
-    , ("strategy: one of " + fhg::util::join (strategies, ", ")).c_str()
+    , ("strategy: one of " + fhg::util::join (strategies, ", ").string()).c_str()
     )
     ;
 

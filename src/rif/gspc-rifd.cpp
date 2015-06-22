@@ -156,7 +156,7 @@ try
         }
         if (!failed_statuses.empty())
         {
-          throw std::runtime_error (fhg::util::join (failed_statuses, ", "));
+          throw std::runtime_error (fhg::util::join (failed_statuses, ", ").string());
         }
       }
     );

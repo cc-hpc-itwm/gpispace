@@ -88,7 +88,7 @@ namespace xml
 
       std::string expression_type::expression (const std::string& sep) const
       {
-        return fhg::util::join (expressions(), ";" + sep);
+        return fhg::util::join (expressions(), ";" + sep).string();
       }
 
       const expressions_type& expression_type::expressions (void) const

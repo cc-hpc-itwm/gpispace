@@ -159,7 +159,7 @@ namespace gspc
         ( name::rif_strategy
         , boost::program_options::value<std::string>()->required()
         , ( "strategy used to bootstrap rifd (one of "
-          + fhg::util::join (fhg::rif::strategy::available_strategies(), ", ")
+          + fhg::util::join (fhg::rif::strategy::available_strategies(), ", ").string()
           + ")"
           ).c_str()
         );

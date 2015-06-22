@@ -161,7 +161,7 @@ namespace xml
         include_loop ( const std::string & pre
                      , IT pos, const IT & end
                      )
-          : generic (pre, "include loop: " + fhg::util::join (pos, end, " -> "))
+          : generic (pre, "include loop: " + fhg::util::join (pos, end, " -> ").string())
         {}
       };
 

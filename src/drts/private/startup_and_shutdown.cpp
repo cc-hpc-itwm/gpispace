@@ -201,7 +201,7 @@ namespace fhg
     , std::ostream& info_output
     )
   {
-     std::string name_prefix (fhg::util::join (description.capabilities, '+'));
+     std::string name_prefix (fhg::util::join (description.capabilities, '+').string());
      std::replace_if
        (name_prefix.begin(), name_prefix.end(), boost::is_any_of ("+#.-"), '_');
 
