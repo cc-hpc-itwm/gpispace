@@ -258,7 +258,7 @@ try
         }
       );
 
-  fhg::rpc::server_with_multiple_clients_and_defered_startup server
+  fhg::rpc::server_with_multiple_clients_and_deferred_startup server
     (service_dispatcher);
 
   if (pid_t child = fhg::util::syscall::fork())
