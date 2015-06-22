@@ -103,10 +103,8 @@ namespace fhg
         fhg::rpc::service_dispatcher service_dispatcher
           {fhg::util::serialization::exception::serialization_functions()};
 
-        fhg::rpc::service_handler<void (fhg::rif::entry_point)>
-          const register_service
+        fhg::rpc::service_handler<bootstrap_callback> const register_service
             ( service_dispatcher
-            , "register"
             , [&entry_points, &entry_points_guard, &entry_point_added]
                 (fhg::rif::entry_point const& entry_point)
               {
