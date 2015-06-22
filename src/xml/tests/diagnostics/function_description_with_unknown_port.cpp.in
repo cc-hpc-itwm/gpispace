@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE (function_description_with_unknown_return_port)
     <xml::parse::error::function_description_with_unknown_port>
   ( [&state, &filename] { xml::parse::just_parse (state, filename); }
   , boost::format ("ERROR: unknown %1% port %2%"
-                   " in description of function %3%.%4% in %5%\n"
+                   " in description of function %3%.%4% in %5%"
                   )
   % "return" % "r" % "m" % "f" % boost::filesystem::path (filename)
   );
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE (function_description_with_unknown_argument_port)
     <xml::parse::error::function_description_with_unknown_port>
   ( [&state, &filename] { xml::parse::just_parse (state, filename); }
   , boost::format ("ERROR: unknown %1% port %2%"
-                   " in description of function %3%.%4% in %5%\n"
+                   " in description of function %3%.%4% in %5%"
                   )
   % "argument" % "p" % "m" % "f" % boost::filesystem::path (filename)
   );
