@@ -146,7 +146,7 @@ namespace xml
       public:
         explicit file_already_there (const boost::filesystem::path& file)
           : generic
-            ( boost::format ("file %1% altready there with a different content")
+            ( boost::format ("file %1% already there with a different content")
             % file
             )
         {}
