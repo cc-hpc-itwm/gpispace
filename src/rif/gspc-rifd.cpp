@@ -21,7 +21,7 @@
 #include <rif/protocol.hpp>
 
 #include <rpc/client.hpp>
-#include <rpc/server.hpp>
+#include <rpc/server_with_multiple_clients.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -258,15 +258,8 @@ try
         }
       );
 
-  fhg::network::server_with_multiple_clients<boost::asio::ip::tcp, true>
-    server ( [&service_dispatcher]
-               ( fhg::network::connection_type* connection
-               , fhg::network::buffer_type message
-               )
-             {
-               service_dispatcher.dispatch (connection, message);
-             }
-           );
+  fhg::rpc::server_with_multiple_clients_and_defered_startup server
+    (service_dispatcher);
 
   if (pid_t child = fhg::util::syscall::fork())
   {
