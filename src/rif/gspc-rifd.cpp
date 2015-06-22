@@ -5,7 +5,7 @@
 #include <util-generic/syscall.hpp>
 #include <network/connectable_to_address_string.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
-#include <fhg/util/join.hpp>
+#include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/temporary_file.hpp>
@@ -150,7 +150,7 @@ try
           catch (...)
           {
             failed_statuses.emplace_back
-              (fhg::util::current_exception_as_string (": "));
+              (fhg::util::current_exception_printer (": ").string());
           }
         }
         if (!failed_statuses.empty())

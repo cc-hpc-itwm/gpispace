@@ -9,7 +9,7 @@
 
 #include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
-#include <fhg/util/join.hpp>
+#include <util-generic/join.hpp>
 #include <util-generic/print_exception.hpp>
 
 #include <gpi-space/gpi/api.hpp>
@@ -339,7 +339,7 @@ namespace gpi
             m_current_results.emplace_back
               ( boost::make_optional
                   ( boost::lexical_cast<int> (av[1])
-                  , fhg::util::join (av.begin() + 2, av.end(), " ")
+                  , fhg::util::join (av.begin() + 2, av.end(), ' ')
                   )
               );
             m_request_finished.notify_one();
@@ -359,7 +359,7 @@ namespace gpi
                , "handling command '" + msg + "' failed: "
                 << fhg::util::current_exception_printer (": ")
                );
-          cast (source, detail::command_t ("+RES") << 1 << fhg::util::current_exception_as_string (": "));
+          cast (source, detail::command_t ("+RES") << 1 << fhg::util::current_exception_printer (": ").string());
         }
       }
     }

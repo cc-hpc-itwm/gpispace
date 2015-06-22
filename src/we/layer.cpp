@@ -389,7 +389,7 @@ namespace we
         {
           rts_failed_and_forget
             ( activity_data._id
-            , fhg::util::current_exception_as_string (": ")
+            , fhg::util::current_exception_printer (": ").string()
             );
           continue;
         }

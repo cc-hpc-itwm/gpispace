@@ -2,7 +2,7 @@
 
 #include <drts/private/drts_impl.hpp>
 
-#include <fhg/util/join.hpp>
+#include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/read_file.hpp>
 #include <util-generic/read_lines.hpp>
@@ -201,7 +201,7 @@ namespace fhg
     , std::ostream& info_output
     )
   {
-     std::string name_prefix (fhg::util::join (description.capabilities, "+"));
+     std::string name_prefix (fhg::util::join (description.capabilities, '+'));
      std::replace_if
        (name_prefix.begin(), name_prefix.end(), boost::is_any_of ("+#.-"), '_');
 
@@ -636,7 +636,7 @@ namespace fhg
                     {
                       info_output << "terminating " << kind << " on "
                                   << entry_point_processes->first.to_string()
-                                  << ": " << fhg::util::join (pids, " ") << "\n";
+                                  << ": " << fhg::util::join (pids, ' ') << "\n";
 
                       fhg::util::nest_exceptions<std::runtime_error>
                         ( [&entry_point_processes, &pids]

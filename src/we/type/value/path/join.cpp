@@ -2,7 +2,7 @@
 
 #include <we/type/value/path/join.hpp>
 
-#include <fhg/util/join.hpp>
+#include <util-generic/join.hpp>
 
 namespace pnet
 {
@@ -14,7 +14,7 @@ namespace pnet
       {
         std::string join (const std::list<std::string>& path)
         {
-          return fhg::util::join (path, ".");
+          return fhg::util::join (path, '.');
         }
       }
     }

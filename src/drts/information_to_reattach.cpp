@@ -7,12 +7,11 @@
 #include <drts/private/pimpl.hpp>
 
 #include <we/type/value.hpp>
+#include <we/type/value/path/join.hpp>
 #include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
-
-#include <fhg/util/join.hpp>
 
 #include <boost/lexical_cast.hpp>
 
@@ -38,7 +37,7 @@ namespace gspc
         {
           throw std::logic_error
             ( "value did not had correct type at path: "
-            + fhg::util::join (path.begin(), path.end(), ".")
+            + pnet::type::value::path::join (path)
             + ": expected type " + typeid (T).name()
             );
         }
@@ -47,7 +46,7 @@ namespace gspc
       {
         throw std::logic_error
           ( "value did not contain anything at path: "
-          + fhg::util::join (path.begin(), path.end(), ".")
+          + pnet::type::value::path::join (path)
           );
       }
     }

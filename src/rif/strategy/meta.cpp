@@ -3,7 +3,7 @@
 #include <rif/strategy/meta.hpp>
 
 #include <network/connectable_to_address_string.hpp>
-#include <fhg/util/join.hpp>
+#include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
 
 #include <rif/strategy/ssh.hpp>

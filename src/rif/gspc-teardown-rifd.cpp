@@ -3,7 +3,7 @@
 
 #include <network/connectable_to_address_string.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
-#include <fhg/util/join.hpp>
+#include <util-generic/join.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/read_lines.hpp>
 
