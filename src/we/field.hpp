@@ -22,7 +22,7 @@ namespace pnet
   {
     const type::value::value_type& value (field (f, v, signature));
 
-    const T* x (boost::get<const T> (&value));
+    const T* x (boost::get<T> (&value));
 
     if (!x)
     {

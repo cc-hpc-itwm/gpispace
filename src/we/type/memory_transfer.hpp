@@ -14,6 +14,9 @@ namespace we
     struct memory_transfer
     {
     public:
+      //! \note serialization only
+      memory_transfer() = default;
+
       memory_transfer
         ( std::string const& global
         , std::string const& local
@@ -42,37 +45,12 @@ namespace we
 
       friend class boost::serialization::access;
       template<class Archive>
-        void serialize (Archive&, const unsigned int)
-      {}
+        void serialize (Archive& ar, const unsigned int)
+      {
+        ar & _global;
+        ar & _local;
+        ar & _not_modified_in_module_call;
+      }
     };
-  }
-}
-
-namespace boost
-{
-  namespace serialization
-  {
-    template<class Archive>
-      inline void save_construct_data
-        (Archive& ar, we::type::memory_transfer const* mt, const unsigned int)
-    {
-      ar << BOOST_SERIALIZATION_NVP (mt->global());
-      ar << BOOST_SERIALIZATION_NVP (mt->local());
-      ar << BOOST_SERIALIZATION_NVP (mt->not_modified_in_module_call());
-    }
-
-    template<class Archive>
-      inline void load_construct_data
-        (Archive& ar, we::type::memory_transfer* mt, const unsigned int)
-    {
-      std::string global;
-      std::string local;
-      boost::optional<bool> not_modified_in_module_call;
-      ar >> BOOST_SERIALIZATION_NVP (global);
-      ar >> BOOST_SERIALIZATION_NVP (local);
-      ar >> BOOST_SERIALIZATION_NVP (not_modified_in_module_call);
-      ::new (mt) we::type::memory_transfer
-          (global, local, not_modified_in_module_call);
-    }
   }
 }

@@ -1887,7 +1887,7 @@ namespace xml
               using pnet::type::signature::complete;
 
               os << complete (_port.type) << " " << _amper << _port.name << " ("
-                 << "boost::get< " << _modif << complete (_port.type) << _amper << " >"
+                 << "boost::get< " << complete (_port.type) << " >"
                  << " (_pnetc_input.value (\"" << _port.name << "\")));";
             }
             else
