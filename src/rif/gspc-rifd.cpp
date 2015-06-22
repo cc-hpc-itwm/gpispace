@@ -19,6 +19,7 @@
 
 #include <rif/execute_and_get_startup_messages.hpp>
 #include <rif/protocol.hpp>
+#include <rif/strategy/meta.hpp>
 
 #include <rpc/client.hpp>
 #include <rpc/server_with_multiple_clients.hpp>
@@ -270,8 +271,8 @@ try
     boost::asio::ip::tcp::endpoint const local_endpoint
       (server.local_endpoint());
 
-    fhg::rpc::sync_remote_function<void (fhg::rif::entry_point)>
-      (endpoint, "register")
+    fhg::rpc::sync_remote_function<fhg::rif::strategy::bootstrap_callback>
+      {endpoint}
       ( fhg::rif::entry_point
           ( fhg::network::connectable_to_address_string (local_endpoint.address())
           , local_endpoint.port()

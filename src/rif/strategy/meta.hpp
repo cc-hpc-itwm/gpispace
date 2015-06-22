@@ -3,6 +3,7 @@
 #pragma once
 
 #include <rif/entry_point.hpp>
+#include <rpc/function_description.hpp>
 
 #include <string>
 #include <vector>
@@ -16,6 +17,8 @@ namespace fhg
   {
     namespace strategy
     {
+      FHG_RPC_FUNCTION_DESCRIPTION (bootstrap_callback, void (entry_point));
+
       std::vector<std::string> available_strategies();
 
       std::vector<fhg::rif::entry_point> bootstrap
