@@ -76,6 +76,7 @@ namespace gspc
       std::string _orchestrator_host;
       unsigned short _orchestrator_port;
     } _started_runtime_system;
+    fhg::log::Logger _logger;
     std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
   };
 }

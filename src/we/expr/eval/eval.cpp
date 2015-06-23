@@ -52,7 +52,7 @@ namespace expr
               pnet::type::value::value_type c1 (boost::apply_visitor (*this, b.r));
 
               c.bind_and_discard_ref
-                ( boost::get<const std::list<std::string>&>(b.l)
+                ( boost::get<std::list<std::string>>(b.l)
                 , c1
                 );
 
@@ -125,7 +125,7 @@ namespace expr
                     typedef std::map< pnet::type::value::value_type
                                     , pnet::type::value::value_type
                                     > map_type;
-                    map_type& m (boost::get<map_type&> (c0));
+                    map_type& m (boost::get<map_type> (c0));
 
                     m[c1] = c2;
 

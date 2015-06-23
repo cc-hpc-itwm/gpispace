@@ -24,9 +24,13 @@ namespace pnet
           {}
           void _struct (const std::pair<std::string, structure_type>& s) const
           {
-            fhg::util::print_container<structure_type>
-              ( _os, s.first, " :: [", ", ", "]", std::ref (s.second)
-              , std::bind (&printer::print, *this, std::placeholders::_1)
+            _os << fhg::util::print_container<structure_type>
+              ( s.first + " :: [", ", ", "]", std::ref (s.second)
+              , [this] (std::ostream& os, const field_type& f) -> std::ostream&
+                {
+                  traverse (*this, f);
+                  return os;
+                }
               );
           }
           void _field (const std::pair<std::string, std::string>& f) const
@@ -40,10 +44,6 @@ namespace pnet
           }
         private:
           std::ostream& _os;
-          void print (const field_type& f) const
-          {
-            traverse (*this, f);
-          }
         };
 
         class show_sig : public boost::static_visitor<std::ostream&>

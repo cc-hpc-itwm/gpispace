@@ -4,6 +4,7 @@
 
 #include <fhg/assert.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/starts_with.hpp>
@@ -323,7 +324,7 @@ namespace we
         , [this, put_token_id, place_name, value]
           (activity_data_type& activity_data)
         {
-          boost::get<we::type::net_type&>
+          boost::get<we::type::net_type>
             (activity_data._activity->transition().data())
             .put_token (place_name, value);
 
@@ -372,18 +373,24 @@ namespace we
         boost::optional<type::activity_t> activity;
         try
         {
-          //! \note We wrap all input activites in a net.
-          activity = boost::get<we::type::net_type&>
-            (activity_data._activity->transition().data())
-            . fire_expressions_and_extract_activity_random
-            (_random_extraction_engine);
-
+          fhg::util::nest_exceptions<std::runtime_error>
+            ( [&]
+              {
+                //! \note We wrap all input activites in a net.
+                activity = boost::get<we::type::net_type>
+                  (activity_data._activity->transition().data())
+                  . fire_expressions_and_extract_activity_random
+                  (_random_extraction_engine);
+              }
+            , "workflow interpretation"
+            );
         }
         catch (...)
         {
-          std::ostringstream oss;
-          fhg::util::print_current_exception (oss, "Workflow interpretation: ");
-          rts_failed_and_forget (activity_data._id, oss.str());
+          rts_failed_and_forget
+            ( activity_data._id
+            , fhg::util::current_exception_printer (": ").string()
+            );
           continue;
         }
 
@@ -615,7 +622,7 @@ namespace we
     {
       //! \note We wrap all input activites in a net.
       we::type::net_type& net
-        (boost::get<we::type::net_type&> (_activity->transition().data()));
+        (boost::get<we::type::net_type> (_activity->transition().data()));
 
       for (const type::activity_t::token_on_port_t& top : child.output())
       {

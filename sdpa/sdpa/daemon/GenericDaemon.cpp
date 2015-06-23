@@ -38,6 +38,7 @@
 #include <util-generic/hostname.hpp>
 #include <fhg/util/macros.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/print_exception.hpp>
 
 #include <boost/tokenizer.hpp>
 #include <boost/range/adaptor/filtered.hpp>
@@ -105,8 +106,11 @@ namespace
   }
 }
 
-    GenericDaemon::virtual_memory_api::virtual_memory_api (boost::filesystem::path const& socket)
-      : _ (socket.string())
+    GenericDaemon::virtual_memory_api::virtual_memory_api
+        ( fhg::log::Logger& logger
+        , boost::filesystem::path const& socket
+        )
+      : _ (logger, socket.string())
     {}
 
     GenericDaemon::master_network_info::master_network_info
@@ -203,7 +207,8 @@ GenericDaemon::GenericDaemon( const std::string name
   , _event_handler_thread (&GenericDaemon::handle_events, this)
   , _virtual_memory_api
     ( vmem_socket
-    ? fhg::util::cxx14::make_unique<virtual_memory_api> (*vmem_socket)
+    ? fhg::util::cxx14::make_unique<virtual_memory_api>
+        (_logger, *vmem_socket)
     : nullptr
     )
 {
@@ -329,15 +334,13 @@ std::string GenericDaemon::gen_id()
       boost::mutex::scoped_lock const _ (_job_map_mutex);
 
       const job_map_t::const_iterator it (job_map_.find( job_id ));
-      if (it != job_map_.end())
-      {
-        delete it->second;
-        job_map_.erase (it);
-      }
-      else
+      if (it == job_map_.end())
       {
         throw std::runtime_error ("deleteJob: job not found");
       }
+
+      delete it->second;
+      job_map_.erase (it);
     }
 
 void GenericDaemon::handleSubmitJobEvent
@@ -395,11 +398,12 @@ void GenericDaemon::handleSubmitJobEvent
         m_guiService->notify (evt);
       }
     }
-    catch(const std::exception& ex)
+    catch (...)
     {
-      LLOG (ERROR, _logger, "Exception occurred: " << ex.what() << ". Failed to submit the job "<<job_id<<" to the workflow engine!");
+      fhg::util::current_exception_printer const error (": ");
+      LLOG (ERROR, _logger, "Exception occurred: " << error << ". Failed to submit the job "<<job_id<<" to the workflow engine!");
 
-      failed (job_id, ex.what());
+      failed (job_id, error.string());
     }
   }
   else {
@@ -493,12 +497,16 @@ void GenericDaemon::handleErrorEvent
 
       scheduler().worker_manager().set_worker_backlog_full (as_worker.get()->second, true);
 
-      if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
+      if (sdpa::status::is_terminal (pJob->getStatus()))
       {
-        scheduler().workerCanceled (as_worker.get()->second, jobId);
-        pJob->Reschedule();
+        throw std::runtime_error
+          ("Got SDPA_EBACKLOGFULL error for an already terminated job!");
+      }
 
-        if (!scheduler().cancelNotTerminatedWorkerJobs
+      scheduler().workerCanceled (as_worker.get()->second, jobId);
+      pJob->Reschedule();
+
+      if ( !scheduler().cancelNotTerminatedWorkerJobs
              ( [this, &jobId](const sdpa::worker_id_t& wid)
                {
                  child_proxy (this, scheduler().worker_manager().address_by_worker (wid).get()->second)
@@ -506,16 +514,11 @@ void GenericDaemon::handleErrorEvent
                }
              , jobId
              )
-           )
-        {
-          scheduler().releaseReservation (jobId);
-          scheduler().enqueueJob (jobId);
-          scheduler().assignJobsToWorkers();
-        }
-      }
-      else
+         )
       {
-        throw std::runtime_error ("Got SDPA_EBACKLOGFULL error for an already terminated job!");
+        scheduler().releaseReservation (jobId);
+        scheduler().enqueueJob (jobId);
+        scheduler().assignJobsToWorkers();
       }
 
       break;
@@ -627,9 +630,10 @@ try
   scheduler().enqueueJob (job_id);
   request_scheduling();
 }
-catch (std::exception const& ex)
+catch (...)
 {
-  workflowEngine()->failed (job_id, ex.what());
+  workflowEngine()->failed
+    (job_id, fhg::util::current_exception_printer (": ").string());
 }
 
 void GenericDaemon::cancel (const we::layer::id_type& job_id)
@@ -922,13 +926,15 @@ void GenericDaemon::handle_events()
     {
       event.second->handleBy (event.first, this);
     }
-    catch (std::exception const& ex)
+    catch (...)
     {
       sendEventToOther
         ( event.first
         , events::ErrorEvent::Ptr
           ( new events::ErrorEvent
-            (events::ErrorEvent::SDPA_EUNKNOWN, ex.what())
+              ( events::ErrorEvent::SDPA_EUNKNOWN
+              , fhg::util::current_exception_printer (": ").string()
+              )
           )
         );
     }
@@ -1105,22 +1111,7 @@ void GenericDaemon::handleSubmitJobAckEvent
   // since it was not rejected, no error occurred etc ....
   //find the job ptrJob and call
   Job* ptrJob = findJob(pEvent->job_id());
-  if(ptrJob)
-  {
-    if(ptrJob->getStatus() == sdpa:: status::CANCELING)
-      return;
-
-   WorkerManager::worker_connections_t::right_map::iterator const worker
-      ( fhg::util::boost::get_or_throw<std::runtime_error>
-         (scheduler().worker_manager().worker_by_address (source), "submit_job_ack for unknown worker")
-      );
-
-    ptrJob->Dispatch();
-    scheduler().worker_manager().acknowledge_job_sent_to_worker ( pEvent->job_id()
-                                                                , worker->second
-                                                                );
-  }
-  else
+  if(!ptrJob)
   {
     LLOG (ERROR, _logger,  "job " << pEvent->job_id()
                         << " could not be acknowledged:"
@@ -1128,8 +1119,23 @@ void GenericDaemon::handleSubmitJobAckEvent
                         << " not found!"
                         );
 
-    throw std::runtime_error ("Could not acknowledge job");
+    throw std::runtime_error
+      ("Could not acknowledge job: " + pEvent->job_id() + " not found");
   }
+
+  if(ptrJob->getStatus() == sdpa:: status::CANCELING)
+    return;
+
+  WorkerManager::worker_connections_t::right_map::iterator const worker
+    ( fhg::util::boost::get_or_throw<std::runtime_error>
+        ( scheduler().worker_manager().worker_by_address (source)
+        , "submit_job_ack for unknown worker"
+        )
+    );
+
+  ptrJob->Dispatch();
+  scheduler().worker_manager().acknowledge_job_sent_to_worker
+    (pEvent->job_id(), worker->second);
 }
 
 // respond to a worker that the JobFinishedEvent was received
@@ -1138,30 +1144,26 @@ void GenericDaemon::handleJobFinishedAckEvent
 {
   // The result was successfully delivered by the worker and the WE was notified
   // therefore, I can delete the job from the job map
-  if(findJob(pEvt->job_id()))
-  {
-      // delete it from the map when you receive a JobFinishedAckEvent!
-      deleteJob(pEvt->job_id());
-  }
-  else
+  if (!findJob(pEvt->job_id()))
   {
     throw std::runtime_error ("Couldn't find the job!");
   }
+
+  // delete it from the map when you receive a JobFinishedAckEvent!
+  deleteJob(pEvt->job_id());
 }
 
 // respond to a worker that the JobFailedEvent was received
 void GenericDaemon::handleJobFailedAckEvent
   (fhg::com::p2p::address_t const&, const events::JobFailedAckEvent* pEvt )
 {
-  if(findJob(pEvt->job_id()))
-  {
-        // delete it from the map when you receive a JobFailedAckEvent!
-        deleteJob(pEvt->job_id());
-  }
-  else
+  if (!findJob(pEvt->job_id()))
   {
     throw std::runtime_error ("Couldn't find the job!");
   }
+
+  // delete it from the map when you receive a JobFailedAckEvent!
+  deleteJob(pEvt->job_id());
 }
 
     void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type job_id)
@@ -1315,7 +1317,13 @@ void GenericDaemon::handleJobFailedAckEvent
       const boost::optional<worker_id_t> worker_id
         (scheduler().worker_manager().findSubmOrAckWorker (event->job_id()));
 
-      if (job && worker_id)
+      if (!job || (!worker_id && !workflowEngine()))
+      {
+        throw std::runtime_error
+          ("unable to put token: " + event->job_id() + " unknown or not running");
+      }
+
+      if (worker_id)
       {
         _put_token_source.emplace (event->put_token_id(), source);
 
@@ -1330,7 +1338,7 @@ void GenericDaemon::handleJobFailedAckEvent
       //! wfe. All jobs are regarded as going to the wfe and the only
       //! way to prevent a loop is to check whether the discover comes
       //! out of the wfe. Special "worker" id?
-      else if (job && workflowEngine())
+      else
       {
         _put_token_source.emplace (event->put_token_id(), source);
 
@@ -1343,11 +1351,6 @@ void GenericDaemon::handleJobFailedAckEvent
                                     , event->place_name()
                                     , event->value()
                                     );
-      }
-      else
-      {
-        throw std::runtime_error
-          ("unable to put token: " + event->job_id() + " unknown or not running");
       }
     }
     void GenericDaemon::handle_put_token_ack
@@ -1366,25 +1369,21 @@ void GenericDaemon::handleRetrieveJobResultsEvent
   (fhg::com::p2p::address_t const& source, const events::RetrieveJobResultsEvent* pEvt )
 {
   Job* pJob = findJob(pEvt->job_id());
-  if(pJob)
-  {
-      if(sdpa::status::is_terminal (pJob->getStatus()))
-      {
-        parent_proxy (this, source).retrieve_job_results_reply
-          (pEvt->job_id(), pJob->result());
-      }
-      else
-      {
-        throw std::runtime_error
-          ( "Not allowed to request results for a non-terminated job, its current status is : "
-          +  sdpa::status::show(pJob->getStatus())
-          );
-      }
-  }
-  else
+  if (!pJob)
   {
     throw std::runtime_error ("Inexistent job: "+pEvt->job_id());
   }
+
+  if (!sdpa::status::is_terminal (pJob->getStatus()))
+  {
+    throw std::runtime_error
+      ( "Not allowed to request results for a non-terminated job, its current status is : "
+      +  sdpa::status::show(pJob->getStatus())
+      );
+  }
+
+  parent_proxy (this, source).retrieve_job_results_reply
+    (pEvt->job_id(), pJob->result());
 }
 
 void GenericDaemon::handleQueryJobStatusEvent
@@ -1393,15 +1392,13 @@ void GenericDaemon::handleQueryJobStatusEvent
   sdpa::job_id_t jobId = pEvt->job_id();
 
   Job* pJob (findJob(jobId));
-  if(pJob)
-  {
-    parent_proxy (this, source).query_job_status_reply
-      (pJob->id(), pJob->getStatus(), pJob->error_message());
-  }
-  else
+  if (!pJob)
   {
     throw std::runtime_error ("Inexistent job: "+pEvt->job_id());
   }
+
+  parent_proxy (this, source).query_job_status_reply
+    (pJob->id(), pJob->getStatus(), pJob->error_message());
 }
 
 }}

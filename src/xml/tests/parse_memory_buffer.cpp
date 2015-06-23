@@ -366,7 +366,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_argument_in_function_signature)
                   );
 
     xml::parse::id::ref::module const& module_call
-      ( boost::get<xml::parse::id::ref::module const&>
+      ( boost::get<xml::parse::id::ref::module>
         (function.get().content())
       );
 
@@ -407,7 +407,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_arguments_in_function_signature)
                   );
 
     xml::parse::id::ref::module const& module_call
-      ( boost::get<xml::parse::id::ref::module const&>
+      ( boost::get<xml::parse::id::ref::module>
         (function.get().content())
       );
 
@@ -451,7 +451,7 @@ BOOST_AUTO_TEST_CASE
                   );
 
     xml::parse::id::ref::module const& module_call
-      ( boost::get<xml::parse::id::ref::module const&>
+      ( boost::get<xml::parse::id::ref::module>
         (function.get().content())
       );
 
@@ -489,7 +489,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_return_in_function_signature)
                   );
 
     xml::parse::id::ref::module const& module_call
-      ( boost::get<xml::parse::id::ref::module const&>
+      ( boost::get<xml::parse::id::ref::module>
         (function.get().content())
       );
 
@@ -524,7 +524,7 @@ BOOST_AUTO_TEST_CASE
                   );
 
     xml::parse::id::ref::module const& module_call
-      ( boost::get<xml::parse::id::ref::module const&>
+      ( boost::get<xml::parse::id::ref::module>
         (function.get().content())
       );
 

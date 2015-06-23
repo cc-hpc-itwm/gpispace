@@ -6,7 +6,7 @@
 #include <xml/parse/type/memory_transfer.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/join.hpp>
+#include <util-generic/join.hpp>
 #include <util-generic/testing/random_string.hpp>
 #include <fhg/util/xml.hpp>
 
@@ -46,8 +46,8 @@ namespace
     fhg::util::xml::xmlstream s (oss);
 
     xml::parse::type::dump::dump
-      (s, make_transfer ( fhg::util::join (expressions_global, ";")
-                        , fhg::util::join (expressions_local, ";")
+      (s, make_transfer ( fhg::util::join (expressions_global, ';')
+                        , fhg::util::join (expressions_local, ';')
                         )
       );
 
@@ -57,8 +57,8 @@ namespace
   <local>%3%</local>
 </memory-%1%>)EOS")
         % tag
-        % fhg::util::join (expressions_global, ";")
-        % fhg::util::join (expressions_local, ";")
+        % fhg::util::join (expressions_global, ';')
+        % fhg::util::join (expressions_local, ';')
         % ( not_modified_in_module_call
           ? ( boost::format (" not-modified-in-module-call=\"%1%\"")
             % (*not_modified_in_module_call ? "true" : "false")

@@ -1,6 +1,6 @@
 #include <gpi-space/pc/memory/transfer_manager.hpp>
 
-#include <gpi-space/log_to_GLOBAL_logger.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <util-generic/cxx14/make_unique.hpp>
 
@@ -16,8 +16,11 @@ namespace gpi
   {
     namespace memory
     {
-      transfer_manager_t::transfer_manager_t (api::gpi_api_t& gpi_api)
-        : _gpi_api (gpi_api)
+      transfer_manager_t::transfer_manager_t ( fhg::log::Logger& logger
+                                             , api::gpi_api_t& gpi_api
+                                             )
+        : _logger (logger)
+        , _gpi_api (gpi_api)
       {
         const std::size_t number_of_queues (gpi_api.number_of_queues());
         for (std::size_t i(0); i < number_of_queues; ++i)
@@ -40,7 +43,8 @@ namespace gpi
       {
         if (t.queue >= m_queues.size())
         {
-          LOG( ERROR
+          LLOG( ERROR
+              , _logger
              , "cannot enqueue request: no such queue: " << t.queue
              );
           throw std::invalid_argument ("no such queue");
@@ -65,7 +69,8 @@ namespace gpi
       {
         if (queue >= m_queues.size())
         {
-          LOG( ERROR
+          LLOG( ERROR
+              , _logger
              , "cannot wait on queue: no such queue: " << queue
              );
           throw std::invalid_argument ("no such queue");
@@ -104,7 +109,8 @@ namespace gpi
           }
           catch (std::exception const & ex)
           {
-            LOG ( ERROR
+            LLOG ( ERROR
+                 , _logger
                  , "marking queue " << queue << " permanently as failed!"
                  );
             m_queues [queue]->disable ();

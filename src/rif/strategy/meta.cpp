@@ -3,7 +3,7 @@
 #include <rif/strategy/meta.hpp>
 
 #include <network/connectable_to_address_string.hpp>
-#include <fhg/util/join.hpp>
+#include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
 
 #include <rif/strategy/ssh.hpp>
@@ -103,10 +103,8 @@ namespace fhg
         fhg::rpc::service_dispatcher service_dispatcher
           {fhg::util::serialization::exception::serialization_functions()};
 
-        fhg::rpc::service_handler<void (fhg::rif::entry_point)>
-          const register_service
+        fhg::rpc::service_handler<bootstrap_callback> const register_service
             ( service_dispatcher
-            , "register"
             , [&entry_points, &entry_points_guard, &entry_point_added]
                 (fhg::rif::entry_point const& entry_point)
               {

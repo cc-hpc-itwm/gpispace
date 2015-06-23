@@ -3,7 +3,7 @@
 #include <utility>
 
 #include <fhg/assert.hpp>
-#include <gpi-space/log_to_GLOBAL_logger.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/global/topology.hpp>
@@ -23,14 +23,16 @@ namespace gpi
   {
     namespace memory
     {
-      gpi_area_t::gpi_area_t ( const gpi::pc::type::process_id_t creator
+      gpi_area_t::gpi_area_t ( fhg::log::Logger& logger
+                             , const gpi::pc::type::process_id_t creator
                              , const std::string & name
                              , const gpi::pc::type::flags_t flags
                              , gpi::pc::global::itopology_t & topology
                              , handle_generator_t& handle_generator
                              , api::gpi_api_t& gpi_api
                              )
-        : area_t ( gpi_area_t::area_type
+        : area_t ( logger
+                 , gpi_area_t::area_type
                  , creator
                  , name
                  , gpi_api.memory_size()
@@ -80,7 +82,8 @@ namespace gpi
           }
           catch (std::exception const & ex)
           {
-            LOG (WARN, "could not allocate communication buffer "
+            LLOG (WARN, _logger
+                 , "could not allocate communication buffer "
                  << (num_buffers_allocated+1)
                  << ": " << ex.what ()
                  );
@@ -98,7 +101,8 @@ namespace gpi
         }
         else if (descriptor().avail == 0)
         {
-          LOG ( WARN
+          LLOG ( WARN
+               , _logger
               ,  "communication buffers consumed all your precious memory,"
               << " this might not be what you wanted!"
               );
@@ -278,7 +282,8 @@ namespace gpi
         }
 
         static
-        void do_send ( area_t & src_area
+        void do_send ( fhg::log::Logger& logger
+                     , area_t & src_area
                      , gpi::pc::type::memory_location_t src_loc
                      , gpi_area_t & dst_area
                      , gpi::pc::type::memory_location_t dst_loc
@@ -304,7 +309,8 @@ namespace gpi
 
             if (0 == read_bytes)
             {
-              LOG ( WARN
+              LLOG ( WARN
+                   , logger
                    , "could not read from src area - premature end-of-file?"
                    );
               break;
@@ -329,7 +335,8 @@ namespace gpi
         }
 
         static
-        void do_recv ( area_t & dst_area
+        void do_recv ( fhg::log::Logger& logger
+                     , area_t & dst_area
                      , gpi::pc::type::memory_location_t dst_loc
                      , gpi_area_t & src_area
                      , gpi::pc::type::memory_location_t src_loc
@@ -365,7 +372,8 @@ namespace gpi
 
             if (written_bytes != buf.used ())
             {
-              LOG ( WARN
+              LLOG ( WARN
+                   , logger
                    , "could not write to dst area - premature end-of-file?"
                    );
               break;
@@ -467,6 +475,7 @@ namespace gpi
           + boost::lexical_cast<std::string> (amount)
 
           , std::bind ( &helper::do_send
+                      , std::ref (_logger)
                       , std::ref (src_area)
                       , src
                       , std::ref (*this)
@@ -499,6 +508,7 @@ namespace gpi
           + boost::lexical_cast<std::string> (amount)
 
           , std::bind ( &helper::do_recv
+                      , std::ref (_logger)
                       , std::ref (dst_area)
                       , dst
                       , std::ref (*this)
@@ -534,7 +544,8 @@ namespace gpi
       }
 
       area_ptr_t gpi_area_t::create
-        ( std::string const &url_s
+        ( fhg::log::Logger& logger
+        , std::string const &url_s
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator
         , api::gpi_api_t& gpi_api
@@ -547,7 +558,8 @@ namespace gpi
         type::size_t numbuf =
           boost::lexical_cast<type::size_t>(url.get ("buffers").get_value_or ("8"));
 
-        gpi_area_t * area = new gpi_area_t ( GPI_PC_INVAL
+        gpi_area_t * area = new gpi_area_t ( logger
+                                           , GPI_PC_INVAL
                                            , "GPI"
                                            , gpi::pc::F_PERSISTENT
                                            + gpi::pc::F_GLOBAL

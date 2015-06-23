@@ -143,9 +143,9 @@ namespace fhg
                     }
                   else
                     {
-                      boost::get<store_type&> ( store::mk_or_keep<store_type>
-                                                (store->second)
-                                              )
+                      boost::get<store_type> ( store::mk_or_keep<store_type>
+                                                 (store->second)
+                                             )
                         .push (pred)
                         ;
                     }
@@ -186,7 +186,7 @@ namespace fhg
                 }
 
               typename store::of<T>::type::optional_value_type value
-                (boost::get<const store_type&> (store->second).get (item));
+                (boost::get<store_type> (store->second).get (item));
 
               if (value)
                 {

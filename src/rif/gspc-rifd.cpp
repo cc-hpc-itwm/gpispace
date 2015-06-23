@@ -5,7 +5,8 @@
 #include <util-generic/syscall.hpp>
 #include <network/connectable_to_address_string.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
-#include <fhg/util/join.hpp>
+#include <util-generic/join.hpp>
+#include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/temporary_file.hpp>
 
@@ -18,8 +19,10 @@
 
 #include <rif/execute_and_get_startup_messages.hpp>
 #include <rif/protocol.hpp>
+#include <rif/strategy/meta.hpp>
 
-#include <rpc/server.hpp>
+#include <rpc/client.hpp>
+#include <rpc/server_with_multiple_clients.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -106,45 +109,49 @@ try
         {
           try
           {
-            int status;
+            fhg::util::nest_exceptions<std::runtime_error>
+              ( [&]
+                {
+                  int status;
 
-            if (fhg::util::syscall::waitpid (pid, &status, WNOHANG) == pid)
-            {
-              if (WIFEXITED (status))
-              {
-                throw std::runtime_error
-                  ("already returned " + std::to_string (WEXITSTATUS (status)));
-              }
-              else if (WIFSIGNALED (status))
-              {
-                throw std::runtime_error
-                  ("already signaled " + std::to_string (WTERMSIG (status)));
-              }
-            }
+                  if (fhg::util::syscall::waitpid (pid, &status, WNOHANG) == pid)
+                  {
+                    if (WIFEXITED (status))
+                    {
+                      throw std::runtime_error
+                        ("already returned " + std::to_string (WEXITSTATUS (status)));
+                    }
+                    else if (WIFSIGNALED (status))
+                    {
+                      throw std::runtime_error
+                        ("already signaled " + std::to_string (WTERMSIG (status)));
+                    }
+                  }
 
-            fhg::util::syscall::kill (pid, SIGTERM);
+                  fhg::util::syscall::kill (pid, SIGTERM);
 
-            if (fhg::util::syscall::waitpid (pid, &status, 0) != pid)
-            {
-              throw std::logic_error ("waitpid returned for wrong child");
-            }
-            if (WIFEXITED (status) && WEXITSTATUS (status))
-            {
-              throw std::runtime_error
-                ("returned " + std::to_string (WEXITSTATUS (status)));
-            }
-            else if (WIFSIGNALED (status))
-            {
-              throw std::runtime_error
-                ("signaled " + std::to_string (WTERMSIG (status)));
-            }
+                  if (fhg::util::syscall::waitpid (pid, &status, 0) != pid)
+                  {
+                    throw std::logic_error ("waitpid returned for wrong child");
+                  }
+                  if (WIFEXITED (status) && WEXITSTATUS (status))
+                  {
+                    throw std::runtime_error
+                      ("returned " + std::to_string (WEXITSTATUS (status)));
+                  }
+                  else if (WIFSIGNALED (status))
+                  {
+                    throw std::runtime_error
+                      ("signaled " + std::to_string (WTERMSIG (status)));
+                  }
+                }
+              , std::to_string (pid)
+              );
           }
           catch (...)
           {
-            std::ostringstream oss;
-            fhg::util::print_current_exception
-              (oss, std::to_string (pid) + ": ");
-            failed_statuses.emplace_back (oss.str());
+            failed_statuses.emplace_back
+              (fhg::util::current_exception_printer (": ").string());
           }
         }
         if (!failed_statuses.empty())
@@ -252,93 +259,20 @@ try
         }
       );
 
-  std::mutex connections_guard;
-  std::vector<std::unique_ptr<fhg::network::connection_type>> connections;
-  std::list<std::unique_ptr<fhg::network::connection_type>> connections_to_delete;
+  fhg::rpc::server_with_multiple_clients_and_deferred_startup server
+    (service_dispatcher);
 
-  fhg::network::continous_acceptor<boost::asio::ip::tcp> acceptor
-    ( boost::asio::ip::tcp::endpoint
-        (boost::asio::ip::address(), port.get_value_or (0))
-    , io_service
-    , [] (fhg::network::buffer_type buf) { return buf; }
-    , [] (fhg::network::buffer_type buf) { return buf; }
-    , [&service_dispatcher]
-        (fhg::network::connection_type* connection, fhg::network::buffer_type message)
-      {
-        service_dispatcher.dispatch (connection, message);
-      }
-    , [&connections, &connections_to_delete, &connections_guard]
-        (fhg::network::connection_type* connection)
-      {
-        std::unique_lock<std::mutex> const _ (connections_guard);
-
-        decltype (connections)::iterator pos
-          ( std::find_if
-              ( connections.begin()
-              , connections.end()
-              , [&connection]
-                  (std::unique_ptr<fhg::network::connection_type> const& other)
-                {
-                  return other.get() == connection;
-                }
-              )
-          );
-
-        if (pos == connections.end())
-        {
-          throw std::logic_error ("disconnect for unknown connection");
-        }
-
-        connections_to_delete.emplace_back (std::move (*pos));
-        connections.erase (pos);
-      }
-    , [&connections, &connections_guard]
-        (std::unique_ptr<fhg::network::connection_type> connection)
-      {
-        std::unique_lock<std::mutex> const _ (connections_guard);
-        connections.emplace_back (std::move (connection));
-      }
-    );
-
-  io_service.notify_fork (boost::asio::io_service::fork_prepare);
   if (pid_t child = fhg::util::syscall::fork())
   {
-    io_service.notify_fork (boost::asio::io_service::fork_parent);
+    server.post_fork_parent();
 
-    boost::asio::io_service io_service;
-    boost::asio::io_service::work const io_service_work (io_service);
-    boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> const
-      io_service_thread
-        ( [&io_service, &connections_guard, &connections_to_delete]
-          {
-            while (io_service.run_one())
-            {
-              std::unique_lock<std::mutex> const _ (connections_guard);
-              connections_to_delete.clear();
-            }
-          }
-        );
-
-    fhg::rpc::remote_endpoint endpoint
-      ( io_service
-      , register_host, register_port
-      , fhg::util::serialization::exception::serialization_functions()
-      );
-
-    struct stop_io_service_on_scope_exit
-    {
-      ~stop_io_service_on_scope_exit()
-      {
-        _io_service.stop();
-      }
-      boost::asio::io_service& _io_service;
-    } stop_io_service_on_scope_exit {io_service};
+    fhg::rpc::remote_endpoint endpoint (register_host, register_port);
 
     boost::asio::ip::tcp::endpoint const local_endpoint
-      (acceptor.local_endpoint());
+      (server.local_endpoint());
 
-    fhg::rpc::sync_remote_function<void (fhg::rif::entry_point)>
-      (endpoint, "register")
+    fhg::rpc::sync_remote_function<fhg::rif::strategy::bootstrap_callback>
+      {endpoint}
       ( fhg::rif::entry_point
           ( fhg::network::connectable_to_address_string (local_endpoint.address())
           , local_endpoint.port()
@@ -353,16 +287,14 @@ try
   fhg::util::syscall::close (1);
   fhg::util::syscall::close (2);
 
-  io_service.notify_fork (boost::asio::io_service::fork_child);
-
-  const boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-    io_service_thread ([&io_service]() { io_service.run(); });
+  server.post_fork_child();
+  server.run_sync();
 
   return 0;
 }
 catch (...)
 {
-  fhg::util::print_current_exception (std::cerr, "EX: ");
+  std::cerr << "EX: " << fhg::util::current_exception_printer() << '\n';
 
   return 1;
 }

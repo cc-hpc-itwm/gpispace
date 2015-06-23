@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fhglog/Logger.hpp>
+
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/type/flags.hpp>
@@ -29,8 +31,7 @@ namespace gpi
         typedef boost::shared_ptr<gpi::pc::segment::segment_t> segment_ptr;
         typedef std::map<gpi::pc::type::segment_id_t, segment_ptr> segment_map_t;
 
-        explicit
-        api_t (std::string const & path);
+        api_t (fhg::log::Logger&, std::string const & path);
 
         ~api_t ();
 
@@ -85,6 +86,7 @@ namespace gpi
 
         gpi::pc::proto::message_t communicate (gpi::pc::proto::message_t const &);
 
+        fhg::log::Logger& _logger;
         mutable mutex_type m_mutex;
         int m_socket;
         segment_map_t m_segments;

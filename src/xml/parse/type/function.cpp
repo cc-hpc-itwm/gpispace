@@ -25,6 +25,7 @@
 #include <fhg/util/cpp/include_guard.hpp>
 #include <fhg/util/indenter.hpp>
 #include <fhg/util/starts_with.hpp>
+#include <util-generic/join.hpp>
 #include <util-generic/ostream_modifier.hpp>
 #include <util-generic/split.hpp>
 
@@ -1887,7 +1888,7 @@ namespace xml
               using pnet::type::signature::complete;
 
               os << complete (_port.type) << " " << _amper << _port.name << " ("
-                 << "boost::get< " << _modif << complete (_port.type) << _amper << " >"
+                 << "boost::get< " << complete (_port.type) << " >"
                  << " (_pnetc_input.value (\"" << _port.name << "\")));";
             }
             else

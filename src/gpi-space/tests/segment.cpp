@@ -9,7 +9,9 @@
 BOOST_AUTO_TEST_CASE (sequence_of_create_close_unlink_does_not_throw)
 {
   gpi::pc::segment::segment_t seg
-    ("seg-test-" + boost::lexical_cast<std::string>(getpid()), 1024);
+    ( "seg-test-" + boost::lexical_cast<std::string>(getpid())
+    , 1024
+    );
   try
   {
     seg.create ();

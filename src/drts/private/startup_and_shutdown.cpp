@@ -2,7 +2,7 @@
 
 #include <drts/private/drts_impl.hpp>
 
-#include <fhg/util/join.hpp>
+#include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/read_file.hpp>
 #include <util-generic/read_lines.hpp>
@@ -132,11 +132,12 @@ namespace
     , boost::filesystem::path const& sdpa_home
     , boost::optional<boost::filesystem::path> const& log_dir
     , fhg::drts::processes_storage& processes
+    , std::ostream& info_output
     )
   {
-    std::cout << "I: starting agent: " << name << " on rif entry point "
-              << rif_entry_point.to_string()
-              << " with parent " << parent_name << "\n";
+    info_output << "I: starting agent: " << name << " on rif entry point "
+                << rif_entry_point.to_string()
+                << " with parent " << parent_name << "\n";
 
     std::vector<std::string> agent_startup_arguments
       { "-u", "0"
@@ -197,32 +198,33 @@ namespace fhg
     , boost::optional<boost::filesystem::path> const& gpi_socket
     , std::vector<boost::filesystem::path> const& app_path
     , boost::filesystem::path const& sdpa_home
+    , std::ostream& info_output
     )
   {
-     std::string name_prefix (fhg::util::join (description.capabilities, "+"));
+     std::string name_prefix (fhg::util::join (description.capabilities, '+'));
      std::replace_if
        (name_prefix.begin(), name_prefix.end(), boost::is_any_of ("+#.-"), '_');
 
-     std::cout << "I: starting " << name_prefix << " workers (master "
-               << master_name << ", "
-               << description.num_per_node << "/host, "
-               << ( description.max_nodes == 0 ? "unlimited"
-                  : description.max_nodes == 1 ? "unique"
-                  : "global max: " + std::to_string (description.max_nodes)
-                  )
-               << ", " << description.shm_size << " SHM) with parent "
-               << master_name << " on rif entry point "
-               << fhg::util::join
-                    ( entry_points
-                    | boost::adaptors::transformed
-                        ( [] (fhg::rif::entry_point const& entry_point)
-                          {
-                            return entry_point.to_string();
-                          }
-                        )
-                    , ", "
+     info_output << "I: starting " << name_prefix << " workers (master "
+                 << master_name << ", "
+                 << description.num_per_node << "/host, "
+                 << ( description.max_nodes == 0 ? "unlimited"
+                    : description.max_nodes == 1 ? "unique"
+                    : "global max: " + std::to_string (description.max_nodes)
                     )
-               << "\n";
+                 << ", " << description.shm_size << " SHM) with parent "
+                 << master_name << " on rif entry point "
+                 << fhg::util::join
+                      ( entry_points
+                      | boost::adaptors::transformed
+                          ( [] (fhg::rif::entry_point const& entry_point)
+                            {
+                              return entry_point.to_string();
+                            }
+                          )
+                      , ", "
+                      )
+                 << "\n";
 
      std::vector<std::future<void>> startups;
 
@@ -413,6 +415,7 @@ namespace fhg
       , fhg::drts::processes_storage& processes
       , std::string& master_agent_name
       , fhg::drts::hostinfo_type& master_agent_hostinfo
+      , std::ostream& info_output
       )
     {
       if (rif_entry_points.empty())
@@ -440,16 +443,16 @@ namespace fhg
           }
         );
 
-      std::cout << "I: starting base sdpa components on " << master.to_string() << "...\n";
+      info_output << "I: starting base sdpa components on " << master.to_string() << "...\n";
       if (log_host && log_port)
       {
-        std::cout << "I: sending log events to: "
-                  << *log_host << ":" << *log_port << "\n";
+        info_output << "I: sending log events to: "
+                    << *log_host << ":" << *log_port << "\n";
       }
       if (gui_host && gui_port)
       {
-        std::cout << "I: sending execution events to: "
-                  << *gui_host << ":" << *gui_port << "\n";
+        info_output << "I: sending execution events to: "
+                    << *gui_host << ":" << *gui_port << "\n";
       }
 
       std::pair<pid_t, std::vector<std::string>> const orchestrator_startup_messages
@@ -510,10 +513,10 @@ namespace fhg
             ("vmem memory size is required when gpi is enabled");
         }
 
-        std::cout << "I: using VMEM mem: " << gpi_mem.get() << " bytes per node\n"
-                  << "I: starting VMEM on: " << gpi_socket.get()
-                  << " with a timeout of " << vmem_startup_timeout.get().count()
-                  << " seconds\n";
+        info_output << "I: using VMEM mem: " << gpi_mem.get() << " bytes per node\n"
+                    << "I: starting VMEM on: " << gpi_socket.get()
+                    << " with a timeout of " << vmem_startup_timeout.get().count()
+                    << " seconds\n";
 
         std::vector<std::string> nodes;
         for (fhg::rif::entry_point const& entry_point : rif_entry_points)
@@ -581,6 +584,7 @@ namespace fhg
                                           , sdpa_home
                                           , log_dir
                                           , processes
+                                          , info_output
                                           );
 
       return orchestrator_hostinfo;
@@ -590,7 +594,10 @@ namespace fhg
     {
       template<typename It>
         void terminate_all_processes_of_a_kind
-          (std::vector<It> const& entry_point_procs, component_type component)
+          ( std::vector<It> const& entry_point_procs
+          , component_type component
+          , std::ostream& info_output
+          )
       {
         std::string const kind
           ( component == component_type::worker ? "drts-kernel"
@@ -625,11 +632,11 @@ namespace fhg
             terminates.emplace_back
               ( std::async
                   ( std::launch::async
-                  , [&kind, pids, to_erase, entry_point_processes]
+                  , [&kind, pids, to_erase, entry_point_processes, &info_output]
                     {
-                      std::cout << "terminating " << kind << " on "
-                                << entry_point_processes->first.to_string()
-                                << ": " << fhg::util::join (pids, " ") << "\n";
+                      info_output << "terminating " << kind << " on "
+                                  << entry_point_processes->first.to_string()
+                                  << ": " << fhg::util::join (pids, ' ') << "\n";
 
                       fhg::util::nest_exceptions<std::runtime_error>
                         ( [&entry_point_processes, &pids]
@@ -674,7 +681,7 @@ namespace fhg
         iterators.emplace_back (pos);
       }
 
-      terminate_all_processes_of_a_kind (iterators, component);
+      terminate_all_processes_of_a_kind (iterators, component, _info_output);
 
       for (decltype (_)::iterator const& it : iterators)
       {
@@ -707,7 +714,7 @@ namespace fhg
         , [this] (component_type component)
           {
             terminate_all_processes_of_a_kind
-              (iterators (_.begin(), _.end()), component);
+              (iterators (_.begin(), _.end()), component, _info_output);
           }
         );
     }

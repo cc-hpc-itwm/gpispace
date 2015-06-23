@@ -39,7 +39,7 @@
 
 #include <xml/parse/util/position.hpp>
 
-#include <fhg/util/join.hpp>
+#include <util-generic/join.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/boost/optional.hpp>
 
@@ -421,11 +421,11 @@ namespace xml
             }
             else if (child_name == "global")
             {
-              global = fhg::util::join (parse_cdata (child, state), ";");
+              global = fhg::util::join (parse_cdata (child, state), ';');
             }
             else if (child_name == "local")
             {
-              local = fhg::util::join (parse_cdata (child, state), ";");
+              local = fhg::util::join (parse_cdata (child, state), ';');
             }
             else
             {
@@ -567,7 +567,7 @@ namespace xml
             }
             else if (child_name == "size")
             {
-              size = fhg::util::join (parse_cdata (child, state), ";");
+              size = fhg::util::join (parse_cdata (child, state), ';');
             }
             else
             {
@@ -1374,7 +1374,7 @@ namespace xml
             else if (child_name == "code")
             {
               pod_of_code = state.position (child);
-              code = fhg::util::join (parse_cdata (child, state), "\n");
+              code = fhg::util::join (parse_cdata (child, state), '\n');
             }
             else
             {

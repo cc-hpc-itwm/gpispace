@@ -7,13 +7,13 @@
 #include <we/type/value/name.hpp>
 #include <we/type/value/path/append.hpp>
 
-#include <fhg/util/indenter.hpp>
-#include <fhg/util/join.hpp>
 #include <fhg/util/cpp/block.hpp>
+#include <fhg/util/cpp/include.hpp>
 #include <fhg/util/cpp/namespace.hpp>
 #include <fhg/util/cpp/struct.hpp>
-#include <fhg/util/cpp/include.hpp>
+#include <fhg/util/indenter.hpp>
 
+#include <util-generic/join.hpp>
 
 #include <set>
 #include <list>

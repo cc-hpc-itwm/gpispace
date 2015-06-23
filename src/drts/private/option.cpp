@@ -12,7 +12,7 @@
 #include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
 #include <fhg/util/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
-#include <fhg/util/join.hpp>
+#include <util-generic/join.hpp>
 
 #include <rif/strategy/meta.hpp>
 

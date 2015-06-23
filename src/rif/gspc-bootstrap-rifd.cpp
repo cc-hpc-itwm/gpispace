@@ -4,7 +4,7 @@
 #include <fhg/util/boost/program_options/validators/existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_file.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
-#include <fhg/util/join.hpp>
+#include <util-generic/join.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/read_lines.hpp>
 
@@ -103,7 +103,7 @@ try
 }
 catch (...)
 {
-  fhg::util::print_current_exception (std::cerr, "EX: ");
+  std::cerr << "EX: " << fhg::util::current_exception_printer() << '\n';
 
   return 1;
 }

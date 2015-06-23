@@ -12,6 +12,8 @@
 
 #include <fhgcom/peer.hpp>
 
+#include <fhglog/Logger.hpp>
+
 #include <gpi-space/pc/global/itopology.hpp>
 
 #include <gpi-space/types.hpp>
@@ -36,7 +38,8 @@ namespace gpi
         typedef fhg::com::port_t port_t;
         typedef fhg::com::host_t host_t;
 
-        topology_t ( memory::manager_t& memory_manager
+        topology_t ( fhg::log::Logger&
+                   , memory::manager_t& memory_manager
                    , api::gpi_api_t&
                    , std::unique_ptr<fhg::com::peer_t>
                    );
@@ -89,6 +92,8 @@ namespace gpi
         void cast (fhg::com::p2p::address_t const&, std::string const& data);
 
         void request (std::string const& name, std::string const& data);
+
+        fhg::log::Logger& _logger;
 
         mutable std::mutex m_mutex;
         mutable std::mutex m_global_alloc_mutex;

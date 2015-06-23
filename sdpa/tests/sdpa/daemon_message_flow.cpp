@@ -8,6 +8,7 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 
+#include <boost/optional/optional_io.hpp>
 #include <boost/test/unit_test.hpp>
 
 namespace
@@ -111,11 +112,13 @@ BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
   const std::string orchestrator_name (utils::random_peer_name());
   const std::string child_name (utils::random_peer_name());
 
+  fhg::log::Logger logger;
+
   const sdpa::daemon::Orchestrator orchestrator
     ( orchestrator_name
     , "localhost"
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
-    , fhg::log::GLOBAL_logger()
+    , logger
     );
 
   network_strategy child;

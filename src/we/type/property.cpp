@@ -32,7 +32,7 @@ namespace we
 
       pnet::type::value::structured_type const& type::list() const
       {
-        return boost::get<pnet::type::value::structured_type const&> (_value);
+        return boost::get<pnet::type::value::structured_type> (_value);
       }
 
       void type::set (const path_type& path, const value_type& val)

@@ -53,7 +53,8 @@ int main (int argc, char **argv)
     boost::optional<bfs::path> vmem_socket;
 
     boost::asio::io_service remote_log_io_service;
-    fhg::log::configure (remote_log_io_service, fhg::log::GLOBAL_logger());
+    fhg::log::Logger logger;
+    fhg::log::configure (remote_log_io_service, logger);
 
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -70,8 +71,6 @@ int main (int argc, char **argv)
 
     po::variables_map vm;
     po::store( po::command_line_parser( argc, argv ).options(desc).run(), vm );
-
-    fhg::log::Logger& logger (fhg::log::GLOBAL_logger());
 
     if (vm.count ("help"))
     {

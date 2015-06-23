@@ -3,7 +3,6 @@
 #pragma once
 
 #include <string>
-#include <sstream>
 
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/util/position.hpp>
@@ -15,7 +14,7 @@
 #include <we/type/signature/show.hpp>
 
 #include <fhg/util/boost/optional.hpp>
-#include <fhg/util/join.hpp>
+#include <util-generic/join.hpp>
 
 #include <xml/parse/rapidxml/1.13/rapidxml.hpp>
 
@@ -39,12 +38,18 @@ namespace xml
         { }
 
         generic (const boost::format& bf)
-          : std::runtime_error ("ERROR: " + bf.str())
+          : generic (bf.str())
         { }
 
         generic (const std::string & msg, const std::string & pre)
-          : std::runtime_error ("ERROR: " + pre + ": " + msg)
+          : generic (pre + ": " + msg)
         { }
+
+        generic ( boost::format const& format
+                , boost::filesystem::path const& path
+                )
+          : generic (boost::format ("%1% in %2%") % format % path)
+        {}
       };
 
       // ******************************************************************* //
@@ -138,19 +143,12 @@ namespace xml
 
       class file_already_there : public generic
       {
-      private:
-        std::string nice (const boost::filesystem::path& file) const
-        {
-          std::ostringstream ss;
-
-          ss << "file " << file << " already there with a different content";
-
-          return ss.str();
-        }
-
       public:
         explicit file_already_there (const boost::filesystem::path& file)
-          : generic (nice (file))
+          : generic
+            ( boost::format ("file %1% already there with a different content")
+            % file
+            )
         {}
       };
 
@@ -159,28 +157,11 @@ namespace xml
       template<typename IT>
       class include_loop : public generic
       {
-      private:
-        std::string nice (IT pos, const IT & end) const
-        {
-          std::ostringstream ss;
-
-          IT loop (pos);
-
-          for  (; pos != end; ++pos)
-            {
-              ss << *pos << " -> ";
-            }
-
-          ss << *loop;
-
-          return ss.str();
-        }
-
       public:
         include_loop ( const std::string & pre
                      , IT pos, const IT & end
                      )
-          : generic (pre, "include loop: " + nice (pos, end))
+          : generic (pre, "include loop: " + fhg::util::join (pos, end, " -> "))
         {}
       };
 
@@ -213,8 +194,8 @@ namespace xml
         struct_field_redefined ( const std::string& name
                                , const boost::filesystem::path& path
                                )
-          : generic ( boost::format ("struct field '%1%' redefined in %2%")
-                    % name % path
+          : generic ( boost::format ("struct field '%1%' redefined")
+                    % name , path
                     )
         {}
       };
@@ -232,36 +213,20 @@ namespace xml
 
       class parse_lift : public generic
       {
-      private:
-        std::string nice ( const std::string & place
-                         , const std::string & field
-                         , const boost::filesystem::path & path
-                         , const std::string & msg
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "when reading a value for place " << place;
-
-          if (field != "")
-            {
-              s << " for field " << field;
-            }
-
-          s << " from "<< path
-            << ": " << msg
-            ;
-
-          return s.str();
-        }
-
       public:
         parse_lift ( const std::string & place
                    , const std::string & field
                    , const boost::filesystem::path & path
                    , const std::string & msg
                    )
-          : generic (nice (place, field, path, msg))
+          : generic
+            ( boost::format
+              ("when reading a value for place %1%%2% from %3%: %4%")
+            % place
+            % (field.empty() ? "" : (" for field " + field))
+            % path
+            % msg
+            )
         {}
       };
 
@@ -374,29 +339,19 @@ namespace xml
 
       class port_with_unknown_type : public generic
       {
-      private:
-        std::string nice ( const we::type::PortDirection & direction
-                         , const std::string & port
-                         , const std::string & type
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << direction << " " << port
-            << " with unknown type " << type
-            << " in " << path
-            ;
-
-          return s.str();
-        }
       public:
         port_with_unknown_type ( const we::type::PortDirection & direction
                                , const std::string & port
                                , const std::string & type
                                , const boost::filesystem::path & path
                                )
-          : generic (nice (direction, port, type, path))
+          : generic
+            ( boost::format ("%1% %2% with unknown type %3%")
+            % direction
+            % port
+            % type
+            , path
+            )
         {}
       };
 
@@ -404,23 +359,6 @@ namespace xml
 
       class function_description_with_unknown_port : public generic
       {
-      private:
-        std::string nice ( const std::string & port_type
-                         , const std::string & port_name
-                         , const std::string & mod_name
-                         , const std::string & mod_function
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "unknown " << port_type << " port " << port_name
-            << " in description of function " << mod_name << "." << mod_function
-            << " in " << path
-            << std::endl;
-
-          return s.str();
-        }
       public:
         function_description_with_unknown_port
         ( const std::string & port_type
@@ -429,7 +367,15 @@ namespace xml
         , const std::string & mod_function
         , const boost::filesystem::path & path
         )
-          : generic (nice (port_type, port_name, mod_name, mod_function, path))
+          : generic
+            ( boost::format
+              ("unknown %1% port %2% in description of function %3%.%4%")
+            % port_type
+            % port_name
+            % mod_name
+            % mod_function
+            , path
+            )
         {}
       };
 
@@ -521,13 +467,13 @@ namespace xml
           : generic
             ( boost::format
               ( "type error: virtual place %1% of type %2%"
-              " identified with real place %3% of type %4% in %5%"
+              " identified with real place %3% of type %4%"
               )
             % name_virtual
             % pnet::type::signature::show (sig_virtual)
             % name_real
             % pnet::type::signature::show (sig_real)
-            % path
+            , path
             )
         {}
       };
@@ -649,26 +595,17 @@ namespace xml
 
       class property_generic : public generic
       {
-      private:
-        std::string nice ( const std::string & msg
-                         , const we::type::property::path_type & key
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << msg << " for property " << fhg::util::join (key, ".")
-            << " in " << path
-            ;
-
-          return s.str();
-        }
       public:
         property_generic ( const std::string & msg
                          , const we::type::property::path_type & key
                          , const boost::filesystem::path & path
                          )
-          : generic (nice (msg, key, path))
+          : generic
+            ( boost::format ("%1% for property %2%")
+            % msg
+            % fhg::util::join (key, '.')
+            , path
+            )
         {}
       };
 
@@ -676,30 +613,21 @@ namespace xml
 
       class type_map_mismatch : public generic
       {
-      private:
-        std::string nice ( const std::string & from
-                         , const std::string & to_old
-                         , const std::string & to_new
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "type map mismatch, type " << from
-            << " mapped to type " << to_new
-            << " and earlier to type " << to_old
-            << " in " << path
-            ;
-
-          return s.str();
-        }
       public:
         type_map_mismatch ( const std::string & from
                           , const std::string & to_old
                           , const std::string & to_new
                           , const boost::filesystem::path & path
                           )
-          : generic (nice (from, to_old, to_new, path))
+          : generic
+            ( boost::format ("type map mismatch, type %1% mapped to type %3%"
+                            " and earlier to type %3%"
+                            )
+            % from
+            % to_old
+            % to_new
+            , path
+            )
         {}
       };
 
@@ -707,27 +635,17 @@ namespace xml
 
       class missing_type_out : public generic
       {
-      private:
-        std::string nice ( const std::string & type
-                         , const std::string & spec
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << "missing type-out " << type
-            << " in specialization " << spec
-            << " in " << path
-            ;
-
-          return s.str();
-        }
       public:
         missing_type_out ( const std::string & type
                          , const std::string & spec
                          , const boost::filesystem::path & path
                          )
-          : generic (nice (type, spec, path))
+          : generic
+            ( boost::format ("missing type-out %1% in specialization %2%")
+            % type
+            % spec
+            , path
+            )
         {}
       };
 
@@ -735,27 +653,17 @@ namespace xml
 
       class invalid_prefix : public generic
       {
-      private:
-        std::string nice ( const std::string & name
-                         , const std::string & type
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << type << " " << name
-            << " with invalid prefix"
-            << " in " << path
-            ;
-
-          return s.str();
-        }
       public:
         invalid_prefix ( const std::string & name
                        , const std::string & type
                        , const boost::filesystem::path & path
                        )
-          : generic (nice (name, type, path))
+          : generic
+            ( boost::format ("%2% %1% with invalid prefix")
+            % name
+            % type
+            , path
+            )
         {}
       };
 
@@ -763,27 +671,18 @@ namespace xml
 
       class invalid_name : public generic
       {
-      private:
-        std::string nice ( const std::string & name
-                         , const std::string & type
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << type << " " << name
-            << " is invalid (not of the form: [a-zA-Z_][a-zA-Z_0-9]^*)"
-            << " in " << path
-            ;
-
-          return s.str();
-        }
       public:
         invalid_name ( const std::string & name
                      , const std::string & type
                      , const boost::filesystem::path & path
                      )
-          : generic (nice (name, type, path))
+          : generic
+            ( boost::format
+              ("%2% %1% is invalid (not of the form: [a-zA-Z_][a-zA-Z_0-9]^*)")
+            % name
+            % type
+            , path
+            )
         {}
       };
 
@@ -791,24 +690,11 @@ namespace xml
 
       class invalid_field_name : public generic
       {
-      private:
-        std::string nice ( const std::string & name
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << " invalid field name " << name
-            << " in " << path
-            ;
-
-          return s.str();
-        }
       public:
         invalid_field_name ( const std::string & name
                            , const boost::filesystem::path & path
                            )
-          : generic (nice (name, path))
+          : generic (boost::format (" invalid field name %1%") % name, path)
         {}
       };
 
@@ -816,24 +702,14 @@ namespace xml
 
       class no_map_for_virtual_place : public generic
       {
-      private:
-        std::string nice ( const std::string & name
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << " missing map for virtual place " << name
-            << " in " << path
-            ;
-
-          return s.str();
-        }
       public:
         no_map_for_virtual_place ( const std::string & name
                                  , const boost::filesystem::path & path
                                  )
-          : generic (nice (name, path))
+          : generic
+            ( boost::format (" missing map for virtual place %1%") % name
+            , path
+            )
         {}
       };
 
@@ -855,30 +731,22 @@ namespace xml
 
       class real_place_missing : public generic
       {
-      private:
-        std::string nice ( const std::string & place_virtual
-                         , const std::string & place_real
-                         , const std::string & trans
-                         , const boost::filesystem::path & path
-                         ) const
-        {
-          std::ostringstream s;
-
-          s << " missing real place " << place_real
-            << " to replace virtual place " << place_virtual
-            << " in transition " << trans
-            << " in " << path
-            ;
-
-          return s.str();
-        }
       public:
         real_place_missing ( const std::string & place_virtual
                            , const std::string & place_real
                            , const std::string & trans
                            , const boost::filesystem::path & path
                            )
-          : generic (nice (place_virtual, place_real, trans, path))
+          : generic
+            ( boost::format
+              (" missing real place %2% to replace virtual place %1%"
+              " in transition %3%"
+              )
+            % place_virtual
+            % place_real
+            % trans
+            , path
+            )
         {}
       };
 
@@ -888,27 +756,6 @@ namespace xml
       {
         class formatted : public generic
         {
-        private:
-          std::string nice ( const std::string & name
-                           , const std::string & function
-                           , const std::string & what
-                           , const std::size_t & k
-                           , const boost::filesystem::path & path
-                           ) const
-          {
-            std::ostringstream s;
-
-            s << "error while parsing a function description for module"
-              << " name " << name << " in " << path << ":"
-              << std::endl << function
-              << std::endl
-              ;
-            for (std::size_t i (0); i < k; ++i) { s << " "; }
-            s << "^" << std::endl;
-            s << what << std::endl;
-
-            return s.str();
-          }
         public:
           formatted ( const std::string & name
                     , const std::string & function
@@ -916,7 +763,20 @@ namespace xml
                     , const std::size_t & k
                     , const boost::filesystem::path & path
                     )
-            : generic (nice (name, function, what, k, path))
+            : generic
+              ( boost::format
+                (R"EOS(error while parsing a function description for module name %1% in %5%:
+%2%
+%4%^
+%3%
+)EOS"
+                )
+              % name
+              % function
+              % what
+              % std::string (k, ' ')
+              % path
+              )
           {}
         };
 
@@ -943,23 +803,13 @@ namespace xml
 
       class could_not_open_file : public generic
       {
-      private:
-        std::string nice (const std::string & file) const
-        {
-          std::ostringstream s;
-
-          s << "could not open file " << file;
-
-          return s.str();
-        }
-
       public:
         could_not_open_file (const boost::filesystem::path & file)
-          : generic (nice (file.string()))
+          : could_not_open_file (file.string())
         {}
 
         could_not_open_file (const std::string & file)
-          : generic (nice (file))
+          : generic (boost::format ("could not open file %1%") % file)
         {}
       };
 
@@ -967,19 +817,9 @@ namespace xml
 
       class could_not_create_directory : public generic
       {
-      private:
-        std::string nice (const boost::filesystem::path & path) const
-        {
-          std::ostringstream s;
-
-          s << "could not create directory " << path;
-
-          return s.str();
-        }
-
       public:
         could_not_create_directory (const boost::filesystem::path & path)
-          : generic (nice (path))
+          : generic (boost::format ("could not create directory %1%") % path)
         {}
       };
 
@@ -991,9 +831,8 @@ namespace xml
         template_without_function ( const boost::optional<std::string>& name
                                   , const boost::filesystem::path& path
                                   )
-          : generic ( boost::format
-                      ("template %1% without a function in %2%") % name % path
-                    )
+          : generic
+            (boost::format ("template %1% without a function") % name, path)
         {}
       };
 

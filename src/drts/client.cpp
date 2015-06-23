@@ -138,8 +138,6 @@ namespace gspc
   {
     void wait_for_terminal_state (job_id_t job_id, sdpa::client::Client& client)
     {
-      std::cerr << "waiting for job " << job_id << std::endl;
-
       sdpa::client::job_info_t job_info;
 
       sdpa::status::code const status
@@ -164,8 +162,6 @@ namespace gspc
 
       we::type::activity_t const result_activity
         (client.retrieveResults (job_id));
-
-      std::cerr << "result retrieved" << std::endl;
 
       client.deleteJob (job_id);
 
@@ -256,65 +252,34 @@ namespace gspc
           }
         );
 
-    boost::asio::io_service io_service;
-    std::unique_ptr<fhg::network::connection_type> connection;
     fhg::util::thread::event<void> disconnected;
 
-    fhg::network::continous_acceptor<boost::asio::ip::tcp> acceptor
-      ( boost::asio::ip::tcp::endpoint()
-      , io_service
-      , [] (fhg::network::buffer_type buf) { return buf; }
-      , [] (fhg::network::buffer_type buf) { return buf; }
-      , [&service_dispatcher] ( fhg::network::connection_type* connection
+    fhg::network::server_with_single_client<boost::asio::ip::tcp> server
+      ( [&service_dispatcher] ( fhg::network::connection_type* connection
                               , fhg::network::buffer_type message
                               )
         {
           service_dispatcher.dispatch (connection, message);
         }
-      , [&disconnected] (fhg::network::connection_type*)
-        {
-          disconnected.notify();
-        }
-      , [&connection] (std::unique_ptr<fhg::network::connection_type> c)
-        {
-          if (!!connection)
-          {
-            throw std::logic_error
-              ("workflow_response: got a second connection");
-          }
-          std::swap (connection, c);
-        }
+      , std::bind (&decltype (disconnected)::notify, &disconnected)
       );
-
-    const boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-      io_service_thread ([&io_service]() { io_service.run(); });
-
-    struct stop_io_service_on_scope_exit
-    {
-      ~stop_io_service_on_scope_exit()
-      {
-        _io_service.stop();
-      }
-      boost::asio::io_service& _io_service;
-    } stop_io_service_on_scope_exit {io_service};
 
     pnet::type::value::value_type value_and_endpoint;
     pnet::type::value::poke ("value", value_and_endpoint, value);
     pnet::type::value::poke ( "address"
                             , value_and_endpoint
                             , fhg::network::connectable_to_address_string
-                              (acceptor.local_endpoint().address())
+                                (server.local_endpoint().address())
                             );
     pnet::type::value::poke
       ( "port"
       , value_and_endpoint
-      , static_cast<unsigned int> (acceptor.local_endpoint().port())
+      , static_cast<unsigned int> (server.local_endpoint().port())
       );
 
     put_token (job_id, place_name, value_and_endpoint);
 
     disconnected.wait();
-    connection.reset();
 
     return result.wait();
   }

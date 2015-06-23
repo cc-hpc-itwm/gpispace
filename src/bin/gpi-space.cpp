@@ -185,7 +185,6 @@ int main (int argc, char** argv)
       setenv ("FHGLOG_to_server", server_url.c_str(), true);
     }
     setenv ("FHGLOG_level", log_level.c_str(), true);
-    setenv ("FHGLOG_to_console", "stderr", true);
 
     if (log_file)
     {
@@ -193,11 +192,12 @@ int main (int argc, char** argv)
     }
 
     boost::asio::io_service remote_log_io_service;
-    fhg::log::configure (remote_log_io_service, fhg::log::GLOBAL_logger());
+    fhg::log::Logger logger;
+    fhg::log::configure (remote_log_io_service, logger);
 
     fhg::util::signal_handler_manager signal_handler;
     fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
-      crit_error_handler (signal_handler, fhg::log::GLOBAL_logger());
+      crit_error_handler (signal_handler, logger);
 
     std::unique_ptr<fhg::com::peer_t> topology_peer
       ( fhg::util::cxx14::make_unique<fhg::com::peer_t>
@@ -208,18 +208,18 @@ int main (int argc, char** argv)
       );
 
     std::unique_ptr<gpi::api::gpi_api_t> const gpi_api
-      ( [&gpi_mem, &gpi_timeout, &port, &requested_api, &topology_peer]()
+      ( [&gpi_mem, &gpi_timeout, &port, &requested_api, &topology_peer, &logger]()
           -> std::unique_ptr<gpi::api::gpi_api_t>
         {
           if (requested_api == API_gaspi)
           {
             return fhg::util::cxx14::make_unique <gpi::api::gaspi_t>
-              (gpi_mem, port, gpi_timeout, topology_peer->local_endpoint().port());
+              (logger, gpi_mem, port, gpi_timeout, topology_peer->local_endpoint().port());
           }
           else
           {
             return fhg::util::cxx14::make_unique <gpi::api::fake_gpi_api_t>
-              (gpi_mem, gpi_timeout, topology_peer->local_endpoint().port());
+              (logger, gpi_mem, gpi_timeout, topology_peer->local_endpoint().port());
           }
         }()
       );
@@ -228,7 +228,8 @@ int main (int argc, char** argv)
     //      gpi://?buffers=8&buffer_size=4194304 GPI memory
     //      sfs://<path>?create=true&size=1073741824
     const gpi::pc::container::manager_t container_manager
-      ( socket_path.string()
+      ( logger
+      , socket_path.string()
       , {"gpi://?buffer_size=4194304&buffers=8"}
       , *gpi_api
       , std::move (topology_peer)

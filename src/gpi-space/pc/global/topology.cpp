@@ -7,9 +7,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
 
-#include <gpi-space/log_to_GLOBAL_logger.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
-#include <fhg/util/join.hpp>
+#include <util-generic/join.hpp>
 #include <util-generic/print_exception.hpp>
 
 #include <gpi-space/gpi/api.hpp>
@@ -68,11 +68,13 @@ namespace gpi
         };
       }
 
-      topology_t::topology_t ( memory::manager_t& memory_manager
+      topology_t::topology_t ( fhg::log::Logger& logger
+                             , memory::manager_t& memory_manager
                              , api::gpi_api_t& gpi_api
                              , std::unique_ptr<fhg::com::peer_t> peer
                              )
-        : m_shutting_down (false)
+        : _logger (logger)
+        , m_shutting_down (false)
         , _gpi_api (gpi_api)
         , m_peer (std::move (peer))
       {
@@ -160,7 +162,7 @@ namespace gpi
 
         if (!errors.empty())
         {
-          LOG (ERROR, name << " failed: " << fhg::util::join (errors, "; "));
+          LLOG (ERROR, _logger, name << " failed: " << fhg::util::join (errors, "; "));
           throw std::runtime_error
             (name + " failed: " + fhg::util::join (errors, "; "));
         }
@@ -212,7 +214,7 @@ namespace gpi
       {
         if (not m_shutting_down && ec)
         {
-          LOG (ERROR, "failed sending a message: " << ec);
+          LLOG (ERROR, _logger, "failed sending a message: " << ec);
         }
       }
 
@@ -337,7 +339,7 @@ namespace gpi
             m_current_results.emplace_back
               ( boost::make_optional
                   ( boost::lexical_cast<int> (av[1])
-                  , fhg::util::join (av.begin() + 2, av.end(), " ")
+                  , fhg::util::join (av.begin() + 2, av.end(), ' ')
                   )
               );
             m_request_finished.notify_one();
@@ -353,10 +355,11 @@ namespace gpi
         }
         catch (...)
         {
-          std::ostringstream sstr;
-          fhg::util::print_current_exception (sstr, "");
-          LOG (ERROR, "handling command '" + msg + "' failed: " << sstr.str());
-          cast (source, detail::command_t ("+RES") << 1 << sstr.str());
+          LLOG ( ERROR, _logger
+               , "handling command '" + msg + "' failed: "
+                << fhg::util::current_exception_printer (": ")
+               );
+          cast (source, detail::command_t ("+RES") << 1 << fhg::util::current_exception_printer (": ").string());
         }
       }
     }

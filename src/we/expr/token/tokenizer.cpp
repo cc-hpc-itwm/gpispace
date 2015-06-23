@@ -75,7 +75,7 @@ namespace expr
           put ( std::next (pos)
               , end
               , f
-              , boost::get<child_type&>
+              , boost::get<child_type>
                 ( child == m.end()
                 ? m.insert (child, std::make_pair (*pos, child_type()))->second
                 : child->second

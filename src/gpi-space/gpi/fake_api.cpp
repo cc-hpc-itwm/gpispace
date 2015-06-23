@@ -1,6 +1,6 @@
 #include <gpi-space/gpi/fake_api.hpp>
 
-#include <gpi-space/log_to_GLOBAL_logger.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <gpi-space/exception.hpp>
 
@@ -12,11 +12,13 @@ namespace gpi
 {
   namespace api
   {
-    fake_gpi_api_t::fake_gpi_api_t ( const unsigned long long memory_size
+    fake_gpi_api_t::fake_gpi_api_t ( fhg::log::Logger& logger
+                                   , const unsigned long long memory_size
                                    , const std::chrono::seconds&
                                    , unsigned short communication_port
                                    )
-      : m_rank (0)
+      : _logger (logger)
+      , m_rank (0)
       , m_mem_size (memory_size)
       , m_dma (nullptr)
       , m_hostname (fhg::util::hostname())
@@ -24,18 +26,17 @@ namespace gpi
     {
       if (sys::get_total_memory_size() < m_mem_size)
       {
-        LOG( ERROR
-           , "requested memory size (" << m_mem_size << ")"
-           <<" exceeds total memory size (" << sys::get_total_memory_size() << ")"
-           );
         throw gpi::exception::gpi_error
           ( gpi::error::startup_failed()
-          , "not enough memory"
+          , "not enough memory: requested memory size ("
+          + std::to_string (m_mem_size) + ") exceeds total memory size ("
+          + std::to_string (sys::get_total_memory_size()) + ")"
           );
       }
       else if (sys::get_avail_memory_size() < m_mem_size)
       {
-        LOG( WARN
+        LLOG( WARN
+            , _logger
            , "requested memory size (" << m_mem_size << ")"
            <<" exceeds available memory size (" << sys::get_avail_memory_size() << ")"
            );

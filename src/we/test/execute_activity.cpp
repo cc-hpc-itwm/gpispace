@@ -101,7 +101,7 @@ struct exec_context : public we::context
     if (act.transition().net())
     {
       while ( boost::optional<we::type::activity_t> sub
-            = boost::get<we::type::net_type&> (act.transition().data())
+            = boost::get<we::type::net_type> (act.transition().data())
             . fire_expressions_and_extract_activity_random (_engine)
             )
       {
@@ -153,6 +153,6 @@ try
 }
 catch (...)
 {
-  fhg::util::print_current_exception (std::cerr, "EX: ");
+  std::cerr << "EX: " << fhg::util::current_exception_printer() << '\n';
   return EXIT_FAILURE;
 }

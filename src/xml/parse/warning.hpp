@@ -12,7 +12,7 @@
 #include <we/type/value/show.hpp>
 
 #include <fhg/util/boost/optional.hpp>
-#include <fhg/util/join.hpp>
+#include <util-generic/join.hpp>
 
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
@@ -333,7 +333,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "unknown property " << fhg::util::join (key, ".")
+          s << "unknown property " << fhg::util::join (key, '.')
             << " value " << pnet::type::value::show (val)
             << " in " << path
             ;
@@ -387,7 +387,7 @@ namespace xml
         {
           std::ostringstream s;
 
-          s << "property " << fhg::util::join (key, ".")
+          s << "property " << fhg::util::join (key, '.')
             << " value " << pnet::type::value::show (old_val)
             << " overwritten by value " << pnet::type::value::show (new_val)
             << " in " << path
