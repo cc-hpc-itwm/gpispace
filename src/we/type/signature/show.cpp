@@ -24,7 +24,7 @@ namespace pnet
           {}
           void _struct (const std::pair<std::string, structure_type>& s) const
           {
-            _os << fhg::util::print_container
+            _os << fhg::util::print_container<decltype (s.second)>
               ( s.first + " :: [", ", ", "]", s.second
               , [this] (std::ostream& os, const field_type& f) -> std::ostream&
                 {

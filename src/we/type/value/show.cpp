@@ -24,7 +24,7 @@ namespace pnet
 
           std::ostream& operator() (const std::list<value_type>& l) const
           {
-            return _os << fhg::util::print_container
+            return _os << fhg::util::print_container<decltype (l)>
               ( "List (", ", ", ")", l
               , std::bind ( &visitor_show::print_value, this
                           , std::placeholders::_1, std::placeholders::_2
@@ -34,7 +34,7 @@ namespace pnet
           std::ostream&
           operator() (const std::map<value_type, value_type>& m) const
           {
-            return _os << fhg::util::print_container
+            return _os << fhg::util::print_container<decltype (m)>
               ( "Map [", ", ", "]", m
               , std::bind ( &visitor_show::print_map_item, this
                           , std::placeholders::_1, std::placeholders::_2
@@ -43,7 +43,7 @@ namespace pnet
           }
           std::ostream& operator() (const std::set<value_type>& s) const
           {
-            return _os << fhg::util::print_container
+            return _os << fhg::util::print_container<decltype (s)>
               ( "Set {", ", ", "}", s
               , std::bind ( &visitor_show::print_value, this
                           , std::placeholders::_1, std::placeholders::_2
@@ -52,7 +52,7 @@ namespace pnet
           }
           std::ostream& operator() (const structured_type& m) const
           {
-            return _os << fhg::util::print_container
+            return _os << fhg::util::print_container<decltype (m)>
               ( "Struct [", ", ", "]", m
               , std::bind ( &visitor_show::print_struct_item, this
                           , std::placeholders::_1, std::placeholders::_2

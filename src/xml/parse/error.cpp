@@ -310,7 +310,7 @@ namespace xml
         std::string print_memory_buffer_positions_of_definition
           (std::unordered_set<id::ref::memory_buffer> const& ids)
         {
-          return fhg::util::print_container
+          return fhg::util::print_container<decltype (ids)>
             ( "{", ", ", "}", ids
             , fhg::util::ostream::callback::generic< id::ref::memory_buffer
                                                    , util::position_type
@@ -350,7 +350,7 @@ namespace xml
         fhg::util::join_reference<std::list<T>, std::string>
           print_positions (std::string const& prefix, std::list<T> const& list)
         {
-          return fhg::util::print_container
+          return fhg::util::print_container<std::list<T>>
               ( prefix + ": (", ", ", ")", list
               , fhg::util::ostream::callback::select<T, util::position_type>
                   (&T::position_of_definition)
