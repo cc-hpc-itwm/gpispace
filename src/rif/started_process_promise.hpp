@@ -10,7 +10,7 @@ namespace fhg
   {
     struct started_process_promise
     {
-      //! \note will remove eat special arguments
+      //! \note will remove special arguments
       started_process_promise (int& argc, char**& argv);
       ~started_process_promise();
 
