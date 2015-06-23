@@ -70,7 +70,7 @@ namespace
 
       total_read += read;
 
-      if (read < to_read)
+      if (read == 0)
       {
         break;
       }
