@@ -19,6 +19,17 @@ extended_add_library (NAME rif-started_process_promise
   SOURCES "started_process_promise.cpp"
   LIBRARIES Boost::iostreams
             Boost::program_options
+            Boost::serialization
+            Util-Generic
+)
+
+add_unit_test (NAME started_process_promise
+  SOURCES "test/started_process_promise.cpp"
+
+  DESCRIPTION "pipe used for communicating with a rif-started process during startup"
+  USE_BOOST
+  LIBRARIES rif-started_process_promise
+            Util-Generic
 )
 
 extended_add_library (NAME rif-strategies
