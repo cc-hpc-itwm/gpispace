@@ -130,10 +130,11 @@ namespace
   void check_something_with_sentinel_was_written (int fd)
   {
     std::vector<char> const buffer (read_from_fd (fd));
-    BOOST_REQUIRE_GT (buffer.size(), 0);
 
     std::string const sentinel
       (fhg::rif::started_process_promise::end_sentinel_value());
+
+    BOOST_REQUIRE_GT (buffer.size(), sentinel.size());
     BOOST_REQUIRE_EQUAL
       ( std::string ( buffer.data() + buffer.size() - sentinel.size()
                     , sentinel.size()
