@@ -12,7 +12,7 @@
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/print_exception.hpp>
 
-#include <rif/startup_messages_pipe.hpp>
+#include <rif/started_process_promise.hpp>
 
 #include <boost/program_options.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
@@ -28,14 +28,17 @@ namespace bfs = boost::filesystem;
 namespace po = boost::program_options;
 
 int main (int argc, char **argv)
-try
 {
+  fhg::rif::started_process_promise promise (argc, argv);
+
+  try
+  {
     std::string orchName;
     std::string orchUrl;
 
-  boost::asio::io_service remote_log_io_service;
-  fhg::log::Logger logger;
-  fhg::log::configure (remote_log_io_service, logger);
+    boost::asio::io_service remote_log_io_service;
+    fhg::log::Logger logger;
+    fhg::log::configure (remote_log_io_service, logger);
 
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -43,8 +46,6 @@ try
        ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
        ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
       ;
-
-    desc.add (fhg::rif::startup_messages_pipe::program_options());
 
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
@@ -58,40 +59,45 @@ try
 
     po::notify(vm);
 
-  const sdpa::daemon::Orchestrator orchestrator
-    ( orchName
-    , orchUrl
-    , fhg::util::cxx14::make_unique<boost::asio::io_service>()
-    , logger
-    );
+    const sdpa::daemon::Orchestrator orchestrator
+      ( orchName
+      , orchUrl
+      , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+      , logger
+      );
 
-  fhg::util::thread::event<> stop_requested;
-  const std::function<void()> request_stop
-    (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
+    fhg::util::thread::event<> stop_requested;
+    const std::function<void()> request_stop
+      (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
 
-  fhg::util::signal_handler_manager signal_handlers;
-  fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
-    crit_error_handler (signal_handlers, logger);
+    fhg::util::signal_handler_manager signal_handlers;
+    fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
+      crit_error_handler (signal_handlers, logger);
 
-  fhg::util::scoped_signal_handler const SIGTERM_handler
-    (signal_handlers, SIGTERM, std::bind (request_stop));
-  fhg::util::scoped_signal_handler const SIGINT_handler
-    (signal_handlers, SIGINT, std::bind (request_stop));
+    fhg::util::scoped_signal_handler const SIGTERM_handler
+      (signal_handlers, SIGTERM, std::bind (request_stop));
+    fhg::util::scoped_signal_handler const SIGINT_handler
+      (signal_handlers, SIGINT, std::bind (request_stop));
 
-  {
-    fhg::rif::startup_messages_pipe startup_messages_pipe (vm);
-    startup_messages_pipe << fhg::network::connectable_to_address_string
-                               (orchestrator.peer_local_endpoint().address());
-    startup_messages_pipe << orchestrator.peer_local_endpoint().port();
-    startup_messages_pipe << fhg::network::connectable_to_address_string
-                               (orchestrator.rpc_local_endpoint().address());
-    startup_messages_pipe << orchestrator.rpc_local_endpoint().port();
+    promise.set_result ( { fhg::network::connectable_to_address_string
+                             (orchestrator.peer_local_endpoint().address())
+                         , std::to_string
+                             (orchestrator.peer_local_endpoint().port())
+                         , fhg::network::connectable_to_address_string
+                             (orchestrator.rpc_local_endpoint().address())
+                         , std::to_string
+                             (orchestrator.rpc_local_endpoint().port())
+                         }
+                       );
+
+    stop_requested.wait();
+
+    return EXIT_SUCCESS;
   }
+  catch (...)
+  {
+    promise.set_exception (std::current_exception());
 
-  stop_requested.wait();
-}
-catch (...)
-{
-  std::cerr << "EX: " << fhg::util::current_exception_printer() << '\n';
-  return 1;
+    return EXIT_FAILURE;
+  }
 }

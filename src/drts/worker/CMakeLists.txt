@@ -7,7 +7,7 @@ fhg_add_runtime_executable (NAME drts-kernel
             fhgcom
             sdpa
             we-dev
-            rif-startup-messages-pipe
+            rif-started_process_promise
             Util::Generic
             Boost::filesystem
             Boost::program_options
