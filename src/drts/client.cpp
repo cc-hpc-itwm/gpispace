@@ -207,6 +207,10 @@ namespace gspc
   {
     wait_for_terminal_state (job_id, _->_client);
   }
+  void client::cancel (job_id_t job_id) const
+  {
+    _->_client.cancelJob (job_id);
+  }
 
   std::multimap<std::string, pnet::type::value::value_type>
     client::extract_result_and_forget_job (job_id_t job_id)

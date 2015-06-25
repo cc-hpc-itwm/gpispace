@@ -50,6 +50,7 @@ namespace gspc
                      > const& values_on_ports
       );
     void wait (job_id_t) const;
+    void cancel (job_id_t) const;
     std::multimap<std::string, pnet::type::value::value_type>
       extract_result_and_forget_job (job_id_t);
     std::multimap<std::string, pnet::type::value::value_type>
