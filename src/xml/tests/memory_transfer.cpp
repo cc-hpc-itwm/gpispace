@@ -46,8 +46,8 @@ namespace
     fhg::util::xml::xmlstream s (oss);
 
     xml::parse::type::dump::dump
-      (s, make_transfer ( fhg::util::join (expressions_global, ';')
-                        , fhg::util::join (expressions_local, ';')
+      (s, make_transfer ( fhg::util::join (expressions_global, ';').string()
+                        , fhg::util::join (expressions_local, ';').string()
                         )
       );
 

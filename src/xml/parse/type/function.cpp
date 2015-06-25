@@ -26,7 +26,7 @@
 #include <fhg/util/indenter.hpp>
 #include <fhg/util/starts_with.hpp>
 #include <util-generic/join.hpp>
-#include <util-generic/ostream_modifier.hpp>
+#include <util-generic/ostream/modifier.hpp>
 #include <util-generic/split.hpp>
 
 #include <we/type/module_call.fwd.hpp>
@@ -603,7 +603,7 @@ namespace xml
       {
         return empty()
           ? "true"
-          : fhg::util::join (begin(), end(), " && ", "(", ")");
+          : fhg::util::join (begin(), end(), " && ", "(", ")").string();
       }
 
       conditions_type operator+ (conditions_type lhs, const conditions_type& rhs)

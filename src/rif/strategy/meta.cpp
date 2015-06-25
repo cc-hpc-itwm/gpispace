@@ -54,7 +54,7 @@ namespace fhg
           {
             throw std::invalid_argument
               ("invalid strategy '" + strategy + "'. available strategies: "
-              + fhg::util::join (available_strategies(), ", ")
+              + fhg::util::join (available_strategies(), ", ").string()
               );
           }
         }

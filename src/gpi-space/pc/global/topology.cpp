@@ -164,7 +164,7 @@ namespace gpi
         {
           LLOG (ERROR, _logger, name << " failed: " << fhg::util::join (errors, "; "));
           throw std::runtime_error
-            (name + " failed: " + fhg::util::join (errors, "; "));
+            (name + " failed: " + fhg::util::join (errors, "; ").string());
         }
       }
 
@@ -339,7 +339,7 @@ namespace gpi
             m_current_results.emplace_back
               ( boost::make_optional
                   ( boost::lexical_cast<int> (av[1])
-                  , fhg::util::join (av.begin() + 2, av.end(), ' ')
+                  , fhg::util::join (av.begin() + 2, av.end(), ' ').string()
                   )
               );
             m_request_finished.notify_one();
