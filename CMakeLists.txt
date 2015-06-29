@@ -14,7 +14,7 @@ include ("cmake/add_macros.cmake")
 include ("cmake/beautify_find_boost.cmake")
 
 set (PROJECT_VERSION "14.03")
-set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
+set (PROJECT_CONTACT "gpispace-support@itwm.fraunhofer.de" CACHE STRING "Contact information")
 execute_process (
   COMMAND git rev-parse HEAD
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
