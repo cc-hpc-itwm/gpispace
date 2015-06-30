@@ -47,4 +47,9 @@ namespace gspc
       }
     }
   }
+
+  rifd_entry_point::rifd_entry_point (implementation* impl)
+    : _ (impl)
+  {}
+  PIMPL_DTOR (rifd_entry_point);
 }
