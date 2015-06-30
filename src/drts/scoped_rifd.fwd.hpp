@@ -9,5 +9,5 @@ namespace gspc
     struct port;
   }
 
-  class scoped_rifd;
+  class scoped_rifds;
 }

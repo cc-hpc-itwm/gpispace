@@ -35,7 +35,7 @@ namespace gspc
       strategy (boost::program_options::variables_map const&);
 
     private:
-      friend class ::gspc::scoped_rifd;
+      friend class ::gspc::scoped_rifds;
 
       PIMPL (strategy);
     };
@@ -46,7 +46,7 @@ namespace gspc
       hostnames (std::vector<std::string> const&);
 
     private:
-      friend class ::gspc::scoped_rifd;
+      friend class ::gspc::scoped_rifds;
 
       PIMPL (hostnames);
     };
@@ -55,23 +55,23 @@ namespace gspc
       port (boost::program_options::variables_map const&);
 
     private:
-      friend class ::gspc::scoped_rifd;
+      friend class ::gspc::scoped_rifds;
 
       PIMPL (port);
     };
   }
 
-  class scoped_rifd : boost::noncopyable
+  class scoped_rifds : boost::noncopyable
   {
   public:
-    scoped_rifd ( rifd::strategy const&
-                , rifd::hostnames const&
-                , rifd::port const&
-                , installation const&
-                );
+    scoped_rifds ( rifd::strategy const&
+                 , rifd::hostnames const&
+                 , rifd::port const&
+                 , installation const&
+                 );
 
     rifd_entry_points entry_points() const;
 
-    PIMPL (scoped_rifd);
+    PIMPL (scoped_rifds);
   };
 }

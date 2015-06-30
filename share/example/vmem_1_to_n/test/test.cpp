@@ -87,16 +87,16 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
   unsigned long const num_bytes
     (vm.at (option_num_bytes).as<validators::positive_integral<unsigned long>>());
 
-  gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
-                               , gspc::rifd::hostnames {vm}
-                               , gspc::rifd::port {vm}
-                               , installation
-                               );
+  gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
+                                 , gspc::rifd::hostnames {vm}
+                                 , gspc::rifd::port {vm}
+                                 , installation
+                                 );
   gspc::scoped_runtime_system const drts
     ( vm
     , installation
     , "worker:1," + std::to_string (num_bytes)
-    , rifd.entry_points()
+    , rifds.entry_points()
     );
 
   gspc::vmem_allocation const allocation_data (drts.alloc (num_bytes, "data"));

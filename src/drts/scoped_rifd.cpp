@@ -35,7 +35,7 @@ namespace gspc
     {}
   }
 
-  struct scoped_rifd::implementation
+  struct scoped_rifds::implementation
   {
     implementation ( std::string const& strategy
                    , std::vector<std::string> const& hostnames
@@ -63,11 +63,11 @@ namespace gspc
     std::vector<fhg::rif::entry_point> _entry_points;
   };
 
-  scoped_rifd::scoped_rifd ( rifd::strategy const& strategy
-                           , rifd::hostnames const& hostnames
-                           , rifd::port const& port
-                           , installation const& installation
-                           )
+  scoped_rifds::scoped_rifds ( rifd::strategy const& strategy
+                             , rifd::hostnames const& hostnames
+                             , rifd::port const& port
+                             , installation const& installation
+                             )
     : _ (new implementation ( strategy._->_
                             , hostnames._->_
                             , port._->_
@@ -76,9 +76,9 @@ namespace gspc
         )
   {}
 
-  PIMPL_DTOR (scoped_rifd)
+  PIMPL_DTOR (scoped_rifds)
 
-  rifd_entry_points scoped_rifd::entry_points() const
+  rifd_entry_points scoped_rifds::entry_points() const
   {
     return {new rifd_entry_points::implementation (_->_entry_points)};
   }

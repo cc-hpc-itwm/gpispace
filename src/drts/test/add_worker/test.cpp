@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
 
   unsigned int n (3);
 
-  std::list<gspc::scoped_rifd> rifds;
+  std::list<gspc::scoped_rifds> rifds;
 
   {
     std::vector<std::string> const hosts
@@ -167,7 +167,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
 
   connected.wait();
 
-  for ( std::list<gspc::scoped_rifd>::const_iterator
+  for ( std::list<gspc::scoped_rifds>::const_iterator
           rifd (std::next (rifds.begin()))
       ; rifd != rifds.end()
       ; ++rifd

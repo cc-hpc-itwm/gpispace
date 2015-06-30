@@ -70,13 +70,13 @@ namespace
       , "net"
       );
 
-    gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
+    gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
                                  , gspc::rifd::port {vm}
                                  , installation
                                  );
     gspc::scoped_runtime_system const drts
-      (vm, installation, "work:4", rifd.entry_points());
+      (vm, installation, "work:4", rifds.entry_points());
 
     return gspc::client (drts).put_and_run
       (gspc::workflow (make.build_directory() / (main + ".pnet")), {{"n", n}});

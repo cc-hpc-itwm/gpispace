@@ -67,13 +67,13 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
     , "net lib install"
     );
 
-  gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
-                               , gspc::rifd::hostnames {vm}
-                               , gspc::rifd::port {vm}
-                               , installation
-                               );
+  gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
+                                 , gspc::rifd::hostnames {vm}
+                                 , gspc::rifd::port {vm}
+                                 , installation
+                                 );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:2", rifd.entry_points());
+    (vm, installation, "worker:2", rifds.entry_points());
   gspc::client client (drts);
 
   gspc::workflow workflow (make.build_directory() / "wait_for_token_put.pnet");

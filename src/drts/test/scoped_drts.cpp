@@ -40,12 +40,12 @@ BOOST_AUTO_TEST_CASE (scoped_drts_empty_topology)
 
   gspc::installation const installation (vm);
 
-  gspc::scoped_rifd const scoped_rifd ( gspc::rifd::strategy {vm}
-                                      , gspc::rifd::hostnames {vm}
-                                      , gspc::rifd::port {vm}
-                                      , installation
-                                      );
+  gspc::scoped_rifds const scoped_rifds ( gspc::rifd::strategy {vm}
+                                        , gspc::rifd::hostnames {vm}
+                                        , gspc::rifd::port {vm}
+                                        , installation
+                                        );
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, "", scoped_rifd.entry_points());
+    (vm, installation, "", scoped_rifds.entry_points());
 }

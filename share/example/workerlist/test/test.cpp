@@ -38,16 +38,16 @@ namespace
                 , boost::filesystem::path const& shared_directory
                 )
   {
-    gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
-                                 , gspc::rifd::hostnames {vm}
-                                 , gspc::rifd::port {vm}
-                                 , installation
-                                 );
+    gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
+                                   , gspc::rifd::hostnames {vm}
+                                   , gspc::rifd::port {vm}
+                                   , installation
+                                   );
     gspc::scoped_runtime_system const drts
       ( vm
       , installation
       , "worker:" + std::to_string (num_worker)
-      , rifd.entry_points()
+      , rifds.entry_points()
       );
 
     std::multimap<std::string, pnet::type::value::value_type> const result
@@ -71,7 +71,7 @@ namespace
     fhg::util::temporary_file const _entry_points
       (shared_directory / boost::filesystem::unique_path());
     //! \note the only usage of write_to_file
-    rifd.entry_points().write_to_file (_entry_points);
+    rifds.entry_points().write_to_file (_entry_points);
     std::vector<std::string> const entry_points
       (fhg::util::read_lines (_entry_points));
 

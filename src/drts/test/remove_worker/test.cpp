@@ -68,14 +68,14 @@ BOOST_AUTO_TEST_CASE (remove_worker)
     , "net lib install"
     );
 
-  gspc::scoped_rifd const rifd { gspc::rifd::strategy (vm)
-                               , gspc::rifd::hostnames (vm)
-                               , gspc::rifd::port (vm)
-                               , installation
-                               };
+  gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
+                                 , gspc::rifd::hostnames (vm)
+                                 , gspc::rifd::port (vm)
+                                 , installation
+                                 };
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", rifd.entry_points());
+    (vm, installation, "worker:1", rifds.entry_points());
 
   gspc::workflow workflow (make.build_directory() / "remove_worker.pnet");
   workflow.set_wait_for_output();
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE (remove_worker)
 
   connected.wait();
 
-  drts.remove_worker (rifd.entry_points());
+  drts.remove_worker (rifds.entry_points());
 
   disconnected.wait();
 }

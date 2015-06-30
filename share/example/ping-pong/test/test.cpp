@@ -66,13 +66,13 @@ BOOST_AUTO_TEST_CASE (share_example_ping_pong)
     , "net lib install"
     );
 
-  gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
-                               , gspc::rifd::hostnames {vm}
-                               , gspc::rifd::port {vm}
-                               , installation
-                               );
+  gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
+                                 , gspc::rifd::hostnames {vm}
+                                 , gspc::rifd::port {vm}
+                                 , installation
+                                 );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "ping:1 pong:1", rifd.entry_points());
+    (vm, installation, "ping:1 pong:1", rifds.entry_points());
 
   unsigned long const n (64);
 

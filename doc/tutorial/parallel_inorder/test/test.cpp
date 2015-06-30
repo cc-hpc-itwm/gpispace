@@ -81,13 +81,13 @@ BOOST_AUTO_TEST_CASE (tutorial_parallel_inorder)
   pnet::type::value::poke ("description", config, std::string ("test"));
   pnet::type::value::poke ("output_file", config, output_file.string());
 
-  gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
-                               , gspc::rifd::hostnames {vm}
-                               , gspc::rifd::port {vm}
-                               , installation
-                               );
+  gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
+                                 , gspc::rifd::hostnames {vm}
+                                 , gspc::rifd::port {vm}
+                                 , installation
+                                 );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:5", rifd.entry_points());
+    (vm, installation, "work:5", rifds.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run

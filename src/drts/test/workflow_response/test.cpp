@@ -72,14 +72,14 @@ BOOST_AUTO_TEST_CASE (workflow_response)
     , "net lib install"
     );
 
-  gspc::scoped_rifd const rifd { gspc::rifd::strategy (vm)
-                               , gspc::rifd::hostnames (vm)
-                               , gspc::rifd::port (vm)
-                               , installation
-                               };
+  gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
+                                 , gspc::rifd::hostnames (vm)
+                                 , gspc::rifd::port (vm)
+                                 , installation
+                                 };
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:2", rifd.entry_points());
+    (vm, installation, "worker:2", rifds.entry_points());
 
   gspc::client client (drts);
 
@@ -244,14 +244,14 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
     , "net lib install"
     );
 
-  gspc::scoped_rifd const rifd { gspc::rifd::strategy (vm)
-                               , gspc::rifd::hostnames (vm)
-                               , gspc::rifd::port (vm)
-                               , installation
-                               };
+  gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
+                                 , gspc::rifd::hostnames (vm)
+                                 , gspc::rifd::port (vm)
+                                 , installation
+                                 };
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:2 management:1", rifd.entry_points());
+    (vm, installation, "work:2 management:1", rifds.entry_points());
 
   gspc::client client (drts);
 
