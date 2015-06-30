@@ -6,8 +6,10 @@ namespace gspc
   {
     struct strategy;
     struct hostnames;
+    struct hostname;
     struct port;
   }
 
+  class scoped_rifd;
   class scoped_rifds;
 }

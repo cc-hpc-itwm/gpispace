@@ -33,4 +33,13 @@ namespace gspc
 
     std::vector<fhg::rif::entry_point> _entry_points;
   };
+
+  struct rifd_entry_point::implementation
+  {
+    implementation (fhg::rif::entry_point const& entry_point)
+      : _entry_point (entry_point)
+    {}
+
+    fhg::rif::entry_point _entry_point;
+  };
 }

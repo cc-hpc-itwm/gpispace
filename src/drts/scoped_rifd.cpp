@@ -17,6 +17,7 @@ namespace gspc
   {
     PIMPL_IMPLEMENTATION (strategy, std::string)
     PIMPL_IMPLEMENTATION (hostnames, std::vector<std::string>)
+    PIMPL_IMPLEMENTATION (hostname, std::string)
     PIMPL_IMPLEMENTATION (port, boost::optional<unsigned short>)
 
     strategy::strategy (boost::program_options::variables_map const& vm)
@@ -28,6 +29,9 @@ namespace gspc
     {}
     hostnames::hostnames (std::vector<std::string> const& hostnames)
       : _ (new implementation (hostnames))
+    {}
+    hostname::hostname (std::string const& host)
+      : _ (new implementation (host))
     {}
 
     port::port (boost::program_options::variables_map const& vm)
@@ -81,5 +85,36 @@ namespace gspc
   rifd_entry_points scoped_rifds::entry_points() const
   {
     return {new rifd_entry_points::implementation (_->_entry_points)};
+  }
+
+  struct scoped_rifd::implementation : public scoped_rifds::implementation
+  {
+    implementation ( std::string const& strategy
+                   , std::string const& host
+                   , boost::optional<unsigned short> const& rifd_port
+                   , boost::filesystem::path const& gspc_home
+                   )
+      : scoped_rifds::implementation (strategy, {host}, rifd_port, gspc_home)
+    {}
+  };
+
+  scoped_rifd::scoped_rifd ( rifd::strategy const& strategy
+                           , rifd::hostname const& hostname
+                           , rifd::port const& port
+                           , installation const& installation
+                           )
+    : _ (new implementation ( strategy._->_
+                            , hostname._->_
+                            , port._->_
+                            , installation.gspc_home()
+                            )
+        )
+  {}
+
+  PIMPL_DTOR (scoped_rifd)
+
+  rifd_entry_point scoped_rifd::entry_point() const
+  {
+    return {new rifd_entry_point::implementation (_->_entry_points.front())};
   }
 }

@@ -36,6 +36,7 @@ namespace gspc
 
     private:
       friend class ::gspc::scoped_rifds;
+      friend class ::gspc::scoped_rifd;
 
       PIMPL (strategy);
     };
@@ -50,17 +51,40 @@ namespace gspc
 
       PIMPL (hostnames);
     };
+    struct hostname
+    {
+      hostname (std::string const&);
+
+    private:
+      friend class ::gspc::scoped_rifd;
+
+      PIMPL (hostname);
+    };
     struct port
     {
       port (boost::program_options::variables_map const&);
 
     private:
       friend class ::gspc::scoped_rifds;
+      friend class ::gspc::scoped_rifd;
 
       PIMPL (port);
     };
   }
 
+  class scoped_rifd : boost::noncopyable
+  {
+  public:
+    scoped_rifd ( rifd::strategy const&
+                , rifd::hostname const&
+                , rifd::port const&
+                , installation const&
+                );
+
+    rifd_entry_point entry_point() const;
+
+    PIMPL (scoped_rifd);
+  };
   class scoped_rifds : boost::noncopyable
   {
   public:
@@ -73,5 +97,8 @@ namespace gspc
     rifd_entry_points entry_points() const;
 
     PIMPL (scoped_rifds);
+
+  private:
+    friend class scoped_rifd;
   };
 }
