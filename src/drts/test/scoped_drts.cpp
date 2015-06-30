@@ -154,9 +154,9 @@ BOOST_AUTO_TEST_CASE (no_worker_started_on_master)
     ( boost::regex_match
       ( info_output[2]
       , boost::regex { ( boost::format ("terminating agent on %1%: [0-9]+")
-                     % entry_point_master
-                     ).str()
-                   }
+                       % entry_point_master
+                       ).str()
+                     }
       )
     );
 
@@ -164,9 +164,9 @@ BOOST_AUTO_TEST_CASE (no_worker_started_on_master)
     ( boost::regex_match
       ( info_output[3]
       , boost::regex { ( boost::format ("terminating orchestrator on %1%: [0-9]+")
-                     % entry_point_master
-                     ).str()
-                   }
+                       % entry_point_master
+                       ).str()
+                     }
       )
     );
 }
@@ -294,9 +294,9 @@ BOOST_AUTO_TEST_CASE (workers_are_started_on_non_master)
     ( boost::regex_match
       ( info_output[3]
       , boost::regex { ( boost::format ("terminating drts-kernel on %1%: [0-9]+")
-                     % entry_point_worker
-                     ).str()
-                   }
+                       % entry_point_worker
+                       ).str()
+                     }
       )
     );
 
@@ -304,9 +304,9 @@ BOOST_AUTO_TEST_CASE (workers_are_started_on_non_master)
     ( boost::regex_match
       ( info_output[4]
       , boost::regex { ( boost::format ("terminating agent on %1%: [0-9]+")
-                     % entry_point_master
-                     ).str()
-                   }
+                       % entry_point_master
+                       ).str()
+                     }
       )
     );
 
@@ -314,9 +314,9 @@ BOOST_AUTO_TEST_CASE (workers_are_started_on_non_master)
     ( boost::regex_match
       ( info_output[5]
       , boost::regex { ( boost::format ("terminating orchestrator on %1%: [0-9]+")
-                     % entry_point_master
-                     ).str()
-                   }
+                       % entry_point_master
+                       ).str()
+                     }
       )
     );
 }
