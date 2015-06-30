@@ -2,6 +2,8 @@
 
 #include <boost/serialization/split_free.hpp>
 
+#include <util-generic/ostream/modifier.hpp>
+
 #include <string>
 #include <stdexcept>
 #include <sstream>
@@ -13,7 +15,7 @@ namespace fhg
 {
   namespace rif
   {
-    struct entry_point
+    struct entry_point : public fhg::util::ostream::modifier
     {
       std::string hostname;
       unsigned short port;
@@ -37,11 +39,9 @@ namespace fhg
             ("parse error: expected 'host port pid': got '" + input + "'");
         }
       }
-      std::string to_string() const
+      virtual std::ostream& operator() (std::ostream& os) const override
       {
-        std::ostringstream oss;
-        oss << hostname << ' ' << port << ' ' << pid;
-        return oss.str();
+        return os << hostname << ' ' << port << ' ' << pid;
       }
 
       bool operator== (entry_point const& other) const
@@ -60,7 +60,7 @@ namespace std
   {
     std::size_t operator() (const fhg::rif::entry_point& ep) const
     {
-      return std::hash<std::string>() (ep.to_string());
+      return std::hash<std::string>() (ep.string());
     }
   };
 }

@@ -98,7 +98,7 @@ try
           )
       )
   {
-    std::cout << entry_point.to_string() << '\n';
+    std::cout << entry_point << '\n';
   }
 }
 catch (...)

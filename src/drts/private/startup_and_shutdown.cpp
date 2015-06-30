@@ -48,7 +48,7 @@ namespace fhg
       {
         throw std::logic_error
           ( "process with name '" + name + "' on entry point '"
-          + entry_point.to_string() + "' already exists with pid "
+          + entry_point.string() + "' already exists with pid "
           + std::to_string (_.at (entry_point).at (name))
           + ", new pid " + std::to_string (pid)
           );
@@ -136,7 +136,7 @@ namespace
     )
   {
     info_output << "I: starting agent: " << name << " on rif entry point "
-                << rif_entry_point.to_string()
+                << rif_entry_point
                 << " with parent " << parent_name << "\n";
 
     std::vector<std::string> agent_startup_arguments
@@ -219,7 +219,7 @@ namespace fhg
                       | boost::adaptors::transformed
                           ( [] (fhg::rif::entry_point const& entry_point)
                             {
-                              return entry_point.to_string();
+                              return entry_point.string();
                             }
                           )
                       , ", "
@@ -292,7 +292,7 @@ namespace fhg
                    }
 
                    std::string const name
-                     ( name_prefix + "-" + entry_point.to_string()
+                     ( name_prefix + "-" + entry_point.string()
                      + "-" + std::to_string (identity + 1)
                      + ( description.socket
                        ? ("." + std::to_string (description.socket.get()))
@@ -443,7 +443,7 @@ namespace fhg
           }
         );
 
-      info_output << "I: starting base sdpa components on " << master.to_string() << "...\n";
+      info_output << "I: starting base sdpa components on " << master << "...\n";
       if (log_host && log_port)
       {
         info_output << "I: sending log events to: "
@@ -549,10 +549,10 @@ namespace fhg
                               ? std::make_pair (log_host.get(), log_port.get())
                               : boost::optional<std::pair<std::string, unsigned short>>()
                               , log_dir
-                              ? *log_dir / ("vmem-" + replace_whitespace (entry_point.to_string()) + ".log")
+                              ? *log_dir / ("vmem-" + replace_whitespace (entry_point.string()) + ".log")
                               : boost::optional<boost::filesystem::path>()
                               , nodes
-                              , master.to_string()
+                              , master.string()
                               , entry_point == master
                               ).get()
                           );
@@ -569,7 +569,7 @@ namespace fhg
           );
       }
 
-      master_agent_name = "agent-" + master.to_string() + "-0";
+      master_agent_name = "agent-" + master.string() + "-0";
 
       master_agent_hostinfo = start_agent ( master
                                           , master_agent_name
@@ -635,7 +635,7 @@ namespace fhg
                   , [&kind, pids, to_erase, entry_point_processes, &info_output]
                     {
                       info_output << "terminating " << kind << " on "
-                                  << entry_point_processes->first.to_string()
+                                  << entry_point_processes->first
                                   << ": " << fhg::util::join (pids, ' ') << "\n";
 
                       fhg::util::nest_exceptions<std::runtime_error>
@@ -646,7 +646,7 @@ namespace fhg
                           }
                         , ( boost::format ("Could not terminate %1% on %2%")
                           % kind
-                          % entry_point_processes->first.to_string()
+                          % entry_point_processes->first
                           ).str()
                         );
 

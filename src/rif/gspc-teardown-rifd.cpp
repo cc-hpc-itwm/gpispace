@@ -84,7 +84,7 @@ try
   {
     for (fhg::rif::entry_point const& entry_point : failed_entry_points)
     {
-      std::cout << entry_point.to_string() << '\n';
+      std::cout << entry_point << '\n';
     }
 
     throw;

@@ -41,7 +41,7 @@ namespace gspc
     }
     for (fhg::rif::entry_point const& entry_point : _->_entry_points)
     {
-      if (!(file << entry_point.to_string() << '\n'))
+      if (!(file << entry_point << '\n'))
       {
         throw std::runtime_error ("unable to write to file " + path.string());
       }
