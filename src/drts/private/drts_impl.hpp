@@ -20,7 +20,7 @@ namespace gspc
     implementation ( boost::program_options::variables_map const& vm
                    , installation const&
                    , std::string const& topology_description
-                   , rifd_entry_points const& entry_points
+                   , boost::optional<rifd_entry_points> const& entry_points
                    , rifd_entry_point const& master
                    , std::ostream& info_output
                    );

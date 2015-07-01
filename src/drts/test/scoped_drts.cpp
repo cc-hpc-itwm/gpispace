@@ -94,12 +94,6 @@ BOOST_AUTO_TEST_CASE (no_worker_started_on_master)
     , gspc::rifd::port {vm}
     , installation
     );
-  gspc::scoped_rifds const scoped_rifds
-    ( gspc::rifd::strategy {vm}
-    , gspc::rifd::hostnames {std::vector<std::string>{}}
-    , gspc::rifd::port {vm}
-    , installation
-    );
 
   std::ostringstream info_output_stream;
 
@@ -108,7 +102,7 @@ BOOST_AUTO_TEST_CASE (no_worker_started_on_master)
       ( vm
       , installation
       , "worker:1"
-      , scoped_rifds.entry_points()
+      , boost::none
       , master.entry_point()
       , info_output_stream
       );
