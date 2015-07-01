@@ -161,5 +161,3 @@ add_subdirectory (share)
 add_subdirectory (src)
 add_subdirectory (test)
 add_subdirectory (util)
-
-configure_file ("${CMAKE_SOURCE_DIR}/CTestCustom.cmake" "${CMAKE_BINARY_DIR}/CTestCustom.cmake" COPYONLY)
