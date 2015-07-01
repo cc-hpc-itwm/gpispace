@@ -21,6 +21,8 @@ namespace gspc
                    , installation const&
                    , std::string const& topology_description
                    , rifd_entry_points const& entry_points
+                   , rifd_entry_point const& master
+                   , std::ostream& info_output
                    );
 
     void add_worker (rifd_entry_points const&);
@@ -50,12 +52,16 @@ namespace gspc
                              , std::vector<fhg::drts::worker_description> worker_descriptions
                              , boost::optional<unsigned short> vmem_port
                              , std::vector<fhg::rif::entry_point> const& rif_entry_points
+                             , fhg::rif::entry_point const& master
+                             , std::ostream& info_output
                              );
 
       void add_worker_impl (std::vector<fhg::rif::entry_point> const&);
       void add_worker (std::vector<fhg::rif::entry_point> const&);
       void remove_worker (std::vector<fhg::rif::entry_point> const&);
 
+      std::ostream& _info_output;
+      fhg::rif::entry_point _master;
       std::vector<fhg::rif::entry_point> _rif_entry_points;
       boost::optional<std::string> _gui_host;
       boost::optional<unsigned short> _gui_port;

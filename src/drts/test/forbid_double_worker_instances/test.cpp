@@ -50,16 +50,16 @@ BOOST_AUTO_TEST_CASE (forbid_double_worker_instances)
 
   gspc::installation const installation (vm);
 
-  gspc::scoped_rifd const rifd { gspc::rifd::strategy (vm)
-                               , gspc::rifd::hostnames (vm)
-                               , gspc::rifd::port (vm)
-                               , installation
-                               };
+  gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
+                                 , gspc::rifd::hostnames (vm)
+                                 , gspc::rifd::port (vm)
+                                 , installation
+                                 };
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "test_worker:1", rifd.entry_points());
+    (vm, installation, "test_worker:1", rifds.entry_points());
 
-  BOOST_REQUIRE_THROW ( drts.add_worker (rifd.entry_points())
+  BOOST_REQUIRE_THROW ( drts.add_worker (rifds.entry_points())
                       , std::exception
                       );
 }

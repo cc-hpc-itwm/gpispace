@@ -202,13 +202,13 @@ BOOST_AUTO_TEST_CASE (share_example_map_transform_file)
 
   topology_description << "worker:2," << (2 * size_block);
 
-  gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
-                               , gspc::rifd::hostnames {vm}
-                               , gspc::rifd::port {vm}
-                               , installation
-                               );
+  gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
+                                 , gspc::rifd::hostnames {vm}
+                                 , gspc::rifd::port {vm}
+                                 , installation
+                                 );
   gspc::scoped_runtime_system const drts
-    (vm, installation, topology_description.str(), rifd.entry_points());
+    (vm, installation, topology_description.str(), rifds.entry_points());
 
   gspc::vmem_allocation const allocation_input
     (drts.alloc (size_input, "map_input"));

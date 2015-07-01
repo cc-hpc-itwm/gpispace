@@ -15,6 +15,7 @@
 #include <boost/program_options.hpp>
 
 #include <functional>
+#include <iostream>
 #include <string>
 
 namespace gpi
@@ -64,6 +65,19 @@ namespace gspc
                           , installation const&
                           , std::string const& topology_description
                           , rifd_entry_points const& entry_points
+                          );
+    scoped_runtime_system ( boost::program_options::variables_map const& vm
+                          , installation const&
+                          , std::string const& topology_description
+                          , rifd_entry_points const& entry_points
+                          , rifd_entry_point const& master
+                          );
+    scoped_runtime_system ( boost::program_options::variables_map const& vm
+                          , installation const&
+                          , std::string const& topology_description
+                          , rifd_entry_points const& entry_points
+                          , rifd_entry_point const& master
+                          , std::ostream& info_output
                           );
 
     void add_worker (rifd_entry_points const&);

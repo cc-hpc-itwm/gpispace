@@ -83,13 +83,13 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
     , "net lib install"
     );
 
-  gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
-                               , gspc::rifd::hostnames {vm}
-                               , gspc::rifd::port {vm}
-                               , installation
-                               );
+  gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
+                                 , gspc::rifd::hostnames {vm}
+                                 , gspc::rifd::port {vm}
+                                 , installation
+                                 );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:2", rifd.entry_points());
+    (vm, installation, "worker:2", rifds.entry_points());
 
   auto submit_fun
     ( [&filename_a, &filename_b, &drts]

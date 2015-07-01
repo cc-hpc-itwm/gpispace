@@ -86,7 +86,57 @@ namespace gspc
     , std::string const& topology_description
     , rifd_entry_points const& entry_points
     )
-      : _ (new implementation (vm, installation, topology_description, entry_points))
+      : scoped_runtime_system
+          ( vm
+          , installation
+          , topology_description
+          , entry_points
+          , [&entry_points]() -> rifd_entry_point
+            {
+              if (entry_points._->_entry_points.empty())
+              {
+                throw std::logic_error
+                  ("scoped_runtime_system: no entry_points given");
+              }
+
+              return { new rifd_entry_point::implementation
+                         (entry_points._->_entry_points.front())
+                     };
+            }()
+          )
+  {}
+  scoped_runtime_system::scoped_runtime_system
+    ( boost::program_options::variables_map const& vm
+    , installation const& installation
+    , std::string const& topology_description
+    , rifd_entry_points const& entry_points
+    , rifd_entry_point const& master
+    )
+      : scoped_runtime_system
+          ( vm
+          , installation
+          , topology_description
+          , entry_points
+          , master
+          , std::cout
+          )
+  {}
+  scoped_runtime_system::scoped_runtime_system
+    ( boost::program_options::variables_map const& vm
+    , installation const& installation
+    , std::string const& topology_description
+    , rifd_entry_points const& entry_points
+    , rifd_entry_point const& master
+    , std::ostream& info_output
+    )
+      : _ (new implementation ( vm
+                              , installation
+                              , topology_description
+                              , entry_points
+                              , master
+                              , info_output
+                              )
+          )
   {}
 
   PIMPL_DTOR (scoped_runtime_system)
@@ -127,8 +177,12 @@ namespace gspc
       , std::vector<fhg::drts::worker_description> worker_descriptions
       , boost::optional<unsigned short> vmem_port
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
+      , fhg::rif::entry_point const& master
+      , std::ostream& info_output
       )
-    : _rif_entry_points (rif_entry_points) //! \note vmem started in startup
+    : _info_output (info_output)
+    , _master (master)
+    , _rif_entry_points (rif_entry_points) //! \note vmem started in startup
     , _gui_host (gui_host)
     , _gui_port (gui_port)
     , _log_host (log_host)
@@ -139,7 +193,7 @@ namespace gspc
     , _sdpa_home (sdpa_home)
     , _log_dir (log_dir)
     , _worker_descriptions (worker_descriptions)
-    , _processes_storage (std::cout)
+    , _processes_storage (_info_output)
   {
     fhg::util::signal_handler_manager signal_handler_manager;
 
@@ -157,15 +211,19 @@ namespace gspc
       , gpi_mem
       , vmem_startup_timeout
       , vmem_port
-      , rif_entry_points
+      , _rif_entry_points
+      , _master
       , _log_dir
       , _processes_storage
       , _master_agent_name
       , _master_agent_hostinfo
-      , std::cout
+      , _info_output
       );
 
-    add_worker_impl (_rif_entry_points);
+    if (!_rif_entry_points.empty())
+    {
+      add_worker_impl (_rif_entry_points);
+    }
   }
 
 
@@ -204,7 +262,7 @@ namespace gspc
                               , _gpi_socket
                               , _app_path
                               , _sdpa_home
-                              , std::cout
+                              , _info_output
                               );
           }
         }
@@ -225,6 +283,8 @@ namespace gspc
     , installation const& installation
     , std::string const& topology_description
     , rifd_entry_points const& entry_points
+    , rifd_entry_point const& master
+    , std::ostream& info_output
     )
       : _virtual_memory_per_node (get_virtual_memory_per_node (vm))
       , _virtual_memory_socket (get_virtual_memory_socket (vm))
@@ -256,6 +316,8 @@ namespace gspc
                                 , parse_worker_descriptions (topology_description)
                                 , get_virtual_memory_port (vm)
                                 , entry_points._->_entry_points
+                                , master._->_entry_point
+                                , info_output
                                 )
       , _logger()
       , _virtual_memory_api

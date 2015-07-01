@@ -70,13 +70,13 @@ BOOST_AUTO_TEST_CASE (sdpa_test_drts_should_handle_multiple_workflows_being_subm
     , "net lib install"
     );
 
-  gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
-                               , gspc::rifd::hostnames {vm}
-                               , gspc::rifd::port {vm}
-                               , installation
-                               );
+  gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
+                                 , gspc::rifd::hostnames {vm}
+                                 , gspc::rifd::port {vm}
+                                 , installation
+                                 );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:1", rifd.entry_points());
+    (vm, installation, "work:1", rifds.entry_points());
 
     std::string const challenge (fhg::util::testing::random_string_without ("\"\\"));
 

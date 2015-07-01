@@ -411,6 +411,7 @@ namespace fhg
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
       , boost::optional<unsigned short> vmem_port
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
+      , fhg::rif::entry_point const& master
       , boost::optional<boost::filesystem::path> const& log_dir
       , fhg::drts::processes_storage& processes
       , std::string& master_agent_name
@@ -418,13 +419,6 @@ namespace fhg
       , std::ostream& info_output
       )
     {
-      if (rif_entry_points.empty())
-      {
-        throw std::invalid_argument ("rif_entry_points empty");
-      }
-
-      fhg::rif::entry_point const& master (rif_entry_points.front());
-
       if (log_dir)
       {
         if (delete_logfiles)

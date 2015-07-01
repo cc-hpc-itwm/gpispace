@@ -86,6 +86,7 @@ namespace fhg
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
       , boost::optional<unsigned short> vmem_port
       , std::vector<fhg::rif::entry_point> const&
+      , fhg::rif::entry_point const&
       , boost::optional<boost::filesystem::path> const& log_dir
       , processes_storage&
       , std::string& master_agent_name

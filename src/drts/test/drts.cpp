@@ -58,9 +58,9 @@ BOOST_AUTO_TEST_CASE (rifd_from_command_line)
 
   gspc::installation const installation (vm);
 
-  gspc::scoped_rifd const rifd ( gspc::rifd::strategy {vm}
-                               , gspc::rifd::hostnames {vm}
-                               , gspc::rifd::port {vm}
-                               , installation
-                               );
+  gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
+                                 , gspc::rifd::hostnames {vm}
+                                 , gspc::rifd::port {vm}
+                                 , installation
+                                 );
 }
