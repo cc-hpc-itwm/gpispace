@@ -3,9 +3,9 @@
 #include <util-generic/hostname.hpp>
 
 #include <fhg/util/macros.hpp>
-#include <fhg/util/wait_and_collect_exceptions.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
+#include <util-generic/wait_and_collect_exceptions.hpp>
 
 #include <sdpa/capability.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>

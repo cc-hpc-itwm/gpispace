@@ -15,10 +15,10 @@
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
-#include <fhg/util/wait_and_collect_exceptions.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/require_exception.hpp>
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/wait_and_collect_exceptions.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>

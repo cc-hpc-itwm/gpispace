@@ -22,7 +22,6 @@ extended_add_library (NAME fhg-util
           "xml.cpp"
 
           "system_with_blocked_SIGCHLD.cpp"
-          "wait_and_collect_exceptions.cpp"
   LIBRARIES Util::Generic
             Boost::thread
             Boost::system

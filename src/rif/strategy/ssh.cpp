@@ -3,8 +3,8 @@
 #include <rif/strategy/ssh.hpp>
 
 #include <util-generic/nest_exceptions.hpp>
+#include <util-generic/wait_and_collect_exceptions.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
-#include <fhg/util/wait_and_collect_exceptions.hpp>
 
 #include <boost/format.hpp>
 
