@@ -109,7 +109,7 @@ namespace gspc
     ( boost::program_options::variables_map const& vm
     , installation const& installation
     , std::string const& topology_description
-    , rifd_entry_points const& entry_points
+    , boost::optional<rifd_entry_points> const& entry_points
     , rifd_entry_point const& master
     )
       : scoped_runtime_system
@@ -125,7 +125,7 @@ namespace gspc
     ( boost::program_options::variables_map const& vm
     , installation const& installation
     , std::string const& topology_description
-    , rifd_entry_points const& entry_points
+    , boost::optional<rifd_entry_points> const& entry_points
     , rifd_entry_point const& master
     , std::ostream& info_output
     )
@@ -282,7 +282,7 @@ namespace gspc
     ( boost::program_options::variables_map const& vm
     , installation const& installation
     , std::string const& topology_description
-    , rifd_entry_points const& entry_points
+    , boost::optional<rifd_entry_points> const& entry_points
     , rifd_entry_point const& master
     , std::ostream& info_output
     )
@@ -295,30 +295,36 @@ namespace gspc
         : boost::none
         )
       , _nodes_and_number_of_unique_nodes
-          (entry_points._->nodes_and_number_of_unique_nodes())
-      , _started_runtime_system ( get_gui_host (vm)
-                                , get_gui_port (vm)
-                                , get_log_host (vm)
-                                , get_log_port (vm)
-                                , !!_virtual_memory_per_node
-                                //! \todo configurable: verbose logging
-                                , false
-                                , _virtual_memory_socket
-                                , get_application_search_path (vm)
-                                ? std::vector<boost::filesystem::path> ({boost::filesystem::canonical (get_application_search_path (vm).get())})
-                                : std::vector<boost::filesystem::path>()
-                                , installation.gspc_home()
-                                , get_log_directory (vm)
-                                // !\todo configurable: delete logfiles
-                                , true
-                                , _virtual_memory_per_node
-                                , _virtual_memory_startup_timeout
-                                , parse_worker_descriptions (topology_description)
-                                , get_virtual_memory_port (vm)
-                                , entry_points._->_entry_points
-                                , master._->_entry_point
-                                , info_output
-                                )
+          ( !entry_points
+            ? decltype (_nodes_and_number_of_unique_nodes) {{}, 0}
+            : entry_points->_->nodes_and_number_of_unique_nodes()
+          )
+      , _started_runtime_system
+          ( get_gui_host (vm)
+          , get_gui_port (vm)
+          , get_log_host (vm)
+          , get_log_port (vm)
+          , !!_virtual_memory_per_node
+          //! \todo configurable: verbose logging
+          , false
+          , _virtual_memory_socket
+          , get_application_search_path (vm)
+          ? std::vector<boost::filesystem::path> ({boost::filesystem::canonical (get_application_search_path (vm).get())})
+          : std::vector<boost::filesystem::path>()
+          , installation.gspc_home()
+          , get_log_directory (vm)
+          // !\todo configurable: delete logfiles
+          , true
+          , _virtual_memory_per_node
+          , _virtual_memory_startup_timeout
+          , parse_worker_descriptions (topology_description)
+          , get_virtual_memory_port (vm)
+          , !entry_points
+            ? decltype (entry_points->_->_entry_points) {}
+            : entry_points->_->_entry_points
+          , master._->_entry_point
+          , info_output
+          )
       , _logger()
       , _virtual_memory_api
         ( _virtual_memory_socket
