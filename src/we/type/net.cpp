@@ -2,12 +2,9 @@
 
 #include <we/type/net.hpp>
 #include <we/type/transition.hpp>
-#include <we/type/value/peek_or_die.hpp>
-#include <we/type/value/serialize.hpp>
 
 #include <we/require_type.hpp>
-
-#include <rpc/client.hpp>
+#include <we/workflow_response.hpp>
 
 #include <util-generic/nest_exceptions.hpp>
 
@@ -604,13 +601,7 @@ put_token ("%1%", %2%): place not marked with attribute put_token="true"
 
                 pnet::type::value::value_type const rpc (context.value (to));
 
-                fhg::rpc::remote_endpoint remote_client
-                  ( pnet::type::value::peek_or_die<std::string>  (rpc, {"address"})
-                  , pnet::type::value::peek_or_die<unsigned int> (rpc, {"port"})
-                  );
-                fhg::rpc::sync_remote_function<void (pnet::type::value::value_type)>
-                  (remote_client, "set_result")
-                    (context.value (p.second.name()));
+                we::workflow_response (rpc, context.value (p.second.name()));
               }
               , "fire_expression: sending workflow response failed"
             );

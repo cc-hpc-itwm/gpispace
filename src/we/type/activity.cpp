@@ -7,16 +7,13 @@
 #include <we/expr/eval/context.hpp>
 
 #include <we/context.hpp>
+#include <we/workflow_response.hpp>
 
 #include <we/type/activity.hpp>
 
-#include <we/type/value/peek_or_die.hpp>
-#include <we/type/value/serialize.hpp>
 #include <we/type/value/show.hpp>
 
 #include <util-generic/nest_exceptions.hpp>
-
-#include <rpc/client.hpp>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -142,12 +139,7 @@ namespace we
                      }()
                     );
 
-                  fhg::rpc::remote_endpoint remote_client
-                    ( pnet::type::value::peek_or_die<std::string> (rpc, {"address"})
-                    , pnet::type::value::peek_or_die<unsigned int> (rpc, {"port"})
-                    );
-                  fhg::rpc::sync_remote_function<void (pnet::type::value::value_type)>
-                    (remote_client, "set_result") (top.first);
+                  we::workflow_response (rpc, top.first);
                 }
               , "inject result: sending workflow response failed"
               );

@@ -71,6 +71,7 @@ extended_add_library (NAME pnet
           "we/type/value/dump.cpp"
 
           "we/loader/Module.cpp"
+          "we/workflow_response.cpp"
 
           "xml/parse/error.cpp"
           "xml/parse/id/generic.cpp"
