@@ -14,21 +14,17 @@
 
     <transition name="get_and_update_state">
       <defun>
-        <require key="management" mandatory="true"/>
         <inout name="state" type="unsigned long"/>
         <in name="trigger" type="value_and_endpoint"/>
-        <module name="workflow_response" function="get_and_update_state (state, trigger)">
-          <cinclude href="drts/workflow_response.hpp"/>
-          <ld flag="-lgspc"/>
-          <code><![CDATA[
-          gspc::workflow_response (trigger.address, trigger.port, state);
-
-          state += trigger.value;
-          ]]></code>
-        </module>
+        <out name="response" type="unsigned long"/>
+        <expression>
+          ${response} := ${state};
+          ${state} := ${state} + ${trigger.value};
+        </expression>
       </defun>
       <connect-inout port="state" place="state"/>
       <connect-in port="trigger" place="get_and_update_state_trigger"/>
+      <connect-response port="response" to="trigger"/>
     </transition>
 
     <place name="random_module_calls" type="unsigned long"/>
@@ -73,19 +69,13 @@
 
     <transition name="check_done">
       <defun>
-        <require key="management" mandatory="true"/>
-        <in name="done" type="control"/>
+        <inout name="done" type="control"/>
         <in name="trigger" type="value_and_endpoint"/>
-        <module name="workflow_response" function="check_done (done, trigger)">
-          <cinclude href="drts/workflow_response.hpp"/>
-          <ld flag="-lgspc"/>
-          <code><![CDATA[
-          gspc::workflow_response (trigger.address, trigger.port, done);
-          ]]></code>
-        </module>
+        <expression/>
       </defun>
       <connect-in port="done" place="done"/>
       <connect-in port="trigger" place="check_done_trigger"/>
+      <connect-response port="done" to="trigger"/>
     </transition>
 
     <place name="done_done" type="control" put_token="true"/>
