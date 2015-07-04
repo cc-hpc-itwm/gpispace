@@ -109,6 +109,131 @@ BOOST_FIXTURE_TEST_CASE (warning_duplicate_external_function, fixture)
     );
 }
 
+BOOST_AUTO_TEST_CASE (error_connect_response_with_unknown_port)
+{
+  std::string const port (fhg::util::testing::random_identifier());
+
+  std::string const input
+    ( ( boost::format (R"EOS(
+<defun name="%1%">
+  <net>
+    <transition name="%2%">
+      <defun>
+        <expression/>
+      </defun>
+      <connect-response port="%3%" to="%4%"/>
+    </transition>
+  </net>
+</defun>)EOS")
+      % fhg::util::testing::random_identifier()
+      % fhg::util::testing::random_identifier()
+      % port
+      % fhg::util::testing::random_identifier()
+      ).str()
+    );
+
+  fhg::util::testing::require_exception
+    <xml::parse::error::unknown_port_in_connect_response>
+    ( [&input]()
+      { xml::parse::state::type state;
+        std::istringstream input_stream (input);
+        xml::parse::post_processing_passes
+          (xml::parse::just_parse (state, input_stream), &state);
+      }
+    , boost::format
+      ("ERROR: connect-response from unknown output port '%1%' in %2%")
+    % port
+    % "[<stdin>:8:7]"
+    );
+}
+
+BOOST_AUTO_TEST_CASE (error_connect_response_with_unknown_to)
+{
+  std::string const to (fhg::util::testing::random_identifier());
+
+  std::string const input
+    ( ( boost::format (R"EOS(
+<defun name="%1%">
+  <net>
+    <transition name="%2%">
+      <defun>
+        <out name="%3%" type="string"/>
+        <expression/>
+      </defun>
+      <connect-response port="%3%" to="%4%"/>
+    </transition>
+  </net>
+</defun>)EOS")
+      % fhg::util::testing::random_identifier()
+      % fhg::util::testing::random_identifier()
+      % fhg::util::testing::random_identifier()
+      % to
+      ).str()
+    );
+
+  fhg::util::testing::require_exception
+    <xml::parse::error::unknown_to_in_connect_response>
+    ( [&input]()
+      { xml::parse::state::type state;
+        std::istringstream input_stream (input);
+        xml::parse::post_processing_passes
+          (xml::parse::just_parse (state, input_stream), &state);
+      }
+    , boost::format ("ERROR: unknown input port '%1%' in attribute 'to'"
+                    " of connect-response in %2%"
+                    )
+    % to
+    % "[<stdin>:9:7]"
+    );
+}
+
+BOOST_AUTO_TEST_CASE (error_connect_response_invalid_signature)
+{
+  std::string const to (fhg::util::testing::random_identifier());
+  std::string const name (fhg::util::testing::random_identifier());
+
+  std::string const input
+    ( ( boost::format (R"EOS(
+<defun name="%1%">
+  <net>
+    <struct name="%2%"/>
+    <transition name="%3%">
+      <defun>
+        <in name="%4%" type="%2%"/>
+        <out name="%5%" type="string"/>
+        <expression/>
+      </defun>
+      <connect-response port="%5%" to="%4%"/>
+    </transition>
+  </net>
+</defun>)EOS")
+      % fhg::util::testing::random_identifier()
+      % name
+      % fhg::util::testing::random_identifier()
+      % to
+      % fhg::util::testing::random_identifier()
+      ).str()
+    );
+
+  fhg::util::testing::require_exception
+    <xml::parse::error::invalid_signature_in_connect_response>
+    ( [&input]()
+      { xml::parse::state::type state;
+        std::istringstream input_stream (input);
+        xml::parse::post_processing_passes
+          (xml::parse::just_parse (state, input_stream), &state);
+      }
+    , boost::format
+      ("ERROR: invalid signature for response to port '%1%'."
+      " The type '%2%' with the signature '%2% :: []' does not provide"
+      " the two fields 'address :: string' and 'port :: unsigned int' in %3%"
+      )
+    % to
+    % name
+    % "[<stdin>:11:7]"
+    );
+}
+
 BOOST_FIXTURE_TEST_CASE (error_duplicate_external_function, fixture)
 {
   parse ("diagnostics/error_duplicate_external_function.xpnet");

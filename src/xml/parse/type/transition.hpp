@@ -143,6 +143,7 @@ namespace xml
 
         // ***************************************************************** //
 
+        void type_check (response_type const&, state::type const&) const;
         void type_check (const connect_type&, const state::type&) const;
         void type_check (const state::type & state) const;
 

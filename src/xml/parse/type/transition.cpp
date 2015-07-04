@@ -14,12 +14,15 @@
 
 #include <we/type/place.hpp>
 #include <we/type/expression.hpp>
+#include <we/workflow_response.hpp>
 
 #include <fhg/assert.hpp>
 
 #include <boost/variant.hpp>
 
 #include <xml/parse/rewrite/validprefix.hpp>
+
+#include <algorithm>
 
 namespace xml
 {
@@ -472,6 +475,54 @@ namespace xml
 
       // ***************************************************************** //
 
+
+      void transition_type::type_check ( response_type const& response
+                                       , state::type const&
+                                       ) const
+      {
+        auto const& ports (resolved_function().get_ref().ports().values());
+
+        if ( std::find_if
+             ( std::begin (ports), std::end (ports)
+             , [&response] (port_type const& port)
+               {
+                 return (  port.direction() == we::type::PORT_OUT
+                        && port.name() == response.port()
+                        );
+               }
+             )
+           == std::end (ports)
+           )
+        {
+          throw error::unknown_port_in_connect_response
+            (response.make_reference_id());
+        }
+
+        auto const& to
+          ( std::find_if
+            ( std::begin (ports), std::end (ports)
+            , [&response] (port_type const& port)
+              {
+                return (  port.direction() == we::type::PORT_IN
+                       && port.name() == response.to()
+                       );
+              }
+            )
+          );
+
+        if (to == std::end (ports))
+        {
+          throw error::unknown_to_in_connect_response
+            (response.make_reference_id());
+        }
+
+        if (!we::is_rpc_server_description (to->signature_or_throw()))
+        {
+          throw error::invalid_signature_in_connect_response
+            (response.make_reference_id(), to->make_reference_id());
+        }
+      }
+
       //! \todo move to connect_type
       void transition_type::type_check ( const connect_type & connect
                                        , const state::type &
@@ -535,6 +586,10 @@ namespace xml
         for (const connect_type& connect : connections().values())
         {
           type_check (connect, state);
+        }
+        for (response_type const& response : responses().values())
+        {
+          type_check (response, state);
         }
 
         boost::apply_visitor (transition_type_check (state), function_or_use());
