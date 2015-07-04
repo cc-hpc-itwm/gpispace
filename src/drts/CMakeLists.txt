@@ -18,7 +18,6 @@ install (FILES
   information_to_reattach.hpp
   virtual_memory.fwd.hpp
   virtual_memory.hpp
-  workflow_response.hpp
   DESTINATION include/drts/
 )
 
@@ -33,7 +32,6 @@ extended_add_library (NAME gspc
           "scoped_rifd.cpp"
           "stream.cpp"
           "virtual_memory.cpp"
-          "workflow_response.cpp"
   LIBRARIES sdpa
             pnet
             rif-strategies
