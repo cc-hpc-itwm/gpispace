@@ -215,6 +215,15 @@
     <xsd:attribute name="port" type="xsd:NCName" use="required"/>
   </xsd:complexType>
 
+  <xsd:complexType name="connect_response_type">
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="properties" type="property_map_type"/>
+      <xsd:element name="include-properties" type="properties_include_type"/>
+    </xsd:choice>
+    <xsd:attribute name="to" type="xsd:NCName" use="required"/>
+    <xsd:attribute name="port" type="xsd:NCName" use="required"/>
+  </xsd:complexType>
+
   <xsd:complexType name="place_map_type">
     <xsd:choice minOccurs="0" maxOccurs="unbounded">
       <xsd:element name="properties" type="property_map_type"/>
@@ -281,6 +290,7 @@
         <xsd:element name="connect-out" type="connect_type"/>
         <xsd:element name="connect-inout" type="connect_type"/>
         <xsd:element name="connect-read" type="connect_type"/>
+        <xsd:element name="connect-response" type="connect_response_type"/>
         <xsd:element name="place-map" type="place_map_type"/>
         <xsd:element name="condition" type="xsd:string"/>
       </xsd:choice>

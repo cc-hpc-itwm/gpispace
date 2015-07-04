@@ -30,6 +30,7 @@
 #include <xml/parse/type/place.hpp>
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/port.hpp>
+#include <xml/parse/type/response.hpp>
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/template.hpp>
@@ -320,6 +321,59 @@ namespace xml
           , required ("connect_type", node, "place", state)
           , required ("connect_type", node, "port", state)
           , direction
+          , properties
+          ).make_reference_id();
+      }
+
+      // **************************************************************** //
+
+      id::ref::response response_type ( const xml_node_type* node
+                                      , state::type& state
+                                      )
+      {
+        we::type::property::type properties;
+
+        for ( xml_node_type* child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
+        {
+          const std::string child_name (name_element (child, state));
+
+          if (child)
+          {
+            if (child_name == "properties")
+            {
+              property_map_type (properties, child, state);
+            }
+            else if (child_name == "include-properties")
+            {
+              util::property::join
+                ( state
+                , properties
+                , properties_include
+                  (required ("response_type", child, "href", state), state)
+                );
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "response_type"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
+          }
+        }
+
+        return type::response_type
+          ( state.id_mapper()->next_id()
+          , state.id_mapper()
+          , boost::none
+          , state.position (node)
+          , required ("response_type", node, "port", state)
+          , required ("response_type", node, "to", state)
           , properties
           ).make_reference_id();
       }
@@ -757,6 +811,10 @@ namespace xml
             {
               transition.get_ref().push_connection
                 (connect_type (child, state, we::edge::PT_READ));
+            }
+            else if (child_name == "connect-response")
+            {
+              transition.get_ref().push_response (response_type (child, state));
             }
             else if (child_name == "condition")
             {

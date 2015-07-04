@@ -101,6 +101,7 @@ namespace xml
         , const boost::optional<function_or_use_type>& fun_or_use
         , const std::string& name
         , const connections_type& connections
+        , responses_type const& responses
         , const place_maps_type& place_map
         , const structs_type& structs
         , const conditions_type& conditions
@@ -119,6 +120,7 @@ namespace xml
                            )
         , _name (name)
         , _connections (connections, _id)
+        , _responses (responses, _id)
         , _place_map (place_map, _id)
         , structs (structs)
         , _conditions (conditions)
@@ -253,6 +255,11 @@ namespace xml
       {
         return _connections;
       }
+      transition_type::responses_type const&
+        transition_type::responses() const
+      {
+        return _responses;
+      }
       const transition_type::place_maps_type&
         transition_type::place_map() const
       {
@@ -289,6 +296,17 @@ namespace xml
           throw error::duplicate_connect (id_old, connect_id);
         }
         connect_id.get_ref().parent (id());
+      }
+
+      void transition_type::push_response (id::ref::response const& response_id)
+      {
+        const id::ref::response& id_old (_responses.push (response_id));
+
+        if (not (id_old == response_id))
+        {
+          throw error::duplicate_response (id_old, response_id);
+        }
+        response_id.get_ref().parent (id());
       }
 
       void transition_type::push_place_map (const id::ref::place_map& pm_id)
@@ -605,6 +623,7 @@ namespace xml
           : boost::none
           , _name
           , _connections.clone (new_id, new_mapper)
+          , _responses.clone (new_id, new_mapper)
           , _place_map.clone (new_id, new_mapper)
           , structs
           , _conditions
@@ -992,6 +1011,16 @@ namespace xml
               }
             }
 
+            for (response_type const& response : trans.responses().values())
+            {
+              we_net.add_response
+                ( tid
+                , port_id_out.at (response.port())
+                , response.to()
+                , response.properties()
+                );
+            }
+
             for ( std::pair<we::port_id_type, std::string> const& association
                 : real_place_names
                 )
@@ -1057,6 +1086,7 @@ namespace xml
 
           dumps (s, t.place_map().values());
           dumps (s, t.connections().values());
+          dumps (s, t.responses().values());
 
           for (const std::string& cond : t.conditions())
           {

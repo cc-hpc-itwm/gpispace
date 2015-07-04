@@ -330,6 +330,7 @@ namespace xml
       DUPLICATE (place_map);
       DUPLICATE_WITH_ID (external_function,module);
       DUPLICATE (connect);
+      DUPLICATE (response);
       DUPLICATE (memory_buffer);
 
 #undef DUPLICATE

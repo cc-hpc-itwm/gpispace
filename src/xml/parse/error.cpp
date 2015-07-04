@@ -559,6 +559,22 @@ namespace xml
             )
       {}
 
+      duplicate_response::duplicate_response
+        ( const id::ref::response& early
+        , const id::ref::response& late
+        )
+          : generic_duplicate<id::ref::response>
+            ( early
+            , late
+            , boost::format ( "connect-response %1% -> %2%"
+                              " (existing response connects to %3%)"
+                            )
+            % late.get().port()
+            % late.get().to()
+            % early.get().to()
+            )
+      {}
+
       duplicate_memory_buffer::duplicate_memory_buffer
         ( id::ref::memory_buffer const& early
         , id::ref::memory_buffer const& late

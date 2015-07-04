@@ -90,6 +90,7 @@ extended_add_library (NAME pnet
           "xml/parse/type/place_map.cpp"
           "xml/parse/type/port.cpp"
           "xml/parse/type/require.cpp"
+          "xml/parse/type/response.cpp"
           "xml/parse/type/specialize.cpp"
           "xml/parse/type/struct.cpp"
           "xml/parse/type/template.cpp"
@@ -116,6 +117,7 @@ extended_add_library (NAME pnet
             Util::Generic
             Boost::serialization
             Boost::date_time
+            RPC
             ${CMAKE_DL_LIBS}
 )
 

@@ -10,13 +10,21 @@
 
 #include <we/type/activity.hpp>
 
+#include <we/type/value/peek_or_die.hpp>
+#include <we/type/value/serialize.hpp>
 #include <we/type/value/show.hpp>
+
+#include <util-generic/nest_exceptions.hpp>
+
+#include <rpc/client.hpp>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <algorithm>
+#include <cassert>
 #include <sstream>
 #include <iostream>
 #include <fstream>
@@ -93,11 +101,57 @@ namespace we
 
         for (const activity_t::token_on_port_t& top : child.output())
         {
-          net.put_value
-            ( net.port_to_place().at (*child.transition_id())
-            .left.find (top.second)->get_right()
-            , top.first
-            );
+          if ( net.port_to_place().count (*child.transition_id())
+             && net.port_to_place().at (*child.transition_id())
+                .left.count (top.second)
+             )
+          {
+            net.put_value
+              ( net.port_to_place().at (*child.transition_id())
+              .left.find (top.second)->get_right()
+              , top.first
+              );
+          }
+          else
+          {
+            fhg::util::nest_exceptions<std::runtime_error>
+              ( [&]
+                {
+                  assert ( net.port_to_response().at (*child.transition_id())
+                         . left.count (top.second)
+                         );
+
+                  pnet::type::value::value_type const rpc
+                    ([this, &net, &child, &top]
+                     {
+                       std::string const to
+                         ( net.port_to_response().at (*child.transition_id())
+                         . left.find (top.second)->get_right()
+                         );
+
+                       we::port_id_type const input_port_id
+                         (child.transition().input_port_by_name (to));
+
+                       return std::find_if
+                         ( child._input.begin(), child._input.end()
+                         , [&input_port_id] (token_on_port_t const& input_top)
+                           {
+                             return input_top.second == input_port_id;
+                           }
+                         )->first;
+                     }()
+                    );
+
+                  fhg::rpc::remote_endpoint remote_client
+                    ( pnet::type::value::peek_or_die<std::string> (rpc, {"address"})
+                    , pnet::type::value::peek_or_die<unsigned int> (rpc, {"port"})
+                    );
+                  fhg::rpc::sync_remote_function<void (pnet::type::value::value_type)>
+                    (remote_client, "set_result") (top.first);
+                }
+              , "inject result: sending workflow response failed"
+              );
+          }
         }
       }
 

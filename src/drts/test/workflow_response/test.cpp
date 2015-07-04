@@ -26,9 +26,9 @@
 #include <map>
 #include <future>
 
-#include <iostream>
-
-BOOST_AUTO_TEST_CASE (workflow_response)
+namespace
+{
+  void check_response (std::string const& name, std::string const& topology)
 {
   boost::program_options::options_description options_description;
 
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE (workflow_response)
     );
 
   fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "workflow_response");
+    (test::shared_directory (vm) / name);
 
   test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE (workflow_response)
 
   test::make const make
     ( installation
-    , "workflow_response"
+    , name
     , test::source_directory (vm)
     , {{"LIB_DESTDIR", installation_dir.string()}}
     , "net lib install"
@@ -79,11 +79,11 @@ BOOST_AUTO_TEST_CASE (workflow_response)
                                  };
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:2", rifds.entry_points());
+    (vm, installation, topology, rifds.entry_points());
 
   gspc::client client (drts);
 
-  gspc::workflow workflow (make.build_directory() / "workflow_response.pnet");
+  gspc::workflow workflow (make.build_directory() / (name + ".pnet"));
 
   workflow.set_wait_for_output();
 
@@ -196,6 +196,13 @@ BOOST_AUTO_TEST_CASE (workflow_response)
   BOOST_REQUIRE_EQUAL ( result.find (port_state)->second
                       , pnet::type::value::value_type (value)
                       );
+}
+}
+
+BOOST_AUTO_TEST_CASE (workflow_response)
+{
+  check_response ("workflow_response", "worker:2");
+  check_response ("workflow_response_expression", "");
 }
 
 BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
