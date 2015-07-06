@@ -14,12 +14,15 @@
 
 #include <we/type/place.hpp>
 #include <we/type/expression.hpp>
+#include <we/workflow_response.hpp>
 
 #include <fhg/assert.hpp>
 
 #include <boost/variant.hpp>
 
 #include <xml/parse/rewrite/validprefix.hpp>
+
+#include <algorithm>
 
 namespace xml
 {
@@ -101,6 +104,7 @@ namespace xml
         , const boost::optional<function_or_use_type>& fun_or_use
         , const std::string& name
         , const connections_type& connections
+        , responses_type const& responses
         , const place_maps_type& place_map
         , const structs_type& structs
         , const conditions_type& conditions
@@ -119,6 +123,7 @@ namespace xml
                            )
         , _name (name)
         , _connections (connections, _id)
+        , _responses (responses, _id)
         , _place_map (place_map, _id)
         , structs (structs)
         , _conditions (conditions)
@@ -253,6 +258,11 @@ namespace xml
       {
         return _connections;
       }
+      transition_type::responses_type const&
+        transition_type::responses() const
+      {
+        return _responses;
+      }
       const transition_type::place_maps_type&
         transition_type::place_map() const
       {
@@ -289,6 +299,17 @@ namespace xml
           throw error::duplicate_connect (id_old, connect_id);
         }
         connect_id.get_ref().parent (id());
+      }
+
+      void transition_type::push_response (id::ref::response const& response_id)
+      {
+        const id::ref::response& id_old (_responses.push (response_id));
+
+        if (not (id_old == response_id))
+        {
+          throw error::duplicate_response (id_old, response_id);
+        }
+        response_id.get_ref().parent (id());
       }
 
       void transition_type::push_place_map (const id::ref::place_map& pm_id)
@@ -454,6 +475,54 @@ namespace xml
 
       // ***************************************************************** //
 
+
+      void transition_type::type_check ( response_type const& response
+                                       , state::type const&
+                                       ) const
+      {
+        auto const& ports (resolved_function().get_ref().ports().values());
+
+        if ( std::find_if
+             ( std::begin (ports), std::end (ports)
+             , [&response] (port_type const& port)
+               {
+                 return (  port.direction() == we::type::PORT_OUT
+                        && port.name() == response.port()
+                        );
+               }
+             )
+           == std::end (ports)
+           )
+        {
+          throw error::unknown_port_in_connect_response
+            (response.make_reference_id());
+        }
+
+        auto const& to
+          ( std::find_if
+            ( std::begin (ports), std::end (ports)
+            , [&response] (port_type const& port)
+              {
+                return (  port.direction() == we::type::PORT_IN
+                       && port.name() == response.to()
+                       );
+              }
+            )
+          );
+
+        if (to == std::end (ports))
+        {
+          throw error::unknown_to_in_connect_response
+            (response.make_reference_id());
+        }
+
+        if (!we::is_rpc_server_description (to->signature_or_throw()))
+        {
+          throw error::invalid_signature_in_connect_response
+            (response.make_reference_id(), to->make_reference_id());
+        }
+      }
+
       //! \todo move to connect_type
       void transition_type::type_check ( const connect_type & connect
                                        , const state::type &
@@ -517,6 +586,10 @@ namespace xml
         for (const connect_type& connect : connections().values())
         {
           type_check (connect, state);
+        }
+        for (response_type const& response : responses().values())
+        {
+          type_check (response, state);
         }
 
         boost::apply_visitor (transition_type_check (state), function_or_use());
@@ -605,6 +678,7 @@ namespace xml
           : boost::none
           , _name
           , _connections.clone (new_id, new_mapper)
+          , _responses.clone (new_id, new_mapper)
           , _place_map.clone (new_id, new_mapper)
           , structs
           , _conditions
@@ -992,6 +1066,16 @@ namespace xml
               }
             }
 
+            for (response_type const& response : trans.responses().values())
+            {
+              we_net.add_response
+                ( tid
+                , port_id_out.at (response.port())
+                , response.to()
+                , response.properties()
+                );
+            }
+
             for ( std::pair<we::port_id_type, std::string> const& association
                 : real_place_names
                 )
@@ -1057,6 +1141,7 @@ namespace xml
 
           dumps (s, t.place_map().values());
           dumps (s, t.connections().values());
+          dumps (s, t.responses().values());
 
           for (const std::string& cond : t.conditions())
           {

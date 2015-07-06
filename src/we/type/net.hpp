@@ -54,6 +54,12 @@ namespace we
         , boost::bimaps::with_info<we::type::property::type>
         > port_to_place_with_info_type;
       typedef boost::bimaps::bimap
+        < port_id_type
+        , std::string
+        , boost::bimaps::left_based
+        , boost::bimaps::with_info<we::type::property::type>
+        > port_to_response_with_info_type;
+      typedef boost::bimaps::bimap
         < place_id_type
         , port_id_type
         , boost::bimaps::left_based
@@ -62,6 +68,9 @@ namespace we
       typedef std::unordered_map< transition_id_type
                                 , port_to_place_with_info_type
                                 > port_to_place_type;
+      typedef std::unordered_map< transition_id_type
+                                , port_to_response_with_info_type
+                                > port_to_response_type;
       typedef std::unordered_map< transition_id_type
                                 , place_to_port_with_info_type
                                 > place_to_port_type;
@@ -84,12 +93,18 @@ namespace we
                           , port_id_type
                           , we::type::property::type const&
                           );
+      void add_response ( transition_id_type
+                        , port_id_type
+                        , std::string const& to
+                        , we::type::property::type const&
+                        );
 
       adj_tp_type const& transition_to_place() const;
       adj_pt_type const& place_to_transition_consume() const;
       adj_pt_type const& place_to_transition_read() const;
 
       port_to_place_type const& port_to_place() const;
+      port_to_response_type const& port_to_response() const;
       place_to_port_type const& place_to_port() const;
 
       void put_value (place_id_type, const pnet::type::value::value_type&);
@@ -138,6 +153,7 @@ namespace we
       adj_tp_type _adj_tp;
 
       port_to_place_type _port_to_place;
+      port_to_response_type _port_to_response;
       place_to_port_type _place_to_port;
 
       typedef std::unordered_map< place_id_type
@@ -211,6 +227,7 @@ namespace we
         ar & BOOST_SERIALIZATION_NVP (_adj_pt_read);
         ar & BOOST_SERIALIZATION_NVP (_adj_tp);
         ar & BOOST_SERIALIZATION_NVP (_port_to_place);
+        ar & BOOST_SERIALIZATION_NVP (_port_to_response);
         ar & BOOST_SERIALIZATION_NVP (_place_to_port);
         {
           const std::size_t s (_token_by_place_id.size());
@@ -267,6 +284,7 @@ namespace we
         ar & BOOST_SERIALIZATION_NVP (_adj_pt_read);
         ar & BOOST_SERIALIZATION_NVP (_adj_tp);
         ar & BOOST_SERIALIZATION_NVP (_port_to_place);
+        ar & BOOST_SERIALIZATION_NVP (_port_to_response);
         ar & BOOST_SERIALIZATION_NVP (_place_to_port);
         std::size_t token_by_place_id_size;
         ar & token_by_place_id_size;

@@ -50,6 +50,12 @@ namespace xml
                 )
           : generic (boost::format ("%1% in %2%") % format % path)
         {}
+
+        generic ( boost::format const& format
+                , util::position_type const& position
+                )
+          : generic (boost::format ("%1% in %2%") % format % position)
+        {}
       };
 
       // ******************************************************************* //
@@ -330,6 +336,7 @@ namespace xml
       DUPLICATE (place_map);
       DUPLICATE_WITH_ID (external_function,module);
       DUPLICATE (connect);
+      DUPLICATE (response);
       DUPLICATE (memory_buffer);
 
 #undef DUPLICATE
@@ -514,6 +521,28 @@ namespace xml
       private:
         const std::string _function_name;
         const id::ref::transition _transition;
+      };
+
+      // ******************************************************************* //
+
+      class unknown_port_in_connect_response : public generic
+      {
+      public:
+        unknown_port_in_connect_response (id::ref::response const&);
+      };
+
+      class unknown_to_in_connect_response : public generic
+      {
+      public:
+        unknown_to_in_connect_response (id::ref::response const&);
+      };
+
+      class invalid_signature_in_connect_response : public generic
+      {
+      public:
+        invalid_signature_in_connect_response ( id::ref::response const&
+                                              , id::ref::port const&
+                                              );
       };
 
       // ******************************************************************* //

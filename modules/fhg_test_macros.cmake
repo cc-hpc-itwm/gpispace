@@ -34,7 +34,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/drts/virtual_memory.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/worker/context.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/worker/context_fwd.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/drts/workflow_response.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/fhg/util/dl.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/fhg/util/parse/error.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/fhg/util/parse/position.hpp"

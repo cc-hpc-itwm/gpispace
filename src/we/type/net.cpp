@@ -4,6 +4,9 @@
 #include <we/type/transition.hpp>
 
 #include <we/require_type.hpp>
+#include <we/workflow_response.hpp>
+
+#include <util-generic/nest_exceptions.hpp>
 
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/join.hpp>
@@ -76,6 +79,7 @@ namespace we
       , _adj_pt_read()
       , _adj_tp()
       , _port_to_place()
+      , _port_to_response()
       , _place_to_port()
       , _token_by_place_id()
       , _enabled()
@@ -91,6 +95,7 @@ namespace we
       , _adj_pt_read (other._adj_pt_read)
       , _adj_tp (other._adj_tp)
       , _port_to_place (other._port_to_place)
+      , _port_to_response (other._port_to_response)
       , _place_to_port (other._place_to_port)
       , _token_by_place_id (other._token_by_place_id)
       , _enabled (other._enabled)
@@ -109,6 +114,7 @@ namespace we
       _adj_pt_read = other._adj_pt_read;
       _adj_tp = other._adj_tp;
       _port_to_place = other._port_to_place;
+      _port_to_response = other._port_to_response;
       _place_to_port = other._place_to_port;
       _token_by_place_id = other._token_by_place_id;
       _enabled = other._enabled;
@@ -198,6 +204,16 @@ namespace we
       }
     }
 
+    void net_type::add_response ( transition_id_type transition_id
+                                , port_id_type port_id
+                                , std::string const& to
+                                , we::type::property::type const& property
+                                )
+    {
+      _port_to_response[transition_id].insert
+        (port_to_response_with_info_type::value_type (port_id, to, property));
+    }
+
     const std::unordered_map<place_id_type,place::type>& net_type::places() const
     {
       return _pmap;
@@ -224,6 +240,10 @@ namespace we
     net_type::port_to_place_type const& net_type::port_to_place() const
     {
       return _port_to_place;
+    }
+    net_type::port_to_response_type const& net_type::port_to_response() const
+    {
+      return _port_to_response;
     }
     net_type::place_to_port_type const& net_type::place_to_port() const
     {
@@ -557,12 +577,35 @@ put_token ("%1%", %2%): place not marked with attribute put_token="true"
           : transition.ports_output()
           )
       {
+        if (  _port_to_place.count (tid)
+           && _port_to_place.at (tid).left.count (p.first)
+           )
+        {
           pending_updates.push_back
             ( do_put_value
               ( _port_to_place.at (tid).left.find (p.first)->get_right()
               , context.value (p.second.name())
               )
             );
+        }
+        else
+        {
+          fhg::util::nest_exceptions<std::runtime_error>
+            ( [&]
+              {
+                assert (_port_to_response.at (tid).left.count (p.first));
+
+                std::string const to ( _port_to_response.at (tid)
+                                     . left.find (p.first)->get_right()
+                                     );
+
+                pnet::type::value::value_type const rpc (context.value (to));
+
+                we::workflow_response (rpc, context.value (p.second.name()));
+              }
+              , "fire_expression: sending workflow response failed"
+            );
+        }
       }
 
       do_delete (tokens_to_be_deleted);

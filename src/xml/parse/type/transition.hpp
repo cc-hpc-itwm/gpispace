@@ -7,6 +7,7 @@
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/use.hpp>
 #include <xml/parse/type/net.fwd.hpp>
+#include <xml/parse/type/response.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
 #include <xml/parse/util/position.fwd.hpp>
 
@@ -33,6 +34,8 @@ namespace xml
 
         typedef xml::util::unique<connect_type,id::ref::connect>
           connections_type;
+        using responses_type
+          = xml::util::unique<response_type,id::ref::response>;
         typedef xml::util::unique<place_map_type,id::ref::place_map>
           place_maps_type;
 
@@ -60,6 +63,7 @@ namespace xml
                         , const boost::optional<function_or_use_type>&
                         , const std::string& name
                         , const connections_type& connections
+                        , responses_type const&
                         , const place_maps_type& place_map
                         , const structs_type& structs
                         , const conditions_type&
@@ -93,12 +97,14 @@ namespace xml
         // ***************************************************************** //
 
         const connections_type& connections() const;
+        responses_type const& responses() const;
         const place_maps_type& place_map() const;
 
         void remove_connection (const id::ref::connect&);
         void remove_place_map (const id::ref::place_map&);
 
         void push_connection (const id::ref::connect&);
+        void push_response (const id::ref::response&);
         void push_place_map (const id::ref::place_map&);
 
         void connection_place (const id::ref::connect&, const std::string&);
@@ -137,6 +143,7 @@ namespace xml
 
         // ***************************************************************** //
 
+        void type_check (response_type const&, state::type const&) const;
         void type_check (const connect_type&, const state::type&) const;
         void type_check (const state::type & state) const;
 
@@ -158,6 +165,7 @@ namespace xml
         std::string _name;
 
         connections_type _connections;
+        responses_type _responses;
         place_maps_type _place_map;
 
         //! \todo All below should be private with accessors.

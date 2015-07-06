@@ -621,17 +621,7 @@ namespace we
     void layer::activity_data_type::child_finished (type::activity_t child)
     {
       //! \note We wrap all input activites in a net.
-      we::type::net_type& net
-        (boost::get<we::type::net_type> (_activity->transition().data()));
-
-      for (const type::activity_t::token_on_port_t& top : child.output())
-      {
-        net.put_value
-          ( net.port_to_place().at (*child.transition_id())
-          .left.find (top.second)->get_right()
-          , top.first
-          );
-      }
+      _activity->inject (child);
     }
 
 

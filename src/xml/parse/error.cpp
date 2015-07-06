@@ -7,12 +7,14 @@
 #include <xml/parse/type/place.hpp>
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/port.hpp>
+#include <xml/parse/type/response.hpp>
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 
 #include <we/type/net.hpp>
 
 #include <we/type/signature/show.hpp>
+#include <we/workflow_response.hpp>
 
 #include <util-generic/first_then.hpp>
 #include <util-generic/print_container.hpp>
@@ -216,6 +218,42 @@ namespace xml
                   )
         , _function_name (fun)
         , _transition (trans)
+      {}
+
+      unknown_port_in_connect_response::unknown_port_in_connect_response
+        (id::ref::response const& response)
+          : generic
+            ( boost::format ("connect-response from unknown output port '%1%'")
+            % response.get().port()
+            , response.get().position_of_definition()
+            )
+      {}
+
+      unknown_to_in_connect_response::unknown_to_in_connect_response
+        (id::ref::response const& response)
+          : generic
+            ( boost::format
+              ("unknown input port '%1%' in attribute 'to' of connect-response")
+            % response.get().to()
+            , response.get().position_of_definition()
+            )
+      {}
+
+      invalid_signature_in_connect_response::invalid_signature_in_connect_response
+        ( id::ref::response const& response
+        , id::ref::port const& port
+        )
+          : generic
+            ( boost::format
+              ("invalid signature for response to port '%1%'."
+              " The type '%2%' with the signature '%3%' does not provide %4%"
+              )
+            % port.get().name()
+            % port.get().type()
+            % pnet::type::signature::show (port.get().signature_or_throw())
+            % we::rpc_server_description_requirements()
+            , response.get().position_of_definition()
+            )
       {}
 
       unknown_template::unknown_template ( const id::ref::specialize& spec
@@ -556,6 +594,22 @@ namespace xml
             % late.get().place()
             % late.get().port()
             % we::edge::enum_to_string (early.get().direction())
+            )
+      {}
+
+      duplicate_response::duplicate_response
+        ( const id::ref::response& early
+        , const id::ref::response& late
+        )
+          : generic_duplicate<id::ref::response>
+            ( early
+            , late
+            , boost::format ( "connect-response %1% -> %2%"
+                              " (existing response connects to %3%)"
+                            )
+            % late.get().port()
+            % late.get().to()
+            % early.get().to()
             )
       {}
 
