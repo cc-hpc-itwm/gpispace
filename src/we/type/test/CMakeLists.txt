@@ -1,7 +1,3 @@
-# {mirko.rahn,bernd.loerwald}@itwm.fraunhofer.de
-
-# mirko.rahn@itwm.fraunhofer.de
-
 fhg_add_test (bytearray.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES pnet fhg-util
@@ -20,6 +16,12 @@ fhg_add_test (signature.cpp
 )
 
 fhg_add_test (bitsetofint.cpp
+  BOOST_UNIT_TEST
+  PROJECT we_type
+  LINK_LIBRARIES pnet
+)
+
+fhg_add_test (module_call.cpp
   BOOST_UNIT_TEST
   PROJECT we_type
   LINK_LIBRARIES pnet
