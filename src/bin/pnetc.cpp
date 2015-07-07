@@ -203,7 +203,6 @@ void list_dependencies ( const xml::parse::state::type& state
 }
 
 int main (int argc, char** argv)
-try
 {
   std::string input ("/dev/stdin");
   std::string output ("/dev/stdout");
@@ -227,6 +226,8 @@ try
 
   xml::parse::state::type state;
 
+try
+{
   state.add_options (desc);
 
   po::positional_options_description p;
@@ -317,4 +318,5 @@ catch (...)
 {
   std::cerr << "pnetc: failed: " << fhg::util::current_exception_printer() << '\n';
   return EXIT_FAILURE;
+}
 }
