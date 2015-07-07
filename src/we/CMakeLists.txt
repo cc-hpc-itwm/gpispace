@@ -1,7 +1,7 @@
 # {mirko.rahn,bernd.loerwald}@itwm.fraunhofer.de
 
 extended_add_library (NAME we-dev
-  TYPE SHARED
+  TYPE STATIC POSITION_INDEPENDENT
   SOURCES "exception.cpp"
           "expr/token/type.cpp"
           "field.cpp"
@@ -21,7 +21,6 @@ extended_add_library (NAME we-dev
           "type/value/read.cpp"
   LIBRARIES fhg-util
             ${CMAKE_DL_LIBS}
-  INSTALL
 )
 
 install (FILES

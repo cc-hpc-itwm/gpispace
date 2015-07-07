@@ -34,6 +34,7 @@ extended_add_library (NAME gspc
           "virtual_memory.cpp"
   LIBRARIES sdpa
             pnet
+            we-dev
             rif-strategies
             gpi-space-pc-client-static
             gpi-space-pc-segment

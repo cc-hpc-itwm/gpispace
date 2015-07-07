@@ -22,7 +22,6 @@
         </properties>
         <module name="workerlist" function="run (workers, hostnames)"
                 pass_context="true">
-          <ld flag="-lwe-dev" />
           <code><![CDATA[
             const std::list<std::string> wlist (_pnetc_context->worker_list());
 

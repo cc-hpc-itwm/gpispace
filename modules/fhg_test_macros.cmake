@@ -72,7 +72,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/lib/libfhg-util.a"
   "${CMAKE_INSTALL_PREFIX}/lib/libfhglog.a"
   "${CMAKE_INSTALL_PREFIX}/lib/libgspc.so"
-  "${CMAKE_INSTALL_PREFIX}/lib/libwe-dev.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/bundle/lib/graphviz/config6"
   #! \note This does not include bundled libraries!
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libdetermine_size.so"

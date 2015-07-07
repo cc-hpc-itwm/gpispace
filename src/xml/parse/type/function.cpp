@@ -1562,8 +1562,7 @@ namespace xml
                    << ", $^)"
                    << " -o $@"
                    << " $(" << ldflags << ")"
-                   << " $(LDFLAGS)"
-                   << " -lwe-dev"                                  << std::endl;
+                   << " $(LDFLAGS)"                                << std::endl;
             stream                                                 << std::endl;
           }
 

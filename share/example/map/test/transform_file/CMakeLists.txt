@@ -3,8 +3,7 @@
 extended_add_library (NAME transform_file_type
   SOURCES "type.cpp"
   INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/share/example"
-  LIBRARIES we-dev
-            Boost::filesystem
+  LIBRARIES Boost::filesystem
 )
 
 extended_add_library (NAME transform_file_map-impl
