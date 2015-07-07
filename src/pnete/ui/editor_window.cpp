@@ -29,9 +29,6 @@
 
 #include <util/qt/parent.hpp>
 
-#include <we/loader/loader.hpp>
-#include <we/loader/module_call.hpp>
-#include <we/context.hpp>
 #include <we/type/activity.hpp>
 
 #include <we/type/value/read.hpp>
@@ -91,8 +88,6 @@ namespace fhg
         , _document_specific_action_menu (nullptr)
         , _document_specific_action_toolbar (nullptr)
         , _action_save_current_file (nullptr)
-        , _action_execute_current_file_locally_via_prompt (nullptr)
-        , _action_execute_current_file_locally_from_file (nullptr)
         , _action_execute_current_file_remote_via_prompt (nullptr)
       {
         setWindowTitle (tr ("editor_window_title"));
@@ -284,8 +279,6 @@ namespace fhg
         }
 
         _action_save_current_file->setEnabled (true);
-        _action_execute_current_file_locally_via_prompt->setEnabled (true);
-        _action_execute_current_file_locally_from_file->setEnabled (true);
         _action_execute_current_file_remote_via_prompt->setEnabled (true);
       }
 
@@ -326,8 +319,6 @@ namespace fhg
           else
           {
             _action_save_current_file->setEnabled (false);
-            _action_execute_current_file_locally_via_prompt->setEnabled (false);
-            _action_execute_current_file_locally_from_file->setEnabled (false);
             _action_execute_current_file_remote_via_prompt->setEnabled (false);
           }
         }
@@ -512,29 +503,13 @@ namespace fhg
         addToolBar (Qt::TopToolBarArea, runtime_toolbar);
         runtime_toolbar->setFloatable (false);
 
-        _action_execute_current_file_locally_via_prompt = runtime_menu->addAction
-          ( tr ("execute_locally_input_prompt")
-          , this
-          , SLOT (execute_locally_inputs_via_prompt())
-          );
-        _action_execute_current_file_locally_from_file = runtime_menu->addAction
-          ( tr ("execute_locally_input_file")
-          , this
-          , SLOT (execute_locally_inputs_from_file())
-          );
         _action_execute_current_file_remote_via_prompt = runtime_menu->addAction
           ( tr ("execute_remote_input_prompt")
           , this
           , SLOT (execute_remote_inputs_via_prompt())
           );
-        _action_execute_current_file_locally_via_prompt->setEnabled (false);
-        _action_execute_current_file_locally_from_file->setEnabled (false);
         _action_execute_current_file_remote_via_prompt->setEnabled (false);
 
-        runtime_toolbar->addAction
-          (_action_execute_current_file_locally_via_prompt);
-        runtime_toolbar->addAction
-          (_action_execute_current_file_locally_from_file);
         runtime_toolbar->addAction
           (_action_execute_current_file_remote_via_prompt);
 
@@ -641,47 +616,6 @@ namespace fhg
 
       namespace
       {
-        //! \note Context copied from we-eval.
-        class eval_context : public we::context
-        {
-          boost::mt19937 _engine;
-
-        public:
-          eval_context (we::loader::loader& module_loader)
-            : loader (module_loader)
-          { }
-
-          virtual void handle_internally (we::type::activity_t& act, net_t const&) override
-          {
-            if (act.transition().net())
-            {
-              while ( boost::optional<we::type::activity_t> sub
-                    = boost::get<we::type::net_type> (act.transition().data())
-                    . fire_expressions_and_extract_activity_random (_engine)
-                    )
-              {
-                sub->execute (this);
-                act.inject (*sub);
-              }
-            }
-          }
-
-          virtual void handle_externally (we::type::activity_t& act, net_t const& n) override
-          {
-            handle_internally (act, n);
-          }
-
-          virtual void handle_externally (we::type::activity_t& act, mod_t const& mod) override
-          {
-            //!\todo pass a real drts::worker::context here
-            we::loader::module_call
-              (loader, nullptr, nullptr, nullptr, act, mod);
-          }
-
-        private:
-          we::loader::loader& loader;
-        };
-
         boost::optional<std::string> get_env (const std::string& name)
         {
           const char *var (getenv (name.c_str()));
@@ -803,21 +737,6 @@ namespace fhg
             msgBox.setText (QString::fromStdString (tmp.str()));
             msgBox.exec();
           }
-        }
-
-        void execute_activity_locally
-          ( we::type::activity_t activity
-          , const boost::filesystem::path& temporary_path
-          )
-        {
-          we::loader::loader loader ({temporary_path / "pnetc" / "op"});
-
-          eval_context context (loader);
-
-          //! \todo Somehow redirect stdout to buffer
-          activity.execute (&context);
-
-          show_results_of_activity (activity);
         }
       }
 
@@ -1004,69 +923,6 @@ namespace fhg
         msgBox.setIcon (QMessageBox::Critical);
         msgBox.exec();
       }
-
-      void editor_window::execute_locally_inputs_via_prompt()
-      try
-      {
-        const fhg::util::temporary_path temporary_path;
-
-        std::pair<we::type::activity_t, xml::parse::id::ref::function>
-          activity_and_fun (prepare_activity (_accessed_widgets, temporary_path));
-
-        request_tokens_for_ports (&activity_and_fun);
-
-        execute_activity_locally (activity_and_fun.first, temporary_path);
-      }
-      catch (const std::runtime_error& e)
-      {
-        QMessageBox msgBox;
-        msgBox.setText (e.what());
-        msgBox.setIcon (QMessageBox::Critical);
-        msgBox.exec();
-      }
-
-      void editor_window::execute_locally_inputs_from_file()
-      try
-      {
-        const fhg::util::temporary_path temporary_path;
-
-        we::type::activity_t activity
-          (prepare_activity (_accessed_widgets, temporary_path).first);
-
-        const QString input_filename
-          (QFileDialog::getOpenFileName (this, tr ("value_file_for_input")));
-        if (input_filename.isEmpty())
-        {
-          return;
-        }
-
-        std::ifstream input_file (input_filename.toStdString().c_str());
-        if (!input_file)
-        {
-          throw std::runtime_error ("bad input file: opening failed");
-        }
-
-        std::string input_line;
-        while (input_file && getline (input_file, input_line))
-        {
-          const std::string port_name
-            (input_line.substr (0, input_line.find ('=')));
-          const std::string value
-            (input_line.substr (input_line.find ('=') + 1));
-
-          put_token (activity, port_name, value);
-        }
-
-        execute_activity_locally (activity, temporary_path);
-      }
-      catch (const std::runtime_error& e)
-      {
-        QMessageBox msgBox;
-        msgBox.setText (e.what());
-        msgBox.setIcon (QMessageBox::Critical);
-        msgBox.exec();
-      }
-
 
       void editor_window::readSettings()
       {
