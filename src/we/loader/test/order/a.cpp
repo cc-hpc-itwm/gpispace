@@ -1,6 +1,6 @@
 #include <we/loader/test/order/stack.hpp>
 
-#include <we/loader/macros.hpp>
+#include <we/loader/wrapper.hpp>
 
 WE_MOD_INITIALIZE_START (a);
 {

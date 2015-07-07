@@ -1,6 +1,6 @@
 #pragma once
 
-#include <we/loader/IModule.hpp>
+#include <we/loader/wrapper.hpp>
 
 #include <boost/utility.hpp>
 

@@ -23,6 +23,11 @@ fhg_add_test (module.cpp
           empty
 )
 
+fhg_add_test (module_requires_guard_symbol.cpp
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES pnet
+)
+
 extended_add_library (NAME answer TYPE SHARED SOURCES "question_answer/answer.cpp" LIBRARIES pnet)
 extended_add_library (NAME question TYPE SHARED SOURCES "question_answer/question.cpp" LIBRARIES answer)
 extended_add_library (NAME order_stack TYPE SHARED SOURCES "order/stack.cpp")

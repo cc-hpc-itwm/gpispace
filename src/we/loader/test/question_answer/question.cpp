@@ -1,4 +1,4 @@
-#include <we/loader/macros.hpp>
+#include <we/loader/wrapper.hpp>
 
 #include <we/loader/test/question_answer/answer.hpp>
 

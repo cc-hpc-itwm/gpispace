@@ -1219,7 +1219,7 @@ namespace xml
             , state.path_to_cpp() + "/pnetc/op/" + modname + ".cpp"
             );
 
-          stream << fhg::util::cpp::include ("we/loader/macros.hpp");
+          stream << fhg::util::cpp::include ("module_call/wrapper.hpp");
 
           for (const fun_info_type& fun : funs)
           {

@@ -1,4 +1,4 @@
-#include <we/loader/macros.hpp>
+#include <we/loader/wrapper.hpp>
 
 WE_MOD_INITIALIZE_START (empty);
 {

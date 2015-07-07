@@ -35,10 +35,8 @@ install (FILES
   DESTINATION include/we/expr/token
 )
 install (FILES
-  loader/IModule.hpp
-  loader/api-guard.hpp
-  loader/macros.hpp
-  DESTINATION include/we/loader
+  loader/wrapper.hpp
+  DESTINATION include/module_call
 )
 install (FILES
   type/bitsetofint.hpp
