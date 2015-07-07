@@ -1389,10 +1389,6 @@ namespace xml
         boost::optional<util::position_type> pod_of_code;
         std::list<std::string> cincludes;
         std::list<std::string> ldflags;
-        if (pass_context)
-        {
-          ldflags.emplace_back ("-ldrts-context");
-        }
         std::list<std::string> cxxflags;
         std::list<type::link_type> links;
 

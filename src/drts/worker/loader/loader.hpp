@@ -1,6 +1,6 @@
 #pragma once
 
-#include <we/loader/Module.hpp>
+#include <drts/worker/loader/Module.hpp>
 
 #include <boost/filesystem.hpp>
 

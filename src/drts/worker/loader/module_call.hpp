@@ -1,7 +1,7 @@
 #pragma once
 
 #include <we/expr/eval/context.hpp>
-#include <we/loader/loader.hpp>
+#include <drts/worker/loader/loader.hpp>
 #include <we/type/activity.hpp>
 #include <we/type/module_call.hpp>
 

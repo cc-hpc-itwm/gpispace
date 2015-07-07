@@ -18,7 +18,7 @@
 #include <sdpa/events/SubmitJobEvent.hpp>
 
 #include <we/context.hpp>
-#include <we/loader/module_call.hpp>
+#include <drts/worker/loader/module_call.hpp>
 
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>

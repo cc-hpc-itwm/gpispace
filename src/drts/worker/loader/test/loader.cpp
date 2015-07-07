@@ -3,10 +3,10 @@
 #define BOOST_TEST_MODULE loader
 #include <boost/test/unit_test.hpp>
 
-#include <we/loader/test/order/stack.hpp>
+#include <drts/worker/loader/test/order/stack.hpp>
 
-#include <we/loader/loader.hpp>
-#include <we/loader/exceptions.hpp>
+#include <drts/worker/loader/loader.hpp>
+#include <drts/worker/loader/exceptions.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
 

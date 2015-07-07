@@ -30,8 +30,6 @@ extended_add_library (NAME pnet
           "we/expr/token/tokenizer.cpp"
           "we/expr/token/type.cpp"
           "we/field.cpp"
-          "we/loader/loader.cpp"
-          "we/loader/module_call.cpp"
           "we/layer.cpp"
           "we/type/activity.cpp"
           "we/type/module_call.cpp"
@@ -70,7 +68,6 @@ extended_add_library (NAME pnet
           "we/type/value/show.cpp"
           "we/type/value/dump.cpp"
 
-          "we/loader/Module.cpp"
           "we/workflow_response.cpp"
 
           "xml/parse/error.cpp"
@@ -114,12 +111,10 @@ extended_add_library (NAME pnet
           "xml/parse/util/weparse.cpp"
           "xml/parse/warning.cpp"
   LIBRARIES fhg-util
-            drts-context
             Util::Generic
             Boost::serialization
             Boost::date_time
             RPC
-            ${CMAKE_DL_LIBS}
 )
 
 add_subdirectory (xml/tests)

@@ -1,6 +1,6 @@
-#include <we/loader/test/question_answer/answer.hpp>
+#include <drts/worker/loader/test/question_answer/answer.hpp>
 
-#include <we/loader/wrapper.hpp>
+#include <drts/worker/loader/wrapper.hpp>
 
 long the_answer;
 long get_answer ()

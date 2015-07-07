@@ -69,7 +69,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/to_value.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/unwrap.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/wrap.hpp"
-  "${CMAKE_INSTALL_PREFIX}/lib/libdrts-context.so"
   "${CMAKE_INSTALL_PREFIX}/lib/libfhg-util.a"
   "${CMAKE_INSTALL_PREFIX}/lib/libfhglog.a"
   "${CMAKE_INSTALL_PREFIX}/lib/libgspc.so"

@@ -3,10 +3,10 @@
 #define BOOST_TEST_MODULE module
 #include <boost/test/unit_test.hpp>
 
-#include <we/loader/Module.hpp>
+#include <drts/worker/loader/Module.hpp>
 
 #include <we/expr/eval/context.hpp>
-#include <we/loader/exceptions.hpp>
+#include <drts/worker/loader/exceptions.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <drts/worker/context.hpp>

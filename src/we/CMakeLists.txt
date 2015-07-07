@@ -19,8 +19,6 @@ extended_add_library (NAME we-dev
           "type/value/poke.cpp"
           "type/value/show.cpp"
           "type/value/read.cpp"
-
-          "loader/Module.cpp"
   LIBRARIES fhg-util
             ${CMAKE_DL_LIBS}
   INSTALL
@@ -33,10 +31,6 @@ install (FILES
 install (FILES
   expr/token/type.hpp
   DESTINATION include/we/expr/token
-)
-install (FILES
-  loader/wrapper.hpp
-  DESTINATION include/module_call
 )
 install (FILES
   type/bitsetofint.hpp
@@ -83,6 +77,5 @@ target_link_libraries (expression_shell pnet ${LibReadline_LIBRARY} Util::Generi
 
 add_subdirectory (expr/parse/test)
 add_subdirectory (expr/test)
-add_subdirectory (loader/test)
 add_subdirectory (test)
 add_subdirectory (type/test)

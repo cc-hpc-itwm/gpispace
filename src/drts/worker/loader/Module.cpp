@@ -1,8 +1,8 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/loader/Module.hpp>
+#include <drts/worker/loader/Module.hpp>
 
-#include <we/loader/exceptions.hpp>
+#include <drts/worker/loader/exceptions.hpp>
 
 #include <boost/format.hpp>
 

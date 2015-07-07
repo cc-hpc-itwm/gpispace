@@ -17,7 +17,7 @@
 #include <sdpa/events/EventHandler.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 
-#include <we/loader/loader.hpp>
+#include <drts/worker/loader/loader.hpp>
 #include <we/type/activity.hpp>
 
 #include <boost/asio/io_service.hpp>

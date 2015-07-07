@@ -2,7 +2,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <we/loader/Module.hpp>
+#include <drts/worker/loader/Module.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/require_exception.hpp>
@@ -15,10 +15,10 @@ BOOST_AUTO_TEST_CASE
 #define XSTR(x) STR(x)
 #define STR(x) #x
   fhg::util::testing::require_exception<std::runtime_error>
-    ( [] { we::loader::Module ("./libempty_not_linked_with_pnet.so"); }
+    ( [] { we::loader::Module ("./libempty.so"); }
     , ( boost::format
-        ( "could not load module './libempty_not_linked_with_pnet.so':"
-          " ./libempty_not_linked_with_pnet.so: undefined symbol: %1%"
+        ( "could not load module './libempty.so':"
+          " ./libempty.so: undefined symbol: %1%"
         )
       % XSTR (WE_GUARD_SYMBOL)
       ).str()
