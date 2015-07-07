@@ -57,7 +57,7 @@ namespace
 BOOST_AUTO_TEST_CASE (memory_buffer_sizes)
 {
   std::list<std::string> names
-    (fhg::util::testing::random<unsigned long>()() % 100);
+    {fhg::util::testing::random<unsigned long>()() % 100};
 
   std::generate ( names.begin(), names.end()
                 , []{ return fhg::util::testing::random_identifier(); }
