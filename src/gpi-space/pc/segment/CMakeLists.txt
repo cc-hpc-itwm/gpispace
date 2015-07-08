@@ -8,4 +8,4 @@ target_include_directories (gpi-space-pc-segment
   PRIVATE SYSTEM "${LIBRT_INCLUDE_DIR}"
 )
 
-target_link_libraries (gpi-space-pc-segment ${LIBRT_SHARED_LIBRARY} Util::Generic)
+target_link_libraries (gpi-space-pc-segment ${LIBRT_STATIC_LIBRARY} Util::Generic)
