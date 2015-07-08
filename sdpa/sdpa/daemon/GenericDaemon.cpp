@@ -604,6 +604,30 @@ void GenericDaemon::handleErrorEvent
   }
 }
 
+namespace
+{
+  unsigned long total_memory_buffer_size (const we::type::activity_t& activity)
+  {
+    if (!activity.transition().module_call())
+      return 0;
+
+    expr::eval::context context;
+
+    for ( std::pair< pnet::type::value::value_type, we::port_id_type>
+            const& token_on_port
+        : activity.input()
+        )
+    {
+      context.bind_ref
+        ( activity.transition().ports_input().at (token_on_port.second).name()
+        , token_on_port.first
+        );
+    }
+
+    return activity.transition().module_call()->memory_buffer_size_total (context);
+  }
+}
+
 void GenericDaemon::submit ( const we::layer::id_type& job_id
                            , const we::type::activity_t& activity
                            )
