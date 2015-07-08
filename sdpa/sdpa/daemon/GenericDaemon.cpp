@@ -437,6 +437,7 @@ try
     ( event->name()
     , event->capacity()
     , workerCpbSet
+    , 0 // To be replaced later by the corresponding value contained in the event
     , event->children_allowed()
     , event->hostname(), source
     );

@@ -29,6 +29,7 @@ namespace sdpa
       void addWorker ( const worker_id_t& workerId
                      , boost::optional<unsigned int> capacity
                      , const capabilities_set_t& cpbset
+                     , unsigned long allocated_shared_memory_size
                      , const bool children_allowed
                      , const std::string& hostname
                      , const fhg::com::p2p::address_t& address

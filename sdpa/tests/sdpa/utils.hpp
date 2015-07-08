@@ -13,6 +13,7 @@
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/random_integral.hpp>
 
 #include <fhglog/Configuration.hpp>
 
