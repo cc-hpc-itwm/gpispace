@@ -18,9 +18,4 @@ install (FILES
   DESTINATION include/fhglog
 )
 
-install (TARGETS fhglog
-  ARCHIVE
-  DESTINATION lib
-)
-
 add_subdirectory (appender/test)
