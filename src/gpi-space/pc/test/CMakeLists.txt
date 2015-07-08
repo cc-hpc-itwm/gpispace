@@ -1,6 +1,5 @@
 fhg_add_test (url.cpp
   BOOST_UNIT_TEST
   PROJECT gpi_space
-  INCLUDE_DIRECTORIES PRIVATE SYSTEM "${LIBRT_INCLUDE_DIR}"
   LINK_LIBRARIES gpi-space_url
 )

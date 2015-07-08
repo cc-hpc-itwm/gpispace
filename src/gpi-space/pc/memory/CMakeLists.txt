@@ -10,9 +10,6 @@ ADD_LIBRARY(gpi-space-pc-memory
   transfer_queue.cpp
   transfer_manager.cpp
 )
-target_include_directories (gpi-space-pc-memory
-  PRIVATE SYSTEM "${LIBRT_INCLUDE_DIR}"
-)
 target_link_libraries (gpi-space-pc-memory
   gpi-space-pc-segment
   mmgr
