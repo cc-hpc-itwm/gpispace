@@ -18,6 +18,7 @@ namespace sdpa
         ( std::string const& name
         , const boost::optional<unsigned int>& capacity
         , const capabilities_set_t& cpbset
+        , const unsigned long allocated_shared_memory_size
         , bool children_allowed
         , const std::string& hostname
         )
@@ -25,6 +26,7 @@ namespace sdpa
           , _name (name)
           , capacity_ (capacity)
           , cpbset_ (cpbset)
+          , allocated_shared_memory_size_ (allocated_shared_memory_size)
           , children_allowed_(children_allowed)
           , hostname_(hostname)
       {}
@@ -52,6 +54,11 @@ namespace sdpa
 	return children_allowed_;
       }
 
+      const unsigned long& allocated_shared_memory_size() const
+      {
+        return allocated_shared_memory_size_;
+      }
+
       virtual void handleBy
         (fhg::com::p2p::address_t const& source, EventHandler* handler) override
       {
@@ -62,6 +69,7 @@ namespace sdpa
       std::string _name;
       boost::optional<unsigned int> capacity_;
       capabilities_set_t cpbset_;
+      unsigned long allocated_shared_memory_size_;
       bool children_allowed_;
       std::string hostname_;
     };
@@ -72,6 +80,7 @@ namespace sdpa
       SAVE_TO_ARCHIVE (e->name());
       SAVE_TO_ARCHIVE (e->capacity());
       SAVE_TO_ARCHIVE (e->capabilities());
+      SAVE_TO_ARCHIVE (e->allocated_shared_memory_size());
       SAVE_TO_ARCHIVE (e->children_allowed());
       SAVE_TO_ARCHIVE (e->hostname());
     }
@@ -82,10 +91,17 @@ namespace sdpa
       LOAD_FROM_ARCHIVE (std::string, name);
       LOAD_FROM_ARCHIVE (boost::optional<unsigned int>, capacity);
       LOAD_FROM_ARCHIVE (capabilities_set_t, cpbset);
+      LOAD_FROM_ARCHIVE (unsigned long, allocated_shared_memory_size);
       LOAD_FROM_ARCHIVE (bool, children_allowed);
       LOAD_FROM_ARCHIVE (std::string, hostname);
 
-      ::new (e) WorkerRegistrationEvent (name, capacity, cpbset, children_allowed, hostname);
+      ::new (e) WorkerRegistrationEvent ( name
+                                        , capacity
+                                        , cpbset
+                                        , allocated_shared_memory_size
+                                        , children_allowed
+                                        , hostname
+                                        );
     }
   }
 }

@@ -173,6 +173,7 @@ DRTSImpl::DRTSImpl
       , m_my_name
       , m_pending_jobs.capacity()
       , capabilities
+      , _shared_memory->size()
       , false
       , fhg::util::hostname()
       );

@@ -437,7 +437,7 @@ try
     ( event->name()
     , event->capacity()
     , workerCpbSet
-    , 0 // To be replaced later by the corresponding value contained in the event
+    , event->allocated_shared_memory_size()
     , event->children_allowed()
     , event->hostname(), source
     );
@@ -1526,7 +1526,7 @@ namespace sdpa
         ( _address
         , events::WorkerRegistrationEvent::Ptr
           ( new events::WorkerRegistrationEvent
-              (_that->name(), capacity, capabilities, true, fhg::util::hostname())
+              (_that->name(), capacity, capabilities, 0, true, fhg::util::hostname())
           )
         );
     }

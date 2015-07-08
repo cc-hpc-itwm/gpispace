@@ -9,6 +9,7 @@
 #include <util-generic/testing/printer/list.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/printer/set.hpp>
+#include <util-generic/testing/random_integral.hpp>
 #include <util-generic/testing/random_string.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
@@ -229,7 +230,10 @@ BOOST_AUTO_TEST_CASE (WorkerRegistration)
   caps.insert (sdpa::Capability ("bar", fhg::util::testing::random_string()));
 
   WorkerRegistrationEvent e
-    (fhg::util::testing::random_string(), 10, caps, true, fhg::util::testing::random_string());
+    ( fhg::util::testing::random_string(), 10, caps
+    , fhg::util::testing::random_integral<unsigned long>()
+    , true, fhg::util::testing::random_string()
+    );
   WorkerRegistrationEvent* r (encode_decode_mgmt_event (e));
 
   BOOST_REQUIRE_EQUAL (r->name(), e.name());
