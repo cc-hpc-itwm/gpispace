@@ -26,7 +26,6 @@ extended_add_library (NAME fhg-util
             Boost::thread
             Boost::system
             Boost::filesystem
-  INSTALL
 )
 
   add_subdirectory(test)
