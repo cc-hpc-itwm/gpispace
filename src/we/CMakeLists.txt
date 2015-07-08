@@ -20,7 +20,6 @@ extended_add_library (NAME we-dev
           "type/value/show.cpp"
           "type/value/read.cpp"
   LIBRARIES fhg-util
-            ${CMAKE_DL_LIBS}
 )
 
 install (FILES

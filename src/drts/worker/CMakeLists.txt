@@ -44,7 +44,6 @@ fhg_add_test ("loader/test/loader.cpp"
   PROJECT we_loader
   LINK_LIBRARIES worker_module_loader
                  order_stack
-                 ${CMAKE_DL_LIBS}
   DEPENDS question
           answer
           order_a
@@ -56,7 +55,6 @@ fhg_add_test ("loader/test/module.cpp"
   PROJECT we_loader
   LINK_LIBRARIES worker_module_loader
                  fhglog
-                 ${CMAKE_DL_LIBS}
   DEPENDS initialize_throws
           empty
 )
