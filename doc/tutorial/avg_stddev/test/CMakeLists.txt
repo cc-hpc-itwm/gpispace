@@ -9,7 +9,6 @@ target_link_libraries (gen.bin
   Boost::program_options
   Boost::thread
   Boost::system
-  pthread
 )
 
 fhg_add_test (test.cpp
