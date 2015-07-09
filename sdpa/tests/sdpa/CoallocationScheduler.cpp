@@ -1230,3 +1230,33 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_re_assignment_when_new_match
                     , max_job_cost
                     );
 }
+
+BOOST_FIXTURE_TEST_CASE (no_assignment_if_not_enough_memory, fixture_scheduler_and_requirements)
+{
+  unsigned long avail_mem (random_ulong());
+  _scheduler.worker_manager().addWorker ( "worker_0"
+                                        , 1
+                                        , {}
+                                        , avail_mem
+                                        , false
+                                        , fhg::util::testing::random_string()
+                                        , fhg::util::testing::random_string()
+                                        );
+
+  const sdpa::job_id_t job_id;
+
+  add_job (job_id, job_requirements_t ( {}
+                                      , we::type::schedule_data()
+                                      , null_transfer_cost
+                                      , computational_cost
+                                      , avail_mem + 1
+                                      )
+          );
+
+  _scheduler.enqueueJob (job_id);
+  sdpa::daemon::CoallocationScheduler::assignment_t
+    assignment (_scheduler.assignJobsToWorkers());
+
+  BOOST_REQUIRE (assignment.empty());
+}
+
