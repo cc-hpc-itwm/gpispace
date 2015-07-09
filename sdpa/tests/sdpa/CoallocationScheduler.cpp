@@ -84,22 +84,22 @@ namespace
 
   job_requirements_t require (std::string name_1)
   {
-    return {{we::type::requirement_t (name_1, true)}, we::type::schedule_data(), null_transfer_cost, computational_cost};
+    return {{we::type::requirement_t (name_1, true)}, we::type::schedule_data(), null_transfer_cost, computational_cost, 0};
   }
 
   job_requirements_t require (std::string name, unsigned long workers)
   {
-    return {{we::type::requirement_t (name, true)}, we::type::schedule_data (workers), null_transfer_cost, computational_cost};
+    return {{we::type::requirement_t (name, true)}, we::type::schedule_data (workers), null_transfer_cost, computational_cost, 0};
   }
 
   job_requirements_t require (unsigned long workers)
   {
-    return {{}, we::type::schedule_data (workers), null_transfer_cost, computational_cost};
+    return {{}, we::type::schedule_data (workers), null_transfer_cost, computational_cost, 0};
   }
 
   job_requirements_t no_requirements()
   {
-    return {{}, we::type::schedule_data(), null_transfer_cost, computational_cost};
+    return {{}, we::type::schedule_data(), null_transfer_cost, computational_cost, 0};
   }
 }
 
@@ -931,6 +931,7 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
                                               , we::type::schedule_data (n_req_workers)
                                               , test_transfer_cost
                                               , computational_cost
+                                              , 0
                                               );
                   }
                 );
@@ -1081,6 +1082,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
                                              , we::type::schedule_data (n_req_workers)
                                              , test_transfer_cost
                                              , computational_cost
+                                             , 0
                                              );
                  }
                );
@@ -1162,6 +1164,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_re_assignment_when_new_match
                                              , we::type::schedule_data (n_req_workers)
                                              , test_transfer_cost
                                              , computational_cost
+                                             , 0
                                              );
                  }
                );

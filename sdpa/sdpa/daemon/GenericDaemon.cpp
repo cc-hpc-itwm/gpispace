@@ -364,7 +364,7 @@ void GenericDaemon::handleSubmitJobEvent
   Job* pJob (addJob ( job_id
                     , e.description()
                     , itMaster
-                    , {{}, we::type::schedule_data(), null_transfer_cost, 1.0} //!Note: an estimation of the computational cost of a master job?
+                    , {{}, we::type::schedule_data(), null_transfer_cost, 1.0, 0} //!Note: a master job needs no shared mem allocation
                     )
              );
 
@@ -649,6 +649,7 @@ try
                               , schedule_data
                               , _virtual_memory_api->transfer_costs (activity)
                               , computational_cost
+                              , total_memory_buffer_size (activity)
                               )
          );
 

@@ -93,6 +93,7 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
                                     , we::type::schedule_data()
                                     , null_transfer_cost
                                     , computational_cost
+                                    , 0
                                     }
                                    );
 
