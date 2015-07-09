@@ -196,6 +196,11 @@ namespace sdpa
         if (it == worker_map_.end())
           continue;
 
+        if ( job_reqs.shared_memory_amount_required()
+           > it->second->allocated_shared_memory_size()
+           )
+          continue;
+
         if (it->second->backlog_full())
           continue;
 
