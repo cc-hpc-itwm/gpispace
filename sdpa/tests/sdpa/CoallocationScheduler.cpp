@@ -1234,6 +1234,8 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_re_assignment_when_new_match
 BOOST_FIXTURE_TEST_CASE (no_assignment_if_not_enough_memory, fixture_scheduler_and_requirements)
 {
   unsigned long avail_mem (random_ulong());
+  if (avail_mem > 0) avail_mem--;
+
   _scheduler.worker_manager().addWorker ( "worker_0"
                                         , 1
                                         , {}
