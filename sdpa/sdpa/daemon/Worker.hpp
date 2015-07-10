@@ -41,7 +41,7 @@ namespace sdpa
       fhg::com::p2p::address_t address() const;
       boost::optional<unsigned int> capacity() const { lock_type lock(mtx_); return capacity_; }
       const unsigned long allocated_shared_memory_size() const
-        {lock_type lock(mtx_); return allocated_shared_memory_size_;}
+        {return allocated_shared_memory_size_;}
 
       // capabilities
       const capabilities_set_t& capabilities() const;
