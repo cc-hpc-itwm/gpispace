@@ -239,6 +239,7 @@ BOOST_AUTO_TEST_CASE (WorkerRegistration)
   BOOST_REQUIRE_EQUAL (r->name(), e.name());
   BOOST_REQUIRE_EQUAL (r->capacity(), e.capacity());
   BOOST_REQUIRE_EQUAL (r->capabilities(), e.capabilities());
+  BOOST_REQUIRE_EQUAL (r->allocated_shared_memory_size(), e.allocated_shared_memory_size());
   BOOST_REQUIRE_EQUAL (r->children_allowed(), e.children_allowed());
   BOOST_REQUIRE_EQUAL (r->hostname(), e.hostname());
 }
