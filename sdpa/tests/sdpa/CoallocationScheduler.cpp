@@ -1262,3 +1262,75 @@ BOOST_FIXTURE_TEST_CASE (no_assignment_if_not_enough_memory, fixture_scheduler_a
   BOOST_REQUIRE (assignment.empty());
 }
 
+BOOST_FIXTURE_TEST_CASE (allocate_multiple_jobs_with_memory_requirements, fixture_scheduler_and_requirements)
+{
+  unsigned int size_0 (1000), size_1 (2000);
+  std::set<sdpa::worker_id_t> set_0 {"worker_0"}, set_1 {"worker_1"};
+
+  _scheduler.worker_manager().addWorker ( "worker_0"
+                                        , 1
+                                        , {}
+                                        , size_0
+                                        , false
+                                        , fhg::util::testing::random_string()
+                                        , fhg::util::testing::random_string()
+                                        );
+
+  _scheduler.worker_manager().addWorker ( "worker_1"
+                                        , 1
+                                        , {}
+                                        , size_1
+                                        , false
+                                        , fhg::util::testing::random_string()
+                                        , fhg::util::testing::random_string()
+                                        );
+
+
+  const sdpa::job_id_t job_id_0 ("job_0"), job_id_1 ("job_1");
+
+  add_job (job_id_0, job_requirements_t ( {}
+                                        , we::type::schedule_data()
+                                        , null_transfer_cost
+                                        , computational_cost
+                                        , size_0
+                                        )
+          );
+
+  add_job (job_id_1, job_requirements_t ( {}
+                                         , we::type::schedule_data()
+                                         , null_transfer_cost
+                                         , computational_cost
+                                         , size_1
+                                         )
+           );
+
+
+  _scheduler.enqueueJob (job_id_0);
+  _scheduler.enqueueJob (job_id_1);
+
+  sdpa::daemon::CoallocationScheduler::assignment_t
+    assignment (_scheduler.assignJobsToWorkers());
+
+  BOOST_REQUIRE (!assignment.empty());
+  BOOST_REQUIRE (assignment.count (job_id_0));
+  BOOST_REQUIRE (assignment.count (job_id_1));
+
+  BOOST_REQUIRE_EQUAL (assignment.at (job_id_0), set_0);
+  BOOST_REQUIRE_EQUAL (assignment.at (job_id_1), set_1);
+
+  _scheduler.releaseReservation (job_id_0);
+  _scheduler.releaseReservation (job_id_1);
+
+  _scheduler.enqueueJob (job_id_1);
+  _scheduler.enqueueJob (job_id_0);
+
+  assignment.clear();
+  assignment = _scheduler.assignJobsToWorkers();
+
+  BOOST_REQUIRE (!assignment.empty());
+  BOOST_REQUIRE (assignment.count (job_id_0));
+  BOOST_REQUIRE (assignment.count (job_id_1));
+
+  BOOST_REQUIRE_EQUAL (assignment.at (job_id_0), set_0);
+  BOOST_REQUIRE_EQUAL (assignment.at (job_id_1), set_1);
+}
