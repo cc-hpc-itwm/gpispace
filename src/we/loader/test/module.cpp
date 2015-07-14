@@ -45,14 +45,16 @@ BOOST_AUTO_TEST_CASE (ctor_failed_bad_boost_version)
 {
 #define XSTR(x) STR(x)
 #define STR(x) #x
-  fhg::util::testing::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception
     ( [] { we::loader::Module ("./libempty_not_linked_with_pnet.so"); }
-    , ( boost::format
-        ( "could not load module './libempty_not_linked_with_pnet.so':"
-          " ./libempty_not_linked_with_pnet.so: undefined symbol: %1%"
+    , std::runtime_error
+        ( ( boost::format
+              ( "could not load module './libempty_not_linked_with_pnet.so':"
+                " ./libempty_not_linked_with_pnet.so: undefined symbol: %1%"
+              )
+          % XSTR (WE_GUARD_SYMBOL)
+          ).str()
         )
-      % XSTR (WE_GUARD_SYMBOL)
-      ).str()
     );
 #undef STR
 #undef XSTR
