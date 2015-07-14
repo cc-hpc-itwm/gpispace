@@ -34,54 +34,74 @@ BOOST_AUTO_TEST_CASE (test_url_ctor)
   BOOST_CHECK_EQUAL (url.get ("bar").get_value_or (""), "baz");
 }
 
+namespace
+{
+  fhg::util::parse::position_string make_position
+    ( std::string const& input
+    , std::size_t offset
+    )
+  {
+    fhg::util::parse::position_string pos (input);
+    pos.advance (offset);
+    return pos;
+  }
+
+  void expect_generic_parse_error ( std::string input
+                                  , std::size_t error_position
+                                  , std::string message
+                                  )
+  {
+    fhg::util::testing::require_exception
+      ( [&input]
+        {
+          gpi::pc::url_t {input};
+        }
+      , fhg::util::parse::error::generic
+          (message, make_position (input, error_position))
+      );
+  }
+  void expect_mismatch_parse_error ( std::string input
+                                   , std::size_t error_position
+                                   , std::string expectation
+                                   )
+  {
+    fhg::util::testing::require_exception
+      ( [&input]
+        {
+          gpi::pc::url_t {input};
+        }
+      , fhg::util::parse::error::expected
+          (expectation, make_position (input, error_position))
+      );
+  }
+}
+
 BOOST_AUTO_TEST_CASE (test_invalid_type)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("://foo"); }
-    , "PARSE ERROR [0]: expected 'identifier [a-zA-Z_][a-zA-Z_0-9]*'\n"
-      " ://foo\n"
-      "^\n"
-    );
+  expect_mismatch_parse_error
+    ("://foo", 0, "identifier [a-zA-Z_][a-zA-Z_0-9]*");
 }
 
 BOOST_AUTO_TEST_CASE (test_empty_param)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("file://bar?=baz"); }
-    , "PARSE ERROR [11]: expected 'identifier [a-zA-Z_][a-zA-Z_0-9]*'\n"
-      "file://bar? =baz\n"
-      "           ^\n"
-    );
+  expect_mismatch_parse_error
+    ("file://bar?=baz", 11, "identifier [a-zA-Z_][a-zA-Z_0-9]*");
 }
 
 BOOST_AUTO_TEST_CASE (ampersand_not_allowed_in_path)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("protocoll://&"); }
-    , "PARSE ERROR [12]: expected 'host {identifier_with_dot_and_space|ip}'\n"
-      "protocoll:// &\n"
-      "            ^\n"
-    );
+  expect_mismatch_parse_error
+    ("protocoll://&", 12, "host {identifier_with_dot_and_space|ip}");
 }
 
 BOOST_AUTO_TEST_CASE (ampersand_not_allowed_in_non_empty_path)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("protocoll://path&"); }
-    , "PARSE ERROR [16]: expected '?'\n"
-      "protocoll://path &\n"
-      "                ^\n"
-    );
+  expect_mismatch_parse_error ("protocoll://path&", 16, "?");
 }
 
 BOOST_AUTO_TEST_CASE (ampersand_not_allowed_in_longer_path)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("protocoll://longer/path&"); }
-    , "PARSE ERROR [23]: expected '?'\n"
-      "protocoll://longer/path &\n"
-      "                       ^\n"
-    );
+  expect_mismatch_parse_error ("protocoll://longer/path&", 23, "?");
 }
 
 BOOST_AUTO_TEST_CASE (simple_type)
@@ -95,22 +115,12 @@ BOOST_AUTO_TEST_CASE (simple_type)
 
 BOOST_AUTO_TEST_CASE (type_with_colon)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("pr:tocoll://"); }
-    , "PARSE ERROR [3]: expected '//'\n"
-      "pr: tocoll://\n"
-      "   ^\n"
-    );
+  expect_mismatch_parse_error ("pr:tocoll://", 3, "//");
 }
 
 BOOST_AUTO_TEST_CASE (type_with_colon_slash)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("pr:/ocoll://"); }
-    , "PARSE ERROR [4]: expected '/'\n"
-      "pr:/ ocoll://\n"
-      "    ^\n"
-    );
+  expect_mismatch_parse_error ("pr:/ocoll://", 4, "/");
 }
 
 BOOST_AUTO_TEST_CASE (no_colon_required)
@@ -133,12 +143,8 @@ BOOST_AUTO_TEST_CASE (no_path_required)
 
 BOOST_AUTO_TEST_CASE (empty_parameter_list)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("protocoll://p/ath?"); }
-    , "PARSE ERROR [18]: expected 'identifier [a-zA-Z_][a-zA-Z_0-9]*'\n"
-      "protocoll://p/ath? \n"
-      "                  ^\n"
-    );
+  expect_mismatch_parse_error
+    ("protocoll://p/ath?", 18, "identifier [a-zA-Z_][a-zA-Z_0-9]*");
 }
 
 BOOST_AUTO_TEST_CASE (parameter_list_single)
@@ -154,32 +160,20 @@ BOOST_AUTO_TEST_CASE (parameter_list_single)
 
 BOOST_AUTO_TEST_CASE (key_contains_colon)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("protocoll://p/ath?:=v"); }
-    , "PARSE ERROR [18]: expected 'identifier [a-zA-Z_][a-zA-Z_0-9]*'\n"
-      "protocoll://p/ath? :=v\n"
-      "                  ^\n"
-    );
+  expect_mismatch_parse_error
+    ("protocoll://p/ath?:=v", 18, "identifier [a-zA-Z_][a-zA-Z_0-9]*");
 }
 
 BOOST_AUTO_TEST_CASE (key_contains_colon_and_slashes)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("protocoll://p/ath?://=v"); }
-    , "PARSE ERROR [18]: expected 'identifier [a-zA-Z_][a-zA-Z_0-9]*'\n"
-      "protocoll://p/ath? ://=v\n"
-      "                  ^\n"
-    );
+  expect_mismatch_parse_error
+    ("protocoll://p/ath?://=v", 18, "identifier [a-zA-Z_][a-zA-Z_0-9]*");
 }
 
 BOOST_AUTO_TEST_CASE (value_contains_colon_and_slashes)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("protocoll://p/ath?k=://"); }
-    , "PARSE ERROR [20]: expected 'value [a-zA-Z_0-9]+'\n"
-      "protocoll://p/ath?k= ://\n"
-      "                    ^\n"
-    );
+  expect_mismatch_parse_error
+    ("protocoll://p/ath?k=://", 20, "value [a-zA-Z_0-9]+");
 }
 
 BOOST_AUTO_TEST_CASE (parameter_list_many)
@@ -197,52 +191,31 @@ BOOST_AUTO_TEST_CASE (parameter_list_many)
 
 BOOST_AUTO_TEST_CASE (key_contains_questionmark)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("protocoll://p/ath?k1=a&k?=b"); }
-    , "PARSE ERROR [24]: expected '='\n"
-      "protocoll://p/ath?k1=a&k ?=b\n"
-      "                        ^\n"
-    );
+  expect_mismatch_parse_error ("protocoll://p/ath?k1=a&k?=b", 24, "=");
 }
 
 BOOST_AUTO_TEST_CASE (value_contains_questionmark)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("protocoll://p/ath?k1=a&k2=?"); }
-    , "PARSE ERROR [26]: expected 'value [a-zA-Z_0-9]+'\n"
-      "protocoll://p/ath?k1=a&k2= ?\n"
-      "                          ^\n"
-    );
+  expect_mismatch_parse_error
+    ("protocoll://p/ath?k1=a&k2=?", 26, "value [a-zA-Z_0-9]+");
 }
 
 BOOST_AUTO_TEST_CASE (parameter_list_last_duplicate_throws)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::generic>
-    ( [] { gpi::pc::url_t ("protocoll://p/ath?k=a&k=b"); }
-    , "PARSE ERROR [25]: duplicate key 'k'\n"
-      "protocoll://p/ath?k=a&k=b \n"
-      "                         ^\n"
-    );
+  expect_generic_parse_error
+    ("protocoll://p/ath?k=a&k=b", 25, "duplicate key 'k'");
 }
 
 BOOST_AUTO_TEST_CASE (empty_value)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("protocoll://path?key="); }
-    , "PARSE ERROR [21]: expected 'value [a-zA-Z_0-9]+'\n"
-      "protocoll://path?key= \n"
-      "                     ^\n"
-    );
+  expect_mismatch_parse_error
+    ("protocoll://path?key=", 21, "value [a-zA-Z_0-9]+");
 }
 
 BOOST_AUTO_TEST_CASE (many_empty_value)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("protocoll://path?k1=&k2="); }
-    , "PARSE ERROR [20]: expected 'value [a-zA-Z_0-9]+'\n"
-      "protocoll://path?k1= &k2=\n"
-      "                    ^\n"
-    );
+  expect_mismatch_parse_error
+    ("protocoll://path?k1=&k2=", 20, "value [a-zA-Z_0-9]+");
 }
 
 BOOST_AUTO_TEST_CASE (port_number)
@@ -254,33 +227,19 @@ BOOST_AUTO_TEST_CASE (port_number)
 
 BOOST_AUTO_TEST_CASE (port_missing)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("protocoll://host:"); }
-    , "PARSE ERROR [17]: expected 'port {UINT16|*}'\n"
-      "protocoll://host: \n"
-      "                 ^\n"
-    );
+  expect_mismatch_parse_error ("protocoll://host:", 17, "port {UINT16|*}");
 }
 
 BOOST_AUTO_TEST_CASE (port_without_host)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("protocoll://:*"); }
-    , "PARSE ERROR [12]: expected 'host {identifier_with_dot_and_space|ip}'\n"
-      "protocoll:// :*\n"
-      "            ^\n"
-    );
+  expect_mismatch_parse_error
+    ("protocoll://:*", 12, "host {identifier_with_dot_and_space|ip}");
 }
 
 BOOST_AUTO_TEST_CASE (port_to_large)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("protocoll://host:65536"); }
-    , "PARSE ERROR [22]: expected 'number in [0,65536)'\n"
-      "protocoll://host:65536 \n"
-      "                      ^\n"
-    );
-
+  expect_mismatch_parse_error
+    ("protocoll://host:65536", 22, "number in [0,65536)");
 }
 
 BOOST_AUTO_TEST_CASE (port_star)
@@ -354,49 +313,25 @@ BOOST_AUTO_TEST_CASE (host_ip_port_star)
 
 BOOST_AUTO_TEST_CASE (host_ip_number_to_large)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("protocoll://256"); }
-    , "PARSE ERROR [15]: expected 'number in [0,256)'\n"
-      "protocoll://256 \n"
-      "               ^\n"
-    );
+  expect_mismatch_parse_error ("protocoll://256", 15, "number in [0,256)");
 }
 
 BOOST_AUTO_TEST_CASE (host_ip_missing_first_dot)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("protocoll://255"); }
-    , "PARSE ERROR [15]: expected '.'\n"
-      "protocoll://255 \n"
-      "               ^\n"
-    );
-
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("protocoll://255:255"); }
-    , "PARSE ERROR [15]: expected '.'\n"
-      "protocoll://255 :255\n"
-      "               ^\n"
-    );
+  expect_mismatch_parse_error ("protocoll://255", 15, ".");
+  expect_mismatch_parse_error ("protocoll://255:255", 15, ".");
 }
 
 BOOST_AUTO_TEST_CASE (host_ip_missing_second_dot)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("protocoll://255.255"); }
-    , "PARSE ERROR [19]: expected '.'\n"
-      "protocoll://255.255 \n"
-      "                   ^\n"
-    );
+  expect_mismatch_parse_error ("protocoll://255.255", 19, ".");
+  expect_mismatch_parse_error ("protocoll://255.255:255", 19, ".");
 }
 
 BOOST_AUTO_TEST_CASE (host_ip_missing_third_dot)
 {
-  fhg::util::testing::require_exception<fhg::util::parse::error::expected>
-    ( [] { gpi::pc::url_t ("protocoll://255.255.255"); }
-    , "PARSE ERROR [23]: expected '.'\n"
-      "protocoll://255.255.255 \n"
-      "                       ^\n"
-    );
+  expect_mismatch_parse_error ("protocoll://255.255.255", 23, ".");
+  expect_mismatch_parse_error ("protocoll://255.255.255:255", 23, ".");
 }
 
 BOOST_AUTO_TEST_CASE (host_star)

@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE (virtual_place_not_tunneled)
      "diagnostics/virtual_place_not_tunneled.xpnet"
     );
 
-  fhg::util::testing::require_exception
+  fhg::util::testing::require_exception_with_message
     <xml::parse::warning::virtual_place_not_tunneled>
   ( [&state, &filename] { xml::parse::just_parse (state, filename); }
   , boost::format ("WARNING: the virtual place %1% is not tunneled in %2%.")

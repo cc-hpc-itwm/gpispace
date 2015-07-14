@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_without_size_throws)
 
     xml::parse::state::type state;
 
-    fhg::util::testing::require_exception
+    fhg::util::testing::require_exception_with_message
       <xml::parse::error::memory_buffer_without_size>
       ( [&state, &input]()
       { std::istringstream input_stream (input);
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE (duplicate_memory_buffer_throws)
 
     xml::parse::state::type state;
 
-    fhg::util::testing::require_exception
+    fhg::util::testing::require_exception_with_message
       <xml::parse::error::duplicate_memory_buffer>
       ( [&state, &input]()
       { std::istringstream input_stream (input);
@@ -176,7 +176,7 @@ namespace
 
     xml::parse::state::type state;
 
-    fhg::util::testing::require_exception
+    fhg::util::testing::require_exception_with_message
       <xml::parse::error::memory_buffer_for_non_module>
       ( [&state, &input]()
       { std::istringstream input_stream (input);
@@ -215,7 +215,7 @@ namespace
 
     xml::parse::state::type state;
 
-    fhg::util::testing::require_exception
+    fhg::util::testing::require_exception_with_message
       <xml::parse::error::memory_buffer_for_non_module>
       ( [&state, &input]()
       { std::istringstream input_stream (input);
@@ -268,7 +268,7 @@ namespace
 
     xml::parse::state::type state;
 
-    fhg::util::testing::require_exception
+    fhg::util::testing::require_exception_with_message
       <xml::parse::error::memory_buffer_with_same_name_as_port>
       ( [&state, &input]()
       { std::istringstream input_stream (input);
@@ -316,7 +316,7 @@ namespace
 
     xml::parse::state::type state;
 
-    fhg::util::testing::require_exception
+    fhg::util::testing::require_exception_with_message
       <xml::parse::error::memory_buffer_with_same_name_as_port>
       ( [&state, &input]()
       { std::istringstream input_stream (input);

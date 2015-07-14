@@ -219,7 +219,7 @@ namespace
 
     xml::parse::state::type state;
 
-    fhg::util::testing::require_exception
+    fhg::util::testing::require_exception_with_message
       <xml::parse::error::memory_transfer_for_non_module>
       ( [&state, &input]()
       { std::istringstream input_stream (input);
@@ -259,7 +259,7 @@ namespace
 
     xml::parse::state::type state;
 
-    fhg::util::testing::require_exception
+    fhg::util::testing::require_exception_with_message
       <xml::parse::error::memory_transfer_for_non_module>
       ( [&state, &input]()
       { std::istringstream input_stream (input);

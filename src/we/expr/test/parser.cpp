@@ -8,6 +8,7 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 #include <we/type/value/show.hpp>
+#include <we/type/value/read.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/require_exception.hpp>
@@ -200,9 +201,9 @@ BOOST_AUTO_TEST_CASE (token_or_integral)
 
 BOOST_AUTO_TEST_CASE (token_or_short_circuit)
 {
-  fhg::util::testing::require_exception<pnet::exception::missing_binding>
+  fhg::util::testing::require_exception
     ( [] { require_evaluating_to ("true || (${a} := true)", true).value ("a"); }
-    , "missing binding for: ${a}"
+    , pnet::exception::missing_binding ("a")
     );
 
   BOOST_REQUIRE_EQUAL
@@ -261,9 +262,9 @@ BOOST_AUTO_TEST_CASE (token_and_integral)
 
 BOOST_AUTO_TEST_CASE (token_and_short_circuit)
 {
-  fhg::util::testing::require_exception<pnet::exception::missing_binding>
+  fhg::util::testing::require_exception
     ( [] { require_evaluating_to ("false && (${a} := false)", false).value ("a"); }
-    , "missing binding for: ${a}"
+    , pnet::exception::missing_binding ("a")
     );
 
   BOOST_REQUIRE_EQUAL
@@ -316,12 +317,12 @@ namespace
 
 namespace
 {
-  template<typename T>
+  template<typename Exception>
     void require_ctor_exception
-    (std::string const& input, std::string const& message)
+    (std::string const& input, Exception exception)
   {
-    fhg::util::testing::require_exception<T>
-      ([&input]() { (void)expr::parse::parser (input); }, message);
+    fhg::util::testing::require_exception
+      ([&input]() { (void)expr::parse::parser (input); }, exception);
   }
 }
 
@@ -386,13 +387,16 @@ BOOST_AUTO_TEST_CASE (token_cmp)
   check_equality ("Struct[a:=0]", "Struct[a:=0]", true);
   check_equality ("Struct[a:=0]", "Struct[a:=1]", false);
 
-  require_ctor_exception<pnet::exception::eval>
+  require_ctor_exception
     ( "Struct [a:=0] == Struct [b:=0]"
-    , "type error: eval  ==  (Struct [a := 0], Struct [b := 0])"
+    , pnet::exception::eval ( expr::token::type::eq
+                            , pnet::type::value::read ("Struct [a := 0]")
+                            , pnet::type::value::read ("Struct [b := 0]")
+                            )
     );
-  require_ctor_exception<pnet::exception::eval>
+  require_ctor_exception
     ( "Struct [a:=0] == Struct [a:=0L]"
-    , "type error: eval  ==  (0, 0L)"
+    , pnet::exception::eval (expr::token::type::eq, 0, 0L)
     );
 }
 
@@ -767,8 +771,8 @@ namespace
     }
     else
     {
-      require_ctor_exception<std::runtime_error>
-        (expression, "r > l => neg result");
+      require_ctor_exception
+        (expression, std::runtime_error ("r > l => neg result"));
     }
   }
 }
@@ -811,10 +815,10 @@ BOOST_AUTO_TEST_CASE (token_sub)
   require_evaluating_to ("1UL - 0UL", 1UL);
   require_evaluating_to ("2UL - 1UL", 1UL);
 
-  require_ctor_exception<std::runtime_error>
-    ("0U - 1U", "r > l => neg result");
-  require_ctor_exception<std::runtime_error>
-    ("0UL - 1UL", "r > l => neg result");
+  require_ctor_exception
+    ("0U - 1U", std::runtime_error ("r > l => neg result"));
+  require_ctor_exception
+    ("0UL - 1UL", std::runtime_error ("r > l => neg result"));
 }
 
 namespace
@@ -848,8 +852,8 @@ namespace
     }
     else
     {
-      require_ctor_exception<expr::exception::eval::divide_by_zero>
-        (expression, "divide by zero");
+      require_ctor_exception
+        (expression, expr::exception::eval::divide_by_zero());
     }
   }
 }
@@ -882,14 +886,14 @@ BOOST_AUTO_TEST_CASE (token_divint)
   require_evaluating_to ("2L div 1L", 2L);
   require_evaluating_to ("2UL div 1UL", 2UL);
 
-  require_ctor_exception<expr::exception::eval::divide_by_zero>
-    ("1 div 0", "divide by zero");
-  require_ctor_exception<expr::exception::eval::divide_by_zero>
-    ("1U div 0U", "divide by zero");
-  require_ctor_exception<expr::exception::eval::divide_by_zero>
-    ("1L div 0L", "divide by zero");
-  require_ctor_exception<expr::exception::eval::divide_by_zero>
-    ("1UL div 0UL", "divide by zero");
+  require_ctor_exception
+    ("1 div 0", expr::exception::eval::divide_by_zero());
+  require_ctor_exception
+    ("1U div 0U", expr::exception::eval::divide_by_zero());
+  require_ctor_exception
+    ("1L div 0L", expr::exception::eval::divide_by_zero());
+  require_ctor_exception
+    ("1UL div 0UL", expr::exception::eval::divide_by_zero());
 }
 
 namespace
@@ -937,14 +941,14 @@ BOOST_AUTO_TEST_CASE (token_modint)
   require_evaluating_to ("5L mod 3L", 2L);
   require_evaluating_to ("5UL mod 3UL", 2UL);
 
-  require_ctor_exception<expr::exception::eval::divide_by_zero>
-    ("1 mod 0", "divide by zero");
-  require_ctor_exception<expr::exception::eval::divide_by_zero>
-    ("1U mod 0U", "divide by zero");
-  require_ctor_exception<expr::exception::eval::divide_by_zero>
-    ("1L mod 0L", "divide by zero");
-  require_ctor_exception<expr::exception::eval::divide_by_zero>
-    ("1UL mod 0UL", "divide by zero");
+  require_ctor_exception
+    ("1 mod 0", expr::exception::eval::divide_by_zero());
+  require_ctor_exception
+    ("1U mod 0U", expr::exception::eval::divide_by_zero());
+  require_ctor_exception
+    ("1L mod 0L", expr::exception::eval::divide_by_zero());
+  require_ctor_exception
+    ("1UL mod 0UL", expr::exception::eval::divide_by_zero());
 }
 
 namespace
@@ -984,8 +988,8 @@ namespace
       }
       else
       {
-        require_ctor_exception<expr::exception::eval::divide_by_zero>
-          (expression, "divide by zero");
+        require_ctor_exception
+          (expression, expr::exception::eval::divide_by_zero());
       }
     }
   }
@@ -1005,10 +1009,10 @@ BOOST_AUTO_TEST_CASE (token_div)
   require_evaluating_to ("2.0 / 2.0", 1.0);
   require_evaluating_to ("2.0f / 2.0f", 1.0f);
 
-  require_ctor_exception<expr::exception::eval::divide_by_zero>
-    ("1.0 / 0.0", "divide by zero");
-  require_ctor_exception<expr::exception::eval::divide_by_zero>
-    ("1.0f / 0.0f", "divide by zero");
+  require_ctor_exception
+    ("1.0 / 0.0", expr::exception::eval::divide_by_zero());
+  require_ctor_exception
+    ("1.0f / 0.0f", expr::exception::eval::divide_by_zero());
 }
 
 namespace
@@ -1063,14 +1067,12 @@ BOOST_AUTO_TEST_CASE (token_pow)
 BOOST_AUTO_TEST_CASE (token_pow_int_signed_negative_exponent_throws)
 {
   fhg::util::testing::require_exception
-    <expr::exception::eval::negative_exponent>
     ( [] { require_evaluating_to ("0 ^ (-1)", 0); }
-    , "negative exponent"
+    , expr::exception::eval::negative_exponent()
     );
   fhg::util::testing::require_exception
-    <expr::exception::eval::negative_exponent>
     ( [] { require_evaluating_to ("0L ^ (-1L)", 0L); }
-    , "negative exponent"
+    , expr::exception::eval::negative_exponent()
     );
 }
 
@@ -1336,10 +1338,8 @@ namespace
       if (value < 0)
       {
         require_ctor_exception
-          <expr::exception::eval::square_root_for_negative_argument<T>>
           ( expression
-          , ( boost::format ("square root for negative argument '%1%'") % value
-            ).str()
+          , expr::exception::eval::square_root_for_negative_argument<T> (value)
           );
       }
       else
@@ -1369,10 +1369,8 @@ namespace
       if (x < 0)
       {
         require_ctor_exception
-          <expr::exception::eval::square_root_for_negative_argument<T>>
           ( expression
-          , ( boost::format ("square root for negative argument '%1%'") % x
-            ).str()
+          , expr::exception::eval::square_root_for_negative_argument<T> (x)
           );
       }
       else
@@ -1426,10 +1424,8 @@ namespace
       if (value < 0)
       {
         require_ctor_exception
-          <expr::exception::eval::log_for_nonpositive_argument<T>>
           ( expression
-          , ( boost::format ("logarithm for nonpositive argument '%1%'") % value
-            ).str()
+          , expr::exception::eval::log_for_nonpositive_argument<T> (value)
           );
       }
       else
@@ -1459,10 +1455,8 @@ namespace
       if (!(x > 0))
       {
         require_ctor_exception
-          <expr::exception::eval::log_for_nonpositive_argument<T>>
           ( expression
-          , ( boost::format ("logarithm for nonpositive argument '%1%'") % x
-            ).str()
+          , expr::exception::eval::log_for_nonpositive_argument<T> (x)
           );
       }
       else
