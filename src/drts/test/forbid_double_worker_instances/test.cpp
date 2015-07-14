@@ -11,7 +11,6 @@
 
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/require_exception.hpp>
 
 BOOST_AUTO_TEST_CASE (forbid_double_worker_instances)
 {
