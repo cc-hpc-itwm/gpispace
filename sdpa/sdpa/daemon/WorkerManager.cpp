@@ -212,6 +212,7 @@ namespace sdpa
           mmap_match_deg_worker_id.emplace ( *matchingDeg
                                            , worker_id_host_info_t ( worker_id
                                                                    , it->second->hostname()
+                                                                   , it->second->allocated_shared_memory_size()
                                                                    , it->second->lastTimeServed()
                                                                    )
                                            );

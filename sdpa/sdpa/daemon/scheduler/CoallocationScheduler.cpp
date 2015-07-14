@@ -40,7 +40,7 @@ namespace sdpa
 
     namespace
     {
-      typedef std::tuple<double, int, double, worker_id_t> cost_deg_wid_t;
+      typedef std::tuple<double, int, unsigned long, double, worker_id_t> cost_deg_wid_t;
 
       struct min_cost_max_deg_comp
       {
@@ -53,6 +53,11 @@ namespace sdpa
                  || (  std::get<0>(lhs) == std::get<0>(rhs)
                     && std::get<1>(lhs) == std::get<1>(rhs)
                     && std::get<2>(lhs) < std::get<2>(rhs)
+                    )
+                 || (  std::get<0>(lhs) == std::get<0>(rhs)
+                    && std::get<1>(lhs) == std::get<1>(rhs)
+                    && std::get<2>(lhs) == std::get<2>(rhs)
+                    && std::get<3>(lhs) < std::get<3>(rhs)
                     )
                  );
         }
@@ -132,6 +137,7 @@ namespace sdpa
 
          bpq.push (std::make_tuple ( total_cost
                                    , it->first
+                                   , worker_info.shared_memory_size()
                                    , worker_info.last_time_served()
                                    , worker_info.worker_id()
                                    )
@@ -143,7 +149,7 @@ namespace sdpa
                       , std::inserter (assigned_workers, assigned_workers.begin())
                       , [] (const cost_deg_wid_t& cost_deg_wid) -> worker_id_t
                         {
-                          return  std::get<3> (cost_deg_wid);
+                          return  std::get<4> (cost_deg_wid);
                         }
                       );
 
