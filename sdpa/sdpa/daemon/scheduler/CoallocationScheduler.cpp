@@ -42,18 +42,8 @@ namespace sdpa
     {
       typedef std::tuple<double, double, unsigned long, double, worker_id_t> cost_deg_wid_t;
 
-      struct min_cost_max_deg_comp
-      {
-        bool operator() (const cost_deg_wid_t& lhs, const cost_deg_wid_t& rhs) const
-        {
-          return std::tie (std::get<0> (lhs), std::get<1> (lhs), std::get<2> (lhs), std::get<3> (lhs))
-               < std::tie (std::get<0> (rhs), std::get<1> (rhs), std::get<2> (rhs), std::get<3> (rhs));
-        }
-      };
-
       typedef std::priority_queue < cost_deg_wid_t
                                   , std::vector<cost_deg_wid_t>
-                                  , min_cost_max_deg_comp
                                   > base_priority_queue_t;
 
       class bounded_priority_queue_t : private base_priority_queue_t
