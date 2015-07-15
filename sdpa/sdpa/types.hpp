@@ -78,7 +78,7 @@ namespace sdpa {
     double last_time_served_;
   };
 
-  typedef std::multimap<int, worker_id_host_info_t, std::greater<int>> mmap_match_deg_worker_id_t;
+  typedef std::multimap<double, worker_id_host_info_t, std::greater<double>> mmap_match_deg_worker_id_t;
 
   struct discovery_info_t;
 

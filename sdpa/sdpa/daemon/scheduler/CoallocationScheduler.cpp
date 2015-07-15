@@ -40,7 +40,7 @@ namespace sdpa
 
     namespace
     {
-      typedef std::tuple<double, int, unsigned long, double, worker_id_t> cost_deg_wid_t;
+      typedef std::tuple<double, double, unsigned long, double, worker_id_t> cost_deg_wid_t;
 
       struct min_cost_max_deg_comp
       {

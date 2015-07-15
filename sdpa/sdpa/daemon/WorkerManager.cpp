@@ -142,7 +142,7 @@ namespace sdpa
       }
     }
 
-    boost::optional<std::size_t> WorkerManager::matchRequirements
+    boost::optional<double> WorkerManager::matchRequirements
       ( const worker_id_t& worker
       , const job_requirements_t& job_req_set
       ) const
@@ -164,7 +164,7 @@ namespace sdpa
         }
       }
 
-      return matchingDeg;
+      return matchingDeg/(1.0*(worker_map_.at (worker)->capabilities().size() + 1));
     }
 
     mmap_match_deg_worker_id_t WorkerManager::getMatchingDegreesAndWorkers
@@ -204,12 +204,12 @@ namespace sdpa
         if (it->second->backlog_full())
           continue;
 
-        const boost::optional<std::size_t>
+        const boost::optional<double>
           matchingDeg (matchRequirements (it->second->name(), job_reqs));
 
         if (matchingDeg)
         {
-          mmap_match_deg_worker_id.emplace ( *matchingDeg
+          mmap_match_deg_worker_id.emplace ( matchingDeg.get()
                                            , worker_id_host_info_t ( worker_id
                                                                    , it->second->hostname()
                                                                    , it->second->allocated_shared_memory_size()
