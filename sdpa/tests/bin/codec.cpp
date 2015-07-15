@@ -217,8 +217,8 @@ BOOST_AUTO_TEST_CASE (worker_registration_response_)
     worker_registration_response e
       (std::make_exception_ptr (std::runtime_error (error)));
     worker_registration_response* r (encode_decode_mgmt_event (e));
-    fhg::util::testing::require_exception<std::runtime_error>
-      ([r] { r->get(); }, error);
+    fhg::util::testing::require_exception
+      ([r] { r->get(); }, std::runtime_error (error));
   }
 }
 

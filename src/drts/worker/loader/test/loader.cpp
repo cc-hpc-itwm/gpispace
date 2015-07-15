@@ -57,9 +57,9 @@ BOOST_AUTO_TEST_CASE (bracket_not_found_empty_search_path)
 {
   we::loader::loader loader ({});
 
-  fhg::util::testing::require_exception<we::loader::module_not_found>
+  fhg::util::testing::require_exception
     ( [&loader] { loader["name"]; }
-    , "module 'libname.so' not found in ''"
+    , we::loader::module_not_found ("libname.so", "")
     );
 }
 
@@ -67,9 +67,9 @@ BOOST_AUTO_TEST_CASE (bracket_not_found_nonempty_search_path)
 {
   we::loader::loader loader ({"<p>","<q>"});
 
-  fhg::util::testing::require_exception<we::loader::module_not_found>
+  fhg::util::testing::require_exception
     ( [&loader] { loader["name"]; }
-    , "module 'libname.so' not found in '\"<p>\":\"<q>\"'"
+    , we::loader::module_not_found ("libname.so", "\"<p>\":\"<q>\"")
     );
 }
 

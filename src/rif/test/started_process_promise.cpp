@@ -87,14 +87,14 @@ BOOST_AUTO_TEST_CASE (missing_special_argument_throws)
   argument_builder arguments
     {"./application.exe"};
 
-  fhg::util::testing::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception
     ( [&arguments]
       {
         int argc (arguments.argc());
         char** argv (arguments.argv());
         fhg::rif::started_process_promise promise (argc, argv);
       }
-    , "command line requires at least 'exe pipefd'"
+    , std::runtime_error ("command line requires at least 'exe pipefd'")
     );
 
 }
@@ -258,7 +258,7 @@ namespace
       std::string serialized_exception;
       archive & serialized_exception;
 
-      fhg::util::testing::require_exception<Exception>
+      fhg::util::testing::require_exception
         ( [&serialized_exception]
           {
             std::rethrow_exception
@@ -269,7 +269,7 @@ namespace
                   )
               );
           }
-        , Exception (exception_args...).what()
+        , Exception (exception_args...)
         );
     }
   }

@@ -920,11 +920,13 @@ namespace
 
     pnet::type::value::value_type const value (pnet::type::value::read (v));
 
-    fhg::util::testing::require_exception<std::runtime_error>
+    fhg::util::testing::require_exception
       ( [&os, &value] { pnet::type::value::dump (os, value); }
-      , ( boost::format ("cannot dump the plain value '%1%'")
-        % pnet::type::value::show (value)
-        ).str()
+      , std::runtime_error
+          ( ( boost::format ("cannot dump the plain value '%1%'")
+            % pnet::type::value::show (value)
+            ).str()
+          )
       );
   }
 
@@ -936,12 +938,14 @@ namespace
     std::ostringstream oss;
     fhg::util::xml::xmlstream os (oss);
 
-    fhg::util::testing::require_exception<std::runtime_error>
+    fhg::util::testing::require_exception
       ( [&os, &v] { pnet::type::value::dump (os, pnet::type::value::read (v)); }
-      , ( boost::format ("cannot dump the single level property"
-                        " with key '%1%' and value '%2%'"
-                        ) % key % val
-        ).str()
+      , std::runtime_error
+          ( ( boost::format ( "cannot dump the single level property"
+                              " with key '%1%' and value '%2%'"
+                            ) % key % val
+            ).str()
+          )
       );
   }
 }

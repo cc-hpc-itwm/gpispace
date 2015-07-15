@@ -25,18 +25,20 @@ int const WE_GUARD_SYMBOL (0);
 
 BOOST_AUTO_TEST_CASE (ctor_load_failed)
 {
-  fhg::util::testing::require_exception<we::loader::module_load_failed>
+  fhg::util::testing::require_exception
     ( [] { we::loader::Module ("<path>"); }
-    , "could not load module '<path>': <path>:"
-      " cannot open shared object file: No such file or directory"
+    , we::loader::module_load_failed
+        ( "<path>"
+        , "<path>: cannot open shared object file: No such file or directory"
+        )
     );
 }
 
 BOOST_AUTO_TEST_CASE (ctor_failed_exception_from_we_mod_initialize)
 {
-  fhg::util::testing::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception
     ( [] { we::loader::Module ("./libinitialize_throws.so"); }
-    , "initialize_throws"
+    , std::runtime_error ("initialize_throws")
     );
 }
 
@@ -61,14 +63,14 @@ BOOST_AUTO_TEST_CASE (call_not_found)
   expr::eval::context input;
   expr::eval::context output;
 
-  fhg::util::testing::require_exception<we::loader::function_not_found>
+  fhg::util::testing::require_exception
     ( [&m, &context, &input, &output]
     {
       m.call ( "<name>", &context, input, output
              , std::map<std::string, void*>()
              );
     }
-    , "function \"./libempty.so\"::<name> not found"
+    , we::loader::function_not_found ("./libempty.so", "<name>")
     );
 }
 
@@ -134,8 +136,8 @@ BOOST_AUTO_TEST_CASE (duplicate_function)
   we::loader::Module m ("./libempty.so");
   m.add_function ("f", &inc);
 
-  fhg::util::testing::require_exception<we::loader::duplicate_function>
+  fhg::util::testing::require_exception
     ( [&m] { m.add_function ("f", &inc); }
-    , "duplicate function \"./libempty.so\"::f"
+    , we::loader::duplicate_function ("./libempty.so", "f")
     );
 }

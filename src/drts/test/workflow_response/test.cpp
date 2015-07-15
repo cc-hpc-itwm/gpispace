@@ -120,65 +120,65 @@ namespace
                       );
 
   //! \todo specific exception
-  fhg::util::testing::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception
     ([&client, &job_id]()
      {
        client.synchronous_workflow_response
          ("JOB-NOT-EXISTENT", "get_and_update_state", 12UL);
      }
-    , "Error: reason := unable to put token: JOB-NOT-EXISTENT unknown or not running code := 3"
+    , std::runtime_error ("Error: reason := unable to put token: JOB-NOT-EXISTENT unknown or not running code := 3")
     );
 
 
   //! \note BUG: Hangs, GenericDaemon: unhandled error (3)
 #if 0
   //! \todo specific exception
-  fhg::util::testing::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception
     ([&client, &job_id]()
      {
        client.synchronous_workflow_response
          (job_id, "get_and_update_state", std::string ("WRONG TYPE"));
      }
-    , "Error: reason := unable to put token: type mismatch for field 'get_and_update_state': expected type 'unsigned long', value '\"WRONG TYPE\"' has type 'string'"
+    , std::runtime_error ("Error: reason := unable to put token: type mismatch for field 'get_and_update_state': expected type 'unsigned long', value '\"WRONG TYPE\"' has type 'string'")
     );
 #endif
 
   //! \note BUG: Hangs, GenericDaemon: unhandled error (3)
 #if 0
   //! \todo specific exception
-  fhg::util::testing::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception
     ([&client, &job_id]()
      {
        client.synchronous_workflow_response
          (job_id, "PLACE-NOT-EXISTENT", 12UL);
      }
-    , "Error: reason := unable to put token: unknown place PLACE-NOT-EXISTENT"
+    , std::runtime_error ("Error: reason := unable to put token: unknown place PLACE-NOT-EXISTENT")
     );
 #endif
 
   //! \note BUG: Hangs, GenericDaemon: unhandled error (3)
 #if 0
   //! \todo specific exception
-  fhg::util::testing::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception
     ([&client, &job_id]()
      {
        client.synchronous_workflow_response
          (job_id, "state", 12UL);
      }
-    , "Error: reason := unable to put token: place not marked with attribute put_token=\"true\""
+    , std::runtime_error ("Error: reason := unable to put token: place not marked with attribute put_token=\"true\"")
     );
 #endif
 
   client.put_token (job_id, "done", we::type::literal::control());
   client.wait (job_id);
 
-  fhg::util::testing::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception
     ([&client, &job_id]()
      {
        client.synchronous_workflow_response
          (job_id, "get_and_update_state", 0UL);
      }
-    , "Error: reason := unable to put token: " + job_id + " unknown or not running code := 3"
+    , std::runtime_error ("Error: reason := unable to put token: " + job_id + " unknown or not running code := 3")
     );
 
   std::multimap<std::string, pnet::type::value::value_type> const result

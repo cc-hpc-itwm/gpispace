@@ -14,14 +14,16 @@ BOOST_AUTO_TEST_CASE
 {
 #define XSTR(x) STR(x)
 #define STR(x) #x
-  fhg::util::testing::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception
     ( [] { we::loader::Module ("./libempty.so"); }
-    , ( boost::format
-        ( "could not load module './libempty.so':"
-          " ./libempty.so: undefined symbol: %1%"
+    , std::runtime_error
+        ( ( boost::format
+              ( "could not load module './libempty.so':"
+                " ./libempty.so: undefined symbol: %1%"
+              )
+          % XSTR (WE_GUARD_SYMBOL)
+          ).str()
         )
-      % XSTR (WE_GUARD_SYMBOL)
-      ).str()
     );
 #undef STR
 #undef XSTR

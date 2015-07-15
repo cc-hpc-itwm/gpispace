@@ -18,41 +18,31 @@ namespace
   {
     template<typename Ex>
     void require_exception_from_generate_cpp
-      ( const std::string& exception_name
-      , const boost::format& expected_what
-      )
+      (const boost::format& expected_what)
     {
       const fhg::util::temporary_path tp;
       state.path_to_cpp() = boost::filesystem::path (tp).string();
 
-      try
-      {
-        ::xml::parse::generate_cpp (*function, state);
-
-        BOOST_FAIL (boost::format ("exception <%1%> missing") % exception_name);
-      }
-      catch (const Ex& e)
-      {
-        BOOST_REQUIRE_EQUAL (e.what(), expected_what.str().c_str());
-      }
+      fhg::util::testing::require_exception_with_message<Ex>
+        ( [this]
+          {
+            ::xml::parse::generate_cpp (*function, state);
+          }
+        , expected_what.str()
+        );
     }
 
     template<typename Ex>
     void require_exception_from_parse
-      ( const std::string& exception_name
-      , const boost::format& expected_what
-      )
+      (const boost::format& expected_what)
     {
-      try
-      {
-        parse();
-
-        BOOST_FAIL (boost::format ("exception <%1%> missing") % exception_name);
-      }
-      catch (const Ex& e)
-      {
-        BOOST_REQUIRE_EQUAL (e.what(), expected_what.str().c_str());
-      }
+      fhg::util::testing::require_exception_with_message<Ex>
+        ( [this]
+          {
+            parse();
+          }
+        , expected_what.str()
+        );
     }
   };
 }
@@ -74,7 +64,7 @@ BOOST_AUTO_TEST_CASE (warning_struct_redefined)
       ).str()
     );
 
-  fhg::util::testing::require_exception
+  fhg::util::testing::require_exception_with_message
     <xml::parse::warning::struct_redefined>
     ( [&input]()
       { xml::parse::state::type state;
@@ -100,8 +90,7 @@ BOOST_FIXTURE_TEST_CASE (warning_duplicate_external_function, fixture)
 
   require_exception_from_generate_cpp
     <xml::parse::warning::duplicate_external_function>
-    ( "warn::duplicate_external_function"
-    , boost::format ( "WARNING: the external function f in module m"
+    ( boost::format ( "WARNING: the external function f in module m"
                       " has multiple occurences in %1% and %2%"
                     )
     % xml::parse::util::position_type (nullptr, nullptr, xpnet, 10, 9)
@@ -132,7 +121,7 @@ BOOST_AUTO_TEST_CASE (error_connect_response_with_unknown_port)
       ).str()
     );
 
-  fhg::util::testing::require_exception
+  fhg::util::testing::require_exception_with_message
     <xml::parse::error::unknown_port_in_connect_response>
     ( [&input]()
       { xml::parse::state::type state;
@@ -171,7 +160,7 @@ BOOST_AUTO_TEST_CASE (error_connect_response_with_unknown_to)
       ).str()
     );
 
-  fhg::util::testing::require_exception
+  fhg::util::testing::require_exception_with_message
     <xml::parse::error::unknown_to_in_connect_response>
     ( [&input]()
       { xml::parse::state::type state;
@@ -215,7 +204,7 @@ BOOST_AUTO_TEST_CASE (error_connect_response_invalid_signature)
       ).str()
     );
 
-  fhg::util::testing::require_exception
+  fhg::util::testing::require_exception_with_message
     <xml::parse::error::invalid_signature_in_connect_response>
     ( [&input]()
       { xml::parse::state::type state;
@@ -240,8 +229,7 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_external_function, fixture)
 
   require_exception_from_generate_cpp
     <xml::parse::error::duplicate_external_function>
-    ( "error::duplicate_external_function"
-    , boost::format ( "ERROR: duplicate external function f in module m"
+    ( boost::format ( "ERROR: duplicate external function f in module m"
                       " has conflicting definition at %1%"
                       ", earlier definition is at %2%"
                     )
@@ -254,8 +242,7 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_external_function, fixture)
   set_parse_input (_file);                                              \
                                                                         \
   require_exception_from_parse<xml::parse::error::duplicate_ ## _type>  \
-  ( "error::duplicate_" #_type                                          \
-  , boost::format ( "ERROR: duplicate " _msg " at %1%"                  \
+  ( boost::format ( "ERROR: duplicate " _msg " at %1%"                  \
                     ", earlier definition is at %2%"                    \
                   )                                                     \
   % xml::parse::util::position_type (nullptr, nullptr, xpnet, _ll, _cl)       \

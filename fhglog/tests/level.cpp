@@ -22,29 +22,33 @@ BOOST_AUTO_TEST_CASE (from_string)
 
 #undef OKAY
 
-  fhg::util::testing::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception
     ( [] { fhg::log::from_string ("TRACEmore"); }
-    , "PARSE ERROR [5]: additional input\n"
-      "TRACE more\n"
-      "     ^\n"
+    , std::runtime_error ( "PARSE ERROR [5]: additional input\n"
+                           "TRACE more\n"
+                           "     ^\n"
+                         )
     );
-  fhg::util::testing::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception
     ( [] { fhg::log::from_string ("INFOmore"); }
-    , "PARSE ERROR [4]: additional input\n"
-      "INFO more\n"
-      "    ^\n"
+    , std::runtime_error ( "PARSE ERROR [4]: additional input\n"
+                           "INFO more\n"
+                           "    ^\n"
+                         )
     );
-  fhg::util::testing::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception
     ( [] { fhg::log::from_string ("WARNmore"); }
-    , "PARSE ERROR [4]: additional input\n"
-      "WARN more\n"
-      "    ^\n"
+    , std::runtime_error ( "PARSE ERROR [4]: additional input\n"
+                           "WARN more\n"
+                           "    ^\n"
+                         )
     );
-  fhg::util::testing::require_exception<std::runtime_error>
+  fhg::util::testing::require_exception
     ( [] { fhg::log::from_string ("ERRORmore"); }
-    , "PARSE ERROR [5]: additional input\n"
-      "ERROR more\n"
-      "     ^\n"
+    , std::runtime_error ( "PARSE ERROR [5]: additional input\n"
+                           "ERROR more\n"
+                           "     ^\n"
+                         )
     );
 
 #define THROW(_s)                                                \
