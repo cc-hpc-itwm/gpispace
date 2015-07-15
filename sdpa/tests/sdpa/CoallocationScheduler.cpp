@@ -1262,7 +1262,9 @@ BOOST_FIXTURE_TEST_CASE (no_assignment_if_not_enough_memory, fixture_scheduler_a
   BOOST_REQUIRE (assignment.empty());
 }
 
-BOOST_FIXTURE_TEST_CASE (allocate_multiple_jobs_with_memory_requirements, fixture_scheduler_and_requirements)
+BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_requirements
+                        , fixture_scheduler_and_requirements
+                        )
 {
   unsigned int size_0 (1000), size_1 (2000);
   std::set<sdpa::worker_id_t> set_0 {"worker_0"}, set_1 {"worker_1"};
@@ -1309,14 +1311,14 @@ BOOST_FIXTURE_TEST_CASE (allocate_multiple_jobs_with_memory_requirements, fixtur
   _scheduler.enqueueJob (job_id_1);
 
   sdpa::daemon::CoallocationScheduler::assignment_t
-    assignment (_scheduler.assignJobsToWorkers());
+    assignment_1 (_scheduler.assignJobsToWorkers());
 
-  BOOST_REQUIRE (!assignment.empty());
-  BOOST_REQUIRE (assignment.count (job_id_0));
-  BOOST_REQUIRE (assignment.count (job_id_1));
+  BOOST_REQUIRE (!assignment_1.empty());
+  BOOST_REQUIRE (assignment_1.count (job_id_0));
+  BOOST_REQUIRE (assignment_1.count (job_id_1));
 
-  BOOST_REQUIRE_EQUAL (assignment.at (job_id_0), set_0);
-  BOOST_REQUIRE_EQUAL (assignment.at (job_id_1), set_1);
+  BOOST_REQUIRE_EQUAL (assignment_1.at (job_id_0), set_0);
+  BOOST_REQUIRE_EQUAL (assignment_1.at (job_id_1), set_1);
 
   _scheduler.releaseReservation (job_id_0);
   _scheduler.releaseReservation (job_id_1);
@@ -1324,13 +1326,13 @@ BOOST_FIXTURE_TEST_CASE (allocate_multiple_jobs_with_memory_requirements, fixtur
   _scheduler.enqueueJob (job_id_1);
   _scheduler.enqueueJob (job_id_0);
 
-  assignment.clear();
-  assignment = _scheduler.assignJobsToWorkers();
+  sdpa::daemon::CoallocationScheduler::assignment_t
+    assignment_2 ( _scheduler.assignJobsToWorkers());
 
-  BOOST_REQUIRE (!assignment.empty());
-  BOOST_REQUIRE (assignment.count (job_id_0));
-  BOOST_REQUIRE (assignment.count (job_id_1));
+  BOOST_REQUIRE (!assignment_2.empty());
+  BOOST_REQUIRE (assignment_2.count (job_id_0));
+  BOOST_REQUIRE (assignment_2.count (job_id_1));
 
-  BOOST_REQUIRE_EQUAL (assignment.at (job_id_0), set_0);
-  BOOST_REQUIRE_EQUAL (assignment.at (job_id_1), set_1);
+  BOOST_REQUIRE_EQUAL (assignment_2.at (job_id_0), set_0);
+  BOOST_REQUIRE_EQUAL (assignment_2.at (job_id_1), set_1);
 }
