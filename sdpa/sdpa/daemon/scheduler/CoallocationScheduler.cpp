@@ -46,20 +46,8 @@ namespace sdpa
       {
         bool operator() (const cost_deg_wid_t& lhs, const cost_deg_wid_t& rhs) const
         {
-          return (  std::get<0>(lhs) < std::get<0>(rhs)
-                 || (  std::get<0>(lhs) == std::get<0>(rhs)
-                    && std::get<1>(lhs) > std::get<1>(rhs)
-                    )
-                 || (  std::get<0>(lhs) == std::get<0>(rhs)
-                    && std::get<1>(lhs) == std::get<1>(rhs)
-                    && std::get<2>(lhs) < std::get<2>(rhs)
-                    )
-                 || (  std::get<0>(lhs) == std::get<0>(rhs)
-                    && std::get<1>(lhs) == std::get<1>(rhs)
-                    && std::get<2>(lhs) == std::get<2>(rhs)
-                    && std::get<3>(lhs) < std::get<3>(rhs)
-                    )
-                 );
+          return std::tie (std::get<0> (lhs), std::get<1> (lhs), std::get<2> (lhs), std::get<3> (lhs))
+               < std::tie (std::get<0> (rhs), std::get<1> (rhs), std::get<2> (rhs), std::get<3> (rhs));
         }
       };
 
@@ -136,7 +124,7 @@ namespace sdpa
                            + cost_preassigned_jobs;
 
          bpq.push (std::make_tuple ( total_cost
-                                   , it->first
+                                   , -1.0*it->first
                                    , worker_info.shared_memory_size()
                                    , worker_info.last_time_served()
                                    , worker_info.worker_id()
