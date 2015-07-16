@@ -1405,3 +1405,76 @@ BOOST_FIXTURE_TEST_CASE ( assign_job_to_the_matching_worker_with_less_capabiliti
   BOOST_REQUIRE_EQUAL (assignment.at (job_id), set_0);
 }
 
+BOOST_FIXTURE_TEST_CASE ( assign_to_the_same_worker_if_the_total_cost_is_lower
+                        , fixture_scheduler_and_requirements
+                        )
+{
+  std::string const name_worker_0 {"worker_0_" + fhg::util::testing::random_string()};
+  std::string const name_worker_1 {"worker_1_" + fhg::util::testing::random_string()};
+  std::string const name_node_0 {"node_0_" + fhg::util::testing::random_string()};
+  std::string const name_node_1 {"node_1_" + fhg::util::testing::random_string()};
+
+  std::set<sdpa::worker_id_t> const expected_assignment {name_worker_1};
+
+  _scheduler.worker_manager().addWorker ( name_worker_0
+                                        , 1
+                                        , {}
+                                        , 199
+                                        , false
+                                        , name_node_0
+                                        , fhg::util::testing::random_string()
+                                        );
+
+  _scheduler.worker_manager().addWorker ( name_worker_1
+                                        , 1
+                                        , {}
+                                        , 200
+                                        , false
+                                        , name_node_1
+                                        , fhg::util::testing::random_string()
+                                        );
+
+  sdpa::job_id_t const job_id_0 (fhg::util::testing::random_string());
+  sdpa::job_id_t const job_id_1 (fhg::util::testing::random_string());
+
+  std::function<double (std::string const&)> const
+    test_transfer_cost ( [&name_node_0, &name_node_1](const std::string& host) -> double
+                         {
+                           if (host == name_node_0)
+                             return 1000.0;
+                           if (host == name_node_1)
+                             return 1.0;
+                           throw std::runtime_error ("Unexpected host argument in test transfer cost function");
+                         }
+                       );
+
+  add_job (job_id_0, job_requirements_t ( {}
+                                        , we::type::schedule_data()
+                                        , test_transfer_cost
+                                        , 1.0
+                                        , 100
+                                        )
+          );
+
+  add_job (job_id_1, job_requirements_t ( {}
+                                         , we::type::schedule_data()
+                                         , test_transfer_cost
+                                         , 1.0
+                                         , 200
+                                         )
+           );
+
+
+  _scheduler.enqueueJob (job_id_0);
+  _scheduler.enqueueJob (job_id_1);
+
+  sdpa::daemon::CoallocationScheduler::assignment_t
+    assignment (_scheduler.assignJobsToWorkers());
+
+  BOOST_REQUIRE (!assignment.empty());
+  BOOST_REQUIRE (assignment.count (job_id_0));
+  BOOST_REQUIRE (assignment.count (job_id_1));
+
+  BOOST_REQUIRE_EQUAL (assignment.at (job_id_0), expected_assignment);
+  BOOST_REQUIRE_EQUAL (assignment.at (job_id_1), expected_assignment);
+}
