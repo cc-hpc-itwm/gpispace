@@ -1,0 +1,93 @@
+## Goals:
+
+* aloma
+  - Demo at SEG2015 in October -> to be definied by Norman
+  - Demo at RSI in Houston any time (please do not remove Hpcdemo account)
+    - extension: prepare tutorial on how to include a new algorithm (Dirk)
+  - speichermanagement (key) -> generator + gpi-space
+    (effort not yet known, all together certainly 3-4 month)
+     - in-memory operationen
+  - batch mode (key) (Bernd, prototype util Sep 7th)
+
+  - support for more types of algorithms -> generator
+    (effort not yet known, all together certainly 2-3 month)
+    - stencil
+    - different sizes for different inputs
+    - multiple input in one transition
+    - output larger than input
+    - automatic coercion
+    - different granularity of input in one transition
+  - Datentypen -> generator + pdl + data management
+  - store _and_ process intermediate results -> generator
+  - Selektion von Daten (lazy? eager? both?)
+  - Drag&Drop für mehr als ein Datum -> remote adoption
+  - Installation/Parametrisierung
+
+* frtm
+  - rework job management server, parallel execution, persistent
+    state, add/remove for individual or groups, status of worker
+  - release before aug 7th, command line level
+  - workflow improvements -> scalability, get_shots eager(?)
+  - cancel policy -> kill on cancel in gpispace
+  - on_cancel im interface
+  - gpi-space robust, e.g. when all workers get killed by -9 or crash _no_
+    message whatsoever appears, _no_ information at all to the job
+    server
+  - rework interface -> discuss with acceleware
+  - test GPU support?
+
+* splotch?
+   - use more than 128 nodes -> gpispace lazy connect -> test
+   - selftest
+   - job server
+   - support for multiple snapshots plus interpolation
+
+* enauto? -> within 3 years of project duration
+   - define interface for bunch of applications
+     - physics
+     - life science
+  - implement workflows
+  - implement starter binaries
+  - improve scheduler: support for time-to-solution/energy-to-solution
+
+* gpispace
+  - topology management (4-6 month)
+  - memory management (4-6 month)
+  - scheduler steals work (4 weeks)
+  - deployment
+     - machine spec, e.g. disk less?
+  - network proxy?  (low)
+  - interruption handling
+  - progress report
+  - course
+  - remove orchestrator, alternative: make it useful, e.g. let it be a
+    generic job management server
+  - static typecheck
+
+* Kurs -> Jens K.
+
+## Work:
+
+- Tiberiu: --24.7 || 26.8--
+- Mirko: --7.8 || 7.9--
+- Bernd: probably away two or three weeks
+
+Tiberiu:
+  - propose changes that are required to support
+    performance models -> until Sep 7th
+  - implements work stealing -> until Sep 7th
+
+Mirko: FRTM/SPLOTCH until Aug 7th
+           (including gpispace changes)
+           write down constraints for aloma modules
+
+Bernd:
+  - network bug
+  - write down constraints for aloma modules
+  - gpispace player (including cmake bundle call)
+  - aloma batch mode for a single job (minimal invasive, require build
+    infrastructure, produce tree with executable and most parameters
+    bind)
+ - support extended status with live information about
+   worker status (e.g. kill -0 from rifd works == answered
+   within a certain amount of time)
