@@ -99,6 +99,7 @@ find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
 find_package (Threads REQUIRED QUIET)
 find_package (asciidoc 8.6.7 REQUIRED QUIET)
 find_package (source_highlite REQUIRED QUIET)
+find_package (libssh2 QUIET REQUIRED)
 
 include (${QT_USE_FILE})
 include (CTest)
