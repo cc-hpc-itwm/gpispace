@@ -41,7 +41,8 @@ namespace
 
 BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
 {
-  const std::vector<std::string> worker_ids (generate_worker_names (4));
+  const std::vector<std::string> worker_ids {"w_0","w_1", "w_2","W_3"};
+//generate_worker_names (4));
 
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker ( worker_ids[0]
@@ -87,8 +88,6 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
   std::set<sdpa::worker_id_t> set_workers (worker_manager.getAllNonReservedWorkers());
 
   const job_requirements_t job_req ({{ we::type::requirement_t ("A", true)
-                                     , we::type::requirement_t ("B", false)
-                                     , we::type::requirement_t ("C", false)
                                      }
                                     , we::type::schedule_data()
                                     , null_transfer_cost
@@ -103,9 +102,17 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
 
   BOOST_REQUIRE_EQUAL (mmap_match_deg_worker_id.size(), worker_ids.size()-1);
   sdpa::mmap_match_deg_worker_id_t::iterator it (mmap_match_deg_worker_id.begin());
-  BOOST_REQUIRE_EQUAL (it++->second.worker_id(), worker_ids[2]);
-  BOOST_REQUIRE_EQUAL (it++->second.worker_id(), worker_ids[3]);
-  BOOST_REQUIRE_EQUAL (it++->second.worker_id(), worker_ids[0]);
+
+  constexpr double matching_deg_worker_0 {1.0/1.0};
+  constexpr double matching_deg_worker_2 {2.0/4.0};
+  constexpr double matching_deg_worker_3 {2.0/3.0};
+
+  BOOST_REQUIRE_EQUAL (it->second.worker_id(), worker_ids[0]);
+  BOOST_REQUIRE_EQUAL (it++->first, matching_deg_worker_0);
+  BOOST_REQUIRE_EQUAL (it->second.worker_id(), worker_ids[3]);
+  BOOST_REQUIRE_EQUAL (it++->first, matching_deg_worker_3);
+  BOOST_REQUIRE_EQUAL (it->second.worker_id(), worker_ids[2]);
+  BOOST_REQUIRE_EQUAL (it++->first, matching_deg_worker_2);
 }
 
 BOOST_AUTO_TEST_CASE (add_worker)

@@ -164,7 +164,7 @@ namespace sdpa
         }
       }
 
-      return matchingDeg/(1.0*(worker_map_.at (worker)->capabilities().size() + 1));
+      return (matchingDeg + 1.0)/(worker_map_.at (worker)->capabilities().size() + 1.0);
     }
 
     mmap_match_deg_worker_id_t WorkerManager::getMatchingDegreesAndWorkers
