@@ -1353,6 +1353,48 @@ BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_re
   }
 }
 
+BOOST_FIXTURE_TEST_CASE
+  ( assign_job_without_requirements_to_worker_with_least_capabilities
+  , fixture_scheduler_and_requirements
+  )
+{
+  std::string const name_worker_0 {"0" + fhg::util::testing::random_string()};
+  std::string const name_worker_1 {"1" + fhg::util::testing::random_string()};
+  std::string const name_capability {fhg::util::testing::random_string()};
+  _scheduler.worker_manager().addWorker
+    ( name_worker_0
+    , 1
+    , {}
+    , random_ulong()
+    , false
+    , fhg::util::testing::random_string()
+    , fhg::util::testing::random_string()
+    );
+  _scheduler.worker_manager().addWorker
+    ( name_worker_1
+    , 1
+    , {sdpa::Capability (name_capability, name_worker_1)}
+    , random_ulong()
+    , false
+    , fhg::util::testing::random_string()
+    , fhg::util::testing::random_string()
+    );
+
+  sdpa::job_id_t const job_id {fhg::util::testing::random_string()};
+
+  add_job (job_id, no_requirements());
+  _scheduler.enqueueJob (job_id);
+
+  sdpa::daemon::CoallocationScheduler::assignment_t
+    assignment (_scheduler.assignJobsToWorkers());
+
+  BOOST_REQUIRE_EQUAL (assignment.size(), 1);
+  BOOST_REQUIRE (assignment.count (job_id));
+
+  BOOST_REQUIRE_EQUAL
+    (assignment.at (job_id), std::set<sdpa::worker_id_t> {name_worker_0});
+}
+
 BOOST_FIXTURE_TEST_CASE ( assign_job_to_the_matching_worker_with_less_capabilities_when_same_costs
                         , fixture_scheduler_and_requirements
                         )
