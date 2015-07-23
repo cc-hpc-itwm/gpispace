@@ -11,6 +11,7 @@
 
 #include <fhglog/LogMacros.hpp>
 #include <util-generic/syscall.hpp>
+#include <util-generic/warning.hpp>
 
 #include <gpi-space/pc/type/flags.hpp>
 
@@ -81,6 +82,19 @@ namespace gpi
                 ( "shared memory segment '" + name()
                 + "' could not be truncated to size " + std::to_string (size())
                 )
+            );
+        }
+
+        if (fhg::util::suppress_warning::sign_conversion<std::size_t>
+             ( fhg::util::syscall::fstat (fd).st_size
+             , "st_size will never be negative"
+             ) != size()
+           )
+        {
+          throw std::runtime_error
+            ( "shared memory segment '" + name()
+            + "' could not be truncated to size " + std::to_string (size())
+            + " verification of size failed"
             );
         }
 
