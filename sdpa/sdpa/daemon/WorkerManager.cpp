@@ -156,7 +156,10 @@ namespace sdpa
       {
         if (worker_map_.at (worker)->hasCapability (req.value()))
         {
-          ++matchingDeg;
+          if (!req.is_mandatory())
+          {
+            ++matchingDeg;
+          }
         }
         else if (req.is_mandatory())
         {
