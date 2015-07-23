@@ -41,8 +41,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
 {
-  const std::vector<std::string> worker_ids {"w_0","w_1", "w_2","W_3"};
-//generate_worker_names (4));
+  const std::vector<std::string> worker_ids (generate_worker_names (4));
 
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker ( worker_ids[0]
