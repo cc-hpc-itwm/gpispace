@@ -13,6 +13,7 @@
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/random_integral.hpp>
 
 #include <fhglog/Configuration.hpp>
 
@@ -355,6 +356,7 @@ namespace utils
             ( _name
             , 1
             , capabilities
+            , fhg::util::testing::random_integral<unsigned long>()
             , accept_workers
             , fhg::util::testing::random_string()
             )

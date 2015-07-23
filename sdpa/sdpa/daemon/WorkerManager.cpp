@@ -66,6 +66,7 @@ namespace sdpa
     void WorkerManager::addWorker ( const worker_id_t& workerId
                                   , boost::optional<unsigned int> capacity
                                   , const capabilities_set_t& cpbSet
+                                  , unsigned long allocated_shared_memory_size
                                   , const bool children_allowed
                                   , const std::string& hostname
                                   , const fhg::com::p2p::address_t& address
@@ -78,7 +79,15 @@ namespace sdpa
         throw std::runtime_error ("worker '" + workerId + "' already exists");
       }
       worker_connections_.left.insert ({workerId, address});
-      Worker::ptr_t pWorker( new Worker( workerId, capacity, cpbSet,  children_allowed, hostname, address) );
+      Worker::ptr_t pWorker ( new Worker ( workerId
+                                         , capacity
+                                         , cpbSet
+                                         , allocated_shared_memory_size
+                                         , children_allowed
+                                         , hostname
+                                         , address
+                                         )
+                            );
       worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
     }
 
@@ -133,7 +142,7 @@ namespace sdpa
       }
     }
 
-    boost::optional<std::size_t> WorkerManager::matchRequirements
+    boost::optional<double> WorkerManager::matchRequirements
       ( const worker_id_t& worker
       , const job_requirements_t& job_req_set
       ) const
@@ -147,7 +156,10 @@ namespace sdpa
       {
         if (worker_map_.at (worker)->hasCapability (req.value()))
         {
-          ++matchingDeg;
+          if (!req.is_mandatory())
+          {
+            ++matchingDeg;
+          }
         }
         else if (req.is_mandatory())
         {
@@ -155,7 +167,7 @@ namespace sdpa
         }
       }
 
-      return matchingDeg;
+      return (matchingDeg + 1.0)/(worker_map_.at (worker)->capabilities().size() + 1.0);
     }
 
     mmap_match_deg_worker_id_t WorkerManager::getMatchingDegreesAndWorkers
@@ -187,17 +199,23 @@ namespace sdpa
         if (it == worker_map_.end())
           continue;
 
+        if ( job_reqs.shared_memory_amount_required()
+           > it->second->allocated_shared_memory_size()
+           )
+          continue;
+
         if (it->second->backlog_full())
           continue;
 
-        const boost::optional<std::size_t>
+        const boost::optional<double>
           matchingDeg (matchRequirements (it->second->name(), job_reqs));
 
         if (matchingDeg)
         {
-          mmap_match_deg_worker_id.emplace ( *matchingDeg
+          mmap_match_deg_worker_id.emplace ( matchingDeg.get()
                                            , worker_id_host_info_t ( worker_id
                                                                    , it->second->hostname()
+                                                                   , it->second->allocated_shared_memory_size()
                                                                    , it->second->lastTimeServed()
                                                                    )
                                            );

@@ -29,6 +29,7 @@ namespace sdpa
       void addWorker ( const worker_id_t& workerId
                      , boost::optional<unsigned int> capacity
                      , const capabilities_set_t& cpbset
+                     , unsigned long allocated_shared_memory_size
                      , const bool children_allowed
                      , const std::string& hostname
                      , const fhg::com::p2p::address_t& address
@@ -44,7 +45,7 @@ namespace sdpa
 
       double cost_assigned_jobs (const worker_id_t, std::function<double (job_id_t job_id)>);
 
-      boost::optional<std::size_t> matchRequirements
+      boost::optional<double> matchRequirements
         ( const worker_id_t& worker
         , const job_requirements_t& job_req_set
         ) const;

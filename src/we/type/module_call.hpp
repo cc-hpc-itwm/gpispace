@@ -27,6 +27,7 @@
 #include <ostream>
 #include <boost/serialization/nvp.hpp>
 
+#include <algorithm>
 #include <list>
 #include <unordered_map>
 
@@ -71,6 +72,24 @@ namespace we { namespace type {
       puts_evaluated_after_call (expr::eval::context const&) const;
     std::list<std::pair<local::range, global::range>>
       gets (expr::eval::context const&) const;
+
+    std::unordered_map<std::string, unsigned long>
+      memory_buffer_sizes (expr::eval::context const&) const;
+
+    unsigned long memory_buffer_size_total
+      (expr::eval::context const& context) const
+    {
+      std::unordered_map<std::string, unsigned long> const sizes
+        (memory_buffer_sizes (context));
+
+      return std::accumulate
+        ( sizes.begin(), sizes.end(), 0UL
+        , [](unsigned long a, std::pair<std::string, unsigned long> const& x)
+          {
+            return a + x.second;
+          }
+        );
+    }
 
     private:
     std::string module_;

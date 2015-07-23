@@ -40,27 +40,10 @@ namespace sdpa
 
     namespace
     {
-      typedef std::tuple<double, int, double, worker_id_t> cost_deg_wid_t;
-
-      struct min_cost_max_deg_comp
-      {
-        bool operator() (const cost_deg_wid_t& lhs, const cost_deg_wid_t& rhs) const
-        {
-          return (  std::get<0>(lhs) < std::get<0>(rhs)
-                 || (  std::get<0>(lhs) == std::get<0>(rhs)
-                    && std::get<1>(lhs) > std::get<1>(rhs)
-                    )
-                 || (  std::get<0>(lhs) == std::get<0>(rhs)
-                    && std::get<1>(lhs) == std::get<1>(rhs)
-                    && std::get<2>(lhs) < std::get<2>(rhs)
-                    )
-                 );
-        }
-      };
+      typedef std::tuple<double, double, unsigned long, double, worker_id_t> cost_deg_wid_t;
 
       typedef std::priority_queue < cost_deg_wid_t
                                   , std::vector<cost_deg_wid_t>
-                                  , min_cost_max_deg_comp
                                   > base_priority_queue_t;
 
       class bounded_priority_queue_t : private base_priority_queue_t
@@ -131,7 +114,8 @@ namespace sdpa
                            + cost_preassigned_jobs;
 
          bpq.push (std::make_tuple ( total_cost
-                                   , it->first
+                                   , -1.0*it->first
+                                   , worker_info.shared_memory_size()
                                    , worker_info.last_time_served()
                                    , worker_info.worker_id()
                                    )
@@ -143,7 +127,7 @@ namespace sdpa
                       , std::inserter (assigned_workers, assigned_workers.begin())
                       , [] (const cost_deg_wid_t& cost_deg_wid) -> worker_id_t
                         {
-                          return  std::get<3> (cost_deg_wid);
+                          return  std::get<4> (cost_deg_wid);
                         }
                       );
 

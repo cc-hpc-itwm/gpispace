@@ -364,7 +364,7 @@ void GenericDaemon::handleSubmitJobEvent
   Job* pJob (addJob ( job_id
                     , e.description()
                     , itMaster
-                    , {{}, we::type::schedule_data(), null_transfer_cost, 1.0} //!Note: an estimation of the computational cost of a master job?
+                    , {{}, we::type::schedule_data(), null_transfer_cost, 1.0, 0} //!Note: a master job needs no shared mem allocation
                     )
              );
 
@@ -437,6 +437,7 @@ try
     ( event->name()
     , event->capacity()
     , workerCpbSet
+    , event->allocated_shared_memory_size()
     , event->children_allowed()
     , event->hostname(), source
     );
@@ -603,6 +604,30 @@ void GenericDaemon::handleErrorEvent
   }
 }
 
+namespace
+{
+  unsigned long total_memory_buffer_size (const we::type::activity_t& activity)
+  {
+    if (!activity.transition().module_call())
+      return 0;
+
+    expr::eval::context context;
+
+    for ( std::pair< pnet::type::value::value_type, we::port_id_type>
+            const& token_on_port
+        : activity.input()
+        )
+    {
+      context.bind_ref
+        ( activity.transition().ports_input().at (token_on_port.second).name()
+        , token_on_port.first
+        );
+    }
+
+    return activity.transition().module_call()->memory_buffer_size_total (context);
+  }
+}
+
 void GenericDaemon::submit ( const we::layer::id_type& job_id
                            , const we::type::activity_t& activity
                            )
@@ -624,6 +649,7 @@ try
                               , schedule_data
                               , _virtual_memory_api->transfer_costs (activity)
                               , computational_cost
+                              , total_memory_buffer_size (activity)
                               )
          );
 
@@ -1525,7 +1551,7 @@ namespace sdpa
         ( _address
         , events::WorkerRegistrationEvent::Ptr
           ( new events::WorkerRegistrationEvent
-              (_that->name(), capacity, capabilities, true, fhg::util::hostname())
+              (_that->name(), capacity, capabilities, 0, true, fhg::util::hostname())
           )
         );
     }

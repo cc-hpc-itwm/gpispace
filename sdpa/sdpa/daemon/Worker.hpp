@@ -23,6 +23,7 @@ namespace sdpa
       explicit Worker ( const worker_id_t& name
                       , const boost::optional<unsigned int>& cap
                       , const capabilities_set_t&
+                      , unsigned long allocated_shared_memory_size
                       , const bool children_allowed
                       , const std::string& hostname
                       , const fhg::com::p2p::address_t& address
@@ -39,6 +40,8 @@ namespace sdpa
       const std::string hostname() const;
       fhg::com::p2p::address_t address() const;
       boost::optional<unsigned int> capacity() const { lock_type lock(mtx_); return capacity_; }
+      const unsigned long allocated_shared_memory_size() const
+        {return allocated_shared_memory_size_;}
 
       // capabilities
       const capabilities_set_t& capabilities() const;
@@ -73,6 +76,7 @@ namespace sdpa
       worker_id_t name_; //! name of the worker
       boost::optional<unsigned int> capacity_;
       capabilities_set_t capabilities_;
+      unsigned long allocated_shared_memory_size_;
       bool children_allowed_;
       std::string hostname_;
       fhg::com::p2p::address_t address_;
