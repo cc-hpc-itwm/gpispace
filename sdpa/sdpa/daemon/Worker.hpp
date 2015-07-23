@@ -40,7 +40,7 @@ namespace sdpa
       const std::string hostname() const;
       fhg::com::p2p::address_t address() const;
       boost::optional<unsigned int> capacity() const { lock_type lock(mtx_); return capacity_; }
-      const unsigned long allocated_shared_memory_size() const
+      unsigned long allocated_shared_memory_size() const
         {return allocated_shared_memory_size_;}
 
       // capabilities
