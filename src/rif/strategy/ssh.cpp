@@ -30,270 +30,10 @@
 #include <stdio.h>
 #include <ctype.h>
 
+#include <libssh2_wrapper/session.hpp>
+
 namespace
 {
-  //! \todo former ssh options: -T -n
-
-  struct ssh2
-  {
-    ssh2()
-    {
-      if (int rc = libssh2_init (0))
-      {
-        throw std::runtime_error
-          ("libssh2 initialization failed: " + std::to_string (rc));
-      }
-    }
-
-    ~ssh2()
-    {
-      libssh2_exit();
-    }
-
-    struct channel;
-
-    struct session
-    {
-      session ( int socket
-              , std::string const& username
-              , boost::filesystem::path const& public_key
-              , boost::filesystem::path const& private_key
-              )
-        : _socket (socket)
-        , _ (libssh2_session_init())
-      {
-        if (!_)
-        {
-          throw std::runtime_error ("libssh2 session initialization failed");
-        }
-
-        //! \todo do blocking (check if eagain can still happen)
-        libssh2_session_set_blocking (_, 0);
-
-        handshake();
-        authenticate (username, public_key, private_key);
-      }
-      ~session()
-      {
-        libssh2_session_disconnect (_, "");
-        libssh2_session_free (_);
-      }
-
-    private:
-      //! \todo remove when blocking
-      void waitsocket (std::chrono::seconds tout)
-      {
-        fd_set fd;
-        FD_ZERO (&fd);
-
-        FD_SET (_socket, &fd);
-
-        int const dir (libssh2_session_block_directions (_));
-
-        fd_set* writefd (nullptr);
-        fd_set* readfd (nullptr);
-
-        if (dir & LIBSSH2_SESSION_BLOCK_INBOUND)
-        {
-          readfd = &fd;
-        }
-
-        if (dir & LIBSSH2_SESSION_BLOCK_OUTBOUND)
-        {
-          writefd = &fd;
-        }
-
-        struct timeval timeout;
-        timeout.tv_sec = tout.count();
-        timeout.tv_usec = 0;
-
-        fhg::util::syscall::select (_socket + 1, readfd, writefd, NULL, &timeout);
-      }
-
-      void handshake()
-      {
-        int rc;
-        while ( (rc = libssh2_session_handshake (_, _socket))
-               == LIBSSH2_ERROR_EAGAIN
-              )
-        {
-          //! \note retry
-          //! \todo retry counter?
-        }
-
-        if (rc)
-        {
-          throw std::runtime_error
-            ("libssh2: could not handshake SSH session: " + std::to_string (rc));
-        }
-      }
-
-      void authenticate ( std::string const& username
-                        , boost::filesystem::path const& public_key
-                        , boost::filesystem::path const& private_key
-                        )
-      {
-        int rc;
-        while ( (rc = libssh2_userauth_publickey_fromfile
-                    ( _
-                    , username.c_str()
-                    , public_key.string().c_str()
-                    , private_key.string().c_str()
-                    , nullptr
-                    )
-                )
-               == LIBSSH2_ERROR_EAGAIN
-              )
-        {
-          //! \note retry
-          //! \todo retry counter?
-        }
-
-        if (rc)
-        {
-          throw std::runtime_error
-            ("libssh2: could not authenticate SSH session: " + std::to_string (rc));
-        }
-      }
-
-      int _socket;
-      LIBSSH2_SESSION* _;
-
-      friend struct channel;
-    };
-
-    struct channel
-    {
-      channel (ssh2::session& session)
-        : _session (session)
-      {
-        int rc;
-        /* Exec non-blocking on the remove host */
-        while( (_ = libssh2_channel_open_session (_session._)) == nullptr &&
-               (rc = libssh2_session_last_error (_session._, nullptr, nullptr,0))
-               == LIBSSH2_ERROR_EAGAIN
-        )
-        {
-          _session.waitsocket (std::chrono::seconds (1));
-        }
-        if (!_)
-        {
-          throw std::runtime_error
-            ("libssh2: could not open channel: " + std::to_string (rc));
-        }
-      }
-
-      std::string read_from_channel (int stream_id)
-      {
-        std::vector<char> buffer (0x1000);
-        std::size_t bytes_read_total (0);
-
-        while (true)
-        {
-          ssize_t const bytes_read_or_rc
-            ( libssh2_channel_read_ex ( _
-                                      , stream_id
-                                      , buffer.data() + bytes_read_total
-                                      , buffer.size() - bytes_read_total
-                                      )
-            );
-
-          if (bytes_read_or_rc > 0)
-          {
-            if (buffer.size() - bytes_read_total == bytes_read_or_rc)
-            {
-              buffer.resize (buffer.size() * 2);
-            }
-
-            bytes_read_total += bytes_read_or_rc;
-          }
-          //\todo check condition, is == 0 enough?
-          else if ( bytes_read_or_rc == LIBSSH2_ERROR_CHANNEL_CLOSED
-                  || bytes_read_or_rc == 0
-                  )
-          {
-            break;
-          }
-          else if (bytes_read_or_rc == LIBSSH2_ERROR_EAGAIN)
-          {
-            _session.waitsocket (std::chrono::seconds (1));
-          }
-          else
-          {
-            throw std::runtime_error
-              ( "error reading from channel: "
-              + std::to_string (bytes_read_or_rc)
-              );
-          }
-        }
-
-        return {buffer.begin(), buffer.begin() + bytes_read_total};
-      }
-
-      std::tuple<int, std::string, std::string> execute
-        (std::string const& command)
-      {
-        int rc;
-        while ( (rc = libssh2_channel_exec (_, command.c_str()))
-              == LIBSSH2_ERROR_EAGAIN
-              )
-        {
-          _session.waitsocket (std::chrono::seconds (1));
-        }
-
-        if (rc)
-        {
-          throw std::runtime_error
-            ("libssh2: could not execute '" + command + "': " + std::to_string (rc));
-        }
-
-        std::string const stdout (read_from_channel (0));
-        std::string const stderr (read_from_channel (SSH_EXTENDED_DATA_STDERR));
-
-        int const exitcode (libssh2_channel_get_exit_status (_));
-        char* exitsignal (nullptr);
-        if ( (rc = libssh2_channel_get_exit_signal
-               (_, &exitsignal, nullptr, nullptr, nullptr, nullptr, nullptr)
-             )
-           )
-        {
-          throw std::runtime_error
-            ("Could not get exit_signal: " + std::to_string (rc));
-        }
-
-        if (exitsignal)
-        {
-          throw std::runtime_error ("signaled: " + std::string (exitsignal));
-        }
-
-        return std::make_tuple (exitcode, stdout, stderr);
-      }
-
-      ~channel()
-      {
-        int rc;
-        while ( (rc = libssh2_channel_close (_))
-              == LIBSSH2_ERROR_EAGAIN
-              )
-        {
-          _session.waitsocket (std::chrono::seconds (1));
-        }
-
-        if (rc)
-        {
-          throw std::runtime_error
-            ("libssh2: could not close channel: " + std::to_string (rc));
-        }
-
-        libssh2_channel_free (_);
-      }
-
-    private:
-      session& _session;
-      LIBSSH2_CHANNEL* _;
-    };
-  };
-
   std::string resolve (std::string const& hostname)
   {
     struct addrinfo hints;
@@ -385,7 +125,7 @@ namespace fhg
                 boost::filesystem::path public_key ("/u/r/rahn/.ssh/id_rsa.pub");
                 boost::filesystem::path private_key ("/u/r/rahn/.ssh/id_rsa");
 
-                ssh2 _;
+                libssh2::context ssh_context;
 
                 for (std::string const& hostname : hostnames)
                 {
@@ -403,7 +143,7 @@ namespace fhg
                   sshs.emplace_back
                     ( std::async
                         ( std::launch::async
-                        , [hostname, command, &username, &public_key, &private_key]
+                        , [hostname, command, &username, &public_key, &private_key, &ssh_context]
                           {
                             //! \todo connected_socket (scoped)
                             int sock = fhg::util::syscall::socket (AF_INET, SOCK_STREAM, 0);
@@ -418,13 +158,25 @@ namespace fhg
                                 (sock, (struct sockaddr const*)&sin, sizeof sin);
                             }
 
-                            ssh2::session session (sock, username, public_key, private_key);
-                            ssh2::channel channel (session);
-                            auto output (channel.execute (command));
+                            //! \todo former ssh options: -T -n
+                            libssh2::session session (ssh_context, sock, username, {public_key, private_key});
+                            auto output (session.execute (command));
 
-                            if (std::get<0> (output))
+                            if (boost::get<libssh2::session::exit_signal> (&std::get<0> (output)))
                             {
-                              throw std::runtime_error (command + " on " + hostname + " failed: " + std::to_string (std::get<0> (output)) + " out: '" + std::get<1> (output) + "' err: '" + std::get<2> (output) + "'");
+                              throw std::runtime_error
+                                ( command + " on " + hostname + " failed: SIG"
+                                + boost::get<libssh2::session::exit_signal> (std::get<0> (output)) + " out: '"
+                                + std::get<1> (output) + "' err: '" + std::get<2> (output) + "'"
+                                );
+                            }
+                            else if (boost::get<libssh2::session::return_value> (std::get<0> (output)))
+                            {
+                              throw std::runtime_error
+                                ( command + " on " + hostname + " failed: "
+                                + std::to_string (boost::get<libssh2::session::return_value> (std::get<0> (output))) + " out: '"
+                                + std::get<1> (output) + "' err: '" + std::get<2> (output) + "'"
+                                );
                             }
                           }
                         )
