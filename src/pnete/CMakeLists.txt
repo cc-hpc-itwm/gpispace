@@ -178,7 +178,7 @@ install (FILES "plugin/plugin_api.hpp" "plugin/plugin_base.hpp"
   qt4_wrap_cpp (monitor_ui_wrapped_cpps ${monitor_ui_tomoc}
     OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
 
-  fhg_add_runtime_executable (NAME sdpa-gui
+  fhg_add_runtime_executable (NAME gspc-monitor
     SOURCES "monitor.cpp"
             ${monitor_ui_sources}
             ${monitor_ui_wrapped_cpps}
@@ -189,6 +189,7 @@ install (FILES "plugin/plugin_api.hpp" "plugin/plugin_base.hpp"
               Util::Generic
               Util::Qt
               Boost::thread
+              Boost::program_options
               ${QT_LIBRARIES}
   )
   fhg_add_runtime_executable (NAME gspcmonc

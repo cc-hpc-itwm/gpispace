@@ -4,24 +4,43 @@
 #include <fhg/revision.hpp>
 #include <util-generic/print_exception.hpp>
 
+#include <fhg/util/boost/program_options/generic.hpp>
+#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+
+#include <boost/program_options.hpp>
+
 #include <QApplication>
 #include <QTabWidget>
 #include <QtCore/QString>
 
 #include <iostream>
 
+namespace
+{
+  namespace option
+  {
+    namespace po = fhg::util::boost::program_options;
+
+    po::option<po::positive_integral<unsigned short>> const gui_port
+      {"gui-port", "gui port"};
+    po::option<po::positive_integral<unsigned short>> const log_port
+      {"log-port", "log port"};
+  }
+}
+
 int main (int ac, char *av[])
 try
 {
-  if (ac < 2)
-  {
-    std::cerr << "usage: " << av[0] << " gui-port [log-port]" << std::endl;
-    return 1;
-  }
+  boost::program_options::variables_map const vm
+    ( fhg::util::boost::program_options::options ("GPI-Space monitor")
+    . require (option::gui_port)
+    . require (option::log_port)
+    . store_and_notify (ac, av)
+    );
 
   QApplication a (ac, av);
 
-  QApplication::setApplicationName ("sdpa-gui");
+  QApplication::setApplicationName ("gspc-monitor");
   QApplication::setApplicationVersion ( QString (fhg::project_version())
                                       .append (" - ")
                                       .append (fhg::project_revision())
@@ -30,10 +49,11 @@ try
   QApplication::setOrganizationName ("Fraunhofer ITWM");
 
   QTabWidget window;
-  window.addTab ( new fhg::pnete::ui::execution_monitor (QString (av[1]).toUShort())
-                , QObject::tr ("Execution Monitor")
-                );
-  window.addTab ( new log_monitor (ac > 2 ? QString (av[2]).toUShort() : 2438)
+  window.addTab
+    ( new fhg::pnete::ui::execution_monitor (option::gui_port.get_from (vm))
+    , QObject::tr ("Execution Monitor")
+    );
+  window.addTab ( new log_monitor (option::log_port.get_from (vm))
                 , QObject::tr ("Logging")
                 );
   window.show();
