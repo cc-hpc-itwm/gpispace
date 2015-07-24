@@ -89,22 +89,6 @@ namespace gpi
                                       , std::ref (memory_manager)
                                       )
                            );
-
-        for (std::size_t rank (0); rank < _gpi_api.number_of_nodes(); ++rank)
-        {
-          if (_gpi_api.rank() == rank)
-          {
-            continue;
-          }
-
-          m_children.emplace
-            ( m_peer->connect_to_or_use_existing_connection
-                ( fhg::com::host_t (_gpi_api.hostname_of_rank (rank))
-                , fhg::com::port_t
-                    (std::to_string (_gpi_api.communication_port_of_rank (rank)))
-                )
-            );
-        }
       }
 
       topology_t::~topology_t()
@@ -128,6 +112,25 @@ namespace gpi
 
         std::unique_lock<std::mutex> result_list_lock (m_result_mutex);
         m_current_results.clear ();
+
+        if (m_children.empty())
+        {
+          for (std::size_t rank (0); rank < _gpi_api.number_of_nodes(); ++rank)
+          {
+            if (_gpi_api.rank() == rank)
+            {
+              continue;
+            }
+
+            m_children.emplace
+              ( m_peer->connect_to_or_use_existing_connection
+                  ( fhg::com::host_t (_gpi_api.hostname_of_rank (rank))
+                  , fhg::com::port_t
+                      (std::to_string (_gpi_api.communication_port_of_rank (rank)))
+                  )
+              );
+          }
+        }
 
         for (fhg::com::p2p::address_t const& child : m_children)
         {
