@@ -97,8 +97,6 @@ find_package (LibRT REQUIRED QUIET)
 find_package (LibReadline REQUIRED QUIET)
 find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
 find_package (Threads REQUIRED QUIET)
-find_package (asciidoc 8.6.7 REQUIRED QUIET)
-find_package (source_highlite REQUIRED QUIET)
 
 include (${QT_USE_FILE})
 include (CTest)
@@ -109,33 +107,6 @@ include (fhg_test_macros)
 
 macro (fhg_add_runtime_executable)
   extended_add_executable (DONT_APPEND_EXE_SUFFIX INSTALL ${ARGN})
-endmacro()
-
-macro (ADD_ASCIIDOC)
-  set (options)
-  set (one_value_options INPUT OUTPUT BACKEND)
-  set (multi_value_options)
-  set (required_options INPUT OUTPUT BACKEND)
-  parse_arguments_with_unknown (DOC "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
-  set (DOC_TARGET ${DOC_UNPARSED_ARGUMENTS})
-
-  if (ASCIIDOC_FOUND AND SOURCE_HIGHLITE_FOUND)
-    add_custom_command (
-      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}
-      COMMAND ${CMAKE_COMMAND}
-              -DPATH="${SOURCE_HIGHLITE_BINDIR}:${GRAPHVIZ_BIN_DIR}:$ENV{PATH}"
-              -DASCIIDOC="${ASCIIDOC_EXECUTABLE}"
-              -DBACKEND="${DOC_BACKEND}"
-              -DOUTPUT="${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}"
-              -DINPUT="${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}"
-              -P "${CMAKE_SOURCE_DIR}/modules/asciidoc.cmake"
-      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}
-    )
-    add_custom_target (${DOC_TARGET}
-      ALL
-      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}
-    )
-  endif()
 endmacro()
 
 include_directories ("${CMAKE_SOURCE_DIR}/fhglog")
