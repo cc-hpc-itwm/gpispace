@@ -31,11 +31,6 @@ namespace sdpa
 
     }
 
-    const std::string Worker::hostname() const
-    {
-      return hostname_;
-    }
-
     fhg::com::p2p::address_t Worker::address() const
     {
       return address_;

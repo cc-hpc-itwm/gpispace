@@ -37,10 +37,10 @@ namespace sdpa
       double lastTimeServed() {lock_type lock(mtx_); return last_time_served_; }
 
       const worker_id_t &name() const { lock_type lock(mtx_); return name_; }
-      const std::string hostname() const;
+      std::string hostname() const { return hostname_; }
       fhg::com::p2p::address_t address() const;
       boost::optional<unsigned int> capacity() const { lock_type lock(mtx_); return capacity_; }
-      const unsigned long allocated_shared_memory_size() const
+      unsigned long allocated_shared_memory_size() const
         {return allocated_shared_memory_size_;}
 
       // capabilities
