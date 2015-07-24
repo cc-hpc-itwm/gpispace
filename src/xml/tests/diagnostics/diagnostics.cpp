@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE (error_connect_response_with_unknown_to)
 </defun>)EOS")
       % fhg::util::testing::random_identifier()
       % fhg::util::testing::random_identifier()
-      % fhg::util::testing::random_identifier()
+      % fhg::util::testing::random_identifier_without_leading_underscore()
       % to
       ).str()
     );
@@ -178,7 +178,8 @@ BOOST_AUTO_TEST_CASE (error_connect_response_with_unknown_to)
 
 BOOST_AUTO_TEST_CASE (error_connect_response_invalid_signature)
 {
-  std::string const to (fhg::util::testing::random_identifier());
+  std::string const to
+    (fhg::util::testing::random_identifier_without_leading_underscore());
   std::string const name (fhg::util::testing::random_identifier());
 
   std::string const input
@@ -200,7 +201,7 @@ BOOST_AUTO_TEST_CASE (error_connect_response_invalid_signature)
       % name
       % fhg::util::testing::random_identifier()
       % to
-      % fhg::util::testing::random_identifier()
+      % fhg::util::testing::random_identifier_without_leading_underscore()
       ).str()
     );
 
