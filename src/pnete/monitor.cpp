@@ -40,7 +40,7 @@ try
 
   QApplication a (ac, av);
 
-  QApplication::setApplicationName ("sdpa-gui");
+  QApplication::setApplicationName ("gspc-monitor");
   QApplication::setApplicationVersion ( QString (fhg::project_version())
                                       .append (" - ")
                                       .append (fhg::project_revision())
