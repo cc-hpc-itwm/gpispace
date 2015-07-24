@@ -158,7 +158,7 @@ namespace fhg
                                 (sock, (struct sockaddr const*)&sin, sizeof sin);
                             }
 
-                            //! \todo former ssh options: -T -n
+                            //! \todo former ssh options: -n
                             libssh2::session session (ssh_context, sock, username, {public_key, private_key});
                             auto output (session.execute (command));
 
