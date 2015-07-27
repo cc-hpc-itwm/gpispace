@@ -145,37 +145,27 @@ namespace fhg
                         ( std::launch::async
                         , [hostname, command, &username, &public_key, &private_key, &ssh_context]
                           {
-                            //! \todo connected_socket (scoped)
-                            int sock = fhg::util::syscall::socket (AF_INET, SOCK_STREAM, 0);
-
+                            try
                             {
-                              struct sockaddr_in sin;
-                              sin.sin_family = AF_INET;
-                              sin.sin_port = htons (22);
-                              sin.sin_addr.s_addr =
-                                inet_addr (resolve (hostname).data());
-                              fhg::util::syscall::connect
-                                (sock, (struct sockaddr const*)&sin, sizeof sin);
+                              //! \todo connected_socket (scoped)
+                              int sock = fhg::util::syscall::socket (AF_INET, SOCK_STREAM, 0);
+
+                              {
+                                struct sockaddr_in sin;
+                                sin.sin_family = AF_INET;
+                                sin.sin_port = htons (22);
+                                sin.sin_addr.s_addr =
+                                  inet_addr (resolve (hostname).data());
+                                fhg::util::syscall::connect
+                                  (sock, (struct sockaddr const*)&sin, sizeof sin);
+                              }
+
+                              libssh2::session session (ssh_context, sock, username, {public_key, private_key});
+                              session.execute_and_require_success_and_no_output (command);
                             }
-
-                            libssh2::session session (ssh_context, sock, username, {public_key, private_key});
-                            auto output (session.execute (command));
-
-                            if (boost::get<libssh2::session::exit_signal> (&std::get<0> (output)))
+                            catch (...)
                             {
-                              throw std::runtime_error
-                                ( command + " on " + hostname + " failed: SIG"
-                                + boost::get<libssh2::session::exit_signal> (std::get<0> (output)) + " out: '"
-                                + std::get<1> (output) + "' err: '" + std::get<2> (output) + "'"
-                                );
-                            }
-                            else if (boost::get<libssh2::session::return_value> (std::get<0> (output)))
-                            {
-                              throw std::runtime_error
-                                ( command + " on " + hostname + " failed: "
-                                + std::to_string (boost::get<libssh2::session::return_value> (std::get<0> (output))) + " out: '"
-                                + std::get<1> (output) + "' err: '" + std::get<2> (output) + "'"
-                                );
+                              std::throw_with_nested (std::runtime_error (hostname));
                             }
                           }
                         )
