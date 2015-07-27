@@ -31,52 +31,7 @@
 #include <ctype.h>
 
 #include <libssh2_wrapper/session.hpp>
-
-namespace
-{
-  std::string resolve (std::string const& hostname)
-  {
-    struct addrinfo hints;
-
-    memset (&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-
-    struct addrinfo* servinfo {nullptr};
-    struct free_addrinfo_on_scope_exit
-    {
-      free_addrinfo_on_scope_exit (struct addrinfo* addrinfo)
-        : _ (addrinfo)
-      {}
-      ~free_addrinfo_on_scope_exit()
-      {
-        //! \todo move to syscall
-        freeaddrinfo (_);
-      }
-      struct addrinfo* _;
-    } const _ {servinfo};
-
-    //! \todo move to syscall
-    if (int rv = getaddrinfo (hostname.data(), nullptr, &hints , &servinfo))
-    {
-      //! \todo specific exception
-      throw std::runtime_error
-        (std::string ("resolve: getaddrinfo: ") + gai_strerror (rv));
-    }
-
-    for (struct addrinfo* p (servinfo); p != nullptr; p = p->ai_next)
-    {
-      struct sockaddr_in* h
-        (reinterpret_cast<struct sockaddr_in *> (p->ai_addr));
-
-      return inet_ntoa (h->sin_addr);
-    }
-
-    //! \todo specific exception
-    throw std::runtime_error
-      ("resolve: could not get ip for '" + hostname + "'");
-  }
-}
+#include <util-generic/unreachable.hpp>
 
 namespace fhg
 {
@@ -86,25 +41,94 @@ namespace fhg
     {
       namespace ssh
       {
-        template<typename Fun, typename Container>
-          void blocked (Container const& container, Fun&& fun)
+        namespace
         {
-          //! \todo 112 -> parameter
-          std::size_t const block_size (112);
-          std::size_t position (0);
-
-          while (position < container.size())
+          template<typename Fun, typename Container>
+            void blocked (Container const& container, Fun&& fun)
           {
-            std::size_t const count
-              (std::min (block_size, container.size() - position));
+            //! \todo 112 -> parameter
+            std::size_t const block_size (112);
+            std::size_t position (0);
 
-            fun ( Container ( std::next (container.begin(), position)
-                            , std::next (container.begin(), position + count)
-                            )
+            while (position < container.size())
+            {
+              std::size_t const count
+                (std::min (block_size, container.size() - position));
+
+              fun ( Container ( std::next (container.begin(), position)
+                              , std::next (container.begin(), position + count)
+                              )
+                  );
+
+              position += count;
+            }
+          }
+
+          struct socket
+          {
+            socket (std::string const& host, unsigned short port)
+            try
+              : _fd (-1)
+            {
+              ::addrinfo hints;
+              memset (&hints, 0, sizeof hints);
+
+              hints.ai_flags = AI_NUMERICSERV | AI_ADDRCONFIG | AI_V4MAPPED;
+              hints.ai_family = AF_UNSPEC;
+              hints.ai_socktype = SOCK_STREAM;
+
+              std::unique_ptr<::addrinfo, util::syscall::addrinfo_deleter> info
+                ( util::syscall::getaddrinfo
+                    (host.c_str(), std::to_string (port).c_str(), &hints)
                 );
 
-            position += count;
-          }
+              for (::addrinfo* ai (info.get()); ai; ai = ai->ai_next)
+              {
+                try
+                {
+                  _fd = util::syscall::socket ( ai->ai_family
+                                              , ai->ai_socktype
+                                              , ai->ai_protocol
+                                              );
+                  try
+                  {
+                    util::syscall::connect (_fd, ai->ai_addr, ai->ai_addrlen);
+                  }
+                  catch (...)
+                  {
+                    util::syscall::close (_fd);
+                    throw;
+                  }
+
+                  return;
+                }
+                catch (...)
+                {
+                  if (!ai->ai_next)
+                  {
+                    throw;
+                  }
+                }
+              }
+
+              FHG_UTIL_UNREACHABLE
+                ("getaddrinfo either throws or returns a non-empty list");
+            }
+            catch (...)
+            {
+              std::throw_with_nested
+                ( std::runtime_error
+                    ("resolve_and_connect (" + host + ", " + std::to_string (port) + ")")
+                );
+            }
+
+            ~socket()
+            {
+              util::syscall::close (_fd);
+            }
+
+            int _fd;
+          };
         }
 
         void bootstrap ( std::vector<std::string> const& all_hostnames
@@ -121,9 +145,10 @@ namespace fhg
                 std::vector<std::future<void>> sshs;
 
                 //! \todo parameter with default
-                std::string username ("rahn");
-                boost::filesystem::path public_key ("/u/r/rahn/.ssh/id_rsa.pub");
-                boost::filesystem::path private_key ("/u/r/rahn/.ssh/id_rsa");
+                std::string username ("loerwald");
+                unsigned short ssh_port (22);
+                boost::filesystem::path public_key ("/u/l/loerwald/.ssh/fhg.pub");
+                boost::filesystem::path private_key ("/u/l/loerwald/.ssh/fhg");
 
                 libssh2::context ssh_context;
 
@@ -139,34 +164,28 @@ namespace fhg
                       ).str()
                     );
 
-
                   sshs.emplace_back
                     ( std::async
                         ( std::launch::async
-                        , [hostname, command, &username, &public_key, &private_key, &ssh_context]
+                        , [ hostname, command, &username, &public_key
+                          , &private_key, &ssh_context, &ssh_port
+                          ]
                           {
-                            try
-                            {
-                              //! \todo connected_socket (scoped)
-                              int sock = fhg::util::syscall::socket (AF_INET, SOCK_STREAM, 0);
-
-                              {
-                                struct sockaddr_in sin;
-                                sin.sin_family = AF_INET;
-                                sin.sin_port = htons (22);
-                                sin.sin_addr.s_addr =
-                                  inet_addr (resolve (hostname).data());
-                                fhg::util::syscall::connect
-                                  (sock, (struct sockaddr const*)&sin, sizeof sin);
-                              }
-
-                              libssh2::session session (ssh_context, sock, username, {public_key, private_key});
-                              session.execute_and_require_success_and_no_output (command);
-                            }
-                            catch (...)
-                            {
-                              std::throw_with_nested (std::runtime_error (hostname));
-                            }
+                            fhg::util::nest_exceptions<std::runtime_error>
+                              ( [&]
+                                {
+                                  socket const sock (hostname, ssh_port);
+                                  libssh2::session session
+                                    ( ssh_context
+                                    , sock._fd
+                                    , username
+                                    , {public_key, private_key}
+                                    );
+                                  session.execute_and_require_success_and_no_output
+                                    (command);
+                                }
+                              , hostname
+                              );
                           }
                         )
                     );
