@@ -204,6 +204,14 @@ namespace fhg
             ( all_entry_points
             , [&] (std::vector<fhg::rif::entry_point> const& entry_points)
               {
+                //! \todo parameter with default
+                std::string username ("loerwald");
+                unsigned short ssh_port (22);
+                boost::filesystem::path public_key ("/u/l/loerwald/.ssh/fhg.pub");
+                boost::filesystem::path private_key ("/u/l/loerwald/.ssh/fhg");
+
+                libssh2::context ssh_context;
+
                 std::mutex failed_entry_points_guard;
 
                 std::vector<std::future<void>> sshs;
@@ -211,9 +219,7 @@ namespace fhg
                 for (fhg::rif::entry_point const& entry_point : entry_points)
                 {
                   std::string const command
-                    ( ( boost::format ("ssh %1% %2% /bin/kill -TERM %3%")
-                      % "-q -x -T -n -o CheckHostIP=no -o StrictHostKeyChecking=no"
-                      % entry_point.hostname
+                    ( ( boost::format ("/bin/kill -TERM %1%")
                       % entry_point.pid
                       ).str()
                     );
@@ -223,25 +229,34 @@ namespace fhg
                         ( std::launch::async
                         , [ command, entry_point
                           , &failed_entry_points_guard, &failed_entry_points
+                          , &username, &public_key, &private_key, &ssh_context
+                          , &ssh_port
                           ]
                           {
                             fhg::util::nest_exceptions<std::runtime_error>
-                              ([&]()
-                               {
-                                 try
-                                 {
-                                   //! \todo use libssh2
-                                   fhg::util::system_with_blocked_SIGCHLD (command);
-                                 }
-                                 catch (...)
-                                 {
-                                   std::unique_lock<std::mutex> const _
-                                     (failed_entry_points_guard);
-                                   failed_entry_points.emplace_back (entry_point);
+                              ( [&]
+                                {
+                                  try
+                                  {
+                                    socket const sock (entry_point.hostname, ssh_port);
+                                    libssh2::session session
+                                      ( ssh_context
+                                      , sock._fd
+                                      , username
+                                      , {public_key, private_key}
+                                      );
+                                    session.execute_and_require_success_and_no_output
+                                      (command);
+                                  }
+                                  catch (...)
+                                  {
+                                    std::unique_lock<std::mutex> const _
+                                      (failed_entry_points_guard);
+                                    failed_entry_points.emplace_back (entry_point);
 
-                                   throw;
-                                 }
-                               }
+                                    throw;
+                                  }
+                                }
                               , entry_point.hostname
                               );
                           }
