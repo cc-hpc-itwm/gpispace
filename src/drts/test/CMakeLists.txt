@@ -43,3 +43,5 @@ fhg_add_test (scoped_drts.cpp
  REQUIRES_INSTALLATION
  START_SCOPED_RIF
 )
+
+add_subdirectory (client_implementation_with_ostream_logger)

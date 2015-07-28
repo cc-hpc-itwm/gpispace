@@ -78,3 +78,83 @@ namespace drts
 
 #define GSPC_LOG(_severity, _message)                   \
   GSPC_LLOG (_severity, _message, GSPC_LOGGER())
+
+#include <ostream>
+#include <streambuf>
+
+namespace drts
+{
+  namespace worker
+  {
+    class line_by_line_streambuf : public std::streambuf
+    {
+    public:
+      line_by_line_streambuf ( context const* const context
+                             , fhg::log::Level const& severity
+                             , std::string const& file
+                             , std::string const& function
+                             , std::size_t const& line
+                             )
+        : std::streambuf()
+        , _buffer()
+        , _context (context)
+        , _severity (severity)
+        , _file (file)
+        , _function (function)
+        , _line (line)
+      {}
+      ~line_by_line_streambuf()
+      {
+        if (!_buffer.empty())
+        {
+          _context->log (_severity, _file, _function, _line, _buffer);
+        }
+      }
+
+      int_type overflow (int_type c)
+      {
+        _buffer += traits_type::to_char_type (c);
+
+        if (*_buffer.rbegin() == '\n')
+        {
+          _context->log (_severity, _file, _function, _line, _buffer);
+
+          _buffer.clear();
+        }
+
+        return c;
+      }
+
+    private:
+      std::string _buffer;
+      context const* const _context;
+      fhg::log::Level const _severity;
+      std::string const _file;
+      std::string const _function;
+      std::size_t const _line;
+    };
+
+    class ostream : private line_by_line_streambuf
+                  , public std::ostream
+    {
+    public:
+      ostream ( context const* const context
+              , fhg::log::Level const& severity
+              , std::string const& file
+              , std::string const& function
+              , std::size_t const& line
+              )
+        : line_by_line_streambuf (context, severity, file, function, line)
+        , std::ostream (this)
+      {}
+    };
+  }
+}
+
+#define DECLARE_GSPC_OSTREAM(_severity, _name)          \
+  drts::worker::ostream _name ( _pnetc_context          \
+                              , fhg::log::_severity     \
+                              , __FILE__                \
+                              , BOOST_CURRENT_FUNCTION  \
+                              , __LINE__                \
+                              )
