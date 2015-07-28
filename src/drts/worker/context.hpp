@@ -55,17 +55,14 @@ namespace drts
 #include <sstream>
 
 #define GSPC_LLOG(_severity, _message, _logger)         \
-  do                                                    \
-  {                                                     \
-    std::ostringstream message;                         \
-    message << _message;                                \
-    _logger ( fhg::log::_severity                       \
-            , __FILE__                                  \
-            , BOOST_CURRENT_FUNCTION                    \
-            , __LINE__                                  \
-            , message.str()                             \
-            );                                          \
-  } while (0)
+  _logger ( fhg::log::_severity                         \
+          , __FILE__                                    \
+          , BOOST_CURRENT_FUNCTION                      \
+          , __LINE__                                    \
+          , (static_cast<std::ostringstream&>           \
+              (std::ostringstream() << _message)        \
+            ).str()                                     \
+          )
 
 #include <boost/bind.hpp>
 
