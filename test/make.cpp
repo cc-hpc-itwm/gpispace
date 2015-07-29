@@ -39,7 +39,6 @@ namespace test
       << " -i " << (source_directory / (main + ".xpnet"))
       << " -o " << pnet()
       << " --gen-cxxflags=-O3"
-      << " --force-overwrite-file=true"
       ;
 
     fhg::util::system_with_blocked_SIGCHLD (command.str());
