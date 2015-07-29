@@ -17,7 +17,6 @@
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/use.hpp>
-#include <xml/parse/type/link.hpp>
 
 #include <fhg/util/backtracing_exception.hpp>
 

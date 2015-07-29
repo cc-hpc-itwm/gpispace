@@ -5,7 +5,6 @@
 #include <xml/parse/error.hpp>
 #include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/function.hpp>
-#include <xml/parse/type/link.hpp>
 #include <xml/parse/util/valid_name.hpp>
 
 #include <fhg/util/xml.hpp>
@@ -47,7 +46,6 @@ namespace xml
         , const std::list<std::string>& cincludes
         , const std::list<std::string>& ldflags
         , const std::list<std::string>& cxxflags
-        , const std::list<link_type>& links
         , const boost::optional<bool> &pass_context
         )
         : with_position_of_definition (pod)
@@ -64,7 +62,6 @@ namespace xml
         , _cincludes (cincludes)
         , _ldflags (ldflags)
         , _cxxflags (cxxflags)
-        , _links (links)
         , _pass_context (pass_context)
       {
         fhg_assert (!(_port_return && _memory_buffer_return));
@@ -118,10 +115,6 @@ namespace xml
       {
         return _cxxflags;
       }
-      const std::list<link_type>& module_type::links() const
-      {
-        return _links;
-      }
       bool module_type::pass_context () const
       {
         return _pass_context ? *_pass_context : false;
@@ -135,7 +128,6 @@ namespace xml
           && _cincludes == other._cincludes
           && _ldflags == other._ldflags
           && _cxxflags == other._cxxflags
-          && _links == other._links
           ;
       }
 
@@ -162,7 +154,6 @@ namespace xml
           , _cincludes
           , _ldflags
           , _cxxflags
-          , _links
           , _pass_context
           ).make_reference_id();
       }
@@ -233,11 +224,6 @@ namespace xml
               s.open ("cxx");
               s.attr ("flag", flag);
               s.close ();
-            }
-
-          for (const link_type& link : m.links())
-            {
-              ::xml::parse::type::dump::dump (s, link);
             }
 
           if (m.code())

@@ -287,14 +287,12 @@ namespace xml
         std::string code;
         std::list<std::string> ldflags;
         std::list<std::string> cxxflags;
-        std::list<link_type> links;
         boost::filesystem::path path;
 
         fun_info_type ( const std::string & _name
                       , const std::string & _code
                       , const std::list<std::string>& _ldflags
                       , const std::list<std::string>& _cxxflags
-                      , const std::list<link_type>& _links
                       , const boost::filesystem::path & _path
                       );
 
