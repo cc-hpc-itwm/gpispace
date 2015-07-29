@@ -53,40 +53,46 @@ namespace test
     )
       : make (main)
   {
-    std::ostringstream command;
-
-    command
-      << "make -f "
-      << (installation.gspc_home() / "share" / "sdpa" / "make" / "common.mk")
-      << " SDPA_HOME=" << installation.gspc_home()
-      << " BOOST_ROOT=" << installation.boost_root()
-      << " BUILDDIR=" << build_directory()
-      << " MAIN=" << main
-      << " LIB_DESTDIR=" << lib_destdir
-      ;
-
-    for (std::pair<std::string, std::string> const& options : make_options)
     {
-      if (options.first == "LIB_DESTDIR")
+      std::ostringstream command;
+
+      command
+        << "make -f "
+        << (installation.gspc_home() / "share" / "sdpa" / "make" / "common.mk")
+        << " SDPA_HOME=" << installation.gspc_home()
+        << " BUILDDIR=" << build_directory()
+        << " MAIN=" << main
+        ;
+
+      for (std::pair<std::string, std::string> const& options : make_options)
       {
-        throw std::invalid_argument
-          (( boost::format ("Multiple definitions of LIB_DESTDIR:"
-                           " Found %1% as parameter and %2% in the make options"
-                           )
-           % lib_destdir
-           % options.second
-           ).str()
-          );
+        command << " " << options.first << "=" << options.second;
       }
 
-      command << " " << options.first << "=" << options.second;
+      command
+        << " -C " << source_directory
+        << " net gen"
+        ;
+
+      fhg::util::system_with_blocked_SIGCHLD (command.str());
     }
 
-    command
-      << " -C " << source_directory
-      << " net lib install"
-      ;
+    {
+      std::ostringstream command;
 
-     fhg::util::system_with_blocked_SIGCHLD (command.str());
+      command
+        << "make "
+        << " SDPA_HOME=" << installation.gspc_home()
+        << " BOOST_ROOT=" << installation.boost_root()
+        << " LIB_DESTDIR=" << lib_destdir
+        << " -C " << ( make_options.count ("GEN")
+                     ? boost::filesystem::path (make_options.at ("GEN"))
+                     : (build_directory() / "gen")
+                     )
+        << " install"
+        ;
+
+      fhg::util::system_with_blocked_SIGCHLD (command.str());
+    }
   }
 }
