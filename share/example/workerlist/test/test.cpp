@@ -177,7 +177,9 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
     , "workerlist"
     , test::source_directory (vm)
     , { {"LIB_DESTDIR", installation_dir.string()}
-      , {"CXXLIBRARYPATHS", (installation.gspc_home() / "lib").string()}
+      , { "PNETC_OPTS"
+        , "--gen-ldflags=-L" + (installation.gspc_home() / "lib").string()
+        }
       }
     , "net lib install"
     );

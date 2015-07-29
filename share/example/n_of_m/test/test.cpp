@@ -77,8 +77,9 @@ BOOST_AUTO_TEST_CASE (share_example_n_of_m)
     , "n_of_m"
     , test::source_directory (vm)
     , { { "LIB_DESTDIR", installation_dir.string()}
-      , { "CXXLIBRARYPATHS"
-        , (installation.gspc_home() / "libexec" / "sdpa").string()
+      , { "PNETC_OPTS"
+        , "--gen-ldflags=-L"
+          + (installation.gspc_home() / "libexec" / "sdpa").string()
         }
       }
     , "net lib install"

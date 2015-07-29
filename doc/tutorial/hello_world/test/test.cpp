@@ -93,10 +93,10 @@ BOOST_AUTO_TEST_CASE (tutorial_hello_world)
     , "hello_many"
     , test::source_directory (vm)
     , { {"LIB_DESTDIR", installation_dir.string()}
-      , {"CXXLIBRARYPATHS", sum_module_dir.string()}
       , {"PNETC_OPTS"
         , ( boost::format ("'--gen-ldflags=%1%/hello2.o"
                           " --gen-ldflags=%1%/hello_world.o"
+                          " --gen-ldflags=-L%1%"
                           " --gen-cxxflags=-I%2%'"
                           )
           % sum_module_dir
