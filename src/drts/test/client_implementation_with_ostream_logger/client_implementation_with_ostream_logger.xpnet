@@ -1,0 +1,34 @@
+<defun name="client_with_ostream_logger">
+  <in name="implementation" type="string" place="implementation"/>
+  <in name="message" type="string" place="message"/>
+  <net>
+    <place name="implementation" type="string"/>
+    <place name="message" type="string"/>
+
+    <transition name="log_with_ostream">
+      <defun>
+        <in name="implementation" type="string"/>
+        <in name="message" type="string"/>
+        <module name="log_with_ostream"
+                function="log_with_ostream (implementation, message)"
+                pass_context="true"
+                >
+          <cinclude href="drts/test/client_implementation_with_ostream_logger/client_implementation_with_ostream_logger.hpp"/>
+          <cinclude href="util-generic/dynamic_linking.hpp"/>
+          <code><![CDATA[
+
+          DECLARE_GSPC_OSTREAM (INFO, os);
+
+          fhg::util::scoped_dlhandle (implementation)
+            .sym<decltype (client_with_ostream_logger)>
+              ("client_with_ostream_logger")
+                (message, os);
+
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="implementation" place="implementation"/>
+      <connect-in port="message" place="message"/>
+    </transition>
+  </net>
+</defun>
