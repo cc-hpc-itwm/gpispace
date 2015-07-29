@@ -192,7 +192,6 @@ PNET2DOT += $(PNET2DOT_OPTS)
 
 PNETC += $(addprefix -I,$(SDPA_XML_LIB))
 PNETC += --gen-cxxflags=-O3
-PNETC += $(addprefix --gen-ldflags=-L,$(CXXLIBRARYPATHS))
 PNETC += --force-overwrite-file=true
 PNETC += $(PNETC_OPTS)
 
@@ -437,8 +436,6 @@ showconfig:
 	@echo 'DEP               = $(DEP)'
 	@echo 'PATH_LIB          = $(PATH_LIB)'
 	@echo 'LIB_DESTDIR       = $(LIB_DESTDIR)'
-	@echo
-	@echo 'CXXLIBRARYPATHS   = $(CXXLIBRARYPATHS)'
 	@echo
 	@echo 'NOT_STARTS_WITH   = $(NOT_STARTS_WITH)'
 	@echo 'NOT_ENDS_WITH     = $(NOT_ENDS_WITH)'
