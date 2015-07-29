@@ -66,7 +66,7 @@ namespace
       ( installation
       , main
       , test::source_directory (vm)
-      , {{"XML", main + ".xml"}}
+      , std::unordered_map<std::string, std::string> {}
       , "net"
       );
 
