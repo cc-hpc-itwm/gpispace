@@ -25,12 +25,7 @@ namespace test
     friend class make_net;
     friend class make_net_lib_install;
 
-    make ( gspc::installation const&
-         , std::string const& main
-         , boost::filesystem::path const& source_directory
-         , std::unordered_map<std::string, std::string> const& make_options
-         , std::string const& make_targets
-         );
+    make (std::string const& main);
 
     make (make const&) = delete;
     make& operator= (make const&) = delete;
