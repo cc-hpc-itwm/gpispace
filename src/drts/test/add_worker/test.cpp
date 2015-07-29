@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
   gspc::scoped_runtime_system drts
     (vm, installation, "worker:1", rifds.front().entry_points());
 
-  gspc::workflow workflow (make.build_directory() / "add_worker.pnet");
+  gspc::workflow workflow (make.pnet());
   workflow.set_wait_for_output();
 
   boost::asio::io_service io_service;

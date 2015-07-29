@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE (share_example_n_of_m)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
-      ( gspc::workflow (make.build_directory() / "n_of_m.pnet")
+      ( gspc::workflow (make.pnet())
       , { {"m", 25L}
         , {"parallel", 2L}
         , {"cmd"

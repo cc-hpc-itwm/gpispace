@@ -19,7 +19,8 @@ namespace test
              , std::unordered_map<std::string, std::string> const& make_options
              , std::string const& make_targets
              )
-    : _build_directory ( boost::filesystem::temp_directory_path()
+    : _main (main)
+    , _build_directory ( boost::filesystem::temp_directory_path()
                        / boost::filesystem::unique_path()
                        )
   {
@@ -45,5 +46,10 @@ namespace test
       ;
 
     fhg::util::system_with_blocked_SIGCHLD (command.str());
+  }
+
+  boost::filesystem::path make::pnet() const
+  {
+    return build_directory() / (_main + ".pnet");
   }
 }

@@ -130,8 +130,7 @@ namespace share_example_stream_test
       (drts.alloc (size, workflow_name + "_buffer"));
     gspc::client client (drts);
 
-    gspc::workflow workflow
-      (make.build_directory() / (workflow_name + ".pnet"));
+    gspc::workflow workflow (make.pnet());
 
     workflow.set_wait_for_output();
 

@@ -82,7 +82,7 @@ namespace
 
   gspc::client client (drts);
 
-  gspc::workflow workflow (make.build_directory() / (name + ".pnet"));
+  gspc::workflow workflow (make.pnet());
 
   workflow.set_wait_for_output();
 
@@ -260,10 +260,7 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
 
   gspc::client client (drts);
 
-  gspc::workflow workflow
-    ( make.build_directory()
-    / "workflow_response_one_response_waits_while_others_are_made.pnet"
-    );
+  gspc::workflow workflow (make.pnet());
 
   workflow.set_wait_for_output();
 

@@ -123,8 +123,7 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_expr)
     , test::source_directory (vm)
     );
 
-  run_and_check
-    (vm, installation, make.build_directory () / "sum_expr_many.pnet");
+  run_and_check (vm, installation, make.pnet());
 }
 
 BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
@@ -199,5 +198,5 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
       }
     );
 
-  run_and_check (vm, installation, make.build_directory () / "sum_many.pnet");
+  run_and_check (vm, installation, make.pnet());
 }

@@ -19,12 +19,7 @@ namespace test
   class make
   {
   public:
-    //! \todo eliminate, at the moment needed because make install
-    //! does not copy the pnet files
-    boost::filesystem::path build_directory() const
-    {
-      return _build_directory;
-    }
+    boost::filesystem::path pnet() const;
 
   private:
     friend class make_net;
@@ -42,7 +37,13 @@ namespace test
     make (make&&) = delete;
     make& operator= (make&&) = delete;
 
+    std::string const _main;
     fhg::util::temporary_path const _build_directory;
+
+    boost::filesystem::path build_directory() const
+    {
+      return _build_directory;
+    }
   };
 
   class make_net : public make

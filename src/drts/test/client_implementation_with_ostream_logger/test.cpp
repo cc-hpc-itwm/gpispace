@@ -140,10 +140,7 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
-      ( gspc::workflow
-          ( make.build_directory()
-          / "client_implementation_with_ostream_logger.pnet"
-          )
+      ( gspc::workflow (make.pnet())
       , { {"implementation", implementation.string()}
         , {"message", message}
         }

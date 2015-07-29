@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts)
-    . put_and_run ( gspc::workflow (make.build_directory() / "avg_stddev.pnet")
+    . put_and_run ( gspc::workflow (make.pnet())
                   , { {"name_file", data_file.string()}
                     , {"size_file", long (sizeof (long) * num_values)}
                     , {"size_chunk", size_chunk}

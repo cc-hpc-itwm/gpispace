@@ -118,11 +118,7 @@ BOOST_AUTO_TEST_CASE (tutorial_hello_world)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
-      ( gspc::workflow (make.build_directory() / "hello_many.pnet")
-      , { {"in", control}
-        , {"in", control}
-        }
-      )
+        (gspc::workflow (make.pnet()), {{"in", control}, {"in", control}})
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 2);

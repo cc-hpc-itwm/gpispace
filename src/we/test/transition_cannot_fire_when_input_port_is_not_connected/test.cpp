@@ -71,11 +71,7 @@ BOOST_AUTO_TEST_CASE
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
-      ( gspc::workflow ( make.build_directory()
-                       / "transition_with_unconnected_input_port.pnet"
-                       )
-      , {{"i", 0L}}
-      )
+        (gspc::workflow (make.pnet()), {{"i", 0L}})
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 0);

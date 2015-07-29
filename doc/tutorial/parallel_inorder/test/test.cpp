@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE (tutorial_parallel_inorder)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
-      ( gspc::workflow (make.build_directory() / "n_of_m.pnet")
+      ( gspc::workflow (make.pnet())
       , { {"n", 5L}
         , {"c", 5L}
         , {"config", config}

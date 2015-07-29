@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
-      ( gspc::workflow (make.build_directory() / "vmem_1_to_n.pnet")
+      ( gspc::workflow (make.pnet())
       , { {"memory", allocation_data.global_memory_range()}
         , {"outer", 5L}
         , {"inner", 5L}

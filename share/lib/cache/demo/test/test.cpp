@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE (share_lib_cache_demo)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
-      ( gspc::workflow (make.build_directory() / "demo.pnet")
+      ( gspc::workflow (make.pnet())
       , { {"num_slots", 4L}
         , {"num_id", num_id}
         , {"multiplicity", multiplicity}

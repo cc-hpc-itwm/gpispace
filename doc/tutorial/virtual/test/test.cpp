@@ -77,9 +77,7 @@ BOOST_AUTO_TEST_CASE (tutorial_virtual)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
-      ( gspc::workflow (make.build_directory() / "work_and_wait.pnet")
-      , {{"n", 5L}}
-      )
+        (gspc::workflow (make.pnet()), {{"n", 5L}})
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 1);
