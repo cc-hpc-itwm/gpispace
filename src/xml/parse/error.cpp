@@ -183,29 +183,6 @@ namespace xml
           , _path (path)
       { }
 
-      parse_link_prefix::parse_link_prefix ( const std::string& reason
-                                           , const std::string& input
-                                           , const std::size_t& pos
-                                           )
-        : generic ( boost::format ( "could not parse link_prefix [%1%]:"
-                                    " %2%, input was %3%"
-                                  )
-                  % pos
-                  % reason
-                  % input
-                  )
-        , _reason (reason)
-        , _input (input)
-          //        , _pos (pos)
-      {}
-
-      link_prefix_missing::link_prefix_missing (const std::string& key)
-        : generic ( boost::format ("missing binding for key %1% in link prefix")
-                  % key
-                  )
-        , _key (key)
-      {}
-
       unknown_function::unknown_function ( const std::string& fun
                                          , const id::ref::transition& trans
                                          )

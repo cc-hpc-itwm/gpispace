@@ -32,7 +32,6 @@ namespace xml
     namespace state
     {
       typedef std::vector<std::string> gen_param_type;
-      typedef std::vector<std::string> link_prefix_type;
 
       struct type
       {
@@ -52,8 +51,6 @@ namespace xml
         const gen_param_type& gen_cxxflags() const;
         gen_param_type& gen_ldflags();
         gen_param_type& gen_cxxflags();
-        const link_prefix_type& link_prefix() const;
-        const std::string& link_prefix_by_key (const std::string&) const;
 
         const ::xml::parse::type::requirements_type& requirements() const;
 
@@ -292,12 +289,6 @@ namespace xml
 
         std::string _path_to_cpp;
 
-        link_prefix_type _link_prefix;
-
-        mutable std::unordered_map< std::string
-                                  , std::string
-                                  > _link_prefix_by_key;
-        mutable bool _link_prefix_parsed;
         std::vector<std::string> _path_prefixes_to_strip;
 
         std::string _option_search_path;
@@ -348,7 +339,6 @@ namespace xml
         std::string _option_do_file_backup;
 
         std::string _option_path_to_cpp;
-        std::string _option_link_prefix;
         std::string _option_path_prefixes_to_strip;
 
         id::mapper _id_mapper;

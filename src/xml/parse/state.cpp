@@ -128,9 +128,6 @@ namespace xml
         , _do_file_backup (true)
 
         , _path_to_cpp ("")
-        , _link_prefix()
-        , _link_prefix_by_key()
-        , _link_prefix_parsed (false)
 
         , _option_search_path ("search-path,I")
         , _option_gen_ldflags ("gen-ldflags")
@@ -180,7 +177,6 @@ namespace xml
         , _option_do_file_backup ("do-backup")
 
         , _option_path_to_cpp ("path-to-cpp,g")
-        , _option_link_prefix("link-prefix")
         , _option_path_prefixes_to_strip ("path-prefix-to-strip")
 
         , _id_mapper()
@@ -204,69 +200,6 @@ namespace xml
       gen_param_type& type::gen_cxxflags()
       {
         return _gen_cxxflags;
-      }
-
-      const link_prefix_type& type::link_prefix() const
-      {
-        return _link_prefix;
-      }
-
-      const std::string&
-      type::link_prefix_by_key (const std::string& key) const
-      {
-        if (!_link_prefix_parsed)
-        {
-          for (const std::string& kv : _link_prefix)
-          {
-            std::string parsed_key;
-            fhg::util::parse::position_string inp (kv);
-            bool found_eq (false);
-
-            while (!found_eq && !inp.end())
-            {
-              if (*inp == '=')
-              {
-                found_eq = true;
-              }
-              else
-              {
-                parsed_key += *inp;
-              }
-
-              ++inp;
-            }
-
-            if (!parsed_key.size())
-            {
-              throw error::parse_link_prefix ("Missing key", kv, inp.eaten());
-            }
-
-            if (!found_eq)
-            {
-              throw error::parse_link_prefix ("Missing =", kv, inp.eaten());
-            }
-
-            if (inp.end())
-            {
-              throw error::parse_link_prefix ("Missing value", kv, inp.eaten());
-            }
-
-            _link_prefix_by_key[parsed_key] =
-              fhg::util::parse::require::rest (inp);
-          }
-
-          _link_prefix_parsed = true;
-        }
-
-        const std::unordered_map<std::string, std::string>::const_iterator
-          pos (_link_prefix_by_key.find (key));
-
-        if (pos != _link_prefix_by_key.end())
-        {
-          return pos->second;
-        }
-
-        throw error::link_prefix_missing (key);
       }
 
       const ::xml::parse::type::requirements_type& type::requirements() const
@@ -703,10 +636,6 @@ namespace xml
           ( _option_path_to_cpp.c_str()
           , STRINGVAL (path_to_cpp)->implicit_value ("gen")
           , "path for cpp output, empty for no cpp output"
-          )
-          ( _option_link_prefix.c_str()
-          , boost::program_options::value<link_prefix_type>(&_link_prefix)
-          , "prefix for linking, key=value"
           )
           ( _option_path_prefixes_to_strip.c_str()
           , STRINGVECVAL (path_prefixes_to_strip)
