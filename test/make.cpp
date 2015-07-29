@@ -37,6 +37,12 @@ namespace test
            ).str()
           );
       }
+
+      if (make_targets == "net" && !make_options.empty())
+      {
+        throw std::invalid_argument
+          ("make_target 'net' does not support options");
+      }
     }
 
     std::ostringstream command;
