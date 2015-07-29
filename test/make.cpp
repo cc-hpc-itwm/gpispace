@@ -34,13 +34,12 @@ namespace test
     std::ostringstream command;
 
     command
-      << "make -f "
-      << (installation.gspc_home() / "share" / "sdpa" / "make" / "common.mk")
-      << " SDPA_HOME=" << installation.gspc_home()
-      << " BUILDDIR=" << build_directory()
-      << " MAIN=" << main
-      << " -C " << source_directory
-      << " net"
+      << installation.pnet_compiler()
+      << " -I " << installation.workflow_library()
+      << " -i " << (source_directory / (main + ".xpnet"))
+      << " -o " << pnet()
+      << " --gen-cxxflags=-O3"
+      << " --force-overwrite-file=true"
       ;
 
     fhg::util::system_with_blocked_SIGCHLD (command.str());
