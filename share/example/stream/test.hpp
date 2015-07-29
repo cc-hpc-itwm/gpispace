@@ -100,16 +100,15 @@ namespace share_example_stream_test
 
     gspc::installation const installation (vm);
 
-    test::make const make
+    test::make_net_lib_install const make
       ( installation
       , workflow_name
       , test::source_directory (vm)
-      , { {"LIB_DESTDIR", installation_dir.string()}
-        , { "PNETC_OPTS"
+      , installation_dir
+      , { { "PNETC_OPTS"
           , "--gen-cxxflags=-I" + test::source_directory (vm).string()
           }
         }
-      , "net lib install"
       );
 
     gspc::stream::number_of_slots const num_slots

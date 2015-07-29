@@ -79,18 +79,17 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
     (shared_directory / boost::filesystem::unique_path());
   boost::filesystem::path const data_file (_data_file);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "avg_stddev"
     , test::source_directory (vm)
-    , { {"LIB_DESTDIR", installation_dir.string()}
-      , {"DATFILE", data_file.string()}
+    , installation_dir
+    , { {"DATFILE", data_file.string()}
       , {"PNETC_OPTS"
         , "--gen-cxxflags=-I"
         + (test::source_directory (vm) / "include").string()
         }
       }
-    , "net lib install"
     );
 
   boost::filesystem::path const generator

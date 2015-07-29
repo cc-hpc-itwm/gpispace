@@ -156,12 +156,12 @@ BOOST_AUTO_TEST_CASE (share_example_map_transform_file)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "map"
     , test::source_directory (vm)
-    , { {"LIB_DESTDIR", installation_dir.string()}
-      , {"PNETC_OPTS"
+    , installation_dir
+    , { {"PNETC_OPTS"
         , ( boost::format ("'--gen-cxxflags=--std=c++11"
                           " --gen-cxxflags=-I%1%'"
                           )
@@ -169,7 +169,6 @@ BOOST_AUTO_TEST_CASE (share_example_map_transform_file)
           ).str()
         }
       }
-    , "net lib install"
     );
 
   boost::filesystem::path const implementation

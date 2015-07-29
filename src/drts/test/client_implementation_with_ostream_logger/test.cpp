@@ -107,12 +107,12 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "client_implementation_with_ostream_logger"
     , test::source_directory (vm)
-    , {{"LIB_DESTDIR", installation_dir.string()}
-      ,{ "PNETC_OPTS"
+    , installation_dir
+    , {{ "PNETC_OPTS"
        , (boost::format ("'--gen-cxxflags=--std=c++11"
                         " --gen-cxxflags=-I%1%'"
                         )
@@ -121,7 +121,6 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
         ).str()
        }
       }
-    , "net lib install"
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}

@@ -88,12 +88,12 @@ BOOST_AUTO_TEST_CASE (tutorial_hello_world)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "hello_many"
     , test::source_directory (vm)
-    , { {"LIB_DESTDIR", installation_dir.string()}
-      , {"PNETC_OPTS"
+    , installation_dir
+    , { {"PNETC_OPTS"
         , ( boost::format ("'--gen-ldflags=%1%/hello2.o"
                           " --gen-ldflags=%1%/hello_world.o"
                           " --gen-ldflags=-L%1%"
@@ -104,7 +104,6 @@ BOOST_AUTO_TEST_CASE (tutorial_hello_world)
           ).str()
         }
       }
-    , "net lib install"
     );
 
   pnet::type::value::value_type const control {we::type::literal::control()};

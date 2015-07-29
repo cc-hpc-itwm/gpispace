@@ -52,12 +52,10 @@ BOOST_AUTO_TEST_CASE (share_example_concurrent)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net const make
     ( installation
     , "concurrent"
     , test::source_directory (vm)
-    , std::unordered_map<std::string, std::string>()
-    , "net"
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}

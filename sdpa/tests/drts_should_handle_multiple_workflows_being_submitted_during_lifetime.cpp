@@ -60,14 +60,13 @@ BOOST_AUTO_TEST_CASE (sdpa_test_drts_should_handle_multiple_workflows_being_subm
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "selftest"
     , test::source_directory (vm)
-    , { {"LIB_DESTDIR", installation_dir.string()}
-      , {"XML", "selftest.xml"}
+    , installation_dir
+    , { {"XML", "selftest.xml"}
       }
-    , "net lib install"
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}

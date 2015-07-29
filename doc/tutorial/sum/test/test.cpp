@@ -117,12 +117,10 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_expr)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net const make
     ( installation
     , "sum_expr_many"
     , test::source_directory (vm)
-    , std::unordered_map<std::string, std::string> {}
-    , "net"
     );
 
   run_and_check
@@ -185,12 +183,12 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "sum_many"
     , test::source_directory (vm)
-    , { {"LIB_DESTDIR", installation_dir.string()}
-      , { "PNETC_OPTS"
+    , installation_dir
+    , { { "PNETC_OPTS"
         , ( boost::format ("'--gen-ldflags=%1%/sum.o"
                           " --gen-cxxflags=-I%2%'"
                           )
@@ -199,7 +197,6 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
           ).str()
         }
       }
-    , "net lib install"
     );
 
   run_and_check (vm, installation, make.build_directory () / "sum_many.pnet");

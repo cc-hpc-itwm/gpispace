@@ -80,12 +80,10 @@ BOOST_AUTO_TEST_CASE (share_example_split_join)
 
   std::string const main (vm.at (option_main).as<validators::nonempty_string>());
 
-  test::make const make
+  test::make_net const make
     ( installation
     , vm.at (option_main).as<validators::nonempty_string>()
     , test::source_directory (vm)
-    , std::unordered_map<std::string, std::string>()
-    , "net"
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}

@@ -76,12 +76,11 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "vmem_1_to_n"
     , test::source_directory (vm)
-    , {{"LIB_DESTDIR", installation_dir.string()}}
-    , "net lib install"
+    , installation_dir
     );
 
   unsigned long const num_bytes

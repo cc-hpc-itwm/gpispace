@@ -58,12 +58,11 @@ BOOST_AUTO_TEST_CASE (share_example_ping_pong)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , main
     , test::source_directory (vm)
-    , {{"LIB_DESTDIR", installation_dir.string()}}
-    , "net lib install"
+    , installation_dir
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}

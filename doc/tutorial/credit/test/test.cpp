@@ -58,14 +58,13 @@ BOOST_AUTO_TEST_CASE (tutorial_credit)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "work_and_wait"
     , test::source_directory (vm)
-    , { {"LIB_DESTDIR", installation_dir.string()}
-      , {"PNETC_OPTS", "-I.."}
+    , installation_dir
+    , { {"PNETC_OPTS", "-I.."}
       }
-    , "net lib install"
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}

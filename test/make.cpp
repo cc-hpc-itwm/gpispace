@@ -23,36 +23,6 @@ namespace test
                        / boost::filesystem::unique_path()
                        )
   {
-    {
-      std::set<std::string> const supported_targets
-        {"net", "net lib install"};
-
-      if (!supported_targets.count (make_targets))
-      {
-        throw std::invalid_argument
-          (( boost::format
-             ("unsupported make_targets '%1%', supported are {%2%}")
-           % make_targets
-           % fhg::util::join (supported_targets, ", ")
-           ).str()
-          );
-      }
-
-      if (make_targets == "net" && !make_options.empty())
-      {
-        throw std::invalid_argument
-          ("make_target 'net' does not support options");
-      }
-
-      if (  make_targets == "net lib install"
-         && !make_options.count ("LIB_DESTDIR")
-         )
-      {
-        throw std::invalid_argument
-          ("make_targets 'net lib install' requires option 'LIB_DESTDIR'");
-      }
-    }
-
     std::ostringstream command;
 
     command

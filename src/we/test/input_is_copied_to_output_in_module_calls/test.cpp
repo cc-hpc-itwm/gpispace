@@ -60,12 +60,11 @@ BOOST_AUTO_TEST_CASE (we_input_is_copied_to_output_in_module_calls)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "input_is_copied_to_output_in_module_calls"
     , test::source_directory (vm)
-    , {{"LIB_DESTDIR", installation_dir.string()}}
-    , "net lib install"
+    , installation_dir
     );
 
   pnet::type::value::value_type const p {we::type::literal::control()};

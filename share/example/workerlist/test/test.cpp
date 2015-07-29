@@ -34,7 +34,7 @@ namespace
   void run_test ( unsigned long num_worker
                 , boost::program_options::variables_map const& vm
                 , gspc::installation const& installation
-                , test::make const& make
+                , test::make_net_lib_install const& make
                 , boost::filesystem::path const& shared_directory
                 )
   {
@@ -172,16 +172,15 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "workerlist"
     , test::source_directory (vm)
-    , { {"LIB_DESTDIR", installation_dir.string()}
-      , { "PNETC_OPTS"
+    , installation_dir
+    , { { "PNETC_OPTS"
         , "--gen-ldflags=-L" + (installation.gspc_home() / "lib").string()
         }
       }
-    , "net lib install"
     );
 
   run_test (1, vm, installation, make, shared_directory);

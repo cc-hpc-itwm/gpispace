@@ -63,14 +63,13 @@ BOOST_AUTO_TEST_CASE (tutorial_parallel_inorder)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "n_of_m"
     , test::source_directory (vm)
-    , { {"LIB_DESTDIR", installation_dir.string()}
-      , {"PNETC_OPTS", "-I.."}
+    , installation_dir
+    , { {"PNETC_OPTS", "-I.."}
       }
-    , "net lib install"
     );
 
   fhg::util::temporary_file const _output_file
