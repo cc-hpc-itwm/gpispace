@@ -66,6 +66,19 @@ namespace gspc
         );
     }
   }
+  //! \todo configure
+  boost::filesystem::path installation::pnet_compiler() const
+  {
+    return gspc_home() / "bin" / "pnetc";
+  }
+  boost::filesystem::path installation::workflow_library() const
+  {
+    return gspc_home() / "share" / "sdpa" / "xml" / "lib";
+  }
+  boost::filesystem::path installation::boost_root() const
+  {
+    return gspc_home() / "external" / "boost";
+  }
 
   scoped_runtime_system::scoped_runtime_system
       ( boost::program_options::variables_map const& vm
