@@ -84,8 +84,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
     , "avg_stddev"
     , test::source_directory (vm)
     , installation_dir
-    , { {"DATFILE", data_file.string()}
-      , {"PNETC_OPTS"
+    , { {"PNETC_OPTS"
         , "--gen-cxxflags=-I"
         + (test::source_directory (vm) / "include").string()
         }
