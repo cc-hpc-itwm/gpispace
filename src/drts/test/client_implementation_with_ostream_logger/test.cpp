@@ -112,11 +112,14 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
     , "client_implementation_with_ostream_logger"
     , test::source_directory (vm)
     , {{"LIB_DESTDIR", installation_dir.string()}
-      ,{ "CXXINCLUDEPATHS"
-          //! \todo urgh, remove make
-       , test::source_directory (vm).parent_path().parent_path().parent_path().string()
+      ,{ "PNETC_OPTS"
+       , (boost::format ("'--gen-cxxflags=--std=c++11"
+                        " --gen-cxxflags=-I%1%'"
+                        )
+         //! \todo urgh, remove make
+         % test::source_directory (vm).parent_path().parent_path().parent_path()
+        ).str()
        }
-      ,{"PNETC_OPTS", std::string ("--gen-cxxflags=--std=c++11")}
       }
     , "net lib install"
     );

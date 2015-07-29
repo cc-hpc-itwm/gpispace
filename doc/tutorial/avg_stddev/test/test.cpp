@@ -85,7 +85,10 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
     , test::source_directory (vm)
     , { {"LIB_DESTDIR", installation_dir.string()}
       , {"DATFILE", data_file.string()}
-      , {"CXXINCLUDEPATHS", (test::source_directory (vm) / "include").string()}
+      , {"PNETC_OPTS"
+        , "--gen-cxxflags=-I"
+        + (test::source_directory (vm) / "include").string()
+        }
       }
     , "net lib install"
     );

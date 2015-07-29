@@ -161,8 +161,13 @@ BOOST_AUTO_TEST_CASE (share_example_map_transform_file)
     , "map"
     , test::source_directory (vm)
     , { {"LIB_DESTDIR", installation_dir.string()}
-      , {"CXXINCLUDEPATHS", test::source_directory (vm).string()}
-      , {"PNETC_OPTS", std::string ("--gen-cxxflags=--std=c++11")}
+      , {"PNETC_OPTS"
+        , ( boost::format ("'--gen-cxxflags=--std=c++11"
+                          " --gen-cxxflags=-I%1%'"
+                          )
+          % test::source_directory (vm)
+          ).str()
+        }
       }
     , "net lib install"
     );

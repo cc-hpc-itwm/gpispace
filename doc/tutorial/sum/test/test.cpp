@@ -190,9 +190,13 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
     , "sum_many"
     , test::source_directory (vm)
     , { {"LIB_DESTDIR", installation_dir.string()}
-      , {"CXXINCLUDEPATHS", (test::source_directory (vm) / "include").string()}
       , { "PNETC_OPTS"
-        , (boost::format ("--gen-ldflags=%1%/sum.o") % sum_module_dir).str()
+        , ( boost::format ("'--gen-ldflags=%1%/sum.o"
+                          " --gen-cxxflags=-I%2%'"
+                          )
+          % sum_module_dir
+          % (test::source_directory (vm) / "include")
+          ).str()
         }
       }
     , "net lib install"

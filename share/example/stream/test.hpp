@@ -105,7 +105,9 @@ namespace share_example_stream_test
       , workflow_name
       , test::source_directory (vm)
       , { {"LIB_DESTDIR", installation_dir.string()}
-        , {"CXXINCLUDEPATHS", test::source_directory (vm).string()}
+        , { "PNETC_OPTS"
+          , "--gen-cxxflags=-I" + test::source_directory (vm).string()
+          }
         }
       , "net lib install"
       );
