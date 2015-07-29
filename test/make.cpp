@@ -43,6 +43,14 @@ namespace test
         throw std::invalid_argument
           ("make_target 'net' does not support options");
       }
+
+      if (  make_targets == "net lib install"
+         && !make_options.count ("LIB_DESTDIR")
+         )
+      {
+        throw std::invalid_argument
+          ("make_targets 'net lib install' requires option 'LIB_DESTDIR'");
+      }
     }
 
     std::ostringstream command;
