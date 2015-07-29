@@ -52,4 +52,55 @@ namespace test
   {
     return build_directory() / (_main + ".pnet");
   }
+
+  make_net::make_net ( gspc::installation const& installation
+                     , std::string const& main
+                     , boost::filesystem::path const& source_directory
+                     )
+    : make ( installation
+           , main
+           , source_directory
+           , std::unordered_map<std::string, std::string> {}
+           , "net"
+           )
+  {}
+
+  namespace
+  {
+    std::unordered_map<std::string, std::string> add_lib_destdir
+      ( std::unordered_map<std::string, std::string> const& make_options
+      , boost::filesystem::path const& lib_destdir
+      )
+    {
+      std::unordered_map<std::string, std::string> options (make_options);
+      if (!options.emplace ("LIB_DESTDIR", lib_destdir.string()).second)
+      {
+        throw std::invalid_argument
+          (( boost::format ("Multiple definitions of LIB_DESTDIR:"
+                           " Found %1% as parameter and %2% in the make options"
+                           )
+           % lib_destdir
+           % make_options.at ("LIB_DESTDIR")
+           ).str()
+          )
+          ;
+      }
+      return options;
+    }
+  }
+
+  make_net_lib_install::make_net_lib_install
+    ( gspc::installation const& installation
+    , std::string const& main
+    , boost::filesystem::path const& source_directory
+    , boost::filesystem::path const& lib_destdir
+    , std::unordered_map<std::string, std::string> const& make_options
+    )
+      : make ( installation
+             , main
+             , source_directory
+             , add_lib_destdir (make_options, lib_destdir)
+             , "net lib install"
+             )
+  {}
 }
