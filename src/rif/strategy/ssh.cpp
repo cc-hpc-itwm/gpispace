@@ -77,7 +77,7 @@ namespace fhg
               hints.ai_family = AF_UNSPEC;
               hints.ai_socktype = SOCK_STREAM;
 
-              std::unique_ptr<::addrinfo, util::syscall::addrinfo_deleter> info
+              util::syscall::addrinfo_ptr info
                 ( util::syscall::getaddrinfo
                     (host.c_str(), std::to_string (port).c_str(), &hints)
                 );
