@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE (error_connect_response_with_unknown_port)
   </net>
 </defun>)EOS")
       % fhg::util::testing::random_identifier()
-      % fhg::util::testing::random_identifier()
+      % fhg::util::testing::random_identifier_without_leading_underscore()
       % port
       % fhg::util::testing::random_identifier()
       ).str()
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE (error_connect_response_with_unknown_to)
   </net>
 </defun>)EOS")
       % fhg::util::testing::random_identifier()
-      % fhg::util::testing::random_identifier()
+      % fhg::util::testing::random_identifier_without_leading_underscore()
       % fhg::util::testing::random_identifier_without_leading_underscore()
       % to
       ).str()
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE (error_connect_response_invalid_signature)
 </defun>)EOS")
       % fhg::util::testing::random_identifier()
       % name
-      % fhg::util::testing::random_identifier()
+      % fhg::util::testing::random_identifier_without_leading_underscore()
       % to
       % fhg::util::testing::random_identifier_without_leading_underscore()
       ).str()
