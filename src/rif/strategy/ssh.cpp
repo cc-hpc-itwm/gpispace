@@ -82,7 +82,11 @@ namespace fhg
                     (host.c_str(), std::to_string (port).c_str(), &hints)
                 );
 
-              for (::addrinfo* ai (info.get()); ai; ai = ai->ai_next)
+              std::vector<std::exception_ptr> exceptions;
+              for ( ::addrinfo* ai (info.get())
+                  ; ai && _fd == -1
+                  ; ai = ai->ai_next
+                  )
               {
                 try
                 {
@@ -92,7 +96,8 @@ namespace fhg
                                               );
                   try
                   {
-                    util::syscall::connect (_fd, ai->ai_addr, ai->ai_addrlen);
+                    util::syscall::connect
+                      (_fd, ai->ai_addr, ai->ai_addrlen);
                   }
                   catch (...)
                   {
@@ -100,25 +105,23 @@ namespace fhg
                     throw;
                   }
 
-                  return;
+                  break;
                 }
                 catch (...)
                 {
-                  if (!ai->ai_next)
-                  {
-                    throw;
-                  }
+                  exceptions.emplace_back (std::current_exception());
                 }
               }
 
-              FHG_UTIL_UNREACHABLE
-                ("getaddrinfo either throws or returns a non-empty list");
+              util::throw_collected_exceptions (exceptions);
             }
             catch (...)
             {
               std::throw_with_nested
                 ( std::runtime_error
-                    ("resolve_and_connect (" + host + ", " + std::to_string (port) + ")")
+                    ( "resolve_and_connect (" + host + ", "
+                    + std::to_string (port) + ")"
+                    )
                 );
             }
 
