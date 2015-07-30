@@ -63,8 +63,6 @@ BOOST_AUTO_TEST_CASE (share_selftest)
     , "selftest"
     , test::source_directory (vm)
     , installation_dir
-    , { {"XML", "selftest.xml"}
-      }
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}

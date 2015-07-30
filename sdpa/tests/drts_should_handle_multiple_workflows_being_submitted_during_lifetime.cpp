@@ -65,8 +65,6 @@ BOOST_AUTO_TEST_CASE (sdpa_test_drts_should_handle_multiple_workflows_being_subm
     , "selftest"
     , test::source_directory (vm)
     , installation_dir
-    , { {"XML", "selftest.xml"}
-      }
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
