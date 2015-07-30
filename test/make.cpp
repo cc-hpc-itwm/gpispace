@@ -25,23 +25,39 @@ namespace test
     return build_directory() / (_main + ".pnet");
   }
 
-  make_net::make_net ( gspc::installation const& installation
-                     , std::string const& main
-                     , boost::filesystem::path const& source_directory
-                     )
-    : make (main)
+  void make::compile_pnet
+    ( gspc::installation const& installation
+    , boost::filesystem::path const& source_directory
+    , boost::optional<boost::filesystem::path> const& build_directory
+    , option::options const& options
+    ) const
   {
     std::ostringstream command;
 
     command
       << installation.pnet_compiler()
       << " -I " << installation.workflow_library()
-      << " -i " << (source_directory / (main + ".xpnet"))
+      << " -i " << (source_directory / (_main + ".xpnet"))
       << " -o " << pnet()
       << option::gen::cxx_flag ("-O3")
+      << options
       ;
 
+    if (!!build_directory)
+    {
+      command << option::generic ("path-to-cpp", build_directory.get() / "gen");
+    }
+
     fhg::util::system_with_blocked_SIGCHLD (command.str());
+  }
+
+  make_net::make_net ( gspc::installation const& installation
+                     , std::string const& main
+                     , boost::filesystem::path const& source_directory
+                     )
+    : make (main)
+  {
+    compile_pnet (installation, source_directory);
   }
 
   namespace option
@@ -102,21 +118,11 @@ namespace test
     )
       : make (main)
   {
-    {
-      std::ostringstream command;
-
-      command
-        << installation.pnet_compiler()
-        << " -I " << installation.workflow_library()
-        << " -i " << (source_directory / (main + ".xpnet"))
-        << " -o " << pnet()
-        << " -g " << (build_directory() / "gen")
-        << option::gen::cxx_flag ("-O3")
-        << options
-        ;
-
-      fhg::util::system_with_blocked_SIGCHLD (command.str());
-    }
+    compile_pnet ( installation
+                 , source_directory
+                 , build_directory()
+                 , options
+                 );
 
     {
       std::ostringstream command;

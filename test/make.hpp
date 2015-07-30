@@ -8,6 +8,7 @@
 #include <util-generic/temporary_path.hpp>
 
 #include <boost/filesystem.hpp>
+#include <boost/optional.hpp>
 
 #include <list>
 #include <memory>
@@ -15,43 +16,6 @@
 
 namespace test
 {
-  class make_net;
-  class make_net_lib_install;
-
-  class make
-  {
-  public:
-    boost::filesystem::path pnet() const;
-
-  private:
-    friend class make_net;
-    friend class make_net_lib_install;
-
-    make (std::string const& main);
-
-    make (make const&) = delete;
-    make& operator= (make const&) = delete;
-    make (make&&) = delete;
-    make& operator= (make&&) = delete;
-
-    std::string const _main;
-    fhg::util::temporary_path const _build_directory;
-
-    boost::filesystem::path build_directory() const
-    {
-      return _build_directory;
-    }
-  };
-
-  class make_net : public make
-  {
-  public:
-    make_net ( gspc::installation const&
-             , std::string const& main
-             , boost::filesystem::path const& source_directory
-             );
-  };
-
   namespace option
   {
     struct generic : public fhg::util::ostream::modifier
@@ -127,6 +91,50 @@ namespace test
       };
     }
   }
+
+  class make_net;
+  class make_net_lib_install;
+
+  class make
+  {
+  public:
+    boost::filesystem::path pnet() const;
+
+  private:
+    friend class make_net;
+    friend class make_net_lib_install;
+
+    make (std::string const& main);
+
+    make (make const&) = delete;
+    make& operator= (make const&) = delete;
+    make (make&&) = delete;
+    make& operator= (make&&) = delete;
+
+    std::string const _main;
+    fhg::util::temporary_path const _build_directory;
+
+    boost::filesystem::path build_directory() const
+    {
+      return _build_directory;
+    }
+    void compile_pnet
+      ( gspc::installation const&
+      , boost::filesystem::path const& source_directory
+      , boost::optional<boost::filesystem::path> const& build_directory
+        = boost::none
+      , option::options const& = option::options()
+      ) const;
+  };
+
+  class make_net : public make
+  {
+  public:
+    make_net ( gspc::installation const&
+             , std::string const& main
+             , boost::filesystem::path const& source_directory
+             );
+  };
 
   class make_net_lib_install : public make
   {
