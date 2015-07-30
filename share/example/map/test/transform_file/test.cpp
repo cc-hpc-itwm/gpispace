@@ -11,6 +11,7 @@
 #include <drts/virtual_memory.hpp>
 
 #include <test/make.hpp>
+#include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
 #include <test/shared_directory.hpp>
 #include <test/source_directory.hpp>
@@ -129,14 +130,12 @@ BOOST_AUTO_TEST_CASE (share_example_map_transform_file)
   options_description.add (gspc::options::scoped_rifd());
   options_description.add (gspc::options::virtual_memory());
 
-  boost::program_options::variables_map vm;
-  boost::program_options::store
-    ( boost::program_options::command_line_parser
-      ( boost::unit_test::framework::master_test_suite().argc
-      , boost::unit_test::framework::master_test_suite().argv
-      )
-    . options (options_description).run()
-    , vm
+  boost::program_options::variables_map vm
+    ( test::parse_command_line
+        ( boost::unit_test::framework::master_test_suite().argc
+        , boost::unit_test::framework::master_test_suite().argv
+        , options_description
+        )
     );
 
   fhg::util::temporary_path const shared_directory

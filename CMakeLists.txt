@@ -44,6 +44,9 @@ SET (TESTING_RIF_STRATEGY ${required_string_option_sentinel_value}
 if (TESTING_RIF_STRATEGY STREQUAL ${required_string_option_sentinel_value})
   message (FATAL_ERROR "required variable TESTING_RIF_STRATEGY not set")
 endif()
+SET (TESTING_RIF_STRATEGY_PARAMETERS ""
+  CACHE STRING "strategy parameters to use for starting scoped rif daemons"
+)
 
 if (NOT BOOST_ROOT)
   set (BOOST_ROOT $ENV{BOOST_ROOT})

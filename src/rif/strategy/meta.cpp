@@ -38,11 +38,13 @@ namespace fhg
                                  , std::string const&
                                  , unsigned short
                                  , boost::filesystem::path const&
+                                 , std::vector<std::string> const&
                                  )
                           >
                       , std::function
                           < void ( std::vector<fhg::rif::entry_point> const&
                                  , std::vector<fhg::rif::entry_point>&
+                                 , std::vector<std::string> const&
                                  )
                           >
                       >
@@ -88,6 +90,7 @@ namespace fhg
         , std::vector<std::string> const& hostnames_in
         , boost::optional<unsigned short> const& port
         , boost::filesystem::path const& gspc_home
+        , std::vector<std::string> const& parameters
         )
       {
         validate_strategy (strategy);
@@ -130,6 +133,7 @@ namespace fhg
                 , fhg::network::connectable_to_address_string (local_endpoint.address())
                 , local_endpoint.port()
                 , gspc_home / "bin" / "gspc-rifd"
+                , parameters
                 );
             }
           , "bootstrap-" + strategy + " failed"
@@ -151,6 +155,7 @@ namespace fhg
       void teardown ( std::string const& strategy
                     , std::vector<fhg::rif::entry_point> const& entry_points
                     , std::vector<fhg::rif::entry_point>& failed_entry_points
+                    , std::vector<std::string> const& parameters
                     )
       {
         validate_strategy (strategy);
@@ -158,7 +163,8 @@ namespace fhg
         fhg::util::nest_exceptions<std::runtime_error>
           ( [&]
             {
-              strategies.at (strategy).second (entry_points, failed_entry_points);
+              strategies.at (strategy).second
+                (entry_points, failed_entry_points, parameters);
             }
           , "teardown-" + strategy + " failed: "
           );

@@ -7,8 +7,8 @@
 
 #include <boost/program_options.hpp>
 
+#include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
-
 #include <test/shared_directory.hpp>
 
 #include <util-generic/read_lines.hpp>
@@ -29,13 +29,12 @@ BOOST_AUTO_TEST_CASE (scoped_drts_empty_topology)
   options_description.add (gspc::options::scoped_rifd());
   options_description.add (test::options::shared_directory());
 
-  boost::program_options::variables_map vm;
-  boost::program_options::store
-    ( boost::program_options::command_line_parser
-      ( boost::unit_test::framework::master_test_suite().argc
-      , boost::unit_test::framework::master_test_suite().argv
-      ).options (options_description).run()
-    , vm
+  boost::program_options::variables_map vm
+    ( test::parse_command_line
+        ( boost::unit_test::framework::master_test_suite().argc
+        , boost::unit_test::framework::master_test_suite().argv
+        , options_description
+        )
     );
 
   fhg::util::temporary_path const shared_directory
@@ -66,13 +65,12 @@ BOOST_AUTO_TEST_CASE (no_worker_started_on_master)
   options_description.add (gspc::options::scoped_rifd());
   options_description.add (test::options::shared_directory());
 
-  boost::program_options::variables_map vm;
-  boost::program_options::store
-    ( boost::program_options::command_line_parser
-      ( boost::unit_test::framework::master_test_suite().argc
-      , boost::unit_test::framework::master_test_suite().argv
-      ).options (options_description).run()
-    , vm
+  boost::program_options::variables_map vm
+    ( test::parse_command_line
+        ( boost::unit_test::framework::master_test_suite().argc
+        , boost::unit_test::framework::master_test_suite().argv
+        , options_description
+        )
     );
 
   fhg::util::temporary_path const shared_directory
@@ -173,13 +171,12 @@ BOOST_AUTO_TEST_CASE (workers_are_started_on_non_master)
   options_description.add (gspc::options::scoped_rifd());
   options_description.add (test::options::shared_directory());
 
-  boost::program_options::variables_map vm;
-  boost::program_options::store
-    ( boost::program_options::command_line_parser
-      ( boost::unit_test::framework::master_test_suite().argc
-      , boost::unit_test::framework::master_test_suite().argv
-      ).options (options_description).run()
-    , vm
+  boost::program_options::variables_map vm
+    ( test::parse_command_line
+        ( boost::unit_test::framework::master_test_suite().argc
+        , boost::unit_test::framework::master_test_suite().argv
+        , options_description
+        )
     );
 
   fhg::util::temporary_path const shared_directory

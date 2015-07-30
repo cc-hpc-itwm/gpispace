@@ -5,33 +5,17 @@
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/syscall.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
-//! \todo remove
-#include <fhg/util/system_with_blocked_SIGCHLD.hpp>
+#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <fhg/util/boost/program_options/validators/nonempty_file.hpp>
+#include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
+
+#include <libssh2_wrapper/session.hpp>
 
 #include <boost/format.hpp>
 
 #include <future>
 #include <mutex>
 #include <stdexcept>
-
-#include <libssh2.h>
-
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <sys/select.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/time.h>
-#include <netdb.h>
-#include <sys/types.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <stdio.h>
-#include <ctype.h>
-
-#include <libssh2_wrapper/session.hpp>
-#include <util-generic/unreachable.hpp>
 
 namespace fhg
 {
@@ -44,19 +28,25 @@ namespace fhg
         namespace
         {
           template<typename Fun, typename Container>
-            void blocked (Container const& container, Fun&& fun)
+            void blocked ( Container const& container
+                         , boost::optional<std::size_t> const& block_size
+                         , Fun&& fun
+                         )
           {
-            //! \todo 112 -> parameter
-            std::size_t const block_size (112);
             std::size_t position (0);
 
             while (position < container.size())
             {
               std::size_t const count
-                (std::min (block_size, container.size() - position));
+                ( std::min ( block_size.get_value_or (container.size())
+                           , container.size() - position
+                           )
+                );
 
               fun ( Container ( std::next (container.begin(), position)
-                              , std::next (container.begin(), position + count)
+                              , std::next ( container.begin()
+                                          , position + count
+                                          )
                               )
                   );
 
@@ -132,26 +122,138 @@ namespace fhg
 
             int _fd;
           };
-        }
+
+          namespace option
+          {
+            namespace validator = fhg::util::boost::program_options;
+
+            constexpr char const* const block_size {"sshs-at-once"};
+            constexpr char const* const block_size_description
+            {"how many SSH connections to establish at once"};
+            using block_size_type = std::size_t;
+            using block_size_validator
+              = validator::positive_integral<std::size_t>;
+
+            constexpr char const* const ssh_port {"ssh-port"};
+            constexpr char const* const ssh_port_description
+              {"port where sshd listens on remote hosts"};
+            using ssh_port_type = unsigned short;
+            using ssh_port_validator
+              = validator::positive_integral<unsigned short>;
+            constexpr ssh_port_type const ssh_port_default = 22;
+
+            constexpr char const* const username {"ssh-username"};
+            constexpr char const* const username_description
+              {"username to use for remote host"};
+            using username_type = std::string;
+            using username_validator = validator::nonempty_string;
+            username_type const username_default()
+            {
+              char* const user (util::syscall::getenv ("USER"));
+              return user ? user : "";
+            }
+
+            constexpr char const* const public_key {"ssh-public-key"};
+            constexpr char const* const public_key_description
+              {"public key file used for authentication"};
+            using public_key_type = boost::filesystem::path;
+            //! \todo validate?
+            using public_key_validator = public_key_type;
+            public_key_type public_key_default()
+            {
+              char* const home (util::syscall::getenv ("HOME"));
+              return home
+                ? boost::filesystem::path (home) / ".ssh" / "id_rsa.pub"
+                : boost::filesystem::path();
+            }
+
+            constexpr char const* const private_key {"ssh-private-key"};
+            constexpr char const* const private_key_description
+              {"private key file used for authentication"};
+            using private_key_type = boost::filesystem::path;
+            //! \todo validate?
+            using private_key_validator = private_key_type;
+            private_key_type private_key_default()
+            {
+              char* const home (util::syscall::getenv ("HOME"));
+              return home
+                ? boost::filesystem::path (home) / ".ssh" / "id_rsa"
+                : boost::filesystem::path();
+            }
+          }
+
+          //! \todo use fhg::util::boost::program_options::generic
+#define EXTRACT_PARAMETERS(parameters_)                                 \
+          boost::program_options::options_description options;          \
+          options.add_options()                                         \
+            ( option::block_size                                        \
+            , boost::program_options::value<option::block_size_validator>() \
+            , option::block_size_description                            \
+            )                                                           \
+            ( option::ssh_port                                          \
+            , boost::program_options::value<option::ssh_port_validator>() \
+              ->default_value (option::ssh_port_default)->required()    \
+            , option::ssh_port_description                              \
+            )                                                           \
+            ( option::username                                          \
+            , boost::program_options::value<option::username_validator>() \
+              ->default_value (option::username_default())->required()  \
+            , option::username_description                              \
+            )                                                           \
+            ( option::public_key                                        \
+            , boost::program_options::value<option::public_key_validator>()\
+              ->default_value (option::public_key_default())->required() \
+            , option::public_key_description                            \
+            )                                                           \
+            ( option::private_key                                       \
+            , boost::program_options::value<option::private_key_validator>() \
+              ->default_value (option::private_key_default())->required() \
+            , option::private_key_description                           \
+            )                                                           \
+            ;                                                           \
+                                                                        \
+          boost::program_options::variables_map vm;                     \
+          boost::program_options::store                                 \
+            ( boost::program_options::command_line_parser (parameters)  \
+              .options (options).run()                                  \
+            , vm                                                        \
+            );                                                          \
+                                                                        \
+          boost::program_options::notify (vm);                          \
+                                                                        \
+          boost::optional<option::block_size_type> const block_size     \
+            ( vm.count (option::block_size)                             \
+            ? boost::optional<option::block_size_type>                  \
+                (vm.at (option::block_size).as<option::block_size_validator>()) \
+            : boost::none                                               \
+            );                                                          \
+          option::username_type const username                          \
+            (vm.at (option::username).as<option::username_validator>()); \
+          option::ssh_port_type const ssh_port                          \
+            (vm.at (option::ssh_port).as<option::ssh_port_validator>()); \
+          option::public_key_type const public_key                      \
+            (vm.at (option::public_key).as<option::public_key_validator>()); \
+          option::private_key_type const private_key                    \
+            (vm.at (option::private_key).as<option::private_key_validator>())
+
+          }
 
         void bootstrap ( std::vector<std::string> const& all_hostnames
                        , boost::optional<unsigned short> const& port
                        , std::string const& register_host
                        , unsigned short register_port
                        , boost::filesystem::path const& binary
+                       , std::vector<std::string> const& parameters
                        )
         {
+          EXTRACT_PARAMETERS (parameters);
+
           blocked
             ( all_hostnames
+            , block_size
             , [&] (std::vector<std::string> const& hostnames)
               {
                 std::vector<std::future<void>> sshs;
-
-                //! \todo parameter with default
-                std::string username ("loerwald");
-                unsigned short ssh_port (22);
-                boost::filesystem::path public_key ("/u/l/loerwald/.ssh/fhg.pub");
-                boost::filesystem::path private_key ("/u/l/loerwald/.ssh/fhg");
 
                 libssh2::context ssh_context;
 
@@ -201,18 +303,16 @@ namespace fhg
 
         void teardown ( std::vector<fhg::rif::entry_point> const& all_entry_points
                       , std::vector<fhg::rif::entry_point>& failed_entry_points
+                      , std::vector<std::string> const& parameters
                       )
         {
+          EXTRACT_PARAMETERS (parameters);
+
           blocked
             ( all_entry_points
+            , block_size
             , [&] (std::vector<fhg::rif::entry_point> const& entry_points)
               {
-                //! \todo parameter with default
-                std::string username ("loerwald");
-                unsigned short ssh_port (22);
-                boost::filesystem::path public_key ("/u/l/loerwald/.ssh/fhg.pub");
-                boost::filesystem::path private_key ("/u/l/loerwald/.ssh/fhg");
-
                 libssh2::context ssh_context;
 
                 std::mutex failed_entry_points_guard;
