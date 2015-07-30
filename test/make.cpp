@@ -1,13 +1,10 @@
 #include <test/make.hpp>
 
-#include <util-generic/join.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
 #include <boost/format.hpp>
 
-#include <exception>
 #include <sstream>
-#include <stdexcept>
 
 namespace test
 {
