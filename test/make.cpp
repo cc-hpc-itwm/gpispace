@@ -36,9 +36,9 @@ namespace test
 
     command
       << installation.pnet_compiler()
-      << " -I " << installation.workflow_library()
-      << " -i " << (source_directory / (_main + ".xpnet"))
-      << " -o " << pnet()
+      << option::include (installation.workflow_library())
+      << option::generic ("input", source_directory / (_main + ".xpnet"))
+      << option::generic ("output", pnet())
       << option::gen::cxx_flag ("-O3")
       << options
       ;
