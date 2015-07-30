@@ -13,51 +13,58 @@
 
 namespace test
 {
-  make::make (std::string const& main)
+  make::make ( gspc::installation const& installation
+             , std::string const& main
+             , boost::filesystem::path const& source_directory
+             , boost::optional<boost::filesystem::path> const& lib_destdir
+             , option::options const& options
+             )
     : _main (main)
     , _build_directory ( boost::filesystem::temp_directory_path()
                        / boost::filesystem::unique_path()
                        )
-  {}
-
-  boost::filesystem::path make::pnet() const
+    , _pnet ( static_cast<boost::filesystem::path> (_build_directory)
+            / (_main + ".pnet")
+            )
   {
-    return build_directory() / (_main + ".pnet");
-  }
+    boost::filesystem::path const wrapper_directory
+      (static_cast<boost::filesystem::path> (_build_directory) / "gen");
 
-  void make::compile_pnet
-    ( gspc::installation const& installation
-    , boost::filesystem::path const& source_directory
-    , boost::optional<boost::filesystem::path> const& build_directory
-    , option::options const& options
-    ) const
-  {
-    std::ostringstream command;
-
-    command
-      << installation.pnet_compiler()
-      << option::include (installation.workflow_library())
-      << option::generic ("input", source_directory / (_main + ".xpnet"))
-      << option::generic ("output", pnet())
-      << option::gen::cxx_flag ("-O3")
-      << options
-      ;
-
-    if (!!build_directory)
     {
-      command << option::generic ("path-to-cpp", build_directory.get() / "gen");
+      std::ostringstream command;
+
+      command
+        << installation.pnet_compiler()
+        << option::include (installation.workflow_library())
+        << option::generic ("input", source_directory / (_main + ".xpnet"))
+        << option::generic ("output", pnet())
+        << option::gen::cxx_flag ("-O3")
+        << options
+        ;
+
+      if (!!lib_destdir)
+      {
+        command << option::generic ("path-to-cpp", wrapper_directory);
+      }
+
+      fhg::util::system_with_blocked_SIGCHLD (command.str());
     }
 
-    fhg::util::system_with_blocked_SIGCHLD (command.str());
-  }
+    if (!!lib_destdir)
+    {
+      std::ostringstream command;
 
-  make_net::make_net ( gspc::installation const& installation
-                     , std::string const& main
-                     , boost::filesystem::path const& source_directory
-                     )
-    : make (main)
-  {
-    compile_pnet (installation, source_directory);
+      command
+        << "make "
+        << " SDPA_HOME=" << installation.gspc_home()
+        << " BOOST_ROOT=" << installation.boost_root()
+        << " LIB_DESTDIR=" << lib_destdir.get()
+        << " -C " << wrapper_directory
+        << " install"
+        ;
+
+      fhg::util::system_with_blocked_SIGCHLD (command.str());
+    }
   }
 
   namespace option
@@ -106,37 +113,6 @@ namespace test
       library_path::library_path (boost::filesystem::path const& path)
         : ld_flag (boost::format ("'-L %1%'") % path)
       {}
-    }
-  }
-
-  make_net_lib_install::make_net_lib_install
-    ( gspc::installation const& installation
-    , std::string const& main
-    , boost::filesystem::path const& source_directory
-    , boost::filesystem::path const& lib_destdir
-    , option::options const& options
-    )
-      : make (main)
-  {
-    compile_pnet ( installation
-                 , source_directory
-                 , build_directory()
-                 , options
-                 );
-
-    {
-      std::ostringstream command;
-
-      command
-        << "make "
-        << " SDPA_HOME=" << installation.gspc_home()
-        << " BOOST_ROOT=" << installation.boost_root()
-        << " LIB_DESTDIR=" << lib_destdir
-        << " -C " << (build_directory() / "gen")
-        << " install"
-        ;
-
-      fhg::util::system_with_blocked_SIGCHLD (command.str());
     }
   }
 }

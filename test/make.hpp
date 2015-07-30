@@ -98,13 +98,22 @@ namespace test
   class make
   {
   public:
-    boost::filesystem::path pnet() const;
+    boost::filesystem::path const& pnet() const
+    {
+      return _pnet;
+    }
 
   private:
     friend class make_net;
     friend class make_net_lib_install;
 
-    make (std::string const& main);
+    make ( gspc::installation const& installation
+         , std::string const& main
+         , boost::filesystem::path const& source_directory
+         , boost::optional<boost::filesystem::path> const& lib_destdir
+           = boost::none
+         , option::options const& = option::options()
+         );
 
     make (make const&) = delete;
     make& operator= (make const&) = delete;
@@ -113,38 +122,31 @@ namespace test
 
     std::string const _main;
     fhg::util::temporary_path const _build_directory;
-
-    boost::filesystem::path build_directory() const
-    {
-      return _build_directory;
-    }
-    void compile_pnet
-      ( gspc::installation const&
-      , boost::filesystem::path const& source_directory
-      , boost::optional<boost::filesystem::path> const& build_directory
-        = boost::none
-      , option::options const& = option::options()
-      ) const;
+    boost::filesystem::path const _pnet;
   };
 
   class make_net : public make
   {
   public:
-    make_net ( gspc::installation const&
+    make_net ( gspc::installation const& installation
              , std::string const& main
              , boost::filesystem::path const& source_directory
-             );
+             )
+      : make (installation, main, source_directory)
+    {}
   };
 
   class make_net_lib_install : public make
   {
   public:
     make_net_lib_install
-      ( gspc::installation const&
+      ( gspc::installation const& installation
       , std::string const& main
       , boost::filesystem::path const& source_directory
       , boost::filesystem::path const& lib_destdir
-      , option::options const& = option::options()
-      );
+      , option::options const& options = option::options()
+      )
+        : make (installation, main, source_directory, lib_destdir, options)
+    {}
   };
 }
