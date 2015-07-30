@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <test/make.hpp>
 
 #include <util-generic/join.hpp>
