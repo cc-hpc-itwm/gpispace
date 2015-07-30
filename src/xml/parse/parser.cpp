@@ -36,7 +36,6 @@
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/use.hpp>
-#include <xml/parse/type/link.hpp>
 
 #include <xml/parse/util/position.hpp>
 
@@ -1394,7 +1393,6 @@ namespace xml
           ldflags.emplace_back ("-ldrts-context");
         }
         std::list<std::string> cxxflags;
-        std::list<type::link_type> links;
 
         for ( xml_node_type* child (node->first_node())
             ; child
@@ -1419,15 +1417,6 @@ namespace xml
             {
               cxxflags.push_back
                 (required ("module_type", child, "flag", state));
-            }
-            else if (child_name == "link")
-            {
-              links.push_back
-                ( type::link_type
-                  ( required ("module_type", child, "href", state)
-                  , optional (child, "prefix")
-                  )
-                );
             }
             else if (child_name == "code")
             {
@@ -1462,7 +1451,6 @@ namespace xml
           , cincludes
           , ldflags
           , cxxflags
-          , links
           , pass_context
           ).make_reference_id();
       }

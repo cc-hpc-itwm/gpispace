@@ -95,8 +95,12 @@ BOOST_AUTO_TEST_CASE (tutorial_hello_world)
     , { {"LIB_DESTDIR", installation_dir.string()}
       , {"CXXINCLUDEPATHS", (test::source_directory (vm) / "include").string()}
       , {"CXXLIBRARYPATHS", sum_module_dir.string()}
-      , { "PNETC_LINK_PREFIX"
-        , (boost::format ("libdir=%1%") % sum_module_dir).str()
+      , {"PNETC_OPTS"
+        , ( boost::format ("'--gen-ldflags=%1%/hello2.o"
+                          " --gen-ldflags=%1%/hello_world.o'"
+                          )
+          % sum_module_dir
+          ).str()
         }
       }
     , "net lib install"

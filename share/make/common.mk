@@ -195,7 +195,6 @@ PNETC += $(addprefix -I,$(SDPA_XML_LIB))
 PNETC += --gen-cxxflags=-O3
 PNETC += $(addprefix --gen-cxxflags=-I,$(CXXINCLUDEPATHS))
 PNETC += $(addprefix --gen-ldflags=-L,$(CXXLIBRARYPATHS))
-PNETC += $(addprefix --link-prefix ,$(PNETC_LINK_PREFIX))
 PNETC += --force-overwrite-file=true
 PNETC += $(PNETC_OPTS)
 
@@ -449,7 +448,6 @@ showconfig:
 	@echo 'PNET2DOT_OPTS     = $(PNET2DOT_OPTS)'
 	@echo
 	@echo 'PNETC_OPTS        = $(PNETC_OPTS)'
-	@echo 'PNETC_LINK_PREFIX = $(PNETC_LINK_PREFIX)'
 	@echo
 	@echo 'BUILD             = $(BUILD)'
 	@echo 'CLEAN             = $(CLEAN)'
