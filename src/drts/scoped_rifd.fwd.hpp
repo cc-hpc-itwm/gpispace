@@ -12,4 +12,5 @@ namespace gspc
 
   class scoped_rifd;
   class scoped_rifds;
+  class rifds;
 }

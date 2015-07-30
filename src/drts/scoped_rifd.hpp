@@ -35,8 +35,7 @@ namespace gspc
       strategy (boost::program_options::variables_map const&);
 
     private:
-      friend class ::gspc::scoped_rifds;
-      friend class ::gspc::scoped_rifd;
+      friend class ::gspc::rifds;
 
       PIMPL (strategy);
     };
@@ -47,7 +46,7 @@ namespace gspc
       hostnames (std::vector<std::string> const&);
 
     private:
-      friend class ::gspc::scoped_rifds;
+      friend class ::gspc::rifds;
 
       PIMPL (hostnames);
     };
@@ -65,14 +64,34 @@ namespace gspc
       port (boost::program_options::variables_map const&);
 
     private:
-      friend class ::gspc::scoped_rifds;
-      friend class ::gspc::scoped_rifd;
+      friend class ::gspc::rifds;
 
       PIMPL (port);
     };
   }
 
-  class scoped_rifd : boost::noncopyable
+  class rifds : boost::noncopyable
+  {
+  public:
+    rifds ( rifd::strategy const&
+          , rifd::port const&
+          , installation const&
+          );
+
+    std::vector<std::string> hosts() const;
+
+    rifd_entry_points bootstrap (rifd::hostnames const&);
+    std::vector<std::string> teardown (rifd::hostnames const&);
+    std::vector<std::string> teardown();
+
+    PIMPL (rifds);
+
+  private:
+    friend class scoped_rifd;
+    friend class scoped_rifds;
+  };
+
+  class scoped_rifd : public rifds
   {
   public:
     scoped_rifd ( rifd::strategy const&
@@ -80,12 +99,11 @@ namespace gspc
                 , rifd::port const&
                 , installation const&
                 );
-
+    ~scoped_rifd(); //! \todo report the failed entry points
     rifd_entry_point entry_point() const;
-
-    PIMPL (scoped_rifd);
   };
-  class scoped_rifds : boost::noncopyable
+
+  class scoped_rifds : public rifds
   {
   public:
     scoped_rifds ( rifd::strategy const&
@@ -93,12 +111,7 @@ namespace gspc
                  , rifd::port const&
                  , installation const&
                  );
-
+    ~scoped_rifds(); //! \todo report the failed entry points
     rifd_entry_points entry_points() const;
-
-    PIMPL (scoped_rifds);
-
-  private:
-    friend class scoped_rifd;
   };
 }
