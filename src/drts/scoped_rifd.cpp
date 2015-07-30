@@ -11,6 +11,8 @@
 
 #include <rif/strategy/meta.hpp>
 
+#include <boost/range/adaptor/map.hpp>
+
 namespace gspc
 {
   namespace rifd
@@ -58,13 +60,13 @@ namespace gspc
     {
       //! \todo somehow report the failed teardown and how to get rid
       //! of left-overs (see #482 Clean shutdown binary)
-      std::vector<fhg::rif::entry_point> failed_entry_points;
+      std::unordered_map<std::string, fhg::rif::entry_point> failed_entry_points;
       fhg::rif::strategy::teardown
         (_strategy, _entry_points, failed_entry_points);
     }
 
     std::string _strategy;
-    std::vector<fhg::rif::entry_point> _entry_points;
+    std::unordered_map<std::string, fhg::rif::entry_point> _entry_points;
   };
 
   scoped_rifds::scoped_rifds ( rifd::strategy const& strategy
@@ -84,7 +86,9 @@ namespace gspc
 
   rifd_entry_points scoped_rifds::entry_points() const
   {
-    return {new rifd_entry_points::implementation (_->_entry_points)};
+    return { new rifd_entry_points::implementation
+               (_->_entry_points | boost::adaptors::map_values)
+           };
   }
 
   struct scoped_rifd::implementation : public scoped_rifds::implementation
@@ -115,6 +119,6 @@ namespace gspc
 
   rifd_entry_point scoped_rifd::entry_point() const
   {
-    return {new rifd_entry_point::implementation (_->_entry_points.front())};
+    return {new rifd_entry_point::implementation (_->_entry_points.begin()->second)};
   }
 }

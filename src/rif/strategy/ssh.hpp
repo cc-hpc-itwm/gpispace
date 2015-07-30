@@ -10,6 +10,8 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
 
+#include <unordered_map>
+
 namespace fhg
 {
   namespace rif
@@ -24,8 +26,8 @@ namespace fhg
                        , unsigned short register_port
                        , boost::filesystem::path const& binary
                        );
-        void teardown ( std::vector<fhg::rif::entry_point> const& entry_points
-                      , std::vector<fhg::rif::entry_point>& failed_entry_points
+        void teardown ( std::unordered_map<std::string, fhg::rif::entry_point> const& entry_points
+                      , std::unordered_map<std::string, fhg::rif::entry_point>& failed_entry_points
                       );
       }
     }

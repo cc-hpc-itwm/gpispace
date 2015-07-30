@@ -41,8 +41,8 @@ namespace fhg
                                  )
                           >
                       , std::function
-                          < void ( std::vector<fhg::rif::entry_point> const&
-                                 , std::vector<fhg::rif::entry_point>&
+                          < void ( std::unordered_map<std::string, fhg::rif::entry_point> const&
+                                 , std::unordered_map<std::string, fhg::rif::entry_point>&
                                  )
                           >
                       >
@@ -83,7 +83,7 @@ namespace fhg
         }
       }
 
-      std::vector<fhg::rif::entry_point> bootstrap
+      std::unordered_map<std::string, fhg::rif::entry_point> bootstrap
         ( std::string const& strategy
         , std::vector<std::string> const& hostnames_in
         , boost::optional<unsigned short> const& port
@@ -96,7 +96,7 @@ namespace fhg
 
         std::mutex entry_points_guard;
         std::condition_variable entry_point_added;
-        std::vector<fhg::rif::entry_point> entry_points;
+        std::unordered_map<std::string, fhg::rif::entry_point> entry_points;
 
         boost::asio::io_service io_service;
 
@@ -106,11 +106,13 @@ namespace fhg
         fhg::rpc::service_handler<bootstrap_callback> const register_service
             ( service_dispatcher
             , [&entry_points, &entry_points_guard, &entry_point_added]
-                (fhg::rif::entry_point const& entry_point)
+                ( std::string const& key
+                , fhg::rif::entry_point const& entry_point
+                )
               {
                 {
                   std::unique_lock<std::mutex> const _ (entry_points_guard);
-                  entry_points.emplace_back (entry_point);
+                  entry_points.emplace (key, entry_point);
                 }
                 entry_point_added.notify_one();
               }
@@ -149,8 +151,8 @@ namespace fhg
         return entry_points;
       }
       void teardown ( std::string const& strategy
-                    , std::vector<fhg::rif::entry_point> const& entry_points
-                    , std::vector<fhg::rif::entry_point>& failed_entry_points
+                    , std::unordered_map<std::string, fhg::rif::entry_point> const& entry_points
+                    , std::unordered_map<std::string, fhg::rif::entry_point>& failed_entry_points
                     )
       {
         validate_strategy (strategy);

@@ -33,13 +33,16 @@ namespace fhg
           {
             std::string const command
               ( ( boost::format
-                    ("ssh %1% %2% %3% %4% --register-host %5% --register-port %6%")
+                    ("ssh %1% %2% %3% %4% --register-host %5% --register-port %6%"
+                    " --register-key %7%"
+                    )
                 % "-q -x -T -n -o CheckHostIP=no -o StrictHostKeyChecking=no"
                 % hostname
                 % binary
                 % (port ? "--port " + std::to_string (*port) : "")
                 % register_host
                 % register_port
+                % hostname
                 ).str()
               );
 
@@ -63,21 +66,24 @@ namespace fhg
           fhg::util::wait_and_collect_exceptions (sshs);
         }
 
-        void teardown ( std::vector<fhg::rif::entry_point> const& entry_points
-                      , std::vector<fhg::rif::entry_point>& failed_entry_points
-                      )
+        void teardown
+          ( std::unordered_map<std::string, fhg::rif::entry_point> const& entry_points
+          , std::unordered_map<std::string, fhg::rif::entry_point>& failed_entry_points
+          )
         {
           std::mutex failed_entry_points_guard;
 
           std::vector<std::future<void>> sshs;
 
-          for (fhg::rif::entry_point const& entry_point : entry_points)
+          for ( std::pair<std::string, fhg::rif::entry_point> const& entry_point
+              : entry_points
+              )
           {
             std::string const command
               ( ( boost::format ("ssh %1% %2% /bin/kill -TERM %3%")
                 % "-q -x -T -n -o CheckHostIP=no -o StrictHostKeyChecking=no"
-                % entry_point.hostname
-                % entry_point.pid
+                % entry_point.second.hostname
+                % entry_point.second.pid
                 ).str()
               );
 
@@ -99,12 +105,12 @@ namespace fhg
                            {
                              std::unique_lock<std::mutex> const _
                                (failed_entry_points_guard);
-                             failed_entry_points.emplace_back (entry_point);
+                             failed_entry_points.emplace (entry_point);
 
                              throw;
                            }
                          }
-                        , entry_point.hostname
+                        , entry_point.first
                         );
                     }
                   )

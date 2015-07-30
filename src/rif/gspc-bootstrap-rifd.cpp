@@ -78,7 +78,7 @@ try
       );
   }
 
-  for ( fhg::rif::entry_point const& entry_point
+  for ( std::pair<std::string, fhg::rif::entry_point> const& entry_point
       : fhg::rif::strategy::bootstrap
           ( strategy
           , fhg::util::read_lines
@@ -98,7 +98,7 @@ try
           )
       )
   {
-    std::cout << entry_point << '\n';
+    std::cout << entry_point.first << ' ' << entry_point.second << '\n';
   }
 }
 catch (...)

@@ -65,16 +65,28 @@ try
       );
   }
 
-  std::vector<std::string> const lines
-    ( fhg::util::read_lines
-        ( vm.at (option::entry_points_file)
-        . as<fhg::util::boost::program_options::existing_path>()
-        )
-    );
-  std::vector<fhg::rif::entry_point> const entry_points
-    (lines.begin(), lines.end());
+  std::unordered_map<std::string, fhg::rif::entry_point> entry_points;
 
-  std::vector<fhg::rif::entry_point> failed_entry_points;
+  for ( std::string line
+      : fhg::util::read_lines
+          ( vm.at (option::entry_points_file)
+          . as<fhg::util::boost::program_options::existing_path>()
+          )
+      )
+  {
+    std::string::size_type const pos (line.find_first_of (' '));
+
+    if (pos == std::string::npos)
+    {
+      std::logic_error ("Failed to parse entry_points_file");
+    }
+
+    entry_points.emplace ( line.substr (0, pos)
+                         , line.substr (pos + 1, std::string::npos)
+                         );
+  }
+
+  std::unordered_map<std::string, fhg::rif::entry_point> failed_entry_points;
 
   try
   {
@@ -82,9 +94,11 @@ try
   }
   catch (...)
   {
-    for (fhg::rif::entry_point const& entry_point : failed_entry_points)
+    for ( std::pair<std::string, fhg::rif::entry_point> const& entry_point
+        : failed_entry_points
+        )
     {
-      std::cout << entry_point << '\n';
+      std::cout << entry_point.first << ' ' << entry_point.second << '\n';
     }
 
     throw;
