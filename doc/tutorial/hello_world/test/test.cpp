@@ -93,17 +93,13 @@ BOOST_AUTO_TEST_CASE (tutorial_hello_world)
     , "hello_many"
     , test::source_directory (vm)
     , installation_dir
-    , { {"PNETC_OPTS"
-        , ( boost::format ("'--gen-ldflags=%1%/hello2.o"
-                          " --gen-ldflags=%1%/hello_world.o"
-                          " --gen-ldflags=-L%1%"
-                          " --gen-cxxflags=-I%2%'"
-                          )
-          % sum_module_dir
-          % (test::source_directory (vm) / "include")
-          ).str()
-        }
-      }
+    , test::option::options()
+    . add (new test::option::gen::link (sum_module_dir / "hello2.o"))
+    . add (new test::option::gen::link (sum_module_dir / "hello_world.o"))
+    . add (new test::option::gen::library_path (sum_module_dir))
+    . add (new test::option::gen::include
+            (test::source_directory (vm) / "include")
+          )
     );
 
   pnet::type::value::value_type const control {we::type::literal::control()};

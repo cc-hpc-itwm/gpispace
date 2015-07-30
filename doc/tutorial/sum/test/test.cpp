@@ -187,15 +187,11 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
     , "sum_many"
     , test::source_directory (vm)
     , installation_dir
-    , { { "PNETC_OPTS"
-        , ( boost::format ("'--gen-ldflags=%1%/sum.o"
-                          " --gen-cxxflags=-I%2%'"
-                          )
-          % sum_module_dir
-          % (test::source_directory (vm) / "include")
-          ).str()
-        }
-      }
+    , test::option::options()
+    . add (new test::option::gen::link (sum_module_dir / "sum.o"))
+    . add (new test::option::gen::include
+            (test::source_directory (vm) / "include")
+          )
     );
 
   run_and_check (vm, installation, make.pnet());

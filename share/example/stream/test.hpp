@@ -105,10 +105,8 @@ namespace share_example_stream_test
       , workflow_name
       , test::source_directory (vm)
       , installation_dir
-      , { { "PNETC_OPTS"
-          , "--gen-cxxflags=-I" + test::source_directory (vm).string()
-          }
-        }
+      , test::option::options()
+      . add (new test::option::gen::include (test::source_directory (vm)))
       );
 
     gspc::stream::number_of_slots const num_slots

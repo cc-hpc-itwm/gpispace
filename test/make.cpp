@@ -38,10 +38,59 @@ namespace test
       << " -I " << installation.workflow_library()
       << " -i " << (source_directory / (main + ".xpnet"))
       << " -o " << pnet()
-      << " --gen-cxxflags=-O3"
+      << option::gen::cxx_flag ("-O3")
       ;
 
     fhg::util::system_with_blocked_SIGCHLD (command.str());
+  }
+
+  namespace option
+  {
+    generic::generic (std::string const& key, char const* const value)
+      : generic (key, std::string (value))
+    {}
+    generic::generic (std::string const& key, std::string const& value)
+      : _key (key)
+      , _value (value)
+    {}
+    generic::generic (std::string const& key, boost::format const& format)
+      : generic (key, format.str())
+    {}
+    generic::generic ( std::string const& key
+                     , boost::filesystem::path const& path
+                     )
+      : generic (key, boost::format ("%1%") % path)
+    {}
+    std::ostream& generic::operator() (std::ostream& os) const
+    {
+      //! \todo quoting
+      return os << " --" << _key << "=" << _value ;
+    }
+    std::ostream& options::operator() (std::ostream& os) const
+    {
+      for (auto&& option : _options)
+      {
+        os << *option;
+      }
+
+      return os;
+    }
+
+    namespace gen
+    {
+      cxx11::cxx11()
+        : cxx_flag ("--std=c++11")
+      {}
+      include::include (boost::filesystem::path const& path)
+        : cxx_flag (boost::format ("'-I %1%'") % path)
+      {}
+      link::link (boost::filesystem::path const& path)
+        : ld_flag (path.string())
+      {}
+      library_path::library_path (boost::filesystem::path const& path)
+        : ld_flag (boost::format ("'-L %1%'") % path)
+      {}
+    }
   }
 
   make_net_lib_install::make_net_lib_install
@@ -49,7 +98,7 @@ namespace test
     , std::string const& main
     , boost::filesystem::path const& source_directory
     , boost::filesystem::path const& lib_destdir
-    , std::unordered_map<std::string, std::string> const& make_options
+    , option::options const& options
     )
       : make (main)
   {
@@ -57,21 +106,13 @@ namespace test
       std::ostringstream command;
 
       command
-        << "make -f "
-        << (installation.gspc_home() / "share" / "sdpa" / "make" / "common.mk")
-        << " SDPA_HOME=" << installation.gspc_home()
-        << " BUILDDIR=" << build_directory()
-        << " MAIN=" << main
-        ;
-
-      for (std::pair<std::string, std::string> const& options : make_options)
-      {
-        command << " " << options.first << "=" << options.second;
-      }
-
-      command
-        << " -C " << source_directory
-        << " net gen"
+        << installation.pnet_compiler()
+        << " -I " << installation.workflow_library()
+        << " -i " << (source_directory / (main + ".xpnet"))
+        << " -o " << pnet()
+        << " -g " << (build_directory() / "gen")
+        << option::gen::cxx_flag ("-O3")
+        << options
         ;
 
       fhg::util::system_with_blocked_SIGCHLD (command.str());
@@ -85,10 +126,7 @@ namespace test
         << " SDPA_HOME=" << installation.gspc_home()
         << " BOOST_ROOT=" << installation.boost_root()
         << " LIB_DESTDIR=" << lib_destdir
-        << " -C " << ( make_options.count ("GEN")
-                     ? boost::filesystem::path (make_options.at ("GEN"))
-                     : (build_directory() / "gen")
-                     )
+        << " -C " << (build_directory() / "gen")
         << " install"
         ;
 

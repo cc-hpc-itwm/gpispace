@@ -84,11 +84,10 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
     , "avg_stddev"
     , test::source_directory (vm)
     , installation_dir
-    , { {"PNETC_OPTS"
-        , "--gen-cxxflags=-I"
-        + (test::source_directory (vm) / "include").string()
-        }
-      }
+    , test::option::options()
+    . add (new test::option::gen::include
+            (test::source_directory (vm) / "include")
+          )
     );
 
   boost::filesystem::path const generator

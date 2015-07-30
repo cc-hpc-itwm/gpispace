@@ -68,8 +68,8 @@ namespace
       , "n_of_m"
       , test::source_directory (vm)
       , installation_dir
-      , { {"PNETC_OPTS", "-I.."}
-      }
+      , test::option::options()
+      . add (new test::option::include (test::source_directory (vm) / ".."))
       );
 
     pnet::type::value::value_type config;

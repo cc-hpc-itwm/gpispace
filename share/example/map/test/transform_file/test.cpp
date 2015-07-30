@@ -161,14 +161,9 @@ BOOST_AUTO_TEST_CASE (share_example_map_transform_file)
     , "map"
     , test::source_directory (vm)
     , installation_dir
-    , { {"PNETC_OPTS"
-        , ( boost::format ("'--gen-cxxflags=--std=c++11"
-                          " --gen-cxxflags=-I%1%'"
-                          )
-          % test::source_directory (vm)
-          ).str()
-        }
-      }
+    , test::option::options()
+    . add (new test::option::gen::cxx11())
+    . add (new test::option::gen::include (test::source_directory (vm)))
     );
 
   boost::filesystem::path const implementation

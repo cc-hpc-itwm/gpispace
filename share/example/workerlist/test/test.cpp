@@ -174,10 +174,8 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
     , "workerlist"
     , test::source_directory (vm)
     , installation_dir
-    , { { "PNETC_OPTS"
-        , "--gen-ldflags=-L" + (installation.gspc_home() / "lib").string()
-        }
-      }
+    , test::option::options()
+    . add (new test::option::gen::library_path (installation.gspc_home() / "lib"))
     );
 
   run_test (1, vm, installation, make, shared_directory);

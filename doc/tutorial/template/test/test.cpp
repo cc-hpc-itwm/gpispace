@@ -63,8 +63,8 @@ BOOST_AUTO_TEST_CASE (tutorial_template)
     , "work_and_wait"
     , test::source_directory (vm)
     , installation_dir
-    , { {"PNETC_OPTS", "-I.."}
-      }
+    , test::option::options()
+    . add (new test::option::include (test::source_directory (vm) / ".."))
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}

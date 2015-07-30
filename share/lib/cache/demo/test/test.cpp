@@ -65,11 +65,10 @@ BOOST_AUTO_TEST_CASE (share_lib_cache_demo)
     , "demo"
     , test::source_directory (vm)
     , installation_dir
-    , { {"PNETC_OPTS", ( boost::format ("-I%1%")
-                       % (installation.gspc_home() / "share" / "sdpa" / "xml")
-                       ).str()
-        }
-      }
+    , test::option::options()
+    . add (new test::option::include
+             (installation.gspc_home() / "share" / "sdpa" / "xml")
+          )
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}

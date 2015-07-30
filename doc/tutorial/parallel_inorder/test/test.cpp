@@ -68,8 +68,8 @@ BOOST_AUTO_TEST_CASE (tutorial_parallel_inorder)
     , "n_of_m"
     , test::source_directory (vm)
     , installation_dir
-    , { {"PNETC_OPTS", "-I.."}
-      }
+    , test::option::options()
+    . add (new test::option::include (test::source_directory (vm) / ".."))
     );
 
   fhg::util::temporary_file const _output_file
