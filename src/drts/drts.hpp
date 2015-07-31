@@ -49,9 +49,6 @@ namespace gspc
     {
       return _gspc_home;
     }
-    boost::filesystem::path pnet_compiler() const;
-    boost::filesystem::path workflow_library() const;
-    boost::filesystem::path boost_root() const;
 
   private:
     boost::filesystem::path const _gspc_home;

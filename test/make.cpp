@@ -8,6 +8,22 @@
 
 namespace test
 {
+  //! \todo configure
+  boost::filesystem::path pnet_compiler (gspc::installation const& installation)
+  {
+    return installation.gspc_home() / "bin" / "pnetc";
+  }
+  boost::filesystem::path workflow_library
+    (gspc::installation const& installation)
+  {
+    return installation.gspc_home() / "share" / "sdpa" / "xml" / "lib";
+  }
+  boost::filesystem::path boost_root
+    (gspc::installation const& installation)
+  {
+    return installation.gspc_home() / "external" / "boost";
+  }
+
   make::make ( gspc::installation const& installation
              , std::string const& main
              , boost::filesystem::path const& source_directory
@@ -29,8 +45,8 @@ namespace test
       std::ostringstream command;
 
       command
-        << installation.pnet_compiler()
-        << option::include (installation.workflow_library())
+        << pnet_compiler (installation)
+        << option::include (workflow_library (installation))
         << option::generic ("input", source_directory / (_main + ".xpnet"))
         << option::generic ("output", pnet())
         << option::gen::cxx_flag ("-O3")
@@ -52,7 +68,7 @@ namespace test
       command
         << "make "
         << " SDPA_HOME=" << installation.gspc_home()
-        << " BOOST_ROOT=" << installation.boost_root()
+        << " BOOST_ROOT=" << boost_root (installation)
         << " LIB_DESTDIR=" << lib_destdir.get()
         << " -C " << wrapper_directory
         << " install"
