@@ -11,6 +11,7 @@
 #include <boost/optional.hpp>
 
 #include <chrono>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -36,6 +37,7 @@ namespace fhg
 
     struct processes_storage : boost::noncopyable
     {
+      std::mutex _guard;
       std::unordered_map < fhg::rif::entry_point
                          , std::unordered_map<std::string /*name*/, pid_t>
                          > _;

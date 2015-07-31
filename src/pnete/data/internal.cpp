@@ -7,7 +7,6 @@
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/mod.hpp>
 #include <xml/parse/type/net.hpp>
-#include <xml/parse/type/link.hpp>
 
 #include <xml/parse/util/position.hpp>
 

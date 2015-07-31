@@ -82,7 +82,6 @@ extended_add_library (NAME pnet
           "xml/parse/type/connect.cpp"
           "xml/parse/type/expression.cpp"
           "xml/parse/type/function.cpp"
-          "xml/parse/type/link.cpp"
           "xml/parse/type/memory_buffer.cpp"
           "xml/parse/type/memory_transfer.cpp"
           "xml/parse/type/mod.cpp"

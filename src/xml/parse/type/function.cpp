@@ -10,7 +10,6 @@
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/use.hpp>
-#include <xml/parse/type/link.hpp>
 #include <xml/parse/util/property.hpp>
 #include <xml/parse/util/weparse.hpp>
 
@@ -1181,14 +1180,12 @@ namespace xml
                                    , const std::string & _code
                                    , const std::list<std::string>& _ldflags
                                    , const std::list<std::string>& _cxxflags
-                                   , const std::list<link_type>& _links
                                    , const boost::filesystem::path & _path
                                    )
         : name (_name)
         , code (_code)
         , ldflags (_ldflags)
         , cxxflags (_cxxflags)
-        , links (_links)
         , path (_path)
       { }
 
@@ -1460,25 +1457,6 @@ namespace xml
                   (std::string ("pnetc/op/") + mod->first + "/" + fun->name + ".o");
 
                 stream << objs << " += " << obj_fun << std::endl;
-
-                for (const link_type& link : fun->links)
-                  {
-                    stream
-                      << objs << " += "
-                      << ( link.prefix()
-                         ? boost::filesystem::absolute
-                           ( link.link
-                             ( std::bind ( &state::type::link_prefix_by_key
-                                         , std::ref (state)
-                                         , std::placeholders::_1
-                                         )
-                             )
-                           , fun->path.parent_path()
-                           ).string()
-                         : link.href()
-                         )
-                      << std::endl;
-                  }
 
                 for (const std::string& flag : fun->ldflags)
                   {
@@ -2306,7 +2284,6 @@ namespace xml
                                            , stream.str()
                                            , mod.ldflags()
                                            , mod.cxxflags()
-                                           , mod.links()
                                            , mod.position_of_definition().path()
                                            );
 

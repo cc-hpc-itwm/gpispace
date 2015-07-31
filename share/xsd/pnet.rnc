@@ -27,7 +27,6 @@ function_include_type =
   attribute as { xsd:string }?
 properties_include_type = attribute href { xsd:anyURI }
 cinclude_type = attribute href { xsd:anyURI }
-link_type = attribute href { xsd:anyURI }
 flag_type = attribute flag { xsd:string }
 property_type =
   attribute key { xsd:NCName },
@@ -54,8 +53,7 @@ token_type = element value { xsd:string }+
 mod_type =
   (element cinclude { cinclude_type }
    | element ld { flag_type }
-   | element cxx { flag_type }
-   | element link { link_type })*,
+   | element cxx { flag_type })*,
   element code { xsd:string }?,
   attribute name { xsd:NCName },
   attribute function { xsd:string }
