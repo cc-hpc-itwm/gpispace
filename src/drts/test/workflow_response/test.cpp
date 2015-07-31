@@ -8,6 +8,7 @@
 #include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
+#include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
@@ -38,14 +39,12 @@ namespace
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
-  boost::program_options::variables_map vm;
-  boost::program_options::store
-    ( boost::program_options::command_line_parser
-      ( boost::unit_test::framework::master_test_suite().argc
-      , boost::unit_test::framework::master_test_suite().argv
-      )
-    . options (options_description).run()
-    , vm
+  boost::program_options::variables_map vm
+    ( test::parse_command_line
+        ( boost::unit_test::framework::master_test_suite().argc
+        , boost::unit_test::framework::master_test_suite().argv
+        , options_description
+        )
     );
 
   fhg::util::temporary_path const shared_directory
@@ -64,12 +63,11 @@ namespace
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , name
     , test::source_directory (vm)
-    , {{"LIB_DESTDIR", installation_dir.string()}}
-    , "net lib install"
+    , installation_dir
     );
 
   gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
@@ -83,7 +81,7 @@ namespace
 
   gspc::client client (drts);
 
-  gspc::workflow workflow (make.build_directory() / (name + ".pnet"));
+  gspc::workflow workflow (make.pnet());
 
   workflow.set_wait_for_output();
 
@@ -215,14 +213,12 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
-  boost::program_options::variables_map vm;
-  boost::program_options::store
-    ( boost::program_options::command_line_parser
-      ( boost::unit_test::framework::master_test_suite().argc
-      , boost::unit_test::framework::master_test_suite().argv
-      )
-    . options (options_description).run()
-    , vm
+  boost::program_options::variables_map vm
+    ( test::parse_command_line
+        ( boost::unit_test::framework::master_test_suite().argc
+        , boost::unit_test::framework::master_test_suite().argv
+        , options_description
+        )
     );
 
   fhg::util::temporary_path const shared_directory
@@ -243,12 +239,11 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "workflow_response_one_response_waits_while_others_are_made"
     , test::source_directory (vm)
-    , {{"LIB_DESTDIR", installation_dir.string()}}
-    , "net lib install"
+   , installation_dir
     );
 
   gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
@@ -262,10 +257,7 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
 
   gspc::client client (drts);
 
-  gspc::workflow workflow
-    ( make.build_directory()
-    / "workflow_response_one_response_waits_while_others_are_made.pnet"
-    );
+  gspc::workflow workflow (make.pnet());
 
   workflow.set_wait_for_output();
 

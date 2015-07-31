@@ -33,12 +33,14 @@ namespace fhg
         , std::vector<std::string> const& hostnames
         , boost::optional<unsigned short> const& port
         , boost::filesystem::path const& gspc_home
+        , std::vector<std::string> const& parameters
         );
       std::pair < std::unordered_set<std::string>
                 , std::unordered_map<std::string, std::exception_ptr>
                 > teardown
         ( std::string const& strategy
         , std::unordered_map<std::string, fhg::rif::entry_point> const& entry_points
+        , std::vector<std::string> const& parameters
         );
     }
   }

@@ -40,13 +40,16 @@ namespace fhg
                 , std::string const&
                 , unsigned short
                 , boost::filesystem::path const&
+                , std::vector<std::string> const&
                 )
               >
             , std::function
               < std::pair < std::unordered_set<std::string>
                           , std::unordered_map<std::string, std::exception_ptr>
                           >
-                (std::unordered_map<std::string, fhg::rif::entry_point> const&)
+                ( std::unordered_map<std::string, fhg::rif::entry_point> const&
+                , std::vector<std::string> const&
+                )
               >
             >
           > const strategies {{"ssh", {ssh::bootstrap, ssh::teardown}}};
@@ -93,6 +96,7 @@ namespace fhg
         , std::vector<std::string> const& hostnames_in
         , boost::optional<unsigned short> const& port
         , boost::filesystem::path const& gspc_home
+        , std::vector<std::string> const& parameters
         )
       {
         validate_strategy (strategy);
@@ -135,6 +139,7 @@ namespace fhg
               , fhg::network::connectable_to_address_string (local_endpoint.address())
               , local_endpoint.port()
               , gspc_home / "bin" / "gspc-rifd"
+              , parameters
               )
           );
 
@@ -156,11 +161,12 @@ namespace fhg
                 > teardown
         ( std::string const& strategy
         , std::unordered_map<std::string, fhg::rif::entry_point> const& entry_points
+        , std::vector<std::string> const& parameters
         )
       {
         validate_strategy (strategy);
 
-        return strategies.at (strategy).second (entry_points);
+        return strategies.at (strategy).second (entry_points, parameters);
       }
     }
   }

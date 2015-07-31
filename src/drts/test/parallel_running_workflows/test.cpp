@@ -8,6 +8,7 @@
 #include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
+#include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
@@ -34,14 +35,12 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
-  boost::program_options::variables_map vm;
-  boost::program_options::store
-    ( boost::program_options::command_line_parser
-      ( boost::unit_test::framework::master_test_suite().argc
-      , boost::unit_test::framework::master_test_suite().argv
-      )
-    . options (options_description).run()
-    , vm
+  boost::program_options::variables_map vm
+    ( test::parse_command_line
+        ( boost::unit_test::framework::master_test_suite().argc
+        , boost::unit_test::framework::master_test_suite().argv
+        , options_description
+        )
     );
 
   fhg::util::temporary_path const shared_directory
@@ -68,19 +67,17 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
   boost::filesystem::path const filename_a (temporary_file_a);
   boost::filesystem::path const filename_b (temporary_file_b);
 
-  test::make const make_wait_then_touch
+  test::make_net_lib_install const make_wait_then_touch
     ( installation
     , "wait_then_touch"
     , test::source_directory (vm)
-    , {{"LIB_DESTDIR", installation_dir.string()}}
-    , "net lib install"
+    , installation_dir
     );
-  test::make const make_touch_then_wait
+  test::make_net_lib_install const make_touch_then_wait
     ( installation
     , "touch_then_wait"
     , test::source_directory (vm)
-    , {{"LIB_DESTDIR", installation_dir.string()}}
-    , "net lib install"
+    , installation_dir
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
@@ -93,11 +90,11 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
 
   auto submit_fun
     ( [&filename_a, &filename_b, &drts]
-      (std::string pnet, std::string port, test::make const& make)
+      (std::string port, test::make_net_lib_install const& make)
     {
       std::multimap<std::string, pnet::type::value::value_type> const result
         ( gspc::client (drts).put_and_run
-          ( gspc::workflow (make.build_directory() / pnet)
+          ( gspc::workflow (make.pnet())
           , { {"filename_a", filename_a.string()}
             , {"filename_b", filename_b.string()}
             , {"timeout_in_seconds", 5U}
@@ -113,7 +110,6 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
   std::future<bool> wait_then_touch
     ( std::async ( std::launch::async
                  , submit_fun
-                 , "wait_then_touch.pnet"
                  , "a_existed"
                  , std::cref (make_wait_then_touch)
                  )
@@ -121,7 +117,6 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
   std::future<bool> touch_then_wait
     ( std::async ( std::launch::async
                  , submit_fun
-                 , "touch_then_wait.pnet"
                  , "b_existed"
                  , std::cref (make_touch_then_wait)
                  )

@@ -8,6 +8,7 @@
 #include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
+#include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
@@ -32,14 +33,12 @@ BOOST_AUTO_TEST_CASE (we_input_is_copied_to_output_in_module_calls)
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
-  boost::program_options::variables_map vm;
-  boost::program_options::store
-    ( boost::program_options::command_line_parser
-      ( boost::unit_test::framework::master_test_suite().argc
-      , boost::unit_test::framework::master_test_suite().argv
-      )
-    . options (options_description).run()
-    , vm
+  boost::program_options::variables_map vm
+    ( test::parse_command_line
+        ( boost::unit_test::framework::master_test_suite().argc
+        , boost::unit_test::framework::master_test_suite().argv
+        , options_description
+        )
     );
 
   fhg::util::temporary_path const shared_directory
@@ -60,12 +59,11 @@ BOOST_AUTO_TEST_CASE (we_input_is_copied_to_output_in_module_calls)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "input_is_copied_to_output_in_module_calls"
     , test::source_directory (vm)
-    , {{"LIB_DESTDIR", installation_dir.string()}}
-    , "net lib install"
+    , installation_dir
     );
 
   pnet::type::value::value_type const p {we::type::literal::control()};
@@ -79,13 +77,8 @@ BOOST_AUTO_TEST_CASE (we_input_is_copied_to_output_in_module_calls)
     (vm, installation, "work:1", rifds.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    ( gspc::client (drts)
-    . put_and_run
-      ( gspc::workflow ( make.build_directory()
-                       / "input_is_copied_to_output_in_module_calls.pnet"
-                       )
-      , {{"p", p}}
-      )
+    ( gspc::client (drts).put_and_run
+        (gspc::workflow (make.pnet()), {{"p", p}})
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 1);

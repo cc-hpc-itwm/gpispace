@@ -8,6 +8,7 @@
 #include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
+#include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
@@ -34,14 +35,12 @@ BOOST_AUTO_TEST_CASE (share_lib_cache_demo)
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
-  boost::program_options::variables_map vm;
-  boost::program_options::store
-    ( boost::program_options::command_line_parser
-      ( boost::unit_test::framework::master_test_suite().argc
-      , boost::unit_test::framework::master_test_suite().argv
-      )
-    . options (options_description).run()
-    , vm
+  boost::program_options::variables_map vm
+    ( test::parse_command_line
+        ( boost::unit_test::framework::master_test_suite().argc
+        , boost::unit_test::framework::master_test_suite().argv
+        , options_description
+        )
     );
 
   fhg::util::temporary_path const shared_directory
@@ -60,17 +59,15 @@ BOOST_AUTO_TEST_CASE (share_lib_cache_demo)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "demo"
     , test::source_directory (vm)
-    , { {"LIB_DESTDIR", installation_dir.string()}
-      , {"PNETC_OPTS", ( boost::format ("-I%1%")
-                       % (installation.gspc_home() / "share" / "sdpa" / "xml")
-                       ).str()
-        }
-      }
-    , "net lib install"
+    , installation_dir
+    , test::option::options()
+    . add (new test::option::include
+             (installation.gspc_home() / "share" / "sdpa" / "xml")
+          )
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
@@ -86,7 +83,7 @@ BOOST_AUTO_TEST_CASE (share_lib_cache_demo)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
-      ( gspc::workflow (make.build_directory() / "demo.pnet")
+      ( gspc::workflow (make.pnet())
       , { {"num_slots", 4L}
         , {"num_id", num_id}
         , {"multiplicity", multiplicity}

@@ -8,6 +8,7 @@
 #include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
+#include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
@@ -37,14 +38,12 @@ BOOST_AUTO_TEST_CASE (tutorial_hello_world)
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
-  boost::program_options::variables_map vm;
-  boost::program_options::store
-    ( boost::program_options::command_line_parser
-      ( boost::unit_test::framework::master_test_suite().argc
-      , boost::unit_test::framework::master_test_suite().argv
-      )
-    . options (options_description).run()
-    , vm
+  boost::program_options::variables_map vm
+    ( test::parse_command_line
+        ( boost::unit_test::framework::master_test_suite().argc
+        , boost::unit_test::framework::master_test_suite().argv
+        , options_description
+        )
     );
 
   fhg::util::temporary_path const shared_directory
@@ -88,22 +87,18 @@ BOOST_AUTO_TEST_CASE (tutorial_hello_world)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "hello_many"
     , test::source_directory (vm)
-    , { {"LIB_DESTDIR", installation_dir.string()}
-      , {"CXXINCLUDEPATHS", (test::source_directory (vm) / "include").string()}
-      , {"CXXLIBRARYPATHS", sum_module_dir.string()}
-      , {"PNETC_OPTS"
-        , ( boost::format ("'--gen-ldflags=%1%/hello2.o"
-                          " --gen-ldflags=%1%/hello_world.o'"
-                          )
-          % sum_module_dir
-          ).str()
-        }
-      }
-    , "net lib install"
+    , installation_dir
+    , test::option::options()
+    . add (new test::option::gen::link (sum_module_dir / "hello2.o"))
+    . add (new test::option::gen::link (sum_module_dir / "hello_world.o"))
+    . add (new test::option::gen::library_path (sum_module_dir))
+    . add (new test::option::gen::include
+            (test::source_directory (vm) / "include")
+          )
     );
 
   pnet::type::value::value_type const control {we::type::literal::control()};
@@ -118,11 +113,7 @@ BOOST_AUTO_TEST_CASE (tutorial_hello_world)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
-      ( gspc::workflow (make.build_directory() / "hello_many.pnet")
-      , { {"in", control}
-        , {"in", control}
-        }
-      )
+        (gspc::workflow (make.pnet()), {{"in", control}, {"in", control}})
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 2);

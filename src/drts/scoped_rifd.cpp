@@ -21,13 +21,19 @@ namespace gspc
 {
   namespace rifd
   {
-    PIMPL_IMPLEMENTATION (strategy, std::string)
+    PIMPL_IMPLEMENTATION
+      (strategy, std::pair<std::string, std::vector<std::string>>)
     PIMPL_IMPLEMENTATION (hostnames, std::vector<std::string>)
     PIMPL_IMPLEMENTATION (hostname, std::string)
     PIMPL_IMPLEMENTATION (port, boost::optional<unsigned short>)
 
     strategy::strategy (boost::program_options::variables_map const& vm)
-      : _ (new implementation (require_rif_strategy (vm)))
+      : _ ( new implementation
+              (  std::make_pair ( require_rif_strategy (vm)
+                                , require_rif_strategy_parameters (vm)
+                                )
+              )
+          )
     {}
 
     hostnames::hostnames (boost::program_options::variables_map const& vm)
@@ -54,7 +60,8 @@ namespace gspc
                    , rifd::port const& port
                    , installation const& installation
                    )
-      : _strategy (strategy._->_)
+      : _strategy (strategy._->_.first)
+      , _parameters (strategy._->_.second)
       , _port (port._->_)
       , _installation (installation)
     {}
@@ -117,7 +124,7 @@ namespace gspc
                , std::unordered_map<std::string, std::exception_ptr>
                > const boot
         ( fhg::rif::strategy::bootstrap
-            (_strategy, no_duplicates, _port, _installation.gspc_home())
+            (_strategy, no_duplicates, _port, _installation.gspc_home(), _parameters)
         );
 
       for (auto const& new_entry_point : boot.first)
@@ -145,7 +152,7 @@ namespace gspc
               > teardown (entry_point_by_host const entry_points)
     {
       auto const result
-        (fhg::rif::strategy::teardown (_strategy, entry_points));
+        (fhg::rif::strategy::teardown (_strategy, entry_points, _parameters));
 
       for (auto const& entry_point : entry_points)
       {
@@ -166,6 +173,7 @@ namespace gspc
     }
 
     std::string _strategy;
+    std::vector<std::string> _parameters;
     boost::optional<unsigned short> _port;
     installation _installation;
 

@@ -8,6 +8,7 @@
 #include <drts/scoped_rifd.hpp>
 
 #include <test/make.hpp>
+#include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
@@ -36,14 +37,12 @@ namespace
     options_description.add (gspc::options::drts());
     options_description.add (gspc::options::scoped_rifd());
 
-    boost::program_options::variables_map vm;
-    boost::program_options::store
-      ( boost::program_options::command_line_parser
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
-        )
-      . options (options_description).run()
-      , vm
+    boost::program_options::variables_map vm
+      ( test::parse_command_line
+          ( boost::unit_test::framework::master_test_suite().argc
+          , boost::unit_test::framework::master_test_suite().argv
+          , options_description
+          )
       );
 
     fhg::util::temporary_path const shared_directory
@@ -62,12 +61,10 @@ namespace
 
     gspc::installation const installation (vm);
 
-    test::make const make
+    test::make_net const make
       ( installation
       , main
       , test::source_directory (vm)
-      , {{"XML", main + ".xml"}}
-      , "net"
       );
 
     gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
@@ -79,7 +76,7 @@ namespace
       (vm, installation, "work:4", rifds.entry_points());
 
     return gspc::client (drts).put_and_run
-      (gspc::workflow (make.build_directory() / (main + ".pnet")), {{"n", n}});
+      (gspc::workflow (make.pnet()), {{"n", n}});
   }
 }
 

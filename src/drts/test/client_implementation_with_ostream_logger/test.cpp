@@ -107,18 +107,17 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "client_implementation_with_ostream_logger"
     , test::source_directory (vm)
-    , {{"LIB_DESTDIR", installation_dir.string()}
-      ,{ "CXXINCLUDEPATHS"
-          //! \todo urgh, remove make
-       , test::source_directory (vm).parent_path().parent_path().parent_path().string()
-       }
-      ,{"PNETC_OPTS", std::string ("--gen-cxxflags=--std=c++11")}
-      }
-    , "net lib install"
+    , installation_dir
+    , test::option::options()
+    . add (new test::option::gen::cxx11())
+    . add (new test::option::gen::include
+            //! \todo urgh
+            (test::source_directory (vm).parent_path().parent_path().parent_path())
+          )
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
@@ -138,10 +137,7 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
-      ( gspc::workflow
-          ( make.build_directory()
-          / "client_implementation_with_ostream_logger.pnet"
-          )
+      ( gspc::workflow (make.pnet())
       , { {"implementation", implementation.string()}
         , {"message", message}
         }
