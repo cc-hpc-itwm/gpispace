@@ -23,9 +23,11 @@ namespace fhg
                        , std::string const& register_host
                        , unsigned short register_port
                        , boost::filesystem::path const& binary
+                       , std::vector<std::string> const& parameters
                        );
         void teardown ( std::vector<fhg::rif::entry_point> const& entry_points
                       , std::vector<fhg::rif::entry_point>& failed_entry_points
+                      , std::vector<std::string> const& parameters
                       );
       }
     }

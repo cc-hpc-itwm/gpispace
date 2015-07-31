@@ -50,6 +50,8 @@ namespace gspc
       constexpr char const* const rif_entry_points_file {"rif-entry-points-file"};
       constexpr char const* const rif_port {"rif-port"};
       constexpr char const* const rif_strategy {"rif-strategy"};
+      constexpr char const* const rif_strategy_parameters
+        {"rif-strategy-parameters"};
     }
   }
 
@@ -163,6 +165,12 @@ namespace gspc
           + ")"
           ).c_str()
         );
+        drts.add_options()
+        ( name::rif_strategy_parameters
+        , boost::program_options::value<std::vector<std::string>>()
+          ->default_value (std::vector<std::string>(), "")->required()
+        , "parameters passed to bootstrapping strategy"
+        );
       }
       if (options & rifd::rif_port)
       {
@@ -214,7 +222,8 @@ namespace gspc
     template<typename T>
       void set_as ( boost::program_options::variables_map& vm
                   , std::string const& option_name
-                  , std::string const& value
+                  , T value
+                  , std::string const& value_string
                   )
     {
       std::pair<boost::program_options::variables_map::iterator, bool> const
@@ -222,7 +231,7 @@ namespace gspc
         ( vm.insert
           ( std::make_pair
             ( option_name
-            , boost::program_options::variable_value (T (value), false)
+            , boost::program_options::variable_value (value, false)
             )
           )
         );
@@ -233,11 +242,20 @@ namespace gspc
           (( boost::format
              ("Failed to set option '%1%' to '%2%': Found old value '%3%'")
            % option_name
-           % value
+           % value_string
            % pos_and_success.first->second.as<T>()
            ).str()
           );
       }
+    }
+
+    template<typename T>
+      void set_as ( boost::program_options::variables_map& vm
+                  , std::string const& option_name
+                  , std::string const& value
+                  )
+    {
+      set_as<T> (vm, option_name, value, value);
     }
   }
 
@@ -337,6 +355,13 @@ namespace gspc
   ACCESS_PATH (rif_entry_points_file, validators::nonempty_file);
   ACCESS_POSITIVE_INTEGRAL (rif_port, unsigned short);
   ACCESS_STRING (rif_strategy, std::string);
+
+  GET_MAYBE (rif_strategy_parameters, std::vector<std::string>, std::vector<std::string>)
+  REQUIRE (rif_strategy_parameters, std::vector<std::string>, std::vector<std::string>)
+  char const* name_rif_strategy_parameters()
+  {
+    return name::rif_strategy_parameters;
+  }
 
 #undef ACCESS_POSITIVE_INTEGRAL
 #undef ACCESS_STRING

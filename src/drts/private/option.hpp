@@ -40,6 +40,10 @@ namespace gspc
   ACCESS (rif_port, unsigned short);
   ACCESS (rif_strategy, std::string);
 
+  GET (rif_strategy_parameters, std::vector<std::string>);
+  REQUIRE (rif_strategy_parameters, std::vector<std::string>);
+  char const* name_rif_strategy_parameters();
+
 #undef ACCESS
 #undef REQUIRE
 #undef GET

@@ -15,13 +15,19 @@ namespace gspc
 {
   namespace rifd
   {
-    PIMPL_IMPLEMENTATION (strategy, std::string)
+    PIMPL_IMPLEMENTATION
+      (strategy, std::pair<std::string, std::vector<std::string>>)
     PIMPL_IMPLEMENTATION (hostnames, std::vector<std::string>)
     PIMPL_IMPLEMENTATION (hostname, std::string)
     PIMPL_IMPLEMENTATION (port, boost::optional<unsigned short>)
 
     strategy::strategy (boost::program_options::variables_map const& vm)
-      : _ (new implementation (require_rif_strategy (vm)))
+      : _ ( new implementation
+              (  std::make_pair ( require_rif_strategy (vm)
+                                , require_rif_strategy_parameters (vm)
+                                )
+              )
+          )
     {}
 
     hostnames::hostnames (boost::program_options::variables_map const& vm)
@@ -42,15 +48,18 @@ namespace gspc
   struct scoped_rifds::implementation
   {
     implementation ( std::string const& strategy
+                   , std::vector<std::string> const& parameters
                    , std::vector<std::string> const& hostnames
                    , boost::optional<unsigned short> const& rifd_port
                    , boost::filesystem::path const& gspc_home
                    )
       : _strategy (strategy)
+      , _parameters (parameters)
       , _entry_points ( fhg::rif::strategy::bootstrap ( _strategy
                                                       , hostnames
                                                       , rifd_port
                                                       , gspc_home
+                                                      , _parameters
                                                       )
                       )
     {}
@@ -60,10 +69,15 @@ namespace gspc
       //! of left-overs (see #482 Clean shutdown binary)
       std::vector<fhg::rif::entry_point> failed_entry_points;
       fhg::rif::strategy::teardown
-        (_strategy, _entry_points, failed_entry_points);
+        ( _strategy
+        , _entry_points
+        , failed_entry_points
+        , _parameters
+        );
     }
 
     std::string _strategy;
+    std::vector<std::string> _parameters;
     std::vector<fhg::rif::entry_point> _entry_points;
   };
 
@@ -72,7 +86,8 @@ namespace gspc
                              , rifd::port const& port
                              , installation const& installation
                              )
-    : _ (new implementation ( strategy._->_
+    : _ (new implementation ( strategy._->_.first
+                            , strategy._->_.second
                             , hostnames._->_
                             , port._->_
                             , installation.gspc_home()
@@ -90,11 +105,12 @@ namespace gspc
   struct scoped_rifd::implementation : public scoped_rifds::implementation
   {
     implementation ( std::string const& strategy
+                   , std::vector<std::string> const& parameters
                    , std::string const& host
                    , boost::optional<unsigned short> const& rifd_port
                    , boost::filesystem::path const& gspc_home
                    )
-      : scoped_rifds::implementation (strategy, {host}, rifd_port, gspc_home)
+      : scoped_rifds::implementation (strategy, parameters, {host}, rifd_port, gspc_home)
     {}
   };
 
@@ -103,7 +119,8 @@ namespace gspc
                            , rifd::port const& port
                            , installation const& installation
                            )
-    : _ (new implementation ( strategy._->_
+    : _ (new implementation ( strategy._->_.first
+                            , strategy._->_.second
                             , hostname._->_
                             , port._->_
                             , installation.gspc_home()

@@ -19,3 +19,6 @@
 [submodule "src/util-qt"]
 	path = src/util-qt
 	url = git@gitlab.hpc.devnet.itwm.fhg.de:shared/util-qt.git
+[submodule "src/libssh2_wrapper"]
+	path = src/libssh2_wrapper
+	url = git@gitlab.hpc.devnet.itwm.fhg.de:shared/libssh2_wrapper.git

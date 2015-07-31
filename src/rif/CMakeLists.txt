@@ -38,6 +38,7 @@ extended_add_library (NAME rif-strategies
   LIBRARIES RPC
             Network
             fhg-util
+            libssh2_wrapper
 )
 
 fhg_add_runtime_executable (NAME gspc-bootstrap-rifd

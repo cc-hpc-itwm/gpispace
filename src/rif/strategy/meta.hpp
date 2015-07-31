@@ -26,10 +26,12 @@ namespace fhg
         , std::vector<std::string> const& hostnames
         , boost::optional<unsigned short> const& port
         , boost::filesystem::path const& gspc_home
+        , std::vector<std::string> const& parameters
         );
       void teardown ( std::string const& strategy
                     , std::vector<fhg::rif::entry_point> const& entry_points
                     , std::vector<fhg::rif::entry_point>& failed_entry_points
+                    , std::vector<std::string> const& parameters
                     );
     }
   }
