@@ -14,7 +14,6 @@
 #include <boost/format.hpp>
 #include <boost/range/adaptor/map.hpp>
 
-#include <algorithm>
 #include <iterator>
 
 namespace gspc
@@ -47,33 +46,6 @@ namespace gspc
 
   using entry_point_by_host =
     std::unordered_map<std::string, fhg::rif::entry_point>;
-
-  namespace
-  {
-    template<typename L, typename R>
-      struct by_first
-    {
-      bool operator() (std::pair<L,R> const& lhs, std::pair<L,R> const& rhs)
-      {
-        return lhs.first < rhs.first;
-      }
-    };
-
-    entry_point_by_host set_difference ( entry_point_by_host const& lhs
-                                       , entry_point_by_host const& rhs
-                                       )
-    {
-      entry_point_by_host difference;
-
-      std::set_difference
-        ( lhs.begin(), lhs.end(), rhs.begin(), rhs.end()
-        , std::inserter (difference, difference.begin())
-        , by_first<std::string, fhg::rif::entry_point>()
-        );
-
-      return difference;
-    }
-  }
 
   struct rifds::implementation
   {
@@ -142,14 +114,19 @@ namespace gspc
       return new_entry_points;
     }
 
-    entry_point_by_host teardown (entry_point_by_host const& entry_points)
+    entry_point_by_host teardown (entry_point_by_host const entry_points)
     {
       entry_point_by_host failed;
 
       fhg::rif::strategy::teardown (_strategy, entry_points, failed);
 
-      _entry_points = set_difference
-        (_entry_points, set_difference (entry_points, failed));
+      for (auto const& entry_point : entry_points)
+      {
+        if (!failed.count (entry_point.first))
+        {
+          _entry_points.erase (entry_point.first);
+        }
+      }
 
       return failed;
     }
