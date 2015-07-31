@@ -12,8 +12,11 @@
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
 
+#include <exception>
 #include <string>
 #include <vector>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace gspc
 {
@@ -82,9 +85,20 @@ namespace gspc
     rifd_entry_points entry_points (rifd::hostnames const&) const;
     rifd_entry_points entry_points() const;
 
-    rifd_entry_points bootstrap (rifd::hostnames const&);
-    std::vector<std::string> teardown (rifd::hostnames const&);
-    std::vector<std::string> teardown();
+    std::pair< rifd_entry_points
+             , std::unordered_map<std::string, std::exception_ptr>
+             >
+      bootstrap (rifd::hostnames const&);
+
+    std::pair < std::unordered_set<std::string>
+              , std::unordered_map<std::string, std::exception_ptr>
+              >
+      teardown (rifd::hostnames const&);
+
+    std::pair < std::unordered_set<std::string>
+              , std::unordered_map<std::string, std::exception_ptr>
+              >
+      teardown();
 
     PIMPL (rifds);
 
@@ -108,18 +122,12 @@ namespace gspc
   class scoped_rifds : public rifds
   {
   public:
-    scoped_rifds ( rifd::strategy const& strategy
-                 , rifd::hostnames const& hostnames
-                 , rifd::port const& port
-                 , installation const& installation
-                 )
-      : rifds (strategy, port, installation)
-    {
-      bootstrap (hostnames);
-    }
-    ~scoped_rifds()
-    {
-      teardown(); //! \todo report the failed entry points
-    }
+    using rifds::rifds;
+    scoped_rifds ( rifd::strategy const&
+                 , rifd::hostnames const&
+                 , rifd::port const&
+                 , installation const&
+                 );
+    ~scoped_rifds(); //! \todo report the failed entry points
   };
 }

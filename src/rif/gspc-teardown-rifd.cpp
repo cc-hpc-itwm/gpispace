@@ -86,25 +86,19 @@ try
                          );
   }
 
-  std::unordered_map<std::string, fhg::rif::entry_point> failed_entry_points;
+  auto const result
+    (fhg::rif::strategy::teardown (strategy, entry_points));
 
-  try
+  for ( std::pair<std::string, std::exception_ptr> const& failure
+      : result.second
+      )
   {
-    fhg::rif::strategy::teardown (strategy, entry_points, failed_entry_points);
-  }
-  catch (...)
-  {
-    for ( std::pair<std::string, fhg::rif::entry_point> const& entry_point
-        : failed_entry_points
-        )
-    {
-      std::cout << entry_point.first << ' ' << entry_point.second << '\n';
-    }
-
-    throw;
+    std::cout << failure.first << ' ' << entry_points.at (failure.first) << '\n';
+    std::cerr << failure.first << ": "
+              << fhg::util::exception_printer (failure.second) << "\n";
   }
 
-  return 0;
+  return result.second.empty() ? 0 : 1;
 }
 catch (...)
 {

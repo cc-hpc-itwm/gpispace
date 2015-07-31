@@ -32,20 +32,23 @@ namespace fhg
       {
         std::unordered_map
           < std::string
-          , std::pair < std::function
-                          < void ( std::vector<std::string> const&
-                                 , boost::optional<unsigned short> const&
-                                 , std::string const&
-                                 , unsigned short
-                                 , boost::filesystem::path const&
-                                 )
+          , std::pair
+            < std::function
+              < std::unordered_map<std::string, std::exception_ptr>
+                ( std::vector<std::string> const&
+                , boost::optional<unsigned short> const&
+                , std::string const&
+                , unsigned short
+                , boost::filesystem::path const&
+                )
+              >
+            , std::function
+              < std::pair < std::unordered_set<std::string>
+                          , std::unordered_map<std::string, std::exception_ptr>
                           >
-                      , std::function
-                          < void ( std::unordered_map<std::string, fhg::rif::entry_point> const&
-                                 , std::unordered_map<std::string, fhg::rif::entry_point>&
-                                 )
-                          >
-                      >
+                (std::unordered_map<std::string, fhg::rif::entry_point> const&)
+              >
+            >
           > const strategies {{"ssh", {ssh::bootstrap, ssh::teardown}}};
 
         void validate_strategy (std::string const& strategy)
@@ -83,7 +86,9 @@ namespace fhg
         }
       }
 
-      std::unordered_map<std::string, fhg::rif::entry_point> bootstrap
+      std::pair < std::unordered_map<std::string, fhg::rif::entry_point>
+                , std::unordered_map<std::string, std::exception_ptr>
+                > bootstrap
         ( std::string const& strategy
         , std::vector<std::string> const& hostnames_in
         , boost::optional<unsigned short> const& port
@@ -123,47 +128,39 @@ namespace fhg
         boost::asio::ip::tcp::endpoint const local_endpoint
           (rpc_server.local_endpoint());
 
-        fhg::util::nest_exceptions<std::runtime_error>
-          ( [&]
-            {
-              strategies.at (strategy).first
-                ( hostnames
-                , port
-                , fhg::network::connectable_to_address_string (local_endpoint.address())
-                , local_endpoint.port()
-                , gspc_home / "bin" / "gspc-rifd"
-                );
-            }
-          , "bootstrap-" + strategy + " failed"
+        std::unordered_map<std::string, std::exception_ptr> const failed
+          ( strategies.at (strategy).first
+              ( hostnames
+              , port
+              , fhg::network::connectable_to_address_string (local_endpoint.address())
+              , local_endpoint.port()
+              , gspc_home / "bin" / "gspc-rifd"
+              )
           );
 
         {
           std::unique_lock<std::mutex> lock (entry_points_guard);
           entry_point_added.wait
             ( lock
-            , [&entry_points, &hostnames]
+            , [&entry_points, &hostnames, &failed]
               {
-                return entry_points.size() == hostnames.size();
+                return entry_points.size() + failed.size() == hostnames.size();
               }
             );
         }
 
-        return entry_points;
+        return {entry_points, failed};
       }
-      void teardown ( std::string const& strategy
-                    , std::unordered_map<std::string, fhg::rif::entry_point> const& entry_points
-                    , std::unordered_map<std::string, fhg::rif::entry_point>& failed_entry_points
-                    )
+      std::pair < std::unordered_set<std::string>
+                , std::unordered_map<std::string, std::exception_ptr>
+                > teardown
+        ( std::string const& strategy
+        , std::unordered_map<std::string, fhg::rif::entry_point> const& entry_points
+        )
       {
         validate_strategy (strategy);
 
-        fhg::util::nest_exceptions<std::runtime_error>
-          ( [&]
-            {
-              strategies.at (strategy).second (entry_points, failed_entry_points);
-            }
-          , "teardown-" + strategy + " failed: "
-          );
+        return strategies.at (strategy).second (entry_points);
       }
     }
   }

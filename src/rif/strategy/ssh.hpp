@@ -11,6 +11,7 @@
 #include <boost/optional.hpp>
 
 #include <unordered_map>
+#include <unordered_set>
 
 namespace fhg
 {
@@ -20,15 +21,17 @@ namespace fhg
     {
       namespace ssh
       {
-        void bootstrap ( std::vector<std::string> const& hostnames
-                       , boost::optional<unsigned short> const& port
-                       , std::string const& register_host
-                       , unsigned short register_port
-                       , boost::filesystem::path const& binary
-                       );
-        void teardown ( std::unordered_map<std::string, fhg::rif::entry_point> const& entry_points
-                      , std::unordered_map<std::string, fhg::rif::entry_point>& failed_entry_points
-                      );
+        std::unordered_map<std::string, std::exception_ptr>
+          bootstrap ( std::vector<std::string> const& hostnames
+                    , boost::optional<unsigned short> const& port
+                    , std::string const& register_host
+                    , unsigned short register_port
+                    , boost::filesystem::path const& binary
+                    );
+        std::pair < std::unordered_set<std::string>
+                  , std::unordered_map<std::string, std::exception_ptr>
+                  > teardown
+          (std::unordered_map<std::string, fhg::rif::entry_point> const&);
       }
     }
   }

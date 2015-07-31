@@ -20,13 +20,17 @@ namespace fhg
     {
       namespace ssh
       {
-        void bootstrap ( std::vector<std::string> const& hostnames
-                       , boost::optional<unsigned short> const& port
-                       , std::string const& register_host
-                       , unsigned short register_port
-                       , boost::filesystem::path const& binary
-                       )
+        std::unordered_map<std::string, std::exception_ptr>
+          bootstrap ( std::vector<std::string> const& hostnames
+                    , boost::optional<unsigned short> const& port
+                    , std::string const& register_host
+                    , unsigned short register_port
+                    , boost::filesystem::path const& binary
+                    )
         {
+          std::mutex failed_guard;
+          std::unordered_map<std::string, std::exception_ptr> failed;
+
           std::vector<std::future<void>> sshs;
 
           for (std::string const& hostname : hostnames)
@@ -49,29 +53,40 @@ namespace fhg
             sshs.emplace_back
               ( std::async
                   ( std::launch::async
-                  , [hostname, command]
+                  , [hostname, command, &failed, &failed_guard]
                     {
-                      fhg::util::nest_exceptions<std::runtime_error>
-                        ([&hostname, &command]()
-                         {
-                           fhg::util::system_with_blocked_SIGCHLD (command);
-                         }
-                        , hostname
-                        );
+                      try
+                      {
+                        fhg::util::system_with_blocked_SIGCHLD (command);
+                      }
+                      catch (...)
+                      {
+                        std::unique_lock<std::mutex> const _ (failed_guard);
+                        failed.emplace (hostname, std::current_exception());
+                      }
                     }
                   )
               );
           }
 
-          fhg::util::wait_and_collect_exceptions (sshs);
+          for (auto& ssh : sshs)
+          {
+            ssh.get();
+          }
+
+          return failed;
         }
 
-        void teardown
-          ( std::unordered_map<std::string, fhg::rif::entry_point> const& entry_points
-          , std::unordered_map<std::string, fhg::rif::entry_point>& failed_entry_points
+        std::pair < std::unordered_set<std::string>
+                  , std::unordered_map<std::string, std::exception_ptr>
+                  > teardown
+          (std::unordered_map<std::string, fhg::rif::entry_point> const&
+            entry_points
           )
         {
-          std::mutex failed_entry_points_guard;
+          std::mutex guard;
+          std::unordered_set<std::string> terminated;
+          std::unordered_map<std::string, std::exception_ptr> failed;
 
           std::vector<std::future<void>> sshs;
 
@@ -91,33 +106,33 @@ namespace fhg
               ( std::async
                   ( std::launch::async
                   , [ command, entry_point
-                    , &failed_entry_points_guard, &failed_entry_points
+                    , &guard, &failed, &terminated
                     ]
                     {
-                      fhg::util::nest_exceptions<std::runtime_error>
-                        ([&]()
-                         {
-                           try
-                           {
-                             fhg::util::system_with_blocked_SIGCHLD (command);
-                           }
-                           catch (...)
-                           {
-                             std::unique_lock<std::mutex> const _
-                               (failed_entry_points_guard);
-                             failed_entry_points.emplace (entry_point);
+                      try
+                      {
+                        fhg::util::system_with_blocked_SIGCHLD (command);
 
-                             throw;
-                           }
-                         }
-                        , entry_point.first
-                        );
+                        std::unique_lock<std::mutex> const _ (guard);
+                        terminated.emplace (entry_point.first);
+                      }
+                      catch (...)
+                      {
+                        std::unique_lock<std::mutex> const _ (guard);
+                        failed.emplace
+                          (entry_point.first, std::current_exception());
+                      }
                     }
                   )
               );
           }
 
-          fhg::util::wait_and_collect_exceptions (sshs);
+          for (auto& ssh : sshs)
+          {
+            ssh.get();
+          }
+
+          return {terminated, failed};
         }
       }
     }
