@@ -79,6 +79,8 @@ namespace gspc
           );
 
     std::vector<std::string> hosts() const;
+    rifd_entry_points entry_points (rifd::hostnames const&) const;
+    rifd_entry_points entry_points() const;
 
     rifd_entry_points bootstrap (rifd::hostnames const&);
     std::vector<std::string> teardown (rifd::hostnames const&);
@@ -106,12 +108,18 @@ namespace gspc
   class scoped_rifds : public rifds
   {
   public:
-    scoped_rifds ( rifd::strategy const&
-                 , rifd::hostnames const&
-                 , rifd::port const&
-                 , installation const&
-                 );
-    ~scoped_rifds(); //! \todo report the failed entry points
-    rifd_entry_points entry_points() const;
+    scoped_rifds ( rifd::strategy const& strategy
+                 , rifd::hostnames const& hostnames
+                 , rifd::port const& port
+                 , installation const& installation
+                 )
+      : rifds (strategy, port, installation)
+    {
+      bootstrap (hostnames);
+    }
+    ~scoped_rifds()
+    {
+      teardown(); //! \todo report the failed entry points
+    }
   };
 }

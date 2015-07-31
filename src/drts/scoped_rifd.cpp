@@ -86,6 +86,62 @@ namespace gspc
       , _installation (installation)
     {}
 
+    entry_point_by_host entry_points
+      (std::vector<std::string> const& hostnames) const
+    {
+      entry_point_by_host entry_points;
+
+      for (std::string const& hostname : hostnames)
+      {
+        auto entry_point (_entry_points.find (hostname));
+
+        if (entry_point == _entry_points.end())
+        {
+          throw std::invalid_argument
+            ((boost::format ("unknown host '%1%'") % hostname).str());
+        }
+
+        entry_points.emplace (*entry_point);
+      }
+
+      return entry_points;
+    }
+    entry_point_by_host const& entry_points() const
+    {
+      return _entry_points;
+    }
+
+    entry_point_by_host bootstrap (std::vector<std::string> const& hostnames)
+    {
+      for (std::string const& hostname : hostnames)
+      {
+        if (_entry_points.count (hostname))
+        {
+          throw std::invalid_argument
+            ((boost::format ("boostrap: duplicate host %1%") % hostname).str());
+        }
+      }
+
+      entry_point_by_host const new_entry_points
+        ( fhg::rif::strategy::bootstrap
+            (_strategy, hostnames, _port, _installation.gspc_home())
+        );
+
+      for (auto new_entry_point : new_entry_points)
+      {
+        if (!_entry_points.emplace (new_entry_point).second)
+        {
+          throw std::logic_error
+            (( boost::format ("STRANGE: duplicate key '%1%'!?")
+             % new_entry_point.first
+             ).str()
+            );
+        }
+      }
+
+      return new_entry_points;
+    }
+
     entry_point_by_host teardown (entry_point_by_host const& entry_points)
     {
       entry_point_by_host failed;
@@ -110,6 +166,14 @@ namespace gspc
     entry_point_by_host _entry_points;
   };
 
+  rifds::rifds ( rifd::strategy const& strategy
+               , rifd::port const& port
+               , installation const& installation
+               )
+    : _ (new implementation (strategy, port, installation))
+  {}
+  PIMPL_DTOR (rifds)
+
   namespace
   {
     template<typename Key, typename Value>
@@ -129,89 +193,33 @@ namespace gspc
     }
   }
 
-  rifds::rifds ( rifd::strategy const& strategy
-               , rifd::port const& port
-               , installation const& installation
-               )
-    : _ (new implementation (strategy, port, installation))
-  {}
-  PIMPL_DTOR (rifds)
-
   std::vector<std::string> rifds::hosts() const
   {
-    return keys (_->_entry_points);
+    return keys (_->entry_points());
   }
+  rifd_entry_points rifds::entry_points (rifd::hostnames const& hostnames) const
+  {
+    return new rifd_entry_points::implementation
+      (values (_->entry_points (hostnames._->_)));
+  }
+  rifd_entry_points rifds::entry_points() const
+  {
+    return new rifd_entry_points::implementation (values (_->entry_points()));
+  }
+
   rifd_entry_points rifds::bootstrap (rifd::hostnames const& hostnames)
   {
-    for (std::string const& hostname : hostnames._->_)
-    {
-      if (_->_entry_points.count (hostname))
-      {
-        throw std::invalid_argument
-          ((boost::format ("boostrap: duplicate host %1%") % hostname).str());
-      }
-    }
-
-    entry_point_by_host const new_entry_points
-      ( fhg::rif::strategy::bootstrap
-          (_->_strategy, hostnames._->_, _->_port, _->_installation.gspc_home())
-      );
-
-    for (auto new_entry_point : new_entry_points)
-    {
-      if (!_->_entry_points.emplace (new_entry_point).second)
-      {
-        throw std::logic_error
-          (( boost::format ("STRANGE: duplicate key '%1%'!?")
-           % new_entry_point.first
-           ).str()
-          );
-      }
-    }
-
-    return new rifd_entry_points::implementation (values (new_entry_points));
+    return new rifd_entry_points::implementation
+     (values (_->bootstrap (hostnames._->_)));
   }
+
   std::vector<std::string> rifds::teardown (rifd::hostnames const& hostnames)
   {
-    entry_point_by_host entry_points_to_remove;
-
-    for (std::string const& hostname : hostnames._->_)
-    {
-      auto pos (_->_entry_points.find (hostname));
-
-      if (pos == _->_entry_points.end())
-      {
-        throw std::invalid_argument
-          ((boost::format ("teardown: unknown host '%1%'") % hostname).str());
-      }
-
-      entry_points_to_remove.emplace (*pos);
-    }
-
-    return keys (_->teardown (entry_points_to_remove));
+    return keys (_->teardown (_->entry_points (hostnames._->_)));
   }
   std::vector<std::string> rifds::teardown()
   {
     return keys (_->teardown());
-  }
-
-  scoped_rifds::scoped_rifds ( rifd::strategy const& strategy
-                             , rifd::hostnames const& hostnames
-                             , rifd::port const& port
-                             , installation const& installation
-                             )
-    : rifds (strategy, port, installation)
-  {
-    bootstrap (hostnames);
-  }
-  scoped_rifds::~scoped_rifds()
-  {
-    teardown();
-  }
-  rifd_entry_points scoped_rifds::entry_points() const
-  {
-    return new rifd_entry_points::implementation
-      (_->_entry_points | boost::adaptors::map_values);
   }
 
   scoped_rifd::scoped_rifd ( rifd::strategy const& strategy
