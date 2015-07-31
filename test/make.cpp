@@ -1,65 +1,129 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <test/make.hpp>
 
-#include <util-generic/join.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
 #include <boost/format.hpp>
 
-#include <exception>
 #include <sstream>
-#include <stdexcept>
 
 namespace test
 {
+  //! \todo configure
+  boost::filesystem::path pnet_compiler (gspc::installation const& installation)
+  {
+    return installation.gspc_home() / "bin" / "pnetc";
+  }
+  boost::filesystem::path workflow_library
+    (gspc::installation const& installation)
+  {
+    return installation.gspc_home() / "share" / "sdpa" / "xml" / "lib";
+  }
+  boost::filesystem::path boost_root
+    (gspc::installation const& installation)
+  {
+    return installation.gspc_home() / "external" / "boost";
+  }
+
   make::make ( gspc::installation const& installation
              , std::string const& main
              , boost::filesystem::path const& source_directory
-             , std::unordered_map<std::string, std::string> const& make_options
-             , std::string const& make_targets
+             , boost::optional<boost::filesystem::path> const& lib_destdir
+             , option::options const& options
              )
-    : _build_directory ( boost::filesystem::temp_directory_path()
+    : _main (main)
+    , _build_directory ( boost::filesystem::temp_directory_path()
                        / boost::filesystem::unique_path()
                        )
+    , _pnet ( static_cast<boost::filesystem::path> (_build_directory)
+            / (_main + ".pnet")
+            )
   {
-    {
-      std::set<std::string> const supported_targets
-        {"net", "net lib install"};
+    boost::filesystem::path const wrapper_directory
+      (static_cast<boost::filesystem::path> (_build_directory) / "gen");
 
-      if (!supported_targets.count (make_targets))
+    {
+      std::ostringstream command;
+
+      command
+        << pnet_compiler (installation)
+        << option::include (workflow_library (installation))
+        << option::generic ("input", source_directory / (_main + ".xpnet"))
+        << option::generic ("output", pnet())
+        << option::gen::cxx_flag ("-O3")
+        << options
+        ;
+
+      if (!!lib_destdir)
       {
-        throw std::invalid_argument
-          (( boost::format
-             ("unsupported make_targets '%1%', supported are {%2%}")
-           % make_targets
-           % fhg::util::join (supported_targets, ", ")
-           ).str()
-          );
+        command << option::generic ("path-to-cpp", wrapper_directory);
       }
+
+      fhg::util::system_with_blocked_SIGCHLD (command.str());
     }
 
-    std::ostringstream command;
-
-    command
-      << "make -f "
-      << (installation.gspc_home() / "share" / "sdpa" / "make" / "common.mk")
-      << " SDPA_HOME=" << installation.gspc_home()
-      << " BOOST_ROOT=" << (installation.gspc_home() / "external" / "boost")
-      << " BUILDDIR=" << build_directory()
-      << " MAIN=" << main
-      ;
-
-    for (std::pair<std::string, std::string> const& options : make_options)
+    if (!!lib_destdir)
     {
-      command << " " << options.first << "=" << options.second;
+      std::ostringstream command;
+
+      command
+        << "make "
+        << " SDPA_HOME=" << installation.gspc_home()
+        << " BOOST_ROOT=" << boost_root (installation)
+        << " LIB_DESTDIR=" << lib_destdir.get()
+        << " -C " << wrapper_directory
+        << " install"
+        ;
+
+      fhg::util::system_with_blocked_SIGCHLD (command.str());
+    }
+  }
+
+  namespace option
+  {
+    generic::generic (std::string const& key, char const* const value)
+      : generic (key, std::string (value))
+    {}
+    generic::generic (std::string const& key, std::string const& value)
+      : _key (key)
+      , _value (value)
+    {}
+    generic::generic (std::string const& key, boost::format const& format)
+      : generic (key, format.str())
+    {}
+    generic::generic ( std::string const& key
+                     , boost::filesystem::path const& path
+                     )
+      : generic (key, boost::format ("%1%") % path)
+    {}
+    std::ostream& generic::operator() (std::ostream& os) const
+    {
+      //! \todo quoting
+      return os << " --" << _key << "=" << _value ;
+    }
+    std::ostream& options::operator() (std::ostream& os) const
+    {
+      for (auto&& option : _options)
+      {
+        os << *option;
+      }
+
+      return os;
     }
 
-    command
-      << " -C " << source_directory
-      << " " << make_targets
-      ;
-
-    fhg::util::system_with_blocked_SIGCHLD (command.str());
+    namespace gen
+    {
+      cxx11::cxx11()
+        : cxx_flag ("--std=c++11")
+      {}
+      include::include (boost::filesystem::path const& path)
+        : cxx_flag (boost::format ("'-I %1%'") % path)
+      {}
+      link::link (boost::filesystem::path const& path)
+        : ld_flag (path.string())
+      {}
+      library_path::library_path (boost::filesystem::path const& path)
+        : ld_flag (boost::format ("'-L %1%'") % path)
+      {}
+    }
   }
 }

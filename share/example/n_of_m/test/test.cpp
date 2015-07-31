@@ -71,16 +71,15 @@ BOOST_AUTO_TEST_CASE (share_example_n_of_m)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "n_of_m"
     , test::source_directory (vm)
-    , { { "LIB_DESTDIR", installation_dir.string()}
-      , { "CXXLIBRARYPATHS"
-        , (installation.gspc_home() / "libexec" / "sdpa").string()
-        }
-      }
-    , "net lib install"
+    , installation_dir
+    , test::option::options()
+    . add (new test::option::gen::library_path
+            (installation.gspc_home() / "libexec" / "sdpa")
+          )
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
@@ -93,7 +92,7 @@ BOOST_AUTO_TEST_CASE (share_example_n_of_m)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
-      ( gspc::workflow (make.build_directory() / "n_of_m.pnet")
+      ( gspc::workflow (make.pnet())
       , { {"m", 25L}
         , {"parallel", 2L}
         , {"cmd"

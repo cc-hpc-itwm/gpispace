@@ -54,12 +54,10 @@ BOOST_AUTO_TEST_CASE
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net const make
     ( installation
     , "transition_with_unconnected_input_port"
     , test::source_directory (vm)
-    , std::unordered_map<std::string, std::string> {}
-    , "net"
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
@@ -72,11 +70,7 @@ BOOST_AUTO_TEST_CASE
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
-      ( gspc::workflow ( make.build_directory()
-                       / "transition_with_unconnected_input_port.pnet"
-                       )
-      , {{"i", 0L}}
-      )
+        (gspc::workflow (make.pnet()), {{"i", 0L}})
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 0);

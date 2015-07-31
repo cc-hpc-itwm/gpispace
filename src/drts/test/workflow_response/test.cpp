@@ -63,12 +63,11 @@ namespace
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , name
     , test::source_directory (vm)
-    , {{"LIB_DESTDIR", installation_dir.string()}}
-    , "net lib install"
+    , installation_dir
     );
 
   gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
@@ -82,7 +81,7 @@ namespace
 
   gspc::client client (drts);
 
-  gspc::workflow workflow (make.build_directory() / (name + ".pnet"));
+  gspc::workflow workflow (make.pnet());
 
   workflow.set_wait_for_output();
 
@@ -240,12 +239,11 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "workflow_response_one_response_waits_while_others_are_made"
     , test::source_directory (vm)
-    , {{"LIB_DESTDIR", installation_dir.string()}}
-    , "net lib install"
+   , installation_dir
     );
 
   gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
@@ -259,10 +257,7 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
 
   gspc::client client (drts);
 
-  gspc::workflow workflow
-    ( make.build_directory()
-    / "workflow_response_one_response_waits_while_others_are_made.pnet"
-    );
+  gspc::workflow workflow (make.pnet());
 
   workflow.set_wait_for_output();
 

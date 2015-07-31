@@ -80,12 +80,10 @@ BOOST_AUTO_TEST_CASE (share_example_split_join)
 
   std::string const main (vm.at (option_main).as<validators::nonempty_string>());
 
-  test::make const make
+  test::make_net const make
     ( installation
     , vm.at (option_main).as<validators::nonempty_string>()
     , test::source_directory (vm)
-    , std::unordered_map<std::string, std::string>()
-    , "net"
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
@@ -104,11 +102,7 @@ BOOST_AUTO_TEST_CASE (share_example_split_join)
   }
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    ( gspc::client (drts)
-    . put_and_run ( gspc::workflow (make.build_directory() / (main + ".pnet"))
-                  , input
-                  )
-    );
+    (gspc::client (drts).put_and_run (gspc::workflow (make.pnet()), input));
 
   std::vector<long> const expected_output
     (vm.at (option_expected_output).as<std::vector<long>>());

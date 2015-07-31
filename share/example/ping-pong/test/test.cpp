@@ -57,12 +57,11 @@ BOOST_AUTO_TEST_CASE (share_example_ping_pong)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , main
     , test::source_directory (vm)
-    , {{"LIB_DESTDIR", installation_dir.string()}}
-    , "net lib install"
+    , installation_dir
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
@@ -82,7 +81,7 @@ BOOST_AUTO_TEST_CASE (share_example_ping_pong)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     (gspc::client (drts).put_and_run
-      (gspc::workflow (make.build_directory() / (main + ".pnet")), {{"n", n}})
+      (gspc::workflow (make.pnet()), {{"n", n}})
     );
 
   BOOST_REQUIRE_LT

@@ -50,12 +50,10 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_atomic)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net const make
     ( installation
     , "atomic"
     , test::source_directory (vm)
-    , std::unordered_map<std::string, std::string>()
-    , "net"
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
@@ -67,12 +65,11 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_atomic)
     (vm, installation, "work:4", rifds.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    ( gspc::client (drts)
-    . put_and_run ( gspc::workflow (make.build_directory() / "atomic.pnet")
-                  , { {"number_of_updates", 100UL}
-                    , {"initial_value", 12L}
-                    }
-                  )
+    ( gspc::client (drts). put_and_run ( gspc::workflow (make.pnet())
+                                       , { {"number_of_updates", 100UL}
+                                         , {"initial_value", 12L}
+                                         }
+                                       )
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 1);

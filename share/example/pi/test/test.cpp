@@ -61,12 +61,11 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "pi"
     , test::source_directory (vm)
-    , {{"LIB_DESTDIR", installation_dir.string()}}
-    , "net lib install"
+    , installation_dir
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
@@ -78,16 +77,15 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
     (vm, installation, "worker:12", rifds.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    ( gspc::client (drts)
-    . put_and_run ( gspc::workflow (make.build_directory() / "pi.pnet")
-                  , { {"num_packet", 500L}
-                    , {"points_per_packet", 1000000L}
-                    , {"credit_generate", 20L}
-                    , {"credit_run", 10L}
-                    , {"credit_get_key", 20L}
-                    , {"seed", 3141L}
-                    }
-                  )
+    ( gspc::client (drts).put_and_run ( gspc::workflow (make.pnet())
+                                      , { {"num_packet", 500L}
+                                        , {"points_per_packet", 1000000L}
+                                        , {"credit_generate", 20L}
+                                        , {"credit_run", 10L}
+                                        , {"credit_get_key", 20L}
+                                        , {"seed", 3141L}
+                                        }
+                                      )
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 1);

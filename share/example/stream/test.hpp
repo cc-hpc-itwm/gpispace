@@ -99,14 +99,13 @@ namespace share_example_stream_test
 
     gspc::installation const installation (vm);
 
-    test::make const make
+    test::make_net_lib_install const make
       ( installation
       , workflow_name
       , test::source_directory (vm)
-      , { {"LIB_DESTDIR", installation_dir.string()}
-        , {"CXXINCLUDEPATHS", test::source_directory (vm).string()}
-        }
-      , "net lib install"
+      , installation_dir
+      , test::option::options()
+      . add (new test::option::gen::include (test::source_directory (vm)))
       );
 
     gspc::stream::number_of_slots const num_slots
@@ -128,8 +127,7 @@ namespace share_example_stream_test
       (drts.alloc (size, workflow_name + "_buffer"));
     gspc::client client (drts);
 
-    gspc::workflow workflow
-      (make.build_directory() / (workflow_name + ".pnet"));
+    gspc::workflow workflow (make.pnet());
 
     workflow.set_wait_for_output();
 

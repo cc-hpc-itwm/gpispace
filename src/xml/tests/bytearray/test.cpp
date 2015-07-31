@@ -58,12 +58,11 @@ BOOST_AUTO_TEST_CASE (xml_transport_bytearray)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "bytearray"
     , test::source_directory (vm)
-    , {{"LIB_DESTDIR", installation_dir.string()}}
-    , "net lib install"
+    , installation_dir
     );
 
   pnet::type::value::value_type const point
@@ -79,9 +78,7 @@ BOOST_AUTO_TEST_CASE (xml_transport_bytearray)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
-      ( gspc::workflow (make.build_directory() / "bytearray.pnet")
-      , {{"point", point}}
-      )
+        (gspc::workflow (make.pnet()), {{"point", point}})
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 1);

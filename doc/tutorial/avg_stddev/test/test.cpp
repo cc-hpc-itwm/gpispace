@@ -78,15 +78,15 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
     (shared_directory / boost::filesystem::unique_path());
   boost::filesystem::path const data_file (_data_file);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "avg_stddev"
     , test::source_directory (vm)
-    , { {"LIB_DESTDIR", installation_dir.string()}
-      , {"DATFILE", data_file.string()}
-      , {"CXXINCLUDEPATHS", (test::source_directory (vm) / "include").string()}
-      }
-    , "net lib install"
+    , installation_dir
+    , test::option::options()
+    . add (new test::option::gen::include
+            (test::source_directory (vm) / "include")
+          )
     );
 
   boost::filesystem::path const generator
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts)
-    . put_and_run ( gspc::workflow (make.build_directory() / "avg_stddev.pnet")
+    . put_and_run ( gspc::workflow (make.pnet())
                   , { {"name_file", data_file.string()}
                     , {"size_file", long (sizeof (long) * num_values)}
                     , {"size_chunk", size_chunk}

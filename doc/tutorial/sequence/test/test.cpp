@@ -52,12 +52,10 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_sequence)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net const make
     ( installation
     , "sequence"
     , test::source_directory (vm)
-    , std::unordered_map<std::string, std::string>()
-    , "net"
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
@@ -72,7 +70,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_sequence)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
-      (gspc::workflow (make.build_directory() / "sequence.pnet"), {{"n", n}})
+        (gspc::workflow (make.pnet()), {{"n", n}})
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), n);

@@ -76,12 +76,11 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "vmem_1_to_n"
     , test::source_directory (vm)
-    , {{"LIB_DESTDIR", installation_dir.string()}}
-    , "net lib install"
+    , installation_dir
     );
 
   unsigned long const num_bytes
@@ -103,7 +102,7 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
-      ( gspc::workflow (make.build_directory() / "vmem_1_to_n.pnet")
+      ( gspc::workflow (make.pnet())
       , { {"memory", allocation_data.global_memory_range()}
         , {"outer", 5L}
         , {"inner", 5L}

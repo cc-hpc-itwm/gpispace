@@ -35,7 +35,7 @@ namespace
   void run_test ( unsigned long num_worker
                 , boost::program_options::variables_map const& vm
                 , gspc::installation const& installation
-                , test::make const& make
+                , test::make_net_lib_install const& make
                 , boost::filesystem::path const& shared_directory
                 )
   {
@@ -52,11 +52,8 @@ namespace
       );
 
     std::multimap<std::string, pnet::type::value::value_type> const result
-      ( gspc::client (drts)
-      . put_and_run
-        ( gspc::workflow (make.build_directory() / "workerlist.pnet")
-        , {{"num_workers", num_worker}}
-        )
+      ( gspc::client (drts).put_and_run
+          (gspc::workflow (make.pnet()), {{"num_workers", num_worker}})
       );
 
     BOOST_REQUIRE_EQUAL (result.size(), 2);
@@ -171,14 +168,13 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "workerlist"
     , test::source_directory (vm)
-    , { {"LIB_DESTDIR", installation_dir.string()}
-      , {"CXXLIBRARYPATHS", (installation.gspc_home() / "lib").string()}
-      }
-    , "net lib install"
+    , installation_dir
+    , test::option::options()
+    . add (new test::option::gen::library_path (installation.gspc_home() / "lib"))
     );
 
   run_test (1, vm, installation, make, shared_directory);

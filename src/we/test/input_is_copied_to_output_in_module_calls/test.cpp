@@ -59,12 +59,11 @@ BOOST_AUTO_TEST_CASE (we_input_is_copied_to_output_in_module_calls)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "input_is_copied_to_output_in_module_calls"
     , test::source_directory (vm)
-    , {{"LIB_DESTDIR", installation_dir.string()}}
-    , "net lib install"
+    , installation_dir
     );
 
   pnet::type::value::value_type const p {we::type::literal::control()};
@@ -78,13 +77,8 @@ BOOST_AUTO_TEST_CASE (we_input_is_copied_to_output_in_module_calls)
     (vm, installation, "work:1", rifds.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    ( gspc::client (drts)
-    . put_and_run
-      ( gspc::workflow ( make.build_directory()
-                       / "input_is_copied_to_output_in_module_calls.pnet"
-                       )
-      , {{"p", p}}
-      )
+    ( gspc::client (drts).put_and_run
+        (gspc::workflow (make.pnet()), {{"p", p}})
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 1);

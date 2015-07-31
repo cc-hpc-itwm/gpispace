@@ -51,12 +51,10 @@ BOOST_AUTO_TEST_CASE (share_example_concurrent)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net const make
     ( installation
     , "concurrent"
     , test::source_directory (vm)
-    , std::unordered_map<std::string, std::string>()
-    , "net"
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
@@ -68,10 +66,8 @@ BOOST_AUTO_TEST_CASE (share_example_concurrent)
     (vm, installation, "", rifds.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    ( gspc::client (drts)
-    . put_and_run ( gspc::workflow (make.build_directory() / "concurrent.pnet")
-                  , {{"N", 1000L}}
-                  )
+    ( gspc::client (drts).put_and_run
+        (gspc::workflow (make.pnet()), {{"N", 1000L}})
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 10);

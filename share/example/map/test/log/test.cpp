@@ -109,15 +109,14 @@ BOOST_AUTO_TEST_CASE (share_example_map_log)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "map"
     , test::source_directory (vm)
-    , { {"LIB_DESTDIR", installation_dir.string()}
-      , {"CXXINCLUDEPATHS", test::source_directory (vm).string()}
-      , {"PNETC_OPTS", std::string ("--gen-cxxflags=--std=c++11")}
-      }
-    , "net lib install"
+    , installation_dir
+    , test::option::options()
+    . add (new test::option::gen::cxx11())
+    . add (new test::option::gen::include (test::source_directory (vm)))
     );
 
   boost::filesystem::path const implementation
@@ -155,7 +154,7 @@ BOOST_AUTO_TEST_CASE (share_example_map_log)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
-      ( gspc::workflow (make.build_directory() / "map.pnet")
+      ( gspc::workflow (make.pnet())
       , { {"input", allocation_input.global_memory_range()}
         , {"output", allocation_output.global_memory_range()}
         , {"num_block", num_block}

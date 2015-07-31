@@ -61,12 +61,10 @@ namespace
 
     gspc::installation const installation (vm);
 
-    test::make const make
+    test::make_net const make
       ( installation
       , main
       , test::source_directory (vm)
-      , {{"XML", main + ".xml"}}
-      , "net"
       );
 
     gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
@@ -78,7 +76,7 @@ namespace
       (vm, installation, "work:4", rifds.entry_points());
 
     return gspc::client (drts).put_and_run
-      (gspc::workflow (make.build_directory() / (main + ".pnet")), {{"n", n}});
+      (gspc::workflow (make.pnet()), {{"n", n}});
   }
 }
 

@@ -62,14 +62,13 @@ namespace
 
     gspc::installation const installation (vm);
 
-    test::make const make
+    test::make_net_lib_install const make
       ( installation
       , "n_of_m"
       , test::source_directory (vm)
-      , { {"LIB_DESTDIR", installation_dir.string()}
-        , {"PNETC_OPTS", "-I.."}
-      }
-      , "net lib install"
+      , installation_dir
+      , test::option::options()
+      . add (new test::option::include (test::source_directory (vm) / ".."))
       );
 
     pnet::type::value::value_type config;
@@ -88,7 +87,7 @@ namespace
 
     std::multimap<std::string, pnet::type::value::value_type> const result
       ( gspc::client (drts).put_and_run
-        ( gspc::workflow (make.build_directory() / "n_of_m.pnet")
+        ( gspc::workflow (make.pnet())
         , { {"n", 12L}
           , {"c", 4L}
           , {"config", config}

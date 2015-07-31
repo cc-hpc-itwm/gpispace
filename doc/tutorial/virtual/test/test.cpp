@@ -57,14 +57,13 @@ BOOST_AUTO_TEST_CASE (tutorial_virtual)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "work_and_wait"
     , test::source_directory (vm)
-    , { {"LIB_DESTDIR", installation_dir.string()}
-      , {"PNETC_OPTS", "-I.."}
-      }
-    , "net lib install"
+    , installation_dir
+    , test::option::options()
+    . add (new test::option::include (test::source_directory (vm) / ".."))
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
@@ -77,9 +76,7 @@ BOOST_AUTO_TEST_CASE (tutorial_virtual)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
-      ( gspc::workflow (make.build_directory() / "work_and_wait.pnet")
-      , {{"n", 5L}}
-      )
+        (gspc::workflow (make.pnet()), {{"n", 5L}})
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 1);

@@ -63,12 +63,11 @@ BOOST_AUTO_TEST_CASE (add_worker)
 
   gspc::installation const installation (vm);
 
-  test::make const make
+  test::make_net_lib_install const make
     ( installation
     , "add_worker"
     , test::source_directory (vm)
-    , {{"LIB_DESTDIR", installation_dir.string()}}
-    , "net lib install"
+    , installation_dir
     );
 
   unsigned int n (3);
@@ -101,7 +100,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
   gspc::scoped_runtime_system drts
     (vm, installation, "worker:1", rifds.front().entry_points());
 
-  gspc::workflow workflow (make.build_directory() / "add_worker.pnet");
+  gspc::workflow workflow (make.pnet());
   workflow.set_wait_for_output();
 
   boost::asio::io_service io_service;
