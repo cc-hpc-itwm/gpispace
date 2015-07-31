@@ -44,6 +44,8 @@ namespace fhg
                                   , pid_t pid
                                   )
     {
+      std::unique_lock<std::mutex> const guard (_guard);
+
       if (!_[entry_point].emplace (name, pid).second)
       {
         throw std::logic_error
