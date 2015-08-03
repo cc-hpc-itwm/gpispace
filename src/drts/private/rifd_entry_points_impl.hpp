@@ -16,11 +16,6 @@ namespace gspc
       : _entry_points (entry_points)
     {}
 
-    template<typename Range>
-      implementation (Range range)
-        : _entry_points (std:: begin (range), std::end (range))
-    {}
-
     std::pair<std::list<std::string>, unsigned long>
       nodes_and_number_of_unique_nodes() const
     {
