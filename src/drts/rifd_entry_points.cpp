@@ -58,6 +58,10 @@ namespace gspc
   }
   PIMPL_DTOR (rifd_entry_point);
 
+  std::string const& rifd_entry_point::hostname() const
+  {
+    return _->hostname();
+  }
   std::size_t rifd_entry_point_hash::operator()
     (rifd_entry_point const& ep) const
   {

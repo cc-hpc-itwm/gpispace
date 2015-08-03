@@ -39,6 +39,10 @@ namespace gspc
     implementation (fhg::rif::entry_point const& entry_point)
       : _entry_point (entry_point)
     {}
+    std::string const& hostname() const
+    {
+      return _entry_point.hostname;
+    }
 
     fhg::rif::entry_point _entry_point;
   };

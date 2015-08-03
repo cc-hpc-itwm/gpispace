@@ -35,6 +35,8 @@ namespace gspc
     rifd_entry_point (implementation*);
     rifd_entry_point (rifd_entry_point&&);
 
+    std::string const& hostname() const;
+
   private:
     friend class scoped_rifd;
     friend class scoped_runtime_system;
