@@ -82,7 +82,12 @@ namespace gspc
           );
 
     std::vector<std::string> hosts() const;
-    rifd_entry_points entry_points (rifd::hostnames const&) const;
+    std::pair< rifd_entry_points
+             , std::pair< std::unordered_set<std::string> // known
+                        , std::unordered_set<std::string> // unknown
+                        >
+             >
+      entry_points (rifd::hostnames const&) const;
     rifd_entry_points entry_points() const;
 
     std::pair< rifd_entry_points
@@ -94,6 +99,16 @@ namespace gspc
               , std::unordered_map<std::string, std::exception_ptr>
               >
       teardown (rifd::hostnames const&);
+
+    std::pair < std::unordered_set<std::string>
+              , std::unordered_map<std::string, std::exception_ptr>
+              >
+      teardown (std::unordered_set<std::string> const& hostnames)
+    {
+      std::vector<std::string> hosts {hostnames.begin(), hostnames.end()};
+
+      return teardown (hosts);
+    }
 
     std::pair < std::unordered_set<std::string>
               , std::unordered_map<std::string, std::exception_ptr>

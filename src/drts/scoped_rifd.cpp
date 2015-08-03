@@ -66,10 +66,16 @@ namespace gspc
       , _installation (installation)
     {}
 
-    entry_point_by_host entry_points
+    std::pair< entry_point_by_host
+             , std::pair< std::unordered_set<std::string>
+                        , std::unordered_set<std::string>
+                        >
+             > entry_points
       (std::vector<std::string> const& hostnames) const
     {
       entry_point_by_host entry_points;
+      std::unordered_set<std::string> known;
+      std::unordered_set<std::string> unknown;
 
       for (std::string const& hostname : hostnames)
       {
@@ -77,14 +83,16 @@ namespace gspc
 
         if (entry_point == _entry_points.end())
         {
-          throw std::invalid_argument
-            ((boost::format ("unknown host '%1%'") % hostname).str());
+          unknown.emplace (hostname);
         }
-
-        entry_points.emplace (*entry_point);
+        else
+        {
+          known.emplace (hostname);
+          entry_points.emplace (*entry_point);
+        }
       }
 
-      return entry_points;
+      return {entry_points, {known, unknown}};
     }
     entry_point_by_host const& entry_points() const
     {
@@ -211,10 +219,17 @@ namespace gspc
   {
     return keys (_->entry_points());
   }
-  rifd_entry_points rifds::entry_points (rifd::hostnames const& hostnames) const
+  std::pair< rifd_entry_points
+           , std::pair< std::unordered_set<std::string>
+                      , std::unordered_set<std::string>
+                      >
+           > rifds::entry_points (rifd::hostnames const& hostnames) const
   {
-    return new rifd_entry_points::implementation
-      (values (_->entry_points (hostnames._->_)));
+    auto const entry_points (_->entry_points (hostnames._->_));
+
+    return { new rifd_entry_points::implementation (values (entry_points.first))
+           , entry_points.second
+           };
   }
   rifd_entry_points rifds::entry_points() const
   {
@@ -238,7 +253,7 @@ namespace gspc
             >
     rifds::teardown (rifd::hostnames const& hostnames)
   {
-    return _->teardown (_->entry_points (hostnames._->_));
+    return _->teardown (_->entry_points (hostnames._->_).first);
   }
 
   std::pair < std::unordered_set<std::string>
