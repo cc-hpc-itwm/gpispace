@@ -271,7 +271,9 @@ namespace gspc
   }
 
   std::unordered_map< fhg::rif::entry_point
-                    , std::unordered_map<pid_t, std::exception_ptr>
+                    , std::pair< std::string /* kind */
+                               , std::unordered_map<pid_t, std::exception_ptr>
+                               >
                     >
     scoped_runtime_system::implementation::started_runtime_system::remove_worker
       (std::vector<fhg::rif::entry_point> const& entry_points)
@@ -342,7 +344,9 @@ namespace gspc
     _started_runtime_system.add_worker (rifd_entry_points._->_entry_points);
   }
   std::unordered_map< fhg::rif::entry_point
-                    , std::unordered_map<pid_t, std::exception_ptr>
+                    , std::pair< std::string /* kind */
+                               , std::unordered_map<pid_t, std::exception_ptr>
+                               >
                     >
       scoped_runtime_system::implementation::remove_worker
     (rifd_entry_points const& rifd_entry_points)
@@ -391,17 +395,23 @@ namespace gspc
     _->add_worker (rifd_entry_points);
   }
   std::unordered_map< rifd_entry_point
-                    , std::unordered_map<pid_t, std::exception_ptr>
+                    , std::pair< std::string /* kind */
+                               , std::unordered_map<pid_t, std::exception_ptr>
+                               >
                     , rifd_entry_point_hash
                     >
     scoped_runtime_system::remove_worker
       (rifd_entry_points const& rifd_entry_points)
   {
     std::unordered_map< fhg::rif::entry_point
-                      , std::unordered_map<pid_t, std::exception_ptr>
+                      , std::pair< std::string /* kind */
+                                 , std::unordered_map<pid_t, std::exception_ptr>
+                                 >
                       > const result (_->remove_worker (rifd_entry_points));
     std::unordered_map< rifd_entry_point
-                      , std::unordered_map<pid_t, std::exception_ptr>
+                      , std::pair< std::string /* kind */
+                                 , std::unordered_map<pid_t, std::exception_ptr>
+                                 >
                       , rifd_entry_point_hash
                       > wrapped;
 

@@ -86,7 +86,9 @@ namespace gspc
 
     void add_worker (rifd_entry_points const&);
     std::unordered_map< rifd_entry_point
-                      , std::unordered_map<pid_t, std::exception_ptr>
+                      , std::pair< std::string /* kind */
+                                 , std::unordered_map<pid_t, std::exception_ptr>
+                                 >
                       , rifd_entry_point_hash
                       >
       remove_worker (rifd_entry_points const&);

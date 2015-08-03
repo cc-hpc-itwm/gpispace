@@ -590,14 +590,16 @@ namespace fhg
     namespace
     {
       template<typename It>
-        std::unordered_map< rif::entry_point
-                          , std::unordered_map<pid_t, std::exception_ptr>
-                          >
-          terminate_all_processes_of_a_kind
-            ( std::vector<It> const& entry_point_procs
-            , component_type component
-            , std::ostream& info_output
-            )
+        std::unordered_map
+          < rif::entry_point
+          , std::pair< std::string /* kind */
+                     , std::unordered_map<pid_t, std::exception_ptr>
+                     >
+          > terminate_all_processes_of_a_kind
+              ( std::vector<It> const& entry_point_procs
+              , component_type component
+              , std::ostream& info_output
+              )
       {
         std::string const kind
           ( component == component_type::worker ? "drts-kernel"
@@ -608,9 +610,12 @@ namespace fhg
           );
 
         std::mutex guard_failures;
-        std::unordered_map< rif::entry_point
-                          , std::unordered_map<pid_t, std::exception_ptr>
-                          > failures;
+        std::unordered_map
+          < rif::entry_point
+          , std::pair< std::string /* kind */
+                     , std::unordered_map<pid_t, std::exception_ptr>
+                     >
+          > failures;
         std::vector<std::future<void>> terminates;
 
         for (It const& entry_point_processes : entry_point_procs)
@@ -656,9 +661,10 @@ namespace fhg
                         {
                           std::unique_lock<std::mutex> const _ (guard_failures);
 
-                          failures.emplace ( entry_point_processes->first
-                                           , failures_kill
-                                           );
+                          failures.emplace
+                            ( entry_point_processes->first
+                            , std::make_pair (kind, failures_kill)
+                            );
                         }
                       }
                       catch (...) // \note: e.g. rif::client::connect
@@ -672,7 +678,9 @@ namespace fhg
 
                         std::unique_lock<std::mutex> const _ (guard_failures);
 
-                        failures.emplace (entry_point_processes->first, fails);
+                        failures.emplace ( entry_point_processes->first
+                                         , std::make_pair (kind, fails)
+                                         );
                       }
 
                       //! \note: remove the process from the list of
@@ -699,7 +707,9 @@ namespace fhg
     }
 
     std::unordered_map< rif::entry_point
-                      , std::unordered_map<pid_t, std::exception_ptr>
+                      , std::pair< std::string /* kind */
+                                 , std::unordered_map<pid_t, std::exception_ptr>
+                                 >
                       >
       processes_storage::shutdown
         ( component_type component
@@ -718,10 +728,16 @@ namespace fhg
         iterators.emplace_back (pos);
       }
 
-      std::unordered_map< rif::entry_point
-                        , std::unordered_map<pid_t, std::exception_ptr>
-                        > const failures
-        (terminate_all_processes_of_a_kind (iterators, component, _info_output));
+      std::unordered_map
+        < rif::entry_point
+        , std::pair< std::string /* kind */
+                   , std::unordered_map<pid_t, std::exception_ptr>
+                   >
+        > const failures (terminate_all_processes_of_a_kind ( iterators
+                                                            , component
+                                                            , _info_output
+                                                            )
+                         );
 
       for (decltype (_)::iterator const& it : iterators)
       {
@@ -755,19 +771,23 @@ namespace fhg
           }
         , [this] (component_type component)
           {
-            std::unordered_map< rif::entry_point
-                              , std::unordered_map<pid_t, std::exception_ptr>
-                              > const failures
-              ( terminate_all_processes_of_a_kind
-                  (iterators (_.begin(), _.end()), component, _info_output)
-              );
+            std::unordered_map
+              < rif::entry_point
+              , std::pair< std::string /* kind */
+                         , std::unordered_map<pid_t, std::exception_ptr>
+                         >
+              > const failures
+                  ( terminate_all_processes_of_a_kind
+                      (iterators (_.begin(), _.end()), component, _info_output)
+                  );
 
             for (auto const& failure : failures)
             {
-              for (auto const& fails : failure.second)
+              for (auto const& fails : failure.second.second)
               {
                 _info_output <<
-                  ( boost::format ("Could not terminate %1% on %2%: %3%")
+                  ( boost::format ("Could not terminate %1%[%2%] on %3%: %4%")
+                  % failure.second.first
                   % fails.first
                   % failure.first
                   % util::exception_printer (fails.second)
