@@ -4,6 +4,7 @@
 
 #include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
+#include <util-generic/print_exception.hpp>
 #include <util-generic/read_file.hpp>
 #include <util-generic/read_lines.hpp>
 #include <util-generic/split.hpp>
@@ -754,8 +755,25 @@ namespace fhg
           }
         , [this] (component_type component)
           {
-            terminate_all_processes_of_a_kind
-              (iterators (_.begin(), _.end()), component, _info_output);
+            std::unordered_map< rif::entry_point
+                              , std::unordered_map<pid_t, std::exception_ptr>
+                              > const failures
+              ( terminate_all_processes_of_a_kind
+                  (iterators (_.begin(), _.end()), component, _info_output)
+              );
+
+            for (auto const& failure : failures)
+            {
+              for (auto const& fails : failure.second)
+              {
+                _info_output <<
+                  ( boost::format ("Could not terminate %1% on %2%: %3%")
+                  % fails.first
+                  % failure.first
+                  % util::exception_printer (fails.second)
+                  ) << std::endl;
+              }
+            }
           }
         );
     }
