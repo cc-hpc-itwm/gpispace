@@ -26,7 +26,10 @@ namespace gspc
                    );
 
     void add_worker (rifd_entry_points const&);
-    void remove_worker (rifd_entry_points const&);
+    std::unordered_map< fhg::rif::entry_point
+                      , std::unordered_map<pid_t, std::exception_ptr>
+                      >
+      remove_worker (rifd_entry_points const&);
 
     boost::optional<unsigned long> _virtual_memory_per_node;
     boost::optional<boost::filesystem::path> _virtual_memory_socket;
@@ -58,7 +61,10 @@ namespace gspc
 
       void add_worker_impl (std::vector<fhg::rif::entry_point> const&);
       void add_worker (std::vector<fhg::rif::entry_point> const&);
-      void remove_worker (std::vector<fhg::rif::entry_point> const&);
+      std::unordered_map< fhg::rif::entry_point
+                        , std::unordered_map<pid_t, std::exception_ptr>
+                        >
+        remove_worker (std::vector<fhg::rif::entry_point> const&);
 
       std::ostream& _info_output;
       fhg::rif::entry_point _master;
