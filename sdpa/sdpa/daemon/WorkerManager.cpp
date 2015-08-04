@@ -35,7 +35,7 @@ namespace sdpa
 {
   namespace daemon
   {
-    std::string WorkerManager::host (const sdpa::worker_id_t& worker) const
+    std::string WorkerManager::host_INDICATES_A_RACE (const sdpa::worker_id_t& worker) const
     {
       return worker_map_.at(worker)->hostname();
     }

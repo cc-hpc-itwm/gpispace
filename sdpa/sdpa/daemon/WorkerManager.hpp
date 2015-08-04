@@ -22,7 +22,7 @@ namespace sdpa
 
       const boost::optional<worker_id_t> findSubmOrAckWorker (const sdpa::job_id_t& job_id) const;
 
-      std::string host (const sdpa::worker_id_t& worker) const;
+      std::string host_INDICATES_A_RACE (const sdpa::worker_id_t& worker) const;
 
       //! throws if workerId was not unique
       void addWorker ( const worker_id_t& workerId

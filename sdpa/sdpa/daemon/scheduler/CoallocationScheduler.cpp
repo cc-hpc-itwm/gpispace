@@ -197,7 +197,7 @@ namespace sdpa
               (new Reservation ( matching_workers
                                , compute_reservation_cost ( jobId
                                                           , matching_workers
-                                                          , std::bind (&WorkerManager::host, &_worker_manager, std::placeholders::_1)
+                                                          , std::bind (&WorkerManager::host_INDICATES_A_RACE, &_worker_manager, std::placeholders::_1)
                                                           , requirements.computational_cost()
                                                           )
                                )
