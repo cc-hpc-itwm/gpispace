@@ -234,18 +234,30 @@ namespace sdpa
       return worker_map_.at (worker_id)->cost_assigned_jobs (cost_reservation);
     }
 
-    bool WorkerManager::can_start_job_INDICATES_A_RACE
-      (std::set<worker_id_t> workers) const
+    bool WorkerManager::submit_if_can_start_job_INDICATES_A_RACE
+      (job_id_t const& job_id, std::set<worker_id_t> const& workers) const
     {
       boost::mutex::scoped_lock const _(mtx_);
-      return std::all_of ( std::begin(workers)
-                         , std::end(workers)
-                         , [this] (const worker_id_t& worker_id)
-                           {
-                             return worker_map_.count (worker_id)
-                               && !worker_map_.at (worker_id)->isReserved();
-                           }
-                         );
+      bool const can_start
+        ( std::all_of ( std::begin(workers)
+                      , std::end(workers)
+                      , [this] (const worker_id_t& worker_id)
+                        {
+                          return worker_map_.count (worker_id)
+                            && !worker_map_.at (worker_id)->isReserved();
+                        }
+                      )
+        );
+
+      if (can_start)
+      {
+        for (worker_id_t const& worker_id : workers)
+        {
+          worker_map_.at (worker_id)->submit (job_id);
+        }
+      }
+
+      return can_start;
     }
 
     std::set<job_id_t>  WorkerManager::remove_all_matching_pending_jobs
@@ -281,12 +293,6 @@ namespace sdpa
     {
       boost::mutex::scoped_lock const _(mtx_);
       worker_map_.at (worker_id)->assign (job_id);
-    }
-
-    void WorkerManager::submit_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
-    {
-      boost::mutex::scoped_lock const _(mtx_);
-      worker_map_.at (worker_id)->submit (job_id);
     }
 
     void WorkerManager::acknowledge_job_sent_to_worker ( const job_id_t& job_id
