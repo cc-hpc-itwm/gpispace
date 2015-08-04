@@ -51,16 +51,16 @@ namespace sdpa
         , const double computational_cost
         );
 
+      void reschedule_pending_jobs_matching_worker (const worker_id_t&);
+      std::set<job_id_t> start_pending_jobs
+        (std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)>);
+    private:
       double compute_reservation_cost
         ( const job_id_t&
         , const std::set<worker_id_t>&
         , const double computational_cost
         ) const;
 
-      void reschedule_pending_jobs_matching_worker (const worker_id_t&);
-      std::set<job_id_t> start_pending_jobs
-        (std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)>);
-    private:
       std::function<job_requirements_t (const sdpa::job_id_t&)>
         _job_requirements;
 
