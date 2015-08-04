@@ -5,6 +5,7 @@
 #include <util-generic/syscall.hpp>
 #include <network/connectable_to_address_string.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
@@ -40,6 +41,7 @@ namespace
     constexpr const char* const port {"port"};
     constexpr const char* const register_host {"register-host"};
     constexpr const char* const register_port {"register-port"};
+    constexpr const char* const register_key {"register-key"};
   }
 }
 
@@ -62,6 +64,12 @@ try
         <fhg::util::boost::program_options::positive_integral<unsigned short>>()
         ->required()
     , "port register server is listening on"
+    )
+    ( option::register_key
+    , boost::program_options::value
+        <fhg::util::boost::program_options::nonempty_string>()
+        ->required()
+    , "key to register with"
     )
     ;
 
@@ -89,6 +97,10 @@ try
   unsigned short const register_port
     ( vm.at (option::register_port)
       .as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
+    );
+  std::string const register_key
+    ( vm.at (option::register_key)
+    . as<fhg::util::boost::program_options::nonempty_string>()
     );
 
   boost::asio::io_service io_service;
@@ -264,7 +276,8 @@ try
 
     fhg::rpc::sync_remote_function<fhg::rif::strategy::bootstrap_callback>
       {endpoint}
-      ( fhg::rif::entry_point
+      ( register_key
+      , fhg::rif::entry_point
           ( fhg::network::connectable_to_address_string (local_endpoint.address())
           , local_endpoint.port()
           , child

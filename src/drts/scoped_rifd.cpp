@@ -8,8 +8,14 @@
 #include <drts/private/rifd_entry_points_impl.hpp>
 
 #include <util-generic/read_lines.hpp>
+#include <util-generic/wait_and_collect_exceptions.hpp>
 
 #include <rif/strategy/meta.hpp>
+
+#include <boost/format.hpp>
+#include <boost/range/adaptor/map.hpp>
+
+#include <iterator>
 
 namespace gspc
 {
@@ -45,93 +51,262 @@ namespace gspc
     {}
   }
 
-  struct scoped_rifds::implementation
+  using entry_point_by_host =
+    std::unordered_map<std::string, fhg::rif::entry_point>;
+
+  struct rifds::implementation
   {
-    implementation ( std::string const& strategy
-                   , std::vector<std::string> const& parameters
-                   , std::vector<std::string> const& hostnames
-                   , boost::optional<unsigned short> const& rifd_port
-                   , boost::filesystem::path const& gspc_home
+    implementation ( rifd::strategy const& strategy
+                   , rifd::port const& port
+                   , installation const& installation
                    )
-      : _strategy (strategy)
-      , _parameters (parameters)
-      , _entry_points ( fhg::rif::strategy::bootstrap ( _strategy
-                                                      , hostnames
-                                                      , rifd_port
-                                                      , gspc_home
-                                                      , _parameters
-                                                      )
-                      )
+      : _strategy (strategy._->_.first)
+      , _parameters (strategy._->_.second)
+      , _port (port._->_)
+      , _installation (installation)
     {}
-    ~implementation()
+
+    std::pair< entry_point_by_host
+             , std::pair< std::unordered_set<std::string>
+                        , std::unordered_set<std::string>
+                        >
+             > entry_points
+      (std::vector<std::string> const& hostnames) const
     {
-      //! \todo somehow report the failed teardown and how to get rid
-      //! of left-overs (see #482 Clean shutdown binary)
-      std::vector<fhg::rif::entry_point> failed_entry_points;
-      fhg::rif::strategy::teardown
-        ( _strategy
-        , _entry_points
-        , failed_entry_points
-        , _parameters
+      entry_point_by_host entry_points;
+      std::unordered_set<std::string> known;
+      std::unordered_set<std::string> unknown;
+
+      for (std::string const& hostname : hostnames)
+      {
+        auto entry_point (_entry_points.find (hostname));
+
+        if (entry_point == _entry_points.end())
+        {
+          unknown.emplace (hostname);
+        }
+        else
+        {
+          known.emplace (hostname);
+          entry_points.emplace (*entry_point);
+        }
+      }
+
+      return {entry_points, {known, unknown}};
+    }
+    entry_point_by_host const& entry_points() const
+    {
+      return _entry_points;
+    }
+
+    std::pair< entry_point_by_host
+             , std::unordered_map<std::string, std::exception_ptr>
+             >
+      bootstrap (std::vector<std::string> const& hostnames)
+    {
+      std::unordered_map<std::string, std::exception_ptr> failed;
+      std::vector<std::string> no_duplicates;
+
+      for (std::string const& hostname : hostnames)
+      {
+        if (!_entry_points.count (hostname))
+        {
+          no_duplicates.emplace_back (hostname);
+        }
+        else
+        {
+          failed.emplace
+            ( hostname
+            , std::make_exception_ptr
+              ( std::invalid_argument
+                  (( boost::format ("bootstrap: duplicate host %1%")
+                   % hostname
+                   ).str()
+                  )
+              )
+            );
+        }
+      }
+
+      std::pair< entry_point_by_host
+               , std::unordered_map<std::string, std::exception_ptr>
+               > const boot
+        ( fhg::rif::strategy::bootstrap
+            (_strategy, no_duplicates, _port, _installation.gspc_home(), _parameters)
         );
+
+      for (auto const& new_entry_point : boot.first)
+      {
+        if (!_entry_points.emplace (new_entry_point).second)
+        {
+          throw std::logic_error
+            (( boost::format ("STRANGE: duplicate key '%1%'!?")
+             % new_entry_point.first
+             ).str()
+            );
+        }
+      }
+
+      for (auto& failed_boot : boot.second)
+      {
+        failed.emplace (std::move (failed_boot));
+      }
+
+      return {boot.first, failed};
+    }
+
+    std::pair < std::unordered_set<std::string>
+              , std::unordered_map<std::string, std::exception_ptr>
+              > teardown (entry_point_by_host const entry_points)
+    {
+      auto const result
+        (fhg::rif::strategy::teardown (_strategy, entry_points, _parameters));
+
+      for (auto const& entry_point : entry_points)
+      {
+        if (!result.second.count (entry_point.first))
+        {
+          _entry_points.erase (entry_point.first);
+        }
+      }
+
+      return result;
+    }
+
+    std::pair < std::unordered_set<std::string>
+              , std::unordered_map<std::string, std::exception_ptr>
+              > teardown()
+    {
+      return teardown (_entry_points);
     }
 
     std::string _strategy;
     std::vector<std::string> _parameters;
-    std::vector<fhg::rif::entry_point> _entry_points;
+    boost::optional<unsigned short> _port;
+    installation _installation;
+
+    entry_point_by_host _entry_points;
   };
 
-  scoped_rifds::scoped_rifds ( rifd::strategy const& strategy
-                             , rifd::hostnames const& hostnames
-                             , rifd::port const& port
-                             , installation const& installation
-                             )
-    : _ (new implementation ( strategy._->_.first
-                            , strategy._->_.second
-                            , hostnames._->_
-                            , port._->_
-                            , installation.gspc_home()
-                            )
-        )
+  rifds::rifds ( rifd::strategy const& strategy
+               , rifd::port const& port
+               , installation const& installation
+               )
+    : _ (new implementation (strategy, port, installation))
   {}
+  PIMPL_DTOR (rifds)
 
-  PIMPL_DTOR (scoped_rifds)
-
-  rifd_entry_points scoped_rifds::entry_points() const
+  namespace
   {
-    return {new rifd_entry_points::implementation (_->_entry_points)};
+    template<typename Key, typename Value>
+      std::vector<Key> keys (std::unordered_map<Key, Value> const& map)
+    {
+      auto range (map | boost::adaptors::map_keys);
+
+      return {std::begin (range), std::end (range)};
+    }
+
+    template<typename Key, typename Value>
+      std::vector<Value> values (std::unordered_map<Key, Value> const& map)
+    {
+      auto range (map | boost::adaptors::map_values);
+
+      return {std::begin (range), std::end (range)};
+    }
   }
 
-  struct scoped_rifd::implementation : public scoped_rifds::implementation
+  std::vector<std::string> rifds::hosts() const
   {
-    implementation ( std::string const& strategy
-                   , std::vector<std::string> const& parameters
-                   , std::string const& host
-                   , boost::optional<unsigned short> const& rifd_port
-                   , boost::filesystem::path const& gspc_home
-                   )
-      : scoped_rifds::implementation (strategy, parameters, {host}, rifd_port, gspc_home)
-    {}
-  };
+    return keys (_->entry_points());
+  }
+  std::pair< rifd_entry_points
+           , std::pair< std::unordered_set<std::string>
+                      , std::unordered_set<std::string>
+                      >
+           > rifds::entry_points (rifd::hostnames const& hostnames) const
+  {
+    auto const entry_points (_->entry_points (hostnames._->_));
+
+    return { new rifd_entry_points::implementation (values (entry_points.first))
+           , entry_points.second
+           };
+  }
+  rifd_entry_points rifds::entry_points() const
+  {
+    return new rifd_entry_points::implementation (values (_->entry_points()));
+  }
+
+  std::pair< rifd_entry_points
+           , std::unordered_map<std::string, std::exception_ptr>
+           >
+    rifds::bootstrap (rifd::hostnames const& hostnames)
+  {
+    auto result (_->bootstrap (hostnames._->_));
+
+    return { new rifd_entry_points::implementation (values (result.first))
+           , result.second
+           };
+  }
+
+  std::pair < std::unordered_set<std::string>
+            , std::unordered_map<std::string, std::exception_ptr>
+            >
+    rifds::teardown (rifd::hostnames const& hostnames)
+  {
+    return _->teardown (_->entry_points (hostnames._->_).first);
+  }
+
+  std::pair < std::unordered_set<std::string>
+            , std::unordered_map<std::string, std::exception_ptr>
+            >
+    rifds::teardown()
+  {
+    return _->teardown();
+  }
 
   scoped_rifd::scoped_rifd ( rifd::strategy const& strategy
                            , rifd::hostname const& hostname
                            , rifd::port const& port
                            , installation const& installation
                            )
-    : _ (new implementation ( strategy._->_.first
-                            , strategy._->_.second
-                            , hostname._->_
-                            , port._->_
-                            , installation.gspc_home()
-                            )
-        )
-  {}
+    : rifds (strategy, port, installation)
+  {
+    auto const failed
+      (bootstrap (std::vector<std::string> {hostname._->_}).second);
+    if (!failed.empty())
+    {
+      teardown();
 
-  PIMPL_DTOR (scoped_rifd)
-
+      fhg::util::throw_collected_exceptions (values (failed));
+    }
+  }
+  scoped_rifd::~scoped_rifd()
+  {
+    teardown();
+  }
   rifd_entry_point scoped_rifd::entry_point() const
   {
-    return {new rifd_entry_point::implementation (_->_entry_points.front())};
+    return new rifd_entry_point::implementation
+      (_->_entry_points.begin()->second);
+  }
+
+  scoped_rifds::scoped_rifds ( rifd::strategy const& strategy
+                             , rifd::hostnames const& hostnames
+                             , rifd::port const& port
+                             , installation const& installation
+                             )
+    : rifds (strategy, port, installation)
+  {
+    auto const failed (bootstrap (hostnames).second);
+    if (!failed.empty())
+    {
+      teardown();
+
+      fhg::util::throw_collected_exceptions (values (failed));
+    }
+  }
+  scoped_rifds::~scoped_rifds()
+  {
+    teardown();
   }
 }

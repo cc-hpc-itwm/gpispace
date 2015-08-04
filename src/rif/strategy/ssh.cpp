@@ -129,10 +129,11 @@ namespace fhg
 
             constexpr char const* const block_size {"sshs-at-once"};
             constexpr char const* const block_size_description
-            {"how many SSH connections to establish at once"};
+              {"how many SSH connections to establish at once"};
             using block_size_type = std::size_t;
             using block_size_validator
               = validator::positive_integral<std::size_t>;
+            //! \todo define a reasonable large default
 
             constexpr char const* const ssh_port {"ssh-port"};
             constexpr char const* const ssh_port_description
@@ -236,17 +237,21 @@ namespace fhg
           option::private_key_type const private_key                    \
             (vm.at (option::private_key).as<option::private_key_validator>())
 
-          }
+        }
 
-        void bootstrap ( std::vector<std::string> const& all_hostnames
-                       , boost::optional<unsigned short> const& port
-                       , std::string const& register_host
-                       , unsigned short register_port
-                       , boost::filesystem::path const& binary
-                       , std::vector<std::string> const& parameters
-                       )
+        std::unordered_map<std::string, std::exception_ptr>
+          bootstrap ( std::vector<std::string> const& all_hostnames
+                    , boost::optional<unsigned short> const& port
+                    , std::string const& register_host
+                    , unsigned short register_port
+                    , boost::filesystem::path const& binary
+                    , std::vector<std::string> const& parameters
+                    )
         {
           EXTRACT_PARAMETERS (parameters);
+
+          std::mutex failed_guard;
+          std::unordered_map<std::string, std::exception_ptr> failed;
 
           blocked
             ( all_hostnames
@@ -261,69 +266,87 @@ namespace fhg
                 {
                   std::string const command
                     ( ( boost::format
-                          ("%1% %2% --register-host %3% --register-port %4%")
+                          ( "%1% %2% --register-host %3% --register-port %4%"
+                            " --register-key %5%"
+                          )
                       % binary
                       % (port ? "--port " + std::to_string (*port) : "")
                       % register_host
                       % register_port
+                      % hostname
                       ).str()
                     );
 
                   sshs.emplace_back
                     ( std::async
                         ( std::launch::async
-                        , [ hostname, command, &username, &public_key
-                          , &private_key, &ssh_context, &ssh_port
+                        , [ hostname, command, &failed, &failed_guard, &username
+                          , &public_key, &private_key, &ssh_context, &ssh_port
                           ]
                           {
-                            fhg::util::nest_exceptions<std::runtime_error>
-                              ( [&]
-                                {
-                                  socket const sock (hostname, ssh_port);
-                                  libssh2::session session
-                                    ( ssh_context
-                                    , sock._fd
-                                    , username
-                                    , {public_key, private_key}
-                                    );
-                                  session.execute_and_require_success_and_no_output
-                                    (command);
-                                }
-                              , hostname
-                              );
+                            try
+                            {
+                              socket const sock (hostname, ssh_port);
+                              libssh2::session session
+                                ( ssh_context
+                                , sock._fd
+                                , username
+                                , {public_key, private_key}
+                                );
+                              session.execute_and_require_success_and_no_output
+                                (command);
+                            }
+                            catch (...)
+                            {
+                              std::unique_lock<std::mutex> const _
+                                (failed_guard);
+                              failed.emplace
+                                (hostname, std::current_exception());
+                            }
                           }
                         )
                     );
                 }
 
-                fhg::util::wait_and_collect_exceptions (sshs);
+                for (auto& ssh : sshs)
+                {
+                  ssh.get();
+                }
               }
             );
+
+          return failed;
         }
 
-        void teardown ( std::vector<fhg::rif::entry_point> const& all_entry_points
-                      , std::vector<fhg::rif::entry_point>& failed_entry_points
-                      , std::vector<std::string> const& parameters
-                      )
+        std::pair < std::unordered_set<std::string>
+                  , std::unordered_map<std::string, std::exception_ptr>
+                  > teardown
+            ( std::unordered_map<std::string, fhg::rif::entry_point> const& all_entry_points
+            , std::vector<std::string> const& parameters
+            )
         {
           EXTRACT_PARAMETERS (parameters);
+
+          std::mutex guard;
+          std::unordered_set<std::string> terminated;
+          std::unordered_map<std::string, std::exception_ptr> failed;
 
           blocked
             ( all_entry_points
             , block_size
-            , [&] (std::vector<fhg::rif::entry_point> const& entry_points)
+            , [&] (std::unordered_map<std::string, fhg::rif::entry_point> const& entry_points)
               {
                 libssh2::context ssh_context;
 
-                std::mutex failed_entry_points_guard;
-
                 std::vector<std::future<void>> sshs;
 
-                for (fhg::rif::entry_point const& entry_point : entry_points)
+                for ( std::pair<std::string, fhg::rif::entry_point> const& entry_point
+                    : entry_points
+                    )
                 {
                   std::string const command
                     ( ( boost::format ("/bin/kill -TERM %1%")
-                      % entry_point.pid
+                      % entry_point.second.pid
                       ).str()
                     );
 
@@ -331,45 +354,45 @@ namespace fhg
                     ( std::async
                         ( std::launch::async
                         , [ command, entry_point
-                          , &failed_entry_points_guard, &failed_entry_points
+                          , &guard, &failed, &terminated
                           , &username, &public_key, &private_key, &ssh_context
                           , &ssh_port
                           ]
                           {
-                            fhg::util::nest_exceptions<std::runtime_error>
-                              ( [&]
-                                {
-                                  try
-                                  {
-                                    socket const sock (entry_point.hostname, ssh_port);
-                                    libssh2::session session
-                                      ( ssh_context
-                                      , sock._fd
-                                      , username
-                                      , {public_key, private_key}
-                                      );
-                                    session.execute_and_require_success_and_no_output
-                                      (command);
-                                  }
-                                  catch (...)
-                                  {
-                                    std::unique_lock<std::mutex> const _
-                                      (failed_entry_points_guard);
-                                    failed_entry_points.emplace_back (entry_point);
+                            try
+                            {
+                              socket const sock (entry_point.second.hostname, ssh_port);
+                              libssh2::session session
+                                ( ssh_context
+                                , sock._fd
+                                , username
+                                , {public_key, private_key}
+                                );
+                              session.execute_and_require_success_and_no_output
+                                (command);
 
-                                    throw;
-                                  }
-                                }
-                              , entry_point.hostname
-                              );
+                              std::unique_lock<std::mutex> const _ (guard);
+                              terminated.emplace (entry_point.first);
+                            }
+                            catch (...)
+                            {
+                              std::unique_lock<std::mutex> const _ (guard);
+                              failed.emplace
+                                (entry_point.first, std::current_exception());
+                            }
                           }
                         )
                     );
                 }
 
-                fhg::util::wait_and_collect_exceptions (sshs);
+                for (auto& ssh : sshs)
+                {
+                  ssh.get();
+                }
               }
             );
+
+          return {terminated, failed};
         }
       }
     }

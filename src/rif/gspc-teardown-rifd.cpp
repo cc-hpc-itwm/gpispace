@@ -81,38 +81,46 @@ try
       );
   }
 
-  std::vector<std::string> const lines
-    ( fhg::util::read_lines
-        ( vm.at (option::entry_points_file)
-        . as<fhg::util::boost::program_options::existing_path>()
-        )
-    );
-  std::vector<fhg::rif::entry_point> const entry_points
-    (lines.begin(), lines.end());
+  std::unordered_map<std::string, fhg::rif::entry_point> entry_points;
 
-  std::vector<fhg::rif::entry_point> failed_entry_points;
+  for ( std::string line
+      : fhg::util::read_lines
+          ( vm.at (option::entry_points_file)
+          . as<fhg::util::boost::program_options::existing_path>()
+          )
+      )
+  {
+    std::string::size_type const pos (line.find_first_of (' '));
 
-  try
-  {
-    fhg::rif::strategy::teardown
-      ( strategy
-      , entry_points
-      , failed_entry_points
-      , vm.at (option::strategy_parameters)
-      . as<option::strategy_parameters_type>()
-      );
-  }
-  catch (...)
-  {
-    for (fhg::rif::entry_point const& entry_point : failed_entry_points)
+    if (pos == std::string::npos)
     {
-      std::cout << entry_point << '\n';
+      std::logic_error ("Failed to parse entry_points_file");
     }
 
-    throw;
+    entry_points.emplace ( line.substr (0, pos)
+                         , line.substr (pos + 1, std::string::npos)
+                         );
   }
 
-  return 0;
+  auto const result
+    ( fhg::rif::strategy::teardown
+        ( strategy
+        , entry_points
+        , vm.at (option::strategy_parameters)
+        . as<option::strategy_parameters_type>()
+        )
+    );
+
+  for ( std::pair<std::string, std::exception_ptr> const& failure
+      : result.second
+      )
+  {
+    std::cout << failure.first << ' ' << entry_points.at (failure.first) << '\n';
+    std::cerr << failure.first << ": "
+              << fhg::util::exception_printer (failure.second) << "\n";
+  }
+
+  return result.second.empty() ? 0 : 1;
 }
 catch (...)
 {

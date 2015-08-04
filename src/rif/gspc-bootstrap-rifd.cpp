@@ -94,8 +94,8 @@ try
       );
   }
 
-  for ( fhg::rif::entry_point const& entry_point
-      : fhg::rif::strategy::bootstrap
+  auto const result
+    (fhg::rif::strategy::bootstrap
           ( strategy
           , fhg::util::read_lines
               ( vm.at (option::hostfile)
@@ -114,10 +114,21 @@ try
           , vm.at (option::strategy_parameters)
           . as<option::strategy_parameters_type>()
           )
+    );
+  for ( std::pair<std::string, fhg::rif::entry_point> const& entry_point
+      : result.first
       )
   {
-    std::cout << entry_point << '\n';
+    std::cout << entry_point.first << ' ' << entry_point.second << '\n';
   }
+
+  for (auto const& failure : result.second)
+  {
+    std::cerr << failure.first << ": "
+              << fhg::util::exception_printer (failure.second) << "\n";
+  }
+
+  return result.second.empty() ? 0 : 1;
 }
 catch (...)
 {
