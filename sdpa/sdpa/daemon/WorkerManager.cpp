@@ -40,7 +40,7 @@ namespace sdpa
       return worker_map_.at(worker)->hostname();
     }
 
-    bool WorkerManager::hasWorker(const worker_id_t& worker_id) const
+    bool WorkerManager::hasWorker_INDICATES_A_RACE_TESTING_ONLY(const worker_id_t& worker_id) const
     {
       boost::mutex::scoped_lock const _ (mtx_);
       return worker_map_.find(worker_id) != worker_map_.end();

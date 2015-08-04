@@ -20,7 +20,6 @@ namespace sdpa
     public:
       typedef std::unordered_map<worker_id_t, Worker::ptr_t> worker_map_t;
 
-      bool hasWorker (const worker_id_t& worker_id) const;
       const boost::optional<worker_id_t> findSubmOrAckWorker (const sdpa::job_id_t& job_id) const;
 
       std::string host (const sdpa::worker_id_t& worker) const;
@@ -81,6 +80,7 @@ namespace sdpa
     boost::optional<WorkerManager::worker_connections_t::left_iterator>
       address_by_worker (std::string const&);
 
+      bool hasWorker_INDICATES_A_RACE_TESTING_ONLY (const worker_id_t& worker_id) const;
     private:
       worker_map_t  worker_map_;
       worker_connections_t worker_connections_;
