@@ -106,7 +106,7 @@ namespace fhg
             using block_size_type = std::size_t;
             using block_size_validator
               = validator::positive_integral<std::size_t>;
-            //! \todo define a reasonable large default
+            constexpr block_size_type const block_size_default = 64;
 
             constexpr char const* const ssh_port {"ssh-port"};
             constexpr char const* const ssh_port_description
@@ -162,6 +162,7 @@ namespace fhg
           options.add_options()                                         \
             ( option::block_size                                        \
             , boost::program_options::value<option::block_size_validator>() \
+              ->default_value (option::block_size_default)              \
             , option::block_size_description                            \
             )                                                           \
             ( option::ssh_port                                          \
