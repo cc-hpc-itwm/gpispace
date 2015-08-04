@@ -2,6 +2,7 @@
 
 #include <drts/private/drts_impl.hpp>
 
+#include <util-generic/blocked.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
@@ -25,6 +26,7 @@
 #include <boost/regex.hpp>
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <fstream>
 #include <functional>
@@ -229,8 +231,6 @@ namespace fhg
                       )
                  << "\n";
 
-     std::vector<std::future<void>> startups;
-
      auto&& kernel_arguments
        ([&] (std::string const& name)
         {
@@ -287,69 +287,84 @@ namespace fhg
         }
        );
 
-     std::size_t num_nodes (0);
-     for (fhg::rif::entry_point const& entry_point : entry_points)
-     {
-       for ( unsigned long identity (0)
-           ; identity < description.num_per_node
-           ; ++identity
-           )
-       {
-         startups.emplace_back
-           ( std::async
-               ( std::launch::async
-               , [&, entry_point, identity]
+     std::atomic<std::size_t> num_nodes (0);
+
+     std::unordered_map<fhg::rif::entry_point, std::exception_ptr> const fails
+       ( util::blocked_async<fhg::rif::entry_point>
+         ( entry_points
+         //! \todo let the blocksize be a parameter
+         , 64
+         , [] (fhg::rif::entry_point const& entry_point)
+           {
+             return entry_point;
+           }
+         , [&] (fhg::rif::entry_point const& entry_point)
+           {
+             //! \todo does this work correctly for multi-segments?!
+             if (  description.max_nodes == 0
+                || num_nodes.fetch_add (1) < description.max_nodes
+                )
+             {
+               for ( unsigned long identity (0)
+                   ; identity < description.num_per_node
+                   ; ++identity
+                   )
+               {
+                 std::string const name
+                   ( name_prefix + "-" + entry_point.string()
+                   + "-" + std::to_string (identity + 1)
+                   + ( description.socket
+                     ? ("." + std::to_string (description.socket.get()))
+                     : std::string()
+                     )
+                   );
+
+                 std::unordered_map<std::string, std::string> environment
+                   ( logging_environment
+                       (log_host, log_port, log_dir, verbose, name)
+                   );
+                 environment.emplace ( "LD_LIBRARY_PATH"
+                                     , (sdpa_home / "lib").string() + ":"
+                                     + (sdpa_home / "libexec" / "sdpa").string()
+                                     );
+
+                 std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages
+                   ( fhg::rif::client (entry_point).execute_and_get_startup_messages
+                     ( sdpa_home / "bin" / "drts-kernel"
+                     , kernel_arguments (name)
+                     , environment
+                     ).get()
+                   );
+
+                 if (!pid_and_startup_messages.second.empty())
                  {
-                   std::string const name
-                     ( name_prefix + "-" + entry_point.string()
-                     + "-" + std::to_string (identity + 1)
-                     + ( description.socket
-                       ? ("." + std::to_string (description.socket.get()))
-                       : std::string()
-                       )
-                     );
-
-                   std::unordered_map<std::string, std::string> environment
-                     ( logging_environment
-                         (log_host, log_port, log_dir, verbose, name)
-                     );
-                   environment.emplace ( "LD_LIBRARY_PATH"
-                                       , (sdpa_home / "lib").string() + ":"
-                                       + (sdpa_home / "libexec" / "sdpa").string()
-                                       );
-
-                   std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages
-                     ( fhg::rif::client (entry_point).execute_and_get_startup_messages
-                       ( sdpa_home / "bin" / "drts-kernel"
-                       , kernel_arguments (name)
-                       , environment
-                       ).get()
-                     );
-
-                   if (!pid_and_startup_messages.second.empty())
-                   {
-                     throw std::runtime_error
-                       ("could not start " + name + ": expected no startup messages");
-                   }
-
-                   processes.store ( entry_point
-                                   , "drts-kernel-" + name
-                                   , pid_and_startup_messages.first
-                                   );
+                   throw std::runtime_error
+                     ("could not start " + name + ": expected no startup messages");
                  }
-               )
-           );
-       }
 
-       //! \todo does this work correctly for multi-segments?!
-       ++num_nodes;
-       if (num_nodes == description.max_nodes)
-       {
-         break;
-       }
+                 processes.store ( entry_point
+                                 , "drts-kernel-" + name
+                                 , pid_and_startup_messages.first
+                                 );
+               }
+             }
+           }
+         ).second
+       );
+
+     if (!fails.empty())
+     {
+       fhg::util::throw_collected_exceptions
+         ( fails
+         , [] (std::pair<fhg::rif::entry_point, std::exception_ptr> const& fail)
+           {
+             return ( boost::format ("drts-kernel startup failed on %1%: %2%")
+                    % fail.first
+                    % fhg::util::exception_printer (fail.second)
+                    ).str();
+           }
+         );
      }
-
-     fhg::util::wait_and_collect_exceptions (startups);
   }
 
     worker_description parse_capability
