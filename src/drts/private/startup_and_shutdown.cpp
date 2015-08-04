@@ -231,6 +231,62 @@ namespace fhg
 
      std::vector<std::future<void>> startups;
 
+     auto&& kernel_arguments
+       ([&] (std::string const& name)
+        {
+          std::vector<std::string> arguments;
+
+          arguments.emplace_back ("--master");
+          arguments.emplace_back
+            (build_parent_with_hostinfo (master_name, master_hostinfo));
+
+          arguments.emplace_back ("--backlog-length");
+          arguments.emplace_back ("1");
+
+          //! \todo gui is optional in worker
+          if (gui_host && gui_port)
+          {
+            arguments.emplace_back ("--gui-host");
+            arguments.emplace_back (*gui_host);
+            arguments.emplace_back ("--gui-port");
+            arguments.emplace_back (std::to_string (*gui_port));
+          }
+
+          for (boost::filesystem::path const& path : app_path)
+          {
+            arguments.emplace_back ("--library-search-path");
+            arguments.emplace_back (path.string());
+          }
+
+          if (description.shm_size)
+          {
+            arguments.emplace_back ("--capability");
+            arguments.emplace_back ("GPI");
+            arguments.emplace_back ("--virtual-memory-socket");
+            arguments.emplace_back (gpi_socket.get().string());
+            arguments.emplace_back ("--shared-memory-size");
+            arguments.emplace_back (std::to_string (description.shm_size));
+          }
+
+          for (std::string const& capability : description.capabilities)
+          {
+            arguments.emplace_back ("--capability");
+            arguments.emplace_back (capability);
+          }
+
+          if (description.socket)
+          {
+            arguments.emplace_back ("--socket");
+            arguments.emplace_back (std::to_string (description.socket.get()));
+          }
+
+          arguments.emplace_back ("-n");
+          arguments.emplace_back (name);
+
+          return arguments;
+        }
+       );
+
      std::size_t num_nodes (0);
      for (fhg::rif::entry_point const& entry_point : entry_points)
      {
@@ -244,56 +300,6 @@ namespace fhg
                ( std::launch::async
                , [&, entry_point, identity]
                  {
-                   std::vector<std::string> arguments;
-
-                   arguments.emplace_back ("--master");
-                   arguments.emplace_back
-                     ( build_parent_with_hostinfo
-                         (master_name, master_hostinfo)
-                     );
-
-                   arguments.emplace_back ("--backlog-length");
-                   arguments.emplace_back ("1");
-
-                   //! \todo gui is optional in worker
-                   if (gui_host && gui_port)
-                   {
-                     arguments.emplace_back ("--gui-host");
-                     arguments.emplace_back (*gui_host);
-                     arguments.emplace_back ("--gui-port");
-                     arguments.emplace_back (std::to_string (*gui_port));
-                   }
-
-                   for (boost::filesystem::path const& path : app_path)
-                   {
-                     arguments.emplace_back ("--library-search-path");
-                     arguments.emplace_back (path.string());
-                   }
-
-                   if (description.shm_size)
-                   {
-                     arguments.emplace_back ("--capability");
-                     arguments.emplace_back ("GPI");
-                     arguments.emplace_back ("--virtual-memory-socket");
-                     arguments.emplace_back (gpi_socket.get().string());
-                     arguments.emplace_back ("--shared-memory-size");
-                     arguments.emplace_back
-                       (std::to_string (description.shm_size));
-                   }
-
-                   for (std::string const& capability : description.capabilities)
-                   {
-                     arguments.emplace_back ("--capability");
-                     arguments.emplace_back (capability);
-                   }
-
-                   if (description.socket)
-                   {
-                     arguments.emplace_back ("--socket");
-                     arguments.emplace_back
-                       (std::to_string (description.socket.get()));
-                   }
-
                    std::string const name
                      ( name_prefix + "-" + entry_point.string()
                      + "-" + std::to_string (identity + 1)
@@ -302,9 +308,6 @@ namespace fhg
                        : std::string()
                        )
                      );
-
-                   arguments.emplace_back ("-n");
-                   arguments.emplace_back (name);
 
                    std::unordered_map<std::string, std::string> environment
                      ( logging_environment
@@ -318,7 +321,7 @@ namespace fhg
                    std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages
                      ( fhg::rif::client (entry_point).execute_and_get_startup_messages
                        ( sdpa_home / "bin" / "drts-kernel"
-                       , arguments
+                       , kernel_arguments (name)
                        , environment
                        ).get()
                      );
