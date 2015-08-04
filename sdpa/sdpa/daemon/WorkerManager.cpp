@@ -234,8 +234,14 @@ namespace sdpa
       return worker_map_.at (worker_id)->cost_assigned_jobs (cost_reservation);
     }
 
-    bool WorkerManager::submit_if_can_start_job_INDICATES_A_RACE
-      (job_id_t const& job_id, std::set<worker_id_t> const& workers) const
+    bool WorkerManager::submit_and_serve_if_can_start_job_INDICATES_A_RACE
+      ( job_id_t const& job_id
+      , std::set<worker_id_t> const& workers
+      , std::function<void ( const sdpa::worker_id_list_t&
+                           , const job_id_t&
+                           )
+                     > const& serve_job
+      ) const
     {
       boost::mutex::scoped_lock const _(mtx_);
       bool const can_start
@@ -255,6 +261,8 @@ namespace sdpa
         {
           worker_map_.at (worker_id)->submit (job_id);
         }
+
+        serve_job ({workers.begin(), workers.end()}, job_id);
       }
 
       return can_start;

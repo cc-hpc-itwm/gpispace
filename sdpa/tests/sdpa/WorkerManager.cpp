@@ -240,8 +240,15 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
   BOOST_REQUIRE (worker_id);
   BOOST_REQUIRE_EQUAL (*worker_id, worker_ids[0]);
 
-  worker_manager.submit_if_can_start_job_INDICATES_A_RACE
-    (job_id, {worker_ids[0]});
+  worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
+    ( job_id
+    , {worker_ids[0]}
+    , [] (std::list<sdpa::worker_id_t> const&, sdpa::job_id_t const&)
+      {
+        // do nothing, serve_job is merged with submit_if_can_start in
+        // order to avoid races when workers are removed
+      }
+    );
   worker_id = worker_manager.findSubmOrAckWorker (job_id);
   BOOST_REQUIRE (worker_id);
   BOOST_REQUIRE_EQUAL (*worker_id, worker_ids[0]);

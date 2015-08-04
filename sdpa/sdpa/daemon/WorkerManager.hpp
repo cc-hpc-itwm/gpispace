@@ -50,8 +50,12 @@ namespace sdpa
         , const job_requirements_t& job_req_set
         ) const;
 
-    bool submit_if_can_start_job_INDICATES_A_RACE
-      (job_id_t const&, std::set<worker_id_t> const&) const;
+    bool submit_and_serve_if_can_start_job_INDICATES_A_RACE
+      ( job_id_t const&, std::set<worker_id_t> const&
+      , std::function<void ( const sdpa::worker_id_list_t&
+                           , const job_id_t&
+                           )> const& serve_job
+      ) const;
 
     bool all_workers_busy_and_have_pending_jobs() const;
 

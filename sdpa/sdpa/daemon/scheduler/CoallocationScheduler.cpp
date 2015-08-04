@@ -303,11 +303,10 @@ namespace sdpa
       for (const job_id_t& job_id: pending_jobs)
       {
         std::set<worker_id_t> workers (allocation_table_.at (job_id)->workers());
-        if (worker_manager().submit_if_can_start_job_INDICATES_A_RACE
-             (job_id, workers)
+        if (worker_manager().submit_and_serve_if_can_start_job_INDICATES_A_RACE
+             (job_id, workers, serve_job)
            )
         {
-          serve_job ({workers.begin(), workers.end()}, job_id);
           jobs_started.insert (job_id);
         }
         else
