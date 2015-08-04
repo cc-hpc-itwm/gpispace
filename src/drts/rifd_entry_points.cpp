@@ -51,5 +51,20 @@ namespace gspc
   rifd_entry_point::rifd_entry_point (implementation* impl)
     : _ (impl)
   {}
+  rifd_entry_point::rifd_entry_point (rifd_entry_point&& other)
+  {
+    _ = std::move (other._);
+    other._ = nullptr;
+  }
   PIMPL_DTOR (rifd_entry_point);
+
+  std::size_t rifd_entry_point_hash::operator()
+    (rifd_entry_point const& ep) const
+  {
+    return std::hash<fhg::rif::entry_point>() (ep._->_entry_point);
+  }
+  bool operator== (rifd_entry_point const& lhs, rifd_entry_point const& rhs)
+  {
+    return lhs._->_entry_point == rhs._->_entry_point;
+  }
 }

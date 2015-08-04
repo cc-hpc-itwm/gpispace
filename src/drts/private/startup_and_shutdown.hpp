@@ -47,7 +47,12 @@ namespace fhg
       {}
 
       ~processes_storage();
-      void shutdown (component_type, std::vector<fhg::rif::entry_point> const&);
+      std::unordered_map
+        < rif::entry_point
+        , std::pair< std::string /* kind */
+                   , std::unordered_map<pid_t, std::exception_ptr>
+                   >
+        > shutdown (component_type, std::vector<fhg::rif::entry_point> const&);
 
       void store (fhg::rif::entry_point const&, std::string const& name, pid_t);
 

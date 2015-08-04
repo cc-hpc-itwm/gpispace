@@ -4,6 +4,7 @@
 
 #include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
+#include <util-generic/print_exception.hpp>
 #include <util-generic/read_file.hpp>
 #include <util-generic/read_lines.hpp>
 #include <util-generic/split.hpp>
@@ -589,11 +590,16 @@ namespace fhg
     namespace
     {
       template<typename It>
-        void terminate_all_processes_of_a_kind
-          ( std::vector<It> const& entry_point_procs
-          , component_type component
-          , std::ostream& info_output
-          )
+        std::unordered_map
+          < rif::entry_point
+          , std::pair< std::string /* kind */
+                     , std::unordered_map<pid_t, std::exception_ptr>
+                     >
+          > terminate_all_processes_of_a_kind
+              ( std::vector<It> const& entry_point_procs
+              , component_type component
+              , std::ostream& info_output
+              )
       {
         std::string const kind
           ( component == component_type::worker ? "drts-kernel"
@@ -603,6 +609,13 @@ namespace fhg
           : throw std::logic_error ("invalid enum value")
           );
 
+        std::mutex guard_failures;
+        std::unordered_map
+          < rif::entry_point
+          , std::pair< std::string /* kind */
+                     , std::unordered_map<pid_t, std::exception_ptr>
+                     >
+          > failures;
         std::vector<std::future<void>> terminates;
 
         for (It const& entry_point_processes : entry_point_procs)
@@ -610,7 +623,7 @@ namespace fhg
           using process_iter
             = typename decltype (entry_point_processes->second)::iterator;
           std::vector<pid_t> pids;
-          std::vector<process_iter> to_erase;
+          std::unordered_map<pid_t, process_iter> to_erase;
           for ( process_iter it (entry_point_processes->second.begin())
               ; it != entry_point_processes->second.end()
               ; ++it
@@ -618,7 +631,7 @@ namespace fhg
           {
             if (fhg::util::starts_with (kind, it->first))
             {
-              to_erase.emplace_back (it);
+              to_erase.emplace (it->second, it);
               pids.emplace_back (it->second);
             }
           }
@@ -628,27 +641,55 @@ namespace fhg
             terminates.emplace_back
               ( std::async
                   ( std::launch::async
-                  , [&kind, pids, to_erase, entry_point_processes, &info_output]
+                  , [&kind, pids, to_erase, entry_point_processes, &info_output
+                    , &failures, &guard_failures
+                    ]
                     {
                       info_output << "terminating " << kind << " on "
                                   << entry_point_processes->first
                                   << ": " << fhg::util::join (pids, ' ') << "\n";
 
-                      fhg::util::nest_exceptions<std::runtime_error>
-                        ( [&entry_point_processes, &pids]
-                          {
-                            rif::client (entry_point_processes->first)
-                              .kill (pids).get();
-                          }
-                        , ( boost::format ("Could not terminate %1% on %2%")
-                          % kind
-                          % entry_point_processes->first
-                          ).str()
-                        );
-
-                      for (process_iter const& iter : to_erase)
+                      try
                       {
-                        entry_point_processes->second.erase (iter);
+                        std::unordered_map<pid_t, std::exception_ptr>
+                          const failures_kill
+                            ( rif::client (entry_point_processes->first)
+                            . kill (pids).get()
+                            );
+
+                        if (!failures_kill.empty())
+                        {
+                          std::unique_lock<std::mutex> const _ (guard_failures);
+
+                          failures.emplace
+                            ( entry_point_processes->first
+                            , std::make_pair (kind, failures_kill)
+                            );
+                        }
+                      }
+                      catch (...) // \note: e.g. rif::client::connect
+                      {
+                        std::unordered_map<pid_t, std::exception_ptr> fails;
+
+                        for (pid_t pid : pids)
+                        {
+                          fails.emplace (pid, std::current_exception());
+                        }
+
+                        std::unique_lock<std::mutex> const _ (guard_failures);
+
+                        failures.emplace ( entry_point_processes->first
+                                         , std::make_pair (kind, fails)
+                                         );
+                      }
+
+                      //! \note: remove the process from the list of
+                      //! known processes in case of failure too
+                      //! assumption: when kill failed once, it will
+                      //! never succeed
+                      for (auto const& iter : to_erase)
+                      {
+                        entry_point_processes->second.erase (iter.second);
                       }
                     }
                   )
@@ -656,14 +697,24 @@ namespace fhg
           }
         }
 
-        fhg::util::wait_and_collect_exceptions (terminates);
+        for (auto& terminate : terminates)
+        {
+          terminate.get();
+        }
+
+        return failures;
       }
     }
 
-    void processes_storage::shutdown
-      ( component_type component
-      , std::vector<fhg::rif::entry_point> const& rif_entry_points
-      )
+    std::unordered_map< rif::entry_point
+                      , std::pair< std::string /* kind */
+                                 , std::unordered_map<pid_t, std::exception_ptr>
+                                 >
+                      >
+      processes_storage::shutdown
+        ( component_type component
+        , std::vector<fhg::rif::entry_point> const& rif_entry_points
+        )
     {
       std::vector<decltype (_)::iterator> iterators;
       for (fhg::rif::entry_point const& entry_point : rif_entry_points)
@@ -677,7 +728,16 @@ namespace fhg
         iterators.emplace_back (pos);
       }
 
-      terminate_all_processes_of_a_kind (iterators, component, _info_output);
+      std::unordered_map
+        < rif::entry_point
+        , std::pair< std::string /* kind */
+                   , std::unordered_map<pid_t, std::exception_ptr>
+                   >
+        > const failures (terminate_all_processes_of_a_kind ( iterators
+                                                            , component
+                                                            , _info_output
+                                                            )
+                         );
 
       for (decltype (_)::iterator const& it : iterators)
       {
@@ -686,6 +746,8 @@ namespace fhg
           _.erase (it);
         }
       }
+
+      return failures;
     }
 
     namespace
@@ -709,8 +771,29 @@ namespace fhg
           }
         , [this] (component_type component)
           {
-            terminate_all_processes_of_a_kind
-              (iterators (_.begin(), _.end()), component, _info_output);
+            std::unordered_map
+              < rif::entry_point
+              , std::pair< std::string /* kind */
+                         , std::unordered_map<pid_t, std::exception_ptr>
+                         >
+              > const failures
+                  ( terminate_all_processes_of_a_kind
+                      (iterators (_.begin(), _.end()), component, _info_output)
+                  );
+
+            for (auto const& failure : failures)
+            {
+              for (auto const& fails : failure.second.second)
+              {
+                _info_output <<
+                  ( boost::format ("Could not terminate %1%[%2%] on %3%: %4%")
+                  % failure.second.first
+                  % fails.first
+                  % failure.first
+                  % util::exception_printer (fails.second)
+                  ) << std::endl;
+              }
+            }
           }
         );
     }

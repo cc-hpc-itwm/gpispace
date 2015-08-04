@@ -14,9 +14,11 @@
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
 
+#include <exception>
 #include <functional>
 #include <iostream>
 #include <string>
+#include <unordered_map>
 
 namespace gpi
 {
@@ -83,7 +85,13 @@ namespace gspc
       );
 
     void add_worker (rifd_entry_points const&);
-    void remove_worker (rifd_entry_points const&);
+    std::unordered_map< rifd_entry_point
+                      , std::pair< std::string /* kind */
+                                 , std::unordered_map<pid_t, std::exception_ptr>
+                                 >
+                      , rifd_entry_point_hash
+                      >
+      remove_worker (rifd_entry_points const&);
 
     vmem_allocation alloc
       (unsigned long size, std::string const& description) const;
