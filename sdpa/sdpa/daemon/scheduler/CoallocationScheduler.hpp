@@ -54,7 +54,6 @@ namespace sdpa
       double compute_reservation_cost
         ( const job_id_t&
         , const std::set<worker_id_t>&
-        , const std::function<std::string (const sdpa::worker_id_t& wid)>
         , const double computational_cost
         ) const;
 

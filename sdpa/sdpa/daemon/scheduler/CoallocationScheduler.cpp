@@ -137,18 +137,20 @@ namespace sdpa
     double CoallocationScheduler::compute_reservation_cost
       ( const job_id_t& job_id
       , const std::set<worker_id_t>& workers
-      , const std::function<std::string (const sdpa::worker_id_t& wid)> host
       , const double computational_cost
       ) const
     {
-      const job_requirements_t& requirements (_job_requirements (job_id));
-
-      return std::accumulate ( workers.begin()
-                             , workers.end()
-                             , 0.0
-                             , [&requirements,host] (const double total, const sdpa::worker_id_t wid)
-                               {return total + requirements.transfer_cost() (host (wid));}
-                             ) + computational_cost;
+      return std::accumulate
+        ( workers.begin()
+        , workers.end()
+        , 0.0
+        , [this, &job_id] (const double total, const sdpa::worker_id_t wid)
+          {
+            return total
+              + _job_requirements (job_id).transfer_cost()
+                  (_worker_manager.host_INDICATES_A_RACE (wid));
+          }
+        ) + computational_cost;
     }
 
     CoallocationScheduler::assignment_t CoallocationScheduler::assignJobsToWorkers()
@@ -197,7 +199,6 @@ namespace sdpa
               (new Reservation ( matching_workers
                                , compute_reservation_cost ( jobId
                                                           , matching_workers
-                                                          , std::bind (&WorkerManager::host_INDICATES_A_RACE, &_worker_manager, std::placeholders::_1)
                                                           , requirements.computational_cost()
                                                           )
                                )
