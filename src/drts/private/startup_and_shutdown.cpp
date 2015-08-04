@@ -648,91 +648,84 @@ namespace fhg
                      , std::unordered_map<pid_t, std::exception_ptr>
                      >
           > failures;
-        std::vector<std::future<void>> terminates;
 
-        for (It const& entry_point_processes : entry_point_procs)
-        {
-          using process_iter
-            = typename decltype (entry_point_processes->second)::iterator;
-          std::vector<pid_t> pids;
-          std::unordered_map<pid_t, process_iter> to_erase;
-          for ( process_iter it (entry_point_processes->second.begin())
-              ; it != entry_point_processes->second.end()
-              ; ++it
-              )
-          {
-            if (fhg::util::starts_with (kind, it->first))
+        util::blocked_async<fhg::rif::entry_point>
+          ( entry_point_procs
+          //! \todo let the blocksize be a parameter
+          , 64
+          , [] (It const& it)
             {
-              to_erase.emplace (it->second, it);
-              pids.emplace_back (it->second);
+              return it->first;
             }
-          }
-
-          if (!pids.empty())
-          {
-            terminates.emplace_back
-              ( std::async
-                  ( std::launch::async
-                  , [&kind, pids, to_erase, entry_point_processes, &info_output
-                    , &failures, &guard_failures
-                    ]
-                    {
-                      info_output << "terminating " << kind << " on "
-                                  << entry_point_processes->first
-                                  << ": " << fhg::util::join (pids, ' ') << "\n";
-
-                      try
-                      {
-                        std::unordered_map<pid_t, std::exception_ptr>
-                          const failures_kill
-                            ( rif::client (entry_point_processes->first)
-                            . kill (pids).get()
-                            );
-
-                        if (!failures_kill.empty())
-                        {
-                          std::unique_lock<std::mutex> const _ (guard_failures);
-
-                          failures.emplace
-                            ( entry_point_processes->first
-                            , std::make_pair (kind, failures_kill)
-                            );
-                        }
-                      }
-                      catch (...) // \note: e.g. rif::client::connect
-                      {
-                        std::unordered_map<pid_t, std::exception_ptr> fails;
-
-                        for (pid_t pid : pids)
-                        {
-                          fails.emplace (pid, std::current_exception());
-                        }
-
-                        std::unique_lock<std::mutex> const _ (guard_failures);
-
-                        failures.emplace ( entry_point_processes->first
-                                         , std::make_pair (kind, fails)
-                                         );
-                      }
-
-                      //! \note: remove the process from the list of
-                      //! known processes in case of failure too
-                      //! assumption: when kill failed once, it will
-                      //! never succeed
-                      for (auto const& iter : to_erase)
-                      {
-                        entry_point_processes->second.erase (iter.second);
-                      }
-                    }
+          , [&] (It const& entry_point_processes)
+            {
+              using process_iter
+                = typename decltype (entry_point_processes->second)::iterator;
+              std::vector<pid_t> pids;
+              std::unordered_map<pid_t, process_iter> to_erase;
+              for ( process_iter it (entry_point_processes->second.begin())
+                  ; it != entry_point_processes->second.end()
+                  ; ++it
                   )
-              );
-          }
-        }
+              {
+                if (fhg::util::starts_with (kind, it->first))
+                {
+                  to_erase.emplace (it->second, it);
+                  pids.emplace_back (it->second);
+                }
+              }
 
-        for (auto& terminate : terminates)
-        {
-          terminate.get();
-        }
+              if (!pids.empty())
+              {
+                info_output << "terminating " << kind << " on "
+                            << entry_point_processes->first
+                            << ": " << fhg::util::join (pids, ' ') << "\n";
+
+                try
+                {
+                  std::unordered_map<pid_t, std::exception_ptr>
+                    const failures_kill
+                    ( rif::client (entry_point_processes->first)
+                    . kill (pids).get()
+                    );
+
+                  if (!failures_kill.empty())
+                  {
+                    std::unique_lock<std::mutex> const _ (guard_failures);
+
+                    failures.emplace
+                      ( entry_point_processes->first
+                      , std::make_pair (kind, failures_kill)
+                      );
+                  }
+                }
+                catch (...) // \note: e.g. rif::client::connect
+                {
+                  std::unordered_map<pid_t, std::exception_ptr> fails;
+
+                  for (pid_t pid : pids)
+                  {
+                    fails.emplace (pid, std::current_exception());
+                  }
+
+                  std::unique_lock<std::mutex> const _ (guard_failures);
+
+                  failures.emplace ( entry_point_processes->first
+                                   , std::make_pair (kind, fails)
+                                   );
+                }
+
+                //! \note: remove the process from the list of
+                //! known processes in case of failure too
+                //! assumption: when kill failed once, it will
+                //! never succeed
+                for (auto const& iter : to_erase)
+                {
+                  entry_point_processes->second.erase (iter.second);
+                }
+              }
+            }
+          );
 
         return failures;
       }
