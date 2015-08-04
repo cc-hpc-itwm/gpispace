@@ -542,43 +542,57 @@ namespace fhg
         fhg::util::nest_exceptions<std::runtime_error>
           ( [&]
             {
-              std::vector<std::future<void>> futures;
+              std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
+                const fails
+                ( util::blocked_async<fhg::rif::entry_point>
+                  ( rif_entry_points
+                  //! \todo let the blocksize be a parameter
+                  , 64
+                  , [] (fhg::rif::entry_point const& entry_point)
+                    {
+                      return entry_point;
+                    }
+                  , [&] (fhg::rif::entry_point const& entry_point)
+                    {
+                      pid_t const pid
+                        ( rif::client (entry_point).start_vmem
+                            ( sdpa_home / "bin" / "gpi-space"
+                            , verbose ? fhg::log::TRACE : fhg::log::INFO
+                            , gpi_mem.get()
+                            , gpi_socket.get()
+                            , vmem_port.get()
+                            , vmem_startup_timeout.get()
+                            , rif_entry_points.size() > 1 ? "gaspi" : "fake"
+                            , log_host && log_port
+                            ? std::make_pair (log_host.get(), log_port.get())
+                            : boost::optional<std::pair<std::string, unsigned short>>()
+                            , log_dir
+                            ? *log_dir / ("vmem-" + replace_whitespace (entry_point.string()) + ".log")
+                            : boost::optional<boost::filesystem::path>()
+                            , nodes
+                            , master.string()
+                            , entry_point == master
+                            ).get()
+                        );
 
-              for (fhg::rif::entry_point const& entry_point : rif_entry_points)
-              {
-                futures.emplace_back
-                  ( std::async
-                      ( std::launch::async
-                      , [&, entry_point]
-                      {
-                        pid_t const pid
-                          ( rif::client (entry_point).start_vmem
-                              ( sdpa_home / "bin" / "gpi-space"
-                              , verbose ? fhg::log::TRACE : fhg::log::INFO
-                              , gpi_mem.get()
-                              , gpi_socket.get()
-                              , vmem_port.get()
-                              , vmem_startup_timeout.get()
-                              , rif_entry_points.size() > 1 ? "gaspi" : "fake"
-                              , log_host && log_port
-                              ? std::make_pair (log_host.get(), log_port.get())
-                              : boost::optional<std::pair<std::string, unsigned short>>()
-                              , log_dir
-                              ? *log_dir / ("vmem-" + replace_whitespace (entry_point.string()) + ".log")
-                              : boost::optional<boost::filesystem::path>()
-                              , nodes
-                              , master.string()
-                              , entry_point == master
-                              ).get()
-                          );
-
-                        processes.store (entry_point, "vmem", pid);
-                      }
-                    )
+                      processes.store (entry_point, "vmem", pid);
+                    }
+                  ).second
                 );
-              }
 
-              fhg::util::wait_and_collect_exceptions (futures);
+              if (!fails.empty())
+              {
+                fhg::util::throw_collected_exceptions
+                  ( fails
+                  , [] (std::pair<fhg::rif::entry_point, std::exception_ptr> const& fail)
+                    {
+                      return ( boost::format ("vmem startup failed %1%: %2%")
+                             % fail.first
+                             % fhg::util::exception_printer (fail.second)
+                             ).str();
+                    }
+                  );
+              }
             }
           , "could not start vmem"
           );
