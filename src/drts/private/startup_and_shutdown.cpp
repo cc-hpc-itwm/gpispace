@@ -2,6 +2,7 @@
 
 #include <drts/private/drts_impl.hpp>
 
+#include <util-generic/blocked.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
@@ -25,6 +26,7 @@
 #include <boost/regex.hpp>
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <fstream>
 #include <functional>
@@ -229,124 +231,143 @@ namespace fhg
                       )
                  << "\n";
 
-     std::vector<std::future<void>> startups;
+     auto&& kernel_arguments
+       ([&] (std::string const& name)
+        {
+          std::vector<std::string> arguments;
 
-     std::size_t num_nodes (0);
-     for (fhg::rif::entry_point const& entry_point : entry_points)
-     {
-       for ( unsigned long identity (0)
-           ; identity < description.num_per_node
-           ; ++identity
-           )
-       {
-         startups.emplace_back
-           ( std::async
-               ( std::launch::async
-               , [&, entry_point, identity]
+          arguments.emplace_back ("--master");
+          arguments.emplace_back
+            (build_parent_with_hostinfo (master_name, master_hostinfo));
+
+          arguments.emplace_back ("--backlog-length");
+          arguments.emplace_back ("1");
+
+          //! \todo gui is optional in worker
+          if (gui_host && gui_port)
+          {
+            arguments.emplace_back ("--gui-host");
+            arguments.emplace_back (*gui_host);
+            arguments.emplace_back ("--gui-port");
+            arguments.emplace_back (std::to_string (*gui_port));
+          }
+
+          for (boost::filesystem::path const& path : app_path)
+          {
+            arguments.emplace_back ("--library-search-path");
+            arguments.emplace_back (path.string());
+          }
+
+          if (description.shm_size)
+          {
+            arguments.emplace_back ("--capability");
+            arguments.emplace_back ("GPI");
+            arguments.emplace_back ("--virtual-memory-socket");
+            arguments.emplace_back (gpi_socket.get().string());
+            arguments.emplace_back ("--shared-memory-size");
+            arguments.emplace_back (std::to_string (description.shm_size));
+          }
+
+          for (std::string const& capability : description.capabilities)
+          {
+            arguments.emplace_back ("--capability");
+            arguments.emplace_back (capability);
+          }
+
+          if (description.socket)
+          {
+            arguments.emplace_back ("--socket");
+            arguments.emplace_back (std::to_string (description.socket.get()));
+          }
+
+          arguments.emplace_back ("-n");
+          arguments.emplace_back (name);
+
+          return arguments;
+        }
+       );
+
+     std::atomic<std::size_t> num_nodes (0);
+
+     std::unordered_map<fhg::rif::entry_point, std::exception_ptr> const fails
+       ( util::blocked_async< fhg::rif::entry_point
+                            , std::function<void (fhg::rif::entry_point const&)>  /* required by gcc482 */
+                            , std::vector<fhg::rif::entry_point>  /* required by gcc482 */
+                            >
+         ( entry_points
+         //! \todo let the blocksize be a parameter
+         , 64
+         , [] (fhg::rif::entry_point const& entry_point)
+           {
+             return entry_point;
+           }
+         , [&] (fhg::rif::entry_point const& entry_point)
+           {
+             //! \todo does this work correctly for multi-segments?!
+             if (  description.max_nodes == 0
+                || num_nodes.fetch_add (1) < description.max_nodes
+                )
+             {
+               for ( unsigned long identity (0)
+                   ; identity < description.num_per_node
+                   ; ++identity
+                   )
+               {
+                 std::string const name
+                   ( name_prefix + "-" + entry_point.string()
+                   + "-" + std::to_string (identity + 1)
+                   + ( description.socket
+                     ? ("." + std::to_string (description.socket.get()))
+                     : std::string()
+                     )
+                   );
+
+                 std::unordered_map<std::string, std::string> environment
+                   ( logging_environment
+                       (log_host, log_port, log_dir, verbose, name)
+                   );
+                 environment.emplace ( "LD_LIBRARY_PATH"
+                                     , (sdpa_home / "lib").string() + ":"
+                                     + (sdpa_home / "libexec" / "sdpa").string()
+                                     );
+
+                 std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages
+                   ( fhg::rif::client (entry_point).execute_and_get_startup_messages
+                     ( sdpa_home / "bin" / "drts-kernel"
+                     , kernel_arguments (name)
+                     , environment
+                     ).get()
+                   );
+
+                 if (!pid_and_startup_messages.second.empty())
                  {
-                   std::vector<std::string> arguments;
-
-                   arguments.emplace_back ("--master");
-                   arguments.emplace_back
-                     ( build_parent_with_hostinfo
-                         (master_name, master_hostinfo)
-                     );
-
-                   arguments.emplace_back ("--backlog-length");
-                   arguments.emplace_back ("1");
-
-                   //! \todo gui is optional in worker
-                   if (gui_host && gui_port)
-                   {
-                     arguments.emplace_back ("--gui-host");
-                     arguments.emplace_back (*gui_host);
-                     arguments.emplace_back ("--gui-port");
-                     arguments.emplace_back (std::to_string (*gui_port));
-                   }
-
-                   for (boost::filesystem::path const& path : app_path)
-                   {
-                     arguments.emplace_back ("--library-search-path");
-                     arguments.emplace_back (path.string());
-                   }
-
-                   if (description.shm_size)
-                   {
-                     arguments.emplace_back ("--capability");
-                     arguments.emplace_back ("GPI");
-                     arguments.emplace_back ("--virtual-memory-socket");
-                     arguments.emplace_back (gpi_socket.get().string());
-                     arguments.emplace_back ("--shared-memory-size");
-                     arguments.emplace_back
-                       (std::to_string (description.shm_size));
-                   }
-
-                   for (std::string const& capability : description.capabilities)
-                   {
-                     arguments.emplace_back ("--capability");
-                     arguments.emplace_back (capability);
-                   }
-
-                   if (description.socket)
-                   {
-                     arguments.emplace_back ("--socket");
-                     arguments.emplace_back
-                       (std::to_string (description.socket.get()));
-                   }
-
-                   std::string const name
-                     ( name_prefix + "-" + entry_point.string()
-                     + "-" + std::to_string (identity + 1)
-                     + ( description.socket
-                       ? ("." + std::to_string (description.socket.get()))
-                       : std::string()
-                       )
-                     );
-
-                   arguments.emplace_back ("-n");
-                   arguments.emplace_back (name);
-
-                   std::unordered_map<std::string, std::string> environment
-                     ( logging_environment
-                         (log_host, log_port, log_dir, verbose, name)
-                     );
-                   environment.emplace ( "LD_LIBRARY_PATH"
-                                       , (sdpa_home / "lib").string() + ":"
-                                       + (sdpa_home / "libexec" / "sdpa").string()
-                                       );
-
-                   std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages
-                     ( fhg::rif::client (entry_point).execute_and_get_startup_messages
-                       ( sdpa_home / "bin" / "drts-kernel"
-                       , arguments
-                       , environment
-                       ).get()
-                     );
-
-                   if (!pid_and_startup_messages.second.empty())
-                   {
-                     throw std::runtime_error
-                       ("could not start " + name + ": expected no startup messages");
-                   }
-
-                   processes.store ( entry_point
-                                   , "drts-kernel-" + name
-                                   , pid_and_startup_messages.first
-                                   );
+                   throw std::runtime_error
+                     ("could not start " + name + ": expected no startup messages");
                  }
-               )
-           );
-       }
 
-       //! \todo does this work correctly for multi-segments?!
-       ++num_nodes;
-       if (num_nodes == description.max_nodes)
-       {
-         break;
-       }
+                 processes.store ( entry_point
+                                 , "drts-kernel-" + name
+                                 , pid_and_startup_messages.first
+                                 );
+               }
+             }
+           }
+         ).second
+       );
+
+     if (!fails.empty())
+     {
+       fhg::util::throw_collected_exceptions
+         ( fails
+         , [] (std::pair<fhg::rif::entry_point, std::exception_ptr> const& fail)
+           {
+             return ( boost::format ("drts-kernel startup failed on %1%: %2%")
+                    % fail.first
+                    % fhg::util::exception_printer (fail.second)
+                    ).str();
+           }
+         );
      }
-
-     fhg::util::wait_and_collect_exceptions (startups);
   }
 
     worker_description parse_capability
@@ -524,43 +545,60 @@ namespace fhg
         fhg::util::nest_exceptions<std::runtime_error>
           ( [&]
             {
-              std::vector<std::future<void>> futures;
+              std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
+                const fails
+                ( util::blocked_async< fhg::rif::entry_point
+                                     , std::function<void (fhg::rif::entry_point const&)>  /* required by gcc482 */
+                                     , std::vector<fhg::rif::entry_point>  /* required by gcc482 */
+                                     >
+                  ( rif_entry_points
+                  //! \todo let the blocksize be a parameter
+                  , 64
+                  , [] (fhg::rif::entry_point const& entry_point)
+                    {
+                      return entry_point;
+                    }
+                  , [&] (fhg::rif::entry_point const& entry_point)
+                    {
+                      pid_t const pid
+                        ( rif::client (entry_point).start_vmem
+                            ( sdpa_home / "bin" / "gpi-space"
+                            , verbose ? fhg::log::TRACE : fhg::log::INFO
+                            , gpi_mem.get()
+                            , gpi_socket.get()
+                            , vmem_port.get()
+                            , vmem_startup_timeout.get()
+                            , rif_entry_points.size() > 1 ? "gaspi" : "fake"
+                            , log_host && log_port
+                            ? std::make_pair (log_host.get(), log_port.get())
+                            : boost::optional<std::pair<std::string, unsigned short>>()
+                            , log_dir
+                            ? *log_dir / ("vmem-" + replace_whitespace (entry_point.string()) + ".log")
+                            : boost::optional<boost::filesystem::path>()
+                            , nodes
+                            , master.string()
+                            , entry_point == master
+                            ).get()
+                        );
 
-              for (fhg::rif::entry_point const& entry_point : rif_entry_points)
-              {
-                futures.emplace_back
-                  ( std::async
-                      ( std::launch::async
-                      , [&, entry_point]
-                      {
-                        pid_t const pid
-                          ( rif::client (entry_point).start_vmem
-                              ( sdpa_home / "bin" / "gpi-space"
-                              , verbose ? fhg::log::TRACE : fhg::log::INFO
-                              , gpi_mem.get()
-                              , gpi_socket.get()
-                              , vmem_port.get()
-                              , vmem_startup_timeout.get()
-                              , rif_entry_points.size() > 1 ? "gaspi" : "fake"
-                              , log_host && log_port
-                              ? std::make_pair (log_host.get(), log_port.get())
-                              : boost::optional<std::pair<std::string, unsigned short>>()
-                              , log_dir
-                              ? *log_dir / ("vmem-" + replace_whitespace (entry_point.string()) + ".log")
-                              : boost::optional<boost::filesystem::path>()
-                              , nodes
-                              , master.string()
-                              , entry_point == master
-                              ).get()
-                          );
-
-                        processes.store (entry_point, "vmem", pid);
-                      }
-                    )
+                      processes.store (entry_point, "vmem", pid);
+                    }
+                  ).second
                 );
-              }
 
-              fhg::util::wait_and_collect_exceptions (futures);
+              if (!fails.empty())
+              {
+                fhg::util::throw_collected_exceptions
+                  ( fails
+                  , [] (std::pair<fhg::rif::entry_point, std::exception_ptr> const& fail)
+                    {
+                      return ( boost::format ("vmem startup failed %1%: %2%")
+                             % fail.first
+                             % fhg::util::exception_printer (fail.second)
+                             ).str();
+                    }
+                  );
+              }
             }
           , "could not start vmem"
           );
@@ -616,91 +654,87 @@ namespace fhg
                      , std::unordered_map<pid_t, std::exception_ptr>
                      >
           > failures;
-        std::vector<std::future<void>> terminates;
 
-        for (It const& entry_point_processes : entry_point_procs)
-        {
-          using process_iter
-            = typename decltype (entry_point_processes->second)::iterator;
-          std::vector<pid_t> pids;
-          std::unordered_map<pid_t, process_iter> to_erase;
-          for ( process_iter it (entry_point_processes->second.begin())
-              ; it != entry_point_processes->second.end()
-              ; ++it
-              )
-          {
-            if (fhg::util::starts_with (kind, it->first))
+        util::blocked_async< fhg::rif::entry_point
+                           , std::function<void (It const&)> /* required by gcc482 */
+                           , std::vector<It>  /* required by gcc482 */
+                           >
+          ( entry_point_procs
+          //! \todo let the blocksize be a parameter
+          , 64
+          , [] (It const& it)
             {
-              to_erase.emplace (it->second, it);
-              pids.emplace_back (it->second);
+              return it->first;
             }
-          }
-
-          if (!pids.empty())
-          {
-            terminates.emplace_back
-              ( std::async
-                  ( std::launch::async
-                  , [&kind, pids, to_erase, entry_point_processes, &info_output
-                    , &failures, &guard_failures
-                    ]
-                    {
-                      info_output << "terminating " << kind << " on "
-                                  << entry_point_processes->first
-                                  << ": " << fhg::util::join (pids, ' ') << "\n";
-
-                      try
-                      {
-                        std::unordered_map<pid_t, std::exception_ptr>
-                          const failures_kill
-                            ( rif::client (entry_point_processes->first)
-                            . kill (pids).get()
-                            );
-
-                        if (!failures_kill.empty())
-                        {
-                          std::unique_lock<std::mutex> const _ (guard_failures);
-
-                          failures.emplace
-                            ( entry_point_processes->first
-                            , std::make_pair (kind, failures_kill)
-                            );
-                        }
-                      }
-                      catch (...) // \note: e.g. rif::client::connect
-                      {
-                        std::unordered_map<pid_t, std::exception_ptr> fails;
-
-                        for (pid_t pid : pids)
-                        {
-                          fails.emplace (pid, std::current_exception());
-                        }
-
-                        std::unique_lock<std::mutex> const _ (guard_failures);
-
-                        failures.emplace ( entry_point_processes->first
-                                         , std::make_pair (kind, fails)
-                                         );
-                      }
-
-                      //! \note: remove the process from the list of
-                      //! known processes in case of failure too
-                      //! assumption: when kill failed once, it will
-                      //! never succeed
-                      for (auto const& iter : to_erase)
-                      {
-                        entry_point_processes->second.erase (iter.second);
-                      }
-                    }
+          , [&] (It const& entry_point_processes)
+            {
+              using process_iter
+                = typename decltype (entry_point_processes->second)::iterator;
+              std::vector<pid_t> pids;
+              std::unordered_map<pid_t, process_iter> to_erase;
+              for ( process_iter it (entry_point_processes->second.begin())
+                  ; it != entry_point_processes->second.end()
+                  ; ++it
                   )
-              );
-          }
-        }
+              {
+                if (fhg::util::starts_with (kind, it->first))
+                {
+                  to_erase.emplace (it->second, it);
+                  pids.emplace_back (it->second);
+                }
+              }
 
-        for (auto& terminate : terminates)
-        {
-          terminate.get();
-        }
+              if (!pids.empty())
+              {
+                info_output << "terminating " << kind << " on "
+                            << entry_point_processes->first
+                            << ": " << fhg::util::join (pids, ' ') << "\n";
+
+                try
+                {
+                  std::unordered_map<pid_t, std::exception_ptr>
+                    const failures_kill
+                    ( rif::client (entry_point_processes->first)
+                    . kill (pids).get()
+                    );
+
+                  if (!failures_kill.empty())
+                  {
+                    std::unique_lock<std::mutex> const _ (guard_failures);
+
+                    failures.emplace
+                      ( entry_point_processes->first
+                      , std::make_pair (kind, failures_kill)
+                      );
+                  }
+                }
+                catch (...) // \note: e.g. rif::client::connect
+                {
+                  std::unordered_map<pid_t, std::exception_ptr> fails;
+
+                  for (pid_t pid : pids)
+                  {
+                    fails.emplace (pid, std::current_exception());
+                  }
+
+                  std::unique_lock<std::mutex> const _ (guard_failures);
+
+                  failures.emplace ( entry_point_processes->first
+                                   , std::make_pair (kind, fails)
+                                   );
+                }
+
+                //! \note: remove the process from the list of
+                //! known processes in case of failure too
+                //! assumption: when kill failed once, it will
+                //! never succeed
+                for (auto const& iter : to_erase)
+                {
+                  entry_point_processes->second.erase (iter.second);
+                }
+              }
+            }
+          );
 
         return failures;
       }

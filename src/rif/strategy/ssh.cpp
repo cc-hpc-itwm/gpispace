@@ -2,6 +2,7 @@
 
 #include <rif/strategy/ssh.hpp>
 
+#include <util-generic/blocked.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/syscall.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
@@ -14,7 +15,6 @@
 #include <boost/format.hpp>
 
 #include <future>
-#include <mutex>
 #include <stdexcept>
 
 namespace fhg
@@ -27,33 +27,6 @@ namespace fhg
       {
         namespace
         {
-          template<typename Fun, typename Container>
-            void blocked ( Container const& container
-                         , boost::optional<std::size_t> const& block_size
-                         , Fun&& fun
-                         )
-          {
-            std::size_t position (0);
-
-            while (position < container.size())
-            {
-              std::size_t const count
-                ( std::min ( block_size.get_value_or (container.size())
-                           , container.size() - position
-                           )
-                );
-
-              fun ( Container ( std::next (container.begin(), position)
-                              , std::next ( container.begin()
-                                          , position + count
-                                          )
-                              )
-                  );
-
-              position += count;
-            }
-          }
-
           struct socket
           {
             socket (std::string const& host, unsigned short port)
@@ -133,7 +106,7 @@ namespace fhg
             using block_size_type = std::size_t;
             using block_size_validator
               = validator::positive_integral<std::size_t>;
-            //! \todo define a reasonable large default
+            constexpr block_size_type const block_size_default = 64;
 
             constexpr char const* const ssh_port {"ssh-port"};
             constexpr char const* const ssh_port_description
@@ -189,6 +162,7 @@ namespace fhg
           options.add_options()                                         \
             ( option::block_size                                        \
             , boost::program_options::value<option::block_size_validator>() \
+              ->default_value (option::block_size_default)              \
             , option::block_size_description                            \
             )                                                           \
             ( option::ssh_port                                          \
@@ -250,72 +224,37 @@ namespace fhg
         {
           EXTRACT_PARAMETERS (parameters);
 
-          std::mutex failed_guard;
-          std::unordered_map<std::string, std::exception_ptr> failed;
+          libssh2::context ssh_context;
 
-          blocked
+          return util::blocked_async< std::string
+                                    , std::function<void (std::string const&)>  /* required by gcc482 */
+                                    , std::vector<std::string> /* required by gcc482 */
+                                    >
             ( all_hostnames
             , block_size
-            , [&] (std::vector<std::string> const& hostnames)
+            , [] (std::string const& hostname) { return hostname; }
+            , [&] (std::string const& hostname)
               {
-                std::vector<std::future<void>> sshs;
-
-                libssh2::context ssh_context;
-
-                for (std::string const& hostname : hostnames)
-                {
-                  std::string const command
-                    ( ( boost::format
-                          ( "%1% %2% --register-host %3% --register-port %4%"
-                            " --register-key %5%"
-                          )
-                      % binary
-                      % (port ? "--port " + std::to_string (*port) : "")
-                      % register_host
-                      % register_port
-                      % hostname
-                      ).str()
-                    );
-
-                  sshs.emplace_back
-                    ( std::async
-                        ( std::launch::async
-                        , [ hostname, command, &failed, &failed_guard, &username
-                          , &public_key, &private_key, &ssh_context, &ssh_port
-                          ]
-                          {
-                            try
-                            {
-                              socket const sock (hostname, ssh_port);
-                              libssh2::session session
-                                ( ssh_context
-                                , sock._fd
-                                , username
-                                , {public_key, private_key}
-                                );
-                              session.execute_and_require_success_and_no_output
-                                (command);
-                            }
-                            catch (...)
-                            {
-                              std::unique_lock<std::mutex> const _
-                                (failed_guard);
-                              failed.emplace
-                                (hostname, std::current_exception());
-                            }
-                          }
-                        )
-                    );
-                }
-
-                for (auto& ssh : sshs)
-                {
-                  ssh.get();
-                }
+                socket const sock (hostname, ssh_port);
+                libssh2::session session ( ssh_context
+                                         , sock._fd
+                                         , username
+                                         , {public_key, private_key}
+                                         );
+                session.execute_and_require_success_and_no_output
+                  (( boost::format
+                     ( "%1% %2% --register-host %3% --register-port %4%"
+                     " --register-key %5%"
+                     )
+                   % binary
+                   % (port ? "--port " + std::to_string (*port) : "")
+                   % register_host
+                   % register_port
+                   % hostname
+                   ).str()
+                  );
               }
-            );
-
-          return failed;
+            ).second;
         }
 
         std::pair < std::unordered_set<std::string>
@@ -327,72 +266,33 @@ namespace fhg
         {
           EXTRACT_PARAMETERS (parameters);
 
-          std::mutex guard;
-          std::unordered_set<std::string> terminated;
-          std::unordered_map<std::string, std::exception_ptr> failed;
+          libssh2::context ssh_context;
 
-          blocked
+          return util::blocked_async< std::string
+                                    , std::function<void (std::pair<std::string, fhg::rif::entry_point> const&)> /* required gcc482 */
+                                    , std::unordered_map<std::string, fhg::rif::entry_point> /* required by gcc482 */
+                                    >
             ( all_entry_points
             , block_size
-            , [&] (std::unordered_map<std::string, fhg::rif::entry_point> const& entry_points)
+            , [] (std::pair<std::string, fhg::rif::entry_point> const& entry_point)
               {
-                libssh2::context ssh_context;
-
-                std::vector<std::future<void>> sshs;
-
-                for ( std::pair<std::string, fhg::rif::entry_point> const& entry_point
-                    : entry_points
-                    )
-                {
-                  std::string const command
-                    ( ( boost::format ("/bin/kill -TERM %1%")
-                      % entry_point.second.pid
-                      ).str()
-                    );
-
-                  sshs.emplace_back
-                    ( std::async
-                        ( std::launch::async
-                        , [ command, entry_point
-                          , &guard, &failed, &terminated
-                          , &username, &public_key, &private_key, &ssh_context
-                          , &ssh_port
-                          ]
-                          {
-                            try
-                            {
-                              socket const sock (entry_point.second.hostname, ssh_port);
-                              libssh2::session session
-                                ( ssh_context
-                                , sock._fd
-                                , username
-                                , {public_key, private_key}
-                                );
-                              session.execute_and_require_success_and_no_output
-                                (command);
-
-                              std::unique_lock<std::mutex> const _ (guard);
-                              terminated.emplace (entry_point.first);
-                            }
-                            catch (...)
-                            {
-                              std::unique_lock<std::mutex> const _ (guard);
-                              failed.emplace
-                                (entry_point.first, std::current_exception());
-                            }
-                          }
-                        )
-                    );
-                }
-
-                for (auto& ssh : sshs)
-                {
-                  ssh.get();
-                }
+                return entry_point.first;
+              }
+            , [&] (std::pair<std::string, fhg::rif::entry_point> const& entry_point)
+              {
+                socket const sock (entry_point.second.hostname, ssh_port);
+                libssh2::session session ( ssh_context
+                                         , sock._fd
+                                         , username
+                                         , {public_key, private_key}
+                                         );
+                session.execute_and_require_success_and_no_output
+                  (( boost::format ("/bin/kill -TERM %1%")
+                   % entry_point.second.pid
+                   ).str()
+                  );
               }
             );
-
-          return {terminated, failed};
         }
       }
     }
