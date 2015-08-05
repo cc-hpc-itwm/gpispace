@@ -7,6 +7,7 @@
 
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 
 #include <unordered_map>
@@ -15,7 +16,7 @@ namespace sdpa
 {
   namespace daemon
   {
-    class WorkerManager
+    class WorkerManager : boost::noncopyable
     {
     public:
       const boost::optional<worker_id_t> findSubmOrAckWorker (const sdpa::job_id_t& job_id) const;
