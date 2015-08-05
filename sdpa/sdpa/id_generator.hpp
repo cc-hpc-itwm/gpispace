@@ -8,7 +8,6 @@
 #include <boost/format.hpp>
 
 #include <atomic>
-#include <chrono>
 
 namespace sdpa {
   class id_generator
@@ -21,12 +20,9 @@ namespace sdpa {
 
     id_generator (std::string const& name)
       : _counter()
-      , _prefix ( ( boost::format ("%1%.%2%.%3%.%4%.")
+      , _prefix ( ( boost::format ("%1%.%2%.%3%.")
                   % fhg::util::hostname()
                   % name
-                  % std::chrono::duration_cast<std::chrono::seconds>
-                      ( std::chrono::steady_clock::now().time_since_epoch()
-                      ).count()
                   % fhg::util::syscall::getpid()
                   ).str()
                 )
