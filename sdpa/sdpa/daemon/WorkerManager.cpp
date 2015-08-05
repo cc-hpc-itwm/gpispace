@@ -49,14 +49,17 @@ namespace sdpa
     {
       boost::mutex::scoped_lock const _ (mtx_);
 
-      for ( Worker::ptr_t worker
+      for ( std::pair<worker_id_t, Worker::ptr_t> const& worker
           : worker_map_
-          | boost::adaptors::map_values
           | boost::adaptors::filtered
-            ([&job_id] (boost::shared_ptr<Worker> w) { return w->has_job (job_id); })
+            ([&job_id] (std::pair<worker_id_t, Worker::ptr_t> const& w)
+             {
+               return w.second->has_job (job_id);
+             }
+            )
           )
       {
-        return worker->name();
+        return worker.first;
       }
 
       return boost::none;
@@ -78,8 +81,7 @@ namespace sdpa
         throw std::runtime_error ("worker '" + workerId + "' already exists");
       }
       worker_connections_.left.insert ({workerId, address});
-      Worker::ptr_t pWorker ( new Worker ( workerId
-                                         , capacity
+      Worker::ptr_t pWorker ( new Worker ( capacity
                                          , cpbSet
                                          , allocated_shared_memory_size
                                          , children_allowed
@@ -87,7 +89,7 @@ namespace sdpa
                                          , address
                                          )
                             );
-      worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
+      worker_map_.emplace (workerId, pWorker);
     }
 
 
@@ -181,7 +183,7 @@ namespace sdpa
           continue;
 
         const boost::optional<double>
-          matchingDeg (matchRequirements (worker.second->name(), job_reqs));
+          matchingDeg (matchRequirements (worker.first, job_reqs));
 
         if (matchingDeg)
         {

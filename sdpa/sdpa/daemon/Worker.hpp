@@ -20,8 +20,7 @@ namespace sdpa
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
 
-      explicit Worker ( const worker_id_t& name
-                      , const boost::optional<unsigned int>& cap
+      explicit Worker ( const boost::optional<unsigned int>& cap
                       , const capabilities_set_t&
                       , unsigned long allocated_shared_memory_size
                       , const bool children_allowed
@@ -36,7 +35,6 @@ namespace sdpa
 
       double lastTimeServed() {lock_type lock(mtx_); return last_time_served_; }
 
-      const worker_id_t &name() const { lock_type lock(mtx_); return name_; }
       std::string hostname() const { return hostname_; }
       fhg::com::p2p::address_t address() const;
       boost::optional<unsigned int> capacity() const { lock_type lock(mtx_); return capacity_; }
@@ -73,7 +71,6 @@ namespace sdpa
       std::set<job_id_t> getJobListAndCleanQueues();
 
     private:
-      worker_id_t name_; //! name of the worker
       boost::optional<unsigned int> capacity_;
       capabilities_set_t capabilities_;
       unsigned long allocated_shared_memory_size_;
