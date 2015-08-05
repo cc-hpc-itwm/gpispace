@@ -61,10 +61,6 @@ namespace sdpa
         }
       }
 
-      using base_priority_queue_t::pop;
-      using base_priority_queue_t::top;
-      using base_priority_queue_t::size;
-
       container_type::const_iterator begin() const {return c.begin();}
       container_type::const_iterator end() const {return c.end();}
 
