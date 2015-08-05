@@ -5,7 +5,6 @@
 #include <we/type/requirement.hpp>
 #include <we/type/schedule_data.hpp>
 
-typedef std::list<we::type::requirement_t> requirement_list_t;
 const std::function<double (std::string const&)>
   null_transfer_cost = [](const std::string&) {return 0.0;};
 
@@ -14,7 +13,7 @@ class job_requirements_t
 public:
   job_requirements_t() = delete;
 
-  job_requirements_t ( const requirement_list_t& r_list
+  job_requirements_t ( const std::list<we::type::requirement_t>& r_list
                      , const we::type::schedule_data& schedule_data
                      , std::function<double (std::string const&)> transfer_cost
                      , double estimated_computational_cost
@@ -28,12 +27,12 @@ public:
   {}
 
   unsigned long numWorkers() const {return _scheduleData.num_worker().get_value_or(1);}
-  const requirement_list_t& getReqList() const {return _requirementList;}
+  const std::list<we::type::requirement_t>& getReqList() const {return _requirementList;}
   const std::function<double (std::string const&)> transfer_cost() const {return _transfer_cost;}
   double computational_cost() const {return _estimated_computational_cost;}
   unsigned long shared_memory_amount_required() const {return _shared_memory_amount_required;}
 private:
-  requirement_list_t _requirementList;
+  std::list<we::type::requirement_t> _requirementList;
   we::type::schedule_data _scheduleData;
   std::function<double (std::string const&)> _transfer_cost;
   double _estimated_computational_cost;
