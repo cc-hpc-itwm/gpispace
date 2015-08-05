@@ -18,7 +18,7 @@ namespace sdpa
       : capabilities_ (capabilities)
       , _allocated_shared_memory_size (allocated_shared_memory_size)
       , _children_allowed (children_allowed)
-      , hostname_ (hostname)
+      , _hostname (hostname)
       , address_ (address)
       , last_time_served_ (0)
       , reserved_ (false)

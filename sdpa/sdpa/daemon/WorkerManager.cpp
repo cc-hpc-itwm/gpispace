@@ -36,7 +36,7 @@ namespace sdpa
   {
     std::string WorkerManager::host_INDICATES_A_RACE (const sdpa::worker_id_t& worker) const
     {
-      return worker_map_.at(worker).hostname();
+      return worker_map_.at(worker)._hostname;
     }
 
     bool WorkerManager::hasWorker_INDICATES_A_RACE_TESTING_ONLY(const worker_id_t& worker_id) const
@@ -187,7 +187,7 @@ namespace sdpa
         {
           mmap_match_deg_worker_id.emplace ( matchingDeg.get()
                                            , worker_id_host_info_t ( worker.first
-                                                                   , worker.second.hostname()
+                                                                   , worker.second._hostname
                                                                    , worker.second._allocated_shared_memory_size
                                                                    , worker.second.lastTimeServed()
                                                                    )

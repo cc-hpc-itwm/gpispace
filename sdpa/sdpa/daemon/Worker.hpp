@@ -31,7 +31,6 @@ namespace sdpa
 
       double lastTimeServed() const { return last_time_served_; }
 
-      std::string hostname() const { return hostname_; }
       fhg::com::p2p::address_t address() const;
 
       // capabilities
@@ -61,7 +60,7 @@ namespace sdpa
       capabilities_set_t capabilities_;
       unsigned long const _allocated_shared_memory_size;
       bool const _children_allowed;
-      std::string hostname_;
+      std::string const _hostname;
       fhg::com::p2p::address_t address_;
       double last_time_served_;
 
