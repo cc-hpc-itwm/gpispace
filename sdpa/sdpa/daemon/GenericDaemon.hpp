@@ -100,14 +100,14 @@ namespace sdpa {
 
       const std::string& name() const;
       boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
-      fhg::com::host_t peer_host() const
+      fhg::com::host_t peer_host_TESTING_ONLY() const
       {
         return fhg::com::host_t ( fhg::network::connectable_to_address_string
                                     (peer_local_endpoint().address())
                                 );
 
       }
-      fhg::com::port_t peer_port() const
+      fhg::com::port_t peer_port_TESTING_ONLY() const
       {
         return fhg::com::port_t (std::to_string (peer_local_endpoint().port()));
       }

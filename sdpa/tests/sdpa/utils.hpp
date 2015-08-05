@@ -265,8 +265,8 @@ namespace utils
 
     sdpa::daemon::Orchestrator _;
     std::string name() const { return _.name(); }
-    fhg::com::host_t host() const { return _.peer_host(); }
-    fhg::com::port_t port() const { return _.peer_port(); }
+    fhg::com::host_t host() const { return _.peer_host_TESTING_ONLY(); }
+    fhg::com::port_t port() const { return _.peer_port_TESTING_ONLY(); }
   };
 
   namespace
@@ -315,8 +315,8 @@ namespace utils
     {}
     sdpa::daemon::Agent _;
     std::string name() const { return _.name(); }
-    fhg::com::host_t host() const { return _.peer_host(); }
-    fhg::com::port_t port() const { return _.peer_port(); }
+    fhg::com::host_t host() const { return _.peer_host_TESTING_ONLY(); }
+    fhg::com::port_t port() const { return _.peer_port_TESTING_ONLY(); }
   };
 
   class basic_drts_component : sdpa::events::EventHandler
