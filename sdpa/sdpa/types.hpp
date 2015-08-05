@@ -3,12 +3,10 @@
 #include <fhgcom/peer_info.hpp>
 
 #include <string>
-#include <vector>
 #include <list>
 #include <map>
 #include <set>
 #include <iostream>
-#include <we/type/value.hpp>
 #include <sdpa/job_states.hpp>
 
 #include <iterator>
