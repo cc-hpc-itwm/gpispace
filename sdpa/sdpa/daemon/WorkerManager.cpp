@@ -157,12 +157,8 @@ namespace sdpa
       ) const
     {
       boost::mutex::scoped_lock const lock_worker_map (mtx_);
-      std::vector<worker_id_t> workers;
-      boost::copy ( worker_map_ | boost::adaptors::map_keys
-                  , std::back_inserter (workers)
-                  );
 
-      if (workers.size() < job_reqs.numWorkers())
+      if (worker_map_.size() < job_reqs.numWorkers())
       {
         return {};
       }
@@ -175,6 +171,10 @@ namespace sdpa
       // Searching and insertion operations have logarithmic complexity, as the
       // multimaps are implemented as binary search trees
 
+      std::vector<worker_id_t> workers;
+      boost::copy ( worker_map_ | boost::adaptors::map_keys
+                  , std::back_inserter (workers)
+                  );
       for (const sdpa::worker_id_t& worker_id : workers)
       {
         const worker_map_t::const_iterator it (worker_map_.find (worker_id));
