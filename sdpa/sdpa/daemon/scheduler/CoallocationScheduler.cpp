@@ -61,8 +61,21 @@ namespace sdpa
         }
       }
 
-      container_type::const_iterator begin() const {return c.begin();}
-      container_type::const_iterator end() const {return c.end();}
+        std::set<worker_id_t> assigned_workers() const
+        {
+          std::set<worker_id_t> assigned_workers;
+
+          std::transform ( c.begin()
+                         , c.end()
+                         , std::inserter (assigned_workers, assigned_workers.begin())
+                         , [] (const cost_deg_wid_t& cost_deg_wid) -> worker_id_t
+                           {
+                             return  std::get<4> (cost_deg_wid);
+                           }
+                         );
+
+          return assigned_workers;
+        };
 
       private:
         size_t capacity_;
@@ -78,8 +91,6 @@ namespace sdpa
      {
        if (mmap_matching_workers.size() < n_req_workers)
          return {};
-
-       std::set<worker_id_t> assigned_workers;
 
        bounded_priority_queue_t bpq (n_req_workers);
 
@@ -111,16 +122,7 @@ namespace sdpa
                   );
        }
 
-       std::transform ( bpq.begin()
-                      , bpq.end()
-                      , std::inserter (assigned_workers, assigned_workers.begin())
-                      , [] (const cost_deg_wid_t& cost_deg_wid) -> worker_id_t
-                        {
-                          return  std::get<4> (cost_deg_wid);
-                        }
-                      );
-
-       return assigned_workers;
+       return bpq.assigned_workers();
      }
 
     double CoallocationScheduler::compute_reservation_cost
