@@ -16,7 +16,7 @@ namespace sdpa
                    , const fhg::com::p2p::address_t& address
                    )
       : capabilities_ (capabilities)
-      , allocated_shared_memory_size_ (allocated_shared_memory_size)
+      , _allocated_shared_memory_size (allocated_shared_memory_size)
       , _children_allowed (children_allowed)
       , hostname_ (hostname)
       , address_ (address)

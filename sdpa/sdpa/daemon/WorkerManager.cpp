@@ -173,7 +173,7 @@ namespace sdpa
       for (std::pair<worker_id_t, Worker> const& worker : worker_map_)
       {
         if ( job_reqs.shared_memory_amount_required()
-           > worker.second.allocated_shared_memory_size()
+           > worker.second._allocated_shared_memory_size
            )
           continue;
 
@@ -188,7 +188,7 @@ namespace sdpa
           mmap_match_deg_worker_id.emplace ( matchingDeg.get()
                                            , worker_id_host_info_t ( worker.first
                                                                    , worker.second.hostname()
-                                                                   , worker.second.allocated_shared_memory_size()
+                                                                   , worker.second._allocated_shared_memory_size
                                                                    , worker.second.lastTimeServed()
                                                                    )
                                            );
