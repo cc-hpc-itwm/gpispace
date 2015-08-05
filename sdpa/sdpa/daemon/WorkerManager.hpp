@@ -20,10 +20,9 @@ namespace sdpa
     public:
       typedef std::unordered_map<worker_id_t, Worker::ptr_t> worker_map_t;
 
-      bool hasWorker (const worker_id_t& worker_id) const;
       const boost::optional<worker_id_t> findSubmOrAckWorker (const sdpa::job_id_t& job_id) const;
 
-      std::string host (const sdpa::worker_id_t& worker) const;
+      std::string host_INDICATES_A_RACE (const sdpa::worker_id_t& worker) const;
 
       //! throws if workerId was not unique
       void addWorker ( const worker_id_t& workerId
@@ -50,14 +49,18 @@ namespace sdpa
         , const job_requirements_t& job_req_set
         ) const;
 
-    bool can_start_job (std::set<worker_id_t> workers) const;
+    bool submit_and_serve_if_can_start_job_INDICATES_A_RACE
+      ( job_id_t const&, std::set<worker_id_t> const&
+      , std::function<void ( const sdpa::worker_id_list_t&
+                           , const job_id_t&
+                           )> const& serve_job
+      ) const;
 
     bool all_workers_busy_and_have_pending_jobs() const;
 
     std::set<job_id_t> remove_all_matching_pending_jobs (const job_id_list_t&);
 
     void assign_job_to_worker (const job_id_t&, const worker_id_t&);
-    void submit_job_to_worker (const job_id_t&, const worker_id_t&);
     void acknowledge_job_sent_to_worker (const job_id_t&, const worker_id_t&);
     void delete_job_from_worker (const job_id_t &job_id, const worker_id_t& );
     const capabilities_set_t& worker_capabilities (const worker_id_t&) const;
@@ -77,6 +80,7 @@ namespace sdpa
     boost::optional<WorkerManager::worker_connections_t::left_iterator>
       address_by_worker (std::string const&);
 
+      bool hasWorker_INDICATES_A_RACE_TESTING_ONLY (const worker_id_t& worker_id) const;
     private:
       worker_map_t  worker_map_;
       worker_connections_t worker_connections_;

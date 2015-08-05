@@ -140,9 +140,9 @@ BOOST_AUTO_TEST_CASE (add_worker)
                            , fhg::util::testing::random_string()
                            );
 
-  BOOST_REQUIRE (worker_manager.hasWorker (worker_ids[0]));
-  BOOST_REQUIRE (worker_manager.hasWorker (worker_ids[1]));
-  BOOST_REQUIRE (worker_manager.hasWorker (worker_ids[2]));
+  BOOST_REQUIRE (worker_manager.hasWorker_INDICATES_A_RACE_TESTING_ONLY (worker_ids[0]));
+  BOOST_REQUIRE (worker_manager.hasWorker_INDICATES_A_RACE_TESTING_ONLY (worker_ids[1]));
+  BOOST_REQUIRE (worker_manager.hasWorker_INDICATES_A_RACE_TESTING_ONLY (worker_ids[2]));
 }
 
 BOOST_AUTO_TEST_CASE (delete_worker)
@@ -170,8 +170,8 @@ BOOST_AUTO_TEST_CASE (delete_worker)
 
   worker_manager.deleteWorker (worker_ids[1]);
 
-  BOOST_REQUIRE (worker_manager.hasWorker(worker_ids[0]));
-  BOOST_REQUIRE (!worker_manager.hasWorker(worker_ids[1]));
+  BOOST_REQUIRE (worker_manager.hasWorker_INDICATES_A_RACE_TESTING_ONLY(worker_ids[0]));
+  BOOST_REQUIRE (!worker_manager.hasWorker_INDICATES_A_RACE_TESTING_ONLY(worker_ids[1]));
 }
 
 BOOST_AUTO_TEST_CASE (get_capabilities)
@@ -240,7 +240,15 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
   BOOST_REQUIRE (worker_id);
   BOOST_REQUIRE_EQUAL (*worker_id, worker_ids[0]);
 
-  worker_manager.submit_job_to_worker (job_id, worker_ids[0]);
+  worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
+    ( job_id
+    , {worker_ids[0]}
+    , [] (std::list<sdpa::worker_id_t> const&, sdpa::job_id_t const&)
+      {
+        // do nothing, serve_job is merged with submit_if_can_start in
+        // order to avoid races when workers are removed
+      }
+    );
   worker_id = worker_manager.findSubmOrAckWorker (job_id);
   BOOST_REQUIRE (worker_id);
   BOOST_REQUIRE_EQUAL (*worker_id, worker_ids[0]);
