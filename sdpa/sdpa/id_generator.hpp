@@ -4,12 +4,13 @@
 
 #include <util-generic/hostname.hpp>
 #include <util-generic/syscall.hpp>
-#include <time.h>   // time
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
 
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
+
+#include <chrono>
 
 namespace sdpa {
   class id_generator
@@ -26,7 +27,9 @@ namespace sdpa {
       , _prefix ( ( boost::format ("%1%.%2%.%3%.%4%.")
                   % fhg::util::hostname()
                   % name
-                  % time (nullptr)
+                  % std::chrono::duration_cast<std::chrono::seconds>
+                      ( std::chrono::steady_clock::now().time_since_epoch()
+                      ).count()
                   % fhg::util::syscall::getpid()
                   ).str()
                 )
