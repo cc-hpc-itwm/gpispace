@@ -1,5 +1,6 @@
 #pragma once
 
+#include <sdpa/events/Codec.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 
 #include <boost/shared_ptr.hpp>
@@ -36,6 +37,7 @@ namespace sdpa
       }
 
     private:
+      sdpa::events::Codec _codec;
       void handle_recv ( boost::system::error_code const & ec
                        , boost::optional<fhg::com::p2p::address_t> source_name
                        );
