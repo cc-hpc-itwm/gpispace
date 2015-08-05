@@ -171,7 +171,6 @@ DRTSImpl::DRTSImpl
     send_event<sdpa::events::WorkerRegistrationEvent>
       ( master_address
       , m_my_name
-      , m_pending_jobs.capacity()
       , capabilities
       , (_shared_memory != nullptr) ? _shared_memory->size() : 0
       , false

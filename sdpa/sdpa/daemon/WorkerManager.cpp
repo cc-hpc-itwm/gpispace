@@ -66,7 +66,6 @@ namespace sdpa
     }
 
     void WorkerManager::addWorker ( const worker_id_t& workerId
-                                  , boost::optional<unsigned int> capacity
                                   , const capabilities_set_t& cpbSet
                                   , unsigned long allocated_shared_memory_size
                                   , const bool children_allowed
@@ -82,8 +81,7 @@ namespace sdpa
       }
       worker_connections_.left.insert ({workerId, address});
       worker_map_.emplace ( workerId
-                          , Worker ( capacity
-                                   , cpbSet
+                          , Worker ( cpbSet
                                    , allocated_shared_memory_size
                                    , children_allowed
                                    , hostname

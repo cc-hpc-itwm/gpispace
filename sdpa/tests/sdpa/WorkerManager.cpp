@@ -45,7 +45,6 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
 
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker ( worker_ids[0]
-                           , 1
                            , {sdpa::capability_t ("A", worker_ids[0])}
                            , random_ulong()
                            , random_bool()
@@ -54,7 +53,6 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
                            );
 
   worker_manager.addWorker ( worker_ids[1]
-                           , 1
                            , {sdpa::capability_t ("B", worker_ids[1])}
                            , random_ulong()
                            , random_bool()
@@ -62,7 +60,6 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
                            , fhg::util::testing::random_string()
                            );
   worker_manager.addWorker ( worker_ids[2]
-                           , 1
                            , { sdpa::capability_t ("A", worker_ids[2])
                              , sdpa::capability_t ("B", worker_ids[2])
                              , sdpa::capability_t ("C", worker_ids[2])
@@ -74,7 +71,6 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
                            );
 
   worker_manager.addWorker ( worker_ids[3]
-                           , 1
                            , { sdpa::capability_t ("A", worker_ids[3])
                              , sdpa::capability_t ("B", worker_ids[3])
                              }
@@ -112,7 +108,6 @@ BOOST_AUTO_TEST_CASE (add_worker)
 
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker ( worker_ids[0]
-                           , 1
                            , {sdpa::capability_t ("A", worker_ids[0])}
                            , random_ulong()
                            , random_bool()
@@ -121,7 +116,6 @@ BOOST_AUTO_TEST_CASE (add_worker)
                            );
 
   worker_manager.addWorker ( worker_ids[1]
-                           , 1
                            , {sdpa::capability_t ("B", worker_ids[1])}
                            , random_ulong()
                            , random_bool()
@@ -130,7 +124,6 @@ BOOST_AUTO_TEST_CASE (add_worker)
                            );
 
   worker_manager.addWorker ( worker_ids[2]
-                           , 1
                            , {sdpa::capability_t ("C", worker_ids[2])}
                            , random_ulong()
                            , random_bool()
@@ -149,7 +142,6 @@ BOOST_AUTO_TEST_CASE (delete_worker)
 
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker ( worker_ids[0]
-                           , 1
                            , {sdpa::capability_t ("A", worker_ids[0])}
                            , random_ulong()
                            , random_bool()
@@ -158,7 +150,6 @@ BOOST_AUTO_TEST_CASE (delete_worker)
                            );
 
   worker_manager.addWorker ( worker_ids[1]
-                           , 1
                            , {sdpa::capability_t ("B", worker_ids[1])}
                            , random_ulong()
                            , random_bool()
@@ -185,7 +176,6 @@ BOOST_AUTO_TEST_CASE (get_capabilities)
 
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker ( worker_ids[0]
-                           , 1
                            , {*it++}
                            , random_ulong()
                            , random_bool()
@@ -194,7 +184,6 @@ BOOST_AUTO_TEST_CASE (get_capabilities)
                            );
 
   worker_manager.addWorker ( worker_ids[1]
-                           , 1
                            , {*it++}
                            , random_ulong()
                            , random_bool()
@@ -203,7 +192,6 @@ BOOST_AUTO_TEST_CASE (get_capabilities)
                            );
 
   worker_manager.addWorker ( worker_ids[2]
-                           , 1
                            , {*it++}
                            , random_ulong()
                            , random_bool()
@@ -223,7 +211,6 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
 
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker ( worker_ids[0]
-                           , 1
                            , {sdpa::capability_t ("A", worker_ids[0])}
                            , random_ulong()
                            , random_bool()

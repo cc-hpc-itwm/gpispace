@@ -354,7 +354,6 @@ namespace utils
         , sdpa::events::SDPAEvent::Ptr
           ( new sdpa::events::WorkerRegistrationEvent
             ( _name
-            , 1
             , capabilities
             , fhg::util::testing::random_integral<unsigned long>()
             , accept_workers

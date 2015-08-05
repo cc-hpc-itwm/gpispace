@@ -9,15 +9,13 @@ namespace sdpa
 {
   namespace daemon
   {
-    Worker::Worker ( const boost::optional<unsigned int>& cap
-                   , const capabilities_set_t& capabilities
+    Worker::Worker ( const capabilities_set_t& capabilities
                    , unsigned long allocated_shared_memory_size
                    , const bool children_allowed
                    , const std::string& hostname
                    , const fhg::com::p2p::address_t& address
                    )
-      : capacity_ (cap)
-      , capabilities_ (capabilities)
+      : capabilities_ (capabilities)
       , allocated_shared_memory_size_ (allocated_shared_memory_size)
       , _children_allowed (children_allowed)
       , hostname_ (hostname)

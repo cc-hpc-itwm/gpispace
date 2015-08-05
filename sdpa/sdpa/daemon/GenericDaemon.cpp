@@ -435,7 +435,6 @@ try
 
   scheduler().worker_manager().addWorker
     ( event->name()
-    , event->capacity()
     , workerCpbSet
     , event->allocated_shared_memory_size()
     , event->children_allowed()
@@ -1000,7 +999,7 @@ void GenericDaemon::requestRegistration (master_info_t::iterator const& it)
 
   scheduler().worker_manager().getCapabilities (cpbSet);
 
-  parent_proxy (this, it).worker_registration (boost::none, cpbSet);
+  parent_proxy (this, it).worker_registration (cpbSet);
 }
 
 void GenericDaemon::addCapability(const capability_t& cpb)
@@ -1532,15 +1531,14 @@ namespace sdpa
     {}
 
     void GenericDaemon::parent_proxy::worker_registration
-      ( boost::optional<unsigned int> capacity
-      , capabilities_set_t capabilities
+      ( capabilities_set_t capabilities
       ) const
     {
       _that->sendEventToOther
         ( _address
         , events::WorkerRegistrationEvent::Ptr
           ( new events::WorkerRegistrationEvent
-              (_that->name(), capacity, capabilities, 0, true, fhg::util::hostname())
+              (_that->name(), capabilities, 0, true, fhg::util::hostname())
           )
         );
     }

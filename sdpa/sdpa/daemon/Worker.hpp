@@ -17,8 +17,7 @@ namespace sdpa
     private:
       friend class WorkerManager;
 
-      explicit Worker ( const boost::optional<unsigned int>& cap
-                      , const capabilities_set_t&
+      explicit Worker ( const capabilities_set_t&
                       , unsigned long allocated_shared_memory_size
                       , const bool children_allowed
                       , const std::string& hostname
@@ -34,7 +33,6 @@ namespace sdpa
 
       std::string hostname() const { return hostname_; }
       fhg::com::p2p::address_t address() const;
-      boost::optional<unsigned int> capacity() const { return capacity_; }
       unsigned long allocated_shared_memory_size() const
         {return allocated_shared_memory_size_;}
 
@@ -62,7 +60,6 @@ namespace sdpa
 
       std::set<job_id_t> getJobListAndCleanQueues();
 
-      boost::optional<unsigned int> capacity_;
       capabilities_set_t capabilities_;
       unsigned long allocated_shared_memory_size_;
       bool const _children_allowed;

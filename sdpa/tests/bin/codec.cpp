@@ -230,14 +230,13 @@ BOOST_AUTO_TEST_CASE (WorkerRegistration)
   caps.insert (sdpa::Capability ("bar", fhg::util::testing::random_string()));
 
   WorkerRegistrationEvent e
-    ( fhg::util::testing::random_string(), 10, caps
+    ( fhg::util::testing::random_string(), caps
     , fhg::util::testing::random_integral<unsigned long>()
     , true, fhg::util::testing::random_string()
     );
   WorkerRegistrationEvent* r (encode_decode_mgmt_event (e));
 
   BOOST_REQUIRE_EQUAL (r->name(), e.name());
-  BOOST_REQUIRE_EQUAL (r->capacity(), e.capacity());
   BOOST_REQUIRE_EQUAL (r->capabilities(), e.capabilities());
   BOOST_REQUIRE_EQUAL (r->allocated_shared_memory_size(), e.allocated_shared_memory_size());
   BOOST_REQUIRE_EQUAL (r->children_allowed(), e.children_allowed());

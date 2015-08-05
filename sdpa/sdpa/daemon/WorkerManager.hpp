@@ -25,7 +25,6 @@ namespace sdpa
 
       //! throws if workerId was not unique
       void addWorker ( const worker_id_t& workerId
-                     , boost::optional<unsigned int> capacity
                      , const capabilities_set_t& cpbset
                      , unsigned long allocated_shared_memory_size
                      , const bool children_allowed
