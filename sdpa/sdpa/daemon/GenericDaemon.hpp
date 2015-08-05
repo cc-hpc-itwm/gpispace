@@ -66,6 +66,7 @@
 #include <boost/make_shared.hpp>
 
 #include <memory>
+#include <mutex>
 #include <random>
 
 #define OVERWRITTEN_IN_TEST virtual
@@ -86,9 +87,6 @@ namespace sdpa {
       using master_info_t = std::map<std::string, master_network_info>;
 
     public:
-      typedef boost::recursive_mutex mutex_type;
-      typedef boost::unique_lock<mutex_type> lock_type;
-
       GenericDaemon( const std::string name
                    , const std::string url
                    , std::unique_ptr<boost::asio::io_service> peer_io_service
@@ -268,8 +266,8 @@ namespace sdpa {
 
     private:
 
-      mutex_type mtx_subscriber_;
-      mutex_type mtx_cpb_;
+      std::mutex mtx_subscriber_;
+      std::mutex mtx_cpb_;
 
       sdpa::capabilities_set_t m_capabilities;
 

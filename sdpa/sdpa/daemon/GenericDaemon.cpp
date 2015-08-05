@@ -997,7 +997,7 @@ void GenericDaemon::requestRegistration (master_info_t::iterator const& it)
     request_registration_soon (it);
   }
 
-  lock_type lock(mtx_cpb_);
+  std::unique_lock<std::mutex> const guard_capabilites (mtx_cpb_);
   capabilities_set_t cpbSet (m_capabilities);
 
   _worker_manager.getCapabilities (cpbSet);
@@ -1007,13 +1007,13 @@ void GenericDaemon::requestRegistration (master_info_t::iterator const& it)
 
 void GenericDaemon::addCapability(const capability_t& cpb)
 {
-  lock_type lock(mtx_cpb_);
+  std::unique_lock<std::mutex> const guard_capabilites (mtx_cpb_);
   m_capabilities.insert(cpb);
 }
 
 void GenericDaemon::unsubscribe(const fhg::com::p2p::address_t& id)
 {
-  lock_type lock(mtx_subscriber_);
+  std::unique_lock<std::mutex> const _ (mtx_subscriber_);
   _subscriptions.erase(id);
 }
 
@@ -1029,7 +1029,7 @@ void GenericDaemon::handleSubscribeEvent
 {
   const job_id_t& jobId (pEvt->job_id());
 
-  lock_type lock (mtx_subscriber_);
+  std::unique_lock<std::mutex> const _ (mtx_subscriber_);
 
   Job* pJob (findJob (jobId));
   if (!pJob)
@@ -1089,7 +1089,7 @@ void GenericDaemon::handleSubscribeEvent
 
 bool GenericDaemon::isSubscriber(const fhg::com::p2p::address_t& agentId)
 {
-  lock_type lock(mtx_subscriber_);
+  std::unique_lock<std::mutex> const _ (mtx_subscriber_);
   return _subscriptions.find (agentId) != _subscriptions.end();
 }
     std::list<fhg::com::p2p::address_t> GenericDaemon::subscribers (job_id_t job_id) const
