@@ -3,8 +3,7 @@
 #pragma once
 
 #include <util-generic/hostname.hpp>
-#include <sys/types.h> // pid_t
-#include <unistd.h> // getpid
+#include <util-generic/syscall.hpp>
 #include <time.h>   // time
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
@@ -28,7 +27,7 @@ namespace sdpa {
                   % fhg::util::hostname()
                   % name
                   % time (nullptr)
-                  % getpid()
+                  % fhg::util::syscall::getpid()
                   ).str()
                 )
     {}
