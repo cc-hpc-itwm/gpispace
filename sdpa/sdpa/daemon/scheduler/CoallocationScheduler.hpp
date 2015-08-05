@@ -19,10 +19,10 @@ namespace sdpa
     public:
       typedef std::map<job_id_t, std::set<worker_id_t>> assignment_t;
 
-      CoallocationScheduler (std::function<job_requirements_t (const sdpa::job_id_t&)>);
-
-      const WorkerManager& worker_manager() const;
-      WorkerManager& worker_manager();
+      CoallocationScheduler
+        ( std::function<job_requirements_t (const sdpa::job_id_t&)>
+        , WorkerManager&
+        );
 
       // -- used by daemon
       bool delete_job (const sdpa::job_id_t&);
@@ -63,7 +63,7 @@ namespace sdpa
       std::function<job_requirements_t (const sdpa::job_id_t&)>
         _job_requirements;
 
-      WorkerManager _worker_manager;
+      WorkerManager& _worker_manager;
 
       class locked_job_id_list
       {

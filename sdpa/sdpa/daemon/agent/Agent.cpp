@@ -45,7 +45,7 @@ namespace sdpa
       else
       {
         scheduler().workerFinished
-          (scheduler().worker_manager().worker_by_address (source).get()->second, pEvt->job_id());
+          (_worker_manager.worker_by_address (source).get()->second, pEvt->job_id());
 
         const bool bAllPartResCollected
           (scheduler().allPartialResultsCollected (pEvt->job_id()));
@@ -105,7 +105,7 @@ namespace sdpa
       else
       {
         scheduler().workerFailed
-          (scheduler().worker_manager().worker_by_address (source).get()->second, pEvt->job_id());
+          (_worker_manager.worker_by_address (source).get()->second, pEvt->job_id());
         bool bAllPartResCollected (scheduler().allPartialResultsCollected (pEvt->job_id()));
 
         if (bAllPartResCollected)
@@ -192,7 +192,7 @@ namespace sdpa
       else
       {
         scheduler().workerCanceled
-          (scheduler().worker_manager().worker_by_address (source).get()->second, pEvt->job_id());
+          (_worker_manager.worker_by_address (source).get()->second, pEvt->job_id());
         const bool bTaskGroupComputed
           (scheduler().allPartialResultsCollected (pEvt->job_id()));
 

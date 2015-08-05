@@ -260,6 +260,7 @@ namespace sdpa {
       } _cleanup_job_map_on_dtor_helper;
 
     protected:
+      WorkerManager _worker_manager;
       CoallocationScheduler _scheduler;
 
       boost::mutex _scheduling_thread_mutex;
