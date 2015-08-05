@@ -12,14 +12,9 @@ namespace sdpa {
 	typedef std::string job_id_t;
 	typedef std::list<job_id_t> job_id_list_t;
 	typedef std::string job_desc_t;
-	typedef std::string location_t;
 	typedef std::string worker_id_t;
 	typedef std::string job_result_t;
 	typedef std::list<sdpa::worker_id_t> worker_id_list_t;
-	typedef worker_id_list_t agent_id_list_t;
-	typedef std::pair<worker_id_t, job_id_t> worker_job_pair_t;
-
-  typedef std::list<std::pair<sdpa::worker_id_t, int>> list_match_workers_t;
 
   using name_host_port_tuple
     = std::tuple<std::string, fhg::com::host_t, fhg::com::port_t>;
