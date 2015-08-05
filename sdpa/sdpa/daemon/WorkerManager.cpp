@@ -124,18 +124,19 @@ namespace sdpa
     }
 
     boost::optional<double> WorkerManager::matchRequirements
-      ( const worker_id_t& worker
+      ( const worker_id_t& worker_id
       , const job_requirements_t& job_req_set
       ) const
     {
       std::size_t matchingDeg (0);
-      if (job_req_set.numWorkers()>1 && worker_map_.at (worker)->children_allowed())
+      Worker::ptr_t worker (worker_map_.at (worker_id));
+      if (job_req_set.numWorkers()>1 && worker->children_allowed())
       {
         return boost::none;
       }
       for (we::type::requirement_t req : job_req_set.getReqList())
       {
-        if (worker_map_.at (worker)->hasCapability (req.value()))
+        if (worker->hasCapability (req.value()))
         {
           if (!req.is_mandatory())
           {
@@ -148,7 +149,7 @@ namespace sdpa
         }
       }
 
-      return (matchingDeg + 1.0)/(worker_map_.at (worker)->capabilities().size() + 1.0);
+      return (matchingDeg + 1.0)/(worker->capabilities().size() + 1.0);
     }
 
     mmap_match_deg_worker_id_t WorkerManager::getMatchingDegreesAndWorkers
