@@ -84,8 +84,6 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
                            , fhg::util::testing::random_string()
                            );
 
-  std::set<sdpa::worker_id_t> set_workers (worker_manager.getAllNonReservedWorkers());
-
   const job_requirements_t job_req ({{ we::type::requirement_t ("A", true)
                                      , we::type::requirement_t ("B", false)
                                      , we::type::requirement_t ("C", false)

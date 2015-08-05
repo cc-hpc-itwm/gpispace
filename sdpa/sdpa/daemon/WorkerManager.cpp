@@ -100,25 +100,6 @@ namespace sdpa
       worker_connections_.left.erase (workerId);
     }
 
-    std::set<worker_id_t> WorkerManager::getAllNonReservedWorkers() const
-    {
-      boost::mutex::scoped_lock const _ (mtx_);
-      std::set<worker_id_t> free_workers;
-      for ( Worker::ptr_t ptr_worker
-          : worker_map_
-          | boost::adaptors::map_values
-          | boost::adaptors::filtered
-             ([](const Worker::ptr_t& ptr_worker)
-               {return !ptr_worker->isReserved();}
-             )
-          )
-      {
-        free_workers.insert (ptr_worker->name());
-      }
-
-      return free_workers;
-    }
-
     void WorkerManager::getCapabilities (sdpa::capabilities_set_t& agentCpbSet) const
     {
       boost::mutex::scoped_lock const _ (mtx_);

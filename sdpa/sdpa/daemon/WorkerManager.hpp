@@ -36,8 +36,6 @@ namespace sdpa
 
       void getCapabilities (sdpa::capabilities_set_t& cpbset) const;
 
-      std::set<worker_id_t> getAllNonReservedWorkers() const;
-
       mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers (const job_requirements_t&) const;
 
       double cost_assigned_jobs (const worker_id_t, std::function<double (job_id_t job_id)>);
