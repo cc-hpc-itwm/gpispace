@@ -46,18 +46,21 @@ namespace sdpa
           : capacity_ (capacity)
         {}
 
-      void push (cost_deg_wid_t next_tuple)
+        template<typename... Args>
+      void push (Args&&... args)
       {
         if (size() < capacity_)
         {
-          base_priority_queue_t::push (next_tuple);
+          base_priority_queue_t::emplace (std::forward<Args> (args)...);
           return;
         }
+
+        cost_deg_wid_t const next_tuple (std::forward<Args> (args)...);
 
         if (comp (next_tuple, top()))
         {
           pop();
-          base_priority_queue_t::push (next_tuple);
+          base_priority_queue_t::emplace (std::move (next_tuple));
         }
       }
 
@@ -117,12 +120,11 @@ namespace sdpa
            + cost_preassigned_jobs
            );
 
-         bpq.push (std::make_tuple ( total_cost
-                                   , -1.0*it->first
-                                   , worker_info.shared_memory_size()
-                                   , worker_info.last_time_served()
-                                   , worker_info.worker_id()
-                                   )
+         bpq.push ( total_cost
+                  , -1.0*it->first
+                  , worker_info.shared_memory_size()
+                  , worker_info.last_time_served()
+                  , worker_info.worker_id()
                   );
        }
 
