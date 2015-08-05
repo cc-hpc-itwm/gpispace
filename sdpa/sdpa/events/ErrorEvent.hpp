@@ -16,7 +16,6 @@ namespace sdpa
       enum error_code_t
         {
           SDPA_EBACKLOGFULL,
-          SDPA_EWORKERNOTREG,
           SDPA_ENODE_SHUTDOWN,
           SDPA_EUNKNOWN,
           SDPA_ENETWORKFAILURE

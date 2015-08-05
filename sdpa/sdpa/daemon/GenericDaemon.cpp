@@ -524,17 +524,6 @@ void GenericDaemon::handleErrorEvent
 
       break;
     }
-    case events::ErrorEvent::SDPA_EWORKERNOTREG:
-    {
-      if (as_master)
-      {
-        as_master.get()->second.address = boost::none;
-
-        request_registration_soon (as_master.get());
-      }
-
-      break;
-    }
     case events::ErrorEvent::SDPA_ENODE_SHUTDOWN:
     case events::ErrorEvent::SDPA_ENETWORKFAILURE:
     {
