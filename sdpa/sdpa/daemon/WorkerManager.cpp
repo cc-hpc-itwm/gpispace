@@ -289,7 +289,11 @@ namespace sdpa
                                                )
     {
       boost::mutex::scoped_lock const _(mtx_);
-      worker_map_.at (worker_id)->deleteJob (job_id);
+      auto worker (worker_map_.find (worker_id));
+      if (worker != worker_map_.end())
+      {
+        worker->second->deleteJob (job_id);
+      }
     }
 
     const capabilities_set_t& WorkerManager::worker_capabilities (const worker_id_t& worker) const

@@ -330,13 +330,7 @@ namespace sdpa
         Reservation* ptr_reservation(it->second);
         for (std::string worker : ptr_reservation->workers())
         {
-          try {
-            worker_manager().delete_job_from_worker (job_id, worker);
-          }
-          catch (std::out_of_range const &)
-          {
-            // the worker might be gone in between
-          }
+          worker_manager().delete_job_from_worker (job_id, worker);
         }
 
         delete ptr_reservation;
