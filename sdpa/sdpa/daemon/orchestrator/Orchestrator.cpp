@@ -53,7 +53,7 @@ namespace sdpa
       notify_subscribers<events::JobFinishedEvent>
         (pEvt->job_id(), pEvt->job_id(), pEvt->result());
 
-      scheduler().releaseReservation (pEvt->job_id());
+      _scheduler.releaseReservation (pEvt->job_id());
       request_scheduling();
     }
 
@@ -74,7 +74,7 @@ namespace sdpa
       notify_subscribers<events::JobFailedEvent>
         (pEvt->job_id(), pEvt->job_id(), pEvt->error_message());
 
-      scheduler().releaseReservation (pEvt->job_id());
+      _scheduler.releaseReservation (pEvt->job_id());
       request_scheduling();
     }
 

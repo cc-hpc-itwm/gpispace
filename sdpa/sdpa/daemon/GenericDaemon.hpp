@@ -129,9 +129,6 @@ namespace sdpa {
       void addCapability(const capability_t& cpb);
 
     protected:
-      const CoallocationScheduler& scheduler() const {return _scheduler;}
-      CoallocationScheduler& scheduler() {return _scheduler;}
-
       // masters and subscribers
       void unsubscribe(const fhg::com::p2p::address_t&);
       virtual void handleSubscribeEvent (fhg::com::p2p::address_t const& source, const sdpa::events::SubscribeEvent*) override;

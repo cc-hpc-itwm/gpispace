@@ -44,11 +44,11 @@ namespace sdpa
       }
       else
       {
-        scheduler().workerFinished
+        _scheduler.workerFinished
           (_worker_manager.worker_by_address (source).get()->second, pEvt->job_id());
 
         const bool bAllPartResCollected
-          (scheduler().allPartialResultsCollected (pEvt->job_id()));
+          (_scheduler.allPartialResultsCollected (pEvt->job_id()));
 
         if (bAllPartResCollected)
         {
@@ -57,7 +57,7 @@ namespace sdpa
             pJob->CancelJobAck();
             workflowEngine()->canceled (pEvt->job_id());
           }
-          else if(scheduler().groupFinished (pEvt->job_id()))
+          else if(_scheduler.groupFinished (pEvt->job_id()))
           {
             pJob->JobFinished (pEvt->result());
             workflowEngine()->finished
@@ -72,7 +72,7 @@ namespace sdpa
               (pEvt->job_id(), "One of tasks of the group failed with the actual reservation!");
           }
 
-          scheduler().releaseReservation (pJob->id());
+          _scheduler.releaseReservation (pJob->id());
         }
         request_scheduling();
 
@@ -84,7 +84,7 @@ namespace sdpa
           }
           else
           {
-            scheduler().enqueueJob (pEvt->job_id());
+            _scheduler.enqueueJob (pEvt->job_id());
           }
         }
       }
@@ -104,9 +104,9 @@ namespace sdpa
       }
       else
       {
-        scheduler().workerFailed
+        _scheduler.workerFailed
           (_worker_manager.worker_by_address (source).get()->second, pEvt->job_id());
-        bool bAllPartResCollected (scheduler().allPartialResultsCollected (pEvt->job_id()));
+        bool bAllPartResCollected (_scheduler.allPartialResultsCollected (pEvt->job_id()));
 
         if (bAllPartResCollected)
         {
@@ -121,7 +121,7 @@ namespace sdpa
             workflowEngine()->failed (pEvt->job_id(), pEvt->error_message());
           }
 
-          scheduler().releaseReservation (pJob->id());
+          _scheduler.releaseReservation (pJob->id());
         }
         request_scheduling();
 
@@ -133,7 +133,7 @@ namespace sdpa
           }
           else
           {
-            scheduler().enqueueJob (pEvt->job_id());
+            _scheduler.enqueueJob (pEvt->job_id());
           }
         }
       }
@@ -191,10 +191,10 @@ namespace sdpa
       }
       else
       {
-        scheduler().workerCanceled
+        _scheduler.workerCanceled
           (_worker_manager.worker_by_address (source).get()->second, pEvt->job_id());
         const bool bTaskGroupComputed
-          (scheduler().allPartialResultsCollected (pEvt->job_id()));
+          (_scheduler.allPartialResultsCollected (pEvt->job_id()));
 
         if (bTaskGroupComputed)
         {
@@ -204,7 +204,7 @@ namespace sdpa
             workflowEngine()->canceled (pEvt->job_id());
           }
 
-          scheduler().releaseReservation (pEvt->job_id());
+          _scheduler.releaseReservation (pEvt->job_id());
         }
 
         request_scheduling();
@@ -217,7 +217,7 @@ namespace sdpa
           }
           else
           {
-            scheduler().enqueueJob (pEvt->job_id());
+            _scheduler.enqueueJob (pEvt->job_id());
           }
         }
       }

@@ -409,7 +409,7 @@ void GenericDaemon::handleSubmitJobEvent
     }
   }
   else {
-    scheduler().enqueueJob(job_id);
+    _scheduler.enqueueJob(job_id);
     request_scheduling();
   }
 }
@@ -443,7 +443,7 @@ try
     , event->hostname(), source
     );
 
-  scheduler().reschedule_pending_jobs_matching_worker (event->name());
+  _scheduler.reschedule_pending_jobs_matching_worker (event->name());
 
   request_scheduling();
 
@@ -505,10 +505,10 @@ void GenericDaemon::handleErrorEvent
           ("Got SDPA_EBACKLOGFULL error for an already terminated job!");
       }
 
-      scheduler().workerCanceled (as_worker.get()->second, jobId);
+      _scheduler.workerCanceled (as_worker.get()->second, jobId);
       pJob->Reschedule();
 
-      if ( !scheduler().cancelNotTerminatedWorkerJobs
+      if ( !_scheduler.cancelNotTerminatedWorkerJobs
              ( [this, &jobId](const sdpa::worker_id_t& wid)
                {
                  child_proxy (this, _worker_manager.address_by_worker (wid).get()->second)
@@ -518,9 +518,9 @@ void GenericDaemon::handleErrorEvent
              )
          )
       {
-        scheduler().releaseReservation (jobId);
-        scheduler().enqueueJob (jobId);
-        scheduler().assignJobsToWorkers();
+        _scheduler.releaseReservation (jobId);
+        _scheduler.enqueueJob (jobId);
+        _scheduler.assignJobsToWorkers();
       }
 
       break;
@@ -542,7 +542,7 @@ void GenericDaemon::handleErrorEvent
           }
         }
 
-        scheduler().reschedule_pending_jobs_matching_worker (as_worker.get()->second);
+        _scheduler.reschedule_pending_jobs_matching_worker (as_worker.get()->second);
 
         const std::set<job_id_t> jobs_to_reschedule
           (_worker_manager.get_worker_jobs_and_clean_queues (as_worker.get()->second));
@@ -552,10 +552,10 @@ void GenericDaemon::handleErrorEvent
           Job* pJob = findJob (jobId);
           if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
           {
-            scheduler().workerCanceled (as_worker.get()->second, jobId);
+            _scheduler.workerCanceled (as_worker.get()->second, jobId);
             pJob->Reschedule();
 
-            if (!scheduler().cancelNotTerminatedWorkerJobs
+            if (!_scheduler.cancelNotTerminatedWorkerJobs
               ( [this, &jobId](const sdpa::worker_id_t& wid)
                 {
                   child_proxy (this, _worker_manager.address_by_worker (wid).get()->second)
@@ -565,8 +565,8 @@ void GenericDaemon::handleErrorEvent
                 )
               )
             {
-              scheduler().releaseReservation (jobId);
-              scheduler().enqueueJob (jobId);
+              _scheduler.releaseReservation (jobId);
+              _scheduler.enqueueJob (jobId);
             }
           }
         }
@@ -643,7 +643,7 @@ try
                               )
          );
 
-  scheduler().enqueueJob (job_id);
+  _scheduler.enqueueJob (job_id);
   request_scheduling();
 }
 catch (...)
@@ -884,7 +884,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent
 
   if(bModified)
   {
-    scheduler().reschedule_pending_jobs_matching_worker (worker->second);
+    _scheduler.reschedule_pending_jobs_matching_worker (worker->second);
     request_scheduling();
     if( !isTop() )
     {
@@ -1430,8 +1430,8 @@ namespace sdpa
         boost::mutex::scoped_lock lock (_scheduling_thread_mutex);
         _scheduling_thread_notifier.wait (lock);
 
-        scheduler().assignJobsToWorkers();
-        scheduler().start_pending_jobs
+        _scheduler.assignJobsToWorkers();
+        _scheduler.start_pending_jobs
           (std::bind (&GenericDaemon::serveJob, this, std::placeholders::_1, std::placeholders::_2));
       }
     }
