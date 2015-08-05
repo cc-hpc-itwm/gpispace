@@ -17,8 +17,6 @@ namespace sdpa
     private:
       friend class WorkerManager;
 
-      typedef boost::shared_ptr<Worker> ptr_t;
-
       explicit Worker ( const boost::optional<unsigned int>& cap
                       , const capabilities_set_t&
                       , unsigned long allocated_shared_memory_size

@@ -79,7 +79,7 @@ namespace sdpa
 
       bool hasWorker_INDICATES_A_RACE_TESTING_ONLY (const worker_id_t& worker_id) const;
     private:
-      typedef std::unordered_map<worker_id_t, Worker::ptr_t> worker_map_t;
+      typedef std::unordered_map<worker_id_t, Worker> worker_map_t;
       worker_map_t  worker_map_;
       worker_connections_t worker_connections_;
 
