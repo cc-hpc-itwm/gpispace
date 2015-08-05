@@ -51,7 +51,7 @@ namespace sdpa
       , std::function<void ( const sdpa::worker_id_list_t&
                            , const job_id_t&
                            )> const& serve_job
-      ) const;
+      );
 
     bool all_workers_busy_and_have_pending_jobs() const;
 
@@ -61,7 +61,7 @@ namespace sdpa
     void acknowledge_job_sent_to_worker (const job_id_t&, const worker_id_t&);
     void delete_job_from_worker (const job_id_t &job_id, const worker_id_t& );
     const capabilities_set_t& worker_capabilities (const worker_id_t&) const;
-    const std::set<job_id_t> get_worker_jobs_and_clean_queues (const worker_id_t&) const;
+    const std::set<job_id_t> get_worker_jobs_and_clean_queues (const worker_id_t&);
     bool add_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
     bool remove_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
     void set_worker_backlog_full (const worker_id_t&, bool);

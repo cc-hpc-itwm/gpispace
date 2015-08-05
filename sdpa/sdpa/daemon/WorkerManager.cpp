@@ -216,7 +216,7 @@ namespace sdpa
                            , const job_id_t&
                            )
                      > const& serve_job
-      ) const
+      )
     {
       boost::mutex::scoped_lock const _(mtx_);
       bool const can_start
@@ -304,7 +304,7 @@ namespace sdpa
       return worker_map_.at (worker)->capabilities();
     }
 
-    const std::set<job_id_t> WorkerManager::get_worker_jobs_and_clean_queues (const worker_id_t& worker) const
+    const std::set<job_id_t> WorkerManager::get_worker_jobs_and_clean_queues (const worker_id_t& worker)
     {
       boost::mutex::scoped_lock const _(mtx_);
       return worker_map_.at (worker)->getJobListAndCleanQueues();
