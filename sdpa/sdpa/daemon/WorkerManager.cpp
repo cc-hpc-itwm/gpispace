@@ -170,32 +170,26 @@ namespace sdpa
       // Searching and insertion operations have logarithmic complexity, as the
       // multimaps are implemented as binary search trees
 
-      for ( const sdpa::worker_id_t& worker_id
-          : worker_map_ | boost::adaptors::map_keys
-          )
+      for (std::pair<worker_id_t, Worker::ptr_t> const& worker : worker_map_)
       {
-        const worker_map_t::const_iterator it (worker_map_.find (worker_id));
-        if (it == worker_map_.end())
-          continue;
-
         if ( job_reqs.shared_memory_amount_required()
-           > it->second->allocated_shared_memory_size()
+           > worker.second->allocated_shared_memory_size()
            )
           continue;
 
-        if (it->second->backlog_full())
+        if (worker.second->backlog_full())
           continue;
 
         const boost::optional<double>
-          matchingDeg (matchRequirements (it->second->name(), job_reqs));
+          matchingDeg (matchRequirements (worker.second->name(), job_reqs));
 
         if (matchingDeg)
         {
           mmap_match_deg_worker_id.emplace ( matchingDeg.get()
-                                           , worker_id_host_info_t ( worker_id
-                                                                   , it->second->hostname()
-                                                                   , it->second->allocated_shared_memory_size()
-                                                                   , it->second->lastTimeServed()
+                                           , worker_id_host_info_t ( worker.first
+                                                                   , worker.second->hostname()
+                                                                   , worker.second->allocated_shared_memory_size()
+                                                                   , worker.second->lastTimeServed()
                                                                    )
                                            );
         }
