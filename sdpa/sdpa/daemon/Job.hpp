@@ -84,16 +84,6 @@ namespace sdpa
                    );
         return state_codes[state];
       }
-
-      template <class FSM, class Event>
-      void no_transition(Event const& e, FSM&, int state)
-      {
-        throw std::runtime_error ( "no transition from state "
-                                 + status::show(state_code(state))
-                                 + " on event "
-                                 + typeid(e).name()
-                                 );
-      }
     };
 
     class Job : public boost::msm::back::state_machine<JobFSM_>
