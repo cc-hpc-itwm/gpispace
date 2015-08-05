@@ -31,8 +31,6 @@ namespace sdpa
       double lastTimeServed() const { return last_time_served_; }
 
       // capabilities
-      const capabilities_set_t& capabilities() const;
-
       bool addCapabilities(const capabilities_set_t& cpbset);
       bool removeCapabilities(const capabilities_set_t& cpbset);
       bool hasCapability(const std::string& cpbName) const;
@@ -54,7 +52,7 @@ namespace sdpa
 
       std::set<job_id_t> getJobListAndCleanQueues();
 
-      capabilities_set_t capabilities_;
+      capabilities_set_t _capabilities;
       unsigned long const _allocated_shared_memory_size;
       bool const _children_allowed;
       std::string const _hostname;

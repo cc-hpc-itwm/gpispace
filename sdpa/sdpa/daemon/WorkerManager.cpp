@@ -104,7 +104,7 @@ namespace sdpa
 
       for (Worker const& worker : worker_map_ | boost::adaptors::map_values)
       {
-        for (sdpa::capability_t capability : worker.capabilities())
+        for (sdpa::capability_t capability : worker._capabilities)
         {
           const sdpa::capabilities_set_t::iterator itag_cpbs
             (agentCpbSet.find (capability));
@@ -147,7 +147,7 @@ namespace sdpa
         }
       }
 
-      return (matchingDeg + 1.0)/(worker.capabilities().size() + 1.0);
+      return (matchingDeg + 1.0)/(worker._capabilities.size() + 1.0);
     }
 
     mmap_match_deg_worker_id_t WorkerManager::getMatchingDegreesAndWorkers
@@ -298,7 +298,7 @@ namespace sdpa
     const capabilities_set_t& WorkerManager::worker_capabilities (const worker_id_t& worker) const
     {
       boost::mutex::scoped_lock const _(mtx_);
-      return worker_map_.at (worker).capabilities();
+      return worker_map_.at (worker)._capabilities;
     }
 
     const std::set<job_id_t> WorkerManager::get_worker_jobs_and_clean_queues (const worker_id_t& worker)

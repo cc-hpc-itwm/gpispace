@@ -14,7 +14,7 @@ namespace sdpa
                    , const bool children_allowed
                    , const std::string& hostname
                    )
-      : capabilities_ (capabilities)
+      : _capabilities (capabilities)
       , _allocated_shared_memory_size (allocated_shared_memory_size)
       , _children_allowed (children_allowed)
       , _hostname (hostname)
@@ -76,27 +76,22 @@ namespace sdpa
       }
     }
 
-    const capabilities_set_t& Worker::capabilities() const
-    {
-      return capabilities_;
-    }
-
     bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
     {
 
       bool bModified = false;
       for (Capability const& capability : recvCpbSet)
       {
-	capabilities_set_t::iterator itwcpb (capabilities_.find (capability));
-	if (itwcpb == capabilities_.end())
+	capabilities_set_t::iterator itwcpb (_capabilities.find (capability));
+	if (itwcpb == _capabilities.end())
 	{
-	  capabilities_.insert (capability);
+	  _capabilities.insert (capability);
 	  bModified = true;
 	}
 	else if (itwcpb->depth() > capability.depth())
 	{
-	  capabilities_.erase (itwcpb);
-	  capabilities_.insert (capability);
+	  _capabilities.erase (itwcpb);
+	  _capabilities.insert (capability);
 	  bModified = true;
 	}
       }
@@ -109,19 +104,19 @@ namespace sdpa
       capabilities_set_t::size_type removed (0);
       for (Capability const& capability : cpbset)
       {
-        removed += capabilities_.erase (capability);
+        removed += _capabilities.erase (capability);
       }
       return removed != 0;
     }
 
     bool Worker::hasCapability(const std::string& cpbName) const
     {
-      return std::find_if ( capabilities_.begin(), capabilities_.end()
+      return std::find_if ( _capabilities.begin(), _capabilities.end()
                           , [&cpbName] (capability_t const& cap)
                           {
                             return cap.name() == cpbName;
                           }
-                          ) != capabilities_.end();
+                          ) != _capabilities.end();
     }
 
     bool Worker::isReserved() const
