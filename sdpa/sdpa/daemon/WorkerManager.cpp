@@ -26,7 +26,6 @@
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/count_if.hpp>
-#include <boost/range/algorithm/copy.hpp>
 #include <boost/range/algorithm_ext/push_back.hpp>
 
 #include <unordered_map>
@@ -171,11 +170,9 @@ namespace sdpa
       // Searching and insertion operations have logarithmic complexity, as the
       // multimaps are implemented as binary search trees
 
-      std::vector<worker_id_t> workers;
-      boost::copy ( worker_map_ | boost::adaptors::map_keys
-                  , std::back_inserter (workers)
-                  );
-      for (const sdpa::worker_id_t& worker_id : workers)
+      for ( const sdpa::worker_id_t& worker_id
+          : worker_map_ | boost::adaptors::map_keys
+          )
       {
         const worker_map_t::const_iterator it (worker_map_.find (worker_id));
         if (it == worker_map_.end())
