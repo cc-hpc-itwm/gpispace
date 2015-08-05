@@ -40,7 +40,6 @@ namespace sdpa
 
       // capabilities
       const capabilities_set_t& capabilities() const;
-      bool children_allowed() const { return children_allowed_;}
 
       bool addCapabilities(const capabilities_set_t& cpbset);
       bool removeCapabilities(const capabilities_set_t& cpbset);
@@ -66,7 +65,7 @@ namespace sdpa
       boost::optional<unsigned int> capacity_;
       capabilities_set_t capabilities_;
       unsigned long allocated_shared_memory_size_;
-      bool children_allowed_;
+      bool const _children_allowed;
       std::string hostname_;
       fhg::com::p2p::address_t address_;
       double last_time_served_;

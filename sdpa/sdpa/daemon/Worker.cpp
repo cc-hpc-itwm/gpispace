@@ -19,7 +19,7 @@ namespace sdpa
       : capacity_ (cap)
       , capabilities_ (capabilities)
       , allocated_shared_memory_size_ (allocated_shared_memory_size)
-      , children_allowed_ (children_allowed)
+      , _children_allowed (children_allowed)
       , hostname_ (hostname)
       , address_ (address)
       , last_time_served_ (0)
@@ -58,7 +58,7 @@ namespace sdpa
         throw std::runtime_error ("subnmit: no pending job with the id " + jobId + " was found!");
       }
       submitted_.insert (jobId);
-      if (!children_allowed_)
+      if (!_children_allowed)
       {
         reserved_ = true;
         last_time_served_ = fhg::util::now();
@@ -79,7 +79,7 @@ namespace sdpa
       pending_.erase (job_id);
       submitted_.erase (job_id);
       acknowledged_.erase (job_id);
-      if (!children_allowed_)
+      if (!_children_allowed)
       {
         reserved_ = false;
       }

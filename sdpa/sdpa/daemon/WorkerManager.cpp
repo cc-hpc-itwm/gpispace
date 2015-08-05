@@ -131,7 +131,7 @@ namespace sdpa
     {
       std::size_t matchingDeg (0);
       Worker const& worker (worker_map_.at (worker_id));
-      if (job_req_set.numWorkers()>1 && worker.children_allowed())
+      if (job_req_set.numWorkers()>1 && worker._children_allowed)
       {
         return boost::none;
       }
