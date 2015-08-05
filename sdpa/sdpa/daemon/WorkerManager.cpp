@@ -85,7 +85,6 @@ namespace sdpa
                                    , allocated_shared_memory_size
                                    , children_allowed
                                    , hostname
-                                   , address
                                    )
                           );
     }

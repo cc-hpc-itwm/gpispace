@@ -13,23 +13,16 @@ namespace sdpa
                    , unsigned long allocated_shared_memory_size
                    , const bool children_allowed
                    , const std::string& hostname
-                   , const fhg::com::p2p::address_t& address
                    )
       : capabilities_ (capabilities)
       , _allocated_shared_memory_size (allocated_shared_memory_size)
       , _children_allowed (children_allowed)
       , _hostname (hostname)
-      , address_ (address)
       , last_time_served_ (0)
       , reserved_ (false)
       , backlog_full_ (false)
     {
 
-    }
-
-    fhg::com::p2p::address_t Worker::address() const
-    {
-      return address_;
     }
 
     bool Worker::has_job( const job_id_t& job_id ) const

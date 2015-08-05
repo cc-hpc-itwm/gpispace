@@ -21,7 +21,6 @@ namespace sdpa
                       , unsigned long allocated_shared_memory_size
                       , const bool children_allowed
                       , const std::string& hostname
-                      , const fhg::com::p2p::address_t& address
                       );
 
       void assign (const job_id_t&);
@@ -30,8 +29,6 @@ namespace sdpa
       void acknowledge(const job_id_t&);
 
       double lastTimeServed() const { return last_time_served_; }
-
-      fhg::com::p2p::address_t address() const;
 
       // capabilities
       const capabilities_set_t& capabilities() const;
@@ -61,7 +58,6 @@ namespace sdpa
       unsigned long const _allocated_shared_memory_size;
       bool const _children_allowed;
       std::string const _hostname;
-      fhg::com::p2p::address_t address_;
       double last_time_served_;
 
       std::set<job_id_t> pending_;
