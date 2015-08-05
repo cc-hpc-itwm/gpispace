@@ -3,7 +3,6 @@
 #pragma once
 
 #include <sdpa/daemon/Job.hpp>
-#include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/types.hpp>
 
