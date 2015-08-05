@@ -64,7 +64,8 @@ namespace sdpa
       submitted_.insert (jobId);
       if (!children_allowed_)
       {
-        reserve();
+        reserved_ = true;
+        last_time_served_ = fhg::util::now();
       }
     }
 
@@ -84,7 +85,10 @@ namespace sdpa
       pending_.erase (job_id);
       submitted_.erase (job_id);
       acknowledged_.erase (job_id);
-      free();
+      if (!children_allowed_)
+      {
+        reserved_ = false;
+      }
     }
 
     const capabilities_set_t& Worker::capabilities() const
@@ -140,26 +144,10 @@ namespace sdpa
                           ) != capabilities_.end();
     }
 
-    void Worker::reserve()
-    {
-      lock_type const _ (mtx_);
-      reserved_ = true;
-      last_time_served_ = fhg::util::now();
-    }
-
     bool Worker::isReserved() const
     {
       lock_type const _ (mtx_);
       return reserved_;
-    }
-
-    void Worker::free()
-    {
-      lock_type const _ (mtx_);
-      if (!children_allowed_)
-      {
-        reserved_ = false;
-      }
     }
 
     std::set<job_id_t> Worker::getJobListAndCleanQueues()
