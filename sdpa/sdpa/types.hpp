@@ -6,10 +6,7 @@
 #include <list>
 #include <map>
 #include <set>
-#include <iostream>
 #include <sdpa/job_states.hpp>
-
-#include <iterator>
 
 namespace sdpa {
 	typedef std::string job_id_t;
@@ -116,19 +113,4 @@ namespace sdpa {
     boost::optional<sdpa::status::code> _state;
     discovery_info_set_t _children;
   };
-}
-
-inline std::ostream& operator<<(std::ostream& os, const sdpa::worker_id_list_t& worker_list)
-{
-  os<<"(";
-  for(sdpa::worker_id_list_t::const_iterator it=worker_list.begin(); it!=worker_list.end(); it++)
-  {
-      os<<*it;
-      if( std::next(it) != worker_list.end() )
-        os<<",";
-      else
-        os<<")";
-  }
-
- return os;
 }

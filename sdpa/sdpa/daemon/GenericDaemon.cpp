@@ -37,6 +37,7 @@
 #include <fhg/util/boost/optional.hpp>
 #include <util-generic/hostname.hpp>
 #include <fhg/util/macros.hpp>
+#include <util-generic/join.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/print_exception.hpp>
 
@@ -289,7 +290,7 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
   if(ptrJob)
   {
       // create a SubmitJobEvent for the job job_id serialize and attach description
-      LLOG(TRACE, _logger, "The job "<<ptrJob->id()<<" was assigned the following workers:"<<worker_list);
+      LLOG(TRACE, _logger, "The job "<<ptrJob->id()<<" was assigned the following workers: {"<< fhg::util::join (worker_list, ", ") << '}');
 
       for (const worker_id_t& worker_id : worker_list)
       {
