@@ -4,23 +4,20 @@
 
 #include <util-generic/hostname.hpp>
 #include <util-generic/syscall.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/locks.hpp>
 
 #include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
 
+#include <atomic>
 #include <chrono>
 
 namespace sdpa {
   class id_generator
   {
   public:
-	std::string next()
-	{
-      boost::mutex::scoped_lock const _ (_counter_mutex);
-    return _prefix + boost::lexical_cast<std::string> (_counter++);
-  }
+    std::string next()
+    {
+      return _prefix + std::to_string (_counter.fetch_add (1));
+    }
 
     id_generator (std::string const& name)
       : _counter()
@@ -36,8 +33,7 @@ namespace sdpa {
     {}
 
   private:
-    mutable boost::mutex _counter_mutex;
-    std::size_t _counter;
+    std::atomic<std::size_t> _counter;
     std::string _prefix;
   };
 }
