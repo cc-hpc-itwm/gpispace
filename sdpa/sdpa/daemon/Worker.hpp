@@ -18,8 +18,6 @@ namespace sdpa
       friend class WorkerManager;
 
       typedef boost::shared_ptr<Worker> ptr_t;
-      typedef boost::recursive_mutex mutex_type;
-      typedef boost::unique_lock<mutex_type> lock_type;
 
       explicit Worker ( const boost::optional<unsigned int>& cap
                       , const capabilities_set_t&
@@ -34,11 +32,11 @@ namespace sdpa
 
       void acknowledge(const job_id_t&);
 
-      double lastTimeServed() {lock_type lock(mtx_); return last_time_served_; }
+      double lastTimeServed() const { return last_time_served_; }
 
       std::string hostname() const { return hostname_; }
       fhg::com::p2p::address_t address() const;
-      boost::optional<unsigned int> capacity() const { lock_type lock(mtx_); return capacity_; }
+      boost::optional<unsigned int> capacity() const { return capacity_; }
       unsigned long allocated_shared_memory_size() const
         {return allocated_shared_memory_size_;}
 
@@ -81,8 +79,6 @@ namespace sdpa
 
       bool reserved_;
       bool backlog_full_;
-
-      mutable mutex_type mtx_;
     };
   }
 }

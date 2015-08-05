@@ -36,7 +36,6 @@ namespace sdpa
 
     bool Worker::has_job( const job_id_t& job_id ) const
     {
-      lock_type const _ (mtx_);
       return pending_.count (job_id)
         || submitted_.count (job_id)
         || acknowledged_.count (job_id);
@@ -44,19 +43,16 @@ namespace sdpa
 
     bool Worker::has_pending_jobs() const
     {
-      lock_type const _ (mtx_);
       return !pending_.empty();
     }
 
     void Worker::assign (const job_id_t& jobId)
     {
-      lock_type const _ (mtx_);
       pending_.insert (jobId);
     }
 
     void Worker::submit (const job_id_t& jobId)
     {
-      lock_type const _ (mtx_);
       if (!pending_.erase (jobId))
       {
         throw std::runtime_error ("subnmit: no pending job with the id " + jobId + " was found!");
@@ -71,7 +67,6 @@ namespace sdpa
 
     void Worker::acknowledge (const job_id_t &job_id)
     {
-      lock_type const _ (mtx_);
       if (submitted_.erase (job_id) == 0)
       {
 	throw std::runtime_error ("acknowledge: job not in submitted queue");
@@ -81,7 +76,6 @@ namespace sdpa
 
     void Worker::deleteJob(const job_id_t &job_id)
     {
-      lock_type const _ (mtx_);
       pending_.erase (job_id);
       submitted_.erase (job_id);
       acknowledged_.erase (job_id);
@@ -93,13 +87,11 @@ namespace sdpa
 
     const capabilities_set_t& Worker::capabilities() const
     {
-      lock_type const _ (mtx_);
       return capabilities_;
     }
 
     bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
     {
-      lock_type const _ (mtx_);
 
       bool bModified = false;
       for (Capability const& capability : recvCpbSet)
@@ -124,7 +116,6 @@ namespace sdpa
     bool Worker::removeCapabilities( const capabilities_set_t& cpbset )
     {
       capabilities_set_t::size_type removed (0);
-      lock_type const _ (mtx_);
       for (Capability const& capability : cpbset)
       {
         removed += capabilities_.erase (capability);
@@ -134,8 +125,6 @@ namespace sdpa
 
     bool Worker::hasCapability(const std::string& cpbName) const
     {
-      lock_type const _ (mtx_);
-
       return std::find_if ( capabilities_.begin(), capabilities_.end()
                           , [&cpbName] (capability_t const& cap)
                           {
@@ -146,13 +135,11 @@ namespace sdpa
 
     bool Worker::isReserved() const
     {
-      lock_type const _ (mtx_);
       return reserved_;
     }
 
     std::set<job_id_t> Worker::getJobListAndCleanQueues()
     {
-      lock_type const _ (mtx_);
       std::set<job_id_t> listAssignedJobs;
 
       listAssignedJobs.insert (pending_.begin(), pending_.end());
@@ -168,7 +155,6 @@ namespace sdpa
     double Worker::cost_assigned_jobs
       (std::function<double (job_id_t job_id)> cost_reservation) const
     {
-      lock_type const _ (mtx_);
       return ( std::accumulate ( pending_.begin()
                                , pending_.end()
                                , 0.0
