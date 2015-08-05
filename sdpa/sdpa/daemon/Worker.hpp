@@ -14,7 +14,8 @@ namespace sdpa
   namespace daemon
   {
     class Worker {
-    public:
+    private:
+      friend class WorkerManager;
 
       typedef boost::shared_ptr<Worker> ptr_t;
       typedef boost::recursive_mutex mutex_type;
@@ -63,11 +64,9 @@ namespace sdpa
       double cost_assigned_jobs (std::function<double (job_id_t job_id)>) const;
 
       bool remove_job_if_pending (const job_id_t& job_id);
-    public:
 
       std::set<job_id_t> getJobListAndCleanQueues();
 
-    private:
       boost::optional<unsigned int> capacity_;
       capabilities_set_t capabilities_;
       unsigned long allocated_shared_memory_size_;
