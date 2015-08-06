@@ -283,19 +283,19 @@ const std::string& GenericDaemon::name() const
       return _network_strategy.local_endpoint();
     }
 
-void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId)
+void GenericDaemon::serveJob(std::set<worker_id_t> const& workers, const job_id_t& jobId)
 {
   //take a job from the workers' queue and serve it
   Job* ptrJob = findJob(jobId);
   if(ptrJob)
   {
       // create a SubmitJobEvent for the job job_id serialize and attach description
-      LLOG(TRACE, _logger, "The job "<<ptrJob->id()<<" was assigned the following workers: {"<< fhg::util::join (worker_list, ", ") << '}');
+      LLOG(TRACE, _logger, "The job "<<ptrJob->id()<<" was assigned the following workers: {"<< fhg::util::join (workers, ", ") << '}');
 
-      for (const worker_id_t& worker_id : worker_list)
+      for (const worker_id_t& worker_id : workers)
       {
         child_proxy (this, _worker_manager.address_by_worker (worker_id).get()->second)
-          .submit_job (ptrJob->id(), ptrJob->description(), worker_list);
+          .submit_job (ptrJob->id(), ptrJob->description(), workers);
       }
   }
 }
@@ -1461,7 +1461,7 @@ namespace sdpa
 
     void GenericDaemon::child_proxy::submit_job ( boost::optional<job_id_t> id
                                                 , job_desc_t description
-                                                , sdpa::worker_id_list_t workers
+                                                , std::set<worker_id_t> const& workers
                                                 ) const
     {
       _that->sendEventToOther

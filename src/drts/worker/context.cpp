@@ -17,9 +17,9 @@ namespace drts
     {
       return _->worker_name();
     }
-    std::list<std::string> const& context::worker_list () const
+    std::set<std::string> const& context::workers () const
     {
-      return _->worker_list();
+      return _->workers();
     }
     std::string context::worker_to_hostname (std::string const& worker) const
     {
@@ -45,19 +45,19 @@ namespace drts
 
     context_constructor::context_constructor
       ( std::string const& worker_name
-      , std::list<std::string> const& worker_list
+      , std::set<std::string> const& workers
       , fhg::log::Logger& logger
       )
-        : _ (new context::implementation (worker_name, worker_list, logger))
+        : _ (new context::implementation (worker_name, workers, logger))
     {}
 
     context::implementation::implementation
       ( std::string const &worker_name
-      , std::list<std::string> const &worker_list
+      , std::set<std::string> const& workers
       , fhg::log::Logger& logger
       )
         : _worker_name (worker_name)
-        , _worker_list (worker_list)
+        , _workers (workers)
         , _module_call_do_cancel ([](){})
         , _logger (logger)
     {}
@@ -65,9 +65,9 @@ namespace drts
     {
       return _worker_name;
     }
-    std::list<std::string> const& context::implementation::worker_list() const
+    std::set<std::string> const& context::implementation::workers() const
     {
-      return _worker_list;
+      return _workers;
     }
     std::string context::implementation::worker_to_hostname
       (std::string const & w) const

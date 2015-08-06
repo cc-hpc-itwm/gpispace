@@ -177,16 +177,14 @@ BOOST_AUTO_TEST_CASE (SubmitJobAck)
 
 BOOST_AUTO_TEST_CASE (SubmitJob)
 {
-  sdpa::worker_id_list_t workers;
-  workers.push_back ("foo");
-  workers.push_back ("bar");
+  std::set<sdpa::worker_id_t> const workers {"foo", "bar"};
 
   SubmitJobEvent e (sdpa::job_id_t("job-id-1"), "pnet", workers);
   SubmitJobEvent* r (encode_decode_sdpa_event (e));
 
   BOOST_REQUIRE_EQUAL (r->job_id(), e.job_id());
   BOOST_REQUIRE_EQUAL (r->description(), e.description());
-  BOOST_REQUIRE_EQUAL (r->worker_list(), e.worker_list());
+  BOOST_REQUIRE_EQUAL (r->workers(), e.workers());
 }
 
 BOOST_AUTO_TEST_CASE (SubscribeAck)

@@ -47,7 +47,7 @@ namespace sdpa
 
     bool submit_and_serve_if_can_start_job_INDICATES_A_RACE
       ( job_id_t const&, std::set<worker_id_t> const&
-      , std::function<void ( const sdpa::worker_id_list_t&
+      , std::function<void ( std::set<worker_id_t> const&
                            , const job_id_t&
                            )> const& serve_job
       );

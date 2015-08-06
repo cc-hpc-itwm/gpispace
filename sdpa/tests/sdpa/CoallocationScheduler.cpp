@@ -18,7 +18,7 @@
 namespace
 {
   std::string (&random_job_id)(void) = utils::random_peer_name;
-  auto serve_job = [] (const sdpa::worker_id_list_t&, const sdpa::job_id_t&) {};
+  auto serve_job = [] (std::set<sdpa::worker_id_t> const&, const sdpa::job_id_t&) {};
 
   unsigned long random_ulong()
   {
@@ -868,7 +868,7 @@ struct serve_job_and_check_for_minimal_cost_assignement
 
   void serve_and_check_assignment ( const std::function<double (std::string const&)> cost
                                   , const std::vector<std::string>& worker_ids
-                                  , const sdpa::worker_id_list_t& assigned_worker_ids
+                                  , std::set<sdpa::worker_id_t> const& assigned_worker_ids
                                   , const sdpa::job_id_t&
                                   )
   {

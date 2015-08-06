@@ -24,21 +24,18 @@
                 pass_context="true">
           <ld flag="-lwe-dev" />
           <code><![CDATA[
-            const std::list<std::string> wlist (_pnetc_context->worker_list());
+            const std::set<std::string> ws (_pnetc_context->workers());
 
-            if (wlist.empty())
+            if (ws.empty())
             {
-              throw std::logic_error ("worker list is empty!");
+              throw std::logic_error ("ws is empty!");
             }
 
-            workers.assign (wlist.begin(), wlist.end());
+            workers.assign (ws.begin(), ws.end());
 
-            for ( std::list<std::string>::const_iterator it (wlist.begin())
-                ; it != wlist.end()
-                ; ++it
-                )
+            for (std::string const& worker : ws)
             {
-              hostnames[*it] = _pnetc_context->worker_to_hostname (*it);
+              hostnames[worker] = _pnetc_context->worker_to_hostname (worker);
             }
           ]]></code>
         </module>

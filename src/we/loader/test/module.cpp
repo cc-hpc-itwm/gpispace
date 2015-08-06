@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE (call_not_found)
   fhg::log::configure (io_service, logger);
   drts::worker::context context
     (drts::worker::context_constructor
-      ("noname", (std::list<std::string>()), logger)
+      ("noname", (std::set<std::string>()), logger)
     );
   expr::eval::context input;
   expr::eval::context output;
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE (call_local)
   fhg::log::configure (io_service, logger);
   drts::worker::context context
     (drts::worker::context_constructor
-      ("noname", (std::list<std::string>()), logger)
+      ("noname", (std::set<std::string>()), logger)
     );
   expr::eval::context input;
   expr::eval::context output;
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE (call_lib)
   fhg::log::configure (io_service, logger);
   drts::worker::context context
     (drts::worker::context_constructor
-      ("noname", (std::list<std::string>()), logger)
+      ("noname", (std::set<std::string>()), logger)
     );
   expr::eval::context input;
   expr::eval::context output;

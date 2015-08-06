@@ -293,7 +293,7 @@ namespace sdpa
     }
 
     std::set<job_id_t> CoallocationScheduler::start_pending_jobs
-      (std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)> serve_job)
+      (std::function<void (std::set<worker_id_t> const&, const job_id_t&)> serve_job)
     {
       std::set<job_id_t> jobs_started;
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);

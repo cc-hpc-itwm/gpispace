@@ -198,7 +198,7 @@ namespace sdpa {
       bool hasWorkflowEngine() const { return !!ptr_workflow_engine_;}
 
       // workers
-      void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
+      void serveJob(std::set<worker_id_t> const&, const job_id_t&);
 
     protected:
       // jobs
@@ -317,7 +317,7 @@ namespace sdpa {
           (boost::optional<std::exception_ptr>) const;
 
         void submit_job
-          (boost::optional<job_id_t>, job_desc_t, sdpa::worker_id_list_t) const;
+          (boost::optional<job_id_t>, job_desc_t, std::set<worker_id_t> const&) const;
         void cancel_job (job_id_t) const;
 
         void job_failed_ack (job_id_t) const;

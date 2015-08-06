@@ -228,7 +228,7 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
   worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
     ( job_id
     , {worker_ids[0]}
-    , [] (std::list<sdpa::worker_id_t> const&, sdpa::job_id_t const&)
+    , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&)
       {
         // do nothing, serve_job is merged with submit_if_can_start in
         // order to avoid races when workers are removed
