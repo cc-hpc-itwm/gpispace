@@ -4,6 +4,7 @@
 #include <fhg/util/boost/program_options/validators/existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_file.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <util-generic/executable_path.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/program_options/separated_argument_list_parser.hpp>
@@ -23,7 +24,6 @@ namespace
     constexpr const char* const hostfile {"hostfile"};
     constexpr const char* const port {"port"};
     constexpr const char* const strategy {"strategy"};
-    constexpr const char* const gspc_home {"gspc-home"};
     constexpr char const* const strategy_parameters {"strategy-parameters"};
     constexpr char const* const strategy_parameters_description
       { "strategy specific parameters. for convenience specify"
@@ -54,11 +54,6 @@ try
     ( option::strategy
     , boost::program_options::value<std::string>()->required()
     , ("strategy: one of " + fhg::util::join (strategies, ", ").string()).c_str()
-    )
-    ( option::gspc_home
-    , boost::program_options::value
-        <fhg::util::boost::program_options::existing_directory>()->required()
-    , "installation path of gpispace"
     )
     ( option::strategy_parameters
     , boost::program_options::value<option::strategy_parameters_type>()
@@ -108,9 +103,7 @@ try
               )
           : boost::none
           , boost::filesystem::canonical
-              ( vm.at (option::gspc_home)
-              . as<fhg::util::boost::program_options::existing_directory>()
-              )
+              (fhg::util::executable_path().parent_path() / INSTALLATION_HOME)
           , vm.at (option::strategy_parameters)
           . as<option::strategy_parameters_type>()
           )
