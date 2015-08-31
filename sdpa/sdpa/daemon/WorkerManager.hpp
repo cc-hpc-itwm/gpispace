@@ -58,7 +58,10 @@ namespace sdpa
 
     bool all_workers_busy_and_have_pending_jobs() const;
 
-    std::set<job_id_t> remove_all_matching_pending_jobs (const job_id_list_t&);
+    std::set<job_id_t> remove_all_matching_pending_jobs ( const worker_id_t&
+                                                        , const job_id_list_t&
+                                                        , std::function<job_requirements_t (const sdpa::job_id_t&)>
+                                                        );
 
     void assign_job_to_worker (const job_id_t&, const worker_id_t&);
     void acknowledge_job_sent_to_worker (const job_id_t&, const worker_id_t&);
