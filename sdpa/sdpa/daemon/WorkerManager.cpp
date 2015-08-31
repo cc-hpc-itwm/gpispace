@@ -285,7 +285,7 @@ namespace sdpa
              && ptr_worker->remove_job_if_pending (job_id)
              )
           {
-              removed_jobs.insert (job_id);
+            removed_jobs.insert (job_id);
           }
         }
       }
