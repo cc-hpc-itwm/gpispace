@@ -12,6 +12,7 @@ set (CMAKE_MODULE_PATH
 include ("cmake/parse_arguments.cmake")
 include ("cmake/add_macros.cmake")
 include ("cmake/beautify_find_boost.cmake")
+include ("cmake/require_compiler_version.cmake")
 
 set (PROJECT_VERSION "14.03")
 set (PROJECT_CONTACT "gpispace-support@itwm.fraunhofer.de" CACHE STRING "Contact information")
@@ -78,6 +79,8 @@ add_definitions (-DBOOST_THREAD_THROW_IF_PRECONDITION_NOT_SATISFIED)
 # sdpa needs boost::mpl::vector with more than $default elements for state machine
 add_definitions ("-DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS")
 add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
+
+require_compiler_version_ge (COMPILER "GNU" VERSION 4.9.2)
 
 find_boost (1.55 REQUIRED QUIET COMPONENTS
   date_time
