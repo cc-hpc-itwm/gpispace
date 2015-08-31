@@ -44,11 +44,6 @@ namespace sdpa
 
       double cost_assigned_jobs (const worker_id_t, std::function<double (job_id_t job_id)>);
 
-      boost::optional<double> matchRequirements
-        ( const worker_id_t& worker
-        , const job_requirements_t& job_req_set
-        ) const;
-
     bool submit_and_serve_if_can_start_job_INDICATES_A_RACE
       ( job_id_t const&, std::set<worker_id_t> const&
       , std::function<void ( const sdpa::worker_id_list_t&
@@ -84,6 +79,13 @@ namespace sdpa
       address_by_worker (std::string const&);
 
       bool hasWorker_INDICATES_A_RACE_TESTING_ONLY (const worker_id_t& worker_id) const;
+
+    private:
+      boost::optional<double> matchRequirements
+            ( const worker_id_t& worker
+            , const job_requirements_t& job_req_set
+            ) const;
+
     private:
       worker_map_t  worker_map_;
       worker_connections_t worker_connections_;
