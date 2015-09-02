@@ -15,6 +15,7 @@ fhg_add_runtime_executable (NAME drts-kernel
             Boost::system
             Boost::thread
             HWLOC::static
+  CREATE_BUNDLE_INFO
 )
 
 install (FILES context_fwd.hpp context.hpp

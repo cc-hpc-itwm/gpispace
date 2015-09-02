@@ -13,6 +13,7 @@ fhg_add_runtime_executable (NAME gspc-rifd
             Boost::program_options
             Boost::system
             Boost::thread
+  CREATE_BUNDLE_INFO
 )
 
 extended_add_library (NAME rif-started_process_promise
@@ -49,6 +50,7 @@ fhg_add_runtime_executable (NAME gspc-bootstrap-rifd
             Boost::filesystem
             Boost::program_options
             Boost::system
+  CREATE_BUNDLE_INFO
 )
 fhg_add_runtime_executable (NAME gspc-teardown-rifd
   SOURCES "gspc-teardown-rifd.cpp"
@@ -59,4 +61,5 @@ fhg_add_runtime_executable (NAME gspc-teardown-rifd
             Boost::filesystem
             Boost::program_options
             Boost::system
+  CREATE_BUNDLE_INFO
 )
