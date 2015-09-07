@@ -1,34 +1,8 @@
-/*
- * =====================================================================================
- *
- *       Filename:  WorkerManager.cpp
- *
- *    Description:  Worker manager implementation
- *
- *        Version:  1.0
- *        Created:
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
-
 #include <sdpa/daemon/WorkerManager.hpp>
-#include <algorithm>
 #include <sdpa/types.hpp>
 
-#include <algorithm>
-#include <limits>
-
-#include <boost/range/adaptor/filtered.hpp>
-#include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/count_if.hpp>
 #include <boost/range/algorithm_ext/push_back.hpp>
-
-#include <unordered_map>
 
 namespace sdpa
 {
