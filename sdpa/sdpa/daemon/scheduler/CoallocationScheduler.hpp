@@ -100,6 +100,17 @@ namespace sdpa
           m_map_worker_result[wid] = result;
         }
 
+        void replace_worker (worker_id_t w1, worker_id_t w2)
+        {
+          if (!_workers.count (w1))
+          {
+            throw std::runtime_error ( "Asked to replace the non-existent worker " + w1);
+          }
+
+          _workers.erase (w1);
+          _workers.insert (w2);
+        }
+
         bool allWorkersTerminated() const
         {
           return m_map_worker_result.size() == _workers.size();
