@@ -54,7 +54,21 @@ namespace sdpa
     {
       try
       {
-        _peer.send (address, _codec.encode (sdpa_event.get()));
+        _peer.async_send
+          ( address
+          , _codec.encode (sdpa_event.get())
+          , [address, this] (boost::system::error_code const& ec)
+            {
+              if (ec)
+              {
+                _event_handler
+                  ( address
+                  , boost::make_shared<events::ErrorEvent>
+                      (events::ErrorEvent::SDPA_ENETWORKFAILURE, ec.message())
+                  );
+              }
+            }
+          );
       }
       catch (...)
       {
