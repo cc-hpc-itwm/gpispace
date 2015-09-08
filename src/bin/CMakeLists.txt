@@ -20,6 +20,7 @@ fhg_add_runtime_executable (NAME gpi-space
             Boost::serialization
             Boost::thread
             Boost::system
+  CREATE_BUNDLE_INFO
 )
 
 fhg_add_runtime_executable (NAME pnet2dot

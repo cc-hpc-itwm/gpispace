@@ -10,6 +10,7 @@ fhg_add_runtime_executable (NAME orchestrator
             rif-started_process_promise
             Boost::program_options
             Boost::system
+  CREATE_BUNDLE_INFO
 )
 
 fhg_add_runtime_executable (NAME agent
@@ -22,4 +23,5 @@ fhg_add_runtime_executable (NAME agent
             rif-started_process_promise
             Boost::program_options
             Boost::system
+  CREATE_BUNDLE_INFO
 )

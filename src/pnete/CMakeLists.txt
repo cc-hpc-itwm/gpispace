@@ -191,6 +191,7 @@ install (FILES "plugin/plugin_api.hpp" "plugin/plugin_base.hpp"
               Boost::thread
               Boost::program_options
               ${QT_LIBRARIES}
+    CREATE_BUNDLE_INFO
   )
   fhg_add_runtime_executable (NAME gspcmonc
     SOURCES "gspcmonc.cpp"
@@ -204,6 +205,7 @@ install (FILES "plugin/plugin_api.hpp" "plugin/plugin_base.hpp"
               Util::Qt
               Boost::thread
               ${QT_LIBRARIES}
+    CREATE_BUNDLE_INFO
   )
 
   add_subdirectory (test)
