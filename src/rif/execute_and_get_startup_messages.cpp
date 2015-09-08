@@ -24,6 +24,8 @@
 #include <mutex>
 #include <sstream>
 #include <system_error>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace fhg
 {
@@ -88,6 +90,22 @@ namespace fhg
 
         std::vector<char*> argv;
         argv.reserve (arguments.size() + 2 + 1);
+
+        bool const start_in_valgrind (false);
+        if (start_in_valgrind)
+        {
+          argv_buffer.resize (argv_buffer.size() + strlen ("/p/hpc/soft/valgrind/valgrind-3.10.1/bin/valgrind")
+                             + strlen ("--log-file=/dev/shm/loerwald/gpispace/build/worker-") + 104
+                             );
+
+          argv.push_back (argv_buffer.data() + argv_pos);
+          argv_pos = append (argv_buffer, "/p/hpc/soft/valgrind/valgrind-3.10.1/bin/valgrind", argv_pos);
+          argv_pos = append (argv_buffer, '\0', argv_pos);
+
+          argv.push_back (argv_buffer.data() + argv_pos);
+          argv_pos = append (argv_buffer, ("--log-file=/dev/shm/loerwald/gpispace/build/worker-" + boost::uuids::to_string (boost::uuids::random_generator()())).c_str(), argv_pos);
+          argv_pos = append (argv_buffer, '\0', argv_pos);
+        }
 
         argv.push_back (argv_buffer.data() + argv_pos);
         argv_pos = append (argv_buffer, command.string(), argv_pos);
@@ -284,7 +302,9 @@ namespace fhg
 
         try
         {
-          util::syscall::execve (command.string().c_str(), argv.data(), envp.data());
+          util::syscall::execve (command.string().find ("drts-kernel") != std::string::npos
+                                ? "/p/hpc/soft/valgrind/valgrind-3.10.1/bin/valgrind"
+                                : command.string().c_str(), argv.data(), envp.data());
         }
         catch (boost::system::system_error const& err)
         {
