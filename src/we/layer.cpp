@@ -411,6 +411,8 @@ namespace we
               )
            )
         {
+          id_type const id (activity_data.id);
+
           try
           {
             fhg::util::nest_exceptions<std::runtime_error>
@@ -425,7 +427,7 @@ namespace we
           catch (...)
           {
             rts_failed_and_forget
-              ( activity_data._id
+              ( id
               , fhg::util::current_exception_printer (": ").string()
               );
           }
