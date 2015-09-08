@@ -47,7 +47,7 @@ namespace sdpa
         {}
 
         template<typename... Args>
-      void push (Args&&... args)
+      void emplace (Args&&... args)
       {
         if (size() < capacity_)
         {
@@ -120,12 +120,12 @@ namespace sdpa
            + cost_preassigned_jobs
            );
 
-         bpq.push ( total_cost
-                  , -1.0*it->first
-                  , worker_info.shared_memory_size()
-                  , worker_info.last_time_served()
-                  , worker_info.worker_id()
-                  );
+         bpq.emplace ( total_cost
+                     , -1.0*it->first
+                     , worker_info.shared_memory_size()
+                     , worker_info.last_time_served()
+                     , worker_info.worker_id()
+                     );
        }
 
        return bpq.assigned_workers();
