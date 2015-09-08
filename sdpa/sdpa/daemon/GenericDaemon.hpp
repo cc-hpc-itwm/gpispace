@@ -66,6 +66,7 @@
 #include <boost/make_shared.hpp>
 
 #include <memory>
+#include <mutex>
 #include <random>
 
 #define OVERWRITTEN_IN_TEST virtual
@@ -86,9 +87,6 @@ namespace sdpa {
       using master_info_t = std::map<std::string, master_network_info>;
 
     public:
-      typedef boost::recursive_mutex mutex_type;
-      typedef boost::unique_lock<mutex_type> lock_type;
-
       GenericDaemon( const std::string name
                    , const std::string url
                    , std::unique_ptr<boost::asio::io_service> peer_io_service
@@ -102,17 +100,6 @@ namespace sdpa {
 
       const std::string& name() const;
       boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
-      fhg::com::host_t peer_host() const
-      {
-        return fhg::com::host_t ( fhg::network::connectable_to_address_string
-                                    (peer_local_endpoint().address())
-                                );
-
-      }
-      fhg::com::port_t peer_port() const
-      {
-        return fhg::com::port_t (std::to_string (peer_local_endpoint().port()));
-      }
 
       bool isTop() { return _master_info.empty(); }
 
@@ -129,9 +116,6 @@ namespace sdpa {
       void addCapability(const capability_t& cpb);
 
     protected:
-      const CoallocationScheduler& scheduler() const {return _scheduler;}
-      CoallocationScheduler& scheduler() {return _scheduler;}
-
       // masters and subscribers
       void unsubscribe(const fhg::com::p2p::address_t&);
       virtual void handleSubscribeEvent (fhg::com::p2p::address_t const& source, const sdpa::events::SubscribeEvent*) override;
@@ -203,7 +187,7 @@ namespace sdpa {
       bool hasWorkflowEngine() const { return !!ptr_workflow_engine_;}
 
       // workers
-      void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
+      void serveJob(std::set<worker_id_t> const&, const job_id_t&);
 
     protected:
       // jobs
@@ -260,6 +244,7 @@ namespace sdpa {
       } _cleanup_job_map_on_dtor_helper;
 
     protected:
+      WorkerManager _worker_manager;
       CoallocationScheduler _scheduler;
 
       boost::mutex _scheduling_thread_mutex;
@@ -270,8 +255,8 @@ namespace sdpa {
 
     private:
 
-      mutex_type mtx_subscriber_;
-      mutex_type mtx_cpb_;
+      std::mutex mtx_subscriber_;
+      std::mutex mtx_cpb_;
 
       sdpa::capabilities_set_t m_capabilities;
 
@@ -321,7 +306,7 @@ namespace sdpa {
           (boost::optional<std::exception_ptr>) const;
 
         void submit_job
-          (boost::optional<job_id_t>, job_desc_t, sdpa::worker_id_list_t) const;
+          (boost::optional<job_id_t>, job_desc_t, std::set<worker_id_t> const&) const;
         void cancel_job (job_id_t) const;
 
         void job_failed_ack (job_id_t) const;
@@ -347,8 +332,7 @@ namespace sdpa {
         parent_proxy (GenericDaemon*, master_info_t::iterator const&);
         parent_proxy (GenericDaemon*, opaque_job_master_t const&);
 
-        void worker_registration
-          (boost::optional<unsigned int> capacity, capabilities_set_t) const;
+        void worker_registration (capabilities_set_t) const;
         void notify_shutdown() const;
 
         void job_failed (job_id_t, std::string error_message) const;

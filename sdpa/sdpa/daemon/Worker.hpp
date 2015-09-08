@@ -14,19 +14,13 @@ namespace sdpa
   namespace daemon
   {
     class Worker {
-    public:
+    private:
+      friend class WorkerManager;
 
-      typedef boost::shared_ptr<Worker> ptr_t;
-      typedef boost::recursive_mutex mutex_type;
-      typedef boost::unique_lock<mutex_type> lock_type;
-
-      explicit Worker ( const worker_id_t& name
-                      , const boost::optional<unsigned int>& cap
-                      , const capabilities_set_t&
+      explicit Worker ( const capabilities_set_t&
                       , unsigned long allocated_shared_memory_size
                       , const bool children_allowed
                       , const std::string& hostname
-                      , const fhg::com::p2p::address_t& address
                       );
 
       void assign (const job_id_t&);
@@ -34,19 +28,9 @@ namespace sdpa
 
       void acknowledge(const job_id_t&);
 
-      double lastTimeServed() {lock_type lock(mtx_); return last_time_served_; }
-
-      const worker_id_t &name() const { lock_type lock(mtx_); return name_; }
-      std::string hostname() const { return hostname_; }
-      fhg::com::p2p::address_t address() const;
-      boost::optional<unsigned int> capacity() const { lock_type lock(mtx_); return capacity_; }
-      unsigned long allocated_shared_memory_size() const
-        {return allocated_shared_memory_size_;}
+      double lastTimeServed() const { return last_time_served_; }
 
       // capabilities
-      const capabilities_set_t& capabilities() const;
-      bool children_allowed() const { return children_allowed_;}
-
       bool addCapabilities(const capabilities_set_t& cpbset);
       bool removeCapabilities(const capabilities_set_t& cpbset);
       bool hasCapability(const std::string& cpbName) const;
@@ -65,21 +49,13 @@ namespace sdpa
       double cost_assigned_jobs (std::function<double (job_id_t job_id)>) const;
 
       bool remove_job_if_pending (const job_id_t& job_id);
-    private:
-      void reserve();
-      void free();
-    public:
 
       std::set<job_id_t> getJobListAndCleanQueues();
 
-    private:
-      worker_id_t name_; //! name of the worker
-      boost::optional<unsigned int> capacity_;
-      capabilities_set_t capabilities_;
-      unsigned long allocated_shared_memory_size_;
-      bool children_allowed_;
-      std::string hostname_;
-      fhg::com::p2p::address_t address_;
+      capabilities_set_t _capabilities;
+      unsigned long const _allocated_shared_memory_size;
+      bool const _children_allowed;
+      std::string const _hostname;
       double last_time_served_;
 
       std::set<job_id_t> pending_;
@@ -88,8 +64,6 @@ namespace sdpa
 
       bool reserved_;
       bool backlog_full_;
-
-      mutable mutex_type mtx_;
     };
   }
 }

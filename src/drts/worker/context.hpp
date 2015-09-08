@@ -4,7 +4,7 @@
 
 #include <fhglog/level.hpp>
 
-#include <list>
+#include <set>
 #include <string>
 
 #include <boost/function.hpp>
@@ -28,7 +28,7 @@ namespace drts
 
       std::string const& worker_name() const;
 
-      std::list<std::string> const& worker_list() const;
+      std::set<std::string> const& workers() const;
       std::string worker_to_hostname (std::string const&) const;
 
       void set_module_call_do_cancel (boost::function<void()>);

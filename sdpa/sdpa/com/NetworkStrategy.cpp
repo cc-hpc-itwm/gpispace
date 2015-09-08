@@ -4,7 +4,6 @@
 
 #include <util-generic/print_exception.hpp>
 
-#include <sdpa/events/Codec.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
 #include <boost/lexical_cast.hpp>
@@ -21,7 +20,8 @@ namespace sdpa
                                      , fhg::com::host_t const & host
                                      , fhg::com::port_t const & port
                                      )
-      : _event_handler (event_handler)
+      : _codec()
+      , _event_handler (event_handler)
       , m_message()
       , m_shutting_down (false)
       , _peer (std::move (peer_io_service), host, port)
@@ -52,13 +52,11 @@ namespace sdpa
       , boost::shared_ptr<events::SDPAEvent> const& sdpa_event
       )
     {
-      static events::Codec codec;
-
       try
       {
         _peer.async_send
           ( address
-          , codec.encode (sdpa_event.get())
+          , _codec.encode (sdpa_event.get())
           , [address, this] (boost::system::error_code const& ec)
             {
               if (ec)
@@ -87,13 +85,11 @@ namespace sdpa
                                       , boost::optional<fhg::com::p2p::address_t> source
                                       )
     {
-      static sdpa::events::Codec codec;
-
       if (! ec)
       {
         // convert m_message to event
         sdpa::events::SDPAEvent::Ptr evt
-          (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
+          (_codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
         _event_handler (source.get(), evt);
 
         _peer.async_recv

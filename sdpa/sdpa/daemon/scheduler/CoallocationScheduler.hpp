@@ -3,7 +3,6 @@
 #pragma once
 
 #include <sdpa/daemon/Job.hpp>
-#include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/types.hpp>
 
@@ -20,10 +19,10 @@ namespace sdpa
     public:
       typedef std::map<job_id_t, std::set<worker_id_t>> assignment_t;
 
-      CoallocationScheduler (std::function<job_requirements_t (const sdpa::job_id_t&)>);
-
-      const WorkerManager& worker_manager() const;
-      WorkerManager& worker_manager();
+      CoallocationScheduler
+        ( std::function<job_requirements_t (const sdpa::job_id_t&)>
+        , WorkerManager&
+        );
 
       // -- used by daemon
       bool delete_job (const sdpa::job_id_t&);
@@ -53,7 +52,7 @@ namespace sdpa
 
       void reschedule_pending_jobs_matching_worker (const worker_id_t&);
       std::set<job_id_t> start_pending_jobs
-        (std::function<void (const sdpa::worker_id_list_t&, const job_id_t&)>);
+        (std::function<void (std::set<worker_id_t> const&, const job_id_t&)>);
     private:
       double compute_reservation_cost
         ( const job_id_t&
@@ -64,7 +63,7 @@ namespace sdpa
       std::function<job_requirements_t (const sdpa::job_id_t&)>
         _job_requirements;
 
-      WorkerManager _worker_manager;
+      WorkerManager& _worker_manager;
 
       class locked_job_id_list
       {

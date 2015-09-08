@@ -7,6 +7,7 @@
 
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 
 #include <unordered_map>
@@ -15,18 +16,15 @@ namespace sdpa
 {
   namespace daemon
   {
-    class WorkerManager
+    class WorkerManager : boost::noncopyable
     {
     public:
-      typedef std::unordered_map<worker_id_t, Worker::ptr_t> worker_map_t;
-
       const boost::optional<worker_id_t> findSubmOrAckWorker (const sdpa::job_id_t& job_id) const;
 
       std::string host_INDICATES_A_RACE (const sdpa::worker_id_t& worker) const;
 
       //! throws if workerId was not unique
       void addWorker ( const worker_id_t& workerId
-                     , boost::optional<unsigned int> capacity
                      , const capabilities_set_t& cpbset
                      , unsigned long allocated_shared_memory_size
                      , const bool children_allowed
@@ -38,18 +36,16 @@ namespace sdpa
 
       void getCapabilities (sdpa::capabilities_set_t& cpbset) const;
 
-      std::set<worker_id_t> getAllNonReservedWorkers() const;
-
       mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers (const job_requirements_t&) const;
 
       double cost_assigned_jobs (const worker_id_t, std::function<double (job_id_t job_id)>);
 
     bool submit_and_serve_if_can_start_job_INDICATES_A_RACE
       ( job_id_t const&, std::set<worker_id_t> const&
-      , std::function<void ( const sdpa::worker_id_list_t&
+      , std::function<void ( std::set<worker_id_t> const&
                            , const job_id_t&
                            )> const& serve_job
-      ) const;
+      );
 
     bool all_workers_busy_and_have_pending_jobs() const;
 
@@ -62,7 +58,7 @@ namespace sdpa
     void acknowledge_job_sent_to_worker (const job_id_t&, const worker_id_t&);
     void delete_job_from_worker (const job_id_t &job_id, const worker_id_t& );
     const capabilities_set_t& worker_capabilities (const worker_id_t&) const;
-    const std::set<job_id_t> get_worker_jobs_and_clean_queues (const worker_id_t&) const;
+    const std::set<job_id_t> get_worker_jobs_and_clean_queues (const worker_id_t&);
     bool add_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
     bool remove_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
     void set_worker_backlog_full (const worker_id_t&, bool);
@@ -87,6 +83,7 @@ namespace sdpa
             ) const;
 
     private:
+      typedef std::unordered_map<worker_id_t, Worker> worker_map_t;
       worker_map_t  worker_map_;
       worker_connections_t worker_connections_;
 

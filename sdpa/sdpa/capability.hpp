@@ -17,7 +17,6 @@ namespace sdpa
     std::string name() const { return name_;}
 
     size_t depth() const { return depth_;}
-    void setDepth(size_t depth) { depth_ = depth;}
     void incDepth() { depth_++; }
 
     std::string owner() const { return owner_; }

@@ -16,12 +16,12 @@ namespace sdpa
       SubmitJobEvent
         ( const boost::optional<sdpa::job_id_t>& a_job_id
         , const job_desc_t& a_description
-        , const sdpa::worker_id_list_t& worker_list = sdpa::worker_id_list_t()
+        , std::set<worker_id_t> const& workers = {}
         )
           : SDPAEvent()
           , _job_id (a_job_id)
           , desc_ (a_description)
-          , worker_list_ (worker_list)
+          , _workers (workers)
       {}
 
       const boost::optional<sdpa::job_id_t>& job_id() const
@@ -32,9 +32,9 @@ namespace sdpa
       {
         return desc_;
       }
-      const sdpa::worker_id_list_t& worker_list() const
+      std::set<worker_id_t> const& workers() const
       {
-        return worker_list_;
+        return _workers;
       }
 
       virtual void handleBy
@@ -46,7 +46,7 @@ namespace sdpa
     private:
       boost::optional<sdpa::job_id_t> _job_id;
       sdpa::job_desc_t desc_;
-      sdpa::worker_id_list_t worker_list_;
+      std::set<worker_id_t> _workers;
     };
 
     SAVE_CONSTRUCT_DATA_DEF (SubmitJobEvent, e)
@@ -54,7 +54,7 @@ namespace sdpa
       SAVE_SDPAEVENT_CONSTRUCT_DATA (e);
       SAVE_TO_ARCHIVE (e->job_id());
       SAVE_TO_ARCHIVE (e->description());
-      SAVE_TO_ARCHIVE (e->worker_list());
+      SAVE_TO_ARCHIVE (e->workers());
     }
 
     LOAD_CONSTRUCT_DATA_DEF (SubmitJobEvent, e)
@@ -62,9 +62,9 @@ namespace sdpa
       LOAD_SDPAEVENT_CONSTRUCT_DATA();
       LOAD_FROM_ARCHIVE (boost::optional<sdpa::job_id_t>, job_id);
       LOAD_FROM_ARCHIVE (sdpa::job_desc_t, description);
-      LOAD_FROM_ARCHIVE (sdpa::worker_id_list_t, worker_list);
+      LOAD_FROM_ARCHIVE (std::set<sdpa::worker_id_t>, workers);
 
-      ::new (e) SubmitJobEvent (job_id, description, worker_list);
+      ::new (e) SubmitJobEvent (job_id, description, workers);
     }
   }
 }

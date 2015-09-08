@@ -265,8 +265,17 @@ namespace utils
 
     sdpa::daemon::Orchestrator _;
     std::string name() const { return _.name(); }
-    fhg::com::host_t host() const { return _.peer_host(); }
-    fhg::com::port_t port() const { return _.peer_port(); }
+    fhg::com::host_t host() const
+    {
+      return fhg::com::host_t ( fhg::network::connectable_to_address_string
+                                  (_.peer_local_endpoint().address())
+                              );
+    }
+    fhg::com::port_t port() const
+    {
+      return fhg::com::port_t
+        (std::to_string (_.peer_local_endpoint().port()));
+    }
   };
 
   namespace
@@ -315,8 +324,17 @@ namespace utils
     {}
     sdpa::daemon::Agent _;
     std::string name() const { return _.name(); }
-    fhg::com::host_t host() const { return _.peer_host(); }
-    fhg::com::port_t port() const { return _.peer_port(); }
+    fhg::com::host_t host() const
+    {
+      return fhg::com::host_t ( fhg::network::connectable_to_address_string
+                                  (_.peer_local_endpoint().address())
+                              );
+    }
+    fhg::com::port_t port() const
+    {
+      return fhg::com::port_t
+        (std::to_string (_.peer_local_endpoint().port()));
+    }
   };
 
   class basic_drts_component : sdpa::events::EventHandler
@@ -354,7 +372,6 @@ namespace utils
         , sdpa::events::SDPAEvent::Ptr
           ( new sdpa::events::WorkerRegistrationEvent
             ( _name
-            , 1
             , capabilities
             , fhg::util::testing::random_integral<unsigned long>()
             , accept_workers

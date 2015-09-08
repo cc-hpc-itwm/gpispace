@@ -3,28 +3,18 @@
 #include <fhgcom/peer_info.hpp>
 
 #include <string>
-#include <vector>
 #include <list>
 #include <map>
 #include <set>
-#include <iostream>
-#include <we/type/value.hpp>
 #include <sdpa/job_states.hpp>
-
-#include <iterator>
 
 namespace sdpa {
 	typedef std::string job_id_t;
 	typedef std::list<job_id_t> job_id_list_t;
 	typedef std::string job_desc_t;
-	typedef std::string location_t;
 	typedef std::string worker_id_t;
 	typedef std::string job_result_t;
 	typedef std::list<sdpa::worker_id_t> worker_id_list_t;
-	typedef worker_id_list_t agent_id_list_t;
-	typedef std::pair<worker_id_t, job_id_t> worker_job_pair_t;
-
-  typedef std::list<std::pair<sdpa::worker_id_t, int>> list_match_workers_t;
 
   using name_host_port_tuple
     = std::tuple<std::string, fhg::com::host_t, fhg::com::port_t>;
@@ -118,19 +108,4 @@ namespace sdpa {
     boost::optional<sdpa::status::code> _state;
     discovery_info_set_t _children;
   };
-}
-
-inline std::ostream& operator<<(std::ostream& os, const sdpa::worker_id_list_t& worker_list)
-{
-  os<<"(";
-  for(sdpa::worker_id_list_t::const_iterator it=worker_list.begin(); it!=worker_list.end(); it++)
-  {
-      os<<*it;
-      if( std::next(it) != worker_list.end() )
-        os<<",";
-      else
-        os<<")";
-  }
-
- return os;
 }

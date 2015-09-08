@@ -171,7 +171,6 @@ DRTSImpl::DRTSImpl
     send_event<sdpa::events::WorkerRegistrationEvent>
       ( master_address
       , m_my_name
-      , m_pending_jobs.capacity()
       , capabilities
       , (_shared_memory != nullptr) ? _shared_memory->size() : 0
       , false
@@ -255,7 +254,7 @@ void DRTSImpl::handleSubmitJobEvent
     ( std::make_shared<DRTSImpl::Job> ( *e->job_id()
                                       , e->description()
                                       , master
-                                      , e->worker_list()
+                                      , e->workers()
                                       )
     );
 
@@ -449,7 +448,7 @@ void DRTSImpl::job_execution_thread()
       job->result = we::type::activity_t().to_string();
 
       wfe_task_t task
-        (job->id, job->description, m_my_name, job->worker_list, _logger);
+        (job->id, job->description, m_my_name, job->workers, _logger);
 
       {
         std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);

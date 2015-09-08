@@ -177,16 +177,14 @@ BOOST_AUTO_TEST_CASE (SubmitJobAck)
 
 BOOST_AUTO_TEST_CASE (SubmitJob)
 {
-  sdpa::worker_id_list_t workers;
-  workers.push_back ("foo");
-  workers.push_back ("bar");
+  std::set<sdpa::worker_id_t> const workers {"foo", "bar"};
 
   SubmitJobEvent e (sdpa::job_id_t("job-id-1"), "pnet", workers);
   SubmitJobEvent* r (encode_decode_sdpa_event (e));
 
   BOOST_REQUIRE_EQUAL (r->job_id(), e.job_id());
   BOOST_REQUIRE_EQUAL (r->description(), e.description());
-  BOOST_REQUIRE_EQUAL (r->worker_list(), e.worker_list());
+  BOOST_REQUIRE_EQUAL (r->workers(), e.workers());
 }
 
 BOOST_AUTO_TEST_CASE (SubscribeAck)
@@ -230,14 +228,13 @@ BOOST_AUTO_TEST_CASE (WorkerRegistration)
   caps.insert (sdpa::Capability ("bar", fhg::util::testing::random_string()));
 
   WorkerRegistrationEvent e
-    ( fhg::util::testing::random_string(), 10, caps
+    ( fhg::util::testing::random_string(), caps
     , fhg::util::testing::random_integral<unsigned long>()
     , true, fhg::util::testing::random_string()
     );
   WorkerRegistrationEvent* r (encode_decode_mgmt_event (e));
 
   BOOST_REQUIRE_EQUAL (r->name(), e.name());
-  BOOST_REQUIRE_EQUAL (r->capacity(), e.capacity());
   BOOST_REQUIRE_EQUAL (r->capabilities(), e.capabilities());
   BOOST_REQUIRE_EQUAL (r->allocated_shared_memory_size(), e.allocated_shared_memory_size());
   BOOST_REQUIRE_EQUAL (r->children_allowed(), e.children_allowed());

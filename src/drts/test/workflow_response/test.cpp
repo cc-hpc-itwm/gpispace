@@ -124,7 +124,7 @@ namespace
        client.synchronous_workflow_response
          ("JOB-NOT-EXISTENT", "get_and_update_state", 12UL);
      }
-    , std::runtime_error ("Error: reason := unable to put token: JOB-NOT-EXISTENT unknown or not running code := 3")
+    , std::runtime_error ("Error: reason := unable to put token: JOB-NOT-EXISTENT unknown or not running code := 2")
     );
 
 
@@ -176,7 +176,7 @@ namespace
        client.synchronous_workflow_response
          (job_id, "get_and_update_state", 0UL);
      }
-    , std::runtime_error ("Error: reason := unable to put token: " + job_id + " unknown or not running code := 3")
+    , std::runtime_error ("Error: reason := unable to put token: " + job_id + " unknown or not running code := 2")
     );
 
   std::multimap<std::string, pnet::type::value::value_type> const result

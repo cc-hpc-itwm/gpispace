@@ -4,7 +4,7 @@
 
 #include <fhglog/Logger.hpp>
 
-#include <list>
+#include <set>
 #include <string>
 
 #include <boost/function.hpp>
@@ -17,7 +17,7 @@ namespace drts
     {
     public:
       context_constructor ( std::string const& worker_name
-                          , std::list<std::string> const& worker_list
+                          , std::set<std::string> const& workers
                           , fhg::log::Logger& logger
                           );
       context::implementation* _;
@@ -27,13 +27,13 @@ namespace drts
     {
     public:
       implementation ( std::string const& worker_name
-                     , std::list<std::string> const& worker_list
+                     , std::set<std::string> const& workers
                      , fhg::log::Logger& logger
                      );
 
       std::string const& worker_name() const;
 
-      std::list<std::string> const& worker_list () const;
+      std::set<std::string> const& workers () const;
       std::string worker_to_hostname (std::string const&) const;
 
       void set_module_call_do_cancel (boost::function<void()> fun);
@@ -48,7 +48,7 @@ namespace drts
 
     private:
       std::string _worker_name;
-      std::list<std::string> _worker_list;
+      std::set<std::string> _workers;
       boost::function<void()> _module_call_do_cancel;
       fhg::log::Logger& _logger;
     };

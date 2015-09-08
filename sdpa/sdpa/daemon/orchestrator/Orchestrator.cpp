@@ -53,7 +53,7 @@ namespace sdpa
       notify_subscribers<events::JobFinishedEvent>
         (pEvt->job_id(), pEvt->job_id(), pEvt->result());
 
-      scheduler().releaseReservation (pEvt->job_id());
+      _scheduler.releaseReservation (pEvt->job_id());
       request_scheduling();
     }
 
@@ -74,7 +74,7 @@ namespace sdpa
       notify_subscribers<events::JobFailedEvent>
         (pEvt->job_id(), pEvt->job_id(), pEvt->error_message());
 
-      scheduler().releaseReservation (pEvt->job_id());
+      _scheduler.releaseReservation (pEvt->job_id());
       request_scheduling();
     }
 
@@ -111,10 +111,10 @@ namespace sdpa
       pJob->CancelJob();
 
       boost::optional<sdpa::worker_id_t> worker_id =
-        scheduler().worker_manager().findSubmOrAckWorker(pEvt->job_id());
+        _worker_manager.findSubmOrAckWorker(pEvt->job_id());
       if (worker_id)
       {
-        child_proxy (this, scheduler().worker_manager().address_by_worker (*worker_id).get()->second)
+        child_proxy (this, _worker_manager.address_by_worker (*worker_id).get()->second)
           .cancel_job (pEvt->job_id());
       }
       else

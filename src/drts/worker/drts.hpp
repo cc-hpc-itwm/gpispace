@@ -50,7 +50,7 @@ struct wfe_task_t
   wfe_task_t ( std::string id
              , std::string const& description
              , std::string worker_name
-             , std::list<std::string> workers
+             , std::set<std::string> workers
              , fhg::log::Logger& logger
              )
     : id (id)
@@ -84,12 +84,12 @@ public:
     Job ( std::string const& jobid
         , std::string const& description
         , owner_type const& owner
-        , std::list<std::string> const& worker_list
+        , std::set<std::string> const& workers
         )
       : id (jobid)
       , description (description)
       , owner (owner)
-      , worker_list (worker_list)
+      , workers (workers)
       , state (Job::PENDING)
       , result()
       , message ("")
@@ -98,7 +98,7 @@ public:
     std::string const id;
     std::string const description;
     owner_type const owner;
-    std::list<std::string> const worker_list;
+    std::set<std::string> const workers;
     std::atomic<state_t> state;
     std::string result;
     std::string message;

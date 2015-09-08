@@ -10,10 +10,7 @@
 
 #include <we/type/value.hpp>
 
-#include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/optional.hpp>
-#include <boost/thread.hpp>
-#include <boost/thread/scoped_thread.hpp>
 
 #include <mutex>
 
