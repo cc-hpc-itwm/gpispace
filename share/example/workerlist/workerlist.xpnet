@@ -33,9 +33,12 @@
 
             workers.assign (ws.begin(), ws.end());
 
-            for (std::string const& worker : ws)
+            for ( std::set<std::string>::const_iterator it (ws.begin())
+                ; it != ws.end()
+                ; ++it
+                )
             {
-              hostnames[worker] = _pnetc_context->worker_to_hostname (worker);
+              hostnames[*it] = _pnetc_context->worker_to_hostname (*it);
             }
           ]]></code>
         </module>
