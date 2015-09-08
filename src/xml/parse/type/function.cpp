@@ -1325,6 +1325,7 @@ namespace xml
         stream << "CXXFLAGS += -I."                                << std::endl;
         stream << "CXXFLAGS += -isystem $(SDPA_INCLUDE)"           << std::endl;
         stream << "CXXFLAGS += -isystem $(BOOST_ROOT)/include"     << std::endl;
+        stream << "LDFLAGS += -L $(BOOST_ROOT)/lib"                << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef SDPA_LDPATH"                             << std::endl;
         stream << "  ifndef SDPA_HOME"                             << std::endl;
