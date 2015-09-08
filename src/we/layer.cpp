@@ -411,7 +411,24 @@ namespace we
               )
            )
         {
-          _nets_to_extract_from.put (std::move (activity_data), was_active);
+          try
+          {
+            fhg::util::nest_exceptions<std::runtime_error>
+              ( [&]
+                {
+                  _nets_to_extract_from.put
+                    (std::move (activity_data), was_active);
+                }
+              , "waiting for further events to continue workflow interpretation"
+              );
+          }
+          catch (...)
+          {
+            rts_failed_and_forget
+              ( activity_data._id
+              , fhg::util::current_exception_printer (": ").string()
+              );
+          }
         }
         else
         {
