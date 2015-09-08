@@ -1569,5 +1569,9 @@ BOOST_FIXTURE_TEST_CASE ( work_stealing
                   || assignment.at (job_1) == std::set<sdpa::worker_id_t>({"worker_2"})
                   || assignment.at (job_2) == std::set<sdpa::worker_id_t>({"worker_2"})
                   );
+
+    BOOST_REQUIRE (assignment.at (job_0) != assignment.at (job_1));
+    BOOST_REQUIRE (assignment.at (job_0) != assignment.at (job_2));
+    BOOST_REQUIRE (assignment.at (job_1) != assignment.at (job_2));
   }
 }
