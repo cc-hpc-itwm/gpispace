@@ -411,7 +411,7 @@ namespace we
               )
            )
         {
-          id_type const id (activity_data.id);
+          id_type const id (activity_data._id);
 
           try
           {
