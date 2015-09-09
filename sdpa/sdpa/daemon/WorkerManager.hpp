@@ -9,8 +9,13 @@
 #include <boost/bimap/unordered_set_of.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
+#include <boost/range/algorithm.hpp>
+#include <boost/range/adaptor/filtered.hpp>
+#include <boost/range/adaptor/map.hpp>
 
+#include <algorithm>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace sdpa
 {
@@ -39,6 +44,18 @@ namespace sdpa
       mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers (const job_requirements_t&) const;
 
       double cost_assigned_jobs (const worker_id_t, std::function<double (job_id_t job_id)>);
+
+      boost::optional<double> matchRequirements
+        ( const worker_id_t& worker
+        , const job_requirements_t& job_req_set
+        ) const;
+
+      template <typename T>
+           void steal_work ( std::list<job_id_t> pending_jobs
+                           , std::function<T (job_id_t const&)> reservation
+                           , std::function<job_requirements_t (const sdpa::job_id_t&)>
+                               requirements
+                           );
 
     bool submit_and_serve_if_can_start_job_INDICATES_A_RACE
       ( job_id_t const&, std::set<worker_id_t> const&
@@ -77,17 +94,88 @@ namespace sdpa
       bool hasWorker_INDICATES_A_RACE_TESTING_ONLY (const worker_id_t& worker_id) const;
 
     private:
-      boost::optional<double> matchRequirements
-            ( const worker_id_t& worker
-            , const job_requirements_t& job_req_set
-            ) const;
-
-    private:
       typedef std::unordered_map<worker_id_t, Worker> worker_map_t;
       worker_map_t  worker_map_;
       worker_connections_t worker_connections_;
 
       mutable boost::mutex mtx_;
     };
+
+    template <typename T>
+    void WorkerManager::steal_work
+      ( std::list<job_id_t> pending_jobs
+      , std::function<T (job_id_t const&)> reservation
+      , std::function<job_requirements_t (const sdpa::job_id_t&)>
+          requirements
+      )
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+
+      auto comp = [this] (worker_id_t a, worker_id_t b)
+                  { return worker_map_.at (a).lastTimeServed()
+                      > worker_map_.at (b).lastTimeServed();
+                  };
+
+      std::set<worker_id_t, decltype(comp)> idle_workers (comp);
+      boost::copy ( worker_map_
+                  | boost::adaptors::filtered
+                      ([] (std::pair<worker_id_t, Worker> const& worker)
+                       {  return worker.second.pending_.empty()
+                            && worker.second.submitted_.empty()
+                            && worker.second.acknowledged_.empty();
+                       }
+                      )
+                  | boost::adaptors::map_keys
+                  , std::inserter (idle_workers, idle_workers.begin())
+                  );
+
+      std::unordered_set<worker_id_t> idle_workers_assigned;
+
+      for (worker_id_t const& w : idle_workers)
+      {
+        std::list<job_id_t> ::iterator
+          it_job (std::find_if ( pending_jobs.begin()
+                               , pending_jobs.end()
+                               , [&w, &requirements, this] (job_id_t job)
+                                 {return matchRequirements (w, requirements(job));}
+                               )
+                 );
+
+        if (it_job != pending_jobs.end())
+        {
+          std::set<worker_id_t> replaceable_workers;
+          std::set<worker_id_t> const& reserved_workers
+            (reservation (*it_job)->workers());
+
+          std::set_difference ( reserved_workers.begin()
+                              , reserved_workers.end()
+                              , idle_workers_assigned.begin()
+                              , idle_workers_assigned.end()
+                              , std::inserter ( replaceable_workers
+                                              , replaceable_workers.begin()
+                                              )
+                              );
+
+          std::set<worker_id_t>::iterator
+            it_w (std::max_element ( replaceable_workers.begin()
+                                   , replaceable_workers.end()
+                                   , [this] (worker_id_t wl, worker_id_t wr)
+                                     {return worker_map_.at (wl).pending_.size()
+                                        > worker_map_.at (wr).pending_.size();
+                                     }
+                                   )
+                 );
+
+          if (it_w != replaceable_workers.end())
+          {
+            reservation (*it_job)->replace_worker (*it_w, w);
+            worker_map_.at (*it_w).deleteJob (*it_job);
+            worker_map_.at (w).assign (*it_job);
+
+            idle_workers_assigned.insert (w);
+          }
+        }
+      }
+    }
   }
 }

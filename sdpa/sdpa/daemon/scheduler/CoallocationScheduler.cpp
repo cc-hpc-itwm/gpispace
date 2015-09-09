@@ -161,6 +161,24 @@ namespace sdpa
       }
 
       std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
+      if (jobs_to_schedule.empty())
+      {
+        std::list<job_id_t> pending_jobs (_list_pending_jobs.get_and_clear());
+        if (!pending_jobs.empty())
+        {
+          _worker_manager.steal_work<CoallocationScheduler::Reservation*>
+            ( pending_jobs
+            , [this] (job_id_t const& job)
+              {return allocation_table_.at (job);}
+            , _job_requirements
+            );
+
+          for (job_id_t const& job : pending_jobs)
+          {
+            _list_pending_jobs.push (job);
+          }
+        }
+      }
 
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
 

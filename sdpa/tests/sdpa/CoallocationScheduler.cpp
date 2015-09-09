@@ -1501,3 +1501,77 @@ BOOST_FIXTURE_TEST_CASE ( assign_to_the_same_worker_if_the_total_cost_is_lower
   BOOST_REQUIRE_EQUAL (assignment.at (job_id_0), expected_assignment);
   BOOST_REQUIRE_EQUAL (assignment.at (job_id_1), expected_assignment);
 }
+
+BOOST_FIXTURE_TEST_CASE ( work_stealing
+                        , fixture_scheduler_and_requirements
+                        )
+{
+  std::set<sdpa::worker_id_t> set_0 {"worker_0"};
+
+  _worker_manager.addWorker ( "worker_0"
+                            , {sdpa::Capability("A", "worker_0")}
+                            , random_ulong()
+                            , false
+                            , fhg::util::testing::random_string()
+                            , fhg::util::testing::random_string()
+                            );
+
+  _worker_manager.addWorker ( "worker_1"
+                            , { sdpa::Capability("A", "worker_1")}
+                            , random_ulong()
+                            , false
+                            , fhg::util::testing::random_string()
+                            , fhg::util::testing::random_string()
+                            );
+
+  const sdpa::job_id_t job_0 ("job_0");
+  const sdpa::job_id_t job_1 ("job_1");
+  const sdpa::job_id_t job_2 ("job_2");
+
+  add_job (job_0, require ("A"));
+  _scheduler.enqueueJob (job_0);
+
+  add_job (job_1, require ("A"));
+  _scheduler.enqueueJob (job_1);
+
+  add_job (job_2, require ("A"));
+  _scheduler.enqueueJob (job_2);
+
+  {
+    sdpa::daemon::CoallocationScheduler::assignment_t
+    assignment (_scheduler.assignJobsToWorkers());
+
+    BOOST_REQUIRE (!assignment.empty());
+    BOOST_REQUIRE (assignment.count (job_0));
+    BOOST_REQUIRE (assignment.count (job_1));
+    BOOST_REQUIRE (assignment.count (job_2));
+  }
+
+  _worker_manager.addWorker ( "worker_2"
+                            , { sdpa::Capability("A", "worker_2")}
+                            , random_ulong()
+                            , false
+                            , fhg::util::testing::random_string()
+                            , fhg::util::testing::random_string()
+                            );
+
+  {
+    sdpa::daemon::CoallocationScheduler::assignment_t
+    assignment (_scheduler.assignJobsToWorkers());
+
+    BOOST_REQUIRE (!assignment.empty());
+
+    BOOST_REQUIRE (assignment.count (job_0));
+    BOOST_REQUIRE (assignment.count (job_1));
+    BOOST_REQUIRE (assignment.count (job_2));
+
+    BOOST_REQUIRE (  assignment.at (job_0) == std::set<sdpa::worker_id_t>({"worker_2"})
+                  || assignment.at (job_1) == std::set<sdpa::worker_id_t>({"worker_2"})
+                  || assignment.at (job_2) == std::set<sdpa::worker_id_t>({"worker_2"})
+                  );
+
+    BOOST_REQUIRE (assignment.at (job_0) != assignment.at (job_1));
+    BOOST_REQUIRE (assignment.at (job_0) != assignment.at (job_2));
+    BOOST_REQUIRE (assignment.at (job_1) != assignment.at (job_2));
+  }
+}
