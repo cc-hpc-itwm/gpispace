@@ -113,13 +113,15 @@ namespace drts
 
       int_type overflow (int_type c)
       {
-        _buffer += traits_type::to_char_type (c);
-
-        if (*_buffer.rbegin() == '\n')
+        if ('\n' == traits_type::to_char_type (c))
         {
           _context->log (_severity, _file, _function, _line, _buffer);
 
           _buffer.clear();
+        }
+        else
+        {
+          _buffer += traits_type::to_char_type (c);
         }
 
         return c;
