@@ -6,9 +6,6 @@ namespace
 {
   fhg::log::LogEvent gen_event()
   {
-    return { fhg::log::TRACE
-           , __FILE__
-           , "main", __LINE__, "hello world!"
-           };
+    return {fhg::log::TRACE, "hello world!"};
   }
 }

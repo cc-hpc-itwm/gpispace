@@ -2,15 +2,10 @@
 
 #include <fhglog/Logger.hpp>
 
-#include <boost/current_function.hpp>
-
 #include <sstream>
 
 #define FHGLOG_MKEVENT_HERE(level, message)             \
     ::fhg::log::LogEvent ( ::fhg::log::level            \
-                         , __FILE__                     \
-                         , BOOST_CURRENT_FUNCTION       \
-                         , __LINE__                     \
                          , message                      \
                          )
 

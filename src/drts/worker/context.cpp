@@ -34,13 +34,10 @@ namespace drts
       _->module_call_do_cancel();
     }
     void context::log ( fhg::log::Level const& severity
-                      , std::string const& file
-                      , std::string const& function
-                      , std::size_t const& line
                       , std::string const& message
                       ) const
     {
-      _->log (severity, file, function, line, message);
+      _->log (severity, message);
     }
 
     context_constructor::context_constructor
@@ -87,14 +84,10 @@ namespace drts
       _module_call_do_cancel();
     }
     void context::implementation::log ( fhg::log::Level const& severity
-                                      , std::string const& file
-                                      , std::string const& function
-                                      , std::size_t const& line
                                       , std::string const& message
                                       ) const
     {
-      _logger.log
-        (fhg::log::LogEvent (severity, file, function, line, message));
+      _logger.log (fhg::log::LogEvent (severity, message));
     }
   }
 }

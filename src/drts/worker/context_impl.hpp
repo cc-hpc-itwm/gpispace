@@ -40,9 +40,6 @@ namespace drts
       void module_call_do_cancel() const;
 
       void log ( fhg::log::Level const& severity
-               , std::string const& file
-               , std::string const& function
-               , std::size_t const& line
                , std::string const& message
                ) const;
 

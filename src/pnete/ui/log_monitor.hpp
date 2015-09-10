@@ -21,7 +21,6 @@ namespace detail
   {
     QString time;
     QString source;
-    QString location;
     QString message;
 
     fhg::log::LogEvent event;
