@@ -61,16 +61,17 @@
         <in name="n" type="long"/>
         <in name="m" type="long"/>
         <out name="n" type="long"/>
-        <module name="n_of_m" function="run (cmd, n, m)" pass_context="true">
+        <module name="n_of_m" function="run (cmd, n, m)">
           <cinclude href="sstream"/>
           <cinclude href="process/process.hpp"/>
+          <cinclude href="iostream"/>
           <ld flag="-lprocess"/>
           <code><![CDATA[
             std::ostringstream cmdline;
 
             cmdline << cmd << " " << n << " " << m;
 
-            GSPC_LOG (INFO, "RUNNING " << cmdline.str());
+            std::cout << "RUNNING " << cmdline.str() << '\n';
 
             const std::size_t bufsize (1 << 10);
             char buf[bufsize];
@@ -82,8 +83,8 @@
                                  )
               );
 
-            GSPC_LOG
-              (INFO, "OUTPUT " << std::string (buf, buf + bytes_written));
+              std::cout
+                << "OUTPUT " << std::string (buf, buf + bytes_written) << '\n';
           ]]>
           </code>
         </module>

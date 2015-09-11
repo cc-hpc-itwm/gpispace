@@ -184,11 +184,10 @@
               <in name="points" type="long"/>
               <in name="seed" type="long"/>
               <out name="job" type="job"/>
-              <module name="pi" function="job get_key (seed, points)"
-                      pass_context="true">
+              <module name="pi" function="job get_key (seed, points)">
                 <cinclude href="sstream"/>
                 <code><![CDATA[
-                  GSPC_LOG (INFO, "GET_KEY for seed " << seed);
+                  std::cout << "GET_KEY for seed " << seed << '\n';
 
                   std::ostringstream os;
 
@@ -271,17 +270,16 @@
               <in name="job" type="job"/>
               <out name="job" type="job"/>
               <out name="ratio" type="ratio"/>
-              <module name="pi" function="ratio run (job)"
-                      pass_context="true">
+              <module name="pi" function="ratio run (job)">
                 <cinclude href="boost/random/mersenne_twister.hpp"/>
                 <cinclude href="boost/random/uniform_real.hpp"/>
                 <cinclude href="boost/random/variate_generator.hpp"/>
                 <code><![CDATA[
-                  GSPC_LOG (INFO, "RUN"
-                           << ", points " << job.points
-                           << ", seed " << job.seed
-                           << ", key " << job.key
-                           );
+                  std::cout << "RUN"
+                            << ", points " << job.points
+                            << ", seed " << job.seed
+                            << ", key " << job.key
+                            << '\n';
 
                   boost::mt19937 gen (job.seed);
                   boost::uniform_real<double> dist (-1, 1);
@@ -305,9 +303,9 @@
                         }
                     }
 
-                    GSPC_LOG (INFO, "RES = " << r.in << " of " << r.total
-                             << " (seed " << job.seed << ")"
-                             );
+                    std::cout << "RES = " << r.in << " of " << r.total
+                              << " (seed " << job.seed << ")"
+                              << '\n';
 
                   return r;
                 ]]></code>
@@ -364,12 +362,11 @@
         <in name="wait" type="long"/>
         <in name="ratio" type="ratio"/>
         <out name="ratio" type="ratio"/>
-        <module name="pi" function="finalize (ratio)"
-                pass_context="true">
+        <module name="pi" function="finalize (ratio)">
           <code><![CDATA[
-            GSPC_LOG (INFO, "FINALIZE"
-                     << ", ratio " << ratio.in << " % " << ratio.total
-                     );
+            std::cout << "FINALIZE"
+                      << ", ratio " << ratio.in << " % " << ratio.total
+                      << '\n';
 
             long gcd (ratio.total);
             long rem (ratio.in);
@@ -386,11 +383,11 @@
 
             const double res (4.0 * double(ratio.in) / double (ratio.total));
 
-            GSPC_LOG (INFO, "gcd " << gcd << " => "
+            std::cout << "gcd " << gcd << " => "
                 << " ratio " << ratio.in << " % " << ratio.total
                 << " res " << res
                 << " err " << res - 3.1415926535897932384626433832795028841968
-                );
+                << '\n';
           ]]></code>
         </module>
       </defun>

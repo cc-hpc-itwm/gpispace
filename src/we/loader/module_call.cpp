@@ -5,6 +5,7 @@
 #include <we/type/range.hpp>
 
 #include <drts/worker/context.hpp>
+#include <drts/worker/context_impl.hpp>
 
 //! \todo remove, needed to make a complete type
 #include <we/type/net.hpp>
@@ -236,8 +237,14 @@ namespace we
 
       expr::eval::context out (input (act));
 
-      loader[module_call.module()].call
-        (module_call.function(), context, input (act), out, pointers);
+      {
+        drts::worker::redirect_output const clog (context, fhg::log::TRACE, std::clog);
+        drts::worker::redirect_output const cout (context, fhg::log::INFO, std::cout);
+        drts::worker::redirect_output const cerr (context, fhg::log::WARN, std::cerr);
+
+        loader[module_call.module()].call
+          (module_call.function(), context, input (act), out, pointers);
+      }
 
       for ( std::pair<we::port_id_type, we::type::port_t> const& port_by_id
           : act.transition().ports_output()

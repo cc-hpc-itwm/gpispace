@@ -4,16 +4,15 @@
 
   <module name="selftest" function="selftest ( challenge
 				             , response
-                                             )"
-          pass_context="true">
+                                             )">
+    <cinclude href="iostream"/>
     <code><![CDATA[
-        GSPC_LOG (INFO, "SDPA selftest");
-
-        GSPC_LOG (INFO, "===> challenge := " << challenge);
+        std::cout << "SDPA selftest" << '\n'
+                  << "===> challenge := " << challenge << '\n';
 
         response = "sdpa.response." + challenge;
 
-        GSPC_LOG (INFO, "===> response := " << response);
+        std::cout << "===> response := " << response << '\n';
     ]]></code>
   </module>
 </defun>

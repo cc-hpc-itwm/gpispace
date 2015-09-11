@@ -113,14 +113,12 @@
         <out name="sum" type="sums"/>
         <module name="avg_stddev"
                 function="sum work (configuration, range_file)"
-                pass_context="true"
         >
           <cinclude href="reader.hpp"/>
           <cinclude href="boost/thread.hpp"/>
           <code><![CDATA[
-           GSPC_LOG (INFO, "work on range [" << range_file.begin
-                    << ".." << range_file.end << ")"
-                    );
+            std::cout << "work on range [" << range_file.begin
+                      << ".." << range_file.end << ")" << '\n';
 
             ::pnetc::type::sums::sums sum;
 

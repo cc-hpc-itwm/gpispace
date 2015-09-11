@@ -33,12 +33,6 @@ namespace drts
     {
       _->module_call_do_cancel();
     }
-    void context::log ( fhg::log::Level const& severity
-                      , std::string const& message
-                      ) const
-    {
-      _->log (severity, message);
-    }
 
     context_constructor::context_constructor
       ( std::string const& worker_name
