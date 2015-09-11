@@ -199,7 +199,7 @@ GenericDaemon::GenericDaemon( const std::string name
                            , std::bind (&GenericDaemon::canceled, this, std::placeholders::_1)
                            , std::bind (&GenericDaemon::discover, this, std::placeholders::_1, std::placeholders::_2)
                            , std::bind (&GenericDaemon::discovered, this, std::placeholders::_1, std::placeholders::_2)
-                           , std::bind (&GenericDaemon::token_put, this, std::placeholders::_1)
+                           , std::bind (&GenericDaemon::token_put, this, std::placeholders::_1, std::placeholders::_2)
                            , std::bind (&GenericDaemon::gen_id, this)
                            , *_random_extraction_engine
                            )
@@ -1370,16 +1370,21 @@ void GenericDaemon::handleJobFailedAckEvent
                                     );
       }
     }
-    void GenericDaemon::handle_put_token_ack
-      (fhg::com::p2p::address_t const&, const events::put_token_ack* event)
+    void GenericDaemon::handle_put_token_response
+      ( fhg::com::p2p::address_t const&
+      , events::put_token_response const* event
+      )
     {
       parent_proxy (this, take (_put_token_source, event->put_token_id()))
-        .put_token_ack (event->put_token_id());
+        .put_token_response (event->put_token_id(), event->exception());
     }
-    void GenericDaemon::token_put (std::string put_token_id)
+    void GenericDaemon::token_put
+      ( std::string put_token_id
+      , boost::optional<std::exception_ptr> error
+      )
     {
       parent_proxy (this, take (_put_token_source, put_token_id))
-        .put_token_ack (put_token_id);
+        .put_token_response (put_token_id, error);
     }
 
 void GenericDaemon::handleRetrieveJobResultsEvent
@@ -1650,13 +1655,13 @@ namespace sdpa
         );
     }
 
-    void GenericDaemon::parent_proxy::put_token_ack
-      (std::string put_token_id) const
+    void GenericDaemon::parent_proxy::put_token_response
+      (std::string put_token_id, boost::optional<std::exception_ptr> error) const
     {
       _that->sendEventToOther
         ( _address
-        , boost::shared_ptr<events::put_token_ack>
-          (new events::put_token_ack (put_token_id))
+        , boost::shared_ptr<events::put_token_response>
+            (new events::put_token_response (put_token_id, error))
         );
     }
   }

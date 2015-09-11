@@ -24,7 +24,7 @@ namespace we
         , std::function<void (id_type)> rts_canceled
         , std::function<void (id_type, id_type)> rts_discover
         , std::function<void (id_type, sdpa::discovery_info_t)> rts_discovered
-        , std::function<void (std::string)> rts_token_put
+        , std::function<void (std::string, boost::optional<std::exception_ptr>)> rts_token_put
         , std::function<id_type()> rts_id_generator
         , std::mt19937& random_extraction_engine
         )
@@ -328,8 +328,9 @@ namespace we
             (activity_data._activity->transition().data())
             .put_token (place_name, value);
 
-          _rts_token_put (put_token_id);
+          _rts_token_put (put_token_id, boost::none);
         }
+        , std::bind (_rts_token_put, put_token_id, std::placeholders::_1)
         );
     }
 
@@ -536,12 +537,21 @@ namespace we
 
         while (fun_and_do_put_it != pos->second.end())
         {
-          std::pair<std::function<void (activity_data_type&)>, bool>
-            fun_and_do_put (*fun_and_do_put_it);
+          std::tuple< std::function<void (activity_data_type&)>
+                    , std::function<void (std::exception_ptr)>
+                    , bool
+                    > fun_and_do_put (*fun_and_do_put_it);
           fun_and_do_put_it = pos->second.erase (fun_and_do_put_it);
 
-          fun_and_do_put.first (activity_data);
-          do_put = do_put && (active = fun_and_do_put.second);
+          try
+          {
+            std::get<0> (fun_and_do_put) (activity_data);
+          }
+          catch (...)
+          {
+            std::get<1> (fun_and_do_put) (std::current_exception());
+          }
+          do_put = do_put && (active = std::get<2> (fun_and_do_put));
 
           if (!active)
           {
@@ -573,7 +583,10 @@ namespace we
     }
 
     void layer::async_remove_queue::remove_and_apply
-      (id_type id, std::function<void (activity_data_type const&)> fun)
+      ( id_type id
+      , std::function<void (activity_data_type const&)> fun
+      , std::function<void (std::exception_ptr)> on_error
+      )
     {
       boost::recursive_mutex::scoped_lock const _ (_container_mutex);
 
@@ -583,22 +596,39 @@ namespace we
 
       if (pos_container != _container.end())
       {
-        fun (std::move (*pos_container->second));
+        try
+        {
+          fun (std::move (*pos_container->second));
+        }
+        catch (...)
+        {
+          on_error (std::current_exception());
+        }
         _container.erase (pos_container);
       }
       else if (pos_container_inactive != _container_inactive.end())
       {
-        fun (std::move (*pos_container_inactive->second));
+        try
+        {
+          fun (std::move (*pos_container_inactive->second));
+        }
+        catch (...)
+        {
+          on_error (std::current_exception());
+        }
         _container_inactive.erase (pos_container_inactive);
       }
       else
       {
-        _to_be_removed[id].push_back (std::make_pair (fun, false));
+        _to_be_removed[id].emplace_back (fun, on_error, false);
       }
     }
 
     void layer::async_remove_queue::apply
-      (id_type id, std::function<void (activity_data_type&)> fun)
+      ( id_type id
+      , std::function<void (activity_data_type&)> fun
+      , std::function<void (std::exception_ptr)> on_error
+      )
     {
       boost::recursive_mutex::scoped_lock const _ (_container_mutex);
 
@@ -608,21 +638,35 @@ namespace we
 
       if (pos_container != _container.end())
       {
-        fun (*pos_container->second);
+        try
+        {
+          fun (*pos_container->second);
+        }
+        catch (...)
+        {
+          on_error (std::current_exception());
+        }
       }
       else if (pos_container_inactive != _container_inactive.end())
       {
         activity_data_type activity_data
           (std::move (*pos_container_inactive->second));
         _container_inactive.erase (pos_container_inactive);
-        fun (activity_data);
+        try
+        {
+          fun (activity_data);
+        }
+        catch (...)
+        {
+          on_error (std::current_exception());
+        }
         _container.push_back (std::move (activity_data));
 
         _condition_non_empty.notify_one();
       }
       else
       {
-        _to_be_removed[id].push_back (std::make_pair (fun, true));
+        _to_be_removed[id].emplace_back (fun, on_error, true);
       }
     }
 
@@ -630,7 +674,31 @@ namespace we
     {
       boost::recursive_mutex::scoped_lock const _ (_container_mutex);
 
-      _to_be_removed.erase (id);
+      to_be_removed_type::iterator const pos
+        (_to_be_removed.find (id));
+
+      if (pos != _to_be_removed.end())
+      {
+        for (auto const& info : pos->second)
+        {
+          try
+          {
+            std::get<1> (info)
+              ( std::make_exception_ptr
+                  (std::runtime_error ("activity was terminated"))
+              );
+          }
+          catch (...)
+          {
+            //! \todo instead have two handlers? before, on_error was
+            //! always doing nothing on forget, but throwing on
+            //! applying. to keep applying, most functions use
+            //! std::rethrow_exception, which would break forget()
+          }
+        }
+
+        _to_be_removed.erase (pos);
+      }
     }
 
 

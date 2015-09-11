@@ -43,7 +43,7 @@ namespace we
               // result of discover (parent) -> top level
             , std::function<void (id_type discover_id, sdpa::discovery_info_t)> rts_discovered
               // result of put_token (parent) -> top level
-            , std::function<void (std::string put_token_id)> rts_token_put
+            , std::function<void (std::string put_token_id, boost::optional<std::exception_ptr>)> rts_token_put
             , std::function<id_type()> rts_id_generator
             , std::mt19937& random_extraction_engine
             );
@@ -86,7 +86,7 @@ namespace we
       std::function<void (id_type)> _rts_canceled;
       std::function<void (id_type, id_type)> _rts_discover;
       std::function<void (id_type, sdpa::discovery_info_t)> _rts_discovered;
-      std::function<void (std::string)> _rts_token_put;
+      std::function<void (std::string, boost::optional<std::exception_ptr>)> _rts_token_put;
       std::function<id_type()> _rts_id_generator;
 
       void rts_finished_and_forget (id_type, type::activity_t);
@@ -115,8 +115,15 @@ namespace we
         void put (activity_data_type, bool was_active);
 
         void remove_and_apply
-          (id_type, std::function<void (activity_data_type const&)>);
-        void apply (id_type, std::function<void (activity_data_type&)>);
+          ( id_type
+          , std::function<void (activity_data_type const&)>
+          , std::function<void (std::exception_ptr)> = &std::rethrow_exception
+          );
+        void apply
+          ( id_type
+          , std::function<void (activity_data_type&)>
+          , std::function<void (std::exception_ptr)> = &std::rethrow_exception
+          );
 
         void forget (id_type);
 
@@ -147,7 +154,11 @@ namespace we
 
         typedef std::unordered_map
           < id_type
-          , std::list<std::pair<std::function<void (activity_data_type&)>, bool>>
+          , std::list<std::tuple< std::function<void (activity_data_type&)>
+                                , std::function<void (std::exception_ptr)>
+                                , bool
+                                >
+                     >
           > to_be_removed_type;
         to_be_removed_type _to_be_removed;
       } _nets_to_extract_from;
