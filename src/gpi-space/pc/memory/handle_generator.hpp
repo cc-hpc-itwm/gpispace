@@ -7,7 +7,8 @@
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/type/segment_descriptor.hpp>
 #include <gpi-space/pc/type/handle.hpp>
-#include <gpi-space/pc/type/counter.hpp>
+
+#include <atomic>
 
 namespace gpi
 {
@@ -47,10 +48,8 @@ namespace gpi
                                 , gpi::pc::type::size_t start
                                 );
       private:
-        typedef boost::shared_ptr<gpi::pc::type::counter_t> counter_ptr;
-
         gpi::pc::type::size_t m_node_identifier;
-        std::vector<counter_ptr> m_counter;
+        std::vector<std::atomic<gpi::pc::type::size_t>> m_counter;
       };
     }
   }

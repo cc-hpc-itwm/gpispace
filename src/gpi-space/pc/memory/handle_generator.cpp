@@ -43,12 +43,8 @@ namespace gpi
 
       handle_generator_t::handle_generator_t(const gpi::pc::type::size_t identifier)
         : m_node_identifier (identifier)
-      {
-        for (size_t i = 0; i < (1<< gpi::pc::type::handle_t::typec_bits); ++i)
-        {
-          m_counter.push_back(counter_ptr(new gpi::pc::type::counter_t()));
-        }
-      }
+        , m_counter (1 << gpi::pc::type::handle_t::typec_bits)
+      {}
 
       gpi::pc::type::handle_t
       handle_generator_t::next (const gpi::pc::type::segment::segment_type seg)
@@ -60,7 +56,7 @@ namespace gpi
 
         return detail::encode ( m_node_identifier
                               , seg
-                              , m_counter[seg]->inc()
+                              , ++m_counter[seg]
                               );
       }
 
@@ -74,7 +70,7 @@ namespace gpi
         if ( (size_t)seg >= m_counter.size())
           throw std::invalid_argument ("invalid segment type");
 
-        return m_counter [seg]->reset (start);
+        m_counter [seg] = start;
       }
     }
   }
