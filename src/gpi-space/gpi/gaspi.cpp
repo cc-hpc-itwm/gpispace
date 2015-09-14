@@ -230,11 +230,6 @@ namespace gpi
       return queue_size;
     }
 
-    bool gaspi_t::max_dma_requests_reached (const queue_desc_t q) const
-    {
-      return (open_dma_requests (q) >= queue_depth());
-    }
-
     gpi::rank_t gaspi_t::rank() const
     {
       gaspi_rank_t rank;

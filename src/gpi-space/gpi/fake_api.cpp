@@ -84,11 +84,6 @@ namespace gpi
       return m_dma_request_count[q];
     }
 
-    bool fake_gpi_api_t::max_dma_requests_reached (const queue_desc_t q) const
-    {
-      return (open_dma_requests(q) >= queue_depth());
-    }
-
     gpi::rank_t fake_gpi_api_t::rank () const
     {
       return m_rank;

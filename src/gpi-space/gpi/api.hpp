@@ -54,7 +54,6 @@ namespace gpi
       virtual gpi::size_t memory_size () const = 0;
 
       virtual gpi::size_t open_dma_requests (const queue_desc_t) const = 0;
-      virtual bool max_dma_requests_reached (const queue_desc_t) const = 0;
 
       virtual gpi::rank_t rank () const = 0;
       virtual std::string const& hostname_of_rank (const gpi::rank_t) const = 0;
