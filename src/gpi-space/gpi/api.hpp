@@ -50,7 +50,6 @@ namespace gpi
       // wrapped C function calls
       virtual gpi::size_t number_of_queues () const = 0;
       virtual gpi::size_t queue_depth () const = 0;
-      virtual gpi::version_t version () const = 0;
       virtual gpi::size_t number_of_nodes () const = 0;
       virtual gpi::size_t memory_size () const = 0;
 

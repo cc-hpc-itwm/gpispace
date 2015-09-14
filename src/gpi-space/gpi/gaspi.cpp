@@ -204,13 +204,6 @@ namespace gpi
       return queue_size_max;
     }
 
-    gpi::version_t gaspi_t::version() const
-    {
-      float vsn;
-      FAIL_ON_NON_ZERO (gaspi_version, &vsn);
-      return vsn;
-    }
-
     gpi::size_t gaspi_t::number_of_nodes() const
     {
       gaspi_rank_t num_ranks;

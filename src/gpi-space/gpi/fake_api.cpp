@@ -69,11 +69,6 @@ namespace gpi
       return 1024;
     }
 
-    gpi::version_t fake_gpi_api_t::version () const
-    {
-      return 0.01;
-    }
-
     gpi::size_t fake_gpi_api_t::number_of_nodes () const
     {
       return 1;
