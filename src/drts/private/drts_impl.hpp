@@ -25,7 +25,8 @@ namespace gspc
                    , std::ostream& info_output
                    );
 
-    void add_worker (rifd_entry_points const&);
+    std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
+      add_worker (rifd_entry_points const&);
     std::unordered_map< fhg::rif::entry_point
                       , std::pair< std::string /* kind */
                                  , std::unordered_map<pid_t, std::exception_ptr>
@@ -61,8 +62,10 @@ namespace gspc
                              , std::ostream& info_output
                              );
 
-      void add_worker_impl (std::vector<fhg::rif::entry_point> const&);
-      void add_worker (std::vector<fhg::rif::entry_point> const&);
+      std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
+        add_worker_impl (std::vector<fhg::rif::entry_point> const&);
+      std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
+        add_worker (std::vector<fhg::rif::entry_point> const&);
       std::unordered_map
         < fhg::rif::entry_point
         , std::pair< std::string /* kind */

@@ -209,7 +209,9 @@ namespace fhg
 {
   namespace drts
   {
-  void start_workers_for
+    std::pair< std::unordered_set<fhg::rif::entry_point>
+             , std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
+             > start_workers_for
     ( std::vector<fhg::rif::entry_point> const& entry_points
     , std::string master_name
     , fhg::drts::hostinfo_type master_hostinfo
@@ -310,7 +312,7 @@ namespace fhg
 
      std::atomic<std::size_t> num_nodes (0);
 
-     std::unordered_map<fhg::rif::entry_point, std::exception_ptr> const fails
+     return
        ( util::blocked_async<fhg::rif::entry_point>
          ( entry_points
          //! \todo let the blocksize be a parameter
@@ -326,81 +328,80 @@ namespace fhg
                 || num_nodes.fetch_add (1) < description.max_nodes
                 )
              {
+               std::vector<std::exception_ptr> exceptions;
+
                for ( unsigned long identity (0)
                    ; identity < description.num_per_node
                    ; ++identity
                    )
                {
-                 std::string const name
-                   ( name_prefix + "-" + entry_point.string()
-                   + "-" + std::to_string (identity + 1)
-                   + ( description.socket
-                     ? ("." + std::to_string (description.socket.get()))
-                     : std::string()
-                     )
-                   );
-                 std::string const storage_name ("drts-kernel-" + name);
-
+                 try
                  {
-                   boost::optional<pid_t> const mpid
-                     (processes.pidof (entry_point, storage_name));
+                   std::string const name
+                     ( name_prefix + "-" + entry_point.string()
+                     + "-" + std::to_string (identity + 1)
+                     + ( description.socket
+                       ? ("." + std::to_string (description.socket.get()))
+                       : std::string()
+                       )
+                     );
+                   std::string const storage_name ("drts-kernel-" + name);
 
-                   if (!!mpid)
                    {
-                     throw std::logic_error
-                       ( "process with name '" + name + "' on entry point '"
-                       + entry_point.string() + "' already exists with pid "
-                       + std::to_string (*mpid)
-                       );
+                     boost::optional<pid_t> const mpid
+                       (processes.pidof (entry_point, storage_name));
+
+                     if (!!mpid)
+                     {
+                       throw std::logic_error
+                         ( "process with name '" + name + "' on entry point '"
+                         + entry_point.string() + "' already exists with pid "
+                         + std::to_string (*mpid)
+                         );
+                     }
                    }
+
+                   std::unordered_map<std::string, std::string> environment
+                     ( logging_environment
+                         (log_host, log_port, log_dir, verbose, name)
+                     );
+                   environment.emplace
+                     ( "LD_LIBRARY_PATH"
+                     , (sdpa_home / "lib").string() + ":"
+                     + (sdpa_home / "libexec" / "sdpa").string()
+                     );
+
+                   std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages
+                     ( fhg::rif::client (entry_point).execute_and_get_startup_messages
+                       ( sdpa_home / "bin" / "drts-kernel"
+                       , kernel_arguments (name)
+                       , environment
+                       ).get()
+                     );
+
+                   if (!pid_and_startup_messages.second.empty())
+                   {
+                     throw std::runtime_error
+                       ("could not start " + name + ": expected no startup messages");
+                   }
+
+                   processes.store ( entry_point
+                                   , storage_name
+                                   , pid_and_startup_messages.first
+                                   );
                  }
-
-                 std::unordered_map<std::string, std::string> environment
-                   ( logging_environment
-                       (log_host, log_port, log_dir, verbose, name)
-                   );
-                 environment.emplace ( "LD_LIBRARY_PATH"
-                                     , (sdpa_home / "lib").string() + ":"
-                                     + (sdpa_home / "libexec" / "sdpa").string()
-                                     );
-
-                 std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages
-                   ( fhg::rif::client (entry_point).execute_and_get_startup_messages
-                     ( sdpa_home / "bin" / "drts-kernel"
-                     , kernel_arguments (name)
-                     , environment
-                     ).get()
-                   );
-
-                 if (!pid_and_startup_messages.second.empty())
+                 catch (...)
                  {
-                   throw std::runtime_error
-                     ("could not start " + name + ": expected no startup messages");
+                   exceptions.emplace_back (std::current_exception());
                  }
-
-                 processes.store ( entry_point
-                                 , storage_name
-                                 , pid_and_startup_messages.first
-                                 );
                }
+
+               //! \todo return the individual exceptions
+               fhg::util::throw_collected_exceptions (exceptions);
              }
            }
-         ).second
+         )
        );
-
-     if (!fails.empty())
-     {
-       fhg::util::throw_collected_exceptions
-         ( fails
-         , [] (std::pair<fhg::rif::entry_point, std::exception_ptr> const& fail)
-           {
-             return ( boost::format ("drts-kernel startup failed on %1%: %2%")
-                    % fail.first
-                    % fhg::util::exception_printer (fail.second)
-                    ).str();
-           }
-         );
-     }
   }
 
     worker_description parse_capability
