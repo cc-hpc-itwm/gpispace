@@ -79,7 +79,6 @@ namespace
   {
     TABLE_COL_TIME,
     TABLE_COL_SOURCE,
-    TABLE_COL_LOCATION,
     TABLE_COL_MESSAGE,
     TABLE_COLUMN_COUNT,
   };
@@ -91,7 +90,6 @@ namespace detail
     //! \todo get time from outside?
     : time (QTime::currentTime().toString())
     , source (QString ("%1@%2").arg (evt.pid()).arg (evt.host ().c_str()))
-    , location (QString ("%1:%2").arg (boost::filesystem::path (evt.path()).filename().string().c_str()).arg (evt.line()))
     , message (evt.message().c_str())
     , event (evt)
   { }
@@ -129,9 +127,6 @@ namespace detail
       case TABLE_COL_SOURCE:
         static const QString source (tr ("Source"));
         return source;
-      case TABLE_COL_LOCATION:
-        static const QString location (tr ("Location"));
-        return location;
       case TABLE_COL_MESSAGE:
         static const QString message (tr ("Message"));
         return message;
@@ -156,8 +151,6 @@ namespace detail
         return event.time;
       case TABLE_COL_SOURCE:
         return event.source;
-      case TABLE_COL_LOCATION:
-        return event.location;
       case TABLE_COL_MESSAGE:
         return event.message;
       }

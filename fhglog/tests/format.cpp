@@ -42,51 +42,6 @@ BOOST_AUTO_TEST_CASE (severity)
 #undef CHECK
 }
 
-BOOST_AUTO_TEST_CASE (file)
-{
-  const fhg::log::LogEvent event ( fhg::log::TRACE
-                                 , "tests/test_formatter.cpp"
-                                 , "main", __LINE__, "hello"
-                                 );
-  BOOST_REQUIRE_EQUAL (fhg::log::format ("%p", event), "test_formatter.cpp");
-}
-
-BOOST_AUTO_TEST_CASE (path)
-{
-  const fhg::log::LogEvent event ( fhg::log::TRACE
-                                 , "tests/test_formatter.cpp"
-                                 , "main", __LINE__, "hello"
-                                 );
-  BOOST_REQUIRE_EQUAL (fhg::log::format ("%P", event), "tests/test_formatter.cpp");
-}
-
-BOOST_AUTO_TEST_CASE (function)
-{
-  const fhg::log::LogEvent event ( fhg::log::TRACE
-                                 , "tests/test_formatter.cpp"
-                                 , "main (int ac, char** av)", __LINE__, "hello"
-                                 );
-  BOOST_REQUIRE_EQUAL (fhg::log::format ("%F", event), "main (int ac, char** av)");
-}
-
-BOOST_AUTO_TEST_CASE (module)
-{
-  const fhg::log::LogEvent event ( fhg::log::TRACE
-                                 , "tests/test_formatter.cpp"
-                                 , "main", __LINE__, "hello"
-                                 );
-  BOOST_REQUIRE_EQUAL (fhg::log::format ("%M", event), "test_formatter");
-}
-
-BOOST_AUTO_TEST_CASE (line)
-{
-  const fhg::log::LogEvent event ( fhg::log::TRACE
-                                 , "tests/test_formatter.cpp"
-                                 , "main", 1002, "hello"
-                                 );
-  BOOST_REQUIRE_EQUAL (fhg::log::format ("%L", event), "1002");
-}
-
 BOOST_AUTO_TEST_CASE (message)
 {
   BOOST_REQUIRE_EQUAL
@@ -104,8 +59,7 @@ BOOST_AUTO_TEST_CASE (logger)
   //! \todo This should actually test something:
   //! put mutiple loggers in a chain, send event through
   const fhg::log::LogEvent event ( fhg::log::TRACE
-                                 , "tests/test_formatter.cpp"
-                                 , "main", 1002, "hello"
+                                 , "hello"
                                  );
 }
 

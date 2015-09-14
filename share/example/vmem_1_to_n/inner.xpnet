@@ -55,7 +55,6 @@
         </memory-get>
         <module name="vmem_1_to_n"
                 function="done run (config, id, i, data, memory)"
-                pass_context="true"
         >
           <cinclude href="stdexcept"/>
           <cinclude href="string.h"/>
@@ -63,11 +62,12 @@
           <cinclude href="limits"/>
           <cinclude href="sstream"/>
           <code><![CDATA[
-            GSPC_LOG (INFO, "run (" << id << ", " << i << ")");
+            std::cout << "run (" << id << ", " << i << ")" << '\n';
 
             unsigned long const num_long (memory.size / sizeof (long));
 
-            GSPC_LOG (INFO, "verifiying " << num_long << " values with seed " << config.seed);
+            std::cout << "verifiying " << num_long
+                      << " values with seed " << config.seed << '\n';
 
             long* a (static_cast<long*> (data));
 

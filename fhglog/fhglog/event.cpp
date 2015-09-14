@@ -20,15 +20,9 @@ namespace fhg
   namespace log
   {
     LogEvent::LogEvent( const Level &a_severity
-                      , const file_type &a_path
-                      , const function_type &a_function
-                      , const line_type &a_line
                       , const std::string &a_message
                       )
       : severity_(a_severity)
-      , path_(a_path)
-      , function_(a_function)
-      , line_(a_line)
       , message_(a_message)
       , tstamp_(fhg::util::now())
       , pid_(getpid())
@@ -38,9 +32,6 @@ namespace fhg
 
     LogEvent::LogEvent()
       : severity_ (INFO)
-      , path_()
-      , function_()
-      , line_()
       , message_()
       , tstamp_()
       , pid_()
@@ -102,9 +93,6 @@ namespace fhg
 
     LogEvent::LogEvent (fhg::util::parse::position& pos)
       : severity_ ((++pos, read_loglevel (pos)))
-      , path_ ((++pos, read_string (pos)))
-      , function_ ((++pos, read_string (pos)))
-      , line_ ((++pos, read_integral<line_type> (pos)))
       , message_ ((++pos, read_string (pos)))
       , tstamp_ ((++pos, fhg::util::read_double (pos)))
       , pid_ ((++pos, read_integral<pid_t> (pos)))
@@ -185,9 +173,6 @@ namespace
 std::ostream& operator<< (std::ostream& os, const fhg::log::LogEvent& event)
 {
   os << ',' << encode::loglevel (event.severity());
-  os << ',' << encode::string (event.path());
-  os << ',' << encode::string (event.function());
-  os << ',' << event.line();
   os << ',' << encode::string (event.message());
   os << ',' << encode::tstamp (event.tstamp());
   os << ',' << event.pid();

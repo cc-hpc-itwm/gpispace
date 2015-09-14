@@ -7,14 +7,13 @@
 void map_produce ( map::user_data_type const& user_data
                  , map::memory_buffer_type buffer
                  , unsigned long id
-                 , drts::worker::logger_type logger
                  )
 {
-  MAP_LOG ( "produce"
-          << ": user_data = " << user_data
-          << ", buffer_size = " << buffer.second
-          << ", id = " << id
-          );
+  std::cout << "produce"
+            << ": user_data = " << user_data
+            << ", buffer_size = " << buffer.second
+            << ", id = " << id
+            << '\n';
 
   unsigned long* const mem (static_cast<unsigned long*> (buffer.first));
 
@@ -25,14 +24,13 @@ void map_process
   ( map::user_data_type const& user_data
   , map::const_memory_buffer_type input
   , map::memory_buffer_type output
-  , drts::worker::logger_type logger
   )
 {
-  MAP_LOG ( "process"
-          << ": user_data = " << user_data
-          << ", input_buffer_size = " << input.second
-          << ", output_buffer_size = " << output.second
-          );
+  std::cout << "process"
+            << ": user_data = " << user_data
+            << ", input_buffer_size = " << input.second
+            << ", output_buffer_size = " << output.second
+            << '\n';
 
   if (input.second != output.second)
   {
@@ -58,14 +56,13 @@ void map_process
 void map_consume ( map::user_data_type const& user_data
                  , map::const_memory_buffer_type buffer
                  , unsigned long id
-                 , drts::worker::logger_type logger
                  )
 {
-  MAP_LOG ( "consume"
-          << ": user_data = " << user_data
-          << ", buffer_size = " << buffer.second
-          << ", id = " << id
-          );
+  std::cout << "consume"
+            << ": user_data = " << user_data
+            << ", buffer_size = " << buffer.second
+            << ", id = " << id
+            << '\n';
 
   unsigned long const* const mem
     (static_cast<unsigned long const* const> (buffer.first));

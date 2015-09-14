@@ -45,11 +45,6 @@ namespace fhg
           case '%': os << '%'; break;
           case 's': os << string (evt.severity())[0]; break;
           case 'S': os << string (evt.severity()); break;
-          case 'p': os << boost::filesystem::path (evt.path()).filename().string(); break;
-          case 'P': os << evt.path(); break;
-          case 'F': os << evt.function(); break;
-          case 'M': os << boost::filesystem::path (evt.path()).stem().string(); break;
-          case 'L': os << evt.line(); break;
           case 'm': os << evt.message(); break;
           case 'R': os << evt.pid(); break;
           case 'n': os << "\n"; break;
@@ -113,12 +108,12 @@ namespace fhg
     {
       static std::string const & SHORT()
       {
-        static std::string f("[%t] %s: %p:%L - %m%n");
+        static std::string f("[%t] %s: %m%n");
         return f;
       }
       static std::string const & LONG()
       {
-        static std::string f("%t %S pid:%R thread:%T %p:%L (%F) - %m%n");
+        static std::string f("%t %S pid:%R thread:%T: %m%n");
         return f;
       }
     };

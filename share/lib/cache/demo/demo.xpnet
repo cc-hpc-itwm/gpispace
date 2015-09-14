@@ -43,18 +43,17 @@
         <in name="cache" type="cache_type"/>
         <inout name="slot" type="long"/>
         <out name="id" type="long"/>
-        <module name="demo" function="id work (cache, slot)"
-                pass_context="true">
+        <module name="demo" function="id work (cache, slot)">
           <cinclude href="stdlib.h"/>
           <code><![CDATA[
             const long id (boost::get<long> (cache.by_slot.id.at (slot)));
             srand (time(NULL) * id * slot);
             const int t (rand() % 4);
 
-            GSPC_LOG (INFO, "WORK on id " << id
-                     << " in slot " << slot
-                     << ", sleep for " << t << " secs"
-                     );
+            std::cout << "WORK on id " << id
+                      << " in slot " << slot
+                      << ", sleep for " << t << " secs"
+                      << '\n';
 
             sleep (t);
 

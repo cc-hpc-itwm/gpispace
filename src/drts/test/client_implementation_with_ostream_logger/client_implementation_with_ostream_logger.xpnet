@@ -11,18 +11,15 @@
         <in name="message" type="string"/>
         <module name="log_with_ostream"
                 function="log_with_ostream (implementation, message)"
-                pass_context="true"
                 >
           <cinclude href="drts/test/client_implementation_with_ostream_logger/client_implementation_with_ostream_logger.hpp"/>
           <cinclude href="util-generic/dynamic_linking.hpp"/>
           <code><![CDATA[
 
-          DECLARE_GSPC_OSTREAM (INFO, os);
-
           fhg::util::scoped_dlhandle (implementation)
             .sym<decltype (client_with_ostream_logger)>
               ("client_with_ostream_logger")
-                (message, os);
+                (message, std::cout);
 
           ]]></code>
         </module>

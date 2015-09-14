@@ -17,10 +17,11 @@
 #include <test/shared_directory.hpp>
 #include <test/source_directory.hpp>
 
+#include <util-generic/hostname.hpp>
+#include <util-generic/join.hpp>
+#include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random_string.hpp>
-#include <util-generic/temporary_path.hpp>
-#include <util-generic/hostname.hpp>
 
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/generic.hpp>
@@ -29,7 +30,7 @@
 #include <boost/program_options.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
-#include <future>
+#include <list>
 
 namespace
 {
@@ -92,12 +93,12 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
   fhg::log::Logger logger;
   fhg::log::remote::LogServer const log_server (logger, io_service, log_port);
 
-  std::promise<std::string> logged;
+  std::list<std::string> logged;
 
   logger.addAppender<fhg::log::appender::call>
     ([&logged] (fhg::log::LogEvent const& event)
      {
-       logged.set_value (event.message());
+       logged.emplace_back (event.message());
      }
     );
 
@@ -131,14 +132,18 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
   boost::filesystem::path const implementation
     (option::implementation.get_from (vm));
 
-  std::string const message
-    {fhg::util::testing::random_string_without ("\n\\\"")};
+  std::list<std::string> lines;
+
+  for (int i (0); i < 10; ++i)
+  {
+    lines.emplace_back (fhg::util::testing::random_string_without ("\n\\\""));
+  }
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
       ( gspc::workflow (make.pnet())
       , { {"implementation", implementation.string()}
-        , {"message", message}
+        , {"message", fhg::util::join (lines, '\n').string()}
         }
       )
     );
@@ -146,5 +151,6 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
   io_service.stop();
 
   BOOST_REQUIRE_EQUAL (result.size(), 0);
-  BOOST_REQUIRE_EQUAL (logged.get_future().get(), message);
+  BOOST_REQUIRE_EQUAL_COLLECTIONS
+    (lines.begin(), lines.end(), logged.begin(), logged.end());
 }
