@@ -406,31 +406,6 @@ namespace gpi
         return costs;
       }
 
-      void
-      manager_t::list_allocations( const gpi::pc::type::process_id_t proc_id
-                                 , const gpi::pc::type::segment_id_t id
-                                 , gpi::pc::type::handle::list_t & l
-                                 ) const
-      {
-        get_area (id)->list_allocations (proc_id, l);
-      }
-
-      void
-      manager_t::list_allocations ( const gpi::pc::type::process_id_t proc_id
-                                  , gpi::pc::type::handle::list_t & l
-                                  ) const
-      {
-        lock_type lock (m_mutex);
-
-        for ( area_map_t::const_iterator s2a (m_areas.begin())
-            ; s2a != m_areas.end()
-            ; ++s2a
-            )
-        {
-          s2a->second->list_allocations (proc_id, l);
-        }
-      }
-
       gpi::pc::type::queue_id_t
       manager_t::memcpy ( gpi::pc::type::memory_location_t const & dst
                         , gpi::pc::type::memory_location_t const & src

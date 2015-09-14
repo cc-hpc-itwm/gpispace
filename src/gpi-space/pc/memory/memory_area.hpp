@@ -87,10 +87,6 @@ namespace gpi
 
         void defrag (const gpi::pc::type::size_t free_at_least = 0);
 
-        void list_allocations ( const gpi::pc::type::process_id_t id
-                              , gpi::pc::type::handle::list_t &
-                              ) const;
-
         gpi::pc::type::segment::descriptor_t const &
         descriptor () const;
 

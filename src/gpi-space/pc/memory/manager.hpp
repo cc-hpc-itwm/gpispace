@@ -78,13 +78,6 @@ namespace gpi
 
         void garbage_collect () {}
         void garbage_collect (const gpi::pc::type::process_id_t);
-        void list_allocations( const gpi::pc::type::process_id_t proc_id
-                             , const gpi::pc::type::segment_id_t seg
-                             , gpi::pc::type::handle::list_t & l
-                             ) const;
-        void list_allocations( const gpi::pc::type::process_id_t proc_id
-                             , gpi::pc::type::handle::list_t & l
-                             ) const;
 
         gpi::pc::type::queue_id_t
         memcpy ( gpi::pc::type::memory_location_t const & dst

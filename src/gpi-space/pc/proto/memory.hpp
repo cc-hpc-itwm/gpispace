@@ -70,32 +70,6 @@ namespace gpi
           }
         };
 
-        struct list_t
-        {
-          gpi::pc::type::segment_id_t segment;
-
-        private:
-          friend class boost::serialization::access;
-          template<typename Archive>
-          void serialize (Archive & ar, const unsigned int /*version*/)
-          {
-            ar & BOOST_SERIALIZATION_NVP( segment );
-          }
-        };
-
-        struct list_reply_t
-        {
-          gpi::pc::type::handle::list_t list;
-
-        private:
-          friend class boost::serialization::access;
-          template<typename Archive>
-          void serialize (Archive & ar, const unsigned int /*version*/)
-          {
-            ar & BOOST_SERIALIZATION_NVP( list );
-          }
-        };
-
         struct memcpy_t
         {
           gpi::pc::type::memory_location_t dst;
@@ -214,8 +188,6 @@ namespace gpi
           memory::alloc_t
           , memory::alloc_reply_t
           , memory::free_t
-          , memory::list_t
-          , memory::list_reply_t
           , memory::memcpy_t
           , memory::memcpy_reply_t
           , memory::wait_t

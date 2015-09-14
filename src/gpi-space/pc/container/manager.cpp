@@ -229,21 +229,6 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-            operator () (const gpi::pc::proto::memory::list_t & list) const
-          {
-            gpi::pc::proto::memory::list_reply_t rpl;
-            if (list.segment == gpi::pc::type::segment::SEG_INVAL)
-            {
-              _memory_manager.list_allocations(m_proc_id, rpl.list);
-            }
-            else
-            {
-              _memory_manager.list_allocations (m_proc_id, list.segment, rpl.list);
-            }
-            return gpi::pc::proto::memory::message_t (rpl);
-          }
-
-          gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::memory::info_t & info) const
           {
             gpi::pc::proto::memory::info_reply_t rpl;
