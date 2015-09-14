@@ -307,9 +307,7 @@ namespace gspc
     scoped_runtime_system::implementation::started_runtime_system::remove_worker
       (std::vector<fhg::rif::entry_point> const& entry_points)
   {
-    return _processes_storage.shutdown ( fhg::drts::component_type::worker
-                                       , entry_points
-                                       );
+    return _processes_storage.shutdown_worker (entry_points);
   }
 
   scoped_runtime_system::implementation::implementation

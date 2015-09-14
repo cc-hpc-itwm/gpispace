@@ -773,10 +773,8 @@ namespace fhg
                                  , std::unordered_map<pid_t, std::exception_ptr>
                                  >
                       >
-      processes_storage::shutdown
-        ( component_type component
-        , std::vector<fhg::rif::entry_point> const& rif_entry_points
-        )
+      processes_storage::shutdown_worker
+        (std::vector<fhg::rif::entry_point> const& rif_entry_points)
     {
       std::vector<decltype (_)::iterator> iterators;
       for (fhg::rif::entry_point const& entry_point : rif_entry_points)
@@ -795,11 +793,12 @@ namespace fhg
         , std::pair< std::string /* kind */
                    , std::unordered_map<pid_t, std::exception_ptr>
                    >
-        > const failures (terminate_all_processes_of_a_kind ( iterators
-                                                            , component
-                                                            , _info_output
-                                                            )
-                         );
+        > const failures
+            (terminate_all_processes_of_a_kind ( iterators
+                                               , component_type::worker
+                                               , _info_output
+                                               )
+            );
 
       for (decltype (_)::iterator const& it : iterators)
       {

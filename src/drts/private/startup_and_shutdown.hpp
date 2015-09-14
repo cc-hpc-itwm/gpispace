@@ -53,7 +53,7 @@ namespace fhg
         , std::pair< std::string /* kind */
                    , std::unordered_map<pid_t, std::exception_ptr>
                    >
-        > shutdown (component_type, std::vector<fhg::rif::entry_point> const&);
+        > shutdown_worker (std::vector<fhg::rif::entry_point> const&);
 
       void store (fhg::rif::entry_point const&, std::string const& name, pid_t);
       boost::optional<pid_t> pidof
