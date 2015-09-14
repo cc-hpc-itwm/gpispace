@@ -23,7 +23,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/adaptors.hpp>
-#include <boost/regex.hpp>
 
 #include <algorithm>
 #include <atomic>
@@ -32,6 +31,7 @@
 #include <functional>
 #include <future>
 #include <iostream>
+#include <regex>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -370,7 +370,7 @@ namespace fhg
     worker_description parse_capability
       (std::size_t def_num_proc, std::string const& cap_spec)
     {
-      static boost::regex const cap_spec_regex
+      static std::regex const cap_spec_regex
         ("^([^#:]+)(#([0-9]+))?(:([0-9]+)(x([0-9]+))?(,([0-9]+))?)?$");
       enum class cap_spec_regex_part
       {
@@ -381,8 +381,8 @@ namespace fhg
         shm = 9,
       };
 
-      boost::smatch cap_spec_match;
-      if (!boost::regex_match (cap_spec, cap_spec_match, cap_spec_regex))
+      std::smatch cap_spec_match;
+      if (!std::regex_match (cap_spec, cap_spec_match, cap_spec_regex))
       {
         throw std::invalid_argument
           ("Invalid capability specification: " + cap_spec);

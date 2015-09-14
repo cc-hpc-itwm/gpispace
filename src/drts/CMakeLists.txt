@@ -41,7 +41,6 @@ extended_add_library (NAME gspc
             Util::Generic
             Network
             Boost::filesystem
-            Boost::regex
             Boost::program_options
   INSTALL
 )
