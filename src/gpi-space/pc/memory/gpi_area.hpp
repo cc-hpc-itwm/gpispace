@@ -95,9 +95,6 @@ namespace gpi
                                   ) const override;
 
         void * m_ptr;
-        gpi::pc::type::size_t m_total_memsize;
-        gpi::pc::type::offset_t m_min_local_offset;
-        gpi::pc::type::offset_t m_max_local_offset;
 
         handle_pool_t m_com_handles; // local allocations that can be used to transfer data
 
