@@ -125,9 +125,14 @@ namespace gpi
       m_rank_to_hostname.resize (number_of_nodes());
       _communication_port_by_rank.resize (number_of_nodes());
 
-      for ( gaspi_rank_t r (0)
-          ; r < number_of_nodes()
-          ; ++r
+      m_rank_to_hostname[rank()] =
+        exchange_hostname_and_port_data_send->hostname;
+      _communication_port_by_rank[rank()] =
+        exchange_hostname_and_port_data_send->port;
+
+      for ( gaspi_rank_t r (rank() + 1)
+          ; r != rank()
+          ; r = (r + 1) % number_of_nodes()
           )
       {
         memset ( exchange_hostname_and_port_data_receive
