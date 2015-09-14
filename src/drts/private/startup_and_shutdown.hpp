@@ -55,6 +55,8 @@ namespace fhg
         > shutdown (component_type, std::vector<fhg::rif::entry_point> const&);
 
       void store (fhg::rif::entry_point const&, std::string const& name, pid_t);
+      boost::optional<pid_t> pidof
+        (fhg::rif::entry_point const&, std::string const& name);
 
     private:
       std::ostream& _info_output;

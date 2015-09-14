@@ -59,6 +59,27 @@ namespace fhg
           );
       }
     }
+    boost::optional<pid_t> processes_storage::pidof
+      (fhg::rif::entry_point const& entry_point, std::string const& name)
+    {
+      std::unique_lock<std::mutex> const guard (_guard);
+
+      auto pos_entry_point (_.find (entry_point));
+
+      if (pos_entry_point == _.end())
+      {
+        return boost::none;
+      }
+
+      auto pos_name (pos_entry_point->second.find (name));
+
+      if (pos_name == pos_entry_point->second.end())
+      {
+        return boost::none;
+      }
+
+      return pos_name->second;
+    }
   }
 }
 
@@ -321,6 +342,21 @@ namespace fhg
                      : std::string()
                      )
                    );
+                 std::string const storage_name ("drts-kernel-" + name);
+
+                 {
+                   boost::optional<pid_t> const mpid
+                     (processes.pidof (entry_point, storage_name));
+
+                   if (!!mpid)
+                   {
+                     throw std::logic_error
+                       ( "process with name '" + name + "' on entry point '"
+                       + entry_point.string() + "' already exists with pid "
+                       + std::to_string (*mpid)
+                       );
+                   }
+                 }
 
                  std::unordered_map<std::string, std::string> environment
                    ( logging_environment
@@ -346,7 +382,7 @@ namespace fhg
                  }
 
                  processes.store ( entry_point
-                                 , "drts-kernel-" + name
+                                 , storage_name
                                  , pid_and_startup_messages.first
                                  );
                }
