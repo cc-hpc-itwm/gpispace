@@ -290,10 +290,7 @@ namespace fhg
      std::atomic<std::size_t> num_nodes (0);
 
      std::unordered_map<fhg::rif::entry_point, std::exception_ptr> const fails
-       ( util::blocked_async< fhg::rif::entry_point
-                            , std::function<void (fhg::rif::entry_point const&)>  /* required by gcc482 */
-                            , std::vector<fhg::rif::entry_point>  /* required by gcc482 */
-                            >
+       ( util::blocked_async<fhg::rif::entry_point>
          ( entry_points
          //! \todo let the blocksize be a parameter
          , 64
@@ -547,10 +544,7 @@ namespace fhg
             {
               std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
                 const fails
-                ( util::blocked_async< fhg::rif::entry_point
-                                     , std::function<void (fhg::rif::entry_point const&)>  /* required by gcc482 */
-                                     , std::vector<fhg::rif::entry_point>  /* required by gcc482 */
-                                     >
+                ( util::blocked_async<fhg::rif::entry_point>
                   ( rif_entry_points
                   //! \todo let the blocksize be a parameter
                   , 64
@@ -655,10 +649,7 @@ namespace fhg
                      >
           > failures;
 
-        util::blocked_async< fhg::rif::entry_point
-                           , std::function<void (It const&)> /* required by gcc482 */
-                           , std::vector<It>  /* required by gcc482 */
-                           >
+        util::blocked_async<fhg::rif::entry_point>
           ( entry_point_procs
           //! \todo let the blocksize be a parameter
           , 64

@@ -226,10 +226,7 @@ namespace fhg
 
           libssh2::context ssh_context;
 
-          return util::blocked_async< std::string
-                                    , std::function<void (std::string const&)>  /* required by gcc482 */
-                                    , std::vector<std::string> /* required by gcc482 */
-                                    >
+          return util::blocked_async<std::string>
             ( all_hostnames
             , block_size
             , [] (std::string const& hostname) { return hostname; }
@@ -268,10 +265,7 @@ namespace fhg
 
           libssh2::context ssh_context;
 
-          return util::blocked_async< std::string
-                                    , std::function<void (std::pair<std::string, fhg::rif::entry_point> const&)> /* required gcc482 */
-                                    , std::unordered_map<std::string, fhg::rif::entry_point> /* required by gcc482 */
-                                    >
+          return util::blocked_async<std::string>
             ( all_entry_points
             , block_size
             , [] (std::pair<std::string, fhg::rif::entry_point> const& entry_point)
