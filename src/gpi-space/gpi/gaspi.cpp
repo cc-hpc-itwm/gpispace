@@ -211,13 +211,6 @@ namespace gpi
       return vsn;
     }
 
-    gpi::port_t gaspi_t::port() const
-    {
-      gaspi_config_t config;
-      FAIL_ON_NON_ZERO (gaspi_config_get, &config);
-      return config.sn_port;
-    }
-
     gpi::size_t gaspi_t::number_of_nodes() const
     {
       gaspi_rank_t num_ranks;

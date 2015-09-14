@@ -74,11 +74,6 @@ namespace gpi
       return 0.01;
     }
 
-    gpi::port_t fake_gpi_api_t::port () const
-    {
-      return 42423;
-    }
-
     gpi::size_t fake_gpi_api_t::number_of_nodes () const
     {
       return 1;

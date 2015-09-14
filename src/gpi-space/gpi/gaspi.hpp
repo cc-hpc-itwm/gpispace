@@ -29,7 +29,6 @@ namespace gpi
       virtual gpi::size_t number_of_queues () const override;
       virtual gpi::size_t queue_depth () const override;
       virtual gpi::version_t version () const override;
-      virtual gpi::port_t port () const override;
       virtual gpi::size_t number_of_nodes () const override;
       virtual gpi::size_t memory_size () const override;
       virtual gpi::size_t max_transfer_size () const;
