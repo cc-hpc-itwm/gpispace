@@ -55,7 +55,6 @@ namespace gpi
         memcpy ( gpi::pc::type::memory_location_t const & dst
                , gpi::pc::type::memory_location_t const & src
                , const gpi::pc::type::size_t amount
-               , const gpi::pc::type::queue_id_t queue
                );
 
         std::function<double (std::string const&)>

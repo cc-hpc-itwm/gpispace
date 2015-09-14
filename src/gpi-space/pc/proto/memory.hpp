@@ -101,7 +101,6 @@ namespace gpi
           gpi::pc::type::memory_location_t dst;
           gpi::pc::type::memory_location_t src;
           gpi::pc::type::size_t size;
-          gpi::pc::type::queue_id_t queue;
 
         private:
           friend class boost::serialization::access;
@@ -111,7 +110,6 @@ namespace gpi
             ar & BOOST_SERIALIZATION_NVP( dst );
             ar & BOOST_SERIALIZATION_NVP( src );
             ar & BOOST_SERIALIZATION_NVP( size );
-            ar & BOOST_SERIALIZATION_NVP( queue );
           }
         };
 

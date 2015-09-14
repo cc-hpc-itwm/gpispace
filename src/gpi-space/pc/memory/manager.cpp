@@ -435,7 +435,6 @@ namespace gpi
       manager_t::memcpy ( gpi::pc::type::memory_location_t const & dst
                         , gpi::pc::type::memory_location_t const & src
                         , const gpi::pc::type::size_t amount
-                        , const gpi::pc::type::queue_id_t queue
                         )
       {
         memory_transfer_t t;
@@ -444,16 +443,9 @@ namespace gpi
         t.src_area     = get_area_by_handle(src.handle);
         t.src_location = src;
         t.amount       = amount;
-        if (queue == GPI_PC_INVAL)
-        {
           static gpi::pc::type::queue_id_t rr_queue = 0;
           t.queue        = rr_queue;
           rr_queue = (rr_queue + 1) % m_transfer_mgr.num_queues ();
-        }
-        else
-        {
-          t.queue        = queue;
-        }
 
         t.dst_area->check_bounds (dst, amount);
         t.src_area->check_bounds (src, amount);
