@@ -153,19 +153,6 @@ namespace gpi
         }
       }
 
-      void manager_t::list_memory (gpi::pc::type::segment::list_t &l) const
-      {
-        lock_type lock (m_mutex);
-
-        for ( area_map_t::const_iterator area (m_areas.begin())
-            ; area != m_areas.end()
-            ; ++area
-            )
-        {
-          l.push_back (area->second->descriptor());
-        }
-      }
-
       void
       manager_t::attach_process ( const gpi::pc::type::process_id_t proc_id
                                 , const gpi::pc::type::segment_id_t mem_id

@@ -45,7 +45,6 @@ namespace gpi
         void unregister_memory ( const gpi::pc::type::process_id_t pid
                                , const gpi::pc::type::segment_id_t
                                );
-        void list_memory (gpi::pc::type::segment::list_t &) const;
 
         void attach_process ( const gpi::pc::type::process_id_t
                             , const gpi::pc::type::segment_id_t

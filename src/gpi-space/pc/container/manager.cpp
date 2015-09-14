@@ -295,20 +295,6 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-            operator () (const gpi::pc::proto::segment::list_t & list) const
-          {
-            gpi::pc::proto::segment::list_reply_t rpl;
-            if (list.id == gpi::pc::type::segment::SEG_INVAL)
-              _memory_manager.list_memory (rpl.list);
-            else
-            {
-              LLOG(WARN, _logger, "list of particular segment not implemented");
-              _memory_manager.list_memory (rpl.list);
-            }
-            return gpi::pc::proto::segment::message_t (rpl);
-          }
-
-          gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::segment::add_memory_t & add_mem) const
           {
             gpi::pc::type::segment_id_t id =
