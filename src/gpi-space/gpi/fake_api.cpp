@@ -79,11 +79,6 @@ namespace gpi
       return m_mem_size;
     }
 
-    gpi::size_t fake_gpi_api_t::open_dma_requests (const queue_desc_t q) const
-    {
-      return m_dma_request_count[q];
-    }
-
     gpi::rank_t fake_gpi_api_t::rank () const
     {
       return m_rank;
