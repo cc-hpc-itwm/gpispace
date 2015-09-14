@@ -88,7 +88,6 @@ find_boost (1.55 REQUIRED QUIET COMPONENTS
   iostreams
   program_options
   random
-  regex
   serialization
   signals
   system

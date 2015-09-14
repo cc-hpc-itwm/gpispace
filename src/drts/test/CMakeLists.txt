@@ -39,7 +39,6 @@ fhg_add_test (scoped_drts.cpp
   LINK_LIBRARIES gspc
                  test-utilities
                  Boost::program_options
-                 Boost::regex
  REQUIRES_INSTALLATION
  START_SCOPED_RIF
 )

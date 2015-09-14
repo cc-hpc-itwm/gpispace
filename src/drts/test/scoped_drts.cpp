@@ -16,8 +16,8 @@
 #include <util-generic/temporary_path.hpp>
 
 #include <boost/format.hpp>
-#include <boost/regex.hpp>
 
+#include <regex>
 #include <sstream>
 #include <vector>
 
@@ -116,13 +116,13 @@ BOOST_AUTO_TEST_CASE (no_worker_started_on_master)
   std::string const entry_point_master
     ([&info_output, &hosts]()
      {
-       boost::smatch match;
+       std::smatch match;
 
        BOOST_REQUIRE
-         ( boost::regex_match
+         ( std::regex_match
            ( info_output[0]
            , match
-           , boost::regex
+           , std::regex
              ("I: starting base sdpa components on ((.+) [0-9]+ [0-9]+)...")
            )
          );
@@ -143,22 +143,22 @@ BOOST_AUTO_TEST_CASE (no_worker_started_on_master)
     );
 
   BOOST_REQUIRE
-    ( boost::regex_match
+    ( std::regex_match
       ( info_output[2]
-      , boost::regex { ( boost::format ("terminating agent on %1%: [0-9]+")
-                       % entry_point_master
-                       ).str()
-                     }
+      , std::regex { ( boost::format ("terminating agent on %1%: [0-9]+")
+                     % entry_point_master
+                     ).str()
+                   }
       )
     );
 
   BOOST_REQUIRE
-    ( boost::regex_match
+    ( std::regex_match
       ( info_output[3]
-      , boost::regex { ( boost::format ("terminating orchestrator on %1%: [0-9]+")
-                       % entry_point_master
-                       ).str()
-                     }
+      , std::regex { ( boost::format ("terminating orchestrator on %1%: [0-9]+")
+                     % entry_point_master
+                     ).str()
+                   }
       )
     );
 }
@@ -228,13 +228,13 @@ BOOST_AUTO_TEST_CASE (workers_are_started_on_non_master)
   std::string const entry_point_master
     ([&info_output, &hosts]()
      {
-       boost::smatch match;
+       std::smatch match;
 
        BOOST_REQUIRE
-         ( boost::regex_match
+         ( std::regex_match
            ( info_output[0]
            , match
-           , boost::regex
+           , std::regex
              ("I: starting base sdpa components on ((.+) [0-9]+ [0-9]+)...")
            )
          );
@@ -257,13 +257,13 @@ BOOST_AUTO_TEST_CASE (workers_are_started_on_non_master)
   std::string const entry_point_worker
     ([&info_output, &hosts, &entry_point_master]()
      {
-       boost::smatch match;
+       std::smatch match;
 
        BOOST_REQUIRE
-         ( boost::regex_match
+         ( std::regex_match
            ( info_output[2]
            , match
-           , boost::regex
+           , std::regex
              ( ( boost::format ("I: starting WORKER workers"
                                " \\(master agent-%1%-0, 1/host, unlimited, 0 SHM\\)"
                                " with parent agent-%1%-0"
@@ -282,32 +282,32 @@ BOOST_AUTO_TEST_CASE (workers_are_started_on_non_master)
     );
 
   BOOST_REQUIRE
-    ( boost::regex_match
+    ( std::regex_match
       ( info_output[3]
-      , boost::regex { ( boost::format ("terminating drts-kernel on %1%: [0-9]+")
-                       % entry_point_worker
-                       ).str()
-                     }
+      , std::regex { ( boost::format ("terminating drts-kernel on %1%: [0-9]+")
+                     % entry_point_worker
+                     ).str()
+                   }
       )
     );
 
   BOOST_REQUIRE
-    ( boost::regex_match
+    ( std::regex_match
       ( info_output[4]
-      , boost::regex { ( boost::format ("terminating agent on %1%: [0-9]+")
-                       % entry_point_master
-                       ).str()
-                     }
+      , std::regex { ( boost::format ("terminating agent on %1%: [0-9]+")
+                     % entry_point_master
+                     ).str()
+                   }
       )
     );
 
   BOOST_REQUIRE
-    ( boost::regex_match
+    ( std::regex_match
       ( info_output[5]
-      , boost::regex { ( boost::format ("terminating orchestrator on %1%: [0-9]+")
-                       % entry_point_master
-                       ).str()
-                     }
+      , std::regex { ( boost::format ("terminating orchestrator on %1%: [0-9]+")
+                     % entry_point_master
+                     ).str()
+                   }
       )
     );
 }

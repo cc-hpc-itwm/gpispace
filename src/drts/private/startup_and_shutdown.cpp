@@ -23,7 +23,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/adaptors.hpp>
-#include <boost/regex.hpp>
 
 #include <algorithm>
 #include <atomic>
@@ -32,6 +31,7 @@
 #include <functional>
 #include <future>
 #include <iostream>
+#include <regex>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -290,10 +290,7 @@ namespace fhg
      std::atomic<std::size_t> num_nodes (0);
 
      std::unordered_map<fhg::rif::entry_point, std::exception_ptr> const fails
-       ( util::blocked_async< fhg::rif::entry_point
-                            , std::function<void (fhg::rif::entry_point const&)>  /* required by gcc482 */
-                            , std::vector<fhg::rif::entry_point>  /* required by gcc482 */
-                            >
+       ( util::blocked_async<fhg::rif::entry_point>
          ( entry_points
          //! \todo let the blocksize be a parameter
          , 64
@@ -373,7 +370,7 @@ namespace fhg
     worker_description parse_capability
       (std::size_t def_num_proc, std::string const& cap_spec)
     {
-      static boost::regex const cap_spec_regex
+      static std::regex const cap_spec_regex
         ("^([^#:]+)(#([0-9]+))?(:([0-9]+)(x([0-9]+))?(,([0-9]+))?)?$");
       enum class cap_spec_regex_part
       {
@@ -384,8 +381,8 @@ namespace fhg
         shm = 9,
       };
 
-      boost::smatch cap_spec_match;
-      if (!boost::regex_match (cap_spec, cap_spec_match, cap_spec_regex))
+      std::smatch cap_spec_match;
+      if (!std::regex_match (cap_spec, cap_spec_match, cap_spec_regex))
       {
         throw std::invalid_argument
           ("Invalid capability specification: " + cap_spec);
@@ -547,10 +544,7 @@ namespace fhg
             {
               std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
                 const fails
-                ( util::blocked_async< fhg::rif::entry_point
-                                     , std::function<void (fhg::rif::entry_point const&)>  /* required by gcc482 */
-                                     , std::vector<fhg::rif::entry_point>  /* required by gcc482 */
-                                     >
+                ( util::blocked_async<fhg::rif::entry_point>
                   ( rif_entry_points
                   //! \todo let the blocksize be a parameter
                   , 64
@@ -655,10 +649,7 @@ namespace fhg
                      >
           > failures;
 
-        util::blocked_async< fhg::rif::entry_point
-                           , std::function<void (It const&)> /* required by gcc482 */
-                           , std::vector<It>  /* required by gcc482 */
-                           >
+        util::blocked_async<fhg::rif::entry_point>
           ( entry_point_procs
           //! \todo let the blocksize be a parameter
           , 64
