@@ -127,7 +127,7 @@ namespace gpi
             }
           }
 
-            gpi::pc::type::process_id_t const id (m_process_counter.inc());
+            gpi::pc::type::process_id_t const id (++m_process_counter);
 
             {
               std::unique_lock<std::mutex> const _ (_mutex_processes);
