@@ -200,6 +200,7 @@ GenericDaemon::GenericDaemon( const std::string name
                            , std::bind (&GenericDaemon::discover, this, std::placeholders::_1, std::placeholders::_2)
                            , std::bind (&GenericDaemon::discovered, this, std::placeholders::_1, std::placeholders::_2)
                            , std::bind (&GenericDaemon::token_put, this, std::placeholders::_1, std::placeholders::_2)
+                           , std::bind (&GenericDaemon::workflow_response_response, this, std::placeholders::_1, std::placeholders::_2)
                            , std::bind (&GenericDaemon::gen_id, this)
                            , *_random_extraction_engine
                            )
@@ -1370,6 +1371,70 @@ void GenericDaemon::handleJobFailedAckEvent
         .put_token_response (put_token_id, error);
     }
 
+    void GenericDaemon::handle_workflow_response
+      (fhg::com::p2p::address_t const& source, const events::workflow_response* event)
+    {
+      Job* job (findJob (event->job_id()));
+
+      const boost::optional<worker_id_t> worker_id
+        (_worker_manager.findSubmOrAckWorker (event->job_id()));
+
+      if (!job || (!worker_id && !workflowEngine()))
+      {
+        throw std::runtime_error
+          ( "unable to request workflow response: " + event->job_id()
+          + " unknown or not running"
+          );
+      }
+
+      if (worker_id)
+      {
+        _workflow_response_source.emplace (event->workflow_response_id(), source);
+
+        child_proxy (this, _worker_manager.address_by_worker (*worker_id).get()->second)
+          .workflow_response ( event->job_id()
+                             , event->workflow_response_id()
+                             , event->place_name()
+                             , event->value()
+                             );
+      }
+      //! \todo Other criteria to know it was submitted to the
+      //! wfe. All jobs are regarded as going to the wfe and the only
+      //! way to prevent a loop is to check whether the discover comes
+      //! out of the wfe. Special "worker" id?
+      else
+      {
+        _workflow_response_source.emplace (event->workflow_response_id(), source);
+
+        //! \todo There is a race here: between SubmitJobAck and
+        //! we->submit(), there's still a lot of stuff. We can't
+        //! guarantee, that the job is already submitted to the wfe!
+        //! We need to handle the "pending" state.
+        workflowEngine()->request_workflow_response ( event->job_id()
+                                                    , event->workflow_response_id()
+                                                    , event->place_name()
+                                                    , event->value()
+                                                    );
+      }
+    }
+    void GenericDaemon::handle_workflow_response_response
+      ( fhg::com::p2p::address_t const&
+      , events::workflow_response_response const* event
+      )
+    {
+      parent_proxy (this, take (_workflow_response_source, event->workflow_response_id()))
+        .workflow_response_response (event->workflow_response_id(), event->content());
+    }
+    void GenericDaemon::workflow_response_response
+      ( std::string workflow_response_id
+      , boost::variant<std::exception_ptr, pnet::type::value::value_type> result
+      )
+    {
+      parent_proxy (this, take (_workflow_response_source, workflow_response_id))
+        .workflow_response_response (workflow_response_id, result);
+    }
+
+
 void GenericDaemon::handleRetrieveJobResultsEvent
   (fhg::com::p2p::address_t const& source, const events::RetrieveJobResultsEvent* pEvt )
 {
@@ -1486,6 +1551,17 @@ namespace sdpa
         (_address, job_id, put_token_id, place_name, value);
     }
 
+    void GenericDaemon::child_proxy::workflow_response
+      ( job_id_t job_id
+      , std::string workflow_response_id
+      , std::string place_name
+      , pnet::type::value::value_type value
+      ) const
+    {
+      _that->sendEventToOther<events::workflow_response>
+        (_address, job_id, workflow_response_id, place_name, value);
+    }
+
     GenericDaemon::parent_proxy::parent_proxy
         (GenericDaemon* that, fhg::com::p2p::address_t const& address)
       : _that (that)
@@ -1583,6 +1659,15 @@ namespace sdpa
     {
       _that->sendEventToOther<events::put_token_response>
         (_address, put_token_id, error);
+    }
+
+    void GenericDaemon::parent_proxy::workflow_response_response
+      ( std::string workflow_response_id
+      , boost::variant<std::exception_ptr, pnet::type::value::value_type> content
+      ) const
+    {
+      _that->sendEventToOther<events::workflow_response_response>
+        (_address, workflow_response_id, content);
     }
   }
 }

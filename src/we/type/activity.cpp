@@ -7,7 +7,6 @@
 #include <we/expr/eval/context.hpp>
 
 #include <we/context.hpp>
-#include <we/workflow_response.hpp>
 
 #include <we/type/activity.hpp>
 
@@ -91,7 +90,10 @@ namespace we
         return oss.str();
       }
 
-      void activity_t::inject (const activity_t& child)
+      void activity_t::inject
+        ( const activity_t& child
+        , we::workflow_response_callback workflow_response
+        )
       {
         we::type::net_type& net
           (boost::get<we::type::net_type> (_transition.data()));
@@ -118,7 +120,7 @@ namespace we
                          . left.count (top.second)
                          );
 
-                  pnet::type::value::value_type const rpc
+                  pnet::type::value::value_type const description
                     ([this, &net, &child, &top]
                      {
                        std::string const to
@@ -139,7 +141,7 @@ namespace we
                      }()
                     );
 
-                  we::workflow_response (rpc, top.first);
+                  workflow_response (description, top.first);
                 }
               , "inject result: sending workflow response failed"
               );

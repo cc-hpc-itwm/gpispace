@@ -4,7 +4,6 @@
 #include <we/type/transition.hpp>
 
 #include <we/require_type.hpp>
-#include <we/workflow_response.hpp>
 
 #include <util-generic/nest_exceptions.hpp>
 
@@ -558,9 +557,11 @@ namespace we
       };
     }
 
-    void net_type::fire_expression ( transition_id_type tid
-                              , we::type::transition_t const& transition
-                              )
+    void net_type::fire_expression
+      ( transition_id_type tid
+      , we::type::transition_t const& transition
+      , we::workflow_response_callback const& workflow_response
+      )
     {
       expr::eval::context context;
 
@@ -597,9 +598,9 @@ namespace we
                                      . left.find (p.first)->get_right()
                                      );
 
-                pnet::type::value::value_type const rpc (context.value (to));
-
-                we::workflow_response (rpc, context.value (p.second.name()));
+                workflow_response ( context.value (to)
+                                  , context.value (p.second.name())
+                                  );
               }
               , "fire_expression: sending workflow response failed"
             );

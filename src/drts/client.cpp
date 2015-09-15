@@ -241,50 +241,6 @@ namespace gspc
     , pnet::type::value::value_type value
     )
   {
-    fhg::rpc::service_dispatcher service_dispatcher
-      {fhg::util::serialization::exception::serialization_functions()};
-
-    fhg::util::thread::event<pnet::type::value::value_type> result;
-
-    fhg::rpc::service_handler<void (pnet::type::value::value_type)>
-      const service_handler_set_result
-        ( service_dispatcher
-        , "set_result"
-        , [&result] (pnet::type::value::value_type value)
-          {
-            result.notify (value);
-          }
-        );
-
-    fhg::util::thread::event<void> disconnected;
-
-    fhg::network::server_with_single_client<boost::asio::ip::tcp> server
-      ( [&service_dispatcher] ( fhg::network::connection_type* connection
-                              , fhg::network::buffer_type message
-                              )
-        {
-          service_dispatcher.dispatch (connection, message);
-        }
-      , std::bind (&decltype (disconnected)::notify, &disconnected)
-      );
-
-    pnet::type::value::value_type value_and_endpoint;
-    pnet::type::value::poke ("value", value_and_endpoint, value);
-    pnet::type::value::poke ( "address"
-                            , value_and_endpoint
-                            , fhg::network::connectable_to_address_string
-                                (server.local_endpoint().address())
-                            );
-    pnet::type::value::poke
-      ( "port"
-      , value_and_endpoint
-      , static_cast<unsigned int> (server.local_endpoint().port())
-      );
-
-    put_token (job_id, place_name, value_and_endpoint);
-
-    disconnected.wait();
-
-    return result.wait();
+    return _->_client.workflow_response (job_id, place_name, value);
   }
 }

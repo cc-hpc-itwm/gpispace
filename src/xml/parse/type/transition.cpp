@@ -516,7 +516,7 @@ namespace xml
             (response.make_reference_id());
         }
 
-        if (!we::is_rpc_server_description (to->signature_or_throw()))
+        if (!we::is_response_description (to->signature_or_throw()))
         {
           throw error::invalid_signature_in_connect_response
             (response.make_reference_id(), to->make_reference_id());

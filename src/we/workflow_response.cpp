@@ -1,6 +1,7 @@
 #include <we/workflow_response.hpp>
 
 #include <we/type/value/peek_or_die.hpp>
+#include <we/type/value/poke.hpp>
 #include <we/type/value/serialize.hpp>
 
 #include <rpc/client.hpp>
@@ -9,18 +10,6 @@
 
 namespace we
 {
-  void workflow_response ( pnet::type::value::value_type const& rpc_server
-                         , pnet::type::value::value_type const& value
-                         )
-  {
-    fhg::rpc::remote_endpoint remote_client
-      ( pnet::type::value::peek_or_die<std::string> (rpc_server, {"address"})
-      , pnet::type::value::peek_or_die<unsigned int> (rpc_server, {"port"})
-      );
-    fhg::rpc::sync_remote_function<void (pnet::type::value::value_type)>
-      (remote_client, "set_result") (value);
-  }
-
   namespace
   {
     class is_field : public boost::static_visitor<bool>
@@ -93,11 +82,23 @@ namespace we
     };
   }
 
-  bool is_rpc_server_description
+  bool is_response_description
     (pnet::type::signature::signature_type const& signature)
   {
-    return boost::apply_visitor (has_field ("address", "string"), signature)
-      && boost::apply_visitor (has_field ("port", "unsigned int"), signature)
-      ;
+    return boost::apply_visitor (has_field ("response_id", "string"), signature);
+  }
+
+  std::string get_response_id (pnet::type::value::value_type const& description)
+  {
+    return pnet::type::value::peek_or_die<std::string>
+      (description, {"response_id"});
+  }
+  pnet::type::value::value_type make_response_description
+    (std::string response_id, pnet::type::value::value_type const& value)
+  {
+    pnet::type::value::value_type description;
+    pnet::type::value::poke ("value", description, value);
+    pnet::type::value::poke ("response_id", description, response_id);
+    return description;
   }
 }

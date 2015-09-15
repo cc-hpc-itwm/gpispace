@@ -5,8 +5,7 @@
   <net>
     <struct name="value_and_endpoint">
       <field name="value" type="unsigned long"/>
-      <field name="address" type="string"/>
-      <field name="port" type="unsigned int"/>
+      <field name="response_id" type="string"/>
     </struct>
 
     <place name="state" type="unsigned long"/>

@@ -236,6 +236,31 @@ namespace sdpa
       return response.get();
     }
 
+    pnet::type::value::value_type Client::workflow_response
+      (job_id_t job_id, std::string place_name, pnet::type::value::value_type value)
+    {
+      std::string const workflow_response_id
+        (boost::uuids::to_string (boost::uuids::random_generator()()));
+
+      sdpa::events::workflow_response_response const response
+        ( send_and_wait_for_reply<sdpa::events::workflow_response_response>
+            ( sdpa::events::workflow_response ( job_id
+                                              , workflow_response_id
+                                              , place_name
+                                              , value
+                                              )
+            )
+        );
+
+      if (response.workflow_response_id() != workflow_response_id)
+      {
+        throw std::logic_error
+          ("received workflow_response_response for different workflow_response");
+      }
+
+      return response.get();
+    }
+
     sdpa::status::code Client::queryJob(const job_id_t &jid)
     {
       job_info_t info;

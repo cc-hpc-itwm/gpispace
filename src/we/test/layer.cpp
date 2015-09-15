@@ -13,6 +13,7 @@
 
 #include <we/test/layer.common.hpp>
 
+#include <util-generic/serialization/exception.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random_string.hpp>
 
@@ -24,6 +25,38 @@
 #include <functional>
 #include <list>
 #include <tuple>
+
+namespace
+{
+  bool compare_workflow_response_result
+    ( boost::variant<std::exception_ptr, pnet::type::value::value_type> const& l
+    , boost::variant<std::exception_ptr, pnet::type::value::value_type> const& r
+    )
+  {
+    struct : boost::static_visitor<bool>
+    {
+      bool operator() (std::exception_ptr const&, pnet::type::value::value_type const&) const { return false; }
+      bool operator() (pnet::type::value::value_type const&, std::exception_ptr const&) const { return false; }
+
+      bool operator() ( pnet::type::value::value_type const& lhs
+                      , pnet::type::value::value_type const& rhs
+                      ) const
+      {
+        return lhs == rhs;
+      }
+
+      bool operator() ( std::exception_ptr const& lhs
+                      , std::exception_ptr const& rhs
+                      ) const
+      {
+        //! \note hacky-di-hack
+        return fhg::util::serialization::exception::serialize (lhs, fhg::util::serialization::exception::serialization_functions(), fhg::util::serialization::exception::aggregated_serialization_functions())
+          == fhg::util::serialization::exception::serialize (rhs, fhg::util::serialization::exception::serialization_functions(), fhg::util::serialization::exception::aggregated_serialization_functions());
+      }
+    } visitor;
+    return boost::apply_visitor (visitor, l, r);
+  }
+}
 
 #define DECLARE_EXPECT_CLASS(NAME, CTOR_ARGUMENTS, INITIALIZER_LIST, MEMBER_VARIABLES, EQ_IMPL) \
   struct expect_ ## NAME                                                \
@@ -72,6 +105,7 @@ struct daemon
             , std::bind (&daemon::discover, this, std::placeholders::_1, std::placeholders::_2)
             , std::bind (&daemon::discovered, this, std::placeholders::_1, std::placeholders::_2)
             , std::bind (&daemon::token_put, this, std::placeholders::_1)
+            , std::bind (&daemon::workflow_response, this, std::placeholders::_1, std::placeholders::_2)
             , std::bind (&daemon::generate_id, this)
             , _random_engine
             )
@@ -100,6 +134,7 @@ struct daemon
     BOOST_REQUIRE (_to_discover.empty());
     BOOST_REQUIRE (_to_discovered.empty());
     BOOST_REQUIRE (_to_token_put.empty());
+    BOOST_REQUIRE (_to_workflow_response.empty());
   }
 
 #define INC_IN_PROGRESS(COUNTER)                                \
@@ -324,6 +359,35 @@ struct daemon
     DEC_IN_PROGRESS (replies);
   }
 
+  DECLARE_EXPECT_CLASS ( workflow_response
+                       , std::string workflow_response_id
+        BOOST_PP_COMMA() boost::variant<std::exception_ptr BOOST_PP_COMMA() pnet::type::value::value_type> result
+                       , _workflow_response_id (workflow_response_id)
+        BOOST_PP_COMMA() _result (result)
+                       , we::layer::id_type _workflow_response_id
+                       ; boost::variant<std::exception_ptr BOOST_PP_COMMA() pnet::type::value::value_type> _result
+                       , _workflow_response_id == workflow_response_id
+                       && compare_workflow_response_result (_result, result)
+                       );
+
+  void workflow_response ( std::string workflow_response_id
+                         , boost::variant<std::exception_ptr, pnet::type::value::value_type> result
+                         )
+  {
+    std::list<expect_workflow_response*>::iterator const e
+      ( boost::find_if ( _to_workflow_response
+                       , std::bind (&expect_workflow_response::eq, std::placeholders::_1, workflow_response_id, result)
+                       )
+      );
+
+    BOOST_REQUIRE (e != _to_workflow_response.end());
+
+    (*e)->happened();
+    _to_workflow_response.erase (e);
+
+    DEC_IN_PROGRESS (replies);
+  }
+
   void do_submit ( we::layer::id_type id
                  , we::type::activity_t act
                  )
@@ -388,6 +452,18 @@ struct daemon
     INC_IN_PROGRESS (replies);
 
     layer.put_token (id, put_token_id, place_name, value);
+  }
+
+  void do_workflow_response ( we::layer::id_type id
+                            , std::string workflow_response_id
+                            , std::string place_name
+                            , pnet::type::value::value_type value
+                            )
+  {
+    INC_IN_PROGRESS (replies);
+
+    layer.request_workflow_response
+      (id, workflow_response_id, place_name, value);
   }
 
   boost::mutex _generate_id_mutex;
@@ -1046,6 +1122,294 @@ BOOST_FIXTURE_TEST_CASE (layer_properly_puts_token, daemon)
   }
 }
 
+namespace
+{
+  std::tuple< we::type::transition_t
+            , we::type::transition_t
+            , we::transition_id_type
+            >
+    wfr_net_with_childs (bool put_on_input, std::size_t token_count)
+  {
+    /* |> in -> [ trans_a ] -> mid -> [ trans_b ] -> out >|
+                        *> request -> [         ] >*
+    */
+
+    pnet::type::signature::structured_type const request_t
+      ( std::make_pair
+          ( "request_t"
+          , pnet::type::signature::structure_type
+              ( { std::pair<std::string, std::string>
+                    ("value", "long")
+                , std::pair<std::string, std::string>
+                    ("response_id", "string")
+                }
+              )
+          )
+      );
+
+    we::type::net_type net;
+
+    we::place_id_type const place_id_in
+      (net.add_place (place::type ("in", signature::CONTROL, true)));
+    we::place_id_type const place_id_mid
+      (net.add_place (place::type ("mid", signature::CONTROL, boost::none)));
+    we::place_id_type const place_id_out
+      (net.add_place (place::type ("out", signature::CONTROL, boost::none)));
+    we::place_id_type const place_id_request
+      (net.add_place (place::type ("request", request_t, true)));
+
+
+    we::type::transition_t trans_a
+      ( "trans_a"
+      , we::type::module_call_t
+        ( "m"
+        , "f"
+        , std::unordered_map<std::string, std::string>()
+        , std::list<we::type::memory_transfer>()
+        , std::list<we::type::memory_transfer>()
+        )
+      , boost::none
+      , true
+      , we::type::property::type()
+      , we::priority_type()
+      );
+    we::port_id_type const trans_a_port_id_in
+      ( trans_a.add_port ( we::type::port_t ( "in"
+                                            , we::type::PORT_IN
+                                            , signature::CONTROL
+                                            , we::type::property::type()
+                                            )
+                         )
+      );
+    we::port_id_type const trans_a_port_id_out
+      ( trans_a.add_port ( we::type::port_t ( "out"
+                                            , we::type::PORT_OUT
+                                            , signature::CONTROL
+                                            , we::type::property::type()
+                                            )
+                         )
+      );
+
+    we::type::transition_t trans_b
+      ( "trans_b"
+      , we::type::expression_t
+          ("${response} := ${request.value} + 1L; ${out} := ${in};")
+      , boost::none
+      , true
+      , we::type::property::type()
+      , we::priority_type()
+      );
+    we::port_id_type const trans_b_port_id_in
+      ( trans_b.add_port ( we::type::port_t ( "in"
+                                            , we::type::PORT_IN
+                                            , signature::CONTROL
+                                            , we::type::property::type()
+                                            )
+                         )
+      );
+    we::port_id_type const trans_b_port_id_out
+      ( trans_b.add_port ( we::type::port_t ( "out"
+                                            , we::type::PORT_OUT
+                                            , signature::CONTROL
+                                            , we::type::property::type()
+                                            )
+                         )
+      );
+    we::port_id_type const trans_b_port_id_request
+      ( trans_b.add_port ( we::type::port_t ( "request"
+                                            , we::type::PORT_IN
+                                            , request_t
+                                            , we::type::property::type()
+                                            )
+                         )
+      );
+    we::port_id_type const trans_b_port_id_response
+      ( trans_b.add_port ( we::type::port_t ( "response"
+                                            , we::type::PORT_OUT
+                                            , signature::LONG
+                                            , we::type::property::type()
+                                            )
+                         )
+      );
+
+    we::transition_id_type const trans_a_id
+      (net.add_transition (trans_a));
+    we::transition_id_type const trans_b_id
+      (net.add_transition (trans_b));
+
+    for (std::size_t i (0); i < token_count; ++i)
+    {
+      net.put_value (put_on_input ? place_id_in : place_id_out, value::CONTROL);
+    }
+
+    {
+      using we::edge::TP;
+      using we::edge::PT;
+      we::type::property::type empty;
+
+      net.add_connection
+        (PT, trans_a_id, place_id_in, trans_a_port_id_in, empty);
+      net.add_connection
+        (TP, trans_a_id, place_id_mid, trans_a_port_id_out, empty);
+
+      net.add_connection
+        (PT, trans_b_id, place_id_mid, trans_b_port_id_in, empty);
+      net.add_connection
+        (PT, trans_b_id, place_id_request, trans_b_port_id_request, empty);
+      net.add_response
+        (trans_b_id, trans_b_port_id_response, "request", empty);
+      net.add_connection
+        (TP, trans_b_id, place_id_out, trans_b_port_id_out, empty);
+    }
+
+    return std::make_tuple
+      ( we::type::transition_t ( "net"
+                               , net
+                               , boost::none
+                               , true
+                               , we::type::property::type()
+                               , we::priority_type()
+                               )
+      , trans_a
+      , trans_a_id
+      );
+  }
+
+  std::tuple< we::type::activity_t
+            , we::type::activity_t
+            , we::type::activity_t
+            , we::type::activity_t
+            >
+    wfr_activity_with_child (std::size_t token_count)
+  {
+    we::transition_id_type transition_id_child;
+    we::type::transition_t transition_in;
+    we::type::transition_t transition_out;
+    we::type::transition_t transition_child;
+    std::tie (transition_in, transition_child, transition_id_child) =
+      wfr_net_with_childs (true, token_count);
+    std::tie (transition_out, std::ignore, std::ignore) =
+      wfr_net_with_childs (false, token_count);
+
+    we::type::activity_t activity_input (transition_in, boost::none);
+    we::type::activity_t activity_output (transition_out, boost::none);
+
+    we::type::activity_t activity_child
+      (transition_child, transition_id_child);
+    activity_child.add_input
+      (transition_child.input_port_by_name ("in"), value::CONTROL);
+
+    we::type::activity_t activity_result
+      (transition_child, transition_id_child);
+    activity_result.add_output
+      (transition_child.output_port_by_name ("out"), value::CONTROL);
+
+    return std::make_tuple
+      (activity_input, activity_output, activity_child, activity_result);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE (workflow_response, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_output;
+  we::type::activity_t activity_child;
+  we::type::activity_t activity_result;
+  std::tie (activity_input, activity_output, activity_child, activity_result)
+    = wfr_activity_with_child (1);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id_a;
+
+  {
+    expect_submit const _ (this, &child_id_a, activity_child);
+
+    do_submit (id, activity_input);
+  }
+
+  {
+    std::string const workflow_response_id
+      (fhg::util::testing::random_string());
+    expect_workflow_response const workflow_response
+      ( this
+      , workflow_response_id
+      , std::make_exception_ptr
+          ( std::invalid_argument
+              ( "put_token (\"NONEXISTING_PLACE\", Struct [value := 0L, response_id := \""
+              + workflow_response_id + "\"]): place not found"
+              )
+          )
+      );
+
+    do_workflow_response (id, workflow_response_id, "NONEXISTING_PLACE", 0L);
+  }
+
+  {
+    std::string const workflow_response_id
+      (fhg::util::testing::random_string());
+    expect_workflow_response const workflow_response
+      ( this
+      , workflow_response_id
+      , std::make_exception_ptr
+          ( std::invalid_argument
+              ( "put_token (\"mid\", Struct [value := 0L, response_id := \""
+              + workflow_response_id + "\"]): place not marked with attribute put_token=\"true\""
+              )
+          )
+      );
+
+    do_workflow_response (id, workflow_response_id, "mid", 0L);
+  }
+
+  std::string const workflow_response_id
+    (fhg::util::testing::random_string());
+  do_workflow_response (id, workflow_response_id, "request", 0L);
+
+  {
+    expect_finished const finished (this, id, activity_output);
+
+    expect_workflow_response const workflow_response
+      (this, workflow_response_id, 1L);
+
+    do_finished (child_id_a, activity_result);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE (workflow_response_fails_when_workflow_fails, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_child;
+  std::tie (activity_input, std::ignore, activity_child, std::ignore)
+    = wfr_activity_with_child (1);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id;
+
+  {
+    expect_submit const _ (this, &child_id, activity_child);
+
+    do_submit (id, activity_input);
+  }
+
+  std::string const workflow_response_id
+    (fhg::util::testing::random_string());
+  do_workflow_response (id, workflow_response_id, "request", 0L);
+
+  {
+    expect_workflow_response const workflow_response
+      ( this
+      , workflow_response_id
+      , std::make_exception_ptr (std::runtime_error ("workflow failed"))
+      );
+    std::string const fail_reason (fhg::util::testing::random_string());
+    expect_failed const failed (this, id, fail_reason);
+
+    do_failed (child_id, fail_reason);
+  }
+}
+
 namespace std
 {
   template<> struct hash<we::type::requirement_t>
@@ -1169,6 +1533,7 @@ namespace
                , std::bind (&disallow, "discover")
                , std::bind (&disallow, "discovered")
                , std::bind (&disallow, "token_put")
+               , std::bind (&disallow, "workflow_response")
                , std::bind
                  (&wfe_and_counter_of_submitted_requirements::generate_id, this)
                , _random_extraction_engine

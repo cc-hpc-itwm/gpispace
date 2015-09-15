@@ -38,6 +38,7 @@ namespace
   void discover (we::layer::id_type, we::layer::id_type){}
   void discovered (we::layer::id_type, sdpa::discovery_info_t){}
   void token_put (std::string, boost::optional<std::exception_ptr>){}
+  void workflow_response_response (std::string, boost::variant<std::exception_ptr, pnet::type::value::value_type>){}
 
   boost::mutex generate_id_mutex;
   we::layer::id_type generate_id()
@@ -77,6 +78,7 @@ BOOST_AUTO_TEST_CASE
     , &discover
     , &discovered
     , &token_put
+    , &workflow_response_response
     , &generate_id
     , _random_engine
     );
