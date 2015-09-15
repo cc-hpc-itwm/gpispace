@@ -23,10 +23,10 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include <boost/regex.hpp>
 
-#include <map>
 #include <future>
+#include <map>
+#include <regex>
 
 namespace
 {
@@ -148,13 +148,13 @@ namespace
         (R"EOS((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]))EOS");
 
       std::string const rhs_what
-        ( boost::regex_replace
-            ( boost::regex_replace
+        ( std::regex_replace
+            ( std::regex_replace
                 ( std::string (rhs.what())
-                , boost::regex ("address := \"" + rfc_1123_hostname + "\"")
+                , std::regex ("address := \"" + rfc_1123_hostname + "\"")
                 , "address := \"IGNORE_FOR_COMPARISON\""
                 )
-            , boost::regex ("port := [0-9]+U")
+            , std::regex ("port := [0-9]+U")
             , "port := IGNORE_FOR_COMPARISON"
             )
         );
