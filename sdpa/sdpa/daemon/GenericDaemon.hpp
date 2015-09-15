@@ -111,7 +111,8 @@ namespace sdpa {
       void canceled(const we::layer::id_type& id);
       void discover (we::layer::id_type discover_id, we::layer::id_type job_id);
       void discovered (we::layer::id_type discover_id, sdpa::discovery_info_t);
-      void token_put (std::string put_token_id);
+      void token_put
+        (std::string put_token_id, boost::optional<std::exception_ptr>);
 
       void addCapability(const capability_t& cpb);
 
@@ -166,7 +167,7 @@ namespace sdpa {
         (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent*) override;
 
       virtual void handle_put_token (fhg::com::p2p::address_t const& source, const events::put_token*) override;
-      virtual void handle_put_token_ack (fhg::com::p2p::address_t const& source, const events::put_token_ack*) override;
+      virtual void handle_put_token_response (fhg::com::p2p::address_t const& source, const events::put_token_response*) override;
 
     protected:
       // event communication
@@ -354,7 +355,9 @@ namespace sdpa {
         //! \todo Client only. Move to client_proxy?
         void retrieve_job_results_reply (job_id_t, job_result_t) const;
 
-        void put_token_ack (std::string put_token_id) const;
+        void put_token_response ( std::string put_token_id
+                                , boost::optional<std::exception_ptr>
+                                ) const;
 
       private:
         GenericDaemon* _that;

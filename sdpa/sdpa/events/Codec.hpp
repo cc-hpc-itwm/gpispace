@@ -94,7 +94,7 @@ namespace sdpa
         REGISTER (worker_registration_response, MgmtEvent);
         REGISTER (WorkerRegistrationEvent, MgmtEvent);
         REGISTER (put_token, JobEvent);
-        REGISTER (put_token_ack, MgmtEvent);
+        REGISTER (put_token_response, MgmtEvent);
         REGISTER (BacklogNoLongerFullEvent, MgmtEvent);
 
 #undef REGISTER

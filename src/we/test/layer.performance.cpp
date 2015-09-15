@@ -37,7 +37,7 @@ namespace
   void canceled (we::layer::id_type){}
   void discover (we::layer::id_type, we::layer::id_type){}
   void discovered (we::layer::id_type, sdpa::discovery_info_t){}
-  void token_put (std::string){}
+  void token_put (std::string, boost::optional<std::exception_ptr>){}
 
   boost::mutex generate_id_mutex;
   we::layer::id_type generate_id()

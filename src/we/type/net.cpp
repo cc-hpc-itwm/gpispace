@@ -267,7 +267,7 @@ namespace we
       if (pid == _place_id_by_name.end())
       {
         throw std::invalid_argument
-          ( ( boost::format ("put_token (\"%1%\", %2%): not found")
+          ( ( boost::format ("put_token (\"%1%\", %2%): place not found")
             % place_name
             % pnet::type::value::show (value)
             ).str()
@@ -279,9 +279,7 @@ namespace we
       if (!place.is_marked_for_put_token())
       {
         throw std::invalid_argument
-          ( ( boost::format (R"EOS(
-put_token ("%1%", %2%): place not marked with attribute put_token="true"
-)EOS")
+          ( ( boost::format (R"EOS(put_token ("%1%", %2%): place not marked with attribute put_token="true")EOS")
             % place_name
             % pnet::type::value::show (value)
             ).str()

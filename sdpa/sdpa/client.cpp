@@ -218,18 +218,22 @@ namespace sdpa
       std::string const put_token_id
         (boost::uuids::to_string (boost::uuids::random_generator()()));
 
-      if ( send_and_wait_for_reply<sdpa::events::put_token_ack>
-           ( sdpa::events::put_token ( job_id
-                                     , put_token_id
-                                     , place_name
-                                     , value
-                                     )
-           )
-         .put_token_id() != put_token_id
-         )
+      sdpa::events::put_token_response const response
+        ( send_and_wait_for_reply<sdpa::events::put_token_response>
+            ( sdpa::events::put_token ( job_id
+                                      , put_token_id
+                                      , place_name
+                                      , value
+                                      )
+            )
+        );
+
+      if (response.put_token_id() != put_token_id)
       {
-        throw std::logic_error ("received put_token_ack for different put_token");
+        throw std::logic_error ("received put_token_response for different put_token");
       }
+
+      return response.get();
     }
 
     sdpa::status::code Client::queryJob(const job_id_t &jid)

@@ -24,8 +24,9 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
-#include <map>
 #include <future>
+#include <map>
+#include <regex>
 
 namespace
 {
@@ -127,9 +128,6 @@ namespace
     , std::runtime_error ("Error: reason := unable to put token: JOB-NOT-EXISTENT unknown or not running code := 2")
     );
 
-
-  //! \note BUG: Hangs, GenericDaemon: unhandled error (3)
-#if 0
   //! \todo specific exception
   fhg::util::testing::require_exception
     ([&client, &job_id]()
@@ -137,35 +135,62 @@ namespace
        client.synchronous_workflow_response
          (job_id, "get_and_update_state", std::string ("WRONG TYPE"));
      }
-    , std::runtime_error ("Error: reason := unable to put token: type mismatch for field 'get_and_update_state': expected type 'unsigned long', value '\"WRONG TYPE\"' has type 'string'")
+    , std::runtime_error ("type error: type mismatch for field 'get_and_update_state.value': expected type 'unsigned long', value '\"WRONG TYPE\"' has type 'string'")
     );
-#endif
 
-  //! \note BUG: Hangs, GenericDaemon: unhandled error (3)
-#if 0
+  struct require_equal_except_address_and_port
+  {
+    void operator() ( std::invalid_argument const& lhs
+                    , std::invalid_argument const& rhs
+                    ) const
+    {
+      static std::string const rfc_1123_hostname
+        (R"EOS((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]))EOS");
+
+      std::string const rhs_what
+        ( std::regex_replace
+            ( std::regex_replace
+                ( std::string (rhs.what())
+                , std::regex ("address := \"" + rfc_1123_hostname + "\"")
+                , "address := \"IGNORE_FOR_COMPARISON\""
+                )
+            , std::regex ("port := [0-9]+U")
+            , "port := IGNORE_FOR_COMPARISON"
+            )
+        );
+
+      if (lhs.what() != rhs_what)
+      {
+        throw std::logic_error
+          ( ( boost::format ("'%1%' != '%2%'")
+            % fhg::util::testing::detail::to_string (lhs)
+            % fhg::util::testing::detail::to_string (rhs)
+            ).str()
+          );
+      }
+    }
+  };
+
+
   //! \todo specific exception
-  fhg::util::testing::require_exception
+  fhg::util::testing::require_exception<require_equal_except_address_and_port>
     ([&client, &job_id]()
      {
        client.synchronous_workflow_response
          (job_id, "PLACE-NOT-EXISTENT", 12UL);
      }
-    , std::runtime_error ("Error: reason := unable to put token: unknown place PLACE-NOT-EXISTENT")
+    , std::invalid_argument ("put_token (\"PLACE-NOT-EXISTENT\", Struct [value := 12UL, address := \"IGNORE_FOR_COMPARISON\", port := IGNORE_FOR_COMPARISON]): place not found")
     );
-#endif
 
-  //! \note BUG: Hangs, GenericDaemon: unhandled error (3)
-#if 0
   //! \todo specific exception
-  fhg::util::testing::require_exception
+  fhg::util::testing::require_exception<require_equal_except_address_and_port>
     ([&client, &job_id]()
      {
        client.synchronous_workflow_response
          (job_id, "state", 12UL);
      }
-    , std::runtime_error ("Error: reason := unable to put token: place not marked with attribute put_token=\"true\"")
+    , std::invalid_argument ("put_token (\"state\", Struct [value := 12UL, address := \"IGNORE_FOR_COMPARISON\", port := IGNORE_FOR_COMPARISON]): place not marked with attribute put_token=\"true\"")
     );
-#endif
 
   client.put_token (job_id, "done", we::type::literal::control());
   client.wait (job_id);
