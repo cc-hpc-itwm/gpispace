@@ -92,15 +92,11 @@ namespace
       , const sdpa::events::DiscoverJobStatesEvent* e
       ) override
     {
-      _network.perform
+      _network.perform<sdpa::events::DiscoverJobStatesReplyEvent>
         ( source
-        , sdpa::events::SDPAEvent::Ptr
-          ( new sdpa::events::DiscoverJobStatesReplyEvent
-            ( e->discover_id()
-            , sdpa::discovery_info_t
-              (e->job_id(), reply, sdpa::discovery_info_set_t())
-            )
-          )
+        , e->discover_id()
+        , sdpa::discovery_info_t
+            (e->job_id(), reply, sdpa::discovery_info_set_t())
         );
     }
   };

@@ -27,6 +27,8 @@
 #include <sdpa/events/put_token.hpp>
 #include <sdpa/events/BacklogNoLongerFullEvent.hpp>
 
+#include <util-generic/cxx14/make_unique.hpp>
+
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
@@ -39,6 +41,13 @@ namespace sdpa
     class Codec
     {
     public:
+      template<typename Event, typename... Args>
+        std::string encode (Args... args) const
+      {
+        std::unique_ptr<Event> const e
+          (fhg::util::cxx14::make_unique<Event> (std::forward<Args> (args)...));
+        return encode (e.get());
+      }
 
       std::string encode (const sdpa::events::SDPAEvent* e) const
       {

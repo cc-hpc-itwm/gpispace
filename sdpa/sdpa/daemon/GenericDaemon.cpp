@@ -945,25 +945,14 @@ void GenericDaemon::handle_events()
     }
     catch (...)
     {
-      sendEventToOther
+      sendEventToOther<events::ErrorEvent>
         ( event.first
-        , events::ErrorEvent::Ptr
-          ( new events::ErrorEvent
-              ( events::ErrorEvent::SDPA_EUNKNOWN
-              , fhg::util::current_exception_printer (": ").string()
-              )
-          )
+        , events::ErrorEvent::SDPA_EUNKNOWN
+        , fhg::util::current_exception_printer (": ").string()
         );
     }
   }
 }
-
-    void GenericDaemon::sendEventToOther ( fhg::com::p2p::address_t const& address
-                                         , sdpa::events::SDPAEvent::Ptr const& event
-                                         )
-    {
-      _network_strategy.perform (address, event);
-    }
 
 void GenericDaemon::delay (std::function<void()> fun)
 {
@@ -1045,9 +1034,7 @@ void GenericDaemon::handleSubscribeEvent
     _subscriptions[source].push_back (jobId);
   }
 
-  sdpa::events::SubscribeAckEvent::Ptr ptrSubscAckEvt
-    (new sdpa::events::SubscribeAckEvent (jobId));
-  sendEventToOther (source, ptrSubscAckEvt);
+  sendEventToOther<events::SubscribeAckEvent> (source, jobId);
 
   // check if the subscribed jobs are already in a terminal state
   const sdpa::status::code status (pJob->getStatus());
@@ -1055,25 +1042,21 @@ void GenericDaemon::handleSubscribeEvent
   {
   case sdpa::status::FINISHED:
     {
-      events::JobFinishedEvent::Ptr pEvtJobFinished
-        (new events::JobFinishedEvent (pJob->id(), pJob->result()));
-      sendEventToOther (source, pEvtJobFinished);
+      sendEventToOther<events::JobFinishedEvent>
+        (source, pJob->id(), pJob->result());
     }
     return;
 
   case sdpa::status::FAILED:
     {
-      events::JobFailedEvent::Ptr pEvtJobFailed
-        (new events::JobFailedEvent (pJob->id(), pJob->error_message()));
-      sendEventToOther (source, pEvtJobFailed);
+      sendEventToOther<events::JobFailedEvent>
+        (source, pJob->id(), pJob->error_message());
     }
     return;
 
   case sdpa::status::CANCELED:
     {
-      events::CancelJobAckEvent::Ptr pEvtCancelJobAck
-        (new events::CancelJobAckEvent (pJob->id()));
-      sendEventToOther (source, pEvtCancelJobAck);
+      sendEventToOther<events::CancelJobAckEvent> (source, pJob->id());
     }
     return;
 
@@ -1452,11 +1435,8 @@ namespace sdpa
     void GenericDaemon::child_proxy::worker_registration_response
       (boost::optional<std::exception_ptr> error) const
     {
-      _that->sendEventToOther
-        ( _address
-        , events::SDPAEvent::Ptr
-            (new events::worker_registration_response (std::move (error)))
-        );
+      _that->sendEventToOther<events::worker_registration_response>
+        (_address, std::move (error));
     }
 
     void GenericDaemon::child_proxy::submit_job ( boost::optional<job_id_t> id
@@ -1464,45 +1444,30 @@ namespace sdpa
                                                 , std::set<worker_id_t> const& workers
                                                 ) const
     {
-      _that->sendEventToOther
-        ( _address
-        , events::SubmitJobEvent::Ptr
-            (new events::SubmitJobEvent (id, description, workers))
-        );
+      _that->sendEventToOther<events::SubmitJobEvent>
+        (_address, id, description, workers);
     }
 
     void GenericDaemon::child_proxy::cancel_job (job_id_t id) const
     {
-      _that->sendEventToOther
-        ( _address
-        , events::CancelJobEvent::Ptr (new events::CancelJobEvent (id))
-        );
+      _that->sendEventToOther<events::CancelJobEvent> (_address, id);
     }
 
     void GenericDaemon::child_proxy::job_failed_ack (job_id_t id) const
     {
-      _that->sendEventToOther
-        ( _address
-        , events::JobFailedAckEvent::Ptr (new events::JobFailedAckEvent (id))
-        );
+      _that->sendEventToOther<events::JobFailedAckEvent> (_address, id);
     }
 
     void GenericDaemon::child_proxy::job_finished_ack (job_id_t id) const
     {
-      _that->sendEventToOther
-        ( _address
-        , events::JobFinishedAckEvent::Ptr (new events::JobFinishedAckEvent (id))
-        );
+      _that->sendEventToOther<events::JobFinishedAckEvent> (_address, id);
     }
 
     void GenericDaemon::child_proxy::discover_job_states
       (job_id_t job_id, job_id_t discover_id) const
     {
-      _that->sendEventToOther
-        ( _address
-        , events::DiscoverJobStatesEvent::Ptr
-            (new events::DiscoverJobStatesEvent (job_id, discover_id))
-        );
+      _that->sendEventToOther<events::DiscoverJobStatesEvent>
+        (_address, job_id, discover_id);
     }
 
     void GenericDaemon::child_proxy::put_token
@@ -1512,11 +1477,8 @@ namespace sdpa
       , pnet::type::value::value_type value
       ) const
     {
-      _that->sendEventToOther
-        ( _address
-        , boost::shared_ptr<events::put_token>
-            (new events::put_token (job_id, put_token_id, place_name, value))
-        );
+      _that->sendEventToOther<events::put_token>
+        (_address, job_id, put_token_id, place_name, value);
     }
 
     GenericDaemon::parent_proxy::parent_proxy
@@ -1537,127 +1499,85 @@ namespace sdpa
       ( capabilities_set_t capabilities
       ) const
     {
-      _that->sendEventToOther
+      _that->sendEventToOther<events::WorkerRegistrationEvent>
         ( _address
-        , events::WorkerRegistrationEvent::Ptr
-          ( new events::WorkerRegistrationEvent
-              (_that->name(), capabilities, 0, true, fhg::util::hostname())
-          )
+        , _that->name(), capabilities, 0, true, fhg::util::hostname()
         );
     }
 
     void GenericDaemon::parent_proxy::notify_shutdown() const
     {
-      _that->sendEventToOther
-        ( _address
-        , events::ErrorEvent::Ptr
-          ( new events::ErrorEvent
-            (events::ErrorEvent::SDPA_ENODE_SHUTDOWN, "")
-          )
-        );
+      _that->sendEventToOther<events::ErrorEvent>
+        (_address, events::ErrorEvent::SDPA_ENODE_SHUTDOWN, "");
     }
 
     void GenericDaemon::parent_proxy::job_failed
       (job_id_t id, std::string message) const
     {
-      _that->sendEventToOther
-        ( _address
-        , events::JobFailedEvent::Ptr (new events::JobFailedEvent (id, message))
-        );
+      _that->sendEventToOther<events::JobFailedEvent> (_address, id, message);
     }
 
     void GenericDaemon::parent_proxy::job_finished
       (job_id_t id, job_result_t result) const
     {
-      _that->sendEventToOther
-        ( _address
-        , events::JobFinishedEvent::Ptr
-          (new events::JobFinishedEvent (id, result))
-        );
+      _that->sendEventToOther<events::JobFinishedEvent> (_address, id, result);
     }
 
     void GenericDaemon::parent_proxy::cancel_job_ack (job_id_t id) const
     {
-      _that->sendEventToOther
-        ( _address
-        , events::CancelJobAckEvent::Ptr (new events::CancelJobAckEvent (id))
-        );
+      _that->sendEventToOther<events::CancelJobAckEvent> (_address, id);
     }
 
     void GenericDaemon::parent_proxy::delete_job_ack (job_id_t id) const
     {
-      _that->sendEventToOther
-        ( _address
-        , events::DeleteJobAckEvent::Ptr (new events::DeleteJobAckEvent (id))
-        );
+      _that->sendEventToOther<events::DeleteJobAckEvent> (_address, id);
     }
 
     void GenericDaemon::parent_proxy::submit_job_ack (job_id_t id) const
     {
-      _that->sendEventToOther
-        ( _address
-        , events::SubmitJobAckEvent::Ptr (new events::SubmitJobAckEvent (id))
-        );
+      _that->sendEventToOther<events::SubmitJobAckEvent> (_address, id);
     }
 
     void GenericDaemon::parent_proxy::capabilities_gained
       (capabilities_set_t capabilities) const
     {
-      _that->sendEventToOther
-        ( _address
-        , events::CapabilitiesGainedEvent::Ptr
-          (new events::CapabilitiesGainedEvent (capabilities))
-        );
+      _that->sendEventToOther<events::CapabilitiesGainedEvent>
+        (_address, capabilities);
     }
 
     void GenericDaemon::parent_proxy::capabilities_lost
       (capabilities_set_t capabilities) const
     {
-      _that->sendEventToOther
-        ( _address
-        , events::CapabilitiesLostEvent::Ptr
-          (new events::CapabilitiesLostEvent (capabilities))
-        );
+      _that->sendEventToOther<events::CapabilitiesLostEvent>
+        (_address, capabilities);
     }
 
     void GenericDaemon::parent_proxy::discover_job_states_reply
       (job_id_t discover_id, discovery_info_t info) const
     {
-      _that->sendEventToOther
-        ( _address
-        , events::DiscoverJobStatesReplyEvent::Ptr
-            (new events::DiscoverJobStatesReplyEvent (discover_id, info))
-        );
+      _that->sendEventToOther<events::DiscoverJobStatesReplyEvent>
+        (_address, discover_id, info);
     }
 
     void GenericDaemon::parent_proxy::query_job_status_reply
       (job_id_t id, status::code status, std::string error_message) const
     {
-      _that->sendEventToOther
-        ( _address
-        , events::JobStatusReplyEvent::Ptr
-            (new events::JobStatusReplyEvent (id, status, error_message))
-        );
+      _that->sendEventToOther<events::JobStatusReplyEvent>
+        (_address, id, status, error_message);
     }
 
     void GenericDaemon::parent_proxy::retrieve_job_results_reply
       (job_id_t id, job_result_t result) const
     {
-      _that->sendEventToOther
-        ( _address
-        , events::JobResultsReplyEvent::Ptr
-          (new events::JobResultsReplyEvent (id, result))
-        );
+      _that->sendEventToOther<events::JobResultsReplyEvent>
+        (_address, id, result);
     }
 
     void GenericDaemon::parent_proxy::put_token_ack
       (std::string put_token_id) const
     {
-      _that->sendEventToOther
-        ( _address
-        , boost::shared_ptr<events::put_token_ack>
-          (new events::put_token_ack (put_token_id))
-        );
+      _that->sendEventToOther<events::put_token_ack>
+        (_address, put_token_id);
     }
   }
 }

@@ -72,17 +72,16 @@ BOOST_AUTO_TEST_CASE (perform_test)
     , fhg::com::port_t ("0")
     );
 
-  net.perform ( net.connect_to
-                  ( fhg::com::host_t ( fhg::network::connectable_to_address_string
-                                         (net.local_endpoint().address())
-                                     )
-                  , fhg::com::port_t (std::to_string (net.local_endpoint().port()))
-                  )
-              , boost::shared_ptr<sdpa::events::SDPAEvent>(new sdpa::events::ErrorEvent(sdpa::events::ErrorEvent::SDPA_EUNKNOWN
-                                                              , "success"
-                                                              )
-                                 )
-               );
+  net.perform<sdpa::events::ErrorEvent>
+    ( net.connect_to
+        ( fhg::com::host_t ( fhg::network::connectable_to_address_string
+                               (net.local_endpoint().address())
+                           )
+        , fhg::com::port_t (std::to_string (net.local_endpoint().port()))
+        )
+    , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+    , "success"
+    );
 
   counter.wait();
 }

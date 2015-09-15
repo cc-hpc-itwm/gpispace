@@ -51,11 +51,7 @@ namespace
       const job_t job (_jobs.at (name));
       _jobs.erase (name);
 
-      _network.perform
-        ( job._owner
-        , sdpa::events::SDPAEvent::Ptr
-            (new sdpa::events::CancelJobAckEvent (job._id))
-        );
+      _network.perform<sdpa::events::CancelJobAckEvent> (job._owner, job._id);
     }
 
   private:

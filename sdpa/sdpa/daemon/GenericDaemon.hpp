@@ -63,8 +63,6 @@
 
 #include <fhglog/LogMacros.hpp>
 
-#include <boost/make_shared.hpp>
-
 #include <memory>
 #include <mutex>
 #include <random>
@@ -126,7 +124,7 @@ namespace sdpa {
       {
         for (fhg::com::p2p::address_t const& subscriber : subscribers (job_id))
         {
-          sendEventToOther (subscriber, boost::make_shared<Event> (args...));
+          sendEventToOther<Event> (subscriber, std::forward<Args> (args)...);
         }
       }
       bool subscribedFor(const fhg::com::p2p::address_t&, const sdpa::job_id_t&);
@@ -168,12 +166,14 @@ namespace sdpa {
       virtual void handle_put_token (fhg::com::p2p::address_t const& source, const events::put_token*) override;
       virtual void handle_put_token_ack (fhg::com::p2p::address_t const& source, const events::put_token_ack*) override;
 
-    protected:
-      // event communication
-      void sendEventToOther ( fhg::com::p2p::address_t const&
-                            , sdpa::events::SDPAEvent::Ptr const&
-                            );
     private:
+      // event communication
+      template<typename Event, typename... Args>
+        void sendEventToOther
+        (fhg::com::p2p::address_t const& address, Args... args)
+      {
+        _network_strategy.perform<Event> (address, std::forward<Args> (args)...);
+      }
       void delay (std::function<void()>);
 
     public:
