@@ -1,7 +1,7 @@
 #pragma once
 
 #define SAVE_TO_ARCHIVE(WHAT)                   \
-  _archive << WHAT
+  _archive << (WHAT)
 
 //! \note Archive<<(int) e.g. is broken and can't handle values
 //! returned from a function call, thus needs a temporary.
