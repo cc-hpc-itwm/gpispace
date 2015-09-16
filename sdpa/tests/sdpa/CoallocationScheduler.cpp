@@ -1660,6 +1660,23 @@ BOOST_FIXTURE_TEST_CASE
     {
       BOOST_REQUIRE (assignment.count (job));
     }
+
+    std::set<sdpa::worker_id_t> assigned_workers;
+    for ( std::set<sdpa::worker_id_t> const& s
+        : assignment | boost::adaptors::map_values
+        )
+    {
+      std::set<sdpa::worker_id_t> result;
+      std::set_union ( assigned_workers.begin()
+                     , assigned_workers.end()
+                     , s.begin()
+                     , s.end()
+                     , std::inserter (result, result.begin())
+                     );
+      std::swap (assigned_workers, result);
+    }
+
+    BOOST_REQUIRE_EQUAL (assigned_workers.size(), n);
   }
 
   for (unsigned int i (0) ; i < k; i++)
