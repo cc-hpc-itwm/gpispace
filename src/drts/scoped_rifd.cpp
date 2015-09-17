@@ -10,6 +10,7 @@
 #include <util-generic/read_lines.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
+#include <rif/client.hpp>
 #include <rif/strategy/meta.hpp>
 
 #include <boost/format.hpp>
@@ -180,6 +181,58 @@ namespace gspc
       return teardown (_entry_points);
     }
 
+    std::pair< std::unordered_map<std::string, std::vector<std::string>>
+             , std::unordered_map<std::string, std::exception_ptr>
+             >
+      execute ( std::unordered_set<std::string> const& hostnames
+              , boost::filesystem::path const& command
+              , std::vector<std::string> const& arguments
+              , std::unordered_map<std::string, std::string> const& environment
+              ) const
+    {
+      std::unordered_map<std::string, std::vector<std::string>> output;
+      std::unordered_map<std::string, std::exception_ptr> failed;
+
+      //! \todo blocked_async or even recursive, better: use aggregated_rpc
+      for (std::string const& hostname : hostnames)
+      {
+        auto const pos (_entry_points.find (hostname));
+
+        if (pos == _entry_points.end())
+        {
+          failed.emplace
+            ( hostname
+            , std::make_exception_ptr
+              ( std::invalid_argument
+                  (( boost::format ("execute: unknown host '%1%'")
+                   % hostname
+                   ).str()
+                  )
+              )
+            );
+        }
+        else
+        {
+          try
+          {
+            output.emplace
+              ( hostname
+              , fhg::rif::client (pos->second)
+              . execute_and_get_startup_messages_and_wait
+                  (command, arguments, environment)
+              . get()
+              );
+          }
+          catch (...)
+          {
+            failed.emplace (hostname, std::current_exception());
+          }
+        }
+      }
+
+      return {output, failed};
+    }
+
     std::string _strategy;
     std::vector<std::string> _parameters;
     boost::optional<unsigned short> _port;
@@ -262,6 +315,19 @@ namespace gspc
     rifds::teardown()
   {
     return _->teardown();
+  }
+
+  std::pair< std::unordered_map<std::string, std::vector<std::string>>
+           , std::unordered_map<std::string, std::exception_ptr>
+           >
+    rifds::execute
+      ( std::unordered_set<std::string> const& hostnames
+      , boost::filesystem::path const& command
+      , std::vector<std::string> const& arguments
+      , std::unordered_map<std::string, std::string> const& environment
+      ) const
+  {
+    return _->execute (hostnames, command, arguments, environment);
   }
 
   scoped_rifd::scoped_rifd ( rifd::strategy const& strategy

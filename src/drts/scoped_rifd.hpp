@@ -115,6 +115,17 @@ namespace gspc
               >
       teardown();
 
+    std::pair< std::unordered_map<std::string, std::vector<std::string>>
+             , std::unordered_map<std::string, std::exception_ptr>
+             >
+      execute ( std::unordered_set<std::string> const& hostnames
+              , boost::filesystem::path const& command
+              , std::vector<std::string> const& arguments
+                  = {}
+              , std::unordered_map<std::string, std::string> const& environment
+                  = std::unordered_map<std::string, std::string> {}
+              ) const;
+
     PIMPL (rifds);
 
   private:

@@ -151,6 +151,27 @@ try
     execute_and_get_startup_messages_service
       (service_dispatcher, &fhg::rif::execute_and_get_startup_messages);
 
+  fhg::rpc::service_handler<fhg::rif::protocol::execute_and_get_startup_messages_and_wait>
+    execute_and_get_startup_messages_and_wait_service
+      ( service_dispatcher
+      , [] ( boost::filesystem::path command
+           , std::vector<std::string> arguments
+           , std::unordered_map<std::string, std::string> environment
+           )
+        {
+          std::pair<pid_t, std::vector<std::string>> const
+            pid_and_startup_messages
+              ( fhg::rif::execute_and_get_startup_messages
+                  (command, arguments, environment)
+              );
+
+          wait_for_pid_returned_with_exit_status_zero
+            (pid_and_startup_messages.first);
+
+          return pid_and_startup_messages.second;
+        }
+      );
+
   fhg::rpc::service_handler<fhg::rif::protocol::kill> kill_service
     ( service_dispatcher
     , [] (std::vector<pid_t> const& pids)
