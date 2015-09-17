@@ -2,12 +2,9 @@
 
 #include <csignal>
 
-#include <util-generic/print_exception.hpp>
-
 #include <sdpa/events/ErrorEvent.hpp>
 
 #include <boost/lexical_cast.hpp>
-#include <boost/make_shared.hpp>
 
 #include <functional>
 
@@ -45,40 +42,6 @@ namespace sdpa
       (fhg::com::host_t const& host, fhg::com::port_t const& port)
     {
       return _peer.connect_to (host, port);
-    }
-
-    void NetworkStrategy::perform
-      ( fhg::com::p2p::address_t const& address
-      , boost::shared_ptr<events::SDPAEvent> const& sdpa_event
-      )
-    {
-      try
-      {
-        _peer.async_send
-          ( address
-          , _codec.encode (sdpa_event.get())
-          , [address, this] (boost::system::error_code const& ec)
-            {
-              if (ec)
-              {
-                _event_handler
-                  ( address
-                  , boost::make_shared<events::ErrorEvent>
-                      (events::ErrorEvent::SDPA_ENETWORKFAILURE, ec.message())
-                  );
-              }
-            }
-          );
-      }
-      catch (...)
-      {
-        _event_handler ( address
-                       , boost::make_shared<events::ErrorEvent>
-                           ( events::ErrorEvent::SDPA_ENETWORKFAILURE
-                           , fhg::util::current_exception_printer (": ").string()
-                           )
-                       );
-      }
     }
 
     void NetworkStrategy::handle_recv ( boost::system::error_code const & ec

@@ -3,7 +3,9 @@
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 
-#include <boost/shared_ptr.hpp>
+#include <util-generic/print_exception.hpp>
+
+#include <boost/make_shared.hpp>
 #include <boost/thread.hpp>
 
 #include <fhgcom/peer.hpp>
@@ -27,9 +29,38 @@ namespace sdpa
       fhg::com::p2p::address_t connect_to
         (fhg::com::host_t const&, fhg::com::port_t const&);
 
-      void perform ( fhg::com::p2p::address_t const&
-                   , boost::shared_ptr<events::SDPAEvent> const&
-                   );
+      template<typename Event, typename... Args>
+        void perform (fhg::com::p2p::address_t const& address, Args... args)
+      {
+        try
+        {
+          _peer.async_send
+            ( address
+            , _codec.encode<Event> (std::forward<Args> (args)...)
+            , [address, this] (boost::system::error_code const& ec)
+              {
+                if (ec)
+                {
+                  _event_handler
+                    ( address
+                    , boost::make_shared<events::ErrorEvent>
+                        (events::ErrorEvent::SDPA_ENETWORKFAILURE, ec.message())
+                    );
+                }
+              }
+            );
+        }
+        catch (...)
+        {
+          _event_handler
+            ( address
+            , boost::make_shared<events::ErrorEvent>
+                ( events::ErrorEvent::SDPA_ENETWORKFAILURE
+                , fhg::util::current_exception_printer (": ").string()
+                )
+            );
+        }
+      }
 
       boost::asio::ip::tcp::endpoint local_endpoint() const
       {

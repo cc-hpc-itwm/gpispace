@@ -654,6 +654,5 @@ template<typename Event, typename... Args>
                             )
 {
   static sdpa::events::Codec codec;
-  Event const event (std::forward<Args> (args)...);
-  _peer.send (destination, codec.encode (&event));
+  _peer.send (destination, codec.encode<Event> (std::forward<Args> (args)...));
 }

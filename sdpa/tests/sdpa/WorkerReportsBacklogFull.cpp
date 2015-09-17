@@ -37,42 +37,27 @@ namespace
       const job_t job (_jobs.at (name));
       _jobs.erase (name);
 
-      _network.perform
+      _network.perform<sdpa::events::ErrorEvent>
         ( job._owner
-        , sdpa::events::SDPAEvent::Ptr
-            (new sdpa::events::ErrorEvent ( sdpa::events::ErrorEvent::SDPA_EBACKLOGFULL
-                                          , "Cannot accept this job, my backlog is full!"
-                                          , job._id
-                                          )
-             )
+        , sdpa::events::ErrorEvent::SDPA_EBACKLOGFULL
+        , "Cannot accept this job, my backlog is full!"
+        , job._id
         );
     }
 
     void report_can_take_jobs()
     {
-      _network.perform
-        ( _master.get()
-        , sdpa::events::SDPAEvent::Ptr (new sdpa::events::BacklogNoLongerFullEvent())
-        );
+      _network.perform<sdpa::events::BacklogNoLongerFullEvent> (_master.get());
     }
 
     void acknowledge_and_finish (std::string name)
     {
       const job_t job (_jobs.at (name));
 
-      _network.perform
-        ( job._owner
-        , sdpa::events::SDPAEvent::Ptr
-            (new sdpa::events::SubmitJobAckEvent (job._id))
-        );
+      _network.perform<sdpa::events::SubmitJobAckEvent> (job._owner, job._id);
 
-      _network.perform
-        ( job._owner
-        , sdpa::events::SDPAEvent::Ptr
-            ( new sdpa::events::JobFinishedEvent
-                (job._id, we::type::activity_t().to_string())
-            )
-        );
+      _network.perform<sdpa::events::JobFinishedEvent>
+        (job._owner, job._id, we::type::activity_t().to_string());
 
       _jobs.erase (name);
     }

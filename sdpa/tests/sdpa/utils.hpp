@@ -367,17 +367,13 @@ namespace utils
     {
       _master = _network.connect_to (master.host(), master.port());
 
-      _network.perform
+      _network.perform<sdpa::events::WorkerRegistrationEvent>
         ( _master.get()
-        , sdpa::events::SDPAEvent::Ptr
-          ( new sdpa::events::WorkerRegistrationEvent
-            ( _name
-            , capabilities
-            , fhg::util::testing::random_integral<unsigned long>()
-            , accept_workers
-            , fhg::util::testing::random_string()
-            )
-          )
+        , _name
+        , capabilities
+        , fhg::util::testing::random_integral<unsigned long>()
+        , accept_workers
+        , fhg::util::testing::random_string()
         );
     }
 
@@ -405,11 +401,8 @@ namespace utils
       BOOST_REQUIRE (_accept_workers);
       BOOST_REQUIRE (_accepted_workers.insert (source).second);
 
-      _network.perform
-        ( source
-        , sdpa::events::SDPAEvent::Ptr
-            (new sdpa::events::worker_registration_response (boost::none))
-        );
+      _network.perform<sdpa::events::worker_registration_response>
+        (source, boost::none);
     }
 
     virtual void handleErrorEvent
@@ -526,11 +519,7 @@ namespace utils
 
       add_job (name, *e->job_id(), source);
 
-      _network.perform
-        ( source
-        , sdpa::events::SDPAEvent::Ptr
-          (new sdpa::events::SubmitJobAckEvent (*e->job_id()))
-        );
+      _network.perform<sdpa::events::SubmitJobAckEvent> (source, *e->job_id());
 
       announce_job (name);
     }
@@ -545,13 +534,8 @@ namespace utils
       const job_t job (_jobs.at (name));
       _jobs.erase (name);
 
-      _network.perform
-        ( job._owner
-        , sdpa::events::SDPAEvent::Ptr
-          ( new sdpa::events::JobFinishedEvent
-            (job._id, we::type::activity_t().to_string())
-          )
-        );
+      _network.perform<sdpa::events::JobFinishedEvent>
+        (job._owner, job._id, we::type::activity_t().to_string());
     }
 
     sdpa::job_id_t job_id (std::string name)
@@ -602,19 +586,10 @@ namespace utils
     virtual void handleSubmitJobEvent
       (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent* e) override
     {
-      _network.perform
-        ( source
-        , sdpa::events::SDPAEvent::Ptr
-          (new sdpa::events::SubmitJobAckEvent (*e->job_id()))
-        );
+      _network.perform<sdpa::events::SubmitJobAckEvent> (source, *e->job_id());
 
-      _network.perform
-        ( source
-        , sdpa::events::SDPAEvent::Ptr
-          ( new sdpa::events::JobFinishedEvent
-            (*e->job_id(), we::type::activity_t().to_string())
-          )
-        );
+      _network.perform<sdpa::events::JobFinishedEvent>
+        (source, *e->job_id(), we::type::activity_t().to_string());
     }
     virtual void handleJobFinishedAckEvent
       (fhg::com::p2p::address_t const&, const sdpa::events::JobFinishedAckEvent*) override
@@ -690,11 +665,7 @@ namespace utils
       const fhg::com::p2p::address_t master (_cancels.at (job_id));
       _cancels.erase (job_id);
 
-      _network.perform
-        ( master
-        , sdpa::events::SDPAEvent::Ptr
-            (new sdpa::events::CancelJobAckEvent (job_id))
-        );
+      _network.perform<sdpa::events::CancelJobAckEvent> (master, job_id);
     }
 
   private:

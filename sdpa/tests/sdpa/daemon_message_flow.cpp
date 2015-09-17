@@ -33,9 +33,10 @@ namespace
       return _network.connect_to (host, port);
     }
 
-    void send (fhg::com::p2p::address_t const& destination, sdpa::events::SDPAEvent* event)
+    template<typename Event, typename... Args>
+    void send (fhg::com::p2p::address_t const& destination, Args... args)
     {
-      _network.perform (destination, sdpa::events::SDPAEvent::Ptr (event));
+      _network.perform<Event> (destination, std::forward<Args> (args)...);
     }
 
     template<typename T> boost::shared_ptr<T> wait_for_event()
@@ -123,16 +124,17 @@ BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
 
   network_strategy child;
 
-  child.send ( child.connect_to
-                 ( fhg::com::host_t
-                     ( fhg::network::connectable_to_address_string
-                         (orchestrator.peer_local_endpoint().address())
-                     )
-                 , fhg::com::port_t
-                     (std::to_string (orchestrator.peer_local_endpoint().port()))
-                 )
-             , new sdpa::events::JobFinishedAckEvent (fhg::util::testing::random_string())
-             );
+  child.send<sdpa::events::JobFinishedAckEvent>
+    ( child.connect_to
+      ( fhg::com::host_t
+        ( fhg::network::connectable_to_address_string
+          (orchestrator.peer_local_endpoint().address())
+        )
+      , fhg::com::port_t
+        (std::to_string (orchestrator.peer_local_endpoint().port()))
+      )
+    , fhg::util::testing::random_string()
+    );
 
   sdpa::events::ErrorEvent::Ptr event
     (child.wait_for_event<sdpa::events::ErrorEvent>());

@@ -39,6 +39,12 @@ namespace sdpa
     class Codec
     {
     public:
+      template<typename Event, typename... Args>
+        std::string encode (Args... args) const
+      {
+        Event const e (std::forward<Args> (args)...);
+        return encode (&e);
+      }
 
       std::string encode (const sdpa::events::SDPAEvent* e) const
       {
