@@ -14,6 +14,7 @@
 #include <mutex>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace fhg
@@ -52,7 +53,7 @@ namespace fhg
         , std::pair< std::string /* kind */
                    , std::unordered_map<pid_t, std::exception_ptr>
                    >
-        > shutdown (component_type, std::vector<fhg::rif::entry_point> const&);
+        > shutdown_worker (std::vector<fhg::rif::entry_point> const&);
 
       void store (fhg::rif::entry_point const&, std::string const& name, pid_t);
       boost::optional<pid_t> pidof
@@ -62,7 +63,9 @@ namespace fhg
       std::ostream& _info_output;
     };
 
-    void start_workers_for
+    std::pair< std::unordered_set<fhg::rif::entry_point>
+             , std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
+             > start_workers_for
       ( std::vector<fhg::rif::entry_point> const& entry_points
       , std::string master_name
       , fhg::drts::hostinfo_type master_hostinfo

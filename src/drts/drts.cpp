@@ -22,8 +22,10 @@
 #include <util-generic/hostname.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/nest_exceptions.hpp>
+#include <util-generic/print_exception.hpp>
 #include <util-generic/read_file.hpp>
 #include <util-generic/split.hpp>
+#include <util-generic/wait_and_collect_exceptions.hpp>
 #include <fhg/revision.hpp>
 #include <util-generic/syscall.hpp>
 
@@ -222,52 +224,79 @@ namespace gspc
 
     if (!_rif_entry_points.empty())
     {
-      add_worker_impl (_rif_entry_points);
+       std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
+         const failures (add_worker_impl (_rif_entry_points));
+
+      if (!failures.empty())
+      {
+        fhg::util::throw_collected_exceptions
+          ( failures
+          , [] (std::pair<fhg::rif::entry_point, std::list<std::exception_ptr>>
+                 const& fail
+               )
+            {
+              std::ostringstream oss;
+
+              oss << "drts-kernel startup failed on '" << fail.first << "':";
+
+              for (std::exception_ptr const& exception_ptr : fail.second)
+              {
+                oss << ' ' << fhg::util::exception_printer (exception_ptr);
+              }
+
+              return oss.str();
+            }
+          );
+      }
     }
   }
 
-
-  void scoped_runtime_system::implementation::started_runtime_system::add_worker
-    (std::vector<fhg::rif::entry_point> const& entry_points)
+  std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
+    scoped_runtime_system::implementation::started_runtime_system::add_worker
+      (std::vector<fhg::rif::entry_point> const& entry_points)
   {
     if (_gpi_socket)
     {
       throw std::logic_error ("add_worker while vmem is in use");
     }
 
-    add_worker_impl (entry_points);
+    return add_worker_impl (entry_points);
   }
 
-  void scoped_runtime_system::implementation::started_runtime_system::add_worker_impl
+  std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
+    scoped_runtime_system::implementation::started_runtime_system::add_worker_impl
     (std::vector<fhg::rif::entry_point> const& entry_points)
   {
-    fhg::util::nest_exceptions<std::runtime_error>
-      ( [&]
-        {
-          for ( fhg::drts::worker_description const& description
-              : _worker_descriptions
-              )
-          {
-            start_workers_for ( entry_points
-                              , _master_agent_name
-                              , _master_agent_hostinfo
-                              , description
-                              , _verbose
-                              , _gui_host
-                              , _gui_port
-                              , _log_host
-                              , _log_port
-                              , _processes_storage
-                              , _log_dir
-                              , _gpi_socket
-                              , _app_path
-                              , _sdpa_home
-                              , _info_output
-                              );
-          }
-        }
-      , "at least one worker could not be started!"
-      );
+    std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
+      failures;
+
+    for ( fhg::drts::worker_description const& description
+        : _worker_descriptions
+        )
+    {
+      for (auto const& fail : start_workers_for ( entry_points
+                                                , _master_agent_name
+                                                , _master_agent_hostinfo
+                                                , description
+                                                , _verbose
+                                                , _gui_host
+                                                , _gui_port
+                                                , _log_host
+                                                , _log_port
+                                                , _processes_storage
+                                                , _log_dir
+                                                , _gpi_socket
+                                                , _app_path
+                                                , _sdpa_home
+                                                , _info_output
+                                                ).second
+          )
+      {
+        failures[fail.first].emplace_back (fail.second);
+      }
+    }
+
+    return failures;
   }
 
   std::unordered_map< fhg::rif::entry_point
@@ -278,9 +307,7 @@ namespace gspc
     scoped_runtime_system::implementation::started_runtime_system::remove_worker
       (std::vector<fhg::rif::entry_point> const& entry_points)
   {
-    return _processes_storage.shutdown ( fhg::drts::component_type::worker
-                                       , entry_points
-                                       );
+    return _processes_storage.shutdown_worker (entry_points);
   }
 
   scoped_runtime_system::implementation::implementation
@@ -338,10 +365,12 @@ namespace gspc
         : nullptr
         )
   {}
-  void scoped_runtime_system::implementation::add_worker
-    (rifd_entry_points const& rifd_entry_points)
+  std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
+    scoped_runtime_system::implementation::add_worker
+      (rifd_entry_points const& rifd_entry_points)
   {
-    _started_runtime_system.add_worker (rifd_entry_points._->_entry_points);
+    return _started_runtime_system.add_worker
+      (rifd_entry_points._->_entry_points);
   }
   std::unordered_map< fhg::rif::entry_point
                     , std::pair< std::string /* kind */
@@ -389,10 +418,28 @@ namespace gspc
     return _->_nodes_and_number_of_unique_nodes.second;
   }
 
-  void scoped_runtime_system::add_worker
-    (rifd_entry_points const& rifd_entry_points)
+  std::unordered_map< rifd_entry_point
+                    , std::list<std::exception_ptr>
+                    , rifd_entry_point_hash
+                    >
+    scoped_runtime_system::add_worker
+      (rifd_entry_points const& rifd_entry_points)
   {
-    _->add_worker (rifd_entry_points);
+    std::unordered_map< fhg::rif::entry_point
+                      , std::list<std::exception_ptr>
+                      > const result (_->add_worker (rifd_entry_points));
+    std::unordered_map< rifd_entry_point
+                      , std::list<std::exception_ptr>
+                      , rifd_entry_point_hash
+                      > wrapped;
+
+    for (auto const& x : result)
+    {
+      wrapped.emplace
+        (new rifd_entry_point::implementation (x.first), x.second);
+    }
+
+    return wrapped;
   }
   std::unordered_map< rifd_entry_point
                     , std::pair< std::string /* kind */

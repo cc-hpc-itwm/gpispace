@@ -13,6 +13,8 @@
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 
+#include <boost/range/adaptor/map.hpp>
+
 BOOST_AUTO_TEST_CASE (forbid_double_worker_instances)
 {
   boost::program_options::options_description options_description;
@@ -57,7 +59,17 @@ BOOST_AUTO_TEST_CASE (forbid_double_worker_instances)
   gspc::scoped_runtime_system drts
     (vm, installation, "test_worker:1", rifds.entry_points());
 
-  BOOST_REQUIRE_THROW ( drts.add_worker (rifds.entry_points())
-                      , std::exception
-                      );
+  std::unordered_map
+    < gspc::rifd_entry_point
+    , std::list<std::exception_ptr>
+    , gspc::rifd_entry_point_hash
+    > const errors (drts.add_worker (rifds.entry_points()));
+
+  BOOST_REQUIRE_EQUAL (drts.number_of_unique_nodes(), errors.size());
+
+  for (auto const& exceptions : errors | boost::adaptors::map_values)
+  {
+    //! \todo do not collect the exceptions but make a longer list
+    BOOST_REQUIRE (!exceptions.empty());
+  }
 }
