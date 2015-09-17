@@ -22,6 +22,12 @@ extended_add_library (NAME rif-started_process_promise
             Boost::program_options
             Boost::serialization
             Util-Generic
+  INSTALL
+)
+
+install (FILES
+  started_process_promise.hpp
+  DESTINATION include/rif
 )
 
 add_unit_test (NAME started_process_promise
