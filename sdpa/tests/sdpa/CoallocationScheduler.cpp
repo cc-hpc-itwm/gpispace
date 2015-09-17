@@ -1581,9 +1581,9 @@ struct fixture_add_new_workers
   fixture_add_new_workers()
     : _worker_manager()
     , _scheduler
-      ( std::bind (&fixture_add_new_workers::requirements, this, std::placeholders::_1)
-      , _worker_manager
-      )
+       ( std::bind (&fixture_add_new_workers::requirements, this, std::placeholders::_1)
+       , _worker_manager
+       )
   {}
 
   sdpa::daemon::WorkerManager _worker_manager;
@@ -1603,6 +1603,70 @@ struct fixture_add_new_workers
   }
 
   std::map<sdpa::job_id_t, job_requirements_t> _requirements;
+
+  void add_new_workers ( std::vector<sdpa::worker_id_t>& a
+                       , unsigned int n
+                       )
+  {
+    const unsigned int N (a.size());
+    unsigned int j (N);
+    a.resize (N + n);
+    std::generate_n ( a.begin() + N
+                    , n
+                    , [&j]
+                      {return "worker_" + std::to_string (j++);}
+                    );
+
+    BOOST_REQUIRE_EQUAL (a.size(), N + n);
+
+    for_each ( a.begin() + N
+             , a.end()
+             , [this] (sdpa::worker_id_t worker)
+               {
+                 _worker_manager.addWorker ( worker
+                                           , {}
+                                           , random_ulong()
+                                           , false
+                                           , fhg::util::testing::random_string()
+                                           , fhg::util::testing::random_string()
+                                           );
+
+                 _scheduler.reschedule_pending_jobs_matching_worker (worker);
+                 request_scheduling ();
+               }
+             );
+  }
+
+  void add_new_jobs ( std::vector<sdpa::job_id_t>& a
+                    , unsigned int n
+                    )
+  {
+    const unsigned int N (a.size());
+    unsigned int j (N);
+    a.resize (N + n);
+    std::generate_n ( a.begin() + N
+                    , n
+                    , [&j]
+                      {return "job_" + std::to_string (j++);}
+                    );
+
+    BOOST_REQUIRE_EQUAL (a.size(), N + n);
+
+    for_each ( a.begin() + N
+             , a.end()
+             , [this] (sdpa::job_id_t job)
+               {
+                 add_job (job, no_requirements());
+                 _scheduler.enqueueJob (job);
+                 request_scheduling();
+               }
+             );
+  }
+
+  void request_scheduling()
+  {
+    _scheduler.assignJobsToWorkers();
+  }
 };
 
 BOOST_FIXTURE_TEST_CASE
@@ -1613,42 +1677,11 @@ BOOST_FIXTURE_TEST_CASE
   const unsigned int n (20);
   const unsigned int k (10);
 
-  constexpr unsigned int n_jobs = 3*(n+k);
+  std::vector<sdpa::worker_id_t> workers;
+  add_new_workers (workers, n);
 
-  std::vector<sdpa::worker_id_t> workers (n + k);
-  unsigned int w (0);
-  std::generate_n ( workers.begin()
-                  , n + k
-                  , [&w]
-                    {return "worker_" + std::to_string (w++);}
-                  );
-
-  // add the first n workers
-  for (unsigned int i (0); i < n; i++)
-  {
-    _worker_manager.addWorker ( workers.at (i)
-                              , {sdpa::Capability ("A", workers.at (i))}
-                              , random_ulong()
-                              , false
-                              , fhg::util::testing::random_string()
-                              , fhg::util::testing::random_string()
-                              );
-  }
-
-  // submit n_jobs jobs
-  std::vector<sdpa::job_id_t> jobs (n_jobs);
-  unsigned int j (0);
-  std::generate_n ( jobs.begin()
-                  , n_jobs
-                  , [&j]
-                    {return "job_" + std::to_string (j++);}
-                  );
-
-  for (sdpa::job_id_t job : jobs)
-  {
-    add_job (job, require ("A"));
-    _scheduler.enqueueJob (job);
-  }
+  std::vector<sdpa::job_id_t> jobs;
+  add_new_jobs (jobs, 2*n);
 
   {
     sdpa::daemon::CoallocationScheduler::assignment_t
@@ -1679,31 +1712,15 @@ BOOST_FIXTURE_TEST_CASE
     BOOST_REQUIRE_EQUAL (assigned_workers.size(), n);
   }
 
-  for (unsigned int i (0) ; i < k; i++)
   {
-    _worker_manager.addWorker ( workers.at (n + i)
-                              , {sdpa::Capability ("A", workers.at (n + i))}
-                              , random_ulong()
-                              , false
-                              , fhg::util::testing::random_string()
-                              , fhg::util::testing::random_string()
-                              );
+    add_new_jobs (jobs, 2*k);
+    add_new_workers (workers, k);
 
-   _scheduler.reschedule_pending_jobs_matching_worker (workers.at (n + i));
-
-   sdpa::daemon::CoallocationScheduler::assignment_t
-     assignment (_scheduler.assignJobsToWorkers());
-
-   // each newly added worker should get at least a job
-   BOOST_REQUIRE_GE
-     (_worker_manager.get_worker_jobs_and_clean_queues (workers.at (n +i)).size(), 1);
-  }
-
-  // The first n workers should have enough jobs to compute
-  for (unsigned int j (0) ; j < n; j++)
-  {
-    BOOST_REQUIRE_GE
-      (_worker_manager.get_worker_jobs_and_clean_queues (workers.at (j)).size(), 2);
+    for (sdpa::worker_id_t worker : workers)
+    {
+      BOOST_REQUIRE_GE
+        (_worker_manager.get_worker_jobs_and_clean_queues (worker).size(), 2);
+    }
   }
 }
 
