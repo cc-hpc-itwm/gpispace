@@ -45,7 +45,6 @@ namespace gpi
         void unregister_memory ( const gpi::pc::type::process_id_t pid
                                , const gpi::pc::type::segment_id_t
                                );
-        void list_memory (gpi::pc::type::segment::list_t &) const;
 
         void attach_process ( const gpi::pc::type::process_id_t
                             , const gpi::pc::type::segment_id_t
@@ -78,19 +77,11 @@ namespace gpi
 
         void garbage_collect () {}
         void garbage_collect (const gpi::pc::type::process_id_t);
-        void list_allocations( const gpi::pc::type::process_id_t proc_id
-                             , const gpi::pc::type::segment_id_t seg
-                             , gpi::pc::type::handle::list_t & l
-                             ) const;
-        void list_allocations( const gpi::pc::type::process_id_t proc_id
-                             , gpi::pc::type::handle::list_t & l
-                             ) const;
 
         gpi::pc::type::queue_id_t
         memcpy ( gpi::pc::type::memory_location_t const & dst
                , gpi::pc::type::memory_location_t const & src
                , const gpi::pc::type::size_t amount
-               , const gpi::pc::type::queue_id_t queue
                );
 
         gpi::pc::type::size_t

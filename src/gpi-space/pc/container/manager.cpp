@@ -127,7 +127,7 @@ namespace gpi
             }
           }
 
-            gpi::pc::type::process_id_t const id (m_process_counter.inc());
+            gpi::pc::type::process_id_t const id (++m_process_counter);
 
             {
               std::unique_lock<std::mutex> const _ (_mutex_processes);
@@ -192,8 +192,7 @@ namespace gpi
             gpi::pc::type::validate (cpy.dst.handle);
             gpi::pc::type::validate (cpy.src.handle);
             gpi::pc::proto::memory::memcpy_reply_t rpl;
-            rpl.queue = _memory_manager.memcpy
-              (cpy.dst, cpy.src, cpy.size, cpy.queue);
+            rpl.queue = _memory_manager.memcpy (cpy.dst, cpy.src, cpy.size);
             return gpi::pc::proto::memory::message_t (rpl);
           }
 
@@ -226,21 +225,6 @@ namespace gpi
             //           messages need unique sequence numbers or message-ids
             rpl.count = _memory_manager.wait_on_queue
               (m_proc_id, w.queue);
-            return gpi::pc::proto::memory::message_t (rpl);
-          }
-
-          gpi::pc::proto::message_t
-            operator () (const gpi::pc::proto::memory::list_t & list) const
-          {
-            gpi::pc::proto::memory::list_reply_t rpl;
-            if (list.segment == gpi::pc::type::segment::SEG_INVAL)
-            {
-              _memory_manager.list_allocations(m_proc_id, rpl.list);
-            }
-            else
-            {
-              _memory_manager.list_allocations (m_proc_id, list.segment, rpl.list);
-            }
             return gpi::pc::proto::memory::message_t (rpl);
           }
 
@@ -308,20 +292,6 @@ namespace gpi
               (m_proc_id, detach_segment.id);
             return gpi::pc::proto::error::error_t
               (gpi::pc::proto::error::success, "success");
-          }
-
-          gpi::pc::proto::message_t
-            operator () (const gpi::pc::proto::segment::list_t & list) const
-          {
-            gpi::pc::proto::segment::list_reply_t rpl;
-            if (list.id == gpi::pc::type::segment::SEG_INVAL)
-              _memory_manager.list_memory (rpl.list);
-            else
-            {
-              LLOG(WARN, _logger, "list of particular segment not implemented");
-              _memory_manager.list_memory (rpl.list);
-            }
-            return gpi::pc::proto::segment::message_t (rpl);
           }
 
           gpi::pc::proto::message_t

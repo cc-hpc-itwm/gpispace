@@ -39,6 +39,29 @@ namespace gpi
       fail_on_non_zero(#F, F, Args)
     }
 
+    namespace
+    {
+      struct time_left
+      {
+        template<typename Duration>
+          time_left (Duration timeout)
+            : _end (std::chrono::steady_clock::now() + timeout)
+        {}
+        gaspi_timeout_t operator()() const
+        {
+          auto const left
+            ( std::chrono::duration_cast<std::chrono::milliseconds>
+                (_end - std::chrono::steady_clock::now()).count()
+            );
+
+          return left < 0 ? GASPI_TEST : left;
+        }
+
+      private:
+        std::chrono::steady_clock::time_point const _end;
+      };
+    }
+
     gaspi_t::gaspi_t ( fhg::log::Logger& logger
                      , const unsigned long long memory_size
                      , const unsigned short port
@@ -50,6 +73,8 @@ namespace gpi
       , m_dma (nullptr)
       , m_replacement_gpi_segment (0)
     {
+      time_left const time_left (timeout);
+
       gaspi_config_t config;
       FAIL_ON_NON_ZERO (gaspi_config_get, &config);
       config.sn_port = port;
@@ -73,14 +98,12 @@ namespace gpi
            );
       }
 
-      FAIL_ON_NON_ZERO ( gaspi_proc_init
-                       , (std::chrono::duration_cast<std::chrono::milliseconds> (timeout)).count()
-                       );
+      FAIL_ON_NON_ZERO (gaspi_proc_init, time_left());
       FAIL_ON_NON_ZERO ( gaspi_segment_create
                        , m_replacement_gpi_segment
                        , m_mem_size
                        , GASPI_GROUP_ALL
-                       , GASPI_BLOCK
+                       , time_left()
                        , GASPI_MEM_UNINITIALIZED
                        );
       FAIL_ON_NON_ZERO ( gaspi_segment_ptr
@@ -100,7 +123,7 @@ namespace gpi
                        , exchange_hostname_and_port_segment
                        , 2 * sizeof (hostname_and_port_t)
                        , GASPI_GROUP_ALL
-                       , GASPI_BLOCK
+                       , time_left()
                        , GASPI_MEM_UNINITIALIZED
                        );
       void* exchange_hostname_and_port_data_raw;
@@ -120,14 +143,19 @@ namespace gpi
               );
       exchange_hostname_and_port_data_send->port = communication_port;
 
-      FAIL_ON_NON_ZERO (gaspi_barrier, GASPI_GROUP_ALL, GASPI_BLOCK);
+      FAIL_ON_NON_ZERO (gaspi_barrier, GASPI_GROUP_ALL, time_left());
 
       m_rank_to_hostname.resize (number_of_nodes());
       _communication_port_by_rank.resize (number_of_nodes());
 
-      for ( gaspi_rank_t r (0)
-          ; r < number_of_nodes()
-          ; ++r
+      m_rank_to_hostname[rank()] =
+        exchange_hostname_and_port_data_send->hostname;
+      _communication_port_by_rank[rank()] =
+        exchange_hostname_and_port_data_send->port;
+
+      for ( gaspi_rank_t r (rank() + 1)
+          ; r != rank()
+          ; r = (r + 1) % number_of_nodes()
           )
       {
         memset ( exchange_hostname_and_port_data_receive
@@ -143,9 +171,9 @@ namespace gpi
                          , 0
                          , sizeof (hostname_and_port_t)
                          , 0
-                         , GASPI_BLOCK
+                         , time_left()
                          );
-        FAIL_ON_NON_ZERO (gaspi_wait, 0, GASPI_BLOCK);
+        FAIL_ON_NON_ZERO (gaspi_wait, 0, time_left());
 
         m_rank_to_hostname[r] =
           exchange_hostname_and_port_data_receive->hostname;
@@ -153,7 +181,7 @@ namespace gpi
           exchange_hostname_and_port_data_receive->port;
       }
 
-      FAIL_ON_NON_ZERO (gaspi_barrier, GASPI_GROUP_ALL, GASPI_BLOCK);
+      FAIL_ON_NON_ZERO (gaspi_barrier, GASPI_GROUP_ALL, time_left());
       FAIL_ON_NON_ZERO (gaspi_segment_delete, exchange_hostname_and_port_segment);
     }
 
@@ -174,20 +202,6 @@ namespace gpi
       gaspi_number_t queue_size_max;
       FAIL_ON_NON_ZERO (gaspi_queue_size_max,  &queue_size_max);
       return queue_size_max;
-    }
-
-    gpi::version_t gaspi_t::version() const
-    {
-      float vsn;
-      FAIL_ON_NON_ZERO (gaspi_version, &vsn);
-      return vsn;
-    }
-
-    gpi::port_t gaspi_t::port() const
-    {
-      gaspi_config_t config;
-      FAIL_ON_NON_ZERO (gaspi_config_get, &config);
-      return config.sn_port;
     }
 
     gpi::size_t gaspi_t::number_of_nodes() const
@@ -214,11 +228,6 @@ namespace gpi
       gaspi_number_t queue_size;
       FAIL_ON_NON_ZERO (gaspi_queue_size, q, &queue_size);
       return queue_size;
-    }
-
-    bool gaspi_t::max_dma_requests_reached (const queue_desc_t q) const
-    {
-      return (open_dma_requests (q) >= queue_depth());
     }
 
     gpi::rank_t gaspi_t::rank() const

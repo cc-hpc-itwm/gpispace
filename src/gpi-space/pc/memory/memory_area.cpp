@@ -527,28 +527,6 @@ namespace gpi
         }
       }
 
-      void area_t::list_allocations ( const gpi::pc::type::process_id_t proc
-                                    , gpi::pc::type::handle::list_t & list
-                                    ) const
-      {
-        lock_type lock (m_mutex);
-
-        for ( handle_descriptor_map_t::const_iterator pos (m_handles.begin())
-            ; pos != m_handles.end()
-            ; ++pos
-            )
-        {
-          if (  (pos->second.flags & gpi::pc::F_EXCLUSIVE)
-             && (pos->second.creator != proc)
-             )
-          {
-            continue;
-          }
-
-          list.push_back (pos->second);
-        }
-      }
-
       bool
       area_t::is_allowed_to_attach (const gpi::pc::type::process_id_t proc) const
       {

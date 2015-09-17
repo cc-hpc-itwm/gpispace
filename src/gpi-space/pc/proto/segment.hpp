@@ -87,35 +87,6 @@ namespace gpi
           }
         };
 
-        struct list_t
-        {
-          list_t (gpi::pc::type::segment_id_t seg_id = gpi::pc::type::segment::SEG_INVAL)
-            : id (seg_id)
-          {}
-
-          gpi::pc::type::segment_id_t id;
-
-        private:
-          friend class boost::serialization::access;
-          template<typename Archive>
-          void serialize (Archive & ar, const unsigned int /*version*/)
-          {
-            ar & BOOST_SERIALIZATION_NVP( id );
-          }
-        };
-
-        struct list_reply_t
-        {
-          gpi::pc::type::segment::list_t list;
-        private:
-          friend class boost::serialization::access;
-          template<typename Archive>
-          void serialize (Archive & ar, const unsigned int /*version*/)
-          {
-            ar & BOOST_SERIALIZATION_NVP( list );
-          }
-        };
-
         // replies with register_reply_t
         struct add_memory_t
         {
@@ -164,8 +135,6 @@ namespace gpi
                               , segment::unregister_t
                               , segment::attach_t
                               , segment::detach_t
-                              , segment::list_t
-                              , segment::list_reply_t
                               , segment::add_memory_t
                               , segment::del_memory_t
                               > message_t;

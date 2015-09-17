@@ -4,11 +4,11 @@
 
 #include <gpi-space/pc/global/topology.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
-#include <gpi-space/pc/type/counter.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
 
 #include <boost/noncopyable.hpp>
 
+#include <atomic>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -46,7 +46,7 @@ namespace gpi
         int m_socket;
         bool m_stopping;
 
-        gpi::pc::type::counter_t m_process_counter;
+        std::atomic<gpi::pc::type::size_t> m_process_counter;
         mutable std::mutex _mutex_processes;
         std::map<gpi::pc::type::process_id_t, std::thread> m_processes;
 

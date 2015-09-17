@@ -26,13 +26,8 @@ namespace gpi
       // wrapped C function calls
       virtual gpi::size_t number_of_queues () const override;
       virtual gpi::size_t queue_depth () const override;
-      virtual gpi::version_t version () const override;
-      virtual gpi::port_t port () const override;
       virtual gpi::size_t number_of_nodes () const override;
       virtual gpi::size_t memory_size () const override;
-
-      virtual gpi::size_t open_dma_requests (const queue_desc_t) const override;
-      virtual bool max_dma_requests_reached (const queue_desc_t) const override;
 
       virtual gpi::rank_t rank () const override;
       virtual std::string const& hostname_of_rank (const gpi::rank_t) const override;

@@ -113,7 +113,6 @@ namespace gspc
         ( {_->_handle_id, 0}
         , {buffer, 0}
         , size
-        , GPI_PC_INVAL
         )
       );
   }

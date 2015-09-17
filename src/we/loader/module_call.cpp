@@ -93,7 +93,6 @@ namespace we
           , gpi::pc::type::memory_location_t
             (shared_memory, shared_memory_offset)
           , size
-          , GPI_PC_INVAL
           )
         );
     }
@@ -114,7 +113,6 @@ namespace we
           , gpi::pc::type::memory_location_t
             (global_memory_handle, global_memory_offset)
           , size
-          , GPI_PC_INVAL
           )
         );
     }

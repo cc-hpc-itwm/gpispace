@@ -69,16 +69,6 @@ namespace gpi
       return 1024;
     }
 
-    gpi::version_t fake_gpi_api_t::version () const
-    {
-      return 0.01;
-    }
-
-    gpi::port_t fake_gpi_api_t::port () const
-    {
-      return 42423;
-    }
-
     gpi::size_t fake_gpi_api_t::number_of_nodes () const
     {
       return 1;
@@ -87,16 +77,6 @@ namespace gpi
     gpi::size_t fake_gpi_api_t::memory_size () const
     {
       return m_mem_size;
-    }
-
-    gpi::size_t fake_gpi_api_t::open_dma_requests (const queue_desc_t q) const
-    {
-      return m_dma_request_count[q];
-    }
-
-    bool fake_gpi_api_t::max_dma_requests_reached (const queue_desc_t q) const
-    {
-      return (open_dma_requests(q) >= queue_depth());
     }
 
     gpi::rank_t fake_gpi_api_t::rank () const

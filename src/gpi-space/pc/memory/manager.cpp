@@ -153,19 +153,6 @@ namespace gpi
         }
       }
 
-      void manager_t::list_memory (gpi::pc::type::segment::list_t &l) const
-      {
-        lock_type lock (m_mutex);
-
-        for ( area_map_t::const_iterator area (m_areas.begin())
-            ; area != m_areas.end()
-            ; ++area
-            )
-        {
-          l.push_back (area->second->descriptor());
-        }
-      }
-
       void
       manager_t::attach_process ( const gpi::pc::type::process_id_t proc_id
                                 , const gpi::pc::type::segment_id_t mem_id
@@ -406,36 +393,10 @@ namespace gpi
         return costs;
       }
 
-      void
-      manager_t::list_allocations( const gpi::pc::type::process_id_t proc_id
-                                 , const gpi::pc::type::segment_id_t id
-                                 , gpi::pc::type::handle::list_t & l
-                                 ) const
-      {
-        get_area (id)->list_allocations (proc_id, l);
-      }
-
-      void
-      manager_t::list_allocations ( const gpi::pc::type::process_id_t proc_id
-                                  , gpi::pc::type::handle::list_t & l
-                                  ) const
-      {
-        lock_type lock (m_mutex);
-
-        for ( area_map_t::const_iterator s2a (m_areas.begin())
-            ; s2a != m_areas.end()
-            ; ++s2a
-            )
-        {
-          s2a->second->list_allocations (proc_id, l);
-        }
-      }
-
       gpi::pc::type::queue_id_t
       manager_t::memcpy ( gpi::pc::type::memory_location_t const & dst
                         , gpi::pc::type::memory_location_t const & src
                         , const gpi::pc::type::size_t amount
-                        , const gpi::pc::type::queue_id_t queue
                         )
       {
         memory_transfer_t t;
@@ -444,16 +405,9 @@ namespace gpi
         t.src_area     = get_area_by_handle(src.handle);
         t.src_location = src;
         t.amount       = amount;
-        if (queue == GPI_PC_INVAL)
-        {
           static gpi::pc::type::queue_id_t rr_queue = 0;
           t.queue        = rr_queue;
           rr_queue = (rr_queue + 1) % m_transfer_mgr.num_queues ();
-        }
-        else
-        {
-          t.queue        = queue;
-        }
 
         t.dst_area->check_bounds (dst, amount);
         t.src_area->check_bounds (src, amount);

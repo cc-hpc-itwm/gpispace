@@ -287,14 +287,12 @@ namespace gpi
       api_t::memcpy ( gpi::pc::type::memory_location_t const & dst
                     , gpi::pc::type::memory_location_t const & src
                     , const gpi::pc::type::size_t amount
-                    , const gpi::pc::type::queue_id_t queue
                     )
       {
         proto::memory::memcpy_t rqst;
         rqst.dst = dst;
         rqst.src = src;
         rqst.size = amount;
-        rqst.queue = queue;
 
         proto::message_t reply (communicate (proto::memory::message_t (rqst)));
 

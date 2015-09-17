@@ -71,8 +71,6 @@ namespace gpi
             ar & BOOST_SERIALIZATION_NVP( ts );
           }
         };
-
-        typedef std::vector<descriptor_t> list_t;
       }
     }
   }
