@@ -43,6 +43,45 @@ namespace
     constexpr const char* const register_port {"register-port"};
     constexpr const char* const register_key {"register-key"};
   }
+
+  void check_pid_is_still_running (pid_t pid)
+  {
+    int status;
+
+    if (fhg::util::syscall::waitpid (pid, &status, WNOHANG) == pid)
+    {
+      if (WIFEXITED (status))
+      {
+        throw std::runtime_error
+          ("already returned " + std::to_string (WEXITSTATUS (status)));
+      }
+      else if (WIFSIGNALED (status))
+      {
+        throw std::runtime_error
+          ("already signaled " + std::to_string (WTERMSIG (status)));
+      }
+    }
+  }
+
+  void wait_for_pid_returned_with_exit_status_zero (pid_t pid)
+  {
+    int status;
+
+    if (fhg::util::syscall::waitpid (pid, &status, 0) != pid)
+    {
+      throw std::logic_error ("waitpid returned for wrong child");
+    }
+    if (WIFEXITED (status) && WEXITSTATUS (status))
+    {
+      throw std::runtime_error
+        ("returned " + std::to_string (WEXITSTATUS (status)));
+    }
+    else if (WIFSIGNALED (status))
+    {
+      throw std::runtime_error
+        ("signaled " + std::to_string (WTERMSIG (status)));
+    }
+  }
 }
 
 int main (int argc, char** argv)
@@ -122,38 +161,11 @@ try
         {
           try
           {
-            int status;
-
-            if (fhg::util::syscall::waitpid (pid, &status, WNOHANG) == pid)
-            {
-              if (WIFEXITED (status))
-              {
-                throw std::runtime_error
-                  ("already returned " + std::to_string (WEXITSTATUS (status)));
-              }
-              else if (WIFSIGNALED (status))
-              {
-                throw std::runtime_error
-                  ("already signaled " + std::to_string (WTERMSIG (status)));
-              }
-            }
+            check_pid_is_still_running (pid);
 
             fhg::util::syscall::kill (pid, SIGTERM);
 
-            if (fhg::util::syscall::waitpid (pid, &status, 0) != pid)
-            {
-              throw std::logic_error ("waitpid returned for wrong child");
-            }
-            if (WIFEXITED (status) && WEXITSTATUS (status))
-            {
-              throw std::runtime_error
-                ("returned " + std::to_string (WEXITSTATUS (status)));
-            }
-            else if (WIFSIGNALED (status))
-            {
-              throw std::runtime_error
-                ("signaled " + std::to_string (WTERMSIG (status)));
-            }
+            wait_for_pid_returned_with_exit_status_zero (pid);
           }
           catch (...)
           {
