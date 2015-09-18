@@ -15,6 +15,7 @@
 
 #include <util-generic/serialization/exception.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/random.hpp>
 #include <util-generic/testing/random_string.hpp>
 
 #include <boost/lexical_cast.hpp>
@@ -1362,15 +1363,17 @@ BOOST_FIXTURE_TEST_CASE (workflow_response, daemon)
     do_workflow_response (id, workflow_response_id, "mid", 0L);
   }
 
+  long const value {fhg::util::testing::random<long>()()};
+
   std::string const workflow_response_id
     (fhg::util::testing::random_string());
-  do_workflow_response (id, workflow_response_id, "request", 0L);
+  do_workflow_response (id, workflow_response_id, "request", value);
 
   {
     expect_finished const finished (this, id, activity_output);
 
     expect_workflow_response const workflow_response
-      (this, workflow_response_id, 1L);
+      (this, workflow_response_id, value + 1);
 
     do_finished (child_id_a, activity_result);
   }
