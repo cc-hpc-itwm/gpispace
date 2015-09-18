@@ -1337,8 +1337,8 @@ void GenericDaemon::handleJobFailedAckEvent
       }
       //! \todo Other criteria to know it was submitted to the
       //! wfe. All jobs are regarded as going to the wfe and the only
-      //! way to prevent a loop is to check whether the discover comes
-      //! out of the wfe. Special "worker" id?
+      //! way to prevent a loop is to check whether the put_token
+      //! comes out of the wfe. Special "worker" id?
       else
       {
         _put_token_source.emplace (event->put_token_id(), source);
@@ -1400,8 +1400,8 @@ void GenericDaemon::handleJobFailedAckEvent
       }
       //! \todo Other criteria to know it was submitted to the
       //! wfe. All jobs are regarded as going to the wfe and the only
-      //! way to prevent a loop is to check whether the discover comes
-      //! out of the wfe. Special "worker" id?
+      //! way to prevent a loop is to check whether the
+      //! workflow_response comes out of the wfe. Special "worker" id?
       else
       {
         _workflow_response_source.emplace (event->workflow_response_id(), source);
