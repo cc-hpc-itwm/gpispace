@@ -265,7 +265,6 @@ namespace sdpa
     void CoallocationScheduler::reschedule_pending_jobs_matching_worker
       (const worker_id_t& worker)
     {
-      typedef std::chrono::duration<int,std::milli> milliecs_t ;
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
 
       job_id_list_t pending_jobs (_list_pending_jobs.get_and_clear());
