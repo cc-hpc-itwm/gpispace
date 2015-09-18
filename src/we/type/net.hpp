@@ -120,7 +120,6 @@ namespace we
       fire_expressions_and_extract_activity_random
         ( Engine& engine
         , we::workflow_response_callback const& workflow_response
-        = [] (pnet::type::value::value_type const&, pnet::type::value::value_type const&) {}
         )
       {
         while (!_enabled.empty())
