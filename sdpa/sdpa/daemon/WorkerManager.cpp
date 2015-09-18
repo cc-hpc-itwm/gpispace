@@ -214,30 +214,6 @@ namespace sdpa
       return can_start;
     }
 
-    std::set<job_id_t>  WorkerManager::remove_all_matching_pending_jobs
-      ( const worker_id_t& worker_id
-      , const job_id_list_t& jobs
-      , std::function<job_requirements_t (const sdpa::job_id_t&)> requirements
-      )
-    {
-      boost::mutex::scoped_lock const _(mtx_);
-      std::set<job_id_t> removed_jobs;
-      for (Worker& worker : worker_map_ | boost::adaptors::map_values)
-      {
-        for (const job_id_t& job_id : jobs)
-        {
-          if (  matchRequirements (worker_id, requirements (job_id))
-             && worker.remove_job_if_pending (job_id)
-             )
-          {
-            removed_jobs.insert (job_id);
-          }
-        }
-      }
-
-      return removed_jobs;
-    }
-
     bool WorkerManager::all_workers_busy_and_have_pending_jobs() const
     {
       boost::mutex::scoped_lock const _(mtx_);

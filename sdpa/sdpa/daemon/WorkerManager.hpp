@@ -66,10 +66,13 @@ namespace sdpa
 
     bool all_workers_busy_and_have_pending_jobs() const;
 
-    std::set<job_id_t> remove_all_matching_pending_jobs ( const worker_id_t&
-                                                        , const job_id_list_t&
-                                                        , std::function<job_requirements_t (const sdpa::job_id_t&)>
-                                                        );
+    template <typename T>
+    std::set<job_id_t> remove_all_matching_pending_jobs
+      ( const worker_id_t&
+      , const job_id_list_t&
+      , std::function<T (job_id_t const&)>
+      , std::function<job_requirements_t (const sdpa::job_id_t&)>
+      );
 
     void assign_job_to_worker (const job_id_t&, const worker_id_t&);
     void acknowledge_job_sent_to_worker (const job_id_t&, const worker_id_t&);
@@ -100,6 +103,39 @@ namespace sdpa
 
       mutable boost::mutex mtx_;
     };
+
+    template <typename T>
+    std::set<job_id_t>  WorkerManager::remove_all_matching_pending_jobs
+      ( const worker_id_t& worker_id
+      , const job_id_list_t& jobs
+      , std::function<T (job_id_t const&)> reservation
+      , std::function<job_requirements_t (const sdpa::job_id_t&)> requirements
+      )
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+
+      std::set<job_id_t> removed_jobs;
+      for (const job_id_t& job_id : jobs)
+      {
+        if (matchRequirements (worker_id, requirements (job_id)))
+        {
+          T ptr_reservation (reservation (job_id));
+
+          for (std::string worker_id : ptr_reservation->workers())
+          {
+            auto it (worker_map_.find (worker_id));
+            if (it != worker_map_.end())
+            {
+              it->second.remove_job_if_pending (job_id);
+            }
+          }
+        }
+
+        removed_jobs.insert (job_id);
+      }
+
+      return removed_jobs;
+    }
 
     template <typename T>
     void WorkerManager::steal_work

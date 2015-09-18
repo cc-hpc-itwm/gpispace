@@ -7,7 +7,6 @@
 #include <boost/range/algorithm.hpp>
 
 #include <climits>
-#include <chrono>
 #include <functional>
 #include <queue>
 
@@ -266,21 +265,32 @@ namespace sdpa
     void CoallocationScheduler::reschedule_pending_jobs_matching_worker
       (const worker_id_t& worker)
     {
-      job_id_list_t jobs;
-
+      typedef std::chrono::duration<int,std::milli> milliecs_t ;
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      boost::copy ( allocation_table_ | boost::adaptors::map_keys
-                  , std::back_inserter(jobs)
-                  );
 
-      std::set<job_id_t> removed_matching_pending_jobs
-        (_worker_manager.remove_all_matching_pending_jobs (worker, jobs, _job_requirements));
+      job_id_list_t pending_jobs (_list_pending_jobs.get_and_clear());
 
-      for (const job_id_t& job_id : removed_matching_pending_jobs)
+      std::set<job_id_t> removed_jobs
+        (_worker_manager.remove_all_matching_pending_jobs<Reservation*>
+          ( worker
+          , pending_jobs
+          , [this] (job_id_t const& job)
+            {return allocation_table_.at (job);}
+          , _job_requirements
+          )
+        );
+
+      for (job_id_t const& job_id : removed_jobs)
       {
-        allocation_table_.erase (job_id);
-        _list_pending_jobs.erase (job_id);
+        pending_jobs.remove (job_id);
         _jobs_to_schedule.push (job_id);
+        delete allocation_table_.at (job_id);
+        allocation_table_.erase (job_id);
+      }
+
+      for (job_id_t const& job_id : pending_jobs)
+      {
+        _list_pending_jobs.push (job_id);
       }
     }
 
