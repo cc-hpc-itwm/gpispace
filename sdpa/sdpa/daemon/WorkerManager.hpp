@@ -129,9 +129,9 @@ namespace sdpa
               it->second.remove_job_if_pending (job_id);
             }
           }
-        }
 
-        removed_jobs.insert (job_id);
+          removed_jobs.insert (job_id);
+        }
       }
 
       return removed_jobs;
