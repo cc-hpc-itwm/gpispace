@@ -4,15 +4,15 @@
   <net>
     <place name="state" type="unsigned long"/>
     <place name="done" type="control" put_token="true"/>
-    <struct name="value_and_endpoint">
+    <struct name="value_and_response_id">
       <field name="value" type="unsigned long"/>
       <field name="response_id" type="string"/>
     </struct>
-    <place name="get_and_update_state" type="value_and_endpoint" put_token="true"/>
+    <place name="get_and_update_state" type="value_and_response_id" put_token="true"/>
     <transition name="get_and_update_state">
       <defun>
         <inout name="state" type="unsigned long"/>
-        <in name="trigger" type="value_and_endpoint"/>
+        <in name="trigger" type="value_and_response_id"/>
         <out name="response" type="unsigned long"/>
         <module name="workflow_response" function="response (state, trigger, response)">
           <code><![CDATA[
