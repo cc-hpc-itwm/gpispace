@@ -518,21 +518,21 @@ namespace we
 
     void layer::rts_finished_and_forget (id_type id, type::activity_t activity)
     {
-      _rts_finished (id, activity);
       _nets_to_extract_from.forget (id);
       cancel_outstanding_responses (id, "workflow finished");
+      _rts_finished (id, activity);
     }
     void layer::rts_failed_and_forget (id_type id, std::string message)
     {
-      _rts_failed (id, message);
       _nets_to_extract_from.forget (id);
       cancel_outstanding_responses (id, "workflow failed");
+      _rts_failed (id, message);
     }
     void layer::rts_canceled_and_forget (id_type id)
     {
-      _rts_canceled (id);
       _nets_to_extract_from.forget (id);
       cancel_outstanding_responses (id, "workflow was canceled");
+      _rts_canceled (id);
     }
 
   void layer::cancel_outstanding_responses

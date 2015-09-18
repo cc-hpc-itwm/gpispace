@@ -1401,13 +1401,14 @@ BOOST_FIXTURE_TEST_CASE (workflow_response_fails_when_workflow_fails, daemon)
   do_workflow_response (id, workflow_response_id, "request", 0L);
 
   {
+    std::string const fail_reason (fhg::util::testing::random_string());
+    expect_failed const failed (this, id, fail_reason);
+
     expect_workflow_response const workflow_response
       ( this
       , workflow_response_id
       , std::make_exception_ptr (std::runtime_error ("workflow failed"))
       );
-    std::string const fail_reason (fhg::util::testing::random_string());
-    expect_failed const failed (this, id, fail_reason);
 
     do_failed (child_id, fail_reason);
   }
