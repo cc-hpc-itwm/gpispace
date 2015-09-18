@@ -1363,6 +1363,21 @@ BOOST_FIXTURE_TEST_CASE (workflow_response, daemon)
     do_workflow_response (id, workflow_response_id, "mid", 0L);
   }
 
+  {
+    std::string const workflow_response_id
+      (fhg::util::testing::random_string());
+    expect_workflow_response const workflow_response
+      ( this
+      , workflow_response_id
+      , std::make_exception_ptr
+          ( pnet::exception::type_mismatch
+              (signature::LONG, value::CONTROL, {"request", "value"})
+          )
+      );
+
+    do_workflow_response (id, workflow_response_id, "request", value::CONTROL);
+  }
+
   long const value {fhg::util::testing::random<long>()()};
 
   std::string const workflow_response_id
