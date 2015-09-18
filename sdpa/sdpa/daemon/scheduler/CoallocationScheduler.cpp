@@ -165,7 +165,7 @@ namespace sdpa
         std::list<job_id_t> pending_jobs (_list_pending_jobs.get_and_clear());
         if (!pending_jobs.empty())
         {
-          _worker_manager.steal_work<CoallocationScheduler::Reservation*>
+          _worker_manager.steal_work<Reservation>
             ( pending_jobs
             , [this] (job_id_t const& job)
               {return allocation_table_.at (job);}
@@ -270,7 +270,7 @@ namespace sdpa
       job_id_list_t pending_jobs (_list_pending_jobs.get_and_clear());
 
       std::set<job_id_t> removed_jobs
-        (_worker_manager.remove_all_matching_pending_jobs<Reservation*>
+        (_worker_manager.remove_all_matching_pending_jobs<Reservation>
           ( worker
           , pending_jobs
           , [this] (job_id_t const& job)

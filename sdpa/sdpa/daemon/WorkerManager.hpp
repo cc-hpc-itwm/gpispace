@@ -50,9 +50,9 @@ namespace sdpa
         , const job_requirements_t& job_req_set
         ) const;
 
-      template <typename T>
+      template <typename Reservation>
            void steal_work ( std::list<job_id_t> pending_jobs
-                           , std::function<T (job_id_t const&)> reservation
+                           , std::function<Reservation* (job_id_t const&)> reservation
                            , std::function<job_requirements_t (const sdpa::job_id_t&)>
                                requirements
                            );
@@ -66,11 +66,11 @@ namespace sdpa
 
     bool all_workers_busy_and_have_pending_jobs() const;
 
-    template <typename T>
+    template <typename Reservation>
     std::set<job_id_t> remove_all_matching_pending_jobs
       ( const worker_id_t&
       , const job_id_list_t&
-      , std::function<T (job_id_t const&)>
+      , std::function<Reservation* (job_id_t const&)>
       , std::function<job_requirements_t (const sdpa::job_id_t&)>
       );
 
@@ -104,11 +104,11 @@ namespace sdpa
       mutable boost::mutex mtx_;
     };
 
-    template <typename T>
+    template <typename Reservation>
     std::set<job_id_t>  WorkerManager::remove_all_matching_pending_jobs
       ( const worker_id_t& worker_id
       , const job_id_list_t& jobs
-      , std::function<T (job_id_t const&)> reservation
+      , std::function<Reservation* (job_id_t const&)> reservation
       , std::function<job_requirements_t (const sdpa::job_id_t&)> requirements
       )
     {
@@ -119,7 +119,7 @@ namespace sdpa
       {
         if (matchRequirements (worker_id, requirements (job_id)))
         {
-          T ptr_reservation (reservation (job_id));
+          Reservation* ptr_reservation (reservation (job_id));
 
           for (std::string worker_id : ptr_reservation->workers())
           {
@@ -137,10 +137,10 @@ namespace sdpa
       return removed_jobs;
     }
 
-    template <typename T>
+    template <typename Reservation>
     void WorkerManager::steal_work
       ( std::list<job_id_t> pending_jobs
-      , std::function<T (job_id_t const&)> reservation
+      , std::function<Reservation* (job_id_t const&)> reservation
       , std::function<job_requirements_t (const sdpa::job_id_t&)>
           requirements
       )
