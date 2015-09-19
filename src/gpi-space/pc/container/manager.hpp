@@ -50,7 +50,6 @@ namespace gpi
         mutable std::mutex _mutex_processes;
         std::map<gpi::pc::type::process_id_t, std::thread> m_processes;
 
-        gpi::api::gpi_api_t& _gpi_api;
         memory::manager_t _memory_manager;
         global::topology_t _topology;
 
