@@ -81,7 +81,7 @@ Q: What are the characteristics/properties the workers should communicate to the
     - if is a leaf node or not
     
   One should probably add:
-    - the number of processing elements associated processing element? 
+    - the number of processing elements associated to a worker? 
       (to clarify the relation worker - PE, how the co-allocation works 
       when a worker has more PEs)
     - the available RAM of the host machine?
@@ -102,12 +102,12 @@ Q: What scheduling strategies to use?
       total costs associated to the workers. 
     - schedule a job to a set of workers s.t. the total cost for each worker is 
       under a predefined threshold (wall time?)
-    - ignore the costs (consider the uniform) and do work stealing 
-      (this would correspond to a worker request model)
+    - ignore the costs (consider them uniform) and do work stealing 
+      (this would correspond to a worker request model).
     - minimize energy costs
-      This requires knowledge about the machine status, some machine maybe down
-      and makes sense to start the up only if there are a lot of jobs to run, 
-      and the costs are not important
+      This requires knowledge about the machine status, some machines maybe down
+      and makes sense to start them up only if there are a lot of jobs to run 
+      and the costs are not important.
     
     The strategy can be specified as a parameter when submitting an activity 
     
