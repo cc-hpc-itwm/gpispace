@@ -69,8 +69,8 @@ namespace sdpa
       {
       public:
         inline void push (job_id_t item);
-        template <typename T>
-        inline void push (T items);
+        template <typename Range>
+        inline void push (Range items);
         inline size_t erase (const job_id_t& item);
 
         std::list<job_id_t> get_and_clear();

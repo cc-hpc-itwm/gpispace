@@ -431,11 +431,11 @@ namespace sdpa
       container_.push_back (item);
     }
 
-    template <typename T>
-    void CoallocationScheduler::locked_job_id_list::push (T list)
+    template <typename Range>
+    void CoallocationScheduler::locked_job_id_list::push (Range range)
     {
       boost::mutex::scoped_lock const _ (mtx_);
-      container_.insert (container_.end(), list.begin(), list.end());
+      container_.insert (container_.end(), std::begin (range), std::end (range));
     }
 
     size_t CoallocationScheduler::locked_job_id_list::erase (const job_id_t& item)
