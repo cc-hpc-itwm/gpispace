@@ -140,3 +140,9 @@ Q: What scheduling strategies to use?
       and the costs are not important.
 
     The strategy can be specified as a parameter when submitting an activity
+
+MR: Personally I very much like a worker request model and I believe
+that randomized distributed work stealing will achieve very good
+results for a broad range of applications. As an add on such models
+not only tend to have simple implementations but, at the same time,
+automatically deal with dynamics and incomplete information.
