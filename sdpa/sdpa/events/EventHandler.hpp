@@ -34,6 +34,8 @@ namespace sdpa
     class put_token;
     class put_token_response;
     class BacklogNoLongerFullEvent;
+    class workflow_response;
+    class workflow_response_response;
 
     class EventHandler
     {
@@ -90,6 +92,10 @@ namespace sdpa
       { throw std::runtime_error ("UNHANDLED EVENT: put_token_response"); }
       virtual void handleBacklogNoLongerFullEvent (fhg::com::p2p::address_t const&, const BacklogNoLongerFullEvent*)
          { throw std::runtime_error ("UNHANDLED EVENT: BacklogNoLongerFullEvent"); }
+      virtual void handle_workflow_response (fhg::com::p2p::address_t const&, const workflow_response*)
+      { throw std::runtime_error ("UNHANDLED EVENT: workflow_response"); }
+      virtual void handle_workflow_response_response (fhg::com::p2p::address_t const&, const workflow_response_response*)
+      { throw std::runtime_error ("UNHANDLED EVENT: workflow_response_response"); }
     };
   }
 }

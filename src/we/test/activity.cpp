@@ -142,7 +142,13 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
   {
     while ( boost::optional<we::type::activity_t> sub
           = boost::get<we::type::net_type> (act.transition().data())
-          . fire_expressions_and_extract_activity_random (engine)
+          . fire_expressions_and_extract_activity_random
+              ( engine
+              , [] (pnet::type::value::value_type const&, pnet::type::value::value_type const&)
+                {
+                  throw std::logic_error ("got unexpected workflow_response");
+                }
+              )
           )
     {
       exec_context ctxt;

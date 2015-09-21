@@ -3,19 +3,18 @@
   <in name="random_module_calls" type="unsigned long" place="random_module_calls"/>
   <out name="done" type="control" place="done_done"/>
   <net>
-    <struct name="value_and_endpoint">
+    <struct name="value_and_response_id">
       <field name="value" type="unsigned long"/>
-      <field name="address" type="string"/>
-      <field name="port" type="unsigned int"/>
+      <field name="response_id" type="string"/>
     </struct>
 
     <place name="state" type="unsigned long"/>
-    <place name="get_and_update_state_trigger" type="value_and_endpoint" put_token="true"/>
+    <place name="get_and_update_state_trigger" type="value_and_response_id" put_token="true"/>
 
     <transition name="get_and_update_state">
       <defun>
         <inout name="state" type="unsigned long"/>
-        <in name="trigger" type="value_and_endpoint"/>
+        <in name="trigger" type="value_and_response_id"/>
         <out name="response" type="unsigned long"/>
         <expression>
           ${response} := ${state};
@@ -65,12 +64,12 @@
 
     <place name="done" type="control"/>
 
-    <place name="check_done_trigger" type="value_and_endpoint" put_token="true"/>
+    <place name="check_done_trigger" type="value_and_response_id" put_token="true"/>
 
     <transition name="check_done">
       <defun>
         <inout name="done" type="control"/>
-        <in name="trigger" type="value_and_endpoint"/>
+        <in name="trigger" type="value_and_response_id"/>
         <expression/>
       </defun>
       <connect-in port="done" place="done"/>

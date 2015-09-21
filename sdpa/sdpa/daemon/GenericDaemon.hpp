@@ -111,6 +111,10 @@ namespace sdpa {
       void discovered (we::layer::id_type discover_id, sdpa::discovery_info_t);
       void token_put
         (std::string put_token_id, boost::optional<std::exception_ptr>);
+      void workflow_response_response
+        ( std::string workflow_response_id
+        , boost::variant<std::exception_ptr, pnet::type::value::value_type>
+        );
 
       void addCapability(const capability_t& cpb);
 
@@ -166,6 +170,15 @@ namespace sdpa {
 
       virtual void handle_put_token (fhg::com::p2p::address_t const& source, const events::put_token*) override;
       virtual void handle_put_token_response (fhg::com::p2p::address_t const& source, const events::put_token_response*) override;
+
+      virtual void handle_workflow_response
+        ( fhg::com::p2p::address_t const&
+        , const events::workflow_response*
+        ) override;
+      virtual void handle_workflow_response_response
+        ( fhg::com::p2p::address_t const&
+        , events::workflow_response_response const*
+        ) override;
 
     private:
       // event communication
@@ -230,6 +243,8 @@ namespace sdpa {
         _discover_sources;
 
       std::unordered_map<std::string, fhg::com::p2p::address_t> _put_token_source;
+      std::unordered_map<std::string, fhg::com::p2p::address_t>
+        _workflow_response_source;
 
     private:
       typedef std::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>
@@ -321,6 +336,12 @@ namespace sdpa {
                        , pnet::type::value::value_type
                        ) const;
 
+        void workflow_response ( job_id_t
+                               , std::string workflow_response_id
+                               , std::string place_name
+                               , pnet::type::value::value_type
+                               ) const;
+
       private:
         GenericDaemon* _that;
         fhg::com::p2p::address_t _address;
@@ -358,6 +379,10 @@ namespace sdpa {
         void put_token_response ( std::string put_token_id
                                 , boost::optional<std::exception_ptr>
                                 ) const;
+        void workflow_response_response
+          ( std::string workflow_response_id
+          , boost::variant<std::exception_ptr, pnet::type::value::value_type>
+          ) const;
 
       private:
         GenericDaemon* _that;

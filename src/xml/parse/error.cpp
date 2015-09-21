@@ -228,7 +228,7 @@ namespace xml
             % port.get().name()
             % port.get().type()
             % pnet::type::signature::show (port.get().signature_or_throw())
-            % we::rpc_server_description_requirements()
+            % we::response_description_requirements()
             , response.get().position_of_definition()
             )
       {}

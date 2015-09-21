@@ -25,6 +25,7 @@
 #include <sdpa/events/worker_registration_response.hpp>
 #include <sdpa/events/WorkerRegistrationEvent.hpp>
 #include <sdpa/events/put_token.hpp>
+#include <sdpa/events/workflow_response.hpp>
 #include <sdpa/events/BacklogNoLongerFullEvent.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
@@ -101,6 +102,8 @@ namespace sdpa
         REGISTER (WorkerRegistrationEvent, MgmtEvent);
         REGISTER (put_token, JobEvent);
         REGISTER (put_token_response, MgmtEvent);
+        REGISTER (workflow_response, JobEvent);
+        REGISTER (workflow_response_response, MgmtEvent);
         REGISTER (BacklogNoLongerFullEvent, MgmtEvent);
 
 #undef REGISTER

@@ -125,7 +125,7 @@ namespace
        client.synchronous_workflow_response
          ("JOB-NOT-EXISTENT", "get_and_update_state", 12UL);
      }
-    , std::runtime_error ("Error: reason := unable to put token: JOB-NOT-EXISTENT unknown or not running code := 2")
+    , std::runtime_error ("Error: reason := unable to request workflow response: JOB-NOT-EXISTENT unknown or not running code := 2")
     );
 
   //! \todo specific exception
@@ -144,18 +144,11 @@ namespace
                     , std::invalid_argument const& rhs
                     ) const
     {
-      static std::string const rfc_1123_hostname
-        (R"EOS((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]))EOS");
-
       std::string const rhs_what
         ( std::regex_replace
-            ( std::regex_replace
-                ( std::string (rhs.what())
-                , std::regex ("address := \"" + rfc_1123_hostname + "\"")
-                , "address := \"IGNORE_FOR_COMPARISON\""
-                )
-            , std::regex ("port := [0-9]+U")
-            , "port := IGNORE_FOR_COMPARISON"
+            ( std::string (rhs.what())
+            , std::regex ("response_id := \"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\"")
+            , "response_id := \"IGNORE_FOR_COMPARISON\""
             )
         );
 
@@ -179,7 +172,7 @@ namespace
        client.synchronous_workflow_response
          (job_id, "PLACE-NOT-EXISTENT", 12UL);
      }
-    , std::invalid_argument ("put_token (\"PLACE-NOT-EXISTENT\", Struct [value := 12UL, address := \"IGNORE_FOR_COMPARISON\", port := IGNORE_FOR_COMPARISON]): place not found")
+    , std::invalid_argument ("put_token (\"PLACE-NOT-EXISTENT\", Struct [value := 12UL, response_id := \"IGNORE_FOR_COMPARISON\"]): place not found")
     );
 
   //! \todo specific exception
@@ -189,7 +182,7 @@ namespace
        client.synchronous_workflow_response
          (job_id, "state", 12UL);
      }
-    , std::invalid_argument ("put_token (\"state\", Struct [value := 12UL, address := \"IGNORE_FOR_COMPARISON\", port := IGNORE_FOR_COMPARISON]): place not marked with attribute put_token=\"true\"")
+    , std::invalid_argument ("put_token (\"state\", Struct [value := 12UL, response_id := \"IGNORE_FOR_COMPARISON\"]): place not marked with attribute put_token=\"true\"")
     );
 
   client.put_token (job_id, "done", we::type::literal::control());
@@ -201,7 +194,7 @@ namespace
        client.synchronous_workflow_response
          (job_id, "get_and_update_state", 0UL);
      }
-    , std::runtime_error ("Error: reason := unable to put token: " + job_id + " unknown or not running code := 2")
+    , std::runtime_error ("Error: reason := unable to request workflow response: " + job_id + " unknown or not running code := 2")
     );
 
   std::multimap<std::string, pnet::type::value::value_type> const result

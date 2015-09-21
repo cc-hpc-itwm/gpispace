@@ -8,6 +8,7 @@
 #include <we/type/transition.hpp>
 
 #include <we/context.fwd.hpp>
+#include <we/workflow_response.hpp>
 
 #include <we/type/value.hpp>
 #include <we/type/value/read.hpp>
@@ -56,7 +57,9 @@ namespace we
         we::type::transition_t& transition();
 
         // allowed for net_type only
-        void inject (const activity_t&);
+        void inject (const activity_t&, we::workflow_response_callback
+                            = [] (pnet::type::value::value_type const&, pnet::type::value::value_type const&) {}
+);
 
         void execute (context*);
 
