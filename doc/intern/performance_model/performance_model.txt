@@ -69,6 +69,11 @@ A: Use historical or statistical information. Maintain a table storing for each
    result reception). The stored time is an average of all previous execution
    times of a job of this type.
 
+   Not only the average can be stored, but by storing $n$,
+   $S=\sum_{1..n} x_i$ and $Q=\sum_{i=n} x_i*x_i$ we know about
+   average and stddev as well. (avg = S / n, stddev == sqrt (Q / n -
+   avg * avg))
+
 Q: What requirements can be formulated and should be taken into account  for a
    job by the scheduler?
 
