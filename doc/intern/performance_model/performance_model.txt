@@ -4,66 +4,66 @@ Actual situation
 
 The agent implements an event-driven architecture.
 The scheduling is done online, i.e. the decisions are made without complete
-information about the entire problem instance. 
+information about the entire problem instance.
 
 The jobs are added one by one, whenever a SubmitJobEvent occurs.
 The workers are added one by one, whenever a WorkersRegistrationEvent
 is received  by the agent. A worker is removed whenever a network error event
 or disconnect is triggered.
 
-Most of the existent online scheduling algorithms focus on the 
+Most of the existent online scheduling algorithms focus on the
 scheduling of a suite of jobs on single machines.
-In GPISpace we deal with a co-scheduling problem: 
+In GPISpace we deal with a co-scheduling problem:
 schedule a job on several workers.
 
 In GPISpace the scheduler assumes that the jobs have associated costs,
 which are transfer costs and computational costs.
 
-The transfer costs correspond to the time needed to transfer input or output data 
+The transfer costs correspond to the time needed to transfer input or output data
 (with a known size) between the virtual memory and the local machine.
 
-The computational costs are considered now to be uniform and they should be adapted 
+The computational costs are considered now to be uniform and they should be adapted
 s.t. to more accurately estimate the execution time of the jobs/activities/modules.
 
 Q: How to model the computational cost of a module?
 
    The user should provide a hint about the execution time of a module.
-   This can be a function provided by the user, which is able for a given 
+   This can be a function provided by the user, which is able for a given
    input data and a given architecture type or processing element speed (CPU/GPU)
-   to give the approximate execution time. 
-   
+   to give the approximate execution time.
+
    Additionally, as argument should also be given the number of processors.
    The reason is that, if the module requires co-scheduling, the computational cost
-   in this case is the execution time for running the module in parallel on a set of 
+   in this case is the execution time for running the module in parallel on a set of
    workers (processing elements?) of the specified type.
-   
+
 Q: If a job requires co-scheduling, should one allocate resources with the same
-   physical characteristics (speed, particularly)? Should we impose such a 
+   physical characteristics (speed, particularly)? Should we impose such a
    restriction?
-   If not, what are the consequences? In the worst case the workers may have quite 
+   If not, what are the consequences? In the worst case the workers may have quite
    different (matching) characteristics and the users may have not tested their modules
    on all the hardware combinations.
-        
+
 Q: what is the relation between workers and processing elements (cores/GPUs),
    (i.e. 1-to-1, 1-to-n)?
-   
+
 Q: How can a user specify the computational cost of a module?
 A: Provide the name of the method as an argument to the module definition function
    and the name of the library in which it is implemented. Or use XML attributes, etc.
 
-Q: How to proceed if the user has no idea or gives no hint about how to estimate 
+Q: How to proceed if the user has no idea or gives no hint about how to estimate
    the computational cost of a module?
-   
-A: Use historical or statistical information. Maintain a table storing for each 
-   module type/name and eventually the input data size the measured execution time 
-   from the point of view of the agent (i.e. the time between submission and 
-   result reception). The stored time is an average of all previous execution 
+
+A: Use historical or statistical information. Maintain a table storing for each
+   module type/name and eventually the input data size the measured execution time
+   from the point of view of the agent (i.e. the time between submission and
+   result reception). The stored time is an average of all previous execution
    times of a job of this type.
-   
-Q: What requirements can be formulated and should be taken into account  for a 
+
+Q: What requirements can be formulated and should be taken into account  for a
    job by the scheduler?
-   
-  The current situation is: the scheduler are submitted jobs with the following 
+
+  The current situation is: the scheduler are submitted jobs with the following
   requirements:
       - the required capabilities
       - the number of workers an activity requires
@@ -71,49 +71,42 @@ Q: What requirements can be formulated and should be taken into account  for a
       - a computational_cost for that activity and input data (constant now, by default)
       - the total memory buffer size for an activity
 
-Q: What are the characteristics/properties the workers should communicate to the 
+Q: What are the characteristics/properties the workers should communicate to the
    agent upon registration and that are to be used by the scheduler?
-   
-   Currently the workers are communicating to the agent the following properties: 
+
+   Currently the workers are communicating to the agent the following properties:
     - the set of capabilities
     - the size of the allocated shared memory
     - the host name
     - if is a leaf node or not
-    
+
   One should probably add:
-    - the number of processing elements associated to a worker? 
-      (to clarify the relation worker - PE, how the co-allocation works 
+    - the number of processing elements associated to a worker?
+      (to clarify the relation worker - PE, how the co-allocation works
       when a worker has more PEs)
     - the available RAM of the host machine?
     - the processing element type (CPU/GPU)
     - the speed/frequency of a processing element
-    
-    All this information should be described in a resource description type class. 
+
+    All this information should be described in a resource description type class.
     Each worker should have associated such a resource type description.
-    
-    
+
+
 Q: What scheduling strategies to use?
    Currently, we have only one strategy: the job is assigned to a set of workers
    minimizing the total cost (execution time), implemented in
    find_job_assignment_minimizing_total_cost.
-   
-   Other strategies, would be 
-    - schedule a job to a set of workers minimizing the standard deviation of the 
-      total costs associated to the workers. 
-    - schedule a job to a set of workers s.t. the total cost for each worker is 
+
+   Other strategies, would be
+    - schedule a job to a set of workers minimizing the standard deviation of the
+      total costs associated to the workers.
+    - schedule a job to a set of workers s.t. the total cost for each worker is
       under a predefined threshold (wall time?)
-    - ignore the costs (consider them uniform) and do work stealing 
+    - ignore the costs (consider them uniform) and do work stealing
       (this would correspond to a worker request model).
     - minimize energy costs
       This requires knowledge about the machine status, some machines maybe down
-      and makes sense to start them up only if there are a lot of jobs to run 
+      and makes sense to start them up only if there are a lot of jobs to run
       and the costs are not important.
-    
-    The strategy can be specified as a parameter when submitting an activity 
-    
-   
-      
-   
-   
-   
-  
+
+    The strategy can be specified as a parameter when submitting an activity
