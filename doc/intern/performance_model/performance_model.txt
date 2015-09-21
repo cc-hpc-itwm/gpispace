@@ -110,6 +110,17 @@ Q: What are the characteristics/properties the workers should communicate to the
     All this information should be described in a resource description type class.
     Each worker should have associated such a resource type description.
 
+    Groups of workers will share resources:
+    - Memory: All workers on a shared memory domain share that
+    memory.
+    Example: A calc-worker and a reduce-worker share a NUMA socket
+    that provides 32 GiB of memory. A calc-activity requires 20 GiB
+    and gets scheduled to the calc-worker. A reduce-activity the
+    requires 16 GiB can not be scheduled. Later the calc-activity
+    finishs and the reduce-activity is scheduled to the
+    reduce-worker. A second calc-activity requires only 12 GiB and
+    gets scheduled to the calc-worker while the reduce-activity is
+    still running.
 
 Q: What scheduling strategies to use?
    Currently, we have only one strategy: the job is assigned to a set of workers
