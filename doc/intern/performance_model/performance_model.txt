@@ -74,6 +74,11 @@ A: Use historical or statistical information. Maintain a table storing for each
    average and stddev as well. (avg = S / n, stddev == sqrt (Q / n -
    avg * avg))
 
+   Probably this will be the default mode of operation, because:
+   1. Reality of application development does not have performance
+   model, not even performance estimations and
+   2. History shows that 1. never changes.
+
 Q: What requirements can be formulated and should be taken into account  for a
    job by the scheduler?
 
