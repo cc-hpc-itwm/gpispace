@@ -52,6 +52,10 @@ partition and only deliver heterogeneous situations if homogeneous is impossible
 Q: what is the relation between workers and processing elements (cores/GPUs),
    (i.e. 1-to-1, 1-to-n)?
 
+A: What we know about for a certain type of worker:
+1:1 (parsu)
+1:n (one worker per socket, e.g. SPLOTCH and FRTM)
+
 Q: How can a user specify the computational cost of a module?
 A: Provide the name of the method as an argument to the module definition function
    and the name of the library in which it is implemented. Or use XML attributes, etc.
