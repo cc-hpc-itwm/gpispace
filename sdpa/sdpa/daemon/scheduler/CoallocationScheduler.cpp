@@ -172,10 +172,7 @@ namespace sdpa
             , _job_requirements
             );
 
-          for (job_id_t const& job : pending_jobs)
-          {
-            _list_pending_jobs.push (job);
-          }
+          _list_pending_jobs.push (pending_jobs);
         }
       }
 
@@ -239,15 +236,8 @@ namespace sdpa
         }
       }
 
-      for (job_id_t id : jobs_to_schedule)
-      {
-        _jobs_to_schedule.push (id);
-      }
-
-      for (const sdpa::job_id_t& id : nonmatching_jobs_queue)
-      {
-        _jobs_to_schedule.push (id);
-      }
+      _jobs_to_schedule.push (jobs_to_schedule);
+      _jobs_to_schedule.push (nonmatching_jobs_queue);
 
       assignment_t assignment;
       std::transform ( allocation_table_.begin()
@@ -282,15 +272,12 @@ namespace sdpa
       for (job_id_t const& job_id : removed_jobs)
       {
         pending_jobs.remove (job_id);
-        _jobs_to_schedule.push (job_id);
         delete allocation_table_.at (job_id);
         allocation_table_.erase (job_id);
       }
 
-      for (job_id_t const& job_id : pending_jobs)
-      {
-        _list_pending_jobs.push (job_id);
-      }
+      _jobs_to_schedule.push (removed_jobs);
+      _list_pending_jobs.push (pending_jobs);
     }
 
     bool CoallocationScheduler::cancelNotTerminatedWorkerJobs ( std::function<void (worker_id_t const&)> func
@@ -442,6 +429,13 @@ namespace sdpa
     {
       boost::mutex::scoped_lock const _ (mtx_);
       container_.push_back (item);
+    }
+
+    template <typename T>
+    void CoallocationScheduler::locked_job_id_list::push (T list)
+    {
+      boost::mutex::scoped_lock const _ (mtx_);
+      container_.insert (container_.end(), list.begin(), list.end());
     }
 
     size_t CoallocationScheduler::locked_job_id_list::erase (const job_id_t& item)
