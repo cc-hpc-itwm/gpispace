@@ -44,6 +44,11 @@ Q: If a job requires co-scheduling, should one allocate resources with the same
    different (matching) characteristics and the users may have not tested their modules
    on all the hardware combinations.
 
+A: Depends on the application. It is up to the application to specify
+valid partitions (e.g. same amount of memory per core is required). As
+a rule of thumb the scheduler should try to find a homogeneous
+partition and only deliver heterogeneous situations if homogeneous is impossible.
+
 Q: what is the relation between workers and processing elements (cores/GPUs),
    (i.e. 1-to-1, 1-to-n)?
 
