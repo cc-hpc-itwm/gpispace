@@ -7,6 +7,7 @@
 #include <drts/private/option.hpp>
 #include <drts/private/rifd_entry_points_impl.hpp>
 
+#include <util-generic/blocked.hpp>
 #include <util-generic/read_lines.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
@@ -190,47 +191,34 @@ namespace gspc
               , std::unordered_map<std::string, std::string> const& environment
               ) const
     {
-      std::unordered_map<std::string, std::vector<std::string>> output;
-      std::unordered_map<std::string, std::exception_ptr> failed;
-
-      //! \todo blocked_async or even recursive, better: use aggregated_rpc
-      for (std::string const& hostname : hostnames)
-      {
-        auto const pos (_entry_points.find (hostname));
-
-        if (pos == _entry_points.end())
-        {
-          failed.emplace
-            ( hostname
-            , std::make_exception_ptr
-              ( std::invalid_argument
-                  (( boost::format ("execute: unknown host '%1%'")
-                   % hostname
-                   ).str()
-                  )
-              )
-            );
-        }
-        else
-        {
-          try
+      //! \todo use aggregated_rpc
+      return fhg::util::blocked_async_with_results< std::string
+                                                  , std::vector<std::string>
+                                                  >
+        ( hostnames
+        //! \todo make the blocksize an option, better: use aggregated_rpc
+        , 64
+        , [] (std::string const& hostname) { return hostname; }
+        , [&] (std::string const& hostname)
           {
-            output.emplace
-              ( hostname
-              , fhg::rif::client (pos->second)
+            auto const pos (_entry_points.find (hostname));
+
+            if (pos == _entry_points.end())
+            {
+              throw std::invalid_argument
+                (( boost::format ("execute: unknown host '%1%'")
+                 % hostname
+                 ).str()
+                );
+            }
+
+            return fhg::rif::client (pos->second)
               . execute_and_get_startup_messages_and_wait
                   (command, arguments, environment)
               . get()
-              );
+              ;
           }
-          catch (...)
-          {
-            failed.emplace (hostname, std::current_exception());
-          }
-        }
-      }
-
-      return {output, failed};
+        );
     }
 
     std::string _strategy;
