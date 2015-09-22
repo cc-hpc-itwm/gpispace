@@ -7,6 +7,7 @@
 #include <we/type/net.hpp>
 #include <we/type/schedule_data.hpp>
 #include <we/type/value.hpp>
+#include <we/workflow_response.hpp>
 
 #include <sdpa/types.hpp>
 
@@ -18,6 +19,7 @@
 #include <boost/thread/scoped_thread.hpp>
 
 #include <functional>
+#include <mutex>
 #include <random>
 #include <unordered_map>
 
@@ -44,6 +46,8 @@ namespace we
             , std::function<void (id_type discover_id, sdpa::discovery_info_t)> rts_discovered
               // result of put_token (parent) -> top level
             , std::function<void (std::string put_token_id, boost::optional<std::exception_ptr>)> rts_token_put
+              //result of workflow_response (parent) -> top level
+            , std::function<void (std::string workflow_response_id, boost::variant<std::exception_ptr, pnet::type::value::value_type>)> rts_workflow_response
             , std::function<id_type()> rts_id_generator
             , std::mt19937& random_extraction_engine
             );
@@ -78,6 +82,13 @@ namespace we
                      , pnet::type::value::value_type
                      );
 
+      // initial from exec_layer -> top level, unique workflow_response_id
+      void request_workflow_response ( id_type
+                                     , std::string workflow_response_id
+                                     , std::string place_name
+                                     , pnet::type::value::value_type
+                                     );
+
     private:
       std::function<void (id_type, type::activity_t)> _rts_submit;
       std::function<void (id_type)> _rts_cancel;
@@ -87,11 +98,23 @@ namespace we
       std::function<void (id_type, id_type)> _rts_discover;
       std::function<void (id_type, sdpa::discovery_info_t)> _rts_discovered;
       std::function<void (std::string, boost::optional<std::exception_ptr>)> _rts_token_put;
+      std::function<void (std::string workflow_response_id, boost::variant<std::exception_ptr, pnet::type::value::value_type>)> _rts_workflow_response;
       std::function<id_type()> _rts_id_generator;
 
       void rts_finished_and_forget (id_type, type::activity_t);
       void rts_failed_and_forget (id_type, std::string);
       void rts_canceled_and_forget (id_type);
+
+      void workflow_response ( id_type
+                             , std::string const& response_id
+                             , boost::variant<std::exception_ptr, pnet::type::value::value_type> const&
+                             );
+      void cancel_outstanding_responses (id_type, std::string const& reason);
+
+      std::mutex _outstanding_responses_guard;
+      std::unordered_map <id_type, std::unordered_set<std::string>>
+        _outstanding_responses;
+
 
 
       struct activity_data_type
@@ -103,7 +126,8 @@ namespace we
           , _activity (std::move (activity))
         {}
 
-        void child_finished (type::activity_t);
+        void child_finished
+          (type::activity_t, we::workflow_response_callback const&);
 
         id_type _id;
         std::unique_ptr<type::activity_t> _activity;

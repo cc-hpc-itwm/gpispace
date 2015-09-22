@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE (error_connect_response_invalid_signature)
     , boost::format
       ("ERROR: invalid signature for response to port '%1%'."
       " The type '%2%' with the signature '%2% :: []' does not provide"
-      " the two fields 'address :: string' and 'port :: unsigned int' in %3%"
+      " the field 'response_id :: string' in %3%"
       )
     % to
     % name

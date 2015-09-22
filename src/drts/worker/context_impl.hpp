@@ -4,9 +4,10 @@
 
 #include <fhglog/Logger.hpp>
 
+#include <util-generic/ostream/redirect.hpp>
+
 #include <set>
 #include <string>
-#include <streambuf>
 
 #include <boost/function.hpp>
 
@@ -51,58 +52,21 @@ namespace drts
       fhg::log::Logger& _logger;
     };
 
-    class redirect_output : public std::streambuf
+    class redirect_output : public fhg::util::ostream::redirect
     {
     public:
       redirect_output ( drts::worker::context const* const context
                       , fhg::log::Level const& severity
                       , std::ostream& os
                       )
-        : std::streambuf()
-        , _buffer()
-        , _context (context)
-        , _severity (severity)
-        , _os (os)
-        , _streambuf (_os.rdbuf (this))
+        : redirect
+          ( os
+          , [context, severity] (std::string const& line)
+            {
+              context->_->log (severity, line);
+            }
+          )
       {}
-      ~redirect_output()
-      {
-        if (_streambuf)
-        {
-          _os.rdbuf (_streambuf);
-        }
-
-        if (!_buffer.empty())
-        {
-          _context->_->log (_severity, _buffer);
-        }
-      }
-
-      int_type overflow (int_type c)
-      {
-        if ('\n' == traits_type::to_char_type (c))
-        {
-          _os.rdbuf (_streambuf);
-          _streambuf = nullptr;
-          _context->_->log (_severity, _buffer);
-          _streambuf = _os.rdbuf (this);
-
-          _buffer.clear();
-        }
-        else
-        {
-          _buffer += traits_type::to_char_type (c);
-        }
-
-        return c;
-      }
-
-    private:
-      std::string _buffer;
-      drts::worker::context const* const _context;
-      fhg::log::Level const _severity;
-      std::ostream& _os;
-      std::streambuf* _streambuf;
     };
   }
 }

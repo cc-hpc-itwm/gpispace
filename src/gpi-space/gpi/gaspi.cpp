@@ -153,7 +153,7 @@ namespace gpi
       _communication_port_by_rank[rank()] =
         exchange_hostname_and_port_data_send->port;
 
-      for ( gaspi_rank_t r (rank() + 1)
+      for ( gaspi_rank_t r ((rank() + 1) % number_of_nodes())
           ; r != rank()
           ; r = (r + 1) % number_of_nodes()
           )

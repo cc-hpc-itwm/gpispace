@@ -12,6 +12,7 @@
 #include <we/type/value.hpp>
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
+#include <we/workflow_response.hpp>
 
 #include <util-generic/serialization/std/unordered_map.hpp>
 
@@ -116,7 +117,10 @@ namespace we
 
       template<typename Engine>
       boost::optional<we::type::activity_t>
-      fire_expressions_and_extract_activity_random (Engine& engine)
+      fire_expressions_and_extract_activity_random
+        ( Engine& engine
+        , we::workflow_response_callback const& workflow_response
+        )
       {
         while (!_enabled.empty())
         {
@@ -129,7 +133,7 @@ namespace we
 
           if (transition.expression())
           {
-            fire_expression (transition_id, transition);
+            fire_expression (transition_id, transition, workflow_response);
           }
           else
           {
@@ -197,7 +201,11 @@ namespace we
 
       we::type::activity_t extract_activity
         (transition_id_type, we::type::transition_t const&);
-      void fire_expression (transition_id_type, we::type::transition_t const&);
+      void fire_expression
+        ( transition_id_type
+        , we::type::transition_t const&
+        , we::workflow_response_callback const&
+        );
 
       typedef std::pair< place_id_type
                        , std::list<pnet::type::value::value_type>::iterator

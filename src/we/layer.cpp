@@ -25,6 +25,7 @@ namespace we
         , std::function<void (id_type, id_type)> rts_discover
         , std::function<void (id_type, sdpa::discovery_info_t)> rts_discovered
         , std::function<void (std::string, boost::optional<std::exception_ptr>)> rts_token_put
+        , std::function<void (std::string workflow_response_id, boost::variant<std::exception_ptr, pnet::type::value::value_type>)> rts_workflow_response
         , std::function<id_type()> rts_id_generator
         , std::mt19937& random_extraction_engine
         )
@@ -36,6 +37,7 @@ namespace we
       , _rts_discover (rts_discover)
       , _rts_discovered (rts_discovered)
       , _rts_token_put (rts_token_put)
+      , _rts_workflow_response (rts_workflow_response)
       , _rts_id_generator (rts_id_generator)
       , _random_extraction_engine (random_extraction_engine)
       , _extract_from_nets_thread (&layer::extract_from_nets, this)
@@ -182,7 +184,18 @@ namespace we
         ( *parent
         , [this, parent, result, id] (activity_data_type& activity_data)
         {
-          activity_data.child_finished (result);
+          activity_data.child_finished
+            ( result
+            , [this, parent] ( pnet::type::value::value_type const& description
+                             , pnet::type::value::value_type const& value
+                             )
+              {
+                workflow_response ( *parent
+                                  , get_response_id (description)
+                                  , value
+                                  );
+              }
+            );
           _running_jobs.terminated (*parent, id);
         }
         );
@@ -334,6 +347,36 @@ namespace we
         );
     }
 
+  void layer::request_workflow_response
+    ( id_type id
+    , std::string workflow_response_id
+    , std::string place_name
+    , pnet::type::value::value_type value
+    )
+  {
+    {
+      std::unique_lock<std::mutex> const _ (_outstanding_responses_guard);
+      _outstanding_responses[id].emplace (workflow_response_id);
+    }
+    _nets_to_extract_from.apply
+      ( id
+      , [this, workflow_response_id, place_name, value]
+          (activity_data_type& activity_data)
+        {
+          boost::get<we::type::net_type>
+            (activity_data._activity->transition().data())
+            .put_token ( place_name
+                       , make_response_description
+                           (workflow_response_id, value)
+                       );
+        }
+      , [this, id, workflow_response_id] (std::exception_ptr error)
+        {
+          workflow_response (id, workflow_response_id, error);
+        }
+      );
+  }
+
   namespace
   {
     bool output_missing (type::activity_t const& activity)
@@ -359,6 +402,21 @@ namespace we
     }
   }
 
+  void layer::workflow_response
+    ( id_type id
+    , std::string const& response_id
+    , boost::variant<std::exception_ptr, pnet::type::value::value_type> const& response
+    )
+  {
+    _rts_workflow_response (response_id, response);
+    std::unique_lock<std::mutex> const _ (_outstanding_responses_guard);
+    _outstanding_responses.at (id).erase (response_id);
+    if (_outstanding_responses.at (id).empty())
+    {
+      _outstanding_responses.erase (id);
+    }
+  }
+
     void layer::extract_from_nets()
     {
       while (true)
@@ -381,7 +439,17 @@ namespace we
                 activity = boost::get<we::type::net_type>
                   (activity_data._activity->transition().data())
                   . fire_expressions_and_extract_activity_random
-                  (_random_extraction_engine);
+                      ( _random_extraction_engine
+                      , [this, &activity_data] ( pnet::type::value::value_type const& description
+                                               , pnet::type::value::value_type const& value
+                                               )
+                        {
+                          workflow_response ( activity_data._id
+                                            , get_response_id (description)
+                                            , value
+                                            );
+                        }
+                      );
               }
             , "workflow interpretation"
             );
@@ -450,20 +518,41 @@ namespace we
 
     void layer::rts_finished_and_forget (id_type id, type::activity_t activity)
     {
-      _rts_finished (id, activity);
       _nets_to_extract_from.forget (id);
+      cancel_outstanding_responses (id, "workflow finished");
+      _rts_finished (id, activity);
     }
     void layer::rts_failed_and_forget (id_type id, std::string message)
     {
-      _rts_failed (id, message);
       _nets_to_extract_from.forget (id);
+      cancel_outstanding_responses (id, "workflow failed");
+      _rts_failed (id, message);
     }
     void layer::rts_canceled_and_forget (id_type id)
     {
-      _rts_canceled (id);
       _nets_to_extract_from.forget (id);
+      cancel_outstanding_responses (id, "workflow was canceled");
+      _rts_canceled (id);
     }
 
+  void layer::cancel_outstanding_responses
+    (id_type id, std::string const& reason)
+  {
+    std::unique_lock<std::mutex> const _ (_outstanding_responses_guard);
+    auto responses (_outstanding_responses.find (id));
+    if (responses != _outstanding_responses.end())
+    {
+      for (std::string const& response_id : responses->second)
+      {
+        _rts_workflow_response
+          ( response_id
+          , std::make_exception_ptr (std::runtime_error (reason))
+          );
+      }
+
+      _outstanding_responses.erase (responses);
+    }
+  }
 
     // list_with_id_lookup
 
@@ -702,13 +791,15 @@ namespace we
     }
 
 
-
     // activity_data_type
 
-    void layer::activity_data_type::child_finished (type::activity_t child)
+    void layer::activity_data_type::child_finished
+      ( type::activity_t child
+      , we::workflow_response_callback const& workflow_response
+      )
     {
       //! \note We wrap all input activites in a net.
-      _activity->inject (child);
+      _activity->inject (child, workflow_response);
     }
 
 

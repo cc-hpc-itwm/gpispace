@@ -30,7 +30,14 @@ BOOST_AUTO_TEST_CASE (transition_without_input_port_can_not_fire)
   std::random_device random_engine;
 
   BOOST_REQUIRE
-    (!net.fire_expressions_and_extract_activity_random (random_engine));
+    ( !net.fire_expressions_and_extract_activity_random
+        ( random_engine
+        , [] (pnet::type::value::value_type const&, pnet::type::value::value_type const&)
+          {
+            throw std::logic_error ("got unexpected workflow_response");
+          }
+        )
+    );
 }
 
 BOOST_AUTO_TEST_CASE (deserialized_transition_without_input_port_can_not_fire)
@@ -61,5 +68,12 @@ BOOST_AUTO_TEST_CASE (deserialized_transition_without_input_port_can_not_fire)
   std::random_device random_engine;
 
   BOOST_REQUIRE
-    (!net.fire_expressions_and_extract_activity_random (random_engine));
+    ( !net.fire_expressions_and_extract_activity_random
+        ( random_engine
+        , [] (pnet::type::value::value_type const&, pnet::type::value::value_type const&)
+          {
+            throw std::logic_error ("got unexpected workflow_response");
+          }
+        )
+    );
 }

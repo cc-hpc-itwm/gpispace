@@ -657,7 +657,13 @@ namespace fhg
             {
               while ( boost::optional<we::type::activity_t> sub
                     = boost::get<we::type::net_type> (act.transition().data())
-                    . fire_expressions_and_extract_activity_random (_engine)
+                    . fire_expressions_and_extract_activity_random
+                        ( _engine
+                        , [] (pnet::type::value::value_type const&, pnet::type::value::value_type const&)
+                          {
+                            throw std::logic_error ("got workflow_response: unsupported");
+                          }
+                        )
                     )
               {
                 sub->execute (this);
