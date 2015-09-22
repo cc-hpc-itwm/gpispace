@@ -146,3 +146,16 @@ that randomized distributed work stealing will achieve very good
 results for a broad range of applications. As an add on such models
 not only tend to have simple implementations but, at the same time,
 automatically deal with dynamics and incomplete information.
+
+Known Application Scenarios:
+Topology, Size, Dynamics, Granularity, Expectations from good (bad) schedules
+
+- Map&Reduce
+- FRTM
+runs on >1000 nodes
+runs 5-10 worker per node
+- SPLOTCH
+- Adaptive Stacking
+- Parsu
+- Parsusort
+- ...
