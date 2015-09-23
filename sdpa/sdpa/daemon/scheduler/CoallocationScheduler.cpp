@@ -260,11 +260,11 @@ namespace sdpa
       job_id_list_t pending_jobs (_list_pending_jobs.get_and_clear());
 
       std::set<job_id_t> removed_jobs
-        (_worker_manager.remove_all_matching_pending_jobs<Reservation>
+        (_worker_manager.remove_all_matching_pending_jobs
           ( worker
           , pending_jobs
           , [this] (job_id_t const& job)
-            {return allocation_table_.at (job);}
+            {return allocation_table_.at (job)->workers();}
           , _job_requirements
           )
         );
