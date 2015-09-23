@@ -123,7 +123,7 @@ namespace sdpa
 
           for (std::string worker_id : ptr_reservation->workers())
           {
-            worker_map_.at (worker_id).remove_job_if_pending (job_id);
+            worker_map_.at (worker_id).remove_pending_job (job_id);
           }
 
           removed_jobs.insert (job_id);
