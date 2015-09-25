@@ -445,8 +445,6 @@ try
     , event->hostname(), source
     );
 
-  _scheduler.reschedule_pending_jobs_matching_worker (event->name());
-
   request_scheduling();
 
   // send to the masters my new set of capabilities
