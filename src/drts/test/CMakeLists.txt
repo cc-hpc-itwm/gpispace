@@ -44,3 +44,4 @@ fhg_add_test (scoped_drts.cpp
 )
 
 add_subdirectory (client_implementation_with_ostream_logger)
+add_subdirectory (scoped_rifd_execute)

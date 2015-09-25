@@ -42,6 +42,15 @@ namespace fhg
         );
 
       FHG_RPC_FUNCTION_DESCRIPTION
+        ( execute_and_get_startup_messages_and_wait
+        , std::vector<std::string>
+            ( boost::filesystem::path command
+            , std::vector<std::string> arguments
+            , std::unordered_map<std::string, std::string> environment
+            )
+        );
+
+      FHG_RPC_FUNCTION_DESCRIPTION
         ( kill
         , std::unordered_map<pid_t, std::exception_ptr> (std::vector<pid_t>)
         );

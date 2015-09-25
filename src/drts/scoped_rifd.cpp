@@ -7,9 +7,11 @@
 #include <drts/private/option.hpp>
 #include <drts/private/rifd_entry_points_impl.hpp>
 
+#include <util-generic/blocked.hpp>
 #include <util-generic/read_lines.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
+#include <rif/client.hpp>
 #include <rif/strategy/meta.hpp>
 
 #include <boost/format.hpp>
@@ -180,6 +182,45 @@ namespace gspc
       return teardown (_entry_points);
     }
 
+    std::pair< std::unordered_map<std::string, std::vector<std::string>>
+             , std::unordered_map<std::string, std::exception_ptr>
+             >
+      execute ( std::unordered_set<std::string> const& hostnames
+              , boost::filesystem::path const& command
+              , std::vector<std::string> const& arguments
+              , std::unordered_map<std::string, std::string> const& environment
+              ) const
+    {
+      //! \todo use aggregated_rpc
+      return fhg::util::blocked_async_with_results< std::string
+                                                  , std::vector<std::string>
+                                                  >
+        ( hostnames
+        //! \todo make the blocksize an option, better: use aggregated_rpc
+        , 64
+        , [] (std::string const& hostname) { return hostname; }
+        , [&] (std::string const& hostname)
+          {
+            auto const pos (_entry_points.find (hostname));
+
+            if (pos == _entry_points.end())
+            {
+              throw std::invalid_argument
+                (( boost::format ("execute: unknown host '%1%'")
+                 % hostname
+                 ).str()
+                );
+            }
+
+            return fhg::rif::client (pos->second)
+              . execute_and_get_startup_messages_and_wait
+                  (command, arguments, environment)
+              . get()
+              ;
+          }
+        );
+    }
+
     std::string _strategy;
     std::vector<std::string> _parameters;
     boost::optional<unsigned short> _port;
@@ -262,6 +303,19 @@ namespace gspc
     rifds::teardown()
   {
     return _->teardown();
+  }
+
+  std::pair< std::unordered_map<std::string, std::vector<std::string>>
+           , std::unordered_map<std::string, std::exception_ptr>
+           >
+    rifds::execute
+      ( std::unordered_set<std::string> const& hostnames
+      , boost::filesystem::path const& command
+      , std::vector<std::string> const& arguments
+      , std::unordered_map<std::string, std::string> const& environment
+      ) const
+  {
+    return _->execute (hostnames, command, arguments, environment);
   }
 
   scoped_rifd::scoped_rifd ( rifd::strategy const& strategy
