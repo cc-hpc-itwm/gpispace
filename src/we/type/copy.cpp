@@ -324,14 +324,14 @@ namespace we
 
       activity_t new_activity (new_trans, input_activity.transition_id());
 
-      for ( std::pair<pnet::type::value::value_type, port_id_type> const top
+      for ( std::pair<pnet::type::value::value_type, port_id_type> const& top
           : input_activity.input()
           )
       {
         new_activity.add_input (port_id.at (top.second), top.first);
       }
 
-      for ( std::pair<pnet::type::value::value_type, port_id_type> const top
+      for ( std::pair<pnet::type::value::value_type, port_id_type> const& top
           : input_activity.output()
           )
       {
@@ -686,7 +686,7 @@ namespace we
       activity_t new_act (new_transition, input_activity.transition_id());
 
       // copy tokens for ports
-      for ( std::pair<pnet::type::value::value_type, port_id_type> const input
+      for ( std::pair<pnet::type::value::value_type, port_id_type> const& input
           : input_activity.input()
           )
       {
@@ -696,7 +696,7 @@ namespace we
         }
       }
 
-      for ( std::pair<pnet::type::value::value_type, port_id_type> const output
+      for ( std::pair<pnet::type::value::value_type, port_id_type> const& output
           : input_activity.output()
           )
       {

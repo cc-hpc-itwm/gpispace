@@ -39,7 +39,7 @@ namespace gpi
             ("queue permanently disabled due to previous errors");
         }
 
-        for (task_ptr const task : tasks)
+        for (task_ptr const& task : tasks)
         {
             m_task_queue.put (task);
         }

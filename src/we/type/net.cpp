@@ -464,7 +464,7 @@ namespace we
     {
       std::list<token_to_be_deleted_type> tokens_to_be_deleted;
 
-      for ( const std::pair<place_id_type, pos_and_distance_type>& pt
+      for ( std::pair<place_id_type const, pos_and_distance_type> const& pt
           : _enabled_choice.at (tid)
           )
       {
@@ -691,7 +691,7 @@ namespace we
       {
         expr::eval::context context;
 
-        for (const std::pair<place_id_type, iterators_type>& pits : _m)
+        for (std::pair<place_id_type const, iterators_type> const& pits : _m)
         {
           context.bind_ref
             ( transition.ports_input()
@@ -714,7 +714,7 @@ namespace we
                                                  >& choice
                               ) const
     {
-      for (const std::pair<place_id_type, iterators_type>& pits : _m)
+      for (std::pair<place_id_type const, iterators_type> const& pits : _m)
       {
         choice[pits.first] = pits.second.pos_and_distance();
       }
