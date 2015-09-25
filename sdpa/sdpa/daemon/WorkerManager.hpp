@@ -142,11 +142,11 @@ namespace sdpa
          )
         return;
 
-      for (worker_id_t w : workers_to_steal_from)
+      for (worker_id_t const& w : workers_to_steal_from)
       {
         Worker& worker (worker_map_.at (w));
 
-        for (worker_id_t wi : idle_workers)
+        for (worker_id_t const& wi : idle_workers)
         {
           std::set<job_id_t>::iterator const it_job
             ( std::find_if ( worker.pending_.begin()
