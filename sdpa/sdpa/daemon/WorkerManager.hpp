@@ -122,19 +122,16 @@ namespace sdpa
           ; ++worker_it
           )
       {
-        if ( worker_it->second.pending_.size()
-           + worker_it->second.submitted_.size()
-           + worker_it->second.acknowledged_.size()
-           > 1
-           )
+        auto const job_count ( worker_it->second.pending_.size()
+                             + worker_it->second.submitted_.size()
+                             + worker_it->second.acknowledged_.size()
+                             );
+
+        if (job_count > 1)
         {
           workers_to_steal_from.insert (worker_it->first);
         }
-        else if ( worker_it->second.pending_.size()
-                + worker_it->second.submitted_.size()
-                + worker_it->second.acknowledged_.size()
-                == 0
-                )
+        else if (job_count == 0)
         {
           idle_workers.emplace_back (worker_it);
         }
