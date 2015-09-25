@@ -145,34 +145,29 @@ namespace sdpa
       for (worker_id_t w : workers_to_steal_from)
       {
         Worker& worker (worker_map_.at (w));
-        std::set<job_id_t>::iterator it_job (worker.pending_.end());
-        worker_id_t w_idle;
 
         for (worker_id_t wi : idle_workers)
         {
-          it_job = std::find_if ( worker.pending_.begin()
-                                , worker.pending_.end()
-                                , [&wi, &requirements, this] (job_id_t job)
-                                  {return matchRequirements ( wi
-                                                            , requirements(job)
-                                                            );
-                                  }
-                                );
+          std::set<job_id_t>::iterator const it_job
+            ( std::find_if ( worker.pending_.begin()
+                           , worker.pending_.end()
+                           , [&wi, &requirements, this] (job_id_t job)
+                             {
+                               return matchRequirements (wi, requirements(job));
+                             }
+                           )
+            );
 
           if (it_job != worker.pending_.end())
           {
-            w_idle = wi;
+            reservation (*it_job)->replace_worker (w, wi);
+
+            worker.deleteJob (*it_job);
+            worker_map_.at (wi).assign (*it_job);
+            idle_workers.erase (wi);
+
             break;
           }
-        }
-
-        if (it_job != worker.pending_.end())
-        {
-          reservation (*it_job)->replace_worker (w, w_idle);
-
-          worker.deleteJob (*it_job);
-          worker_map_.at (w_idle).assign (*it_job);
-          idle_workers.erase (w_idle);
         }
 
         if (idle_workers.empty())
