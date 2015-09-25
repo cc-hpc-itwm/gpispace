@@ -96,12 +96,11 @@ namespace sdpa
     }
 
     boost::optional<double> WorkerManager::matchRequirements
-      ( const worker_id_t& worker_id
+      ( Worker const& worker
       , const job_requirements_t& job_req_set
       ) const
     {
       std::size_t matchingDeg (0);
-      Worker const& worker (worker_map_.at (worker_id));
       if (job_req_set.numWorkers()>1 && worker._children_allowed)
       {
         return boost::none;
@@ -154,7 +153,7 @@ namespace sdpa
           continue;
 
         const boost::optional<double>
-          matchingDeg (matchRequirements (worker.first, job_reqs));
+          matchingDeg (matchRequirements (worker.second, job_reqs));
 
         if (matchingDeg)
         {
@@ -236,7 +235,7 @@ namespace sdpa
       std::set<job_id_t> removed_jobs;
       for (const job_id_t& job_id : jobs)
       {
-        if (matchRequirements (worker_id, requirements (job_id)))
+        if (matchRequirements (worker_map_.at (worker_id), requirements (job_id)))
         {
           for (std::string worker_id : job_workers (job_id))
           {

@@ -45,11 +45,6 @@ namespace sdpa
 
       double cost_assigned_jobs (const worker_id_t, std::function<double (job_id_t job_id)>);
 
-      boost::optional<double> matchRequirements
-        ( const worker_id_t& worker
-        , const job_requirements_t& job_req_set
-        ) const;
-
       template <typename Reservation>
       void steal_work ( std::function<Reservation* (job_id_t const&)> reservation
                       , std::function<job_requirements_t (const sdpa::job_id_t&)>
@@ -94,6 +89,11 @@ namespace sdpa
       bool hasWorker_INDICATES_A_RACE_TESTING_ONLY (const worker_id_t& worker_id) const;
 
     private:
+      boost::optional<double> matchRequirements
+        ( Worker const&
+        , const job_requirements_t& job_req_set
+        ) const;
+
       typedef std::unordered_map<worker_id_t, Worker> worker_map_t;
       worker_map_t  worker_map_;
       worker_connections_t worker_connections_;
@@ -159,9 +159,9 @@ namespace sdpa
           std::set<job_id_t>::iterator const it_job
             ( std::find_if ( worker.pending_.begin()
                            , worker.pending_.end()
-                           , [&idle_worker_id, &requirements, this] (job_id_t job)
+                           , [&idle_worker, &requirements, this] (job_id_t job)
                              {
-                               return matchRequirements ( idle_worker_id
+                               return matchRequirements ( idle_worker
                                                         , requirements(job)
                                                         );
                              }
