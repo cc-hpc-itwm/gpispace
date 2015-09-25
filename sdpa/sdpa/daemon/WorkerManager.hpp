@@ -109,12 +109,14 @@ namespace sdpa
       )
     {
       boost::mutex::scoped_lock const _(mtx_);
-      auto comp = [this] (worker_id_t a, worker_id_t b)
-                 { return worker_map_.at (a).pending_.size()
-                     > worker_map_.at (b).pending_.size();
+      auto comp = [this] ( decltype (worker_map_)::iterator const& lhs
+                         , decltype (worker_map_)::iterator const& rhs
+                         )
+                 { return lhs->second.pending_.size()
+                     > rhs->second.pending_.size();
                  };
 
-      std::set<worker_id_t, decltype(comp)> workers_to_steal_from (comp);
+      std::set<decltype (worker_map_)::iterator, decltype(comp)> workers_to_steal_from (comp);
       std::list<decltype (worker_map_)::iterator> idle_workers;
 
       for ( decltype (worker_map_)::iterator worker_it (worker_map_.begin())
@@ -129,7 +131,7 @@ namespace sdpa
 
         if (job_count > 1)
         {
-          workers_to_steal_from.insert (worker_it->first);
+          workers_to_steal_from.emplace (worker_it);
         }
         else if (job_count == 0)
         {
@@ -142,9 +144,9 @@ namespace sdpa
          )
         return;
 
-      for (worker_id_t const& w : workers_to_steal_from)
+      for (decltype (worker_map_)::iterator const& w : workers_to_steal_from)
       {
-        Worker& worker (worker_map_.at (w));
+        Worker& worker (w->second);
 
         for ( auto idle_worker_it (idle_workers.begin())
             ; idle_worker_it != idle_workers.end()
@@ -168,7 +170,7 @@ namespace sdpa
 
           if (it_job != worker.pending_.end())
           {
-            reservation (*it_job)->replace_worker (w, idle_worker_id);
+            reservation (*it_job)->replace_worker (w->first, idle_worker_id);
 
             worker.deleteJob (*it_job);
             idle_worker.assign (*it_job);
