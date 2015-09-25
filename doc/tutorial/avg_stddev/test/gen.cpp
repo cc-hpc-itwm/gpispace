@@ -128,13 +128,13 @@ try
 
   for (unsigned long i (0); i < number;)
     {
-      buffer_type buf (queue_empty.get());
+      buffer_type _buf (queue_empty.get());
 
-      double* val (buf.begin());
-      std::size_t end (std::min (number, i + buf.size()));
-      buf.count() = 0;
+      double* val (_buf.begin());
+      std::size_t _end (std::min (number, i + _buf.size()));
+      _buf.count() = 0;
 
-      for (unsigned long j (i); j < end; ++j, ++i, ++val, ++buf.count())
+      for (unsigned long j (i); j < _end; ++j, ++i, ++val, ++_buf.count())
         {
           const double r (generator());
 
@@ -143,7 +143,7 @@ try
           *val = r;
         }
 
-      queue_full.put (buf);
+      queue_full.put (_buf);
     }
 
   queue_full.put (buffer_type (0, 0));

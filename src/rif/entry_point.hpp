@@ -24,10 +24,10 @@ namespace fhg
       //! \note Serialization only.
       entry_point() = default;
 
-      entry_point (std::string const& hostname, unsigned short port, pid_t pid)
-        : hostname (hostname)
-        , port (port)
-        , pid (pid)
+      entry_point (std::string const& hostname_, unsigned short port_, pid_t pid_)
+        : hostname (hostname_)
+        , port (port_)
+        , pid (pid_)
       {}
 
       entry_point (std::string const& input)

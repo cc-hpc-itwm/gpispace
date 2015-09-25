@@ -232,9 +232,9 @@ void DRTSImpl::handleSubmitJobEvent
 {
   map_of_masters_t::const_iterator master
     ( std::find_if ( m_masters.cbegin(), m_masters.cend()
-                   , [&source] (map_of_masters_t::value_type const& master)
+                   , [&source] (map_of_masters_t::value_type const& master_)
                      {
-                       return master.second == source;
+                       return master_.second == source;
                      }
                    )
     );

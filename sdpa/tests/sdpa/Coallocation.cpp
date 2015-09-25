@@ -92,8 +92,8 @@ BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_part_of_coallo
   worker_1.finish_and_wait_for_ack (job_name);
 
   {
-    const std::string job_name (job_submitted_1.wait());
-    BOOST_REQUIRE_EQUAL (job_name, job_submitted_2.wait());
+    const std::string _job_name (job_submitted_1.wait());
+    BOOST_REQUIRE_EQUAL (_job_name, job_submitted_2.wait());
 
     worker_1.finish_and_wait_for_ack (job_name);
     worker_2.finish_and_wait_for_ack (job_name);
@@ -145,8 +145,8 @@ BOOST_FIXTURE_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are
     utils::fake_drts_worker_waiting_for_finished_ack worker_4
       ([&job_submitted_4] (std::string j) { job_submitted_4.notify (j); }, agent);
 
-    const std::string job_name (job_submitted_3.wait());
-    BOOST_REQUIRE_EQUAL (job_name, job_submitted_4.wait());
+    const std::string _job_name (job_submitted_3.wait());
+    BOOST_REQUIRE_EQUAL (_job_name, job_submitted_4.wait());
 
     worker_3.finish_and_wait_for_ack (job_name);
     worker_4.finish_and_wait_for_ack (job_name);

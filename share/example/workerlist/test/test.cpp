@@ -96,14 +96,14 @@ namespace
     std::set<std::string> const hostnames
       ([&entry_points]
        {
-         std::set<std::string> hostnames;
+         std::set<std::string> hostnames_;
 
          for (std::string const& entry_point : entry_points)
          {
-           hostnames.emplace (entry_point.substr (0, entry_point.find (' ')));
+           hostnames_.emplace (entry_point.substr (0, entry_point.find (' ')));
          }
 
-         return hostnames;
+         return hostnames_;
        }()
       );
 

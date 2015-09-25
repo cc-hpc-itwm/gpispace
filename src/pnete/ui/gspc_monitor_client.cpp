@@ -744,7 +744,7 @@ namespace fhg
 
                 require::list
                   ( pos
-                  , [this] (fhg::util::parse::position& pos) { action_result (pos); }
+                  , [this] (fhg::util::parse::position& p) { action_result (p); }
                   );
               }
               break;

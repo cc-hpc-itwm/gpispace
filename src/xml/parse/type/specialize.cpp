@@ -17,17 +17,17 @@ namespace xml
                                        , PARENT_CONS_PARAM(net)
                                        , const util::position_type& pod
                                        , const std::string& name
-                                       , const std::string& use
-                                       , const type_map_type& type_map
-                                       , const type_get_type& type_get
+                                       , const std::string& use_
+                                       , const type_map_type& type_map_
+                                       , const type_get_type& type_get_
                                        )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _name (name)
-        , use (use)
-        , type_map (type_map)
-        , type_get (type_get)
+        , use (use_)
+        , type_map (type_map_)
+        , type_get (type_get_)
       {
         _id_mapper->put (_id, *this);
       }

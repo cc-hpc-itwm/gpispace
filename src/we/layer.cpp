@@ -276,15 +276,15 @@ namespace we
         ( id
         , [this, discover_id] (activity_data_type& activity_data)
         {
-          const id_type id (activity_data._id);
+          const id_type a_id (activity_data._id);
 
           boost::mutex::scoped_lock const _ (_discover_state_mutex);
           fhg_assert (_discover_state.find (discover_id) == _discover_state.end());
 
           std::pair<std::size_t, sdpa::discovery_info_t > state
-            (0, sdpa::discovery_info_t(id, boost::none, sdpa::discovery_info_set_t()));
+            (0, sdpa::discovery_info_t(a_id, boost::none, sdpa::discovery_info_set_t()));
 
-          _running_jobs.apply ( id
+          _running_jobs.apply ( a_id
                               , [this, &discover_id, &state] (id_type child)
                               {
                                 ++state.first;

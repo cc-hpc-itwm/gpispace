@@ -44,7 +44,7 @@ namespace xml
                              , boost::optional<bool> put_token
                              , const std::string& name
                              , const std::string& type
-                             , const std::list<token_type>& tokens
+                             , const std::list<token_type>& tokens_
                              , const we::type::property::type& properties
                              )
         : with_position_of_definition (pod)
@@ -54,7 +54,7 @@ namespace xml
         , _put_token (put_token)
         , _name (name)
         , _type (type)
-        , tokens (tokens)
+        , tokens (tokens_)
         , _properties (properties)
       {
         _id_mapper->put (_id, *this);

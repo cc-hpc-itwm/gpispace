@@ -115,9 +115,9 @@ namespace
     {}
 
     GenericDaemon::master_network_info::master_network_info
-        (std::string const& host, std::string const& port)
-      : host (host)
-      , port (port)
+        (std::string const& host_, std::string const& port_)
+      : host (host_)
+      , port (port_)
       , address (boost::none)
     {}
 
@@ -392,14 +392,14 @@ void GenericDaemon::handleSubmitJobEvent
 
       if (m_guiService)
       {
-        const sdpa::daemon::NotificationEvent evt
+        const sdpa::daemon::NotificationEvent evt_
           ( {name()}
           , job_id
           , NotificationEvent::STATE_STARTED
           , act
           );
 
-        m_guiService->notify (evt);
+        m_guiService->notify (evt_);
       }
     }
     catch (...)
