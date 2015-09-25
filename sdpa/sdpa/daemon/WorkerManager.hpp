@@ -50,9 +50,9 @@ namespace sdpa
         , const job_requirements_t& job_req_set
         ) const;
 
-      template <typename T>
+      template <typename Reservation>
            void steal_work ( std::list<job_id_t> pending_jobs
-                           , std::function<T (job_id_t const&)> reservation
+                           , std::function<Reservation* (job_id_t const&)> reservation
                            , std::function<job_requirements_t (const sdpa::job_id_t&)>
                                requirements
                            );
@@ -66,10 +66,12 @@ namespace sdpa
 
     bool all_workers_busy_and_have_pending_jobs() const;
 
-    std::set<job_id_t> remove_all_matching_pending_jobs ( const worker_id_t&
-                                                        , const job_id_list_t&
-                                                        , std::function<job_requirements_t (const sdpa::job_id_t&)>
-                                                        );
+    std::set<job_id_t> remove_all_matching_pending_jobs
+      ( const worker_id_t&
+      , const job_id_list_t&
+      , std::function<std::set<worker_id_t> (job_id_t const&)>
+      , std::function<job_requirements_t (const sdpa::job_id_t&)>
+      );
 
     void assign_job_to_worker (const job_id_t&, const worker_id_t&);
     void acknowledge_job_sent_to_worker (const job_id_t&, const worker_id_t&);
@@ -101,10 +103,10 @@ namespace sdpa
       mutable boost::mutex mtx_;
     };
 
-    template <typename T>
+    template <typename Reservation>
     void WorkerManager::steal_work
       ( std::list<job_id_t> pending_jobs
-      , std::function<T (job_id_t const&)> reservation
+      , std::function<Reservation* (job_id_t const&)> reservation
       , std::function<job_requirements_t (const sdpa::job_id_t&)>
           requirements
       )

@@ -168,9 +168,14 @@ namespace sdpa
              );
     }
 
-    bool Worker::remove_job_if_pending (const job_id_t& job_id)
+    void Worker::remove_pending_job (const job_id_t& job_id)
     {
-      return pending_.erase (job_id);
+      if (0 == pending_.erase (job_id))
+      {
+        throw std::runtime_error ( "Could not remove the pending job "
+                                 + job_id
+                                 );
+      }
     }
 
     bool Worker::backlog_full() const
