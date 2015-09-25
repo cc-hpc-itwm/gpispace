@@ -29,7 +29,7 @@ namespace fhg
       {
         class association : public base_item
         {
-          Q_OBJECT;
+          Q_OBJECT
 
         public:
           association (connectable_item* start, connectable_item* end);

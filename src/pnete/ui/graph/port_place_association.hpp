@@ -29,7 +29,7 @@ namespace fhg
       {
         class port_place_association : public association
         {
-          Q_OBJECT;
+          Q_OBJECT
 
         public:
           port_place_association

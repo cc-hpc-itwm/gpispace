@@ -14,7 +14,7 @@ namespace fhg
     {
       class plugin_base : public QObject
       {
-        Q_OBJECT;
+        Q_OBJECT
 
       public:
         plugin_base (QObject* parent)

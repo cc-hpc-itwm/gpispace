@@ -22,7 +22,7 @@ namespace fhg
     {
       class document_view : public dock_widget
       {
-        Q_OBJECT;
+        Q_OBJECT
 
       public:
         document_view ( const data::handle::function&

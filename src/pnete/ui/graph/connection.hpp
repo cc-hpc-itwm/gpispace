@@ -28,7 +28,7 @@ namespace fhg
       {
         class connection_item : public association
         {
-          Q_OBJECT;
+          Q_OBJECT
 
         public:
           connection_item ( connectable_item* start

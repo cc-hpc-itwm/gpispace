@@ -15,7 +15,7 @@ namespace fhg
     {
       class module_call_widget : public QWidget
       {
-        Q_OBJECT;
+        Q_OBJECT
 
       public:
         module_call_widget ( const data::handle::module&

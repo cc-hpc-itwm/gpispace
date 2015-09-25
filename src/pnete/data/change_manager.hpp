@@ -43,7 +43,7 @@ namespace fhg
     {
       class change_manager_t : public QUndoStack
       {
-        Q_OBJECT;
+        Q_OBJECT
 
       public:
         change_manager_t (QObject* parent = nullptr);

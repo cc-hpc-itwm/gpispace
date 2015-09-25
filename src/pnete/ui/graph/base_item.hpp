@@ -32,7 +32,7 @@ namespace fhg
       {
         class base_item : public QGraphicsObject
         {
-          Q_OBJECT;
+          Q_OBJECT
 
         public:
           enum item_types
