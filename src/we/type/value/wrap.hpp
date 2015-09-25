@@ -24,7 +24,7 @@ namespace pnet
 
         BOOST_FOREACH (T const& x, lT)
         {
-          lv.push_back (to_value (x));
+          lv.emplace_back (to_value (x));
         }
 
         return lv;
@@ -45,7 +45,7 @@ namespace pnet
 
         BOOST_FOREACH (T const& x, sT)
         {
-          sv.insert (to_value (x));
+          sv.emplace (to_value (x));
         }
 
         return sv;
@@ -60,10 +60,9 @@ namespace pnet
         BOOST_FOREACH
           (typename std::map<K BOOST_PP_COMMA() V>::value_type const& kv, mkv)
         {
-          mvv.insert (std::make_pair ( to_value (kv.first)
-                                     , to_value (kv.second)
-                                     )
-                     );
+          mvv.emplace ( to_value (kv.first)
+                      , to_value (kv.second)
+                      );
         }
 
         return mvv;
