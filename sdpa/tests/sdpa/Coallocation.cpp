@@ -95,8 +95,8 @@ BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_part_of_coallo
     const std::string _job_name (job_submitted_1.wait());
     BOOST_REQUIRE_EQUAL (_job_name, job_submitted_2.wait());
 
-    worker_1.finish_and_wait_for_ack (job_name);
-    worker_2.finish_and_wait_for_ack (job_name);
+    worker_1.finish_and_wait_for_ack (_job_name);
+    worker_2.finish_and_wait_for_ack (_job_name);
   }
 
   BOOST_REQUIRE_EQUAL
@@ -148,8 +148,8 @@ BOOST_FIXTURE_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are
     const std::string _job_name (job_submitted_3.wait());
     BOOST_REQUIRE_EQUAL (_job_name, job_submitted_4.wait());
 
-    worker_3.finish_and_wait_for_ack (job_name);
-    worker_4.finish_and_wait_for_ack (job_name);
+    worker_3.finish_and_wait_for_ack (_job_name);
+    worker_4.finish_and_wait_for_ack (_job_name);
   }
 
   //! \note less cleanup: second child job is executed by worker_3 and worker_4
