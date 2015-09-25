@@ -66,9 +66,9 @@ namespace fhg
               return NAME (id, _document);                        \
             }
 
-            CASE (expression);
-            CASE (module);
-            CASE (net);
+            CASE (expression)
+            CASE (module)
+            CASE (net)
 
 #undef CASE
 
