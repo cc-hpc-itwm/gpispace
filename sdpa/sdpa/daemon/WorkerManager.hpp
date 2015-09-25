@@ -117,23 +117,26 @@ namespace sdpa
       std::set<worker_id_t, decltype(comp)> workers_to_steal_from (comp);
       std::list<decltype (worker_map_)::iterator> idle_workers;
 
-      for (std::pair<worker_id_t const, Worker> const& worker: worker_map_)
+      for ( decltype (worker_map_)::iterator worker_it (worker_map_.begin())
+          ; worker_it != worker_map_.end()
+          ; ++worker_it
+          )
       {
-        if ( worker.second.pending_.size()
-           + worker.second.submitted_.size()
-           + worker.second.acknowledged_.size()
+        if ( worker_it->second.pending_.size()
+           + worker_it->second.submitted_.size()
+           + worker_it->second.acknowledged_.size()
            > 1
            )
         {
-          workers_to_steal_from.insert (worker.first);
+          workers_to_steal_from.insert (worker_it->first);
         }
-        else if ( worker.second.pending_.size()
-                + worker.second.submitted_.size()
-                + worker.second.acknowledged_.size()
+        else if ( worker_it->second.pending_.size()
+                + worker_it->second.submitted_.size()
+                + worker_it->second.acknowledged_.size()
                 == 0
                 )
         {
-          idle_workers.emplace_back (worker_map_.find (worker.first));
+          idle_workers.emplace_back (worker_it);
         }
       }
 
