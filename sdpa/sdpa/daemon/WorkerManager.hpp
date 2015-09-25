@@ -145,8 +145,7 @@ namespace sdpa
       for (worker_id_t w : workers_to_steal_from)
       {
         Worker& worker (worker_map_.at (w));
-        std::set<job_id_t> ::iterator it_job
-          (worker.pending_.end());
+        std::set<job_id_t>::iterator it_job (worker.pending_.end());
         worker_id_t w_idle;
 
         for (worker_id_t wi : idle_workers)
