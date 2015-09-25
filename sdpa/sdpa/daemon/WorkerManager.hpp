@@ -117,23 +117,23 @@ namespace sdpa
       std::set<worker_id_t, decltype(comp)> workers_to_steal_from (comp);
       std::set<worker_id_t> idle_workers;
 
-      for (worker_id_t w : worker_map_ | boost::adaptors::map_keys)
+      for (std::pair<worker_id_t const, Worker> const& worker: worker_map_)
       {
-        if ( worker_map_.at (w).pending_.size()
-           + worker_map_.at (w).submitted_.size()
-           + worker_map_.at (w).acknowledged_.size()
+        if ( worker.second.pending_.size()
+           + worker.second.submitted_.size()
+           + worker.second.acknowledged_.size()
            > 1
            )
         {
-          workers_to_steal_from.insert (w);
+          workers_to_steal_from.insert (worker.first);
         }
-        else if ( worker_map_.at (w).pending_.size()
-                + worker_map_.at (w).submitted_.size()
-                + worker_map_.at (w).acknowledged_.size()
+        else if ( worker.second.pending_.size()
+                + worker.second.submitted_.size()
+                + worker.second.acknowledged_.size()
                 == 0
                 )
         {
-          idle_workers.insert (w);
+          idle_workers.insert (worker.first);
         }
       }
 
