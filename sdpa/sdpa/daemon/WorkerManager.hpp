@@ -51,11 +51,9 @@ namespace sdpa
         ) const;
 
       template <typename Reservation>
-           void steal_work ( std::list<job_id_t> pending_jobs
-                           , std::function<Reservation* (job_id_t const&)> reservation
-                           , std::function<job_requirements_t (const sdpa::job_id_t&)>
-                               requirements
-                           );
+      void steal_work ( std::function<Reservation* (job_id_t const&)> reservation
+                      , std::function<job_requirements_t (const sdpa::job_id_t&)>
+                      );
 
     bool submit_and_serve_if_can_start_job_INDICATES_A_RACE
       ( job_id_t const&, std::set<worker_id_t> const&
@@ -105,78 +103,80 @@ namespace sdpa
 
     template <typename Reservation>
     void WorkerManager::steal_work
-      ( std::list<job_id_t> pending_jobs
-      , std::function<Reservation* (job_id_t const&)> reservation
+      ( std::function<Reservation* (job_id_t const&)> reservation
       , std::function<job_requirements_t (const sdpa::job_id_t&)>
           requirements
       )
     {
       boost::mutex::scoped_lock const _(mtx_);
-
       auto comp = [this] (worker_id_t a, worker_id_t b)
-                  { return worker_map_.at (a).lastTimeServed()
-                      > worker_map_.at (b).lastTimeServed();
-                  };
+                 { return worker_map_.at (a).pending_.size()
+                     > worker_map_.at (b).pending_.size();
+                 };
 
-      std::set<worker_id_t, decltype(comp)> idle_workers (comp);
-      boost::copy ( worker_map_
-                  | boost::adaptors::filtered
-                      ([] (std::pair<worker_id_t, Worker> const& worker)
-                       {  return worker.second.pending_.empty()
-                            && worker.second.submitted_.empty()
-                            && worker.second.acknowledged_.empty();
-                       }
-                      )
-                  | boost::adaptors::map_keys
-                  , std::inserter (idle_workers, idle_workers.begin())
-                  );
+      std::set<worker_id_t, decltype(comp)> workers_to_steal_from (comp);
+      std::set<worker_id_t> idle_workers;
 
-      std::unordered_set<worker_id_t> idle_workers_assigned;
-
-      for (worker_id_t const& w : idle_workers)
+      for (worker_id_t w : worker_map_ | boost::adaptors::map_keys)
       {
-        std::list<job_id_t> ::iterator
-          it_job (std::find_if ( pending_jobs.begin()
-                               , pending_jobs.end()
-                               , [&w, &requirements, this] (job_id_t job)
-                                 {return matchRequirements (w, requirements(job));}
-                               )
-                 );
-
-        if (it_job != pending_jobs.end())
+        if ( worker_map_.at (w).pending_.size()
+           + worker_map_.at (w).submitted_.size()
+           + worker_map_.at (w).acknowledged_.size()
+           > 1
+           )
         {
-          std::set<worker_id_t> replaceable_workers;
-          std::set<worker_id_t> const& reserved_workers
-            (reservation (*it_job)->workers());
+          workers_to_steal_from.insert (w);
+        }
+        else if ( worker_map_.at (w).pending_.size()
+                + worker_map_.at (w).submitted_.size()
+                + worker_map_.at (w).acknowledged_.size()
+                == 0
+                )
+        {
+          idle_workers.insert (w);
+        }
+      }
 
-          std::set_difference ( reserved_workers.begin()
-                              , reserved_workers.end()
-                              , idle_workers_assigned.begin()
-                              , idle_workers_assigned.end()
-                              , std::inserter ( replaceable_workers
-                                              , replaceable_workers.begin()
-                                              )
-                              );
+      if ( workers_to_steal_from.empty()
+        || idle_workers.empty()
+         )
+        return;
 
-          std::set<worker_id_t>::iterator
-            it_w (std::max_element ( replaceable_workers.begin()
-                                   , replaceable_workers.end()
-                                   , [this] (worker_id_t wl, worker_id_t wr)
-                                     {return worker_map_.at (wl).pending_.size()
-                                        > worker_map_.at (wr).pending_.size();
-                                     }
-                                   )
-                 );
+      for (worker_id_t w : workers_to_steal_from)
+      {
+        std::set<job_id_t> ::iterator it_job
+          (worker_map_.at (w).pending_.end());
+        worker_id_t w_idle;
 
-          if (it_w != replaceable_workers.end())
+        for (worker_id_t wi : idle_workers)
+        {
+          it_job = std::find_if ( worker_map_.at (w).pending_.begin()
+                                , worker_map_.at (w).pending_.end()
+                                , [&w, &wi, &requirements, this] (job_id_t job)
+                                  {return matchRequirements ( wi
+                                                            , requirements(job)
+                                                            );
+                                  }
+                                );
+
+          if (it_job != worker_map_.at (w).pending_.end())
           {
-            reservation (*it_job)->replace_worker (*it_w, w);
-            worker_map_.at (*it_w).deleteJob (*it_job);
-            worker_map_.at (w).assign (*it_job);
-
-            idle_workers_assigned.insert (w);
+            w_idle = wi;
+            break;
           }
         }
+
+        if (it_job != worker_map_.at (w).pending_.end())
+        {
+          reservation (*it_job)->replace_worker (w, w_idle);
+
+          worker_map_.at (w).deleteJob (*it_job);
+          worker_map_.at (w_idle).assign (*it_job);
+          idle_workers.erase (w_idle);
+        }
+
+        if (idle_workers.empty())
+          break;
       }
     }
   }
