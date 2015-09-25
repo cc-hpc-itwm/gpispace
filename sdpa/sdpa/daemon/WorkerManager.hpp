@@ -115,7 +115,7 @@ namespace sdpa
                  };
 
       std::set<worker_id_t, decltype(comp)> workers_to_steal_from (comp);
-      std::set<worker_id_t> idle_workers;
+      std::list<decltype (worker_map_)::iterator> idle_workers;
 
       for (std::pair<worker_id_t const, Worker> const& worker: worker_map_)
       {
@@ -133,7 +133,7 @@ namespace sdpa
                 == 0
                 )
         {
-          idle_workers.insert (worker.first);
+          idle_workers.emplace_back (worker_map_.find (worker.first));
         }
       }
 
@@ -146,25 +146,33 @@ namespace sdpa
       {
         Worker& worker (worker_map_.at (w));
 
-        for (worker_id_t const& wi : idle_workers)
+        for ( auto idle_worker_it (idle_workers.begin())
+            ; idle_worker_it != idle_workers.end()
+            ; ++idle_worker_it
+            )
         {
+          worker_id_t const& idle_worker_id ((*idle_worker_it)->first);
+          Worker& idle_worker ((*idle_worker_it)->second);
+
           std::set<job_id_t>::iterator const it_job
             ( std::find_if ( worker.pending_.begin()
                            , worker.pending_.end()
-                           , [&wi, &requirements, this] (job_id_t job)
+                           , [&idle_worker_id, &requirements, this] (job_id_t job)
                              {
-                               return matchRequirements (wi, requirements(job));
+                               return matchRequirements ( idle_worker_id
+                                                        , requirements(job)
+                                                        );
                              }
                            )
             );
 
           if (it_job != worker.pending_.end())
           {
-            reservation (*it_job)->replace_worker (w, wi);
+            reservation (*it_job)->replace_worker (w, idle_worker_id);
 
             worker.deleteJob (*it_job);
-            worker_map_.at (wi).assign (*it_job);
-            idle_workers.erase (wi);
+            idle_worker.assign (*it_job);
+            idle_workers.erase (idle_worker_it);
 
             break;
           }
