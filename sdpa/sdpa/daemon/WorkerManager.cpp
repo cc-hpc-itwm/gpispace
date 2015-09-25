@@ -142,7 +142,7 @@ namespace sdpa
       // Searching and insertion operations have logarithmic complexity, as the
       // multimaps are implemented as binary search trees
 
-      for (std::pair<worker_id_t, Worker> const& worker : worker_map_)
+      for (std::pair<worker_id_t const, Worker> const& worker : worker_map_)
       {
         if ( job_reqs.shared_memory_amount_required()
            > worker.second._allocated_shared_memory_size
