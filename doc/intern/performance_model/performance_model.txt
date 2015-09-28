@@ -151,6 +151,35 @@ Known Application Scenarios:
 Topology, Size, Dynamics, Granularity, Expectations from good (bad) schedules
 
 - Map&Reduce
+  Should scale with the number of nodes.
+  Typically, #cores workers are spawned on each node.
+  There are 3 types of tasks: load, map and reduce.
+  The load is very fast/short. 
+  The maps are the largest tasks (seconds to minutes). 
+  The reduce tasks are intermediate size tasks.
+  Completing a load task results in producing a
+  map task. The result of a map task gives birth
+  to a number of reduce tasks, typically equal to
+  the number of partitions used.
+  There are different types of reduce (reduce in memory,
+  reduce on disk, etc).
+  The ideal would be to have all reduce workers running
+  at 100% on reduce tasks.
+  Typically, all the tasks require virtual memory
+  and work on an input/output buffer (load, map)
+  or multiple input buffers and one output buffer,
+  which is the case of reduce tasks.
+  Each task type works with buffer of a predefined size.
+  Problem 1: how to automatically choose the size of
+  the buffers? (Currently, set a priori)
+  Problem 2: how to decide which number of workers of each
+  type to spawn such that to reach the maximum performance?
+  
+  Q: should we the workers to change the capabilities at runtime,
+     in the case more workers of a certain type are needed?
+     If yes, information from the workflow is required.
+   
+  Main criteria for scheduling: all reduce workers are busy.
 
 - FRTM
 * runs on >1000 nodes
