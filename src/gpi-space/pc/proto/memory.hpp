@@ -153,8 +153,8 @@ namespace gpi
         struct get_transfer_costs_t
         {
           get_transfer_costs_t () {}
-          get_transfer_costs_t (std::list<gpi::pc::type::memory_region_t> const& transfers)
-            : transfers (transfers)
+          get_transfer_costs_t (std::list<gpi::pc::type::memory_region_t> const& transfers_)
+            : transfers (transfers_)
           {}
 
           std::list<gpi::pc::type::memory_region_t> transfers;
@@ -170,8 +170,8 @@ namespace gpi
         struct transfer_costs_t
         {
           transfer_costs_t () {}
-          transfer_costs_t (std::map<std::string, double> const& costs)
-            : costs (costs)
+          transfer_costs_t (std::map<std::string, double> const& costs_)
+            : costs (costs_)
           {}
 
           std::map<std::string, double> costs;

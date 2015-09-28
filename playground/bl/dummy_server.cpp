@@ -296,7 +296,7 @@ void thread::execute_action (fhg::util::parse::position& pos)
     {
       if (!block_updates_for_host.isEmpty())
       {
-        const QMutexLocker lock (&_pending_status_updates_mutex);
+        const QMutexLocker lock_pending_status_updates (&_pending_status_updates_mutex);
         _pending_status_updates << block_updates_for_host;
       }
       block_updates_for_host = host;
@@ -523,7 +523,7 @@ void thread::send_some_status_updates()
       continue;
     }
 
-    const QMutexLocker lock (&_hosts_mutex);
+    const QMutexLocker lock_hosts (&_hosts_mutex);
 
     if (!_hosts.contains (host))
     {

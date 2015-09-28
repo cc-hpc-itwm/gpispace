@@ -676,12 +676,12 @@ try
     return EXIT_SUCCESS;
   }
 
-  for (std::string const& p : not_starts_with)
+  for (std::string const& nsw : not_starts_with)
   {
     options.filter.push_back
-      ( [&p] (we::type::transition_t const& t)
+      ( [&nsw] (we::type::transition_t const& t)
       {
-        return fhg::util::starts_with (p, t.name());
+        return fhg::util::starts_with (nsw, t.name());
       }
       );
   }

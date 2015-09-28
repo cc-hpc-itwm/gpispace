@@ -47,13 +47,13 @@ struct wfe_task_t
   we::type::activity_t activity;
   drts::worker::context context;
 
-  wfe_task_t ( std::string id
+  wfe_task_t ( std::string id_
              , std::string const& description
              , std::string worker_name
              , std::set<std::string> workers
              , fhg::log::Logger& logger
              )
-    : id (id)
+    : id (id_)
     , state (PENDING)
     , activity (description)
     , context
@@ -82,14 +82,14 @@ public:
     using owner_type = map_of_masters_t::const_iterator;
 
     Job ( std::string const& jobid
-        , std::string const& description
-        , owner_type const& owner
-        , std::set<std::string> const& workers
+        , std::string const& description_
+        , owner_type const& owner_
+        , std::set<std::string> const& workers_
         )
       : id (jobid)
-      , description (description)
-      , owner (owner)
-      , workers (workers)
+      , description (description_)
+      , owner (owner_)
+      , workers (workers_)
       , state (Job::PENDING)
       , result()
       , message ("")
