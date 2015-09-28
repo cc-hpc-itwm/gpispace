@@ -151,9 +151,21 @@ Known Application Scenarios:
 Topology, Size, Dynamics, Granularity, Expectations from good (bad) schedules
 
 - Map&Reduce
+
 - FRTM
-runs on >1000 nodes
-runs 5-10 worker per node
+* runs on >1000 nodes
+* runs 5-10 worker per node
+  calc = 100% busy, from minutes to some hours, O(10000)
+  reduce = busy sometimes, several minutes, O(10000)
+  management, cleanup = busy sometimes, some seconds, O(10000)
+* does not use virtual memory
+* workflow knows about the number of workers and tries to always keep
+  the number of activities in the range of two times the number of workers
+* (fast) addition and removal nodes of, mostly in bunches of 64 or 128
+* (fast) interruption (cancel), calc already installs on_cancel_handler
+* uses workflow_response for status report
+* main criteria for good schedule: all calc workers are busy all the time
+
 - SPLOTCH
 - Adaptive Stacking
 - Parsu
