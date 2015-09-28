@@ -547,38 +547,33 @@ void DRTSImpl::job_execution_thread()
       job->message = error;
     }
 
-    send_job_result_to_master (job);
-  }
-}
+    switch (job->state.load())
+    {
+    case DRTSImpl::Job::FINISHED:
+      send_event<sdpa::events::JobFinishedEvent>
+        (job->owner->second, job->id, job->result);
 
-void DRTSImpl::send_job_result_to_master (std::shared_ptr<DRTSImpl::Job> const& job)
-{
-  switch (job->state.load())
-  {
-  case DRTSImpl::Job::FINISHED:
-    send_event<sdpa::events::JobFinishedEvent>
-      (job->owner->second, job->id, job->result);
+      break;
+    case DRTSImpl::Job::FAILED:
+      send_event<sdpa::events::JobFailedEvent>
+        (job->owner->second, job->id, job->message);
 
-    break;
-  case DRTSImpl::Job::FAILED:
-    send_event<sdpa::events::JobFailedEvent>
-      (job->owner->second, job->id, job->message);
+      break;
+    case DRTSImpl::Job::CANCELED:
+      send_event<sdpa::events::CancelJobAckEvent>
+        (job->owner->second, job->id);
 
-    break;
-  case DRTSImpl::Job::CANCELED:
-    send_event<sdpa::events::CancelJobAckEvent>
-      (job->owner->second, job->id);
+      break;
 
-    break;
+    case DRTSImpl::Job::CANCELED_DUE_TO_WORKER_SHUTDOWN:
+      //! \note Do _not_ send anything: will be rescheduled by worker
+      //! failure-handling.
 
-  case DRTSImpl::Job::CANCELED_DUE_TO_WORKER_SHUTDOWN:
-    //! \note Do _not_ send anything: will be rescheduled by worker
-    //! failure-handling.
+      break;
 
-    break;
-
-  default:
-    INVALID_ENUM_VALUE (DRTSImpl::Job::state_t, job->state);
+    default:
+      INVALID_ENUM_VALUE (DRTSImpl::Job::state_t, job->state);
+    }
   }
 }
 
