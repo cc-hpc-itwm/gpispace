@@ -167,6 +167,19 @@ Topology, Size, Dynamics, Granularity, Expectations from good (bad) schedules
 * main criteria for good schedule: all calc workers are busy all the time
 
 - SPLOTCH
+* runs and scales up to 128 nodes
+* is expected to run on O(1000) nodes
+* runs 4-5 worker per node
+  calc = 100% busy, some seconds to minutes, O(1000000)
+  load = busy sometimes, several seconds to a minute, O(10000)
+  store = busy sometimes, several seconds to a minute, O(10000)
+* uses virtual memory
+* number of workers does not change during a single run
+* jobs consists of small dependency pipeline, e.g. after load some calc
+  are triggered and a number of calc releases a store
+* main criteria for good schedule: calc workers are busy (excluding
+  memory transfer costs)
+
 - Adaptive Stacking
 - Parsu
 - Parsusort
