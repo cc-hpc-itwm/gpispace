@@ -313,7 +313,7 @@ namespace we
           {
             std::string token_rep;
             ar & token_rep;
-            pos->second.push_back (pnet::type::value::read (token_rep));
+            pos->second.emplace_back (pnet::type::value::read (token_rep));
           }
         }
 

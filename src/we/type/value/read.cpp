@@ -39,19 +39,19 @@ namespace pnet
           fhg::util::parse::require::skip_spaces (pos);
           fhg::util::parse::require::require (pos, ":=");
 
-          m.push_back (std::make_pair (fieldname, read (pos)));
+          m.emplace_back (fieldname, read (pos));
         }
         void list_item ( std::list<value_type>& l
                        , fhg::util::parse::position& pos
                        )
         {
-          l.push_back (read (pos));
+          l.emplace_back (read (pos));
         }
         void set_item ( std::set<value_type>& s
                       , fhg::util::parse::position& pos
                       )
         {
-          s.insert (read (pos));
+          s.emplace (read (pos));
         }
       }
 

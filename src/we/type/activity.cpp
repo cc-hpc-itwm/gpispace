@@ -167,7 +167,7 @@ namespace we
         }
         else
         {
-          _input.push_back (input_t::value_type (value, port_id));
+          _input.emplace_back (value, port_id);
         }
       }
 
@@ -269,7 +269,7 @@ namespace we
                     : _transition.net()->get_token (pid)
                     )
                 {
-                  output.push_back (std::make_pair (token, port_id));
+                  output.emplace_back (token, port_id);
                 }
           }
 
@@ -286,7 +286,7 @@ namespace we
         , pnet::type::value::value_type const& value
         )
       {
-        _output.push_back (output_t::value_type (value, port_id));
+        _output.emplace_back (value, port_id);
       }
 
       boost::optional<we::transition_id_type> const&
