@@ -6,5 +6,5 @@ extended_add_library (NAME "${LIB_PREFIX}graphviz-wrapper"
 )
 #!\todo move into extended_add_library
 target_include_directories ("${LIB_PREFIX}graphviz-wrapper"
-  PRIVATE SYSTEM "${GRAPHVIZ_INCLUDE_DIR}"
+  SYSTEM PRIVATE "${GRAPHVIZ_INCLUDE_DIR}"
 )
