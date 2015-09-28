@@ -153,7 +153,7 @@ namespace fhg
             int row (to->model()->rowCount());
             to->model()->insertRows (row, selection.size());
             to->selectionModel()->clear();
-            for (const QModelIndex idx : selection)
+            for (QModelIndex const& idx : selection)
             {
               const QModelIndex index (to->model()->index (row, 0));
               to->model()->setItemData (index, idx.model()->itemData (idx));

@@ -858,7 +858,7 @@ struct serve_job_and_check_for_minimal_cost_assignement
     std::normal_distribution<> dist(0,1);
 
     std::map<sdpa::worker_id_t, double> map_costs;
-    for (const sdpa::worker_id_t worker : worker_ids)
+    for (sdpa::worker_id_t const& worker : worker_ids)
     {
       map_costs.insert (std::make_pair (worker, dist (gen)));
     }
@@ -928,7 +928,7 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
                , _worker_manager
                );
 
-  for (const sdpa::worker_id_t worker_id : worker_ids)
+  for (sdpa::worker_id_t const& worker_id : worker_ids)
   {
     _worker_manager.addWorker (worker_id, {}, random_ulong(), false, worker_id, fhg::util::testing::random_string());
   }

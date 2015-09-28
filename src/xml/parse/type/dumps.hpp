@@ -45,7 +45,7 @@ namespace xml
                    , Container container
                    )
         {
-          for (const typename Container::value_type val : container)
+          for (typename Container::value_type const& val : container)
           {
             ::xml::parse::type::dump::dump (s, val);
           }
