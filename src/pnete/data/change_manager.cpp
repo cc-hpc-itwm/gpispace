@@ -2039,11 +2039,11 @@ namespace fhg
 
         if (port.get().place && !place)
         {
-          const handle::place place
+          const handle::place place_
             (*port.get().resolved_place(), port.document());
-          if (place.is_implicit())
+          if (place_.is_implicit())
           {
-            make_explicit (place);
+            make_explicit (place_);
           }
         }
 

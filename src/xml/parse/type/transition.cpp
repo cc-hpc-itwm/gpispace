@@ -35,17 +35,17 @@ namespace xml
         , PARENT_CONS_PARAM(net)
         , const util::position_type& pod
         , const std::string& name
-        , const boost::optional<we::priority_type>& priority
-        , const boost::optional<bool>& finline
-        , const boost::optional<bool>& internal
+        , const boost::optional<we::priority_type>& priority_
+        , const boost::optional<bool>& finline_
+        , const boost::optional<bool>& internal_
         )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _name (name)
-        , priority (priority)
-        , finline (finline)
-        , internal (internal)
+        , priority (priority_)
+        , finline (finline_)
+        , internal (internal_)
       {
         _id_mapper->put (_id, *this);
       }
@@ -106,12 +106,12 @@ namespace xml
         , const connections_type& connections
         , responses_type const& responses
         , const place_maps_type& place_map
-        , const structs_type& structs
+        , const structs_type& structs_
         , const conditions_type& conditions
-        , const requirements_type& requirements
-        , const boost::optional<we::priority_type>& priority
-        , const boost::optional<bool>& finline
-        , const boost::optional<bool>& internal
+        , const requirements_type& requirements_
+        , const boost::optional<we::priority_type>& priority_
+        , const boost::optional<bool>& finline_
+        , const boost::optional<bool>& internal_
         , const we::type::property::type& properties
         )
         : with_position_of_definition (pod)
@@ -125,12 +125,12 @@ namespace xml
         , _connections (connections, _id)
         , _responses (responses, _id)
         , _place_map (place_map, _id)
-        , structs (structs)
+        , structs (structs_)
         , _conditions (conditions)
-        , requirements (requirements)
-        , priority (priority)
-        , finline (finline)
-        , internal (internal)
+        , requirements (requirements_)
+        , priority (priority_)
+        , finline (finline_)
+        , internal (internal_)
         , _properties (properties)
       {
         _id_mapper->put (_id, *this);

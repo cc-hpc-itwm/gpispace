@@ -438,15 +438,15 @@ namespace we
         place_id_type pid_new_net;
 
         boost::optional<const pnet::type::value::value_type&>
-          transformation_property
+          transformed
             = input_place.second.property().get (transformation_property_path);
 
         // skip if transformed
         if ( !control
            || *control != input_place.second.name()
-           || !transformation_property
+           || !transformed
            || fhg::util::boost::get_or_none<std::string>
-                (transformation_property.get()).get()
+                (transformed.get()).get()
               != transformation_property_value
            )
         {
@@ -609,10 +609,10 @@ namespace we
           {transformation_property};
 
         boost::optional<const pnet::type::value::value_type&>
-          transformation_property =
+          transformed =
             port.property().get (transformation_property_path);
 
-        if (  !transformation_property
+        if (  !transformed
            || !( port.associated_place()
                && port.associated_place().get() == std::get<2>(copy_map)
                )

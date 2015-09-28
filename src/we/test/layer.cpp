@@ -577,11 +577,11 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
   we::layer::id_type const id (generate_id());
 
   {
-    expect_finished const _ (this, id, activity_output);
+    expect_finished const _finished (this, id, activity_output);
 
     we::layer::id_type child_id;
     {
-      expect_submit const _ (this, &child_id, activity_child);
+      expect_submit const _submit (this, &child_id, activity_child);
 
       do_submit (id, activity_input);
     }
@@ -718,15 +718,15 @@ BOOST_FIXTURE_TEST_CASE
   we::layer::id_type child_id_1_1;
 
   {
-    expect_submit const _0 (this, &child_id_0_0, activity_child);
-    expect_submit const _1 (this, &child_id_0_1, activity_child);
+    expect_submit const _s0 (this, &child_id_0_0, activity_child);
+    expect_submit const _s1 (this, &child_id_0_1, activity_child);
 
     do_submit (id_0, activity_input);
   }
 
   {
-    expect_submit const _0 (this, &child_id_1_0, activity_child);
-    expect_submit const _1 (this, &child_id_1_1, activity_child);
+    expect_submit const _s0 (this, &child_id_1_0, activity_child);
+    expect_submit const _s1 (this, &child_id_1_1, activity_child);
 
     do_submit (id_1, activity_input);
   }

@@ -41,8 +41,8 @@ namespace xml
                          , const specializes_type& specializes
                          , const templates_type& templates
                          , const transitions_type& transitions
-                         , const structs_type& structs
-                         , const bool& contains_a_module_call
+                         , const structs_type& structs_
+                         , const bool& contains_a_module_call_
                          , const we::type::property::type& properties
                          )
         : with_position_of_definition (pod)
@@ -53,8 +53,8 @@ namespace xml
         , _specializes (specializes, _id)
         , _templates (templates, _id)
         , _transitions (transitions, _id)
-        , structs (structs)
-        , contains_a_module_call (contains_a_module_call)
+        , structs (structs_)
+        , contains_a_module_call (contains_a_module_call_)
         , _properties (properties)
       {
         _id_mapper->put (_id, *this);
