@@ -800,58 +800,6 @@ void GenericDaemon::handle_worker_registration_response
     );
 
   response->get();
-
-  {
-    boost::mutex::scoped_lock const _ (_job_map_mutex);
-
-    for ( Job* job
-        : job_map_
-        | boost::adaptors::map_values
-        | boost::adaptors::filtered
-            ( [&master_it] (Job* job)
-              {
-                return job->owner()->_actual == master_it;
-              }
-            )
-        )
-    {
-      const sdpa::status::code status (job->getStatus());
-      switch (status)
-      {
-      case sdpa::status::FINISHED:
-        {
-          parent_proxy (this, master_it).job_finished (job->id(), job->result());
-        }
-        continue;
-
-      case sdpa::status::FAILED:
-        {
-          parent_proxy (this, master_it).job_failed
-            (job->id(), job->error_message());
-        }
-        continue;
-
-      case sdpa::status::CANCELED:
-        {
-          parent_proxy (this, master_it).cancel_job_ack (job->id());
-        }
-        continue;
-
-      case sdpa::status::PENDING:
-        {
-          parent_proxy (this, master_it).submit_job_ack (job->id());
-        }
-        continue;
-
-      case sdpa::status::RUNNING:
-      case sdpa::status::CANCELING:
-        // don't send anything to the master if the job is not completed or in a pending state
-        continue;
-      }
-
-      INVALID_ENUM_VALUE (sdpa::status::code, status);
-    }
-  }
 }
 
 void GenericDaemon::handleCapabilitiesGainedEvent

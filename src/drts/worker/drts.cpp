@@ -217,8 +217,6 @@ void DRTSImpl::handle_worker_registration_response
   {
     response->get();
 
-    resend_outstanding_events (master_it);
-
     _registration_responses.at (source).set_value();
   }
   catch (...)
@@ -549,29 +547,6 @@ void DRTSImpl::job_execution_thread()
       job->message = error;
     }
 
-    send_job_result_to_master (job);
-  }
-}
-
-void DRTSImpl::resend_outstanding_events
-  (map_of_masters_t::const_iterator const& master)
-{
-  LLOG (TRACE, _logger, "resending outstanding notifications to " << master->first);
-
-  std::unique_lock<std::mutex> const _ (m_job_map_mutex);
-
-  for ( std::shared_ptr<DRTSImpl::Job> const& job
-      : m_jobs
-      | boost::adaptors::map_values
-      | boost::adaptors::filtered
-          ( [&master] (std::shared_ptr<DRTSImpl::Job> const& j)
-            {
-              return j->owner == master && j->state >= DRTSImpl::Job::FINISHED;
-            }
-          )
-      )
-  {
-    LLOG (TRACE, _logger, "resending outcome of job " << job->id);
     send_job_result_to_master (job);
   }
 }
