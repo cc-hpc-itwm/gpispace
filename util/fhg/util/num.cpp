@@ -324,6 +324,7 @@ namespace fhg
             {
             case '.':
               ++pos;
+              BOOST_FALLTHROUGH;
             case 'e':
             case 'E':
               {

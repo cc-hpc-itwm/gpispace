@@ -368,7 +368,6 @@ namespace gpi
             + " segment = " + std::to_string (m_descriptor.id)
             + " avail = " + std::to_string (m_descriptor.avail)
             );
-          break;
         case ALLOC_INSUFFICIENT_MEMORY:
           throw std::runtime_error
             ( "not enough memory: requested_size = "
@@ -376,13 +375,11 @@ namespace gpi
             + " segment = " + std::to_string (m_descriptor.id)
             + " avail = " + std::to_string (m_descriptor.avail)
             );
-          break;
         case ALLOC_DUPLICATE_HANDLE:
           throw std::runtime_error
             ( "duplicate handle: handle = " + std::to_string (hdl.id)
             + " segment " + std::to_string (m_descriptor.id)
             );
-          break;
         case ALLOC_FAILURE:
           throw std::runtime_error
             ( "internal error during allocation: requested_size = "
@@ -390,7 +387,6 @@ namespace gpi
             + " handle = " + std::to_string (hdl.id)
             + " segment = " + std::to_string (m_descriptor.id)
             );
-          break;
         default:
           throw std::runtime_error
             ( "unexpected error during allocation: requested_size = "
@@ -399,7 +395,6 @@ namespace gpi
             + " segment = " + std::to_string (m_descriptor.id)
             + " error = " + std::to_string (alloc_return)
             );
-          break;
         }
       }
 
@@ -446,10 +441,8 @@ namespace gpi
           break;
         case RET_HANDLE_UNKNOWN:
           throw std::runtime_error ("inconsistent state: no such handle");
-          break;
         case RET_FAILURE:
           throw std::runtime_error ("no such handle");
-          break;
         }
       }
 
@@ -490,10 +483,8 @@ namespace gpi
           break;
         case RET_HANDLE_UNKNOWN:
           throw std::runtime_error ("inconsistent state: no such handle");
-          break;
         case RET_FAILURE:
           throw std::runtime_error ("no such handle");
-          break;
         }
       }
 
