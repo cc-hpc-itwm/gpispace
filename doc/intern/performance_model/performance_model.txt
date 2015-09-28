@@ -210,6 +210,28 @@ Topology, Size, Dynamics, Granularity, Expectations from good (bad) schedules
   memory transfer costs)
 
 - Adaptive Stacking
+
 - Parsu
+* in theory scales with number of nodes (plain split of input data)
+* 2-3 load, store, theoretically overlapping with calc
+  5-10 calc, constantly
+* vmem for work packages
+* constant topo
+* load -> calc -> store
+* vmem packages freed for load after calc, for calc after store
+* good schedule: constant calc, vmem locality for the whole data chain
+
 - Parsusort
+* fine to run on few nodes, algorithmic does not scale to a load of
+  nodes (final, singlethreaded step at end)
+* few workers per node, threaded for IO, not using vmem, so threads
+  better than workers
+  only one type of workers, at first all busy with same runtime, then
+  log-k parallel activities down to only one active with runtime of
+  activities increasing
+* number of workers constant
+* no fancy new stuff (put_token, …)
+* good schedule: equal distribution, as long as file system is equal
+  on all nodes, no locality exists.
+
 - ...
