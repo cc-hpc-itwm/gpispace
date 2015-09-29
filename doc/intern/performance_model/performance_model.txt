@@ -208,8 +208,26 @@ Topology, Size, Dynamics, Granularity, Expectations from good (bad) schedules
   are triggered and a number of calc releases a store
 * main criteria for good schedule: calc workers are busy (excluding
   memory transfer costs)
+* wanted: memory shared between workers (more general: shared
+  resources, e.g. memory, cpu) = overlapping resources
 
 - Adaptive Stacking
+* vmem application
+* has a big read-only constant in memory after phase one
+* should be integrated with FRTM
+* each activity transports significant amount of data from/to the vmem
+  => locality is very important, besides that the schedule seems to be
+  straight forward
+  * load O(10000), some seconds
+  * store O(1), some seconds
+  * correlate O(10000), some seconds
+  * reduce O(10000), some seconds
+* number of available activities is more or less constant over the
+  runtime, e.g. O(number of slots in virtual memory) ~ O(5-10 * number
+  of worker)
+* running time of a single activity is correlated with the size of a
+  vmem slot
+* no worker dynamics
 
 - Parsu
 * in theory scales with number of nodes (plain split of input data)
@@ -220,6 +238,8 @@ Topology, Size, Dynamics, Granularity, Expectations from good (bad) schedules
 * load -> calc -> store
 * vmem packages freed for load after calc, for calc after store
 * good schedule: constant calc, vmem locality for the whole data chain
+* wanted: shared memory between workers (scheduler known about sum oif
+  available memory and required memory per activity)
 
 - Parsusort
 * fine to run on few nodes, algorithmic does not scale to a load of
@@ -233,5 +253,7 @@ Topology, Size, Dynamics, Granularity, Expectations from good (bad) schedules
 * no fancy new stuff (put_token, …)
 * good schedule: equal distribution, as long as file system is equal
   on all nodes, no locality exists.
+* nyi but beneficial to resource sharing: removal of nodes after each
+  merge level
 
 - ...
