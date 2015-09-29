@@ -192,7 +192,6 @@ namespace pnet
           default:
             throw fhg::util::parse::error::expected ("truct, et", pos);
           }
-          break;
 
         case 'L':
           {
