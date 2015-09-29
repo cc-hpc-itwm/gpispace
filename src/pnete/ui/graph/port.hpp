@@ -30,7 +30,7 @@ namespace fhg
       {
         class port_item : public connectable_item
         {
-          Q_OBJECT;
+          Q_OBJECT
 
         public:
           port_item ( const data::handle::port& handle
@@ -87,7 +87,7 @@ namespace fhg
 
         class top_level_port_item : public port_item
         {
-          Q_OBJECT;
+          Q_OBJECT
 
         public:
           top_level_port_item ( const data::handle::port& handle

@@ -44,7 +44,7 @@ namespace fhg
 
       class remote_job_waiting : public QThread
       {
-        Q_OBJECT;
+        Q_OBJECT
 
       public:
         remote_job_waiting (sdpa::client::Client*, const std::string&);
@@ -63,7 +63,7 @@ namespace fhg
 
       class editor_window : public QMainWindow
       {
-        Q_OBJECT;
+        Q_OBJECT
 
       public:
         editor_window ( data::manager&

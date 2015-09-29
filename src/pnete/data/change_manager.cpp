@@ -203,7 +203,7 @@ namespace fhg
 
 #define ACTION_MEMBERS                              \
           change_manager_t& _change_manager;        \
-          internal_type* _document;
+          internal_type* _document
 
 #define ACTION_IMPL_ARGS                        \
         _change_manager, _document

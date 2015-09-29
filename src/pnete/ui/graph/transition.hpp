@@ -28,7 +28,7 @@ namespace fhg
       {
         class transition_item : public base_item
         {
-          Q_OBJECT;
+          Q_OBJECT
 
         public:
           explicit transition_item ( const data::handle::transition& handle

@@ -12,7 +12,7 @@
 
 class server : public QTcpServer
 {
-  Q_OBJECT;
+  Q_OBJECT
 public:
   server (int port, const QString& hostlist, QObject* parent = nullptr);
 
@@ -25,7 +25,7 @@ private:
 
 class thread : public QThread
 {
-  Q_OBJECT;
+  Q_OBJECT
 public:
   thread (int socket_descriptor, const QString& hostlist, QObject* parent = nullptr);
 

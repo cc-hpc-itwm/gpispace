@@ -125,5 +125,5 @@ struct SegYBHeader{	/* bhed - binary header */
   {
       memset(this, 0, sizeof(SegYBHeader));
       format = 1;
-  };
+  }
 };

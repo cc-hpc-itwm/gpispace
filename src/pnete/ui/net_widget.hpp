@@ -18,7 +18,7 @@ namespace fhg
     {
       class net_widget : public QSplitter
       {
-        Q_OBJECT;
+        Q_OBJECT
 
       public:
         net_widget ( data::manager&

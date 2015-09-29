@@ -30,7 +30,7 @@ namespace detail
 
   class log_table_model : public QAbstractTableModel
   {
-    Q_OBJECT;
+    Q_OBJECT
 
   public:
     log_table_model (QObject* parent = nullptr);
@@ -66,7 +66,7 @@ namespace detail
 
 class log_monitor : public QWidget
 {
-  Q_OBJECT;
+  Q_OBJECT
 
 public:
   explicit log_monitor (unsigned short port, QWidget* parent = nullptr);

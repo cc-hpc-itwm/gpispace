@@ -23,7 +23,7 @@ namespace fhg
 
       class expression_widget : public QWidget
       {
-        Q_OBJECT;
+        Q_OBJECT
 
       public:
         expression_widget ( const data::handle::expression&

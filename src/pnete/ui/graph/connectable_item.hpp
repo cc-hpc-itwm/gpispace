@@ -22,7 +22,7 @@ namespace fhg
       {
         class connectable_item : public base_item
         {
-          Q_OBJECT;
+          Q_OBJECT
 
         public:
           connectable_item (base_item* parent = nullptr);

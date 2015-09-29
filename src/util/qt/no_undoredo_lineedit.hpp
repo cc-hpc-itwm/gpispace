@@ -12,7 +12,7 @@ namespace fhg
     {
       class no_undoredo_lineedit : public QLineEdit
       {
-        Q_OBJECT;
+        Q_OBJECT
 
       public:
         no_undoredo_lineedit (QWidget* parent = nullptr);

@@ -19,7 +19,7 @@ namespace fhg
     {
       class StructureView : public QTreeView
       {
-        Q_OBJECT;
+        Q_OBJECT
 
       private:
         QStandardItemModel* _model;

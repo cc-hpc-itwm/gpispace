@@ -25,7 +25,7 @@ namespace fhg
     {
       class monitor_client : public QObject
       {
-        Q_OBJECT;
+        Q_OBJECT
 
       public:
         monitor_client (const QString& host, int port, QObject* parent = nullptr);
