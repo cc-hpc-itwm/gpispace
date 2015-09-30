@@ -247,6 +247,8 @@ void DRTSImpl::handleSubmitJobEvent
     throw std::runtime_error ("Received job with an unspecified job id");
   }
 
+  std::unique_lock<std::mutex> job_map_lock(m_job_map_mutex);
+
   map_of_jobs_t::iterator job_it (m_jobs.find(*e->job_id()));
   if (job_it != m_jobs.end())
   {
@@ -261,8 +263,6 @@ void DRTSImpl::handleSubmitJobEvent
                                       , e->workers()
                                       )
     );
-
-  std::unique_lock<std::mutex> job_map_lock(m_job_map_mutex);
 
   if (!m_pending_jobs.try_put (job))
   {
