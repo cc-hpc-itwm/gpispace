@@ -247,6 +247,26 @@ void DRTSImpl::handleSubmitJobEvent
     throw std::runtime_error ("Received job with an unspecified job id");
   }
 
+  if (m_shutting_down)
+  {
+    send_event<sdpa::events::ErrorEvent>
+      ( source
+      , sdpa::events::ErrorEvent::SDPA_EBACKLOGFULL
+      , "abusing backlogfull to stop getting new jobs"
+      , *e->job_id()
+      );
+
+    //! \note not putting into _masters_backlogfull_notified to avoid
+    //! being marked as free again at any point, but instead even
+    //! remove them all to avoid a legit backlogfull triggering
+    //! another job
+    std::unique_lock<std::mutex> const _
+      (_guard_backlogfull_notified_masters);
+    _masters_backlogfull_notified.clear();
+
+    return;
+  }
+
   std::unique_lock<std::mutex> job_map_lock(m_job_map_mutex);
 
   map_of_jobs_t::iterator job_it (m_jobs.find(*e->job_id()));
