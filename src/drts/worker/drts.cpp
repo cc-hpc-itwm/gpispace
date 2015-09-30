@@ -492,31 +492,28 @@ void DRTSImpl::job_execution_thread()
           );
       }
 
-      if (task.state == wfe_task_t::PENDING)
+      wfe_exec_context ctxt
+        (m_loader, _virtual_memory_api, _shared_memory, task);
+
+      try
       {
-        wfe_exec_context ctxt
-          (m_loader, _virtual_memory_api, _shared_memory, task);
-
-        try
+        //! \todo there is a race between putting it into
+        //! _currently_executed_tasks and actually starting it, as
+        //! well as between finishing execution and removing: a cancel
+        //! between the two means to call on_cancel() on a module call
+        //! not yet or no longer executed.
         {
-          //! \todo there is a race between putting it into
-          //! _currently_executed_tasks and actually starting it, as
-          //! well as between finishing execution and removing: a
-          //! cancel between the two means to call on_cancel() on a
-          //! module call not yet or no longer executed.
-          {
-            std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
-            _currently_executed_tasks.emplace (job->id, &task);
-          }
+          std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
+          _currently_executed_tasks.emplace (job->id, &task);
+        }
 
-          task.activity.execute (&ctxt);
-        }
-        catch (...)
-        {
-          task.state = wfe_task_t::FAILED;
-          job->message = "Module call failed: "
-            + fhg::util::current_exception_printer (": ").string();
-        }
+        task.activity.execute (&ctxt);
+      }
+      catch (...)
+      {
+        task.state = wfe_task_t::FAILED;
+        job->message = "Module call failed: "
+          + fhg::util::current_exception_printer (": ").string();
       }
 
       {
