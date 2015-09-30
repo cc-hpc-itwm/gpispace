@@ -669,24 +669,20 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
     return;
   }
 
-  const boost::optional<sdpa::worker_id_t> worker_id
-    (_worker_manager.findSubmOrAckWorker (job_id));
-
+  sdpa::status::code job_state (pJob->getStatus());
   pJob->CancelJob();
 
-  if (worker_id)
+  if (sdpa::status::PENDING == job_state)
   {
-    child_proxy (this, _worker_manager.address_by_worker (*worker_id).get()->second)
-      .cancel_job (job_id);
+    workflowEngine()->canceled (job_id);
+    pJob->CancelJobAck();
+    _scheduler.delete_job (job_id);
+    _scheduler.releaseReservation (job_id);
+    deleteJob (job_id);
   }
   else
   {
-    workflowEngine()->canceled (job_id);
-
-    pJob->CancelJobAck();
-    _scheduler.delete_job (job_id);
-
-    deleteJob (job_id);
+    _worker_manager.cancel_job<child_proxy> (job_id, this);
   }
 }
 

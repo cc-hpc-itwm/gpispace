@@ -4,6 +4,7 @@
 
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/job_requirements.hpp>
+#include <sdpa/events/CancelJobEvent.hpp>
 
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
@@ -27,6 +28,9 @@ namespace sdpa
       const boost::optional<worker_id_t> findSubmOrAckWorker (const sdpa::job_id_t& job_id) const;
 
       std::string host_INDICATES_A_RACE (const sdpa::worker_id_t& worker) const;
+
+      template <typename Proxy, typename PtrDaemon>
+      void cancel_job (job_id_t const&, PtrDaemon*);
 
       //! throws if workerId was not unique
       void addWorker ( const worker_id_t& workerId
@@ -176,6 +180,29 @@ namespace sdpa
 
             idle_workers_assigned.insert (w);
           }
+        }
+      }
+    }
+
+    template <typename Proxy, typename PtrDaemon>
+    void WorkerManager::cancel_job ( job_id_t const& job_id
+                                   , PtrDaemon* p
+                                   )
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+
+      for ( std::pair<const worker_id_t, Worker>& worker
+          : worker_map_
+          )
+      {
+        if ( worker.second.submitted_.count (job_id)
+          || worker.second.acknowledged_.count (job_id)
+           )
+        {
+          Proxy ( p
+                , address_by_worker (worker.first).get()->second
+                ).cancel_job (job_id);
+
         }
       }
     }
