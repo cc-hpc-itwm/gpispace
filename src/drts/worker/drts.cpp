@@ -101,11 +101,17 @@ DRTSImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canc
 {
   std::unique_lock<std::mutex> const currently_executed_tasks_lock
     (_currently_executed_tasks_mutex);
+  std::unique_lock<std::mutex> const jobs_lock (_jobs_guard);
 
   for (auto& task : _currently_executed_tasks | boost::adaptors::map_values)
   {
     task->state = wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN;
     task->context.module_call_do_cancel();
+  }
+
+  for (auto& job : _jobs | boost::adaptors::map_values)
+  {
+    job->state = Job::state_t::CANCELED_DUE_TO_WORKER_SHUTDOWN;
   }
 }
 
