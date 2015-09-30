@@ -479,11 +479,6 @@ void DRTSImpl::job_execution_thread()
       wfe_task_t task
         (job->id, job->description, m_my_name, job->workers, _logger);
 
-      {
-        std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
-        _currently_executed_tasks.emplace (job->id, &task);
-      }
-
       if (_notification_service)
       {
         using sdpa::daemon::NotificationEvent;
@@ -499,19 +494,22 @@ void DRTSImpl::job_execution_thread()
 
       if (task.state == wfe_task_t::PENDING)
       {
+        wfe_exec_context ctxt
+          (m_loader, _virtual_memory_api, _shared_memory, task);
+
         try
         {
-          wfe_exec_context ctxt
-            (m_loader, _virtual_memory_api, _shared_memory, task);
+          //! \todo there is a race between putting it into
+          //! _currently_executed_tasks and actually starting it, as
+          //! well as between finishing execution and removing: a
+          //! cancel between the two means to call on_cancel() on a
+          //! module call not yet or no longer executed.
+          {
+            std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
+            _currently_executed_tasks.emplace (job->id, &task);
+          }
 
           task.activity.execute (&ctxt);
-
-          //! \note failing or canceling overwrites
-          if (task.state == wfe_task_t::PENDING)
-          {
-            task.state = wfe_task_t::FINISHED;
-            job->result = task.activity.to_string();
-          }
         }
         catch (...)
         {
@@ -524,6 +522,13 @@ void DRTSImpl::job_execution_thread()
       {
         std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
         _currently_executed_tasks.erase (job->id);
+      }
+
+      //! \note failing or canceling overwrites
+      if (task.state == wfe_task_t::PENDING)
+      {
+        task.state = wfe_task_t::FINISHED;
+        job->result = task.activity.to_string();
       }
 
       if (wfe_task_t::FINISHED == task.state)
