@@ -99,14 +99,13 @@ namespace
 
 DRTSImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canceled_helper()
 {
-  std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
-  while (!_currently_executed_tasks.empty())
+  std::unique_lock<std::mutex> const currently_executed_tasks_lock
+    (_currently_executed_tasks_mutex);
+
+  for (auto& task : _currently_executed_tasks | boost::adaptors::map_values)
   {
-    wfe_task_t *task = _currently_executed_tasks.begin()->second;
     task->state = wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN;
     task->context.module_call_do_cancel();
-
-    _currently_executed_tasks.erase (task->id);
   }
 }
 
