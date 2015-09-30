@@ -197,6 +197,13 @@ DRTSImpl::DRTSImpl
 DRTSImpl::~DRTSImpl()
 {
   m_shutting_down = true;
+
+  //! \note remove them all to avoid a legit backlogfull triggering
+  //! another job: we will reply to all submitjobs with a backlogfull
+  //! that should never be followed up with a no-longer-full
+  std::unique_lock<std::mutex> const _
+    (_guard_backlogfull_notified_masters);
+  _masters_backlogfull_notified.clear();
 }
 
 void DRTSImpl::handle_worker_registration_response
@@ -262,12 +269,7 @@ void DRTSImpl::handleSubmitJobEvent
       );
 
     //! \note not putting into _masters_backlogfull_notified to avoid
-    //! being marked as free again at any point, but instead even
-    //! remove them all to avoid a legit backlogfull triggering
-    //! another job
-    std::unique_lock<std::mutex> const _
-      (_guard_backlogfull_notified_masters);
-    _masters_backlogfull_notified.clear();
+    //! being marked as free again at any point
 
     return;
   }
