@@ -9,7 +9,7 @@ set (CMAKE_CXX_STANDARD 11)
 set (CMAKE_CXX_STANDARD_REQUIRED on)
 
 macro (CHECK_AND_ADD_COMPILER_FLAG _VAR _FLAG)
-  STRING(REGEX REPLACE "-" _ __flag_literal ${_FLAG})
+  STRING(REGEX REPLACE "[-=]" "_" __flag_literal ${_FLAG})
   set(__flag_literal "FLAG${__flag_literal}")
   CHECK_CXX_COMPILER_FLAG (${_FLAG} ${__flag_literal})
   if (${__flag_literal})
