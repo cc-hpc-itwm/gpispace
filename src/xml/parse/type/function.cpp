@@ -1323,6 +1323,8 @@ namespace xml
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "CXXFLAGS += -I."                                << std::endl;
+        stream << "CXXFLAGS += -DBOOST_VARIANT_DO_NOT_USE_VARIADIC_TEMPLATES"
+                                                                   << std::endl;
         stream << "CXXFLAGS += -isystem $(SDPA_INCLUDE)"           << std::endl;
         stream << "CXXFLAGS += -isystem $(BOOST_ROOT)/include"     << std::endl;
         stream << "LDFLAGS += -L $(BOOST_ROOT)/lib"                << std::endl;
