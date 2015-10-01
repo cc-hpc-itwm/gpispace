@@ -49,13 +49,7 @@ SET (TESTING_RIF_STRATEGY_PARAMETERS ""
   CACHE STRING "strategy parameters to use for starting scoped rif daemons"
 )
 
-if (NOT BOOST_ROOT)
-  set (BOOST_ROOT $ENV{BOOST_ROOT})
-endif()
-
-if (BOOST_ROOT)
-  set (Boost_NO_SYSTEM_PATHS ON)
-endif()
+set (Boost_NO_SYSTEM_PATHS ON)
 
 if (${CMAKE_BUILD_TYPE} MATCHES "Release")
   add_definitions ("-DFHG_ASSERT_MODE=0")
