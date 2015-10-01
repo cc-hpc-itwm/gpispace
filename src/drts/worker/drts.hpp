@@ -143,6 +143,10 @@ private:
   void event_thread();
   void job_execution_thread();
 
+  void resend_outstanding_events (map_of_masters_t::const_iterator const&);
+
+  void send_job_result_to_master (std::shared_ptr<DRTSImpl::Job> const& job);
+
   void start_receiver();
 
   template<typename Event, typename... Args>
