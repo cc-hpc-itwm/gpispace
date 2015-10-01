@@ -75,7 +75,8 @@ add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
 
 require_compiler_version_ge (COMPILER "GNU" VERSION 4.9.2)
 
-find_boost (1.55 REQUIRED QUIET COMPONENTS
+find_boost (1.59 REQUIRED QUIET COMPONENTS
+  chrono
   date_time
   filesystem
   iostreams
@@ -86,6 +87,7 @@ find_boost (1.55 REQUIRED QUIET COMPONENTS
   system
   test_exec_monitor
   thread
+  timer
   unit_test_framework
 )
 find_package (GASPI 1.1.0 REQUIRED QUIET)

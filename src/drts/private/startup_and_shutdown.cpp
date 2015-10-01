@@ -13,7 +13,6 @@
 #include <fhg/util/starts_with.hpp>
 
 #include <util-generic/serialization/boost/filesystem/path.hpp>
-#include <util-generic/serialization/std/unordered_map.hpp>
 
 #include <rif/client.hpp>
 
@@ -23,6 +22,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/adaptors.hpp>
+#include <boost/serialization/unordered_map.hpp>
 
 #include <algorithm>
 #include <atomic>
