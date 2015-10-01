@@ -49,13 +49,7 @@ SET (TESTING_RIF_STRATEGY_PARAMETERS ""
   CACHE STRING "strategy parameters to use for starting scoped rif daemons"
 )
 
-if (NOT BOOST_ROOT)
-  set (BOOST_ROOT $ENV{BOOST_ROOT})
-endif()
-
-if (BOOST_ROOT)
-  set (Boost_NO_SYSTEM_PATHS ON)
-endif()
+set (Boost_NO_SYSTEM_PATHS ON)
 
 if (${CMAKE_BUILD_TYPE} MATCHES "Release")
   add_definitions ("-DFHG_ASSERT_MODE=0")
@@ -66,9 +60,8 @@ endif()
 set (FHG_QT_MOC_BOOST_HACK_OPTIONS "-DBOOST_LEXICAL_CAST_INCLUDED;-DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED;-DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION;-DBOOST_TT_HAS_PLUS_HPP_INCLUDED;-DBOOST_TT_HAS_PLUS_ASSIGN_HPP_INCLUDED;-DBOOST_TT_HAS_MINUS_HPP_INCLUDED;-DBOOST_TT_HAS_MINUS_ASSIGN_HPP_INCLUDED")
 set (PNETC_LIB_DIR "share/sdpa/xml/lib")
 
-add_definitions ("-DBOOST_FILESYSTEM_VERSION=3")
-add_definitions ("-DBOOST_FILESYSTEM_NO_DEPRECATED")
 add_definitions ("-DBOOST_NO_CXX11_SCOPED_ENUMS") # required if linking against boost not built with c++11
+add_definitions ("-DBOOST_VARIANT_DO_NOT_USE_VARIADIC_TEMPLATES")
 
 # Boost.Thread now throws when preconditions are not met.
 # This is the case when calling join() in some tests, while
@@ -82,7 +75,8 @@ add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
 
 require_compiler_version_ge (COMPILER "GNU" VERSION 4.9.2)
 
-find_boost (1.55 REQUIRED QUIET COMPONENTS
+find_boost (1.59 REQUIRED QUIET COMPONENTS
+  chrono
   date_time
   filesystem
   iostreams
@@ -93,6 +87,7 @@ find_boost (1.55 REQUIRED QUIET COMPONENTS
   system
   test_exec_monitor
   thread
+  timer
   unit_test_framework
 )
 find_package (GASPI 1.1.0 REQUIRED QUIET)
