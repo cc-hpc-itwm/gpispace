@@ -125,7 +125,7 @@ namespace
        client.synchronous_workflow_response
          ("JOB-NOT-EXISTENT", "get_and_update_state", 12UL);
      }
-    , std::runtime_error ("Error: reason := unable to request workflow response: JOB-NOT-EXISTENT unknown or not running code := 2")
+    , std::runtime_error ("unable to request workflow response: JOB-NOT-EXISTENT unknown or not running")
     );
 
   //! \todo specific exception
@@ -194,7 +194,7 @@ namespace
        client.synchronous_workflow_response
          (job_id, "get_and_update_state", 0UL);
      }
-    , std::runtime_error ("Error: reason := unable to request workflow response: " + job_id + " unknown or not running code := 2")
+    , std::runtime_error ("unable to request workflow response: " + job_id + " unknown or not running")
     );
 
   std::multimap<std::string, pnet::type::value::value_type> const result
