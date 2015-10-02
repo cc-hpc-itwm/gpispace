@@ -144,3 +144,67 @@ BOOST_FIXTURE_TEST_CASE (call_cancel_twice_agent, setup_logging)
 
   BOOST_REQUIRE_THROW (client.cancel_job (job_id), std::runtime_error);
 }
+
+BOOST_FIXTURE_TEST_CASE (cancel_pending_jobs, setup_logging)
+{
+  const utils::orchestrator orchestrator (_logger);
+  const utils::agent agent (orchestrator, _logger);
+
+  fhg::util::thread::event<> job_submitted;
+  fhg::util::thread::event<std::string> cancel_requested;
+  fake_drts_worker_notifying_submission_and_cancel worker
+    ( [&job_submitted] (std::string) { job_submitted.notify(); }
+    , [&cancel_requested] (std::string j) { cancel_requested.notify (j); }
+    , agent
+    );
+
+  utils::client client (orchestrator);
+
+  const sdpa::job_id_t job_id_0 (client.submit_job (utils::module_call()));
+
+  const sdpa::job_id_t job_id_1 (client.submit_job (utils::module_call()));
+
+  job_submitted.wait();
+
+  client.cancel_job (job_id_1);
+
+  BOOST_REQUIRE_EQUAL
+    (client.wait_for_terminal_state (job_id_1), sdpa::status::CANCELED);
+}
+
+BOOST_FIXTURE_TEST_CASE (cancel_workflow_with_two_activities, setup_logging)
+{
+  const utils::orchestrator orchestrator (_logger);
+  const utils::agent agent (orchestrator, _logger);
+
+  fhg::util::thread::event<> job_submitted_0;
+  fhg::util::thread::event<std::string> cancel_requested_0;
+  fake_drts_worker_notifying_submission_and_cancel worker_0
+    ( [&job_submitted_0] (std::string) { job_submitted_0.notify(); }
+    , [&cancel_requested_0] (std::string j) { cancel_requested_0.notify (j); }
+    , agent
+    );
+
+  fhg::util::thread::event<> job_submitted_1;
+  fhg::util::thread::event<std::string> cancel_requested_1;
+  fake_drts_worker_notifying_submission_and_cancel worker_1
+     ( [&job_submitted_1] (std::string) { job_submitted_1.notify(); }
+     , [&cancel_requested_1] (std::string j) { cancel_requested_1.notify (j); }
+     , agent
+     );
+
+  utils::client client (orchestrator);
+  sdpa::job_id_t const job_id
+    (client.submit_job (utils::net_with_two_children_requiring_n_workers (2).to_string()));
+
+  job_submitted_0.wait();
+  job_submitted_1.wait();
+
+  client.cancel_job (job_id);
+
+  worker_0.canceled (cancel_requested_0.wait());
+  worker_1.canceled (cancel_requested_1.wait());
+
+  BOOST_REQUIRE_EQUAL
+    (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
+}
