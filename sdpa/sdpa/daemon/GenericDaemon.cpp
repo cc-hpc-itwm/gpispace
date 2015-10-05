@@ -1312,6 +1312,7 @@ void GenericDaemon::handleJobFailedAckEvent
 
     void GenericDaemon::handle_put_token
       (fhg::com::p2p::address_t const& source, const events::put_token* event)
+    try
     {
       Job* job (findJob (event->job_id()));
 
@@ -1354,6 +1355,11 @@ void GenericDaemon::handleJobFailedAckEvent
                                     );
       }
     }
+    catch (...)
+    {
+      parent_proxy (this, source).put_token_response
+        (event->put_token_id(), std::current_exception());
+    }
     void GenericDaemon::handle_put_token_response
       ( fhg::com::p2p::address_t const&
       , events::put_token_response const* event
@@ -1373,6 +1379,7 @@ void GenericDaemon::handleJobFailedAckEvent
 
     void GenericDaemon::handle_workflow_response
       (fhg::com::p2p::address_t const& source, const events::workflow_response* event)
+    try
     {
       Job* job (findJob (event->job_id()));
 
@@ -1416,6 +1423,11 @@ void GenericDaemon::handleJobFailedAckEvent
                                                     , event->value()
                                                     );
       }
+    }
+    catch (...)
+    {
+      parent_proxy (this, source).workflow_response_response
+        (event->workflow_response_id(), std::current_exception());
     }
     void GenericDaemon::handle_workflow_response_response
       ( fhg::com::p2p::address_t const&
