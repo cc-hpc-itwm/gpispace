@@ -822,6 +822,170 @@ BOOST_FIXTURE_TEST_CASE
 }
 
 BOOST_FIXTURE_TEST_CASE
+  (failing_a_child_during_canceling_is_equivalent_to_canceled, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_output;
+  we::type::activity_t activity_child;
+  we::type::activity_t activity_result;
+  std::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (2);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
+
+  {
+    expect_submit const _a (this, &child_id_a, activity_child);
+    expect_submit const _b (this, &child_id_b, activity_child);
+
+    do_submit (id, activity_input);
+  }
+
+  {
+    expect_cancel const _a (this, child_id_a);
+    expect_cancel const _b (this, child_id_b);
+
+    do_cancel (id);
+  }
+
+  do_failed (child_id_a, "canceling interleaved with failing");
+
+  {
+    expect_canceled const _ (this, id);
+
+    //! \todo There is an uncheckable(?) race here: rts_canceled may
+    //! be called before do_canceled (second child)!
+
+    do_canceled (child_id_b);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (finishing_a_child_during_canceling_is_equivalent_to_canceled, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_output;
+  we::type::activity_t activity_child;
+  we::type::activity_t activity_result;
+  std::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (2);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
+
+  {
+    expect_submit const _a (this, &child_id_a, activity_child);
+    expect_submit const _b (this, &child_id_b, activity_child);
+
+    do_submit (id, activity_input);
+  }
+
+  {
+    expect_cancel const _a (this, child_id_a);
+    expect_cancel const _b (this, child_id_b);
+
+    do_cancel (id);
+  }
+
+  do_finished (child_id_a, activity_result);
+
+  {
+    expect_canceled const _ (this, id);
+
+    //! \todo There is an uncheckable(?) race here: rts_canceled may
+    //! be called before do_canceled (second child)!
+
+    do_canceled (child_id_b);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (failing_a_child_during_canceling_is_equivalent_to_canceled_second, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_output;
+  we::type::activity_t activity_child;
+  we::type::activity_t activity_result;
+  std::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (2);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
+
+  {
+    expect_submit const _a (this, &child_id_a, activity_child);
+    expect_submit const _b (this, &child_id_b, activity_child);
+
+    do_submit (id, activity_input);
+  }
+
+  {
+    expect_cancel const _a (this, child_id_a);
+    expect_cancel const _b (this, child_id_b);
+
+    do_cancel (id);
+  }
+
+  do_canceled (child_id_b);
+
+  {
+    expect_canceled const _ (this, id);
+
+    //! \todo There is an uncheckable(?) race here: rts_canceled may
+    //! be called before do_canceled (second child)!
+
+    do_failed (child_id_a, "canceling interleaved with failing");
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (finishing_a_child_during_canceling_is_equivalent_to_canceled_second, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_output;
+  we::type::activity_t activity_child;
+  we::type::activity_t activity_result;
+  std::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (2);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
+
+  {
+    expect_submit const _a (this, &child_id_a, activity_child);
+    expect_submit const _b (this, &child_id_b, activity_child);
+
+    do_submit (id, activity_input);
+  }
+
+  {
+    expect_cancel const _a (this, child_id_a);
+    expect_cancel const _b (this, child_id_b);
+
+    do_cancel (id);
+  }
+
+  do_canceled (child_id_b);
+
+  {
+    expect_canceled const _ (this, id);
+
+    //! \todo There is an uncheckable(?) race here: rts_canceled may
+    //! be called before do_canceled (second child)!
+
+    do_finished (child_id_a, activity_result);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE
   ( canceled_shall_be_called_after_cancel_two_childs_with_one_child_finished
   , daemon
   )
