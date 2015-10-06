@@ -669,20 +669,15 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
     return;
   }
 
-  sdpa::status::code job_state (pJob->getStatus());
   pJob->CancelJob();
 
-  if (sdpa::status::PENDING == job_state)
+  if (!_worker_manager.cancel_job<child_proxy> (job_id, this))
   {
     workflowEngine()->canceled (job_id);
     pJob->CancelJobAck();
     _scheduler.delete_job (job_id);
     _scheduler.releaseReservation (job_id);
     deleteJob (job_id);
-  }
-  else
-  {
-    _worker_manager.cancel_job<child_proxy> (job_id, this);
   }
 }
 

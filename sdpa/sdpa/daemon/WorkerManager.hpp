@@ -30,7 +30,7 @@ namespace sdpa
       std::string host_INDICATES_A_RACE (const sdpa::worker_id_t& worker) const;
 
       template <typename Proxy, typename PtrDaemon>
-      void cancel_job (job_id_t const&, PtrDaemon*);
+      bool cancel_job (job_id_t const&, PtrDaemon*);
 
       //! throws if workerId was not unique
       void addWorker ( const worker_id_t& workerId
@@ -185,11 +185,12 @@ namespace sdpa
     }
 
     template <typename Proxy, typename PtrDaemon>
-    void WorkerManager::cancel_job ( job_id_t const& job_id
+    bool WorkerManager::cancel_job ( job_id_t const& job_id
                                    , PtrDaemon* p
                                    )
     {
       boost::mutex::scoped_lock const _(mtx_);
+      bool b_job_submitted (false);
 
       for ( std::pair<const worker_id_t, Worker>& worker
           : worker_map_
@@ -203,8 +204,11 @@ namespace sdpa
                 , address_by_worker (worker.first).get()->second
                 ).cancel_job (job_id);
 
+          b_job_submitted = true;
         }
       }
+
+      return b_job_submitted;
     }
   }
 }
