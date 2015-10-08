@@ -42,7 +42,7 @@
 #include <util-generic/print_exception.hpp>
 
 #include <boost/tokenizer.hpp>
-#include <boost/range/adaptor/filtered.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 #include <functional>
 #include <sstream>
