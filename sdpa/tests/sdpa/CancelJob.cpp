@@ -161,10 +161,9 @@ BOOST_FIXTURE_TEST_CASE (cancel_pending_jobs, setup_logging)
   utils::client client (orchestrator);
 
   const sdpa::job_id_t job_id_0 (client.submit_job (utils::module_call()));
+  job_submitted.wait();
 
   const sdpa::job_id_t job_id_1 (client.submit_job (utils::module_call()));
-
-  job_submitted.wait();
 
   client.cancel_job (job_id_1);
 
