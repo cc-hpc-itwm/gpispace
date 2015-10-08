@@ -792,11 +792,9 @@ void GenericDaemon::handle_worker_registration_response
   , sdpa::events::worker_registration_response const* response
   )
 {
-  master_info_t::iterator const master_it
-    ( fhg::util::boost::get_or_throw<std::runtime_error>
-       ( master_by_address (source)
-       , "workerRegistrationAckEvent from source not in list of masters"
-       )
+  fhg::util::boost::get_or_throw<std::runtime_error>
+    ( master_by_address (source)
+    , "workerRegistrationAckEvent from source not in list of masters"
     );
 
   response->get();
