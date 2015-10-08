@@ -217,8 +217,6 @@ void DRTSImpl::handle_worker_registration_response
   {
     response->get();
 
-    resend_outstanding_events (master_it);
-
     _registration_responses.at (source).set_value();
   }
   catch (...)
@@ -549,61 +547,33 @@ void DRTSImpl::job_execution_thread()
       job->message = error;
     }
 
-    send_job_result_to_master (job);
-  }
-}
+    switch (job->state.load())
+    {
+    case DRTSImpl::Job::FINISHED:
+      send_event<sdpa::events::JobFinishedEvent>
+        (job->owner->second, job->id, job->result);
 
-void DRTSImpl::resend_outstanding_events
-  (map_of_masters_t::const_iterator const& master)
-{
-  LLOG (TRACE, _logger, "resending outstanding notifications to " << master->first);
+      break;
+    case DRTSImpl::Job::FAILED:
+      send_event<sdpa::events::JobFailedEvent>
+        (job->owner->second, job->id, job->message);
 
-  std::unique_lock<std::mutex> const _ (m_job_map_mutex);
+      break;
+    case DRTSImpl::Job::CANCELED:
+      send_event<sdpa::events::CancelJobAckEvent>
+        (job->owner->second, job->id);
 
-  for ( std::shared_ptr<DRTSImpl::Job> const& job
-      : m_jobs
-      | boost::adaptors::map_values
-      | boost::adaptors::filtered
-          ( [&master] (std::shared_ptr<DRTSImpl::Job> const& j)
-            {
-              return j->owner == master && j->state >= DRTSImpl::Job::FINISHED;
-            }
-          )
-      )
-  {
-    LLOG (TRACE, _logger, "resending outcome of job " << job->id);
-    send_job_result_to_master (job);
-  }
-}
+      break;
 
-void DRTSImpl::send_job_result_to_master (std::shared_ptr<DRTSImpl::Job> const& job)
-{
-  switch (job->state.load())
-  {
-  case DRTSImpl::Job::FINISHED:
-    send_event<sdpa::events::JobFinishedEvent>
-      (job->owner->second, job->id, job->result);
+    case DRTSImpl::Job::CANCELED_DUE_TO_WORKER_SHUTDOWN:
+      //! \note Do _not_ send anything: will be rescheduled by worker
+      //! failure-handling.
 
-    break;
-  case DRTSImpl::Job::FAILED:
-    send_event<sdpa::events::JobFailedEvent>
-      (job->owner->second, job->id, job->message);
+      break;
 
-    break;
-  case DRTSImpl::Job::CANCELED:
-    send_event<sdpa::events::CancelJobAckEvent>
-      (job->owner->second, job->id);
-
-    break;
-
-  case DRTSImpl::Job::CANCELED_DUE_TO_WORKER_SHUTDOWN:
-    //! \note Do _not_ send anything: will be rescheduled by worker
-    //! failure-handling.
-
-    break;
-
-  default:
-    INVALID_ENUM_VALUE (DRTSImpl::Job::state_t, job->state);
+    default:
+      INVALID_ENUM_VALUE (DRTSImpl::Job::state_t, job->state);
+    }
   }
 }
 
