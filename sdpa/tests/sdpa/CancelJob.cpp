@@ -151,10 +151,8 @@ BOOST_FIXTURE_TEST_CASE (cancel_pending_jobs, setup_logging)
   const utils::agent agent (orchestrator, _logger);
 
   fhg::util::thread::event<> job_submitted;
-  fhg::util::thread::event<std::string> cancel_requested;
-  fake_drts_worker_notifying_submission_and_cancel worker
+  utils::fake_drts_worker_notifying_module_call_submission worker
     ( [&job_submitted] (std::string) { job_submitted.notify(); }
-    , [&cancel_requested] (std::string j) { cancel_requested.notify (j); }
     , agent
     );
 
