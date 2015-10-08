@@ -671,7 +671,19 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
 
   pJob->CancelJob();
 
-  if (!_worker_manager.cancel_job<child_proxy> (job_id, this))
+  std::set<worker_id_t>
+    workers_to_cancel (_worker_manager.workers_to_send_cancel (job_id));
+
+  if (!workers_to_cancel.empty())
+  {
+    for (worker_id_t const& w : workers_to_cancel)
+    {
+      child_proxy ( this
+                  , _worker_manager.address_by_worker (w).get()->second
+                  ).cancel_job (job_id);
+    }
+  }
+  else
   {
     workflowEngine()->canceled (job_id);
     pJob->CancelJobAck();

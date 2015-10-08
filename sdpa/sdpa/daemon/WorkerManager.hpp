@@ -29,9 +29,6 @@ namespace sdpa
 
       std::string host_INDICATES_A_RACE (const sdpa::worker_id_t& worker) const;
 
-      template <typename Proxy, typename PtrDaemon>
-      bool cancel_job (job_id_t const&, PtrDaemon*);
-
       //! throws if workerId was not unique
       void addWorker ( const worker_id_t& workerId
                      , const capabilities_set_t& cpbset
@@ -98,6 +95,8 @@ namespace sdpa
       address_by_worker (std::string const&);
 
       bool hasWorker_INDICATES_A_RACE_TESTING_ONLY (const worker_id_t& worker_id) const;
+
+      std::set<worker_id_t> workers_to_send_cancel (job_id_t const& job_id);
 
     private:
       typedef std::unordered_map<worker_id_t, Worker> worker_map_t;
@@ -182,33 +181,6 @@ namespace sdpa
           }
         }
       }
-    }
-
-    template <typename Proxy, typename PtrDaemon>
-    bool WorkerManager::cancel_job ( job_id_t const& job_id
-                                   , PtrDaemon* p
-                                   )
-    {
-      boost::mutex::scoped_lock const _(mtx_);
-      bool b_job_submitted (false);
-
-      for ( std::pair<const worker_id_t, Worker>& worker
-          : worker_map_
-          )
-      {
-        if ( worker.second.submitted_.count (job_id)
-          || worker.second.acknowledged_.count (job_id)
-           )
-        {
-          Proxy ( p
-                , address_by_worker (worker.first).get()->second
-                ).cancel_job (job_id);
-
-          b_job_submitted = true;
-        }
-      }
-
-      return b_job_submitted;
     }
   }
 }
