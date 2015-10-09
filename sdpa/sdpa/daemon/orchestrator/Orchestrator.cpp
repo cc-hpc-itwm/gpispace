@@ -110,24 +110,29 @@ namespace sdpa
         parent_proxy (this, source).cancel_job_ack (pEvt->job_id());
       }
 
+      sdpa::job_id_t job_id (pEvt->job_id());
       pJob->CancelJob();
 
-      boost::optional<sdpa::worker_id_t> worker_id =
-        _worker_manager.findSubmOrAckWorker(pEvt->job_id());
-      if (worker_id)
+      std::set<worker_id_t>
+        workers_to_cancel (_worker_manager.workers_to_send_cancel (job_id));
+
+      if (!workers_to_cancel.empty())
       {
-        child_proxy (this, _worker_manager.address_by_worker (*worker_id).get()->second)
-          .cancel_job (pEvt->job_id());
+        for (worker_id_t const& w : workers_to_cancel)
+        {
+          child_proxy ( this
+                      , _worker_manager.address_by_worker (w).get()->second
+                      ).cancel_job (job_id);
+        }
       }
       else
       {
-        // the job was not yet assigned to any worker
-
         pJob->CancelJobAck();
-        _scheduler.delete_job (pEvt->job_id());
+        _scheduler.delete_job (job_id);
+        _scheduler.releaseReservation (job_id);
 
         notify_subscribers<events::CancelJobAckEvent>
-          (pEvt->job_id(), pEvt->job_id());
+                (pEvt->job_id(), pEvt->job_id());
       }
     }
 
