@@ -81,6 +81,8 @@ namespace sdpa
     void Orchestrator::handleCancelJobEvent
       (fhg::com::p2p::address_t const& source, const events::CancelJobEvent* pEvt)
     {
+      boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
+
       Job* pJob (findJob (pEvt->job_id()));
       if (!pJob)
       {
