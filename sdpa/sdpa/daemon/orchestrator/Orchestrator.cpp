@@ -132,7 +132,7 @@ namespace sdpa
         _scheduler.releaseReservation (job_id);
 
         notify_subscribers<events::CancelJobAckEvent>
-                (job_id, job_id);
+          (job_id, job_id);
       }
     }
 
