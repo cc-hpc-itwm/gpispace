@@ -673,7 +673,7 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
 
   pJob->CancelJob();
 
-  std::set<worker_id_t>
+  const std::set<worker_id_t>
     workers_to_cancel (_worker_manager.workers_to_send_cancel (job_id));
 
   if (!workers_to_cancel.empty())

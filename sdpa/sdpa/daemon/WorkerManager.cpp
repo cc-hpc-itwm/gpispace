@@ -258,7 +258,7 @@ namespace sdpa
 
       boost::copy ( worker_map_
                   | boost::adaptors::filtered
-                    ( [&job_id] (std::pair<worker_id_t, Worker> const& w)
+                    ( [&job_id] (std::pair<worker_id_t const, Worker> const& w)
                       {
                        return w.second.submitted_.count (job_id)
                          || w.second.acknowledged_.count (job_id);
