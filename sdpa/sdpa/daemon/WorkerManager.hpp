@@ -96,7 +96,7 @@ namespace sdpa
 
       bool hasWorker_INDICATES_A_RACE_TESTING_ONLY (const worker_id_t& worker_id) const;
 
-      std::set<worker_id_t> workers_to_send_cancel (job_id_t const& job_id);
+      std::unordered_set<worker_id_t> workers_to_send_cancel (job_id_t const& job_id);
 
     private:
       typedef std::unordered_map<worker_id_t, Worker> worker_map_t;
