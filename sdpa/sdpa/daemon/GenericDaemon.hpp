@@ -262,10 +262,12 @@ namespace sdpa {
     protected:
       WorkerManager _worker_manager;
       CoallocationScheduler _scheduler;
+      boost::optional<worker_id_t> _new_worker_added;
 
       boost::mutex _scheduling_thread_mutex;
       boost::condition_variable _scheduling_thread_notifier;
       void request_scheduling();
+      void request_rescheduling (worker_id_t const&);
 
       boost::optional<std::mt19937> _random_extraction_engine;
 

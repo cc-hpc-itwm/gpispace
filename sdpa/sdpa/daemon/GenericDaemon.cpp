@@ -445,7 +445,7 @@ try
     , event->hostname(), source
     );
 
-  request_scheduling();
+  request_rescheduling (event->name());
 
   // send to the masters my new set of capabilities
   for (master_info_t::value_type const& info : _master_info)
@@ -1440,6 +1440,11 @@ namespace sdpa
         boost::mutex::scoped_lock lock (_scheduling_thread_mutex);
         _scheduling_thread_notifier.wait (lock);
 
+        if (_new_worker_added)
+        {
+          _scheduler.reschedule_pending_jobs_matching_worker (*_new_worker_added);
+          _new_worker_added.reset();
+        }
         _scheduler.assignJobsToWorkers();
         _scheduler.start_pending_jobs
           (std::bind (&GenericDaemon::serveJob, this, std::placeholders::_1, std::placeholders::_2));
@@ -1449,6 +1454,13 @@ namespace sdpa
     void GenericDaemon::request_scheduling()
     {
       boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
+      _scheduling_thread_notifier.notify_one();
+    }
+
+    void GenericDaemon::request_rescheduling (worker_id_t const& w)
+    {
+      boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
+      _new_worker_added = w;
       _scheduling_thread_notifier.notify_one();
     }
 
