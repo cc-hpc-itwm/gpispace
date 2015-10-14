@@ -12,7 +12,6 @@
 #include <util-generic/temporary_file.hpp>
 
 #include <util-generic/serialization/boost/filesystem/path.hpp>
-#include <util-generic/serialization/std/unordered_map.hpp>
 
 #include <fhglog/level_io.hpp>
 
@@ -28,6 +27,7 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/program_options.hpp>
+#include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/thread/scoped_thread.hpp>

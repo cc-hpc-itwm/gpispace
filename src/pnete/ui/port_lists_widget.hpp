@@ -24,7 +24,7 @@ namespace fhg
       {
        class ports_model : public QAbstractTableModel
         {
-          Q_OBJECT;
+          Q_OBJECT
 
         public:
           ports_model ( const data::handle::function&
@@ -55,7 +55,7 @@ namespace fhg
 
       class port_lists_widget : public QWidget
       {
-        Q_OBJECT;
+        Q_OBJECT
 
       public:
         explicit port_lists_widget ( const data::handle::function&

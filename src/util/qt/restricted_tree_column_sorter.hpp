@@ -15,7 +15,7 @@ namespace fhg
     {
       class restricted_tree_column_sorter : public QObject
       {
-        Q_OBJECT;
+        Q_OBJECT
 
       public:
         restricted_tree_column_sorter

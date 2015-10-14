@@ -168,7 +168,7 @@ namespace fhg
           const QString activity_id
             (QString::fromStdString (event.activity_id()));
 
-          for (const std::string worker_std : event.components())
+          for (std::string const& worker_std : event.components())
           {
             const QString worker (QString::fromStdString (worker_std));
 

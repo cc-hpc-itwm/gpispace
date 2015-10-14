@@ -79,7 +79,7 @@ namespace sdpa
                          );
 
           return assigned_workers;
-        };
+        }
 
       private:
         size_t capacity_;

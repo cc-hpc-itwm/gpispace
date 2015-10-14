@@ -45,7 +45,7 @@ namespace fhg
 
       class legend : public QWidget
       {
-        Q_OBJECT;
+        Q_OBJECT
 
       public:
         legend (monitor_client*, QWidget* parent = nullptr);
@@ -73,7 +73,7 @@ namespace fhg
 
       class log_widget : public QTableWidget
       {
-        Q_OBJECT;
+        Q_OBJECT
 
       public:
         log_widget (QWidget* parent = nullptr);
@@ -91,7 +91,7 @@ namespace fhg
 
       class node_state_widget : public QWidget
       {
-        Q_OBJECT;
+        Q_OBJECT
 
       public:
         node_state_widget ( const QString& window_title

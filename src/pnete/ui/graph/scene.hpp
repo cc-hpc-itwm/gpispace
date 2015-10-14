@@ -45,7 +45,7 @@ namespace fhg
       {
         class scene_type : public QGraphicsScene
         {
-          Q_OBJECT;
+          Q_OBJECT
 
         public:
           explicit scene_type ( data::manager&

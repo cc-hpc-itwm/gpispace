@@ -16,7 +16,7 @@ namespace fhg
     {
       class TransitionLibraryItem : public QObject
       {
-        Q_OBJECT;
+        Q_OBJECT
 
       public:
         TransitionLibraryItem (QObject*);

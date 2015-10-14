@@ -147,32 +147,32 @@ namespace sdpa
         (sdpa::events::SubscribeEvent (id));
      sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
 
-      if ( sdpa::events::JobFinishedEvent* evt
+      if ( sdpa::events::JobFinishedEvent* job_finished
          = dynamic_cast<sdpa::events::JobFinishedEvent*> (reply.get())
          )
       {
-        if (evt->job_id() != id)
+        if (job_finished->job_id() != id)
         {
           throw std::runtime_error ("got status change for different job");
         }
         return sdpa::status::FINISHED;
       }
-      else if ( sdpa::events::JobFailedEvent* evt
+      else if ( sdpa::events::JobFailedEvent* job_failed
               = dynamic_cast<sdpa::events::JobFailedEvent*> (reply.get())
               )
       {
-        if (evt->job_id() != id)
+        if (job_failed->job_id() != id)
         {
           throw std::runtime_error ("got status change for different job");
         }
-        job_info.error_message = evt->error_message();
+        job_info.error_message = job_failed->error_message();
         return sdpa::status::FAILED;
       }
-      else if ( sdpa::events::CancelJobAckEvent* evt
+      else if ( sdpa::events::CancelJobAckEvent* cancel_ack
               = dynamic_cast<sdpa::events::CancelJobAckEvent*> (reply.get())
               )
       {
-        if (evt->job_id() != id)
+        if (cancel_ack->job_id() != id)
         {
           throw std::runtime_error ("got status change for different job");
         }

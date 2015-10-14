@@ -112,7 +112,7 @@ namespace xml
                                    , const boost::optional<parent_id_type>& parent
                                    , const util::position_type& pod
                                    , const boost::optional<std::string>& name
-                                   , const boost::optional<bool>& internal
+                                   , const boost::optional<bool>& internal_
                                    , const content_type& content
                                    )
         : with_position_of_definition (pod)
@@ -120,7 +120,7 @@ namespace xml
         , _parent (parent)
         , _name (name)
         , contains_a_module_call (false)
-        , internal (internal)
+        , internal (internal_)
         , _content (reparent (content, _id))
       {
         _id_mapper->put (_id, *this);
@@ -137,11 +137,11 @@ namespace xml
         , std::list<memory_put> const& memory_puts
         , std::list<memory_getput> const& memory_getputs
         , const typenames_type& typenames
-        , const bool& contains_a_module_call
-        , const boost::optional<bool>& internal
-        , const structs_type& structs
+        , const bool& contains_a_module_call_
+        , const boost::optional<bool>& internal_
+        , const structs_type& structs_
         , const conditions_type& conditions
-        , const requirements_type& requirements
+        , const requirements_type& requirements_
         , const content_type& content
         , const we::type::property::type& properties
         )
@@ -155,11 +155,11 @@ namespace xml
         , _memory_puts (memory_puts)
         , _memory_getputs (memory_getputs)
         , _typenames (typenames)
-        , contains_a_module_call (contains_a_module_call)
-        , internal (internal)
-        , structs (structs)
+        , contains_a_module_call (contains_a_module_call_)
+        , internal (internal_)
+        , structs (structs_)
         , _conditions (conditions)
-        , requirements (requirements)
+        , requirements (requirements_)
         , _content (reparent (content, _id))
         , _properties (properties)
       {
@@ -1323,6 +1323,8 @@ namespace xml
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "CXXFLAGS += -I."                                << std::endl;
+        stream << "CXXFLAGS += -DBOOST_VARIANT_DO_NOT_USE_VARIADIC_TEMPLATES"
+                                                                   << std::endl;
         stream << "CXXFLAGS += -isystem $(SDPA_INCLUDE)"           << std::endl;
         stream << "CXXFLAGS += -isystem $(BOOST_ROOT)/include"     << std::endl;
         stream << "LDFLAGS += -L $(BOOST_ROOT)/lib"                << std::endl;

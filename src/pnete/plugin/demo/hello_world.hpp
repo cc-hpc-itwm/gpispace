@@ -8,7 +8,7 @@ namespace demo
 {
   class hello_plugin : public fhg::pnete::plugin::plugin_base
   {
-    Q_OBJECT;
+    Q_OBJECT
 
   public:
     hello_plugin (QObject* parent);

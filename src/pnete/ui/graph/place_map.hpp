@@ -29,7 +29,7 @@ namespace fhg
       {
         class place_map : public association
         {
-          Q_OBJECT;
+          Q_OBJECT
 
         public:
           place_map (port_item*, place_item*, const data::handle::place_map&);

@@ -29,7 +29,7 @@ namespace fhg
       {
         class place_item : public connectable_item
         {
-          Q_OBJECT;
+          Q_OBJECT
 
         public:
           place_item

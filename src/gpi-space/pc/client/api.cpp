@@ -125,8 +125,8 @@ namespace gpi
         proto::message_t rply;
         // deserialize
         {
-          std::stringstream sstr (std::string(buffer.begin(), buffer.end()));
-          boost::archive::text_iarchive ia (sstr);
+          std::stringstream sstr2 (std::string(buffer.begin(), buffer.end()));
+          boost::archive::text_iarchive ia (sstr2);
           ia & rply;
         }
 

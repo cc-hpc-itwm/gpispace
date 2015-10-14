@@ -511,15 +511,15 @@ namespace xml
         return memory_transfer<type::memory_get>
           ( node
           , state
-          , [] ( const xml_node_type* node
-               , state::type const& state
+          , [] ( const xml_node_type* node_
+               , state::type const& state_
                , std::string const& global
                , std::string const& local
                , we::type::property::type const& properties
                , boost::optional<bool> const& // ignored
                )
           { return type::memory_get
-              ( state.position (node)
+              ( state_.position (node_)
               , global
               , local
               , properties
@@ -534,14 +534,14 @@ namespace xml
         return memory_transfer<type::memory_put>
           ( node
           , state
-          , [] ( const xml_node_type* node
-               , state::type const& state
+          , [] ( const xml_node_type* node_
+               , state::type const& state_
                , std::string const& global
                , std::string const& local
                , we::type::property::type const& properties
                , boost::optional<bool> const& not_modified_in_module_call
                )
-          { return type::memory_put ( state.position (node)
+          { return type::memory_put ( state_.position (node_)
                                     , global
                                     , local
                                     , properties
@@ -557,14 +557,14 @@ namespace xml
         return memory_transfer<type::memory_getput>
           ( node
           , state
-          , [] ( const xml_node_type* node
-               , state::type const& state
+          , [] ( const xml_node_type* node_
+               , state::type const& state_
                , std::string const& global
                , std::string const& local
                , we::type::property::type const& properties
                , boost::optional<bool> const& not_modified_in_module_call
                )
-          { return type::memory_getput ( state.position (node)
+          { return type::memory_getput ( state_.position (node_)
                                        , global
                                        , local
                                        , properties

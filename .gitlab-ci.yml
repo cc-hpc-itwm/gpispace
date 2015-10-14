@@ -1,0 +1,8 @@
+gitlab-ci-build:
+  script: # todo: inline gpispace_buildbot in here, partially
+  - pushd $HOME/gpispace_buildbot && git pull && popd
+  - git submodule update --init --recursive # todo: is this really required?
+  - "$HOME/gpispace_buildbot/gitlab-ci-build"
+  tags:
+  except:
+  - tags

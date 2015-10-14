@@ -128,7 +128,7 @@ namespace we
                                 , pos_and_distance_type
                                 > enabled_by_place_id_type;
 
-      for ( const std::pair<transition_id_type, enabled_by_place_id_type> & tm
+      for ( std::pair<transition_id_type const, enabled_by_place_id_type> const& tm
           : other._enabled_choice
           )
       {
@@ -295,7 +295,7 @@ namespace we
 
       std::list<pnet::type::value::value_type>& tokens (_token_by_place_id[pid]);
       std::list<pnet::type::value::value_type>::iterator const tokenpos
-        ( tokens.insert
+        ( tokens.emplace
           ( tokens.end()
           , pnet::require_type (value, place.signature(), place.name())
           )
@@ -464,7 +464,7 @@ namespace we
     {
       std::list<token_to_be_deleted_type> tokens_to_be_deleted;
 
-      for ( const std::pair<place_id_type, pos_and_distance_type>& pt
+      for ( std::pair<place_id_type const, pos_and_distance_type> const& pt
           : _enabled_choice.at (tid)
           )
       {
@@ -481,7 +481,7 @@ namespace we
            == _adj_pt_read.end()
            )
         {
-          tokens_to_be_deleted.push_back (std::make_pair (pid, token));
+          tokens_to_be_deleted.emplace_back (pid, token);
         }
       }
 
@@ -580,7 +580,7 @@ namespace we
            && _port_to_place.at (tid).left.count (p.first)
            )
         {
-          pending_updates.push_back
+          pending_updates.emplace_back
             ( do_put_value
               ( _port_to_place.at (tid).left.find (p.first)->get_right()
               , context.value (p.second.name())
@@ -691,7 +691,7 @@ namespace we
       {
         expr::eval::context context;
 
-        for (const std::pair<place_id_type, iterators_type>& pits : _m)
+        for (std::pair<place_id_type const, iterators_type> const& pits : _m)
         {
           context.bind_ref
             ( transition.ports_input()
@@ -714,7 +714,7 @@ namespace we
                                                  >& choice
                               ) const
     {
-      for (const std::pair<place_id_type, iterators_type>& pits : _m)
+      for (std::pair<place_id_type const, iterators_type> const& pits : _m)
       {
         choice[pits.first] = pits.second.pos_and_distance();
       }

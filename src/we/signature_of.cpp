@@ -44,10 +44,10 @@ namespace pnet
 
       for (const type::value::structured_type::value_type& f : v)
       {
-        s.push_back (boost::apply_visitor ( visitor_structured (f.first)
-                                          , f.second
-                                          )
-                    );
+        s.emplace_back (boost::apply_visitor ( visitor_structured (f.first)
+                                             , f.second
+                                             )
+                       );
       }
 
       return std::make_pair (name, s);

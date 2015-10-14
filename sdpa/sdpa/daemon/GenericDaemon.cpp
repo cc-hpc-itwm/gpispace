@@ -42,7 +42,7 @@
 #include <util-generic/print_exception.hpp>
 
 #include <boost/tokenizer.hpp>
-#include <boost/range/adaptor/filtered.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 #include <functional>
 #include <sstream>
@@ -115,9 +115,9 @@ namespace
     {}
 
     GenericDaemon::master_network_info::master_network_info
-        (std::string const& host, std::string const& port)
-      : host (host)
-      , port (port)
+        (std::string const& host_, std::string const& port_)
+      : host (host_)
+      , port (port_)
       , address (boost::none)
     {}
 
@@ -392,14 +392,14 @@ void GenericDaemon::handleSubmitJobEvent
 
       if (m_guiService)
       {
-        const sdpa::daemon::NotificationEvent evt
+        const sdpa::daemon::NotificationEvent evt_
           ( {name()}
           , job_id
           , NotificationEvent::STATE_STARTED
           , act
           );
 
-        m_guiService->notify (evt);
+        m_guiService->notify (evt_);
       }
     }
     catch (...)
@@ -790,66 +790,12 @@ void GenericDaemon::handle_worker_registration_response
   , sdpa::events::worker_registration_response const* response
   )
 {
-  master_info_t::iterator const master_it
-    ( fhg::util::boost::get_or_throw<std::runtime_error>
-       ( master_by_address (source)
-       , "workerRegistrationAckEvent from source not in list of masters"
-       )
+  fhg::util::boost::get_or_throw<std::runtime_error>
+    ( master_by_address (source)
+    , "workerRegistrationAckEvent from source not in list of masters"
     );
 
   response->get();
-
-  {
-    boost::mutex::scoped_lock const _ (_job_map_mutex);
-
-    for ( Job* job
-        : job_map_
-        | boost::adaptors::map_values
-        | boost::adaptors::filtered
-            ( [&master_it] (Job* job)
-              {
-                return job->owner()->_actual == master_it;
-              }
-            )
-        )
-    {
-      const sdpa::status::code status (job->getStatus());
-      switch (status)
-      {
-      case sdpa::status::FINISHED:
-        {
-          parent_proxy (this, master_it).job_finished (job->id(), job->result());
-        }
-        continue;
-
-      case sdpa::status::FAILED:
-        {
-          parent_proxy (this, master_it).job_failed
-            (job->id(), job->error_message());
-        }
-        continue;
-
-      case sdpa::status::CANCELED:
-        {
-          parent_proxy (this, master_it).cancel_job_ack (job->id());
-        }
-        continue;
-
-      case sdpa::status::PENDING:
-        {
-          parent_proxy (this, master_it).submit_job_ack (job->id());
-        }
-        continue;
-
-      case sdpa::status::RUNNING:
-      case sdpa::status::CANCELING:
-        // don't send anything to the master if the job is not completed or in a pending state
-        continue;
-      }
-
-      INVALID_ENUM_VALUE (sdpa::status::code, status);
-    }
-  }
 }
 
 void GenericDaemon::handleCapabilitiesGainedEvent
@@ -1310,6 +1256,7 @@ void GenericDaemon::handleJobFailedAckEvent
 
     void GenericDaemon::handle_put_token
       (fhg::com::p2p::address_t const& source, const events::put_token* event)
+    try
     {
       Job* job (findJob (event->job_id()));
 
@@ -1352,6 +1299,11 @@ void GenericDaemon::handleJobFailedAckEvent
                                     );
       }
     }
+    catch (...)
+    {
+      parent_proxy (this, source).put_token_response
+        (event->put_token_id(), std::current_exception());
+    }
     void GenericDaemon::handle_put_token_response
       ( fhg::com::p2p::address_t const&
       , events::put_token_response const* event
@@ -1371,6 +1323,7 @@ void GenericDaemon::handleJobFailedAckEvent
 
     void GenericDaemon::handle_workflow_response
       (fhg::com::p2p::address_t const& source, const events::workflow_response* event)
+    try
     {
       Job* job (findJob (event->job_id()));
 
@@ -1414,6 +1367,11 @@ void GenericDaemon::handleJobFailedAckEvent
                                                     , event->value()
                                                     );
       }
+    }
+    catch (...)
+    {
+      parent_proxy (this, source).workflow_response_response
+        (event->workflow_response_id(), std::current_exception());
     }
     void GenericDaemon::handle_workflow_response_response
       ( fhg::com::p2p::address_t const&

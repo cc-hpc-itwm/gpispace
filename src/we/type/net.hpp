@@ -14,14 +14,13 @@
 #include <we/type/value/show.hpp>
 #include <we/workflow_response.hpp>
 
-#include <util-generic/serialization/std/unordered_map.hpp>
-
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
 #include <boost/random.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/any_range.hpp>
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/unordered_map.hpp>
 
 #include <functional>
 #include <iterator>
@@ -313,7 +312,7 @@ namespace we
           {
             std::string token_rep;
             ar & token_rep;
-            pos->second.push_back (pnet::type::value::read (token_rep));
+            pos->second.emplace_back (pnet::type::value::read (token_rep));
           }
         }
 

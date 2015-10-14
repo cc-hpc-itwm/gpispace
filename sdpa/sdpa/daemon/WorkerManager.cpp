@@ -237,9 +237,9 @@ namespace sdpa
       {
         if (matchRequirements (worker_map_.at (worker_id), requirements (job_id)))
         {
-          for (std::string worker_id : job_workers (job_id))
+          for (std::string job_worker_id : job_workers (job_id))
           {
-            worker_map_.at (worker_id).remove_pending_job (job_id);
+            worker_map_.at (job_worker_id).remove_pending_job (job_id);
           }
 
           removed_jobs.insert (job_id);

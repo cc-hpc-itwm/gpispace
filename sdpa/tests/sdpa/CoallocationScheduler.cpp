@@ -858,7 +858,7 @@ struct serve_job_and_check_for_minimal_cost_assignement
     std::normal_distribution<> dist(0,1);
 
     std::map<sdpa::worker_id_t, double> map_costs;
-    for (const sdpa::worker_id_t worker : worker_ids)
+    for (sdpa::worker_id_t const& worker : worker_ids)
     {
       map_costs.insert (std::make_pair (worker, dist (gen)));
     }
@@ -928,7 +928,7 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
                , _worker_manager
                );
 
-  for (const sdpa::worker_id_t worker_id : worker_ids)
+  for (sdpa::worker_id_t const& worker_id : worker_ids)
   {
     _worker_manager.addWorker (worker_id, {}, random_ulong(), false, worker_id, fhg::util::testing::random_string());
   }
@@ -1036,7 +1036,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
   std::random_device rand_dev;
   std::mt19937 rand_engine (rand_dev());
 
-  const double computational_cost (dist (rand_engine));
+  const double _computational_cost (dist (rand_engine));
   std::vector<double> transfer_costs (n_hosts);
   std::generate_n ( transfer_costs.begin()
                   , n_hosts
@@ -1065,12 +1065,12 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
 
   sdpa::daemon::WorkerManager _worker_manager;
   sdpa::daemon::CoallocationScheduler
-    _scheduler ( [&test_transfer_cost, &computational_cost] (const sdpa::job_id_t&)
+    _scheduler ( [&test_transfer_cost, &_computational_cost] (const sdpa::job_id_t&)
                  {
                    return job_requirements_t ( {}
                                              , we::type::schedule_data (n_req_workers)
                                              , test_transfer_cost
-                                             , computational_cost
+                                             , _computational_cost
                                              , 0
                                              );
                  }
@@ -1095,7 +1095,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
 
   std::vector<double> sum_costs_assigned_jobs (n_workers, 0.0);
   const double max_job_cost ( *std::max_element (transfer_costs.begin(), transfer_costs.end())
-                            + computational_cost
+                            + _computational_cost
                             );
 
   for ( const std::set<sdpa::worker_id_t>& job_assigned_workers
@@ -1105,7 +1105,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
     for (int k=0; k<n_workers; ++k)
     {
       sum_costs_assigned_jobs[k] += job_assigned_workers.count (worker_ids[k])
-                                  * (transfer_costs[k] + computational_cost);
+                                  * (transfer_costs[k] + _computational_cost);
     }
   }
 
@@ -1128,7 +1128,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_re_assignment_when_new_match
   std::random_device rand_dev;
   std::mt19937 rand_engine (rand_dev());
 
-  const double computational_cost (dist (rand_engine));
+  const double _computational_cost (dist (rand_engine));
   const double transfer_cost_host_0 (dist (rand_engine));
   const double transfer_cost_host_1 (dist (rand_engine));
 
@@ -1149,12 +1149,12 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_re_assignment_when_new_match
 
   sdpa::daemon::WorkerManager _worker_manager;
   sdpa::daemon::CoallocationScheduler
-    _scheduler ( [n_req_workers, &test_transfer_cost, &computational_cost] (const sdpa::job_id_t&)
+    _scheduler ( [n_req_workers, &test_transfer_cost, &_computational_cost] (const sdpa::job_id_t&)
                  {
                    return job_requirements_t ( {}
                                              , we::type::schedule_data (n_req_workers)
                                              , test_transfer_cost
-                                             , computational_cost
+                                             , _computational_cost
                                              , 0
                                              );
                  }
@@ -1194,7 +1194,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_re_assignment_when_new_match
    double max_job_cost ( std::max ( transfer_cost_host_0
                                   , transfer_cost_host_1
                                   )
-                       + computational_cost
+                       + _computational_cost
                        );
 
    for ( const std::set<sdpa::worker_id_t>& job_assigned_workers
@@ -1203,12 +1203,12 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_re_assignment_when_new_match
    {
      if (job_assigned_workers == set_worker_0)
      {
-       sum_costs_jobs_assigned_to_worker_0 += transfer_cost_host_0 + computational_cost;
+       sum_costs_jobs_assigned_to_worker_0 += transfer_cost_host_0 + _computational_cost;
      }
      else
        if (job_assigned_workers == set_worker_1)
        {
-         sum_costs_jobs_assigned_to_worker_1 += transfer_cost_host_1 + computational_cost;
+         sum_costs_jobs_assigned_to_worker_1 += transfer_cost_host_1 + _computational_cost;
        }
        else
        {
@@ -1723,4 +1723,3 @@ BOOST_FIXTURE_TEST_CASE
     }
   }
 }
-

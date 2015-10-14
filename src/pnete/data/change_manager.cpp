@@ -203,7 +203,7 @@ namespace fhg
 
 #define ACTION_MEMBERS                              \
           change_manager_t& _change_manager;        \
-          internal_type* _document;
+          internal_type* _document
 
 #define ACTION_IMPL_ARGS                        \
         _change_manager, _document
@@ -2039,11 +2039,11 @@ namespace fhg
 
         if (port.get().place && !place)
         {
-          const handle::place place
+          const handle::place place_
             (*port.get().resolved_place(), port.document());
-          if (place.is_implicit())
+          if (place_.is_implicit())
           {
-            make_explicit (place);
+            make_explicit (place_);
           }
         }
 

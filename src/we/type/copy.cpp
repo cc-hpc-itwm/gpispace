@@ -324,14 +324,14 @@ namespace we
 
       activity_t new_activity (new_trans, input_activity.transition_id());
 
-      for ( std::pair<pnet::type::value::value_type, port_id_type> const top
+      for ( std::pair<pnet::type::value::value_type, port_id_type> const& top
           : input_activity.input()
           )
       {
         new_activity.add_input (port_id.at (top.second), top.first);
       }
 
-      for ( std::pair<pnet::type::value::value_type, port_id_type> const top
+      for ( std::pair<pnet::type::value::value_type, port_id_type> const& top
           : input_activity.output()
           )
       {
@@ -438,15 +438,15 @@ namespace we
         place_id_type pid_new_net;
 
         boost::optional<const pnet::type::value::value_type&>
-          transformation_property
+          transformed
             = input_place.second.property().get (transformation_property_path);
 
         // skip if transformed
         if ( !control
            || *control != input_place.second.name()
-           || !transformation_property
+           || !transformed
            || fhg::util::boost::get_or_none<std::string>
-                (transformation_property.get()).get()
+                (transformed.get()).get()
               != transformation_property_value
            )
         {
@@ -609,10 +609,10 @@ namespace we
           {transformation_property};
 
         boost::optional<const pnet::type::value::value_type&>
-          transformation_property =
+          transformed =
             port.property().get (transformation_property_path);
 
-        if (  !transformation_property
+        if (  !transformed
            || !( port.associated_place()
                && port.associated_place().get() == std::get<2>(copy_map)
                )
@@ -686,7 +686,7 @@ namespace we
       activity_t new_act (new_transition, input_activity.transition_id());
 
       // copy tokens for ports
-      for ( std::pair<pnet::type::value::value_type, port_id_type> const input
+      for ( std::pair<pnet::type::value::value_type, port_id_type> const& input
           : input_activity.input()
           )
       {
@@ -696,7 +696,7 @@ namespace we
         }
       }
 
-      for ( std::pair<pnet::type::value::value_type, port_id_type> const output
+      for ( std::pair<pnet::type::value::value_type, port_id_type> const& output
           : input_activity.output()
           )
       {
