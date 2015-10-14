@@ -223,26 +223,28 @@ namespace sdpa
                          );
     }
 
-    std::set<job_id_t>  WorkerManager::remove_all_matching_pending_jobs
-      ( const worker_id_t& worker_id
-      , const job_id_list_t& jobs
-      , std::function<std::set<worker_id_t> (job_id_t const&)> job_workers
-      , std::function<job_requirements_t (const sdpa::job_id_t&)> requirements
-      )
+    std::unordered_set<job_id_t>
+      WorkerManager::remove_pending_jobs_from_workers_with_similar_capabilities
+        (worker_id_t const& w)
     {
       boost::mutex::scoped_lock const _(mtx_);
+      std::unordered_set<job_id_t> removed_jobs;
 
-      std::set<job_id_t> removed_jobs;
-      for (const job_id_t& job_id : jobs)
+      capabilities_set_t const cpb_set (worker_map_.at (w)._capabilities);
+
+      for (Worker& worker : worker_map_ | boost::adaptors::map_values)
       {
-        if (matchRequirements (worker_map_.at (worker_id), requirements (job_id)))
+        if (std::all_of ( cpb_set.begin()
+                        , cpb_set.end()
+                        , [&worker](capability_t const& cpb)
+                          {return worker.hasCapability (cpb.name());}
+                        )
+           )
         {
-          for (std::string job_worker_id : job_workers (job_id))
-          {
-            worker_map_.at (job_worker_id).remove_pending_job (job_id);
-          }
-
-          removed_jobs.insert (job_id);
+          removed_jobs.insert ( worker.pending_.begin()
+                              , worker.pending_.end()
+                              );
+          worker.pending_.clear();
         }
       }
 
