@@ -142,7 +142,7 @@ DRTSImpl::DRTSImpl
   , m_shutting_down (false)
   , m_my_name (kernel_name)
   , _currently_executed_tasks()
-  , m_loader ({library_path.begin(), library_path.end()})
+  , _library_path (library_path)
   , _notification_service (std::move (gui_notification_service))
   , _virtual_memory_api (virtual_memory_api)
   , _shared_memory (shared_memory)
@@ -476,8 +476,11 @@ void DRTSImpl::job_execution_thread()
       {
         try
         {
+          we::loader::loader loader
+            ({_library_path.begin(), _library_path.end()});
+
           wfe_exec_context ctxt
-            (m_loader, _virtual_memory_api, _shared_memory, task);
+            (loader, _virtual_memory_api, _shared_memory, task);
 
           task.activity.execute (&ctxt);
 
