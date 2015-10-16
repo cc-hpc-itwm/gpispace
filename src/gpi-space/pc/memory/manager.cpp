@@ -36,7 +36,6 @@ namespace gpi
         return
           ( url.type() == "gpi" ? gpi_area_t::create (logger, url_s, topology, handle_generator, gpi_api)
           : url.type() == "sfs" ? sfs_area_t::create (logger, url_s, topology, handle_generator)
-          : url.type() == "shm" ? shm_area_t::create (logger, url_s, handle_generator)
           : throw std::runtime_error
               ("no memory type registered with: '" + url_s + "'")
           );
