@@ -18,7 +18,6 @@ namespace gpi
                    , const gpi::pc::type::process_id_t creator
                    , type::name_t const&
                    , const gpi::pc::type::size_t size
-                   , const gpi::pc::type::flags_t flags
                    , handle_generator_t&
                    );
 
@@ -52,8 +51,6 @@ namespace gpi
         double get_transfer_costs ( const gpi::pc::type::memory_region_t&
                                   , const gpi::rank_t
                                   ) const override;
-
-        static bool unlink_after_close (const gpi::pc::type::flags_t);
 
         void *m_ptr;
         std::string m_path;

@@ -117,7 +117,6 @@ namespace gpi
                              , const gpi::pc::type::process_id_t creator
                              , type::name_t const& name
                              , const gpi::pc::type::size_t user_size
-                             , const gpi::pc::type::flags_t flags
                              , handle_generator_t& handle_generator
                              )
         : area_t ( logger
@@ -125,7 +124,7 @@ namespace gpi
                  , creator
                  , name
                  , user_size
-                 , flags
+                 , F_NOCREATE | F_NOMMAP | F_EXCLUSIVE
                  , handle_generator
                  )
         , m_ptr (nullptr)
@@ -143,12 +142,6 @@ namespace gpi
         gpi::pc::type::size_t size = user_size;
 
         int open_flags = O_RDWR;
-
-        if (not gpi::flag::is_set (flags, gpi::pc::F_NOCREATE))
-        {
-          LLOG (INFO, _logger, "setting open_flags to O_CREAT + O_EXCL");
-          open_flags |= O_CREAT | O_EXCL;
-        }
 
         m_ptr = detail::open ( m_path
                              , size
@@ -169,10 +162,7 @@ namespace gpi
         {
           detail::close (m_ptr, descriptor().local_size);
           m_ptr = nullptr;
-          if (unlink_after_close (descriptor().flags))
-          {
-            detail::unlink (m_path);
-          }
+          detail::unlink (m_path);
         }
         catch (std::exception const & ex)
         {
@@ -200,13 +190,6 @@ namespace gpi
       shm_area_t::grow_direction (const gpi::pc::type::flags_t) const
       {
         return ARENA_UP;
-      }
-
-      bool shm_area_t::unlink_after_close (const gpi::pc::type::flags_t flgs)
-      {
-        if (gpi::flag::is_set (flgs, gpi::pc::F_PERSISTENT))
-          return false;
-        return true;
       }
 
       bool

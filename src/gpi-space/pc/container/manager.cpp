@@ -253,7 +253,6 @@ namespace gpi
                                        , m_proc_id
                                        , register_segment.name
                                        , register_segment.size
-                                       , F_NOCREATE | F_NOMMAP | F_EXCLUSIVE
                                        , _memory_manager.handle_generator()
                                        )
               );
