@@ -155,10 +155,6 @@ namespace gpi
                              , open_flags
                              , 0600
                              );
-        if (unlink_after_open (flags))
-        {
-          detail::unlink (m_path);
-        }
 
         if (0 == user_size)
         {
@@ -204,11 +200,6 @@ namespace gpi
       shm_area_t::grow_direction (const gpi::pc::type::flags_t) const
       {
         return ARENA_UP;
-      }
-
-      bool shm_area_t::unlink_after_open (const gpi::pc::type::flags_t)
-      {
-        return false;
       }
 
       bool shm_area_t::unlink_after_close (const gpi::pc::type::flags_t flgs)
