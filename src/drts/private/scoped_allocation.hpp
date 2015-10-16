@@ -19,12 +19,7 @@ namespace gspc
         , unsigned long size
         )
           : _virtual_memory (virtual_memory)
-          , _segment (_virtual_memory->register_segment
-                       ( description
-                       , size
-                       , gpi::pc::F_EXCLUSIVE | gpi::pc::F_FORCE_UNLINK
-                       )
-                     )
+          , _segment (_virtual_memory->register_segment (description, size))
       {}
 
       ~scoped_segment()
