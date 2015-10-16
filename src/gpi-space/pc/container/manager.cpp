@@ -250,10 +250,7 @@ namespace gpi
           {
             url_t url ("shm", register_segment.name);
             url.set ("size", boost::lexical_cast<std::string>(register_segment.size));
-            if (false)
-              url.set ("persistent", "true");
-            if (true)
-              url.set ("exclusive", "true");
+            url.set ("exclusive", "true");
 
             memory::area_ptr_t area (memory::shm_area_t::create (_logger, boost::lexical_cast<std::string>(url), _memory_manager.handle_generator()));
             area->set_owner (m_proc_id);

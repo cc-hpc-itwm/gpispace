@@ -346,33 +346,24 @@ namespace gpi
                              )
       {
         segment_ptr seg (new gpi::pc::segment::segment_t(name, sz));
-          if (false)
+
+        try
+        {
+          seg->unlink();
+        }
+        catch (boost::system::system_error const &se)
+        {
+          if (se.code ().value () == ENOENT)
           {
-            seg->open();
+            // unlink() always throws, even  if the file did not
+            // exist, so we have to ignore this error here.
           }
           else
           {
-            if (true)
-            {
-              try
-              {
-                seg->unlink();
-              }
-              catch (boost::system::system_error const &se)
-              {
-                if (se.code ().value () == ENOENT)
-                {
-                  // unlink() always throws, even  if the file did not
-                  // exist, so we have to ignore this error here.
-                }
-                else
-                {
-                  throw;
-                }
-              }
-            }
-            seg->create ();
+            throw;
           }
+        }
+        seg->create ();
 
         // communication part
         {
@@ -422,10 +413,7 @@ namespace gpi
 
         m_segments [seg->id()] = seg;
 
-        if (true)
-        {
-          seg->unlink();
-        }
+        seg->unlink();
 
         return seg->id();
       }
