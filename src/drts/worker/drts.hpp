@@ -159,7 +159,7 @@ private:
   mutable std::mutex _currently_executed_tasks_mutex;
   std::map<std::string, wfe_task_t *> _currently_executed_tasks;
 
-  std::vector<boost::filesystem::path> _library_path;
+  we::loader::loader m_loader;
 
   std::unique_ptr<sdpa::daemon::NotificationService> _notification_service;
 
