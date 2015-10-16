@@ -267,27 +267,9 @@ namespace gpi
                                     )
       {
         gpi::pc::type::flags_t flags = F_NONE;
-
-        if (not false)
-        {
-          gpi::flag::set (flags, F_NOCREATE);
-        }
-        if (    false)
-        {
-          gpi::flag::set (flags, F_FORCE_UNLINK);
-        }
-        if (not false)
-        {
-          gpi::flag::set (flags, F_NOMMAP);
-        }
-        if (    true)
-        {
-          gpi::flag::set (flags, F_EXCLUSIVE);
-        }
-        if (    false)
-        {
-          gpi::flag::set (flags, F_PERSISTENT);
-        }
+        gpi::flag::set (flags, F_NOCREATE);
+        gpi::flag::set (flags, F_NOMMAP);
+        gpi::flag::set (flags, F_EXCLUSIVE);
 
         area_ptr_t area (new shm_area_t ( logger
                                         , GPI_PC_INVAL
