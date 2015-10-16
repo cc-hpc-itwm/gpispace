@@ -249,14 +249,14 @@ namespace gpi
             operator () (const gpi::pc::proto::segment::register_t & register_segment) const
           {
             memory::area_ptr_t area
-              ( memory::shm_area_t::create
-                  ( _logger
-                  , register_segment.name
-                  , register_segment.size
-                  , _memory_manager.handle_generator()
-                  )
+              ( new memory::shm_area_t ( _logger
+                                       , m_proc_id
+                                       , register_segment.name
+                                       , register_segment.size
+                                       , F_NOCREATE | F_NOMMAP | F_EXCLUSIVE
+                                       , _memory_manager.handle_generator()
+                                       )
               );
-            area->set_owner (m_proc_id);
 
             gpi::pc::proto::segment::register_reply_t rpl;
             rpl.id =

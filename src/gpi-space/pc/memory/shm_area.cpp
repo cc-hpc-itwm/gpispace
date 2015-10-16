@@ -115,7 +115,7 @@ namespace gpi
 
       shm_area_t::shm_area_t ( fhg::log::Logger& logger
                              , const gpi::pc::type::process_id_t creator
-                             , const std::string & name
+                             , type::name_t const& name
                              , const gpi::pc::type::size_t user_size
                              , const gpi::pc::type::flags_t flags
                              , handle_generator_t& handle_generator
@@ -258,28 +258,6 @@ namespace gpi
                                             ) const
       {
         return 0.0;
-      }
-
-      area_ptr_t shm_area_t::create ( fhg::log::Logger& logger
-                                    , type::name_t const& name
-                                    , type::size_t size
-                                    , handle_generator_t& handle_generator
-                                    )
-      {
-        gpi::pc::type::flags_t flags = F_NONE;
-        gpi::flag::set (flags, F_NOCREATE);
-        gpi::flag::set (flags, F_NOMMAP);
-        gpi::flag::set (flags, F_EXCLUSIVE);
-
-        area_ptr_t area (new shm_area_t ( logger
-                                        , GPI_PC_INVAL
-                                        , name
-                                        , size
-                                        , flags
-                                        , handle_generator
-                                        )
-                        );
-        return area;
       }
     }
   }
