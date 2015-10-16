@@ -248,11 +248,14 @@ namespace gpi
           gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::segment::register_t & register_segment) const
           {
-            url_t url ("shm", register_segment.name);
-            url.set ("size", boost::lexical_cast<std::string>(register_segment.size));
-            url.set ("exclusive", "true");
-
-            memory::area_ptr_t area (memory::shm_area_t::create (_logger, boost::lexical_cast<std::string>(url), _memory_manager.handle_generator()));
+            memory::area_ptr_t area
+              ( memory::shm_area_t::create
+                  ( _logger
+                  , register_segment.name
+                  , register_segment.size
+                  , _memory_manager.handle_generator()
+                  )
+              );
             area->set_owner (m_proc_id);
 
             gpi::pc::proto::segment::register_reply_t rpl;

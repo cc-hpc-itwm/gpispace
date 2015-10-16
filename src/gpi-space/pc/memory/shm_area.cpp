@@ -261,40 +261,37 @@ namespace gpi
       }
 
       area_ptr_t shm_area_t::create ( fhg::log::Logger& logger
-                                    , std::string const &url_s
+                                    , type::name_t const& name
+                                    , type::size_t size
                                     , handle_generator_t& handle_generator
                                     )
       {
-        url_t url (url_s);
         gpi::pc::type::flags_t flags = F_NONE;
 
-        if (not fhg::util::read_bool (url.get ("create").get_value_or ("false")))
+        if (not false)
         {
           gpi::flag::set (flags, F_NOCREATE);
         }
-        if (    fhg::util::read_bool (url.get ("unlink").get_value_or ("false")))
+        if (    false)
         {
           gpi::flag::set (flags, F_FORCE_UNLINK);
         }
-        if (not fhg::util::read_bool (url.get ("mmap").get_value_or ("false")))
+        if (not false)
         {
           gpi::flag::set (flags, F_NOMMAP);
         }
-        if (    fhg::util::read_bool (url.get ("exclusive").get_value_or ("false")))
+        if (    true)
         {
           gpi::flag::set (flags, F_EXCLUSIVE);
         }
-        if (    fhg::util::read_bool (url.get ("persistent").get_value_or ("false")))
+        if (    false)
         {
           gpi::flag::set (flags, F_PERSISTENT);
         }
 
-        gpi::pc::type::size_t size =
-          boost::lexical_cast<gpi::pc::type::size_t>(url.get ("size").get_value_or ("0"));
-
         area_ptr_t area (new shm_area_t ( logger
                                         , GPI_PC_INVAL
-                                        , url.path ()
+                                        , name
                                         , size
                                         , flags
                                         , handle_generator

@@ -14,8 +14,11 @@ namespace gpi
       public:
         static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_SHM;
 
-        static area_ptr_t create
-          (fhg::log::Logger&, std::string const &url, handle_generator_t&);
+        static area_ptr_t create ( fhg::log::Logger&
+                                 , type::name_t const&
+                                 , type::size_t
+                                 , handle_generator_t&
+                                 );
 
         shm_area_t ( fhg::log::Logger&
                    , const gpi::pc::type::process_id_t creator
