@@ -6,14 +6,14 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhglog/format.hpp>
 
-#include <util-generic/testing/printer/chrono.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/measure_average_time.hpp>
+#include <util-generic/testing/measure_average_time.hpp>
+#include <util-generic/testing/printer/chrono.hpp>
 
 BOOST_AUTO_TEST_CASE (formatting_performance)
 {
   BOOST_REQUIRE_LT
-    ( fhg::util::measure_average_time<std::chrono::microseconds>
+    ( fhg::util::testing::measure_average_time<std::chrono::microseconds>
       ( []()
         {
           format ( fhg::log::default_format::LONG()

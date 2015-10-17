@@ -5,8 +5,8 @@
 #include <tests/dump_event.common.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/measure_average_time.hpp>
 #include <util-generic/testing/printer/chrono.hpp>
-#include <fhg/util/measure_average_time.hpp>
 
 BOOST_AUTO_TEST_CASE (encode_with_time_constraint)
 {
@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE (encode_with_time_constraint)
   int count (0);
 
   BOOST_REQUIRE_LT
-    ( fhg::util::measure_average_time<std::chrono::milliseconds>
+    ( fhg::util::testing::measure_average_time<std::chrono::milliseconds>
       ( [&count, evt]()
         {
           count += *evt.encoded().begin();
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE (decode_with_time_constraint)
   pid_t count (0);
 
   BOOST_REQUIRE_LT
-    ( fhg::util::measure_average_time<std::chrono::milliseconds>
+    ( fhg::util::testing::measure_average_time<std::chrono::milliseconds>
       ( [&count, evts]()
         {
           count += fhg::log::LogEvent::from_string (evts).tid();
