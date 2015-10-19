@@ -445,7 +445,7 @@ namespace gpi
                            , std::string const & p
                            , std::vector<std::string> const& default_memory_urls
                            , api::gpi_api_t& gpi_api
-                           , std::unique_ptr<fhg::com::peer_t> topology_peer
+                           , std::unique_ptr<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher> topology_rpc_server
                            )
         : _logger (logger)
         , m_path (p)
@@ -453,7 +453,7 @@ namespace gpi
         , m_stopping (false)
         , m_process_counter (0)
         , _memory_manager (_logger, gpi_api)
-        , _topology (_logger, _memory_manager, gpi_api, std::move (topology_peer))
+        , _topology (_memory_manager, gpi_api, std::move (topology_rpc_server))
       {
         if ( default_memory_urls.size ()
            >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID
