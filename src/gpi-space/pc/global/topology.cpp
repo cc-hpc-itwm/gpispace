@@ -72,7 +72,7 @@ namespace gpi
           void wait_for (ContainerOfFutures& futures, Duration duration)
         {
           auto const deadline
-            (std::chrono::high_resolution_clock::now() + duration);
+            (std::chrono::steady_clock::now() + duration);
 
           std::size_t fail_count (0);
 
