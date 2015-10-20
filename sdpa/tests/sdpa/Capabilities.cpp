@@ -9,6 +9,10 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <condition_variable>
+#include <map>
+#include <mutex>
+
 namespace
 {
   class drts_component_observing_capabilities : public utils::basic_drts_component
@@ -19,101 +23,119 @@ namespace
     {}
 
     virtual void handleCapabilitiesGainedEvent
-      (fhg::com::p2p::address_t const&, const sdpa::events::CapabilitiesGainedEvent* event) override
+      (fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesGainedEvent* event) override
     {
-      boost::mutex::scoped_lock const _ (_mutex);
+      std::unique_lock<std::mutex> const _ (_mutex);
       for (const sdpa::capability_t& cpb : event->capabilities())
       {
-        _capabilities.insert (cpb);
-        _capabilitiy_added.notify_all();
+        _capabilities.emplace_back (source, cpb);
       }
+      _capabilities_changed.notify_one();
     }
 
     virtual void handleCapabilitiesLostEvent
-      (fhg::com::p2p::address_t const&, const sdpa::events::CapabilitiesLostEvent* event) override
+      (fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesLostEvent* event) override
     {
-      boost::mutex::scoped_lock const _ (_mutex);
+      std::unique_lock<std::mutex> const _ (_mutex);
       for (const sdpa::capability_t& cpb : event->capabilities())
       {
-        _capabilities.erase (cpb);
-        _capabilitiy_added.notify_all();
+        _capabilities.erase
+          ( std::find ( _capabilities.begin()
+                      , _capabilities.end()
+                      , decltype (_capabilities)::value_type (source, cpb)
+                      )
+          );
       }
+      _capabilities_changed.notify_one();
+    }
+
+    virtual void handleErrorEvent
+      ( fhg::com::p2p::address_t const& source
+      , sdpa::events::ErrorEvent const* event
+      ) override
+    {
+      if (event->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN)
+      {
+        //! \note hack? isn't this part of what this test is supposed
+        //! to test?
+        std::unique_lock<std::mutex> const _ (_mutex);
+        _capabilities.remove_if
+          ( [&] (decltype (_capabilities)::value_type const& elem)
+            {
+              return elem.first == source;
+            }
+          );
+        _capabilities_changed.notify_one();
+      }
+
+      utils::basic_drts_component::handleErrorEvent (source, event);
     }
 
     void wait_for_capabilities
-      (const unsigned int n, const sdpa::capabilities_set_t& expected)
+      (sdpa::capabilities_set_t const& expected)
     {
-      boost::mutex::scoped_lock lock (_mutex);
-      while (_capabilities.size() != n)
+      std::unique_lock<std::mutex> lock (_mutex);
+      _capabilities_changed.wait
+        (lock, [&] { return _capabilities.size() == expected.size(); });
+
+      sdpa::capabilities_set_t capabilities;
+      for ( auto const& capability
+          : _capabilities | boost::adaptors::map_values
+          )
       {
-        _capabilitiy_added.wait (lock);
+        capabilities.emplace (capability);
       }
-      BOOST_REQUIRE (_capabilities == expected);
+      BOOST_REQUIRE (capabilities == expected);
     }
 
   private:
-    boost::mutex _mutex;
-    boost::condition_variable_any _capabilitiy_added;
-    sdpa::capabilities_set_t _capabilities;
+    std::mutex _mutex;
+    std::condition_variable _capabilities_changed;
+    std::list<std::pair<fhg::com::p2p::address_t, sdpa::capability_t>>
+      _capabilities;
   };
-
-  template<typename T> std::set<T> set (T v)
-  {
-    std::set<T> s;
-    s.insert (v);
-    return s;
-  }
 }
 
 BOOST_FIXTURE_TEST_CASE (acquire_capabilities_from_workers, setup_logging)
 {
   drts_component_observing_capabilities observer;
 
-  const utils::agent agent (observer, _logger);
-
-  const std::string name_0 (utils::random_peer_name());
-  const std::string name_1 (utils::random_peer_name());
-  const sdpa::capability_t capability_0 ("A", name_0);
-  const sdpa::capability_t capability_1 ("B", name_1);
-  utils::basic_drts_worker worker_0 (name_0, agent, set (capability_0));
-  utils::basic_drts_worker worker_1 (name_1, agent, set (capability_1));
-
   {
-    sdpa::capabilities_set_t expected;
-    expected.insert (capability_0);
-    expected.insert (capability_1);
+    const utils::agent agent (observer, _logger);
 
-    observer.wait_for_capabilities (2, expected);
+    const std::string name_0 (utils::random_peer_name());
+    const std::string name_1 (utils::random_peer_name());
+    const sdpa::capability_t capability_0 ("A", name_0);
+    const sdpa::capability_t capability_1 ("B", name_1);
+    utils::basic_drts_worker const worker_0 (name_0, agent, {capability_0});
+    utils::basic_drts_worker const worker_1 (name_1, agent, {capability_1});
+
+    observer.wait_for_capabilities ({capability_0, capability_1});
   }
+
+  observer.wait_for_capabilities ({});
 }
 
 BOOST_FIXTURE_TEST_CASE (lose_capabilities_after_worker_dies, setup_logging)
 {
   drts_component_observing_capabilities observer;
 
-  const utils::agent agent (observer, _logger);
-
-  const std::string name_0 (utils::random_peer_name());
-  const std::string name_1 (utils::random_peer_name());
-  const sdpa::capability_t capability_0 ("A", name_0);
-  const sdpa::capability_t capability_1 ("B", name_1);
-  utils::basic_drts_worker worker_0 (name_0, agent, set (capability_0));
   {
-    utils::basic_drts_worker pWorker_1 (name_1, agent, set (capability_1));
+    const utils::agent agent (observer, _logger);
 
+    const std::string name_0 (utils::random_peer_name());
+    const std::string name_1 (utils::random_peer_name());
+    const sdpa::capability_t capability_0 ("A", name_0);
+    const sdpa::capability_t capability_1 ("B", name_1);
+    utils::basic_drts_worker const worker_0 (name_0, agent, {capability_0});
     {
-      sdpa::capabilities_set_t expected;
-      expected.insert (capability_0);
-      expected.insert (capability_1);
+      utils::basic_drts_worker const worker_1 (name_1, agent, {capability_1});
 
-      observer.wait_for_capabilities (2, expected);
+      observer.wait_for_capabilities ({capability_0, capability_1});
     }
+
+    observer.wait_for_capabilities ({capability_0});
   }
 
-  {
-    sdpa::capabilities_set_t expected;
-    expected.insert (capability_0);
-
-    observer.wait_for_capabilities (1, expected);
-  }
+  observer.wait_for_capabilities ({});
 }
