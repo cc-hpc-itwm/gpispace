@@ -12,7 +12,7 @@
 
 #include <xml/parse/util/position.fwd.hpp>
 
-#include <fhg/util/std/pair.hpp>
+#include <util-generic/hash/std/pair.hpp>
 #include <fhg/util/xml.fwd.hpp>
 
 #include <we/type/port.hpp>

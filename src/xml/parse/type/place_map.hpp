@@ -8,7 +8,7 @@
 #include <xml/parse/util/position.fwd.hpp>
 #include <xml/parse/util/unique.hpp>
 
-#include <fhg/util/std/pair.hpp>
+#include <util-generic/hash/std/tuple.hpp>
 #include <fhg/util/xml.fwd.hpp>
 
 #include <we/type/id.hpp> //we::place_id_type
