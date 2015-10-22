@@ -210,7 +210,7 @@ namespace we
             _ctxt->handle_externally (_activity, mod);
           }
 
-          void operator() (we::type::expression_t const& expr) const
+          void operator() (we::type::expression_t const&) const
           {
             throw std::logic_error ("executor (expression)");
           }
