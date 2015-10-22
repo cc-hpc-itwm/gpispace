@@ -4,8 +4,6 @@
 
 #include <we/type/transition.hpp>
 
-#include <we/expr/eval/context.hpp>
-
 #include <we/context.hpp>
 
 #include <we/type/activity.hpp>
@@ -214,28 +212,7 @@ namespace we
 
           void operator() (we::type::expression_t const& expr) const
           {
-            expr::eval::context context;
-
-            for ( type::activity_t::input_t::const_iterator top
-                    (_activity.input().begin())
-                ; top != _activity.input().end()
-                ; ++top
-                )
-              {
-                context.bind_ref
-                  ( _activity.transition().ports_input().at (top->second).name()
-                  , top->first
-                  );
-              }
-
-            expr.ast ().eval_all (context);
-
-            for ( we::type::transition_t::port_map_t::value_type const& p
-                : _activity.transition().ports_output()
-                )
-            {
-                _activity.add_output (p.first, context.value (p.second.name()));
-            }
+            throw std::logic_error ("executor (expression)");
           }
         };
       }
