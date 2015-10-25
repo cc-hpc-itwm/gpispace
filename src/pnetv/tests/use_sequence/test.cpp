@@ -8,12 +8,14 @@
 #include <test/source_directory.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/read_file.hpp>
+#include <util-generic/read_lines.hpp>
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 #include <util-generic/temporary_path.hpp>
 
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
+
+#include <set>
 
 BOOST_AUTO_TEST_CASE (pnetv_use_sequence)
 {
@@ -45,28 +47,31 @@ BOOST_AUTO_TEST_CASE (pnetv_use_sequence)
      ).str()
     );
 
-  std::string const expected_result
-    (( boost::format (R"EOS(%1%::_outer_step: (TERMINATES)
-%1%::_outer_not_break: (TERMINATES)
-%1%::_outer_break: (TERMINATES)
-%1%::_outer_init: (TERMINATES)
-%1%::_inner_OUT: (TERMINATES)
-%1%::_inner_IN: (TERMINATES)
-%1%::_inner_step: (TERMINATES)
-%1%::_inner_not_break: (TERMINATES)
-%1%::_inner_break: (TERMINATES)
-%1%::_inner_init: (TERMINATES)
-%1%::_outer_IN: (TERMINATES)
-%1%::_outer_OUT: (TERMINATES)
-%1%: (TERMINATES)
-)EOS")
-     % "stdin"
-     ).str()
-    );
+  std::set<std::string> const expected_result
+    { "stdin::_outer_step: (TERMINATES)"
+    , "stdin::_outer_not_break: (TERMINATES)"
+    , "stdin::_outer_break: (TERMINATES)"
+    , "stdin::_outer_init: (TERMINATES)"
+    , "stdin::_inner_OUT: (TERMINATES)"
+    , "stdin::_inner_IN: (TERMINATES)"
+    , "stdin::_inner_step: (TERMINATES)"
+    , "stdin::_inner_not_break: (TERMINATES)"
+    , "stdin::_inner_break: (TERMINATES)"
+    , "stdin::_inner_init: (TERMINATES)"
+    , "stdin::_outer_IN: (TERMINATES)"
+    , "stdin::_outer_OUT: (TERMINATES)"
+    , "stdin: (TERMINATES)"
+    };
 
-  BOOST_REQUIRE_EQUAL ( expected_result
-                      , fhg::util::read_file ( temporary_path
-                                             / "use_sequence.pnet.verification"
-                                             )
-                      );
+  auto const lines (fhg::util::read_lines ( temporary_path
+                                          / "use_sequence.pnet.verification"
+                                          )
+                   );
+
+  std::set<std::string> const result {lines.cbegin(), lines.cend()};
+
+   BOOST_REQUIRE_EQUAL_COLLECTIONS
+     ( expected_result.cbegin(), expected_result.cend()
+     , result.cbegin(), result.cend()
+     );
 }
