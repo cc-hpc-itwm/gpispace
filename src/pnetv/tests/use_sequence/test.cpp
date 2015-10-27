@@ -70,8 +70,10 @@ BOOST_AUTO_TEST_CASE (pnetv_use_sequence)
 
   std::set<std::string> const result {lines.cbegin(), lines.cend()};
 
-   BOOST_REQUIRE_EQUAL_COLLECTIONS
-     ( expected_result.cbegin(), expected_result.cend()
-     , result.cbegin(), result.cend()
-     );
+  BOOST_REQUIRE_EQUAL (result.size(), lines.size());
+
+  BOOST_REQUIRE_EQUAL_COLLECTIONS
+    ( expected_result.cbegin(), expected_result.cend()
+    , result.cbegin(), result.cend()
+    );
 }
