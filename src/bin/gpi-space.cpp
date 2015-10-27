@@ -199,27 +199,22 @@ int main (int argc, char** argv)
     fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
       crit_error_handler (signal_handler, logger);
 
-    std::unique_ptr<fhg::com::peer_t> topology_peer
-      ( fhg::util::cxx14::make_unique<fhg::com::peer_t>
-          ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-          , fhg::com::host_t ("*")
-          , fhg::com::port_t ("0")
-          )
-      );
+    auto topology_rpc_server
+      (fhg::util::cxx14::make_unique<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher>());
 
     std::unique_ptr<gpi::api::gpi_api_t> const gpi_api
-      ( [&gpi_mem, &gpi_timeout, &port, &requested_api, &topology_peer, &logger]()
+      ( [&gpi_mem, &gpi_timeout, &port, &requested_api, &topology_rpc_server, &logger]()
           -> std::unique_ptr<gpi::api::gpi_api_t>
         {
           if (requested_api == API_gaspi)
           {
             return fhg::util::cxx14::make_unique <gpi::api::gaspi_t>
-              (logger, gpi_mem, port, gpi_timeout, topology_peer->local_endpoint().port());
+              (logger, gpi_mem, port, gpi_timeout, topology_rpc_server->local_endpoint().port());
           }
           else
           {
             return fhg::util::cxx14::make_unique <gpi::api::fake_gpi_api_t>
-              (logger, gpi_mem, gpi_timeout, topology_peer->local_endpoint().port());
+              (logger, gpi_mem, gpi_timeout, topology_rpc_server->local_endpoint().port());
           }
         }()
       );
@@ -232,7 +227,7 @@ int main (int argc, char** argv)
       , socket_path.string()
       , {"gpi://?buffer_size=4194304&buffers=8"}
       , *gpi_api
-      , std::move (topology_peer)
+      , std::move (topology_rpc_server)
       );
 
     fhg::util::thread::event<> stop_requested;

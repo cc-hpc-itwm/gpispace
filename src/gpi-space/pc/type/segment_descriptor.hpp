@@ -30,7 +30,7 @@ namespace gpi
           gpi::pc::type::size_t avail;          // available size
           gpi::pc::type::size_t allocs;         // number of allocations
           gpi::pc::type::ref_count_t nref;      // number of containers attached
-          gpi::pc::type::flags_t flags;         // flags (see above)
+          gpi::pc::type::flags_t const flags;         // flags (see above)
           gpi::pc::type::time_stamp_t ts;       // time stamps
 
           descriptor_t ()

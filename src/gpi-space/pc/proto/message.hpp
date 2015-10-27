@@ -13,7 +13,6 @@
 #include <gpi-space/pc/proto/error.hpp>
 #include <gpi-space/pc/proto/memory.hpp>
 #include <gpi-space/pc/proto/segment.hpp>
-#include <gpi-space/pc/proto/control.hpp>
 
 namespace gpi
 {
@@ -31,7 +30,6 @@ namespace gpi
       };
 
       typedef boost::variant< error::error_t
-        , gpi::pc::proto::control::message_t
         , gpi::pc::proto::memory::message_t
         , gpi::pc::proto::segment::message_t
         > message_t;
