@@ -51,11 +51,11 @@ namespace gpi
                                 );
         void free (const type::handle_id_t);
 
-        gpi::pc::type::queue_id_t
-        memcpy ( gpi::pc::type::memory_location_t const & dst
-               , gpi::pc::type::memory_location_t const & src
-               , const gpi::pc::type::size_t amount
-               );
+        type::memcpy_id_t memcpy ( type::memory_location_t const& dst
+                                 , type::memory_location_t const& src
+                                 , type::size_t const amount
+                                 );
+        void wait (type::memcpy_id_t const&);
 
         std::function<double (std::string const&)>
         transfer_costs (std::list<std::pair<we::local::range, we::global::range>> const&);
@@ -64,9 +64,6 @@ namespace gpi
         transfer_costs (std::list<gpi::pc::type::memory_region_t> const&);
 
         void * ptr(const gpi::pc::type::handle_t h);
-
-        gpi::pc::type::size_t
-        wait (const gpi::pc::type::queue_id_t);
 
         gpi::pc::type::segment_id_t register_segment( std::string const & name
                                                     , const gpi::pc::type::size_t sz

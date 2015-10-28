@@ -3,6 +3,7 @@
 #include <fhglog/LogMacros.hpp>
 
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/finally.hpp>
 
 #include <boost/make_shared.hpp>
 
@@ -21,6 +22,7 @@ namespace gpi
                                              )
         : _logger (logger)
         , _gpi_api (gpi_api)
+        , _next_memcpy_id (0)
       {
         const std::size_t number_of_queues (gpi_api.number_of_queues());
         for (std::size_t i(0); i < number_of_queues; ++i)
@@ -38,86 +40,43 @@ namespace gpi
         }
       }
 
-      void
+      type::memcpy_id_t
       transfer_manager_t::transfer (memory_transfer_t const &t)
       {
         if (t.queue >= m_queues.size())
         {
-          LLOG( ERROR
-              , _logger
-             , "cannot enqueue request: no such queue: " << t.queue
-             );
           throw std::invalid_argument ("no such queue");
         }
 
-        task_list_t task_list;
+        auto task
+          ( t.src_area->get_transfer_task ( t.src_location
+                                          , t.dst_location
+                                          , *t.dst_area
+                                          , t.amount
+                                          , t.queue
+                                          , m_memory_buffer_pool
+                                          )
+          );
 
-        t.src_area->get_transfer_tasks ( t.src_location
-                                       , t.dst_location
-                                       , *t.dst_area
-                                       , t.amount
-                                       , t.queue
-                                       , m_memory_buffer_pool
-                                       , task_list
-                                       );
+        type::memcpy_id_t const memcpy_id (_next_memcpy_id++);
 
-        m_queues [t.queue]->enqueue (task_list);
+        _task_by_id.emplace (memcpy_id, task);
+        m_queues[t.queue]->enqueue (task);
+
+        return memcpy_id;
       }
 
-      std::size_t
-      transfer_manager_t::wait_on_queue (const std::size_t queue)
+      void transfer_manager_t::wait (type::memcpy_id_t const& memcpy_id)
       {
-        if (queue >= m_queues.size())
+        auto const task_it (_task_by_id.find (memcpy_id));
+        if (task_it == _task_by_id.end())
         {
-          LLOG( ERROR
-              , _logger
-             , "cannot wait on queue: no such queue: " << queue
-             );
-          throw std::invalid_argument ("no such queue");
+          throw std::invalid_argument ("no such memcpy id");
         }
-        else
-        {
-          try
-          {
-            task_ptr wtask (boost::make_shared<task_t>
-                           ("wait_on_queue", std::bind( &api::gpi_api_t::wait_dma
-                                                      , &_gpi_api
-                                                      , queue
-                                                      )
-                           )
-                           );
-            m_queues [queue]->enqueue (wtask);
-            wtask->wait ();
 
-            if (wtask->has_failed ())
-            {
-              throw std::runtime_error
-                ("wait failed: " + wtask->get_error_message ());
-            }
+        FHG_UTIL_FINALLY ([&] { _task_by_id.erase (task_it); });
 
-            // account for the wait task  before, but since another thread could
-            // already  have consumed  his and  our  wait task,  we just  always
-            // decrement  by  one  if  we  got  more  than  1  finished  task  -
-            // specification just  means, ok the  tasks have finished,  but it's
-            // not specific about the exact number to return - quite ugly
-
-            const size_t tasks_finished (m_queues[queue]->wait ());
-            if (tasks_finished)
-              return tasks_finished - 1;
-            else
-              return tasks_finished;
-          }
-          catch (std::exception const & ex)
-          {
-            LLOG ( ERROR
-                 , _logger
-                 , "marking queue " << queue << " permanently as failed!"
-                 );
-            m_queues [queue]->disable ();
-
-            throw;
-          }
-        }
+        task_it->second->get();
       }
     }
   }

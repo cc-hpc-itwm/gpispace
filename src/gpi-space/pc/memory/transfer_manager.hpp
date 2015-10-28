@@ -136,8 +136,8 @@ namespace gpi
       public:
         transfer_manager_t (fhg::log::Logger&, api::gpi_api_t&);
 
-        void transfer (memory_transfer_t const &);
-        std::size_t wait_on_queue (const std::size_t queue);
+        type::memcpy_id_t transfer (memory_transfer_t const&);
+        void wait (type::memcpy_id_t const&);
 
         std::size_t num_queues () const { return m_queues.size (); }
       private:
@@ -147,6 +147,9 @@ namespace gpi
 
         fhg::log::Logger& _logger;
         api::gpi_api_t& _gpi_api;
+
+        std::size_t _next_memcpy_id;
+        std::map<std::size_t, boost::shared_ptr<task_t>> _task_by_id;
 
         transfer_queues_t m_queues;
         fhg::thread::ptr_queue<buffer_t> m_memory_buffer_pool;

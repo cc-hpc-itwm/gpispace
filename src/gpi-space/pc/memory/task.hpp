@@ -31,6 +31,8 @@ namespace gpi
         void execute ();
         void wait ();
 
+        void get();
+
         std::string const & get_name () const;
         std::string get_error_message () const;
         bool has_failed () const;

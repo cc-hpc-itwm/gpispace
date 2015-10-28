@@ -135,13 +135,12 @@ namespace gpi
                  , gpi::pc::type::size_t amount
                  );
 
-        int get_transfer_tasks ( const gpi::pc::type::memory_location_t src
+        boost::shared_ptr<task_t> get_transfer_task ( const gpi::pc::type::memory_location_t src
                                , const gpi::pc::type::memory_location_t dst
                                , area_t & dst_area
                                , gpi::pc::type::size_t amount
                                , gpi::pc::type::size_t queue
                                , memory_pool_t & buffer_pool
-                               , task_list_t & tasks
                                );
         virtual double get_transfer_costs ( const gpi::pc::type::memory_region_t&
                                           , const gpi::rank_t
@@ -177,29 +176,27 @@ namespace gpi
                                                      , const gpi::pc::type::flags_t flags
                                                      ) const = 0;
 
-        virtual int get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
-                                                , const gpi::pc::type::memory_location_t dst
-                                                , area_t & dst_area
-                                                , gpi::pc::type::size_t amount
-                                                , gpi::pc::type::size_t queue
-                                                , task_list_t & tasks
-                                                ) = 0;
+        virtual boost::shared_ptr<task_t> get_specific_transfer_task
+          ( const gpi::pc::type::memory_location_t src
+          , const gpi::pc::type::memory_location_t dst
+          , area_t & dst_area
+          , gpi::pc::type::size_t amount
+          , gpi::pc::type::size_t queue
+          );
 
-        virtual int get_send_tasks ( area_t & src_area
-                                   , const gpi::pc::type::memory_location_t src
-                                   , const gpi::pc::type::memory_location_t dst
-                                   , gpi::pc::type::size_t amount
-                                   , gpi::pc::type::size_t queue
-                                   , task_list_t & tasks
-                                   );
+        virtual boost::shared_ptr<task_t> get_send_task ( area_t & src_area
+                                     , const gpi::pc::type::memory_location_t src
+                                     , const gpi::pc::type::memory_location_t dst
+                                     , gpi::pc::type::size_t amount
+                                     , gpi::pc::type::size_t queue
+                                     ) ;
 
-        virtual int get_recv_tasks ( area_t & dst_area
-                                   , const gpi::pc::type::memory_location_t dst
-                                   , const gpi::pc::type::memory_location_t src
-                                   , gpi::pc::type::size_t amount
-                                   , gpi::pc::type::size_t queue
-                                   , task_list_t & tasks
-                                   );
+        virtual boost::shared_ptr<task_t> get_recv_task ( area_t & dst_area
+                                     , const gpi::pc::type::memory_location_t dst
+                                     , const gpi::pc::type::memory_location_t src
+                                     , gpi::pc::type::size_t amount
+                                     , gpi::pc::type::size_t queue
+                                     ) ;
 
         virtual gpi::pc::type::size_t
         read_from_impl ( gpi::pc::type::offset_t offset

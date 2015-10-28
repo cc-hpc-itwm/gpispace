@@ -392,11 +392,11 @@ namespace gpi
         return costs;
       }
 
-      gpi::pc::type::queue_id_t
-      manager_t::memcpy ( gpi::pc::type::memory_location_t const & dst
-                        , gpi::pc::type::memory_location_t const & src
-                        , const gpi::pc::type::size_t amount
-                        )
+      type::memcpy_id_t manager_t::memcpy
+        ( type::memory_location_t const & dst
+        , type::memory_location_t const & src
+        , const type::size_t amount
+        )
       {
         memory_transfer_t t;
         t.dst_area     = get_area_by_handle(dst.handle);
@@ -413,17 +413,12 @@ namespace gpi
 //        check_permissions (permission::memcpy_t (proc_id, dst, src));
 
         // TODO: increase refcount in handles, set access/modification times
-        m_transfer_mgr.transfer (t);
-
-        return t.queue;
+        return m_transfer_mgr.transfer (t);
       }
 
-      gpi::pc::type::size_t
-      manager_t::wait_on_queue ( const gpi::pc::type::process_id_t
-                               , const gpi::pc::type::queue_id_t queue
-                               )
+      void manager_t::wait (type::memcpy_id_t const& memcpy_id)
       {
-        return m_transfer_mgr.wait_on_queue (queue);
+        m_transfer_mgr.wait (memcpy_id);
       }
 
       int

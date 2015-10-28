@@ -54,13 +54,6 @@ namespace gpi
         virtual void alloc_hook (const gpi::pc::type::handle::descriptor_t &) override;
         virtual void  free_hook (const gpi::pc::type::handle::descriptor_t &) override;
 
-        virtual int get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
-                                        , const gpi::pc::type::memory_location_t dst
-                                        , area_t & dst_area
-                                        , gpi::pc::type::size_t amount
-                                        , gpi::pc::type::size_t queue
-                                        , task_list_t & tasks
-                                        ) override;
       private:
         virtual bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
                             , const gpi::pc::type::offset_t begin

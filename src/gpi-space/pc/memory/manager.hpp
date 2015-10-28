@@ -78,16 +78,11 @@ namespace gpi
         void garbage_collect () {}
         void garbage_collect (const gpi::pc::type::process_id_t);
 
-        gpi::pc::type::queue_id_t
-        memcpy ( gpi::pc::type::memory_location_t const & dst
-               , gpi::pc::type::memory_location_t const & src
-               , const gpi::pc::type::size_t amount
-               );
-
-        gpi::pc::type::size_t
-        wait_on_queue ( const gpi::pc::type::process_id_t proc_id
-                      , const gpi::pc::type::queue_id_t queue
-                      );
+        type::memcpy_id_t memcpy ( type::memory_location_t const & dst
+                                 , type::memory_location_t const & src
+                                 , const type::size_t amount
+                                 );
+        void wait (type::memcpy_id_t const&);
 
         int
         remote_add_memory ( const gpi::pc::type::segment_id_t seg_id

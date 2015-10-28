@@ -782,39 +782,49 @@ namespace gpi
         return amount;
       }
 
-      int
-      area_t::get_send_tasks ( area_t &
-                             , const gpi::pc::type::memory_location_t
-                             , const gpi::pc::type::memory_location_t
-                             , gpi::pc::type::size_t
-                             , gpi::pc::type::size_t
-                             , task_list_t &
-                             )
+
+      boost::shared_ptr<task_t> area_t::get_specific_transfer_task
+        ( const gpi::pc::type::memory_location_t
+        , const gpi::pc::type::memory_location_t
+        , area_t&
+        , gpi::pc::type::size_t
+        , gpi::pc::type::size_t
+        )
       {
-        throw std::runtime_error ("get_send_tasks() not implemented");
+        throw std::logic_error
+          ("get_specific_transfer_task not implemented");
       }
 
-      int
-      area_t::get_recv_tasks ( area_t &
-                             , const gpi::pc::type::memory_location_t
-                             , const gpi::pc::type::memory_location_t
-                             , gpi::pc::type::size_t
-                             , gpi::pc::type::size_t
-                             , task_list_t &
-                             )
+      boost::shared_ptr<task_t> area_t::get_send_task
+        ( area_t&
+        , const gpi::pc::type::memory_location_t
+        , const gpi::pc::type::memory_location_t
+        , gpi::pc::type::size_t
+        , gpi::pc::type::size_t
+        )
       {
-        throw std::runtime_error ("get_recv_tasks() not implemented");
+        throw std::logic_error ("get_send_task not implemented");
       }
 
-      int
-      area_t::get_transfer_tasks ( const gpi::pc::type::memory_location_t src
-                                 , const gpi::pc::type::memory_location_t dst
-                                 , area_t & dst_area
-                                 , gpi::pc::type::size_t amount
-                                 , gpi::pc::type::size_t queue
-                                 , memory_pool_t & buffer_pool
-                                 , task_list_t & tasks
-                                 )
+      boost::shared_ptr<task_t> area_t::get_recv_task
+        ( area_t&
+        , const gpi::pc::type::memory_location_t
+        , const gpi::pc::type::memory_location_t
+        , gpi::pc::type::size_t
+        , gpi::pc::type::size_t
+        )
+      {
+        throw std::logic_error ("get_recv_task not implemented");
+      }
+
+      boost::shared_ptr<task_t>
+      area_t::get_transfer_task ( const gpi::pc::type::memory_location_t src
+                                , const gpi::pc::type::memory_location_t dst
+                                , area_t & dst_area
+                                , gpi::pc::type::size_t amount
+                                , gpi::pc::type::size_t queue
+                                , memory_pool_t & buffer_pool
+                                )
       {
         const bool src_is_local
           (         is_local (gpi::pc::type::memory_region_t( src
@@ -837,7 +847,7 @@ namespace gpi
 
           if (src_ptr)
           {
-            tasks.push_back
+            return
               (boost::make_shared<task_t>
               ( "write_to: "
               + boost::lexical_cast<std::string> (dst)
@@ -852,11 +862,10 @@ namespace gpi
                                , amount
                                )
               ));
-            return 0;
           }
           else if (dst_ptr)
           {
-            tasks.push_back
+            return
               (boost::make_shared<task_t>
               ( "read_from: "
               + boost::lexical_cast<std::string> (dst)
@@ -871,11 +880,10 @@ namespace gpi
                                , amount
                                )
               ));
-            return 0;
           }
           else
           {
-            tasks.push_back
+            return
               (boost::make_shared<task_t>
               ( "copy: "
               + boost::lexical_cast<std::string> (dst)
@@ -892,7 +900,6 @@ namespace gpi
                              , buffer_pool
                              )
               ));
-            return 0;
           }
         }
 
@@ -903,13 +910,12 @@ namespace gpi
         // horizontal copy (same type)
         if (type () == dst_area.type ())
         {
-          return get_specific_transfer_tasks ( src
-                                             , dst
-                                             , dst_area
-                                             , amount
-                                             , queue
-                                             , tasks
-                                             );
+          return get_specific_transfer_task ( src
+                                            , dst
+                                            , dst_area
+                                            , amount
+                                            , queue
+                                            );
         }
         // diagonal copy (non-local different types)
         else
@@ -917,24 +923,22 @@ namespace gpi
           if (src_is_local)
           {
             // send from local source to remote destination
-            return dst_area.get_send_tasks ( *this
-                                           , src
-                                           , dst
-                                           , amount
-                                           , queue
-                                           , tasks
-                                           );
+            return dst_area.get_send_task ( *this
+                                          , src
+                                          , dst
+                                          , amount
+                                          , queue
+                                          );
           }
           else if (dst_is_local)
           {
             // receive from remote src to local destination
-            return this->get_recv_tasks ( dst_area
-                                        , dst
-                                        , src
-                                        , amount
-                                        , queue
-                                        , tasks
-                                        );
+            return this->get_recv_task ( dst_area
+                                       , dst
+                                       , src
+                                       , amount
+                                       , queue
+                                       );
           }
           else
           {
@@ -945,8 +949,6 @@ namespace gpi
               );
           }
         }
-
-        return 0;
       }
     }
   }

@@ -385,21 +385,20 @@ namespace gpi
         }
       }
 
-      int
-      gpi_area_t::get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
-                                              , const gpi::pc::type::memory_location_t dst
-                                              , area_t & dst_area
-                                              , gpi::pc::type::size_t amount
-                                              , gpi::pc::type::size_t queue
-                                              , task_list_t & tasks
-                                              )
+      boost::shared_ptr<task_t> gpi_area_t::get_specific_transfer_task
+        ( const gpi::pc::type::memory_location_t src
+        , const gpi::pc::type::memory_location_t dst
+        , area_t & dst_area
+        , gpi::pc::type::size_t amount
+        , gpi::pc::type::size_t queue
+        )
       {
         fhg_assert (type () == dst_area.type ());
 
         if (is_local (gpi::pc::type::memory_region_t (src, amount)))
         {
           // write dma
-          tasks.push_back
+          return
             (boost::make_shared<task_t>
             ( "writeDMA "
             + boost::lexical_cast<std::string> (dst)
@@ -408,21 +407,27 @@ namespace gpi
             + " "
             + boost::lexical_cast<std::string> (amount)
 
-            , std::bind ( &helper::do_write_dma
-                        , this->descriptor (src.handle)
-                        , src.offset
-                        , dst_area.descriptor (dst.handle)
-                        , dst.offset
-                        , amount
-                        , queue
-                        , std::ref (_gpi_api)
-                        )
+            , [this, &dst_area, src, dst, amount, queue]
+              {
+                helper::do_write_dma ( descriptor (src.handle)
+                                     , src.offset
+                                     , dst_area.descriptor (dst.handle)
+                                     , dst.offset
+                                     , amount
+                                     , queue
+                                     , _gpi_api
+                                     );
+
+                //! \todo get notified that data is received from
+                //! other side(s) instead
+                _gpi_api.wait_dma (queue);
+              }
             ));
         }
         else if (dst_area.is_local (gpi::pc::type::memory_region_t (dst, amount)))
         {
           // read dma
-          tasks.push_back
+          return
             (boost::make_shared<task_t>
             ( "readDMA "
             + boost::lexical_cast<std::string> (dst)
@@ -442,81 +447,76 @@ namespace gpi
                         )
             ));
         }
-        else
-        {
-          throw std::runtime_error
-            ( "illegal memory transfer requested:"
-            " source and destination cannot both be remote!"
-            );
-        }
 
-        return 0;
+
+        throw std::runtime_error
+          ( "illegal memory transfer requested:"
+          " source and destination cannot both be remote!"
+          );
       }
 
-      int
-      gpi_area_t::get_send_tasks ( area_t & src_area
-                                 , const gpi::pc::type::memory_location_t src
-                                 , const gpi::pc::type::memory_location_t dst
-                                 , gpi::pc::type::size_t amount
-                                 , gpi::pc::type::size_t queue
-                                 , task_list_t & tasks
-                                 )
+      boost::shared_ptr<task_t> gpi_area_t::get_send_task
+        ( area_t & src_area
+        , const gpi::pc::type::memory_location_t src
+        , const gpi::pc::type::memory_location_t dst
+        , gpi::pc::type::size_t amount
+        , gpi::pc::type::size_t queue
+        )
       {
-        tasks.push_back
-          (boost::make_shared<task_t>
-          ( "send "
-          + boost::lexical_cast<std::string> (dst)
-          + " <- "
-          + boost::lexical_cast<std::string> (src)
-          + " "
-          + boost::lexical_cast<std::string> (amount)
+        return boost::make_shared<task_t> ( "send "
+               + boost::lexical_cast<std::string> (dst)
+               + " <- "
+               + boost::lexical_cast<std::string> (src)
+               + " "
+               + boost::lexical_cast<std::string> (amount)
 
-          , std::bind ( &helper::do_send
-                      , std::ref (_logger)
-                      , std::ref (src_area)
-                      , src
-                      , std::ref (*this)
-                      , dst
-                      , amount
-                      , queue
-                      , std::ref (m_com_handles)
-                      , std::ref (_gpi_api)
-                      )
-          ));
-        return 0;
+          , [this, &src_area, src, dst, amount, queue]
+            {
+              helper::do_send ( _logger
+                              , src_area
+                              , src
+                              , *this
+                              , dst
+                              , amount
+                              , queue
+                              , m_com_handles
+                              , _gpi_api
+                              );
+
+              //! \todo get notified that data is received from other
+              //! side(s) instead
+              _gpi_api.wait_dma (queue);
+            }
+          );
       }
 
-      int
-      gpi_area_t::get_recv_tasks ( area_t & dst_area
-                                 , const gpi::pc::type::memory_location_t dst
-                                 , const gpi::pc::type::memory_location_t src
-                                 , gpi::pc::type::size_t amount
-                                 , gpi::pc::type::size_t queue
-                                 , task_list_t & tasks
-                                 )
+      boost::shared_ptr<task_t> gpi_area_t::get_recv_task
+        ( area_t & dst_area
+        , const gpi::pc::type::memory_location_t dst
+        , const gpi::pc::type::memory_location_t src
+        , gpi::pc::type::size_t amount
+        , gpi::pc::type::size_t queue
+        )
       {
-        tasks.push_back
-          (boost::make_shared<task_t>
-          ( "recv "
-          + boost::lexical_cast<std::string> (dst)
-          + " <- "
-          + boost::lexical_cast<std::string> (src)
-          + " "
-          + boost::lexical_cast<std::string> (amount)
+        return boost::make_shared<task_t> ( "recv "
+               + boost::lexical_cast<std::string> (dst)
+               + " <- "
+               + boost::lexical_cast<std::string> (src)
+               + " "
+               + boost::lexical_cast<std::string> (amount)
 
-          , std::bind ( &helper::do_recv
-                      , std::ref (_logger)
-                      , std::ref (dst_area)
-                      , dst
-                      , std::ref (*this)
-                      , src
-                      , amount
-                      , queue
-                      , std::ref (m_com_handles)
-                      , std::ref (_gpi_api)
-                      )
-          ));
-        return 0;
+               , std::bind ( &helper::do_recv
+                           , std::ref (_logger)
+                           , std::ref (dst_area)
+                           , dst
+                           , std::ref (*this)
+                           , src
+                           , amount
+                           , queue
+                           , std::ref (m_com_handles)
+                           , std::ref (_gpi_api)
+                           )
+                                          );
       }
 
       double gpi_area_t::get_transfer_costs ( const gpi::pc::type::memory_region_t& transfer

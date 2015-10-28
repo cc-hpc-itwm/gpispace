@@ -59,6 +59,15 @@ namespace gpi
         }
       }
 
+      void task_t::get()
+      {
+        wait();
+        if (has_failed())
+        {
+          throw std::runtime_error (get_error_message());
+        }
+      }
+
       std::string const &
       task_t::get_name () const
       {
