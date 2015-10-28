@@ -22,7 +22,8 @@ namespace fhg
         boost::unique_lock<boost::recursive_mutex> lock (m_mtx);
         m_get_cond.wait (lock, [this] { return !m_container.empty(); });
 
-        T t (m_container.front()); m_container.pop_front();
+        T t (std::move (m_container.front()));
+        m_container.pop_front();
         return t;
       }
 
