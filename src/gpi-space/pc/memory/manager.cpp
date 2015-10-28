@@ -4,6 +4,8 @@
 
 #include <fhglog/LogMacros.hpp>
 
+#include <util-generic/finally.hpp>
+
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/global/topology.hpp>
 #include <gpi-space/pc/memory/gpi_area.hpp>
@@ -45,11 +47,26 @@ namespace gpi
       manager_t::manager_t (fhg::log::Logger& logger, api::gpi_api_t& gpi_api)
         : _logger (logger)
         , _gpi_api (gpi_api)
-        , m_transfer_mgr (gpi_api)
+        , _next_memcpy_id (0)
         , _handle_generator (gpi_api.rank())
       {
         _handle_generator.initialize_counter
           (gpi::pc::type::segment::SEG_INVAL, MAX_PREALLOCATED_SEGMENT_ID);
+
+        const std::size_t number_of_queues (gpi_api.number_of_queues());
+        for (std::size_t i(0); i < number_of_queues; ++i)
+        {
+          m_queues.push_back
+            (boost::make_shared<transfer_queue_t>());
+        }
+
+        for (size_t i = 0; i < number_of_queues; ++i)
+        {
+          constexpr size_t DEF_BUFFER_SIZE (4194304);
+
+          m_memory_buffer_pool.put
+            (fhg::util::cxx14::make_unique<buffer_t> (DEF_BUFFER_SIZE));
+        }
       }
 
       manager_t::~manager_t ()
@@ -406,19 +423,48 @@ namespace gpi
         t.amount       = amount;
           static gpi::pc::type::queue_id_t rr_queue = 0;
           t.queue        = rr_queue;
-          rr_queue = (rr_queue + 1) % m_transfer_mgr.num_queues ();
+          rr_queue = (rr_queue + 1) % m_queues.size();
 
         t.dst_area->check_bounds (dst, amount);
         t.src_area->check_bounds (src, amount);
 //        check_permissions (permission::memcpy_t (proc_id, dst, src));
 
         // TODO: increase refcount in handles, set access/modification times
-        return m_transfer_mgr.transfer (t);
+
+        if (t.queue >= m_queues.size())
+        {
+          throw std::invalid_argument ("no such queue");
+        }
+
+        auto task
+          ( t.src_area->get_transfer_task ( t.src_location
+                                          , t.dst_location
+                                          , *t.dst_area
+                                          , t.amount
+                                          , t.queue
+                                          , m_memory_buffer_pool
+                                          )
+          );
+
+        type::memcpy_id_t const memcpy_id (_next_memcpy_id++);
+
+        _task_by_id.emplace (memcpy_id, task);
+        m_queues[t.queue]->enqueue (task);
+
+        return memcpy_id;
       }
 
       void manager_t::wait (type::memcpy_id_t const& memcpy_id)
       {
-        m_transfer_mgr.wait (memcpy_id);
+        auto const task_it (_task_by_id.find (memcpy_id));
+        if (task_it == _task_by_id.end())
+        {
+          throw std::invalid_argument ("no such memcpy id");
+        }
+
+        FHG_UTIL_FINALLY ([&] { _task_by_id.erase (task_it); });
+
+        task_it->second->get();
       }
 
       int

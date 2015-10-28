@@ -7,9 +7,13 @@
 
 #include <fhglog/Logger.hpp>
 
+#include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
-#include <gpi-space/pc/memory/transfer_manager.hpp>
+#include <gpi-space/pc/memory/transfer_queue.hpp>
+#include <gpi-space/pc/memory/memory_buffer.hpp>
+
+#include <fhg/util/thread/queue.hpp>
 
 #include <unordered_set>
 #include <unordered_map>
@@ -134,7 +138,12 @@ namespace gpi
         area_map_t m_areas;
         handle_to_segment_t m_handle_to_segment;
         api::gpi_api_t& _gpi_api;
-        transfer_manager_t m_transfer_mgr;
+
+        std::size_t _next_memcpy_id;
+        std::map<std::size_t, boost::shared_ptr<task_t>> _task_by_id;
+        std::vector<boost::shared_ptr<transfer_queue_t>> m_queues;
+        fhg::thread::ptr_queue<buffer_t> m_memory_buffer_pool;
+
         handle_generator_t _handle_generator;
       };
     }
