@@ -579,95 +579,6 @@ namespace gpi
         return raw_ptr (location_to_offset (loc));
       }
 
-      namespace detail
-      {
-        namespace
-        {
-          struct temporarily_removed_buffer
-          {
-            temporarily_removed_buffer (area_t::memory_pool_t& pool)
-              : _pool (pool)
-              , _buffer (_pool.get())
-            {}
-            ~temporarily_removed_buffer()
-            {
-              _pool.put (std::move (_buffer));
-            }
-
-            buffer_t* operator->() const
-            {
-              return _buffer.operator->();
-            }
-
-            area_t::memory_pool_t& _pool;
-            std::unique_ptr<buffer_t> _buffer;
-          };
-        }
-
-        struct copy
-        {
-          copy ( area_t & src
-               , area_t & dst
-               , gpi::pc::type::memory_location_t src_loc
-               , gpi::pc::type::memory_location_t dst_loc
-               , gpi::pc::type::size_t amount
-               , area_t::memory_pool_t & buffer_pool
-               )
-            : m_src (src)
-            , m_dst (dst)
-            , m_src_loc (src_loc)
-            , m_dst_loc (dst_loc)
-            , m_amount (amount)
-            , m_pool (buffer_pool)
-          {}
-
-          void operator () ()
-          {
-            temporarily_removed_buffer buffer (m_pool);
-
-            size_t remaining = m_amount;
-
-            while (remaining)
-            {
-              const size_t to_read = std::min (remaining, buffer->size ());
-
-              const size_t num_read = m_src.read_from ( m_src_loc
-                                                      , buffer->data ()
-                                                      , to_read
-                                                      );
-              if (0 == num_read)
-              {
-                throw std::runtime_error
-                  ( "could not read " + std::to_string (buffer->size())
-                  + " bytes from " + boost::lexical_cast<std::string> (m_src_loc)
-                  + " remaining " + std::to_string (remaining)
-                  );
-              }
-
-              buffer->used (num_read);
-
-              const size_t num_written = m_dst.write_to ( m_dst_loc
-                                                        , buffer->data ()
-                                                        , buffer->used ()
-                                                        );
-
-              fhg_assert (num_read == num_written);
-
-              buffer->used (num_read - num_written);
-
-              remaining -= num_read;
-            }
-          }
-        private:
-          area_t & m_src;
-          area_t & m_dst;
-          gpi::pc::type::memory_location_t m_src_loc;
-          gpi::pc::type::memory_location_t m_dst_loc;
-          gpi::pc::type::size_t m_amount;
-          area_t::memory_pool_t & m_pool;
-        };
-      }
-
       gpi::pc::type::size_t
       area_t::read_from ( gpi::pc::type::memory_location_t loc
                         , void *buffer
@@ -820,13 +731,55 @@ namespace gpi
             return std::packaged_task<void()>
               ( [this, &dst_area, src, dst, amount, &buffer_pool]
                 {
-                  detail::copy ( *this
-                               , dst_area
-                               , src
-                               , dst
-                               , amount
-                               , buffer_pool
-                               );
+                  struct temporarily_removed_buffer
+                  {
+                    temporarily_removed_buffer (area_t::memory_pool_t& pool)
+                      : _pool (pool)
+                      , _buffer (_pool.get())
+                    {}
+                    ~temporarily_removed_buffer()
+                    {
+                      _pool.put (std::move (_buffer));
+                    }
+                    buffer_t* operator->() const
+                    {
+                      return _buffer.operator->();
+                    }
+                    area_t::memory_pool_t& _pool;
+                    std::unique_ptr<buffer_t> _buffer;
+                  } buffer = {buffer_pool};
+
+                  size_t remaining (amount);
+
+                  while (remaining)
+                  {
+                    const size_t to_read
+                      (std::min (remaining, buffer->size ()));
+
+                    const size_t num_read
+                      (read_from (src, buffer->data (), to_read));
+                    if (0 == num_read)
+                    {
+                      throw std::runtime_error
+                        ( "could not read " + std::to_string (buffer->size())
+                        + " bytes from " + boost::lexical_cast<std::string> (src)
+                        + " remaining " + std::to_string (remaining)
+                        );
+                    }
+
+                    buffer->used (num_read);
+
+                    const size_t num_written
+                      ( dst_area.write_to
+                          (dst, buffer->data (), buffer->used())
+                      );
+
+                    fhg_assert (num_read == num_written);
+
+                    buffer->used (num_read - num_written);
+
+                    remaining -= num_read;
+                  }
                 }
               );
           }
