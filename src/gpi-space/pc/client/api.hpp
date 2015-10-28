@@ -51,11 +51,21 @@ namespace gpi
                                 );
         void free (const type::handle_id_t);
 
+      private:
         type::memcpy_id_t memcpy ( type::memory_location_t const& dst
                                  , type::memory_location_t const& src
                                  , type::size_t const amount
                                  );
         void wait (type::memcpy_id_t const&);
+
+      public:
+        void memcpy_and_wait ( type::memory_location_t const& dst
+                             , type::memory_location_t const& src
+                             , type::size_t const amount
+                             )
+        {
+          wait (memcpy (dst, src, amount));
+        }
 
         std::function<double (std::string const&)>
         transfer_costs (std::list<std::pair<we::local::range, we::global::range>> const&);
