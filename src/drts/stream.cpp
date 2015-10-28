@@ -7,6 +7,7 @@
 #include <drts/drts.fwd.hpp>
 #include <drts/private/drts_impl.hpp>
 #include <drts/private/pimpl.hpp>
+#include <drts/private/virtual_memory_impl.hpp>
 #include <drts/virtual_memory.hpp>
 
 #include <drts/private/scoped_allocation.hpp>
@@ -67,9 +68,7 @@ namespace gspc
       _virtual_memory->wait
         ( _virtual_memory->memcpy
           ( {_flags, 0}
-          , { boost::lexical_cast<gpi::pc::type::handle_t> (_buffer.handle())
-            , _offset_to_meta_data
-            }
+          , {_buffer._->_handle_id, _offset_to_meta_data}
           , _number_of_slots
           )
         );
@@ -114,9 +113,7 @@ namespace gspc
         _virtual_memory->wait
           ( _virtual_memory->memcpy
             ( {_update, 0}
-            , { boost::lexical_cast<gpi::pc::type::handle_t> (_buffer.handle())
-              , _offset_to_meta_data
-              }
+            , {_buffer._->_handle_id, _offset_to_meta_data}
             , _number_of_slots
             )
           );
@@ -149,9 +146,7 @@ namespace gspc
 
       _virtual_memory->wait
         ( _virtual_memory->memcpy
-          ( { boost::lexical_cast<gpi::pc::type::handle_t> (_buffer.handle())
-            , slot * _size_of_slot
-            }
+          ( {_buffer._->_handle_id, slot * _size_of_slot}
           , {_data, 0}
           , data.size()
           )
