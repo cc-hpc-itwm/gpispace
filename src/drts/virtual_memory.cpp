@@ -17,6 +17,7 @@
 #include <boost/format.hpp>
 
 #include <exception>
+#include <sstream>
 
 namespace gspc
 {
