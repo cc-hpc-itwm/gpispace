@@ -45,7 +45,7 @@ namespace gpi
       manager_t::manager_t (fhg::log::Logger& logger, api::gpi_api_t& gpi_api)
         : _logger (logger)
         , _gpi_api (gpi_api)
-        , m_transfer_mgr (_logger, gpi_api)
+        , m_transfer_mgr (gpi_api)
         , _handle_generator (gpi_api.rank())
       {
         _handle_generator.initialize_counter

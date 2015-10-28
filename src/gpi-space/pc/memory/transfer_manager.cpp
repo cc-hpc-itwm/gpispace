@@ -1,7 +1,5 @@
 #include <gpi-space/pc/memory/transfer_manager.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/finally.hpp>
 
@@ -17,12 +15,8 @@ namespace gpi
   {
     namespace memory
     {
-      transfer_manager_t::transfer_manager_t ( fhg::log::Logger& logger
-                                             , api::gpi_api_t& gpi_api
-                                             )
-        : _logger (logger)
-        , _gpi_api (gpi_api)
-        , _next_memcpy_id (0)
+      transfer_manager_t::transfer_manager_t (api::gpi_api_t& gpi_api)
+        : _next_memcpy_id (0)
       {
         const std::size_t number_of_queues (gpi_api.number_of_queues());
         for (std::size_t i(0); i < number_of_queues; ++i)
