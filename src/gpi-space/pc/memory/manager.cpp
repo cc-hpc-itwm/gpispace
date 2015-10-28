@@ -448,8 +448,8 @@ namespace gpi
 
         type::memcpy_id_t const memcpy_id (_next_memcpy_id++);
 
-        _task_by_id.emplace (memcpy_id, task);
-        m_queues[t.queue]->enqueue (task);
+        _task_by_id.emplace (memcpy_id, task.get_future());
+        m_queues[t.queue]->enqueue (std::move (task));
 
         return memcpy_id;
       }
@@ -464,7 +464,7 @@ namespace gpi
 
         FHG_UTIL_FINALLY ([&] { _task_by_id.erase (task_it); });
 
-        task_it->second->get();
+        task_it->second.get();
       }
 
       int

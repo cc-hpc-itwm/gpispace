@@ -2,10 +2,9 @@
 
 #include <fhg/util/thread/queue.hpp>
 
-#include <gpi-space/pc/memory/task.hpp>
-
-#include <boost/shared_ptr.hpp>
 #include <boost/thread/scoped_thread.hpp>
+
+#include <future>
 
 namespace gpi
 {
@@ -19,12 +18,12 @@ namespace gpi
         explicit
         transfer_queue_t();
 
-        void enqueue (task_ptr const &);
+        void enqueue (std::packaged_task<void()>);
 
       private:
         void worker ();
 
-        fhg::thread::queue<boost::shared_ptr<task_t>>  m_task_queue;
+        fhg::thread::queue<std::packaged_task<void()>> m_task_queue;
         boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
           m_thread;
       };

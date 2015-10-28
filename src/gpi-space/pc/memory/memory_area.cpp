@@ -581,54 +581,6 @@ namespace gpi
 
       namespace detail
       {
-        struct writer
-        {
-          writer ( area_t & a
-                 , gpi::pc::type::memory_location_t loc
-                 , const void *buffer
-                 , gpi::pc::type::size_t amount
-                 )
-            : m_area (a)
-            , m_location (loc)
-            , m_buffer (buffer)
-            , m_amount (amount)
-          {}
-
-          void operator () ()
-          {
-            m_area.write_to (m_location, m_buffer, m_amount);
-          }
-        private:
-          area_t & m_area;
-          gpi::pc::type::memory_location_t m_location;
-          const void * m_buffer;
-          gpi::pc::type::size_t m_amount;
-        };
-
-        struct reader
-        {
-          reader ( area_t & a
-                 , gpi::pc::type::memory_location_t loc
-                 , void *buffer
-                 , gpi::pc::type::size_t amount
-                 )
-            : m_area (a)
-            , m_location (loc)
-            , m_buffer (buffer)
-            , m_amount (amount)
-          {}
-
-          void operator () ()
-          {
-            m_area.read_from (m_location, m_buffer, m_amount);
-          }
-        private:
-          area_t & m_area;
-          gpi::pc::type::memory_location_t m_location;
-          void * m_buffer;
-          gpi::pc::type::size_t m_amount;
-        };
-
         namespace
         {
           struct temporarily_removed_buffer
@@ -783,7 +735,7 @@ namespace gpi
       }
 
 
-      boost::shared_ptr<task_t> area_t::get_specific_transfer_task
+      std::packaged_task<void()> area_t::get_specific_transfer_task
         ( const gpi::pc::type::memory_location_t
         , const gpi::pc::type::memory_location_t
         , area_t&
@@ -795,7 +747,7 @@ namespace gpi
           ("get_specific_transfer_task not implemented");
       }
 
-      boost::shared_ptr<task_t> area_t::get_send_task
+      std::packaged_task<void()> area_t::get_send_task
         ( area_t&
         , const gpi::pc::type::memory_location_t
         , const gpi::pc::type::memory_location_t
@@ -806,7 +758,7 @@ namespace gpi
         throw std::logic_error ("get_send_task not implemented");
       }
 
-      boost::shared_ptr<task_t> area_t::get_recv_task
+      std::packaged_task<void()> area_t::get_recv_task
         ( area_t&
         , const gpi::pc::type::memory_location_t
         , const gpi::pc::type::memory_location_t
@@ -817,14 +769,14 @@ namespace gpi
         throw std::logic_error ("get_recv_task not implemented");
       }
 
-      boost::shared_ptr<task_t>
-      area_t::get_transfer_task ( const gpi::pc::type::memory_location_t src
-                                , const gpi::pc::type::memory_location_t dst
-                                , area_t & dst_area
-                                , gpi::pc::type::size_t amount
-                                , gpi::pc::type::size_t queue
-                                , memory_pool_t & buffer_pool
-                                )
+      std::packaged_task<void()> area_t::get_transfer_task
+        ( const type::memory_location_t src
+        , const type::memory_location_t dst
+        , area_t& dst_area
+        , type::size_t amount
+        , type::size_t queue
+        , memory_pool_t& buffer_pool
+        )
       {
         const bool src_is_local
           (         is_local (gpi::pc::type::memory_region_t( src
@@ -847,59 +799,36 @@ namespace gpi
 
           if (src_ptr)
           {
-            return
-              (boost::make_shared<task_t>
-              ( "write_to: "
-              + boost::lexical_cast<std::string> (dst)
-              + " <- "
-              + boost::lexical_cast<std::string> (src)
-              + " "
-              + boost::lexical_cast<std::string> (amount)
-
-              , detail::writer ( dst_area
-                               , dst
-                               , src_ptr
-                               , amount
-                               )
-              ));
+            return std::packaged_task<void()>
+              ( [&dst_area, dst, src_ptr, amount]
+                {
+                  dst_area.write_to (dst, src_ptr, amount);
+                }
+              );
           }
           else if (dst_ptr)
           {
-            return
-              (boost::make_shared<task_t>
-              ( "read_from: "
-              + boost::lexical_cast<std::string> (dst)
-              + " <- "
-              + boost::lexical_cast<std::string> (src)
-              + " "
-              + boost::lexical_cast<std::string> (amount)
-
-              , detail::reader ( *this
-                               , src
-                               , dst_ptr
-                               , amount
-                               )
-              ));
+            return std::packaged_task<void()>
+              ( [this, src, dst_ptr, amount]
+                {
+                  read_from (src, dst_ptr, amount);
+                }
+              );
           }
           else
           {
-            return
-              (boost::make_shared<task_t>
-              ( "copy: "
-              + boost::lexical_cast<std::string> (dst)
-              + " <- "
-              + boost::lexical_cast<std::string> (src)
-              + " "
-              + boost::lexical_cast<std::string> (amount)
-
-              , detail::copy ( *this
-                             , dst_area
-                             , src
-                             , dst
-                             , amount
-                             , buffer_pool
-                             )
-              ));
+            return std::packaged_task<void()>
+              ( [this, &dst_area, src, dst, amount, &buffer_pool]
+                {
+                  detail::copy ( *this
+                               , dst_area
+                               , src
+                               , dst
+                               , amount
+                               , buffer_pool
+                               );
+                }
+              );
           }
         }
 

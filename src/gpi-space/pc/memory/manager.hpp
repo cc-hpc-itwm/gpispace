@@ -140,7 +140,7 @@ namespace gpi
         api::gpi_api_t& _gpi_api;
 
         std::size_t _next_memcpy_id;
-        std::map<std::size_t, boost::shared_ptr<task_t>> _task_by_id;
+        std::map<std::size_t, std::future<void>> _task_by_id;
         std::vector<boost::shared_ptr<transfer_queue_t>> m_queues;
         fhg::thread::ptr_queue<buffer_t> m_memory_buffer_pool;
 

@@ -15,14 +15,13 @@ namespace gpi
       {
         for (;;)
         {
-          m_task_queue.get()->execute();
+          m_task_queue.get()();
         }
       }
 
-      void
-      transfer_queue_t::enqueue (const task_ptr &task)
+      void transfer_queue_t::enqueue (std::packaged_task<void()> task)
       {
-        m_task_queue.put (task);
+        m_task_queue.put (std::move (task));
       }
     }
   }

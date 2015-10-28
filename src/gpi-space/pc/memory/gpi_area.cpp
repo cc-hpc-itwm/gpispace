@@ -385,7 +385,7 @@ namespace gpi
         }
       }
 
-      boost::shared_ptr<task_t> gpi_area_t::get_specific_transfer_task
+      std::packaged_task<void()> gpi_area_t::get_specific_transfer_task
         ( const gpi::pc::type::memory_location_t src
         , const gpi::pc::type::memory_location_t dst
         , area_t & dst_area
@@ -398,16 +398,8 @@ namespace gpi
         if (is_local (gpi::pc::type::memory_region_t (src, amount)))
         {
           // write dma
-          return
-            (boost::make_shared<task_t>
-            ( "writeDMA "
-            + boost::lexical_cast<std::string> (dst)
-            + " <- "
-            + boost::lexical_cast<std::string> (src)
-            + " "
-            + boost::lexical_cast<std::string> (amount)
-
-            , [this, &dst_area, src, dst, amount, queue]
+          return std::packaged_task<void()>
+            ( [this, &dst_area, src, dst, amount, queue]
               {
                 helper::do_write_dma ( descriptor (src.handle)
                                      , src.offset
@@ -422,22 +414,14 @@ namespace gpi
                 //! other side(s) instead
                 _gpi_api.wait_dma (queue);
               }
-            ));
+            );
         }
         else if (dst_area.is_local (gpi::pc::type::memory_region_t (dst, amount)))
         {
           // read dma
-          return
-            (boost::make_shared<task_t>
-            ( "readDMA "
-            + boost::lexical_cast<std::string> (dst)
-            + " <- "
-            + boost::lexical_cast<std::string> (src)
-            + " "
-            + boost::lexical_cast<std::string> (amount)
-
-            , std::bind ( &helper::do_read_dma
-                        , this->descriptor     (src.handle)
+          return std::packaged_task<void()>
+            ( std::bind ( &helper::do_read_dma
+                        , this->descriptor (src.handle)
                         , src.offset
                         , dst_area.descriptor (dst.handle)
                         , dst.offset
@@ -445,9 +429,8 @@ namespace gpi
                         , queue
                         , std::ref (_gpi_api)
                         )
-            ));
+            );
         }
-
 
         throw std::runtime_error
           ( "illegal memory transfer requested:"
@@ -455,7 +438,7 @@ namespace gpi
           );
       }
 
-      boost::shared_ptr<task_t> gpi_area_t::get_send_task
+      std::packaged_task<void()> gpi_area_t::get_send_task
         ( area_t & src_area
         , const gpi::pc::type::memory_location_t src
         , const gpi::pc::type::memory_location_t dst
@@ -463,14 +446,8 @@ namespace gpi
         , gpi::pc::type::size_t queue
         )
       {
-        return boost::make_shared<task_t> ( "send "
-               + boost::lexical_cast<std::string> (dst)
-               + " <- "
-               + boost::lexical_cast<std::string> (src)
-               + " "
-               + boost::lexical_cast<std::string> (amount)
-
-          , [this, &src_area, src, dst, amount, queue]
+        return std::packaged_task<void()>
+          ( [this, &src_area, src, dst, amount, queue]
             {
               helper::do_send ( _logger
                               , src_area
@@ -490,7 +467,7 @@ namespace gpi
           );
       }
 
-      boost::shared_ptr<task_t> gpi_area_t::get_recv_task
+      std::packaged_task<void()> gpi_area_t::get_recv_task
         ( area_t & dst_area
         , const gpi::pc::type::memory_location_t dst
         , const gpi::pc::type::memory_location_t src
@@ -498,25 +475,19 @@ namespace gpi
         , gpi::pc::type::size_t queue
         )
       {
-        return boost::make_shared<task_t> ( "recv "
-               + boost::lexical_cast<std::string> (dst)
-               + " <- "
-               + boost::lexical_cast<std::string> (src)
-               + " "
-               + boost::lexical_cast<std::string> (amount)
-
-               , std::bind ( &helper::do_recv
-                           , std::ref (_logger)
-                           , std::ref (dst_area)
-                           , dst
-                           , std::ref (*this)
-                           , src
-                           , amount
-                           , queue
-                           , std::ref (m_com_handles)
-                           , std::ref (_gpi_api)
-                           )
-                                          );
+        return std::packaged_task<void()>
+          ( std::bind ( &helper::do_recv
+                      , std::ref (_logger)
+                      , std::ref (dst_area)
+                      , dst
+                      , std::ref (*this)
+                      , src
+                      , amount
+                      , queue
+                      , std::ref (m_com_handles)
+                      , std::ref (_gpi_api)
+                      )
+          );
       }
 
       double gpi_area_t::get_transfer_costs ( const gpi::pc::type::memory_region_t& transfer

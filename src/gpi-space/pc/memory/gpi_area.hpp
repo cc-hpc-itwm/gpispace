@@ -48,7 +48,7 @@ namespace gpi
         virtual void alloc_hook (const gpi::pc::type::handle::descriptor_t &) override;
         virtual void  free_hook (const gpi::pc::type::handle::descriptor_t &) override;
 
-        virtual boost::shared_ptr<task_t> get_specific_transfer_task
+        virtual std::packaged_task<void()> get_specific_transfer_task
           ( const gpi::pc::type::memory_location_t src
           , const gpi::pc::type::memory_location_t dst
           , area_t & dst_area
@@ -56,7 +56,7 @@ namespace gpi
           , gpi::pc::type::size_t queue
           ) override;
 
-        virtual boost::shared_ptr<task_t> get_send_task
+        virtual std::packaged_task<void()> get_send_task
           ( area_t & src_area
           , const gpi::pc::type::memory_location_t src
           , const gpi::pc::type::memory_location_t dst
@@ -64,7 +64,7 @@ namespace gpi
           , gpi::pc::type::size_t queue
           ) override;
 
-        virtual boost::shared_ptr<task_t> get_recv_task
+        virtual std::packaged_task<void()> get_recv_task
           ( area_t & dst_area
           , const gpi::pc::type::memory_location_t dst
           , const gpi::pc::type::memory_location_t src
