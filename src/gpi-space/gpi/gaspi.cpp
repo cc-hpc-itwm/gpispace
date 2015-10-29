@@ -11,6 +11,7 @@
 #include <GASPI.h>
 
 #include <limits>
+#include <unordered_set>
 
 namespace gpi
 {
@@ -265,12 +266,13 @@ namespace gpi
       return m_dma;
     }
 
-    void gaspi_t::read_dma ( const offset_t local_offset
-                           , const offset_t remote_offset
-                           , const size_t amount
-                           , const rank_t from_node
-                           , const queue_desc_t queue
-                           )
+    gaspi_t::read_dma_info gaspi_t::read_dma
+      ( const offset_t local_offset
+      , const offset_t remote_offset
+      , const size_t amount
+      , const rank_t from_node
+      , const queue_desc_t queue
+      )
     {
       size_t remaining (amount);
       const size_t chunk_size (max_transfer_size());
@@ -316,6 +318,20 @@ namespace gpi
         remaining -= to_transfer;
         l_off     += to_transfer;
         r_off     += to_transfer;
+      }
+
+      return {queue};
+    }
+    void gaspi_t::wait_readable (std::list<read_dma_info> const& infos)
+    {
+      //! \todo wait on specific reads instead (gaspi_read_notify)
+      std::unordered_set<queue_desc_t> waited_queues;
+      for (read_dma_info const& info : infos)
+      {
+        if (waited_queues.emplace (info.queue).second)
+        {
+          wait_dma (info.queue);
+        }
       }
     }
 

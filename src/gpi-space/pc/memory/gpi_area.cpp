@@ -254,6 +254,8 @@ namespace gpi
             , api::gaspi_t& gaspi
             )
           {
+            std::list<api::gaspi_t::read_dma_info> handles;
+
             for ( auto const& part
                 : split_by_rank ( dst_hdl.offset + dst_offset
                                 , src_hdl.offset
@@ -263,15 +265,17 @@ namespace gpi
                                 )
                 )
             {
-              gaspi.read_dma ( part.local_offset
-                             , part.remote_offset
-                             , part.size
-                             , part.rank
-                             , queue
-                             );
+              handles.emplace_back
+                ( gaspi.read_dma ( part.local_offset
+                                 , part.remote_offset
+                                 , part.size
+                                 , part.rank
+                                 , queue
+                                 )
+                );
             }
 
-            gaspi.wait_dma (queue);
+            gaspi.wait_readable (handles);
           }
 
           void do_write_dma

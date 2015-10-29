@@ -72,12 +72,18 @@ namespace gpi
       template <typename T>
       T* dma_ptr (void) { return (T*)(dma_ptr()); }
 
-      void read_dma ( const offset_t local_offset
-                    , const offset_t remote_offset
-                    , const size_t amount
-                    , const rank_t from_node
-                    , const queue_desc_t queue
-                    );
+      struct read_dma_info
+      {
+        queue_desc_t queue;
+      };
+      read_dma_info read_dma ( const offset_t local_offset
+                             , const offset_t remote_offset
+                             , const size_t amount
+                             , const rank_t from_node
+                             , const queue_desc_t queue
+                             );
+      void wait_readable (std::list<read_dma_info> const&);
+
       void write_dma ( const offset_t local_offset
                      , const offset_t remote_offset
                      , const size_t amount
