@@ -12,7 +12,6 @@
 #include <gpi-space/pc/memory/handle_generator.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
-#include <gpi-space/pc/memory/memory_transfer_t.hpp>
 #include <gpi-space/pc/memory/sfs_area.hpp>
 #include <gpi-space/pc/memory/shm_area.hpp>
 
@@ -415,41 +414,36 @@ namespace gpi
         , const type::size_t amount
         )
       {
-        memory_transfer_t t;
-        t.dst_area     = get_area_by_handle(dst.handle);
-        t.dst_location = dst;
-        t.src_area     = get_area_by_handle(src.handle);
-        t.src_location = src;
-        t.amount       = amount;
-          static gpi::pc::type::queue_id_t rr_queue = 0;
-          t.queue        = rr_queue;
-          rr_queue = (rr_queue + 1) % m_queues.size();
+        //! \todo this selects the task queue and the gaspi queue at
+        //! the same time. the task queue shall be replaced by a
+        //! thread pool and the gaspi queue shall be chosen in the
+        //! gaspi api (so way later than here and only for actual
+        //! gaspi stuff)
+        static type::queue_id_t rr_queue (0);
 
-        t.dst_area->check_bounds (dst, amount);
-        t.src_area->check_bounds (src, amount);
-//        check_permissions (permission::memcpy_t (proc_id, dst, src));
+        type::queue_id_t const queue (rr_queue);
+        rr_queue = (rr_queue + 1) % m_queues.size();
 
-        // TODO: increase refcount in handles, set access/modification times
+        auto& src_area (*get_area_by_handle (src.handle));
+        auto& dst_area (*get_area_by_handle (dst.handle));
 
-        if (t.queue >= m_queues.size())
-        {
-          throw std::invalid_argument ("no such queue");
-        }
+        dst_area.check_bounds (dst, amount);
+        src_area.check_bounds (src, amount);
 
-        auto task
-          ( t.src_area->get_transfer_task ( t.src_location
-                                          , t.dst_location
-                                          , *t.dst_area
-                                          , t.amount
-                                          , t.queue
-                                          , m_memory_buffer_pool
-                                          )
-          );
+        auto task ( src_area.get_transfer_task
+                      ( src
+                      , dst
+                      , dst_area
+                      , amount
+                      , queue
+                      , m_memory_buffer_pool
+                      )
+                  );
 
         type::memcpy_id_t const memcpy_id (_next_memcpy_id++);
 
         _task_by_id.emplace (memcpy_id, task.get_future());
-        m_queues[t.queue]->enqueue (std::move (task));
+        m_queues[queue]->enqueue (std::move (task));
 
         return memcpy_id;
       }
