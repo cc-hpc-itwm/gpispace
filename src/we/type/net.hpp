@@ -280,21 +280,11 @@ namespace we
 
         ar & number_of_enabled_transitions;
 
-        std::unordered_set<transition_id_type> enabled_transitions;
-
         while (number_of_enabled_transitions --> 0)
         {
           transition_id_type transition_id;
           ar & transition_id;
-          enabled_transitions.insert (transition_id);
-        }
-
-        for (transition_id_type tid : _tmap | boost::adaptors::map_keys)
-        {
-          if (enabled_transitions.count (tid) > 0)
-          {
-            update_enabled (tid);
-          }
+          update_enabled (transition_id);
         }
       }
       BOOST_SERIALIZATION_SPLIT_MEMBER()
