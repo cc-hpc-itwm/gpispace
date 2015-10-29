@@ -2,11 +2,12 @@
 
 #include <fhglog/Logger.hpp>
 
-#include <gpi-space/gpi/api.hpp>
+#include <gpi-space/exception.hpp>
+#include <gpi-space/types.hpp>
 
-#include <boost/utility.hpp>
-#include <boost/lexical_cast.hpp>
+#include <boost/noncopyable.hpp>
 
+#include <chrono>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,37 @@ namespace gpi
 {
   namespace api
   {
-    class gaspi_t : public gpi_api_t
+    namespace exception
+    {
+      struct dma_error : public gpi::exception::gpi_error
+      {
+        dma_error ( gpi::error::code_t const & ec
+                  , const offset_t loc_offset
+                  , const offset_t rem_offset
+                  , const rank_t from
+                  , const rank_t to
+                  , const size_t bytes
+                  , const queue_desc_t via_queue
+                  )
+          : gpi::exception::gpi_error (ec)
+          , local_offset (loc_offset)
+          , remote_offset (rem_offset)
+          , from_node (from)
+          , to_node (to)
+          , amount (bytes)
+          , queue (via_queue)
+        {}
+
+        const offset_t local_offset;
+        const offset_t remote_offset;
+        const rank_t from_node;
+        const rank_t to_node;
+        const size_t amount;
+        const queue_desc_t queue;
+      };
+    }
+
+    class gaspi_t : boost::noncopyable
     {
     public:
       gaspi_t ( fhg::log::Logger&
@@ -26,34 +57,34 @@ namespace gpi
       ~gaspi_t();
 
       // wrapped C function calls
-      virtual gpi::size_t number_of_queues () const override;
-      virtual gpi::size_t queue_depth () const override;
-      virtual gpi::size_t number_of_nodes () const override;
-      virtual gpi::size_t memory_size () const override;
-      virtual gpi::size_t max_transfer_size () const;
+      gpi::size_t number_of_queues () const;
+      gpi::size_t queue_depth () const;
+      gpi::size_t number_of_nodes () const;
+      gpi::size_t memory_size () const;
+      gpi::size_t max_transfer_size () const;
 
-      virtual gpi::rank_t rank () const override;
-      virtual std::string const& hostname_of_rank (const gpi::rank_t) const override;
-      virtual unsigned short communication_port_of_rank (gpi::rank_t) const override;
-      virtual gpi::error_vector_t get_error_vector(const queue_desc_t) const override;
-      virtual void *dma_ptr (void) override;
+      gpi::rank_t rank () const;
+      std::string const& hostname_of_rank (const gpi::rank_t) const;
+      unsigned short communication_port_of_rank (gpi::rank_t) const;
+      gpi::error_vector_t get_error_vector(const queue_desc_t) const;
+      void *dma_ptr (void);
 
       template <typename T>
       T* dma_ptr (void) { return (T*)(dma_ptr()); }
 
-      virtual void read_dma ( const offset_t local_offset
+      void read_dma ( const offset_t local_offset
                     , const offset_t remote_offset
                     , const size_t amount
                     , const rank_t from_node
                     , const queue_desc_t queue
-                    ) override;
-      virtual void write_dma ( const offset_t local_offset
+                    );
+      void write_dma ( const offset_t local_offset
                      , const offset_t remote_offset
                      , const size_t amount
                      , const rank_t to_node
                      , const queue_desc_t queue
-                     ) override;
-      virtual void wait_dma (const queue_desc_t queue) override;
+                     );
+      void wait_dma (const queue_desc_t queue);
     private:
       gpi::size_t open_dma_requests (const queue_desc_t) const;
       bool max_dma_requests_reached (const queue_desc_t q) const

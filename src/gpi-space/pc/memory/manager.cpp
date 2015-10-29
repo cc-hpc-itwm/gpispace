@@ -6,7 +6,7 @@
 
 #include <util-generic/finally.hpp>
 
-#include <gpi-space/gpi/api.hpp>
+#include <gpi-space/gpi/gaspi.hpp>
 #include <gpi-space/pc/global/topology.hpp>
 #include <gpi-space/pc/memory/gpi_area.hpp>
 #include <gpi-space/pc/memory/handle_generator.hpp>
@@ -29,13 +29,13 @@ namespace gpi
                                , std::string const &url_s
                                , global::topology_t& topology
                                , handle_generator_t& handle_generator
-                               , api::gpi_api_t& gpi_api
+                               , api::gaspi_t& gaspi
                                )
       {
         url_t url (url_s);
 
         return
-          ( url.type() == "gpi" ? gpi_area_t::create (logger, url_s, topology, handle_generator, gpi_api)
+          ( url.type() == "gpi" ? gpi_area_t::create (logger, url_s, topology, handle_generator, gaspi)
           : url.type() == "sfs" ? sfs_area_t::create (logger, url_s, topology, handle_generator)
           : throw std::runtime_error
               ("no memory type registered with: '" + url_s + "'")
@@ -43,16 +43,16 @@ namespace gpi
       }
       }
 
-      manager_t::manager_t (fhg::log::Logger& logger, api::gpi_api_t& gpi_api)
+      manager_t::manager_t (fhg::log::Logger& logger, api::gaspi_t& gaspi)
         : _logger (logger)
-        , _gpi_api (gpi_api)
+        , _gaspi (gaspi)
         , _next_memcpy_id (0)
-        , _handle_generator (gpi_api.rank())
+        , _handle_generator (gaspi.rank())
       {
         _handle_generator.initialize_counter
           (gpi::pc::type::segment::SEG_INVAL, MAX_PREALLOCATED_SEGMENT_ID);
 
-        const std::size_t number_of_queues (gpi_api.number_of_queues());
+        const std::size_t number_of_queues (gaspi.number_of_queues());
         for (std::size_t i (0); i < number_of_queues; ++i)
         {
           _task_threads.emplace_back
@@ -408,9 +408,9 @@ namespace gpi
         {
           const area_ptr area (get_area_by_handle (transfer.location.handle));
 
-          for (gpi::rank_t rank = 0; rank < _gpi_api.number_of_nodes(); ++rank)
+          for (gpi::rank_t rank = 0; rank < _gaspi.number_of_nodes(); ++rank)
           {
-            costs[_gpi_api.hostname_of_rank (rank)] += area->get_transfer_costs (transfer, rank);
+            costs[_gaspi.hostname_of_rank (rank)] += area->get_transfer_costs (transfer, rank);
           }
         }
 
@@ -465,7 +465,7 @@ namespace gpi
                                    , global::topology_t& topology
                                    )
       {
-        area_ptr_t area (create_area (_logger, url, topology, _handle_generator, _gpi_api));
+        area_ptr_t area (create_area (_logger, url, topology, _handle_generator, _gaspi));
         area->set_owner (0);
         area->set_id (seg_id);
         add_area (area);
@@ -479,7 +479,7 @@ namespace gpi
                             , global::topology_t& topology
                             )
       {
-        area_ptr_t area (create_area (_logger, url_s, topology, _handle_generator, _gpi_api));
+        area_ptr_t area (create_area (_logger, url_s, topology, _handle_generator, _gaspi));
         area->set_owner (proc_id);
         if (seg_id > 0)
           area->set_id (seg_id);

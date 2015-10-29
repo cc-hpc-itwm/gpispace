@@ -183,14 +183,12 @@ int main (int argc, char** argv)
     auto topology_rpc_server
       (fhg::util::cxx14::make_unique<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher>());
 
-    auto const gpi_api ( fhg::util::cxx14::make_unique <gpi::api::gaspi_t>
-                           ( logger
-                           , gpi_mem
-                           , port
-                           , gpi_timeout
-                           , topology_rpc_server->local_endpoint().port()
-                           )
-                       );
+    gpi::api::gaspi_t gaspi ( logger
+                            , gpi_mem
+                            , port
+                            , gpi_timeout
+                            , topology_rpc_server->local_endpoint().port()
+                            );
 
     // other url examples are:
     //      gpi://?buffers=8&buffer_size=4194304 GPI memory
@@ -199,7 +197,7 @@ int main (int argc, char** argv)
       ( logger
       , socket_path.string()
       , {"gpi://?buffer_size=4194304&buffers=8"}
-      , *gpi_api
+      , gaspi
       , std::move (topology_rpc_server)
       );
 

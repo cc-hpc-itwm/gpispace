@@ -4,7 +4,7 @@
 
 #include <fhg/assert.hpp>
 #include <fhglog/LogMacros.hpp>
-#include <gpi-space/gpi/api.hpp>
+#include <gpi-space/gpi/gaspi.hpp>
 #include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/global/topology.hpp>
 
@@ -29,22 +29,22 @@ namespace gpi
                              , const gpi::pc::type::flags_t flags
                              , gpi::pc::global::itopology_t & topology
                              , handle_generator_t& handle_generator
-                             , api::gpi_api_t& gpi_api
+                             , api::gaspi_t& gaspi
                              )
         : area_t ( logger
                  , gpi_area_t::area_type
                  , creator
                  , name
-                 , gpi_api.memory_size()
+                 , gaspi.memory_size()
                  , flags
                  , handle_generator
                  )
-        , m_ptr (gpi_api.dma_ptr())
+        , m_ptr (gaspi.dma_ptr())
         , m_num_com_buffers (8)
         , m_com_buffer_size (4* (1<<20))
         , _topology (topology)
         , _next_gaspi_queue (0)
-        , _gpi_api (gpi_api)
+        , _gaspi (gaspi)
       {}
 
       void gpi_area_t::init ()
@@ -161,7 +161,7 @@ namespace gpi
                                 , const gpi::pc::type::offset_t end
                                 ) const
       {
-        gpi::pc::type::id_t     my_rank = _gpi_api.rank ();
+        gpi::pc::type::id_t     my_rank = _gaspi.rank ();
 
         if (not gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL))
           my_rank = 0;
@@ -186,7 +186,7 @@ namespace gpi
         if (gpi::flag::is_set (flgs, gpi::pc::F_GLOBAL))
         {
           // static distribution scheme with overhead
-          const size_t num_nodes = _gpi_api.number_of_nodes ();
+          const size_t num_nodes = _gaspi.number_of_nodes ();
           size_t overhead = (0 != (size % num_nodes)) ? 1 : 0;
           return (size / num_nodes + overhead);
         }
@@ -236,7 +236,7 @@ namespace gpi
                          , const gpi::pc::type::size_t dst_offset
                          , const gpi::pc::type::size_t amount
                          , const gpi::pc::type::size_t queue
-                         , api::gpi_api_t& gpi_api
+                         , api::gaspi_t& gaspi
                          )
         {
           do_rdma( dst_hdl.offset + dst_offset
@@ -244,7 +244,7 @@ namespace gpi
                  , src_hdl.local_size
                  , amount
                  , queue
-                 , std::bind ( &api::gpi_api_t::read_dma, &gpi_api
+                 , std::bind ( &api::gaspi_t::read_dma, &gaspi
                              , std::placeholders::_1
                              , std::placeholders::_2
                              , std::placeholders::_3
@@ -252,7 +252,7 @@ namespace gpi
                              , std::placeholders::_5
                              )
                  );
-          gpi_api.wait_dma (queue);
+          gaspi.wait_dma (queue);
         }
 
         static
@@ -262,7 +262,7 @@ namespace gpi
                           , const gpi::pc::type::size_t dst_offset
                           , const gpi::pc::type::size_t amount
                           , const gpi::pc::type::size_t queue
-                          , api::gpi_api_t& gpi_api
+                          , api::gaspi_t& gaspi
                           )
         {
           do_rdma( src_hdl.offset + src_offset
@@ -270,7 +270,7 @@ namespace gpi
                  , dst_hdl.local_size
                  , amount
                  , queue
-                 , std::bind ( &api::gpi_api_t::write_dma, &gpi_api
+                 , std::bind ( &api::gaspi_t::write_dma, &gaspi
                              , std::placeholders::_1
                              , std::placeholders::_2
                              , std::placeholders::_3
@@ -289,7 +289,7 @@ namespace gpi
                      , gpi::pc::type::size_t amount
                      , const gpi::pc::type::size_t queue
                      , gpi_area_t::handle_pool_t & handle_pool
-                     , api::gpi_api_t& gpi_api
+                     , api::gaspi_t& gaspi
                      )
         {
           handle_buffer_t buf (handle_pool.get());
@@ -321,9 +321,9 @@ namespace gpi
                          , dst_loc.offset
                          , buf.used ()
                          , queue
-                         , gpi_api
+                         , gaspi
                          );
-            gpi_api.wait_dma (queue);
+            gaspi.wait_dma (queue);
 
             src_loc.offset += buf.used ();
             dst_loc.offset += buf.used ();
@@ -342,7 +342,7 @@ namespace gpi
                      , gpi::pc::type::size_t amount
                      , const gpi::pc::type::size_t queue
                      , gpi_area_t::handle_pool_t & handle_pool
-                     , api::gpi_api_t& gpi_api
+                     , api::gaspi_t& gaspi
                      )
         {
           handle_buffer_t buf (handle_pool.get());
@@ -361,7 +361,7 @@ namespace gpi
                         , 0
                         , to_recv
                         , queue
-                        , gpi_api
+                        , gaspi
                         );
             buf.used (to_recv);
 
@@ -409,12 +409,12 @@ namespace gpi
                                      , dst.offset
                                      , amount
                                      , queue
-                                     , _gpi_api
+                                     , _gaspi
                                      );
 
                 //! \todo get notified that data is received from
                 //! other side(s) instead
-                _gpi_api.wait_dma (queue);
+                _gaspi.wait_dma (queue);
               }
             );
         }
@@ -429,7 +429,7 @@ namespace gpi
                         , dst.offset
                         , amount
                         , queue
-                        , std::ref (_gpi_api)
+                        , std::ref (_gaspi)
                         )
             );
         }
@@ -460,12 +460,12 @@ namespace gpi
                               , amount
                               , queue
                               , m_com_handles
-                              , _gpi_api
+                              , _gaspi
                               );
 
               //! \todo get notified that data is received from other
               //! side(s) instead
-              _gpi_api.wait_dma (queue);
+              _gaspi.wait_dma (queue);
             }
           );
       }
@@ -489,7 +489,7 @@ namespace gpi
                       , amount
                       , queue
                       , std::ref (m_com_handles)
-                      , std::ref (_gpi_api)
+                      , std::ref (_gaspi)
                       )
           );
       }
@@ -519,7 +519,7 @@ namespace gpi
       {
         auto id (_next_gaspi_queue);
         _next_gaspi_queue
-          = (_next_gaspi_queue + 1) % _gpi_api.number_of_queues();
+          = (_next_gaspi_queue + 1) % _gaspi.number_of_queues();
         return id;
       }
 
@@ -528,7 +528,7 @@ namespace gpi
         , std::string const &url_s
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator
-        , api::gpi_api_t& gpi_api
+        , api::gaspi_t& gaspi
         )
       {
         url_t url (url_s);
@@ -545,7 +545,7 @@ namespace gpi
                                            + gpi::pc::F_GLOBAL
                                            , topology
                                            , handle_generator
-                                           , gpi_api
+                                           , gaspi
                                            );
         area->m_num_com_buffers = numbuf;
         area->m_com_buffer_size = comsize;

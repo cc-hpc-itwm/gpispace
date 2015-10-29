@@ -12,7 +12,7 @@ namespace gpi
 {
   namespace api
   {
-    class gpi_api_t;
+    class gaspi_t;
   }
   namespace pc
   {
@@ -29,7 +29,7 @@ namespace gpi
                                  , std::string const &url
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
-                                 , api::gpi_api_t& gpi_api
+                                 , api::gaspi_t& gaspi
                                  );
 
       protected:
@@ -39,7 +39,7 @@ namespace gpi
                    , const gpi::pc::type::flags_t flags
                    , gpi::pc::global::itopology_t & topology
                    , handle_generator_t&
-                   , api::gpi_api_t&
+                   , api::gaspi_t&
                    );
 
         virtual bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const override;
@@ -104,7 +104,7 @@ namespace gpi
         type::queue_id_t _next_gaspi_queue;
         type::queue_id_t next_gaspi_queue();
 
-        api::gpi_api_t& _gpi_api;
+        api::gaspi_t& _gaspi;
       };
     }
   }

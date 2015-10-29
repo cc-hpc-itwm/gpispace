@@ -28,7 +28,7 @@ namespace gpi
         manager_t ( fhg::log::Logger&
                   , std::string const & p
                   , std::vector<std::string> const& default_memory_urls
-                  , api::gpi_api_t& gpi_api
+                  , api::gaspi_t&
                   , std::unique_ptr<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher> topology_rpc_server
                   );
 
