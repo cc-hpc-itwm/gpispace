@@ -11,8 +11,7 @@
 #include <we/workflow_response.hpp>
 
 #include <we/type/value.hpp>
-#include <we/type/value/read.hpp>
-#include <we/type/value/show.hpp>
+#include <we/type/value/serialize.hpp>
 
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/nvp.hpp>
@@ -79,58 +78,15 @@ namespace we
           transition_id() const;
 
       private:
-        template<class Archive>
-          void save (Archive& ar, const token_on_port_list_t& l) const
-        {
-          const std::size_t size (l.size());
-          ar & size;
-          for (const token_on_port_t& top : l)
-          {
-            std::ostringstream oss;
-            oss << pnet::type::value::show (top.first);
-            const std::string rep (oss.str());
-            ar & rep;
-            ar & top.second;
-          }
-        }
-        template<class Archive>
-          void load (Archive& ar, token_on_port_list_t& l) const
-        {
-          std::size_t size;
-          ar & size;
-          while (size --> 0)
-          {
-            std::string rep;
-            ar & rep;
-            we::port_id_type port_id;
-            ar & port_id;
-            l.push_back (std::make_pair ( pnet::type::value::read (rep)
-                                        , port_id
-                                        )
-                        );
-          }
-        }
-
         friend class boost::serialization::access;
         template<class Archive>
-          void save (Archive& ar, const unsigned int) const
+          void serialize (Archive& ar, const unsigned int)
         {
           ar & BOOST_SERIALIZATION_NVP(_transition);
           ar & BOOST_SERIALIZATION_NVP(_transition_id);
-
-          save (ar, _input);
-          save (ar, _output);
+          ar & BOOST_SERIALIZATION_NVP(_input);
+          ar & BOOST_SERIALIZATION_NVP(_output);
         }
-        template<class Archive>
-        void load (Archive& ar, const unsigned int)
-        {
-          ar & BOOST_SERIALIZATION_NVP(_transition);
-          ar & BOOST_SERIALIZATION_NVP(_transition_id);
-
-          load (ar, _input);
-          load (ar, _output);
-        }
-        BOOST_SERIALIZATION_SPLIT_MEMBER()
 
       private:
         we::type::transition_t _transition;

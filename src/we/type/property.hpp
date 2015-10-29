@@ -5,7 +5,7 @@
 #include <we/type/property.fwd.hpp>
 
 #include <we/type/value/read.hpp>
-#include <we/type/value/show.hpp>
+#include <we/type/value/serialize.hpp>
 
 #include <fhg/util/xml.fwd.hpp>
 
@@ -14,8 +14,8 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/map.hpp>
 
+#include <iosfwd>
 #include <list>
-#include <sstream>
 
 namespace we
 {
@@ -39,21 +39,10 @@ namespace we
 
         friend class boost::serialization::access;
         template<typename Archive>
-        void save (Archive& ar, const unsigned int) const
+        void serialize (Archive& ar, const unsigned int)
         {
-          std::ostringstream oss;
-          oss << pnet::type::value::show (_value);
-          std::string const val (oss.str());
-          ar & val;
+          ar & _value;
         }
-        template<typename Archive>
-        void load (Archive& ar, const unsigned int)
-        {
-          std::string val;
-          ar & val;
-          _value = pnet::type::value::read (val);
-        }
-        BOOST_SERIALIZATION_SPLIT_MEMBER()
       };
 
       namespace dump

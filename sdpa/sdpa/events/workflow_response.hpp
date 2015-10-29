@@ -6,6 +6,7 @@
 #include <we/type/value.hpp>
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
+#include <we/type/value/serialize.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
@@ -62,9 +63,7 @@ namespace sdpa
       SAVE_JOBEVENT_CONSTRUCT_DATA (e);
       SAVE_TO_ARCHIVE (e->workflow_response_id());
       SAVE_TO_ARCHIVE (e->place_name());
-      std::ostringstream oss;
-      oss << pnet::type::value::show (e->value());
-      SAVE_TO_ARCHIVE_WITH_TEMPORARY (std::string, oss.str());
+      SAVE_TO_ARCHIVE (e->value());
     }
 
     LOAD_CONSTRUCT_DATA_DEF (workflow_response, e)
@@ -72,12 +71,12 @@ namespace sdpa
       LOAD_JOBEVENT_CONSTRUCT_DATA (job_id);
       LOAD_FROM_ARCHIVE (std::string, workflow_response_id);
       LOAD_FROM_ARCHIVE (std::string, place_name);
-      LOAD_FROM_ARCHIVE (std::string, value);
+      LOAD_FROM_ARCHIVE (pnet::type::value::value_type, value);
 
       ::new (e) workflow_response ( job_id
                                   , workflow_response_id
                                   , place_name
-                                  , pnet::type::value::read (value)
+                                  , value
                                   );
     }
 
