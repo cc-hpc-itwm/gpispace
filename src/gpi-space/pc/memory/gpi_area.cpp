@@ -198,86 +198,109 @@ namespace gpi
 
       namespace helper
       {
-        template <typename DMAFun>
-        static
-        void do_rdma( gpi::pc::type::size_t local_offset
-                    , const gpi::pc::type::size_t remote_base
-                    , gpi::pc::type::size_t offset
-                    , const gpi::pc::type::size_t per_node_size
-                    , gpi::pc::type::size_t amount
-                    , const gpi::pc::type::queue_id_t queue
-                    , DMAFun rdma
-                    )
+        namespace
         {
-          while (amount)
+          struct part
           {
-            const std::size_t rank (offset / per_node_size);
-            const std::size_t max_offset_on_rank ((rank + 1) * per_node_size);
-            const std::size_t size (std::min ( std::min (per_node_size, amount)
-                                             , max_offset_on_rank - offset
-                                             )
-                                   );
-            const std::size_t remote_offset ( remote_base
-                                            + (offset % per_node_size)
-                                            );
+            type::offset_t local_offset;
+            type::offset_t remote_offset;
+            type::size_t size;
+            type::rank_t rank;
+          };
 
-            rdma (local_offset, remote_offset, size, rank, queue);
+          //! \todo lazy iteration, …
+          std::list<part> split_by_rank
+            ( gpi::pc::type::size_t local_offset
+            , const gpi::pc::type::size_t remote_base
+            , gpi::pc::type::size_t offset
+            , const gpi::pc::type::size_t per_node_size
+            , gpi::pc::type::size_t amount
+            )
+          {
+            std::list<part> parts;
 
-            local_offset += size;
-            offset += size;
-            amount -= size;
+            while (amount)
+            {
+              part p;
+
+              p.local_offset = local_offset;
+              p.rank = offset / per_node_size;
+
+              const std::size_t max_offset_on_rank
+                ((p.rank + 1) * per_node_size);
+
+              p.size = std::min ( std::min (per_node_size, amount)
+                                , max_offset_on_rank - offset
+                                );
+              p.remote_offset = remote_base + (offset % per_node_size);
+
+              parts.emplace_back (p);
+
+              local_offset += p.size;
+              offset += p.size;
+              amount -= p.size;
+            }
+
+            return parts;
           }
-        }
 
-        static
-        void dma_read_and_wait_for_readable ( const gpi::pc::type::handle::descriptor_t & src_hdl
-                         , const gpi::pc::type::size_t src_offset
-                         , const gpi::pc::type::handle::descriptor_t & dst_hdl
-                         , const gpi::pc::type::size_t dst_offset
-                         , const gpi::pc::type::size_t amount
-                         , const gpi::pc::type::size_t queue
-                         , api::gaspi_t& gaspi
-                         )
-        {
-          do_rdma( dst_hdl.offset + dst_offset
-                 , src_hdl.offset , src_offset
-                 , src_hdl.local_size
-                 , amount
-                 , queue
-                 , std::bind ( &api::gaspi_t::read_dma, &gaspi
-                             , std::placeholders::_1
-                             , std::placeholders::_2
-                             , std::placeholders::_3
-                             , std::placeholders::_4
-                             , std::placeholders::_5
-                             )
-                 );
-          gaspi.wait_dma (queue);
-        }
+          void dma_read_and_wait_for_readable
+            ( const gpi::pc::type::handle::descriptor_t & src_hdl
+            , const gpi::pc::type::size_t src_offset
+            , const gpi::pc::type::handle::descriptor_t & dst_hdl
+            , const gpi::pc::type::size_t dst_offset
+            , const gpi::pc::type::size_t amount
+            , const gpi::pc::type::size_t queue
+            , api::gaspi_t& gaspi
+            )
+          {
+            for ( auto const& part
+                : split_by_rank ( dst_hdl.offset + dst_offset
+                                , src_hdl.offset
+                                , src_offset
+                                , src_hdl.local_size
+                                , amount
+                                )
+                )
+            {
+              gaspi.read_dma ( part.local_offset
+                             , part.remote_offset
+                             , part.size
+                             , part.rank
+                             , queue
+                             );
+            }
 
-        static
-        void do_write_dma ( const gpi::pc::type::handle::descriptor_t & src_hdl
-                          , const gpi::pc::type::size_t src_offset
-                          , const gpi::pc::type::handle::descriptor_t & dst_hdl
-                          , const gpi::pc::type::size_t dst_offset
-                          , const gpi::pc::type::size_t amount
-                          , const gpi::pc::type::size_t queue
-                          , api::gaspi_t& gaspi
-                          )
-        {
-          do_rdma( src_hdl.offset + src_offset
-                 , dst_hdl.offset , dst_offset
-                 , dst_hdl.local_size
-                 , amount
-                 , queue
-                 , std::bind ( &api::gaspi_t::write_dma, &gaspi
-                             , std::placeholders::_1
-                             , std::placeholders::_2
-                             , std::placeholders::_3
-                             , std::placeholders::_4
-                             , std::placeholders::_5
-                             )
-                 );
+            gaspi.wait_dma (queue);
+          }
+
+          void do_write_dma
+            ( const gpi::pc::type::handle::descriptor_t & src_hdl
+            , const gpi::pc::type::size_t src_offset
+            , const gpi::pc::type::handle::descriptor_t & dst_hdl
+            , const gpi::pc::type::size_t dst_offset
+            , const gpi::pc::type::size_t amount
+            , const gpi::pc::type::size_t queue
+            , api::gaspi_t& gaspi
+            )
+          {
+            for ( auto const& part
+                : split_by_rank ( src_hdl.offset + src_offset
+                                , dst_hdl.offset
+                                , dst_offset
+                                , dst_hdl.local_size
+                                , amount
+                                )
+                )
+            {
+              gaspi.write_dma ( part.local_offset
+                              , part.remote_offset
+                              , part.size
+                              , part.rank
+                              , queue
+                              );
+            }
+          }
         }
 
         static
