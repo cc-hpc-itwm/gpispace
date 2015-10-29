@@ -278,7 +278,7 @@ namespace gpi
             gaspi.wait_readable (handles);
           }
 
-          void do_write_dma
+          std::list<api::gaspi_t::write_dma_info> do_write_dma
             ( const gpi::pc::type::handle::descriptor_t & src_hdl
             , const gpi::pc::type::size_t src_offset
             , const gpi::pc::type::handle::descriptor_t & dst_hdl
@@ -288,6 +288,8 @@ namespace gpi
             , api::gaspi_t& gaspi
             )
           {
+            std::list<api::gaspi_t::write_dma_info> handles;
+
             for ( auto const& part
                 : split_by_rank ( src_hdl.offset + src_offset
                                 , dst_hdl.offset
@@ -297,13 +299,17 @@ namespace gpi
                                 )
                 )
             {
-              gaspi.write_dma ( part.local_offset
-                              , part.remote_offset
-                              , part.size
-                              , part.rank
-                              , queue
-                              );
+              handles.emplace_back
+                ( gaspi.write_dma ( part.local_offset
+                                  , part.remote_offset
+                                  , part.size
+                                  , part.rank
+                                  , queue
+                                  )
+                );
             }
+
+            return handles;
           }
         }
 
@@ -320,6 +326,8 @@ namespace gpi
                      )
         {
           handle_buffer_t buf (handle_pool.get());
+
+          std::list<api::gaspi_t::write_dma_info> all_handles;
 
           gpi::pc::type::size_t remaining = amount;
           while (remaining)
@@ -342,15 +350,18 @@ namespace gpi
               break;
             }
 
-            do_write_dma ( dst_area.descriptor (buf.handle ())
-                         , 0
-                         , dst_area.descriptor (dst_loc.handle)
-                         , dst_loc.offset
-                         , buf.used ()
-                         , queue
-                         , gaspi
-                         );
-            gaspi.wait_dma (queue);
+            std::list<api::gaspi_t::write_dma_info> handles
+              ( do_write_dma ( dst_area.descriptor (buf.handle ())
+                             , 0
+                             , dst_area.descriptor (dst_loc.handle)
+                             , dst_loc.offset
+                             , buf.used ()
+                             , queue
+                             , gaspi
+                             )
+              );
+            gaspi.wait_buffer_reusable (handles);
+            all_handles.splice (all_handles.end(), handles);
 
             src_loc.offset += buf.used ();
             dst_loc.offset += buf.used ();
@@ -358,6 +369,8 @@ namespace gpi
           }
 
           handle_pool.put (buf);
+
+          gaspi.wait_remote_written (all_handles);
         }
 
         static
@@ -430,18 +443,16 @@ namespace gpi
           return std::packaged_task<void()>
             ( [this, &dst_area, src, dst, amount, queue]
               {
-                helper::do_write_dma ( descriptor (src.handle)
-                                     , src.offset
-                                     , dst_area.descriptor (dst.handle)
-                                     , dst.offset
-                                     , amount
-                                     , queue
-                                     , _gaspi
-                                     );
-
-                //! \todo get notified that data is received from
-                //! other side(s) instead
-                _gaspi.wait_dma (queue);
+                _gaspi.wait_remote_written
+                  ( helper::do_write_dma ( descriptor (src.handle)
+                                         , src.offset
+                                         , dst_area.descriptor (dst.handle)
+                                         , dst.offset
+                                         , amount
+                                         , queue
+                                         , _gaspi
+                                         )
+                  );
               }
             );
         }
@@ -489,10 +500,6 @@ namespace gpi
                               , m_com_handles
                               , _gaspi
                               );
-
-              //! \todo get notified that data is received from other
-              //! side(s) instead
-              _gaspi.wait_dma (queue);
             }
           );
       }

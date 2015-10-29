@@ -84,14 +84,22 @@ namespace gpi
                              );
       void wait_readable (std::list<read_dma_info> const&);
 
-      void write_dma ( const offset_t local_offset
-                     , const offset_t remote_offset
-                     , const size_t amount
-                     , const rank_t to_node
-                     , const queue_desc_t queue
-                     );
-      void wait_dma (const queue_desc_t queue);
+      struct write_dma_info
+      {
+        queue_desc_t queue;
+      };
+      write_dma_info write_dma ( const offset_t local_offset
+                               , const offset_t remote_offset
+                               , const size_t amount
+                               , const rank_t to_node
+                               , const queue_desc_t queue
+                               );
+      void wait_buffer_reusable (std::list<write_dma_info> const&);
+      void wait_remote_written (std::list<write_dma_info> const&);
+
     private:
+      void wait_dma (const queue_desc_t);
+
       gpi::size_t open_dma_requests (const queue_desc_t) const;
       bool max_dma_requests_reached (const queue_desc_t q) const
       {

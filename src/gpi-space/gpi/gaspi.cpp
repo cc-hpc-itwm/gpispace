@@ -335,12 +335,13 @@ namespace gpi
       }
     }
 
-    void gaspi_t::write_dma ( const offset_t local_offset
-                            , const offset_t remote_offset
-                            , const size_t amount
-                            , const rank_t to_node
-                            , const queue_desc_t queue
-                            )
+    gaspi_t::write_dma_info gaspi_t::write_dma
+      ( const offset_t local_offset
+      , const offset_t remote_offset
+      , const size_t amount
+      , const rank_t to_node
+      , const queue_desc_t queue
+      )
     {
       size_t remaining (amount);
       const size_t chunk_size (max_transfer_size());
@@ -387,6 +388,32 @@ namespace gpi
         l_off     += to_transfer;
         r_off     += to_transfer;
       }
+
+      return {queue};
+    }
+
+    void gaspi_t::wait_buffer_reusable
+      (std::list<write_dma_info> const& infos)
+    {
+      //! \todo only check for specific buffers? possible with gaspi?!
+      std::unordered_set<queue_desc_t> waited_queues;
+      for (write_dma_info const& info : infos)
+      {
+        if (waited_queues.emplace (info.queue).second)
+        {
+          wait_dma (info.queue);
+        }
+      }
+    }
+    void gaspi_t::wait_remote_written
+      (std::list<write_dma_info> const& infos)
+    {
+      wait_buffer_reusable (infos);
+
+      //! \todo BROKEN: does not verify that actually written! use
+      //! gaspi_write_notify and gaspi_waitsome on remote and
+      //! gaspi_notify on remote and gaspi_waitsome for a response
+      //! from remote
     }
 
     void gaspi_t::wait_dma (const queue_desc_t queue)
