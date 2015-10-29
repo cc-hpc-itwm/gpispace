@@ -11,7 +11,7 @@
 #include <we/type/transition.fwd.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/read.hpp>
-#include <we/type/value/show.hpp>
+#include <we/type/value/serialize.hpp>
 #include <we/workflow_response.hpp>
 
 #include <boost/bimap/bimap.hpp>
@@ -25,7 +25,6 @@
 #include <functional>
 #include <iterator>
 #include <list>
-#include <sstream>
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
@@ -236,25 +235,7 @@ namespace we
         ar & BOOST_SERIALIZATION_NVP (_port_to_place);
         ar & BOOST_SERIALIZATION_NVP (_port_to_response);
         ar & BOOST_SERIALIZATION_NVP (_place_to_port);
-        {
-          const std::size_t s (_token_by_place_id.size());
-          ar & s;
-        }
-        for (const token_by_place_id_type::value_type& pl : _token_by_place_id)
-        {
-          ar & pl.first;
-          {
-            const std::size_t s (pl.second.size());
-            ar & s;
-          }
-          for (const pnet::type::value::value_type& x : pl.second)
-          {
-            std::ostringstream oss;
-            oss << pnet::type::value::show (x);
-            const std::string token_rep (oss.str());
-            ar & token_rep;
-          }
-        }
+        ar & BOOST_SERIALIZATION_NVP (_token_by_place_id);
 
         std::size_t const number_of_enabled_transitions
           ( std::accumulate
@@ -293,28 +274,7 @@ namespace we
         ar & BOOST_SERIALIZATION_NVP (_port_to_place);
         ar & BOOST_SERIALIZATION_NVP (_port_to_response);
         ar & BOOST_SERIALIZATION_NVP (_place_to_port);
-        std::size_t token_by_place_id_size;
-        ar & token_by_place_id_size;
-        while (token_by_place_id_size --> 0)
-        {
-          place_id_type place_id;
-          ar & place_id;
-          token_by_place_id_type::iterator pos
-            ( _token_by_place_id.insert
-              (std::make_pair ( place_id
-                              , std::list<pnet::type::value::value_type>()
-                              )
-              ).first
-            );
-          std::size_t num_tokens;
-          ar & num_tokens;
-          while (num_tokens --> 0)
-          {
-            std::string token_rep;
-            ar & token_rep;
-            pos->second.emplace_back (pnet::type::value::read (token_rep));
-          }
-        }
+        ar & BOOST_SERIALIZATION_NVP (_token_by_place_id);
 
         std::size_t number_of_enabled_transitions;
 
