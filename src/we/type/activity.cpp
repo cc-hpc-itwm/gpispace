@@ -8,8 +8,6 @@
 
 #include <we/type/activity.hpp>
 
-#include <we/type/value/show.hpp>
-
 #include <util-generic/nest_exceptions.hpp>
 
 #include <boost/archive/text_oarchive.hpp>

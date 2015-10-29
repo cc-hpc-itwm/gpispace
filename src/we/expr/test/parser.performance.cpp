@@ -7,7 +7,6 @@
 #include <we/expr/eval/context.hpp>
 #include <we/expr/parse/parser.hpp>
 #include <we/type/value/boost/test/printer.hpp>
-#include <we/type/value/show.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/require_maximum_running_time.hpp>
