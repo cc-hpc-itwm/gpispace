@@ -230,7 +230,7 @@ namespace gpi
         }
 
         static
-        void do_read_dma ( const gpi::pc::type::handle::descriptor_t & src_hdl
+        void dma_read_and_wait_for_readable ( const gpi::pc::type::handle::descriptor_t & src_hdl
                          , const gpi::pc::type::size_t src_offset
                          , const gpi::pc::type::handle::descriptor_t & dst_hdl
                          , const gpi::pc::type::size_t dst_offset
@@ -252,6 +252,7 @@ namespace gpi
                              , std::placeholders::_5
                              )
                  );
+          gpi_api.wait_dma (queue);
         }
 
         static
@@ -354,7 +355,7 @@ namespace gpi
             const gpi::pc::type::size_t to_recv =
               std::min (remaining, buf.size ());
 
-            do_read_dma ( src_area.descriptor (src_loc.handle)
+            dma_read_and_wait_for_readable ( src_area.descriptor (src_loc.handle)
                         , src_loc.offset
                         , src_area.descriptor (buf.handle ())
                         , 0
@@ -362,7 +363,6 @@ namespace gpi
                         , queue
                         , gpi_api
                         );
-            gpi_api.wait_dma (queue);
             buf.used (to_recv);
 
             const gpi::pc::type::size_t written_bytes =
@@ -422,7 +422,7 @@ namespace gpi
         {
           // read dma
           return std::packaged_task<void()>
-            ( std::bind ( &helper::do_read_dma
+            ( std::bind ( &helper::dma_read_and_wait_for_readable
                         , this->descriptor (src.handle)
                         , src.offset
                         , dst_area.descriptor (dst.handle)
