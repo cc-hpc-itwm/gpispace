@@ -63,7 +63,6 @@ namespace fhg
                 , boost::filesystem::path socket
                 , unsigned short gaspi_port
                 , std::chrono::seconds proc_init_timeout
-                , std::string vmem_implementation
                 , boost::optional<std::pair<std::string, unsigned short>> log_server
                 , boost::optional<boost::filesystem::path> log_file
                 , std::vector<std::string> nodes

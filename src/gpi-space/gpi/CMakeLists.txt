@@ -1,6 +1,5 @@
 extended_add_library (NAME gpi-space-gpiapi
   SOURCES "system.cpp"
-          "fake_api.cpp"
           "gaspi.cpp"
   LIBRARIES GASPI::static
             Util::Generic

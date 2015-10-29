@@ -599,7 +599,6 @@ namespace fhg
                             , gpi_socket.get()
                             , vmem_port.get()
                             , vmem_startup_timeout.get()
-                            , rif_entry_points.size() > 1 ? "gaspi" : "fake"
                             , log_host && log_port
                             ? std::make_pair (log_host.get(), log_port.get())
                             : boost::optional<std::pair<std::string, unsigned short>>()

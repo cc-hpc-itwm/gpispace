@@ -206,7 +206,6 @@ try
            , boost::filesystem::path socket
            , unsigned short gaspi_port
            , std::chrono::seconds proc_init_timeout
-           , std::string vmem_implementation
            , boost::optional<std::pair<std::string, unsigned short>> log_server
            , boost::optional<boost::filesystem::path> log_file
            , std::vector<std::string> nodes
@@ -219,7 +218,6 @@ try
             , "--gpi-mem", std::to_string (memory_in_bytes)
             , "--socket", socket.string()
             , "--port", std::to_string (gaspi_port)
-            , "--gpi-api", vmem_implementation
             , "--gpi-timeout", std::to_string (proc_init_timeout.count())
             };
           if (log_server)
