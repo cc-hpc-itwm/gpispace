@@ -53,10 +53,19 @@ namespace gpi
           (gpi::pc::type::segment::SEG_INVAL, MAX_PREALLOCATED_SEGMENT_ID);
 
         const std::size_t number_of_queues (gpi_api.number_of_queues());
-        for (std::size_t i(0); i < number_of_queues; ++i)
+        for (std::size_t i (0); i < number_of_queues; ++i)
         {
-          m_queues.push_back
-            (boost::make_shared<transfer_queue_t>());
+          _task_threads.emplace_back
+            ( fhg::util::cxx14::make_unique<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
+                ( [this]
+                  {
+                    for (;;)
+                    {
+                      _tasks.get()();
+                    }
+                  }
+                )
+            );
         }
 
         for (size_t i = 0; i < number_of_queues; ++i)
@@ -414,16 +423,6 @@ namespace gpi
         , const type::size_t amount
         )
       {
-        //! \todo this selects the task queue and the gaspi queue at
-        //! the same time. the task queue shall be replaced by a
-        //! thread pool and the gaspi queue shall be chosen in the
-        //! gaspi api (so way later than here and only for actual
-        //! gaspi stuff)
-        static type::queue_id_t rr_queue (0);
-
-        type::queue_id_t const queue (rr_queue);
-        rr_queue = (rr_queue + 1) % m_queues.size();
-
         auto& src_area (*get_area_by_handle (src.handle));
         auto& dst_area (*get_area_by_handle (dst.handle));
 
@@ -442,7 +441,7 @@ namespace gpi
         type::memcpy_id_t const memcpy_id (_next_memcpy_id++);
 
         _task_by_id.emplace (memcpy_id, task.get_future());
-        m_queues[queue]->enqueue (std::move (task));
+        _tasks.put (std::move (task));
 
         return memcpy_id;
       }

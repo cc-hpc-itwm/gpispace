@@ -10,13 +10,16 @@
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
-#include <gpi-space/pc/memory/transfer_queue.hpp>
 #include <gpi-space/pc/memory/memory_buffer.hpp>
 
 #include <fhg/util/thread/queue.hpp>
 
-#include <unordered_set>
+#include <boost/thread/scoped_thread.hpp>
+
+#include <memory>
 #include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 namespace gpi
 {
@@ -140,8 +143,10 @@ namespace gpi
         api::gpi_api_t& _gpi_api;
 
         std::size_t _next_memcpy_id;
+        fhg::thread::queue<std::packaged_task<void()>> _tasks;
         std::map<std::size_t, std::future<void>> _task_by_id;
-        std::vector<boost::shared_ptr<transfer_queue_t>> m_queues;
+        std::vector<std::unique_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>>
+          _task_threads;
         fhg::thread::ptr_queue<buffer_t> m_memory_buffer_pool;
 
         handle_generator_t _handle_generator;
