@@ -43,6 +43,7 @@ namespace gpi
         , m_num_com_buffers (8)
         , m_com_buffer_size (4* (1<<20))
         , _topology (topology)
+        , _next_gaspi_queue (0)
         , _gpi_api (gpi_api)
       {}
 
@@ -390,10 +391,11 @@ namespace gpi
         , const gpi::pc::type::memory_location_t dst
         , area_t & dst_area
         , gpi::pc::type::size_t amount
-        , gpi::pc::type::size_t queue
         )
       {
         fhg_assert (type () == dst_area.type ());
+
+        type::queue_id_t const queue (next_gaspi_queue());
 
         if (is_local (gpi::pc::type::memory_region_t (src, amount)))
         {
@@ -443,9 +445,10 @@ namespace gpi
         , const gpi::pc::type::memory_location_t src
         , const gpi::pc::type::memory_location_t dst
         , gpi::pc::type::size_t amount
-        , gpi::pc::type::size_t queue
         )
       {
+        type::queue_id_t const queue (next_gaspi_queue());
+
         return std::packaged_task<void()>
           ( [this, &src_area, src, dst, amount, queue]
             {
@@ -472,9 +475,10 @@ namespace gpi
         , const gpi::pc::type::memory_location_t dst
         , const gpi::pc::type::memory_location_t src
         , gpi::pc::type::size_t amount
-        , gpi::pc::type::size_t queue
         )
       {
+        type::queue_id_t const queue (next_gaspi_queue());
+
         return std::packaged_task<void()>
           ( std::bind ( &helper::do_recv
                       , std::ref (_logger)
@@ -509,6 +513,14 @@ namespace gpi
         constexpr const double remote_transfer_cost_weight {1.0};
 
         return transfer.size + remote_transfer_cost_weight * (transfer.size - local_part.size());
+      }
+
+      type::queue_id_t gpi_area_t::next_gaspi_queue()
+      {
+        auto id (_next_gaspi_queue);
+        _next_gaspi_queue
+          = (_next_gaspi_queue + 1) % _gpi_api.number_of_queues();
+        return id;
       }
 
       area_ptr_t gpi_area_t::create

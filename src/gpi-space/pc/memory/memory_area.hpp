@@ -140,7 +140,6 @@ namespace gpi
           , const type::memory_location_t dst
           , area_t& dst_area
           , type::size_t amount
-          , type::size_t queue
           , memory_pool_t& buffer_pool
           );
         virtual double get_transfer_costs ( const gpi::pc::type::memory_region_t&
@@ -182,7 +181,6 @@ namespace gpi
           , const gpi::pc::type::memory_location_t dst
           , area_t& dst_area
           , gpi::pc::type::size_t amount
-          , gpi::pc::type::size_t queue
           );
 
         virtual std::packaged_task<void()> get_send_task
@@ -190,7 +188,6 @@ namespace gpi
           , const gpi::pc::type::memory_location_t src
           , const gpi::pc::type::memory_location_t dst
           , gpi::pc::type::size_t amount
-          , gpi::pc::type::size_t queue
           );
 
         virtual std::packaged_task<void()> get_recv_task
@@ -198,7 +195,6 @@ namespace gpi
           , const gpi::pc::type::memory_location_t dst
           , const gpi::pc::type::memory_location_t src
           , gpi::pc::type::size_t amount
-          , gpi::pc::type::size_t queue
           );
 
         virtual gpi::pc::type::size_t

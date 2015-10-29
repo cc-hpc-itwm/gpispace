@@ -435,7 +435,6 @@ namespace gpi
                       , dst
                       , dst_area
                       , amount
-                      , queue
                       , m_memory_buffer_pool
                       )
                   );

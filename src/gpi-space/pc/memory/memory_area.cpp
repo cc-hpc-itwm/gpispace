@@ -651,7 +651,6 @@ namespace gpi
         , const gpi::pc::type::memory_location_t
         , area_t&
         , gpi::pc::type::size_t
-        , gpi::pc::type::size_t
         )
       {
         throw std::logic_error
@@ -663,7 +662,6 @@ namespace gpi
         , const gpi::pc::type::memory_location_t
         , const gpi::pc::type::memory_location_t
         , gpi::pc::type::size_t
-        , gpi::pc::type::size_t
         )
       {
         throw std::logic_error ("get_send_task not implemented");
@@ -673,7 +671,6 @@ namespace gpi
         ( area_t&
         , const gpi::pc::type::memory_location_t
         , const gpi::pc::type::memory_location_t
-        , gpi::pc::type::size_t
         , gpi::pc::type::size_t
         )
       {
@@ -685,7 +682,6 @@ namespace gpi
         , const type::memory_location_t dst
         , area_t& dst_area
         , type::size_t amount
-        , type::size_t queue
         , memory_pool_t& buffer_pool
         )
       {
@@ -796,7 +792,6 @@ namespace gpi
                                             , dst
                                             , dst_area
                                             , amount
-                                            , queue
                                             );
         }
         // diagonal copy (non-local different types)
@@ -809,7 +804,6 @@ namespace gpi
                                           , src
                                           , dst
                                           , amount
-                                          , queue
                                           );
           }
           else if (dst_is_local)
@@ -819,7 +813,6 @@ namespace gpi
                                        , dst
                                        , src
                                        , amount
-                                       , queue
                                        );
           }
           else

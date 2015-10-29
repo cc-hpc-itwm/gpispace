@@ -53,7 +53,6 @@ namespace gpi
           , const gpi::pc::type::memory_location_t dst
           , area_t & dst_area
           , gpi::pc::type::size_t amount
-          , gpi::pc::type::size_t queue
           ) override;
 
         virtual std::packaged_task<void()> get_send_task
@@ -61,7 +60,6 @@ namespace gpi
           , const gpi::pc::type::memory_location_t src
           , const gpi::pc::type::memory_location_t dst
           , gpi::pc::type::size_t amount
-          , gpi::pc::type::size_t queue
           ) override;
 
         virtual std::packaged_task<void()> get_recv_task
@@ -69,7 +67,6 @@ namespace gpi
           , const gpi::pc::type::memory_location_t dst
           , const gpi::pc::type::memory_location_t src
           , gpi::pc::type::size_t amount
-          , gpi::pc::type::size_t queue
           ) override;
 
       private:
@@ -103,6 +100,9 @@ namespace gpi
         gpi::pc::type::size_t m_com_buffer_size;
 
         gpi::pc::global::itopology_t & _topology;
+
+        type::queue_id_t _next_gaspi_queue;
+        type::queue_id_t next_gaspi_queue();
 
         api::gpi_api_t& _gpi_api;
       };
