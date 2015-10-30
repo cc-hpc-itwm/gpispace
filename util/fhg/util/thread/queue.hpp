@@ -34,6 +34,13 @@ namespace fhg
         m_get_cond.notify_one();
       }
 
+      template<typename FwdIt> void put_many (FwdIt begin, FwdIt end)
+      {
+        boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
+        m_container.insert (m_container.end(), begin, end);
+        m_get_cond.notify_one();
+      }
+
       void INDICATES_A_RACE_clear()
       {
         boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
