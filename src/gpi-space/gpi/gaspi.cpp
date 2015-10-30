@@ -6,10 +6,14 @@
 #include <gpi-space/exception.hpp>
 #include <gpi-space/gpi/system.hpp>
 
+#include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/divru.hpp>
 #include <util-generic/hostname.hpp>
+#include <util-generic/print_exception.hpp>
 
 #include <GASPI.h>
 
+#include <algorithm>
 #include <limits>
 #include <unordered_set>
 
@@ -17,8 +21,32 @@ namespace gpi
 {
   namespace api
   {
+    static_assert
+      ( std::is_same<notification_t, gaspi_notification_t>::value
+      , "HACK: don't expose GASPI.h to users, but we still need the types"
+      );
+    static_assert
+      ( std::is_same<rank_t, gaspi_rank_t>::value
+      , "HACK: don't expose GASPI.h to users, but we still need the types"
+      );
+    static_assert
+      ( std::is_same<notification_id_t, gaspi_notification_id_t>::value
+      , "HACK: don't expose GASPI.h to users, but we still need the types"
+      );
+
     namespace
     {
+      void throw_gaspi_error ( std::string const& function_name
+                             , gaspi_return_t rc
+                             )
+      {
+        throw gpi::exception::gpi_error
+          ( gpi::error::internal_error()
+          , function_name + " failed: " + gaspi_error_str (rc)
+          + " (" + std::to_string (rc) + ")"
+          );
+      }
+
       template <typename Fun, typename... T>
       void fail_on_non_zero ( const std::string& function_name
                             , Fun&& f
@@ -28,11 +56,7 @@ namespace gpi
         gaspi_return_t const rc (f (arguments...));
         if (rc != 0)
         {
-          throw gpi::exception::gpi_error
-            ( gpi::error::internal_error()
-            , function_name + " failed: " + gaspi_error_str (rc)
-            + " (" + std::to_string (rc) + ")"
-            );
+          throw_gaspi_error (function_name, rc);
         }
       }
 
@@ -112,6 +136,51 @@ namespace gpi
                        , &m_dma
                        );
 
+      gaspi_number_t available_notifications;
+      FAIL_ON_NON_ZERO (gaspi_notification_num, &available_notifications);
+
+      //! \todo reasonable maximum
+      constexpr gaspi_number_t const maximum_notifications_per_rank (8);
+      gaspi_number_t const available_notifications_per_rank
+        ( std::min ( available_notifications
+                   / gaspi_number_t (number_of_nodes())
+                   , maximum_notifications_per_rank
+                   )
+        );
+
+      if (available_notifications_per_rank < 1)
+      {
+        throw std::runtime_error
+          ( "need at least one notification id per rank ("
+          + std::to_string (available_notifications)
+          + " notification ids available, but "
+          + std::to_string (number_of_nodes()) + " ranks"
+          );
+      }
+
+      _maximum_notification_id
+        = available_notifications_per_rank * number_of_nodes();
+      {
+        auto thread
+          ( fhg::util::cxx14::make_unique<decltype (_notification_check)::element_type>
+              (&gaspi_t::notification_check, this)
+          );
+        std::swap (_notification_check, thread);
+      }
+
+      {
+        std::vector<gaspi_notification_id_t> all_ids
+          (_maximum_notification_id);
+        std::iota (all_ids.begin(), all_ids.end(), 0);
+        for (gaspi_rank_t rank (0); rank < number_of_nodes(); ++rank)
+        {
+          _communication_notification_ids[rank].put_many
+            ( all_ids.begin() + rank * available_notifications_per_rank
+            , all_ids.begin() + (rank + 1) * available_notifications_per_rank
+            );
+        }
+      }
+
       struct hostname_and_port_t
       {
         char hostname[HOST_NAME_MAX + 1]; // + \0
@@ -188,6 +257,8 @@ namespace gpi
 
     gaspi_t::~gaspi_t()
     {
+      _notification_check.reset();
+
       FAIL_ON_NON_ZERO (gaspi_proc_term, GASPI_BLOCK);
     }
 
@@ -349,6 +420,14 @@ namespace gpi
       size_t l_off (local_offset);
       size_t r_off (remote_offset);
 
+      notification_t const write_id (next_write_id());
+      std::size_t const chunks (fhg::util::divru (amount, chunk_size));
+
+      {
+        std::unique_lock<std::mutex> const _ (_notification_guard);
+        _outstanding_notifications.emplace (write_id, chunks);
+      }
+
       while (remaining)
       {
         const size_t to_transfer (std::min (chunk_size, remaining));
@@ -360,16 +439,19 @@ namespace gpi
 
         try
         {
-          FAIL_ON_NON_ZERO ( gaspi_write
+          FAIL_ON_NON_ZERO ( gaspi_write_notify
                            , m_replacement_gpi_segment
                            , l_off
                            , to_node
                            , m_replacement_gpi_segment
                            , r_off
                            , to_transfer
+                           , next_notification_id (to_node)
+                           , write_id
                            , queue
                            , GASPI_BLOCK
                            );
+
         }
         catch (const gpi::exception::gpi_error& e)
         {
@@ -389,7 +471,7 @@ namespace gpi
         r_off     += to_transfer;
       }
 
-      return {queue};
+      return {queue, write_id};
     }
 
     void gaspi_t::wait_buffer_reusable
@@ -408,12 +490,98 @@ namespace gpi
     void gaspi_t::wait_remote_written
       (std::list<write_dma_info> const& infos)
     {
-      wait_buffer_reusable (infos);
+      std::unordered_set<notification_t> waited_write_ids;
 
-      //! \todo BROKEN: does not verify that actually written! use
-      //! gaspi_write_notify and gaspi_waitsome on remote and
-      //! gaspi_notify on remote and gaspi_waitsome for a response
-      //! from remote
+      std::unique_lock<std::mutex> lock (_notification_guard);
+
+      for (write_dma_info const& info : infos)
+      {
+        if (waited_write_ids.emplace (info.write_id).second)
+        {
+          _notification_received.wait
+            ( lock
+            , [&] { return _outstanding_notifications[info.write_id] == 0; }
+            );
+
+          _outstanding_notifications.erase (info.write_id);
+        }
+      }
+    }
+
+    void gaspi_t::notification_check()
+    {
+      //! \todo interrupt?!
+      for (;;)
+      {
+        boost::this_thread::interruption_point();
+
+        gaspi_notification_id_t notification_id;
+        gaspi_return_t const waitsome_result
+          ( gaspi_notify_waitsome
+              ( m_replacement_gpi_segment
+              , 0
+              , _maximum_notification_id
+              , &notification_id
+              , 100
+              )
+          );
+
+        if (waitsome_result == GASPI_TIMEOUT)
+        {
+          continue;
+        }
+        else if (waitsome_result != GASPI_SUCCESS)
+        {
+          throw_gaspi_error
+            ("notification_check: waitsome", waitsome_result);
+        }
+
+        gaspi_notification_t write_id;
+        FAIL_ON_NON_ZERO ( gaspi_notify_reset
+                         , m_replacement_gpi_segment
+                         , notification_id
+                         , &write_id
+                         );
+
+        gaspi_rank_t const sending_rank (write_id / number_of_nodes());
+        if (sending_rank == rank())
+        {
+          {
+            std::unique_lock<std::mutex> const _ (_notification_guard);
+            --_outstanding_notifications[write_id];
+          }
+          _communication_notification_ids[sending_rank].put
+            (notification_id);
+          _notification_received.notify_all();
+        }
+        else
+        {
+          FAIL_ON_NON_ZERO ( gaspi_notify
+                           , m_replacement_gpi_segment
+                           , sending_rank
+                           , notification_id
+                           , write_id
+                           //! \todo better choice of queue!
+                           , 0
+                           , GASPI_BLOCK
+                           );
+        }
+      }
+    }
+
+    notification_t gaspi_t::next_write_id()
+    {
+      std::unique_lock<std::mutex> const _ (_notification_guard);
+      notification_t write_id (++_next_write_id);
+      if (!write_id)
+      {
+        write_id = ++_next_write_id;
+      }
+      return write_id;
+    }
+    notification_id_t gaspi_t::next_notification_id (rank_t rank)
+    {
+      return _communication_notification_ids[rank].get();
     }
 
     void gaspi_t::wait_dma (const queue_desc_t queue)

@@ -5,10 +5,17 @@
 #include <gpi-space/exception.hpp>
 #include <gpi-space/types.hpp>
 
-#include <boost/noncopyable.hpp>
+#include <fhg/util/thread/queue.hpp>
 
+#include <boost/noncopyable.hpp>
+#include <boost/thread/scoped_thread.hpp>
+
+#include <atomic>
 #include <chrono>
+#include <condition_variable>
+#include <mutex>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace gpi
@@ -87,6 +94,7 @@ namespace gpi
       struct write_dma_info
       {
         queue_desc_t queue;
+        notification_t write_id;
       };
       write_dma_info write_dma ( const offset_t local_offset
                                , const offset_t remote_offset
@@ -109,8 +117,23 @@ namespace gpi
       size_t m_mem_size;
       void *m_dma;
       size_t m_replacement_gpi_segment;
+
       std::vector<std::string> m_rank_to_hostname;
       std::vector<unsigned short> _communication_port_by_rank;
+
+      notification_id_t _maximum_notification_id;
+      std::atomic<notification_t> _next_write_id;
+      std::unordered_map<rank_t, fhg::thread::queue<notification_id_t>>
+        _communication_notification_ids;
+      std::mutex _notification_guard;
+      std::condition_variable _notification_received;
+      std::unique_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
+        _notification_check;
+      std::map<notification_t, std::size_t> _outstanding_notifications;
+
+      void notification_check();
+      notification_t next_write_id();
+      notification_id_t next_notification_id (rank_t);
     };
   }
 }
