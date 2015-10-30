@@ -3,6 +3,7 @@
 #include <drts/virtual_memory.fwd.hpp>
 #include <drts/pimpl.hpp>
 #include <drts/drts.fwd.hpp>
+#include <drts/stream.fwd.hpp>
 
 #include <we/type/value.hpp>
 
@@ -16,6 +17,7 @@ namespace gspc
   {
   private:
     friend class scoped_runtime_system;
+    friend class stream;
 
     vmem_allocation ( scoped_runtime_system const* const
                     , unsigned long size
@@ -28,7 +30,6 @@ namespace gspc
                     );
 
   public:
-    std::string const handle() const;
     std::size_t size() const;
 
     pnet::type::value::value_type global_memory_range() const;
