@@ -38,7 +38,7 @@ namespace fhg
       {
         boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
         m_container.insert (m_container.end(), begin, end);
-        m_get_cond.notify_one();
+        m_get_cond.notify_all();
       }
 
       void INDICATES_A_RACE_clear()
