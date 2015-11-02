@@ -154,7 +154,7 @@ namespace gpi
           ( "need at least one notification id per rank ("
           + std::to_string (available_notifications)
           + " notification ids available, but "
-          + std::to_string (number_of_nodes()) + " ranks"
+          + std::to_string (number_of_nodes()) + " ranks)"
           );
       }
 
