@@ -198,6 +198,10 @@ private:
 
     std::mutex& _currently_executed_tasks_mutex;
     std::map<std::string, wfe_task_t *>& _currently_executed_tasks;
+    std::mutex& _jobs_guard;
+    map_of_jobs_t& _jobs;
   } _mark_remaining_tasks_as_canceled_helper
-    = {_currently_executed_tasks_mutex, _currently_executed_tasks};
+    = { _currently_executed_tasks_mutex, _currently_executed_tasks
+      , m_job_map_mutex, m_jobs
+      };
 };
