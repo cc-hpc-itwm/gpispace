@@ -9,7 +9,6 @@
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/divru.hpp>
 #include <util-generic/hostname.hpp>
-#include <util-generic/print_exception.hpp>
 
 #include <GASPI.h>
 
@@ -97,6 +96,7 @@ namespace gpi
       , m_mem_size (memory_size)
       , m_dma (nullptr)
       , m_replacement_gpi_segment (0)
+      , _next_write_id (0)
     {
       time_left const time_left (timeout);
 
@@ -140,26 +140,29 @@ namespace gpi
       FAIL_ON_NON_ZERO (gaspi_notification_num, &available_notifications);
 
       //! \todo reasonable maximum
-      constexpr gaspi_number_t const maximum_notifications_per_rank (8);
-      gaspi_number_t const available_notifications_per_rank
-        ( std::min ( available_notifications
+      constexpr gaspi_number_t const maximum_notifications_per_rank (16);
+
+      _notification_ids_per_node
+        = std::min ( available_notifications
                    / gaspi_number_t (number_of_nodes())
                    , maximum_notifications_per_rank
-                   )
-        );
-
-      if (available_notifications_per_rank < 1)
+                   );
+      if (_notification_ids_per_node < 2)
       {
         throw std::runtime_error
-          ( "need at least one notification id per rank ("
+          ( "need at least two notification ids per rank ("
           + std::to_string (available_notifications)
-          + " notification ids available, but "
+          + " notification ids available in total, but "
           + std::to_string (number_of_nodes()) + " ranks)"
           );
       }
 
       _maximum_notification_id
-        = available_notifications_per_rank * number_of_nodes();
+        = _notification_ids_per_node * number_of_nodes();
+
+      _local_ids_begin = rank() * _notification_ids_per_node;
+      _pong_ids_offset = _notification_ids_per_node / 2;
+
       {
         auto thread
           ( fhg::util::cxx14::make_unique<decltype (_notification_check)::element_type>
@@ -169,15 +172,11 @@ namespace gpi
       }
 
       {
-        std::vector<gaspi_notification_id_t> all_ids
-          (_maximum_notification_id);
-        std::iota (all_ids.begin(), all_ids.end(), 0);
+        std::vector<gaspi_notification_id_t> ping_ids (_pong_ids_offset);
+        std::iota (ping_ids.begin(), ping_ids.end(), _local_ids_begin);
         for (gaspi_rank_t rank (0); rank < number_of_nodes(); ++rank)
         {
-          _communication_notification_ids[rank].put_many
-            ( all_ids.begin() + rank * available_notifications_per_rank
-            , all_ids.begin() + (rank + 1) * available_notifications_per_rank
-            );
+          _ping_ids[rank].put_many (ping_ids.begin(), ping_ids.end());
         }
       }
 
@@ -425,7 +424,11 @@ namespace gpi
 
       {
         std::unique_lock<std::mutex> const _ (_notification_guard);
-        _outstanding_notifications.emplace (write_id, chunks);
+        if (!_outstanding_notifications.emplace (write_id, chunks).second)
+        {
+          throw std::logic_error
+            ("write_id already exists in outstanding notifications");
+        }
       }
 
       while (remaining)
@@ -446,7 +449,7 @@ namespace gpi
                            , m_replacement_gpi_segment
                            , r_off
                            , to_transfer
-                           , next_notification_id (to_node)
+                           , next_ping_id (to_node)
                            , write_id
                            , queue
                            , GASPI_BLOCK
@@ -500,7 +503,10 @@ namespace gpi
         {
           _notification_received.wait
             ( lock
-            , [&] { return _outstanding_notifications[info.write_id] == 0; }
+            , [&]
+              {
+                return _outstanding_notifications.at (info.write_id) == 0;
+              }
             );
 
           _outstanding_notifications.erase (info.write_id);
@@ -510,7 +516,6 @@ namespace gpi
 
     void gaspi_t::notification_check()
     {
-      //! \todo interrupt?!
       for (;;)
       {
         boost::this_thread::interruption_point();
@@ -543,15 +548,23 @@ namespace gpi
                          , &write_id
                          );
 
-        gaspi_rank_t const sending_rank (write_id / number_of_nodes());
-        if (sending_rank == rank())
+        gaspi_rank_t const sending_rank
+          (notification_id / _notification_ids_per_node);
+        gaspi_notification_id_t notification_id_offset
+          (notification_id - (sending_rank * _notification_ids_per_node));
+        bool const is_pong (notification_id_offset >= _pong_ids_offset);
+
+        if (is_pong)
         {
           {
             std::unique_lock<std::mutex> const _ (_notification_guard);
-            --_outstanding_notifications[write_id];
+            --_outstanding_notifications.at (write_id);
           }
-          _communication_notification_ids[sending_rank].put
-            (notification_id);
+
+          _ping_ids[sending_rank].put ( notification_id_offset
+                                      - _pong_ids_offset
+                                      + _local_ids_begin
+                                      );
           _notification_received.notify_all();
         }
         else
@@ -559,7 +572,9 @@ namespace gpi
           FAIL_ON_NON_ZERO ( gaspi_notify
                            , m_replacement_gpi_segment
                            , sending_rank
-                           , notification_id
+                           , notification_id_offset
+                           + _pong_ids_offset
+                           + _local_ids_begin
                            , write_id
                            //! \todo better choice of queue!
                            , 0
@@ -579,9 +594,9 @@ namespace gpi
       }
       return write_id;
     }
-    notification_id_t gaspi_t::next_notification_id (rank_t rank)
+    notification_id_t gaspi_t::next_ping_id (rank_t rank)
     {
-      return _communication_notification_ids[rank].get();
+      return _ping_ids[rank].get();
     }
 
     void gaspi_t::wait_dma (const queue_desc_t queue)
