@@ -438,6 +438,7 @@ namespace gpi
                       )
                   );
 
+        std::unique_lock<std::mutex> const _ (_memcpy_task_guard);
         type::memcpy_id_t const memcpy_id (_next_memcpy_id++);
 
         _task_by_id.emplace (memcpy_id, task.get_future());
@@ -448,13 +449,25 @@ namespace gpi
 
       void manager_t::wait (type::memcpy_id_t const& memcpy_id)
       {
-        auto const task_it (_task_by_id.find (memcpy_id));
-        if (task_it == _task_by_id.end())
+        decltype (_task_by_id)::iterator task_it (_task_by_id.end());
+
         {
-          throw std::invalid_argument ("no such memcpy id");
+          std::unique_lock<std::mutex> const _ (_memcpy_task_guard);
+
+          task_it = _task_by_id.find (memcpy_id);
+          if (task_it == _task_by_id.end())
+          {
+            throw std::invalid_argument ("no such memcpy id");
+          }
         }
 
-        FHG_UTIL_FINALLY ([&] { _task_by_id.erase (task_it); });
+        FHG_UTIL_FINALLY
+          ( [&]
+            {
+              std::unique_lock<std::mutex> const _ (_memcpy_task_guard);
+              _task_by_id.erase (task_it);
+            }
+          );
 
         task_it->second.get();
       }

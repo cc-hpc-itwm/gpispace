@@ -142,6 +142,7 @@ namespace gpi
         handle_to_segment_t m_handle_to_segment;
         api::gaspi_t& _gaspi;
 
+        std::mutex _memcpy_task_guard;
         std::size_t _next_memcpy_id;
         fhg::thread::queue<std::packaged_task<void()>> _tasks;
         std::map<std::size_t, std::future<void>> _task_by_id;
