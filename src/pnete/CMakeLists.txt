@@ -1,211 +1,40 @@
-# bernd.loerwald@itwm.fraunhofer.de
-
-set (base_sources
-  data/change_manager.cpp
-  data/internal.cpp
-  data/manager.cpp
-  data/handle/base.cpp
-  data/handle/connect.cpp
-  data/handle/expression.cpp
-  data/handle/function.cpp
-  data/handle/module.cpp
-  data/handle/net.cpp
-  data/handle/place.cpp
-  data/handle/place_map.cpp
-  data/handle/port.cpp
-  data/handle/transition.cpp
+fhg_add_runtime_executable (NAME gspc-monitor
+  SOURCES "monitor.cpp"
+          "ui/execution_monitor.cpp"
+          "ui/execution_monitor_detail.cpp"
+          "ui/execution_monitor_worker_model.cpp"
+          "ui/log_monitor.cpp"
+  MOC "ui/execution_monitor.hpp"
+      "ui/execution_monitor_detail.hpp"
+      "ui/execution_monitor_worker_model.hpp"
+      "ui/log_monitor.hpp"
+  LIBRARIES Boost::thread
+            Boost::program_options
+            Qt4::QtCore
+            Qt4::QtGui
+            Util::Qt
+            fhg-revision
+            fhg-util
+            fhg_util_qt
+            fhglog
+  CREATE_BUNDLE_INFO
 )
 
-set (base_tomoc
-  data/change_manager.hpp
+fhg_add_runtime_executable (NAME gspcmonc
+  SOURCES "gspcmonc.cpp"
+          "ui/gspc_monitor.cpp"
+          "ui/gspc_monitor_client.cpp"
+          "ui/gspc_monitor_detail.cpp"
+  MOC "ui/gspc_monitor.hpp"
+      "ui/gspc_monitor_client.hpp"
+      "ui/gspc_monitor_detail.hpp"
+  LIBRARIES Qt4::QtCore
+            Qt4::QtGui
+            Qt4::QtNetwork
+            Util::Qt
+            fhg-util
+            fhg_util_qt
+  CREATE_BUNDLE_INFO
 )
 
-
-set (base_ui_sources
-  ui/dock_widget.cpp
-  ui/document_view.cpp
-  ui/editor_window.cpp
-)
-
-set (base_ui_tomoc
-  ui/dock_widget.hpp
-  ui/document_view.hpp
-  ui/editor_window.hpp
-)
-
-
-set (editor_ui_sources
-  ui/ComboItemDelegate.cpp
-  ui/StructureView.cpp
-  ui/TransitionLibraryItem.cpp
-  ui/TransitionLibraryModel.cpp
-  ui/expression_widget.cpp
-  ui/graph_view.cpp
-  ui/module_call_widget.cpp
-  ui/net_widget.cpp
-  ui/port_lists_widget.cpp
-  ui/size.cpp
-  ui/transition_library_view.cpp
-  ui/graph/association.cpp
-  ui/graph/base_item.cpp
-  ui/graph/cogwheel_button.cpp
-  ui/graph/connectable_item.cpp
-  ui/graph/connection.cpp
-  ui/graph/orientation.cpp
-  ui/graph/pending_connection.cpp
-  ui/graph/place.cpp
-  ui/graph/place_map.cpp
-  ui/graph/popover_widget.cpp
-  ui/graph/port.cpp
-  ui/graph/port_place_association.cpp
-  ui/graph/scene.cpp
-  ui/graph/transition.cpp
-  ui/graph/style/association.cpp
-  ui/graph/style/cap.cpp
-  ui/graph/style/fallback.cpp
-  ui/graph/style/predicate.cpp
-  ui/graph/style/raster.cpp
-  ui/graph/style/size.cpp
-  ui/graph/style/type.cpp
-  weaver/display.cpp
-  weaver/tv.cpp
-)
-
-set (editor_ui_tomoc
-  ui/StructureView.hpp
-  ui/TransitionLibraryItem.hpp
-  ui/TransitionLibraryModel.hpp
-  ui/execution_monitor.hpp
-  ui/expression_widget.hpp
-  ui/graph/association.hpp
-  ui/graph/base_item.hpp
-  ui/graph/connectable_item.hpp
-  ui/graph/connection.hpp
-  ui/graph/place.hpp
-  ui/graph/place_map.hpp
-  ui/graph/popover_widget.hpp
-  ui/graph/port.hpp
-  ui/graph/port_place_association.hpp
-  ui/graph/scene.hpp
-  ui/graph/transition.hpp
-  ui/graph_view.hpp
-  ui/log_monitor.hpp
-  ui/module_call_widget.hpp
-  ui/net_widget.hpp
-  ui/port_lists_widget.hpp
-)
-
-set (editor_ui_resources
-  resources/resources.qrc
-)
-
-
-set (monitor_ui_sources
-  ui/execution_monitor.cpp
-  ui/execution_monitor_detail.cpp
-  ui/execution_monitor_worker_model.cpp
-  ui/gspc_monitor.cpp
-  ui/gspc_monitor_client.cpp
-  ui/gspc_monitor_detail.cpp
-  ui/log_monitor.cpp
-)
-set (monitor_ui_tomoc
-  ui/execution_monitor.hpp
-  ui/execution_monitor_detail.hpp
-  ui/execution_monitor_worker_model.hpp
-  ui/gspc_monitor.hpp
-  ui/gspc_monitor_client.hpp
-  ui/gspc_monitor_detail.hpp
-  ui/log_monitor.hpp
-)
-
-set (plugin_tomoc
-  plugin/plugin_base.hpp
-)
-
-  qt4_wrap_cpp (base_wrapped_cpps ${base_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
-  qt4_wrap_cpp (base_ui_wrapped_cpps ${base_ui_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
-  qt4_wrap_cpp (editor_ui_wrapped_cpps ${editor_ui_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
-qt4_wrap_cpp (plugin_wrapped_cpps ${plugin_tomoc})
-  qt4_wrap_ui (editor_ui_wrapped_uis ${editor_ui_uis})
-  qt4_add_resources (editor_ui_resource_cpps ${editor_ui_resources})
-  qt4_wrap_cpp (monitor_ui_wrapped_cpps ${monitor_ui_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
-
-  fhg_add_runtime_executable (NAME pnete
-    SOURCES "pnete.cpp"
-            "setting.cpp"
-            ${base_sources}
-            ${base_wrapped_cpps}
-            ${base_ui_sources}
-            ${base_ui_wrapped_cpps}
-            ${editor_ui_sources}
-            ${editor_ui_wrapped_cpps}
-            ${editor_ui_wrapped_uis}
-            ${editor_ui_resource_cpps}
-            ${monitor_ui_sources}
-            ${monitor_ui_wrapped_cpps}
-            ${plugin_wrapped_cpps}
-    LIBRARIES "${LIB_PREFIX}graphviz-wrapper"
-              "fhg_util_qt"
-              pnet
-              fhg-util
-              sdpa
-              fhglog
-              fhg-revision
-              fhg-util
-              Util::Generic
-              Util::Qt
-              Boost::filesystem
-              Boost::program_options
-              Boost::thread
-              ${QT_LIBRARIES}
-  )
-
-extended_add_library (NAME hello_world-plugin
-  TYPE MODULE
-  SOURCES "plugin/demo/hello_world.cpp"
-  MOC "plugin/demo/hello_world.hpp"
-)
-
-target_link_libraries (hello_world-plugin ${QT_LIBRARIES})
-
-install (FILES "plugin/plugin_api.hpp" "plugin/plugin_base.hpp"
-  DESTINATION "include/pnete/plugin"
-)
-
-  add_subdirectory (ui/graph/style/test)
-
-  qt4_wrap_cpp (monitor_ui_wrapped_cpps ${monitor_ui_tomoc}
-    OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
-
-  fhg_add_runtime_executable (NAME gspc-monitor
-    SOURCES "monitor.cpp"
-            ${monitor_ui_sources}
-            ${monitor_ui_wrapped_cpps}
-    LIBRARIES pnet
-              "fhg_util_qt"
-              fhg-revision
-              fhglog
-              Util::Generic
-              Util::Qt
-              Boost::thread
-              Boost::program_options
-              ${QT_LIBRARIES}
-    CREATE_BUNDLE_INFO
-  )
-  fhg_add_runtime_executable (NAME gspcmonc
-    SOURCES "gspcmonc.cpp"
-            ${monitor_ui_sources}
-            ${monitor_ui_wrapped_cpps}
-    LIBRARIES pnet
-              "fhg_util_qt"
-              fhg-util
-              fhglog
-              Util::Generic
-              Util::Qt
-              Boost::thread
-              ${QT_LIBRARIES}
-    CREATE_BUNDLE_INFO
-  )
-
-  add_subdirectory (test)
+add_subdirectory (test)

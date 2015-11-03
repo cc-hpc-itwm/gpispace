@@ -4,8 +4,6 @@ add_subdirectory (fhgcom)
 
 add_subdirectory (gpi-space)
 
-  set (LIB_PREFIX "fhg_pnete_")
-
   add_subdirectory (pnete)
   add_subdirectory (util)
 
