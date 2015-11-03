@@ -250,6 +250,26 @@ namespace sdpa
       return removed_jobs;
     }
 
+    std::unordered_set<worker_id_t> WorkerManager::workers_to_send_cancel
+      (job_id_t const& job_id)
+    {
+      std::unordered_set<worker_id_t> workers_to_cancel;
+
+      boost::copy ( worker_map_
+                  | boost::adaptors::filtered
+                    ( [&job_id] (std::pair<worker_id_t const, Worker> const& w)
+                      {
+                       return w.second.submitted_.count (job_id)
+                         || w.second.acknowledged_.count (job_id);
+                      }
+                    )
+                  | boost::adaptors::map_keys
+                  , std::inserter (workers_to_cancel, workers_to_cancel.begin())
+                  );
+
+      return workers_to_cancel;
+    }
+
     void WorkerManager::assign_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
     {
       boost::mutex::scoped_lock const _(mtx_);
