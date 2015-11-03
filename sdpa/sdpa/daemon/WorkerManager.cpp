@@ -253,7 +253,6 @@ namespace sdpa
     std::unordered_set<worker_id_t> WorkerManager::workers_to_send_cancel
       (job_id_t const& job_id)
     {
-      boost::mutex::scoped_lock const _(mtx_);
       std::unordered_set<worker_id_t> workers_to_cancel;
 
       boost::copy ( worker_map_
