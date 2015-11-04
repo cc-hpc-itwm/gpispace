@@ -139,3 +139,41 @@ BOOST_FIXTURE_TEST_CASE (lose_capabilities_after_worker_dies, setup_logging)
 
   observer.wait_for_capabilities ({});
 }
+
+BOOST_FIXTURE_TEST_CASE
+  ( RACE_capabilities_of_children_are_removed_when_disconnected
+  , setup_logging
+  )
+{
+  //! \note race exists due to us not being able to ensure that no
+  //! CapabilitiesLost is sent in the agent chain and only network
+  //! errors happen. In fact, the race is rather in the other
+  //! direction, though: when a chain of agents exits,
+  //! capabilitieslosts are very rare in what I was able to observe
+  //! (throw on explicit capabilities_lost). With multiple agents all
+  //! exiting as fast as possible, we trigger a disconnect-only quite
+  //! likely. Note that the race would not fail the test! :(
+
+  size_t repeat (10);
+  while (repeat --> 0)
+  {
+    drts_component_observing_capabilities observer;
+    utils::agent const agent_0 (observer, _logger);
+
+    {
+      utils::agent const agent_1 (agent_0, _logger);
+      utils::agent const agent_2 (agent_1, _logger);
+      utils::agent const agent_3 (agent_2, _logger);
+      utils::agent const agent_4 (agent_3, _logger);
+
+      std::string const worker_name (utils::random_peer_name());
+      sdpa::capability_t const capability ("A", worker_name);
+      utils::basic_drts_worker const worker
+        (worker_name, agent_4, {capability});
+
+      observer.wait_for_capabilities ({capability});
+    }
+
+    observer.wait_for_capabilities ({});
+  }
+}
