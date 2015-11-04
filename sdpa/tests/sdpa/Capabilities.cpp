@@ -159,17 +159,20 @@ BOOST_FIXTURE_TEST_CASE
   {
     drts_component_observing_capabilities observer;
     utils::agent const agent_0 (observer, _logger);
+    utils::agent const agent_1 (agent_0, _logger);
+    utils::agent const agent_2 (agent_1, _logger);
+    utils::agent const agent_3 (agent_2, _logger);
 
     {
-      utils::agent const agent_1 (agent_0, _logger);
-      utils::agent const agent_2 (agent_1, _logger);
-      utils::agent const agent_3 (agent_2, _logger);
       utils::agent const agent_4 (agent_3, _logger);
+      utils::agent const agent_5 (agent_4, _logger);
+      utils::agent const agent_6 (agent_5, _logger);
+      utils::agent const agent_7 (agent_6, _logger);
 
       std::string const worker_name (utils::random_peer_name());
       sdpa::capability_t const capability ("A", worker_name);
       utils::basic_drts_worker const worker
-        (worker_name, agent_4, {capability});
+        (worker_name, agent_7, {capability});
 
       observer.wait_for_capabilities ({capability});
     }
