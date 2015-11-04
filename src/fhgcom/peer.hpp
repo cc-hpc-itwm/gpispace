@@ -6,7 +6,9 @@
 
 #include <fhg/util/thread/event.hpp>
 
+#include <boost/optional.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
 #include <deque>
