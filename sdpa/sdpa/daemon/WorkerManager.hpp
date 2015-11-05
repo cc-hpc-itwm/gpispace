@@ -25,7 +25,8 @@ namespace sdpa
     class WorkerManager : boost::noncopyable
     {
     public:
-      const boost::optional<worker_id_t> findSubmOrAckWorker (const sdpa::job_id_t& job_id) const;
+      std::unordered_set<worker_id_t> findSubmOrAckWorkers
+        (const sdpa::job_id_t& job_id) const;
 
       std::string host_INDICATES_A_RACE (const sdpa::worker_id_t& worker) const;
 

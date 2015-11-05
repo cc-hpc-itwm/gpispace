@@ -221,9 +221,8 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
   const sdpa::job_id_t job_id (fhg::util::testing::random_string());
 
   worker_manager.assign_job_to_worker (job_id, worker_ids[0]);
-  boost::optional<sdpa::worker_id_t> worker_id (worker_manager.findSubmOrAckWorker (job_id));
-  BOOST_REQUIRE (worker_id);
-  BOOST_REQUIRE_EQUAL (*worker_id, worker_ids[0]);
+  std::unordered_set<sdpa::worker_id_t> workers (worker_manager.findSubmOrAckWorkers (job_id));
+  BOOST_REQUIRE (workers.empty());
 
   worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
     ( job_id
@@ -234,14 +233,15 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
         // order to avoid races when workers are removed
       }
     );
-  worker_id = worker_manager.findSubmOrAckWorker (job_id);
-  BOOST_REQUIRE (worker_id);
-  BOOST_REQUIRE_EQUAL (*worker_id, worker_ids[0]);
+
+  workers = worker_manager.findSubmOrAckWorkers (job_id);
+  BOOST_REQUIRE_EQUAL (workers.size(), 1);
+  BOOST_REQUIRE (workers.count (worker_ids[0]));
 
   worker_manager.acknowledge_job_sent_to_worker (job_id, worker_ids[0]);
-  worker_id = worker_manager.findSubmOrAckWorker (job_id);
-  BOOST_REQUIRE (worker_id);
-  BOOST_REQUIRE_EQUAL (*worker_id, worker_ids[0]);
+  workers = worker_manager.findSubmOrAckWorkers (job_id);
+  BOOST_REQUIRE_EQUAL (workers.size(), 1);
+  BOOST_REQUIRE (workers.count (worker_ids[0]));
 }
 
 BOOST_AUTO_TEST_CASE (find_non_submitted_job)
@@ -249,6 +249,6 @@ BOOST_AUTO_TEST_CASE (find_non_submitted_job)
   sdpa::daemon::WorkerManager worker_manager;
 
   const sdpa::job_id_t job_not_submitted (fhg::util::testing::random_string());
-  boost::optional<sdpa::worker_id_t>  worker_id (worker_manager.findSubmOrAckWorker (job_not_submitted));
-  BOOST_REQUIRE_EQUAL (worker_id, boost::none);
+  std::unordered_set<sdpa::worker_id_t>  workers (worker_manager.findSubmOrAckWorkers (job_not_submitted));
+  BOOST_REQUIRE (workers.empty());
 }
