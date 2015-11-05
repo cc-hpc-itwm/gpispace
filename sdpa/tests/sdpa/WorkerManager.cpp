@@ -244,6 +244,66 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
   BOOST_REQUIRE (workers.count (worker_ids[0]));
 }
 
+BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_coallocated_workers)
+{
+  const unsigned int N (10);
+  const std::vector<std::string> worker_ids (generate_worker_names (N));
+
+  sdpa::daemon::WorkerManager worker_manager;
+
+  for (unsigned int k=0; k<N; k++)
+  {
+    worker_manager.addWorker ( worker_ids[k]
+                             , {sdpa::capability_t ("A", worker_ids[k])}
+                             , random_ulong()
+                             , random_bool()
+                             , fhg::util::testing::random_string()
+                             , fhg::util::testing::random_string()
+                             );
+  }
+
+  const sdpa::job_id_t job_id (fhg::util::testing::random_string());
+
+  for (unsigned int i=0; i<N; i++)
+  {
+    worker_manager.assign_job_to_worker (job_id, worker_ids[i]);
+    std::unordered_set<sdpa::worker_id_t> workers (worker_manager.findSubmOrAckWorkers (job_id));
+    BOOST_REQUIRE (workers.empty());
+  }
+
+  worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
+    ( job_id
+    , std::set<sdpa::worker_id_t> (worker_ids.begin(), worker_ids.end())
+    , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&)
+      {
+        // do nothing, serve_job is merged with submit_if_can_start in
+        // order to avoid races when workers are removed
+      }
+    );
+
+  std::unordered_set<sdpa::worker_id_t>workers
+    (worker_manager.findSubmOrAckWorkers (job_id));
+
+  BOOST_REQUIRE_EQUAL (workers.size(), N);
+
+  for (unsigned int k=0; k<N; k++)
+  {
+    BOOST_REQUIRE (workers.count (worker_ids[k]));
+  }
+
+  for (unsigned int k=0; k<N; k++)
+  {
+    worker_manager.acknowledge_job_sent_to_worker (job_id, worker_ids[k]);
+    workers = worker_manager.findSubmOrAckWorkers (job_id);
+    BOOST_REQUIRE_EQUAL (workers.size(), N);
+
+    for (unsigned int i=0; i<N; i++)
+    {
+      BOOST_REQUIRE (workers.count (worker_ids[i]));
+    }
+  }
+}
+
 BOOST_AUTO_TEST_CASE (find_non_submitted_job)
 {
   sdpa::daemon::WorkerManager worker_manager;
