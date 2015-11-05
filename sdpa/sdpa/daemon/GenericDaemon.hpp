@@ -65,6 +65,7 @@
 
 #include <memory>
 #include <mutex>
+#include <queue>
 #include <random>
 
 #define OVERWRITTEN_IN_TEST virtual
@@ -262,7 +263,35 @@ namespace sdpa {
     protected:
       WorkerManager _worker_manager;
       CoallocationScheduler _scheduler;
-      boost::optional<worker_id_t> _new_worker_added;
+
+      template <typename T>
+      class concurrent_queue_t
+      {
+      public:
+        void push (T const& v)
+        {
+          boost::mutex::scoped_lock _ (mutex_);
+          queue_.push (v);
+          _.unlock();
+          cond_.notify_one();
+        }
+
+        bool try_pop (T& v)
+        {
+          boost::mutex::scoped_lock _ (mutex_);
+          if (queue_.empty())
+            return false;
+
+          v = queue_.front();
+          queue_.pop();
+          return true;
+       }
+      private:
+        std::queue<T> queue_;
+        boost::mutex mutex_;
+        boost::condition_variable cond_;
+      };
+      concurrent_queue_t<worker_id_t> _new_workers_added;
 
       boost::mutex _scheduling_thread_mutex;
       boost::condition_variable _scheduling_thread_notifier;

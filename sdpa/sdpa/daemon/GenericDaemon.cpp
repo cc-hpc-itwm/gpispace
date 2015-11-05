@@ -1440,11 +1440,12 @@ namespace sdpa
         boost::mutex::scoped_lock lock (_scheduling_thread_mutex);
         _scheduling_thread_notifier.wait (lock);
 
-        if (_new_worker_added)
+        worker_id_t new_worker;
+        while (_new_workers_added.try_pop (new_worker))
         {
-          _scheduler.reschedule_pending_jobs_matching_worker (*_new_worker_added);
-          _new_worker_added.reset();
+          _scheduler.reschedule_pending_jobs_matching_worker (new_worker);
         }
+
         _scheduler.assignJobsToWorkers();
         _scheduler.start_pending_jobs
           (std::bind (&GenericDaemon::serveJob, this, std::placeholders::_1, std::placeholders::_2));
@@ -1459,8 +1460,7 @@ namespace sdpa
 
     void GenericDaemon::request_rescheduling (worker_id_t const& w)
     {
-      boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
-      _new_worker_added = w;
+      _new_workers_added.push (w);
       _scheduling_thread_notifier.notify_one();
     }
 
