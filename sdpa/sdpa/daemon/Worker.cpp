@@ -25,13 +25,6 @@ namespace sdpa
 
     }
 
-    bool Worker::has_job( const job_id_t& job_id ) const
-    {
-      return pending_.count (job_id)
-        || submitted_.count (job_id)
-        || acknowledged_.count (job_id);
-    }
-
     bool Worker::has_pending_jobs() const
     {
       return !pending_.empty();
