@@ -1440,10 +1440,12 @@ namespace sdpa
         boost::mutex::scoped_lock lock (_scheduling_thread_mutex);
         _scheduling_thread_notifier.wait (lock);
 
-        worker_id_t new_worker;
-        while (_new_workers_added.try_pop (new_worker))
+        std::list<worker_id_t> new_workers
+          (_new_workers_added.get_and_clear());
+
+        for (worker_id_t const& w : new_workers)
         {
-          _scheduler.reschedule_pending_jobs_matching_worker (new_worker);
+          _scheduler.reschedule_pending_jobs_matching_worker (w);
         }
 
         _scheduler.assignJobsToWorkers();

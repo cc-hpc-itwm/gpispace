@@ -265,30 +265,28 @@ namespace sdpa {
       CoallocationScheduler _scheduler;
 
       template <typename T>
-      class concurrent_queue_t
+      class concurrent_list_t
       {
       public:
         void push (T const& v)
         {
           boost::mutex::scoped_lock _ (mutex_);
-          queue_.push (v);
+          items_.push_back (v);
         }
 
-        bool try_pop (T& v)
+        std::list<job_id_t> get_and_clear()
         {
-          boost::mutex::scoped_lock _ (mutex_);
-          if (queue_.empty())
-            return false;
+          boost::mutex::scoped_lock const _ (mutex_);
+          std::list<job_id_t> items;
+          std::swap (items, items_);
+          return items;
+        }
 
-          v = queue_.front();
-          queue_.pop();
-          return true;
-       }
       private:
-        std::queue<T> queue_;
+        std::list<T> items_;
         boost::mutex mutex_;
       };
-      concurrent_queue_t<worker_id_t> _new_workers_added;
+      concurrent_list_t<worker_id_t> _new_workers_added;
 
       boost::mutex _scheduling_thread_mutex;
       boost::condition_variable _scheduling_thread_notifier;
