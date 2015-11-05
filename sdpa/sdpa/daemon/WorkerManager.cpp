@@ -22,6 +22,7 @@ namespace sdpa
     std::unordered_set<worker_id_t> WorkerManager::findSubmOrAckWorkers
       (job_id_t const& job_id) const
     {
+      boost::mutex::scoped_lock const _ (mtx_);
       std::unordered_set<worker_id_t> submitted_or_ack_workers;
 
       boost::copy ( worker_map_
