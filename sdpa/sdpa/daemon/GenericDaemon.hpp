@@ -272,8 +272,6 @@ namespace sdpa {
         {
           boost::mutex::scoped_lock _ (mutex_);
           queue_.push (v);
-          _.unlock();
-          cond_.notify_one();
         }
 
         bool try_pop (T& v)
@@ -289,7 +287,6 @@ namespace sdpa {
       private:
         std::queue<T> queue_;
         boost::mutex mutex_;
-        boost::condition_variable cond_;
       };
       concurrent_queue_t<worker_id_t> _new_workers_added;
 
