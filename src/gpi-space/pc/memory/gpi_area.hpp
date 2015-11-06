@@ -101,9 +101,6 @@ namespace gpi
 
         gpi::pc::global::itopology_t & _topology;
 
-        type::queue_id_t _next_gaspi_queue;
-        type::queue_id_t next_gaspi_queue();
-
         api::gaspi_t& _gaspi;
       };
     }

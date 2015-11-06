@@ -270,17 +270,6 @@ namespace gpi
       return queue_num;
     }
 
-    bool gaspi_t::max_dma_requests_reached (queue_desc_t const queue) const
-    {
-      gaspi_number_t queue_size_max;
-      FAIL_ON_NON_ZERO (gaspi_queue_size_max, &queue_size_max);
-
-      gaspi_number_t queue_size;
-      FAIL_ON_NON_ZERO (gaspi_queue_size, queue, &queue_size);
-
-      return queue_size >= queue_size_max;
-    }
-
     gpi::size_t gaspi_t::number_of_nodes() const
     {
       gaspi_rank_t num_ranks;
@@ -315,14 +304,43 @@ namespace gpi
       return m_dma;
     }
 
+    template<std::size_t queue_entry_count, typename Fun, typename... Args>
+      queue_desc_t gaspi_t::queued_operation ( Fun&& function
+                                             , Args&&... arguments
+                                             )
+    {
+      //! \todo round-robin queues again!
+      queue_desc_t queue (0);
+
+      gaspi_number_t queue_size_max;
+      FAIL_ON_NON_ZERO (gaspi_queue_size_max, &queue_size_max);
+
+      gaspi_number_t queue_size;
+      FAIL_ON_NON_ZERO (gaspi_queue_size, queue, &queue_size);
+
+      if (queue_size >= queue_size_max)
+      {
+        wait_dma (queue);
+      }
+
+      FAIL_ON_NON_ZERO ( std::forward<Fun> (function)
+                       , std::forward<Args> (arguments)...
+                       , queue
+                       , GASPI_BLOCK
+                       );
+
+      return queue;
+    }
+
     gaspi_t::read_dma_info gaspi_t::read_dma
       ( const offset_t local_offset
       , const offset_t remote_offset
       , const size_t amount
       , const rank_t from_node
-      , const queue_desc_t queue
       )
     {
+      std::unordered_set<queue_desc_t> queues;
+
       size_t remaining (amount);
       const size_t chunk_size (_max_transfer_size);
 
@@ -333,28 +351,23 @@ namespace gpi
       {
         const size_t to_transfer (std::min (chunk_size, remaining));
 
-        if (max_dma_requests_reached (queue))
-        {
-          wait_dma (queue);
-        }
-
-        FAIL_ON_NON_ZERO ( gaspi_read
-                         , m_replacement_gpi_segment
-                         , l_off
-                         , from_node
-                         , m_replacement_gpi_segment
-                         , r_off
-                         , to_transfer
-                         , queue
-                         , GASPI_BLOCK
-                         );
+        queues.emplace
+          ( queued_operation<1> ( gaspi_read
+                                , m_replacement_gpi_segment
+                                , l_off
+                                , from_node
+                                , m_replacement_gpi_segment
+                                , r_off
+                                , to_transfer
+                                )
+          );
 
         remaining -= to_transfer;
         l_off     += to_transfer;
         r_off     += to_transfer;
       }
 
-      return {queue};
+      return {queues};
     }
     void gaspi_t::wait_readable (std::list<read_dma_info> const& infos)
     {
@@ -362,9 +375,12 @@ namespace gpi
       std::unordered_set<queue_desc_t> waited_queues;
       for (read_dma_info const& info : infos)
       {
-        if (waited_queues.emplace (info.queue).second)
+        for (auto const& queue : info.queues)
         {
-          wait_dma (info.queue);
+          if (waited_queues.emplace (queue).second)
+          {
+            wait_dma (queue);
+          }
         }
       }
     }
@@ -374,9 +390,10 @@ namespace gpi
       , const offset_t remote_offset
       , const size_t amount
       , const rank_t to_node
-      , const queue_desc_t queue
       )
     {
+      std::unordered_set<queue_desc_t> queues;
+
       size_t remaining (amount);
       const size_t chunk_size (_max_transfer_size);
 
@@ -399,30 +416,25 @@ namespace gpi
       {
         const size_t to_transfer (std::min (chunk_size, remaining));
 
-        if (max_dma_requests_reached (queue))
-        {
-          wait_dma (queue);
-        }
-
-        FAIL_ON_NON_ZERO ( gaspi_write_notify
-                         , m_replacement_gpi_segment
-                         , l_off
-                         , to_node
-                         , m_replacement_gpi_segment
-                         , r_off
-                         , to_transfer
-                         , next_ping_id (to_node)
-                         , write_id
-                         , queue
-                         , GASPI_BLOCK
-                         );
+        queues.emplace
+          ( queued_operation<2> ( gaspi_write_notify
+                                , m_replacement_gpi_segment
+                                , l_off
+                                , to_node
+                                , m_replacement_gpi_segment
+                                , r_off
+                                , to_transfer
+                                , next_ping_id (to_node)
+                                , write_id
+                                )
+          );
 
         remaining -= to_transfer;
         l_off     += to_transfer;
         r_off     += to_transfer;
       }
 
-      return {queue, write_id};
+      return {queues, write_id};
     }
 
     void gaspi_t::wait_buffer_reusable
@@ -432,9 +444,12 @@ namespace gpi
       std::unordered_set<queue_desc_t> waited_queues;
       for (write_dma_info const& info : infos)
       {
-        if (waited_queues.emplace (info.queue).second)
+        for (auto const& queue : info.queues)
         {
-          wait_dma (info.queue);
+          if (waited_queues.emplace (queue).second)
+          {
+            wait_dma (queue);
+          }
         }
       }
     }
@@ -517,17 +532,14 @@ namespace gpi
         }
         else
         {
-          FAIL_ON_NON_ZERO ( gaspi_notify
-                           , m_replacement_gpi_segment
-                           , sending_rank
-                           , notification_id_offset
-                           + _pong_ids_offset
-                           + _local_ids_begin
-                           , write_id
-                           //! \todo better choice of queue!
-                           , 0
-                           , GASPI_BLOCK
-                           );
+          queued_operation<1> ( gaspi_notify
+                              , m_replacement_gpi_segment
+                              , sending_rank
+                              , notification_id_offset
+                              + _pong_ids_offset
+                              + _local_ids_begin
+                              , write_id
+                              );
         }
       }
     }

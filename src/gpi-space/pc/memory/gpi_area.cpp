@@ -43,7 +43,6 @@ namespace gpi
         , m_num_com_buffers (8)
         , m_com_buffer_size (4* (1<<20))
         , _topology (topology)
-        , _next_gaspi_queue (0)
         , _gaspi (gaspi)
       {}
 
@@ -250,7 +249,6 @@ namespace gpi
             , const gpi::pc::type::handle::descriptor_t & dst_hdl
             , const gpi::pc::type::size_t dst_offset
             , const gpi::pc::type::size_t amount
-            , const gpi::pc::type::size_t queue
             , api::gaspi_t& gaspi
             )
           {
@@ -270,7 +268,6 @@ namespace gpi
                                  , part.remote_offset
                                  , part.size
                                  , part.rank
-                                 , queue
                                  )
                 );
             }
@@ -284,7 +281,6 @@ namespace gpi
             , const gpi::pc::type::handle::descriptor_t & dst_hdl
             , const gpi::pc::type::size_t dst_offset
             , const gpi::pc::type::size_t amount
-            , const gpi::pc::type::size_t queue
             , api::gaspi_t& gaspi
             )
           {
@@ -304,7 +300,6 @@ namespace gpi
                                   , part.remote_offset
                                   , part.size
                                   , part.rank
-                                  , queue
                                   )
                 );
             }
@@ -320,7 +315,6 @@ namespace gpi
                      , gpi_area_t & dst_area
                      , gpi::pc::type::memory_location_t dst_loc
                      , gpi::pc::type::size_t amount
-                     , const gpi::pc::type::size_t queue
                      , gpi_area_t::handle_pool_t & handle_pool
                      , api::gaspi_t& gaspi
                      )
@@ -356,7 +350,6 @@ namespace gpi
                              , dst_area.descriptor (dst_loc.handle)
                              , dst_loc.offset
                              , buf.used ()
-                             , queue
                              , gaspi
                              )
               );
@@ -380,7 +373,6 @@ namespace gpi
                      , gpi_area_t & src_area
                      , gpi::pc::type::memory_location_t src_loc
                      , gpi::pc::type::size_t amount
-                     , const gpi::pc::type::size_t queue
                      , gpi_area_t::handle_pool_t & handle_pool
                      , api::gaspi_t& gaspi
                      )
@@ -400,7 +392,6 @@ namespace gpi
                         , src_area.descriptor (buf.handle ())
                         , 0
                         , to_recv
-                        , queue
                         , gaspi
                         );
             buf.used (to_recv);
@@ -435,13 +426,11 @@ namespace gpi
       {
         fhg_assert (type () == dst_area.type ());
 
-        type::queue_id_t const queue (next_gaspi_queue());
-
         if (is_local (gpi::pc::type::memory_region_t (src, amount)))
         {
           // write dma
           return std::packaged_task<void()>
-            ( [this, &dst_area, src, dst, amount, queue]
+            ( [this, &dst_area, src, dst, amount]
               {
                 _gaspi.wait_remote_written
                   ( helper::do_write_dma ( descriptor (src.handle)
@@ -449,7 +438,6 @@ namespace gpi
                                          , dst_area.descriptor (dst.handle)
                                          , dst.offset
                                          , amount
-                                         , queue
                                          , _gaspi
                                          )
                   );
@@ -466,7 +454,6 @@ namespace gpi
                         , dst_area.descriptor (dst.handle)
                         , dst.offset
                         , amount
-                        , queue
                         , std::ref (_gaspi)
                         )
             );
@@ -485,10 +472,8 @@ namespace gpi
         , gpi::pc::type::size_t amount
         )
       {
-        type::queue_id_t const queue (next_gaspi_queue());
-
         return std::packaged_task<void()>
-          ( [this, &src_area, src, dst, amount, queue]
+          ( [this, &src_area, src, dst, amount]
             {
               helper::do_send ( _logger
                               , src_area
@@ -496,7 +481,6 @@ namespace gpi
                               , *this
                               , dst
                               , amount
-                              , queue
                               , m_com_handles
                               , _gaspi
                               );
@@ -511,8 +495,6 @@ namespace gpi
         , gpi::pc::type::size_t amount
         )
       {
-        type::queue_id_t const queue (next_gaspi_queue());
-
         return std::packaged_task<void()>
           ( std::bind ( &helper::do_recv
                       , std::ref (_logger)
@@ -521,7 +503,6 @@ namespace gpi
                       , std::ref (*this)
                       , src
                       , amount
-                      , queue
                       , std::ref (m_com_handles)
                       , std::ref (_gaspi)
                       )
@@ -547,14 +528,6 @@ namespace gpi
         constexpr const double remote_transfer_cost_weight {1.0};
 
         return transfer.size + remote_transfer_cost_weight * (transfer.size - local_part.size());
-      }
-
-      type::queue_id_t gpi_area_t::next_gaspi_queue()
-      {
-        auto id (_next_gaspi_queue);
-        _next_gaspi_queue
-          = (_next_gaspi_queue + 1) % _gaspi.number_of_queues();
-        return id;
       }
 
       area_ptr_t gpi_area_t::create

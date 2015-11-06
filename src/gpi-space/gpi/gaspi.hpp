@@ -16,6 +16,7 @@
 #include <mutex>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace gpi
@@ -48,20 +49,19 @@ namespace gpi
 
       struct read_dma_info
       {
-        queue_desc_t queue;
+        std::unordered_set<queue_desc_t> queues;
       };
 
       read_dma_info read_dma ( const offset_t local_offset
                              , const offset_t remote_offset
                              , const size_t amount
                              , const rank_t from_node
-                             , const queue_desc_t queue
                              );
       void wait_readable (std::list<read_dma_info> const&);
 
       struct write_dma_info
       {
-        queue_desc_t queue;
+        std::unordered_set<queue_desc_t> queues;
         notification_t write_id;
       };
 
@@ -69,7 +69,6 @@ namespace gpi
                                , const offset_t remote_offset
                                , const size_t amount
                                , const rank_t to_node
-                               , const queue_desc_t queue
                                );
       void wait_buffer_reusable (std::list<write_dma_info> const&);
       void wait_remote_written (std::list<write_dma_info> const&);
@@ -77,7 +76,8 @@ namespace gpi
     private:
       void wait_dma (const queue_desc_t);
 
-      bool max_dma_requests_reached (const queue_desc_t) const;
+      template<std::size_t queue_entry_count, typename Fun, typename... Args>
+        queue_desc_t queued_operation (Fun&&, Args&&...);
 
       fhg::log::Logger& _logger;
       size_t m_mem_size;
