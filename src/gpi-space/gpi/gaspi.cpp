@@ -136,6 +136,8 @@ namespace gpi
                        , &m_dma
                        );
 
+      FAIL_ON_NON_ZERO (gaspi_transfer_size_max, &_max_transfer_size);
+
       gaspi_number_t available_notifications;
       FAIL_ON_NON_ZERO (gaspi_notification_num, &available_notifications);
 
@@ -268,11 +270,15 @@ namespace gpi
       return queue_num;
     }
 
-    gpi::size_t gaspi_t::queue_depth() const
+    bool gaspi_t::max_dma_requests_reached (queue_desc_t const queue) const
     {
       gaspi_number_t queue_size_max;
-      FAIL_ON_NON_ZERO (gaspi_queue_size_max,  &queue_size_max);
-      return queue_size_max;
+      FAIL_ON_NON_ZERO (gaspi_queue_size_max, &queue_size_max);
+
+      gaspi_number_t queue_size;
+      FAIL_ON_NON_ZERO (gaspi_queue_size, queue, &queue_size);
+
+      return queue_size >= queue_size_max;
     }
 
     gpi::size_t gaspi_t::number_of_nodes() const
@@ -285,20 +291,6 @@ namespace gpi
     gpi::size_t gaspi_t::memory_size() const
     {
       return m_mem_size;
-    }
-
-    gpi::size_t gaspi_t::max_transfer_size() const
-    {
-      gaspi_size_t transfer_size_max;
-      FAIL_ON_NON_ZERO (gaspi_transfer_size_max, &transfer_size_max);
-      return transfer_size_max;
-    }
-
-    gpi::size_t gaspi_t::open_dma_requests (const queue_desc_t q) const
-    {
-      gaspi_number_t queue_size;
-      FAIL_ON_NON_ZERO (gaspi_queue_size, q, &queue_size);
-      return queue_size;
     }
 
     gpi::rank_t gaspi_t::rank() const
@@ -318,20 +310,7 @@ namespace gpi
       return _communication_port_by_rank[rank];
     }
 
-    gpi::error_vector_t gaspi_t::get_error_vector (const gpi::queue_desc_t) const
-    {
-      std::vector<unsigned char> gaspi_state_vector (number_of_nodes());
-      FAIL_ON_NON_ZERO (gaspi_state_vec_get, gaspi_state_vector.data());
-
-      gpi::error_vector_t v (gaspi_state_vector.size());
-      for (std::size_t i (0); i < number_of_nodes(); ++i)
-      {
-        v.set (i, (gaspi_state_vector [i] != 0));
-      }
-      return v;
-    }
-
-    void * gaspi_t::dma_ptr (void)
+    void* gaspi_t::dma_ptr() const
     {
       return m_dma;
     }
@@ -345,7 +324,7 @@ namespace gpi
       )
     {
       size_t remaining (amount);
-      const size_t chunk_size (max_transfer_size());
+      const size_t chunk_size (_max_transfer_size);
 
       size_t l_off (local_offset);
       size_t r_off (remote_offset);
@@ -414,7 +393,7 @@ namespace gpi
       )
     {
       size_t remaining (amount);
-      const size_t chunk_size (max_transfer_size());
+      const size_t chunk_size (_max_transfer_size);
 
       size_t l_off (local_offset);
       size_t r_off (remote_offset);

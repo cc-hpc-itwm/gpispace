@@ -63,26 +63,24 @@ namespace gpi
               );
       ~gaspi_t();
 
-      // wrapped C function calls
-      gpi::size_t number_of_queues () const;
-      gpi::size_t queue_depth () const;
-      gpi::size_t number_of_nodes () const;
-      gpi::size_t memory_size () const;
-      gpi::size_t max_transfer_size () const;
+      gpi::size_t memory_size() const;
+      gpi::rank_t rank() const;
+      gpi::size_t number_of_nodes() const;
 
-      gpi::rank_t rank () const;
+      void* dma_ptr() const;
+
       std::string const& hostname_of_rank (const gpi::rank_t) const;
       unsigned short communication_port_of_rank (gpi::rank_t) const;
-      gpi::error_vector_t get_error_vector(const queue_desc_t) const;
-      void *dma_ptr (void);
 
-      template <typename T>
-      T* dma_ptr (void) { return (T*)(dma_ptr()); }
+      //! \todo do not expose: used to determine count of memory
+      //! management task threads, which is just bad.
+      gpi::size_t number_of_queues() const;
 
       struct read_dma_info
       {
         queue_desc_t queue;
       };
+
       read_dma_info read_dma ( const offset_t local_offset
                              , const offset_t remote_offset
                              , const size_t amount
@@ -96,6 +94,7 @@ namespace gpi
         queue_desc_t queue;
         notification_t write_id;
       };
+
       write_dma_info write_dma ( const offset_t local_offset
                                , const offset_t remote_offset
                                , const size_t amount
@@ -108,15 +107,13 @@ namespace gpi
     private:
       void wait_dma (const queue_desc_t);
 
-      gpi::size_t open_dma_requests (const queue_desc_t) const;
-      bool max_dma_requests_reached (const queue_desc_t q) const
-      {
-        return (open_dma_requests (q) >= queue_depth());
-      }
+      bool max_dma_requests_reached (const queue_desc_t) const;
+
       fhg::log::Logger& _logger;
       size_t m_mem_size;
       void *m_dma;
       size_t m_replacement_gpi_segment;
+      gpi::size_t _max_transfer_size;
 
       std::vector<std::string> m_rank_to_hostname;
       std::vector<unsigned short> _communication_port_by_rank;
