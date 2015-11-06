@@ -88,6 +88,8 @@ namespace gpi
       std::vector<std::string> m_rank_to_hostname;
       std::vector<unsigned short> _communication_port_by_rank;
 
+      std::mutex _queue_operation_guard;
+
       //! \note We split (1) the available notification
       //! (_maximum_notification_id) ids into $num_proc parts
       //! (_notification_ids_per_node) and split (2) them in half at

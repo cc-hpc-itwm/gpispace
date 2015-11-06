@@ -309,6 +309,12 @@ namespace gpi
                                              , Args&&... arguments
                                              )
     {
+      //! \todo do without synchronization by knowing the number of
+      //! threads and thus how many queue entries can be taken if a
+      //! thread gets suspended and woken up again between the queue
+      //! entry check and the actual operation.
+      std::unique_lock<std::mutex> const _ (_queue_operation_guard);
+
       //! \todo round-robin queues again!
       queue_desc_t queue (0);
 
