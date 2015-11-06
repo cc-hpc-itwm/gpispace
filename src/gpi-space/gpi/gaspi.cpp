@@ -338,31 +338,16 @@ namespace gpi
           wait_dma (queue);
         }
 
-        try
-        {
-          FAIL_ON_NON_ZERO ( gaspi_read
-                           , m_replacement_gpi_segment
-                           , l_off
-                           , from_node
-                           , m_replacement_gpi_segment
-                           , r_off
-                           , to_transfer
-                           , queue
-                           , GASPI_BLOCK
-                           );
-        }
-        catch (gpi::exception::gpi_error const &e)
-        {
-          throw exception::dma_error
-            ( gpi::error::read_dma_failed (e.user_message)
-            , l_off
-            , r_off
-            , from_node
-            , rank()
-            , to_transfer
-            , queue
-            );
-        }
+        FAIL_ON_NON_ZERO ( gaspi_read
+                         , m_replacement_gpi_segment
+                         , l_off
+                         , from_node
+                         , m_replacement_gpi_segment
+                         , r_off
+                         , to_transfer
+                         , queue
+                         , GASPI_BLOCK
+                         );
 
         remaining -= to_transfer;
         l_off     += to_transfer;
@@ -419,34 +404,18 @@ namespace gpi
           wait_dma (queue);
         }
 
-        try
-        {
-          FAIL_ON_NON_ZERO ( gaspi_write_notify
-                           , m_replacement_gpi_segment
-                           , l_off
-                           , to_node
-                           , m_replacement_gpi_segment
-                           , r_off
-                           , to_transfer
-                           , next_ping_id (to_node)
-                           , write_id
-                           , queue
-                           , GASPI_BLOCK
-                           );
-
-        }
-        catch (const gpi::exception::gpi_error& e)
-        {
-          throw exception::dma_error
-            ( gpi::error::write_dma_failed (e.user_message)
-            , l_off
-            , r_off
-            , to_node
-            , rank()
-            , to_transfer
-            , queue
-            );
-        }
+        FAIL_ON_NON_ZERO ( gaspi_write_notify
+                         , m_replacement_gpi_segment
+                         , l_off
+                         , to_node
+                         , m_replacement_gpi_segment
+                         , r_off
+                         , to_transfer
+                         , next_ping_id (to_node)
+                         , write_id
+                         , queue
+                         , GASPI_BLOCK
+                         );
 
         remaining -= to_transfer;
         l_off     += to_transfer;

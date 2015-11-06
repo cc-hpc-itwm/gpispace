@@ -22,36 +22,6 @@ namespace gpi
 {
   namespace api
   {
-    namespace exception
-    {
-      struct dma_error : public gpi::exception::gpi_error
-      {
-        dma_error ( gpi::error::code_t const & ec
-                  , const offset_t loc_offset
-                  , const offset_t rem_offset
-                  , const rank_t from
-                  , const rank_t to
-                  , const size_t bytes
-                  , const queue_desc_t via_queue
-                  )
-          : gpi::exception::gpi_error (ec)
-          , local_offset (loc_offset)
-          , remote_offset (rem_offset)
-          , from_node (from)
-          , to_node (to)
-          , amount (bytes)
-          , queue (via_queue)
-        {}
-
-        const offset_t local_offset;
-        const offset_t remote_offset;
-        const rank_t from_node;
-        const rank_t to_node;
-        const size_t amount;
-        const queue_desc_t queue;
-      };
-    }
-
     class gaspi_t : boost::noncopyable
     {
     public:
