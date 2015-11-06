@@ -5,7 +5,6 @@
 #include <xml/parse/id/mapper.hpp>
 
 #include <xml/parse/type/connect.hpp>
-#include <xml/parse/type/expression.hpp>
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/memory_buffer.hpp>
 #include <xml/parse/type/mod.hpp>
@@ -66,7 +65,6 @@ namespace xml
     namespace type
     {
       ID_IMPL(connect)
-      ID_IMPL(expression)
       ID_IMPL(function)
       ID_IMPL(memory_buffer)
       ID_IMPL(module)
@@ -81,7 +79,6 @@ namespace xml
       ID_IMPL(transition)
       ID_IMPL(use)
 
-      PARENT_IMPL(function,expression)
       PARENT_IMPL(function,module)
       PARENT_IMPL(function,net)
       PARENT_IMPL(function,port)

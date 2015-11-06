@@ -6,7 +6,6 @@
 
 #include <xml/parse/id/mapper.fwd.hpp>
 #include <xml/parse/type/connect.fwd.hpp>
-#include <xml/parse/type/expression.fwd.hpp>
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/memory_buffer.fwd.hpp>
 #include <xml/parse/type/mod.fwd.hpp>

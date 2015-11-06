@@ -67,10 +67,8 @@ namespace xml
             : _parent (parent)
           { }
 
-          void operator() (const id::ref::expression& id) const
-          {
-            id.get_ref().parent (_parent);
-          }
+          void operator() (const expression_type&) const
+          {}
           void operator() (const id::ref::module& id) const
           {
             id.get_ref().parent (_parent);
@@ -569,9 +567,9 @@ namespace xml
             : _expressions (expressions)
           { }
 
-          void operator () (id::ref::expression & id_expression) const
+          void operator () (expression_type& e) const
           {
-            id_expression.get_ref().append (_expressions);
+            e.append (_expressions);
           }
 
           template<typename T>
@@ -676,7 +674,7 @@ namespace xml
             : _state (state)
           { }
 
-          void operator() (const id::ref::expression&) const
+          void operator() (expression_type const&) const
           {
           }
           void operator() (const id::ref::module&) const
@@ -875,9 +873,9 @@ namespace xml
         }
 
         we_transition_type
-        operator () (const id::ref::expression& id_expression) const
+        operator () (expression_type const& e) const
         {
-          const std::string expr (id_expression.get().expression());
+          const std::string expr (e.expression());
           const expr::parse::parser parsed_expression
             (util::we_parse (expr, "expression", "function", name(), fun.position_of_definition().path()));
 
@@ -1059,7 +1057,7 @@ namespace xml
               , fun (_fun)
           {}
 
-          void operator () (id::ref::expression &) const { return; }
+          void operator () (expression_type&) const { return; }
           void operator () (id::ref::module &) const { return; }
           void operator () (id::ref::net & id) const
           {
@@ -1137,6 +1135,10 @@ namespace xml
             function_type::content_type operator() (const ID_TYPE& id) const
           {
             return id.get().clone (_new_id, _mapper);
+          }
+          function_type::content_type operator() (expression_type const& e) const
+          {
+            return e;
           }
 
         private:
@@ -2150,7 +2152,7 @@ namespace xml
             , mcs (_mcs)
           {}
 
-          bool operator () (id::ref::expression &) const
+          bool operator () (expression_type&) const
           {
             return false;
           }
@@ -2619,7 +2621,7 @@ namespace xml
 
           void operator() (const id::ref::use&) const { }
           void operator() (const id::ref::module&) const { }
-          void operator() (const id::ref::expression&) const { }
+          void operator() (expression_type const&) const { }
 
         private:
           const state::type & state;
@@ -2676,6 +2678,10 @@ namespace xml
             void operator () (const ID& id) const
             {
               ::xml::parse::type::dump::dump (s, id.get());
+            }
+            void operator() (expression_type const& e) const
+            {
+              ::xml::parse::type::dump::dump (s, e);
             }
           };
         }

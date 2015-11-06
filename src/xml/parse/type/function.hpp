@@ -61,7 +61,7 @@ namespace xml
                               , id::net
                               > parent_id_type;
 
-        typedef boost::variant < id::ref::expression
+        typedef boost::variant < expression_type
                                , id::ref::module
                                , id::ref::net
                                > content_type;
