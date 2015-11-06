@@ -61,7 +61,6 @@ namespace gpi
 
       struct write_dma_info
       {
-        std::unordered_set<queue_desc_t> queues;
         notification_t write_id;
       };
 
@@ -70,7 +69,6 @@ namespace gpi
                                , const size_t amount
                                , const rank_t to_node
                                );
-      void wait_buffer_reusable (std::list<write_dma_info> const&);
       void wait_remote_written (std::list<write_dma_info> const&);
 
     private:

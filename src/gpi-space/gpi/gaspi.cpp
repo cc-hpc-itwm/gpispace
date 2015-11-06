@@ -402,8 +402,6 @@ namespace gpi
       , const rank_t to_node
       )
     {
-      std::unordered_set<queue_desc_t> queues;
-
       size_t remaining (amount);
       const size_t chunk_size (_max_transfer_size);
 
@@ -426,43 +424,25 @@ namespace gpi
       {
         const size_t to_transfer (std::min (chunk_size, remaining));
 
-        queues.emplace
-          ( queued_operation<2> ( gaspi_write_notify
-                                , m_replacement_gpi_segment
-                                , l_off
-                                , to_node
-                                , m_replacement_gpi_segment
-                                , r_off
-                                , to_transfer
-                                , next_ping_id (to_node)
-                                , write_id
-                                )
-          );
+        queued_operation<2> ( gaspi_write_notify
+                            , m_replacement_gpi_segment
+                            , l_off
+                            , to_node
+                            , m_replacement_gpi_segment
+                            , r_off
+                            , to_transfer
+                            , next_ping_id (to_node)
+                            , write_id
+                            );
 
         remaining -= to_transfer;
         l_off     += to_transfer;
         r_off     += to_transfer;
       }
 
-      return {queues, write_id};
+      return {write_id};
     }
 
-    void gaspi_t::wait_buffer_reusable
-      (std::list<write_dma_info> const& infos)
-    {
-      //! \todo only check for specific buffers? possible with gaspi?!
-      std::unordered_set<queue_desc_t> waited_queues;
-      for (write_dma_info const& info : infos)
-      {
-        for (auto const& queue : info.queues)
-        {
-          if (waited_queues.emplace (queue).second)
-          {
-            wait_dma (queue);
-          }
-        }
-      }
-    }
     void gaspi_t::wait_remote_written
       (std::list<write_dma_info> const& infos)
     {

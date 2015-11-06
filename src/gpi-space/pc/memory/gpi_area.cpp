@@ -321,8 +321,6 @@ namespace gpi
         {
           handle_buffer_t buf (handle_pool.get());
 
-          std::list<api::gaspi_t::write_dma_info> all_handles;
-
           gpi::pc::type::size_t remaining = amount;
           while (remaining)
           {
@@ -344,7 +342,7 @@ namespace gpi
               break;
             }
 
-            std::list<api::gaspi_t::write_dma_info> handles
+            gaspi.wait_remote_written
               ( do_write_dma ( dst_area.descriptor (buf.handle ())
                              , 0
                              , dst_area.descriptor (dst_loc.handle)
@@ -353,8 +351,6 @@ namespace gpi
                              , gaspi
                              )
               );
-            gaspi.wait_buffer_reusable (handles);
-            all_handles.splice (all_handles.end(), handles);
 
             src_loc.offset += buf.used ();
             dst_loc.offset += buf.used ();
@@ -362,8 +358,6 @@ namespace gpi
           }
 
           handle_pool.put (buf);
-
-          gaspi.wait_remote_written (all_handles);
         }
 
         static
