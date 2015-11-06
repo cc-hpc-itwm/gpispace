@@ -72,8 +72,6 @@ namespace gpi
       void wait_remote_written (std::list<write_dma_info> const&);
 
     private:
-      void wait_dma (const queue_desc_t);
-
       template<std::size_t queue_entry_count, typename Fun, typename... Args>
         queue_desc_t queued_operation (Fun&&, Args&&...);
 

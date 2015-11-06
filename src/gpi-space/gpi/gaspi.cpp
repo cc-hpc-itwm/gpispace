@@ -389,7 +389,7 @@ namespace gpi
         {
           if (waited_queues.emplace (queue).second)
           {
-            wait_dma (queue);
+            FAIL_ON_NON_ZERO (gaspi_wait, queue, GASPI_BLOCK);
           }
         }
       }
@@ -547,11 +547,6 @@ namespace gpi
     notification_id_t gaspi_t::next_ping_id (rank_t rank)
     {
       return _ping_ids[rank].get();
-    }
-
-    void gaspi_t::wait_dma (const queue_desc_t queue)
-    {
-      FAIL_ON_NON_ZERO (gaspi_wait, queue, GASPI_BLOCK);
     }
 
 #undef FAIL_ON_NON_ZERO
