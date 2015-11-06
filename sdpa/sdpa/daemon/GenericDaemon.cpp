@@ -658,6 +658,8 @@ void GenericDaemon::cancel (const we::layer::id_type& job_id)
 }
 void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
 {
+  boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
+
   Job* pJob (findJob (job_id));
   if (!pJob)
   {
@@ -667,23 +669,26 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
     return;
   }
 
-  const boost::optional<sdpa::worker_id_t> worker_id
-    (_worker_manager.findSubmOrAckWorker (job_id));
-
   pJob->CancelJob();
 
-  if (worker_id)
+  const std::unordered_set<worker_id_t>
+    workers_to_cancel (_worker_manager.workers_to_send_cancel (job_id));
+
+  if (!workers_to_cancel.empty())
   {
-    child_proxy (this, _worker_manager.address_by_worker (*worker_id).get()->second)
-      .cancel_job (job_id);
+    for (worker_id_t const& w : workers_to_cancel)
+    {
+      child_proxy ( this
+                  , _worker_manager.address_by_worker (w).get()->second
+                  ).cancel_job (job_id);
+    }
   }
   else
   {
     workflowEngine()->canceled (job_id);
-
     pJob->CancelJobAck();
     _scheduler.delete_job (job_id);
-
+    _scheduler.releaseReservation (job_id);
     deleteJob (job_id);
   }
 }

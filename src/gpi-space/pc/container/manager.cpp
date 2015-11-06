@@ -153,14 +153,10 @@ namespace gpi
           handle_message_t ( fhg::log::Logger& logger
                            , gpi::pc::type::process_id_t const& proc_id
                            , memory::manager_t& memory_manager
-                           , global::topology_t& topology
-                           , gpi::api::gpi_api_t& gpi_api
                            )
             : _logger (logger)
             , m_proc_id (proc_id)
             , _memory_manager (memory_manager)
-            , _topology (topology)
-            , _gpi_api (gpi_api)
           {}
 
           /**********************************************/
@@ -250,15 +246,14 @@ namespace gpi
           gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::segment::register_t & register_segment) const
           {
-            url_t url ("shm", register_segment.name);
-            url.set ("size", boost::lexical_cast<std::string>(register_segment.size));
-            if (register_segment.flags & F_PERSISTENT)
-              url.set ("persistent", "true");
-            if (register_segment.flags & F_EXCLUSIVE)
-              url.set ("exclusive", "true");
-
-            memory::area_ptr_t area (memory::shm_area_t::create (_logger, boost::lexical_cast<std::string>(url), _memory_manager.handle_generator()));
-            area->set_owner (m_proc_id);
+            memory::area_ptr_t area
+              ( new memory::shm_area_t ( _logger
+                                       , m_proc_id
+                                       , register_segment.name
+                                       , register_segment.size
+                                       , _memory_manager.handle_generator()
+                                       )
+              );
 
             gpi::pc::proto::segment::register_reply_t rpl;
             rpl.id =
@@ -276,63 +271,9 @@ namespace gpi
               (gpi::pc::proto::error::success, "success");
           }
 
-          gpi::pc::proto::message_t
-            operator () (const gpi::pc::proto::segment::attach_t & attach_segment) const
-          {
-            _memory_manager.attach_process
-              (m_proc_id, attach_segment.id);
-            return gpi::pc::proto::error::error_t
-              (gpi::pc::proto::error::success, "success");
-          }
-
-          gpi::pc::proto::message_t
-            operator () (const gpi::pc::proto::segment::detach_t & detach_segment) const
-          {
-            _memory_manager.detach_process
-              (m_proc_id, detach_segment.id);
-            return gpi::pc::proto::error::error_t
-              (gpi::pc::proto::error::success, "success");
-          }
-
-          gpi::pc::proto::message_t
-            operator () (const gpi::pc::proto::segment::add_memory_t & add_mem) const
-          {
-            gpi::pc::type::segment_id_t id =
-              _memory_manager.add_memory (m_proc_id, add_mem.url, 0, _topology);
-            gpi::pc::proto::segment::register_reply_t rpl;
-            rpl.id = id;
-            return gpi::pc::proto::segment::message_t (rpl);
-          }
-
-          gpi::pc::proto::message_t
-            operator () (const gpi::pc::proto::segment::del_memory_t & del_mem) const
-          {
-            _memory_manager.del_memory (m_proc_id, del_mem.id, _topology);
-            return
-              gpi::pc::proto::error::error_t (gpi::pc::proto::error::success);
-          }
-
           /**********************************************/
           /***     C O N T R O L   R E L A T E D      ***/
           /**********************************************/
-
-          gpi::pc::proto::message_t
-            operator () (const gpi::pc::proto::control::ping_t &) const
-          {
-            gpi::pc::proto::control::pong_t pong;
-            return gpi::pc::proto::control::message_t (pong);
-          }
-
-          gpi::pc::proto::message_t
-            operator () (const gpi::pc::proto::control::info_t &) const
-          {
-            gpi::pc::proto::control::info_reply_t rpl;
-            rpl.info.rank = _gpi_api.rank();
-            rpl.info.nodes = _gpi_api.number_of_nodes();
-            rpl.info.queues = _gpi_api.number_of_queues();
-            rpl.info.queue_depth = _gpi_api.queue_depth();
-            return gpi::pc::proto::control::message_t (rpl);
-          }
 
           gpi::pc::proto::message_t
           operator () (const gpi::pc::proto::segment::message_t & m) const
@@ -342,12 +283,6 @@ namespace gpi
 
           gpi::pc::proto::message_t
           operator () (const gpi::pc::proto::memory::message_t & m) const
-          {
-            return boost::apply_visitor (*this, m);
-          }
-
-          gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::control::message_t & m) const
           {
             return boost::apply_visitor (*this, m);
           }
@@ -366,8 +301,6 @@ namespace gpi
           fhg::log::Logger& _logger;
           gpi::pc::type::process_id_t const& m_proc_id;
           memory::manager_t& _memory_manager;
-          global::topology_t& _topology;
-          gpi::api::gpi_api_t& _gpi_api;
         };
 
         gpi::pc::proto::message_t handle_message
@@ -375,14 +308,12 @@ namespace gpi
           , gpi::pc::type::process_id_t const& id
           , gpi::pc::proto::message_t const& request
           , gpi::pc::memory::manager_t& memory_manager
-          , global::topology_t& topology
-          , gpi::api::gpi_api_t& gpi_api
           )
         {
           try
           {
             return boost::apply_visitor
-              (handle_message_t (logger, id, memory_manager, topology, gpi_api), request);
+              (handle_message_t (logger, id, memory_manager), request);
           }
           catch (std::exception const& ex)
           {
@@ -444,7 +375,7 @@ namespace gpi
               );
 
             gpi::pc::proto::message_t const reply
-              (handle_message (_logger, process_id, request, _memory_manager, _topology, _gpi_api));
+              (handle_message (_logger, process_id, request, _memory_manager));
 
             fhg::util::nest_exceptions<std::runtime_error>
               ( [&]
@@ -514,16 +445,15 @@ namespace gpi
                            , std::string const & p
                            , std::vector<std::string> const& default_memory_urls
                            , api::gpi_api_t& gpi_api
-                           , std::unique_ptr<fhg::com::peer_t> topology_peer
+                           , std::unique_ptr<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher> topology_rpc_server
                            )
         : _logger (logger)
         , m_path (p)
         , m_socket (-1)
         , m_stopping (false)
         , m_process_counter (0)
-        , _gpi_api (gpi_api)
         , _memory_manager (_logger, gpi_api)
-        , _topology (_logger, _memory_manager, gpi_api, std::move (topology_peer))
+        , _topology (_memory_manager, gpi_api, std::move (topology_rpc_server))
       {
         if ( default_memory_urls.size ()
            >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID

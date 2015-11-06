@@ -2,6 +2,7 @@
 
 #include <we/type/net.hpp>
 #include <we/type/transition.hpp>
+#include <we/type/value/show.hpp>
 
 #include <we/require_type.hpp>
 

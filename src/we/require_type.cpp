@@ -8,9 +8,6 @@
 
 #include <we/type/signature.hpp>
 
-#include <we/type/value/show.hpp>
-#include <we/type/signature/show.hpp>
-
 #include <algorithm>
 #include <list>
 

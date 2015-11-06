@@ -40,8 +40,8 @@
 namespace gspc
 {
   installation::installation
-    (boost::program_options::variables_map const& vm)
-      : _gspc_home (boost::filesystem::canonical (require_gspc_home (vm)))
+    (boost::filesystem::path const& gspc_home)
+      : _gspc_home (boost::filesystem::canonical (gspc_home))
   {
     boost::filesystem::path const path_revision (_gspc_home / "revision");
 
@@ -68,6 +68,10 @@ namespace gspc
         );
     }
   }
+  installation::installation
+    (boost::program_options::variables_map const& vm)
+      : installation (require_gspc_home (vm))
+  {}
 
   scoped_runtime_system::scoped_runtime_system
       ( boost::program_options::variables_map const& vm

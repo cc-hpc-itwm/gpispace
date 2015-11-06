@@ -9,7 +9,7 @@
 #include <xml/parse/type/with_position_of_definition.hpp>
 #include <xml/parse/util/position.fwd.hpp>
 
-#include <fhg/util/std/tuple.hpp> //! \note To allow storing in unique.
+#include <util-generic/hash/std/pair.hpp>
 #include <fhg/util/xml.fwd.hpp>
 
 #include <we/type/net.hpp>

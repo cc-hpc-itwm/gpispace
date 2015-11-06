@@ -57,7 +57,7 @@
 #include <gpi-space/pc/client/api.hpp>
 
 #include <network/connectable_to_address_string.hpp>
-#include <fhg/util/std/pair.hpp>
+#include <util-generic/hash/std/pair.hpp>
 #include <fhg/util/thread/set.hpp>
 #include <fhg/util/thread/queue.hpp>
 

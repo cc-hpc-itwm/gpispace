@@ -46,6 +46,7 @@ namespace gspc
   class installation
   {
   public:
+    installation (boost::filesystem::path const& gspc_home);
     installation (boost::program_options::variables_map const& vm);
 
     boost::filesystem::path const& gspc_home() const

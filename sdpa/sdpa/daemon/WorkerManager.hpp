@@ -4,6 +4,7 @@
 
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/job_requirements.hpp>
+#include <sdpa/events/CancelJobEvent.hpp>
 
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
@@ -84,6 +85,8 @@ namespace sdpa
       address_by_worker (std::string const&);
 
       bool hasWorker_INDICATES_A_RACE_TESTING_ONLY (const worker_id_t& worker_id) const;
+
+      std::unordered_set<worker_id_t> workers_to_send_cancel (job_id_t const& job_id);
 
     private:
       boost::optional<double> matchRequirements

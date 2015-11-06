@@ -343,44 +343,33 @@ namespace gpi
       gpi::pc::type::segment_id_t
       api_t::register_segment( std::string const & name
                              , const gpi::pc::type::size_t sz
-                             , const gpi::pc::type::flags_t flags
                              )
       {
         segment_ptr seg (new gpi::pc::segment::segment_t(name, sz));
-          if (flags & gpi::pc::F_NOCREATE)
+
+        try
+        {
+          seg->unlink();
+        }
+        catch (boost::system::system_error const &se)
+        {
+          if (se.code ().value () == ENOENT)
           {
-            seg->open();
+            // unlink() always throws, even  if the file did not
+            // exist, so we have to ignore this error here.
           }
           else
           {
-            if (flags & gpi::pc::F_FORCE_UNLINK)
-            {
-              try
-              {
-                seg->unlink();
-              }
-              catch (boost::system::system_error const &se)
-              {
-                if (se.code ().value () == ENOENT)
-                {
-                  // unlink() always throws, even  if the file did not
-                  // exist, so we have to ignore this error here.
-                }
-                else
-                {
-                  throw;
-                }
-              }
-            }
-            seg->create ();
+            throw;
           }
+        }
+        seg->create ();
 
         // communication part
         {
           proto::segment::register_t rqst;
           rqst.name = name;
           rqst.size = sz;
-          rqst.flags = flags | gpi::pc::F_NOCREATE;
 
           proto::message_t rply (communicate (proto::segment::message_t (rqst)));
           try
@@ -424,10 +413,7 @@ namespace gpi
 
         m_segments [seg->id()] = seg;
 
-        if (gpi::flag::is_set (flags, gpi::pc::F_EXCLUSIVE))
-        {
-          seg->unlink();
-        }
+        seg->unlink();
 
         return seg->id();
       }

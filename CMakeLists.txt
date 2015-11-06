@@ -91,7 +91,6 @@ find_boost (1.59 REQUIRED QUIET COMPONENTS
   unit_test_framework
 )
 find_package (GASPI 1.1.0 REQUIRED QUIET)
-find_package (Graphviz COMPONENTS cdt gvc graph pathplan REQUIRED QUIET)
 find_package (HWLOC REQUIRED QUIET)
 find_package (LibRT REQUIRED QUIET)
 find_package (LibReadline REQUIRED QUIET)
@@ -124,7 +123,8 @@ if (CMAKE_USE_PTHREADS_INIT)
   link_libraries (${CMAKE_THREAD_LIBS_INIT} rt)
 endif()
 
-add_subdirectory (bundle)
+bundle_boost (DESTINATION "external/boost")
+
 add_subdirectory (doc)
 add_subdirectory (fhglog)
 add_subdirectory (playground/bl)
