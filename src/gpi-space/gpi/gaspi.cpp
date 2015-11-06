@@ -96,6 +96,7 @@ namespace gpi
       , m_mem_size (memory_size)
       , m_dma (nullptr)
       , m_replacement_gpi_segment (0)
+      , _current_queue (0)
       , _next_write_id (0)
     {
       time_left const time_left (timeout);
@@ -315,27 +316,30 @@ namespace gpi
       //! entry check and the actual operation.
       std::unique_lock<std::mutex> const _ (_queue_operation_guard);
 
-      //! \todo round-robin queues again!
-      queue_desc_t queue (0);
-
       gaspi_number_t queue_size_max;
-      FAIL_ON_NON_ZERO (gaspi_queue_size_max, &queue_size_max);
-
       gaspi_number_t queue_size;
-      FAIL_ON_NON_ZERO (gaspi_queue_size, queue, &queue_size);
+      gaspi_number_t queue_num;
 
-      if (queue_size >= queue_size_max)
+      FAIL_ON_NON_ZERO (gaspi_queue_size_max, &queue_size_max);
+      FAIL_ON_NON_ZERO (gaspi_queue_size, _current_queue, &queue_size);
+      FAIL_ON_NON_ZERO (gaspi_queue_num, &queue_num);
+
+      assert (queue_entry_count <= queue_size_max);
+
+      if ((queue_size + queue_entry_count) > queue_size_max)
       {
-        wait_dma (queue);
+        _current_queue = (_current_queue + 1) % queue_num;
+
+        FAIL_ON_NON_ZERO (gaspi_wait, _current_queue, GASPI_BLOCK);
       }
 
       FAIL_ON_NON_ZERO ( std::forward<Fun> (function)
                        , std::forward<Args> (arguments)...
-                       , queue
+                       , _current_queue
                        , GASPI_BLOCK
                        );
 
-      return queue;
+      return _current_queue;
     }
 
     gaspi_t::read_dma_info gaspi_t::read_dma
