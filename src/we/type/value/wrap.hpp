@@ -8,8 +8,6 @@
 #include <boost/foreach.hpp>
 #include <boost/preprocessor/punctuation/comma.hpp>
 
-#include <we/type/value/show.hpp>
-
 namespace pnet
 {
   namespace type

@@ -99,14 +99,19 @@ namespace
 
 DRTSImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canceled_helper()
 {
-  std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
-  while (!_currently_executed_tasks.empty())
+  std::unique_lock<std::mutex> const currently_executed_tasks_lock
+    (_currently_executed_tasks_mutex);
+  std::unique_lock<std::mutex> const jobs_lock (_jobs_guard);
+
+  for (auto& task : _currently_executed_tasks | boost::adaptors::map_values)
   {
-    wfe_task_t *task = _currently_executed_tasks.begin()->second;
     task->state = wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN;
     task->context.module_call_do_cancel();
+  }
 
-    _currently_executed_tasks.erase (task->id);
+  for (auto& job : _jobs | boost::adaptors::map_values)
+  {
+    job->state = Job::state_t::CANCELED_DUE_TO_WORKER_SHUTDOWN;
   }
 }
 
@@ -192,6 +197,13 @@ DRTSImpl::DRTSImpl
 DRTSImpl::~DRTSImpl()
 {
   m_shutting_down = true;
+
+  //! \note remove them all to avoid a legit backlogfull triggering
+  //! another job: we will reply to all submitjobs with a backlogfull
+  //! that should never be followed up with a no-longer-full
+  std::unique_lock<std::mutex> const _
+    (_guard_backlogfull_notified_masters);
+  _masters_backlogfull_notified.clear();
 }
 
 void DRTSImpl::handle_worker_registration_response
@@ -247,6 +259,23 @@ void DRTSImpl::handleSubmitJobEvent
     throw std::runtime_error ("Received job with an unspecified job id");
   }
 
+  if (m_shutting_down)
+  {
+    send_event<sdpa::events::ErrorEvent>
+      ( source
+      , sdpa::events::ErrorEvent::SDPA_EBACKLOGFULL
+      , "abusing backlogfull to stop getting new jobs"
+      , *e->job_id()
+      );
+
+    //! \note not putting into _masters_backlogfull_notified to avoid
+    //! being marked as free again at any point
+
+    return;
+  }
+
+  std::unique_lock<std::mutex> job_map_lock(m_job_map_mutex);
+
   map_of_jobs_t::iterator job_it (m_jobs.find(*e->job_id()));
   if (job_it != m_jobs.end())
   {
@@ -261,8 +290,6 @@ void DRTSImpl::handleSubmitJobEvent
                                       , e->workers()
                                       )
     );
-
-  std::unique_lock<std::mutex> job_map_lock(m_job_map_mutex);
 
   if (!m_pending_jobs.try_put (job))
   {
@@ -454,11 +481,6 @@ void DRTSImpl::job_execution_thread()
       wfe_task_t task
         (job->id, job->description, m_my_name, job->workers, _logger);
 
-      {
-        std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
-        _currently_executed_tasks.emplace (job->id, &task);
-      }
-
       if (_notification_service)
       {
         using sdpa::daemon::NotificationEvent;
@@ -472,33 +494,40 @@ void DRTSImpl::job_execution_thread()
           );
       }
 
-      if (task.state == wfe_task_t::PENDING)
+      wfe_exec_context ctxt
+        (m_loader, _virtual_memory_api, _shared_memory, task);
+
+      try
       {
-        try
+        //! \todo there is a race between putting it into
+        //! _currently_executed_tasks and actually starting it, as
+        //! well as between finishing execution and removing: a cancel
+        //! between the two means to call on_cancel() on a module call
+        //! not yet or no longer executed.
         {
-          wfe_exec_context ctxt
-            (m_loader, _virtual_memory_api, _shared_memory, task);
-
-          task.activity.execute (&ctxt);
-
-          //! \note failing or canceling overwrites
-          if (task.state == wfe_task_t::PENDING)
-          {
-            task.state = wfe_task_t::FINISHED;
-            job->result = task.activity.to_string();
-          }
+          std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
+          _currently_executed_tasks.emplace (job->id, &task);
         }
-        catch (...)
-        {
-          task.state = wfe_task_t::FAILED;
-          job->message = "Module call failed: "
-            + fhg::util::current_exception_printer (": ").string();
-        }
+
+        task.activity.execute (&ctxt);
+      }
+      catch (...)
+      {
+        task.state = wfe_task_t::FAILED;
+        job->message = "Module call failed: "
+          + fhg::util::current_exception_printer (": ").string();
       }
 
       {
         std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
         _currently_executed_tasks.erase (job->id);
+      }
+
+      //! \note failing or canceling overwrites
+      if (task.state == wfe_task_t::PENDING)
+      {
+        task.state = wfe_task_t::FINISHED;
+        job->result = task.activity.to_string();
       }
 
       if (wfe_task_t::FINISHED == task.state)
