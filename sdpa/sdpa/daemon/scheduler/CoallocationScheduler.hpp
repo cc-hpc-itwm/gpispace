@@ -102,7 +102,7 @@ namespace sdpa
           m_map_worker_result[wid] = result;
         }
 
-        void replace_worker (worker_id_t w1, worker_id_t w2)
+        void replace_worker (worker_id_t const& w1, worker_id_t w2)
         {
           if (!_workers.count (w1))
           {
@@ -110,7 +110,7 @@ namespace sdpa
           }
 
           _workers.erase (w1);
-          _workers.insert (w2);
+          _workers.emplace (std::move (w2));
         }
 
         bool allWorkersTerminated() const

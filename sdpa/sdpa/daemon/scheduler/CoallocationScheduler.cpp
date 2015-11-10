@@ -162,18 +162,11 @@ namespace sdpa
       std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
       if (jobs_to_schedule.empty())
       {
-        std::list<job_id_t> pending_jobs (_list_pending_jobs.get_and_clear());
-        if (!pending_jobs.empty())
-        {
-          _worker_manager.steal_work<Reservation>
-            ( pending_jobs
-            , [this] (job_id_t const& job)
-              {return allocation_table_.at (job);}
-            , _job_requirements
-            );
-
-          _list_pending_jobs.push (pending_jobs);
-        }
+        _worker_manager.steal_work<Reservation>
+          ( [this] (job_id_t const& job)
+            {return allocation_table_.at (job);}
+          , _job_requirements
+          );
       }
 
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
@@ -257,27 +250,19 @@ namespace sdpa
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
 
-      job_id_list_t pending_jobs (_list_pending_jobs.get_and_clear());
-
-      std::set<job_id_t> removed_jobs
-        (_worker_manager.remove_all_matching_pending_jobs
-          ( worker
-          , pending_jobs
-          , [this] (job_id_t const& job)
-            {return allocation_table_.at (job)->workers();}
-          , _job_requirements
-          )
+      const std::unordered_set<job_id_t> removed_jobs
+        (_worker_manager.remove_pending_jobs_from_workers_with_similar_capabilities
+          (worker)
         );
 
       for (job_id_t const& job_id : removed_jobs)
       {
-        pending_jobs.remove (job_id);
+        _list_pending_jobs.erase (job_id);
         delete allocation_table_.at (job_id);
         allocation_table_.erase (job_id);
       }
 
       _jobs_to_schedule.push (removed_jobs);
-      _list_pending_jobs.push (pending_jobs);
     }
 
     bool CoallocationScheduler::cancelNotTerminatedWorkerJobs ( std::function<void (worker_id_t const&)> func
