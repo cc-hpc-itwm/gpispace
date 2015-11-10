@@ -19,24 +19,27 @@ namespace sdpa
       return worker_map_.find(worker_id) != worker_map_.end();
     }
 
-    const boost::optional<worker_id_t> WorkerManager::findSubmOrAckWorker (const sdpa::job_id_t& job_id) const
+    std::unordered_set<worker_id_t> WorkerManager::findSubmOrAckWorkers
+      (job_id_t const& job_id) const
     {
       boost::mutex::scoped_lock const _ (mtx_);
+      std::unordered_set<worker_id_t> submitted_or_ack_workers;
 
-      for ( std::pair<worker_id_t, Worker> const& worker
-          : worker_map_
-          | boost::adaptors::filtered
-            ([&job_id] (std::pair<worker_id_t, Worker> const& w)
-             {
-               return w.second.has_job (job_id);
-             }
-            )
-          )
-      {
-        return worker.first;
-      }
+      boost::copy ( worker_map_
+                  | boost::adaptors::filtered
+                    ( [&job_id] (std::pair<worker_id_t const, Worker> const& w)
+                      {
+                       return w.second.submitted_.count (job_id)
+                         || w.second.acknowledged_.count (job_id);
+                      }
+                    )
+                  | boost::adaptors::map_keys
+                  , std::inserter ( submitted_or_ack_workers
+                                  , submitted_or_ack_workers.begin()
+                                  )
+                  );
 
-      return boost::none;
+      return submitted_or_ack_workers;
     }
 
     void WorkerManager::addWorker ( const worker_id_t& workerId

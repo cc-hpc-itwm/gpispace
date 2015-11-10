@@ -1128,13 +1128,16 @@ void GenericDaemon::handleJobFailedAckEvent
     {
       Job* pJob (findJob (job_id));
 
-      const boost::optional<worker_id_t> worker_id
-        (_worker_manager.findSubmOrAckWorker(job_id));
+      std::unordered_set<worker_id_t> workers
+        (_worker_manager.findSubmOrAckWorkers (job_id));
 
-      if (pJob && worker_id)
+      if (pJob && !workers.empty())
       {
-        child_proxy (this, _worker_manager.address_by_worker (*worker_id).get()->second)
-          .discover_job_states (job_id, discover_id);
+        for (worker_id_t const& w : workers)
+        {
+          child_proxy (this, _worker_manager.address_by_worker (w).get()->second)
+              .discover_job_states (job_id, discover_id);
+        }
       }
       else if (pJob)
       {
@@ -1157,16 +1160,19 @@ void GenericDaemon::handleJobFailedAckEvent
     {
       Job* pJob (findJob (pEvt->job_id()));
 
-      const boost::optional<worker_id_t> worker_id
-        (_worker_manager.findSubmOrAckWorker(pEvt->job_id()));
+      std::unordered_set<worker_id_t> workers
+        (_worker_manager.findSubmOrAckWorkers (pEvt->job_id()));
 
-      if (pJob && worker_id)
+      if (pJob && !workers.empty())
       {
         _discover_sources.emplace
           (std::make_pair (pEvt->discover_id(), pEvt->job_id()), source);
 
-        child_proxy (this, _worker_manager.address_by_worker (*worker_id).get()->second)
-          .discover_job_states (pEvt->job_id(), pEvt->discover_id());
+        for (worker_id_t const& w : workers)
+        {
+          child_proxy (this, _worker_manager.address_by_worker (w).get()->second)
+            .discover_job_states (pEvt->job_id(), pEvt->discover_id());
+        }
       }
       //! \todo Other criteria to know it was submitted to the
       //! wfe. All jobs are regarded as going to the wfe and the only
@@ -1265,25 +1271,28 @@ void GenericDaemon::handleJobFailedAckEvent
     {
       Job* job (findJob (event->job_id()));
 
-      const boost::optional<worker_id_t> worker_id
-        (_worker_manager.findSubmOrAckWorker (event->job_id()));
+      std::unordered_set<worker_id_t> workers
+        (_worker_manager.findSubmOrAckWorkers (event->job_id()));
 
-      if (!job || (!worker_id && !workflowEngine()))
+      if (!job || (workers.empty() && !workflowEngine()))
       {
         throw std::runtime_error
           ("unable to put token: " + event->job_id() + " unknown or not running");
       }
 
-      if (worker_id)
+      if (!workers.empty())
       {
         _put_token_source.emplace (event->put_token_id(), source);
 
-        child_proxy (this, _worker_manager.address_by_worker (*worker_id).get()->second)
-          .put_token ( event->job_id()
-                     , event->put_token_id()
-                     , event->place_name()
-                     , event->value()
-                     );
+        for (worker_id_t const& w : workers)
+        {
+          child_proxy (this, _worker_manager.address_by_worker (w).get()->second)
+            .put_token ( event->job_id()
+                       , event->put_token_id()
+                       , event->place_name()
+                       , event->value()
+                       );
+        }
       }
       //! \todo Other criteria to know it was submitted to the
       //! wfe. All jobs are regarded as going to the wfe and the only
@@ -1332,10 +1341,10 @@ void GenericDaemon::handleJobFailedAckEvent
     {
       Job* job (findJob (event->job_id()));
 
-      const boost::optional<worker_id_t> worker_id
-        (_worker_manager.findSubmOrAckWorker (event->job_id()));
+      std::unordered_set<worker_id_t> workers
+        (_worker_manager.findSubmOrAckWorkers (event->job_id()));
 
-      if (!job || (!worker_id && !workflowEngine()))
+      if (!job || (workers.empty() && !workflowEngine()))
       {
         throw std::runtime_error
           ( "unable to request workflow response: " + event->job_id()
@@ -1343,16 +1352,19 @@ void GenericDaemon::handleJobFailedAckEvent
           );
       }
 
-      if (worker_id)
+      if (!workers.empty())
       {
         _workflow_response_source.emplace (event->workflow_response_id(), source);
 
-        child_proxy (this, _worker_manager.address_by_worker (*worker_id).get()->second)
-          .workflow_response ( event->job_id()
-                             , event->workflow_response_id()
-                             , event->place_name()
-                             , event->value()
-                             );
+        for (worker_id_t const& w : workers)
+        {
+          child_proxy (this, _worker_manager.address_by_worker (w).get()->second)
+            .workflow_response ( event->job_id()
+                               , event->workflow_response_id()
+                               , event->place_name()
+                               , event->value()
+                               );
+        }
       }
       //! \todo Other criteria to know it was submitted to the
       //! wfe. All jobs are regarded as going to the wfe and the only
