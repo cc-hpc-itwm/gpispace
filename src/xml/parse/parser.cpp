@@ -1698,11 +1698,7 @@ namespace xml
             , fhg::util::boost::fmap<std::string, bool>
               (fhg::util::read_bool, optional (node, "internal"))
             //! \todo see Issue #118 and forbid more than one expression
-            , type::expression_type ( state.id_mapper()->next_id()
-                                    , state.id_mapper()
-                                    , id
-                                    , state.position (node)
-                                    ).make_reference_id()
+            , {state.position (node)}
             ).make_reference_id()
           );
 

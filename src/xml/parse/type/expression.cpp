@@ -1,8 +1,4 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <xml/parse/type/expression.hpp>
-
-#include <xml/parse/id/mapper.hpp>
 
 #include <util-generic/join.hpp>
 #include <fhg/util/xml.hpp>
@@ -67,18 +63,12 @@ namespace xml
         }
       }
 
-      expression_type::expression_type ( ID_CONS_PARAM(expression)
-                                       , PARENT_CONS_PARAM(function)
-                                       , const util::position_type& pod
+      expression_type::expression_type ( const util::position_type& pod
                                        , const expressions_type & exps
                                        )
         : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
         , _expressions (split (exps))
-      {
-        _id_mapper->put (_id, *this);
-      }
+      {}
 
       void expression_type::set (const std::string& exps)
       {
@@ -104,22 +94,6 @@ namespace xml
       {
         expressions().insert
           (expressions().end(), other.begin(), other.end());
-      }
-
-      id::ref::expression expression_type::clone
-        ( const boost::optional<parent_id_type>& parent
-        , const boost::optional<id::mapper*>& mapper
-        ) const
-      {
-        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
-        const id_type new_id (new_mapper->next_id());
-        return expression_type
-          ( new_id
-          , new_mapper
-          , parent
-          , _position_of_definition
-          , _expressions
-          ).make_reference_id();
       }
 
       namespace dump

@@ -1,11 +1,7 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #pragma once
 
 #include <xml/parse/type/expression.fwd.hpp>
 
-#include <xml/parse/id/generic.hpp>
-#include <xml/parse/id/types.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
 #include <xml/parse/util/position.hpp>
 
@@ -25,13 +21,8 @@ namespace xml
 
       struct expression_type : with_position_of_definition
       {
-        ID_SIGNATURES(expression);
-        PARENT_SIGNATURES(function);
-
       public:
-        expression_type ( ID_CONS_PARAM(expression)
-                        , PARENT_CONS_PARAM(function)
-                        , const util::position_type&
+        expression_type ( const util::position_type&
                         , const expressions_type& exps
                         = expressions_type()
                         );
@@ -44,11 +35,6 @@ namespace xml
         expressions_type& expressions (void);
 
         void append (const expressions_type& other);
-
-        id::ref::expression clone
-          ( const boost::optional<parent_id_type>& parent = boost::none
-          , const boost::optional<id::mapper*>& mapper = boost::none
-          ) const;
 
       private:
         expressions_type _expressions;

@@ -177,7 +177,7 @@ namespace xml
             }
           }
 
-          void operator() (const id::ref::expression&) const
+          void operator() (const expression_type&) const
           {
             if (_port.get().place)
             {
