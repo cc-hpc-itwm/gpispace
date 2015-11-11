@@ -24,6 +24,8 @@ namespace sdpa
       , STATE_FINISHED
       , STATE_FAILED
       , STATE_CANCELED
+        , STATE_HACK_WAS_PUT
+        , STATE_HACK_WAS_GET
       , STATE_MAX = STATE_CANCELED
       };
 

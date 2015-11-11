@@ -34,11 +34,17 @@ namespace
       , gpi::pc::client::api_t /*const*/* virtual_memory_api
       , gspc::scoped_allocation /*const*/* shared_memory
       , wfe_task_t& target
+      , sdpa::daemon::NotificationService* service
+      , std::string const& worker_name
+      , std::string const& activity_id
       )
       : loader (module_loader)
       , _virtual_memory_api (virtual_memory_api)
       , _shared_memory (shared_memory)
       , task (target)
+      , _service (service)
+      , _worker_name (worker_name)
+      , _activity_id (activity_id)
     {}
 
     virtual void handle_internally (we::type::activity_t& act, net_t const&) override
@@ -83,6 +89,9 @@ namespace
                                     , &task.context
                                     , act
                                     , mod
+                                    , _service
+                                    , _worker_name
+                                    , _activity_id
                                     );
           }
         , "call to '" + mod.module() + "::" + mod.function() + "' failed"
@@ -94,6 +103,9 @@ namespace
     gpi::pc::client::api_t /*const*/* _virtual_memory_api;
     gspc::scoped_allocation /*const*/* _shared_memory;
     wfe_task_t& task;
+    sdpa::daemon::NotificationService* _service;
+    std::string const& _worker_name;
+    std::string const& _activity_id;
   };
 }
 
@@ -481,21 +493,8 @@ void DRTSImpl::job_execution_thread()
       wfe_task_t task
         (job->id, job->description, m_my_name, job->workers, _logger);
 
-      if (_notification_service)
-      {
-        using sdpa::daemon::NotificationEvent;
-        _notification_service->notify
-          ( NotificationEvent
-              ( {m_my_name}
-              , task.id
-              , NotificationEvent::STATE_STARTED
-              , task.activity
-              )
-          );
-      }
-
       wfe_exec_context ctxt
-        (m_loader, _virtual_memory_api, _shared_memory, task);
+        (m_loader, _virtual_memory_api, _shared_memory, task, _notification_service.get(), m_my_name, task.id);
 
       try
       {
@@ -538,23 +537,6 @@ void DRTSImpl::job_execution_thread()
       {
         LLOG (ERROR, _logger, "task failed: " << task.id << ": " << job->message);
       }
-
-      if (_notification_service)
-      {
-        using sdpa::daemon::NotificationEvent;
-        _notification_service->notify
-          ( NotificationEvent
-              ( {m_my_name}
-              , task.id
-              , task.state == wfe_task_t::FINISHED ? NotificationEvent::STATE_FINISHED
-              : task.state == wfe_task_t::CANCELED ? NotificationEvent::STATE_CANCELED
-              : task.state == wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN ? NotificationEvent::STATE_FAILED
-              : task.state == wfe_task_t::FAILED ? NotificationEvent::STATE_FAILED
-              : INVALID_ENUM_VALUE (wfe_task_t::state_t, task.state)
-              , task.activity
-              )
-            );
-        }
 
       job->state = task.state == wfe_task_t::FINISHED ? DRTSImpl::Job::FINISHED
                  : task.state == wfe_task_t::CANCELED ? DRTSImpl::Job::CANCELED

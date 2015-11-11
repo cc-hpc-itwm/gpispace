@@ -176,6 +176,9 @@ namespace we
       , drts::worker::context* context
       , we::type::activity_t& act
       , const we::type::module_call_t& module_call
+      , sdpa::daemon::NotificationService* service
+      , std::string const& worker_name
+      , std::string const& activity_id
       )
     {
       unsigned long position (0);
@@ -225,9 +228,25 @@ namespace we
         }
       }
 
+      service->notify ( sdpa::daemon::NotificationEvent
+                         ( {worker_name}
+                         , activity_id + ".get"
+                         , sdpa::daemon::NotificationEvent::STATE_STARTED
+                         , act
+                         )
+                      );
+
       transfer ( get_global_data, virtual_memory_api, shared_memory
                , memory_buffer, module_call.gets (input (act))
                );
+
+      service->notify ( sdpa::daemon::NotificationEvent
+                         ( {worker_name}
+                         , activity_id + ".get"
+                         , sdpa::daemon::NotificationEvent::STATE_HACK_WAS_GET
+                         , act
+                         )
+                      );
 
       std::list<std::pair<local::range, global::range>> const
         puts_evaluated_before_call
@@ -235,6 +254,15 @@ namespace we
 
       expr::eval::context out (input (act));
 
+      service->notify ( sdpa::daemon::NotificationEvent
+                         ( {worker_name}
+                         , activity_id + ".exec"
+                         , sdpa::daemon::NotificationEvent::STATE_STARTED
+                         , act
+                         )
+                      );
+
+      try
       {
         drts::worker::redirect_output const clog (context, fhg::log::TRACE, std::clog);
         drts::worker::redirect_output const cout (context, fhg::log::INFO, std::cout);
@@ -243,6 +271,26 @@ namespace we
         loader[module_call.module()].call
           (module_call.function(), context, input (act), out, pointers);
       }
+      catch (...)
+      {
+        service->notify ( sdpa::daemon::NotificationEvent
+                         ( {worker_name}
+                         , activity_id + ".exec"
+                         , sdpa::daemon::NotificationEvent::STATE_FAILED
+                         , act
+                         )
+                      );
+
+        throw;
+      }
+
+      service->notify ( sdpa::daemon::NotificationEvent
+                         ( {worker_name}
+                         , activity_id + ".exec"
+                         , sdpa::daemon::NotificationEvent::STATE_FINISHED
+                         , act
+                         )
+                      );
 
       for ( std::pair<we::port_id_type, we::type::port_t> const& port_by_id
           : act.transition().ports_output()
@@ -254,12 +302,28 @@ namespace we
         act.add_output (port_id, out.value (port.name()));
       }
 
+      service->notify ( sdpa::daemon::NotificationEvent
+                         ( {worker_name}
+                         , activity_id + ".put"
+                         , sdpa::daemon::NotificationEvent::STATE_STARTED
+                         , act
+                         )
+                      );
+
       transfer ( put_global_data, virtual_memory_api, shared_memory
                , memory_buffer, puts_evaluated_before_call
                );
       transfer ( put_global_data, virtual_memory_api, shared_memory
                , memory_buffer, module_call.puts_evaluated_after_call (out)
                );
+      service->notify ( sdpa::daemon::NotificationEvent
+                         ( {worker_name}
+                         , activity_id + ".put"
+                         , sdpa::daemon::NotificationEvent::STATE_HACK_WAS_PUT
+                         , act
+                         )
+                      );
+
     }
   }
 }
