@@ -97,7 +97,6 @@ namespace gpi
       , m_dma (nullptr)
       , m_replacement_gpi_segment (0)
       , _current_queue (0)
-      , _next_write_id (0)
     {
       time_left const time_left (timeout);
 
@@ -141,6 +140,27 @@ namespace gpi
 
       gaspi_number_t available_notifications;
       FAIL_ON_NON_ZERO (gaspi_notification_num, &available_notifications);
+
+      //! \note limited due to rui.machado/gpi-2#10: notification
+      //! values are not written atomically in gpi-2+eth but on a
+      //! byte-by-byte level, thus we limit us to using just a single
+      //! byte at any given time.
+      {
+        std::vector<gaspi_notification_t> write_ids;
+
+        constexpr std::size_t const bytes (sizeof (gaspi_notification_t));
+        //! \note do not use 0 as notification value
+        constexpr std::size_t const ids_per_byte ((1 << CHAR_BIT) - 1);
+        for (gaspi_notification_t n (1); n < ids_per_byte; ++n)
+        {
+          for (std::size_t byte (0); byte < bytes; ++byte)
+          {
+            write_ids.emplace_back (n << (byte * CHAR_BIT));
+          }
+        }
+
+        _write_ids.put_many (write_ids.begin(), write_ids.end());
+      }
 
       //! \todo reasonable maximum
       constexpr gaspi_number_t const maximum_notifications_per_rank (16);
@@ -457,6 +477,7 @@ namespace gpi
             );
 
           _outstanding_notifications.erase (info.write_id);
+          _write_ids.put (info.write_id);
         }
       }
     }
@@ -566,13 +587,7 @@ namespace gpi
 
     notification_t gaspi_t::next_write_id()
     {
-      std::unique_lock<std::mutex> const _ (_notification_guard);
-      notification_t write_id (++_next_write_id);
-      if (!write_id)
-      {
-        write_id = ++_next_write_id;
-      }
-      return write_id;
+      return _write_ids.get();
     }
     notification_id_t gaspi_t::next_ping_id (rank_t rank)
     {

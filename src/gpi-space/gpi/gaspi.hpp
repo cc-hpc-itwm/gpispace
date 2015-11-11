@@ -128,7 +128,7 @@ namespace gpi
 
       std::mutex _notification_guard;
 
-      std::atomic<notification_t> _next_write_id;
+      fhg::thread::queue<notification_t> _write_ids;
       notification_t next_write_id();
 
       notification_id_t _notification_ids_per_node;
