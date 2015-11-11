@@ -131,10 +131,20 @@ namespace gpi
       std::atomic<notification_t> _next_write_id;
       notification_t next_write_id();
 
-      notification_id_t _maximum_notification_id;
       notification_id_t _notification_ids_per_node;
-      notification_id_t _local_ids_begin;
-      notification_id_t _pong_ids_offset;
+      constexpr notification_id_t pong_ids_offset() const;
+      constexpr notification_id_t ping_ids_count() const;
+      constexpr notification_id_t total_number_of_notifications() const;
+
+      constexpr rank_t sending_rank (notification_id_t) const;
+      constexpr notification_id_t ids_begin (rank_t) const;
+      constexpr notification_id_t notification_id_offset (notification_id_t) const;
+      constexpr bool is_pong (notification_id_t) const;
+      constexpr notification_id_t corresponding_local_ping_id
+        (notification_id_t pong_id) const;
+      constexpr notification_id_t corresponding_local_pong_id
+        (notification_id_t ping_id) const;
+
       std::unordered_map<rank_t, fhg::thread::queue<notification_id_t>>
         _ping_ids;
       notification_id_t next_ping_id (rank_t);

@@ -160,15 +160,9 @@ namespace gpi
           );
       }
 
-      _maximum_notification_id
-        = _notification_ids_per_node * number_of_nodes();
-
-      _local_ids_begin = rank() * _notification_ids_per_node;
-      _pong_ids_offset = _notification_ids_per_node / 2;
-
       {
-        std::vector<gaspi_notification_id_t> ping_ids (_pong_ids_offset);
-        std::iota (ping_ids.begin(), ping_ids.end(), _local_ids_begin);
+        std::vector<gaspi_notification_id_t> ping_ids (ping_ids_count());
+        std::iota (ping_ids.begin(), ping_ids.end(), ids_begin (rank()));
         for (gaspi_rank_t rank (0); rank < number_of_nodes(); ++rank)
         {
           _ping_ids[rank].put_many (ping_ids.begin(), ping_ids.end());
@@ -467,6 +461,51 @@ namespace gpi
       }
     }
 
+    constexpr notification_id_t gaspi_t::pong_ids_offset() const
+    {
+      return _notification_ids_per_node / 2;
+    }
+    constexpr notification_id_t gaspi_t::ping_ids_count() const
+    {
+      return pong_ids_offset();
+    }
+    constexpr notification_id_t gaspi_t::total_number_of_notifications() const
+    {
+      return _notification_ids_per_node * number_of_nodes();
+    }
+
+    constexpr rank_t gaspi_t::sending_rank (notification_id_t notification_id) const
+    {
+      return notification_id / _notification_ids_per_node;
+    }
+    constexpr notification_id_t gaspi_t::ids_begin (rank_t rank) const
+    {
+      return rank * _notification_ids_per_node;
+    }
+    constexpr notification_id_t gaspi_t::notification_id_offset
+      (notification_id_t notification_id) const
+    {
+      return notification_id - ids_begin (sending_rank (notification_id));
+    }
+    constexpr bool gaspi_t::is_pong (notification_id_t notification_id) const
+    {
+      return notification_id_offset (notification_id) >= pong_ids_offset();
+    }
+    constexpr notification_id_t gaspi_t::corresponding_local_ping_id
+      (notification_id_t pong_id) const
+    {
+      return ids_begin (rank())
+        + notification_id_offset (pong_id)
+        - pong_ids_offset();
+    }
+    constexpr notification_id_t gaspi_t::corresponding_local_pong_id
+      (notification_id_t ping_id) const
+    {
+      return ids_begin (rank())
+        + notification_id_offset (ping_id)
+        + pong_ids_offset();
+    }
+
     void gaspi_t::notification_check()
     {
       for (;;)
@@ -478,7 +517,7 @@ namespace gpi
           ( gaspi_notify_waitsome
               ( m_replacement_gpi_segment
               , 0
-              , _maximum_notification_id
+              , total_number_of_notifications()
               , &notification_id
               , 100
               )
@@ -501,35 +540,26 @@ namespace gpi
                          , &write_id
                          );
 
-        gaspi_rank_t const sending_rank
-          (notification_id / _notification_ids_per_node);
-        gaspi_notification_id_t notification_id_offset
-          (notification_id - (sending_rank * _notification_ids_per_node));
-        bool const is_pong (notification_id_offset >= _pong_ids_offset);
-
-        if (is_pong)
+        if (is_pong (notification_id))
         {
           {
             std::unique_lock<std::mutex> const _ (_notification_guard);
             --_outstanding_notifications.at (write_id);
           }
 
-          _ping_ids[sending_rank].put ( notification_id_offset
-                                      - _pong_ids_offset
-                                      + _local_ids_begin
-                                      );
+          _ping_ids[sending_rank (notification_id)].put
+            (corresponding_local_ping_id (notification_id));
           _notification_received.notify_all();
         }
         else
         {
-          queued_operation<1> ( gaspi_notify
-                              , m_replacement_gpi_segment
-                              , sending_rank
-                              , notification_id_offset
-                              + _pong_ids_offset
-                              + _local_ids_begin
-                              , write_id
-                              );
+          queued_operation<1>
+            ( gaspi_notify
+            , m_replacement_gpi_segment
+            , sending_rank (notification_id)
+            , corresponding_local_pong_id (notification_id)
+            , write_id
+            );
         }
       }
     }
