@@ -185,51 +185,54 @@ namespace fhg
         if (!is_complete)
         {
           int child_status (0);
-          if (util::syscall::waitpid (pid, &child_status, WNOHANG) == pid)
+          if (util::syscall::waitpid (pid, &child_status, 0) != pid)
           {
-            if (WIFSIGNALED (child_status))
-            {
-              throw std::runtime_error
-                ("child signalled: " + std::to_string (WTERMSIG (child_status)));
-            }
-            else if (WIFEXITED (child_status))
-            {
-              switch (WEXITSTATUS (child_status))
-              {
-              case 241:
-                throw std::system_error
-                  (std::make_error_code (std::errc::argument_list_too_long));
-              case 242:
-                throw std::system_error
-                  (std::make_error_code (std::errc::filename_too_long));
-              case 243:
-                throw std::system_error
-                  (std::make_error_code (std::errc::invalid_argument));
-              case 244:
-                throw std::system_error
-                  (std::make_error_code (std::errc::no_such_file_or_directory));
-              case 245:
-                throw std::system_error
-                  (std::make_error_code (std::errc::not_a_directory));
-              case 246:
-                throw std::system_error
-                  (std::make_error_code (std::errc::permission_denied));
-              case 247:
-                throw std::system_error
-                  (std::make_error_code (std::errc::too_many_symbolic_link_levels));
-              case 240:
-                throw std::runtime_error
-                  ("execve failed: unknown error");
-              default:
-                throw std::runtime_error
-                  ("child exited: " + std::to_string (WEXITSTATUS (child_status)));
-              }
-            }
-            //! \note can't really happen, but just fall through to
-            //! generic exception
+            throw std::logic_error ("waitpid (pid) != pid");
           }
 
-          throw std::runtime_error ("pipe closed before end-sentinel-value read");
+          if (WIFSIGNALED (child_status))
+          {
+            throw std::runtime_error
+              ("child signalled: " + std::to_string (WTERMSIG (child_status)));
+          }
+          else if (WIFEXITED (child_status))
+          {
+            switch (WEXITSTATUS (child_status))
+            {
+            case 241:
+              throw std::system_error
+                (std::make_error_code (std::errc::argument_list_too_long));
+            case 242:
+              throw std::system_error
+                (std::make_error_code (std::errc::filename_too_long));
+            case 243:
+              throw std::system_error
+                (std::make_error_code (std::errc::invalid_argument));
+            case 244:
+              throw std::system_error
+                (std::make_error_code (std::errc::no_such_file_or_directory));
+            case 245:
+              throw std::system_error
+                (std::make_error_code (std::errc::not_a_directory));
+            case 246:
+              throw std::system_error
+                (std::make_error_code (std::errc::permission_denied));
+            case 247:
+              throw std::system_error
+                (std::make_error_code (std::errc::too_many_symbolic_link_levels));
+            case 240:
+              throw std::runtime_error
+                ("execve failed: unknown error");
+            default:
+              throw std::runtime_error
+                ("child exited: " + std::to_string (WEXITSTATUS (child_status)));
+            }
+          }
+
+          //! \note can't really happen, but just fall through to
+          //! generic exception
+
+          throw std::runtime_error ("child exited: unknown status");
         }
 
         std::istringstream stream (message_data);
