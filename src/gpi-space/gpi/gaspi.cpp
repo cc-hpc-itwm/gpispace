@@ -167,20 +167,20 @@ namespace gpi
       _pong_ids_offset = _notification_ids_per_node / 2;
 
       {
-        auto thread
-          ( fhg::util::cxx14::make_unique<decltype (_notification_check)::element_type>
-              (&gaspi_t::notification_check, this)
-          );
-        std::swap (_notification_check, thread);
-      }
-
-      {
         std::vector<gaspi_notification_id_t> ping_ids (_pong_ids_offset);
         std::iota (ping_ids.begin(), ping_ids.end(), _local_ids_begin);
         for (gaspi_rank_t rank (0); rank < number_of_nodes(); ++rank)
         {
           _ping_ids[rank].put_many (ping_ids.begin(), ping_ids.end());
         }
+      }
+
+      {
+        auto thread
+          ( fhg::util::cxx14::make_unique<decltype (_notification_check)::element_type>
+              (&gaspi_t::notification_check, this)
+          );
+        std::swap (_notification_check, thread);
       }
 
       struct hostname_and_port_t
