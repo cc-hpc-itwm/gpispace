@@ -19,9 +19,11 @@
 #include <util-generic/testing/random_string.hpp>
 
 #include <boost/lexical_cast.hpp>
-#include <boost/range/algorithm.hpp>
 #include <boost/preprocessor/punctuation/comma.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/range/algorithm.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <functional>
 #include <list>
@@ -780,45 +782,95 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_FIXTURE_TEST_CASE
-  (canceled_shall_be_called_after_cancel_two_childs, daemon)
+namespace
 {
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_output;
-  we::type::activity_t activity_child;
-  we::type::activity_t activity_result;
-  std::tie (activity_input, activity_output, activity_child, activity_result)
-    = activity_with_child (2);
-
-  we::layer::id_type const id (generate_id());
-
-  we::layer::id_type child_id_a;
-  we::layer::id_type child_id_b;
-
+  struct cancel_test_daemon : public daemon
   {
-    expect_submit const _a (this, &child_id_a, activity_child);
-    expect_submit const _b (this, &child_id_b, activity_child);
+    enum method
+    {
+      canceled
+    , failed
+    , finished
+    };
+    static std::array<method, 3> methods;
 
-    do_submit (id, activity_input);
-  }
+    void test_routine (method first_child, method second_child)
+    {
+      we::type::activity_t activity_input;
+      we::type::activity_t activity_output;
+      we::type::activity_t activity_child;
+      we::type::activity_t activity_result;
+      std::tie (activity_input, activity_output, activity_child, activity_result)
+        = activity_with_child (2);
 
-  {
-    expect_cancel const _a (this, child_id_a);
-    expect_cancel const _b (this, child_id_b);
+      we::layer::id_type const id (generate_id());
 
-    do_cancel (id);
-  }
+      we::layer::id_type child_id_a;
+      we::layer::id_type child_id_b;
 
-  do_canceled (child_id_a);
+      {
+        expect_submit const _a (this, &child_id_a, activity_child);
+        expect_submit const _b (this, &child_id_b, activity_child);
 
-  {
-    expect_canceled const _ (this, id);
+        do_submit (id, activity_input);
+      }
 
-    //! \todo There is an uncheckable(?) race here: rts_canceled may
-    //! be called before do_canceled (second child)!
+      {
+        expect_cancel const _a (this, child_id_a);
+        expect_cancel const _b (this, child_id_b);
 
-    do_canceled (child_id_b);
-  }
+        do_cancel (id);
+      }
+
+      auto&& do_method
+        ( [&] (we::layer::id_type const& id, method how)
+          {
+            switch (how)
+            {
+            case canceled: do_canceled (id); break;
+            case failed: do_failed (id, "interleaved with cancel"); break;
+            case finished: do_finished (id, activity_result); break;
+            }
+          }
+        );
+
+      do_method (child_id_a, first_child);
+
+      {
+        expect_canceled const _ (this, id);
+
+        //! \todo There is an uncheckable(?) race here: rts_canceled may
+        //! be called before do_canceled (second child)!
+
+
+        do_method (child_id_b, second_child);
+      }
+    }
+  };
+  std::array<cancel_test_daemon::method, 3> cancel_test_daemon::methods
+    { { cancel_test_daemon::canceled
+      , cancel_test_daemon::failed
+      , cancel_test_daemon::finished
+      }
+    };
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (canceled_shall_be_called_after_cancel_two_childs, cancel_test_daemon)
+{
+  test_routine (canceled, canceled);
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_DATA_TEST_CASE
+  ( any_terminiation_during_canceling_is_equivalent_to_canceled
+  , boost::unit_test::data::make (cancel_test_daemon::methods)
+  * boost::unit_test::data::make (cancel_test_daemon::methods)
+  , first_child
+  , second_child
+  )
+{
+  cancel_test_daemon().test_routine (first_child, second_child);
 }
 
 BOOST_FIXTURE_TEST_CASE
