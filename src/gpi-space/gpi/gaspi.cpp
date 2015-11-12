@@ -482,44 +482,44 @@ namespace gpi
       }
     }
 
-    constexpr notification_id_t gaspi_t::pong_ids_offset() const
+    notification_id_t gaspi_t::pong_ids_offset() const
     {
       return _notification_ids_per_node / 2;
     }
-    constexpr notification_id_t gaspi_t::ping_ids_count() const
+    notification_id_t gaspi_t::ping_ids_count() const
     {
       return pong_ids_offset();
     }
-    constexpr notification_id_t gaspi_t::total_number_of_notifications() const
+    notification_id_t gaspi_t::total_number_of_notifications() const
     {
       return _notification_ids_per_node * number_of_nodes();
     }
 
-    constexpr rank_t gaspi_t::sending_rank (notification_id_t notification_id) const
+    rank_t gaspi_t::sending_rank (notification_id_t notification_id) const
     {
       return notification_id / _notification_ids_per_node;
     }
-    constexpr notification_id_t gaspi_t::ids_begin (rank_t rank) const
+    notification_id_t gaspi_t::ids_begin (rank_t rank) const
     {
       return rank * _notification_ids_per_node;
     }
-    constexpr notification_id_t gaspi_t::notification_id_offset
+    notification_id_t gaspi_t::notification_id_offset
       (notification_id_t notification_id) const
     {
       return notification_id - ids_begin (sending_rank (notification_id));
     }
-    constexpr bool gaspi_t::is_pong (notification_id_t notification_id) const
+    bool gaspi_t::is_pong (notification_id_t notification_id) const
     {
       return notification_id_offset (notification_id) >= pong_ids_offset();
     }
-    constexpr notification_id_t gaspi_t::corresponding_local_ping_id
+    notification_id_t gaspi_t::corresponding_local_ping_id
       (notification_id_t pong_id) const
     {
       return ids_begin (rank())
         + notification_id_offset (pong_id)
         - pong_ids_offset();
     }
-    constexpr notification_id_t gaspi_t::corresponding_local_pong_id
+    notification_id_t gaspi_t::corresponding_local_pong_id
       (notification_id_t ping_id) const
     {
       return ids_begin (rank())
