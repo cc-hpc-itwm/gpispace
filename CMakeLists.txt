@@ -14,7 +14,7 @@ include ("cmake/add_macros.cmake")
 include ("cmake/beautify_find_boost.cmake")
 include ("cmake/require_compiler_version.cmake")
 
-set (PROJECT_VERSION "14.03")
+set (PROJECT_VERSION "15.11")
 set (PROJECT_CONTACT "gpispace-support@itwm.fraunhofer.de" CACHE STRING "Contact information")
 execute_process (
   COMMAND git rev-parse HEAD
