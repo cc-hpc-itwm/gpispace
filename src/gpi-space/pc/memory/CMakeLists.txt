@@ -6,9 +6,6 @@ ADD_LIBRARY(gpi-space-pc-memory
   gpi_area.cpp
   shm_area.cpp
   sfs_area.cpp
-  task.cpp
-  transfer_queue.cpp
-  transfer_manager.cpp
 )
 target_include_directories (gpi-space-pc-memory
   SYSTEM PRIVATE "${LIBRT_INCLUDE_DIR}"

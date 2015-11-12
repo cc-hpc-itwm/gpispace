@@ -22,7 +22,8 @@ namespace fhg
         boost::unique_lock<boost::recursive_mutex> lock (m_mtx);
         m_get_cond.wait (lock, [this] { return !m_container.empty(); });
 
-        T t (m_container.front()); m_container.pop_front();
+        T t (std::move (m_container.front()));
+        m_container.pop_front();
         return t;
       }
 
@@ -31,6 +32,13 @@ namespace fhg
         boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
         m_container.emplace_back (std::forward<Args> (args)...);
         m_get_cond.notify_one();
+      }
+
+      template<typename FwdIt> void put_many (FwdIt begin, FwdIt end)
+      {
+        boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
+        m_container.insert (m_container.end(), begin, end);
+        m_get_cond.notify_all();
       }
 
       void INDICATES_A_RACE_clear()

@@ -12,7 +12,7 @@ namespace gpi
 {
   namespace api
   {
-    class gpi_api_t;
+    class gaspi_t;
   }
   namespace pc
   {
@@ -29,7 +29,7 @@ namespace gpi
                                  , std::string const &url
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
-                                 , api::gpi_api_t& gpi_api
+                                 , api::gaspi_t& gaspi
                                  );
 
       protected:
@@ -39,7 +39,7 @@ namespace gpi
                    , const gpi::pc::type::flags_t flags
                    , gpi::pc::global::itopology_t & topology
                    , handle_generator_t&
-                   , api::gpi_api_t&
+                   , api::gaspi_t&
                    );
 
         virtual bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const override;
@@ -48,29 +48,27 @@ namespace gpi
         virtual void alloc_hook (const gpi::pc::type::handle::descriptor_t &) override;
         virtual void  free_hook (const gpi::pc::type::handle::descriptor_t &) override;
 
-        virtual int get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
-                                        , const gpi::pc::type::memory_location_t dst
-                                        , area_t & dst_area
-                                        , gpi::pc::type::size_t amount
-                                        , gpi::pc::type::size_t queue
-                                        , task_list_t & tasks
-                                        ) override;
+        virtual std::packaged_task<void()> get_specific_transfer_task
+          ( const gpi::pc::type::memory_location_t src
+          , const gpi::pc::type::memory_location_t dst
+          , area_t & dst_area
+          , gpi::pc::type::size_t amount
+          ) override;
 
-        virtual int get_send_tasks ( area_t & src_area
-                           , const gpi::pc::type::memory_location_t src
-                           , const gpi::pc::type::memory_location_t dst
-                           , gpi::pc::type::size_t amount
-                           , gpi::pc::type::size_t queue
-                           , task_list_t & tasks
-                           ) override;
+        virtual std::packaged_task<void()> get_send_task
+          ( area_t & src_area
+          , const gpi::pc::type::memory_location_t src
+          , const gpi::pc::type::memory_location_t dst
+          , gpi::pc::type::size_t amount
+          ) override;
 
-        virtual int get_recv_tasks ( area_t & dst_area
-                           , const gpi::pc::type::memory_location_t dst
-                           , const gpi::pc::type::memory_location_t src
-                           , gpi::pc::type::size_t amount
-                           , gpi::pc::type::size_t queue
-                           , task_list_t & tasks
-                           ) override;
+        virtual std::packaged_task<void()> get_recv_task
+          ( area_t & dst_area
+          , const gpi::pc::type::memory_location_t dst
+          , const gpi::pc::type::memory_location_t src
+          , gpi::pc::type::size_t amount
+          ) override;
+
       private:
         virtual void init () override;
 
@@ -103,7 +101,7 @@ namespace gpi
 
         gpi::pc::global::itopology_t & _topology;
 
-        api::gpi_api_t& _gpi_api;
+        api::gaspi_t& _gaspi;
       };
     }
   }

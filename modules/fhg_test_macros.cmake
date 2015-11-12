@@ -191,6 +191,10 @@ macro(FHG_ADD_TEST)
       list(APPEND tc_labels "performance_test")
     endif()
 
+    if (TEST_REQUIRES_VIRTUAL_MEMORY)
+      list (APPEND tc_labels "requires_vmem")
+    endif()
+
     set_tests_properties (${tc_name}
       PROPERTIES LABELS "${tc_labels}"
     )

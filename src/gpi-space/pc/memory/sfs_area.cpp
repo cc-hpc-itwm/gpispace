@@ -585,22 +585,6 @@ namespace gpi
         return size;
       }
 
-      int
-      sfs_area_t::get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t
-                                              , const gpi::pc::type::memory_location_t
-                                              , area_t &
-                                              , gpi::pc::type::size_t
-                                              , gpi::pc::type::size_t
-                                              , task_list_t &
-                                              )
-      {
-        // TODO: implement locking  or an fd pool on which we  can wait and some
-        //       kind of  a buffer pool that can  be used to read  data into for
-        //       now we can only transfer data between sfs_areas by the means of
-        //       a shm segment
-        throw std::runtime_error ("not yet implemented");
-      }
-
       double sfs_area_t::get_transfer_costs ( const gpi::pc::type::memory_region_t& transfer
                                             , const gpi::rank_t rank
                                             ) const

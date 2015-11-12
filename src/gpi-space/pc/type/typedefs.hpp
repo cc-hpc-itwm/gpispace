@@ -21,6 +21,8 @@ namespace gpi
       typedef id_t process_id_t;
       typedef id_t rank_t;
 
+      using memcpy_id_t = id_t;
+
       typedef uint32_t error_t;
       typedef uint16_t mode_t;
       typedef uint16_t flags_t;

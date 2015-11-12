@@ -6,18 +6,46 @@
 #include <gpi-space/exception.hpp>
 #include <gpi-space/gpi/system.hpp>
 
+#include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/divru.hpp>
 #include <util-generic/hostname.hpp>
 
 #include <GASPI.h>
 
+#include <algorithm>
 #include <limits>
+#include <unordered_set>
 
 namespace gpi
 {
   namespace api
   {
+    static_assert
+      ( std::is_same<notification_t, gaspi_notification_t>::value
+      , "HACK: don't expose GASPI.h to users, but we still need the types"
+      );
+    static_assert
+      ( std::is_same<rank_t, gaspi_rank_t>::value
+      , "HACK: don't expose GASPI.h to users, but we still need the types"
+      );
+    static_assert
+      ( std::is_same<notification_id_t, gaspi_notification_id_t>::value
+      , "HACK: don't expose GASPI.h to users, but we still need the types"
+      );
+
     namespace
     {
+      void throw_gaspi_error ( std::string const& function_name
+                             , gaspi_return_t rc
+                             )
+      {
+        throw gpi::exception::gpi_error
+          ( gpi::error::internal_error()
+          , function_name + " failed: " + gaspi_error_str (rc)
+          + " (" + std::to_string (rc) + ")"
+          );
+      }
+
       template <typename Fun, typename... T>
       void fail_on_non_zero ( const std::string& function_name
                             , Fun&& f
@@ -27,11 +55,7 @@ namespace gpi
         gaspi_return_t const rc (f (arguments...));
         if (rc != 0)
         {
-          throw gpi::exception::gpi_error
-            ( gpi::error::internal_error()
-            , function_name + " failed: " + gaspi_error_str (rc)
-            + " (" + std::to_string (rc) + ")"
-            );
+          throw_gaspi_error (function_name, rc);
         }
       }
 
@@ -72,6 +96,7 @@ namespace gpi
       , m_mem_size (memory_size)
       , m_dma (nullptr)
       , m_replacement_gpi_segment (0)
+      , _current_queue (0)
     {
       time_left const time_left (timeout);
 
@@ -110,6 +135,67 @@ namespace gpi
                        , m_replacement_gpi_segment
                        , &m_dma
                        );
+
+      FAIL_ON_NON_ZERO (gaspi_transfer_size_max, &_max_transfer_size);
+
+      gaspi_number_t available_notifications;
+      FAIL_ON_NON_ZERO (gaspi_notification_num, &available_notifications);
+
+      //! \note limited due to rui.machado/gpi-2#10: notification
+      //! values are not written atomically in gpi-2+eth but on a
+      //! byte-by-byte level, thus we limit us to using just a single
+      //! byte at any given time.
+      {
+        std::vector<gaspi_notification_t> write_ids;
+
+        constexpr std::size_t const bytes (sizeof (gaspi_notification_t));
+        //! \note do not use 0 as notification value
+        constexpr std::size_t const ids_per_byte ((1 << CHAR_BIT) - 1);
+        for (gaspi_notification_t n (1); n < ids_per_byte; ++n)
+        {
+          for (std::size_t byte (0); byte < bytes; ++byte)
+          {
+            write_ids.emplace_back (n << (byte * CHAR_BIT));
+          }
+        }
+
+        _write_ids.put_many (write_ids.begin(), write_ids.end());
+      }
+
+      //! \todo reasonable maximum
+      constexpr gaspi_number_t const maximum_notifications_per_rank (16);
+
+      _notification_ids_per_node
+        = std::min ( available_notifications
+                   / gaspi_number_t (number_of_nodes())
+                   , maximum_notifications_per_rank
+                   );
+      if (_notification_ids_per_node < 2)
+      {
+        throw std::runtime_error
+          ( "need at least two notification ids per rank ("
+          + std::to_string (available_notifications)
+          + " notification ids available in total, but "
+          + std::to_string (number_of_nodes()) + " ranks)"
+          );
+      }
+
+      {
+        std::vector<gaspi_notification_id_t> ping_ids (ping_ids_count());
+        std::iota (ping_ids.begin(), ping_ids.end(), ids_begin (rank()));
+        for (gaspi_rank_t rank (0); rank < number_of_nodes(); ++rank)
+        {
+          _ping_ids[rank].put_many (ping_ids.begin(), ping_ids.end());
+        }
+      }
+
+      {
+        auto thread
+          ( fhg::util::cxx14::make_unique<decltype (_notification_check)::element_type>
+              (&gaspi_t::notification_check, this)
+          );
+        std::swap (_notification_check, thread);
+      }
 
       struct hostname_and_port_t
       {
@@ -187,6 +273,8 @@ namespace gpi
 
     gaspi_t::~gaspi_t()
     {
+      _notification_check.reset();
+
       FAIL_ON_NON_ZERO (gaspi_proc_term, GASPI_BLOCK);
     }
 
@@ -195,13 +283,6 @@ namespace gpi
       gaspi_number_t queue_num;
       FAIL_ON_NON_ZERO (gaspi_queue_num, &queue_num);
       return queue_num;
-    }
-
-    gpi::size_t gaspi_t::queue_depth() const
-    {
-      gaspi_number_t queue_size_max;
-      FAIL_ON_NON_ZERO (gaspi_queue_size_max,  &queue_size_max);
-      return queue_size_max;
     }
 
     gpi::size_t gaspi_t::number_of_nodes() const
@@ -214,20 +295,6 @@ namespace gpi
     gpi::size_t gaspi_t::memory_size() const
     {
       return m_mem_size;
-    }
-
-    gpi::size_t gaspi_t::max_transfer_size() const
-    {
-      gaspi_size_t transfer_size_max;
-      FAIL_ON_NON_ZERO (gaspi_transfer_size_max, &transfer_size_max);
-      return transfer_size_max;
-    }
-
-    gpi::size_t gaspi_t::open_dma_requests (const queue_desc_t q) const
-    {
-      gaspi_number_t queue_size;
-      FAIL_ON_NON_ZERO (gaspi_queue_size, q, &queue_size);
-      return queue_size;
     }
 
     gpi::rank_t gaspi_t::rank() const
@@ -247,33 +314,59 @@ namespace gpi
       return _communication_port_by_rank[rank];
     }
 
-    gpi::error_vector_t gaspi_t::get_error_vector (const gpi::queue_desc_t) const
-    {
-      std::vector<unsigned char> gaspi_state_vector (number_of_nodes());
-      FAIL_ON_NON_ZERO (gaspi_state_vec_get, gaspi_state_vector.data());
-
-      gpi::error_vector_t v (gaspi_state_vector.size());
-      for (std::size_t i (0); i < number_of_nodes(); ++i)
-      {
-        v.set (i, (gaspi_state_vector [i] != 0));
-      }
-      return v;
-    }
-
-    void * gaspi_t::dma_ptr (void)
+    void* gaspi_t::dma_ptr() const
     {
       return m_dma;
     }
 
-    void gaspi_t::read_dma ( const offset_t local_offset
-                           , const offset_t remote_offset
-                           , const size_t amount
-                           , const rank_t from_node
-                           , const queue_desc_t queue
-                           )
+    template<std::size_t queue_entry_count, typename Fun, typename... Args>
+      queue_desc_t gaspi_t::queued_operation ( Fun&& function
+                                             , Args&&... arguments
+                                             )
     {
+      //! \todo do without synchronization by knowing the number of
+      //! threads and thus how many queue entries can be taken if a
+      //! thread gets suspended and woken up again between the queue
+      //! entry check and the actual operation.
+      std::unique_lock<std::mutex> const _ (_queue_operation_guard);
+
+      gaspi_number_t queue_size_max;
+      gaspi_number_t queue_size;
+      gaspi_number_t queue_num;
+
+      FAIL_ON_NON_ZERO (gaspi_queue_size_max, &queue_size_max);
+      FAIL_ON_NON_ZERO (gaspi_queue_size, _current_queue, &queue_size);
+      FAIL_ON_NON_ZERO (gaspi_queue_num, &queue_num);
+
+      assert (queue_entry_count <= queue_size_max);
+
+      if ((queue_size + queue_entry_count) > queue_size_max)
+      {
+        _current_queue = (_current_queue + 1) % queue_num;
+
+        FAIL_ON_NON_ZERO (gaspi_wait, _current_queue, GASPI_BLOCK);
+      }
+
+      FAIL_ON_NON_ZERO ( std::forward<Fun> (function)
+                       , std::forward<Args> (arguments)...
+                       , _current_queue
+                       , GASPI_BLOCK
+                       );
+
+      return _current_queue;
+    }
+
+    gaspi_t::read_dma_info gaspi_t::read_dma
+      ( const offset_t local_offset
+      , const offset_t remote_offset
+      , const size_t amount
+      , const rank_t from_node
+      )
+    {
+      std::unordered_set<queue_desc_t> queues;
+
       size_t remaining (amount);
-      const size_t chunk_size (max_transfer_size());
+      const size_t chunk_size (_max_transfer_size);
 
       size_t l_off (local_offset);
       size_t r_off (remote_offset);
@@ -282,100 +375,223 @@ namespace gpi
       {
         const size_t to_transfer (std::min (chunk_size, remaining));
 
-        if (max_dma_requests_reached (queue))
-        {
-          wait_dma (queue);
-        }
-
-        try
-        {
-          FAIL_ON_NON_ZERO ( gaspi_read
-                           , m_replacement_gpi_segment
-                           , l_off
-                           , from_node
-                           , m_replacement_gpi_segment
-                           , r_off
-                           , to_transfer
-                           , queue
-                           , GASPI_BLOCK
-                           );
-        }
-        catch (gpi::exception::gpi_error const &e)
-        {
-          throw exception::dma_error
-            ( gpi::error::read_dma_failed (e.user_message)
-            , l_off
-            , r_off
-            , from_node
-            , rank()
-            , to_transfer
-            , queue
-            );
-        }
+        queues.emplace
+          ( queued_operation<1> ( gaspi_read
+                                , m_replacement_gpi_segment
+                                , l_off
+                                , from_node
+                                , m_replacement_gpi_segment
+                                , r_off
+                                , to_transfer
+                                )
+          );
 
         remaining -= to_transfer;
         l_off     += to_transfer;
         r_off     += to_transfer;
       }
+
+      return {queues};
+    }
+    void gaspi_t::wait_readable (std::list<read_dma_info> const& infos)
+    {
+      //! \todo wait on specific reads instead (gaspi_read_notify)
+      std::unordered_set<queue_desc_t> waited_queues;
+      for (read_dma_info const& info : infos)
+      {
+        for (auto const& queue : info.queues)
+        {
+          if (waited_queues.emplace (queue).second)
+          {
+            FAIL_ON_NON_ZERO (gaspi_wait, queue, GASPI_BLOCK);
+          }
+        }
+      }
     }
 
-    void gaspi_t::write_dma ( const offset_t local_offset
-                            , const offset_t remote_offset
-                            , const size_t amount
-                            , const rank_t to_node
-                            , const queue_desc_t queue
-                            )
+    gaspi_t::write_dma_info gaspi_t::write_dma
+      ( const offset_t local_offset
+      , const offset_t remote_offset
+      , const size_t amount
+      , const rank_t to_node
+      )
     {
       size_t remaining (amount);
-      const size_t chunk_size (max_transfer_size());
+      const size_t chunk_size (_max_transfer_size);
 
       size_t l_off (local_offset);
       size_t r_off (remote_offset);
+
+      notification_t const write_id (next_write_id());
+      std::size_t const chunks (fhg::util::divru (amount, chunk_size));
+
+      {
+        std::unique_lock<std::mutex> const _ (_notification_guard);
+        if (!_outstanding_notifications.emplace (write_id, chunks).second)
+        {
+          throw std::logic_error
+            ("write_id already exists in outstanding notifications");
+        }
+      }
 
       while (remaining)
       {
         const size_t to_transfer (std::min (chunk_size, remaining));
 
-        if (max_dma_requests_reached (queue))
-        {
-          wait_dma (queue);
-        }
-
-        try
-        {
-          FAIL_ON_NON_ZERO ( gaspi_write
-                           , m_replacement_gpi_segment
-                           , l_off
-                           , to_node
-                           , m_replacement_gpi_segment
-                           , r_off
-                           , to_transfer
-                           , queue
-                           , GASPI_BLOCK
-                           );
-        }
-        catch (const gpi::exception::gpi_error& e)
-        {
-          throw exception::dma_error
-            ( gpi::error::write_dma_failed (e.user_message)
-            , l_off
-            , r_off
-            , to_node
-            , rank()
-            , to_transfer
-            , queue
-            );
-        }
+        queued_operation<2> ( gaspi_write_notify
+                            , m_replacement_gpi_segment
+                            , l_off
+                            , to_node
+                            , m_replacement_gpi_segment
+                            , r_off
+                            , to_transfer
+                            , next_ping_id (to_node)
+                            , write_id
+                            );
 
         remaining -= to_transfer;
         l_off     += to_transfer;
         r_off     += to_transfer;
       }
+
+      return {write_id};
     }
 
-    void gaspi_t::wait_dma (const queue_desc_t queue)
+    void gaspi_t::wait_remote_written
+      (std::list<write_dma_info> const& infos)
     {
-      FAIL_ON_NON_ZERO (gaspi_wait, queue, GASPI_BLOCK);
+      std::unordered_set<notification_t> waited_write_ids;
+
+      std::unique_lock<std::mutex> lock (_notification_guard);
+
+      for (write_dma_info const& info : infos)
+      {
+        if (waited_write_ids.emplace (info.write_id).second)
+        {
+          _notification_received.wait
+            ( lock
+            , [&]
+              {
+                return _outstanding_notifications.at (info.write_id) == 0;
+              }
+            );
+
+          _outstanding_notifications.erase (info.write_id);
+          _write_ids.put (info.write_id);
+        }
+      }
+    }
+
+    notification_id_t gaspi_t::pong_ids_offset() const
+    {
+      return _notification_ids_per_node / 2;
+    }
+    notification_id_t gaspi_t::ping_ids_count() const
+    {
+      return pong_ids_offset();
+    }
+    notification_id_t gaspi_t::total_number_of_notifications() const
+    {
+      return _notification_ids_per_node * number_of_nodes();
+    }
+
+    rank_t gaspi_t::sending_rank (notification_id_t notification_id) const
+    {
+      return notification_id / _notification_ids_per_node;
+    }
+    notification_id_t gaspi_t::ids_begin (rank_t rank) const
+    {
+      return rank * _notification_ids_per_node;
+    }
+    notification_id_t gaspi_t::notification_id_offset
+      (notification_id_t notification_id) const
+    {
+      return notification_id - ids_begin (sending_rank (notification_id));
+    }
+    bool gaspi_t::is_pong (notification_id_t notification_id) const
+    {
+      return notification_id_offset (notification_id) >= pong_ids_offset();
+    }
+    notification_id_t gaspi_t::corresponding_local_ping_id
+      (notification_id_t pong_id) const
+    {
+      return ids_begin (rank())
+        + notification_id_offset (pong_id)
+        - pong_ids_offset();
+    }
+    notification_id_t gaspi_t::corresponding_local_pong_id
+      (notification_id_t ping_id) const
+    {
+      return ids_begin (rank())
+        + notification_id_offset (ping_id)
+        + pong_ids_offset();
+    }
+
+    void gaspi_t::notification_check()
+    {
+      for (;;)
+      {
+        boost::this_thread::interruption_point();
+
+        gaspi_notification_id_t notification_id;
+        gaspi_return_t const waitsome_result
+          ( gaspi_notify_waitsome
+              ( m_replacement_gpi_segment
+              , 0
+              , total_number_of_notifications()
+              , &notification_id
+              , 100
+              )
+          );
+
+        if (waitsome_result == GASPI_TIMEOUT)
+        {
+          continue;
+        }
+        else if (waitsome_result != GASPI_SUCCESS)
+        {
+          throw_gaspi_error
+            ("notification_check: waitsome", waitsome_result);
+        }
+
+        gaspi_notification_t write_id;
+        FAIL_ON_NON_ZERO ( gaspi_notify_reset
+                         , m_replacement_gpi_segment
+                         , notification_id
+                         , &write_id
+                         );
+
+        if (is_pong (notification_id))
+        {
+          {
+            std::unique_lock<std::mutex> const _ (_notification_guard);
+            --_outstanding_notifications.at (write_id);
+          }
+
+          _ping_ids[sending_rank (notification_id)].put
+            (corresponding_local_ping_id (notification_id));
+          _notification_received.notify_all();
+        }
+        else
+        {
+          queued_operation<1>
+            ( gaspi_notify
+            , m_replacement_gpi_segment
+            , sending_rank (notification_id)
+            , corresponding_local_pong_id (notification_id)
+            , write_id
+            );
+        }
+      }
+    }
+
+    notification_t gaspi_t::next_write_id()
+    {
+      return _write_ids.get();
+    }
+    notification_id_t gaspi_t::next_ping_id (rank_t rank)
+    {
+      return _ping_ids[rank].get();
     }
 
 #undef FAIL_ON_NON_ZERO

@@ -283,11 +283,10 @@ namespace gpi
             );
       }
 
-      gpi::pc::type::queue_id_t
-      api_t::memcpy ( gpi::pc::type::memory_location_t const & dst
-                    , gpi::pc::type::memory_location_t const & src
-                    , const gpi::pc::type::size_t amount
-                    )
+      type::memcpy_id_t api_t::memcpy ( type::memory_location_t const & dst
+                                      , type::memory_location_t const & src
+                                      , const type::size_t amount
+                                      )
       {
         proto::memory::memcpy_t rqst;
         rqst.dst = dst;
@@ -300,7 +299,7 @@ namespace gpi
         {
           proto::memory::message_t mem_msg (boost::get<proto::memory::message_t>(reply));
           proto::memory::memcpy_reply_t memcpy_rpl (boost::get<proto::memory::memcpy_reply_t>(mem_msg));
-          return memcpy_rpl.queue;
+          return memcpy_rpl.memcpy_id;
         }
         catch (boost::bad_get const & ex)
         {
@@ -314,11 +313,10 @@ namespace gpi
         }
       }
 
-      gpi::pc::type::size_t
-      api_t::wait (const gpi::pc::type::queue_id_t queue)
+      void api_t::wait (type::memcpy_id_t const& memcpy_id)
       {
         proto::memory::wait_t rqst;
-        rqst.queue = queue;
+        rqst.memcpy_id = memcpy_id;
 
         proto::message_t reply(communicate (proto::memory::message_t (rqst)));
 
@@ -326,7 +324,7 @@ namespace gpi
         {
           proto::memory::message_t mem_msg (boost::get<proto::memory::message_t>(reply));
           proto::memory::wait_reply_t w_rpl (boost::get<proto::memory::wait_reply_t>(mem_msg));
-          return w_rpl.count;
+          w_rpl.get();
         }
         catch (boost::bad_get const & ex)
         {

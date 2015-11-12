@@ -86,14 +86,12 @@ namespace we
       , const fvmShmemOffset_t shared_memory_offset
       )
     {
-      virtual_memory_api.wait
-        ( virtual_memory_api.memcpy
-          ( gpi::pc::type::memory_location_t
+      virtual_memory_api.memcpy_and_wait
+        ( gpi::pc::type::memory_location_t
             (global_memory_handle, global_memory_offset)
-          , gpi::pc::type::memory_location_t
+        , gpi::pc::type::memory_location_t
             (shared_memory, shared_memory_offset)
-          , size
-          )
+        , size
         );
     }
 
@@ -106,14 +104,12 @@ namespace we
       , const fvmShmemOffset_t shared_memory_offset
       )
     {
-      virtual_memory_api.wait
-        ( virtual_memory_api.memcpy
-          ( gpi::pc::type::memory_location_t
+      virtual_memory_api.memcpy_and_wait
+        ( gpi::pc::type::memory_location_t
             (shared_memory, shared_memory_offset)
-          , gpi::pc::type::memory_location_t
+        , gpi::pc::type::memory_location_t
             (global_memory_handle, global_memory_offset)
-          , size
-          )
+        , size
         );
     }
 

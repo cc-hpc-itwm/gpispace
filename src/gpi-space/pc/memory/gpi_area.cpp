@@ -4,7 +4,7 @@
 
 #include <fhg/assert.hpp>
 #include <fhglog/LogMacros.hpp>
-#include <gpi-space/gpi/api.hpp>
+#include <gpi-space/gpi/gaspi.hpp>
 #include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/global/topology.hpp>
 
@@ -29,21 +29,21 @@ namespace gpi
                              , const gpi::pc::type::flags_t flags
                              , gpi::pc::global::itopology_t & topology
                              , handle_generator_t& handle_generator
-                             , api::gpi_api_t& gpi_api
+                             , api::gaspi_t& gaspi
                              )
         : area_t ( logger
                  , gpi_area_t::area_type
                  , creator
                  , name
-                 , gpi_api.memory_size()
+                 , gaspi.memory_size()
                  , flags
                  , handle_generator
                  )
-        , m_ptr (gpi_api.dma_ptr())
+        , m_ptr (gaspi.dma_ptr())
         , m_num_com_buffers (8)
         , m_com_buffer_size (4* (1<<20))
         , _topology (topology)
-        , _gpi_api (gpi_api)
+        , _gaspi (gaspi)
       {}
 
       void gpi_area_t::init ()
@@ -160,7 +160,7 @@ namespace gpi
                                 , const gpi::pc::type::offset_t end
                                 ) const
       {
-        gpi::pc::type::id_t     my_rank = _gpi_api.rank ();
+        gpi::pc::type::id_t     my_rank = _gaspi.rank ();
 
         if (not gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL))
           my_rank = 0;
@@ -185,7 +185,7 @@ namespace gpi
         if (gpi::flag::is_set (flgs, gpi::pc::F_GLOBAL))
         {
           // static distribution scheme with overhead
-          const size_t num_nodes = _gpi_api.number_of_nodes ();
+          const size_t num_nodes = _gaspi.number_of_nodes ();
           size_t overhead = (0 != (size % num_nodes)) ? 1 : 0;
           return (size / num_nodes + overhead);
         }
@@ -197,85 +197,115 @@ namespace gpi
 
       namespace helper
       {
-        template <typename DMAFun>
-        static
-        void do_rdma( gpi::pc::type::size_t local_offset
-                    , const gpi::pc::type::size_t remote_base
-                    , gpi::pc::type::size_t offset
-                    , const gpi::pc::type::size_t per_node_size
-                    , gpi::pc::type::size_t amount
-                    , const gpi::pc::type::queue_id_t queue
-                    , DMAFun rdma
-                    )
+        namespace
         {
-          while (amount)
+          struct part
           {
-            const std::size_t rank (offset / per_node_size);
-            const std::size_t max_offset_on_rank ((rank + 1) * per_node_size);
-            const std::size_t size (std::min ( std::min (per_node_size, amount)
-                                             , max_offset_on_rank - offset
-                                             )
-                                   );
-            const std::size_t remote_offset ( remote_base
-                                            + (offset % per_node_size)
-                                            );
+            type::offset_t local_offset;
+            type::offset_t remote_offset;
+            type::size_t size;
+            type::rank_t rank;
+          };
 
-            rdma (local_offset, remote_offset, size, rank, queue);
+          //! \todo lazy iteration, …
+          std::list<part> split_by_rank
+            ( gpi::pc::type::size_t local_offset
+            , const gpi::pc::type::size_t remote_base
+            , gpi::pc::type::size_t offset
+            , const gpi::pc::type::size_t per_node_size
+            , gpi::pc::type::size_t amount
+            )
+          {
+            std::list<part> parts;
 
-            local_offset += size;
-            offset += size;
-            amount -= size;
+            while (amount)
+            {
+              part p;
+
+              p.local_offset = local_offset;
+              p.rank = offset / per_node_size;
+
+              const std::size_t max_offset_on_rank
+                ((p.rank + 1) * per_node_size);
+
+              p.size = std::min ( std::min (per_node_size, amount)
+                                , max_offset_on_rank - offset
+                                );
+              p.remote_offset = remote_base + (offset % per_node_size);
+
+              parts.emplace_back (p);
+
+              local_offset += p.size;
+              offset += p.size;
+              amount -= p.size;
+            }
+
+            return parts;
           }
-        }
 
-        static
-        void do_read_dma ( const gpi::pc::type::handle::descriptor_t & src_hdl
-                         , const gpi::pc::type::size_t src_offset
-                         , const gpi::pc::type::handle::descriptor_t & dst_hdl
-                         , const gpi::pc::type::size_t dst_offset
-                         , const gpi::pc::type::size_t amount
-                         , const gpi::pc::type::size_t queue
-                         , api::gpi_api_t& gpi_api
-                         )
-        {
-          do_rdma( dst_hdl.offset + dst_offset
-                 , src_hdl.offset , src_offset
-                 , src_hdl.local_size
-                 , amount
-                 , queue
-                 , std::bind ( &api::gpi_api_t::read_dma, &gpi_api
-                             , std::placeholders::_1
-                             , std::placeholders::_2
-                             , std::placeholders::_3
-                             , std::placeholders::_4
-                             , std::placeholders::_5
-                             )
-                 );
-        }
+          void dma_read_and_wait_for_readable
+            ( const gpi::pc::type::handle::descriptor_t & src_hdl
+            , const gpi::pc::type::size_t src_offset
+            , const gpi::pc::type::handle::descriptor_t & dst_hdl
+            , const gpi::pc::type::size_t dst_offset
+            , const gpi::pc::type::size_t amount
+            , api::gaspi_t& gaspi
+            )
+          {
+            std::list<api::gaspi_t::read_dma_info> handles;
 
-        static
-        void do_write_dma ( const gpi::pc::type::handle::descriptor_t & src_hdl
-                          , const gpi::pc::type::size_t src_offset
-                          , const gpi::pc::type::handle::descriptor_t & dst_hdl
-                          , const gpi::pc::type::size_t dst_offset
-                          , const gpi::pc::type::size_t amount
-                          , const gpi::pc::type::size_t queue
-                          , api::gpi_api_t& gpi_api
-                          )
-        {
-          do_rdma( src_hdl.offset + src_offset
-                 , dst_hdl.offset , dst_offset
-                 , dst_hdl.local_size
-                 , amount
-                 , queue
-                 , std::bind ( &api::gpi_api_t::write_dma, &gpi_api
-                             , std::placeholders::_1
-                             , std::placeholders::_2
-                             , std::placeholders::_3
-                             , std::placeholders::_4
-                             , std::placeholders::_5
-                             )
-                 );
+            for ( auto const& part
+                : split_by_rank ( dst_hdl.offset + dst_offset
+                                , src_hdl.offset
+                                , src_offset
+                                , src_hdl.local_size
+                                , amount
+                                )
+                )
+            {
+              handles.emplace_back
+                ( gaspi.read_dma ( part.local_offset
+                                 , part.remote_offset
+                                 , part.size
+                                 , part.rank
+                                 )
+                );
+            }
+
+            gaspi.wait_readable (handles);
+          }
+
+          std::list<api::gaspi_t::write_dma_info> do_write_dma
+            ( const gpi::pc::type::handle::descriptor_t & src_hdl
+            , const gpi::pc::type::size_t src_offset
+            , const gpi::pc::type::handle::descriptor_t & dst_hdl
+            , const gpi::pc::type::size_t dst_offset
+            , const gpi::pc::type::size_t amount
+            , api::gaspi_t& gaspi
+            )
+          {
+            std::list<api::gaspi_t::write_dma_info> handles;
+
+            for ( auto const& part
+                : split_by_rank ( src_hdl.offset + src_offset
+                                , dst_hdl.offset
+                                , dst_offset
+                                , dst_hdl.local_size
+                                , amount
+                                )
+                )
+            {
+              handles.emplace_back
+                ( gaspi.write_dma ( part.local_offset
+                                  , part.remote_offset
+                                  , part.size
+                                  , part.rank
+                                  )
+                );
+            }
+
+            return handles;
+          }
         }
 
         static
@@ -285,9 +315,8 @@ namespace gpi
                      , gpi_area_t & dst_area
                      , gpi::pc::type::memory_location_t dst_loc
                      , gpi::pc::type::size_t amount
-                     , const gpi::pc::type::size_t queue
                      , gpi_area_t::handle_pool_t & handle_pool
-                     , api::gpi_api_t& gpi_api
+                     , api::gaspi_t& gaspi
                      )
         {
           handle_buffer_t buf (handle_pool.get());
@@ -313,15 +342,15 @@ namespace gpi
               break;
             }
 
-            do_write_dma ( dst_area.descriptor (buf.handle ())
-                         , 0
-                         , dst_area.descriptor (dst_loc.handle)
-                         , dst_loc.offset
-                         , buf.used ()
-                         , queue
-                         , gpi_api
-                         );
-            gpi_api.wait_dma (queue);
+            gaspi.wait_remote_written
+              ( do_write_dma ( dst_area.descriptor (buf.handle ())
+                             , 0
+                             , dst_area.descriptor (dst_loc.handle)
+                             , dst_loc.offset
+                             , buf.used ()
+                             , gaspi
+                             )
+              );
 
             src_loc.offset += buf.used ();
             dst_loc.offset += buf.used ();
@@ -338,9 +367,8 @@ namespace gpi
                      , gpi_area_t & src_area
                      , gpi::pc::type::memory_location_t src_loc
                      , gpi::pc::type::size_t amount
-                     , const gpi::pc::type::size_t queue
                      , gpi_area_t::handle_pool_t & handle_pool
-                     , api::gpi_api_t& gpi_api
+                     , api::gaspi_t& gaspi
                      )
         {
           handle_buffer_t buf (handle_pool.get());
@@ -353,15 +381,13 @@ namespace gpi
             const gpi::pc::type::size_t to_recv =
               std::min (remaining, buf.size ());
 
-            do_read_dma ( src_area.descriptor (src_loc.handle)
+            dma_read_and_wait_for_readable ( src_area.descriptor (src_loc.handle)
                         , src_loc.offset
                         , src_area.descriptor (buf.handle ())
                         , 0
                         , to_recv
-                        , queue
-                        , gpi_api
+                        , gaspi
                         );
-            gpi_api.wait_dma (queue);
             buf.used (to_recv);
 
             const gpi::pc::type::size_t written_bytes =
@@ -385,138 +411,96 @@ namespace gpi
         }
       }
 
-      int
-      gpi_area_t::get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
-                                              , const gpi::pc::type::memory_location_t dst
-                                              , area_t & dst_area
-                                              , gpi::pc::type::size_t amount
-                                              , gpi::pc::type::size_t queue
-                                              , task_list_t & tasks
-                                              )
+      std::packaged_task<void()> gpi_area_t::get_specific_transfer_task
+        ( const gpi::pc::type::memory_location_t src
+        , const gpi::pc::type::memory_location_t dst
+        , area_t & dst_area
+        , gpi::pc::type::size_t amount
+        )
       {
         fhg_assert (type () == dst_area.type ());
 
         if (is_local (gpi::pc::type::memory_region_t (src, amount)))
         {
           // write dma
-          tasks.push_back
-            (boost::make_shared<task_t>
-            ( "writeDMA "
-            + boost::lexical_cast<std::string> (dst)
-            + " <- "
-            + boost::lexical_cast<std::string> (src)
-            + " "
-            + boost::lexical_cast<std::string> (amount)
-
-            , std::bind ( &helper::do_write_dma
+          return std::packaged_task<void()>
+            ( [this, &dst_area, src, dst, amount]
+              {
+                _gaspi.wait_remote_written
+                  ( helper::do_write_dma ( descriptor (src.handle)
+                                         , src.offset
+                                         , dst_area.descriptor (dst.handle)
+                                         , dst.offset
+                                         , amount
+                                         , _gaspi
+                                         )
+                  );
+              }
+            );
+        }
+        else if (dst_area.is_local (gpi::pc::type::memory_region_t (dst, amount)))
+        {
+          // read dma
+          return std::packaged_task<void()>
+            ( std::bind ( &helper::dma_read_and_wait_for_readable
                         , this->descriptor (src.handle)
                         , src.offset
                         , dst_area.descriptor (dst.handle)
                         , dst.offset
                         , amount
-                        , queue
-                        , std::ref (_gpi_api)
+                        , std::ref (_gaspi)
                         )
-            ));
-        }
-        else if (dst_area.is_local (gpi::pc::type::memory_region_t (dst, amount)))
-        {
-          // read dma
-          tasks.push_back
-            (boost::make_shared<task_t>
-            ( "readDMA "
-            + boost::lexical_cast<std::string> (dst)
-            + " <- "
-            + boost::lexical_cast<std::string> (src)
-            + " "
-            + boost::lexical_cast<std::string> (amount)
-
-            , std::bind ( &helper::do_read_dma
-                        , this->descriptor     (src.handle)
-                        , src.offset
-                        , dst_area.descriptor (dst.handle)
-                        , dst.offset
-                        , amount
-                        , queue
-                        , std::ref (_gpi_api)
-                        )
-            ));
-        }
-        else
-        {
-          throw std::runtime_error
-            ( "illegal memory transfer requested:"
-            " source and destination cannot both be remote!"
             );
         }
 
-        return 0;
+        throw std::runtime_error
+          ( "illegal memory transfer requested:"
+          " source and destination cannot both be remote!"
+          );
       }
 
-      int
-      gpi_area_t::get_send_tasks ( area_t & src_area
-                                 , const gpi::pc::type::memory_location_t src
-                                 , const gpi::pc::type::memory_location_t dst
-                                 , gpi::pc::type::size_t amount
-                                 , gpi::pc::type::size_t queue
-                                 , task_list_t & tasks
-                                 )
+      std::packaged_task<void()> gpi_area_t::get_send_task
+        ( area_t & src_area
+        , const gpi::pc::type::memory_location_t src
+        , const gpi::pc::type::memory_location_t dst
+        , gpi::pc::type::size_t amount
+        )
       {
-        tasks.push_back
-          (boost::make_shared<task_t>
-          ( "send "
-          + boost::lexical_cast<std::string> (dst)
-          + " <- "
-          + boost::lexical_cast<std::string> (src)
-          + " "
-          + boost::lexical_cast<std::string> (amount)
-
-          , std::bind ( &helper::do_send
-                      , std::ref (_logger)
-                      , std::ref (src_area)
-                      , src
-                      , std::ref (*this)
-                      , dst
-                      , amount
-                      , queue
-                      , std::ref (m_com_handles)
-                      , std::ref (_gpi_api)
-                      )
-          ));
-        return 0;
+        return std::packaged_task<void()>
+          ( [this, &src_area, src, dst, amount]
+            {
+              helper::do_send ( _logger
+                              , src_area
+                              , src
+                              , *this
+                              , dst
+                              , amount
+                              , m_com_handles
+                              , _gaspi
+                              );
+            }
+          );
       }
 
-      int
-      gpi_area_t::get_recv_tasks ( area_t & dst_area
-                                 , const gpi::pc::type::memory_location_t dst
-                                 , const gpi::pc::type::memory_location_t src
-                                 , gpi::pc::type::size_t amount
-                                 , gpi::pc::type::size_t queue
-                                 , task_list_t & tasks
-                                 )
+      std::packaged_task<void()> gpi_area_t::get_recv_task
+        ( area_t & dst_area
+        , const gpi::pc::type::memory_location_t dst
+        , const gpi::pc::type::memory_location_t src
+        , gpi::pc::type::size_t amount
+        )
       {
-        tasks.push_back
-          (boost::make_shared<task_t>
-          ( "recv "
-          + boost::lexical_cast<std::string> (dst)
-          + " <- "
-          + boost::lexical_cast<std::string> (src)
-          + " "
-          + boost::lexical_cast<std::string> (amount)
-
-          , std::bind ( &helper::do_recv
+        return std::packaged_task<void()>
+          ( std::bind ( &helper::do_recv
                       , std::ref (_logger)
                       , std::ref (dst_area)
                       , dst
                       , std::ref (*this)
                       , src
                       , amount
-                      , queue
                       , std::ref (m_com_handles)
-                      , std::ref (_gpi_api)
+                      , std::ref (_gaspi)
                       )
-          ));
-        return 0;
+          );
       }
 
       double gpi_area_t::get_transfer_costs ( const gpi::pc::type::memory_region_t& transfer
@@ -545,7 +529,7 @@ namespace gpi
         , std::string const &url_s
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator
-        , api::gpi_api_t& gpi_api
+        , api::gaspi_t& gaspi
         )
       {
         url_t url (url_s);
@@ -562,7 +546,7 @@ namespace gpi
                                            + gpi::pc::F_GLOBAL
                                            , topology
                                            , handle_generator
-                                           , gpi_api
+                                           , gaspi
                                            );
         area->m_num_com_buffers = numbuf;
         area->m_com_buffer_size = comsize;

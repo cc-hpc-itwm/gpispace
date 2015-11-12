@@ -20,8 +20,6 @@
 #include <fhglog/Configuration.hpp>
 #include <fhglog/LogMacros.hpp>
 
-#include <gpi-space/gpi/api.hpp>
-#include <gpi-space/gpi/fake_api.hpp>
 #include <gpi-space/gpi/gaspi.hpp>
 #include <gpi-space/pc/container/manager.hpp>
 
@@ -40,7 +38,6 @@ namespace
 {
   namespace option
   {
-    constexpr const char* const gpi_api ("gpi-api");
     constexpr const char* const gpi_mem ("gpi-mem");
     constexpr const char* const gpi_timeout ("gpi-timeout");
     constexpr const char* const log_file ("log-file");
@@ -79,11 +76,6 @@ int main (int argc, char** argv)
       , boost::program_options::value
           <fhg::util::boost::program_options::nonempty_string>()->required()
       , "log level"
-      )
-      ( option::gpi_api
-      , boost::program_options::value
-          <fhg::util::boost::program_options::nonempty_string>()->required()
-      , "'fake' or 'gaspi'"
       )
       ( option::gpi_mem
       , boost::program_options::value<std::size_t>()->required()
@@ -158,17 +150,6 @@ int main (int argc, char** argv)
 
     std::size_t const gpi_mem (vm.at (option::gpi_mem).as<std::size_t>());
 
-    std::string const gpi_api_string
-      ( vm.at (option::gpi_api)
-        .as<fhg::util::boost::program_options::nonempty_string>()
-      );
-    enum requested_api_t { API_fake, API_gaspi };
-    requested_api_t const requested_api
-      ( gpi_api_string == "gaspi" ? API_gaspi
-      : gpi_api_string == "fake" ? API_fake
-      : throw std::invalid_argument ("gpi-api must be 'gaspi' or 'fake'")
-      );
-
     std::chrono::seconds const gpi_timeout
       ( vm.at (option::gpi_timeout)
         .as<fhg::util::boost::program_options::positive_integral<std::size_t>>()
@@ -202,22 +183,12 @@ int main (int argc, char** argv)
     auto topology_rpc_server
       (fhg::util::cxx14::make_unique<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher>());
 
-    std::unique_ptr<gpi::api::gpi_api_t> const gpi_api
-      ( [&gpi_mem, &gpi_timeout, &port, &requested_api, &topology_rpc_server, &logger]()
-          -> std::unique_ptr<gpi::api::gpi_api_t>
-        {
-          if (requested_api == API_gaspi)
-          {
-            return fhg::util::cxx14::make_unique <gpi::api::gaspi_t>
-              (logger, gpi_mem, port, gpi_timeout, topology_rpc_server->local_endpoint().port());
-          }
-          else
-          {
-            return fhg::util::cxx14::make_unique <gpi::api::fake_gpi_api_t>
-              (logger, gpi_mem, gpi_timeout, topology_rpc_server->local_endpoint().port());
-          }
-        }()
-      );
+    gpi::api::gaspi_t gaspi ( logger
+                            , gpi_mem
+                            , port
+                            , gpi_timeout
+                            , topology_rpc_server->local_endpoint().port()
+                            );
 
     // other url examples are:
     //      gpi://?buffers=8&buffer_size=4194304 GPI memory
@@ -226,7 +197,7 @@ int main (int argc, char** argv)
       ( logger
       , socket_path.string()
       , {"gpi://?buffer_size=4194304&buffers=8"}
-      , *gpi_api
+      , gaspi
       , std::move (topology_rpc_server)
       );
 

@@ -46,15 +46,3 @@ fhg_add_test (sfs_area.cpp
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )
-
-fhg_add_test (task.cpp
-  PROJECT gpi-space_test
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES SYSTEM PRIVATE "${LIBRT_INCLUDE_DIR}"
-  LINK_LIBRARIES gpi-space-pc-segment
-                 gpi-space-pc-memory
-                 fhgcom
-                 fhglog
-                 ${CMAKE_THREAD_LIBS_INIT}
-                 fhg-util
-)

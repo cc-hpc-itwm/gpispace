@@ -65,12 +65,10 @@ namespace gspc
       , _free_slots()
       , _sequence_number (0)
     {
-      _virtual_memory->wait
-        ( _virtual_memory->memcpy
-          ( {_flags, 0}
-          , {_buffer._->_handle_id, _offset_to_meta_data}
-          , _number_of_slots
-          )
+      _virtual_memory->memcpy_and_wait
+        ( {_flags, 0}
+        , {_buffer._->_handle_id, _offset_to_meta_data}
+        , _number_of_slots
         );
 
       for (unsigned long slot (0); slot < _number_of_slots; ++slot)
@@ -110,12 +108,10 @@ namespace gspc
 
       if (_free_slots.empty())
       {
-        _virtual_memory->wait
-          ( _virtual_memory->memcpy
-            ( {_update, 0}
-            , {_buffer._->_handle_id, _offset_to_meta_data}
-            , _number_of_slots
-            )
+        _virtual_memory->memcpy_and_wait
+          ( {_update, 0}
+          , {_buffer._->_handle_id, _offset_to_meta_data}
+          , _number_of_slots
           );
 
         char const* const update
@@ -144,12 +140,10 @@ namespace gspc
 
       std::copy (data.begin(), data.end(), content);
 
-      _virtual_memory->wait
-        ( _virtual_memory->memcpy
-          ( {_buffer._->_handle_id, slot * _size_of_slot}
-          , {_data, 0}
-          , data.size()
-          )
+      _virtual_memory->memcpy_and_wait
+        ( {_buffer._->_handle_id, slot * _size_of_slot}
+        , {_data, 0}
+        , data.size()
         );
 
       pnet::type::value::value_type value;

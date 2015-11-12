@@ -210,23 +210,6 @@ namespace gpi
         return sz;
       }
 
-      int
-      shm_area_t::get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
-                                              , const gpi::pc::type::memory_location_t dst
-                                              , area_t &
-                                              , gpi::pc::type::size_t amount
-                                              , gpi::pc::type::size_t
-                                              , task_list_t &
-                                              )
-      {
-        throw std::runtime_error
-          ( "get_specific_transfer_tasks not implemented on shm_area: "
-          + std::to_string (amount) + " bytes: "
-          + boost::lexical_cast<std::string> (dst) + " <- "
-          + boost::lexical_cast<std::string> (src)
-          );
-      }
-
       double shm_area_t::get_transfer_costs ( const gpi::pc::type::memory_region_t&
                                             , const gpi::rank_t
                                             ) const

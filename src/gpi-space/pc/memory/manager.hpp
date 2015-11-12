@@ -7,12 +7,19 @@
 
 #include <fhglog/Logger.hpp>
 
+#include <gpi-space/gpi/gaspi.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
-#include <gpi-space/pc/memory/transfer_manager.hpp>
+#include <gpi-space/pc/memory/memory_buffer.hpp>
 
-#include <unordered_set>
+#include <fhg/util/thread/queue.hpp>
+
+#include <boost/thread/scoped_thread.hpp>
+
+#include <memory>
 #include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 namespace gpi
 {
@@ -31,7 +38,7 @@ namespace gpi
 
         static const gpi::pc::type::segment_id_t MAX_PREALLOCATED_SEGMENT_ID=16;
 
-        manager_t (fhg::log::Logger&, api::gpi_api_t& gpi_api);
+        manager_t (fhg::log::Logger&, api::gaspi_t&);
         ~manager_t ();
 
         void clear ();
@@ -78,16 +85,11 @@ namespace gpi
         void garbage_collect () {}
         void garbage_collect (const gpi::pc::type::process_id_t);
 
-        gpi::pc::type::queue_id_t
-        memcpy ( gpi::pc::type::memory_location_t const & dst
-               , gpi::pc::type::memory_location_t const & src
-               , const gpi::pc::type::size_t amount
-               );
-
-        gpi::pc::type::size_t
-        wait_on_queue ( const gpi::pc::type::process_id_t proc_id
-                      , const gpi::pc::type::queue_id_t queue
-                      );
+        type::memcpy_id_t memcpy ( type::memory_location_t const & dst
+                                 , type::memory_location_t const & src
+                                 , const type::size_t amount
+                                 );
+        void wait (type::memcpy_id_t const&);
 
         int
         remote_add_memory ( const gpi::pc::type::segment_id_t seg_id
@@ -138,8 +140,16 @@ namespace gpi
         mutable mutex_type m_mutex;
         area_map_t m_areas;
         handle_to_segment_t m_handle_to_segment;
-        api::gpi_api_t& _gpi_api;
-        transfer_manager_t m_transfer_mgr;
+        api::gaspi_t& _gaspi;
+
+        std::mutex _memcpy_task_guard;
+        std::size_t _next_memcpy_id;
+        fhg::thread::queue<std::packaged_task<void()>> _tasks;
+        std::map<std::size_t, std::future<void>> _task_by_id;
+        std::vector<std::unique_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>>
+          _task_threads;
+        fhg::thread::ptr_queue<buffer_t> m_memory_buffer_pool;
+
         handle_generator_t _handle_generator;
       };
     }

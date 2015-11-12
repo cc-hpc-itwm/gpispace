@@ -24,7 +24,7 @@ namespace gpi
       {
       public:
         topology_t ( memory::manager_t& memory_manager
-                   , api::gpi_api_t&
+                   , api::gaspi_t&
                    , std::unique_ptr<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher>
                    );
 
@@ -49,7 +49,7 @@ namespace gpi
       private:
         mutable std::mutex m_global_alloc_mutex;
 
-        api::gpi_api_t& _gpi_api;
+        api::gaspi_t& _gaspi;
 
         FHG_RPC_FUNCTION_DESCRIPTION ( alloc_desc
                                      , void ( type::segment_id_t

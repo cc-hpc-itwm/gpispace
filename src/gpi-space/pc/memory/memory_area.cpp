@@ -579,143 +579,6 @@ namespace gpi
         return raw_ptr (location_to_offset (loc));
       }
 
-      namespace detail
-      {
-        struct writer
-        {
-          writer ( area_t & a
-                 , gpi::pc::type::memory_location_t loc
-                 , const void *buffer
-                 , gpi::pc::type::size_t amount
-                 )
-            : m_area (a)
-            , m_location (loc)
-            , m_buffer (buffer)
-            , m_amount (amount)
-          {}
-
-          void operator () ()
-          {
-            m_area.write_to (m_location, m_buffer, m_amount);
-          }
-        private:
-          area_t & m_area;
-          gpi::pc::type::memory_location_t m_location;
-          const void * m_buffer;
-          gpi::pc::type::size_t m_amount;
-        };
-
-        struct reader
-        {
-          reader ( area_t & a
-                 , gpi::pc::type::memory_location_t loc
-                 , void *buffer
-                 , gpi::pc::type::size_t amount
-                 )
-            : m_area (a)
-            , m_location (loc)
-            , m_buffer (buffer)
-            , m_amount (amount)
-          {}
-
-          void operator () ()
-          {
-            m_area.read_from (m_location, m_buffer, m_amount);
-          }
-        private:
-          area_t & m_area;
-          gpi::pc::type::memory_location_t m_location;
-          void * m_buffer;
-          gpi::pc::type::size_t m_amount;
-        };
-
-        namespace
-        {
-          struct temporarily_removed_buffer
-          {
-            temporarily_removed_buffer (area_t::memory_pool_t& pool)
-              : _pool (pool)
-              , _buffer (_pool.get())
-            {}
-            ~temporarily_removed_buffer()
-            {
-              _pool.put (std::move (_buffer));
-            }
-
-            buffer_t* operator->() const
-            {
-              return _buffer.operator->();
-            }
-
-            area_t::memory_pool_t& _pool;
-            std::unique_ptr<buffer_t> _buffer;
-          };
-        }
-
-        struct copy
-        {
-          copy ( area_t & src
-               , area_t & dst
-               , gpi::pc::type::memory_location_t src_loc
-               , gpi::pc::type::memory_location_t dst_loc
-               , gpi::pc::type::size_t amount
-               , area_t::memory_pool_t & buffer_pool
-               )
-            : m_src (src)
-            , m_dst (dst)
-            , m_src_loc (src_loc)
-            , m_dst_loc (dst_loc)
-            , m_amount (amount)
-            , m_pool (buffer_pool)
-          {}
-
-          void operator () ()
-          {
-            temporarily_removed_buffer buffer (m_pool);
-
-            size_t remaining = m_amount;
-
-            while (remaining)
-            {
-              const size_t to_read = std::min (remaining, buffer->size ());
-
-              const size_t num_read = m_src.read_from ( m_src_loc
-                                                      , buffer->data ()
-                                                      , to_read
-                                                      );
-              if (0 == num_read)
-              {
-                throw std::runtime_error
-                  ( "could not read " + std::to_string (buffer->size())
-                  + " bytes from " + boost::lexical_cast<std::string> (m_src_loc)
-                  + " remaining " + std::to_string (remaining)
-                  );
-              }
-
-              buffer->used (num_read);
-
-              const size_t num_written = m_dst.write_to ( m_dst_loc
-                                                        , buffer->data ()
-                                                        , buffer->used ()
-                                                        );
-
-              fhg_assert (num_read == num_written);
-
-              buffer->used (num_read - num_written);
-
-              remaining -= num_read;
-            }
-          }
-        private:
-          area_t & m_src;
-          area_t & m_dst;
-          gpi::pc::type::memory_location_t m_src_loc;
-          gpi::pc::type::memory_location_t m_dst_loc;
-          gpi::pc::type::size_t m_amount;
-          area_t::memory_pool_t & m_pool;
-        };
-      }
-
       gpi::pc::type::size_t
       area_t::read_from ( gpi::pc::type::memory_location_t loc
                         , void *buffer
@@ -782,39 +645,45 @@ namespace gpi
         return amount;
       }
 
-      int
-      area_t::get_send_tasks ( area_t &
-                             , const gpi::pc::type::memory_location_t
-                             , const gpi::pc::type::memory_location_t
-                             , gpi::pc::type::size_t
-                             , gpi::pc::type::size_t
-                             , task_list_t &
-                             )
+
+      std::packaged_task<void()> area_t::get_specific_transfer_task
+        ( const gpi::pc::type::memory_location_t
+        , const gpi::pc::type::memory_location_t
+        , area_t&
+        , gpi::pc::type::size_t
+        )
       {
-        throw std::runtime_error ("get_send_tasks() not implemented");
+        throw std::logic_error
+          ("get_specific_transfer_task not implemented");
       }
 
-      int
-      area_t::get_recv_tasks ( area_t &
-                             , const gpi::pc::type::memory_location_t
-                             , const gpi::pc::type::memory_location_t
-                             , gpi::pc::type::size_t
-                             , gpi::pc::type::size_t
-                             , task_list_t &
-                             )
+      std::packaged_task<void()> area_t::get_send_task
+        ( area_t&
+        , const gpi::pc::type::memory_location_t
+        , const gpi::pc::type::memory_location_t
+        , gpi::pc::type::size_t
+        )
       {
-        throw std::runtime_error ("get_recv_tasks() not implemented");
+        throw std::logic_error ("get_send_task not implemented");
       }
 
-      int
-      area_t::get_transfer_tasks ( const gpi::pc::type::memory_location_t src
-                                 , const gpi::pc::type::memory_location_t dst
-                                 , area_t & dst_area
-                                 , gpi::pc::type::size_t amount
-                                 , gpi::pc::type::size_t queue
-                                 , memory_pool_t & buffer_pool
-                                 , task_list_t & tasks
-                                 )
+      std::packaged_task<void()> area_t::get_recv_task
+        ( area_t&
+        , const gpi::pc::type::memory_location_t
+        , const gpi::pc::type::memory_location_t
+        , gpi::pc::type::size_t
+        )
+      {
+        throw std::logic_error ("get_recv_task not implemented");
+      }
+
+      std::packaged_task<void()> area_t::get_transfer_task
+        ( const type::memory_location_t src
+        , const type::memory_location_t dst
+        , area_t& dst_area
+        , type::size_t amount
+        , memory_pool_t& buffer_pool
+        )
       {
         const bool src_is_local
           (         is_local (gpi::pc::type::memory_region_t( src
@@ -837,62 +706,78 @@ namespace gpi
 
           if (src_ptr)
           {
-            tasks.push_back
-              (boost::make_shared<task_t>
-              ( "write_to: "
-              + boost::lexical_cast<std::string> (dst)
-              + " <- "
-              + boost::lexical_cast<std::string> (src)
-              + " "
-              + boost::lexical_cast<std::string> (amount)
-
-              , detail::writer ( dst_area
-                               , dst
-                               , src_ptr
-                               , amount
-                               )
-              ));
-            return 0;
+            return std::packaged_task<void()>
+              ( [&dst_area, dst, src_ptr, amount]
+                {
+                  dst_area.write_to (dst, src_ptr, amount);
+                }
+              );
           }
           else if (dst_ptr)
           {
-            tasks.push_back
-              (boost::make_shared<task_t>
-              ( "read_from: "
-              + boost::lexical_cast<std::string> (dst)
-              + " <- "
-              + boost::lexical_cast<std::string> (src)
-              + " "
-              + boost::lexical_cast<std::string> (amount)
-
-              , detail::reader ( *this
-                               , src
-                               , dst_ptr
-                               , amount
-                               )
-              ));
-            return 0;
+            return std::packaged_task<void()>
+              ( [this, src, dst_ptr, amount]
+                {
+                  read_from (src, dst_ptr, amount);
+                }
+              );
           }
           else
           {
-            tasks.push_back
-              (boost::make_shared<task_t>
-              ( "copy: "
-              + boost::lexical_cast<std::string> (dst)
-              + " <- "
-              + boost::lexical_cast<std::string> (src)
-              + " "
-              + boost::lexical_cast<std::string> (amount)
+            return std::packaged_task<void()>
+              ( [this, &dst_area, src, dst, amount, &buffer_pool]
+                {
+                  struct temporarily_removed_buffer
+                  {
+                    temporarily_removed_buffer (area_t::memory_pool_t& pool)
+                      : _pool (pool)
+                      , _buffer (_pool.get())
+                    {}
+                    ~temporarily_removed_buffer()
+                    {
+                      _pool.put (std::move (_buffer));
+                    }
+                    buffer_t* operator->() const
+                    {
+                      return _buffer.operator->();
+                    }
+                    area_t::memory_pool_t& _pool;
+                    std::unique_ptr<buffer_t> _buffer;
+                  } buffer = {buffer_pool};
 
-              , detail::copy ( *this
-                             , dst_area
-                             , src
-                             , dst
-                             , amount
-                             , buffer_pool
-                             )
-              ));
-            return 0;
+                  size_t remaining (amount);
+
+                  while (remaining)
+                  {
+                    const size_t to_read
+                      (std::min (remaining, buffer->size ()));
+
+                    const size_t num_read
+                      (read_from (src, buffer->data (), to_read));
+                    if (0 == num_read)
+                    {
+                      throw std::runtime_error
+                        ( "could not read " + std::to_string (buffer->size())
+                        + " bytes from " + boost::lexical_cast<std::string> (src)
+                        + " remaining " + std::to_string (remaining)
+                        );
+                    }
+
+                    buffer->used (num_read);
+
+                    const size_t num_written
+                      ( dst_area.write_to
+                          (dst, buffer->data (), buffer->used())
+                      );
+
+                    fhg_assert (num_read == num_written);
+
+                    buffer->used (num_read - num_written);
+
+                    remaining -= num_read;
+                  }
+                }
+              );
           }
         }
 
@@ -903,13 +788,11 @@ namespace gpi
         // horizontal copy (same type)
         if (type () == dst_area.type ())
         {
-          return get_specific_transfer_tasks ( src
-                                             , dst
-                                             , dst_area
-                                             , amount
-                                             , queue
-                                             , tasks
-                                             );
+          return get_specific_transfer_task ( src
+                                            , dst
+                                            , dst_area
+                                            , amount
+                                            );
         }
         // diagonal copy (non-local different types)
         else
@@ -917,24 +800,20 @@ namespace gpi
           if (src_is_local)
           {
             // send from local source to remote destination
-            return dst_area.get_send_tasks ( *this
-                                           , src
-                                           , dst
-                                           , amount
-                                           , queue
-                                           , tasks
-                                           );
+            return dst_area.get_send_task ( *this
+                                          , src
+                                          , dst
+                                          , amount
+                                          );
           }
           else if (dst_is_local)
           {
             // receive from remote src to local destination
-            return this->get_recv_tasks ( dst_area
-                                        , dst
-                                        , src
-                                        , amount
-                                        , queue
-                                        , tasks
-                                        );
+            return this->get_recv_task ( dst_area
+                                       , dst
+                                       , src
+                                       , amount
+                                       );
           }
           else
           {
@@ -945,8 +824,6 @@ namespace gpi
               );
           }
         }
-
-        return 0;
       }
     }
   }

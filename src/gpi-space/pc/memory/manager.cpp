@@ -4,13 +4,14 @@
 
 #include <fhglog/LogMacros.hpp>
 
-#include <gpi-space/gpi/api.hpp>
+#include <util-generic/finally.hpp>
+
+#include <gpi-space/gpi/gaspi.hpp>
 #include <gpi-space/pc/global/topology.hpp>
 #include <gpi-space/pc/memory/gpi_area.hpp>
 #include <gpi-space/pc/memory/handle_generator.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
-#include <gpi-space/pc/memory/memory_transfer_t.hpp>
 #include <gpi-space/pc/memory/sfs_area.hpp>
 #include <gpi-space/pc/memory/shm_area.hpp>
 
@@ -28,13 +29,13 @@ namespace gpi
                                , std::string const &url_s
                                , global::topology_t& topology
                                , handle_generator_t& handle_generator
-                               , api::gpi_api_t& gpi_api
+                               , api::gaspi_t& gaspi
                                )
       {
         url_t url (url_s);
 
         return
-          ( url.type() == "gpi" ? gpi_area_t::create (logger, url_s, topology, handle_generator, gpi_api)
+          ( url.type() == "gpi" ? gpi_area_t::create (logger, url_s, topology, handle_generator, gaspi)
           : url.type() == "sfs" ? sfs_area_t::create (logger, url_s, topology, handle_generator)
           : throw std::runtime_error
               ("no memory type registered with: '" + url_s + "'")
@@ -42,14 +43,38 @@ namespace gpi
       }
       }
 
-      manager_t::manager_t (fhg::log::Logger& logger, api::gpi_api_t& gpi_api)
+      manager_t::manager_t (fhg::log::Logger& logger, api::gaspi_t& gaspi)
         : _logger (logger)
-        , _gpi_api (gpi_api)
-        , m_transfer_mgr (_logger, gpi_api)
-        , _handle_generator (gpi_api.rank())
+        , _gaspi (gaspi)
+        , _next_memcpy_id (0)
+        , _handle_generator (gaspi.rank())
       {
         _handle_generator.initialize_counter
           (gpi::pc::type::segment::SEG_INVAL, MAX_PREALLOCATED_SEGMENT_ID);
+
+        const std::size_t number_of_queues (gaspi.number_of_queues());
+        for (std::size_t i (0); i < number_of_queues; ++i)
+        {
+          _task_threads.emplace_back
+            ( fhg::util::cxx14::make_unique<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
+                ( [this]
+                  {
+                    for (;;)
+                    {
+                      _tasks.get()();
+                    }
+                  }
+                )
+            );
+        }
+
+        for (size_t i = 0; i < number_of_queues; ++i)
+        {
+          constexpr size_t DEF_BUFFER_SIZE (4194304);
+
+          m_memory_buffer_pool.put
+            (fhg::util::cxx14::make_unique<buffer_t> (DEF_BUFFER_SIZE));
+        }
       }
 
       manager_t::~manager_t ()
@@ -383,47 +408,68 @@ namespace gpi
         {
           const area_ptr area (get_area_by_handle (transfer.location.handle));
 
-          for (gpi::rank_t rank = 0; rank < _gpi_api.number_of_nodes(); ++rank)
+          for (gpi::rank_t rank = 0; rank < _gaspi.number_of_nodes(); ++rank)
           {
-            costs[_gpi_api.hostname_of_rank (rank)] += area->get_transfer_costs (transfer, rank);
+            costs[_gaspi.hostname_of_rank (rank)] += area->get_transfer_costs (transfer, rank);
           }
         }
 
         return costs;
       }
 
-      gpi::pc::type::queue_id_t
-      manager_t::memcpy ( gpi::pc::type::memory_location_t const & dst
-                        , gpi::pc::type::memory_location_t const & src
-                        , const gpi::pc::type::size_t amount
-                        )
+      type::memcpy_id_t manager_t::memcpy
+        ( type::memory_location_t const & dst
+        , type::memory_location_t const & src
+        , const type::size_t amount
+        )
       {
-        memory_transfer_t t;
-        t.dst_area     = get_area_by_handle(dst.handle);
-        t.dst_location = dst;
-        t.src_area     = get_area_by_handle(src.handle);
-        t.src_location = src;
-        t.amount       = amount;
-          static gpi::pc::type::queue_id_t rr_queue = 0;
-          t.queue        = rr_queue;
-          rr_queue = (rr_queue + 1) % m_transfer_mgr.num_queues ();
+        auto& src_area (*get_area_by_handle (src.handle));
+        auto& dst_area (*get_area_by_handle (dst.handle));
 
-        t.dst_area->check_bounds (dst, amount);
-        t.src_area->check_bounds (src, amount);
-//        check_permissions (permission::memcpy_t (proc_id, dst, src));
+        dst_area.check_bounds (dst, amount);
+        src_area.check_bounds (src, amount);
 
-        // TODO: increase refcount in handles, set access/modification times
-        m_transfer_mgr.transfer (t);
+        auto task ( src_area.get_transfer_task
+                      ( src
+                      , dst
+                      , dst_area
+                      , amount
+                      , m_memory_buffer_pool
+                      )
+                  );
 
-        return t.queue;
+        std::unique_lock<std::mutex> const _ (_memcpy_task_guard);
+        type::memcpy_id_t const memcpy_id (_next_memcpy_id++);
+
+        _task_by_id.emplace (memcpy_id, task.get_future());
+        _tasks.put (std::move (task));
+
+        return memcpy_id;
       }
 
-      gpi::pc::type::size_t
-      manager_t::wait_on_queue ( const gpi::pc::type::process_id_t
-                               , const gpi::pc::type::queue_id_t queue
-                               )
+      void manager_t::wait (type::memcpy_id_t const& memcpy_id)
       {
-        return m_transfer_mgr.wait_on_queue (queue);
+        decltype (_task_by_id)::iterator task_it (_task_by_id.end());
+
+        {
+          std::unique_lock<std::mutex> const _ (_memcpy_task_guard);
+
+          task_it = _task_by_id.find (memcpy_id);
+          if (task_it == _task_by_id.end())
+          {
+            throw std::invalid_argument ("no such memcpy id");
+          }
+        }
+
+        FHG_UTIL_FINALLY
+          ( [&]
+            {
+              std::unique_lock<std::mutex> const _ (_memcpy_task_guard);
+              _task_by_id.erase (task_it);
+            }
+          );
+
+        task_it->second.get();
       }
 
       int
@@ -432,7 +478,7 @@ namespace gpi
                                    , global::topology_t& topology
                                    )
       {
-        area_ptr_t area (create_area (_logger, url, topology, _handle_generator, _gpi_api));
+        area_ptr_t area (create_area (_logger, url, topology, _handle_generator, _gaspi));
         area->set_owner (0);
         area->set_id (seg_id);
         add_area (area);
@@ -446,7 +492,7 @@ namespace gpi
                             , global::topology_t& topology
                             )
       {
-        area_ptr_t area (create_area (_logger, url_s, topology, _handle_generator, _gpi_api));
+        area_ptr_t area (create_area (_logger, url_s, topology, _handle_generator, _gaspi));
         area->set_owner (proc_id);
         if (seg_id > 0)
           area->set_id (seg_id);

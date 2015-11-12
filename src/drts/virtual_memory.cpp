@@ -39,12 +39,10 @@ namespace gspc
       (static_cast<char* const> (drts->_->_virtual_memory_api->ptr (buffer)));
     std::copy (data, data + size, content);
 
-    drts->_->_virtual_memory_api->wait
-      ( drts->_->_virtual_memory_api->memcpy
-        ( {_->_handle_id, 0}
-        , {buffer, 0}
-        , size
-        )
+    drts->_->_virtual_memory_api->memcpy_and_wait
+      ( {_->_handle_id, 0}
+      , {buffer, 0}
+      , size
       );
   }
   PIMPL_DTOR (vmem_allocation)

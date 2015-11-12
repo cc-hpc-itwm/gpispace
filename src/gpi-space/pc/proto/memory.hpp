@@ -6,6 +6,8 @@
 
 #include <boost/variant.hpp>
 
+#include <util-generic/serialization/exception.hpp>
+
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/type/handle_descriptor.hpp>
 #include <gpi-space/pc/type/memory_location.hpp>
@@ -89,40 +91,85 @@ namespace gpi
 
         struct memcpy_reply_t
         {
-          gpi::pc::type::queue_id_t queue;
+          gpi::pc::type::memcpy_id_t memcpy_id;
 
         private:
           friend class boost::serialization::access;
           template<typename Archive>
           void serialize (Archive & ar, const unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP( queue );
+            ar & BOOST_SERIALIZATION_NVP( memcpy_id );
           }
         };
 
         struct wait_t
         {
-          gpi::pc::type::queue_id_t queue;
+          gpi::pc::type::memcpy_id_t memcpy_id;
 
         private:
           friend class boost::serialization::access;
           template<typename Archive>
           void serialize (Archive & ar, const unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP( queue );
+            ar & BOOST_SERIALIZATION_NVP( memcpy_id );
           }
         };
 
         struct wait_reply_t
         {
-          gpi::pc::type::size_t count;
+          wait_reply_t (std::exception_ptr exception = nullptr)
+            : _exception (exception)
+          {}
+
+          void get() const
+          {
+            if (_exception)
+            {
+              std::rethrow_exception (_exception);
+            }
+          }
 
         private:
+          std::exception_ptr _exception;
+
           friend class boost::serialization::access;
-          template<typename Archive>
-          void serialize (Archive & ar, const unsigned int /*version*/)
+          template<class Archive>
+            void serialize (Archive & ar, unsigned int const version)
           {
-            ar & BOOST_SERIALIZATION_NVP( count );
+            boost::serialization::split_member (ar, *this, version);
+          }
+
+          template<typename Archive>
+            void save (Archive& ar, unsigned int const) const
+          {
+            ar << !!_exception;
+            if (_exception)
+            {
+              std::string const exception
+                ( fhg::util::serialization::exception::serialize
+                    ( _exception
+                    , fhg::util::serialization::exception::serialization_functions()
+                    , fhg::util::serialization::exception::aggregated_serialization_functions()
+                    )
+                );
+              ar << exception;
+            }
+          }
+          template<typename Archive>
+            void load (Archive& ar, unsigned int const)
+          {
+            bool has_exception;
+            ar >> has_exception;
+            if (has_exception)
+            {
+              std::string exception;
+              ar >> exception;
+              _exception = fhg::util::serialization::exception::deserialize
+                ( exception
+                , fhg::util::serialization::exception::serialization_functions()
+                , fhg::util::serialization::exception::aggregated_serialization_functions()
+                );
+            }
           }
         };
 

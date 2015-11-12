@@ -11,7 +11,7 @@
 
 #include <fhglog/LogMacros.hpp>
 
-#include <gpi-space/gpi/api.hpp>
+#include <gpi-space/gpi/gaspi.hpp>
 #include <gpi-space/pc/memory/shm_area.hpp>
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/url.hpp>
@@ -188,40 +188,24 @@ namespace gpi
             gpi::pc::type::validate (cpy.dst.handle);
             gpi::pc::type::validate (cpy.src.handle);
             gpi::pc::proto::memory::memcpy_reply_t rpl;
-            rpl.queue = _memory_manager.memcpy (cpy.dst, cpy.src, cpy.size);
+            rpl.memcpy_id = _memory_manager.memcpy (cpy.dst, cpy.src, cpy.size);
             return gpi::pc::proto::memory::message_t (rpl);
           }
 
           gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::memory::wait_t & w) const
           {
-            gpi::pc::proto::memory::wait_reply_t rpl;
-            // this is not that easy to implement
-            //    do we want to put the process container to sleep? - no
-            //    we basically want to delay the answer
-            //    the client should also be able to release the lock so that other threads can still interact with the pc
-            //
-            // TODO:
-            //   client:
-            //     attach a unique sequence number to the wait message
-            //     enqueue the request
-            //     send the message
-            //     unlock communication lock
-            //     wait for the request to "return"
-            //
-            //   server:
-            //     enqueue the "wait" request into some queue that is handled by a seperate thread (each queue one thread)
-            //     "reply" to the enqueued wait request via this process using the same sequence number waking up the client thread
-            //
-            //   implementation:
-            //     processes' message visitor has to be rewritten to be "asynchronous" in some way
-            //        -> idea: visitor's return value is a boost::optional
-            //                 if set: reply immediately
-            //                   else: somebody else will reply later
-            //           messages need unique sequence numbers or message-ids
-            rpl.count = _memory_manager.wait_on_queue
-              (m_proc_id, w.queue);
-            return gpi::pc::proto::memory::message_t (rpl);
+            try
+            {
+              _memory_manager.wait (w.memcpy_id);
+            }
+            catch (...)
+            {
+              return proto::memory::message_t
+                (proto::memory::wait_reply_t (std::current_exception()));
+            }
+
+            return proto::memory::message_t (proto::memory::wait_reply_t());
           }
 
           gpi::pc::proto::message_t
@@ -444,7 +428,7 @@ namespace gpi
       manager_t::manager_t ( fhg::log::Logger& logger
                            , std::string const & p
                            , std::vector<std::string> const& default_memory_urls
-                           , api::gpi_api_t& gpi_api
+                           , api::gaspi_t& gaspi
                            , std::unique_ptr<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher> topology_rpc_server
                            )
         : _logger (logger)
@@ -452,8 +436,8 @@ namespace gpi
         , m_socket (-1)
         , m_stopping (false)
         , m_process_counter (0)
-        , _memory_manager (_logger, gpi_api)
-        , _topology (_memory_manager, gpi_api, std::move (topology_rpc_server))
+        , _memory_manager (_logger, gaspi)
+        , _topology (_memory_manager, gaspi, std::move (topology_rpc_server))
       {
         if ( default_memory_urls.size ()
            >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID
