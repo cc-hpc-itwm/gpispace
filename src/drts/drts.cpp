@@ -124,7 +124,7 @@ namespace gspc
           , topology_description
           , entry_points
           , master
-          , std::cout
+          , std::cerr
           )
   {}
   scoped_runtime_system::scoped_runtime_system
