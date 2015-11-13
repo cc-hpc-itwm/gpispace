@@ -122,32 +122,29 @@ namespace sdpa
         return _content;
       }
 
+      using serialized = boost::variant< pnet::type::value::value_type
+                                       , std::string
+                                       >;
+
     private:
       std::string _workflow_response_id;
       content_t _content;
     };
-
-    namespace
-    {
-      using serialized = boost::variant< pnet::type::value::value_type
-                                       , std::string
-                                       >;
-    }
 
     SAVE_CONSTRUCT_DATA_DEF (workflow_response_response, e)
     {
       SAVE_MGMTEVENT_CONSTRUCT_DATA (e);
       SAVE_TO_ARCHIVE (e->workflow_response_id());
 
-      struct : public boost::static_visitor<serialized>
+      struct : public boost::static_visitor<workflow_response_response::serialized>
       {
-        serialized operator()
+        workflow_response_response::serialized operator()
           (workflow_response_response::value_t const& value) const
         {
           return value;
         }
 
-        serialized operator() (std::exception_ptr const& ex) const
+        workflow_response_response::serialized operator() (std::exception_ptr const& ex) const
         {
           return fhg::util::serialization::exception::serialize
                    ( ex
@@ -158,7 +155,7 @@ namespace sdpa
       } visitor;
 
       SAVE_TO_ARCHIVE_WITH_TEMPORARY
-        (serialized, boost::apply_visitor (visitor, e->content()));
+        (workflow_response_response::serialized, boost::apply_visitor (visitor, e->content()));
     }
 
     LOAD_CONSTRUCT_DATA_DEF (workflow_response_response, e)
@@ -166,7 +163,7 @@ namespace sdpa
       LOAD_MGMTEVENT_CONSTRUCT_DATA();
       LOAD_FROM_ARCHIVE (std::string, workflow_response_id);
 
-      LOAD_FROM_ARCHIVE (serialized, content);
+      LOAD_FROM_ARCHIVE (workflow_response_response::serialized, content);
 
       struct : public boost::static_visitor<workflow_response_response::content_t>
       {
