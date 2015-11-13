@@ -15,6 +15,7 @@
 #include <we/type/value/unwrap.hpp>
 #include <we/type/value/to_value.hpp>
 #include <we/type/value/dump.hpp>
+#include <we/type/value/serialize.hpp>
 #include <we/field.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
@@ -58,6 +59,12 @@ namespace
       BOOST_CHECK_EQUAL (value_type (x), pnet::type::value::read (pos));
       BOOST_CHECK (pos.end());
     }
+
+    BOOST_CHECK_EQUAL
+      ( pnet::type::value::from_string
+          (pnet::type::value::to_string (value_type (x)))
+      , value_type (x)
+      );
   }
 }
 
