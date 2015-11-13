@@ -5,7 +5,6 @@
 
 #include <we/type/value.hpp>
 #include <we/type/value/read.hpp>
-#include <we/type/value/show.hpp>
 #include <we/type/value/serialize.hpp>
 
 #include <boost/lexical_cast.hpp>
@@ -130,7 +129,9 @@ namespace sdpa
 
     namespace
     {
-      using serialized = std::pair<bool, std::string>;
+      using serialized = boost::variant< pnet::type::value::value_type
+                                       , std::string
+                                       >;
     }
 
     SAVE_CONSTRUCT_DATA_DEF (workflow_response_response, e)
@@ -138,27 +139,21 @@ namespace sdpa
       SAVE_MGMTEVENT_CONSTRUCT_DATA (e);
       SAVE_TO_ARCHIVE (e->workflow_response_id());
 
-      struct : public boost::static_visitor<std::pair<bool, std::string>>
+      struct : public boost::static_visitor<serialized>
       {
-        std::pair<bool, std::string> operator()
+        serialized operator()
           (workflow_response_response::value_t const& value) const
         {
-          return { true
-                 , boost::lexical_cast<std::string>
-                     (pnet::type::value::show (value))
-                 };
+          return value;
         }
 
-        std::pair<bool, std::string> operator()
-          (std::exception_ptr const& ex) const
+        serialized operator() (std::exception_ptr const& ex) const
         {
-          return { false
-                 , fhg::util::serialization::exception::serialize
-                     ( ex
-                     , fhg::util::serialization::exception::serialization_functions()
-                     , fhg::util::serialization::exception::aggregated_serialization_functions()
-                     )
-                 };
+          return fhg::util::serialization::exception::serialize
+                   ( ex
+                   , fhg::util::serialization::exception::serialization_functions()
+                   , fhg::util::serialization::exception::aggregated_serialization_functions()
+                   );
         }
       } visitor;
 
@@ -172,22 +167,30 @@ namespace sdpa
       LOAD_FROM_ARCHIVE (std::string, workflow_response_id);
 
       LOAD_FROM_ARCHIVE (serialized, content);
-      if (content.first)
+
+      struct : public boost::static_visitor<workflow_response_response::content_t>
       {
-        ::new (e) workflow_response_response
-          (workflow_response_id, pnet::type::value::read (content.second));
-      }
-      else
-      {
-        ::new (e) workflow_response_response
+        workflow_response_response::content_t operator()
+          (pnet::type::value::value_type const& value) const
+        {
+          return value;
+        }
+
+        workflow_response_response::content_t operator()
+          (std::string const& ex) const
+        {
+          return fhg::util::serialization::exception::deserialize
+                  ( ex
+                  , fhg::util::serialization::exception::serialization_functions()
+                  , fhg::util::serialization::exception::aggregated_serialization_functions()
+                  );
+        }
+      } visitor;
+
+      ::new (e) workflow_response_response
           ( workflow_response_id
-          , fhg::util::serialization::exception::deserialize
-              ( content.second
-              , fhg::util::serialization::exception::serialization_functions()
-              , fhg::util::serialization::exception::aggregated_serialization_functions()
-              )
+          , boost::apply_visitor (visitor, content)
           );
-      }
     }
   }
 }
