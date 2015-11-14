@@ -67,8 +67,6 @@ namespace test
 
       command
         << "make "
-        << " SDPA_HOME=" << installation.gspc_home()
-        << " BOOST_ROOT=" << boost_root (installation)
         << " LIB_DESTDIR=" << lib_destdir.get()
         << " -C " << wrapper_directory
         << " install"

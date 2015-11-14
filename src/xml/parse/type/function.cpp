@@ -1,4 +1,4 @@
-// bernd.loerwald@itwm.fraunhofer.de
+#include <installation.hpp>
 
 #include <xml/parse/type/function.hpp>
 
@@ -1286,6 +1286,8 @@ namespace xml
                  << std::endl;
         }
 
+        gspc::installation const installation;
+
         stream                                                     << std::endl;
         stream << "CXXFLAGS += -fPIC"                              << std::endl;
         stream                                                     << std::endl;
@@ -1293,54 +1295,17 @@ namespace xml
         stream << "  $(error Variable CXX is not defined)"         << std::endl;
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
-        stream << "ifndef SDPA_INCLUDE"                            << std::endl;
-        stream << "  ifndef SDPA_HOME"                             << std::endl;
-        stream << "    $(error Neither SDPA_INCLUDE nor SDPA_HOME are set)"
-                                                                   << std::endl;
-        stream << "  else"                                         << std::endl;
-        stream << "    SDPA_INCLUDE := $(SDPA_HOME)/include"       << std::endl;
-        stream << "  endif"                                        << std::endl;
-        stream << "endif"                                          << std::endl;
-        stream                                                     << std::endl;
-        stream << "ifndef BOOST_ROOT"                              << std::endl;
-        stream << "  ifndef SDPA_HOME"                             << std::endl;
-        stream << "    $(error Neither BOOST_ROOT nor SDPA_HOME are set)"
-                                                                   << std::endl;
-        stream << "  else"                                         << std::endl;
-        stream << "    BOOST_ROOT := $(SDPA_HOME)/external/boost"  << std::endl;
-        stream << "  endif"                                        << std::endl;
-        stream << "else"                                           << std::endl;
-        stream << "  ifdef SDPA_HOME"                              << std::endl;
-        stream << "    ifneq \"$(BOOST_ROOT)\" \"$(SDPA_HOME)/external/boost\""
-                                                                   << std::endl;
-        stream << "      $(warning !!!)"                           << std::endl;
-        stream << "      $(warning !!! BOOST_ROOT is set and different from GSPC bundled version)"
-                                                                   << std::endl;
-        stream << "      $(warning !!! BOOST_ROOT = $(BOOST_ROOT))"    << std::endl;
-        stream << "      $(warning !!! GSPC_BUNDLED = $(SDPA_HOME)/external/boost)"
-                                                                   << std::endl;
-        stream << "      $(warning !!!)"                           << std::endl;
-        stream << "    endif"                                      << std::endl;
-        stream << "  endif"                                        << std::endl;
-        stream << "endif"                                          << std::endl;
-        stream                                                     << std::endl;
         stream << "CXXFLAGS += -I."                                << std::endl;
         stream << "CXXFLAGS += -DBOOST_VARIANT_DO_NOT_USE_VARIADIC_TEMPLATES"
                                                                    << std::endl;
-        stream << "CXXFLAGS += -isystem $(SDPA_INCLUDE)"           << std::endl;
-        stream << "CXXFLAGS += -isystem $(BOOST_ROOT)/include"     << std::endl;
-        stream << "LDFLAGS += -L $(BOOST_ROOT)/lib"                << std::endl;
+        stream << "CXXFLAGS += -isystem "
+               << installation.include()                           << std::endl;
+        stream << "CXXFLAGS += -isystem "
+               << (installation.boost_root() / "include")          << std::endl;
+        stream << "LDFLAGS += -L "
+               << (installation.boost_root() / "lib")              << std::endl;
         stream                                                     << std::endl;
-        stream << "ifndef SDPA_LDPATH"                             << std::endl;
-        stream << "  ifndef SDPA_HOME"                             << std::endl;
-        stream << "    $(error Neither SDPA_LDPATH nor SDPA_HOME are set)"
-                                                                   << std::endl;
-        stream << "  else"                                         << std::endl;
-        stream << "    SDPA_LDPATH := $(SDPA_HOME)/lib"            << std::endl;
-        stream << "  endif"                                        << std::endl;
-        stream << "endif"                                          << std::endl;
-        stream                                                     << std::endl;
-        stream << "LDFLAGS += -L$(SDPA_LDPATH)"                    << std::endl;
+        stream << "LDFLAGS += -L " << installation.lib()           << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef CP"                                      << std::endl;
         stream << "  CP := $(shell which cp 2>/dev/null)"          << std::endl;
