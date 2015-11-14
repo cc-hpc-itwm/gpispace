@@ -41,6 +41,13 @@ namespace drts
       void set_module_call_do_cancel (boost::function<void()> fun);
       void module_call_do_cancel() const;
 
+      void execute_and_kill_on_cancel
+        ( boost::function<void()> fun
+        , boost::function<void()> on_cancel
+        , boost::function<void (int)> on_signal
+        , boost::function<void (int)> on_exit
+        );
+
       void log ( fhg::log::Level const& severity
                , std::string const& message
                ) const;
