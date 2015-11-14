@@ -8,15 +8,8 @@
     <cinclude href="boost/asio/connect.hpp"/>
     <cinclude href="boost/asio/io_service.hpp"/>
     <cinclude href="boost/asio/ip/tcp.hpp"/>
-    <cinclude href="condition_variable"/>
-    <cinclude href="mutex"/>
     <cxx flag="--std=c++11"/>
     <code><![CDATA[
-    std::condition_variable cancel_received;
-
-    _pnetc_context->set_module_call_do_cancel
-      (std::bind (&std::condition_variable::notify_all, &cancel_received));
-
     boost::asio::io_service io_service;
     boost::asio::ip::tcp::socket socket (io_service);
 
@@ -30,9 +23,36 @@
                 )
       );
 
-    std::mutex mutex;
-    std::unique_lock<std::mutex> lock (mutex);
-    cancel_received.wait (lock);
+    bool cancelled {false};
+
+    //! \note: race: cancel before cancel handler gets installed
+    _pnetc_context->execute_and_kill_on_cancel
+      ( []()
+        {
+          while (1) {}
+        }
+      , [&cancelled]()
+        {
+          cancelled = true;
+        }
+      , [] (int signal)
+        {
+          throw std::logic_error
+            ("unexpected signal: " + std::to_string (signal));
+        }
+      , [] (int exit_code)
+        {
+          throw std::logic_error
+            ("unexpected exit wih code: " + std::to_string (exit_code));
+        }
+      )
+      ;
+
+    if (!cancelled)
+    {
+      //! \note: continue to work in order to let the test fail with a timeout
+      while (1) {};
+    }
 
     return we::type::literal::control();
     ]]></code>
