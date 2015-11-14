@@ -80,7 +80,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libprocess.a"
   "${CMAKE_INSTALL_PREFIX}/revision"
   "${CMAKE_INSTALL_PREFIX}/share/man/man5/xpnet.5"
-  "${CMAKE_INSTALL_PREFIX}/share/sdpa/make/common.mk"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/4.xml"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/5.xml"
   "${CMAKE_INSTALL_PREFIX}/share/sdpa/xml/lib/6.xml"
