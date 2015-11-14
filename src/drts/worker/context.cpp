@@ -35,10 +35,6 @@ namespace drts
     {
       return _->worker_to_hostname (worker);
     }
-    void context::set_module_call_do_cancel (boost::function<void()> f)
-    {
-      _->set_module_call_do_cancel (f);
-    }
     void context::module_call_do_cancel() const
     {
       _->module_call_do_cancel();

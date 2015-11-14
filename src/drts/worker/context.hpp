@@ -31,7 +31,6 @@ namespace drts
       std::set<std::string> const& workers() const;
       std::string worker_to_hostname (std::string const&) const;
 
-      void set_module_call_do_cancel (boost::function<void()>);
       void module_call_do_cancel() const;
 
       void execute_and_kill_on_cancel
