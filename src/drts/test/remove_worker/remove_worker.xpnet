@@ -8,6 +8,8 @@
     <cinclude href="boost/asio/connect.hpp"/>
     <cinclude href="boost/asio/io_service.hpp"/>
     <cinclude href="boost/asio/ip/tcp.hpp"/>
+    <cinclude href="thread"/>
+    <cinclude href="chrono"/>
     <cxx flag="--std=c++11"/>
     <code><![CDATA[
     boost::asio::io_service io_service;
@@ -23,9 +25,10 @@
                 )
       );
 
+    std::this_thread::sleep_for (std::chrono::seconds (2));
+
     bool cancelled {false};
 
-    //! \note: race: cancel before cancel handler gets installed
     _pnetc_context->execute_and_kill_on_cancel
       ( []()
         {

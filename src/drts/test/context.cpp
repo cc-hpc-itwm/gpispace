@@ -10,6 +10,7 @@
 #include <util-generic/testing/random_string.hpp>
 
 #include <thread>
+#include <chrono>
 
 namespace
 {
@@ -116,7 +117,11 @@ BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_calls_on_cancel, cf)
   std::thread execution
     ( [this, &cancelled]()
       {
-        //! \note: race: do_cancel() before set_on_cancel
+        std::this_thread::sleep_for
+          ( std::chrono::milliseconds
+            (fhg::util::testing::random<int>()() % 500)
+          );
+
         context.execute_and_kill_on_cancel
           ( []()
             {

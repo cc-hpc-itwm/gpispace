@@ -65,6 +65,7 @@ namespace drts
         : _worker_name (worker_name)
         , _workers (workers)
         , _module_call_do_cancel ([](){})
+        , _cancelled (false)
         , _logger (logger)
     {}
     std::string const& context::implementation::worker_name() const
@@ -87,9 +88,14 @@ namespace drts
       (boost::function<void()> fun)
     {
       _module_call_do_cancel = fun;
+      if (_cancelled)
+      {
+        module_call_do_cancel();
+      }
     }
-    void context::implementation::module_call_do_cancel() const
+    void context::implementation::module_call_do_cancel()
     {
+      _cancelled = true;
       _module_call_do_cancel();
     }
     void context::implementation::log ( fhg::log::Level const& severity
