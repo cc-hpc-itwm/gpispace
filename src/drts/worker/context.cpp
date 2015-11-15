@@ -165,13 +165,16 @@ namespace drts
                                  , std::istream_iterator<char>()
                                  };
 
-            std::rethrow_exception
-              ( fhg::util::serialization::exception::deserialize
-                ( ex
-                , fhg::util::serialization::exception::serialization_functions()
-                , fhg::util::serialization::exception::aggregated_serialization_functions()
-                )
-              );
+            if (ex.size())
+            {
+              std::rethrow_exception
+                ( fhg::util::serialization::exception::deserialize
+                  ( ex
+                  , fhg::util::serialization::exception::serialization_functions()
+                  , fhg::util::serialization::exception::aggregated_serialization_functions()
+                  )
+                );
+            }
           }
 
           return on_exit (WEXITSTATUS (status));

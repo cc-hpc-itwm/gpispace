@@ -185,3 +185,28 @@ BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_with_throw, cf)
     , exception
     );
 }
+
+BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_fun_exit, cf)
+{
+  for (int ec (0); ec < 256; ++ec)
+  {
+    bool exited {false};
+
+    context.execute_and_kill_on_cancel
+      ( [&ec]()
+        {
+          exit (ec);
+        }
+      , &on_cancel_unexpected
+      , &on_signal_unexpected
+      , [&ec, &exited] (int exit_code)
+        {
+          BOOST_REQUIRE_EQUAL (exit_code, ec);
+
+          exited = true;
+        }
+      );
+
+    BOOST_REQUIRE (exited);
+  }
+}
