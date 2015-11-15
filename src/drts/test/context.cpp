@@ -8,6 +8,7 @@
 #include <util-generic/syscall.hpp>
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/require_exception.hpp>
 
 #include <thread>
 #include <chrono>
@@ -92,14 +93,12 @@ BOOST_FIXTURE_TEST_CASE
     ( [r, &channel, &exited]()
       {
         channel.write (r);
-
-        exit (std::abs (r) % 255);
       }
     , &on_cancel_unexpected
     , &on_signal_unexpected
     , [r, &exited] (int exit_code)
       {
-        BOOST_REQUIRE_EQUAL (exit_code, std::abs (r) % 255);
+        BOOST_REQUIRE_EQUAL (exit_code, 0);
 
         exited = true;
       }
@@ -164,4 +163,25 @@ BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_calls_on_signal, cf)
     );
 
   BOOST_REQUIRE (signalled);
+}
+
+BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_with_throw, cf)
+{
+  std::runtime_error const exception {fhg::util::testing::random_string()};
+
+  fhg::util::testing::require_exception
+    ( [this, &exception]()
+      {
+        context.execute_and_kill_on_cancel
+          ( [&exception]()
+            {
+              throw exception;
+            }
+          , &on_cancel_unexpected
+          , &on_signal_unexpected
+          , &on_exit_unexpected
+          );
+      }
+    , exception
+    );
 }

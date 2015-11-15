@@ -1,15 +1,18 @@
 #include <drts/worker/context.hpp>
 #include <drts/worker/context_impl.hpp>
 
-#include <util-generic/print_exception.hpp>
+#include <util-generic/serialization/exception.hpp>
 #include <util-generic/syscall.hpp>
 #include <util-generic/syscall/process_signal_block.hpp>
 #include <util-generic/syscall/signal_set.hpp>
 
 #include <boost/format.hpp>
+#include <boost/iostreams/device/file_descriptor.hpp>
+#include <boost/iostreams/stream.hpp>
 
-#include <stdexcept>
 #include <iostream>
+#include <stdexcept>
+#include <string>
 
 namespace drts
 {
@@ -105,6 +108,8 @@ namespace drts
       _logger.log (fhg::log::LogEvent (severity, message));
     }
 
+    //! \todo factor out channel_from_child_to_parent, see
+    //! execute_and_get_startup_messages, process::execute
     void context::implementation::execute_and_kill_on_cancel
       ( boost::function<void()> fun
       , boost::function<void()> on_cancel
@@ -112,8 +117,13 @@ namespace drts
       , boost::function<void (int)> on_exit
       )
     {
+      int pipe_fds[2];
+      fhg::util::syscall::pipe (pipe_fds);
+
       if (pid_t child = fhg::util::syscall::fork())
       {
+        fhg::util::syscall::close (pipe_fds[1]);
+
         bool cancelled {false};
 
         set_module_call_do_cancel
@@ -144,6 +154,26 @@ namespace drts
         }
         else if (WIFEXITED (status))
         {
+          if (WEXITSTATUS (status) == 1)
+          {
+            boost::iostreams::stream<boost::iostreams::file_descriptor_source>
+              pipe_read (pipe_fds[0], boost::iostreams::close_handle);
+
+            pipe_read >> std::noskipws;
+
+            std::string const ex { std::istream_iterator<char> (pipe_read)
+                                 , std::istream_iterator<char>()
+                                 };
+
+            std::rethrow_exception
+              ( fhg::util::serialization::exception::deserialize
+                ( ex
+                , fhg::util::serialization::exception::serialization_functions()
+                , fhg::util::serialization::exception::aggregated_serialization_functions()
+                )
+              );
+          }
+
           return on_exit (WEXITSTATUS (status));
         }
         else
@@ -154,6 +184,8 @@ namespace drts
       }
       else
       {
+        fhg::util::syscall::close (pipe_fds[0]);
+
         //! \note block to avoid "normal" exit due to external signal
         fhg::util::syscall::process_signal_block const process_signal_block
           {fhg::util::syscall::signal_set ({SIGINT, SIGTERM})};
@@ -166,7 +198,13 @@ namespace drts
         }
         catch (...)
         {
-          std::cerr << fhg::util::current_exception_printer().string() << '\n';
+          boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
+            (pipe_fds[1], boost::iostreams::close_handle) <<
+              fhg::util::serialization::exception::serialize
+                ( std::current_exception()
+                , fhg::util::serialization::exception::serialization_functions()
+                , fhg::util::serialization::exception::aggregated_serialization_functions()
+                );
 
           exit (1);
         }

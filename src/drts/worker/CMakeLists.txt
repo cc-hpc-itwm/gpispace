@@ -25,6 +25,7 @@ install (FILES context_fwd.hpp context.hpp
 extended_add_library (NAME drts-context
   SOURCES "context.cpp"
   LIBRARIES fhglog
+            Boost::iostreams
   TYPE SHARED
   INSTALL
 )
