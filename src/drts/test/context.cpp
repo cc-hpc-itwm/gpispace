@@ -52,9 +52,9 @@ namespace
     } _fds;
   };
 
-  struct cf
+  struct context_fixture
   {
-    cf()
+    context_fixture()
       : logger()
       , context
         ( drts::worker::context_constructor
@@ -81,7 +81,7 @@ namespace
 }
 
 BOOST_FIXTURE_TEST_CASE
-  (execute_and_kill_on_cancel_runs_function_and_calls_on_exit, cf)
+  (execute_and_kill_on_cancel_runs_function_and_calls_on_exit, context_fixture)
 {
   int const r {fhg::util::testing::random<int>()()};
 
@@ -109,7 +109,8 @@ BOOST_FIXTURE_TEST_CASE
   BOOST_REQUIRE (exited);
 }
 
-BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_calls_on_cancel, cf)
+BOOST_FIXTURE_TEST_CASE
+  (execute_and_kill_on_cancel_calls_on_cancel, context_fixture)
 {
   bool cancelled {false};
 
@@ -143,7 +144,8 @@ BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_calls_on_cancel, cf)
   BOOST_REQUIRE (cancelled);
 }
 
-BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_calls_on_signal, cf)
+BOOST_FIXTURE_TEST_CASE
+  (execute_and_kill_on_cancel_calls_on_signal, context_fixture)
 {
   bool signalled {false};
 
@@ -165,7 +167,7 @@ BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_calls_on_signal, cf)
   BOOST_REQUIRE (signalled);
 }
 
-BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_with_throw, cf)
+BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_with_throw, context_fixture)
 {
   std::runtime_error const exception {fhg::util::testing::random_string()};
 
@@ -186,7 +188,7 @@ BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_with_throw, cf)
     );
 }
 
-BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_fun_exit, cf)
+BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_fun_exit, context_fixture)
 {
   for (int ec (0); ec < 256; ++ec)
   {
