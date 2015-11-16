@@ -982,6 +982,51 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  (sibling_jobs_shall_be_canceled_on_child_failure_and_any_termination_is_okay, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_output;
+  we::type::activity_t activity_child;
+  we::type::activity_t activity_result;
+  std::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (3);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
+  we::layer::id_type child_id_c;
+
+  {
+    expect_submit const _a (this, &child_id_a, activity_child);
+    expect_submit const _b (this, &child_id_b, activity_child);
+    expect_submit const _c (this, &child_id_c, activity_child);
+
+    do_submit (id, activity_input);
+  }
+
+  const std::string message (rand() % 0xFE + 1, rand() % 0xFE + 1);
+
+  {
+    expect_cancel const _b (this, child_id_b);
+    expect_cancel const _c (this, child_id_c);
+
+    do_failed (child_id_a, message);
+  }
+
+  {
+    expect_failed const _ (this, id, message);
+
+    //! \todo There is an uncheckable(?) race here: rts_failed may
+    //! be called before do_* (second and third child)!
+
+    do_finished (child_id_b, activity_result);
+    do_failed (child_id_c, message);
+  }
+}
+
 BOOST_FIXTURE_TEST_CASE
   (finished_shall_be_called_after_finished_N_childs, daemon)
 {
