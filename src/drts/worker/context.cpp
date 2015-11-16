@@ -182,7 +182,7 @@ namespace drts
         else
         {
           throw std::logic_error
-            ("Unexpected exit status" + std::to_string (status));
+            ("Unexpected exit status: " + std::to_string (status));
         }
       }
       else
