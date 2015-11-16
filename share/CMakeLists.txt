@@ -5,7 +5,6 @@ set (PROCESS_PUBLIC_HEADER_INSTALL_DESTINATION "include/process")
 
 add_subdirectory (example)
 add_subdirectory (lib)
-add_subdirectory (make)
 add_subdirectory (man)
 add_subdirectory (process)
 add_subdirectory (seis)
