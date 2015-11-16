@@ -66,6 +66,7 @@ extended_add_library (NAME pnet
           "we/type/value/positions.cpp"
           "we/type/value/read.cpp"
           "we/type/value/show.cpp"
+          "we/type/value/serialize.cpp"
           "we/type/value/dump.cpp"
 
           "we/loader/Module.cpp"

@@ -11,9 +11,7 @@
 #include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
 #include <we/type/value/read.hpp>
-#include <we/type/value/show.hpp>
-
-#include <boost/lexical_cast.hpp>
+#include <we/type/value/serialize.hpp>
 
 #include <list>
 #include <utility>
@@ -61,7 +59,7 @@ namespace gspc
   }
 
   information_to_reattach::implementation::implementation (std::string const& serialized_value)
-    : _endpoint (get_orchestrator_endpoint (pnet::type::value::read (serialized_value)))
+    : _endpoint (get_orchestrator_endpoint (pnet::type::value::from_string (serialized_value)))
   {}
 
   information_to_reattach::implementation::implementation (host_and_port_type const& orchestrator)
@@ -79,7 +77,7 @@ namespace gspc
                             , serialized
                             , static_cast<unsigned int> (_endpoint.port)
                             );
-    return boost::lexical_cast<std::string> (pnet::type::value::show (serialized));
+    return pnet::type::value::to_string (serialized);
   }
 
   gspc::host_and_port_type const&

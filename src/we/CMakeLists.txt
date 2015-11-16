@@ -19,6 +19,7 @@ extended_add_library (NAME we-dev
           "type/value/poke.cpp"
           "type/value/show.cpp"
           "type/value/read.cpp"
+          "type/value/serialize.cpp"
 
           "loader/Module.cpp"
   LIBRARIES fhg-util
