@@ -24,7 +24,7 @@ namespace
     }
 
     template<typename T>
-      void write (T x) const
+      void write (T&& x) const
     {
       BOOST_REQUIRE_EQUAL
         (sizeof (x), fhg::util::syscall::write (_fds.write, &x, sizeof (x)));
