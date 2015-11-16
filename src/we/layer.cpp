@@ -180,6 +180,14 @@ namespace we
       boost::optional<id_type> const parent (_running_jobs.parent (id));
       fhg_assert (parent);
 
+      //! \todo Don't forget that this child actually finished and
+      //! inject result.
+      if (_finalize_job_cancellation.count (*parent))
+      {
+        canceled (id);
+        return;
+      }
+
       _nets_to_extract_from.apply
         ( *parent
         , [this, parent, result, id] (activity_data_type& activity_data)
@@ -230,6 +238,14 @@ namespace we
     {
       boost::optional<id_type> const parent (_running_jobs.parent (id));
       fhg_assert (parent);
+
+      //! \todo Don't forget that this child actually failed and
+      //! store reason.
+      if (_finalize_job_cancellation.count (*parent))
+      {
+        canceled (id);
+        return;
+      }
 
       _nets_to_extract_from.remove_and_apply
         ( *parent
