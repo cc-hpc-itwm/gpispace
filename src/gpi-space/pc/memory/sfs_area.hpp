@@ -74,6 +74,8 @@ namespace gpi
                       , gpi::pc::type::size_t amount
                       ) override;
 
+        std::string version_string() const;
+
         void open();
         void save_state();
         void close();

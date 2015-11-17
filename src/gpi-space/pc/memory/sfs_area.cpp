@@ -13,8 +13,11 @@
 #include <util-generic/finally.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/print_exception.hpp>
+#include <fhg/util/boost/optional.hpp>
 #include <fhg/util/read_bool.hpp>
+#include <util-generic/read_file.hpp>
 #include <util-generic/syscall.hpp>
+#include <util-generic/write_file.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/system/system_error.hpp>
@@ -142,6 +145,11 @@ namespace gpi
         fs::remove_all (path);
       }
 
+      std::string sfs_area_t::version_string() const
+      {
+        return "SFS version " + std::to_string (m_version);
+      }
+
       void sfs_area_t::open()
       {
         /* steps:
@@ -182,34 +190,19 @@ namespace gpi
 
         // read version information
         {
-          path_t vers_path = detail::version_path (m_path);
-          FILE *vers_file = fopen (vers_path.string ().c_str (), "r");
-          if (vers_file == nullptr)
-          {
-            throw boost::system::system_error
-              (errno, boost::system::system_category());
-          }
-          int version = -1;
-          int rc = fscanf (vers_file, "SFS version %d\n", &version);
-          if (rc != 1)
-          {
-            LLOG (ERROR, _logger, "could not read version information");
-            fclose (vers_file);
-            throw boost::system::system_error
-              (EIO, boost::system::system_category());
-          }
+          boost::optional<std::string> const found_version
+            ( fhg::util::boost::exception_is_none
+                (&fhg::util::read_file, detail::version_path (m_path))
+            );
 
-          if (version > SFS_VERSION)
+          if (!!found_version && found_version.get() != version_string())
           {
-            fclose (vers_file);
             throw std::logic_error
               ( "the file segment was created by a newer version:"
-                " found: " + std::to_string (version)
-              + " wanted: " + std::to_string (SFS_VERSION)
+                " found: " + found_version.get()
+              + " wanted: " + version_string()
               );
           }
-
-          fclose (vers_file);
         }
 
         {
@@ -460,15 +453,9 @@ namespace gpi
 
         {
           // write version information
-          fs::path version_path = detail::version_path (path);
-          fs::ofstream ofs (version_path);
-          if (! ofs)
-          {
-            throw boost::system::system_error
-              (errno, boost::system::system_category());
-          }
-
-          ofs << "SFS version " << SFS_VERSION << std::endl;
+          fhg::util::write_file ( detail::version_path (path)
+                                , version_string()
+                                );
         }
 
         {
