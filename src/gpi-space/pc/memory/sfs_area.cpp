@@ -542,13 +542,8 @@ namespace gpi
                                  )
       {
         // TODO: implement locking or an fd pool on which we can wait
-        ::lseek (m_fd, offset, SEEK_SET);
-        ssize_t read_rc = ::read (m_fd, buffer, amount);
-        if (read_rc < 0)
-        {
-          throw std::runtime_error ("could not read");
-        }
-        return (gpi::pc::type::size_t)(read_rc);
+        fhg::util::syscall::lseek (m_fd, offset, SEEK_SET);
+        return fhg::util::syscall::read (m_fd, buffer, amount);
       }
 
       gpi::pc::type::size_t
@@ -558,13 +553,8 @@ namespace gpi
                                 )
       {
         // TODO: implement locking or an fd pool on which we can wait
-        ::lseek (m_fd, offset, SEEK_SET);
-        ssize_t write_rc = ::write (m_fd, buffer, amount);
-        if (write_rc < 0)
-        {
-          throw std::runtime_error ("could not write");
-        }
-        return (gpi::pc::type::size_t)(write_rc);
+        fhg::util::syscall::lseek (m_fd, offset, SEEK_SET);
+        return fhg::util::syscall::write (m_fd, buffer, amount);
       }
 
       area_ptr_t sfs_area_t::create ( fhg::log::Logger& logger
