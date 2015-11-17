@@ -19,6 +19,8 @@
 #include <util-generic/syscall.hpp>
 #include <util-generic/write_file.hpp>
 
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/filesystem.hpp>
@@ -55,16 +57,44 @@ namespace gpi
         {
           return p / "lock";
         }
-
-        static std::string my_lock_info ()
-        {
-          std::ostringstream sstr;
-          sstr << fhg::util::hostname() << " " << getpid ();
-          return sstr.str ();
-        }
       }
       namespace
       {
+        struct lock_info
+        {
+          std::string hostname;
+          pid_t pid;
+
+          bool operator== (lock_info const& other) const
+          {
+            return std::tie (hostname, pid)
+              == std::tie (other.hostname, other.pid);
+          }
+
+          lock_info()
+            : hostname (fhg::util::hostname())
+            , pid (fhg::util::syscall::getpid())
+          {}
+
+          lock_info (boost::filesystem::path const& path)
+          {
+            std::string const content (fhg::util::read_file (path));
+            std::istringstream iss (content);
+            boost::archive::text_iarchive ia (iss);
+            ia & hostname;
+            ia & pid;
+          }
+          void write (int fd) const
+          {
+            std::ostringstream oss;
+            boost::archive::text_oarchive oa (oss);
+            oa & hostname;
+            oa & pid;
+            std::string const content (oss.str());
+            fhg::util::syscall::write (fd, content.data(), content.size());
+          }
+        };
+
         struct scoped_file
         {
           scoped_file ( boost::filesystem::path const& path
@@ -209,106 +239,59 @@ namespace gpi
           // lock it
           if (m_topology.is_master ())
           {
-            static const std::string my_lock_info = detail::my_lock_info ();
+            lock_info const local_lock_info;
 
             path_t lock_file = detail::lock_path (m_path);
 
             // check for lock file
             // abort if it exists -> we have it already open?
-            m_lock_fd = ::open ( lock_file.string ().c_str ()
-                               , O_CREAT + O_RDWR + O_EXCL
-                               , S_IRUSR + S_IWUSR
-                               );
-            if (m_lock_fd < 0)
+            try
+            {
+              m_lock_fd = fhg::util::syscall::open
+                ( lock_file.string ().c_str ()
+                , O_CREAT + O_RDWR + O_EXCL
+                , S_IRUSR + S_IWUSR
+                );
+            }
+            catch (...)
             {
               // still in use?
 
               // lock was successful, check who owns/owned it and abort
-              int fd = ::open ( lock_file.string ().c_str ()
-                              , O_RDONLY
-                              );
-              if (fd < 0)
-              {
-                throw boost::system::system_error
-                  (errno, boost::system::system_category());
-              }
+              lock_info const existing_lock_info (lock_file);
 
-              char buf [1024];
-              int read_bytes = ::read (fd, buf, sizeof(buf)-1);
-              if (read_bytes)
-                buf [read_bytes-1] = '\0';
-              else
-                buf [0] = '\0';
-              ::close (fd); fd = -1;
-
-              // compare lock info
-              if (my_lock_info == buf)
+              if (local_lock_info == existing_lock_info)
               {
                 throw std::logic_error ("segment already open");
               }
-              else
+
+              if (existing_lock_info.hostname != local_lock_info.hostname)
               {
-                std::stringstream sstr (buf);
-                std::string other_host;
-                sstr >> other_host;
-
-                std::string my_host = fhg::util::hostname ();
-                if (other_host == my_host)
-                {
-                  m_lock_fd = ::open ( lock_file.string ().c_str ()
-                                     , O_CREAT + O_RDWR
-                                     , S_IRUSR + S_IWUSR
-                                     );
-                  if (lockf (m_lock_fd, F_TLOCK, 0) < 0)
-                  {
-                    ::close (m_lock_fd); m_lock_fd = -1;
-                    throw std::runtime_error
-                      ( "sfs segment still actively in use by another"
-                        " process: '" + std::string (buf) + "'"
-                      );
-                  }
-                  else
-                  {
-                    LLOG (WARN, _logger, "cleaning stale lock file: " << lock_file);
-
-                    fhg::util::syscall::write ( m_lock_fd
-                                              , my_lock_info.c_str()
-                                              , my_lock_info.size()
-                                              );
-                    fhg::util::syscall::write (m_lock_fd, "\n", 1);
-
-                    fdatasync (m_lock_fd);
-                  }
-                }
-                else
-                {
-                  throw std::runtime_error
-                    ( "sfs segment may still be in use by: '"
-                    + std::string (buf) + "'"
-                    + ", if this is wrong, remove " + lock_file.string()
-                    );
-                }
-              }
-            }
-            else
-            {
-              if (lockf (m_lock_fd, F_TLOCK, 0) < 0)
-              {
-                ::close (m_lock_fd); m_lock_fd = -1;
-                throw std::logic_error
-                  ( "STRANGE: was able to open & create exclusively the"
-                    " lock file but not to lock it"
+                throw std::runtime_error
+                  ( "sfs segment may still be in use by: host="
+                  + existing_lock_info.hostname + " pid="
+                  + std::to_string (existing_lock_info.pid)
+                  + ", if this is wrong, remove " + lock_file.string()
                   );
               }
 
-              fhg::util::syscall::write ( m_lock_fd
-                                        , my_lock_info.c_str()
-                                        , my_lock_info.size()
-                                        );
-              fhg::util::syscall::write (m_lock_fd, "\n", 1);
-
-              fdatasync (m_lock_fd);
+              m_lock_fd = fhg::util::syscall::open
+                ( lock_file.string ().c_str ()
+                , O_CREAT + O_RDWR
+                , S_IRUSR + S_IWUSR
+                );
             }
+
+            if (lockf (m_lock_fd, F_TLOCK, 0) < 0)
+            {
+              fhg::util::syscall::close (m_lock_fd);
+              m_lock_fd = -1;
+              throw std::runtime_error ("unable to lock segment");
+            }
+
+            local_lock_info.write (m_lock_fd);
+
+            fhg::util::syscall::fdatasync (m_lock_fd);
           }
 
           // try to open existing file
