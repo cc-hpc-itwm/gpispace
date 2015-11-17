@@ -11,7 +11,9 @@
 #include <fhglog/LogMacros.hpp>
 #include <gpi-space/pc/url.hpp>
 #include <util-generic/hostname.hpp>
+#include <util-generic/print_exception.hpp>
 #include <fhg/util/read_bool.hpp>
+#include <util-generic/syscall.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/system/system_error.hpp>
@@ -82,12 +84,14 @@ namespace gpi
         , m_size (size)
         , m_topology (topology)
       {
-        boost::system::error_code ec;
-        int rc = this->open (ec);
-        if (rc < 0)
+        try
         {
-          throw boost::system::system_error
-            (ec, std::string ("open '")+path.string ()+"' failed: ");
+          open();
+        }
+        catch (...)
+        {
+          std::throw_with_nested
+            (std::runtime_error ("opening '" + path.string() + "' failed"));
         }
 
         if (m_size != size)
@@ -98,8 +102,14 @@ namespace gpi
 
       sfs_area_t::~sfs_area_t ()
       {
-        boost::system::error_code ec;
-        this->close (ec);
+        try
+        {
+          close();
+        }
+        catch (...)
+        {
+          LLOG (ERROR, _logger, fhg::util::current_exception_printer());
+        }
       }
 
       void sfs_area_t::cleanup (sfs_area_t::path_t const &path)
@@ -107,7 +117,7 @@ namespace gpi
         fs::remove_all (path);
       }
 
-      int sfs_area_t::open (boost::system::error_code &ec)
+      void sfs_area_t::open()
       {
         /* steps:
 
@@ -138,13 +148,11 @@ namespace gpi
         {
           if (0 == m_size)
           {
-            ec.assign (ENOSPC, boost::system::system_category ());
-            return -1;
+            throw boost::system::system_error
+              (ENOSPC, boost::system::system_category());
           }
-          else if (! initialize (m_path, m_size, ec))
-          {
-            return -1;
-          }
+
+          initialize (m_path, m_size);
         }
 
         // read version information
@@ -153,29 +161,27 @@ namespace gpi
           FILE *vers_file = fopen (vers_path.string ().c_str (), "r");
           if (vers_file == nullptr)
           {
-            ec.assign (errno, boost::system::system_category ());
-            return -1;
+            throw boost::system::system_error
+              (errno, boost::system::system_category());
           }
           int version = -1;
           int rc = fscanf (vers_file, "SFS version %d\n", &version);
           if (rc != 1)
           {
-            ec.assign (EIO, boost::system::system_category ());
             LLOG (ERROR, _logger, "could not read version information");
             fclose (vers_file);
-            return -1;
+            throw boost::system::system_error
+              (EIO, boost::system::system_category());
           }
 
           if (version > SFS_VERSION)
           {
-            LLOG ( ERROR
-                 , _logger
-                 , "the file segment was created by a newer version:"
-                 << " found: " << version
-                 << " wanted: " << SFS_VERSION
-                 );
             fclose (vers_file);
-            return -1;
+            throw std::logic_error
+              ( "the file segment was created by a newer version:"
+                " found: " + std::to_string (version)
+              + " wanted: " + std::to_string (SFS_VERSION)
+              );
           }
           else if (version < SFS_VERSION)
           {
@@ -215,8 +221,8 @@ namespace gpi
                               );
               if (fd < 0)
               {
-                ec.assign (errno, boost::system::system_category ());
-                return -1;
+                throw boost::system::system_error
+                  (errno, boost::system::system_category());
               }
 
               char buf [1024];
@@ -230,9 +236,7 @@ namespace gpi
               // compare lock info
               if (my_lock_info == buf)
               {
-                LLOG (WARN, _logger, "I already have this segment open: " << m_path);
-                ec.assign (EADDRINUSE, boost::system::system_category ());
-                return -1;
+                throw std::logic_error ("segment already open");
               }
               else
               {
@@ -250,13 +254,10 @@ namespace gpi
                   if (lockf (m_lock_fd, F_TLOCK, 0) < 0)
                   {
                     ::close (m_lock_fd); m_lock_fd = -1;
-                    LLOG ( ERROR
-                         , _logger
-                         , "sfs segment in: " << m_path
-                         << " still actively in use by another process: '" << buf << "'"
-                         );
-                    ec.assign (EADDRINUSE, boost::system::system_category ());
-                    return -1;
+                    throw std::runtime_error
+                      ( "sfs segment still actively in use by another"
+                        " process: '" + std::string (buf) + "'"
+                      );
                   }
                   else
                   {
@@ -280,14 +281,11 @@ namespace gpi
                 }
                 else
                 {
-                  LLOG ( ERROR
-                       , _logger
-                       , "sfs segment in: " << m_path
-                       << " may still be in use by: '" << buf << "'"
-                       << ", if this is wrong, please remove: " << lock_file
-                       );
-                  ec.assign (EADDRINUSE, boost::system::system_category ());
-                  return -1;
+                  throw std::runtime_error
+                    ( "sfs segment may still be in use by: '"
+                    + std::string (buf) + "'"
+                    + ", if this is wrong, remove " + lock_file.string()
+                    );
                 }
               }
             }
@@ -295,10 +293,11 @@ namespace gpi
             {
               if (lockf (m_lock_fd, F_TLOCK, 0) < 0)
               {
-                ec.assign (errno, boost::system::system_category ());
                 ::close (m_lock_fd); m_lock_fd = -1;
-                LLOG (ERROR, _logger, "STRANGE: I was able to open & create exclusively the lock file but not to lock it");
-                return -1;
+                throw std::logic_error
+                  ( "STRANGE: was able to open & create exclusively the"
+                    " lock file but not to lock it"
+                  );
               }
 
               if (write ( m_lock_fd
@@ -324,17 +323,16 @@ namespace gpi
                           );
           if (fd < 0)
           {
-            ec.assign (errno, boost::system::system_category ());
-            return -1;
+            throw boost::system::system_error
+              (errno, boost::system::system_category());
           }
 
           off_t file_size = lseek (fd, 0, SEEK_END);
           if (file_size < 0)
           {
-            ec.assign (errno, boost::system::system_category ());
-            LLOG (ERROR, _logger, "could not seek: " << strerror (errno));
             ::close (fd); fd = -1;
-            return -1;
+            throw std::runtime_error
+              ("could not seek: " + std::string (strerror (errno)));
           }
 
           lseek (fd, 0, SEEK_SET);
@@ -373,10 +371,10 @@ namespace gpi
                          );
             if (m_ptr == MAP_FAILED)
             {
-              ec.assign (errno, boost::system::system_category ());
               ::close (fd); fd = -1;
               m_ptr = nullptr;
-              return -1;
+              throw boost::system::system_error
+                (errno, boost::system::system_category());
             }
           }
 
@@ -404,14 +402,10 @@ namespace gpi
              << " size: " << m_size
              << " mapped-to: " << m_ptr
              );
-
-        return 0;
       }
 
-      int sfs_area_t::close (boost::system::error_code &ec)
+      void sfs_area_t::close()
       {
-        int rc = 0;
-
         // only cleanup when we actually opened...
         if ((m_fd >= 0) || (m_ptr != nullptr))
         {
@@ -438,7 +432,7 @@ namespace gpi
                                 )
              )
           {
-            rc = save_state (ec);
+            save_state();
           }
           else
           {
@@ -456,35 +450,25 @@ namespace gpi
             fs::remove_all (detail::lock_path (m_path));
           }
         }
-
-        return rc;
       }
 
-      int sfs_area_t::save_state (boost::system::error_code &ec)
+      void sfs_area_t::save_state()
       {
         // create meta data
         fs::path meta_path = detail::meta_path (m_path);
-        int fd = ::open ( meta_path.string ().c_str ()
-                        , O_CREAT | O_EXCL | O_RDWR
-                        , 0600
-                        );
-        if (fd < 0)
-        {
-          ec.assign (errno, boost::system::system_category ());
-          return -1;
-        }
-        ::close (fd); fd = -1;
-
-        return 0;
+        fhg::util::syscall::close
+          ( fhg::util::syscall::open ( meta_path.string ().c_str ()
+                                     , O_CREAT | O_EXCL | O_RDWR
+                                     , 0600
+                                     )
+          );
       }
 
-      bool sfs_area_t::initialize ( path_t const & path
+      void sfs_area_t::initialize ( path_t const & path
                                   , gpi::pc::type::size_t size
-                                  , boost::system::error_code &ec
                                   )
       {
-        if (! fs::create_directories (path, ec))
-          return false;
+        fs::create_directories (path);
 
         {
           // write version information
@@ -492,8 +476,9 @@ namespace gpi
           fs::ofstream ofs (version_path);
           if (! ofs)
           {
-            ec.assign (errno, boost::system::system_category ());
             cleanup (path);
+            throw boost::system::system_error
+              (errno, boost::system::system_category());
           }
 
           ofs << "SFS version " << SFS_VERSION << std::endl;
@@ -508,24 +493,21 @@ namespace gpi
                           );
           if (fd < 0)
           {
-            ec.assign (errno, boost::system::system_category ());
             cleanup (path);
-            return false;
+            throw boost::system::system_error
+              (errno, boost::system::system_category());
           }
 
           int rc = ::ftruncate (fd, size);
           if (rc < 0)
           {
-            ec.assign (errno, boost::system::system_category ());
             ::close (fd); fd = -1;
             cleanup (path);
-            return false;
+            throw boost::system::system_error
+              (errno, boost::system::system_category ());
           }
           ::close (fd); fd = -1;
         }
-
-        ec.clear ();
-        return true;
       }
 
       Arena_t

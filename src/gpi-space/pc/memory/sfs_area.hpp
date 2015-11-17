@@ -41,10 +41,6 @@ namespace gpi
 
         ~sfs_area_t ();
 
-        int save_state (boost::system::error_code &ec);
-        int open (boost::system::error_code & ec);
-        int close (boost::system::error_code & ec);
-
       protected:
         int get_type_id () const;
 
@@ -78,9 +74,11 @@ namespace gpi
                       , gpi::pc::type::size_t amount
                       ) override;
 
-        bool initialize ( path_t const & path
+        void open();
+        void save_state();
+        void close();
+        void initialize ( path_t const & path
                         , const gpi::pc::type::size_t size
-                        , boost::system::error_code &ec
                         );
         double get_transfer_costs ( const gpi::pc::type::memory_region_t&
                                   , const gpi::rank_t
