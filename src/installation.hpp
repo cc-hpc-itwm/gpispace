@@ -12,7 +12,7 @@ namespace gspc
     installation()
       : boost::filesystem::path
         (fhg::util::executable_path().parent_path().parent_path())
-    {};
+    {}
 
     //! \todo configure
     boost::filesystem::path include() const
