@@ -10,6 +10,7 @@
 
 #include <fhglog/LogMacros.hpp>
 #include <gpi-space/pc/url.hpp>
+#include <util-generic/finally.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/print_exception.hpp>
 #include <fhg/util/read_bool.hpp>
@@ -58,6 +59,30 @@ namespace gpi
           sstr << fhg::util::hostname() << " " << getpid ();
           return sstr.str ();
         }
+      }
+      namespace
+      {
+        struct scoped_file
+        {
+          scoped_file ( boost::filesystem::path const& path
+                      , int flags
+                      , int perms
+                      )
+            : _fd ( fhg::util::syscall::open
+                      (path.string().c_str(), flags, perms)
+                  )
+          {}
+          ~scoped_file()
+          {
+            fhg::util::syscall::close (_fd);
+          }
+          void ftruncate (std::size_t size)
+          {
+            fhg::util::syscall::ftruncate (_fd, size);
+          }
+
+          int _fd;
+        };
       }
 
       sfs_area_t::sfs_area_t ( fhg::log::Logger& logger
@@ -441,14 +466,10 @@ namespace gpi
 
       void sfs_area_t::save_state()
       {
-        // create meta data
-        fs::path meta_path = detail::meta_path (m_path);
-        fhg::util::syscall::close
-          ( fhg::util::syscall::open ( meta_path.string ().c_str ()
-                                     , O_CREAT | O_EXCL | O_RDWR
-                                     , 0600
-                                     )
-          );
+        scoped_file meta ( detail::meta_path (m_path)
+                         , O_CREAT | O_EXCL | O_RDWR
+                         , 0600
+                         );
       }
 
       void sfs_area_t::initialize ( path_t const & path
@@ -457,13 +478,15 @@ namespace gpi
       {
         fs::create_directories (path);
 
+        bool success = false;
+        FHG_UTIL_FINALLY ([&] { if (!success) { cleanup (path); } });
+
         {
           // write version information
           fs::path version_path = detail::version_path (path);
           fs::ofstream ofs (version_path);
           if (! ofs)
           {
-            cleanup (path);
             throw boost::system::system_error
               (errno, boost::system::system_category());
           }
@@ -473,28 +496,15 @@ namespace gpi
 
         {
           // create data file
-          fs::path data_path = detail::data_path (path);
-          int fd = ::open ( data_path.string ().c_str ()
-                          , O_CREAT | O_EXCL | O_RDWR
-                          , 0600 // TODO: pass in permissions
-                          );
-          if (fd < 0)
-          {
-            cleanup (path);
-            throw boost::system::system_error
-              (errno, boost::system::system_category());
-          }
+          scoped_file data ( detail::data_path (path)
+                           , O_CREAT | O_EXCL | O_RDWR
+                           , 0600 // TODO: pass in permissions
+                           );
 
-          int rc = ::ftruncate (fd, size);
-          if (rc < 0)
-          {
-            ::close (fd); fd = -1;
-            cleanup (path);
-            throw boost::system::system_error
-              (errno, boost::system::system_category ());
-          }
-          ::close (fd); fd = -1;
+          data.ftruncate (size);
         }
+
+        success = true;
       }
 
       Arena_t
