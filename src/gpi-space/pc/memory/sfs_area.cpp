@@ -208,16 +208,6 @@ namespace gpi
               + " wanted: " + std::to_string (SFS_VERSION)
               );
           }
-          else if (version < SFS_VERSION)
-          {
-            m_version = version;
-            LLOG ( WARN
-                 , _logger
-                 , "the file segment was created by an older version:"
-                 << " found: " << version
-                 << " wanted: " << SFS_VERSION
-                 );
-          }
 
           fclose (vers_file);
         }
