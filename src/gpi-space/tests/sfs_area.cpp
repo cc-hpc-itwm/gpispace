@@ -49,28 +49,27 @@ BOOST_FIXTURE_TEST_CASE (create_sfs_segment, setup_and_cleanup_shared_file)
   const gpi::pc::type::size_t size = 4096;
   const char *text = "hello world!\n";
 
-  sfs_area_t area ( _logger
-                  , 0
-                  , path_to_shared_file
-                  , size
-                  , gpi::pc::F_PERSISTENT
-                  , topology
-                  , handle_generator
-                  );
-  area.set_id (2);
+  {
+    sfs_area_t area ( _logger
+                    , 0
+                    , path_to_shared_file
+                    , size
+                    , gpi::pc::F_PERSISTENT
+                    , topology
+                    , handle_generator
+                    );
+    area.set_id (2);
 
-  BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
+    BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
 
-  handle_t handle = area.alloc (1, size, "test", 0);
+    handle_t handle = area.alloc (1, size, "test", 0);
 
-  void *ptr = area.pointer_to (memory_location_t (handle, 0));
+    void *ptr = area.pointer_to (memory_location_t (handle, 0));
 
-  memcpy (ptr, text, strlen (text));
+    memcpy (ptr, text, strlen (text));
 
-  area.free (handle);
-
-  boost::system::error_code ec;
-  area.close (ec);
+    area.free (handle);
+  }
 
   int fd = open ( ((path_to_shared_file / "data").string ().c_str ())
                 , O_RDONLY
@@ -239,9 +238,6 @@ BOOST_FIXTURE_TEST_CASE (reopen_sfs_segment, setup_and_cleanup_shared_file)
 
     memcpy (ptr, text, strlen (text));
     area.free (handle);
-
-    boost::system::error_code ec;
-    area.close (ec);
   }
 
   {
@@ -265,9 +261,6 @@ BOOST_FIXTURE_TEST_CASE (reopen_sfs_segment, setup_and_cleanup_shared_file)
     BOOST_CHECK_EQUAL (0, eq);
 
     area.free (handle);
-
-    boost::system::error_code ec;
-    area.close (ec);
   }
 }
 
