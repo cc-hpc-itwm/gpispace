@@ -258,3 +258,69 @@ BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_fun_exit, context_fixture)
     BOOST_REQUIRE (exited);
   }
 }
+
+BOOST_FIXTURE_TEST_CASE
+  (execute_and_kill_on_cancel_simpler_unexpected_signal, context_fixture)
+{
+  fhg::util::testing::require_exception
+    ( [this]()
+      {
+        context.execute_and_kill_on_cancel
+          ( []()
+            {
+              fhg::util::syscall::kill (fhg::util::syscall::getpid(), SIGUSR1);
+            }
+          , &on_cancel_unexpected
+          );
+      }
+    , std::logic_error
+        ("Unexpected on_signal (" + std::to_string (SIGUSR1) + ")")
+    );
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (execute_and_kill_on_cancel_simpler_unexpected_exit, context_fixture)
+{
+  for (int ec (0); ec < 256; ++ec)
+  {
+    fhg::util::testing::require_exception
+      ( [this, ec]()
+      {
+        context.execute_and_kill_on_cancel
+          ( [ec] ()
+            {
+              exit (ec);
+            }
+          , &on_cancel_unexpected
+          );
+      }
+      , std::logic_error ("Unexpected on_exit (" + std::to_string (ec) + ")")
+      );
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (execute_and_kill_on_cancel_simpler_cancelled, context_fixture)
+{
+  std::thread execution
+    ( [this]()
+      {
+        fhg::util::testing::require_exception
+          ( [this]()
+            {
+              context.execute_and_kill_on_cancel
+                ( []()
+                  {
+                    while (1) {}
+                  }
+                );
+            }
+          , drts::worker::context::cancelled()
+          );
+      }
+    );
+
+  context.module_call_do_cancel();
+
+  execution.join();
+}
