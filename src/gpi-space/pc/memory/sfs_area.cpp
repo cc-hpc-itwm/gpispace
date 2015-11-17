@@ -288,19 +288,12 @@ namespace gpi
                   {
                     LLOG (WARN, _logger, "cleaning stale lock file: " << lock_file);
 
-                    if (write ( m_lock_fd
-                              , my_lock_info.c_str (), my_lock_info.size ()
-                              )
-                       <= 0
-                       )
-                    {
-                      LLOG (ERROR, _logger, "could not write to lock file");
-                    }
+                    fhg::util::syscall::write ( m_lock_fd
+                                              , my_lock_info.c_str()
+                                              , my_lock_info.size()
+                                              );
+                    fhg::util::syscall::write (m_lock_fd, "\n", 1);
 
-                    if (write (m_lock_fd, "\n", 1) <= 0)
-                    {
-                      LLOG (ERROR, _logger, "could not write to lock file");
-                    }
                     fdatasync (m_lock_fd);
                   }
                 }
@@ -325,18 +318,12 @@ namespace gpi
                   );
               }
 
-              if (write ( m_lock_fd
-                        , my_lock_info.c_str (), my_lock_info.size ()
-                        )
-                 <= 0
-                 )
-              {
-                LLOG (ERROR, _logger, "could not write to lock file");
-              }
-              if (write (m_lock_fd, "\n", 1) <= 0)
-              {
-                LLOG (ERROR, _logger, "could not write to lock file");
-              }
+              fhg::util::syscall::write ( m_lock_fd
+                                        , my_lock_info.c_str()
+                                        , my_lock_info.size()
+                                        );
+              fhg::util::syscall::write (m_lock_fd, "\n", 1);
+
               fdatasync (m_lock_fd);
             }
           }
