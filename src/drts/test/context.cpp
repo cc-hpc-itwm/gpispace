@@ -167,6 +167,52 @@ BOOST_FIXTURE_TEST_CASE
   BOOST_REQUIRE (signalled);
 }
 
+BOOST_FIXTURE_TEST_CASE
+  (execute_and_kill_on_cancel_calls_SIGTERM_blocked, context_fixture)
+{
+  bool exited {false};
+
+  context.execute_and_kill_on_cancel
+    ( [] ()
+      {
+        fhg::util::syscall::kill (fhg::util::syscall::getpid(), SIGTERM);
+      }
+    , &on_cancel_unexpected
+    , &on_signal_unexpected
+    , [&exited] (int exit_code)
+      {
+        BOOST_REQUIRE_EQUAL (exit_code, 0);
+
+        exited = true;
+      }
+    );
+
+  BOOST_REQUIRE (exited);
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (execute_and_kill_on_cancel_calls_SIGINT_blocked, context_fixture)
+{
+  bool exited {false};
+
+  context.execute_and_kill_on_cancel
+    ( [] ()
+      {
+        fhg::util::syscall::kill (fhg::util::syscall::getpid(), SIGINT);
+      }
+    , &on_cancel_unexpected
+    , &on_signal_unexpected
+    , [&exited] (int exit_code)
+      {
+        BOOST_REQUIRE_EQUAL (exit_code, 0);
+
+        exited = true;
+      }
+    );
+
+  BOOST_REQUIRE (exited);
+}
+
 BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_with_throw, context_fixture)
 {
   std::runtime_error const exception {fhg::util::testing::random_string()};
