@@ -382,19 +382,6 @@ namespace gpi
           m_fd = fd;
         }
 
-        {
-          // try to recover
-          path_t meta_path = detail::meta_path (m_path);
-          int fd = ::open ( meta_path.string ().c_str ()
-                          , O_RDONLY
-                          );
-          if (fd >= 0)
-          {
-            LLOG (TRACE, _logger, "ignoring recovery information: not yet implemented");
-            ::close (fd); fd = -1;
-          }
-        }
-
         LLOG ( TRACE
              , _logger
              , "SFS memory created:"
