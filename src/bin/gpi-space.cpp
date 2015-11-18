@@ -25,6 +25,8 @@
 
 #include <rif/started_process_promise.hpp>
 
+#include <vmem/gaspi_context.hpp>
+
 #include <boost/asio/io_service.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
@@ -183,11 +185,16 @@ int main (int argc, char** argv)
     auto topology_rpc_server
       (fhg::util::cxx14::make_unique<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher>());
 
-    gpi::api::gaspi_t gaspi ( logger
+    fhg::vmem::gaspi_timeout initialization_timeout (gpi_timeout);
+    fhg::vmem::gaspi_context gaspi_context
+      ( initialization_timeout
+      , port
+      , topology_rpc_server->local_endpoint().port()
+      );
+    gpi::api::gaspi_t gaspi ( gaspi_context
+                            , logger
                             , gpi_mem
-                            , port
-                            , gpi_timeout
-                            , topology_rpc_server->local_endpoint().port()
+                            , initialization_timeout
                             );
 
     // other url examples are:

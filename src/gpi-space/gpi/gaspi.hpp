@@ -28,11 +28,10 @@ namespace gpi
     class gaspi_t : boost::noncopyable
     {
     public:
-      gaspi_t ( fhg::log::Logger&
+      gaspi_t ( fhg::vmem::gaspi_context&
+              , fhg::log::Logger&
               , const unsigned long long memory_size
-              , const unsigned short port
-              , fhg::vmem::gaspi_timeout
-              , unsigned short communication_port
+              , fhg::vmem::gaspi_timeout&
               );
       ~gaspi_t();
 
@@ -77,7 +76,7 @@ namespace gpi
       template<std::size_t queue_entry_count, typename Fun, typename... Args>
         queue_desc_t queued_operation (Fun&&, Args&&...);
 
-      fhg::vmem::gaspi_context _gaspi_context;
+      fhg::vmem::gaspi_context& _gaspi_context;
 
       fhg::log::Logger& _logger;
       size_t m_mem_size;

@@ -50,13 +50,12 @@ namespace gpi
       fail_on_non_zero(#F, F, Args)
     }
 
-    gaspi_t::gaspi_t ( fhg::log::Logger& logger
+    gaspi_t::gaspi_t ( fhg::vmem::gaspi_context& gaspi_context
+                     , fhg::log::Logger& logger
                      , const unsigned long long memory_size
-                     , const unsigned short port
-                     , fhg::vmem::gaspi_timeout time_left
-                     , unsigned short communication_port
+                     , fhg::vmem::gaspi_timeout& time_left
                      )
-      : _gaspi_context (time_left, port, communication_port)
+      : _gaspi_context (gaspi_context)
       , _logger (logger)
       , m_mem_size (memory_size)
       , m_dma (nullptr)
