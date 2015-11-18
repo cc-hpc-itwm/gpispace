@@ -36,17 +36,8 @@ namespace gpi
       ~gaspi_t();
 
       gpi::size_t memory_size() const;
-      gpi::rank_t rank() const { return _gaspi_context.rank(); }
-      gpi::size_t number_of_nodes() const { return _gaspi_context.number_of_nodes(); }
 
       void* dma_ptr() const;
-
-      std::string const& hostname_of_rank (gpi::rank_t rank) const { return _gaspi_context.hostname_of_rank (rank); }
-      unsigned short communication_port_of_rank (gpi::rank_t rank) const { return _gaspi_context.communication_port_of_rank (rank); }
-
-      //! \todo do not expose: used to determine count of memory
-      //! management task threads, which is just bad.
-      gpi::size_t number_of_queues() const { return _gaspi_context.number_of_queues(); }
 
       struct read_dma_info
       {
