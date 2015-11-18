@@ -27,27 +27,27 @@
 
     std::this_thread::sleep_for (std::chrono::seconds (2));
 
-    bool cancelled {false};
-
-    _pnetc_context->execute_and_kill_on_cancel
-      ( []()
-        {
-          while (1) {}
-        }
-      , [&cancelled]()
-        {
-          cancelled = true;
-        }
-      )
-      ;
-
-    if (!cancelled)
+    try
     {
-      //! \note: continue to work in order to let the test fail with a timeout
-      while (1) {};
+      _pnetc_context->execute_and_kill_on_cancel
+        ( []()
+          {
+            while (1) {}
+          }
+        )
+        ;
+    }
+    catch (drts::worker::context::cancelled const&)
+    {
+      return we::type::literal::control();
+    }
+    catch (...)
+    {
+      // fallthrough
     }
 
-    return we::type::literal::control();
+    //! \note: continue to work in order to let the test fail with a timeout
+    while (1) {};
     ]]></code>
   </module>
 </defun>
