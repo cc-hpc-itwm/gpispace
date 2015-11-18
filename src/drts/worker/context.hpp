@@ -15,6 +15,10 @@ namespace drts
     class redirect_output;
     class context_constructor;
 
+    void throw_cancelled();
+    void on_signal_unexpected (int);
+    void on_exit_unexpected (int);
+
     class context
     {
     private:
@@ -49,16 +53,8 @@ namespace drts
         execute_and_kill_on_cancel
           ( fun
           , on_cancel
-          , [] (int signal)
-            {
-              throw std::logic_error
-                ("Unexpected on_signal (" + std::to_string (signal) + ")");
-            }
-          , [] (int exit_code)
-            {
-              throw std::logic_error
-                ("Unexpected on_exit (" + std::to_string (exit_code) + ")");
-            }
+          , &on_signal_unexpected
+          , &on_exit_unexpected
           );
       }
 
@@ -68,10 +64,7 @@ namespace drts
       {
         execute_and_kill_on_cancel
           ( fun
-          , [] ()
-            {
-              throw cancelled();
-            }
+          , &throw_cancelled
           );
       }
     };

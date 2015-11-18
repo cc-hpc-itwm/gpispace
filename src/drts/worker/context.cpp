@@ -213,5 +213,21 @@ namespace drts
         }
       }
     }
+
+    void throw_cancelled()
+    {
+      throw context::cancelled();
+    }
+
+    void on_signal_unexpected (int signal)
+    {
+      throw std::logic_error
+        ("Unexpected on_signal (" + std::to_string (signal) + ")");
+    }
+    void on_exit_unexpected (int exit_code)
+    {
+      throw std::logic_error
+        ("Unexpected on_exit (" + std::to_string (exit_code) + ")");
+    }
   }
 }
