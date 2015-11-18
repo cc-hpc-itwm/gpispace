@@ -413,8 +413,7 @@ namespace gspc
 
   unsigned long scoped_runtime_system::virtual_memory_total() const
   {
-      return number_of_unique_nodes()
-        * (*_->_virtual_memory_per_node - 32UL * (1UL << 20UL));
+    return number_of_unique_nodes() * (*_->_virtual_memory_per_node);
   }
 
   unsigned long scoped_runtime_system::number_of_unique_nodes() const

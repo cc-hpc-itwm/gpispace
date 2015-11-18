@@ -1,9 +1,7 @@
 # mirko.rahn@itwm.fraunhofer.de
 
-math (EXPR size_communication_buffer "8 * 4 << 20")
-
 math (EXPR num_bytes "192 << 20")
-math (EXPR size_virtual_memory "${num_bytes} + ${size_communication_buffer}")
+math (EXPR size_virtual_memory "${num_bytes}")
 
 fhg_add_test (test.cpp
   PROJECT share_example_vmem_1_to_n

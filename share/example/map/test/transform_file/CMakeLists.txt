@@ -14,14 +14,12 @@ extended_add_library (NAME transform_file_map-impl
   INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/share/example"
 )
 
-math (EXPR size_communication_buffer "8 * 4 << 20")
-
 math (EXPR size_input "20 << 20")
 math (EXPR size_output "20 << 20")
 math (EXPR size_block "2 << 20")
 math (EXPR num_block "120")
 math (EXPR size_virtual_memory
-           "${size_input} + ${size_output} + ${size_communication_buffer}"
+           "${size_input} + ${size_output}"
      )
 
 fhg_add_test (test.cpp

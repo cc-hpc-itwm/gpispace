@@ -541,7 +541,9 @@ namespace gpi
         type::size_t numbuf =
           boost::lexical_cast<type::size_t>(url.get ("buffers").get_value_or ("8"));
         type::size_t const memory_size
-          (boost::lexical_cast<type::size_t> (url.get ("memory_size").get()));
+          ( boost::lexical_cast<type::size_t> (url.get ("memory_size").get())
+          + comsize * numbuf
+          );
 
         //! \todo get from user? use for other areas as well? remove?
         fhg::vmem::gaspi_timeout time_left (std::chrono::seconds (30));
