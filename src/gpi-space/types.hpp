@@ -16,4 +16,6 @@ namespace gpi
 
   using notification_t = unsigned int;
   using notification_id_t = unsigned short;
+
+  using timeout_t = unsigned long;
 }

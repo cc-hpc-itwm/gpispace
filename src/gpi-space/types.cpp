@@ -17,4 +17,6 @@ namespace gpi
     (std::is_same<notification_t, gaspi_notification_t>::value, "notification_t");
   static_assert
     (std::is_same<notification_id_t, gaspi_notification_id_t>::value, "notification_id_t");
+  static_assert
+    (std::is_same<timeout_t, gaspi_timeout_t>::value, "timeout_t");
 }

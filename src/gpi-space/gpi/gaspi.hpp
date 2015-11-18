@@ -5,6 +5,8 @@
 #include <gpi-space/exception.hpp>
 #include <gpi-space/types.hpp>
 
+#include <vmem/gaspi_context.hpp>
+
 #include <fhg/util/thread/queue.hpp>
 
 #include <boost/noncopyable.hpp>
@@ -29,23 +31,23 @@ namespace gpi
       gaspi_t ( fhg::log::Logger&
               , const unsigned long long memory_size
               , const unsigned short port
-              , const std::chrono::seconds& timeout
+              , fhg::vmem::gaspi_timeout
               , unsigned short communication_port
               );
       ~gaspi_t();
 
       gpi::size_t memory_size() const;
-      gpi::rank_t rank() const;
-      gpi::size_t number_of_nodes() const;
+      gpi::rank_t rank() const { return _gaspi_context.rank(); }
+      gpi::size_t number_of_nodes() const { return _gaspi_context.number_of_nodes(); }
 
       void* dma_ptr() const;
 
-      std::string const& hostname_of_rank (const gpi::rank_t) const;
-      unsigned short communication_port_of_rank (gpi::rank_t) const;
+      std::string const& hostname_of_rank (gpi::rank_t rank) const { return _gaspi_context.hostname_of_rank (rank); }
+      unsigned short communication_port_of_rank (gpi::rank_t rank) const { return _gaspi_context.communication_port_of_rank (rank); }
 
       //! \todo do not expose: used to determine count of memory
       //! management task threads, which is just bad.
-      gpi::size_t number_of_queues() const;
+      gpi::size_t number_of_queues() const { return _gaspi_context.number_of_queues(); }
 
       struct read_dma_info
       {
@@ -74,6 +76,8 @@ namespace gpi
     private:
       template<std::size_t queue_entry_count, typename Fun, typename... Args>
         queue_desc_t queued_operation (Fun&&, Args&&...);
+
+      fhg::vmem::gaspi_context _gaspi_context;
 
       fhg::log::Logger& _logger;
       size_t m_mem_size;
