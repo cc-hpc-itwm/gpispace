@@ -38,16 +38,6 @@
         {
           cancelled = true;
         }
-      , [] (int signal)
-        {
-          throw std::logic_error
-            ("unexpected signal: " + std::to_string (signal));
-        }
-      , [] (int exit_code)
-        {
-          throw std::logic_error
-            ("unexpected exit wih code: " + std::to_string (exit_code));
-        }
       )
       ;
 
