@@ -3,6 +3,7 @@
 #include <drts/worker/context_fwd.hpp>
 
 #include <set>
+#include <stdexcept>
 #include <string>
 
 #include <boost/function.hpp>
