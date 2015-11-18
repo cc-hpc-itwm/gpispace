@@ -1,5 +1,7 @@
 #pragma once
 
+#include <gpi-space/gpi/gaspi.hpp>
+
 #include <gpi-space/pc/type/segment_type.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
 #include <gpi-space/pc/memory/handle_buffer.hpp>
@@ -31,7 +33,6 @@ namespace gpi
                                  , std::string const &url
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
-                                 , api::gaspi_t& gaspi
                                  , fhg::vmem::gaspi_context&
                                  );
 
@@ -42,8 +43,9 @@ namespace gpi
                    , const gpi::pc::type::flags_t flags
                    , gpi::pc::global::itopology_t & topology
                    , handle_generator_t&
-                   , api::gaspi_t&
                    , fhg::vmem::gaspi_context&
+                   , fhg::vmem::gaspi_timeout&
+                   , type::size_t memory_size
                    );
 
         virtual bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const override;
@@ -96,6 +98,9 @@ namespace gpi
                                   , const gpi::rank_t
                                   ) const override;
 
+        fhg::vmem::gaspi_context& _gaspi_context;
+        api::gaspi_t _gaspi;
+
         void * m_ptr;
 
         handle_pool_t m_com_handles; // local allocations that can be used to transfer data
@@ -104,9 +109,6 @@ namespace gpi
         gpi::pc::type::size_t m_com_buffer_size;
 
         gpi::pc::global::itopology_t & _topology;
-
-        api::gaspi_t& _gaspi;
-        fhg::vmem::gaspi_context& _gaspi_context;
       };
     }
   }

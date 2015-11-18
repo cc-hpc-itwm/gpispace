@@ -15,4 +15,5 @@ target_link_libraries (gpi-space-pc-memory
   mmgr
   gpi-space_url
   Util::Generic
+  gpi-space-gpiapi
   )

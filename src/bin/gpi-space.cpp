@@ -191,11 +191,6 @@ int main (int argc, char** argv)
       , port
       , topology_rpc_server->local_endpoint().port()
       );
-    gpi::api::gaspi_t gaspi ( gaspi_context
-                            , logger
-                            , gpi_mem
-                            , initialization_timeout
-                            );
 
     // other url examples are:
     //      gpi://?buffers=8&buffer_size=4194304 GPI memory
@@ -203,8 +198,7 @@ int main (int argc, char** argv)
     const gpi::pc::container::manager_t container_manager
       ( logger
       , socket_path.string()
-      , {"gpi://?buffer_size=4194304&buffers=8"}
-      , gaspi
+      , {"gpi://?memory_size=" + std::to_string (gpi_mem) + "&buffer_size=4194304&buffers=8"}
       , gaspi_context
       , std::move (topology_rpc_server)
       );

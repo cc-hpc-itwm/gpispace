@@ -11,7 +11,6 @@
 
 #include <fhglog/LogMacros.hpp>
 
-#include <gpi-space/gpi/gaspi.hpp>
 #include <gpi-space/pc/memory/shm_area.hpp>
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/url.hpp>
@@ -428,7 +427,6 @@ namespace gpi
       manager_t::manager_t ( fhg::log::Logger& logger
                            , std::string const & p
                            , std::vector<std::string> const& default_memory_urls
-                           , api::gaspi_t& gaspi
                            , fhg::vmem::gaspi_context& gaspi_context
                            , std::unique_ptr<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher> topology_rpc_server
                            )
@@ -437,7 +435,7 @@ namespace gpi
         , m_socket (-1)
         , m_stopping (false)
         , m_process_counter (0)
-        , _memory_manager (_logger, gaspi, gaspi_context)
+        , _memory_manager (_logger, gaspi_context)
         , _topology ( _memory_manager
                     , gaspi_context
                     , std::move (topology_rpc_server)

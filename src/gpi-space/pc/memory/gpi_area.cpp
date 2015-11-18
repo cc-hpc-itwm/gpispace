@@ -29,23 +29,24 @@ namespace gpi
                              , const gpi::pc::type::flags_t flags
                              , gpi::pc::global::itopology_t & topology
                              , handle_generator_t& handle_generator
-                             , api::gaspi_t& gaspi
                              , fhg::vmem::gaspi_context& gaspi_context
+                             , fhg::vmem::gaspi_timeout& time_left
+                             , type::size_t memory_size
                              )
         : area_t ( logger
                  , gpi_area_t::area_type
                  , creator
                  , name
-                 , gaspi.memory_size()
+                 , memory_size
                  , flags
                  , handle_generator
                  )
-        , m_ptr (gaspi.dma_ptr())
+        , _gaspi_context (gaspi_context)
+        , _gaspi (_gaspi_context, logger, memory_size, time_left)
+        , m_ptr (_gaspi.dma_ptr())
         , m_num_com_buffers (8)
         , m_com_buffer_size (4* (1<<20))
         , _topology (topology)
-        , _gaspi (gaspi)
-        , _gaspi_context (gaspi_context)
       {}
 
       void gpi_area_t::init ()
@@ -531,7 +532,6 @@ namespace gpi
         , std::string const &url_s
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator
-        , api::gaspi_t& gaspi
         , fhg::vmem::gaspi_context& gaspi_context
         )
       {
@@ -541,7 +541,11 @@ namespace gpi
           boost::lexical_cast<type::size_t>(url.get ("buffer_size").get_value_or ("4194304"));
         type::size_t numbuf =
           boost::lexical_cast<type::size_t>(url.get ("buffers").get_value_or ("8"));
+        type::size_t const memory_size
+          (boost::lexical_cast<type::size_t> (url.get ("memory_size").get()));
 
+        //! \todo get from user? use for other areas as well? remove?
+        fhg::vmem::gaspi_timeout time_left (std::chrono::seconds (30));
         gpi_area_t * area = new gpi_area_t ( logger
                                            , GPI_PC_INVAL
                                            , "GPI"
@@ -549,8 +553,9 @@ namespace gpi
                                            + gpi::pc::F_GLOBAL
                                            , topology
                                            , handle_generator
-                                           , gaspi
                                            , gaspi_context
+                                           , time_left
+                                           , memory_size
                                            );
         area->m_num_com_buffers = numbuf;
         area->m_com_buffer_size = comsize;

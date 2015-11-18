@@ -6,7 +6,6 @@
 
 #include <util-generic/finally.hpp>
 
-#include <gpi-space/gpi/gaspi.hpp>
 #include <gpi-space/pc/global/topology.hpp>
 #include <gpi-space/pc/memory/gpi_area.hpp>
 #include <gpi-space/pc/memory/handle_generator.hpp>
@@ -29,14 +28,13 @@ namespace gpi
                                , std::string const &url_s
                                , global::topology_t& topology
                                , handle_generator_t& handle_generator
-                               , api::gaspi_t& gaspi
                                , fhg::vmem::gaspi_context& gaspi_context
                                )
       {
         url_t url (url_s);
 
         return
-          ( url.type() == "gpi" ? gpi_area_t::create (logger, url_s, topology, handle_generator, gaspi, gaspi_context)
+          ( url.type() == "gpi" ? gpi_area_t::create (logger, url_s, topology, handle_generator, gaspi_context)
           : url.type() == "sfs" ? sfs_area_t::create (logger, url_s, topology, handle_generator)
           : throw std::runtime_error
               ("no memory type registered with: '" + url_s + "'")
@@ -45,11 +43,9 @@ namespace gpi
       }
 
       manager_t::manager_t ( fhg::log::Logger& logger
-                           , api::gaspi_t& gaspi
                            , fhg::vmem::gaspi_context& gaspi_context
                            )
         : _logger (logger)
-        , _gaspi (gaspi)
         , _gaspi_context (gaspi_context)
         , _next_memcpy_id (0)
         , _handle_generator (gaspi_context.rank())
@@ -483,7 +479,7 @@ namespace gpi
                                    , global::topology_t& topology
                                    )
       {
-        area_ptr_t area (create_area (_logger, url, topology, _handle_generator, _gaspi, _gaspi_context));
+        area_ptr_t area (create_area (_logger, url, topology, _handle_generator, _gaspi_context));
         area->set_owner (0);
         area->set_id (seg_id);
         add_area (area);
@@ -497,7 +493,7 @@ namespace gpi
                             , global::topology_t& topology
                             )
       {
-        area_ptr_t area (create_area (_logger, url_s, topology, _handle_generator, _gaspi, _gaspi_context));
+        area_ptr_t area (create_area (_logger, url_s, topology, _handle_generator, _gaspi_context));
         area->set_owner (proc_id);
         if (seg_id > 0)
           area->set_id (seg_id);

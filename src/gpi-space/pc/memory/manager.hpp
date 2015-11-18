@@ -7,12 +7,13 @@
 
 #include <fhglog/Logger.hpp>
 
-#include <gpi-space/gpi/gaspi.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
 #include <gpi-space/pc/memory/memory_buffer.hpp>
 
 #include <fhg/util/thread/queue.hpp>
+
+#include <vmem/gaspi_context.hpp>
 
 #include <boost/thread/scoped_thread.hpp>
 
@@ -38,7 +39,7 @@ namespace gpi
 
         static const gpi::pc::type::segment_id_t MAX_PREALLOCATED_SEGMENT_ID=16;
 
-        manager_t (fhg::log::Logger&, api::gaspi_t&, fhg::vmem::gaspi_context&);
+        manager_t (fhg::log::Logger&, fhg::vmem::gaspi_context&);
         ~manager_t ();
 
         void clear ();
@@ -140,7 +141,6 @@ namespace gpi
         mutable mutex_type m_mutex;
         area_map_t m_areas;
         handle_to_segment_t m_handle_to_segment;
-        api::gaspi_t& _gaspi;
         fhg::vmem::gaspi_context& _gaspi_context;
 
         std::mutex _memcpy_task_guard;
