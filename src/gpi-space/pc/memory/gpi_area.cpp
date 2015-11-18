@@ -53,8 +53,10 @@ namespace gpi
         fhg_assert (m_num_com_buffers > 0);
         fhg_assert (m_com_buffer_size > 0);
 
-        // TODO: make  this lazy, just define  a maximum number  of buffers, but
-        // try to allocate them only when actually needed.
+        //! \todo move to different gaspi segment to have separate
+        //! allocation and not operate in the user's one. this could
+        //! then also be used to reduce the buffer count when having
+        //! multiple areas.
         size_t num_buffers_allocated = 0;
         for (size_t i = 0; i < m_num_com_buffers; ++i)
         {
