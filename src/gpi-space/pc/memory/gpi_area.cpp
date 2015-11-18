@@ -30,6 +30,7 @@ namespace gpi
                              , gpi::pc::global::itopology_t & topology
                              , handle_generator_t& handle_generator
                              , api::gaspi_t& gaspi
+                             , fhg::vmem::gaspi_context& gaspi_context
                              )
         : area_t ( logger
                  , gpi_area_t::area_type
@@ -44,6 +45,7 @@ namespace gpi
         , m_com_buffer_size (4* (1<<20))
         , _topology (topology)
         , _gaspi (gaspi)
+        , _gaspi_context (gaspi_context)
       {}
 
       void gpi_area_t::init ()
@@ -160,7 +162,7 @@ namespace gpi
                                 , const gpi::pc::type::offset_t end
                                 ) const
       {
-        gpi::pc::type::id_t     my_rank = _gaspi.rank ();
+        gpi::pc::type::id_t     my_rank = _gaspi_context.rank ();
 
         if (not gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL))
           my_rank = 0;
@@ -185,7 +187,7 @@ namespace gpi
         if (gpi::flag::is_set (flgs, gpi::pc::F_GLOBAL))
         {
           // static distribution scheme with overhead
-          const size_t num_nodes = _gaspi.number_of_nodes ();
+          const size_t num_nodes = _gaspi_context.number_of_nodes ();
           size_t overhead = (0 != (size % num_nodes)) ? 1 : 0;
           return (size / num_nodes + overhead);
         }
@@ -530,6 +532,7 @@ namespace gpi
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator
         , api::gaspi_t& gaspi
+        , fhg::vmem::gaspi_context& gaspi_context
         )
       {
         url_t url (url_s);
@@ -547,6 +550,7 @@ namespace gpi
                                            , topology
                                            , handle_generator
                                            , gaspi
+                                           , gaspi_context
                                            );
         area->m_num_com_buffers = numbuf;
         area->m_com_buffer_size = comsize;

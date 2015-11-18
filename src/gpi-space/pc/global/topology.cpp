@@ -2,7 +2,6 @@
 
 #include <fhglog/LogMacros.hpp>
 
-#include <gpi-space/gpi/gaspi.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
 
 #include <util-generic/wait_and_collect_exceptions.hpp>
@@ -16,10 +15,10 @@ namespace gpi
     namespace global
     {
       topology_t::topology_t ( memory::manager_t& memory_manager
-                             , api::gaspi_t& gaspi
+                             , fhg::vmem::gaspi_context& gaspi_context
                              , std::unique_ptr<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher> server
                              )
-        : _gaspi (gaspi)
+        : _gaspi_context (gaspi_context)
         , _service_dispatcher
             (fhg::util::serialization::exception::serialization_functions())
         , _alloc ( _service_dispatcher
@@ -63,7 +62,7 @@ namespace gpi
 
       bool topology_t::is_master () const
       {
-        return 0 == _gaspi.rank();
+        return 0 == _gaspi_context.rank();
       }
 
       namespace
@@ -101,16 +100,16 @@ namespace gpi
         //! \todo never store but just always create: calls are very rare
         if (_others.empty())
         {
-          for (std::size_t rank (0); rank < _gaspi.number_of_nodes(); ++rank)
+          for (std::size_t rank (0); rank < _gaspi_context.number_of_nodes(); ++rank)
           {
-            if (_gaspi.rank() == rank)
+            if (_gaspi_context.rank() == rank)
             {
               continue;
             }
 
             _others.emplace_back
-              ( _gaspi.hostname_of_rank (rank)
-              , _gaspi.communication_port_of_rank (rank)
+              ( _gaspi_context.hostname_of_rank (rank)
+              , _gaspi_context.communication_port_of_rank (rank)
               );
           }
         }

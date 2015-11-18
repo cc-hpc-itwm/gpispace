@@ -6,6 +6,8 @@
 
 #include <gpi-space/pc/global/itopology.hpp>
 
+#include <vmem/gaspi_context.hpp>
+
 #include <fhg/util/thread/queue.hpp>
 
 namespace gpi
@@ -30,6 +32,7 @@ namespace gpi
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
                                  , api::gaspi_t& gaspi
+                                 , fhg::vmem::gaspi_context&
                                  );
 
       protected:
@@ -40,6 +43,7 @@ namespace gpi
                    , gpi::pc::global::itopology_t & topology
                    , handle_generator_t&
                    , api::gaspi_t&
+                   , fhg::vmem::gaspi_context&
                    );
 
         virtual bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const override;
@@ -102,6 +106,7 @@ namespace gpi
         gpi::pc::global::itopology_t & _topology;
 
         api::gaspi_t& _gaspi;
+        fhg::vmem::gaspi_context& _gaspi_context;
       };
     }
   }

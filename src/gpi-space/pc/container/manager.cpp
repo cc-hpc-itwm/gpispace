@@ -429,6 +429,7 @@ namespace gpi
                            , std::string const & p
                            , std::vector<std::string> const& default_memory_urls
                            , api::gaspi_t& gaspi
+                           , fhg::vmem::gaspi_context& gaspi_context
                            , std::unique_ptr<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher> topology_rpc_server
                            )
         : _logger (logger)
@@ -436,8 +437,11 @@ namespace gpi
         , m_socket (-1)
         , m_stopping (false)
         , m_process_counter (0)
-        , _memory_manager (_logger, gaspi)
-        , _topology (_memory_manager, gaspi, std::move (topology_rpc_server))
+        , _memory_manager (_logger, gaspi, gaspi_context)
+        , _topology ( _memory_manager
+                    , gaspi_context
+                    , std::move (topology_rpc_server)
+                    )
       {
         if ( default_memory_urls.size ()
            >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID

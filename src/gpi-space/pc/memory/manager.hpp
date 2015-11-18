@@ -38,7 +38,7 @@ namespace gpi
 
         static const gpi::pc::type::segment_id_t MAX_PREALLOCATED_SEGMENT_ID=16;
 
-        manager_t (fhg::log::Logger&, api::gaspi_t&);
+        manager_t (fhg::log::Logger&, api::gaspi_t&, fhg::vmem::gaspi_context&);
         ~manager_t ();
 
         void clear ();
@@ -141,6 +141,7 @@ namespace gpi
         area_map_t m_areas;
         handle_to_segment_t m_handle_to_segment;
         api::gaspi_t& _gaspi;
+        fhg::vmem::gaspi_context& _gaspi_context;
 
         std::mutex _memcpy_task_guard;
         std::size_t _next_memcpy_id;

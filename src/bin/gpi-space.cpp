@@ -205,6 +205,7 @@ int main (int argc, char** argv)
       , socket_path.string()
       , {"gpi://?buffer_size=4194304&buffers=8"}
       , gaspi
+      , gaspi_context
       , std::move (topology_rpc_server)
       );
 
