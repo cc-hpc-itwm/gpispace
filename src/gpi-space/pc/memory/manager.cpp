@@ -266,7 +266,6 @@ namespace gpi
         }
 
         m_areas [area->get_id ()] = area;
-        area->init ();
       }
 
       manager_t::area_ptr

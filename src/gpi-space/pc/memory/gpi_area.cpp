@@ -32,6 +32,8 @@ namespace gpi
                              , fhg::vmem::gaspi_context& gaspi_context
                              , fhg::vmem::gaspi_timeout& time_left
                              , type::size_t memory_size
+                             , type::size_t num_com_buffers
+                             , type::size_t com_buffer_size
                              )
         : area_t ( logger
                  , gpi_area_t::area_type
@@ -44,12 +46,9 @@ namespace gpi
         , _gaspi_context (gaspi_context)
         , _gaspi (_gaspi_context, logger, memory_size, time_left)
         , m_ptr (_gaspi.dma_ptr())
-        , m_num_com_buffers (8)
-        , m_com_buffer_size (4* (1<<20))
+        , m_num_com_buffers (num_com_buffers)
+        , m_com_buffer_size (com_buffer_size)
         , _topology (topology)
-      {}
-
-      void gpi_area_t::init ()
       {
         fhg_assert (m_num_com_buffers > 0);
         fhg_assert (m_com_buffer_size > 0);
@@ -60,7 +59,7 @@ namespace gpi
         for (size_t i = 0; i < m_num_com_buffers; ++i)
         {
           const std::string hdl_name =
-            name () + "-com-" + boost::lexical_cast<std::string>(i);
+            name + "-com-" + boost::lexical_cast<std::string>(i);
           try
           {
             gpi::pc::type::handle_t com_hdl =
@@ -556,9 +555,9 @@ namespace gpi
                                            , gaspi_context
                                            , time_left
                                            , memory_size
+                                           , numbuf
+                                           , comsize
                                            );
-        area->m_num_com_buffers = numbuf;
-        area->m_com_buffer_size = comsize;
         return area_ptr_t (area);
       }
     }

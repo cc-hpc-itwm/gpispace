@@ -46,6 +46,8 @@ namespace gpi
                    , fhg::vmem::gaspi_context&
                    , fhg::vmem::gaspi_timeout&
                    , type::size_t memory_size
+                   , type::size_t num_com_buffers
+                   , type::size_t com_buffer_size
                    );
 
         virtual bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const override;
@@ -76,8 +78,6 @@ namespace gpi
           ) override;
 
       private:
-        virtual void init () override;
-
         virtual bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
                             , const gpi::pc::type::offset_t begin
                             , const gpi::pc::type::size_t   range_size
