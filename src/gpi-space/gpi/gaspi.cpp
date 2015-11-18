@@ -20,19 +20,6 @@ namespace gpi
 {
   namespace api
   {
-    static_assert
-      ( std::is_same<notification_t, gaspi_notification_t>::value
-      , "HACK: don't expose GASPI.h to users, but we still need the types"
-      );
-    static_assert
-      ( std::is_same<rank_t, gaspi_rank_t>::value
-      , "HACK: don't expose GASPI.h to users, but we still need the types"
-      );
-    static_assert
-      ( std::is_same<notification_id_t, gaspi_notification_id_t>::value
-      , "HACK: don't expose GASPI.h to users, but we still need the types"
-      );
-
     namespace
     {
       void throw_gaspi_error ( std::string const& function_name
