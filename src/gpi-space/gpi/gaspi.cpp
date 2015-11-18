@@ -123,7 +123,7 @@ namespace gpi
 
       _notification_ids_per_node
         = std::min ( available_notifications
-                   / gaspi_number_t (number_of_nodes())
+                   / gaspi_number_t (_gaspi_context.number_of_nodes())
                    , maximum_notifications_per_rank
                    );
       if (_notification_ids_per_node < 2)
@@ -132,14 +132,14 @@ namespace gpi
           ( "need at least two notification ids per rank ("
           + std::to_string (available_notifications)
           + " notification ids available in total, but "
-          + std::to_string (number_of_nodes()) + " ranks)"
+          + std::to_string (_gaspi_context.number_of_nodes()) + " ranks)"
           );
       }
 
       {
         std::vector<gaspi_notification_id_t> ping_ids (ping_ids_count());
-        std::iota (ping_ids.begin(), ping_ids.end(), ids_begin (rank()));
-        for (gaspi_rank_t rank (0); rank < number_of_nodes(); ++rank)
+        std::iota (ping_ids.begin(), ping_ids.end(), ids_begin (_gaspi_context.rank()));
+        for (gaspi_rank_t rank (0); rank < _gaspi_context.number_of_nodes(); ++rank)
         {
           _ping_ids[rank].put_many (ping_ids.begin(), ping_ids.end());
         }
@@ -344,7 +344,7 @@ namespace gpi
     }
     notification_id_t gaspi_t::total_number_of_notifications() const
     {
-      return _notification_ids_per_node * number_of_nodes();
+      return _notification_ids_per_node * _gaspi_context.number_of_nodes();
     }
 
     rank_t gaspi_t::sending_rank (notification_id_t notification_id) const
@@ -367,14 +367,14 @@ namespace gpi
     notification_id_t gaspi_t::corresponding_local_ping_id
       (notification_id_t pong_id) const
     {
-      return ids_begin (rank())
+      return ids_begin (_gaspi_context.rank())
         + notification_id_offset (pong_id)
         - pong_ids_offset();
     }
     notification_id_t gaspi_t::corresponding_local_pong_id
       (notification_id_t ping_id) const
     {
-      return ids_begin (rank())
+      return ids_begin (_gaspi_context.rank())
         + notification_id_offset (ping_id)
         + pong_ids_offset();
     }
