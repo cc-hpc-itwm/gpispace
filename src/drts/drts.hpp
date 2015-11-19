@@ -107,7 +107,6 @@ namespace gspc
       , char const* const data
       ) const;
 
-    unsigned long virtual_memory_total() const;
     unsigned long number_of_unique_nodes() const;
 
     stream create_stream ( std::string const& name

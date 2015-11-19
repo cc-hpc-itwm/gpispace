@@ -44,9 +44,7 @@ namespace gpi
         gpi::pc::type::handle_t
         next (const gpi::pc::type::segment::segment_type);
 
-        void initialize_counter ( const gpi::pc::type::segment::segment_type
-                                , gpi::pc::type::size_t start
-                                );
+        void initialize_counter (const gpi::pc::type::segment::segment_type);
       private:
         gpi::pc::type::size_t m_node_identifier;
         std::vector<std::atomic<gpi::pc::type::size_t>> m_counter;

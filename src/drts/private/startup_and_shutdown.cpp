@@ -465,7 +465,6 @@ namespace fhg
       , boost::filesystem::path sdpa_home
       , bool delete_logfiles
       , fhg::util::signal_handler_manager& signal_handler_manager
-      , boost::optional<std::size_t> gpi_mem
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
       , boost::optional<unsigned short> vmem_port
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
@@ -559,14 +558,8 @@ namespace fhg
           throw std::invalid_argument
             ("vmem socket is required when gpi is enabled");
         }
-        if (!gpi_mem)
-        {
-          throw std::invalid_argument
-            ("vmem memory size is required when gpi is enabled");
-        }
 
-        info_output << "I: using VMEM mem: " << gpi_mem.get() << " bytes per node\n"
-                    << "I: starting VMEM on: " << gpi_socket.get()
+        info_output << "I: starting VMEM on: " << gpi_socket.get()
                     << " with a timeout of " << vmem_startup_timeout.get().count()
                     << " seconds\n";
 
@@ -595,7 +588,6 @@ namespace fhg
                         ( rif::client (entry_point).start_vmem
                             ( sdpa_home / "bin" / "gpi-space"
                             , verbose ? fhg::log::TRACE : fhg::log::INFO
-                            , gpi_mem.get()
                             , gpi_socket.get()
                             , vmem_port.get()
                             , vmem_startup_timeout.get()

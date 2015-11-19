@@ -38,8 +38,6 @@ namespace gspc
       constexpr char const* const application_search_path
         {"application-search-path"};
 
-      constexpr char const* const virtual_memory_per_node
-        {"virtual-memory-per-node"};
       constexpr char const* const virtual_memory_socket
         {"virtual-memory-socket"};
       constexpr char const* const virtual_memory_port
@@ -190,11 +188,6 @@ namespace gspc
       boost::program_options::options_description vmem ("Virtual memory");
 
       vmem.add_options()
-        ( name::virtual_memory_per_node
-        , boost::program_options::value
-          <validators::positive_integral<unsigned long>>()->required()
-        , "virtual memory per node in bytes"
-        )
         ( name::virtual_memory_socket
         , boost::program_options::value
             <validators::nonexisting_path_in_existing_directory>()->required()
@@ -345,7 +338,6 @@ namespace gspc
   ACCESS_PATH (nodefile, validators::existing_path);
   ACCESS_PATH (application_search_path, validators::existing_directory);
 
-  ACCESS_POSITIVE_INTEGRAL (virtual_memory_per_node, unsigned long);
   ACCESS_PATH ( virtual_memory_socket
               , validators::nonexisting_path_in_existing_directory
               );

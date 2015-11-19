@@ -202,7 +202,6 @@ try
       ( service_dispatcher
       , [] ( boost::filesystem::path command
            , fhg::log::Level log_level
-           , std::size_t memory_in_bytes
            , boost::filesystem::path socket
            , unsigned short gaspi_port
            , std::chrono::seconds proc_init_timeout
@@ -215,7 +214,6 @@ try
         {
           std::vector<std::string> arguments
             { "--log-level", fhg::log::string (log_level)
-            , "--gpi-mem", std::to_string (memory_in_bytes)
             , "--socket", socket.string()
             , "--port", std::to_string (gaspi_port)
             , "--gpi-timeout", std::to_string (proc_init_timeout.count())

@@ -448,7 +448,6 @@ namespace gpi
 
       manager_t::manager_t ( fhg::log::Logger& logger
                            , std::string const & p
-                           , std::vector<std::string> const& default_memory_urls
                            , fhg::vmem::gaspi_context& gaspi_context
                            , std::unique_ptr<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher> topology_rpc_server
                            )
@@ -463,28 +462,6 @@ namespace gpi
                     , std::move (topology_rpc_server)
                     )
       {
-        if ( default_memory_urls.size ()
-           >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID
-           )
-        {
-          throw std::runtime_error ("too many predefined memory urls!");
-        }
-
-        if (_topology.is_master ())
-        {
-          gpi::pc::type::id_t id = 1;
-          for (std::string const& url : default_memory_urls)
-          {
-            _memory_manager.add_memory
-              ( 0 // owner
-              , url
-              , id
-              , _topology
-              );
-            ++id;
-          }
-        }
-
         fhg::util::nest_exceptions<std::runtime_error>
           ( [&]
             {

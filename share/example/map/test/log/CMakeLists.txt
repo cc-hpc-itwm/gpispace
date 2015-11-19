@@ -10,9 +10,6 @@ math (EXPR size_input 50)
 math (EXPR size_output 50)
 math (EXPR size_block 10)
 math (EXPR num_block 10)
-math (EXPR size_virtual_memory
-           "${size_input} + ${size_output}"
-     )
 
 fhg_add_test (test.cpp
   PROJECT share_example_map_log
@@ -22,7 +19,6 @@ fhg_add_test (test.cpp
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/../../"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-       --virtual-memory-per-node ${size_virtual_memory}
        --virtual-memory-startup-timeout 60
        --implementation "$<TARGET_FILE:log_map-impl>"
        --size-input ${size_input}

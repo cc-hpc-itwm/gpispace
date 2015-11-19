@@ -178,7 +178,6 @@ namespace gspc
       , boost::filesystem::path sdpa_home
       , boost::optional<boost::filesystem::path> const& log_dir
       , bool delete_logfiles
-      , boost::optional<std::size_t> gpi_mem
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
       , std::vector<fhg::drts::worker_description> worker_descriptions
       , boost::optional<unsigned short> vmem_port
@@ -214,7 +213,6 @@ namespace gspc
       , _sdpa_home
       , delete_logfiles
       , signal_handler_manager
-      , gpi_mem
       , vmem_startup_timeout
       , vmem_port
       , _rif_entry_points
@@ -322,8 +320,7 @@ namespace gspc
     , rifd_entry_point const& master
     , std::ostream& info_output
     )
-      : _virtual_memory_per_node (get_virtual_memory_per_node (vm))
-      , _virtual_memory_socket (get_virtual_memory_socket (vm))
+      : _virtual_memory_socket (get_virtual_memory_socket (vm))
       , _virtual_memory_startup_timeout
         ( get_virtual_memory_startup_timeout (vm)
         ? boost::make_optional
@@ -340,7 +337,7 @@ namespace gspc
           , get_gui_port (vm)
           , get_log_host (vm)
           , get_log_port (vm)
-          , !!_virtual_memory_per_node
+          , !!_virtual_memory_socket
           //! \todo configurable: verbose logging
           , false
           , _virtual_memory_socket
@@ -351,7 +348,6 @@ namespace gspc
           , get_log_directory (vm)
           // !\todo configurable: delete logfiles
           , true
-          , _virtual_memory_per_node
           , _virtual_memory_startup_timeout
           , parse_worker_descriptions (topology_description)
           , get_virtual_memory_port (vm)
@@ -409,11 +405,6 @@ namespace gspc
                                               ) const
   {
     return stream (*this, name, buffer, size_of_slot, on_slot_filled);
-  }
-
-  unsigned long scoped_runtime_system::virtual_memory_total() const
-  {
-    return number_of_unique_nodes() * (*_->_virtual_memory_per_node);
   }
 
   unsigned long scoped_runtime_system::number_of_unique_nodes() const

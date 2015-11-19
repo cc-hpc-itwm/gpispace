@@ -37,8 +37,6 @@ namespace gpi
       public:
         typedef boost::shared_ptr<area_t> area_ptr;
 
-        static const gpi::pc::type::segment_id_t MAX_PREALLOCATED_SEGMENT_ID=16;
-
         manager_t (fhg::log::Logger&, fhg::vmem::gaspi_context&);
         ~manager_t ();
 

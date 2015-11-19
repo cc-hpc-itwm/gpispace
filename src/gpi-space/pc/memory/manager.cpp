@@ -51,7 +51,7 @@ namespace gpi
         , _handle_generator (gaspi_context.rank())
       {
         _handle_generator.initialize_counter
-          (gpi::pc::type::segment::SEG_INVAL, MAX_PREALLOCATED_SEGMENT_ID);
+          (gpi::pc::type::segment::SEG_INVAL);
 
         const std::size_t number_of_queues (gaspi_context.number_of_queues());
         for (std::size_t i (0); i < number_of_queues; ++i)
@@ -544,8 +544,6 @@ namespace gpi
       {
         if (0 == seg_id)
           throw std::runtime_error ("invalid segment id");
-        if (seg_id <= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID)
-          throw std::runtime_error ("permission denied");
 
         {
           lock_type lock (m_mutex);

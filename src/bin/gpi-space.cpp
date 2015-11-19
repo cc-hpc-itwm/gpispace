@@ -40,7 +40,6 @@ namespace
 {
   namespace option
   {
-    constexpr const char* const gpi_mem ("gpi-mem");
     constexpr const char* const gpi_timeout ("gpi-timeout");
     constexpr const char* const log_file ("log-file");
     constexpr const char* const log_host ("log-host");
@@ -78,10 +77,6 @@ int main (int argc, char** argv)
       , boost::program_options::value
           <fhg::util::boost::program_options::nonempty_string>()->required()
       , "log level"
-      )
-      ( option::gpi_mem
-      , boost::program_options::value<std::size_t>()->required()
-      , "memory to allocate (in bytes)"
       )
       ( option::gpi_timeout
       , boost::program_options::value
@@ -150,8 +145,6 @@ int main (int argc, char** argv)
         .as<fhg::util::boost::program_options::nonempty_string>()
       );
 
-    std::size_t const gpi_mem (vm.at (option::gpi_mem).as<std::size_t>());
-
     std::chrono::seconds const gpi_timeout
       ( vm.at (option::gpi_timeout)
         .as<fhg::util::boost::program_options::positive_integral<std::size_t>>()
@@ -192,13 +185,9 @@ int main (int argc, char** argv)
       , topology_rpc_server->local_endpoint().port()
       );
 
-    // other url examples are:
-    //      gpi://?buffers=8&buffer_size=4194304 GPI memory
-    //      sfs://<path>?create=true&size=1073741824
     const gpi::pc::container::manager_t container_manager
       ( logger
       , socket_path.string()
-      , {"gpi://?memory_size=" + std::to_string (gpi_mem) + "&buffer_size=4194304&buffers=8"}
       , gaspi_context
       , std::move (topology_rpc_server)
       );
