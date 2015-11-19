@@ -10,6 +10,7 @@
 
 #include <we/type/range.hpp>
 
+#include <boost/filesystem/path.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
@@ -85,6 +86,8 @@ namespace gpi
         gpi::pc::type::handle::descriptor_t
         info(const gpi::pc::type::handle_t h);
 
+        type::segment_id_t create_segment (std::string const& info);
+        void delete_segment (type::segment_id_t);
 
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
@@ -95,6 +98,46 @@ namespace gpi
         mutable mutex_type m_mutex;
         int m_socket;
         segment_map_t m_segments;
+
+        friend struct remote_segment;
+      };
+
+      struct remote_segment
+      {
+      public:
+        static struct {} gaspi;
+        static struct {} filesystem;
+
+        remote_segment ( api_t&
+                       , decltype (gaspi)
+                       , type::size_t
+                       , type::size_t communication_buffer = 4 * (1 << 20)
+                       , type::size_t num_communication_buffers = 8
+                       );
+        remote_segment ( api_t&
+                       , decltype (filesystem)
+                       , boost::filesystem::path
+                       , type::size_t
+                       );
+
+      private:
+        remote_segment (api_t&, std::string const&);
+
+      public:
+        ~remote_segment();
+        remote_segment (remote_segment const&) = delete;
+        remote_segment (remote_segment&&) = delete;
+        remote_segment& operator= (remote_segment const&) = delete;
+        remote_segment& operator= (remote_segment&&) = delete;
+
+        operator type::segment_id_t() const
+        {
+          return _segment_id;
+        }
+
+      private:
+        api_t& _api;
+        type::segment_id_t _segment_id;
       };
     }
   }
