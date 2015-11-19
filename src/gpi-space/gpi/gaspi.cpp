@@ -59,7 +59,7 @@ namespace gpi
       , _logger (logger)
       , m_mem_size (memory_size)
       , m_dma (nullptr)
-      , m_replacement_gpi_segment (0)
+      , _segment_id (gaspi_context)
       , _current_queue (0)
     {
       if (sys::get_total_memory_size() < m_mem_size)
@@ -81,14 +81,14 @@ namespace gpi
       }
 
       FAIL_ON_NON_ZERO ( gaspi_segment_create
-                       , m_replacement_gpi_segment
+                       , _segment_id
                        , m_mem_size
                        , GASPI_GROUP_ALL
                        , time_left()
                        , GASPI_MEM_UNINITIALIZED
                        );
       FAIL_ON_NON_ZERO ( gaspi_segment_ptr
-                       , m_replacement_gpi_segment
+                       , _segment_id
                        , &m_dma
                        );
 
@@ -160,7 +160,7 @@ namespace gpi
     {
       _notification_check.reset();
 
-      FAIL_ON_NON_ZERO (gaspi_segment_delete, m_replacement_gpi_segment);
+      FAIL_ON_NON_ZERO (gaspi_segment_delete, _segment_id);
     }
 
     gpi::size_t gaspi_t::memory_size() const
@@ -231,10 +231,10 @@ namespace gpi
 
         queues.emplace
           ( queued_operation<1> ( gaspi_read
-                                , m_replacement_gpi_segment
+                                , _segment_id
                                 , l_off
                                 , from_node
-                                , m_replacement_gpi_segment
+                                , _segment_id
                                 , r_off
                                 , to_transfer
                                 )
@@ -293,10 +293,10 @@ namespace gpi
         const size_t to_transfer (std::min (chunk_size, remaining));
 
         queued_operation<2> ( gaspi_write_notify
-                            , m_replacement_gpi_segment
+                            , _segment_id
                             , l_off
                             , to_node
-                            , m_replacement_gpi_segment
+                            , _segment_id
                             , r_off
                             , to_transfer
                             , next_ping_id (to_node)
@@ -390,7 +390,7 @@ namespace gpi
         gaspi_notification_id_t notification_id;
         gaspi_return_t const waitsome_result
           ( gaspi_notify_waitsome
-              ( m_replacement_gpi_segment
+              ( _segment_id
               , 0
               , total_number_of_notifications()
               , &notification_id
@@ -410,7 +410,7 @@ namespace gpi
 
         gaspi_notification_t write_id;
         FAIL_ON_NON_ZERO ( gaspi_notify_reset
-                         , m_replacement_gpi_segment
+                         , _segment_id
                          , notification_id
                          , &write_id
                          );
@@ -430,7 +430,7 @@ namespace gpi
         {
           queued_operation<1>
             ( gaspi_notify
-            , m_replacement_gpi_segment
+            , _segment_id
             , sending_rank (notification_id)
             , corresponding_local_pong_id (notification_id)
             , write_id

@@ -3,7 +3,9 @@
 #include <gpi-space/types.hpp>
 
 #include <chrono>
+#include <mutex>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 namespace fhg
@@ -46,9 +48,28 @@ namespace fhg
       //! management task threads, which is just bad.
       gpi::size_t number_of_queues() const;
 
+      struct reserved_segment_id
+      {
+        reserved_segment_id (gaspi_context&);
+        ~reserved_segment_id();
+        reserved_segment_id (reserved_segment_id const&) = delete;
+        reserved_segment_id (reserved_segment_id&&) = delete;
+        reserved_segment_id& operator= (reserved_segment_id const&) = delete;
+        reserved_segment_id& operator= (reserved_segment_id&&) = delete;
+
+        operator gpi::segment_id_t() const { return _id; }
+
+      private:
+        gaspi_context& _context;
+        gpi::segment_id_t _id;
+      };
+
     private:
       std::vector<std::string> m_rank_to_hostname;
       std::vector<unsigned short> _communication_port_by_rank;
+
+      std::mutex _segment_id_guard;
+      std::unordered_set<gpi::segment_id_t> _segment_ids;
     };
   }
 }

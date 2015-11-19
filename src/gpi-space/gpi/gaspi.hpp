@@ -72,7 +72,7 @@ namespace gpi
       fhg::log::Logger& _logger;
       size_t m_mem_size;
       void *m_dma;
-      size_t m_replacement_gpi_segment;
+      fhg::vmem::gaspi_context::reserved_segment_id _segment_id;
       gpi::size_t _max_transfer_size;
 
       std::vector<std::string> m_rank_to_hostname;

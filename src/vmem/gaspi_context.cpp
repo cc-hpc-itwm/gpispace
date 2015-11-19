@@ -138,6 +138,14 @@ namespace fhg
 
       FAIL_ON_NON_ZERO (gaspi_barrier, GASPI_GROUP_ALL, time_left());
       FAIL_ON_NON_ZERO (gaspi_segment_delete, exchange_hostname_and_port_segment);
+
+      {
+        gpi::segment_id_t id (0);
+        std::generate_n ( std::inserter (_segment_ids, _segment_ids.end())
+                        , std::numeric_limits<gpi::segment_id_t>::max()
+                        , [&id] { return id++; }
+                        );
+      }
     }
 
     gaspi_context::~gaspi_context()
@@ -174,6 +182,24 @@ namespace fhg
     unsigned short gaspi_context::communication_port_of_rank (gpi::rank_t rank) const
     {
       return _communication_port_by_rank[rank];
+    }
+
+    gaspi_context::reserved_segment_id::reserved_segment_id (gaspi_context& context)
+      : _context (context)
+    {
+      std::unique_lock<std::mutex> const _ (_context._segment_id_guard);
+      if (_context._segment_ids.empty())
+      {
+        throw std::runtime_error ("no segment id available");
+      }
+      _id = *_context._segment_ids.begin();
+      _context._segment_ids.erase (_context._segment_ids.begin());
+    }
+
+    gaspi_context::reserved_segment_id::~reserved_segment_id()
+    {
+      std::unique_lock<std::mutex> const _ (_context._segment_id_guard);
+      _context._segment_ids.emplace (_id);
     }
 
 #undef FAIL_ON_NON_ZERO
