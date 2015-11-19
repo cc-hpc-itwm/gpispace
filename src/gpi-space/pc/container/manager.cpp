@@ -152,10 +152,12 @@ namespace gpi
           handle_message_t ( fhg::log::Logger& logger
                            , gpi::pc::type::process_id_t const& proc_id
                            , memory::manager_t& memory_manager
+                           , global::topology_t& topology
                            )
             : _logger (logger)
             , m_proc_id (proc_id)
             , _memory_manager (memory_manager)
+            , _topology (topology)
           {}
 
           /**********************************************/
@@ -254,6 +256,24 @@ namespace gpi
               (gpi::pc::proto::error::success, "success");
           }
 
+          gpi::pc::proto::message_t
+            operator () (const gpi::pc::proto::segment::add_memory_t & add_mem) const
+          {
+            gpi::pc::type::segment_id_t id =
+              _memory_manager.add_memory (m_proc_id, add_mem.url, 0, _topology);
+            gpi::pc::proto::segment::register_reply_t rpl;
+            rpl.id = id;
+            return gpi::pc::proto::segment::message_t (rpl);
+          }
+
+          gpi::pc::proto::message_t
+            operator () (const gpi::pc::proto::segment::del_memory_t & del_mem) const
+          {
+            _memory_manager.del_memory (m_proc_id, del_mem.id, _topology);
+            return
+              gpi::pc::proto::error::error_t (gpi::pc::proto::error::success);
+          }
+
           /**********************************************/
           /***     C O N T R O L   R E L A T E D      ***/
           /**********************************************/
@@ -284,6 +304,7 @@ namespace gpi
           fhg::log::Logger& _logger;
           gpi::pc::type::process_id_t const& m_proc_id;
           memory::manager_t& _memory_manager;
+          global::topology_t& _topology;
         };
 
         gpi::pc::proto::message_t handle_message
@@ -291,12 +312,13 @@ namespace gpi
           , gpi::pc::type::process_id_t const& id
           , gpi::pc::proto::message_t const& request
           , gpi::pc::memory::manager_t& memory_manager
+          , global::topology_t& topology
           )
         {
           try
           {
             return boost::apply_visitor
-              (handle_message_t (logger, id, memory_manager), request);
+              (handle_message_t (logger, id, memory_manager, topology), request);
           }
           catch (std::exception const& ex)
           {
@@ -358,7 +380,7 @@ namespace gpi
               );
 
             gpi::pc::proto::message_t const reply
-              (handle_message (_logger, process_id, request, _memory_manager));
+              (handle_message (_logger, process_id, request, _memory_manager, _topology));
 
             fhg::util::nest_exceptions<std::runtime_error>
               ( [&]
