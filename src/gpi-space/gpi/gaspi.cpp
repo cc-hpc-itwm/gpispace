@@ -159,6 +159,8 @@ namespace gpi
     gaspi_t::~gaspi_t()
     {
       _notification_check.reset();
+
+      FAIL_ON_NON_ZERO (gaspi_segment_delete, m_replacement_gpi_segment);
     }
 
     gpi::size_t gaspi_t::memory_size() const
