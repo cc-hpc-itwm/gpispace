@@ -1,6 +1,19 @@
 #include <drts/worker/context.hpp>
 #include <drts/worker/context_impl.hpp>
 
+#include <util-generic/serialization/exception.hpp>
+#include <util-generic/syscall.hpp>
+#include <util-generic/syscall/process_signal_block.hpp>
+#include <util-generic/syscall/signal_set.hpp>
+
+#include <boost/format.hpp>
+#include <boost/iostreams/device/file_descriptor.hpp>
+#include <boost/iostreams/stream.hpp>
+
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
 namespace drts
 {
   namespace worker
@@ -25,13 +38,18 @@ namespace drts
     {
       return _->worker_to_hostname (worker);
     }
-    void context::set_module_call_do_cancel (boost::function<void()> f)
-    {
-      _->set_module_call_do_cancel (f);
-    }
     void context::module_call_do_cancel() const
     {
       _->module_call_do_cancel();
+    }
+    void context::execute_and_kill_on_cancel
+      ( boost::function<void()> fun
+      , boost::function<void()> on_cancel
+      , boost::function<void (int)> on_signal
+      , boost::function<void (int)> on_exit
+      )
+    {
+      _->execute_and_kill_on_cancel (fun, on_cancel, on_signal, on_exit);
     }
 
     context_constructor::context_constructor
@@ -50,6 +68,7 @@ namespace drts
         : _worker_name (worker_name)
         , _workers (workers)
         , _module_call_do_cancel ([](){})
+        , _cancelled (false)
         , _logger (logger)
     {}
     std::string const& context::implementation::worker_name() const
@@ -72,9 +91,14 @@ namespace drts
       (boost::function<void()> fun)
     {
       _module_call_do_cancel = fun;
+      if (_cancelled)
+      {
+        module_call_do_cancel();
+      }
     }
-    void context::implementation::module_call_do_cancel() const
+    void context::implementation::module_call_do_cancel()
     {
+      _cancelled = true;
       _module_call_do_cancel();
     }
     void context::implementation::log ( fhg::log::Level const& severity
@@ -82,6 +106,128 @@ namespace drts
                                       ) const
     {
       _logger.log (fhg::log::LogEvent (severity, message));
+    }
+
+    //! \todo factor out channel_from_child_to_parent, see
+    //! execute_and_get_startup_messages, process::execute
+    void context::implementation::execute_and_kill_on_cancel
+      ( boost::function<void()> fun
+      , boost::function<void()> on_cancel
+      , boost::function<void (int)> on_signal
+      , boost::function<void (int)> on_exit
+      )
+    {
+      int pipe_fds[2];
+      fhg::util::syscall::pipe (pipe_fds);
+
+      if (pid_t child = fhg::util::syscall::fork())
+      {
+        fhg::util::syscall::close (pipe_fds[1]);
+
+        bool cancelled {false};
+
+        set_module_call_do_cancel
+          ( [&child, &cancelled]
+            {
+              cancelled = true;
+
+              fhg::util::syscall::kill (child, SIGUSR2);
+            }
+          );
+
+        int status;
+
+        if (fhg::util::syscall::waitpid (child, &status, 0) != child)
+        {
+          throw std::logic_error
+            ((boost::format ("wait (%1%) != %1%") % child).str());
+        }
+
+        if (WIFSIGNALED (status))
+        {
+          if (cancelled && WTERMSIG (status) == SIGUSR2)
+          {
+            return on_cancel();
+          }
+
+          return on_signal (WTERMSIG (status));
+        }
+        else if (WIFEXITED (status))
+        {
+          if (WEXITSTATUS (status) == 1)
+          {
+            boost::iostreams::stream<boost::iostreams::file_descriptor_source>
+              pipe_read (pipe_fds[0], boost::iostreams::close_handle);
+
+            pipe_read >> std::noskipws;
+
+            std::string const ex { std::istream_iterator<char> (pipe_read)
+                                 , std::istream_iterator<char>()
+                                 };
+
+            if (ex.size())
+            {
+              std::rethrow_exception
+                ( fhg::util::serialization::exception::deserialize
+                  ( ex
+                  , fhg::util::serialization::exception::serialization_functions()
+                  , fhg::util::serialization::exception::aggregated_serialization_functions()
+                  )
+                );
+            }
+          }
+
+          return on_exit (WEXITSTATUS (status));
+        }
+        else
+        {
+          throw std::logic_error
+            ("Unexpected exit status: " + std::to_string (status));
+        }
+      }
+      else
+      {
+        fhg::util::syscall::close (pipe_fds[0]);
+
+        //! \note block to avoid "normal" exit due to external signal
+        fhg::util::syscall::process_signal_block const process_signal_block
+          {fhg::util::syscall::signal_set ({SIGINT, SIGTERM})};
+
+        try
+        {
+          fun();
+
+          exit (0);
+        }
+        catch (...)
+        {
+          boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
+            (pipe_fds[1], boost::iostreams::close_handle) <<
+              fhg::util::serialization::exception::serialize
+                ( std::current_exception()
+                , fhg::util::serialization::exception::serialization_functions()
+                , fhg::util::serialization::exception::aggregated_serialization_functions()
+                );
+
+          exit (1);
+        }
+      }
+    }
+
+    void throw_cancelled()
+    {
+      throw context::cancelled();
+    }
+
+    void on_signal_unexpected (int signal)
+    {
+      throw std::logic_error
+        ("Unexpected on_signal (" + std::to_string (signal) + ")");
+    }
+    void on_exit_unexpected (int exit_code)
+    {
+      throw std::logic_error
+        ("Unexpected on_exit (" + std::to_string (exit_code) + ")");
     }
   }
 }

@@ -17,6 +17,12 @@ fhg_add_test (installation_from_command_line.cpp
  REQUIRES_INSTALLATION
 )
 
+fhg_add_test (context.cpp
+  PROJECT drts
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES gspc
+)
+
 fhg_add_test (scoped_rifd.cpp
   PROJECT drts
   BOOST_UNIT_TEST

@@ -3,6 +3,7 @@
 #include <drts/worker/context_fwd.hpp>
 
 #include <set>
+#include <stdexcept>
 #include <string>
 
 #include <boost/function.hpp>
@@ -13,6 +14,10 @@ namespace drts
   {
     class redirect_output;
     class context_constructor;
+
+    void throw_cancelled();
+    void on_signal_unexpected (int);
+    void on_exit_unexpected (int);
 
     class context
     {
@@ -31,8 +36,37 @@ namespace drts
       std::set<std::string> const& workers() const;
       std::string worker_to_hostname (std::string const&) const;
 
-      void set_module_call_do_cancel (boost::function<void()>);
       void module_call_do_cancel() const;
+
+      void execute_and_kill_on_cancel
+        ( boost::function<void()> fun
+        , boost::function<void()> on_cancel
+        , boost::function<void (int)> on_signal
+        , boost::function<void (int)> on_exit
+        );
+
+      void execute_and_kill_on_cancel
+        ( boost::function<void()> fun
+        , boost::function<void()> on_cancel
+        )
+      {
+        execute_and_kill_on_cancel
+          ( fun
+          , on_cancel
+          , &on_signal_unexpected
+          , &on_exit_unexpected
+          );
+      }
+
+      struct cancelled : public std::exception {};
+
+      void execute_and_kill_on_cancel (boost::function<void()> fun)
+      {
+        execute_and_kill_on_cancel
+          ( fun
+          , &throw_cancelled
+          );
+      }
     };
   }
 }
