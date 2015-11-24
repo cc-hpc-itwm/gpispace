@@ -325,10 +325,14 @@ namespace sdpa {
         _scheduling_thread;
       void scheduling_thread();
 
-      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-        _event_handler_thread;
+    protected:
+      //! \note In order to call the correct abstract functions, the
+      //! event handling thread needs to be in the class that defines
+      //! the handlers, while the handling is done the same way for
+      //! all classes. (see issue #618)
       void handle_events();
 
+    private:
       struct virtual_memory_api
       {
         virtual_memory_api

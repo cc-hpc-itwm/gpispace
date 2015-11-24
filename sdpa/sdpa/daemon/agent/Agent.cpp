@@ -28,6 +28,7 @@ namespace sdpa
                       , gui_info
                       , true
                       )
+      , _event_handler_thread (&Agent::handle_events, this)
     {}
 
     void Agent::handleJobFinishedEvent

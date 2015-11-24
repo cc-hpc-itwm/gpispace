@@ -25,7 +25,7 @@
 
 namespace sdpa {
   namespace daemon {
-    class Orchestrator : public GenericDaemon
+    class Orchestrator final : public GenericDaemon
     {
       public:
       Orchestrator ( const std::string &name
@@ -51,6 +51,9 @@ namespace sdpa {
     private:
       fhg::rpc::service_dispatcher _rpc_dispatcher;
       fhg::rpc::server_with_multiple_clients _rpc_server;
+
+      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+        _event_handler_thread;
     };
   }
 }

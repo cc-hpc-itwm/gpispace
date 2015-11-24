@@ -11,15 +11,15 @@
 
 namespace
 {
-  class fake_drts_worker_reporting_backlog_full
-    : public utils::fake_drts_worker_notifying_module_call_submission
+  class fake_drts_worker_reporting_backlog_full final
+    : public utils::no_thread::fake_drts_worker_notifying_module_call_submission
   {
   public:
     fake_drts_worker_reporting_backlog_full
       ( std::function<void (std::string)> announce_job
       , utils::agent const& master
       )
-      : utils::fake_drts_worker_notifying_module_call_submission (announce_job, master)
+      : utils::no_thread::fake_drts_worker_notifying_module_call_submission (announce_job, master)
     {}
 
     virtual void handleSubmitJobEvent
@@ -61,6 +61,9 @@ namespace
 
       _jobs.erase (name);
     }
+
+  private:
+    basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 }
 

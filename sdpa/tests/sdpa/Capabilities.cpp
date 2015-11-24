@@ -15,7 +15,7 @@
 
 namespace
 {
-  class drts_component_observing_capabilities : public utils::basic_drts_component
+  class drts_component_observing_capabilities final : public utils::basic_drts_component
   {
   public:
     drts_component_observing_capabilities()
@@ -93,6 +93,8 @@ namespace
     std::condition_variable _capabilities_changed;
     std::list<std::pair<fhg::com::p2p::address_t, sdpa::capability_t>>
       _capabilities;
+
+    basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 }
 
