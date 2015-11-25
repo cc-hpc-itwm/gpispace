@@ -13,7 +13,6 @@ namespace gpi
       , F_GLOBAL       = 0x004
       , F_NOCREATE     = 0x008 // do not create the segment (try to open it)
       , F_FORCE_UNLINK = 0x010 // force recreation of the segment
-      , F_NOMMAP       = 0x080 // do not mmap, rather use seek/read/write if possible
       };
   }
 }

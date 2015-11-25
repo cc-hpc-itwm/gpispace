@@ -63,11 +63,7 @@ BOOST_FIXTURE_TEST_CASE (create_sfs_segment, setup_and_cleanup_shared_file)
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
 
     handle_t handle = area.alloc (1, size, "test", 0);
-
-    void *ptr = area.pointer_to (memory_location_t (handle, 0));
-
-    memcpy (ptr, text, strlen (text));
-
+    area.write_to (memory_location_t (handle, 0), text, strlen (text));
     area.free (handle);
   }
 
@@ -233,10 +229,7 @@ BOOST_FIXTURE_TEST_CASE (reopen_sfs_segment, setup_and_cleanup_shared_file)
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
 
     handle_t handle = area.alloc (1, size, "test", 0);
-
-    void *ptr = area.pointer_to (memory_location_t (handle, 0));
-
-    memcpy (ptr, text, strlen (text));
+    area.write_to (memory_location_t (handle, 0), text, strlen (text));
     area.free (handle);
   }
 
@@ -254,11 +247,10 @@ BOOST_FIXTURE_TEST_CASE (reopen_sfs_segment, setup_and_cleanup_shared_file)
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
 
     handle_t handle = area.alloc (1, size, "test", 0);
-
-    void *ptr = area.pointer_to (memory_location_t (handle, 0));
-
-    int eq = strncmp (text, (char*)ptr, strlen (text));
-    BOOST_CHECK_EQUAL (0, eq);
+    char read_buffer[strlen (text)];
+    area.read_from
+      (memory_location_t (handle, 0), read_buffer, sizeof (read_buffer));
+    BOOST_CHECK_EQUAL (std::string (read_buffer), std::string (text));
 
     area.free (handle);
   }
@@ -296,7 +288,7 @@ BOOST_FIXTURE_TEST_CASE (create_big_sfs_segment, setup_and_cleanup_shared_file)
   }
 }
 
-BOOST_FIXTURE_TEST_CASE (create_huge_sfs_segment_mmap, setup_and_cleanup_shared_file)
+BOOST_FIXTURE_TEST_CASE (create_huge_sfs_segment, setup_and_cleanup_shared_file)
 {
   gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
 
@@ -313,38 +305,6 @@ BOOST_FIXTURE_TEST_CASE (create_huge_sfs_segment_mmap, setup_and_cleanup_shared_
                     , path_to_shared_file
                     , size
                     , gpi::pc::F_NONE
-                    , topology
-                    , handle_generator
-                    );
-    BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
-  }
-  catch (std::exception const &ex)
-  {
-    BOOST_WARN_MESSAGE ( false
-                       , "could not allocate sfs segment of size: " << size
-                       << ": " << ex.what ()
-                       << " - please check 'ulimit -v'"
-                       );
-  }
-}
-
-BOOST_FIXTURE_TEST_CASE (create_huge_sfs_segment_no_mmap, setup_and_cleanup_shared_file)
-{
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
-
-  using namespace gpi::pc::memory;
-
-  gpi::tests::dummy_topology topology;
-
-  const gpi::pc::type::size_t size = (1L << 40); // 1 TB
-
-  try
-  {
-    sfs_area_t area ( _logger
-                    , 0
-                    , path_to_shared_file
-                    , size
-                    , gpi::pc::F_NOMMAP
                     , topology
                     , handle_generator
                     );
@@ -378,7 +338,6 @@ BOOST_FIXTURE_TEST_CASE (test_read, setup_and_cleanup_shared_file)
                     , path_to_shared_file
                     , size
                     , gpi::pc::F_PERSISTENT
-                    + gpi::pc::F_NOMMAP
                     , topology
                     , handle_generator
                     );
@@ -427,7 +386,6 @@ BOOST_FIXTURE_TEST_CASE (test_already_open, setup_and_cleanup_shared_file)
                   , path_to_shared_file
                   , size
                   , gpi::pc::F_PERSISTENT
-                  + gpi::pc::F_NOMMAP
                   , topology
                   , handle_generator
                   );
@@ -439,7 +397,6 @@ BOOST_FIXTURE_TEST_CASE (test_already_open, setup_and_cleanup_shared_file)
                                    , path_to_shared_file
                                    , size
                                    , gpi::pc::F_PERSISTENT
-                                   + gpi::pc::F_NOMMAP
                                    , topology
                                    , handle_generator
                                    )

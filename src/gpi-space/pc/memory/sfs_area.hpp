@@ -86,7 +86,6 @@ namespace gpi
                                   , const gpi::rank_t
                                   ) const override;
 
-        void * m_ptr;
         int    m_fd;
         int    m_lock_fd;
         path_t m_path;

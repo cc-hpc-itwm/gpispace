@@ -1,7 +1,6 @@
 #include <gpi-space/pc/memory/sfs_area.hpp>
 
 #include <cerrno>
-#include <sys/mman.h> // mmap
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -134,7 +133,6 @@ namespace gpi
                  , flags
                  , handle_generator
                  )
-        , m_ptr (nullptr)
         , m_fd (-1)
         , m_lock_fd (-1)
         , m_path (path)
@@ -335,27 +333,6 @@ namespace gpi
 
           descriptor ().local_size = m_size;
 
-          if (not gpi::flag::is_set ( descriptor ().flags
-                                    , gpi::pc::F_NOMMAP
-                                    )
-             )
-          {
-            m_ptr = mmap ( (void*)nullptr
-                         , m_size
-                         , PROT_READ + PROT_WRITE
-                         , MAP_SHARED
-                         , fd
-                         , 0
-                         );
-            if (m_ptr == MAP_FAILED)
-            {
-              ::close (fd); fd = -1;
-              m_ptr = nullptr;
-              throw boost::system::system_error
-                (errno, boost::system::system_category());
-            }
-          }
-
           // we need the fd for read/write support
           m_fd = fd;
         }
@@ -365,14 +342,13 @@ namespace gpi
              , "SFS memory created:"
              << " path: " << m_path
              << " size: " << m_size
-             << " mapped-to: " << m_ptr
              );
       }
 
       void sfs_area_t::close()
       {
         // only cleanup when we actually opened...
-        if ((m_fd >= 0) || (m_ptr != nullptr))
+        if (m_fd >= 0)
         {
           /*
             steps:
@@ -384,12 +360,6 @@ namespace gpi
           if (m_fd)
           {
             ::close (m_fd); m_fd = -1;
-          }
-
-          if (m_ptr)
-          {
-            munmap (m_ptr, m_size);
-            m_ptr = nullptr;
           }
 
           if (gpi::flag::is_set ( descriptor ().flags
@@ -462,9 +432,9 @@ namespace gpi
       }
 
       void *
-      sfs_area_t::raw_ptr (gpi::pc::type::offset_t off)
+      sfs_area_t::raw_ptr (gpi::pc::type::offset_t)
       {
-        return m_ptr && off < m_size ? (char*)m_ptr + off : nullptr;
+        return nullptr;
       }
 
       bool
@@ -556,10 +526,6 @@ namespace gpi
         if (    fhg::util::read_bool (url.get ("unlink").get_value_or ("false")))
         {
           gpi::flag::set (flags, F_FORCE_UNLINK);
-        }
-        if (not fhg::util::read_bool (url.get ("mmap").get_value_or ("false")))
-        {
-          gpi::flag::set (flags, F_NOMMAP);
         }
         if (    fhg::util::read_bool (url.get ("exclusive").get_value_or ("false")))
         {
