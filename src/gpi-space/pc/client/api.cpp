@@ -481,6 +481,9 @@ namespace gpi
         m_segments.erase (id);
       }
 
+      decltype (remote_segment::gaspi) remote_segment::gaspi = {};
+      decltype (remote_segment::filesystem) remote_segment::filesystem = {};
+
       remote_segment::remote_segment
           ( api_t& api
           , decltype (gaspi)
