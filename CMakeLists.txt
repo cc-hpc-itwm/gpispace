@@ -9,10 +9,11 @@ set (CMAKE_MODULE_PATH
   "$ENV{CMAKE_MODULE_PATH}"
 )
 
-include ("cmake/parse_arguments.cmake")
-include ("cmake/add_macros.cmake")
-include ("cmake/beautify_find_boost.cmake")
-include ("cmake/require_compiler_version.cmake")
+add_subdirectory (cmake)
+
+include (add_macros)
+include (beautify_find_boost)
+include (require_compiler_version)
 
 set (PROJECT_VERSION "15.11")
 set (PROJECT_CONTACT "gpispace-support@itwm.fraunhofer.de" CACHE STRING "Contact information")

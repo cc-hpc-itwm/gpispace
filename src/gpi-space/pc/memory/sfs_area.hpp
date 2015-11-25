@@ -7,6 +7,8 @@
 #include <gpi-space/pc/global/itopology.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
 
+#include <fhg/util/thread/queue.hpp>
+
 namespace gpi
 {
   namespace pc
@@ -86,7 +88,7 @@ namespace gpi
                                   , const gpi::rank_t
                                   ) const override;
 
-        int    m_fd;
+        fhg::thread::queue<int> _fds;
         int    m_lock_fd;
         path_t m_path;
         int    m_version;

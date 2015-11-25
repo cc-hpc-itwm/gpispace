@@ -133,7 +133,6 @@ namespace gpi
                  , flags
                  , handle_generator
                  )
-        , m_fd (-1)
         , m_lock_fd (-1)
         , m_path (path)
         , m_version (SFS_VERSION)
@@ -333,8 +332,12 @@ namespace gpi
 
           descriptor ().local_size = m_size;
 
-          // we need the fd for read/write support
-          m_fd = fd;
+          fhg::util::syscall::close (fd);
+
+          for (int i (0); i < 20; ++i)
+          {
+            _fds.put (fhg::util::syscall::open (data_path.string().c_str(), O_RDWR));
+          }
         }
 
         LLOG ( TRACE
@@ -348,7 +351,6 @@ namespace gpi
       void sfs_area_t::close()
       {
         // only cleanup when we actually opened...
-        if (m_fd >= 0)
         {
           /*
             steps:
@@ -357,10 +359,6 @@ namespace gpi
             - unmap memory
             - depending on the flags, remove the directory again
           */
-          if (m_fd)
-          {
-            ::close (m_fd); m_fd = -1;
-          }
 
           if (gpi::flag::is_set ( descriptor ().flags
                                 , gpi::pc::F_PERSISTENT
@@ -495,8 +493,12 @@ namespace gpi
                                  )
       {
         // TODO: implement locking or an fd pool on which we can wait
-        fhg::util::syscall::lseek (m_fd, offset, SEEK_SET);
-        return fhg::util::syscall::read (m_fd, buffer, amount);
+        int const fd (_fds.get());
+        FHG_UTIL_FINALLY ([&] { _fds.put (fd); });
+        fhg::util::syscall::flock (fd, LOCK_EX);
+        FHG_UTIL_FINALLY ([&] { fhg::util::syscall::flock (fd, LOCK_UN); });
+        fhg::util::syscall::lseek (fd, offset, SEEK_SET);
+        return fhg::util::syscall::read (fd, buffer, amount);
       }
 
       gpi::pc::type::size_t
@@ -506,8 +508,12 @@ namespace gpi
                                 )
       {
         // TODO: implement locking or an fd pool on which we can wait
-        fhg::util::syscall::lseek (m_fd, offset, SEEK_SET);
-        return fhg::util::syscall::write (m_fd, buffer, amount);
+        int const fd (_fds.get());
+        FHG_UTIL_FINALLY ([&] { _fds.put (fd); });
+        fhg::util::syscall::flock (fd, LOCK_EX);
+        FHG_UTIL_FINALLY ([&] { fhg::util::syscall::flock (fd, LOCK_UN); });
+        fhg::util::syscall::lseek (fd, offset, SEEK_SET);
+        return fhg::util::syscall::write (fd, buffer, amount);
       }
 
       area_ptr_t sfs_area_t::create ( fhg::log::Logger& logger
