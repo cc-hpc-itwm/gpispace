@@ -156,6 +156,18 @@ struct daemon
 
   std::unordered_set<we::layer::id_type> _in_progress_cancels;
 
+#define ADD_CANCEL_IN_PROGRESS(ID)                              \
+  {                                                             \
+    boost::mutex::scoped_lock const _ (_in_progress_mutex);     \
+    _in_progress_cancels.emplace (ID);                          \
+  }
+
+#define REMOVE_CANCEL_IN_PROGRESS(ID)                           \
+  {                                                             \
+    boost::mutex::scoped_lock const _ (_in_progress_mutex);     \
+    _in_progress_cancels.erase (ID);                            \
+  }
+
   DECLARE_EXPECT_CLASS ( submit
                        , we::layer::id_type* id
         BOOST_PP_COMMA() we::type::activity_t act
@@ -194,10 +206,7 @@ struct daemon
 
   void cancel (we::layer::id_type id)
   {
-    {
-      boost::mutex::scoped_lock const _ (_in_progress_mutex);
-      _in_progress_cancels.emplace (id);
-    }
+    ADD_CANCEL_IN_PROGRESS (id);
 
     std::list<expect_cancel*>::iterator const e
       ( boost::find_if ( _to_cancel
@@ -238,10 +247,7 @@ struct daemon
     _to_finished.erase (e);
 
     DEC_IN_PROGRESS (jobs_layer);
-    {
-      boost::mutex::scoped_lock const _ (_in_progress_mutex);
-      _in_progress_cancels.erase (id);
-    }
+    REMOVE_CANCEL_IN_PROGRESS (id);
   }
 
   DECLARE_EXPECT_CLASS ( failed
@@ -268,11 +274,7 @@ struct daemon
     _to_failed.erase (e);
 
     DEC_IN_PROGRESS (jobs_layer);
-
-    {
-      boost::mutex::scoped_lock const _ (_in_progress_mutex);
-      _in_progress_cancels.erase (id);
-    }
+    REMOVE_CANCEL_IN_PROGRESS (id);
   }
 
   DECLARE_EXPECT_CLASS ( canceled
@@ -296,10 +298,7 @@ struct daemon
     _to_canceled.erase (e);
 
     DEC_IN_PROGRESS (jobs_layer);
-    {
-      boost::mutex::scoped_lock const _ (_in_progress_mutex);
-      _in_progress_cancels.erase (id);
-    }
+    REMOVE_CANCEL_IN_PROGRESS (id);
   }
 
   DECLARE_EXPECT_CLASS ( discover
@@ -423,20 +422,14 @@ struct daemon
                    )
   {
     DEC_IN_PROGRESS (jobs_rts);
-    {
-      boost::mutex::scoped_lock const _ (_in_progress_mutex);
-      _in_progress_cancels.erase (id);
-    }
+    REMOVE_CANCEL_IN_PROGRESS (id);
 
     layer.finished (id, act);
   }
 
   void do_cancel (we::layer::id_type id)
   {
-    {
-      boost::mutex::scoped_lock const _ (_in_progress_mutex);
-      _in_progress_cancels.emplace (id);
-    }
+    ADD_CANCEL_IN_PROGRESS (id);
 
     layer.cancel (id);
   }
@@ -444,10 +437,7 @@ struct daemon
   void do_failed (we::layer::id_type id, std::string message)
   {
     DEC_IN_PROGRESS (jobs_rts);
-    {
-      boost::mutex::scoped_lock const _ (_in_progress_mutex);
-      _in_progress_cancels.erase (id);
-    }
+    REMOVE_CANCEL_IN_PROGRESS (id);
 
     layer.failed (id, message);
   }
@@ -455,10 +445,7 @@ struct daemon
   void do_canceled (we::layer::id_type id)
   {
     DEC_IN_PROGRESS (jobs_rts);
-    {
-      boost::mutex::scoped_lock const _ (_in_progress_mutex);
-      _in_progress_cancels.erase (id);
-    }
+    REMOVE_CANCEL_IN_PROGRESS (id);
 
     layer.canceled (id);
   }
