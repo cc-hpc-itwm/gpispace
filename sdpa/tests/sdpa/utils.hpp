@@ -621,21 +621,50 @@ namespace utils
 
   struct basic_drts_worker final : public no_thread::basic_drts_worker
   {
-    using no_thread::basic_drts_worker::basic_drts_worker;
+    basic_drts_worker (utils::agent const& master)
+      : no_thread::basic_drts_worker (master)
+    {}
+    basic_drts_worker (std::string name, utils::agent const& master)
+      : no_thread::basic_drts_worker (std::move (name), master)
+    {}
+    basic_drts_worker ( std::string name
+                      , utils::agent const& master
+                      , sdpa::capabilities_set_t capabilities
+                      )
+      : no_thread::basic_drts_worker (std::move (name), master, std::move (capabilities))
+    {}
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
   struct fake_drts_worker_notifying_module_call_submission final
     : public no_thread::fake_drts_worker_notifying_module_call_submission
   {
-    using no_thread::fake_drts_worker_notifying_module_call_submission::fake_drts_worker_notifying_module_call_submission;
+    fake_drts_worker_notifying_module_call_submission
+      ( std::function<void (std::string)> announce_job
+      , utils::agent const& master
+      )
+      : no_thread::fake_drts_worker_notifying_module_call_submission (announce_job, master)
+    {}
+    fake_drts_worker_notifying_module_call_submission
+      ( std::string name
+      , std::function<void (std::string)> announce_job
+      , utils::agent const& master
+      )
+      : no_thread::fake_drts_worker_notifying_module_call_submission (name, announce_job, master)
+    {}
+
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
   struct fake_drts_worker_directly_finishing_jobs final
     : public no_thread::basic_drts_worker
   {
-    using no_thread::basic_drts_worker::basic_drts_worker;
+    fake_drts_worker_directly_finishing_jobs (utils::agent const& master)
+      : no_thread::basic_drts_worker (master)
+    {}
+    fake_drts_worker_directly_finishing_jobs (std::string name, utils::agent const& master)
+      : no_thread::basic_drts_worker (std::move (name), master)
+    {}
 
     virtual void handleSubmitJobEvent
       (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent* e) override
@@ -657,7 +686,13 @@ namespace utils
   struct fake_drts_worker_waiting_for_finished_ack final
     : public no_thread::fake_drts_worker_waiting_for_finished_ack
   {
-    using no_thread::fake_drts_worker_waiting_for_finished_ack::fake_drts_worker_waiting_for_finished_ack;
+    fake_drts_worker_waiting_for_finished_ack
+      ( std::function<void (std::string)> announce_job
+      , const utils::agent& master_agent
+      )
+    : no_thread::fake_drts_worker_waiting_for_finished_ack
+        (std::move (announce_job), master_agent)
+    {}
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
