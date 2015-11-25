@@ -975,7 +975,8 @@ BOOST_FIXTURE_TEST_CASE (child_failure_shall_fail_parent, daemon)
     do_submit (id, activity_input);
   }
 
-  const std::string message (rand() % 0xFE + 1, rand() % 0xFE + 1);
+  const std::string message
+    (fhg::util::testing::random_string_without_zero());
 
   {
     expect_failed const _ (this, id, message);
@@ -1007,7 +1008,8 @@ BOOST_FIXTURE_TEST_CASE
     do_submit (id, activity_input);
   }
 
-  const std::string message (rand() % 0xFE + 1, rand() % 0xFE + 1);
+  const std::string message
+    (fhg::util::testing::random_string_without_zero());
 
   {
     expect_cancel const _ (this, child_id_b);
@@ -1050,7 +1052,8 @@ BOOST_FIXTURE_TEST_CASE
     do_submit (id, activity_input);
   }
 
-  const std::string message (rand() % 0xFE + 1, rand() % 0xFE + 1);
+  const std::string message
+    (fhg::util::testing::random_string_without_zero());
 
   {
     expect_cancel const _b (this, child_id_b);
