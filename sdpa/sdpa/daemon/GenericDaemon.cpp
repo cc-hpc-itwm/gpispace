@@ -208,7 +208,6 @@ GenericDaemon::GenericDaemon( const std::string name
                          )
   , _registration_threads()
   , _scheduling_thread (&GenericDaemon::scheduling_thread, this)
-  , _event_handler_thread (&GenericDaemon::handle_events, this)
   , _virtual_memory_api
     ( vmem_socket
     ? fhg::util::cxx14::make_unique<virtual_memory_api>

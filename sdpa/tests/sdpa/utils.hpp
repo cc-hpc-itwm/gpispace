@@ -355,7 +355,6 @@ namespace utils
                  , fhg::util::cxx14::make_unique<boost::asio::io_service>()
                  , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
                  )
-      , _event_thread (&basic_drts_component::event_thread, this)
     {}
 
     basic_drts_component ( std::string name
@@ -381,6 +380,22 @@ namespace utils
     {
       wait_for_workers_to_shutdown();
     }
+
+    struct event_thread_and_worker_join
+    {
+      event_thread_and_worker_join (basic_drts_component& component)
+        : _component (component)
+        , _event_thread (&basic_drts_component::event_thread, &component)
+      {}
+      ~event_thread_and_worker_join()
+      {
+        _component.wait_for_workers_to_shutdown();
+      }
+
+      basic_drts_component& _component;
+      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+        _event_thread;
+    };
 
     virtual void handle_worker_registration_response
       ( fhg::com::p2p::address_t const& source
@@ -454,9 +469,6 @@ namespace utils
   protected:
     sdpa::com::NetworkStrategy _network;
 
-  private:
-    boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-      _event_thread;
     void event_thread()
     {
       for (;;)
@@ -466,121 +478,192 @@ namespace utils
         event.second->handleBy (event.first, this);
       }
     }
+
   private:
       boost::mutex _mutex_workers_shutdown;
       boost::condition_variable_any _cond_workers_shutdown;
   };
 
-  class basic_drts_worker : public basic_drts_component
+  namespace no_thread
   {
-  public:
+    class basic_drts_worker : public basic_drts_component
+    {
+    public:
+      basic_drts_worker (utils::agent const& master)
+        : basic_drts_component
+          (random_peer_name(), master, sdpa::capabilities_set_t(), false)
+      {}
+      basic_drts_worker
+        (std::string name, utils::agent const& master)
+        : basic_drts_component
+          (name, master, sdpa::capabilities_set_t(), false)
+      {}
+      basic_drts_worker ( std::string name
+                        , utils::agent const& master
+                        , sdpa::capabilities_set_t capabilities
+                        )
+        : basic_drts_component (name, master, capabilities, false)
+      {}
+    };
+
+    class fake_drts_worker_notifying_module_call_submission
+      : public basic_drts_worker
+    {
+    public:
+      fake_drts_worker_notifying_module_call_submission
+          ( std::function<void (std::string)> announce_job
+          , utils::agent const& master
+          )
+        : basic_drts_worker (master)
+        , _announce_job (announce_job)
+      {}
+      fake_drts_worker_notifying_module_call_submission
+          ( std::string name
+          , std::function<void (std::string)> announce_job
+          , utils::agent const& master
+          )
+        : basic_drts_worker (name, master)
+        , _announce_job (announce_job)
+      {}
+
+      virtual void handleSubmitJobEvent
+        (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent* e) override
+      {
+        const std::string name
+          (we::type::activity_t (e->description()).transition().name());
+
+        add_job (name, *e->job_id(), source);
+
+        _network.perform<sdpa::events::SubmitJobAckEvent> (source, *e->job_id());
+
+        announce_job (name);
+      }
+      virtual void handleJobFinishedAckEvent
+        (fhg::com::p2p::address_t const&, const sdpa::events::JobFinishedAckEvent*) override
+      {
+        // can be ignored as we clean up in finish() already
+      }
+
+      void finish (std::string name)
+      {
+        const job_t job (_jobs.at (name));
+        _jobs.erase (name);
+
+        _network.perform<sdpa::events::JobFinishedEvent>
+          (job._owner, job._id, we::type::activity_t().to_string());
+      }
+
+      sdpa::job_id_t job_id (std::string name)
+      {
+        return _jobs.at (name)._id;
+      }
+
+      void add_job ( const std::string& name
+                   , const sdpa::job_id_t& job_id
+                   , const fhg::com::p2p::address_t& owner
+                   )
+      {
+        _jobs.emplace (name, job_t (job_id, owner));
+      }
+
+      void announce_job (const std::string& name)
+      {
+        _announce_job (name);
+      }
+
+    protected:
+      struct job_t
+      {
+        sdpa::job_id_t _id;
+        fhg::com::p2p::address_t _owner;
+        job_t (sdpa::job_id_t id, fhg::com::p2p::address_t owner)
+          : _id (id)
+          , _owner (owner)
+        {}
+      };
+      std::map<std::string, job_t> _jobs;
+
+    private:
+      std::function<void (std::string)> _announce_job;
+    };
+
+    class fake_drts_worker_waiting_for_finished_ack
+      : public no_thread::fake_drts_worker_notifying_module_call_submission
+    {
+    public:
+      fake_drts_worker_waiting_for_finished_ack
+        ( std::function<void (std::string)> announce_job
+        , const utils::agent& master_agent
+        )
+        : no_thread::fake_drts_worker_notifying_module_call_submission
+            (announce_job, master_agent)
+      {}
+
+      virtual void handleJobFinishedAckEvent
+        (fhg::com::p2p::address_t const&, const sdpa::events::JobFinishedAckEvent* e) override
+      {
+        _finished_ack.notify (e->job_id());
+      }
+
+      void finish_and_wait_for_ack (std::string name)
+      {
+        const std::string expected_id (_jobs.at (name)._id);
+
+        finish (name);
+
+        BOOST_REQUIRE_EQUAL (_finished_ack.wait(), expected_id);
+      }
+
+    private:
+      fhg::util::thread::event<std::string> _finished_ack;
+    };
+  }
+
+  struct basic_drts_worker final : public no_thread::basic_drts_worker
+  {
     basic_drts_worker (utils::agent const& master)
-      : basic_drts_component
-        (random_peer_name(), master, sdpa::capabilities_set_t(), false)
+      : no_thread::basic_drts_worker (master)
     {}
-    basic_drts_worker
-      (std::string name, utils::agent const& master)
-      : basic_drts_component
-        (name, master, sdpa::capabilities_set_t(), false)
+    basic_drts_worker (std::string name, utils::agent const& master)
+      : no_thread::basic_drts_worker (std::move (name), master)
     {}
     basic_drts_worker ( std::string name
                       , utils::agent const& master
                       , sdpa::capabilities_set_t capabilities
                       )
-      : basic_drts_component (name, master, capabilities, false)
+      : no_thread::basic_drts_worker (std::move (name), master, std::move (capabilities))
     {}
+    basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
-  class fake_drts_worker_notifying_module_call_submission
-    : public basic_drts_worker
+  struct fake_drts_worker_notifying_module_call_submission final
+    : public no_thread::fake_drts_worker_notifying_module_call_submission
   {
-  public:
     fake_drts_worker_notifying_module_call_submission
-        ( std::function<void (std::string)> announce_job
-        , utils::agent const& master
-        )
-      : basic_drts_worker (master)
-      , _announce_job (announce_job)
+      ( std::function<void (std::string)> announce_job
+      , utils::agent const& master
+      )
+      : no_thread::fake_drts_worker_notifying_module_call_submission (announce_job, master)
     {}
     fake_drts_worker_notifying_module_call_submission
-        ( std::string name
-        , std::function<void (std::string)> announce_job
-        , utils::agent const& master
-        )
-      : basic_drts_worker (name, master)
-      , _announce_job (announce_job)
+      ( std::string name
+      , std::function<void (std::string)> announce_job
+      , utils::agent const& master
+      )
+      : no_thread::fake_drts_worker_notifying_module_call_submission (name, announce_job, master)
     {}
 
-    virtual void handleSubmitJobEvent
-      (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent* e) override
-    {
-      const std::string name
-        (we::type::activity_t (e->description()).transition().name());
-
-      add_job (name, *e->job_id(), source);
-
-      _network.perform<sdpa::events::SubmitJobAckEvent> (source, *e->job_id());
-
-      announce_job (name);
-    }
-    virtual void handleJobFinishedAckEvent
-      (fhg::com::p2p::address_t const&, const sdpa::events::JobFinishedAckEvent*) override
-    {
-      // can be ignored as we clean up in finish() already
-    }
-
-    void finish (std::string name)
-    {
-      const job_t job (_jobs.at (name));
-      _jobs.erase (name);
-
-      _network.perform<sdpa::events::JobFinishedEvent>
-        (job._owner, job._id, we::type::activity_t().to_string());
-    }
-
-    sdpa::job_id_t job_id (std::string name)
-    {
-      return _jobs.at (name)._id;
-    }
-
-    void add_job ( const std::string& name
-                 , const sdpa::job_id_t& job_id
-                 , const fhg::com::p2p::address_t& owner
-                 )
-    {
-      _jobs.emplace (name, job_t (job_id, owner));
-    }
-
-    void announce_job (const std::string& name)
-    {
-      _announce_job (name);
-    }
-
-  protected:
-    struct job_t
-    {
-      sdpa::job_id_t _id;
-      fhg::com::p2p::address_t _owner;
-      job_t (sdpa::job_id_t id, fhg::com::p2p::address_t owner)
-        : _id (id)
-        , _owner (owner)
-      {}
-    };
-    std::map<std::string, job_t> _jobs;
-
-  private:
-    std::function<void (std::string)> _announce_job;
+    basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
-  class fake_drts_worker_directly_finishing_jobs : public basic_drts_worker
+  struct fake_drts_worker_directly_finishing_jobs final
+    : public no_thread::basic_drts_worker
   {
-  public:
     fake_drts_worker_directly_finishing_jobs (utils::agent const& master)
-      : basic_drts_worker (master)
+      : no_thread::basic_drts_worker (master)
     {}
-    fake_drts_worker_directly_finishing_jobs
-        (std::string name, utils::agent const& master)
-      : basic_drts_worker (name, master)
+    fake_drts_worker_directly_finishing_jobs (std::string name, utils::agent const& master)
+      : no_thread::basic_drts_worker (std::move (name), master)
     {}
 
     virtual void handleSubmitJobEvent
@@ -596,41 +679,25 @@ namespace utils
     {
       // can be ignored as we don't have any state
     }
+
+    basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
-  class fake_drts_worker_waiting_for_finished_ack
-    : public utils::fake_drts_worker_notifying_module_call_submission
+  struct fake_drts_worker_waiting_for_finished_ack final
+    : public no_thread::fake_drts_worker_waiting_for_finished_ack
   {
-  public:
     fake_drts_worker_waiting_for_finished_ack
-        ( std::function<void (std::string)> announce_job
-        , const utils::agent& master_agent
-        )
-      : utils::fake_drts_worker_notifying_module_call_submission
-        (announce_job, master_agent)
+      ( std::function<void (std::string)> announce_job
+      , const utils::agent& master_agent
+      )
+    : no_thread::fake_drts_worker_waiting_for_finished_ack
+        (std::move (announce_job), master_agent)
     {}
-
-    virtual void handleJobFinishedAckEvent
-      (fhg::com::p2p::address_t const&, const sdpa::events::JobFinishedAckEvent* e) override
-    {
-      _finished_ack.notify (e->job_id());
-    }
-
-    void finish_and_wait_for_ack (std::string name)
-    {
-      const std::string expected_id (_jobs.at (name)._id);
-
-      finish (name);
-
-      BOOST_REQUIRE_EQUAL (_finished_ack.wait(), expected_id);
-    }
-
-  private:
-    fhg::util::thread::event<std::string> _finished_ack;
+    basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
-  class fake_drts_worker_notifying_cancel
-    : public utils::fake_drts_worker_waiting_for_finished_ack
+  class fake_drts_worker_notifying_cancel final
+    : public no_thread::fake_drts_worker_waiting_for_finished_ack
   {
   public:
     fake_drts_worker_notifying_cancel
@@ -638,7 +705,7 @@ namespace utils
       , std::function<void (std::string)> announce_cancel
       , const utils::agent& master_agent
       )
-      : utils::fake_drts_worker_waiting_for_finished_ack
+      : no_thread::fake_drts_worker_waiting_for_finished_ack
           (announce_job, master_agent)
       , _announce_cancel (announce_cancel)
     {}
@@ -672,6 +739,7 @@ namespace utils
     std::function<void (std::string)> _announce_cancel;
     mutable boost::mutex _cancels_mutex;
     std::map<std::string, fhg::com::p2p::address_t> _cancels;
+    basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
   struct client : boost::noncopyable

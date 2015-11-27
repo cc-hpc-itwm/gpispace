@@ -75,15 +75,15 @@ namespace
   }
 
   template<sdpa::status::code reply>
-  class fake_drts_worker_discovering :
-    public utils::fake_drts_worker_notifying_module_call_submission
+  class fake_drts_worker_discovering final :
+    public utils::no_thread::fake_drts_worker_notifying_module_call_submission
   {
   public:
     fake_drts_worker_discovering
         ( std::function<void (std::string)> announce_job
         , utils::agent const& master
         )
-      : utils::fake_drts_worker_notifying_module_call_submission
+      : utils::no_thread::fake_drts_worker_notifying_module_call_submission
         (announce_job, master)
     {}
 
@@ -99,12 +99,15 @@ namespace
             (e->job_id(), reply, sdpa::discovery_info_set_t())
         );
     }
+
+  private:
+    basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
   struct wait_until_submitted_and_finish_on_scope_exit
   {
     wait_until_submitted_and_finish_on_scope_exit
-        ( utils::fake_drts_worker_notifying_module_call_submission& worker
+        ( utils::no_thread::fake_drts_worker_notifying_module_call_submission& worker
         , std::string expected_job_name
         , fhg::util::thread::event<std::string>& job_submitted
         )
@@ -118,7 +121,7 @@ namespace
       _worker.finish (_actual_job_name);
     }
 
-    utils::fake_drts_worker_notifying_module_call_submission& _worker;
+    utils::no_thread::fake_drts_worker_notifying_module_call_submission& _worker;
     std::string _actual_job_name;
   };
 

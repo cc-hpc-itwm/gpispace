@@ -61,7 +61,7 @@ struct wfe_task_t
   {}
 };
 
-class DRTSImpl : public sdpa::events::EventHandler
+class DRTSImpl final : public sdpa::events::EventHandler
 {
   typedef std::map<std::string, fhg::com::p2p::address_t> map_of_masters_t;
 
