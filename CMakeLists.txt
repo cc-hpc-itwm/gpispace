@@ -126,6 +126,7 @@ endif()
 
 bundle_boost (DESTINATION "external/boost")
 
+add_subdirectory (external)
 add_subdirectory (doc)
 add_subdirectory (fhglog)
 add_subdirectory (playground/bl)

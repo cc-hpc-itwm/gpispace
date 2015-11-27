@@ -15,6 +15,7 @@
 #include <fhg/util/boost/optional.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <util-generic/read_file.hpp>
+#include <util-generic/read_lines.hpp>
 #include <util-generic/syscall.hpp>
 #include <util-generic/write_file.hpp>
 
@@ -26,6 +27,8 @@
 #include <boost/filesystem/fstream.hpp>
 
 #include <gpi-space/pc/type/flags.hpp>
+
+#include <beegfs/beegfs.h>
 
 namespace fs = boost::filesystem;
 
@@ -115,6 +118,54 @@ namespace gpi
 
           int _fd;
         };
+
+        namespace beegfs
+        {
+          void require_beegfs (int fd)
+          {
+            if (!beegfs_testIsBeeGFS (fd))
+            {
+              throw std::runtime_error ("not a BeeGFS mountpoint");
+            }
+          }
+
+          namespace
+          {
+            boost::filesystem::path config_file (int fd)
+            {
+              char* raw_path (nullptr);
+              if (!beegfs_getRuntimeConfigFile (fd, &raw_path))
+              {
+                throw std::runtime_error
+                  ( "unable to get config file of BeeGFS mountpoint: "
+                  + std::string (strerror (errno))
+                  );
+              }
+              boost::filesystem::path path (raw_path);
+              free (raw_path);
+              return path;
+            }
+          }
+
+          bool tuneUseGlobalFileLocks (int fd)
+          {
+            for ( std::string const& line
+                : fhg::util::read_lines (beegfs::config_file (fd))
+                )
+            {
+              if (line == "tuneUseGlobalFileLocks = 1")
+              {
+                return true;
+              }
+              else if (line == "tuneUseGlobalFileLocks = 0")
+              {
+                return false;
+              }
+            }
+            throw std::runtime_error
+              ("tuneUseGlobalFileLocks not set in config");
+          }
+        }
       }
 
       sfs_area_t::sfs_area_t ( fhg::log::Logger& logger
@@ -297,6 +348,13 @@ namespace gpi
                                             , O_RDWR
                                             );
           FHG_UTIL_FINALLY ([&] { fhg::util::syscall::close (fd); });
+
+          beegfs::require_beegfs (fd);
+          if (!beegfs::tuneUseGlobalFileLocks (fd))
+          {
+            throw std::runtime_error
+              ("sfs requires 'tuneUseGlobalFileLocks = 1' in BeeGFS config");
+          }
 
           off_t file_size = fhg::util::syscall::lseek (fd, 0, SEEK_END);
           fhg::util::syscall::lseek (fd, 0, SEEK_SET);
