@@ -293,24 +293,14 @@ namespace gpi
 
           // try to open existing file
           path_t data_path = detail::data_path (m_path);
-          int fd = ::open ( data_path.string ().c_str ()
-                          , O_RDWR
-                          );
-          if (fd < 0)
-          {
-            throw boost::system::system_error
-              (errno, boost::system::system_category());
-          }
+          int fd = fhg::util::syscall::open ( data_path.string ().c_str ()
+                                            , O_RDWR
+                                            );
+          FHG_UTIL_FINALLY ([&] { fhg::util::syscall::close (fd); });
 
-          off_t file_size = lseek (fd, 0, SEEK_END);
-          if (file_size < 0)
-          {
-            ::close (fd); fd = -1;
-            throw std::runtime_error
-              ("could not seek: " + std::string (strerror (errno)));
-          }
+          off_t file_size = fhg::util::syscall::lseek (fd, 0, SEEK_END);
+          fhg::util::syscall::lseek (fd, 0, SEEK_SET);
 
-          lseek (fd, 0, SEEK_SET);
           if (m_size)
           {
             if (m_size != (gpi::pc::type::size_t)file_size)
@@ -332,8 +322,7 @@ namespace gpi
 
           descriptor ().local_size = m_size;
 
-          fhg::util::syscall::close (fd);
-
+          //! \todo better constant (number of threads? configurable?)
           for (int i (0); i < 20; ++i)
           {
             _fds.put (fhg::util::syscall::open (data_path.string().c_str(), O_RDWR));
