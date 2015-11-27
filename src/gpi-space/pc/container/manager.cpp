@@ -6,8 +6,9 @@
 #include <boost/filesystem.hpp>
 #include <boost/variant/static_visitor.hpp>
 
-#include <util-generic/syscall.hpp>
 #include <util-generic/nest_exceptions.hpp>
+#include <util-generic/print_exception.hpp>
+#include <util-generic/syscall.hpp>
 
 #include <fhglog/LogMacros.hpp>
 
@@ -320,10 +321,12 @@ namespace gpi
             return boost::apply_visitor
               (handle_message_t (logger, id, memory_manager, topology), request);
           }
-          catch (std::exception const& ex)
+          catch (...)
           {
             return gpi::pc::proto::error::error_t
-              (gpi::pc::proto::error::bad_request, ex.what());
+              ( gpi::pc::proto::error::bad_request
+              , fhg::util::current_exception_printer().string()
+              );
           }
         }
 
