@@ -259,12 +259,19 @@ namespace gpi
 
           gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::segment::add_memory_t & add_mem) const
+          try
           {
-            gpi::pc::type::segment_id_t id =
-              _memory_manager.add_memory (m_proc_id, add_mem.url, 0, _topology);
-            gpi::pc::proto::segment::register_reply_t rpl;
-            rpl.id = id;
-            return gpi::pc::proto::segment::message_t (rpl);
+            return proto::segment::message_t
+              ( proto::segment::add_reply_t
+                  ( _memory_manager.add_memory
+                      (m_proc_id, add_mem.url, 0, _topology)
+                  )
+              );
+          }
+          catch (...)
+          {
+            return proto::segment::message_t
+              (proto::segment::add_reply_t (std::current_exception()));
           }
 
           gpi::pc::proto::message_t

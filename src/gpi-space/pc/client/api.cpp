@@ -187,16 +187,8 @@ namespace gpi
                         )
           );
 
-        try
-        {
-          return boost::get<proto::segment::register_reply_t>
-            (boost::get<proto::segment::message_t> (reply)).id;
-        }
-        catch (boost::bad_get const&)
-        {
-          throw std::runtime_error
-            (boost::get<proto::error::error_t> (reply).detail);
-        }
+        return boost::get<proto::segment::add_reply_t>
+          (boost::get<proto::segment::message_t> (reply)).get();
       }
       void api_t::delete_segment (type::segment_id_t segment_id)
       {
