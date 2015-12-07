@@ -544,7 +544,7 @@ namespace gpi
           boost::lexical_cast<type::size_t>(url.get ("buffers").get_value_or ("8"));
         type::size_t const memory_size
           ( boost::lexical_cast<type::size_t> (url.get ("memory_size").get())
-          + comsize * numbuf
+          + comsize * numbuf * gaspi_context.number_of_nodes()
           );
 
         //! \todo get from user? use for other areas as well? remove?
