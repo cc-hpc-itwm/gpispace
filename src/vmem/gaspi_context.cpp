@@ -66,13 +66,21 @@ namespace fhg
 
       FAIL_ON_NON_ZERO (gaspi_proc_init, time_left());
 
+      {
+        gpi::segment_id_t id (0);
+        std::generate_n ( std::inserter (_segment_ids, _segment_ids.end())
+                        , std::numeric_limits<gpi::segment_id_t>::max()
+                        , [&id] { return id++; }
+                        );
+      }
+
       struct hostname_and_port_t
       {
         char hostname[HOST_NAME_MAX + 1]; // + \0
         unsigned short port;
       };
 
-      const gaspi_segment_id_t exchange_hostname_and_port_segment {1};
+      reserved_segment_id const exchange_hostname_and_port_segment (*this);
 
       FAIL_ON_NON_ZERO ( gaspi_segment_create
                        , exchange_hostname_and_port_segment
@@ -138,14 +146,6 @@ namespace fhg
 
       FAIL_ON_NON_ZERO (gaspi_barrier, GASPI_GROUP_ALL, time_left());
       FAIL_ON_NON_ZERO (gaspi_segment_delete, exchange_hostname_and_port_segment);
-
-      {
-        gpi::segment_id_t id (0);
-        std::generate_n ( std::inserter (_segment_ids, _segment_ids.end())
-                        , std::numeric_limits<gpi::segment_id_t>::max()
-                        , [&id] { return id++; }
-                        );
-      }
     }
 
     gaspi_context::~gaspi_context()
