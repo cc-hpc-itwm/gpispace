@@ -118,6 +118,8 @@ namespace gpi
                                  , const area_ptr &area
                                  )
       {
+        area->set_id
+          (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
         add_area (area);
         attach_process (creator, area->get_id ());
 
@@ -251,18 +253,10 @@ namespace gpi
       {
         lock_type lock (m_mutex);
 
-        if (area->get_id () == (gpi::pc::type::id_t (-1)))
+        if (m_areas.find (area->get_id ()) != m_areas.end())
         {
-          area->set_id
-            (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
-        }
-        else
-        {
-          if (m_areas.find (area->get_id ()) != m_areas.end())
-          {
-            throw std::runtime_error
-              ("cannot add another gpi segment: id already in use!");
-          }
+          throw std::runtime_error
+            ("cannot add another gpi segment: id already in use!");
         }
 
         m_areas [area->get_id ()] = area;
@@ -493,6 +487,8 @@ namespace gpi
       {
         area_ptr_t area (create_area (_logger, url_s, topology, _handle_generator, _gaspi_context));
         area->set_owner (proc_id);
+        area->set_id
+          (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
 
         add_area (area);
 
