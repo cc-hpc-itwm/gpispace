@@ -485,35 +485,51 @@ namespace gpi
                             , global::topology_t& topology
                             )
       {
-        area_ptr_t area (create_area (_logger, url_s, topology, _handle_generator, _gaspi_context));
-        area->set_owner (proc_id);
-        area->set_id
-          (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
+        //! \note for sfs, master creates file that slaves need to
+        //! open determining filesize from the opened file. thus, to
+        //! avoid a race, the master is doing this before all
+        //! others. gaspi on the other side needs simultaneous
+        //! initialization for gaspi_segment_create etc.
+        bool const require_earlier_master_initialization
+          (url_t (url_s).type() == "sfs");
 
-        add_area (area);
+        area_ptr_t area (nullptr);
 
-        if (area->flags () & F_GLOBAL)
+        //! \todo BROKEN: simultaneous initialization not implemented,
+        //! thus falling back to earlier one as a hack, which is wrong
+        //! and lets gaspi segment creation time out!
+        if (true || require_earlier_master_initialization)
         {
-          try
-          {
-            url_t old_url (url_s);
-            url_t new_url (old_url.type(), old_url.path());
-            new_url.set ("persistent", "true");
-            topology.add_memory
-              (area->get_id (), boost::lexical_cast<std::string>(new_url));
-          }
-          catch (std::exception const & up)
+          area = create_area (_logger, url_s, topology, _handle_generator, _gaspi_context);
+          area->set_owner (proc_id);
+          area->set_id
+            (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
+
+          add_area (area);
+
+          if (area->flags () & F_GLOBAL)
           {
             try
             {
-              del_memory (proc_id, area->get_id (), topology);
+              url_t old_url (url_s);
+              url_t new_url (old_url.type(), old_url.path());
+              new_url.set ("persistent", "true");
+              topology.add_memory
+                (area->get_id (), boost::lexical_cast<std::string>(new_url));
             }
-            catch (...)
+            catch (std::exception const & up)
             {
-              // ignore follow up exception
-            }
+              try
+              {
+                del_memory (proc_id, area->get_id (), topology);
+              }
+              catch (...)
+              {
+                // ignore follow up exception
+              }
 
-            throw;
+              throw;
+            }
           }
         }
 
