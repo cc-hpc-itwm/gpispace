@@ -113,7 +113,6 @@ namespace gpi
                    , global::topology_t& topology
                    );
 
-        void add_area (area_ptr const &area);
       private:
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
@@ -124,6 +123,7 @@ namespace gpi
                                   , gpi::pc::type::segment_id_t
                                   > handle_to_segment_t;
 
+        void add_area (area_ptr const &area);
         area_ptr get_area (const gpi::pc::type::segment_id_t);
         area_ptr get_area (const gpi::pc::type::segment_id_t) const;
         area_ptr get_area_by_handle (const gpi::pc::type::handle_t);
