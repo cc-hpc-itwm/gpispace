@@ -488,14 +488,11 @@ namespace gpi
       gpi::pc::type::segment_id_t
       manager_t::add_memory ( const gpi::pc::type::process_id_t proc_id
                             , const std::string & url_s
-                            , const gpi::pc::type::segment_id_t seg_id
                             , global::topology_t& topology
                             )
       {
         area_ptr_t area (create_area (_logger, url_s, topology, _handle_generator, _gaspi_context));
         area->set_owner (proc_id);
-        if (seg_id > 0)
-          area->set_id (seg_id);
 
         add_area (area);
 

@@ -264,7 +264,7 @@ namespace gpi
             return proto::segment::message_t
               ( proto::segment::add_reply_t
                   ( _memory_manager.add_memory
-                      (m_proc_id, add_mem.url, 0, _topology)
+                      (m_proc_id, add_mem.url, _topology)
                   )
               );
           }

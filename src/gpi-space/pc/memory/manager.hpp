@@ -99,7 +99,6 @@ namespace gpi
         gpi::pc::type::segment_id_t
         add_memory ( const gpi::pc::type::process_id_t proc_id
                    , const std::string & url
-                   , const gpi::pc::type::segment_id_t seg_id
                    , global::topology_t& topology
                    );
 
