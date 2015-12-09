@@ -492,8 +492,8 @@ namespace gpi
       {}
       remote_segment::remote_segment ( api_t& api
                                      , decltype (filesystem)
-                                     , boost::filesystem::path location
                                      , type::size_t size
+                                     , boost::filesystem::path location
                                      )
         : remote_segment
             ( api

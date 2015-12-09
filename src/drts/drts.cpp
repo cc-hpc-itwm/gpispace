@@ -385,17 +385,21 @@ namespace gspc
   }
 
   vmem_allocation scoped_runtime_system::alloc
-    (unsigned long size, std::string const& description) const
+    ( vmem::segment_description segment_description
+    , unsigned long size
+    , std::string const& name
+    ) const
   {
-    return vmem_allocation (this, size, description);
+    return vmem_allocation (this, segment_description, size, name);
   }
   vmem_allocation scoped_runtime_system::alloc_and_fill
-    ( unsigned long size
-    , std::string const& description
+    ( vmem::segment_description segment_description
+    , unsigned long size
+    , std::string const& name
     , char const* const data
     ) const
   {
-    return vmem_allocation (this, size, description, data);
+    return vmem_allocation (this, segment_description, size, name, data);
   }
 
   stream scoped_runtime_system::create_stream ( std::string const& name

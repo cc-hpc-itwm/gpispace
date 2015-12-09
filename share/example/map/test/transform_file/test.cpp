@@ -209,9 +209,17 @@ BOOST_AUTO_TEST_CASE (share_example_map_transform_file)
     (vm, installation, topology_description.str(), rifds.entry_points());
 
   gspc::vmem_allocation const allocation_input
-    (drts.alloc (size_input, "map_input"));
+    ( drts.alloc ( gspc::vmem::gaspi_segment_description()
+                 , size_input
+                 , "map_input"
+                 )
+    );
   gspc::vmem_allocation const allocation_output
-    (drts.alloc (size_output, "map_output"));
+    ( drts.alloc ( gspc::vmem::gaspi_segment_description()
+                 , size_output
+                 , "map_output"
+                 )
+    );
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run

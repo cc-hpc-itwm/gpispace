@@ -111,13 +111,13 @@ namespace gpi
         remote_segment ( api_t&
                        , decltype (gaspi)
                        , type::size_t
-                       , type::size_t communication_buffer = 4 * (1 << 20)
-                       , type::size_t num_communication_buffers = 8
+                       , type::size_t communication_buffer
+                       , type::size_t num_communication_buffers
                        );
         remote_segment ( api_t&
                        , decltype (filesystem)
-                       , boost::filesystem::path
                        , type::size_t
+                       , boost::filesystem::path
                        );
 
       private:
