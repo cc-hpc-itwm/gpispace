@@ -67,9 +67,12 @@ namespace fhg
       FAIL_ON_NON_ZERO (gaspi_proc_init, time_left());
 
       {
+        gaspi_number_t segment_max;
+        FAIL_ON_NON_ZERO (gaspi_segment_max, &segment_max);
+
         gpi::segment_id_t id (0);
         std::generate_n ( std::inserter (_segment_ids, _segment_ids.end())
-                        , std::numeric_limits<gpi::segment_id_t>::max()
+                        , segment_max
                         , [&id] { return id++; }
                         );
       }
