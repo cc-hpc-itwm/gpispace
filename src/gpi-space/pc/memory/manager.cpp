@@ -493,17 +493,17 @@ namespace gpi
         bool const require_earlier_master_initialization
           (url_t (url_s).type() == "sfs");
 
-        area_ptr_t area (nullptr);
+        type::segment_id_t const id
+          (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
 
         //! \todo BROKEN: simultaneous initialization not implemented,
         //! thus falling back to earlier one as a hack, which is wrong
         //! and lets gaspi segment creation time out!
         if (true || require_earlier_master_initialization)
         {
-          area = create_area (_logger, url_s, topology, _handle_generator, _gaspi_context);
+          area_ptr_t area = create_area (_logger, url_s, topology, _handle_generator, _gaspi_context);
           area->set_owner (proc_id);
-          area->set_id
-            (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
+          area->set_id (id);
 
           add_area (area);
 
@@ -513,13 +513,13 @@ namespace gpi
               url_t new_url (old_url.type(), old_url.path());
               new_url.set ("persistent", "true");
               topology.add_memory
-                (area->get_id (), boost::lexical_cast<std::string>(new_url));
+                (id, boost::lexical_cast<std::string>(new_url));
             }
             catch (std::exception const & up)
             {
               try
               {
-                del_memory (proc_id, area->get_id (), topology);
+                del_memory (proc_id, id, topology);
               }
               catch (...)
               {
@@ -530,7 +530,7 @@ namespace gpi
             }
         }
 
-        return area->get_id ();
+        return id;
       }
 
       int
