@@ -414,7 +414,7 @@ namespace gpi
           {
             save_state();
           }
-          else
+          else if (m_topology.is_master())
           {
             cleanup (m_path);
           }

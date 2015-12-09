@@ -509,11 +509,7 @@ namespace gpi
 
             try
             {
-              url_t old_url (url_s);
-              url_t new_url (old_url.type(), old_url.path());
-              new_url.set ("persistent", "true");
-              topology.add_memory
-                (id, boost::lexical_cast<std::string>(new_url));
+              topology.add_memory (id, url_s);
             }
             catch (std::exception const & up)
             {
