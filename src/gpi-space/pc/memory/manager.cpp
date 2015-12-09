@@ -505,10 +505,7 @@ namespace gpi
                            }
                          );
 
-        //! \todo BROKEN: simultaneous initialization not implemented,
-        //! thus falling back to earlier one as a hack, which is wrong
-        //! and lets gaspi segment creation time out!
-        if (true || require_earlier_master_initialization)
+        if (require_earlier_master_initialization)
         {
           area_ptr_t area = create_area (_logger, url_s, topology, _handle_generator, _gaspi_context);
           area->set_owner (proc_id);
@@ -517,6 +514,30 @@ namespace gpi
           add_area (area);
 
           topology.add_memory (id, url_s);
+        }
+        else
+        {
+          std::future<void> local
+            ( std::async
+                ( std::launch::async
+                , [&]
+                  {
+                    area_ptr_t area ( create_area ( _logger
+                                                  , url_s
+                                                  , topology
+                                                  , _handle_generator
+                                                  , _gaspi_context
+                                                  )
+                                    );
+                    area->set_owner (proc_id);
+                    area->set_id (id);
+                    add_area (area);
+                  }
+                )
+            );
+
+          topology.add_memory (id, url_s);
+          local.get();
         }
 
         successfully_added = true;
