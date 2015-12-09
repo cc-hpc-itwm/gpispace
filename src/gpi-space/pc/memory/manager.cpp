@@ -507,8 +507,6 @@ namespace gpi
 
           add_area (area);
 
-          if (area->flags () & F_GLOBAL)
-          {
             try
             {
               url_t old_url (url_s);
@@ -530,7 +528,6 @@ namespace gpi
 
               throw;
             }
-          }
         }
 
         return area->get_id ();
