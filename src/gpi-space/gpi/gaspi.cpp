@@ -52,37 +52,37 @@ namespace gpi
 
     gaspi_t::gaspi_t ( fhg::vmem::gaspi_context& gaspi_context
                      , fhg::log::Logger& logger
-                     , const unsigned long long memory_size
+                     , const unsigned long long per_node_size
                      , fhg::vmem::gaspi_timeout& time_left
                      )
       : _gaspi_context (gaspi_context)
       , _logger (logger)
-      , m_mem_size (memory_size)
+      , _per_node_size (per_node_size)
       , m_dma (nullptr)
       , _segment_id (gaspi_context)
       , _current_queue (0)
     {
-      if (sys::get_total_memory_size() < m_mem_size)
+      if (sys::get_total_memory_size() < _per_node_size)
       {
         throw gpi::exception::gpi_error
           ( gpi::error::startup_failed()
           , "not enough memory: requested memory size ("
-          + std::to_string (m_mem_size) + ") exceeds total memory size ("
+          + std::to_string (_per_node_size) + ") exceeds total memory size ("
           + std::to_string (sys::get_total_memory_size()) + ")"
           );
       }
-      else if (sys::get_avail_memory_size() < m_mem_size)
+      else if (sys::get_avail_memory_size() < _per_node_size)
       {
         LLOG( WARN
             , _logger
-           , "requested memory size (" << m_mem_size << ")"
+           , "requested memory size (" << _per_node_size << ")"
            <<" exceeds available memory size (" << sys::get_avail_memory_size() << ")"
            );
       }
 
       FAIL_ON_NON_ZERO ( gaspi_segment_create
                        , _segment_id
-                       , m_mem_size
+                       , _per_node_size
                        , GASPI_GROUP_ALL
                        , time_left()
                        , GASPI_MEM_UNINITIALIZED
@@ -163,9 +163,9 @@ namespace gpi
       FAIL_ON_NON_ZERO (gaspi_segment_delete, _segment_id);
     }
 
-    gpi::size_t gaspi_t::memory_size() const
+    gpi::size_t gaspi_t::per_node_size() const
     {
-      return m_mem_size;
+      return _per_node_size;
     }
 
     void* gaspi_t::dma_ptr() const

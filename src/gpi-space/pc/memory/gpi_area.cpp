@@ -10,6 +10,8 @@
 
 #include <gpi-space/pc/url.hpp>
 
+#include <util-generic/divru.hpp>
+
 #include <we/type/range.hpp>
 
 #include <boost/lexical_cast.hpp>
@@ -31,7 +33,7 @@ namespace gpi
                              , handle_generator_t& handle_generator
                              , fhg::vmem::gaspi_context& gaspi_context
                              , fhg::vmem::gaspi_timeout& time_left
-                             , type::size_t memory_size
+                             , type::size_t per_node_size
                              , type::size_t num_com_buffers
                              , type::size_t com_buffer_size
                              )
@@ -39,12 +41,12 @@ namespace gpi
                  , gpi_area_t::area_type
                  , creator
                  , name
-                 , memory_size
+                 , per_node_size
                  , flags
                  , handle_generator
                  )
         , _gaspi_context (gaspi_context)
-        , _gaspi (_gaspi_context, logger, memory_size, time_left)
+        , _gaspi (_gaspi_context, logger, per_node_size, time_left)
         , m_ptr (_gaspi.dma_ptr())
         , m_num_com_buffers (num_com_buffers)
         , m_com_buffer_size (com_buffer_size)
@@ -542,8 +544,10 @@ namespace gpi
           boost::lexical_cast<type::size_t>(url.get ("buffer_size").get_value_or ("4194304"));
         type::size_t numbuf =
           boost::lexical_cast<type::size_t>(url.get ("buffers").get_value_or ("8"));
-        type::size_t const memory_size
-          ( boost::lexical_cast<type::size_t> (url.get ("memory_size").get())
+        type::size_t const total_size
+          (boost::lexical_cast<type::size_t> (url.get ("total_size").get()));
+        type::size_t const per_node_size
+          ( fhg::util::divru (total_size, gaspi_context.number_of_nodes())
           + comsize * numbuf
           );
 
@@ -558,7 +562,7 @@ namespace gpi
                                            , handle_generator
                                            , gaspi_context
                                            , time_left
-                                           , memory_size
+                                           , per_node_size
                                            , numbuf
                                            , comsize
                                            );

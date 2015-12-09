@@ -30,12 +30,12 @@ namespace gpi
     public:
       gaspi_t ( fhg::vmem::gaspi_context&
               , fhg::log::Logger&
-              , const unsigned long long memory_size
+              , const unsigned long long per_node_size
               , fhg::vmem::gaspi_timeout&
               );
       ~gaspi_t();
 
-      gpi::size_t memory_size() const;
+      gpi::size_t per_node_size() const;
 
       void* dma_ptr() const;
 
@@ -70,7 +70,7 @@ namespace gpi
       fhg::vmem::gaspi_context& _gaspi_context;
 
       fhg::log::Logger& _logger;
-      size_t m_mem_size;
+      size_t _per_node_size;
       void *m_dma;
       fhg::vmem::gaspi_context::reserved_segment_id _segment_id;
       gpi::size_t _max_transfer_size;

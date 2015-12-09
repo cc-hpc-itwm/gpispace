@@ -590,7 +590,7 @@ namespace gpi
         }
 
         gpi::pc::type::size_t size =
-          boost::lexical_cast<gpi::pc::type::size_t>(url.get ("size").get_value_or ("0"));
+          boost::lexical_cast<gpi::pc::type::size_t>(url.get ("total_size").get_value_or ("0"));
 
         area_ptr_t area (new sfs_area_t ( logger
                                         , GPI_PC_INVAL
