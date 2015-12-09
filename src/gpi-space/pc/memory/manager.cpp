@@ -495,6 +495,15 @@ namespace gpi
 
         type::segment_id_t const id
           (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
+        bool successfully_added (false);
+        FHG_UTIL_FINALLY ( [&]
+                           {
+                             if (!successfully_added)
+                             {
+                               del_memory (proc_id, id, topology);
+                             }
+                           }
+                         );
 
         //! \todo BROKEN: simultaneous initialization not implemented,
         //! thus falling back to earlier one as a hack, which is wrong
@@ -507,25 +516,10 @@ namespace gpi
 
           add_area (area);
 
-            try
-            {
-              topology.add_memory (id, url_s);
-            }
-            catch (std::exception const & up)
-            {
-              try
-              {
-                del_memory (proc_id, id, topology);
-              }
-              catch (...)
-              {
-                // ignore follow up exception
-              }
-
-              throw;
-            }
+          topology.add_memory (id, url_s);
         }
 
+        successfully_added = true;
         return id;
       }
 
