@@ -572,9 +572,19 @@ namespace fhg
         fhg::util::nest_exceptions<std::runtime_error>
           ( [&]
             {
-              std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
-                const fails
-                ( util::blocked_async<fhg::rif::entry_point>
+              std::mutex clients_guard;
+              std::list<rif::client> clients;
+
+              std::pair< std::unordered_map< fhg::rif::entry_point
+                                           , std::future<pid_t>
+                                           >
+                       , std::unordered_map< fhg::rif::entry_point
+                                           , std::exception_ptr
+                                           >
+                       > queued_start_requests
+                ( util::blocked_async_with_results< fhg::rif::entry_point
+                                                  , std::future<pid_t>
+                                                  >
                   ( rif_entry_points
                   //! \todo let the blocksize be a parameter
                   , 64
@@ -584,29 +594,48 @@ namespace fhg
                     }
                   , [&] (fhg::rif::entry_point const& entry_point)
                     {
-                      pid_t const pid
-                        ( rif::client (entry_point).start_vmem
-                            ( sdpa_home / "bin" / "gpi-space"
-                            , verbose ? fhg::log::TRACE : fhg::log::INFO
-                            , gpi_socket.get()
-                            , vmem_port.get()
-                            , vmem_startup_timeout.get()
-                            , log_host && log_port
-                            ? std::make_pair (log_host.get(), log_port.get())
-                            : boost::optional<std::pair<std::string, unsigned short>>()
-                            , log_dir
-                            ? *log_dir / ("vmem-" + replace_whitespace (entry_point.string()) + ".log")
-                            : boost::optional<boost::filesystem::path>()
-                            , nodes
-                            , master.string()
-                            , entry_point == master
-                            ).get()
-                        );
+                      rif::client* client (nullptr);
+                      {
+                        std::unique_lock<std::mutex> const _ (clients_guard);
+                        clients.emplace_back (entry_point);
+                        client = &clients.back();
+                      }
 
-                      processes.store (entry_point, "vmem", pid);
+                      return client->start_vmem
+                        ( sdpa_home / "bin" / "gpi-space"
+                        , verbose ? fhg::log::TRACE : fhg::log::INFO
+                        , gpi_socket.get()
+                        , vmem_port.get()
+                        , vmem_startup_timeout.get()
+                        , log_host && log_port
+                        ? std::make_pair (log_host.get(), log_port.get())
+                        : boost::optional<std::pair<std::string, unsigned short>>()
+                        , log_dir
+                        ? *log_dir / ("vmem-" + replace_whitespace (entry_point.string()) + ".log")
+                        : boost::optional<boost::filesystem::path>()
+                        , nodes
+                        , master.string()
+                        , entry_point == master
+                        );
                     }
-                  ).second
+                  )
                 );
+
+              std::unordered_map< fhg::rif::entry_point
+                                , std::exception_ptr
+                                > fails (queued_start_requests.second);
+
+              for (auto& request : queued_start_requests.first)
+              {
+                try
+                {
+                  processes.store (request.first, "vmem", request.second.get());
+                }
+                catch (...)
+                {
+                  fails.emplace (request.first, std::current_exception());
+                }
+              }
 
               if (!fails.empty())
               {
