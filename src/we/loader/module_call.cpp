@@ -228,25 +228,31 @@ namespace we
         }
       }
 
-      service->notify ( sdpa::daemon::NotificationEvent
-                         ( {worker_name}
-                         , activity_id + ".get"
-                         , sdpa::daemon::NotificationEvent::STATE_STARTED
-                         , act
-                         )
-                      );
+      if (service)
+      {
+        service->notify ( sdpa::daemon::NotificationEvent
+                          ( {worker_name}
+                          , activity_id + ".get"
+                          , sdpa::daemon::NotificationEvent::STATE_STARTED
+                          , act
+                          )
+                        );
+      }
 
       transfer ( get_global_data, virtual_memory_api, shared_memory
                , memory_buffer, module_call.gets (input (act))
                );
 
-      service->notify ( sdpa::daemon::NotificationEvent
-                         ( {worker_name}
-                         , activity_id + ".get"
-                         , sdpa::daemon::NotificationEvent::STATE_HACK_WAS_GET
-                         , act
-                         )
-                      );
+      if (service)
+      {
+        service->notify ( sdpa::daemon::NotificationEvent
+                          ( {worker_name}
+                          , activity_id + ".get"
+                          , sdpa::daemon::NotificationEvent::STATE_HACK_WAS_GET
+                          , act
+                          )
+                       );
+      }
 
       std::list<std::pair<local::range, global::range>> const
         puts_evaluated_before_call
@@ -254,13 +260,16 @@ namespace we
 
       expr::eval::context out (input (act));
 
-      service->notify ( sdpa::daemon::NotificationEvent
-                         ( {worker_name}
-                         , activity_id + ".exec"
-                         , sdpa::daemon::NotificationEvent::STATE_STARTED
-                         , act
-                         )
-                      );
+      if (service)
+      {
+        service->notify ( sdpa::daemon::NotificationEvent
+                          ( {worker_name}
+                          , activity_id + ".exec"
+                          , sdpa::daemon::NotificationEvent::STATE_STARTED
+                          , act
+                          )
+                        );
+      }
 
       try
       {
@@ -273,24 +282,30 @@ namespace we
       }
       catch (...)
       {
-        service->notify ( sdpa::daemon::NotificationEvent
-                         ( {worker_name}
-                         , activity_id + ".exec"
-                         , sdpa::daemon::NotificationEvent::STATE_FAILED
-                         , act
-                         )
-                      );
+        if (service)
+        {
+          service->notify ( sdpa::daemon::NotificationEvent
+                           ( {worker_name}
+                           , activity_id + ".exec"
+                           , sdpa::daemon::NotificationEvent::STATE_FAILED
+                           , act
+                           )
+                        );
+        }
 
         throw;
       }
 
-      service->notify ( sdpa::daemon::NotificationEvent
-                         ( {worker_name}
-                         , activity_id + ".exec"
-                         , sdpa::daemon::NotificationEvent::STATE_FINISHED
-                         , act
-                         )
-                      );
+      if (service)
+      {
+        service->notify ( sdpa::daemon::NotificationEvent
+                           ( {worker_name}
+                           , activity_id + ".exec"
+                           , sdpa::daemon::NotificationEvent::STATE_FINISHED
+                           , act
+                           )
+                        );
+      }
 
       for ( std::pair<we::port_id_type, we::type::port_t> const& port_by_id
           : act.transition().ports_output()
@@ -302,13 +317,16 @@ namespace we
         act.add_output (port_id, out.value (port.name()));
       }
 
-      service->notify ( sdpa::daemon::NotificationEvent
-                         ( {worker_name}
-                         , activity_id + ".put"
-                         , sdpa::daemon::NotificationEvent::STATE_STARTED
-                         , act
-                         )
-                      );
+      if (service)
+      {
+        service->notify ( sdpa::daemon::NotificationEvent
+                           ( {worker_name}
+                           , activity_id + ".put"
+                           , sdpa::daemon::NotificationEvent::STATE_STARTED
+                           , act
+                           )
+                        );
+      }
 
       transfer ( put_global_data, virtual_memory_api, shared_memory
                , memory_buffer, puts_evaluated_before_call
@@ -316,14 +334,17 @@ namespace we
       transfer ( put_global_data, virtual_memory_api, shared_memory
                , memory_buffer, module_call.puts_evaluated_after_call (out)
                );
-      service->notify ( sdpa::daemon::NotificationEvent
-                         ( {worker_name}
-                         , activity_id + ".put"
-                         , sdpa::daemon::NotificationEvent::STATE_HACK_WAS_PUT
-                         , act
-                         )
-                      );
 
+      if (service)
+      {
+        service->notify ( sdpa::daemon::NotificationEvent
+                           ( {worker_name}
+                           , activity_id + ".put"
+                           , sdpa::daemon::NotificationEvent::STATE_HACK_WAS_PUT
+                           , act
+                           )
+                        );
+      }
     }
   }
 }
