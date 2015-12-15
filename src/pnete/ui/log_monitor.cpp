@@ -313,6 +313,8 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   _log_table->setWordWrap (false);
   _log_table->verticalHeader()->setVisible (false);
   _log_table->horizontalHeader()->setStretchLastSection (true);
+  _log_table->verticalHeader()->setResizeMode
+    (QHeaderView::ResizeToContents);
 
   QGroupBox* filter_level_box (new QGroupBox (tr ("Filter"), this));
 
