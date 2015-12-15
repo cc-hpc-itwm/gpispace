@@ -29,6 +29,11 @@ namespace fhg
           void delegate_for_section (int, header_delegate*);
           header_delegate* delegate_for_section (int) const;
           void delegate (header_delegate*);
+          boost::optional<int> current_editor() const;
+
+        public slots:
+          void request_editor (int section);
+          void close_editor();
 
         protected:
           virtual void paintSection (QPainter*, const QRect&, int) const override;
@@ -43,9 +48,7 @@ namespace fhg
           void sections_removed (const QModelIndex&, int, int);
           void data_changed (Qt::Orientation, int, int);
 
-          void request_editor (int section);
           void set_editor_geometry();
-          void close_editor();
 
         private:
           QRect editor_geometry() const;

@@ -388,7 +388,27 @@ namespace fhg
 
         util::qt::connect<void()>
           ( clear_model, SIGNAL (triggered())
-          , this, std::bind (&worker_model::clear, base)
+          , this
+          , [base, header_view, next]
+            {
+              //! \note HACK: for some reason the signal blocking in
+              //! execution_monitor_editor::update() does not work,
+              //! resulting in the _scrollbar->setValue() call to
+              //! uncheck _automove (while that's working fine on all
+              //! other invokations) when an editor is open while the
+              //! model is reset. Thus, store which editor is
+              //! visible, hide it, and show it again.
+              boost::optional<int> const section
+                (header_view->current_editor());
+              header_view->close_editor();
+
+              base->clear();
+
+              if (section)
+              {
+                header_view->request_editor (*section);
+              }
+            }
           );
 
         util::qt::widget::mini_button* clear_button
