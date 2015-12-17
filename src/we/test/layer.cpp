@@ -497,8 +497,8 @@ struct daemon
   }
 
   std::mt19937 _random_engine;
-  we::layer layer;
   mutable boost::mutex _in_progress_mutex;
+  we::layer layer;
   boost::condition_variable_any _in_progress_condition;
   unsigned long _in_progress_jobs_rts;
   unsigned long _in_progress_jobs_layer;
