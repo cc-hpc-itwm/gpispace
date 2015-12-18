@@ -173,7 +173,7 @@ namespace sdpa
           {
             reservation (*it_job)->replace_worker (w->first, idle_worker_id);
 
-            worker.deleteJob (*it_job);
+            worker.pending_.erase (*it_job);
             idle_worker.assign (*it_job);
             idle_workers.erase (idle_worker_it);
 
