@@ -148,10 +148,12 @@ namespace sdpa
       for (decltype (worker_map_)::iterator const& w : workers_to_steal_from)
       {
         Worker& worker (w->second);
+        if (worker.pending_.size() == 0)
+          continue;
 
         for ( auto idle_worker_it (idle_workers.begin())
             ; idle_worker_it != idle_workers.end()
-            ; ++idle_worker_it
+            ;
             )
         {
           worker_id_t const& idle_worker_id ((*idle_worker_it)->first);
@@ -173,11 +175,14 @@ namespace sdpa
           {
             reservation (*it_job)->replace_worker (w->first, idle_worker_id);
 
-            worker.deleteJob (*it_job);
             idle_worker.assign (*it_job);
-            idle_workers.erase (idle_worker_it);
+            worker.pending_.erase (*it_job);
 
-            break;
+            idle_worker_it = idle_workers.erase (idle_worker_it);
+          }
+          else
+          {
+            ++idle_worker_it;
           }
         }
 
