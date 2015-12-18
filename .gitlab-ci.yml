@@ -1,8 +1,63 @@
-gitlab-ci-build:
-  script: # todo: inline gpispace_buildbot in here, partially
-  - pushd $HOME/gpispace_buildbot && git pull && popd
-  - git submodule update --init --recursive # todo: is this really required?
-  - "$HOME/gpispace_buildbot/gitlab-ci-build"
-  tags:
-  except:
-  - tags
+stages:
+  - build
+  - test
+  - performance_test
+  - cleanup
+
+before_script:
+  - set -u
+  - source ".buildenv/${HOSTNAME}"
+
+  - git submodule update --init --recursive
+
+  - source_directory="$(pwd)"
+  - base_directory="/tmp/gitlab-ci/${CI_BUILD_REF}"
+  - build_directory="${base_directory}/build"
+  - install_directory="${base_directory}/install"
+  - shared_directory_for_tests="${base_directory}/shared_for_tests"
+
+build:
+  stage: build
+  script:
+    - mkdir -p "${build_directory}"
+    - cd "${build_directory}"
+    - cmake -DSHARED_DIRECTORY_FOR_TESTS="${shared_directory_for_tests}"
+            -DTESTING_RIF_STRATEGY="${gspc_testing_rif_strategy}"
+            -DCMAKE_INSTALL_PREFIX="${install_directory}"
+            "${source_directory}"
+    - export CCACHE_DIR="/tmp/gitlab-ci/.ccache"
+    - make -j "${gspc_parallel_test_and_build_jobs}" install
+
+test:
+  stage: test
+  script:
+    - cd "${build_directory}"
+    - mkdir -p "${shared_directory_for_tests}"
+    - export GSPC_NODEFILE_FOR_TESTS="${base_directory}/nodefile_for_tests"
+    - hostname > "${GSPC_NODEFILE_FOR_TESTS}"
+    - ctest --output-on-failure --timeout 180 --schedule-random
+            -LE "performance_test|requires_vmem"
+            -j "${gspc_parallel_test_and_build_jobs}"
+
+performance_test:
+  stage: performance_test
+  script:
+    - cd "${build_directory}"
+    - mkdir -p "${shared_directory_for_tests}"
+    - export GSPC_NODEFILE_FOR_TESTS="${base_directory}/nodefile_for_tests"
+    - hostname > "${GSPC_NODEFILE_FOR_TESTS}"
+    - ctest --output-on-failure --timeout 180 --schedule-random
+            -L "performance_test|requires_vmem"
+  allow_failure: true
+
+killall_leftover_drts:
+  stage: cleanup
+  when: on_failure
+  script:
+    - killall -qs SIGKILL gspc-rifd orchestrator agent drts-kernel gpispace || true
+
+remove_from_tmp:
+  stage: cleanup
+  when: always
+  script:
+    - rm -rf "${base_directory}"

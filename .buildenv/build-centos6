@@ -1,0 +1,44 @@
+path()
+{
+  path=${external}/${1}; shift
+  if [[ ":${PATH:-}:" != *":${path}:"* ]]; then
+    PATH="${path}${PATH:+":$PATH"}"
+  fi
+}
+export PATH
+pkg_config_path()
+{
+  path=${external}/${1}; shift
+  if [[ ":${PKG_CONFIG_PATH:-}:" != *":${path}:"* ]]; then
+    PKG_CONFIG_PATH="${path}${PKG_CONFIG_PATH:+":$PKG_CONFIG_PATH"}"
+  fi
+}
+export PKG_CONFIG_PATH
+ld_library_path()
+{
+  path=${external}/${1}; shift
+  if [[ ":${LD_LIBRARY_PATH:-}:" != *":${path}:"* ]]; then
+    LD_LIBRARY_PATH="${path}${LD_LIBRARY_PATH:+":$LD_LIBRARY_PATH"}"
+  fi
+}
+export LD_LIBRARY_PATH
+
+external=/home/projects/sdpa/external_software
+
+export BOOST_ROOT=${external}/boost/1.59/gcc
+path chrpath/0.16/bin
+path cmake/3.1.3/bin
+path gcc/4.9.2/bin
+path qt/4.8.5/bin
+pkg_config_path gaspi/1.2.0+eth/lib64/pkgconfig
+pkg_config_path hwloc/1.10.1/lib/pkgconfig
+pkg_config_path libssh2/1.6.0/lib/pkgconfig
+pkg_config_path openssl/1.0.2e/lib/pkgconfig
+
+export CCACHE_PATH=${external}/gcc/4.9.2/bin
+export CC="${external}/ccache/3.1.9/lib/gcc"
+export CXX="${external}/ccache/3.1.9/lib/g++"
+ld_library_path gcc/4.9.2/lib64
+
+gspc_testing_rif_strategy=ssh
+gspc_parallel_test_and_build_jobs=$(nproc)
