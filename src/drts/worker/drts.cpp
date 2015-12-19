@@ -67,11 +67,6 @@ namespace
       }
     }
 
-    virtual void handle_externally (we::type::activity_t& act, net_t const& n) override
-    {
-      handle_internally (act, n);
-    }
-
     virtual void handle_externally (we::type::activity_t& act, mod_t const& mod) override
     {
       fhg::util::nest_exceptions<std::runtime_error>
