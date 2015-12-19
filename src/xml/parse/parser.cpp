@@ -743,8 +743,6 @@ namespace xml
               )
             , fhg::util::boost::fmap<std::string, bool>
               (fhg::util::read_bool, optional (node, "inline"))
-            , fhg::util::boost::fmap<std::string, bool>
-              (fhg::util::read_bool, optional (node, "internal"))
             ).make_reference_id()
           );
 
@@ -1695,8 +1693,6 @@ namespace xml
             , boost::none
             , state.position (node)
             , optional (node, "name")
-            , fhg::util::boost::fmap<std::string, bool>
-              (fhg::util::read_bool, optional (node, "internal"))
             //! \todo see Issue #118 and forbid more than one expression
             , {state.position (node)}
             ).make_reference_id()
@@ -2011,7 +2007,6 @@ namespace xml
           , state
           , port_id_in
           , port_id_out
-          , boost::none
           , type::conditions_type()
           , we::type::property::type()
           , type::requirements_type()

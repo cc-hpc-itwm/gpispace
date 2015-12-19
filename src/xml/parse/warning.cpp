@@ -67,18 +67,6 @@ namespace xml
           , _function (function)
       { }
 
-      overwrite_function_internal_trans::overwrite_function_internal_trans
-        (const id::ref::transition& trans, const id::ref::function& function)
-          : generic ( boost::format ( "transition %1% in %2% overwrites the "
-                                      "internal tag of the contained function"
-                                    )
-                    % trans.get().name()
-                    % trans.get().position_of_definition()
-                    )
-          , _transition (trans)
-          , _function (function)
-      { }
-
       duplicate_external_function::duplicate_external_function
         (const id::ref::module& mod, const id::ref::module& old)
           : generic ( boost::format ( "the external function %1% in module %2%"

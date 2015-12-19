@@ -309,20 +309,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      class overwrite_function_internal_trans : public generic
-      {
-      public:
-        overwrite_function_internal_trans ( const id::ref::transition&
-                                          , const id::ref::function&
-                                          );
-
-      private:
-        const id::ref::transition _transition;
-        const id::ref::function _function;
-      };
-
-      // ******************************************************************* //
-
       class property_unknown : public generic
       {
       private:

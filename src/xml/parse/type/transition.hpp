@@ -48,7 +48,6 @@ namespace xml
                         , const std::string& name
                         , const boost::optional<we::priority_type>& priority
                         , const boost::optional<bool>& finline
-                        , const boost::optional<bool>& internal
                         );
 
         transition_type ( ID_CONS_PARAM(transition)
@@ -70,7 +69,6 @@ namespace xml
                         , const requirements_type& requirements
                         , const boost::optional<we::priority_type>& priority
                         , const boost::optional<bool>& finline
-                        , const boost::optional<bool>& internal
                         , const we::type::property::type& properties
                         );
 
@@ -180,7 +178,6 @@ namespace xml
 
         boost::optional<we::priority_type> priority;
         boost::optional<bool> finline;
-        boost::optional<bool> internal;
 
       private:
         we::type::property::type _properties;
