@@ -135,7 +135,7 @@ try
   if (ac < 2)
   {
     std::cerr << "usage: " << av[0] << " pnet-file" << std::endl;
-    return EXIT_SUCCESS;
+    return EXIT_FAILURE;
   }
 
   std::ifstream ifs (av[1]);
