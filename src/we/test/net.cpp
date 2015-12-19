@@ -21,7 +21,6 @@ BOOST_AUTO_TEST_CASE (transition_without_input_port_can_not_fire)
                        ( fhg::util::testing::random_string()
                        , we::type::expression_t()
                        , boost::none
-                       , true
                        , we::type::property::type()
                        , we::priority_type()
                        )
@@ -51,7 +50,6 @@ BOOST_AUTO_TEST_CASE (deserialized_transition_without_input_port_can_not_fire)
                          ( fhg::util::testing::random_string()
                          , we::type::expression_t()
                          , boost::none
-                         , true
                          , we::type::property::type()
                          , we::priority_type()
                          )

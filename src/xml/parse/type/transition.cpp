@@ -839,7 +839,6 @@ namespace xml
               ( prefix + "IN"
               , we::type::expression_t()
               , we::type::expression_t (cond_in, parsed_condition_in)
-              , true
               , properties
               , we::priority_type()
               );
@@ -915,7 +914,6 @@ namespace xml
               ( prefix + "OUT"
               , we::type::expression_t()
               , boost::none
-              , true
               , properties
               , we::priority_type()
               );

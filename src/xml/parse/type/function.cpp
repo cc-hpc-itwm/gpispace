@@ -879,11 +879,15 @@ namespace xml
           const expr::parse::parser parsed_expression
             (util::we_parse (expr, "expression", "function", name(), fun.position_of_definition().path()));
 
+          if (!_internal.get_value_or (true))
+          {
+            throw std::logic_error ("external not supported");
+          }
+
           we_transition_type trans
             ( name()
             , we_expr_type (expr, parsed_expression)
             , condition()
-            , _internal.get_value_or (true)
             , _properties
             , _priority
             );
@@ -929,6 +933,11 @@ namespace xml
               (mgp.global(), mgp.local(), mgp.not_modified_in_module_call());
           }
 
+          if (!_internal.get_value_or (true))
+          {
+            throw std::logic_error ("external not supported");
+          }
+
           we_transition_type trans
             ( name()
             , we_module_type ( mod.name()
@@ -938,7 +947,6 @@ namespace xml
                              , std::move (memory_puts)
                              )
             , condition()
-            , _internal.get_value_or (false)
             , _properties
             , _priority
             );
@@ -968,11 +976,15 @@ namespace xml
                                , id_net.get().properties()
                                );
 
+          if (!_internal.get_value_or (true))
+          {
+            throw std::logic_error ("external not supported");
+          }
+
           we_transition_type trans
             ( name()
             , we_net
             , condition()
-            , _internal.get_value_or (true)
             , properties
             , _priority
             );
