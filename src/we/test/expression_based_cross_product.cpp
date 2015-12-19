@@ -1,8 +1,6 @@
 #define BOOST_TEST_MODULE we_activity
 #include <boost/test/unit_test.hpp>
 
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
-
 #include <we/type/activity.hpp>
 #include <we/type/net.hpp>
 #include <we/type/value/poke.hpp>
