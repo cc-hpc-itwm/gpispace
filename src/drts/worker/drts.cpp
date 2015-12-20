@@ -17,7 +17,6 @@
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
 
-#include <we/context.hpp>
 #include <we/loader/module_call.hpp>
 
 #include <boost/range/adaptor/filtered.hpp>
@@ -25,28 +24,28 @@
 
 namespace
 {
-  struct wfe_exec_context : public we::context
+  struct wfe_exec_context : public boost::static_visitor<>
   {
-    std::mt19937 _engine;
-
     wfe_exec_context
       ( we::loader::loader& module_loader
       , gpi::pc::client::api_t /*const*/* virtual_memory_api
       , gspc::scoped_allocation /*const*/* shared_memory
       , wfe_task_t& target
+      , std::mt19937 engine
+      , we::type::activity_t& activity
       )
       : loader (module_loader)
       , _virtual_memory_api (virtual_memory_api)
       , _shared_memory (shared_memory)
       , task (target)
+      , _engine (engine)
+      , _activity (activity)
     {}
 
-    virtual void handle_internally (we::type::activity_t& act, net_t const&) override
+    void operator() (we::type::net_type& net) const
     {
-      if (act.transition().net())
-      {
         while ( boost::optional<we::type::activity_t> sub
-              = boost::get<we::type::net_type> (act.transition().data())
+              = net
               . fire_expressions_and_extract_activity_random
                   ( _engine
                   , [] (pnet::type::value::value_type const&, pnet::type::value::value_type const&)
@@ -56,18 +55,25 @@ namespace
                   )
               )
         {
-          sub->execute (this);
-          act.inject (*sub);
+          boost::apply_visitor ( wfe_exec_context ( loader
+                                                  , _virtual_memory_api
+                                                  , _shared_memory
+                                                  , task
+                                                  , _engine
+                                                  , *sub
+                                                  )
+                               , sub->transition().data()
+                               );
+          _activity.inject (*sub);
 
           if (task.state == wfe_task_t::CANCELED)
           {
             break;
           }
         }
-      }
     }
 
-    virtual void handle_externally (we::type::activity_t& act, mod_t const& mod) override
+    void operator() (we::type::module_call_t& mod) const
     {
       fhg::util::nest_exceptions<std::runtime_error>
         ( [&]
@@ -76,7 +82,7 @@ namespace
                                     , _virtual_memory_api
                                     , _shared_memory
                                     , &task.context
-                                    , act
+                                    , _activity
                                     , mod
                                     );
           }
@@ -84,11 +90,18 @@ namespace
         );
     }
 
+    void operator() (we::type::expression_t&) const
+    {
+      throw std::logic_error ("wfe_exec_context (expression)");
+    }
+
   private:
     we::loader::loader& loader;
     gpi::pc::client::api_t /*const*/* _virtual_memory_api;
     gspc::scoped_allocation /*const*/* _shared_memory;
     wfe_task_t& task;
+    std::mt19937& _engine;
+    we::type::activity_t& _activity;
   };
 }
 
@@ -489,9 +502,6 @@ void DRTSImpl::job_execution_thread()
           );
       }
 
-      wfe_exec_context ctxt
-        (m_loader, _virtual_memory_api, _shared_memory, task);
-
       try
       {
         //! \todo there is a race between putting it into
@@ -504,7 +514,17 @@ void DRTSImpl::job_execution_thread()
           _currently_executed_tasks.emplace (job->id, &task);
         }
 
-        task.activity.execute (&ctxt);
+        //! \todo might be reused for different context'
+        std::mt19937 engine;
+        boost::apply_visitor ( wfe_exec_context ( m_loader
+                                                , _virtual_memory_api
+                                                , _shared_memory
+                                                , task
+                                                , engine
+                                                , task.activity
+                                                )
+                             , task.activity.transition().data()
+                             );
       }
       catch (...)
       {

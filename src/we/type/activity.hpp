@@ -7,7 +7,6 @@
 #include <we/type/id.hpp>
 #include <we/type/transition.hpp>
 
-#include <we/context.fwd.hpp>
 #include <we/workflow_response.hpp>
 
 #include <we/type/value.hpp>
@@ -59,8 +58,6 @@ namespace we
         void inject (const activity_t&, we::workflow_response_callback
                             = [] (pnet::type::value::value_type const&, pnet::type::value::value_type const&) {}
 );
-
-        void execute (context*);
 
         const input_t& input() const;
         void add_input
