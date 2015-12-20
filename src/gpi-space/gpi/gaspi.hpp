@@ -2,7 +2,6 @@
 
 #include <fhglog/Logger.hpp>
 
-#include <gpi-space/exception.hpp>
 #include <gpi-space/types.hpp>
 
 #include <fhg/util/thread/queue.hpp>
