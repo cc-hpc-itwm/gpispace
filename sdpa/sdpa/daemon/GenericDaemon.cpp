@@ -243,19 +243,7 @@ std::function<double (std::string const&)>
   if (!activity.transition().module_call())
     return null_transfer_cost;
 
-  expr::eval::context context;
-
-  for ( std::pair< pnet::type::value::value_type
-                , we::port_id_type
-                > const& token_on_port
-      : activity.input()
-      )
-  {
-   context.bind_ref
-     ( activity.transition().ports_input().at (token_on_port.second).name()
-     , token_on_port.first
-     );
-  }
+  expr::eval::context const context {activity.evaluation_context()};
 
   std::list<std::pair<we::local::range, we::global::range>>
     vm_transfers (activity.transition().module_call()->gets (context));
@@ -600,20 +588,8 @@ namespace
     if (!activity.transition().module_call())
       return 0;
 
-    expr::eval::context context;
-
-    for ( std::pair< pnet::type::value::value_type, we::port_id_type>
-            const& token_on_port
-        : activity.input()
-        )
-    {
-      context.bind_ref
-        ( activity.transition().ports_input().at (token_on_port.second).name()
-        , token_on_port.first
-        );
-    }
-
-    return activity.transition().module_call()->memory_buffer_size_total (context);
+    return activity.transition().module_call()
+      ->memory_buffer_size_total (activity.evaluation_context());
   }
 }
 
