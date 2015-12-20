@@ -208,7 +208,7 @@ namespace fhg
           start_sender (addr);
     }
 
-    void peer_t::recv (message_t *m)
+    void peer_t::TESTING_ONLY_recv (message_t *m)
     {
       fhg_assert (m);
 

@@ -56,7 +56,7 @@ namespace fhg
                              )
                        >
         );
-      void recv (message_t *m);
+      void TESTING_ONLY_recv (message_t *m);
 
     protected:
       void handle_hello_message (connection_t::ptr_t, const message_t *m);
