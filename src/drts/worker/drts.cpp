@@ -454,6 +454,9 @@ void DRTSImpl::event_thread()
 
 void DRTSImpl::job_execution_thread()
 {
+  //! \todo let user supply a seed
+  std::mt19937 engine;
+
   for (;;)
   {
     std::shared_ptr<DRTSImpl::Job> job;
@@ -514,8 +517,6 @@ void DRTSImpl::job_execution_thread()
           _currently_executed_tasks.emplace (job->id, &task);
         }
 
-        //! \todo might be reused for different context'
-        std::mt19937 engine;
         boost::apply_visitor ( wfe_exec_context ( m_loader
                                                 , _virtual_memory_api
                                                 , _shared_memory
