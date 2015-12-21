@@ -9,9 +9,12 @@
 
 #include <fhg/util/boost/optional.hpp>
 
+#include <util-generic/cxx14/make_unique.hpp>
+
 #include <boost/format.hpp>
 
 #include <fstream>
+#include <memory>
 #include <unordered_map>
 
 namespace jpna {
@@ -22,7 +25,7 @@ namespace {
  * Visitor for discovering subnets in workflows and translating them to Petri nets.
  */
 class TransitionVisitor: public boost::static_visitor<void> {
-    std::auto_ptr<PetriNet> petriNet_; ///< Resulting Petri net.
+    std::unique_ptr<PetriNet> petriNet_; ///< Resulting Petri net.
     boost::ptr_vector<PetriNet> &petriNets_; ///< Where to add the resulting Petri net when done.
 
     /**
@@ -39,7 +42,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
      * \param[out] petriNets Where to add the result of parsing a subnet.
      */
     TransitionVisitor(const std::string &name, boost::ptr_vector<PetriNet> &petriNets):
-        petriNet_(new PetriNet(name)), petriNets_(petriNets)
+        petriNet_(fhg::util::cxx14::make_unique<PetriNet> (name)), petriNets_(petriNets)
     { return; }
 
     void operator()(const we::type::expression_t &) { return; }
@@ -150,7 +153,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
           }
         }
 
-        petriNets_.push_back(petriNet_);
+        petriNets_.push_back(petriNet_.release());
     }
 };
 
