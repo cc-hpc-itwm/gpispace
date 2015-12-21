@@ -30,13 +30,14 @@ namespace gpi
                                , global::topology_t& topology
                                , handle_generator_t& handle_generator
                                , fhg::vmem::gaspi_context& gaspi_context
+                               , type::id_t owner
                                )
       {
         url_t url (url_s);
 
         return
-          ( url.type() == "gpi" ? gpi_area_t::create (logger, url_s, topology, handle_generator, gaspi_context)
-          : url.type() == "sfs" ? sfs_area_t::create (logger, url_s, topology, handle_generator)
+          ( url.type() == "gpi" ? gpi_area_t::create (logger, url_s, topology, handle_generator, gaspi_context, owner)
+          : url.type() == "sfs" ? sfs_area_t::create (logger, url_s, topology, handle_generator, owner)
           : throw std::runtime_error
               ("no memory type registered with: '" + url_s + "'")
           );
@@ -473,8 +474,7 @@ namespace gpi
                                    , global::topology_t& topology
                                    )
       {
-        area_ptr_t area (create_area (_logger, url, topology, _handle_generator, _gaspi_context));
-        area->set_owner (0);
+        area_ptr_t area (create_area (_logger, url, topology, _handle_generator, _gaspi_context, 0));
         area->set_id (seg_id);
         add_area (area);
         return 0;
@@ -519,8 +519,7 @@ namespace gpi
 
         if (require_earlier_master_initialization)
         {
-          area_ptr_t area = create_area (_logger, url_s, topology, _handle_generator, _gaspi_context);
-          area->set_owner (proc_id);
+          area_ptr_t area = create_area (_logger, url_s, topology, _handle_generator, _gaspi_context, proc_id);
           area->set_id (id);
 
           add_area (area);
@@ -539,9 +538,9 @@ namespace gpi
                                                   , topology
                                                   , _handle_generator
                                                   , _gaspi_context
+                                                  , proc_id
                                                   )
                                     );
-                    area->set_owner (proc_id);
                     area->set_id (id);
                     add_area (area);
                   }

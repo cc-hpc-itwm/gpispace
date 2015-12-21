@@ -27,6 +27,7 @@ namespace gpi
                                  , std::string const &url
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
+                                 , type::id_t owner
                                  );
 
         // cleanup a file segment

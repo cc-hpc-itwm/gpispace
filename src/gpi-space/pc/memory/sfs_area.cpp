@@ -577,6 +577,7 @@ namespace gpi
                                     , std::string const &url_s
                                     , gpi::pc::global::itopology_t & topology
                                     , handle_generator_t& handle_generator
+                                    , type::id_t owner
                                     )
       {
         url_t url (url_s);
@@ -603,7 +604,7 @@ namespace gpi
           boost::lexical_cast<gpi::pc::type::size_t>(url.get ("total_size").get_value_or ("0"));
 
         area_ptr_t area (new sfs_area_t ( logger
-                                        , GPI_PC_INVAL
+                                        , owner
                                         , url.path ()
                                         , size
                                         , flags | F_GLOBAL

@@ -536,6 +536,7 @@ namespace gpi
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator
         , fhg::vmem::gaspi_context& gaspi_context
+        , type::id_t owner
         )
       {
         url_t url (url_s);
@@ -554,7 +555,7 @@ namespace gpi
         //! \todo get from user? use for other areas as well? remove?
         fhg::vmem::gaspi_timeout time_left (std::chrono::seconds (30));
         gpi_area_t * area = new gpi_area_t ( logger
-                                           , GPI_PC_INVAL
+                                           , owner
                                            , "GPI"
                                            , gpi::pc::F_PERSISTENT
                                            + gpi::pc::F_GLOBAL

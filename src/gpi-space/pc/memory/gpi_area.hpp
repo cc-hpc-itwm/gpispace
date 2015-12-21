@@ -34,6 +34,7 @@ namespace gpi
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
                                  , fhg::vmem::gaspi_context&
+                                 , type::id_t owner
                                  );
 
       protected:
