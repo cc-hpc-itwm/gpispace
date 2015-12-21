@@ -287,7 +287,7 @@ namespace gpi
 
         {
           // lock it
-          if (m_topology.is_master ())
+          if (get_owner())
           {
             lock_info const local_lock_info;
 
