@@ -26,6 +26,7 @@ build:
             -DCMAKE_INSTALL_PREFIX="${install_directory}"
             "${source_directory}"
     - export CCACHE_DIR="/tmp/gitlab-ci/.ccache"
+    - export CCACHE_SLOPPINESS=file_macro
     - make -j "${gspc_parallel_test_and_build_jobs}" install
 
 test:
