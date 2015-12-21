@@ -27,6 +27,7 @@ build:
             "${source_directory}"
     - export CCACHE_DIR="/tmp/gitlab-ci/.ccache"
     - export CCACHE_SLOPPINESS=file_macro
+    - export CCACHE_LOGFILE=/tmp/ccache.log
     - make -j "${gspc_parallel_test_and_build_jobs}" install
 
 test:
