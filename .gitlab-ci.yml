@@ -1,9 +1,3 @@
-stages:
-  - build
-  - test
-  - virtual_memory_test
-  - performance_test
-
 before_script:
   - set -u
   - source ".buildenv/${HOSTNAME}"
@@ -43,7 +37,7 @@ test:
             -j "${gspc_parallel_test_and_build_jobs}"
 
 virtual_memory_test:
-  stage: virtual_memory_test
+  stage: test
   script:
     - cd "${build_directory}"
     - make -j "${gspc_parallel_test_and_build_jobs}" install >/dev/null 2>/dev/null
@@ -56,7 +50,7 @@ virtual_memory_test:
             -L "requires_vmem"
 
 performance_test:
-  stage: performance_test
+  stage: test
   script:
     - cd "${build_directory}"
     - make -j "${gspc_parallel_test_and_build_jobs}" install >/dev/null 2>/dev/null
