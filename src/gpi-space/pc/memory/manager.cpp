@@ -5,6 +5,7 @@
 #include <fhglog/LogMacros.hpp>
 
 #include <util-generic/finally.hpp>
+#include <util-generic/print_exception.hpp>
 
 #include <gpi-space/pc/global/topology.hpp>
 #include <gpi-space/pc/memory/gpi_area.hpp>
@@ -500,7 +501,18 @@ namespace gpi
                            {
                              if (!successfully_added)
                              {
-                               del_memory (proc_id, id, topology);
+                               try
+                               {
+                                 del_memory (proc_id, id, topology);
+                               }
+                               catch (...)
+                               {
+                                 LLOG ( ERROR
+                                      , _logger
+                                      , "additional error in cleanup: "
+                                      << fhg::util::current_exception_printer()
+                                      );
+                               }
                              }
                            }
                          );
