@@ -555,8 +555,20 @@ namespace gpi
         // TODO: implement locking or an fd pool on which we can wait
         int const fd (_fds.get());
         FHG_UTIL_FINALLY ([&] { _fds.put (fd); });
-        fhg::util::syscall::flock (fd, LOCK_EX);
-        FHG_UTIL_FINALLY ([&] { fhg::util::syscall::flock (fd, LOCK_UN); });
+
+        struct flock lock_info;
+        lock_info.l_type = F_WRLCK;
+        lock_info.l_whence = SEEK_SET;
+        lock_info.l_start = offset;
+        lock_info.l_len = amount;
+
+        fhg::util::syscall::fcntl_setlkw (fd, &lock_info);
+        FHG_UTIL_FINALLY ( [&]
+                           {
+                             lock_info.l_type = F_UNLCK;
+                             fhg::util::syscall::fcntl_setlkw (fd, &lock_info);
+                           }
+                         );
         fhg::util::syscall::lseek (fd, offset, SEEK_SET);
         return fhg::util::syscall::write (fd, buffer, amount);
       }
