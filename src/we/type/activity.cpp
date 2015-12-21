@@ -269,5 +269,24 @@ namespace we
       {
         return _transition_id;
       }
+
+      expr::eval::context activity_t::evaluation_context() const
+      {
+        expr::eval::context context;
+
+        for ( std::pair< pnet::type::value::value_type
+                       , we::port_id_type
+                       > const& token_on_port
+            : _input
+            )
+        {
+          context.bind_ref
+            ( transition().ports_input().at (token_on_port.second).name()
+            , token_on_port.first
+            );
+        }
+
+        return context;
+      }
     }
 }

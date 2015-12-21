@@ -13,6 +13,8 @@
 #include <we/type/value.hpp>
 #include <we/type/value/serialize.hpp>
 
+#include <we/expr/eval/context.hpp>
+
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/optional.hpp>
@@ -76,6 +78,9 @@ namespace we
 
         boost::optional<we::transition_id_type> const&
           transition_id() const;
+
+        //! \note context contains references to input
+        expr::eval::context evaluation_context() const;
 
       private:
         friend class boost::serialization::access;
