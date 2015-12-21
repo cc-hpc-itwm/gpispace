@@ -542,8 +542,6 @@ namespace gpi
         // TODO: implement locking or an fd pool on which we can wait
         int const fd (_fds.get());
         FHG_UTIL_FINALLY ([&] { _fds.put (fd); });
-        fhg::util::syscall::flock (fd, LOCK_EX);
-        FHG_UTIL_FINALLY ([&] { fhg::util::syscall::flock (fd, LOCK_UN); });
         fhg::util::syscall::lseek (fd, offset, SEEK_SET);
         return fhg::util::syscall::read (fd, buffer, amount);
       }
