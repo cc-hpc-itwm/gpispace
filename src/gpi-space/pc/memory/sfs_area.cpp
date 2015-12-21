@@ -247,6 +247,7 @@ namespace gpi
         if (fs::exists (m_path) && gpi::flag::is_set ( descriptor ().flags
                                                      , gpi::pc::F_FORCE_UNLINK
                                                      )
+           && get_owner()
            )
         {
           sfs_area_t::cleanup (m_path);
@@ -255,6 +256,7 @@ namespace gpi
         if (! fs::exists (m_path) && !gpi::flag::is_set ( descriptor ().flags
                                                         , gpi::pc::F_NOCREATE
                                                         )
+           && get_owner()
            )
         {
           if (0 == m_size)
