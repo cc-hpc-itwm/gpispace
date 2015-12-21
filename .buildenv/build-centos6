@@ -12,9 +12,10 @@ pkg_config_path hwloc/1.10.1/lib/pkgconfig
 pkg_config_path libssh2/1.6.0/lib/pkgconfig
 pkg_config_path openssl/1.0.2e/lib/pkgconfig
 
-export CCACHE_PATH=${external}/gcc/4.9.2/bin
 export CC="${external}/ccache/3.2.4/lib/gcc"
 export CXX="${external}/ccache/3.2.4/lib/g++"
+export CCACHE_DIR="/tmp/gitlab-ci/.ccache"
+export CCACHE_PATH=${external}/gcc/4.9.2/bin
 ld_library_path gcc/4.9.2/lib64
 
 gspc_testing_rif_strategy=ssh

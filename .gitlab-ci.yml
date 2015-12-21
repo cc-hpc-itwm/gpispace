@@ -1,8 +1,8 @@
 stages:
   - build
   - test
+  - virtual_memory_test
   - performance_test
-  - cleanup
 
 before_script:
   - set -u
@@ -11,55 +11,60 @@ before_script:
   - git submodule update --init --recursive
 
   - source_directory="$(pwd)"
-  - base_directory="/tmp/gitlab-ci/${CI_BUILD_REF}"
+  - base_directory="${source_directory}"
   - build_directory="${base_directory}/build"
   - install_directory="${base_directory}/install"
   - shared_directory_for_tests="${base_directory}/shared_for_tests"
+  - mkdir -p "${build_directory}"
+  - cd "${build_directory}"
+  - cmake -DSHARED_DIRECTORY_FOR_TESTS="${shared_directory_for_tests}"
+          -DTESTING_RIF_STRATEGY="${gspc_testing_rif_strategy}"
+          -DCMAKE_INSTALL_PREFIX="${install_directory}"
+          "${source_directory}"
+  - export CCACHE_SLOPPINESS=file_macro
 
 build:
   stage: build
   script:
-    - mkdir -p "${build_directory}"
-    - cd "${build_directory}"
-    - cmake -DSHARED_DIRECTORY_FOR_TESTS="${shared_directory_for_tests}"
-            -DTESTING_RIF_STRATEGY="${gspc_testing_rif_strategy}"
-            -DCMAKE_INSTALL_PREFIX="${install_directory}"
-            "${source_directory}"
-    - export CCACHE_DIR="/tmp/gitlab-ci/.ccache"
-    - export CCACHE_SLOPPINESS=file_macro
-    - export CCACHE_LOGFILE=/tmp/ccache.log
     - make -j "${gspc_parallel_test_and_build_jobs}" install
 
 test:
   stage: test
   script:
     - cd "${build_directory}"
+    - make -j "${gspc_parallel_test_and_build_jobs}" install >/dev/null 2>/dev/null
     - mkdir -p "${shared_directory_for_tests}"
     - export GSPC_NODEFILE_FOR_TESTS="${base_directory}/nodefile_for_tests"
     - hostname > "${GSPC_NODEFILE_FOR_TESTS}"
+
+    - trap "killall -qs SIGKILL gspc-rifd orchestrator agent drts-kernel gpispace" EXIT
     - ctest --output-on-failure --timeout 180 --schedule-random
             -LE "performance_test|requires_vmem"
             -j "${gspc_parallel_test_and_build_jobs}"
+
+virtual_memory_test:
+  stage: virtual_memory_test
+  script:
+    - cd "${build_directory}"
+    - make -j "${gspc_parallel_test_and_build_jobs}" install >/dev/null 2>/dev/null
+    - mkdir -p "${shared_directory_for_tests}"
+    - export GSPC_NODEFILE_FOR_TESTS="${base_directory}/nodefile_for_tests"
+    - hostname > "${GSPC_NODEFILE_FOR_TESTS}"
+
+    - trap "killall -qs SIGKILL gspc-rifd orchestrator agent drts-kernel gpispace" EXIT
+    - ctest --output-on-failure --timeout 180 --schedule-random
+            -L "requires_vmem"
 
 performance_test:
   stage: performance_test
   script:
     - cd "${build_directory}"
+    - make -j "${gspc_parallel_test_and_build_jobs}" install >/dev/null 2>/dev/null
     - mkdir -p "${shared_directory_for_tests}"
     - export GSPC_NODEFILE_FOR_TESTS="${base_directory}/nodefile_for_tests"
     - hostname > "${GSPC_NODEFILE_FOR_TESTS}"
+
+    - trap "killall -qs SIGKILL gspc-rifd orchestrator agent drts-kernel gpispace" EXIT
     - ctest --output-on-failure --timeout 180 --schedule-random
-            -L "performance_test|requires_vmem"
+            -L "performance_test"
   allow_failure: true
-
-killall_leftover_drts:
-  stage: cleanup
-  when: on_failure
-  script:
-    - killall -qs SIGKILL gspc-rifd orchestrator agent drts-kernel gpispace || true
-
-remove_from_tmp:
-  stage: cleanup
-  when: always
-  script:
-    - rm -rf "${base_directory}"
