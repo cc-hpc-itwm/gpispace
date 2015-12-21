@@ -125,7 +125,9 @@ namespace gpi
         = std::min ( available_notifications
                    / gaspi_number_t (_gaspi_context.number_of_nodes())
                    , maximum_notifications_per_rank
-                   );
+                   )
+        //! \note only use even amounts (ping + pong ids)
+        & ~notification_id_t (1);
       if (_notification_ids_per_node < 2)
       {
         throw std::runtime_error
