@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE (peer_run_two)
               , "hello world!"
               );
     message_t m;
-    peer_2.recv (&m);
+    peer_2.TESTING_ONLY_recv (&m);
 
   BOOST_CHECK_EQUAL (m.header.src, peer_1.address());
   BOOST_CHECK_EQUAL
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE (send_large_data)
              , std::string (2<<25, 'X')
              );
     message_t r;
-    peer_1.recv(&r);
+    peer_1.TESTING_ONLY_recv(&r);
 
     BOOST_CHECK_EQUAL(2<<25, r.data.size());
 }

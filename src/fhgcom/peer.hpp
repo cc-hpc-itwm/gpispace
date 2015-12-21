@@ -40,8 +40,6 @@ namespace fhg
       }
 
       p2p::address_t connect_to (host_t const&, port_t const&);
-      p2p::address_t connect_to_or_use_existing_connection
-        (host_t const&, port_t const&);
 
       void async_send ( p2p::address_t const& addr
                       , std::string const & data
@@ -58,7 +56,7 @@ namespace fhg
                              )
                        >
         );
-      void recv (message_t *m);
+      void TESTING_ONLY_recv (message_t *m);
 
     protected:
       void handle_hello_message (connection_t::ptr_t, const message_t *m);
