@@ -8,9 +8,6 @@
 #include <drts/worker/context.hpp>
 #include <drts/worker/context_impl.hpp>
 
-//! \todo remove, needed to make a complete type
-#include <we/type/net.hpp>
-
 #include <boost/format.hpp>
 
 #include <functional>
@@ -22,12 +19,10 @@ namespace we
 {
   namespace
   {
-    unsigned long evaluate_size_or_die ( we::type::activity_t const& activity
+    unsigned long evaluate_size_or_die ( expr::eval::context context
                                        , std::string const& expression
                                        )
     {
-      expr::eval::context context (activity.evaluation_context());
-
       return boost::get<unsigned long>
         (expr::parse::parser (expression).eval_all (context));
     }
@@ -147,12 +142,12 @@ namespace we
 
   namespace loader
   {
-    void module_call
+    expr::eval::context module_call
       ( we::loader::loader& loader
       , gpi::pc::client::api_t /*const*/* virtual_memory_api
       , gspc::scoped_allocation /*const*/* shared_memory
       , drts::worker::context* context
-      , we::type::activity_t& act
+      , expr::eval::context const& input
       , const we::type::module_call_t& module_call
       )
     {
@@ -184,7 +179,7 @@ namespace we
           (static_cast<char*> (virtual_memory_api->ptr (*shared_memory)));
 
         unsigned long const size
-          (evaluate_size_or_die (act, buffer_and_size.second));
+          (evaluate_size_or_die (input, buffer_and_size.second));
 
         memory_buffer.emplace (buffer_and_size.first, buffer (position, size));
         pointers.emplace (buffer_and_size.first, local_memory + position);
@@ -202,8 +197,6 @@ namespace we
             );
         }
       }
-
-      expr::eval::context const input {act.evaluation_context()};
 
       transfer ( get_global_data, virtual_memory_api, shared_memory
                , memory_buffer, module_call.gets (input)
@@ -224,14 +217,14 @@ namespace we
           (module_call.function(), context, input, out, pointers);
       }
 
-      act.add_output (out);
-
       transfer ( put_global_data, virtual_memory_api, shared_memory
                , memory_buffer, puts_evaluated_before_call
                );
       transfer ( put_global_data, virtual_memory_api, shared_memory
                , memory_buffer, module_call.puts_evaluated_after_call (out)
                );
+
+      return out;
     }
   }
 }

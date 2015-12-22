@@ -78,13 +78,15 @@ namespace
       fhg::util::nest_exceptions<std::runtime_error>
         ( [&]
           {
-            we::loader::module_call ( loader
-                                    , _virtual_memory_api
-                                    , _shared_memory
-                                    , &task.context
-                                    , _activity
-                                    , mod
-                                    );
+            _activity.add_output
+              ( we::loader::module_call ( loader
+                                        , _virtual_memory_api
+                                        , _shared_memory
+                                        , &task.context
+                                        , _activity.evaluation_context()
+                                        , mod
+                                        )
+              );
           }
         , "call to '" + mod.module() + "::" + mod.function() + "' failed"
         );
