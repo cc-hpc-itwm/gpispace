@@ -135,7 +135,6 @@ namespace gpi
                  , flags
                  , handle_generator
                  )
-        , m_lock_fd (-1)
         , m_path (path)
         , m_version (BEEGFS_AREA_VERSION)
         , m_size (size)
@@ -177,6 +176,79 @@ namespace gpi
       std::string beegfs_area_t::version_string() const
       {
         return "BEEGFS segment version " + std::to_string (m_version);
+      }
+
+      beegfs_area_t::lock_file_helper::lock_file_helper
+          (beegfs_area_t* area)
+        : _area (area)
+      {
+        lock_info const local_lock_info;
+
+        boost::filesystem::path const lock_file
+          (detail::lock_path (_area->m_path));
+
+        // check for lock file
+        // abort if it exists -> we have it already open?
+        try
+        {
+          _fd = fhg::util::syscall::open
+            ( lock_file.string ().c_str ()
+            , O_CREAT + O_RDWR + O_EXCL
+            , S_IRUSR + S_IWUSR
+            );
+        }
+        catch (...)
+        {
+          // still in use?
+
+          // lock was successful, check who owns/owned it and abort
+          lock_info const existing_lock_info (lock_file);
+
+          if (local_lock_info == existing_lock_info)
+          {
+            throw std::logic_error ("segment already open");
+          }
+
+          if (existing_lock_info.hostname != local_lock_info.hostname)
+          {
+            throw std::runtime_error
+              ( "beegfs segment may still be in use by: host="
+              + existing_lock_info.hostname + " pid="
+              + std::to_string (existing_lock_info.pid)
+              + ", if this is wrong, remove " + lock_file.string()
+              );
+          }
+
+          _fd = fhg::util::syscall::open
+            ( lock_file.string ().c_str ()
+            , O_CREAT + O_RDWR
+            , S_IRUSR + S_IWUSR
+            );
+        }
+
+        if (lockf (_fd, F_TLOCK, 0) < 0)
+        {
+          fhg::util::syscall::close (_fd);
+          throw std::runtime_error ("unable to lock segment");
+        }
+
+        local_lock_info.write (_fd);
+
+        fhg::util::syscall::fdatasync (_fd);
+      }
+
+      beegfs_area_t::lock_file_helper::~lock_file_helper()
+      {
+        if (0 != lockf (_fd, F_ULOCK, 0))
+        {
+          LLOG ( WARN
+               , _area->_logger
+               , "could not unlock beegfs area: " << _area->m_path
+               );
+        }
+        ::close (_fd);
+
+        boost::filesystem::remove (detail::lock_path (_area->m_path));
       }
 
       void beegfs_area_t::open()
@@ -230,63 +302,12 @@ namespace gpi
           }
         }
 
-          // lock it
-          if (get_owner())
-          {
-            lock_info const local_lock_info;
-
-            path_t lock_file = detail::lock_path (m_path);
-
-            // check for lock file
-            // abort if it exists -> we have it already open?
-            try
-            {
-              m_lock_fd = fhg::util::syscall::open
-                ( lock_file.string ().c_str ()
-                , O_CREAT + O_RDWR + O_EXCL
-                , S_IRUSR + S_IWUSR
-                );
-            }
-            catch (...)
-            {
-              // still in use?
-
-              // lock was successful, check who owns/owned it and abort
-              lock_info const existing_lock_info (lock_file);
-
-              if (local_lock_info == existing_lock_info)
-              {
-                throw std::logic_error ("segment already open");
-              }
-
-              if (existing_lock_info.hostname != local_lock_info.hostname)
-              {
-                throw std::runtime_error
-                  ( "beegfs segment may still be in use by: host="
-                  + existing_lock_info.hostname + " pid="
-                  + std::to_string (existing_lock_info.pid)
-                  + ", if this is wrong, remove " + lock_file.string()
-                  );
-              }
-
-              m_lock_fd = fhg::util::syscall::open
-                ( lock_file.string ().c_str ()
-                , O_CREAT + O_RDWR
-                , S_IRUSR + S_IWUSR
-                );
-            }
-
-            if (lockf (m_lock_fd, F_TLOCK, 0) < 0)
-            {
-              fhg::util::syscall::close (m_lock_fd);
-              m_lock_fd = -1;
-              throw std::runtime_error ("unable to lock segment");
-            }
-
-            local_lock_info.write (m_lock_fd);
-
-            fhg::util::syscall::fdatasync (m_lock_fd);
-          }
+        if (get_owner())
+        {
+          _lock_file = lock_file_helper (this);
+        }
+        bool succeeded (false);
+        FHG_UTIL_FINALLY ([&] { if (!succeeded) { _lock_file.reset(); }});
 
           // try to open existing file
           path_t data_path = detail::data_path (m_path);
@@ -333,6 +354,8 @@ namespace gpi
              << " path: " << m_path
              << " size: " << m_size
              );
+
+        succeeded = true;
       }
 
       void beegfs_area_t::close()
@@ -359,16 +382,7 @@ namespace gpi
             cleanup (m_path);
           }
 
-          if (m_lock_fd >= 0)
-          {
-            if (0 != lockf (m_lock_fd, F_ULOCK, 0))
-            {
-              LLOG (WARN, _logger, "could not unlock beegfs area: " << m_path);
-            }
-            ::close (m_lock_fd); m_lock_fd = -1;
-
-            fs::remove_all (detail::lock_path (m_path));
-          }
+          _lock_file.reset();
         }
       }
 

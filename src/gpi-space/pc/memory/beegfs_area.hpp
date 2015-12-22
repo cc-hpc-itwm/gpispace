@@ -90,7 +90,14 @@ namespace gpi
                                   ) const override;
 
         fhg::thread::queue<int> _fds;
-        int    m_lock_fd;
+        struct lock_file_helper
+        {
+          lock_file_helper (beegfs_area_t*);
+          ~lock_file_helper();
+          beegfs_area_t* _area;
+          int _fd;
+        };
+        boost::optional<lock_file_helper> _lock_file;
         path_t m_path;
         int    m_version;
 
