@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>
-#include <cstring> // strerror
+#include <cstring>
 
 #include <fhglog/LogMacros.hpp>
 #include <gpi-space/pc/url.hpp>
@@ -187,7 +187,6 @@ namespace gpi
         boost::filesystem::path const lock_file
           (detail::lock_path (_area->m_path));
 
-        // check for lock file
         // abort if it exists -> we have it already open?
         try
         {
@@ -253,20 +252,6 @@ namespace gpi
 
       void beegfs_area_t::open()
       {
-        /* steps:
-
-           - check if path exists and whether it's a directory or not
-
-           - if it doesn't exist: create files
-
-           - locate required files: meta, data, version
-
-           - read the version file, check version number
-
-           - open meta file, consistency check
-           - open data file, consistency check
-           - map memory
-        */
         bool const do_initialization
           ( !gpi::flag::is_set (descriptor().flags, gpi::pc::F_NOCREATE)
           && get_owner()
@@ -283,14 +268,12 @@ namespace gpi
           fs::create_directories (m_path);
 
           {
-            // write version information
             fhg::util::write_file ( detail::version_path (m_path)
                                   , version_string()
                                   );
           }
 
           {
-            // create data file
             scoped_file data ( detail::data_path (m_path)
                              , O_CREAT | O_EXCL | O_RDWR
                              , 0600 // TODO: pass in permissions
@@ -312,7 +295,6 @@ namespace gpi
             }
           );
 
-        // read version information
         {
           boost::optional<std::string> const found_version
             ( fhg::util::boost::exception_is_none
@@ -335,7 +317,6 @@ namespace gpi
         }
         FHG_UTIL_FINALLY ([&] { if (!succeeded) { _lock_file.reset(); }});
 
-          // try to open existing file
           path_t data_path = detail::data_path (m_path);
           int fd = fhg::util::syscall::open ( data_path.string ().c_str ()
                                             , O_RDWR
@@ -385,16 +366,7 @@ namespace gpi
 
       void beegfs_area_t::close()
       {
-        // only cleanup when we actually opened...
         {
-          /*
-            steps:
-
-            - check that no ongoing memory transfers are accessing this area
-            - unmap memory
-            - depending on the flags, remove the directory again
-          */
-
           if (gpi::flag::is_set ( descriptor ().flags
                                 , gpi::pc::F_PERSISTENT
                                 )
@@ -489,7 +461,6 @@ namespace gpi
                                  , gpi::pc::type::size_t amount
                                  )
       {
-        // TODO: implement locking or an fd pool on which we can wait
         int const fd (_fds.get());
         FHG_UTIL_FINALLY ([&] { _fds.put (fd); });
         fhg::util::syscall::lseek (fd, offset, SEEK_SET);
@@ -502,7 +473,6 @@ namespace gpi
                                 , gpi::pc::type::size_t amount
                                 )
       {
-        // TODO: implement locking or an fd pool on which we can wait
         int const fd (_fds.get());
         FHG_UTIL_FINALLY ([&] { _fds.put (fd); });
 
