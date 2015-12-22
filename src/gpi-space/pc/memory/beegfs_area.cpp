@@ -210,12 +210,6 @@ namespace gpi
            && get_owner()
            )
         {
-          if (0 == m_size)
-          {
-            throw boost::system::system_error
-              (ENOSPC, boost::system::system_category());
-          }
-
           initialize (m_path, m_size);
         }
 
