@@ -598,8 +598,7 @@ void GenericDaemon::submit ( const we::layer::id_type& job_id
                            )
 try
 {
-  const we::type::schedule_data schedule_data
-    (activity.get_schedule_data<unsigned long> ("num_worker"));
+  const we::type::schedule_data schedule_data (activity.get_schedule_data());
 
   const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
   if (schedule_data.num_worker() && schedule_data.num_worker().get() == 0UL)

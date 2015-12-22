@@ -5,6 +5,7 @@
 #include <we/type/activity.fwd.hpp>
 
 #include <we/type/id.hpp>
+#include <we/type/schedule_data.hpp>
 #include <we/type/transition.hpp>
 
 #include <we/workflow_response.hpp>
@@ -77,24 +78,7 @@ namespace we
         //! \note context contains references to input
         expr::eval::context evaluation_context() const;
 
-        template<typename T>
-          boost::optional<T> get_schedule_data (const std::string& key) const
-        {
-          boost::optional<const property::value_type&> expression_value
-            (_transition.prop().get ({"fhg", "drts", "schedule", key}));
-
-          if (!expression_value)
-          {
-            return boost::none;
-          }
-
-          expression_t const expression
-            (boost::get<std::string> (expression_value.get()));
-
-          expr::eval::context context {evaluation_context()};
-
-          return boost::get<T> (expression.ast().eval_all (context));
-        }
+        schedule_data get_schedule_data() const;
 
       private:
         friend class boost::serialization::access;

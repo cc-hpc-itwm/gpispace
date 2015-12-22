@@ -213,5 +213,36 @@ namespace we
 
         return context;
       }
+
+      namespace
+      {
+        template<typename T>
+          boost::optional<T> eval_schedule_data
+            ( transition_t const& transition
+            , expr::eval::context context
+            , const std::string& key
+            )
+        {
+          boost::optional<const property::value_type&> expression_value
+            (transition.prop().get ({"fhg", "drts", "schedule", key}));
+
+          if (!expression_value)
+          {
+            return boost::none;
+          }
+
+          expression_t const expression
+            (boost::get<std::string> (expression_value.get()));
+
+          return boost::get<T> (expression.ast().eval_all (context));
+        }
+      }
+
+      schedule_data activity_t::get_schedule_data() const
+      {
+        return { eval_schedule_data<unsigned long>
+                   (_transition, evaluation_context(), "num_worker")
+               };
+      }
     }
 }
