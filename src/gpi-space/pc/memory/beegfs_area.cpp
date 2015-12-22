@@ -317,42 +317,43 @@ namespace gpi
         }
         FHG_UTIL_FINALLY ([&] { if (!succeeded) { _lock_file.reset(); }});
 
-          path_t data_path = detail::data_path (m_path);
-          int fd = fhg::util::syscall::open ( data_path.string ().c_str ()
-                                            , O_RDWR
-                                            );
-          FHG_UTIL_FINALLY ([&] { fhg::util::syscall::close (fd); });
+        path_t data_path = detail::data_path (m_path);
+        int const fd ( fhg::util::syscall::open
+                         (data_path.string ().c_str(), O_RDWR)
+                     );
+        FHG_UTIL_FINALLY ([&] { fhg::util::syscall::close (fd); });
 
-          fhg::vmem::segment::beegfs::check_requirements (fd);
+        fhg::vmem::segment::beegfs::check_requirements (fd);
 
-          off_t file_size = fhg::util::syscall::lseek (fd, 0, SEEK_END);
-          fhg::util::syscall::lseek (fd, 0, SEEK_SET);
+        off_t const file_size (fhg::util::syscall::lseek (fd, 0, SEEK_END));
+        fhg::util::syscall::lseek (fd, 0, SEEK_SET);
 
-          if (m_size)
+        if (m_size)
+        {
+          if (m_size != (gpi::pc::type::size_t)file_size)
           {
-            if (m_size != (gpi::pc::type::size_t)file_size)
-            {
-              throw std::logic_error
-                ( "segment file on disk has size "
-                + std::to_string (file_size)
-                + " but tried to open it with size "
-                + std::to_string (m_size)
-                );
-            }
+            throw std::logic_error
+              ( "segment file on disk has size "
+              + std::to_string (file_size)
+              + " but tried to open it with size "
+              + std::to_string (m_size)
+              );
           }
-          else
-          {
-            // used in non-create mode
-            m_size = file_size;
-          }
+        }
+        else
+        {
+          // used in non-create mode
+          m_size = file_size;
+        }
 
-          descriptor ().local_size = m_size;
+        descriptor().local_size = m_size;
 
-          //! \todo better constant (number of threads? configurable?)
-          for (int i (0); i < 20; ++i)
-          {
-            _fds.put (fhg::util::syscall::open (data_path.string().c_str(), O_RDWR));
-          }
+        //! \todo better constant (number of threads? configurable?)
+        for (int i (0); i < 20; ++i)
+        {
+          _fds.put
+            (fhg::util::syscall::open (data_path.string().c_str(), O_RDWR));
+        }
 
         LLOG ( TRACE
              , _logger
