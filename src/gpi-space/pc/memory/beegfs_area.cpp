@@ -342,13 +342,14 @@ namespace gpi
 
       void beegfs_area_t::close()
       {
+        if (get_owner())
         {
-          if (get_owner())
-          {
-            cleanup (m_path);
-          }
+          boost::filesystem::remove (detail::data_path (m_path));
+          boost::filesystem::remove (detail::version_path (m_path));
 
           _lock_file.reset();
+
+          boost::filesystem::remove (m_path);
         }
       }
 
