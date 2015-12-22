@@ -16,5 +16,4 @@ target_link_libraries (gpi-space-pc-memory
   gpi-space_url
   Util::Generic
   gpi-space-gpiapi
-  BeeGFS::ClientDevel
   )
