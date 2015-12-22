@@ -275,6 +275,10 @@ namespace gpi
             }
           );
 
+        //! \todo move in front of creation even by checking first
+        //! existing parent path
+        fhg::vmem::segment::beegfs::check_requirements (m_path);
+
         {
           boost::optional<std::string> const found_version
             ( fhg::util::boost::exception_is_none
@@ -302,8 +306,6 @@ namespace gpi
                          (data_path.string ().c_str(), O_RDWR)
                      );
         FHG_UTIL_FINALLY ([&] { fhg::util::syscall::close (fd); });
-
-        fhg::vmem::segment::beegfs::check_requirements (fd);
 
         off_t const file_size (fhg::util::syscall::lseek (fd, 0, SEEK_END));
         fhg::util::syscall::lseek (fd, 0, SEEK_SET);

@@ -4,6 +4,7 @@ extended_add_library (NAME vmem
           "segment/beegfs.cpp"
   LIBRARIES GASPI::static
             BeeGFS::ClientDevel
+            Util::Generic
 )
 #! \todo move into extended_add_library
 target_include_directories (GPISpace-vmem

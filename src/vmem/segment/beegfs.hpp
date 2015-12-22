@@ -1,5 +1,7 @@
 #pragma once
 
+#include <boost/filesystem/path.hpp>
+
 #include <stdexcept>
 
 namespace fhg
@@ -12,12 +14,13 @@ namespace fhg
       {
         struct requirements_not_met : std::runtime_error
         {
-          requirements_not_met (std::string const& reason)
-            : std::runtime_error (reason)
+          requirements_not_met (boost::filesystem::path const& path)
+            : std::runtime_error
+                ("BeeGFS segment requirements not met for " + path.string())
           {}
         };
 
-        void check_requirements (int fd);
+        void check_requirements (boost::filesystem::path const&);
       }
     }
   }

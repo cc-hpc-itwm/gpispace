@@ -1,6 +1,7 @@
 #include <vmem/segment/beegfs.hpp>
 
 #include <util-generic/read_lines.hpp>
+#include <util-generic/syscall/directory.hpp>
 
 #include <beegfs/beegfs.h>
 
@@ -23,8 +24,8 @@ namespace fhg
             char* raw_path (nullptr);
             if (!beegfs_getRuntimeConfigFile (fd, &raw_path))
             {
-              throw requirements_not_met
-                ( "unable to get config file of BeeGFS mountpoint: "
+              throw std::runtime_error
+                ( "unable to get config file: "
                 + std::string (strerror (errno))
                 );
             }
@@ -47,27 +48,33 @@ namespace fhg
                 return false;
               }
             }
-            throw requirements_not_met
-              ( "BeeGFS segment requires 'tuneUseGlobalFileLocks = 1'"
-                " in BeeGFS config, but it isn't set"
-              );
+            throw std::runtime_error
+              ("'tuneUseGlobalFileLocks = [01]' not found in BeeGFS config");
+          }
+
+          void check_requirements (int fd)
+          {
+            if (!beegfs_testIsBeeGFS (fd))
+            {
+              throw std::runtime_error ("not a BeeGFS mountpoint");
+            }
+            if (!tuneUseGlobalFileLocks (fd))
+            {
+              throw std::runtime_error
+                ("'tuneUseGlobalFileLocks' required but disabled");
+            }
           }
         }
 
-        void check_requirements (int fd)
+        void check_requirements (boost::filesystem::path const& path)
+        try
         {
-          if (!beegfs_testIsBeeGFS (fd))
-          {
-            throw requirements_not_met
-              ("BeeGFS segment requires BeeGFS mountpoint");
-          }
-          if (!tuneUseGlobalFileLocks (fd))
-          {
-            throw requirements_not_met
-              ( "BeeGFS segment requires 'tuneUseGlobalFileLocks = 1'"
-                " in BeeGFS config"
-              );
-          }
+          util::syscall::directory const directory (path);
+          check_requirements (directory.fd());
+        }
+        catch (...)
+        {
+          std::throw_with_nested (requirements_not_met (path));
         }
       }
     }
