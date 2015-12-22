@@ -278,12 +278,12 @@ namespace gpi
           cleanup (m_path);
         }
 
-        if ( !path_existed
-           && !gpi::flag::is_set ( descriptor ().flags
-                                 , gpi::pc::F_NOCREATE
-                                 )
-           && get_owner()
-           )
+        bool const do_initialization
+          ( !path_existed
+          && !gpi::flag::is_set (descriptor().flags, gpi::pc::F_NOCREATE)
+          && get_owner()
+          );
+        if (do_initialization)
         {
           fs::create_directories (m_path);
 
@@ -308,13 +308,7 @@ namespace gpi
         FHG_UTIL_FINALLY
           ( [&]
             {
-              if ( !succeeded
-                 && !path_existed
-                 && !gpi::flag::is_set ( descriptor ().flags
-                                       , gpi::pc::F_NOCREATE
-                                       )
-                 && get_owner()
-                 )
+              if (!succeeded && do_initialization)
               {
                 cleanup (m_path);
               }
