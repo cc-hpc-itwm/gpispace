@@ -158,6 +158,16 @@ namespace we
       {
         _output.emplace_back (value, port_id);
       }
+      void activity_t::add_output (expr::eval::context const& output)
+      {
+        for ( std::pair<port_id_type, port_t> const& port_by_id
+            : _transition.ports_output()
+            )
+        {
+          add_output
+            (port_by_id.first, output.value (port_by_id.second.name()));
+        }
+      }
 
       boost::optional<we::transition_id_type> const&
         activity_t::transition_id() const

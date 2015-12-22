@@ -67,6 +67,7 @@ namespace we
           ( we::port_id_type const&
           , pnet::type::value::value_type const&
           );
+        void add_output (expr::eval::context const&);
 
         boost::optional<we::transition_id_type> const&
           transition_id() const;

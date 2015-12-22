@@ -223,15 +223,7 @@ namespace we
           (module_call.function(), context, input, out, pointers);
       }
 
-      for ( std::pair<we::port_id_type, we::type::port_t> const& port_by_id
-          : act.transition().ports_output()
-          )
-      {
-        const we::port_id_type& port_id (port_by_id.first);
-        const we::type::port_t& port (port_by_id.second);
-
-        act.add_output (port_id, out.value (port.name()));
-      }
+      act.add_output (out);
 
       transfer ( put_global_data, virtual_memory_api, shared_memory
                , memory_buffer, puts_evaluated_before_call
