@@ -230,7 +230,6 @@ namespace gpi
           }
         }
 
-        {
           // lock it
           if (get_owner())
           {
@@ -327,7 +326,6 @@ namespace gpi
           {
             _fds.put (fhg::util::syscall::open (data_path.string().c_str(), O_RDWR));
           }
-        }
 
         LLOG ( TRACE
              , _logger
