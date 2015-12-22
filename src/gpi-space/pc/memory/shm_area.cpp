@@ -62,6 +62,9 @@ namespace gpi
             }
             else
             {
+              //! \todo clarify which side opens the segment to not
+              //! have this auto-size-determination in here, and to be
+              //! able to drop memory_area_t::reinit
               size = (gpi::pc::type::size_t)(end);
               lseek (fd, 0, SEEK_SET);
             }
