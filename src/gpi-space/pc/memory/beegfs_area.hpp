@@ -80,7 +80,6 @@ namespace gpi
         std::string version_string() const;
 
         void open();
-        void save_state();
         void close();
         double get_transfer_costs ( const gpi::pc::type::memory_region_t&
                                   , const gpi::rank_t

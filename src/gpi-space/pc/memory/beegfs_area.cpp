@@ -39,11 +39,6 @@ namespace gpi
     {
       namespace detail
       {
-        static beegfs_area_t::path_t meta_path (beegfs_area_t::path_t const &p)
-        {
-          return p / "meta";
-        }
-
         static beegfs_area_t::path_t data_path (beegfs_area_t::path_t const &p)
         {
           return p / "data";
@@ -367,28 +362,13 @@ namespace gpi
       void beegfs_area_t::close()
       {
         {
-          if (gpi::flag::is_set ( descriptor ().flags
-                                , gpi::pc::F_PERSISTENT
-                                )
-             )
-          {
-            save_state();
-          }
-          else if (get_owner())
+          if (get_owner())
           {
             cleanup (m_path);
           }
 
           _lock_file.reset();
         }
-      }
-
-      void beegfs_area_t::save_state()
-      {
-        scoped_file meta ( detail::meta_path (m_path)
-                         , O_CREAT | O_EXCL | O_RDWR
-                         , 0600
-                         );
       }
 
       Arena_t
@@ -511,10 +491,6 @@ namespace gpi
         if (    fhg::util::read_bool (url.get ("exclusive").get_value_or ("false")))
         {
           gpi::flag::set (flags, F_EXCLUSIVE);
-        }
-        if (    fhg::util::read_bool (url.get ("persistent").get_value_or ("false")))
-        {
-          gpi::flag::set (flags, F_PERSISTENT);
         }
 
         gpi::pc::type::size_t size =

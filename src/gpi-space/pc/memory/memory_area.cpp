@@ -89,7 +89,7 @@ namespace gpi
         }
       }
 
-      // remove all non persistent handles allocated by pid
+      // remove all handles allocated by pid
       void area_t::garbage_collect (const gpi::pc::type::process_id_t pid)
       {
         lock_type lock (m_mutex);
@@ -99,11 +99,7 @@ namespace gpi
             ; ++hdl_it
             )
         {
-          if ( hdl_it->second.creator == pid
-             and not gpi::flag::is_set ( hdl_it->second.flags
-                                       , gpi::pc::F_PERSISTENT
-                                       )
-             )
+          if (hdl_it->second.creator == pid)
           {
             garbage_handles.push (hdl_it->first);
           }
@@ -176,12 +172,6 @@ namespace gpi
         {
           return false;
         }
-        else if (gpi::flag::is_set ( m_descriptor.flags
-                                   , gpi::pc::F_PERSISTENT
-                                   ))
-        {
-          return false;
-        }
         else
         {
           return true;
@@ -237,7 +227,7 @@ namespace gpi
         hdl.name = name;
         hdl.offset = offset;
         hdl.creator = GPI_PC_INVAL;
-        hdl.flags = gpi::pc::F_GLOBAL | gpi::pc::F_PERSISTENT;
+        hdl.flags = gpi::pc::F_GLOBAL;
 
         internal_alloc (hdl);
 

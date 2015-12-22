@@ -51,13 +51,13 @@ BOOST_FIXTURE_TEST_CASE (create_beegfs_segment, setup_and_cleanup_shared_file)
 
   {
     beegfs_area_t area ( _logger
-                    , 0
-                    , path_to_shared_file
-                    , size
-                    , gpi::pc::F_PERSISTENT
-                    , topology
-                    , handle_generator
-                    );
+                       , 0
+                       , path_to_shared_file
+                       , size
+                       , gpi::pc::F_NONE
+                       , topology
+                       , handle_generator
+                       );
     area.set_id (2);
 
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
@@ -97,7 +97,7 @@ BOOST_FIXTURE_TEST_CASE (old_segment_version, setup_and_cleanup_shared_file)
                        , 0
                        , path_to_shared_file
                        , size
-                       , gpi::pc::F_PERSISTENT
+                       , gpi::pc::F_NONE
                        , topology
                        , handle_generator
                        );
@@ -115,7 +115,7 @@ BOOST_FIXTURE_TEST_CASE (old_segment_version, setup_and_cleanup_shared_file)
                        , 0
                        , path_to_shared_file
                        , size
-                       , gpi::pc::F_PERSISTENT
+                       , gpi::pc::F_NONE
                        , topology
                        , handle_generator
                        );
@@ -142,7 +142,7 @@ BOOST_FIXTURE_TEST_CASE (too_new_segment_version, setup_and_cleanup_shared_file)
                        , 0
                        , path_to_shared_file
                        , size
-                       , gpi::pc::F_PERSISTENT
+                       , gpi::pc::F_NONE
                        , topology
                        , handle_generator
                        );
@@ -157,7 +157,7 @@ BOOST_FIXTURE_TEST_CASE (too_new_segment_version, setup_and_cleanup_shared_file)
                                       , 0
                                       , path_to_shared_file
                                       , size
-                                      , gpi::pc::F_PERSISTENT
+                                      , gpi::pc::F_NONE
                                       , topology
                                       , handle_generator
                                       )
@@ -180,7 +180,7 @@ BOOST_FIXTURE_TEST_CASE (garbage_segment_version, setup_and_cleanup_shared_file)
                        , 0
                        , path_to_shared_file
                        , size
-                       , gpi::pc::F_PERSISTENT
+                       , gpi::pc::F_NONE
                        , topology
                        , handle_generator
                        );
@@ -195,7 +195,7 @@ BOOST_FIXTURE_TEST_CASE (garbage_segment_version, setup_and_cleanup_shared_file)
                                       , 0
                                       , path_to_shared_file
                                       , size
-                                      , gpi::pc::F_PERSISTENT
+                                      , gpi::pc::F_NONE
                                       , topology
                                       , handle_generator
                                       )
@@ -220,7 +220,7 @@ BOOST_FIXTURE_TEST_CASE (reopen_beegfs_segment, setup_and_cleanup_shared_file)
                        , 0
                        , path_to_shared_file
                        , size
-                       , gpi::pc::F_PERSISTENT
+                       , gpi::pc::F_NONE
                        , topology
                        , handle_generator
                        );
@@ -238,7 +238,7 @@ BOOST_FIXTURE_TEST_CASE (reopen_beegfs_segment, setup_and_cleanup_shared_file)
                        , 0
                        , path_to_shared_file
                        , size
-                       , gpi::pc::F_PERSISTENT
+                       , gpi::pc::F_NONE
                        , topology
                        , handle_generator
                        );
@@ -337,7 +337,7 @@ BOOST_FIXTURE_TEST_CASE (test_read, setup_and_cleanup_shared_file)
                        , 0
                        , path_to_shared_file
                        , size
-                       , gpi::pc::F_PERSISTENT
+                       , gpi::pc::F_NONE
                        , topology
                        , handle_generator
                        );
@@ -385,7 +385,7 @@ BOOST_FIXTURE_TEST_CASE (test_already_open, setup_and_cleanup_shared_file)
                      , 0
                      , path_to_shared_file
                      , size
-                     , gpi::pc::F_PERSISTENT
+                     , gpi::pc::F_NONE
                      , topology
                      , handle_generator
                      );
@@ -396,7 +396,7 @@ BOOST_FIXTURE_TEST_CASE (test_already_open, setup_and_cleanup_shared_file)
                                       , 0
                                       , path_to_shared_file
                                       , size
-                                      , gpi::pc::F_PERSISTENT
+                                      , gpi::pc::F_NONE
                                       , topology
                                       , handle_generator
                                       )
