@@ -351,13 +351,12 @@ namespace gpi
           {
             if (m_size != (gpi::pc::type::size_t)file_size)
             {
-              LLOG ( WARN
-                   , _logger
-                   , "segment has size: " << file_size
-                   << " but tried to open it with size: " << m_size
-                   << ", adjusting..."
-                   );
-              m_size = file_size;
+              throw std::logic_error
+                ( "segment file on disk has size "
+                + std::to_string (file_size)
+                + " but tried to open it with size "
+                + std::to_string (m_size)
+                );
             }
           }
           else
