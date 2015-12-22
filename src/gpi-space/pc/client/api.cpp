@@ -485,7 +485,7 @@ namespace gpi
           )
         : remote_segment
             ( api
-            , "gpi://?total_size=" + std::to_string (size)
+            , "gaspi://?total_size=" + std::to_string (size)
             + "&buffer_size=" + std::to_string (communication_buffer_size)
             + "&buffers=" + std::to_string (num_communication_buffers)
             )

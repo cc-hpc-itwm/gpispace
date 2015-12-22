@@ -20,7 +20,7 @@ namespace fhg
                              , gaspi_return_t rc
                              )
       {
-        throw gpi::exception::gpi_error
+        throw gpi::exception::gaspi_error
           ( gpi::error::internal_error()
           , function_name + " failed: " + gaspi_error_str (rc)
           + " (" + std::to_string (rc) + ")"

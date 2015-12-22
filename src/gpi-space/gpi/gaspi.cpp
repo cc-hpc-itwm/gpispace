@@ -26,7 +26,7 @@ namespace gpi
                              , gaspi_return_t rc
                              )
       {
-        throw gpi::exception::gpi_error
+        throw gpi::exception::gaspi_error
           ( gpi::error::internal_error()
           , function_name + " failed: " + gaspi_error_str (rc)
           + " (" + std::to_string (rc) + ")"
@@ -64,7 +64,7 @@ namespace gpi
     {
       if (sys::get_total_memory_size() < _per_node_size)
       {
-        throw gpi::exception::gpi_error
+        throw gpi::exception::gaspi_error
           ( gpi::error::startup_failed()
           , "not enough memory: requested memory size ("
           + std::to_string (_per_node_size) + ") exceeds total memory size ("

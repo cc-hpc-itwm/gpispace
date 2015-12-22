@@ -8,7 +8,7 @@
 #include <util-generic/print_exception.hpp>
 
 #include <gpi-space/pc/global/topology.hpp>
-#include <gpi-space/pc/memory/gpi_area.hpp>
+#include <gpi-space/pc/memory/gaspi_area.hpp>
 #include <gpi-space/pc/memory/handle_generator.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
@@ -36,7 +36,7 @@ namespace gpi
         url_t url (url_s);
 
         return
-          ( url.type() == "gpi" ? gpi_area_t::create (logger, url_s, topology, handle_generator, gaspi_context, owner)
+          ( url.type() == "gaspi" ? gaspi_area_t::create (logger, url_s, topology, handle_generator, gaspi_context, owner)
           : url.type() == "beegfs" ? beegfs_area_t::create (logger, url_s, topology, handle_generator, owner)
           : throw std::runtime_error
               ("no memory type registered with: '" + url_s + "'")

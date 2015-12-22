@@ -3,7 +3,7 @@ ADD_LIBRARY(gpi-space-pc-memory
   memory_area.cpp
   handle_generator.cpp
   manager.cpp
-  gpi_area.cpp
+  gaspi_area.cpp
   shm_area.cpp
   beegfs_area.cpp
 )

@@ -22,10 +22,10 @@ namespace gpi
   {
     namespace memory
     {
-      class gpi_area_t : public area_t
+      class gaspi_area_t : public area_t
       {
       public:
-        static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_GPI;
+        static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_GASPI;
 
         typedef fhg::thread::queue<handle_buffer_t> handle_pool_t;
 
@@ -38,18 +38,18 @@ namespace gpi
                                  );
 
       protected:
-        gpi_area_t ( fhg::log::Logger&
-                   , const gpi::pc::type::process_id_t creator
-                   , const std::string & name
-                   , const gpi::pc::type::flags_t flags
-                   , gpi::pc::global::itopology_t & topology
-                   , handle_generator_t&
-                   , fhg::vmem::gaspi_context&
-                   , fhg::vmem::gaspi_timeout&
-                   , type::size_t memory_size
-                   , type::size_t num_com_buffers
-                   , type::size_t com_buffer_size
-                   );
+        gaspi_area_t ( fhg::log::Logger&
+                     , const gpi::pc::type::process_id_t creator
+                     , const std::string & name
+                     , const gpi::pc::type::flags_t flags
+                     , gpi::pc::global::itopology_t & topology
+                     , handle_generator_t&
+                     , fhg::vmem::gaspi_context&
+                     , fhg::vmem::gaspi_timeout&
+                     , type::size_t memory_size
+                     , type::size_t num_com_buffers
+                     , type::size_t com_buffer_size
+                     );
 
         virtual bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const override;
         virtual Arena_t grow_direction (const gpi::pc::type::flags_t) const override;

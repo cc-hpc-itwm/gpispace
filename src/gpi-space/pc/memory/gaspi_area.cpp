@@ -1,4 +1,4 @@
-#include <gpi-space/pc/memory/gpi_area.hpp>
+#include <gpi-space/pc/memory/gaspi_area.hpp>
 
 #include <utility>
 
@@ -25,20 +25,20 @@ namespace gpi
   {
     namespace memory
     {
-      gpi_area_t::gpi_area_t ( fhg::log::Logger& logger
-                             , const gpi::pc::type::process_id_t creator
-                             , const std::string & name
-                             , const gpi::pc::type::flags_t flags
-                             , gpi::pc::global::itopology_t & topology
-                             , handle_generator_t& handle_generator
-                             , fhg::vmem::gaspi_context& gaspi_context
-                             , fhg::vmem::gaspi_timeout& time_left
-                             , type::size_t per_node_size
-                             , type::size_t num_com_buffers
-                             , type::size_t com_buffer_size
-                             )
+      gaspi_area_t::gaspi_area_t ( fhg::log::Logger& logger
+                                 , const gpi::pc::type::process_id_t creator
+                                 , const std::string & name
+                                 , const gpi::pc::type::flags_t flags
+                                 , gpi::pc::global::itopology_t & topology
+                                 , handle_generator_t& handle_generator
+                                 , fhg::vmem::gaspi_context& gaspi_context
+                                 , fhg::vmem::gaspi_timeout& time_left
+                                 , type::size_t per_node_size
+                                 , type::size_t num_com_buffers
+                                 , type::size_t com_buffer_size
+                                 )
         : area_t ( logger
-                 , gpi_area_t::area_type
+                 , gaspi_area_t::area_type
                  , creator
                  , name
                  , per_node_size
@@ -113,14 +113,14 @@ namespace gpi
       }
 
       Arena_t
-      gpi_area_t::grow_direction (const gpi::pc::type::flags_t flgs) const
+      gaspi_area_t::grow_direction (const gpi::pc::type::flags_t flgs) const
       {
         return gpi::flag::is_set (flgs, gpi::pc::F_GLOBAL)
           ? ARENA_UP : ARENA_DOWN;
       }
 
       void *
-      gpi_area_t::raw_ptr (gpi::pc::type::offset_t off)
+      gaspi_area_t::raw_ptr (gpi::pc::type::offset_t off)
       {
         return
           (m_ptr && off < descriptor ().local_size)
@@ -129,13 +129,13 @@ namespace gpi
       }
 
       bool
-      gpi_area_t::is_allowed_to_attach (const gpi::pc::type::process_id_t) const
+      gaspi_area_t::is_allowed_to_attach (const gpi::pc::type::process_id_t) const
       {
         return false;
       }
 
       void
-      gpi_area_t::alloc_hook (const gpi::pc::type::handle::descriptor_t &hdl)
+      gaspi_area_t::alloc_hook (const gpi::pc::type::handle::descriptor_t &hdl)
       {
         if (  gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL)
            && hdl.creator != (gpi::pc::type::process_id_t)(-1)
@@ -152,7 +152,7 @@ namespace gpi
       }
 
       void
-      gpi_area_t::free_hook (const gpi::pc::type::handle::descriptor_t &hdl)
+      gaspi_area_t::free_hook (const gpi::pc::type::handle::descriptor_t &hdl)
       {
         if (gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL))
         {
@@ -161,10 +161,10 @@ namespace gpi
       }
 
       bool
-      gpi_area_t::is_range_local( const gpi::pc::type::handle::descriptor_t &hdl
-                                , const gpi::pc::type::offset_t begin
-                                , const gpi::pc::type::offset_t end
-                                ) const
+      gaspi_area_t::is_range_local( const gpi::pc::type::handle::descriptor_t &hdl
+                                  , const gpi::pc::type::offset_t begin
+                                  , const gpi::pc::type::offset_t end
+                                  ) const
       {
         gpi::pc::type::id_t     my_rank = _gaspi_context.rank ();
 
@@ -184,9 +184,9 @@ namespace gpi
       }
 
       gpi::pc::type::size_t
-      gpi_area_t::get_local_size ( const gpi::pc::type::size_t size
-                                 , const gpi::pc::type::flags_t flgs
-                                 ) const
+      gaspi_area_t::get_local_size ( const gpi::pc::type::size_t size
+                                   , const gpi::pc::type::flags_t flgs
+                                   ) const
       {
         if (gpi::flag::is_set (flgs, gpi::pc::F_GLOBAL))
         {
@@ -318,10 +318,10 @@ namespace gpi
         void do_send ( fhg::log::Logger& logger
                      , area_t & src_area
                      , gpi::pc::type::memory_location_t src_loc
-                     , gpi_area_t & dst_area
+                     , gaspi_area_t & dst_area
                      , gpi::pc::type::memory_location_t dst_loc
                      , gpi::pc::type::size_t amount
-                     , gpi_area_t::handle_pool_t & handle_pool
+                     , gaspi_area_t::handle_pool_t & handle_pool
                      , api::gaspi_t& gaspi
                      )
         {
@@ -370,10 +370,10 @@ namespace gpi
         void do_recv ( fhg::log::Logger& logger
                      , area_t & dst_area
                      , gpi::pc::type::memory_location_t dst_loc
-                     , gpi_area_t & src_area
+                     , gaspi_area_t & src_area
                      , gpi::pc::type::memory_location_t src_loc
                      , gpi::pc::type::size_t amount
-                     , gpi_area_t::handle_pool_t & handle_pool
+                     , gaspi_area_t::handle_pool_t & handle_pool
                      , api::gaspi_t& gaspi
                      )
         {
@@ -417,7 +417,7 @@ namespace gpi
         }
       }
 
-      std::packaged_task<void()> gpi_area_t::get_specific_transfer_task
+      std::packaged_task<void()> gaspi_area_t::get_specific_transfer_task
         ( const gpi::pc::type::memory_location_t src
         , const gpi::pc::type::memory_location_t dst
         , area_t & dst_area
@@ -465,7 +465,7 @@ namespace gpi
           );
       }
 
-      std::packaged_task<void()> gpi_area_t::get_send_task
+      std::packaged_task<void()> gaspi_area_t::get_send_task
         ( area_t & src_area
         , const gpi::pc::type::memory_location_t src
         , const gpi::pc::type::memory_location_t dst
@@ -488,7 +488,7 @@ namespace gpi
           );
       }
 
-      std::packaged_task<void()> gpi_area_t::get_recv_task
+      std::packaged_task<void()> gaspi_area_t::get_recv_task
         ( area_t & dst_area
         , const gpi::pc::type::memory_location_t dst
         , const gpi::pc::type::memory_location_t src
@@ -509,9 +509,9 @@ namespace gpi
           );
       }
 
-      double gpi_area_t::get_transfer_costs ( const gpi::pc::type::memory_region_t& transfer
-                                            , const gpi::rank_t rank
-                                            ) const
+      double gaspi_area_t::get_transfer_costs ( const gpi::pc::type::memory_region_t& transfer
+                                              , const gpi::rank_t rank
+                                              ) const
       {
         const gpi::pc::type::handle::descriptor_t allocation
           (descriptor (transfer.location.handle));
@@ -530,7 +530,7 @@ namespace gpi
         return transfer.size + remote_transfer_cost_weight * (transfer.size - local_part.size());
       }
 
-      area_ptr_t gpi_area_t::create
+      area_ptr_t gaspi_area_t::create
         ( fhg::log::Logger& logger
         , std::string const &url_s
         , gpi::pc::global::itopology_t & topology
@@ -554,19 +554,19 @@ namespace gpi
 
         //! \todo get from user? use for other areas as well? remove?
         fhg::vmem::gaspi_timeout time_left (std::chrono::seconds (30));
-        gpi_area_t * area = new gpi_area_t ( logger
-                                           , owner
-                                           , "GPI"
-                                           , gpi::pc::F_PERSISTENT
-                                           + gpi::pc::F_GLOBAL
-                                           , topology
-                                           , handle_generator
-                                           , gaspi_context
-                                           , time_left
-                                           , per_node_size
-                                           , numbuf
-                                           , comsize
-                                           );
+        gaspi_area_t * area = new gaspi_area_t ( logger
+                                               , owner
+                                               , "GASPI"
+                                               , gpi::pc::F_PERSISTENT
+                                               + gpi::pc::F_GLOBAL
+                                               , topology
+                                               , handle_generator
+                                               , gaspi_context
+                                               , time_left
+                                               , per_node_size
+                                               , numbuf
+                                               , comsize
+                                               );
         return area_ptr_t (area);
       }
     }
