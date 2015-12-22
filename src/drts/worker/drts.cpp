@@ -31,7 +31,7 @@ namespace
       , gpi::pc::client::api_t /*const*/* virtual_memory_api
       , gspc::scoped_allocation /*const*/* shared_memory
       , wfe_task_t& target
-      , std::mt19937 engine
+      , std::mt19937& engine
       , we::type::activity_t& activity
       )
       : loader (module_loader)
