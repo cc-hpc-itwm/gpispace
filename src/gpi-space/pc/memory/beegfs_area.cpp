@@ -268,16 +268,6 @@ namespace gpi
            - map memory
         */
         bool const path_existed (boost::filesystem::exists (m_path));
-        if ( path_existed
-           && gpi::flag::is_set ( descriptor ().flags
-                                , gpi::pc::F_FORCE_UNLINK
-                                )
-           && get_owner()
-           )
-        {
-          cleanup (m_path);
-        }
-
         bool const do_initialization
           ( !path_existed
           && !gpi::flag::is_set (descriptor().flags, gpi::pc::F_NOCREATE)
@@ -543,10 +533,6 @@ namespace gpi
         if (not fhg::util::read_bool (url.get ("create").get_value_or ("false")))
         {
           gpi::flag::set (flags, F_NOCREATE);
-        }
-        if (    fhg::util::read_bool (url.get ("unlink").get_value_or ("false")))
-        {
-          gpi::flag::set (flags, F_FORCE_UNLINK);
         }
         if (    fhg::util::read_bool (url.get ("exclusive").get_value_or ("false")))
         {
