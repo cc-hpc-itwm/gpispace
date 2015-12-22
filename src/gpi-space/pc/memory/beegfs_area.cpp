@@ -144,11 +144,6 @@ namespace gpi
           std::throw_with_nested
             (std::runtime_error ("opening '" + path.string() + "' failed"));
         }
-
-        if (m_size != size)
-        {
-          area_t::reinit ();
-        }
       }
 
       beegfs_area_t::~beegfs_area_t ()
@@ -247,11 +242,7 @@ namespace gpi
 
       void beegfs_area_t::open()
       {
-        bool const do_initialization
-          ( !gpi::flag::is_set (descriptor().flags, gpi::pc::F_NOCREATE)
-          && get_owner()
-          );
-        if (do_initialization)
+        if (get_owner())
         {
           if (boost::filesystem::exists (m_path))
           {
@@ -281,7 +272,7 @@ namespace gpi
         FHG_UTIL_FINALLY
           ( [&]
             {
-              if (!succeeded && do_initialization)
+              if (!succeeded && get_owner())
               {
                 boost::filesystem::remove (detail::data_path (m_path));
                 boost::filesystem::remove (detail::version_path (m_path));
@@ -323,21 +314,14 @@ namespace gpi
         off_t const file_size (fhg::util::syscall::lseek (fd, 0, SEEK_END));
         fhg::util::syscall::lseek (fd, 0, SEEK_SET);
 
-        if (!gpi::flag::is_set (descriptor().flags, gpi::pc::F_NOCREATE))
+        if (m_size != (gpi::pc::type::size_t)file_size)
         {
-          if (m_size != (gpi::pc::type::size_t)file_size)
-          {
-            throw std::logic_error
-              ( "segment file on disk has size "
-              + std::to_string (file_size)
-              + " but tried to open it with size "
-              + std::to_string (m_size)
-              );
-          }
-        }
-        else
-        {
-          m_size = file_size;
+          throw std::logic_error
+            ( "segment file on disk has size "
+            + std::to_string (file_size)
+            + " but tried to open it with size "
+            + std::to_string (m_size)
+            );
         }
 
         descriptor().local_size = m_size;
@@ -484,10 +468,6 @@ namespace gpi
         url_t url (url_s);
         gpi::pc::type::flags_t flags = F_NONE;
 
-        if (not fhg::util::read_bool (url.get ("create").get_value_or ("false")))
-        {
-          gpi::flag::set (flags, F_NOCREATE);
-        }
         if (    fhg::util::read_bool (url.get ("exclusive").get_value_or ("false")))
         {
           gpi::flag::set (flags, F_EXCLUSIVE);

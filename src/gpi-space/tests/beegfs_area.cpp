@@ -65,22 +65,25 @@ BOOST_FIXTURE_TEST_CASE (create_beegfs_segment, setup_and_cleanup_shared_file)
 
     handle_t handle = area.alloc (1, size, "test", 0);
     area.write_to (memory_location_t (handle, 0), text, strlen (text));
+
+    {
+      int fd = open ( ((path_to_shared_file / "data").string ().c_str ())
+                    , O_RDONLY
+                    );
+      BOOST_REQUIRE_GE (fd, 0);
+
+      char buf [size];
+      int read_bytes (read (fd, buf, size));
+      BOOST_REQUIRE_GE (read_bytes, 0);
+      BOOST_CHECK_EQUAL (size, gpi::pc::type::size_t (read_bytes));
+      close (fd);
+
+      int eq = strncmp (text, buf, strlen (text));
+      BOOST_CHECK_EQUAL (0, eq);
+    }
+
     area.free (handle);
   }
-
-  int fd = open ( ((path_to_shared_file / "data").string ().c_str ())
-                , O_RDONLY
-                );
-  BOOST_REQUIRE_GE (fd, 0);
-
-  char buf [size];
-  int read_bytes (read (fd, buf, size));
-  BOOST_REQUIRE_GE (read_bytes, 0);
-  BOOST_CHECK_EQUAL (size, gpi::pc::type::size_t (read_bytes));
-  close (fd);
-
-  int eq = strncmp (text, buf, strlen (text));
-  BOOST_CHECK_EQUAL (0, eq);
 }
 
 BOOST_FIXTURE_TEST_CASE (old_segment_version, setup_and_cleanup_shared_file)
@@ -202,59 +205,6 @@ BOOST_FIXTURE_TEST_CASE (garbage_segment_version, setup_and_cleanup_shared_file)
                                       )
                       , std::exception
                       );
-}
-
-BOOST_FIXTURE_TEST_CASE (reopen_beegfs_segment, setup_and_cleanup_shared_file)
-{
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
-
-  using namespace gpi::pc::memory;
-  using namespace gpi::pc::type;
-
-  gpi::tests::dummy_topology topology;
-
-  const gpi::pc::type::size_t size = 4096;
-  const char *text = "hello world!\n";
-
-  {
-    beegfs_area_t area ( _logger
-                       , fhg::util::syscall::getpid()
-                       , path_to_shared_file
-                       , size
-                       , gpi::pc::F_NONE
-                       , topology
-                       , handle_generator
-                       );
-    area.set_id (2);
-
-    BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
-
-    handle_t handle = area.alloc (1, size, "test", 0);
-    area.write_to (memory_location_t (handle, 0), text, strlen (text));
-    area.free (handle);
-  }
-
-  {
-    beegfs_area_t area ( _logger
-                       , fhg::util::syscall::getpid()
-                       , path_to_shared_file
-                       , size
-                       , gpi::pc::F_NONE
-                       , topology
-                       , handle_generator
-                       );
-    area.set_id (2);
-
-    BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
-
-    handle_t handle = area.alloc (1, size, "test", 0);
-    char read_buffer[strlen (text)];
-    area.read_from
-      (memory_location_t (handle, 0), read_buffer, sizeof (read_buffer));
-    BOOST_CHECK_EQUAL (std::string (read_buffer), std::string (text));
-
-    area.free (handle);
-  }
 }
 
 BOOST_FIXTURE_TEST_CASE (create_big_beegfs_segment, setup_and_cleanup_shared_file)

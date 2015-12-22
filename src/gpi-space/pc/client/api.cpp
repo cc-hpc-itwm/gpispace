@@ -499,7 +499,6 @@ namespace gpi
             ( api
             , "beegfs://" + location.string()
             + "?total_size=" + std::to_string (size)
-            + "&create=true"
             )
       {}
 
