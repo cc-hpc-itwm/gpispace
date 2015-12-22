@@ -362,7 +362,7 @@ namespace gpi
           {
             save_state();
           }
-          else if (m_topology.is_master())
+          else if (get_owner())
           {
             cleanup (m_path);
           }
