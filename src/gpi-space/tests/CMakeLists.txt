@@ -37,6 +37,7 @@ fhg_add_test (segment.cpp
 fhg_add_test (beegfs_area.cpp
   PROJECT gpi-space_test
   BOOST_UNIT_TEST
+  ARGS --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
   INCLUDE_DIRECTORIES SYSTEM PRIVATE "${LIBRT_INCLUDE_DIR}"
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
@@ -45,4 +46,5 @@ fhg_add_test (beegfs_area.cpp
                  Boost::filesystem
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
+                 test-utilities
 )

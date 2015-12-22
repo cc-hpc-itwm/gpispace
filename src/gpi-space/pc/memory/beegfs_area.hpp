@@ -30,9 +30,6 @@ namespace gpi
                                  , type::id_t owner
                                  );
 
-        // cleanup a file segment
-        static void cleanup (path_t const & path);
-
         beegfs_area_t ( fhg::log::Logger&
                       , const gpi::pc::type::process_id_t creator
                       , const path_t & path

@@ -157,11 +157,6 @@ namespace gpi
         }
       }
 
-      void beegfs_area_t::cleanup (beegfs_area_t::path_t const &path)
-      {
-        fs::remove_all (path);
-      }
-
       std::string beegfs_area_t::version_string() const
       {
         return "BEEGFS segment version " + std::to_string (m_version);

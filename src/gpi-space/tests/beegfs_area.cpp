@@ -14,24 +14,38 @@
 #include <util-generic/syscall.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 
+#include <test/shared_directory.hpp>
+
 #include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/memory/beegfs_area.hpp>
 #include <gpi-space/pc/memory/handle_generator.hpp>
 #include <gpi-space/tests/dummy_topology.hpp>
 
+#include <boost/program_options.hpp>
+
 struct setup_and_cleanup_shared_file
 {
-  setup_and_cleanup_shared_file ()
+  boost::filesystem::path get_shared_directory()
   {
-    path_to_shared_file =
-      "beegfs_area." + boost::lexical_cast<std::string> (getpid ());
+    boost::program_options::options_description options_description;
+    options_description.add (test::options::shared_directory());
+    boost::program_options::variables_map vm;
+    boost::program_options::store
+      ( boost::program_options::command_line_parser
+          ( boost::unit_test::framework::master_test_suite().argc
+          , boost::unit_test::framework::master_test_suite().argv
+          )
+      . options (options_description)
+      . run()
+      , vm
+      );
+    return test::shared_directory (vm);
   }
 
-  ~setup_and_cleanup_shared_file ()
-  {
-    gpi::pc::memory::beegfs_area_t::cleanup (path_to_shared_file);
-  }
+  setup_and_cleanup_shared_file()
+    : path_to_shared_file (get_shared_directory() / "beegfs_area_test_area")
+  {}
 
   boost::filesystem::path path_to_shared_file;
 
