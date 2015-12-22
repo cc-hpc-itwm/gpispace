@@ -9,3 +9,6 @@ extended_add_library (NAME test-utilities
             Boost::program_options
             Boost::filesystem
 )
+set_property (TARGET test-utilities APPEND
+  PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}"
+)
