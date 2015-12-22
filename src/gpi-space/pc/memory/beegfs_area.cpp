@@ -310,7 +310,9 @@ namespace gpi
             {
               if (!succeeded && do_initialization)
               {
-                cleanup (m_path);
+                boost::filesystem::remove (detail::data_path (m_path));
+                boost::filesystem::remove (detail::version_path (m_path));
+                boost::filesystem::remove (m_path);
               }
             }
           );
