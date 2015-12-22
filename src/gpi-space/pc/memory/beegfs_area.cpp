@@ -267,14 +267,19 @@ namespace gpi
            - open data file, consistency check
            - map memory
         */
-        bool const path_existed (boost::filesystem::exists (m_path));
         bool const do_initialization
-          ( !path_existed
-          && !gpi::flag::is_set (descriptor().flags, gpi::pc::F_NOCREATE)
+          ( !gpi::flag::is_set (descriptor().flags, gpi::pc::F_NOCREATE)
           && get_owner()
           );
         if (do_initialization)
         {
+          if (boost::filesystem::exists (m_path))
+          {
+            throw std::runtime_error ( "unable to create BeeGFS segment: "
+                                     + m_path.string() + " already exists"
+                                     );
+          }
+
           fs::create_directories (m_path);
 
           {
