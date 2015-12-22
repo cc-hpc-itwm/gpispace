@@ -97,8 +97,6 @@ namespace gpi
         path_t m_path;
         int    m_version;
 
-        gpi::pc::type::size_t   m_size;
-
         gpi::pc::global::itopology_t & m_topology;
       };
     }

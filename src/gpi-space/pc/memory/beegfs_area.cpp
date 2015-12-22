@@ -132,7 +132,6 @@ namespace gpi
                  )
         , m_path (path)
         , m_version (BEEGFS_AREA_VERSION)
-        , m_size (size)
         , m_topology (topology)
       {
         try
@@ -265,7 +264,7 @@ namespace gpi
                              , 0600 // TODO: pass in permissions
                              );
 
-            data.ftruncate (m_size);
+            data.ftruncate (size());
           }
         }
         bool succeeded (false);
@@ -314,17 +313,15 @@ namespace gpi
         off_t const file_size (fhg::util::syscall::lseek (fd, 0, SEEK_END));
         fhg::util::syscall::lseek (fd, 0, SEEK_SET);
 
-        if (m_size != (gpi::pc::type::size_t)file_size)
+        if (size() != (gpi::pc::type::size_t)file_size)
         {
           throw std::logic_error
             ( "segment file on disk has size "
             + std::to_string (file_size)
             + " but tried to open it with size "
-            + std::to_string (m_size)
+            + std::to_string (size())
             );
         }
-
-        descriptor().local_size = m_size;
 
         //! \todo better constant (number of threads? configurable?)
         for (int i (0); i < 20; ++i)
@@ -337,7 +334,7 @@ namespace gpi
              , _logger
              , "BEEGFS memory created:"
              << " path: " << m_path
-             << " size: " << m_size
+             << " size: " << size()
              );
 
         succeeded = true;
