@@ -267,23 +267,42 @@ namespace gpi
            - open data file, consistency check
            - map memory
         */
-        if (fs::exists (m_path) && gpi::flag::is_set ( descriptor ().flags
-                                                     , gpi::pc::F_FORCE_UNLINK
-                                                     )
+        bool const path_existed (boost::filesystem::exists (m_path));
+        if ( path_existed
+           && gpi::flag::is_set ( descriptor ().flags
+                                , gpi::pc::F_FORCE_UNLINK
+                                )
            && get_owner()
            )
         {
-          beegfs_area_t::cleanup (m_path);
+          cleanup (m_path);
         }
 
-        if (! fs::exists (m_path) && !gpi::flag::is_set ( descriptor ().flags
-                                                        , gpi::pc::F_NOCREATE
-                                                        )
+        if ( !path_existed
+           && !gpi::flag::is_set ( descriptor ().flags
+                                 , gpi::pc::F_NOCREATE
+                                 )
            && get_owner()
            )
         {
           initialize (m_path, m_size);
         }
+        bool succeeded (false);
+        FHG_UTIL_FINALLY
+          ( [&]
+            {
+              if ( !succeeded
+                 && !path_existed
+                 && !gpi::flag::is_set ( descriptor ().flags
+                                       , gpi::pc::F_NOCREATE
+                                       )
+                 && get_owner()
+                 )
+              {
+                cleanup (m_path);
+              }
+            }
+          );
 
         // read version information
         {
@@ -306,7 +325,6 @@ namespace gpi
         {
           _lock_file = lock_file_helper (this);
         }
-        bool succeeded (false);
         FHG_UTIL_FINALLY ([&] { if (!succeeded) { _lock_file.reset(); }});
 
           // try to open existing file
@@ -400,9 +418,6 @@ namespace gpi
       {
         fs::create_directories (path);
 
-        bool success = false;
-        FHG_UTIL_FINALLY ([&] { if (!success) { cleanup (path); } });
-
         {
           // write version information
           fhg::util::write_file ( detail::version_path (path)
@@ -419,8 +434,6 @@ namespace gpi
 
           data.ftruncate (size);
         }
-
-        success = true;
       }
 
       Arena_t
