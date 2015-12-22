@@ -328,7 +328,7 @@ namespace gpi
         off_t const file_size (fhg::util::syscall::lseek (fd, 0, SEEK_END));
         fhg::util::syscall::lseek (fd, 0, SEEK_SET);
 
-        if (m_size)
+        if (!gpi::flag::is_set (descriptor().flags, gpi::pc::F_NOCREATE))
         {
           if (m_size != (gpi::pc::type::size_t)file_size)
           {
@@ -342,7 +342,6 @@ namespace gpi
         }
         else
         {
-          // used in non-create mode
           m_size = file_size;
         }
 
