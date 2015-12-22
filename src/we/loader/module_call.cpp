@@ -3,6 +3,7 @@
 #include <we/type/id.hpp>
 #include <we/type/port.hpp>
 #include <we/type/range.hpp>
+#include <we/expr/parse/parser.hpp>
 
 #include <drts/worker/context.hpp>
 #include <drts/worker/context_impl.hpp>
