@@ -34,6 +34,26 @@ fhg_add_test (segment.cpp
                  fhg-util
 )
 
+extended_add_executable (NAME check_beegfs_segment_requirements
+  SOURCES "check_beegfs_segment_requirements.cpp"
+  LIBRARIES GPISpace::vmem
+            Util::Generic
+            test-utilities
+            Boost::program_options
+)
+
+file (GENERATE OUTPUT "${CMAKE_BINARY_DIR}/CTestCustom.cmake"
+  CONTENT "execute_process (COMMAND \"$<TARGET_FILE:check_beegfs_segment_requirements.exe>\"
+                                    \"${SHARED_DIRECTORY_FOR_TESTS}\"
+             WORKING_DIRECTORY \"${CMAKE_BINARY_DIR}\"
+             RESULT_VARIABLE can_run_beegfs_segment_tests
+           )
+
+           if (\${can_run_beegfs_segment_tests})
+             list (APPEND CTEST_CUSTOM_TESTS_IGNORE gpi-space_test_beegfs_area)
+           endif()"
+)
+
 fhg_add_test (beegfs_area.cpp
   PROJECT gpi-space_test
   BOOST_UNIT_TEST
