@@ -285,7 +285,24 @@ namespace gpi
            && get_owner()
            )
         {
-          initialize (m_path, m_size);
+          fs::create_directories (m_path);
+
+          {
+            // write version information
+            fhg::util::write_file ( detail::version_path (m_path)
+                                  , version_string()
+                                  );
+          }
+
+          {
+            // create data file
+            scoped_file data ( detail::data_path (m_path)
+                             , O_CREAT | O_EXCL | O_RDWR
+                             , 0600 // TODO: pass in permissions
+                             );
+
+            data.ftruncate (m_size);
+          }
         }
         bool succeeded (false);
         FHG_UTIL_FINALLY
@@ -410,30 +427,6 @@ namespace gpi
                          , O_CREAT | O_EXCL | O_RDWR
                          , 0600
                          );
-      }
-
-      void beegfs_area_t::initialize ( path_t const & path
-                                  , gpi::pc::type::size_t size
-                                  )
-      {
-        fs::create_directories (path);
-
-        {
-          // write version information
-          fhg::util::write_file ( detail::version_path (path)
-                                , version_string()
-                                );
-        }
-
-        {
-          // create data file
-          scoped_file data ( detail::data_path (path)
-                           , O_CREAT | O_EXCL | O_RDWR
-                           , 0600 // TODO: pass in permissions
-                           );
-
-          data.ftruncate (size);
-        }
       }
 
       Arena_t

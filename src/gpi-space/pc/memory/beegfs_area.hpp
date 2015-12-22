@@ -82,9 +82,6 @@ namespace gpi
         void open();
         void save_state();
         void close();
-        void initialize ( path_t const & path
-                        , const gpi::pc::type::size_t size
-                        );
         double get_transfer_costs ( const gpi::pc::type::memory_region_t&
                                   , const gpi::rank_t
                                   ) const override;
