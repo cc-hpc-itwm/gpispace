@@ -31,7 +31,7 @@ test:
     - export GSPC_NODEFILE_FOR_TESTS="${base_directory}/nodefile_for_tests"
     - hostname > "${GSPC_NODEFILE_FOR_TESTS}"
 
-    - trap "killall -qs SIGKILL gspc-rifd orchestrator agent drts-kernel gpispace || true" EXIT
+    - trap "killall -qs SIGKILL gspc-rifd orchestrator agent drts-kernel || true" EXIT
     - ctest --output-on-failure --timeout 180 --schedule-random
             -LE "performance_test|requires_vmem"
             -j "${gspc_parallel_test_and_build_jobs}"
@@ -45,7 +45,7 @@ virtual_memory_test:
     - export GSPC_NODEFILE_FOR_TESTS="${base_directory}/nodefile_for_tests"
     - hostname > "${GSPC_NODEFILE_FOR_TESTS}"
 
-    - trap "killall -qs SIGKILL gspc-rifd orchestrator agent drts-kernel gpispace || true" EXIT
+    - trap "killall -qs SIGKILL gspc-rifd orchestrator agent drts-kernel gpi-space || true" EXIT
     - ctest --output-on-failure --timeout 180 --schedule-random
             -L "requires_vmem"
 
@@ -58,7 +58,7 @@ performance_test:
     - export GSPC_NODEFILE_FOR_TESTS="${base_directory}/nodefile_for_tests"
     - hostname > "${GSPC_NODEFILE_FOR_TESTS}"
 
-    - trap "killall -qs SIGKILL gspc-rifd orchestrator agent drts-kernel gpispace || true" EXIT
+    - trap "killall -qs SIGKILL gspc-rifd orchestrator agent drts-kernel || true" EXIT
     - ctest --output-on-failure --timeout 180 --schedule-random
             -L "performance_test"
   allow_failure: true
