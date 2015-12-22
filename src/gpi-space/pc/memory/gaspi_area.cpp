@@ -557,8 +557,7 @@ namespace gpi
         gaspi_area_t * area = new gaspi_area_t ( logger
                                                , owner
                                                , "GASPI"
-                                               , gpi::pc::F_PERSISTENT
-                                               + gpi::pc::F_GLOBAL
+                                               , gpi::pc::F_GLOBAL
                                                , topology
                                                , handle_generator
                                                , gaspi_context
