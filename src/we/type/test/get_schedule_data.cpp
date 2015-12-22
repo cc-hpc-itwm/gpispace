@@ -1,24 +1,13 @@
-// mirko.rahn@itwm.fraunhofer.de
-
-#define BOOST_TEST_MODULE pnet_type_transition
+#define BOOST_TEST_MODULE pnet_type_activity
 #include <boost/test/unit_test.hpp>
 
-#include <we/type/transition.hpp>
-
-#include <we/type/property.hpp>
+#include <we/type/activity.hpp>
 //! \todo: eliminate this include that just completes the type
 #include <we/type/net.hpp>
+#include <we/type/property.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random_string.hpp>
-
-namespace
-{
-  typedef  std::vector<std::pair< pnet::type::value::value_type
-                                , we::port_id_type
-                                >
-                      > input_t;
-}
 
 BOOST_AUTO_TEST_CASE (get_schedule_data_not_set)
 {
@@ -29,12 +18,11 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_not_set)
     , we::type::property::type()
     , we::priority_type()
     );
+  we::type::activity_t const activity (transition, boost::none);
 
-  BOOST_REQUIRE (!transition.get_schedule_data<unsigned long>
-                  (input_t(), "num_worker")
-                );
-  BOOST_REQUIRE (!transition.get_schedule_data<unsigned long>
-                  (input_t(), fhg::util::testing::random_string())
+  BOOST_REQUIRE (!activity.get_schedule_data<unsigned long> ("num_worker"));
+  BOOST_REQUIRE (!activity.get_schedule_data<unsigned long>
+                  (fhg::util::testing::random_string())
                 );
 }
 
@@ -53,11 +41,10 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_constant_string)
     , properties
     , we::priority_type()
     );
+  we::type::activity_t const activity (transition, boost::none);
 
   BOOST_REQUIRE_EQUAL
-    ( transition.get_schedule_data<std::string> (input_t(), key).get()
-    , value
-    );
+    (activity.get_schedule_data<std::string> (key).get(), value);
 }
 
 BOOST_AUTO_TEST_CASE (get_schedule_data_constant_long)
@@ -77,11 +64,10 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_constant_long)
     , properties
     , we::priority_type()
     );
+  we::type::activity_t const activity (transition, boost::none);
 
   BOOST_REQUIRE_EQUAL
-    ( transition.get_schedule_data<unsigned long> (input_t(), key).get()
-    , value
-    );
+    (activity.get_schedule_data<unsigned long> (key).get(), value);
 }
 
 BOOST_AUTO_TEST_CASE (get_schedule_data_expression_simple)
@@ -112,13 +98,11 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_simple)
       )
     );
 
-  input_t input;
-  input.push_back (std::make_pair (value, port_id));
+  we::type::activity_t activity (transition, boost::none);
+  activity.add_input (port_id, value);
 
   BOOST_REQUIRE_EQUAL
-    ( transition.get_schedule_data<unsigned long> (input, key).get()
-    , value
-    );
+    (activity.get_schedule_data<unsigned long> (key).get(), value);
 }
 
 BOOST_AUTO_TEST_CASE (get_schedule_data_expression_sum)
@@ -163,12 +147,10 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_sum)
       )
     );
 
-  input_t input;
-  input.push_back (std::make_pair (value1, port_id1));
-  input.push_back (std::make_pair (value2, port_id2));
+  we::type::activity_t activity (transition, boost::none);
+  activity.add_input (port_id1, value1);
+  activity.add_input (port_id2, value2);
 
   BOOST_REQUIRE_EQUAL
-    ( transition.get_schedule_data<unsigned long> (input, key).get()
-    , value1 + value2
-    );
+    (activity.get_schedule_data<unsigned long> (key).get(), value1 + value2);
 }

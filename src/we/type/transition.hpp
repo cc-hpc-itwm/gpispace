@@ -104,39 +104,6 @@ namespace we { namespace type {
 
       we::priority_type priority() const;
 
-      template<typename T>
-        boost::optional<T> get_schedule_data
-          ( std::vector<std::pair< pnet::type::value::value_type
-                                 , we::port_id_type
-                                 >
-                       > const& input
-          , const std::string& key
-          ) const
-      {
-        boost::optional<const property::value_type&> expr
-          (prop().get ({"fhg", "drts", "schedule", key}));
-
-        if (!expr)
-        {
-          return boost::none;
-        }
-
-        expression_t e (boost::get<std::string> (*expr));
-
-        expr::eval::context context;
-
-        typedef std::pair< pnet::type::value::value_type
-                         , we::port_id_type
-                         > token_on_port_t;
-
-        for (token_on_port_t const& top : input)
-        {
-          context.bind_ref (ports_input().at (top.second).name(), top.first);
-        }
-
-        return boost::get<T> (e.ast().eval_all (context));
-      }
-
       void set_property ( property::path_type const& path
                         , property::value_type const& value
                         )
