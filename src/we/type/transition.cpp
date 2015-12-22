@@ -38,11 +38,6 @@ namespace we
       return name_;
     }
 
-    bool transition_t::is_internal() const
-    {
-      return internal_;
-    }
-
     const transition_t::data_type& transition_t::data() const
     {
       return data_;

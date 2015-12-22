@@ -110,7 +110,6 @@ namespace xml
                                    , const boost::optional<parent_id_type>& parent
                                    , const util::position_type& pod
                                    , const boost::optional<std::string>& name
-                                   , const boost::optional<bool>& internal_
                                    , const content_type& content
                                    )
         : with_position_of_definition (pod)
@@ -118,7 +117,6 @@ namespace xml
         , _parent (parent)
         , _name (name)
         , contains_a_module_call (false)
-        , internal (internal_)
         , _content (reparent (content, _id))
       {
         _id_mapper->put (_id, *this);
@@ -136,7 +134,6 @@ namespace xml
         , std::list<memory_getput> const& memory_getputs
         , const typenames_type& typenames
         , const bool& contains_a_module_call_
-        , const boost::optional<bool>& internal_
         , const structs_type& structs_
         , const conditions_type& conditions
         , const requirements_type& requirements_
@@ -154,7 +151,6 @@ namespace xml
         , _memory_getputs (memory_getputs)
         , _typenames (typenames)
         , contains_a_module_call (contains_a_module_call_)
-        , internal (internal_)
         , structs (structs_)
         , _conditions (conditions)
         , requirements (requirements_)
@@ -709,7 +705,6 @@ namespace xml
         const std::string& _name;
         const state::type & state;
         const function_type& fun;
-        const boost::optional<bool>& _internal;
         const conditions_type& _conditions;
         we::type::property::type _properties;
         const requirements_type& _trans_requirements;
@@ -846,7 +841,6 @@ namespace xml
           ( const std::string& name
           , const state::type& _state
           , const function_type& _fun
-          , const boost::optional<bool>& internal
           , const conditions_type& conditions
           , const we::type::property::type& trans_properties
           , const requirements_type& trans_requirements
@@ -859,7 +853,6 @@ namespace xml
           : _name (name)
           , state (_state)
           , fun (_fun)
-          , _internal (internal)
           , _conditions (conditions)
           , _properties (trans_properties)
           , _trans_requirements (trans_requirements)
@@ -883,7 +876,6 @@ namespace xml
             ( name()
             , we_expr_type (expr, parsed_expression)
             , condition()
-            , _internal.get_value_or (true)
             , _properties
             , _priority
             );
@@ -938,7 +930,6 @@ namespace xml
                              , std::move (memory_puts)
                              )
             , condition()
-            , _internal.get_value_or (false)
             , _properties
             , _priority
             );
@@ -972,7 +963,6 @@ namespace xml
             ( name()
             , we_net
             , condition()
-            , _internal.get_value_or (true)
             , properties
             , _priority
             );
@@ -989,7 +979,6 @@ namespace xml
         , const state::type& state
         , std::unordered_map<std::string, we::port_id_type>& port_id_in
         , std::unordered_map<std::string, we::port_id_type>& port_id_out
-        , const boost::optional<bool>& trans_internal
         , const conditions_type& conditions
         , const we::type::property::type& trans_properties
         , const requirements_type& trans_requirements
@@ -1002,7 +991,6 @@ namespace xml
           ( function_synthesize ( name
                                 , state
                                 , *this
-                                , trans_internal ? trans_internal : internal
                                 , conditions
                                 , trans_properties
                                 , trans_requirements
@@ -1167,7 +1155,6 @@ namespace xml
           , _memory_getputs
           , _typenames
           , contains_a_module_call
-          , internal
           , structs
           , _conditions
           , requirements
@@ -2657,7 +2644,6 @@ namespace xml
         {
           s.open ("defun");
           s.attr ("name", f.name());
-          s.attr ("internal", f.internal);
 
           ::we::type::property::dump::dump (s, f.properties());
 

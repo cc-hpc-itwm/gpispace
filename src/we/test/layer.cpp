@@ -512,7 +512,6 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
     ( "expression"
     , we::type::expression_t ("${out} := ${in} + 1L")
     , boost::none
-    , true
     , we::type::property::type()
     , we::priority_type()
     );
@@ -564,7 +563,6 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
       , std::list<we::type::memory_transfer>()
       )
     , boost::none
-    , true
     , we::type::property::type()
     , we::priority_type()
     );
@@ -1304,7 +1302,6 @@ namespace
         , std::list<we::type::memory_transfer>()
         )
       , boost::none
-      , true
       , we::type::property::type()
       , we::priority_type()
       );
@@ -1330,7 +1327,6 @@ namespace
       , we::type::expression_t
           ("${response} := ${request.value} + 1L; ${out} := ${in};")
       , boost::none
-      , true
       , we::type::property::type()
       , we::priority_type()
       );
@@ -1401,7 +1397,6 @@ namespace
       ( we::type::transition_t ( "net"
                                , net
                                , boost::none
-                               , true
                                , we::type::property::type()
                                , we::priority_type()
                                )
@@ -1593,7 +1588,6 @@ namespace
                                 , std::list<we::type::memory_transfer>()
                                 )
       , boost::none
-      , true
       , we::type::property::type()
       , we::priority_type()
       );
@@ -1658,7 +1652,6 @@ namespace
       ( we::type::transition_t ( fhg::util::testing::random_string()
                                , net
                                , boost::none
-                               , true
                                , we::type::property::type()
                                , we::priority_type()
                                )

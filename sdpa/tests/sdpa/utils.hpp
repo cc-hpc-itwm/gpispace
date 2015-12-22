@@ -83,7 +83,6 @@ namespace utils
                                 , std::list<we::type::memory_transfer>()
                                 )
       , boost::none
-      , true
       , we::type::property::type()
       , we::priority_type()
       );
@@ -123,7 +122,6 @@ namespace utils
                                 , std::list<we::type::memory_transfer>()
                                 )
       , boost::none
-      , true
       , props
       , we::priority_type()
       );
@@ -158,7 +156,6 @@ namespace utils
       ( we::type::transition_t ( fhg::util::testing::random_string()
                                , net
                                , boost::none
-                               , true
                                , we::type::property::type()
                                , we::priority_type()
                                )
@@ -179,7 +176,6 @@ namespace utils
                                 , std::list<we::type::memory_transfer>()
                                 )
       , boost::none
-      , true
       , props
       , we::priority_type()
       );
@@ -192,7 +188,6 @@ namespace utils
                                 , std::list<we::type::memory_transfer>()
                                 )
       , boost::none
-      , true
       , props
       , we::priority_type()
       );
@@ -246,7 +241,6 @@ namespace utils
       ( we::type::transition_t ( fhg::util::testing::random_string()
                                , net
                                , boost::none
-                               , true
                                , we::type::property::type()
                                , we::priority_type()
                                )

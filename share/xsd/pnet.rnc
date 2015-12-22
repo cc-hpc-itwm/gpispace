@@ -112,8 +112,7 @@ function_type =
    | element module { mod_type }
    | element net { net_type }),
   element condition { xsd:string }*,
-  attribute name { xsd:NCName }?,
-  attribute internal { xsd:boolean }?
+  attribute name { xsd:NCName }?
 transition_type =
   (element properties { property_map_type }
    | element include-properties { properties_include_type }
@@ -129,8 +128,7 @@ transition_type =
    | element condition { xsd:string })*,
   attribute name { xsd:NCName },
   attribute priority { xsd:nonNegativeInteger }?,
-  attribute inline { xsd:boolean }?,
-  attribute internal { xsd:boolean }?
+  attribute inline { xsd:boolean }?
 net_type =
   (element include-properties { properties_include_type }
    | element include-structs { struct_include_type }

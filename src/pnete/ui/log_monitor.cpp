@@ -2,7 +2,6 @@
 
 #include <util-qt/connect.hpp>
 
-#include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
 #include <we/type/activity.hpp>
 
 #include <fhglog/appender/call.hpp>

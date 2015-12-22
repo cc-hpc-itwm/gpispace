@@ -34,7 +34,6 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
         "${pair.vid}   := ${vid}                               "
       )
     , we::type::expression_t ("!bitset_is_element (${store.seen}, ${vid})")
-    , true
     , we::type::property::type()
     , we::priority_type()
     );
@@ -104,7 +103,6 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
   we::type::transition_t tnet ( "tnet"
                               , net
                               , boost::none
-                              , true
                               , we::type::property::type()
                               , we::priority_type()
                               );

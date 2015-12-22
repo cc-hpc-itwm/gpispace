@@ -44,7 +44,6 @@ namespace we { namespace type {
       transition_t ()
         : name_ ("<<transition unknown>>")
         , data_ (expression_t())
-        , internal_ (true)
         , condition_ (boost::none)
         , _ports_input()
         , _ports_output()
@@ -59,13 +58,11 @@ namespace we { namespace type {
       transition_t ( const std::string& name
                    , Type const& typ
                    , boost::optional<expression_t> const& _condition
-                   , bool intern
                    , const we::type::property::type& prop
                    , we::priority_type priority
                    )
         : name_ (name)
         , data_ (typ)
-        , internal_ (intern)
           //! \todo better check user input earlier!?
         , condition_
           ( (!_condition || _condition.get().ast().is_const_true())
@@ -88,8 +85,6 @@ namespace we { namespace type {
       boost::optional<const expression_t&> expression() const;
       boost::optional<const we::type::net_type&> net() const;
       boost::optional<const module_call_t&> module_call() const;
-
-      bool is_internal() const;
 
       boost::optional<expression_t> const& condition() const;
 
@@ -152,7 +147,6 @@ namespace we { namespace type {
     private:
       std::string name_;
       data_type data_;
-      bool internal_;
       boost::optional<expression_t> condition_;
 
       port_map_t _ports_input;
@@ -171,7 +165,6 @@ namespace we { namespace type {
       {
         ar & BOOST_SERIALIZATION_NVP(name_);
         ar & BOOST_SERIALIZATION_NVP(data_);
-        ar & BOOST_SERIALIZATION_NVP(internal_);
         ar & BOOST_SERIALIZATION_NVP(condition_);
         ar & BOOST_SERIALIZATION_NVP(_ports_input);
         ar & BOOST_SERIALIZATION_NVP(_ports_output);

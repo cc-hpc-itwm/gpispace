@@ -27,7 +27,6 @@ BOOST_AUTO_TEST_CASE (isolated_transition_terminates)
     ( fhg::util::testing::random_string()
     , we::type::expression_t()
     , boost::none
-    , true
     , we::type::property::type()
     , we::priority_type()
     );

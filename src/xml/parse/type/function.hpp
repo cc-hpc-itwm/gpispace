@@ -86,7 +86,6 @@ namespace xml
                       , const boost::optional<parent_id_type>& parent
                       , const util::position_type&
                       , const boost::optional<std::string>& name
-                      , const boost::optional<bool>& internal
                       , const content_type& content
                       );
 
@@ -101,7 +100,6 @@ namespace xml
                       , std::list<memory_getput> const&
                       , const typenames_type& typenames
                       , const bool& contains_a_module_call
-                      , const boost::optional<bool>& internal
                       , const structs_type& structs
                       , const conditions_type&
                       , const requirements_type& requirements
@@ -217,7 +215,6 @@ namespace xml
           , const state::type&
           , std::unordered_map<std::string, we::port_id_type>& port_id_in
           , std::unordered_map<std::string, we::port_id_type>& port_id_out
-          , const boost::optional<bool>&
           , const conditions_type&
           , const we::type::property::type&
           , const requirements_type&
@@ -263,8 +260,6 @@ namespace xml
 
       public:
         bool contains_a_module_call;
-
-        boost::optional<bool> internal;
 
         structs_type structs;
 

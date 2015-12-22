@@ -233,7 +233,6 @@ namespace we
       transition_t new_trans ( input_activity.transition().name()
                              , std::get<0>(copy_map)
                              , input_activity.transition().condition()
-                             , input_activity.transition().is_internal()
                              , input_activity.transition().prop()
                              , input_activity.transition().priority()
                              );
@@ -352,7 +351,6 @@ namespace we
       transition_t new_transition ( input_transition.name()
                                   , input_transition.data()
                                   , input_transition.condition()
-                                  , input_transition.is_internal()
                                   , input_transition.prop()
                                   , input_transition.priority()
                                   );
@@ -581,7 +579,6 @@ namespace we
       transition_t new_transition ( input_activity.transition().name()
                                   , std::get<0>(copy_map)
                                   , input_activity.transition().condition()
-                                  , input_activity.transition().is_internal()
                                   , input_activity.transition().prop()
                                   , input_activity.transition().priority()
                                   );

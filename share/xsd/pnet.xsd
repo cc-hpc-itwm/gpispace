@@ -264,7 +264,6 @@
       <xsd:element minOccurs="0" maxOccurs="unbounded" name="condition" type="xsd:string"/>
     </xsd:sequence>
     <xsd:attribute name="name" type="xsd:NCName" use="optional"/>
-    <xsd:attribute name="internal" type="xsd:boolean" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="transition_type">
@@ -292,7 +291,6 @@
     <xsd:attribute name="name" type="xsd:NCName" use="required"/>
     <xsd:attribute name="priority" type="xsd:nonNegativeInteger" use="optional"/>
     <xsd:attribute name="inline" type="xsd:boolean" use="optional"/>
-    <xsd:attribute name="internal" type="xsd:boolean" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="net_type">

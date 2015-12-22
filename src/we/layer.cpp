@@ -125,7 +125,6 @@ namespace we
                                  + activity.transition().name()
                                  , net
                                  , boost::none
-                                 , true
                                  , we::type::property::type()
                                  , we::priority_type()
                                  );
