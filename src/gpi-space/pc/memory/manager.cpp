@@ -12,7 +12,7 @@
 #include <gpi-space/pc/memory/handle_generator.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
-#include <gpi-space/pc/memory/sfs_area.hpp>
+#include <gpi-space/pc/memory/beegfs_area.hpp>
 #include <gpi-space/pc/memory/shm_area.hpp>
 
 #include <string>
@@ -37,7 +37,7 @@ namespace gpi
 
         return
           ( url.type() == "gpi" ? gpi_area_t::create (logger, url_s, topology, handle_generator, gaspi_context, owner)
-          : url.type() == "sfs" ? sfs_area_t::create (logger, url_s, topology, handle_generator, owner)
+          : url.type() == "beegfs" ? beegfs_area_t::create (logger, url_s, topology, handle_generator, owner)
           : throw std::runtime_error
               ("no memory type registered with: '" + url_s + "'")
           );
@@ -486,13 +486,13 @@ namespace gpi
                             , global::topology_t& topology
                             )
       {
-        //! \note for sfs, master creates file that slaves need to
+        //! \note for beegfs, master creates file that slaves need to
         //! open determining filesize from the opened file. thus, to
         //! avoid a race, the master is doing this before all
         //! others. gaspi on the other side needs simultaneous
         //! initialization for gaspi_segment_create etc.
         bool const require_earlier_master_initialization
-          (url_t (url_s).type() == "sfs");
+          (url_t (url_s).type() == "beegfs");
 
         type::segment_id_t const id
           (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));

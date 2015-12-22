@@ -34,7 +34,7 @@ fhg_add_test (segment.cpp
                  fhg-util
 )
 
-fhg_add_test (sfs_area.cpp
+fhg_add_test (beegfs_area.cpp
   PROJECT gpi-space_test
   BOOST_UNIT_TEST
   INCLUDE_DIRECTORIES SYSTEM PRIVATE "${LIBRT_INCLUDE_DIR}"

@@ -5,7 +5,7 @@ ADD_LIBRARY(gpi-space-pc-memory
   manager.cpp
   gpi_area.cpp
   shm_area.cpp
-  sfs_area.cpp
+  beegfs_area.cpp
 )
 target_include_directories (gpi-space-pc-memory
   SYSTEM PRIVATE "${LIBRT_INCLUDE_DIR}"

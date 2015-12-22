@@ -1,4 +1,4 @@
-#include <gpi-space/pc/memory/sfs_area.hpp>
+#include <gpi-space/pc/memory/beegfs_area.hpp>
 
 #include <cerrno>
 #include <sys/types.h>
@@ -40,22 +40,22 @@ namespace gpi
     {
       namespace detail
       {
-        static sfs_area_t::path_t meta_path (sfs_area_t::path_t const &p)
+        static beegfs_area_t::path_t meta_path (beegfs_area_t::path_t const &p)
         {
           return p / "meta";
         }
 
-        static sfs_area_t::path_t data_path (sfs_area_t::path_t const &p)
+        static beegfs_area_t::path_t data_path (beegfs_area_t::path_t const &p)
         {
           return p / "data";
         }
 
-        static sfs_area_t::path_t version_path (sfs_area_t::path_t const &p)
+        static beegfs_area_t::path_t version_path (beegfs_area_t::path_t const &p)
         {
           return p / "version";
         }
 
-        static sfs_area_t::path_t lock_path (sfs_area_t::path_t const &p)
+        static beegfs_area_t::path_t lock_path (beegfs_area_t::path_t const &p)
         {
           return p / "lock";
         }
@@ -168,16 +168,16 @@ namespace gpi
         }
       }
 
-      sfs_area_t::sfs_area_t ( fhg::log::Logger& logger
-                             , const gpi::pc::type::process_id_t creator
-                             , const sfs_area_t::path_t & path
-                             , const gpi::pc::type::size_t size        // total
-                             , const gpi::pc::type::flags_t flags
-                             , gpi::pc::global::itopology_t & topology
-                             , handle_generator_t& handle_generator
-                             )
+      beegfs_area_t::beegfs_area_t ( fhg::log::Logger& logger
+                                   , const gpi::pc::type::process_id_t creator
+                                   , const beegfs_area_t::path_t & path
+                                   , const gpi::pc::type::size_t size        // total
+                                   , const gpi::pc::type::flags_t flags
+                                   , gpi::pc::global::itopology_t & topology
+                                   , handle_generator_t& handle_generator
+                                   )
         : area_t ( logger
-                 , sfs_area_t::area_type
+                 , beegfs_area_t::area_type
                  , creator
                  , path.string ()
                  , size
@@ -186,7 +186,7 @@ namespace gpi
                  )
         , m_lock_fd (-1)
         , m_path (path)
-        , m_version (SFS_VERSION)
+        , m_version (BEEGFS_AREA_VERSION)
         , m_size (size)
         , m_topology (topology)
       {
@@ -206,7 +206,7 @@ namespace gpi
         }
       }
 
-      sfs_area_t::~sfs_area_t ()
+      beegfs_area_t::~beegfs_area_t ()
       {
         try
         {
@@ -218,17 +218,17 @@ namespace gpi
         }
       }
 
-      void sfs_area_t::cleanup (sfs_area_t::path_t const &path)
+      void beegfs_area_t::cleanup (beegfs_area_t::path_t const &path)
       {
         fs::remove_all (path);
       }
 
-      std::string sfs_area_t::version_string() const
+      std::string beegfs_area_t::version_string() const
       {
-        return "SFS version " + std::to_string (m_version);
+        return "BEEGFS segment version " + std::to_string (m_version);
       }
 
-      void sfs_area_t::open()
+      void beegfs_area_t::open()
       {
         /* steps:
 
@@ -250,7 +250,7 @@ namespace gpi
            && get_owner()
            )
         {
-          sfs_area_t::cleanup (m_path);
+          beegfs_area_t::cleanup (m_path);
         }
 
         if (! fs::exists (m_path) && !gpi::flag::is_set ( descriptor ().flags
@@ -318,7 +318,7 @@ namespace gpi
               if (existing_lock_info.hostname != local_lock_info.hostname)
               {
                 throw std::runtime_error
-                  ( "sfs segment may still be in use by: host="
+                  ( "beegfs segment may still be in use by: host="
                   + existing_lock_info.hostname + " pid="
                   + std::to_string (existing_lock_info.pid)
                   + ", if this is wrong, remove " + lock_file.string()
@@ -355,7 +355,7 @@ namespace gpi
           if (!beegfs::tuneUseGlobalFileLocks (fd))
           {
             throw std::runtime_error
-              ("sfs requires 'tuneUseGlobalFileLocks = 1' in BeeGFS config");
+              ("beegfs segment requires 'tuneUseGlobalFileLocks = 1' in BeeGFS config");
           }
 
           off_t file_size = fhg::util::syscall::lseek (fd, 0, SEEK_END);
@@ -391,13 +391,13 @@ namespace gpi
 
         LLOG ( TRACE
              , _logger
-             , "SFS memory created:"
+             , "BEEGFS memory created:"
              << " path: " << m_path
              << " size: " << m_size
              );
       }
 
-      void sfs_area_t::close()
+      void beegfs_area_t::close()
       {
         // only cleanup when we actually opened...
         {
@@ -425,7 +425,7 @@ namespace gpi
           {
             if (0 != lockf (m_lock_fd, F_ULOCK, 0))
             {
-              LLOG (WARN, _logger, "could not unlock sfs area: " << m_path);
+              LLOG (WARN, _logger, "could not unlock beegfs area: " << m_path);
             }
             ::close (m_lock_fd); m_lock_fd = -1;
 
@@ -434,7 +434,7 @@ namespace gpi
         }
       }
 
-      void sfs_area_t::save_state()
+      void beegfs_area_t::save_state()
       {
         scoped_file meta ( detail::meta_path (m_path)
                          , O_CREAT | O_EXCL | O_RDWR
@@ -442,7 +442,7 @@ namespace gpi
                          );
       }
 
-      void sfs_area_t::initialize ( path_t const & path
+      void beegfs_area_t::initialize ( path_t const & path
                                   , gpi::pc::type::size_t size
                                   )
       {
@@ -472,26 +472,26 @@ namespace gpi
       }
 
       Arena_t
-      sfs_area_t::grow_direction (const gpi::pc::type::flags_t) const
+      beegfs_area_t::grow_direction (const gpi::pc::type::flags_t) const
       {
         // we do not support multiple arenas in this memory type
         return ARENA_UP;
       }
 
       void *
-      sfs_area_t::raw_ptr (gpi::pc::type::offset_t)
+      beegfs_area_t::raw_ptr (gpi::pc::type::offset_t)
       {
         return nullptr;
       }
 
       bool
-      sfs_area_t::is_allowed_to_attach (const gpi::pc::type::process_id_t) const
+      beegfs_area_t::is_allowed_to_attach (const gpi::pc::type::process_id_t) const
       {
         return false;
       }
 
       void
-      sfs_area_t::alloc_hook (const gpi::pc::type::handle::descriptor_t &hdl)
+      beegfs_area_t::alloc_hook (const gpi::pc::type::handle::descriptor_t &hdl)
       {
         if (hdl.creator != (gpi::pc::type::process_id_t)(-1))
         {
@@ -506,13 +506,13 @@ namespace gpi
       }
 
       void
-      sfs_area_t::free_hook (const gpi::pc::type::handle::descriptor_t &hdl)
+      beegfs_area_t::free_hook (const gpi::pc::type::handle::descriptor_t &hdl)
       {
         m_topology.free(hdl.id);
       }
 
       bool
-      sfs_area_t::is_range_local( const gpi::pc::type::handle::descriptor_t &
+      beegfs_area_t::is_range_local( const gpi::pc::type::handle::descriptor_t &
                                 , const gpi::pc::type::offset_t
                                 , const gpi::pc::type::offset_t
                                 ) const
@@ -521,14 +521,14 @@ namespace gpi
       }
 
       gpi::pc::type::size_t
-      sfs_area_t::get_local_size ( const gpi::pc::type::size_t size
+      beegfs_area_t::get_local_size ( const gpi::pc::type::size_t size
                                  , const gpi::pc::type::flags_t
                                  ) const
       {
         return size;
       }
 
-      double sfs_area_t::get_transfer_costs ( const gpi::pc::type::memory_region_t& transfer
+      double beegfs_area_t::get_transfer_costs ( const gpi::pc::type::memory_region_t& transfer
                                             , const gpi::rank_t rank
                                             ) const
       {
@@ -536,7 +536,7 @@ namespace gpi
       }
 
       gpi::pc::type::size_t
-      sfs_area_t::read_from_impl ( gpi::pc::type::offset_t offset
+      beegfs_area_t::read_from_impl ( gpi::pc::type::offset_t offset
                                  , void *buffer
                                  , gpi::pc::type::size_t amount
                                  )
@@ -549,7 +549,7 @@ namespace gpi
       }
 
       gpi::pc::type::size_t
-      sfs_area_t::write_to_impl ( gpi::pc::type::offset_t offset
+      beegfs_area_t::write_to_impl ( gpi::pc::type::offset_t offset
                                 , const void *buffer
                                 , gpi::pc::type::size_t amount
                                 )
@@ -575,12 +575,13 @@ namespace gpi
         return fhg::util::syscall::write (fd, buffer, amount);
       }
 
-      area_ptr_t sfs_area_t::create ( fhg::log::Logger& logger
-                                    , std::string const &url_s
-                                    , gpi::pc::global::itopology_t & topology
-                                    , handle_generator_t& handle_generator
-                                    , type::id_t owner
-                                    )
+      area_ptr_t beegfs_area_t::create
+        ( fhg::log::Logger& logger
+        , std::string const &url_s
+        , gpi::pc::global::itopology_t & topology
+        , handle_generator_t& handle_generator
+        , type::id_t owner
+        )
       {
         url_t url (url_s);
         gpi::pc::type::flags_t flags = F_NONE;
@@ -605,14 +606,14 @@ namespace gpi
         gpi::pc::type::size_t size =
           boost::lexical_cast<gpi::pc::type::size_t>(url.get ("total_size").get_value_or ("0"));
 
-        area_ptr_t area (new sfs_area_t ( logger
-                                        , owner
-                                        , url.path ()
-                                        , size
-                                        , flags | F_GLOBAL
-                                        , topology
-                                        , handle_generator
-                                        )
+        area_ptr_t area (new beegfs_area_t ( logger
+                                           , owner
+                                           , url.path()
+                                           , size
+                                           , flags | F_GLOBAL
+                                           , topology
+                                           , handle_generator
+                                           )
                         );
         return area;
       }

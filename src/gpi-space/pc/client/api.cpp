@@ -497,7 +497,7 @@ namespace gpi
                                      )
         : remote_segment
             ( api
-            , "sfs://" + location.string()
+            , "beegfs://" + location.string()
             + "?total_size=" + std::to_string (size)
             + "&unlink=true&create=true"
             )

@@ -15,13 +15,13 @@ namespace gpi
   {
     namespace memory
     {
-      class sfs_area_t : public area_t
+      class beegfs_area_t : public area_t
       {
       public:
         typedef boost::filesystem::path path_t;
 
-        static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_SFS;
-        static const int SFS_VERSION = 0x0001;
+        static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_BEEGFS;
+        static const int BEEGFS_AREA_VERSION = 0x0001;
 
         static area_ptr_t create ( fhg::log::Logger&
                                  , std::string const &url
@@ -33,16 +33,16 @@ namespace gpi
         // cleanup a file segment
         static void cleanup (path_t const & path);
 
-        sfs_area_t ( fhg::log::Logger&
-                   , const gpi::pc::type::process_id_t creator
-                   , const path_t & path
-                   , const gpi::pc::type::size_t size        // total
-                   , const gpi::pc::type::flags_t flags
-                   , gpi::pc::global::itopology_t & topology
-                   , handle_generator_t&
-                   );
+        beegfs_area_t ( fhg::log::Logger&
+                      , const gpi::pc::type::process_id_t creator
+                      , const path_t & path
+                      , const gpi::pc::type::size_t size        // total
+                      , const gpi::pc::type::flags_t flags
+                      , gpi::pc::global::itopology_t & topology
+                      , handle_generator_t&
+                      );
 
-        ~sfs_area_t ();
+        ~beegfs_area_t ();
 
       protected:
         int get_type_id () const;
