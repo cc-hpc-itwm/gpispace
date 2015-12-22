@@ -814,7 +814,8 @@ namespace we
       )
     {
       //! \note We wrap all input activites in a net.
-      _activity->inject (child, workflow_response);
+      boost::get<we::type::net_type> (_activity->transition().data())
+        .inject (child, workflow_response);
     }
 
 

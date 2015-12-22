@@ -84,65 +84,6 @@ namespace we
         return oss.str();
       }
 
-      void activity_t::inject
-        ( const activity_t& child
-        , we::workflow_response_callback workflow_response
-        )
-      {
-        we::type::net_type& net
-          (boost::get<we::type::net_type> (_transition.data()));
-
-        for (const activity_t::token_on_port_t& top : child.output())
-        {
-          if ( net.port_to_place().count (*child.transition_id())
-             && net.port_to_place().at (*child.transition_id())
-                .left.count (top.second)
-             )
-          {
-            net.put_value
-              ( net.port_to_place().at (*child.transition_id())
-              .left.find (top.second)->get_right()
-              , top.first
-              );
-          }
-          else
-          {
-            fhg::util::nest_exceptions<std::runtime_error>
-              ( [&]
-                {
-                  assert ( net.port_to_response().at (*child.transition_id())
-                         . left.count (top.second)
-                         );
-
-                  pnet::type::value::value_type const description
-                    ([this, &net, &child, &top]
-                     {
-                       std::string const to
-                         ( net.port_to_response().at (*child.transition_id())
-                         . left.find (top.second)->get_right()
-                         );
-
-                       we::port_id_type const input_port_id
-                         (child.transition().input_port_by_name (to));
-
-                       return std::find_if
-                         ( child._input.begin(), child._input.end()
-                         , [&input_port_id] (token_on_port_t const& input_top)
-                           {
-                             return input_top.second == input_port_id;
-                           }
-                         )->first;
-                     }()
-                    );
-
-                  workflow_response (description, top.first);
-                }
-              , "inject result: sending workflow response failed"
-              );
-          }
-        }
-      }
-
       void activity_t::add_input
         ( we::port_id_type const& port_id
         , pnet::type::value::value_type const& value

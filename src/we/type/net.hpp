@@ -142,6 +142,13 @@ namespace we
         return boost::none;
       }
 
+      void inject ( activity_t const&
+                  , workflow_response_callback
+                  = [] ( pnet::type::value::value_type const&
+                       , pnet::type::value::value_type const&
+                       ) {}
+                  );
+
     private:
       place_id_type _place_id;
       std::unordered_map<place_id_type, place::type> _pmap;

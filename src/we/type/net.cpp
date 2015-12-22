@@ -616,6 +616,57 @@ namespace we
       }
     }
 
+    void net_type::inject ( activity_t const& child
+                          , workflow_response_callback workflow_response
+                          )
+    {
+      for (auto const& token_on_port : child.output())
+      {
+        if ( _port_to_place.count (*child.transition_id())
+           && _port_to_place.at (*child.transition_id())
+            . left.count (token_on_port.second)
+           )
+        {
+          put_value ( _port_to_place.at (*child.transition_id())
+                    . left.find (token_on_port.second)->get_right()
+                    , token_on_port.first
+                    );
+        }
+        else
+        {
+          fhg::util::nest_exceptions<std::runtime_error>
+            ( [&]
+              {
+                assert ( _port_to_response.at (*child.transition_id())
+                       . left.count (token_on_port.second)
+                       );
+               pnet::type::value::value_type const description
+                  ([this, &child, &token_on_port]
+                   {
+                     std::string const to
+                       ( _port_to_response.at (*child.transition_id())
+                       . left.find (token_on_port.second)->get_right()
+                       );
+                    we::port_id_type const input_port_id
+                       (child.transition().input_port_by_name (to));
+
+                    return std::find_if
+                       ( child._input.begin(), child._input.end()
+                       , [&input_port_id] (activity_t::token_on_port_t const& input_token_on_port)
+                         {
+                           return input_token_on_port.second == input_port_id;
+                         }
+                       )->first;
+                   }()
+                  );
+               workflow_response (description, token_on_port.first);
+              }
+            , "inject result: sending workflow response failed"
+            );
+        }
+      }
+    }
+
 
     // cross_type
 

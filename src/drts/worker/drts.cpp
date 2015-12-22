@@ -64,7 +64,7 @@ namespace
                                                   )
                                , sub->transition().data()
                                );
-          _activity.inject (*sub);
+          net.inject (*sub);
 
           if (task.state == wfe_task_t::CANCELED)
           {

@@ -56,11 +56,6 @@ namespace we
         const we::type::transition_t& transition() const;
         we::type::transition_t& transition();
 
-        // allowed for net_type only
-        void inject (const activity_t&, we::workflow_response_callback
-                            = [] (pnet::type::value::value_type const&, pnet::type::value::value_type const&) {}
-);
-
         const input_t& input() const;
         void add_input
           ( we::port_id_type const&
@@ -94,6 +89,7 @@ namespace we
         we::type::transition_t _transition;
         boost::optional<we::transition_id_type> _transition_id;
 
+        friend class net_type;
         input_t _input;
         output_t _output;
       };
