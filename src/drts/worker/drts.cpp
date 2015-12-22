@@ -1,5 +1,8 @@
 #include <drts/worker/drts.hpp>
 
+#include <drts/worker/context.hpp>
+#include <drts/worker/context_impl.hpp>
+
 #include <util-generic/hostname.hpp>
 
 #include <fhg/util/macros.hpp>
@@ -17,10 +20,41 @@
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
 
+#include <we/type/activity.hpp>
 #include <we/loader/module_call.hpp>
 
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
+
+struct wfe_task_t
+{
+  enum state_t
+  {
+    PENDING
+  , CANCELED
+  , CANCELED_DUE_TO_WORKER_SHUTDOWN
+  , FINISHED
+  , FAILED
+  };
+
+  std::string id;
+  state_t state;
+  we::type::activity_t activity;
+  drts::worker::context context;
+
+  wfe_task_t ( std::string id_
+             , std::string const& description
+             , std::string worker_name
+             , std::set<std::string> workers
+             , fhg::log::Logger& logger
+             )
+    : id (id_)
+    , state (PENDING)
+    , activity (description)
+    , context
+      (drts::worker::context_constructor (worker_name, workers, logger))
+  {}
+};
 
 namespace
 {
