@@ -8,10 +8,11 @@
 
 #include <util-generic/nest_exceptions.hpp>
 
-#include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 #include <algorithm>
 #include <cassert>
@@ -167,6 +168,25 @@ namespace we
           add_output
             (port_by_id.first, output.value (port_by_id.second.name()));
         }
+      }
+
+      bool activity_t::output_missing() const
+      {
+        output_t const out (output());
+
+        if (out.size() < _transition.ports_output().size())
+        {
+          return true;
+        }
+
+        std::unordered_set<port_id_type> port_ids_with_output;
+
+        for (port_id_type port_id : out | boost::adaptors::map_values)
+        {
+          port_ids_with_output.emplace (port_id);
+        }
+
+        return port_ids_with_output.size() != _transition.ports_output().size();
       }
 
       boost::optional<we::transition_id_type> const&

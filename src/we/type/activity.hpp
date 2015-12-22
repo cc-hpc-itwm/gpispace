@@ -69,6 +69,8 @@ namespace we
           );
         void add_output (expr::eval::context const&);
 
+        bool output_missing() const;
+
         boost::optional<we::transition_id_type> const&
           transition_id() const;
 
